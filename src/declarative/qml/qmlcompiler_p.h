@@ -62,6 +62,9 @@
 #include <private/qmlparser_p.h>
 #include <private/qmlengine_p.h>
 #include <private/qbitfield_p.h>
+#include <private/qmlpropertycache_p.h>
+#include <private/qmlintegercache_p.h>
+#include <private/qmltypenamecache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -69,6 +72,7 @@ class QmlEngine;
 class QmlComponent;
 class QmlContext;
 
+class QScriptProgram;
 class QmlCompiledData : public QmlRefCount
 {
 public:
@@ -78,6 +82,7 @@ public:
     QByteArray name;
     QUrl url;
     QmlEnginePrivate::Imports imports;
+    QmlTypeNameCache *importCache;
 
     struct TypeReference 
     {
@@ -98,6 +103,7 @@ public:
         int index;
         int type;
     };
+
     QAbstractDynamicMetaObject root;
     QList<QString> primitives;
     QList<float> floatData;
@@ -106,6 +112,9 @@ public:
     QList<QByteArray> datas;
     QList<QmlParser::Location> locations;
     QList<QmlInstruction> bytecode;
+    QList<QScriptProgram *> programs;
+    QList<QmlPropertyCache *> propertyCaches;
+    QList<QmlIntegerCache *> contextCaches;
 
     void dumpInstructions();
 private:
@@ -162,6 +171,7 @@ private:
 
 
     bool buildObject(QmlParser::Object *obj, const BindingContext &);
+    bool buildScript(QmlParser::Object *obj, QmlParser::Object *script);
     bool buildComponent(QmlParser::Object *obj, const BindingContext &);
     bool buildSubObject(QmlParser::Object *obj, const BindingContext &);
     bool buildSignal(QmlParser::Property *prop, QmlParser::Object *obj, 
@@ -227,7 +237,7 @@ private:
                               QmlParser::Property *prop, 
                               QmlParser::Object *obj,
                               QmlParser::Property *valueTypeProperty = 0);
-
+    int genContextCache();
 
     int componentTypeRef();
 
@@ -253,12 +263,10 @@ private:
     struct ComponentCompileState
     {
         ComponentCompileState() 
-            : parserStatusCount(0), savedObjects(0), 
-              pushedProperties(0), root(0) {}
+            : parserStatusCount(0), pushedProperties(0), root(0) {}
         QHash<QString, QmlParser::Object *> ids;
         QHash<int, QmlParser::Object *> idIndexes;
         int parserStatusCount;
-        int savedObjects;
         int pushedProperties;
 
         QHash<QmlParser::Value *, BindingReference> bindings;

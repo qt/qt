@@ -79,23 +79,13 @@ private:
     QmlAbstractExpression  *m_nextExpression;
 };
 
-class QmlExpression;
-class QString;
-class QmlExpressionPrivate : public QObjectPrivate, public QmlAbstractExpression
+class QmlExpressionData : public QmlAbstractExpression, public QmlRefCount
 {
-    Q_DECLARE_PUBLIC(QmlExpression)
 public:
-    QmlExpressionPrivate();
-    ~QmlExpressionPrivate();
+    QmlExpressionData();
+    ~QmlExpressionData();
 
-    enum CompiledDataType {
-        BasicScriptEngineData = 1,
-        PreTransformedQtScriptData = 2
-    };
-
-
-    void init(QmlContext *, const QString &, QObject *);
-    void init(QmlContext *, void *, QmlRefCount *, QObject *);
+    QmlExpressionPrivate *q;
 
     QString expression;
     bool expressionFunctionValid:1;
@@ -108,10 +98,6 @@ public:
 
     QString fileName;
     int line;
-
-    QVariant value(QObject *secondaryScope = 0);
-    QVariant evalSSE();
-    QVariant evalQtScript(QObject *secondaryScope);
 
     struct SignalGuard : public QGuard<QObject> {
         SignalGuard() : isDuplicate(false), notifyIndex(-1) {}
@@ -132,6 +118,32 @@ public:
     };
     SignalGuard *guardList;
     int guardListLength;
+};
+
+class QmlExpression;
+class QString;
+class QmlExpressionPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlExpression)
+public:
+    QmlExpressionPrivate();
+    QmlExpressionPrivate(QmlExpressionData *);
+    ~QmlExpressionPrivate();
+
+    enum CompiledDataType {
+        BasicScriptEngineData = 1,
+        PreTransformedQtScriptData = 2
+    };
+
+    void init(QmlContext *, const QString &, QObject *);
+    void init(QmlContext *, void *, QmlRefCount *, QObject *);
+
+    QmlExpressionData *data;
+
+    QVariant value(QObject *secondaryScope = 0);
+    QVariant evalSSE();
+    QVariant evalQtScript(QObject *secondaryScope);
+
     void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);
     void clearGuards();
 

@@ -54,12 +54,14 @@
 //
 
 #include <private/qobject_p.h>
+#include <QtScript/qscriptvalue.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlCompiledData;
 class QmlAbstractBinding;
 class QmlContext;
+class QmlPropertyCache;
 class QmlDeclarativeData : public QDeclarativeData
 {
 public:
@@ -84,6 +86,9 @@ public:
     unsigned int deferredIdx;
 
     QHash<int, QObject *> *attachedProperties;
+
+    QScriptValue scriptValue;
+    QmlPropertyCache *propertyCache;
 
     static QmlDeclarativeData *get(const QObject *object, bool create = false) {
         QObjectPrivate *priv = 

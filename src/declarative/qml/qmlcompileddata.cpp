@@ -150,6 +150,7 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
 }
 
 QmlCompiledData::QmlCompiledData()
+: importCache(0)
 {
 }
 
@@ -159,6 +160,14 @@ QmlCompiledData::~QmlCompiledData()
         if (types.at(ii).ref)
             types.at(ii).ref->release();
     }
+
+    for (int ii = 0; ii < propertyCaches.count(); ++ii) 
+        propertyCaches.at(ii)->release();
+
+    if (importCache)
+        importCache->release();
+
+    qDeleteAll(programs);
 }
 
 QObject *QmlCompiledData::TypeReference::createInstance(QmlContext *ctxt, const QBitField &bindings) const

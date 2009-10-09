@@ -63,11 +63,24 @@ QmlCompositeTypeData::~QmlCompositeTypeData()
     for (int ii = 0; ii < dependants.count(); ++ii)
         dependants.at(ii)->release();
 
+    for (int ii = 0; ii < resources.count(); ++ii)
+        resources.at(ii)->release();
+
     if (compiledComponent)
         compiledComponent->release();
 
     if (component) 
         delete component;
+}
+
+QmlCompositeTypeResource::QmlCompositeTypeResource()
+{
+}
+
+QmlCompositeTypeResource::~QmlCompositeTypeResource()
+{
+    for (int ii = 0; ii < dependants.count(); ++ii)
+        dependants.at(ii)->release();
 }
 
 void QmlCompositeTypeData::addWaiter(QmlComponentPrivate *p)
@@ -142,6 +155,10 @@ QmlCompositeTypeManager::~QmlCompositeTypeManager()
         (*iter)->release();
         iter = components.erase(iter);
     }
+    for (Resources::Iterator iter = resources.begin(); iter != resources.end();) {
+        (*iter)->release();
+        iter = resources.erase(iter);
+    }
 }
 
 QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
@@ -181,8 +198,16 @@ void QmlCompositeTypeManager::clearCache()
             ++iter;
         }
     }
-}
 
+    for (Resources::Iterator iter = resources.begin(); iter != resources.end();) {
+        if ((*iter)->status != QmlCompositeTypeResource::Waiting) {
+            (*iter)->release();
+            iter = resources.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
+}
 
 void QmlCompositeTypeManager::replyFinished()
 {
@@ -213,6 +238,52 @@ void QmlCompositeTypeManager::replyFinished()
     }
 
     reply->deleteLater();
+}
+
+void QmlCompositeTypeManager::resourceReplyFinished()
+{
+    QNetworkReply *reply = static_cast<QNetworkReply *>(sender());
+
+    QmlCompositeTypeResource *resource = resources.value(reply->url().toString());
+    Q_ASSERT(resource);
+
+    if (reply->error() != QNetworkReply::NoError) {
+
+        resource->status = QmlCompositeTypeResource::Error;
+
+    } else {
+
+        resource->status = QmlCompositeTypeResource::Complete;
+        resource->data = reply->readAll();
+
+    }
+
+    doComplete(resource);
+    reply->deleteLater();
+}
+
+void QmlCompositeTypeManager::loadResource(QmlCompositeTypeResource *resource)
+{
+    QUrl url(resource->url);
+
+    if (url.scheme() == QLatin1String("file")) {
+
+        QFile file(url.toLocalFile());
+        if (file.open(QFile::ReadOnly)) {
+            resource->data = file.readAll();
+            resource->status = QmlCompositeTypeResource::Complete;
+        } else {
+            resource->status = QmlCompositeTypeResource::Error;
+        }
+
+    } else {
+
+        QNetworkReply *reply = 
+            engine->networkAccessManager()->get(QNetworkRequest(url));
+        QObject::connect(reply, SIGNAL(finished()),
+                         this, SLOT(resourceReplyFinished()));
+
+    }
 }
 
 void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
@@ -308,6 +379,15 @@ void QmlCompositeTypeManager::doComplete(QmlCompositeTypeData *unit)
     }
 }
 
+void QmlCompositeTypeManager::doComplete(QmlCompositeTypeResource *resource)
+{
+    for (int ii = 0; ii < resource->dependants.count(); ++ii) {
+        checkComplete(resource->dependants.at(ii));
+        resource->dependants.at(ii)->release();
+    }
+    resource->dependants.clear();
+}
+
 void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
 {
     if (unit->status != QmlCompositeTypeData::Waiting)
@@ -329,12 +409,33 @@ void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
             waiting++;
         }
     }
+    for (int ii = 0; ii < unit->resources.count(); ++ii) {
+        QmlCompositeTypeResource *r = unit->resources.at(ii);
+
+        if (!r)
+            continue;
+
+        if (r->status == QmlCompositeTypeResource::Error) {
+            unit->status = QmlCompositeTypeData::Error;
+            QmlError error;
+            error.setUrl(unit->imports.baseUrl());
+            error.setDescription(QLatin1String("Resource ") + r->url + 
+                                 QLatin1String(" unavailable"));
+            unit->errors << error;
+            doComplete(unit);
+            return;
+        } else if (r->status == QmlCompositeTypeData::Waiting) {
+            waiting++;
+        }
+    }
+
     if (!waiting) {
         unit->status = QmlCompositeTypeData::Complete;
         doComplete(unit);
     }
 }
 
+// ### Check ref counting in here
 void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
 {
     QList<QmlScriptParser::TypeReference*> types = unit->data.referencedTypes();
@@ -345,12 +446,6 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         QByteArray typeName = parserRef->name.toLatin1();
 
         QmlCompositeTypeData::TypeReference ref;
-
-        if (typeName == QByteArray("Property") ||
-            typeName == QByteArray("Signal")) {
-            unit->types << ref;
-            continue;
-        }
 
         QUrl url;
         int majorVersion;
@@ -429,6 +524,49 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         }
 
         unit->types << ref;
+    }
+
+    QList<QUrl> resourceList = unit->data.referencedResources();
+    for (int ii = 0; ii < resourceList.count(); ++ii) {
+        QUrl url = unit->imports.baseUrl().resolved(resourceList.at(ii));
+
+        QmlCompositeTypeResource *resource = resources.value(url.toString());
+
+        if (!resource) {
+            resource = new QmlCompositeTypeResource;
+            resource->status = QmlCompositeTypeResource::Waiting;
+            resource->url = url.toString();
+            resources.insert(resource->url, resource);
+
+            loadResource(resource);
+        }
+
+        switch(resource->status) {
+        case QmlCompositeTypeResource::Invalid:
+        case QmlCompositeTypeResource::Error:
+            unit->status = QmlCompositeTypeData::Error;
+            {
+                QmlError error;
+                error.setUrl(unit->imports.baseUrl());
+                error.setDescription(QLatin1String("Resource ") + resource->url + 
+                                     QLatin1String(" unavailable"));
+                unit->errors << error;
+            }
+            doComplete(unit);
+            return;
+
+        case QmlCompositeTypeData::Complete:
+            break;
+
+        case QmlCompositeTypeData::Waiting:
+            unit->addref();
+            resource->dependants << unit;
+            waiting++;
+            break;
+        }
+
+        resource->addref();
+        unit->resources << resource;
     }
 
     if (waiting) {

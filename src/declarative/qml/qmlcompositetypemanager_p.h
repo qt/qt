@@ -67,6 +67,7 @@ class QmlComponent;
 class QmlDomDocument;
 
 class QmlCompositeTypeData;
+class QmlCompositeTypeResource;
 
 class QmlCompositeTypeManager : public QObject
 {
@@ -88,19 +89,24 @@ public:
 
 private Q_SLOTS:
     void replyFinished();
+    void resourceReplyFinished();
     void requestProgress(qint64 received, qint64 total);
 
 private:
     void loadSource(QmlCompositeTypeData *);
+    void loadResource(QmlCompositeTypeResource *);
     void compile(QmlCompositeTypeData *);
     void setData(QmlCompositeTypeData *, const QByteArray &, const QUrl &);
 
     void doComplete(QmlCompositeTypeData *);
+    void doComplete(QmlCompositeTypeResource *);
     void checkComplete(QmlCompositeTypeData *);
 
     QmlEngine *engine;
     typedef QHash<QString, QmlCompositeTypeData *> Components;
     Components components;
+    typedef QHash<QString, QmlCompositeTypeResource *> Resources;
+    Resources resources;
 };
 
 QT_END_NAMESPACE

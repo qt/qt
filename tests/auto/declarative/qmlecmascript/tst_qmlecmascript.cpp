@@ -45,15 +45,22 @@ private slots:
     void objectPropertiesTriggerReeval();
     void deferredProperties();
     void extensionObjects();
+    void attachedProperties();
     void enums();
     void valueTypeFunctions();
     void constantsOverrideBindings();
     void outerBindingOverridesInnerBinding();
     void aliasPropertyAndBinding();
     void nonExistantAttachedObject();
+    void scope();
+    void signalParameterTypes();
+    void objectsCompareAsEqual();
+    void scriptAccess();
     void dynamicCreation();
     void dynamicDestruction();
     void objectToString();
+    void selfDeletingBinding();
+    void extendedObjectPropertyLookup();
 
 private:
     QmlEngine engine;
@@ -383,6 +390,19 @@ void tst_qmlecmascript::extensionObjects()
     QCOMPARE(object->baseProperty(), 92);
 }
 
+void tst_qmlecmascript::attachedProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("attachedProperty.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+    QCOMPARE(object->property("a").toInt(), 19);
+    QCOMPARE(object->property("b").toInt(), 19);
+    QCOMPARE(object->property("c").toInt(), 19);
+    QCOMPARE(object->property("d").toInt(), 19);
+
+    // ### Need to test attached property assignment
+}
+
 void tst_qmlecmascript::enums()
 {
     // Existant enums
@@ -515,6 +535,58 @@ void tst_qmlecmascript::nonExistantAttachedObject()
     QVERIFY(object != 0);
 }
 
+void tst_qmlecmascript::scope()
+{
+    QmlComponent component(&engine, TEST_FILE("scope.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 1);
+    QCOMPARE(object->property("test2").toInt(), 2);
+    QCOMPARE(object->property("test3").toString(), QString("1Test"));
+    QCOMPARE(object->property("test4").toString(), QString("2Test"));
+    QCOMPARE(object->property("test5").toInt(), 1);
+    QCOMPARE(object->property("test6").toInt(), 1);
+    QCOMPARE(object->property("test7").toInt(), 2);
+    QCOMPARE(object->property("test8").toInt(), 2);
+    QCOMPARE(object->property("test9").toInt(), 1);
+    QCOMPARE(object->property("test10").toInt(), 3);
+}
+
+/*
+Tests that "any" type passes through a synthesized signal parameter.  This
+is essentially a test of QmlMetaType::copy()
+*/
+void tst_qmlecmascript::signalParameterTypes()
+{
+    QmlComponent component(&engine, TEST_FILE("signalParameterTypes.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
+    QVERIFY(object != 0);
+
+    emit object->basicSignal();
+
+    QCOMPARE(object->property("intProperty").toInt(), 10);
+    QCOMPARE(object->property("realProperty").toReal(), 19.2);
+    QVERIFY(object->property("colorProperty").value<QColor>() == QColor(255, 255, 0, 255));
+    QVERIFY(object->property("variantProperty") == QVariant::fromValue(QColor(255, 0, 255, 255)));
+}
+
+/*
+Test that two JS objects for the same QObject compare as equal.
+*/
+void tst_qmlecmascript::objectsCompareAsEqual()
+{
+    QmlComponent component(&engine, TEST_FILE("objectsCompareAsEqual.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toBool(), true);
+    QCOMPARE(object->property("test2").toBool(), true);
+    QCOMPARE(object->property("test3").toBool(), true);
+    QCOMPARE(object->property("test4").toBool(), true);
+    QCOMPARE(object->property("test5").toBool(), true);
+}
+
 /*
 Confirm bindings and alias properties can coexist.
 
@@ -536,8 +608,22 @@ void tst_qmlecmascript::aliasPropertyAndBinding()
 }
 
 /*
-    Test using createQmlObject to dynamically generate an item
-    Also using createComponent is tested.
+Tests that only methods of Script {} blocks are exposed.
+*/
+void tst_qmlecmascript::scriptAccess()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptAccess.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 10);
+    QCOMPARE(object->property("test2").toInt(), 19);
+    QCOMPARE(object->property("test3").toInt(), 0);
+}
+
+/*
+Test using createQmlObject to dynamically generate an item
+Also using createComponent is tested.
 */
 void tst_qmlecmascript::dynamicCreation()
 {
@@ -576,13 +662,16 @@ void tst_qmlecmascript::dynamicDestruction()
     QMetaObject::invokeMethod(object, "killOther");
     QVERIFY(createdQmlObject);
     QTest::qWait(0);
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(createdQmlObject);
     QTest::qWait(100);
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(!createdQmlObject);
 
     QMetaObject::invokeMethod(object, "killMe");
     QVERIFY(object);
     QTest::qWait(0);
+    QCoreApplication::instance()->processEvents(QEventLoop::DeferredDeletion);
     QVERIFY(!object);
 }
 
@@ -595,7 +684,44 @@ void tst_qmlecmascript::objectToString()
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
     QMetaObject::invokeMethod(object, "testToString");
-    QVERIFY(object->stringProperty().startsWith("Qml Object, \"objName\" MyQmlObject_QML_15"));
+    QVERIFY(object->stringProperty().startsWith("MyQmlObject_QML_"));
+    QVERIFY(object->stringProperty().endsWith(", \"objName\")"));
+}
+
+/*
+Tests bindings that indirectly cause their own deletion work.
+
+This test is best run under valgrind to ensure no invalid memory access occur.
+*/
+void tst_qmlecmascript::selfDeletingBinding()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("selfDeletingBinding.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        object->setProperty("triggerDelete", true);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("selfDeletingBinding.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        object->setProperty("triggerDelete", true);
+    }
+}
+
+/*
+Test that extended object properties can be accessed.
+
+This test a regression where this used to crash.  The issue was specificially
+for extended objects that did not include a synthesized meta object (so non-root
+and no synthesiszed properties).
+*/
+void tst_qmlecmascript::extendedObjectPropertyLookup()
+{
+    QmlComponent component(&engine, TEST_FILE("extendedObjectPropertyLookup.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 QTEST_MAIN(tst_qmlecmascript)
