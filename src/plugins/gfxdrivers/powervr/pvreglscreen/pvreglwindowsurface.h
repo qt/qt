@@ -65,6 +65,8 @@ public:
     QByteArray permanentState() const;
     void setPermanentState(const QByteArray &state);
 
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+
     QImage image() const;
     QPaintDevice *paintDevice();
 
