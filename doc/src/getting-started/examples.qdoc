@@ -827,7 +827,7 @@
 
     \list
     \o \l{phonon/capabilities}{Capabilities}\raisedaster
-    \o \l{phonon/musicplayer}{Music Player}\raisedaster
+    \o \l{phonon/qmusicplayer}{Music Player}\raisedaster
     \endlist
 */
 

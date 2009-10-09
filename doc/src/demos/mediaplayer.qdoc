@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example demos/mediaplayer
+    \example demos/qmediaplayer
     \title Media Player
 
     The Media Player demonstration shows how \l{Phonon Module}{Phonon}

@@ -6,7 +6,7 @@
     <example filename="deform" name="Vector Deformation" image="screenshots/deform.png" args="-small-screen"/>
     <example filename="pathstroke" name="Path Stroking" image="screenshots/pathstroke.png" args="-small-screen"/>
     <example filename="wiggly" name="Wiggly Text" image="screenshots/wiggly_s60.png" args="-small-screen"/>
-    <example filename="ftp" name="Ftp Client" image="screenshots/ftp_s60.png"/>
+    <example filename="qftp" name="Ftp Client" image="screenshots/ftp_s60.png"/>
     <example filename="context2d" name="Context2d" image="screenshots/context2d_s60.png" args="-small-screen"/>
     <example filename="saxbookmarks" name="SaxBookmarks" image="screenshots/saxbookmarks_s60.png"/>
     <example filename="desktopservices" name="Desktop Services" image="screenshots/desktopservices_s60.png"/>

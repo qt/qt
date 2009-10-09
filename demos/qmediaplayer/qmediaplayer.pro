@@ -3,7 +3,6 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = qmediaplayer
 DEPENDPATH += . build src ui
 
 QT += phonon
@@ -18,7 +17,7 @@ HEADERS += mediaplayer.h
 
 target.path = $$[QT_INSTALL_DEMOS]/qmediaplayer
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.html *.doc images
-sources.path = $$[QT_INSTALL_DEMOS]/mediaplayer
+sources.path = $$[QT_INSTALL_DEMOS]/qmediaplayer
 INSTALLS += target sources
 
 wince*{

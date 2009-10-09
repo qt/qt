@@ -166,6 +166,12 @@ QT_USE_NAMESPACE
         }
         // Keep us in sync with file output
         PMDestinationType dest;
+
+        // If the user selected print to file, the session has been
+        // changed behind our back and our d->ep->session object is a
+        // dangling pointer. Update it based on the "current" session
+        d->ep->session = static_cast<PMPrintSession>([d->ep->printInfo PMPrintSession]);
+
         PMSessionGetDestinationType(d->ep->session, d->ep->settings, &dest);
         if (dest == kPMDestinationFile) {
             QCFType<CFURLRef> file;
