@@ -162,6 +162,10 @@ class Config
 
 #define CONFIG_FILEEXTENSIONS           "fileextensions"
 
+#ifdef QDOC_QML
+#define CONFIG_QMLONLY                  "qmlonly"
+#endif
+
 QT_END_NAMESPACE
 
 #endif

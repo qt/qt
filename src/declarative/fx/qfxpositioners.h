@@ -59,7 +59,7 @@ class Q_DECLARATIVE_EXPORT QFxBasePositioner : public QFxItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(int spacing READ spacing WRITE setSpacing)
+    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(QmlTransition *move READ move WRITE setMove)
     Q_PROPERTY(QmlTransition *add READ add WRITE setAdd)
     Q_PROPERTY(QmlTransition *remove READ remove WRITE setRemove)
@@ -93,6 +93,7 @@ protected:
 
 Q_SIGNALS:
     void layoutItemChanged();
+    void spacingChanged();
 
 protected Q_SLOTS:
     virtual void doPositioning()=0;

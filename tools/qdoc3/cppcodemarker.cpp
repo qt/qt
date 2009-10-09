@@ -1109,15 +1109,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
     if (qmlClassNode) {
         if (style == Summary) {
 	    FastSection qmlproperties(qmlClassNode,
-                                      "QML Properties",
+                                      "Properties",
                                       "property",
                                       "properties");
 	    FastSection qmlsignals(qmlClassNode,
-                                "QML Signals",
+                                "Signals",
                                 "signal",
                                 "signals");
 	    FastSection qmlmethods(qmlClassNode,
-                                   "QML Methods",
+                                   "Methods",
                                    "method",
                                    "methods");
 
@@ -1146,9 +1146,9 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
 	    append(sections,qmlmethods);
         }
         else if (style == Detailed) {
-	    FastSection qmlproperties(qmlClassNode,"QML Property Documentation");
-	    FastSection qmlsignals(qmlClassNode,"QML Signal Documentation");
-	    FastSection qmlmethods(qmlClassNode,"QML Method Documentation");
+            FastSection qmlproperties(qmlClassNode, "Property Documentation");
+            FastSection qmlsignals(qmlClassNode,"Signal Documentation");
+            FastSection qmlmethods(qmlClassNode,"Method Documentation");
 	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
 	    while (c != qmlClassNode->childNodes().end()) {
                 if ((*c)->subType() == Node::QmlPropertyGroup) {

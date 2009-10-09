@@ -72,7 +72,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(bool strictlyEnforceHighlightRange READ strictlyEnforceHighlightRange WRITE setStrictlyEnforceHighlightRange)
 
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
-    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation)
+    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
@@ -106,7 +106,7 @@ public:
 
     bool strictlyEnforceHighlightRange() const;
     void setStrictlyEnforceHighlightRange(bool strict);
-    
+
     qreal preferredHighlightBegin() const;
     void setPreferredHighlightBegin(qreal);
 
@@ -144,6 +144,7 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged();
     void spacingChanged();
+    void orientationChanged();
     void currentIndexChanged();
     void currentSectionChanged();
     void sectionExpressionChanged();
