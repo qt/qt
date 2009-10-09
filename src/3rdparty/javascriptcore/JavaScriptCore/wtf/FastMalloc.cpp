@@ -103,6 +103,11 @@
 #define USE_BACKGROUND_THREAD_TO_SCAVENGE_MEMORY 1
 #endif
 
+#if defined(__HP_aCC)
+// HP'a aCC compiler has broken for scoping
+# define for if(0){}else for
+#endif
+
 #ifndef NDEBUG
 namespace WTF {
 
