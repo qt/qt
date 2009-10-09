@@ -567,7 +567,7 @@ Feature: PRINTPREVIEWWIDGET
 Description: Provides a widget for previewing page layouts for printer output.
 a date.
 Section: Widgets
-Requires: GRAPHICSVIEW PRINTER
+Requires: GRAPHICSVIEW PRINTER TOOLBAR MAINWINDOW
 Name: QPrintPreviewWidget
 SeeAlso: ???
 

@@ -767,7 +767,7 @@
 #endif
 
 // QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER))
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_TOOLBAR) || defined(QT_NO_MAINWINDOW))
 #define QT_NO_PRINTPREVIEWWIDGET
 #endif
 
