@@ -134,7 +134,11 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         }
 
     case VolumeFaderEffectClass:
+#ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
         return new VolumeFaderEffect(this, parent);
+#else
+        return 0;
+#endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 
     case VisualizationClass:  //Fall through
     default:

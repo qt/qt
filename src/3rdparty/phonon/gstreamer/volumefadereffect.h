@@ -30,7 +30,7 @@
 #include <gst/gst.h>
 
 QT_BEGIN_NAMESPACE
-
+#ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
 namespace Phonon
 {
 namespace Gstreamer
@@ -64,7 +64,7 @@ namespace Gstreamer
             QTime m_fadeStartTime;
     };
 }} //namespace Phonon::Gstreamer
-
+#endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 QT_END_NAMESPACE
 
 #endif // Phonon_GSTREAMER_VOLUMEFADEREFFECT_H
