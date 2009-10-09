@@ -87,6 +87,19 @@ win32-g++ {
     QMAKE_LIBDIR_POST += $$split(TMPPATH,";")
 }
 
+# Temporary workaround to pick up the DEF file from the same place as all the others
+symbian {
+    shared {
+        MMP_RULES -= defBlock
+
+        MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
+                    "DEFFILE ../../../s60installs/bwins/$${TARGET}.def" \
+                    "$${LITERAL_HASH}elif defined EABI" \
+                    "DEFFILE ../../../s60installs/eabi/$${TARGET}.def" \
+                    "$${LITERAL_HASH}endif"
+    }
+}
+
 # Assume that symbian OS always comes with sqlite
 symbian:!CONFIG(QTDIR_build): CONFIG += system-sqlite
 
