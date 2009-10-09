@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,30 +39,33 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "pinchwidget.h"
+#include "qgesturerecognizer.h"
 
-class MainWindow : public QWidget
-{
-public:
-    MainWindow();
-};
+#include "private/qgesture_p.h"
 
-MainWindow::MainWindow()
+QT_BEGIN_NAMESPACE
+
+QGestureRecognizer::QGestureRecognizer()
 {
-    QVBoxLayout *l = new QVBoxLayout(this);
-    QPushButton *btn = new QPushButton(QLatin1String("AcceptTouchEvents"));
-    l->addWidget(btn);
-    QImage image(":/images/qt-logo.png");
-    PinchWidget *w = new PinchWidget(image);
-    l->addWidget(w);
-    connect(btn, SIGNAL(clicked()), w, SLOT(acceptTouchEvents()));
 }
 
-int main(int argc, char *argv[])
+QGestureRecognizer::~QGestureRecognizer()
 {
-    QApplication app(argc, argv);
-    MainWindow w;
-    w.show();
-    return app.exec();
 }
+
+QGesture *QGestureRecognizer::createGesture(QObject *)
+{
+    return new QGesture;
+}
+
+void QGestureRecognizer::reset(QGesture *state)
+{
+    if (state) {
+        QGesturePrivate *d = state->d_func();
+        d->state = Qt::NoGesture;
+        d->hotSpot = QPointF();
+        d->targetObject = 0;
+    }
+}
+
+QT_END_NAMESPACE

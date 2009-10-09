@@ -115,6 +115,7 @@
 #include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -8332,6 +8333,9 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
+    case QEvent::Gesture:
+        event->ignore();
+        break;
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11667,6 +11671,13 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 
     Synonym for QList<QWidget *>.
 */
+
+void QWidget::grabGesture(Qt::GestureType type, Qt::GestureContext context)
+{
+    Q_D(QWidget);
+    d->gestureContext.insert(type, context);
+    (void)QGestureManager::instance(); // create a gesture manager
+}
 
 QT_END_NAMESPACE
 

@@ -228,6 +228,8 @@ QT_BEGIN_NAMESPACE
     \value TouchBegin                       Beginning of a sequence of touch-screen and/or track-pad events (QTouchEvent)
     \value TouchUpdate                      Touch-screen event (QTouchEvent)
     \value TouchEnd                         End of touch-event sequence (QTouchEvent)
+    \value Gesture                          A gesture was triggered (QGestureEvent)
+    \value GestureOverride                  A gesture override was triggered (QGestureEvent)
 
     User events should have values between \c User and \c{MaxUser}:
 

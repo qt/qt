@@ -59,24 +59,16 @@ ImageWidget::ImageWidget(QWidget *parent)
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
 
-    QGesture *panGesture = new QPanGesture(this);
-    connect(panGesture, SIGNAL(started()), this, SLOT(panTriggered()));
-    connect(panGesture, SIGNAL(finished()), this, SLOT(panTriggered()));
-    connect(panGesture, SIGNAL(canceled()), this, SLOT(panTriggered()));
-    connect(panGesture, SIGNAL(triggered()), this, SLOT(panTriggered()));
+    grabGesture(Qt::PanGesture);
+    grabGesture(Qt::PinchGesture);
+    grabGesture(Qt::SwipeGesture);
+}
 
-    QGesture *pinchGesture = new QPinchGesture(this);
-    connect(pinchGesture, SIGNAL(started()), this, SLOT(pinchTriggered()));
-    connect(pinchGesture, SIGNAL(finished()), this, SLOT(pinchTriggered()));
-    connect(pinchGesture, SIGNAL(canceled()), this, SLOT(pinchTriggered()));
-    connect(pinchGesture, SIGNAL(triggered()), this, SLOT(pinchTriggered()));
-
-//! [construct swipe gesture]
-    QGesture *swipeGesture = new QSwipeGesture(this);
-//! [construct swipe gesture]
-//! [connect swipe gesture]
-    connect(swipeGesture, SIGNAL(triggered()), this, SLOT(swipeTriggered()));
-//! [connect swipe gesture]
+bool ImageWidget::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture)
+        return gestureEvent(static_cast<QGestureEvent*>(event));
+    return QWidget::event(event);
 }
 
 void ImageWidget::paintEvent(QPaintEvent*)
@@ -106,11 +98,25 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
     update();
 }
 
-void ImageWidget::panTriggered()
+bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    QPanGesture *pg = qobject_cast<QPanGesture*>(sender());
+    if (QGesture *pan = event->gesture(Qt::PanGesture)) {
+        panTriggered(static_cast<QPanGesture*>(pan));
+        return true;
+    } else if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
+        pinchTriggered(static_cast<QPinchGesture*>(pan));
+        return true;
+    } else if (QGesture *swipe = event->gesture(Qt::SwipeGesture)) {
+        swipeTriggered(static_cast<QSwipeGesture*>(pan));
+        return true;
+    }
+    return false;
+}
+
+void ImageWidget::panTriggered(QPanGesture *gesture)
+{
 #ifndef QT_NO_CURSOR
-    switch (pg->state()) {
+    switch (gesture->state()) {
         case Qt::GestureStarted:
         case Qt::GestureUpdated:
             setCursor(Qt::SizeAllCursor);
@@ -119,33 +125,37 @@ void ImageWidget::panTriggered()
             setCursor(Qt::ArrowCursor);
     }
 #endif
-    horizontalOffset += pg->lastOffset().width();
-    verticalOffset += pg->lastOffset().height();
+    QSizeF lastOffset = gesture->property("lastOffset").toSizeF();
+    horizontalOffset += lastOffset.width();
+    verticalOffset += lastOffset.height();
     update();
 }
 
-void ImageWidget::pinchTriggered()
+void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
-    QPinchGesture *pg = qobject_cast<QPinchGesture*>(sender());
-    if (pg->whatChanged() & QPinchGesture::RotationAngleChanged)
-        rotationAngle += pg->rotationAngle() - pg->lastRotationAngle();
-    if (pg->whatChanged() & QPinchGesture::ScaleFactorChanged)
-        scaleFactor += pg->scaleFactor() - pg->lastScaleFactor();
+    QPinchGesture::WhatChanged whatChanged = gesture->property("whatChanged").value<QPinchGesture::WhatChanged>();
+    if (whatChanged & QPinchGesture::RotationAngleChanged) {
+        qreal value = gesture->property("rotationAngle").toReal();
+        qreal lastValue = gesture->property("lastRotationAngle").toReal();
+        rotationAngle += value - lastValue;
+    }
+    if (whatChanged & QPinchGesture::ScaleFactorChanged) {
+        qreal value = gesture->property("scaleFactor").toReal();
+        qreal lastValue = gesture->property("lastScaleFactor").toReal();
+        scaleFactor += value - lastValue;
+    }
     update();
 }
 
-//! [swipe slot start]
-void ImageWidget::swipeTriggered()
+void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
-    QSwipeGesture *pg = qobject_cast<QSwipeGesture*>(sender());
-    if (pg->horizontalDirection() == QSwipeGesture::Left
-            || pg->verticalDirection() == QSwipeGesture::Up)
+    if (gesture->horizontalDirection() == QSwipeGesture::Left
+            || gesture->verticalDirection() == QSwipeGesture::Up)
         goPrevImage();
     else
         goNextImage();
     update();
 }
-//! [swipe slot start]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {

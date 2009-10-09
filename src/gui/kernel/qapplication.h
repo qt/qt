@@ -86,6 +86,7 @@ class QDecoration;
 
 class QApplication;
 class QApplicationPrivate;
+class QGestureRecognizer;
 #if defined(qApp)
 #undef qApp
 #endif
@@ -289,6 +290,9 @@ public:
     static Qt::NavigationMode navigationMode();
 #endif
 
+    Qt::GestureType registerGestureRecognizer(QGestureRecognizer *recognizer);
+    void unregisterGestureRecognizer(Qt::GestureType type);
+
 Q_SIGNALS:
     void lastWindowClosed();
     void focusChanged(QWidget *old, QWidget *now);
@@ -400,6 +404,7 @@ private:
     friend class QDirectPainter;
     friend class QDirectPainterPrivate;
 #endif
+    friend class QGestureManager;
 
 #if defined(Q_WS_MAC) || defined(Q_WS_X11)
     Q_PRIVATE_SLOT(d_func(), void _q_alertTimeOut())

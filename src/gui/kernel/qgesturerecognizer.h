@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,40 +39,55 @@
 **
 ****************************************************************************/
 
-#ifndef PINCHWIDGET_H
-#define PINCHWIDGET_H
+#ifndef QGESTURERECOGNIZER_H
+#define QGESTURERECOGNIZER_H
 
-#include <QWidget>
-#include <QTransform>
+#include "qglobal.h"
 
-class QPanGesture;
-class QPinchGesture;
+QT_BEGIN_HEADER
 
-class PinchWidget : public QWidget
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class QObject;
+class QEvent;
+class QGesture;
+class Q_GUI_EXPORT QGestureRecognizer
 {
-    Q_OBJECT
 public:
-    PinchWidget(const QImage &image, QWidget *parent = 0);
+    enum ResultFlags
+    {
+        Ignore            = 0x0001,
+        NotGesture        = 0x0002,
+        MaybeGesture      = 0x0004,
+        GestureTriggered  = 0x0008, // Gesture started or updated
+        GestureFinished   = 0x0010,
 
-private Q_SLOTS:
-    void acceptTouchEvents();
-    void onPanTriggered();
-    void onPanFinished();
-    void onPinchTriggered();
-    void onPinchFinished();
+        ResultState_Mask  = 0x00ff,
 
-private:
-    void paintEvent(QPaintEvent *);
-    QSize sizeHint() const;
+        ConsumeEventHint        = 0x0100,
+        // StoreEventHint          = 0x0200,
+        // ReplayStoredEventsHint  = 0x0400,
+        // DiscardStoredEventsHint = 0x0800,
 
-    QImage image;
+        ResultHint_Mask   = 0xff00
+    };
+    Q_DECLARE_FLAGS(Result, ResultFlags)
 
-    QPanGesture *pan;
-    QPinchGesture *pinch;
+    QGestureRecognizer();
+    virtual ~QGestureRecognizer();
 
-    QTransform worldTransform;
-    QTransform currentPanTransform;
-    QTransform currentPinchTransform;
+    virtual QGesture *createGesture(QObject *target);
+    virtual QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event) = 0;
+
+    virtual void reset(QGesture *state);
 };
 
-#endif // PINCHWIDGET_H
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGestureRecognizer::Result)
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // QGESTURERECOGNIZER_H

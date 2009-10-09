@@ -398,7 +398,8 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           utf8
+           utf8 \
+           gestures
            
 !wince*:SUBDIRS += $$Q3SUBDIRS
 

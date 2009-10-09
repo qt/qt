@@ -2029,11 +2029,6 @@ void QWidgetPrivate::winSetupGestures()
     if (!q || !q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    QApplicationPrivate::WidgetStandardGesturesMap::const_iterator it =
-            qAppPriv->widgetGestures.find(q);
-    if (it == qAppPriv->widgetGestures.end())
-        return;
-    const QStandardGestures &gestures = it.value();
     WId winid = q->effectiveWinId();
 
     bool needh = false;
@@ -2052,10 +2047,10 @@ void QWidgetPrivate::winSetupGestures()
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
     }
     if (winid && qAppPriv->SetGestureConfig) {
-        GESTURECONFIG gc[3];
+        GESTURECONFIG gc[1];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
-        if (gestures.pan) {
+        if (nativeGesturePanEnabled) {
             gc[0].dwWant = GC_PAN;
             if (needv && singleFingerPanEnabled)
                 gc[0].dwWant |= GC_PAN_WITH_SINGLE_FINGER_VERTICALLY;
@@ -2069,16 +2064,16 @@ void QWidgetPrivate::winSetupGestures()
             gc[0].dwBlock = GC_PAN;
         }
 
-        gc[1].dwID = GID_ZOOM;
-        if (gestures.pinch)
-            gc[1].dwWant = GC_ZOOM;
-        else
-            gc[1].dwBlock = GC_ZOOM;
-        gc[2].dwID = GID_ROTATE;
-        if (gestures.pinch)
-            gc[2].dwWant = GC_ROTATE;
-        else
-            gc[2].dwBlock = GC_ROTATE;
+//        gc[1].dwID = GID_ZOOM;
+//        if (gestures.pinch)
+//            gc[1].dwWant = GC_ZOOM;
+//        else
+//            gc[1].dwBlock = GC_ZOOM;
+//        gc[2].dwID = GID_ROTATE;
+//        if (gestures.pinch)
+//            gc[2].dwWant = GC_ROTATE;
+//        else
+//            gc[2].dwBlock = GC_ROTATE;
 
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
