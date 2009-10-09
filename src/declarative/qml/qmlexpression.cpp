@@ -114,11 +114,8 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
                 new QScriptProgram(scriptEngine->compile(data->expression, data->fileName, data->line));
         }
 
-        QmlContextPrivate *ctxtPriv = ctxt->d_func();
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
-        scriptContext->pushScope(ctxtPriv->scriptValue);
-        if (me)
-            scriptContext->pushScope(ep->objectClass->newQObject(me));
+        scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
         data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
 
@@ -297,10 +294,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
     if (!data->expressionFunctionValid) {
 
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
-        scriptContext->pushScope(ctxtPriv->scriptValue);
-
-        if (data->me)
-            scriptContext->pushScope(ep->objectClass->newQObject(data->me));
+        scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 

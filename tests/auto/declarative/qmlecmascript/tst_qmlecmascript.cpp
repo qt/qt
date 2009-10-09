@@ -538,20 +538,35 @@ void tst_qmlecmascript::nonExistantAttachedObject()
 
 void tst_qmlecmascript::scope()
 {
-    QmlComponent component(&engine, TEST_FILE("scope.qml"));
-    QObject *object = component.create();
-    QVERIFY(object != 0);
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
 
-    QCOMPARE(object->property("test1").toInt(), 1);
-    QCOMPARE(object->property("test2").toInt(), 2);
-    QCOMPARE(object->property("test3").toString(), QString("1Test"));
-    QCOMPARE(object->property("test4").toString(), QString("2Test"));
-    QCOMPARE(object->property("test5").toInt(), 1);
-    QCOMPARE(object->property("test6").toInt(), 1);
-    QCOMPARE(object->property("test7").toInt(), 2);
-    QCOMPARE(object->property("test8").toInt(), 2);
-    QCOMPARE(object->property("test9").toInt(), 1);
-    QCOMPARE(object->property("test10").toInt(), 3);
+        QCOMPARE(object->property("test1").toInt(), 1);
+        QCOMPARE(object->property("test2").toInt(), 2);
+        QCOMPARE(object->property("test3").toString(), QString("1Test"));
+        QCOMPARE(object->property("test4").toString(), QString("2Test"));
+        QCOMPARE(object->property("test5").toInt(), 1);
+        QCOMPARE(object->property("test6").toInt(), 1);
+        QCOMPARE(object->property("test7").toInt(), 2);
+        QCOMPARE(object->property("test8").toInt(), 2);
+        QCOMPARE(object->property("test9").toInt(), 1);
+        QCOMPARE(object->property("test10").toInt(), 3);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test1").toInt(), 19);
+        QCOMPARE(object->property("test2").toInt(), 19);
+        QCOMPARE(object->property("test3").toInt(), 11);
+        QCOMPARE(object->property("test4").toInt(), 11);
+        QCOMPARE(object->property("test5").toInt(), 24);
+        QCOMPARE(object->property("test6").toInt(), 24);
+    }
 }
 
 /*
