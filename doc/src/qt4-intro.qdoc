@@ -488,7 +488,7 @@
     Qt 4.6 is the first release to include support for the Symbian
     platform, with integration into the S60 framework. The port to
     Symbian and S60 provides all functionality required to develop
-    rich end-user applications for devices running Symbian 3.1 and
+    rich end-user applications for devices running S60 3.1 and
     later.
 
     \section1 Animation Framework

@@ -952,7 +952,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 130
 
-    The default values depend on the version of the S60 SDK you're using.
+    The default values depend on the version of the Symbian SDK you're using.
 
     \section2 Compiler specific options
 
@@ -983,8 +983,7 @@
     an official UID, please contact Nokia. Both \c SID and \c VID default to empty values.
 
     For more information about unique identifiers and their meaning for
-    Symbian applications, please refer to the
-    \l{http://www.symbian.com/developer/techlib/v9.2docs/doc_source/ToolsAndUtilities/BuildTools/UsingUids.guide.html}{respective S60 SDK documentation}.
+    Symbian applications, please refer to the Symbian SDK documentation.
 
     \section2 Capabilities
 
@@ -1000,8 +999,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 134
 
-    For more information about capabilities, please refer to the
-    \l{http://www.symbian.com/developer/techlib/v9.2docs/doc_source/guide/platsecsdk/index.html}{respective S60 SDK documentation}.
+    For more information about capabilities, please refer to the Symbian SDK documentation.
 */
 
 /*!
@@ -2925,7 +2923,7 @@ For example:
     \e {This is only used on the Symbian platform.}
 
     Specifies which platform capabilities the application should have. For more
-    information, please refer to the S60 SDK documentation.
+    information, please refer to the Symbian SDK documentation.
 
     \target TARGET.EPOCALLOWDLLDATA
     \section1 TARGET.EPOCALLOWDLLDATA
@@ -2961,7 +2959,7 @@ For example:
     \e {This is only used on the Symbian platform.}
 
     Specifies which secure identifier to use for the target application or
-    library. For more information, see the S60 SDK documentation.
+    library. For more information, see the Symbian SDK documentation.
 
     \target TARGET.UID2
     \section1 TARGET.UID2
@@ -2970,7 +2968,7 @@ For example:
 
     Specifies which unique identifier 2 to use for the target application or
     library. If this variable is not specified, it defaults to the same value
-    as TARGET.UID3. For more information, see the S60 SDK documentation.
+    as TARGET.UID3. For more information, see the Symbian SDK documentation.
 
     \target TARGET.UID3
     \section1 TARGET.UID3
@@ -2981,7 +2979,7 @@ For example:
     library. If this variable is not specified, a UID3 suitable for development
     and debugging will be generated automatically. However, applications being
     released should always define this variable. For more information, see the
-    S60 SDK documentation.
+    Symbian SDK documentation.
 
     \target TARGET.VID
     \section1 TARGET.VID
@@ -2989,7 +2987,7 @@ For example:
     \e {This is only used on the Symbian platform.}
 
     Specifies which vendor identifier to use for the target application or
-    library. For more information, see the S60 SDK documentation.
+    library. For more information, see the Symbian SDK documentation.
 
     \section1 TARGET_EXT
 
