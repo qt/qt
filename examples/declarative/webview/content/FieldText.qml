@@ -10,7 +10,6 @@ Item {
     signal cancelled
     signal startEdit
 
-    resources: [
     Script {
 
         function edit() {
@@ -36,7 +35,6 @@ Item {
         }
 
     }
-    ]
 
     Image {
         id: cancelIcon
