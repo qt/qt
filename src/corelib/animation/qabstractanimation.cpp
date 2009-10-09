@@ -207,14 +207,10 @@ void QUnifiedTimer::ensureTimerUpdate(QAbstractAnimation *animation)
 
 void QUnifiedTimer::updateAnimationsTime()
 {
-    // this is simply the time we last received a tick
-    const int oldLastTick = lastTick;
     // ignore consistentTiming in case the pause timer is active
-    if (consistentTiming && !isPauseTimerActive)
-        lastTick = oldLastTick + timingInterval;
-    else
-        lastTick = time.elapsed();
-    const int delta = lastTick - oldLastTick;
+    const int delta = (consistentTiming && !isPauseTimerActive) ?
+                        timingInterval : time.elapsed() - lastTick;
+    lastTick = time.elapsed();
 
     //we make sure we only call update time if the time has actually changed
     //it might happen in some cases that the time doesn't change because events are delayed
@@ -293,6 +289,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         // this is needed if we unregister an animation while its running
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
+
         if (animations.isEmpty())
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
