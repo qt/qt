@@ -43,8 +43,41 @@
 #include <QGraphicsObject>
 #include <QGraphicsWidget>
 #include <QGraphicsSceneResizeEvent>
+#include <private/qfxitem_p.h>
 
 QT_BEGIN_NAMESPACE
+
+class QFxGraphicsObjectContainerPrivate : public QFxItemPrivate
+{
+    Q_DECLARE_PUBLIC(QFxGraphicsObjectContainer)
+
+public:
+    QFxGraphicsObjectContainerPrivate() : QFxItemPrivate(), graphicsObject(0), syncedResize(false)
+    { }
+
+    void _q_updateSize();
+
+    void setFiltering(bool on)
+    {
+        Q_Q(QFxGraphicsObjectContainer);
+        if (graphicsObject && graphicsObject->isWidget()) {
+            if (!on) {
+                graphicsObject->removeEventFilter(q);
+                QObject::disconnect(q, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+                QObject::disconnect(q, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
+            } else {
+                graphicsObject->installEventFilter(q);
+                QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+                QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
+            }
+        }
+    }
+
+
+    QGraphicsObject *graphicsObject;
+    bool syncedResize;
+};
+
 
 /*!
     \qmlclass GraphicsObjectContainer QFxGraphicsObjectContainer
@@ -61,7 +94,7 @@ QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GraphicsObjectContainer,QFxGraphicsObjectContainer)
 
 QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)
-: QFxItem(parent), _graphicsObject(0), _syncedResize(false)
+: QFxItem(*new QFxGraphicsObjectContainerPrivate, parent)
 {
 }
 
@@ -71,7 +104,8 @@ QFxGraphicsObjectContainer::~QFxGraphicsObjectContainer()
 
 QGraphicsObject *QFxGraphicsObjectContainer::graphicsObject() const
 {
-    return _graphicsObject;
+    Q_D(const QFxGraphicsObjectContainer);
+    return d->graphicsObject;
 }
 
 /*!
@@ -80,30 +114,45 @@ QGraphicsObject *QFxGraphicsObjectContainer::graphicsObject() const
 */
 void QFxGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
 {
-    if (object == _graphicsObject)
+    Q_D(QFxGraphicsObjectContainer);
+    if (object == d->graphicsObject)
         return;
 
-    //### what should we do with previously set object?
+    //### remove previously set item?
 
-    _graphicsObject = object;
+    d->setFiltering(false);
 
-    if (_graphicsObject) {
-        _graphicsObject->setParentItem(this);
+    d->graphicsObject = object;
 
-        if (_syncedResize && _graphicsObject->isWidget()) {
-            _graphicsObject->installEventFilter(this);
-            QSizeF newSize = static_cast<QGraphicsWidget*>(_graphicsObject)->size();    //### use sizeHint?
-            setImplicitWidth(newSize.width());
-            setImplicitHeight(newSize.height());
+    if (d->graphicsObject) {
+        d->graphicsObject->setParentItem(this);
+
+        if (d->syncedResize && d->graphicsObject->isWidget()) {
+            QGraphicsWidget *gw = static_cast<QGraphicsWidget*>(d->graphicsObject);
+            QSizeF gwSize = gw->size(); //### should we use sizeHint?
+            QSizeF newSize = gwSize;
+            if (heightValid())
+                newSize.setHeight(height());
+            if (widthValid())
+                newSize.setWidth(width());
+            if (gwSize != newSize)
+                gw->resize(newSize);
+
+            gwSize = gw->size();
+            setImplicitWidth(gwSize.width());
+            setImplicitHeight(gwSize.height());
+
+            d->setFiltering(true);
         }
     }
 }
 
 QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const QVariant &value)
 {
+    Q_D(QFxGraphicsObjectContainer);
     if (change == ItemSceneHasChanged) {
-        QGraphicsObject *o = _graphicsObject;
-        _graphicsObject = 0;
+        QGraphicsObject *o = d->graphicsObject;
+        d->graphicsObject = 0;
         setGraphicsObject(o);
     }
     return QFxItem::itemChange(change, value);
@@ -111,9 +160,10 @@ QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const
 
 bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
 {
-    if (watched == _graphicsObject && e->type() == QEvent::GraphicsSceneResize) {
-        if (_graphicsObject && _graphicsObject->isWidget() && _syncedResize) {
-           QSizeF newSize = static_cast<QGraphicsWidget*>(_graphicsObject)->size();
+    Q_D(QFxGraphicsObjectContainer);
+    if (watched == d->graphicsObject && e->type() == QEvent::GraphicsSceneResize) {
+        if (d->graphicsObject && d->graphicsObject->isWidget() && d->syncedResize) {
+           QSizeF newSize = static_cast<QGraphicsWidget*>(d->graphicsObject)->size();
            setImplicitWidth(newSize.width());
            setImplicitHeight(newSize.height());
        }
@@ -142,40 +192,27 @@ bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
 */
 bool QFxGraphicsObjectContainer::synchronizedResizing() const
 {
-    return _syncedResize;
+    Q_D(const QFxGraphicsObjectContainer);
+    return d->syncedResize;
 }
 
 void QFxGraphicsObjectContainer::setSynchronizedResizing(bool on)
 {
-    if (on == _syncedResize)
+    Q_D(QFxGraphicsObjectContainer);
+    if (on == d->syncedResize)
         return;
 
-    if (_graphicsObject && _graphicsObject->isWidget()) {
-        if (!on) {
-            _graphicsObject->removeEventFilter(this);
-            disconnect(this, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
-            disconnect(this, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
-        }
-    }
-
-    _syncedResize = on;
-
-    if (_graphicsObject && _graphicsObject->isWidget()) {
-        if (on) {
-            _graphicsObject->installEventFilter(this);
-            connect(this, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
-            connect(this, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
-        }
-    }
+    d->syncedResize = on;
+    d->setFiltering(on);
 }
 
-void QFxGraphicsObjectContainer::_q_updateSize()
+void QFxGraphicsObjectContainerPrivate::_q_updateSize()
 {
-    if (!_graphicsObject || !_graphicsObject->isWidget() || !_syncedResize)
+    if (!graphicsObject || !graphicsObject->isWidget() || !syncedResize)
         return;
 
-    QGraphicsWidget *gw = static_cast<QGraphicsWidget*>(_graphicsObject);
-    const QSizeF newSize(width(), height());
+    QGraphicsWidget *gw = static_cast<QGraphicsWidget*>(graphicsObject);
+    const QSizeF newSize(width, height);
     gw->resize(newSize);
 
     //### will respecting the widgets min/max ever get us in trouble? (all other items always
@@ -189,3 +226,5 @@ void QFxGraphicsObjectContainer::_q_updateSize()
 }
 
 QT_END_NAMESPACE
+
+#include "moc_qfxgraphicsobjectcontainer.cpp"
