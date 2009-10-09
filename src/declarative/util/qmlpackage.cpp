@@ -55,11 +55,11 @@ public:
 class QmlPackageAttached : public QObject
 {
 Q_OBJECT
+Q_PROPERTY(QString name READ name WRITE setName)
 public:
     QmlPackageAttached(QObject *parent);
     virtual ~QmlPackageAttached();
 
-    Q_PROPERTY(QString name READ name WRITE setName)
     QString name() const;
     void setName(const QString &n);
 

@@ -4,7 +4,6 @@ SOURCES += \
            util/qperformancelog.cpp \
            util/qmlconnection.cpp \
            util/qmlpackage.cpp \
-           util/qmlscript.cpp \
            util/qmlanimation.cpp \
            util/qmlsystempalette.cpp \
            util/qmlspringfollow.cpp \
@@ -29,7 +28,6 @@ HEADERS += \
            util/qperformancelog_p.h \
            util/qmlconnection.h \
            util/qmlpackage.h \
-           util/qmlscript.h \
            util/qmlanimation.h \
            util/qmlanimation_p.h \
            util/qmlsystempalette.h \

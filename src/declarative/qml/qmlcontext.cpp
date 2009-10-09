@@ -48,6 +48,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlbindingoptimizations_p.h>
+#include <QtDeclarative/qmlinfo.h>
 
 // 6-bits
 #define MAXIMUM_DEFAULT_OBJECTS 63
@@ -55,9 +56,47 @@
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
-: parent(0), engine(0), isInternal(false), notifyIndex(-1), 
-  highPriorityCount(0), expressions(0), idValues(0), idValueCount(0)
+: parent(0), engine(0), isInternal(false), propertyNames(0), notifyIndex(-1), 
+  highPriorityCount(0), imports(0), expressions(0), idValues(0), idValueCount(0)
 {
+}
+
+void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject)
+{
+    if (!engine) 
+        return;
+
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+
+    QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+    scriptContext->pushScope(scriptValue);
+    
+    if (scopeObject)
+        scriptContext->pushScope(enginePriv->objectClass->newQObject(scopeObject));
+
+    QScriptValue scope = scriptEngine->newObject();
+    scriptContext->setActivationObject(scope);
+
+    QScriptValue val = scriptEngine->evaluate(script);
+
+    if (scriptEngine->hasUncaughtException()) {
+        if (scriptEngine->uncaughtException().isError()){
+            QScriptValue exception = scriptEngine->uncaughtException();
+            if (!exception.property(QLatin1String("fileName")).toString().isEmpty()){
+                qWarning() << exception.property(QLatin1String("fileName")).toString()
+                           << scriptEngine->uncaughtExceptionLineNumber()
+                           << exception.toString();
+
+            } else {
+                qmlInfo(scopeObject) << exception.toString();
+            }
+        }
+    }
+
+    scriptEngine->popContext();
+
+    scripts.append(scope);
 }
 
 void QmlContextPrivate::dump()
@@ -103,16 +142,7 @@ void QmlContextPrivate::init()
 
     //set scope chain
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    QScriptValue scopeObj =
-        scriptEngine->newObject(QmlEnginePrivate::get(engine)->contextClass, scriptEngine->newVariant(QVariant::fromValue((QObject*)q)));
-    //### no longer need to push global object once we switch to JSC (test with objects added to globalObject)
-    //if (parent)
-    //    scopeChain = parent->d_func()->scopeChain;
-    if (!parent)
-        scopeChain.append(scriptEngine->globalObject());
-    else
-        scopeChain = parent->d_func()->scopeChain;
-    scopeChain.prepend(scopeObj);
+    scriptValue = QmlEnginePrivate::get(engine)->contextClass->newContext(q);
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
@@ -304,6 +334,12 @@ QmlContext::~QmlContext()
     d->contextObjects.clear();
 
     delete [] d->idValues;
+
+    if (d->propertyNames)
+        d->propertyNames->release();
+
+    if (d->imports)
+        d->imports->release();
 }
 
 void QmlContextPrivate::invalidateEngines()
@@ -361,13 +397,16 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
         QObject *o = QmlMetaType::toQObject(value);
         setContextProperty(name, o);
     } else {
-        QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
-        if(iter == d->propertyNames.end()) {
-            d->propertyNames.insert(name, d->idValueCount + d->propertyValues.count());
+
+        if (!d->propertyNames) d->propertyNames = new QmlIntegerCache(d->engine);
+
+        int idx = d->propertyNames->value(name);
+        if (idx == -1) {
+            d->propertyNames->add(name, d->idValueCount + d->propertyValues.count());
             d->propertyValues.append(value);
         } else {
-            d->propertyValues[*iter] = value;
-            QMetaObject::activate(this, *iter + d->notifyIndex, 0);
+            d->propertyValues[idx] = value;
+            QMetaObject::activate(this, idx + d->notifyIndex, 0);
         }
     }
 }
@@ -380,15 +419,18 @@ void QmlContextPrivate::setIdProperty(const QString &name, int idx,
         notifyIndex = q->metaObject()->methodCount();
     }
 
-    propertyNames.insert(name, idx);
     idValues[idx].priv = this;
     idValues[idx] = obj;
 }
 
-void QmlContextPrivate::setIdPropertyCount(int count)
+void QmlContextPrivate::setIdPropertyData(QmlIntegerCache *data)
 {
-    idValues = new ContextGuard[count];
-    idValueCount = count;
+    Q_ASSERT(!propertyNames);
+    propertyNames = data;
+    propertyNames->addref();
+
+    idValueCount = data->count();
+    idValues = new ContextGuard[idValueCount];
 }
 
 /*!
@@ -402,14 +444,15 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    QHash<QString, int>::ConstIterator iter = d->propertyNames.find(name);
-    if(iter == d->propertyNames.end()) {
-        d->propertyNames.insert(name, d->idValueCount  + d->propertyValues.count());
+    if (!d->propertyNames) d->propertyNames = new QmlIntegerCache(d->engine);
+    int idx = d->propertyNames->value(name);
+
+    if (idx == -1) {
+        d->propertyNames->add(name, d->idValueCount  + d->propertyValues.count());
         d->propertyValues.append(QVariant::fromValue(value));
     } else {
-        int idx = *iter;
-        d->propertyValues[*iter] = QVariant::fromValue(value);
-        QMetaObject::activate(this, *iter + d->notifyIndex, 0);
+        d->propertyValues[idx] = QVariant::fromValue(value);
+        QMetaObject::activate(this, idx + d->notifyIndex, 0);
     }
 }
 

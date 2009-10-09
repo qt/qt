@@ -57,8 +57,13 @@ QT_BEGIN_NAMESPACE
 
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
-QmlBindingPrivate::QmlBindingPrivate()
+QmlBindingData::QmlBindingData()
 : updating(false), enabled(false)
+{
+}
+
+QmlBindingPrivate::QmlBindingPrivate()
+: QmlExpressionPrivate(new QmlBindingData)
 {
 }
 
@@ -81,7 +86,7 @@ QmlBinding::~QmlBinding()
 void QmlBinding::setTarget(const QmlMetaProperty &prop)
 {
     Q_D(QmlBinding);
-    d->property = prop;
+    d->bindingData()->property = prop;
 
     update();
 }
@@ -89,7 +94,7 @@ void QmlBinding::setTarget(const QmlMetaProperty &prop)
 QmlMetaProperty QmlBinding::property() const 
 {
    Q_D(const QmlBinding);
-   return d->property; 
+   return d->bindingData()->property; 
 }
 
 void QmlBinding::update()
@@ -99,45 +104,41 @@ void QmlBinding::update()
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
 #endif
-    if (!d->enabled)
+    QmlBindingData *data = d->bindingData();
+
+    if (!data->enabled)
         return;
 
-    if (!d->updating) {
-        d->updating = true;
+    data->addref();
 
-        if (d->property.propertyCategory() == QmlMetaProperty::Bindable) {
+    if (!data->updating) {
+        data->updating = true;
 
-            int idx = d->property.coreIndex();
+        if (data->property.propertyCategory() == QmlMetaProperty::Bindable) {
+
+            int idx = data->property.coreIndex();
             Q_ASSERT(idx != -1);
 
             void *a[1];
             QmlBinding *t = this;
             a[0] = (void *)&t;
-            QMetaObject::metacall(d->property.object(), 
+            QMetaObject::metacall(data->property.object(), 
                                   QMetaObject::WriteProperty,
                                   idx, a);
 
         } else {
 
             QVariant value = this->value();
-            if (value.type() == QVariant::String) {
-                QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(d->property.propertyType());
-                if (con)
-                    value = con(value.toString());
-            }
-
-            if (d->property.propertyType() == QVariant::Vector3D &&
-                value.type() == QVariant::String) {
-                value = qVariantFromValue(QmlStringConverters::vector3DFromString(value.toString()));
-            }
-
-            d->property.write(value, QmlMetaProperty::Binding);
+            data->property.write(value, QmlMetaProperty::Binding);
         }
 
-        d->updating = false;
+        data->updating = false;
     } else {
-        qmlInfo(d->property.object()) << "Binding loop detected for property" << d->property.name();
+        qmlInfo(data->property.object()) << "Binding loop detected for property" 
+                                         << data->property.name();
     }
+
+    data->release();
 }
 
 void QmlBinding::valueChanged()
@@ -148,30 +149,30 @@ void QmlBinding::valueChanged()
 void QmlBinding::setEnabled(bool e)
 {
     Q_D(QmlBinding);
-    d->enabled = e;
+    d->bindingData()->enabled = e;
     setTrackChange(e);
 
+    QmlAbstractBinding::setEnabled(e);
+
     if (e) {
-        addToObject(d->property.object());
+        addToObject(d->bindingData()->property.object());
         update();
     } else {
         removeFromObject();
     }
-
-    QmlAbstractBinding::setEnabled(e);
 }
 
 int QmlBinding::propertyIndex()
 {
     Q_D(QmlBinding);
-    return d->property.coreIndex();
+    return d->bindingData()->property.coreIndex();
 }
 
 bool QmlBinding::enabled() const
 {
     Q_D(const QmlBinding);
 
-    return d->enabled;
+    return d->bindingData()->enabled;
 }
 
 QString QmlBinding::expression() const

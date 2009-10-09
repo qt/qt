@@ -73,6 +73,7 @@ public:
 private:
     friend class QmlDeclarativeData;
     friend class QmlMetaProperty;
+    friend class QmlMetaPropertyPrivate;
     friend class QmlVME;
 
     QObject *m_object;

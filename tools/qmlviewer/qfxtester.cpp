@@ -118,12 +118,14 @@ void QFxTester::imagefailure()
 
 void QFxTester::complete()
 {
+    if (options & QmlViewer::ExitOnComplete) 
+        QApplication::exit(hasFailed?-1:0);
+
     if (hasCompleted)
         return;
     hasCompleted = true;
-    if (options & QmlViewer::ExitOnComplete)
-        QApplication::exit(hasFailed?-1:0);
-    else if (options & QmlViewer::Play)
+
+    if (options & QmlViewer::Play)
         qWarning("Script playback complete");
 }
 
