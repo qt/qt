@@ -51,6 +51,8 @@
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
 #include "qscriptclass.h"
+#include "qscriptprogram.h"
+#include "qscriptprogram_p.h"
 #include "qdebug.h"
 
 #include <QtCore/qstringlist.h>
@@ -2214,6 +2216,77 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     return d->scriptValueFromJSCValue(result);
 }
 
+QScriptProgram QScriptEngine::compile(const QString &program, const QString &fileName, int lineNumber)
+{
+    Q_D(QScriptEngine);
+    JSC::UString jscProgram = program;
+    JSC::UString jscFileName = fileName;
+    WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
+            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
+    JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
+
+    JSC::ExecState* exec = d->currentFrame;
+    exec->clearException();
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
+
+    JSC::EvalExecutable *executable = new JSC::EvalExecutable(exec, source);
+    JSC::JSObject* error = executable->compile(exec, exec->scopeChain());
+    if (error != 0) {
+        delete executable;
+        return QScriptProgram();
+    }
+    return QScriptProgramPrivate::create(d, executable, provider->asID());
+}
+
+QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
+{
+    Q_D(QScriptEngine);
+    QScriptProgramPrivate *program_d = QScriptProgramPrivate::get(program);
+    if (!program_d || !program_d->engine || !program_d->executable)
+        return QScriptValue();
+
+    JSC::ExecState* exec = d->currentFrame;
+    exec->clearException();
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
+
+    intptr_t sourceId = program_d->sourceId;
+    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
+    if (debugger)
+        debugger->evaluateStart(sourceId);
+
+    JSC::JSValue thisValue = d->thisForContext(exec);
+    JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
+    JSC::JSValue exceptionValue;
+    d->timeoutChecker()->setShouldAbort(false);
+    if (d->processEventsInterval > 0)
+        d->timeoutChecker()->reset();
+    JSC::JSValue result = exec->interpreter()->execute(program_d->executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
+
+    if (d->timeoutChecker()->shouldAbort()) {
+        if (d->abortResult.isError())
+            exec->setException(d->scriptValueToJSCValue(d->abortResult));
+
+        if (debugger)
+            debugger->evaluateStop(d->scriptValueToJSCValue(d->abortResult), sourceId);
+
+        return d->abortResult;
+    }
+
+    if (exceptionValue) {
+        exec->setException(exceptionValue);
+
+        if (debugger)
+            debugger->evaluateStop(exceptionValue, sourceId);
+
+        return d->scriptValueFromJSCValue(exceptionValue);
+    }
+
+    if (debugger)
+        debugger->evaluateStop(result, sourceId);
+
+    Q_ASSERT(!exec->hadException());
+    return d->scriptValueFromJSCValue(result);
+}
 
 /*!
   Returns the current context.
