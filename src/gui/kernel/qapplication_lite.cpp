@@ -575,6 +575,45 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
 }
 
 
+//### there's a lot of duplicated logic here -- refactoring required!
+
+void QApplicationPrivate::handleWheelEvent(QWidget *tlw, QWheelEvent &ev)
+{
+//    QPoint localPoint = ev.pos();
+    QPoint globalPoint = ev.globalPos();
+//    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
+    QWidget *mouseWidget = tlw;
+
+    qt_last_x = globalPoint.x();
+    qt_last_y = globalPoint.y();
+
+     QWidget *mouseWindow = tlw;
+
+     // find the tlw if we didn't get it from the plugin
+     if (!mouseWindow) {
+         mouseWindow = QApplication::topLevelAt(globalPoint);
+     }
+
+     if (!mouseWindow)
+         return;
+
+     if (app_do_modal && !qt_try_modal(mouseWindow, &ev) ) {
+         qDebug() << "modal blocked wheel event" << mouseWindow;
+         return;
+     }
+     QPoint p = mouseWindow->mapFromGlobal(globalPoint);
+     QWidget *w = mouseWindow->childAt(p);
+     if (w) {
+         mouseWidget = w;
+         p = mouseWidget->mapFromGlobal(globalPoint);
+     }
+
+     QWheelEvent e(p, globalPoint, ev.delta(), ev.buttons(), ev.modifiers(),
+                   ev.orientation());
+     QApplication::sendSpontaneousEvent(mouseWidget, &e);
+}
+
+
 
 // Remember, Qt convention is:  keyboard state is state *before*
 
@@ -627,5 +666,6 @@ void QApplicationPrivate::handleCloseEvent(QWidget *tlw)
 {
     tlw->d_func()->close_helper(QWidgetPrivate::CloseWithSpontaneousEvent);
 }
+
 
 QT_END_NAMESPACE

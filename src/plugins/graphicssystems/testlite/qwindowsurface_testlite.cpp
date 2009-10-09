@@ -174,6 +174,23 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
         case Button1: button = Qt::LeftButton; break;
         case Button2: button = Qt::MidButton; break;
         case Button3: button = Qt::RightButton; break;
+        case Button4:
+        case Button5:
+        case 6:
+        case 7: {
+            //mouse wheel
+            if (type == QEvent::MouseButtonPress) {
+                //logic borrowed from qapplication_x11.cpp
+                int delta = 120 * ((e->button == Button4 || e->button == 6) ? 1 : -1);
+                bool hor = (((e->button == Button4 || e->button == Button5)
+                             && (modifiers & Qt::AltModifier))
+                            || (e->button == 6 || e->button == 7));
+                QWheelEvent we(QPoint(e->x, e->y), QPoint(e->x_root, e->y_root), delta,
+                               buttons, modifiers, hor ? Qt::Horizontal : Qt::Vertical);
+                QApplicationPrivate::handleWheelEvent(window(),we);
+            }
+            return;
+        }
         default: break;
         }
     }

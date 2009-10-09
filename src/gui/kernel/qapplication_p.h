@@ -582,6 +582,7 @@ public:
     static void handleKeyEvent(QWidget *tlw, QKeyEvent *e);
     static void handleGeometryChange(QWidget *tlw, const QRect &newRect);
     static void handleCloseEvent(QWidget *tlw);
+    static void handleWheelEvent(QWidget *tlw, QWheelEvent &e);
 #endif
 
 #if defined(Q_WS_S60)
