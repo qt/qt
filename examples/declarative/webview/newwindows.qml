@@ -7,22 +7,23 @@ import Qt 4.6
 
 Row {
     id: pages
-    height: 200
-    resources: [
-        Component {
-            id: webViewPage
-                Rectangle {
-                    width: webView.width
-                    height: webView.height
-                    WebView {
-                        id: webView
-                        newWindowComponent: webViewPage
-                        newWindowParent: pages
-                        url: "newwindows.html"
-                    }
-                }
+    height: 200; width: 500
+
+    Component {
+        id: webViewPage
+        Rectangle {
+            width: webView.width
+            height: webView.height
+            border.color: "gray"
+
+            WebView {
+                id: webView
+                newWindowComponent: webViewPage
+                newWindowParent: pages
+                url: "newwindows.html"
+            }
         }
-    ]
-    width: 500
+    }
+
     Loader { sourceComponent: webViewPage }
 }
