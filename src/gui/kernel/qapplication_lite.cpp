@@ -127,7 +127,6 @@ static bool qt_try_modal(QWidget *widget, const QEvent *event)
 
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
-    qDebug() << ">>>>>>>> enterModal_sys" << app_do_modal << widget;
     if (!qt_modal_stack)
         qt_modal_stack = new QWidgetList;
     qt_modal_stack->insert(0, widget);
@@ -136,7 +135,6 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 
 void QApplicationPrivate::leaveModal_sys(QWidget *widget )
 {
-    qDebug() << "<<<<<<<<< leaveModal_sys" << app_do_modal << widget;
     if (qt_modal_stack && qt_modal_stack->removeAll(widget)) {
         if (qt_modal_stack->isEmpty()) {
             delete qt_modal_stack;
