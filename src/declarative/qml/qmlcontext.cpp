@@ -64,6 +64,8 @@ QmlContextPrivate::QmlContextPrivate()
 void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
                                   const QString &fileName, int lineNumber)
 {
+    Q_Q(QmlContext);
+
     if (!engine) 
         return;
 
@@ -71,11 +73,8 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     QScriptContext *scriptContext = scriptEngine->pushCleanContext();
-    scriptContext->pushScope(scriptValue);
+    scriptContext->pushScope(enginePriv->contextClass->newContext(q, scopeObject));
     
-    if (scopeObject)
-        scriptContext->pushScope(enginePriv->objectClass->newQObject(scopeObject));
-
     QScriptValue scope = scriptEngine->newObject();
     scriptContext->setActivationObject(scope);
 
@@ -129,10 +128,6 @@ void QmlContextPrivate::init()
 
     if (parent) 
         parent->d_func()->childContexts.insert(q);
-
-    //set scope chain
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    scriptValue = QmlEnginePrivate::get(engine)->contextClass->newContext(q);
 }
 
 void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)

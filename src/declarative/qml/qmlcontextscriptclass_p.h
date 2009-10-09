@@ -67,7 +67,7 @@ public:
     QmlContextScriptClass(QmlEngine *);
     ~QmlContextScriptClass();
 
-    QScriptValue newContext(QmlContext *);
+    QScriptValue newContext(QmlContext *, QObject * = 0);
 
     QmlContext *contextFromValue(const QScriptValue &);
 
@@ -78,11 +78,13 @@ protected:
     virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
 private:
-    QScriptClass::QueryFlags queryProperty(QmlContext *, const Identifier &,
+    QScriptClass::QueryFlags queryProperty(QmlContext *, QObject *scopeObject, 
+                                           const Identifier &,
                                            QScriptClass::QueryFlags flags);
 
     QmlEngine *engine;
 
+    QObject *lastScopeObject;
     QmlContext *lastContext;
     QmlTypeNameCache::Data *lastData;
     int lastPropertyIndex;

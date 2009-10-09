@@ -47,8 +47,9 @@
 QT_BEGIN_NAMESPACE
 
 struct ContextData : public QScriptDeclarativeClass::Object {
-    ContextData(QmlContext *c) : context(c) {}
+    ContextData(QmlContext *c, QObject *o) : context(c), scopeObject(o) {}
     QGuard<QmlContext> context;
+    QGuard<QObject> scopeObject;
 };
 
 /*
@@ -57,7 +58,7 @@ struct ContextData : public QScriptDeclarativeClass::Object {
  */
 QmlContextScriptClass::QmlContextScriptClass(QmlEngine *bindEngine)
 : QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine),
-  lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
+  lastScopeObject(0), lastContext(0), lastData(0), lastPropertyIndex(-1), lastDefaultObject(-1)
 {
 }
 
@@ -65,11 +66,11 @@ QmlContextScriptClass::~QmlContextScriptClass()
 {
 }
 
-QScriptValue QmlContextScriptClass::newContext(QmlContext *context)
+QScriptValue QmlContextScriptClass::newContext(QmlContext *context, QObject *scopeObject)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    return newObject(scriptEngine, this, new ContextData(context));
+    return newObject(scriptEngine, this, new ContextData(context, scopeObject));
 }
 
 QmlContext *QmlContextScriptClass::contextFromValue(const QScriptValue &v)
@@ -81,24 +82,27 @@ QmlContext *QmlContextScriptClass::contextFromValue(const QScriptValue &v)
     return data->context;
 }
 
-#include <QDebug>
 QScriptClass::QueryFlags 
 QmlContextScriptClass::queryProperty(Object *object, const Identifier &name, 
                                      QScriptClass::QueryFlags flags)
 {
     Q_UNUSED(flags);
     
+    lastScopeObject = 0;
     lastContext = 0;
     lastData = 0;
     lastPropertyIndex = -1;
     lastDefaultObject = -1;
 
     QmlContext *bindContext = ((ContextData *)object)->context.data();
+    QObject *scopeObject = ((ContextData *)object)->scopeObject.data();
     if (!bindContext)
         return 0;
 
     while (bindContext) {
-        QScriptClass::QueryFlags rv = queryProperty(bindContext, name, flags);
+        QScriptClass::QueryFlags rv = 
+            queryProperty(bindContext, scopeObject, name, flags);
+        scopeObject = 0; // Only applies to the first context
         if (rv) return rv;
         bindContext = bindContext->parentContext();
     }
@@ -107,7 +111,8 @@ QmlContextScriptClass::queryProperty(Object *object, const Identifier &name,
 }
 
 QScriptClass::QueryFlags 
-QmlContextScriptClass::queryProperty(QmlContext *bindContext, const Identifier &name,
+QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObject,
+                                     const Identifier &name,
                                      QScriptClass::QueryFlags flags)
 {
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
@@ -129,6 +134,24 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, const Identifier &
         }
     }
 
+    for (int ii = 0; ii < cp->scripts.count(); ++ii) {
+        lastFunction = QScriptDeclarativeClass::function(cp->scripts.at(ii), name);
+        if (lastFunction.isValid()) {
+            lastContext = bindContext;
+            return QScriptClass::HandlesReadAccess;
+        }
+    }
+
+    if (scopeObject) {
+        QScriptClass::QueryFlags rv = 
+            ep->objectClass->queryProperty(scopeObject, name, flags, 0);
+        if (rv) {
+            lastScopeObject = scopeObject;
+            lastContext = bindContext;
+            return rv;
+        }
+    }
+
     for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
         QScriptClass::QueryFlags rv = 
             ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, 0);
@@ -140,13 +163,6 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, const Identifier &
         }
     }
 
-    for (int ii = 0; ii < cp->scripts.count(); ++ii) {
-        lastFunction = QScriptDeclarativeClass::function(cp->scripts.at(ii), name);
-        if (lastFunction.isValid()) {
-            lastContext = bindContext;
-            return QScriptClass::HandlesReadAccess;
-        }
-    }
     return 0;
 }
 
@@ -160,8 +176,11 @@ QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &n
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
 
+    if (lastScopeObject) {
 
-    if (lastData) {
+        return ep->objectClass->property(lastScopeObject, name);
+
+    } else if (lastData) {
 
         if (lastData->type)
             return ep->typeNameClass->newObject(cp->defaultObjects.at(0), lastData->type);
@@ -197,7 +216,7 @@ QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &n
 void QmlContextScriptClass::setProperty(Object *object, const Identifier &name, 
                                         const QScriptValue &value)
 {
-    Q_ASSERT(lastDefaultObject != -1);
+    Q_ASSERT(lastScopeObject || lastDefaultObject != -1);
 
     QmlContext *bindContext = lastContext;
     Q_ASSERT(bindContext);
@@ -205,7 +224,11 @@ void QmlContextScriptClass::setProperty(Object *object, const Identifier &name,
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
 
-    ep->objectClass->setProperty(cp->defaultObjects.at(lastDefaultObject), name, value);
+    if (lastScopeObject) {
+        ep->objectClass->setProperty(lastScopeObject, name, value);
+    } else {
+        ep->objectClass->setProperty(cp->defaultObjects.at(lastDefaultObject), name, value);
+    }
 }
 
 QT_END_NAMESPACE
