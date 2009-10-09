@@ -96,8 +96,6 @@ public:
     int propertyType() const;
     QmlMetaProperty::PropertyCategory propertyCategory() const;
 
-    void writeSignalProperty(const QVariant &);
-
     QVariant readValueProperty();
     void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
     static void write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *);
