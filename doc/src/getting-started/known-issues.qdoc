@@ -45,52 +45,19 @@
     \ingroup platform-specific
     \brief A summary of known issues in Qt %VERSION% at the time of release.
 
-    An up-to-date list of known issues with Qt %VERSION% can be found via the
-    \l{Task Tracker} on the Qt website which provides additional information
-    about known issues and tasks related to Qt.
+    This page documents known problems with the packaging and installation in
+    Qt %VERSION%, as well as issues with third party software that we have
+    not been able to work around. For a list of such issues in previous Qt
+    versions refer to this page in the respective documentation.
 
-    \section1 General Issues
+    For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
+    on the Qt website.
 
-    When running Qt applications on Windows or with \c{-graphicssystem raster},
-    any process that triggers a QWidget::update() from within a destructor
-    might result in a crash.
+    \section1 Installation Issues
 
-
-    \section1 Issues with Third Party Software
-
-    \section2 X11 Hardware Support
+    \section2 Building the Source Package on Windows 7
 
     \list
-    \o  There is a bug in the 169.xx NVIDIA drivers on certain GeForce 8 series
-        cards that is triggered by the OpenGL paint engine when using QPainter
-        on a QGLWidget to draw paths and polygons. Some other painting
-        operations that end up in the path fallback are affected as well. The
-        bug causes the whole X server to repeatedly hang for several seconds at
-        a time.
-    \o  There is an issue with NVIDIA's 9xxx driver series on X11 that causes a
-        crash in cases where there are several \l{QGLContext}s and the extended
-        composition modes are used (the composition modes between and including
-        QPainter::CompositionMode_Multiply and
-        QPainter::CompositionMode_Exclusion). This affects the composition mode
-        demo in Qt 4.5, for example. The crash does not occur in newer versions
-        of the drivers.
-    \endlist
-
-    \section2 Windows Hardware Support
-
-    \list
-    \o  When using version 6.14.11.6921 of the NVIDIA drivers for the GeForce
-        6600 GT under Windows XP, Qt applications which use drag and drop will
-        display reduced size drag and drop icons when run alongside
-        applications that use OpenGL. This problem can be worked around by
-        reducing the level of graphics acceleration provided by the driver, or
-        by disabling hardware acceleration completely.
-    \endlist
-
-    \section2 Windows Software Issues
-
-    \list
-
     \o  When building Qt 4.5.0 with Windows 7, the build fails with an error
         message regarding failing to embed manifest. This a known issue with
         Windows 7, explained in the Windows 7 SDK Beta
@@ -116,36 +83,8 @@
          }
         \endcode
 
-    \o  Under certain circumstances Visual Studio Integration v1.4.0 will not
-        be able to install the integration for Visual Studio 2005 on Windows
-        Vista. An error message states that .NET Framework v2.0 Service Pack 1
-        is not installed. This is due to a problem with the built-in
-        installation of this on Windows Vista. This issue can be fixed by
-        installing .NET Framework version 3.5.
+    \section2 Installing the Source Package on Unix systems
 
-    \o  With NVIDIA GeForce 7950 GT (driver version 6.14.11.7824), a fullscreen
-        QGLWidget flickers when child widgets are shown/hidden. The workaround
-        for this is to use \l{QWidget::}{setGeometry()} with a width/height 1
-        pixel bigger than your geometry and call \l{QWidget::}{show()}.
-
-    \o  A bug in the Firebird database can cause an application to crash when
-        \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
-
-    \endlist
-
-
-    \section2 Mac OS X Software Support
-
-    \list
-    \o  If a sheet is opened for a given window, clicking the title bar of that
-        window will cause it to flash. This behavior has been reported to Apple
-        (bug number 5827676).
-    \endlist
-
-
-    \section2 Installing source packages on Unix systems
-
-    \list
     \o  If you download a Zip source package, you will need to convert
         Windows-style line endings (CR/LF) to Unix-style line-endings (LF) when
         you uncompress the package.  To do this, give the "-a" option when you
@@ -157,18 +96,63 @@
         "bash: ./configure: /bin/sh^M: bad interpreter: No such file or directory"
     \endlist
 
+    \section2 Installing on Mac OS X 10.6 "Snow Leopard"
+    \list
+    \o Performing a new install of the Qt 4.6 beta on Snow Leopard
+       triggers a bug in the installer that causes the install to fail.
+       Updating an existing Qt installation works fine.
 
-    \section2 Running evaluation packages on Windows XP
+       There are two workarounds, either disable spotlight for the target
+       drive during the install, or do a custom install where you deselect
+       documentation and examples. Run the installer again as a full
+       install to get the documentation and examples installed.
+    \endlist
+
+    \section1 Issues with Third Party Software
+
+    \section2 X11
 
     \list
-    \o  If running the qt-win-eval-%VERSION%-vs2008.exe package on a Windows XP
-        system, you may encounter the following error message:
-        "The application failed to start because the application configuration
-        is incorrect. Reinstalling the application may fix this problem.".
+    \o  There is a bug in the 169.xx NVIDIA drivers on certain GeForce 8 series
+        cards that is triggered by the OpenGL paint engine when using QPainter
+        on a QGLWidget to draw paths and polygons. Some other painting
+        operations that end up in the path fallback are affected as well. The
+        bug causes the whole X server to repeatedly hang for several seconds at
+        a time.
+    \o  There is an issue with NVIDIA's 9xxx driver series on X11 that causes a
+        crash in cases where there are several \l{QGLContext}s and the extended
+        composition modes are used (the composition modes between and including
+        QPainter::CompositionMode_Multiply and
+        QPainter::CompositionMode_Exclusion). This affects the composition mode
+        demo in Qt 4.5, for example. The crash does not occur in newer versions
+        of the drivers.
+    \endlist
 
-        This error occurs because the version of the CRT component on the
-        system is incorrect.  Visual Studio 2008 requires CRT90 while Windows
-        XP comes with CRT80. To solve this problem, please install the 2008 CRT
-        redistributable package from Microsoft.
+    \section2 Windows
+
+    \list
+    \o  When using version 6.14.11.6921 of the NVIDIA drivers for the GeForce
+        6600 GT under Windows XP, Qt applications which use drag and drop will
+        display reduced size drag and drop icons when run alongside
+        applications that use OpenGL. This problem can be worked around by
+        reducing the level of graphics acceleration provided by the driver, or
+        by disabling hardware acceleration completely.
+
+    \o  With NVIDIA GeForce 7950 GT (driver version 6.14.11.7824), a fullscreen
+        QGLWidget flickers when child widgets are shown/hidden. The workaround
+        for this is to use \l{QWidget::}{setGeometry()} with a width/height 1
+        pixel bigger than your geometry and call \l{QWidget::}{show()}.
+
+    \o  A bug in the Firebird database can cause an application to crash when
+        \c{fbembed.dll} is unloaded. The bug is fixed in version 2.5.
+
+    \endlist
+
+    \section2 Mac OS X
+
+    \list
+    \o  If a sheet is opened for a given window, clicking the title bar of that
+        window will cause it to flash. This behavior has been reported to Apple
+        (bug number 5827676).
     \endlist
 */
