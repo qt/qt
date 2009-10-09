@@ -66,7 +66,7 @@ symbian {
         deform.exe \
         pathstroke.exe \
         wiggly.exe \
-        ftp.exe \
+        qftp.exe \
         saxbookmarks.exe \
         desktopservices.exe \
         fridgemagnets.exe \
@@ -85,7 +85,7 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/deform_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/pathstroke_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/wiggly_reg.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/ftp_reg.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/qftp_reg.rsc\
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/saxbookmarks_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
@@ -109,7 +109,7 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/deform.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/pathstroke.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/wiggly.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/ftp.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qftp.rsc\
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \

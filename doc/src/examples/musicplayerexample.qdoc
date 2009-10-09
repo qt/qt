@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example phonon/musicplayer
+    \example phonon/qmusicplayer
     \title Music Player Example
 
     The Music Player Example shows how to use Phonon - the multimedia
@@ -90,7 +90,7 @@
     look at them when we walk through the \c MainWindow
     implementation.
 
-    \snippet examples/phonon/musicplayer/mainwindow.h 2
+    \snippet examples/phonon/qmusicplayer/mainwindow.h 2
 
     We use the \l{Phonon::}{SeekSlider} to move the current playback
     position in the media stream, and the \l{Phonon::}{VolumeSlider}
@@ -99,7 +99,7 @@
     metaInformationProvider, to get the meta information from the
     music files. More on this later.
 
-    \snippet examples/phonon/musicplayer/mainwindow.h 1
+    \snippet examples/phonon/qmusicplayer/mainwindow.h 1
 
     The \l{Phonon::}{MediaObject} informs us of the state of the playback and
     properties of the media it is playing back through a series of
@@ -116,7 +116,7 @@
 
     We start with the constructor:
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 0
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 0
 
     We start by instantiating our media and audio output objects.
     As mentioned, the media object knows how to playback
@@ -130,20 +130,20 @@
     paths. Objects are connected using the \c createPath() function,
     which is part of the Phonon namespace.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 1
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 1
 
     We also connect signals of the media object to slots in our \c
     MainWindow. We will examine them shortly.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 2
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 2
 
     Finally, we call private helper functions to set up the GUI.
     The \c setupUi() function contains code for setting up the seek
     , and volume slider. We move on to \c setupUi():
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 3
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 3
     \dots
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 4
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 4
 
     After creating the widgets, they must be supplied with the
     \l{Phonon::}{MediaObject} and \l{Phonon::}{AudioOutput} objects
@@ -152,12 +152,12 @@
     In the \c setupActions(), we connect the actions for the play,
     pause, and stop tool buttons, to slots of the media object.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 5
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 5
 
     We move on to the slots of \c MainWindow, starting with \c
     addFiles(): 
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 6
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 6
 
     In the \c addFiles() slot, we add files selected by the user to
     the \c sources list. We then set the first source selected on the
@@ -169,7 +169,7 @@
     stateChanged() signal. The \c stateChanged() slot is connected
     to this signal.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 9
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 9
 
     The \l{Phonon::MediaObject::}{errorString()} function gives a
     description of the error that is suitable for users of a Phonon
@@ -177,7 +177,7 @@
     helps us determine whether it is possible to try to play the same
     file again.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 10
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 10
 
     We update the GUI when the playback state changes, i.e., when it
     starts, pauses, stops, or resumes.
@@ -188,26 +188,26 @@
     The \c tick() slot is connected to a \l{Phonon::}{MediaObject} signal which is
     emitted when the playback position changes:
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 11
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 11
 
     The \c time is given in milliseconds.
 
     When the table is clicked on with the mouse, \c tableClick()
     is invoked:
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 12
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 12
 
     Since we stop the media object, we first check whether it is
     currently playing. \c row contains the row in the table that was
     clicked upon; the indices of \c sources follows the table, so we
     can simply use \c row to find the new source.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 13
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 13
 
     When the media source changes, we simply need to select the
     corresponding row in the table.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 14
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 14
 
     When \c metaStateChanged() is invoked, \c
     metaInformationProvider has resolved the meta data for its current
@@ -220,7 +220,7 @@
     music table. A file might not contain the meta data requested,
     in which case an empty string is returned.
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 15
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 15
 
     If we have media sources in \c sources of which meta information
     is not resolved, we set a new source on the \c
@@ -229,7 +229,7 @@
 
     We move on to the \c aboutToFinish() slot:
 
-    \snippet examples/phonon/musicplayer/mainwindow.cpp 16
+    \snippet examples/phonon/qmusicplayer/mainwindow.cpp 16
 
     When a file is finished playing, the Music Player will move on and
     play the next file in the table. This slot is connected to the
@@ -244,5 +244,5 @@
     \l{QCoreApplication::}{setApplicationName()}. This is because
     D-Bus, which is used by Phonon on Linux systems, demands this.
 
-    \snippet examples/phonon/musicplayer/main.cpp 1
+    \snippet examples/phonon/qmusicplayer/main.cpp 1
 */
