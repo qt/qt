@@ -171,7 +171,6 @@ protected:
 
     QRectF m_clip_rect;
 
-private:
     void *m_customData;
     qStrokerMoveToHook m_moveTo;
     qStrokerLineToHook m_lineTo;
@@ -258,12 +257,18 @@ public:
     virtual void begin(void *data);
     virtual void end();
 
+    inline void setStrokeWidth(qreal width) { m_stroke_width = width; }
+    inline void setMiterLimit(qreal limit) { m_miter_limit = limit; }
+
 protected:
     virtual void processCurrentSubpath();
 
     QStroker *m_stroker;
     QVector<qfixed> m_dashPattern;
     qreal m_dashOffset;
+
+    qreal m_stroke_width;
+    qreal m_miter_limit;
 };
 
 
