@@ -2236,31 +2236,44 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
 
     QStringList alias = astNodeToStringList(node);
 
-    if (alias.count() != 2)
+    if (alias.count() != 1 && alias.count() != 2)
         COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     Object *idObject = compileState.ids[alias.at(0)];
-    int propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
-    if (-1 == propIdx)
-        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
+    QByteArray typeName;
 
-    QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+    int propIdx = -1;
+    bool writable = false;
+    if (alias.count() == 2) {
+        propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
+
+        if (-1 == propIdx)
+            COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
+
+        QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+        writable = aliasProperty.isWritable();
+
+        if (aliasProperty.isEnumType()) 
+            typeName = "int";  // Avoid introducing a dependency on the aliased metaobject
+        else
+            typeName = aliasProperty.typeName();
+    } else {
+        typeName = idObject->metaObject()->className();
+        typeName += "*";
+    }
 
     data.append((const char *)&idObject->idIndex, sizeof(idObject->idIndex));
     data.append((const char *)&propIdx, sizeof(propIdx));
 
-    const char *typeName = aliasProperty.typeName();
-    if (aliasProperty.isEnumType()) 
-        typeName = "int";  // Avoid introducing a dependency on the aliased metaobject
-
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 
-        builder.addProperty(prop.name, typeName, builder.methodCount() - 1);
+        builder.addProperty(prop.name, typeName.constData(), builder.methodCount() - 1);
     propBuilder.setScriptable(true);
+    propBuilder.setWritable(writable);
     return true;
 }
 

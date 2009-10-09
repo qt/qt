@@ -620,6 +620,30 @@ void tst_qmllanguage::aliasProperties()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("enumAlias").toInt(), 1);
+
+        delete object;
+    }
+
+    // Id aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.5.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVariant v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        MyQmlObject *o = qvariant_cast<MyQmlObject*>(v);
+        QCOMPARE(o->value(), 10);
+
+        delete o;
+
+        v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        o = qvariant_cast<MyQmlObject*>(v);
+        QVERIFY(o == 0);
+
+        delete object;
     }
 }
 

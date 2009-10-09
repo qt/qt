@@ -645,13 +645,13 @@ value, a property alias includes a compulsary alias reference.  The alias
 reference is used to locate the aliased property.  While similar to a property
 binding, the alias reference syntax is highly restricted.
 
-An alias reference takes the form
+An alias reference takes one of the following forms
 \code
     <Id>.<property>
+    <Id>
 \endcode
 where <Id> must refer to an object id within the same component as the type
-declaring the alias, and <property> refers to a property on this object.  The
-alias reference syntax may become more flexibly in future releases.
+declaring the alias, and, optionally, <property> refers to a property on that object.  
 
 Here is the property definition example rewritten to use property aliases.
 \code
