@@ -215,8 +215,8 @@
     \o QStringListModel is used to store a simple list of QString items.
     \o QStandardItemModel manages more complex tree structures of items, each
        of which can contain arbitrary data.
-    \o QDirModel provides information about files and directories in the local
-       filing system.
+    \o QFileSystemModel provides information about files and directories in the
+       local filing system.
     \o QSqlQueryModel, QSqlTableModel, and QSqlRelationalTableModel are used
        to access databases using model/view conventions.
     \endlist
@@ -313,14 +313,14 @@
     \section1 Introduction
 
     Two of the standard models provided by Qt are QStandardItemModel and
-    QDirModel. QStandardItemModel is a multi-purpose model that can be used
-    to represent various different data structures needed by list, table,
+    QFileSystemModel. QStandardItemModel is a multi-purpose model that can be
+    used to represent various different data structures needed by list, table,
     and tree views. This model also holds the items of data.
-    QDirModel is a model that maintains information about the contents of a
-    directory. As a result, it does not hold any items of data itself, but
+    QFileSystemModel is a model that maintains information about the contents
+    of a directory. As a result, it does not hold any items of data itself, but
     simply represents files and directories on the local filing system.
 
-    QDirModel provides a ready-to-use model to experiment with, and can be
+    QFileSystemModel provides a ready-to-use model to experiment with, and can be
     easily configured to use existing data. Using this model, we can show how
     to set up a model for use with ready-made views, and explore how to
     manipulate data using model indexes.
@@ -328,22 +328,25 @@
     \section1 Using Views with an Existing Model
 
     The QListView and QTreeView classes are the most suitable views
-    to use with QDirModel. The example presented below displays the
+    to use with QFileSystemModel. The example presented below displays the
     contents of a directory in a tree view next to the same information in
     a list view. The views share the user's selection so that the selected
     items are highlighted in both views.
 
     \img shareddirmodel.png
 
-    We set up a QDirModel so that it is ready for use, and create some
+    We set up a QFileSystemModel so that it is ready for use, and create some
     views to display the contents of a directory. This shows the simplest
     way to use a model. The construction and use of the model is
     performed from within a single \c main() function:
 
     \snippet doc/src/snippets/shareddirmodel/main.cpp 0
 
-    The model is set up to use data from a default directory. We create two
-    views so that we can examine the items held in the model in two
+    The model is set up to use data from a certain file system. The call to
+    \l{QFileSystemModel::}{setRootPath()} tell the model which drive on the
+    file system to expose to the views.
+
+    We create two views so that we can examine the items held in the model in two
     different ways:
 
     \snippet doc/src/snippets/shareddirmodel/main.cpp 5
@@ -351,13 +354,13 @@
     The views are constructed in the same way as other widgets. Setting up
     a view to display the items in the model is simply a matter of calling its
     \l{QAbstractItemView::setModel()}{setModel()} function with the directory
-    model as the argument. The calls to
-    \l{QAbstractItemView::setRootIndex()}{setRootIndex()} tell the views which
-    directory to display by supplying a \e{model index} that we obtain from
-    the directory model.
+    model as the argument. We filter the data supplied by the model by calling
+    the \l{QAbstractItemView::}{setRootIndex()} function on each view, passing
+    a suitable \e{model index} from the file system model for the current
+    directory.
 
-    The \c index() function used in this case is unique to QDirModel; we supply
-    it with a directory and it returns a model index. Model indexes are
+    The \c index() function used in this case is unique to QFileSystemModel; we
+    supply it with a directory and it returns a model index. Model indexes are
     discussed in the \l{Model Classes} chapter.
 
     The rest of the function just displays the views within a splitter
@@ -556,19 +559,19 @@
     \section2 Using Model Indexes
 
     To demonstrate how data can be retrieved from a model, using model
-    indexes, we set up a QDirModel without a view and display the
+    indexes, we set up a QFileSystemModel without a view and display the
     names of files and directories in a widget.
     Although this does not show a normal way of using a model, it demonstrates
     the conventions used by models when dealing with model indexes.
 
-    We construct a directory model in the following way:
+    We construct a file system model in the following way:
 
     \snippet doc/src/snippets/simplemodel-use/main.cpp 0
 
-    In this case, we set up a default QDirModel, obtain a parent index using
-    a specific implementation of \l{QDirModel::index()}{index()} provided by
-    that model, and we count the number of rows in the model using the
-    \l{QDirModel::rowCount()}{rowCount()} function.
+    In this case, we set up a default QFileSystemModel, obtain a parent index
+    using a specific implementation of \l{QFileSystemModel::}{index()}
+    provided by that model, and we count the number of rows in the model using
+    the \l{QFileSystemModel::}{rowCount()} function.
 
     For simplicity, we are only interested in the items in the first column
     of the model. We examine each row in turn, obtaining a model index for
@@ -581,7 +584,7 @@
     for the first column), and the appropriate model index for the parent
     of all the items that we want.
     The text stored in each item is retrieved using the model's
-    \l{QDirModel::data()}{data()} function. We specify the model index and
+    \l{QFileSystemModel::}{data()} function. We specify the model index and
     the \l{Qt::ItemDataRole}{DisplayRole} to obtain data for the
     item in the form of a string.
 

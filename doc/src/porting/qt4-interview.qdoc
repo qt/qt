@@ -109,8 +109,8 @@
     \list
     \o QStandardItemModel is a minimal convenience model that developers
        can use to manage items of data.
-    \o QDirModel provides directory information for use with QListView and
-       QTreeView.
+    \o QFileSystemModel provides directory information for use with QListView
+       and QTreeView.
     \o QStringListModel is a convenience model that can be used to hold
        strings for views such as QListView and QComboBox.
     \endlist
@@ -153,7 +153,7 @@
 
     In this example, we display the contents of a model using two
     different views, and share the user's selection between
-    them. We will use the QDirModel supplied with Qt because it
+    them. We will use the QFileSystemModel supplied with Qt because it
     requires very little configuration, and provides existing data to
     the views.
 
@@ -174,7 +174,7 @@
 
     \image interview-shareddirmodel.png
 
-    The model/view architecture allows us to replace the QDirModel in
+    The model/view architecture allows us to replace the QFileSystemModel in
     this example with a completely different model, one that will perhaps
     obtain data from a remote server, or from a database.
 
