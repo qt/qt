@@ -910,7 +910,7 @@ SeeAlso: ???
 Feature: PRINTER
 Description: Supports printing
 Section: Painting
-Requires: TEXTSTREAM PICTURE
+Requires: TEXTSTREAM PICTURE TEMPORARYFILE
 Name: QPrinter
 SeeAlso: ???
 
