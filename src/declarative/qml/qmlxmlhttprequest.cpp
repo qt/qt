@@ -1190,7 +1190,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
     if (context->argumentCount() < 2 || context->argumentCount() > 5)
-        return context->throwError(QScriptContext::SyntaxError, "Incorrect argument count");
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
 
     // Argument 0 - Method
     QString method = context->argument(0).toString().toUpper();
@@ -1198,7 +1198,7 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
         method != QLatin1String("PUT") &&
         method != QLatin1String("HEAD") &&
         method != QLatin1String("POST"))
-        return context->throwError(QScriptContext::SyntaxError, "Unsupported method");
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Unsupported method"));
 
 
     // Argument 1 - URL
@@ -1209,12 +1209,12 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
         if (ctxt)
             url = ctxt->resolvedUrl(url);
         else
-            return context->throwError(QScriptContext::SyntaxError, "Relative URLs not supported");
+            return context->throwError(QScriptContext::SyntaxError, QLatin1String("Relative URLs not supported"));
     }
 
     // Argument 2 - async (optional)
     if (context->argumentCount() > 2 && !context->argument(2).toBoolean())
-        return context->throwError(QScriptContext::SyntaxError, "Synchronous call not supported");
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Synchronous call not supported"));
 
 
     // Argument 3/4 - user/pass (optional)
@@ -1242,12 +1242,12 @@ static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, 
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
     if (context->argumentCount() != 2)
-        return context->throwError(QScriptContext::SyntaxError, "Incorrect argument count");
+        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
 
 
     if (request->readyState() != QmlXMLHttpRequest::Opened ||
         request->sendFlag())
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
 
     QString name = context->argument(0).toString();
@@ -1289,10 +1289,10 @@ static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngin
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
     if (request->readyState() != QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     if (request->sendFlag())
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     QByteArray data;
     if (context->argumentCount() > 0)
@@ -1324,7 +1324,7 @@ static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context,
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
         request->readyState() != QmlXMLHttpRequest::HeadersReceived)
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     QString headerName = context->argument(0).toString();
 
@@ -1342,7 +1342,7 @@ static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *cont
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
         request->readyState() != QmlXMLHttpRequest::HeadersReceived)
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     return QScriptValue(request->headers());
 }
@@ -1363,7 +1363,7 @@ static QScriptValue qmlxmlhttprequest_status(QScriptContext *context, QScriptEng
 
     if (request->readyState() == QmlXMLHttpRequest::Unsent ||
         request->readyState() == QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     if (request->errorFlag())
         return QScriptValue(0);
@@ -1378,7 +1378,7 @@ static QScriptValue qmlxmlhttprequest_statusText(QScriptContext *context, QScrip
 
     if (request->readyState() == QmlXMLHttpRequest::Unsent ||
         request->readyState() == QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, "Invalid state");
+        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
 
     if (request->errorFlag())
         return QScriptValue(0);

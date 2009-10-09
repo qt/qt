@@ -39,46 +39,56 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSCRIPT_H
-#define QMLSCRIPT_H
-
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/qobject.h>
-#include <QtDeclarative/qml.h>
-
-QT_BEGIN_HEADER
+#include "qmlglobalscriptclass_p.h"
+#include <QtScript/qscriptstring.h>
+#include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptvalueiterator.h>
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QmlScriptPrivate;
-class Q_DECLARATIVE_EXPORT QmlScript : public QObject
+/*
+    Used to prevent any writes to the global object.
+*/
+QmlGlobalScriptClass::QmlGlobalScriptClass(QScriptEngine *engine)
+: QScriptClass(engine)
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlScript)
+    QScriptValue v = engine->newObject();
+    globalObject = engine->globalObject();
 
-    Q_PROPERTY(QString script READ script WRITE setScript)
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_CLASSINFO("DefaultProperty", "script")
+    QScriptValueIterator iter(globalObject);
+    while (iter.hasNext()) {
+        iter.next();
+        v.setProperty(iter.scriptName(), iter.value());
+    }
 
-public:
-    QmlScript(QObject *parent=0);
+    v.setScriptClass(this);
+    engine->setGlobalObject(v);
+}
 
-    QString script() const;
-    void setScript(const QString &);
+QScriptClass::QueryFlags 
+QmlGlobalScriptClass::queryProperty(const QScriptValue &object,
+                                    const QScriptString &name,
+                                    QueryFlags flags, uint *id)
+{
+    return HandlesReadAccess | HandlesWriteAccess;
+}
 
-    QUrl source() const;
-    void setSource(const QUrl &);
+QScriptValue 
+QmlGlobalScriptClass::property(const QScriptValue &object,
+                               const QScriptString &name, 
+                               uint id)
+{
+    return engine()->undefinedValue();
+}
 
-private Q_SLOTS:
-    void replyFinished();
-};
+void QmlGlobalScriptClass::setProperty(QScriptValue &object, 
+                                       const QScriptString &name,
+                                       uint id, const QScriptValue &value)
+{
+    QString error = QLatin1String("Invalid write to global property \"") + 
+                    name.toString() + QLatin1String("\"");
+    engine()->currentContext()->throwError(error);
+}
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlScript)
-
-QT_END_HEADER
-
-#endif

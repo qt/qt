@@ -59,16 +59,25 @@
 
 QT_BEGIN_NAMESPACE
 
+class QmlBindingData : public QmlExpressionData
+{
+public:
+    QmlBindingData();
+
+    bool updating:1;
+    bool enabled:1;
+
+    QmlMetaProperty property;
+};
+
 class QmlBindingPrivate : public QmlExpressionPrivate
 {
     Q_DECLARE_PUBLIC(QmlBinding)
 public:
     QmlBindingPrivate();
 
-    bool updating:1;
-    bool enabled:1;
-
-    QmlMetaProperty property;
+    QmlBindingData *bindingData() { return static_cast<QmlBindingData *>(data); }
+    const QmlBindingData *bindingData() const { return static_cast<const QmlBindingData *>(data); }
 };
 
 QT_END_NAMESPACE

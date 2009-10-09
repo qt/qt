@@ -5,8 +5,6 @@ Rectangle {
     id: screen
     width: 490; height: 720
 
-    Script { source: "content/samegame.js" }
-
     SystemPalette { id: activePalette; colorGroup: Qt.Active }
 
     Item {
@@ -23,9 +21,11 @@ Rectangle {
             property int score: 0
             property int tileSize: 40
 
+            Script { source: "content/samegame.js" }
+
             z: 20; anchors.centerIn: parent
-            width: parent.width - (parent.width % tileSize);
-            height: parent.height - (parent.height % tileSize);
+            width: parent.width - (parent.width % getTileSize());
+            height: parent.height - (parent.height % getTileSize());
 
             MouseRegion {
                 id: gameMR

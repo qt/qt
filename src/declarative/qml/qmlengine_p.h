@@ -72,6 +72,10 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtScript/qscriptengine.h>
 #include <private/qmlmetaproperty_p.h>
+#include <private/qmlpropertycache_p.h>
+#include <private/qmlobjectscriptclass_p.h>
+#include <private/qmlcontextscriptclass_p.h>
+#include <private/qmlvaluetypescriptclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -88,6 +92,9 @@ class QScriptEngineDebugger;
 class QNetworkReply;
 class QNetworkAccessManager;
 class QmlAbstractBinding;
+class QScriptDeclarativeClass;
+class QmlTypeNameScriptClass;
+class QmlTypeNameCache;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -97,17 +104,6 @@ public:
     ~QmlEnginePrivate();
 
     void init();
-
-    QScriptClass::QueryFlags queryContext(const QString &name, uint *id,
-                                          QmlContext *);
-    QScriptValue propertyContext(const QScriptString &propName, uint id);
-    void setPropertyContext(const QScriptValue &, uint id);
-    QScriptClass::QueryFlags queryObject(const QString &name, uint *id, 
-                                         QObject *);
-    QScriptValue propertyObject(const QScriptString &propName, QObject *, 
-                                uint id = 0);
-    void setPropertyObject(const QScriptValue &, uint id);
-
 
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
@@ -128,29 +124,12 @@ public:
 #endif
 
     struct ImportedNamespace;
-    struct ResolveData {
-        ResolveData() : safetyCheckId(0) {}
-        int safetyCheckId;
-
-        void clear() { 
-            object = 0; context = 0; 
-            type = 0; ns = 0;
-            contextIndex = -1; isFunction = false;
-        }
-        QObject *object;
-        QmlContext *context;
-
-        QmlType *type;
-        QmlEnginePrivate::ImportedNamespace *ns;
-
-        int contextIndex;
-        bool isFunction;
-        QmlMetaProperty property;
-    } resolveData;
     QmlContextScriptClass *contextClass;
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
     QmlTypeNameScriptClass *typeNameClass;
+    // Global script class
+    QScriptClass *globalClass;
     // Used by DOM Core 3 API
     QScriptClass *nodeListClass;
     QScriptClass *namedNodeMapClass;
@@ -209,15 +188,21 @@ public:
     }
 
     QmlValueTypeFactory valueTypes;
-    // ### Fixme
-    typedef QHash<QPair<const QMetaObject *, QString>, bool> FunctionCache;
-    FunctionCache functionCache;
-    QHash<const QMetaObject *, QmlMetaObjectCache> propertyCache;
-    static QmlMetaObjectCache *cache(QmlEnginePrivate *priv, QObject *obj) { 
-        if (!priv || !obj || QObjectPrivate::get(obj)->metaObject) return 0; 
-        return &priv->propertyCache[obj->metaObject()];
+
+    QHash<const QMetaObject *, QmlPropertyCache *> propertyCache;
+    QmlPropertyCache *cache(QObject *obj) { 
+        Q_Q(QmlEngine);
+        if (!obj || QObjectPrivate::get(obj)->metaObject) return 0;
+        const QMetaObject *mo = obj->metaObject();
+        QmlPropertyCache *rv = propertyCache.value(mo);
+        if (!rv) {
+            rv = QmlPropertyCache::create(q, mo);
+            propertyCache.insert(mo, rv);
+        }
+        return rv;
     }
 
+    // ### This whole class is embarrassing
     struct Imports {
         Imports();
         ~Imports();
@@ -226,6 +211,8 @@ public:
 
         void setBaseUrl(const QUrl& url);
         QUrl baseUrl() const;
+
+        QmlTypeNameCache *cache(QmlEngine *) const;
 
     private:
         friend class QmlEnginePrivate;
@@ -251,6 +238,9 @@ public:
     QHash<int, int> m_qmlLists;
     QHash<int, QmlCompiledData *> m_compositeTypes;
 
+    QScriptValue scriptValueFromVariant(const QVariant &);
+    QVariant scriptValueToVariant(const QScriptValue &);
+
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
@@ -275,100 +265,11 @@ public:
 class QmlScriptClass : public QScriptClass
 {
 public:
-    enum ClassId 
-    {
-        InvalidId = -1,
-
-        FunctionId           = 0x80000000,
-        VariantPropertyId    = 0x40000000,
-        PropertyId           = 0x00000000,
-
-        ClassIdMask          = 0xC0000000,
-
-        ClassIdSelectorMask  = 0x3F000000,
-    };
-
     QmlScriptClass(QmlEngine *);
 
     static QVariant toVariant(QmlEngine *, const QScriptValue &);
 protected:
     QmlEngine *engine;
-};
-
-class QmlContextScriptClass : public QmlScriptClass
-{
-public:
-    QmlContextScriptClass(QmlEngine *);
-    ~QmlContextScriptClass();
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-    virtual void setProperty(QScriptValue &object,
-                             const QScriptString &name,
-                             uint id,
-                             const QScriptValue &value);
-};
-
-class QmlObjectScriptClass : public QmlScriptClass
-{
-public:
-    QmlObjectScriptClass(QmlEngine *);
-    ~QmlObjectScriptClass();
-
-    virtual QScriptValue prototype () const;
-    QScriptValue prototypeObject;
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-    virtual void setProperty(QScriptValue &object,
-                             const QScriptString &name,
-                             uint id,
-                             const QScriptValue &value);
-};
-
-class QmlTypeNameScriptClass : public QmlScriptClass
-{
-public:
-    QmlTypeNameScriptClass(QmlEngine *);
-    ~QmlTypeNameScriptClass();
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-
-private:
-    QObject *object;
-    QmlType *type;
-    quint32 enumValue;
-};
-
-class QmlValueTypeScriptClass : public QmlScriptClass
-{
-public:
-    QmlValueTypeScriptClass(QmlEngine *);
-    ~QmlValueTypeScriptClass();
-
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-    virtual void setProperty(QScriptValue &object,
-                             const QScriptString &name,
-                             uint id,
-                             const QScriptValue &value);
 };
 
 QT_END_NAMESPACE
