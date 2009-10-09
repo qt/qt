@@ -443,8 +443,8 @@ public:
     void constraintsFromPaths(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
-    void identifyNonFloatItems(QSet<AnchorData *> visited, Orientation orientation);
-    void identifyNonFloatItems_helper(const AnchorData *ad, Orientation orientation);
+    void identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
+    void identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar);
 
     inline AnchorVertex *internalVertex(const QPair<QGraphicsLayoutItem*, Qt::AnchorPoint> &itemEdge) const
     {
@@ -511,7 +511,7 @@ public:
     // ###
     bool graphSimplified[2];
     bool graphHasConflicts[2];
-    QSet<QGraphicsLayoutItem *> m_nonFloatItems[2];
+    QSet<QGraphicsLayoutItem *> m_floatItems[2];
 
     uint calculateGraphCacheDirty : 1;
 };

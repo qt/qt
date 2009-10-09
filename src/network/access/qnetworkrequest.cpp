@@ -481,6 +481,36 @@ void QNetworkRequest::setSslConfiguration(const QSslConfiguration &config)
 }
 #endif
 
+/*!
+    \since 4.6
+
+    Allows setting a reference to the \a object initiating
+    the request.
+
+    For example QtWebKit sets the originating object to the
+    QWebFrame that initiated the request.
+
+    \sa originatingObject()
+*/
+void QNetworkRequest::setOriginatingObject(QObject *object)
+{
+    d->originatingObject = object;
+}
+
+/*!
+    \since 4.6
+
+    Returns a reference to the object that initiated this
+    network request; returns 0 if not set or the object has
+    been destroyed.
+
+    \sa setOriginatingObject()
+*/
+QObject *QNetworkRequest::originatingObject() const
+{
+    return d->originatingObject.data();
+}
+
 static QByteArray headerName(QNetworkRequest::KnownHeaders header)
 {
     switch (header) {

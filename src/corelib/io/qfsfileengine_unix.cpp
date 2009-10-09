@@ -1255,8 +1255,19 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
     int realOffset = offset / pagesSize;
     int extra = offset % pagesSize;
 
-    void *mapAddress = mmap((void*)0, (size_t)size + extra,
-                   access, MAP_SHARED, nativeHandle(), realOffset * pagesSize);
+#ifdef Q_OS_SYMBIAN
+    void *mapAddress;
+    TRAPD(err,     mapAddress = mmap((void*)0, (size_t)size + extra,
+                   access, MAP_SHARED, nativeHandle(), realOffset * pagesSize));
+    if (err != KErrNone) {
+        qWarning("OpenC bug: leave from mmap %d", err);
+        mapAddress = MAP_FAILED;
+        errno = EINVAL;
+    }
+#else
+     void *mapAddress = mmap((void*)0, (size_t)size + extra,
+                    access, MAP_SHARED, nativeHandle(), realOffset * pagesSize);
+#endif
     if (MAP_FAILED != mapAddress) {
         uchar *address = extra + static_cast<uchar*>(mapAddress);
         maps[address] = QPair<int,int>(extra, size);

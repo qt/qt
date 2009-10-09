@@ -275,8 +275,8 @@ static qreal getFactor(qreal value, qreal min, qreal pref, qreal max)
     }
 }
 
-static qreal getExpandingFactor(qreal expSize, qreal sizeAtPreferred,
-                                qreal sizeAtExpanding, qreal sizeAtMaximum)
+static qreal getExpandingFactor(const qreal &expSize, const qreal &sizeAtPreferred,
+                                const qreal &sizeAtExpanding, const qreal &sizeAtMaximum)
 {
     const qreal lower = qMin(sizeAtPreferred, sizeAtMaximum);
     const qreal upper = qMax(sizeAtPreferred, sizeAtMaximum);
@@ -1842,10 +1842,10 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
         }
     }
 
-    // We will walk through every reachable items (non-float) and mark them
-    // by keeping their references on m_nonFloatItems. With this we can easily
-    // identify non-float and float items.
-    identifyNonFloatItems(visited, orientation);
+    // We will walk through every reachable items (non-float) store them in a temporary set.
+    // We them create a set of all items and subtract the non-floating items from the set in
+    // order to get the floating items. The floating items is then stored in m_floatItems
+    identifyFloatItems(visited, orientation);
 }
 
 /*!
@@ -2008,13 +2008,19 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 
   Use all visited Anchors on findPaths() so we can identify non-float Items.
 */
-void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems(QSet<AnchorData *> visited, Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation)
 {
-    m_nonFloatItems[orientation].clear();
+    QSet<QGraphicsLayoutItem *> nonFloating;
 
     foreach (const AnchorData *ad, visited)
-        identifyNonFloatItems_helper(ad, orientation);
+        identifyNonFloatItems_helper(ad, &nonFloating);
+
+    QSet<QGraphicsLayoutItem *> allItems;
+    foreach (QGraphicsLayoutItem *item, items)
+        allItems.insert(item);
+    m_floatItems[orientation] = allItems - nonFloating;
 }
+
 
 /*!
  \internal
@@ -2023,22 +2029,22 @@ void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems(QSet<AnchorData *> visi
   If the anchor is Sequential or Parallel, we must iterate on its children recursively until we reach
   internal anchors (items).
 */
-void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems_helper(const AnchorData *ad, Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems_helper(const AnchorData *ad, QSet<QGraphicsLayoutItem *> *nonFloatingItemsIdentifiedSoFar)
 {
     Q_Q(QGraphicsAnchorLayout);
 
     switch(ad->type) {
     case AnchorData::Normal:
         if (ad->from->m_item == ad->to->m_item && ad->to->m_item != q)
-            m_nonFloatItems[orientation].insert(ad->to->m_item);
+            nonFloatingItemsIdentifiedSoFar->insert(ad->to->m_item);
         break;
     case AnchorData::Sequential:
         foreach (const AnchorData *d, static_cast<const SequentialAnchorData *>(ad)->m_edges)
-            identifyNonFloatItems_helper(d, orientation);
+            identifyNonFloatItems_helper(d, nonFloatingItemsIdentifiedSoFar);
         break;
     case AnchorData::Parallel:
-        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->firstEdge, orientation);
-        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->secondEdge, orientation);
+        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->firstEdge, nonFloatingItemsIdentifiedSoFar);
+        identifyNonFloatItems_helper(static_cast<const ParallelAnchorData *>(ad)->secondEdge, nonFloatingItemsIdentifiedSoFar);
         break;
     }
 }
@@ -2070,7 +2076,10 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
     foreach (QGraphicsLayoutItem *item, items) {
         QRectF newGeom;
         QSizeF itemPreferredSize = item->effectiveSizeHint(Qt::PreferredSize);
-        if (m_nonFloatItems[Horizontal].contains(item)) {
+        if (m_floatItems[Horizontal].contains(item)) {
+            newGeom.setLeft(0);
+            newGeom.setRight(itemPreferredSize.width());
+        } else {
             firstH = internalVertex(item, Qt::AnchorLeft);
             secondH = internalVertex(item, Qt::AnchorRight);
 
@@ -2081,20 +2090,17 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
                 newGeom.setLeft(right - secondH->distance);
                 newGeom.setRight(right - firstH->distance);
             }
-        } else {
-            newGeom.setLeft(0);
-            newGeom.setRight(itemPreferredSize.width());
         }
 
-        if (m_nonFloatItems[Vertical].contains(item)) {
+        if (m_floatItems[Vertical].contains(item)) {
+            newGeom.setTop(0);
+            newGeom.setBottom(itemPreferredSize.height());
+        } else {
             firstV = internalVertex(item, Qt::AnchorTop);
             secondV = internalVertex(item, Qt::AnchorBottom);
 
             newGeom.setTop(top + firstV->distance);
             newGeom.setBottom(top + secondV->distance);
-        } else {
-            newGeom.setTop(0);
-            newGeom.setBottom(itemPreferredSize.height());
         }
 
         item->setGeometry(newGeom);
@@ -2554,8 +2560,7 @@ bool QGraphicsAnchorLayoutPrivate::hasConflicts() const
     QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate*>(this);
     that->calculateGraphs();
 
-    bool floatConflict = (m_nonFloatItems[0].size() < items.size())
-                         || (m_nonFloatItems[1].size() < items.size());
+    bool floatConflict = !m_floatItems[0].isEmpty() || !m_floatItems[1].isEmpty();
 
     return graphHasConflicts[0] || graphHasConflicts[1] || floatConflict;
 }
