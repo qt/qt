@@ -97,7 +97,7 @@ Qt::GestureState QGesture::state() const
     return d_func()->state;
 }
 
-QObject* QGesture::targetObject() const
+QObject *QGesture::targetObject() const
 {
     return d_func()->targetObject;
 }
@@ -132,9 +132,9 @@ void QGesture::unsetHotSpot()
 // QPanGesture
 
 QPanGesture::QPanGesture(QObject *parent)
-    : QGesture(*new QPanGesturePrivate, Qt::PanGesture, parent)
+    : QGesture(*new QPanGesturePrivate, parent)
 {
-
+    d_func()->gestureType = Qt::PanGesture;
 }
 
 QSizeF QPanGesture::totalOffset() const
@@ -181,9 +181,9 @@ void QPanGesture::setAcceleration(qreal value)
 // QPinchGesture
 
 QPinchGesture::QPinchGesture(QObject *parent)
-    : QGesture(*new QPinchGesturePrivate, Qt::PinchGesture, parent)
+    : QGesture(*new QPinchGesturePrivate, parent)
 {
-
+    d_func()->gestureType = Qt::PinchGesture;
 }
 
 QPinchGesture::WhatChanged QPinchGesture::whatChanged() const
@@ -292,8 +292,9 @@ void QPinchGesture::setRotationAngle(qreal value)
 // QSwipeGesture
 
 QSwipeGesture::QSwipeGesture(QObject *parent)
-    : QGesture(*new QSwipeGesturePrivate, Qt::SwipeGesture, parent)
+    : QGesture(*new QSwipeGesturePrivate, parent)
 {
+    d_func()->gestureType = Qt::SwipeGesture;
 }
 
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const

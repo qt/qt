@@ -70,8 +70,7 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject)
 
 public:
-    explicit QGesture(Qt::GestureType type = Qt::CustomGesture, QObject *parent = 0);
-    explicit QGesture(QObject *parent);
+    explicit QGesture(QObject *parent = 0);
     ~QGesture();
 
     Qt::GestureType gestureType() const;
@@ -87,7 +86,7 @@ public:
     void unsetHotSpot();
 
 protected:
-    QGesture(QGesturePrivate &dd, Qt::GestureType type, QObject *parent);
+    QGesture(QGesturePrivate &dd, QObject *parent);
 
 private:
     friend class QGestureEvent;
