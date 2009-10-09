@@ -1673,10 +1673,10 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     identifies the contents of the QPixmap object.
 
     The x11Info() function returns information about the configuration
-    of the X display used to display the widget.  The
-    x11PictureHandle() function returns the X11 Picture handle of the
-    pixmap for XRender support. Note that the two latter functions are
-    only available on x11.
+    of the X display used by the screen to which the pixmap currently
+    belongs. The x11PictureHandle() function returns the X11 Picture
+    handle of the pixmap for XRender support. Note that the two latter
+    functions are only available on x11.
 
     \endtable
 
@@ -2094,7 +2094,7 @@ QPixmapData* QPixmap::pixmapData() const
 
 /*! \fn const QX11Info &QPixmap::x11Info() const
     \bold{X11 only:} Returns information about the configuration of
-    the X display used to display the widget.
+    the X display used by the screen to which the pixmap currently belongs.
 
     \warning This function is only available on X11.
 
