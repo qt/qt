@@ -510,9 +510,9 @@ in the \l{Qt for Symbian platform Requirements} document.
 
     \o  Install Qt
 
-        Run \c{qt-s60-%VERSION%.exe} and follow the instructions.
+        Run \c{qt-symbian-opensource-%VERSION%.exe} and follow the instructions.
 
-        \note Qt must be installed on the same drive as the S60 SDK you are
+        \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
 
     \o  Running Qt demos
@@ -567,7 +567,7 @@ If you are using pre-built binaries, follow the instructions
         Uncompress the package into the directory you want Qt installed,
         e.g. \c{C:\Qt\%VERSION%}.
 
-        \note Qt must be installed on the same drive as the S60 SDK you are
+        \note Qt must be installed on the same drive as the Symbian SDK you are
         using, and the install path must not contain any spaces.
 
     \o  Environment variables
@@ -582,7 +582,7 @@ If you are using pre-built binaries, follow the instructions
         On Windows the PATH can be extended by navigating to
         "Control Panel->System->Advanced->Environment variables".
 
-        In addition, you must configure the environment for use with the S60
+        In addition, you must configure the environment for use with the Symbian
         emulator. This is done by locating the Carbide.c++ submenu on the Start
         menu, and choosing "Configure environment for WINSCW command line".
 
@@ -972,13 +972,13 @@ Symbian platform, see \l{Symbian platform - Introduction to using Qt}.
            \endlist
         \o \l{http://www.forum.nokia.com/main/resources/tools_and_sdks/S60SDK/}{S60 Platform SDK 3rd Edition FP1 or higher}
         \o \l{http://www.forum.nokia.com/main/resources/technologies/openc_cpp/}{Open C/C++ v1.6.0 or higher}. 
-           Install this to all S60 SDKs you plan to use Qt with.
+           Install this to all Symbian SDKs you plan to use Qt with.
         \o Building Qt libraries requires \l{http://www.arm.com/products/DevTools/RVCT.html}{RVCT} 2.2 [build 686] or later,
            which is not available free of charge. 
     \endlist
 
     Running Qt on real device requires the following packages to be installed on your device.
-    The packages can be found in the S60 SDK where you installed Open C/C++:
+    The packages can be found in the Symbian SDK where you installed Open C/C++:
     \list
         \o \c{nokia_plugin\openc\s60opencsis\pips_s60_<version>.sis}
         \o \c{nokia_plugin\openc\s60opencsis\openc_ssl_s60_<version>.sis}

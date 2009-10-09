@@ -43,7 +43,7 @@
 #define QTLOGO_H
 
 #include <QObject>
-#include <QtOpenGL>
+#include <QColor>
 
 class Patch;
 struct Geometry;

@@ -901,9 +901,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
 
     \section1 Softkeys
-    \since 4.6
 
-    Softkeys are usually physical keys on a device that have a corresponding label or
+    Since Qt 4.6, Softkeys are usually physical keys on a device that have a corresponding label or
     other visual representation on the screen that is generally located next to its
     physical counterpart. They are most often found on mobile phone platforms. In
     modern touch based user interfaces it is also possible to have softkeys that do

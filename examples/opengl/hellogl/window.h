@@ -57,6 +57,9 @@ class Window : public QWidget
 public:
     Window();
 
+protected:
+    void keyPressEvent(QKeyEvent *event);
+
 private:
     QSlider *createSlider();
 

@@ -121,7 +121,7 @@
     <example filename="network-chat" name="Network Chat Client" />
     <example filename="fortuneclient" name="Fortune Client" />
     <example filename="fortuneserver" name="Fortune Server" />
-    <example filename="ftp" changedirectory="false" name="FTP Client" />
+    <example filename="qftp" changedirectory="false" name="FTP Client" />
     <example filename="http" changedirectory="false" name="HTTP Client" />
     <example filename="loopback" name="Loopback" />
     <example filename="threadedfortuneserver" name="Threaded Fort. Server" />
@@ -152,7 +152,7 @@
     <example filename="transformations" name="Transformations" />
   </category>
   <category dirname="phonon" name="Phonon">
-    <example filename="musicplayer" name="Music Player" />
+    <example filename="qmusicplayer" name="Music Player" />
   </category>
   <category dirname="multimedia/audio" name="Multimedia">
     <example filename="audiodevices" name="Audio Devices" />

@@ -944,7 +944,7 @@ void tst_QFiledialog::selectFiles()
     QVERIFY(listView);
     for (int i = 0; i < list.count(); ++i) {
         fd.selectFile(fd.directory().path() + "/" + list.at(i));
-#if defined(Q_WS_MAC) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
+#if defined(QT_MAC_USE_COCOA) || defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("", "This test does not work on Mac, Windows, or Symbian", Abort);
 #endif
         QTRY_VERIFY(!listView->selectionModel()->selectedRows().isEmpty());
