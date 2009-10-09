@@ -39,15 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_TESTLITE_H
-#define QWINDOWSURFACE_TESTLITE_H
+#ifndef QWINDOWSURFACE_VNC_H
+#define QWINDOWSURFACE_VNC_H
 
 #include <QtGui/private/qwindowsurface_p.h>
 #include <qevent.h>
 
 QT_BEGIN_NAMESPACE
 
-class MyWindow;
 class QVNCGraphicsSystem;
 class QVNCGraphicsSystemScreen;
 
@@ -69,7 +68,6 @@ public:
 private:
     QVNCGraphicsSystem *mGraphicsSystem;
     QVNCGraphicsSystemScreen *mScreen;
-    MyWindow *xw;
 };
 
 QT_END_NAMESPACE
