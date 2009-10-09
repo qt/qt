@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,36 +39,35 @@
 **
 ****************************************************************************/
 
-#ifndef TAPANDHOLDGESTURE_H
-#define TAPANDHOLDGESTURE_H
+#ifndef QWINNATIVEPANGESTURERECOGNIZER_WIN_P_H
+#define QWINNATIVEPANGESTURERECOGNIZER_WIN_P_H
 
-#include <QtCore/QBasicTimer>
-#include <QtGui/QGesture>
-#include <QtGui/QWidget>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists for the convenience
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class TapAndHoldGesture : public QGesture
+#include <QGestureRecognizer>
+
+QT_BEGIN_NAMESPACE
+
+class QWinNativePanGestureRecognizer : public QGestureRecognizer
 {
-    Q_OBJECT
-    Q_PROPERTY(QPoint pos READ pos)
-
 public:
-    TapAndHoldGesture(QWidget *parent);
+    QWinNativePanGestureRecognizer();
 
-    bool filterEvent(QEvent *event);
-    void reset();
+    QGesture* createGesture(QObject *target) const;
 
-    QPoint pos() const;
-
-protected:
-    void timerEvent(QTimerEvent *event);
-
-private:
-    QBasicTimer timer;
-    int iteration;
-    QPoint position;
-    QPoint startPosition;
-    static const int iterationCount;
-    static const int iterationTimeout;
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
 };
 
-#endif // TAPANDHOLDGESTURE_H
+QT_END_NAMESPACE
+
+#endif // QWINNATIVEPANGESTURERECOGNIZER_WIN_P_H

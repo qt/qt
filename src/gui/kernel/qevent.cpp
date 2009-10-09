@@ -49,6 +49,8 @@
 #include "qmime.h"
 #include "qdnd_p.h"
 #include "qevent_p.h"
+#include "qgesture.h"
+#include "qgesture_p.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -3357,6 +3359,9 @@ QDebug operator<<(QDebug dbg, const QEvent *e) {
     case QEvent::ChildRemoved: n = n ? n : "ChildRemoved";
         dbg.nospace() << "QChildEvent(" << n << ", " << (static_cast<const QChildEvent*>(e))->child();
         return dbg.space();
+    case QEvent::Gesture:
+        n = "Gesture";
+        break;
     default:
         dbg.nospace() << "QEvent(" << (const void *)e << ", type = " << e->type() << ')';
         return dbg.space();
@@ -4184,6 +4189,75 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
         delete d;
     d = other.d;
     return *this;
+}
+
+/*!
+    \class QGestureEvent
+    \since 4.6
+    \ingroup events
+
+    \brief The QGestureEvent class provides the description of triggered
+    gestures.
+
+    The QGestureEvent class contains a list of gestures that are being executed
+    right now (\l{QGestureEvent::}{activeGestures()}) and a list of gestures
+    that are \l{QGestureEvent::canceledGestures}{cancelled} (a gesture might be
+    cancelled because the window lost focus, or because of timeout, etc).
+
+    \sa QGesture
+*/
+
+/*!
+    Creates new QGestureEvent containing a list of \a gestures.
+*/
+QGestureEvent::QGestureEvent(const QList<QGesture*> &gestures)
+    : QEvent(QEvent::Gesture), gestures_(gestures)
+{
+}
+
+QList<QGesture*> QGestureEvent::allGestures() const
+{
+    return gestures_;
+}
+
+QGesture* QGestureEvent::gesture(Qt::GestureType type)
+{
+    for(int i = 0; i < gestures_.size(); ++i)
+        if (gestures_.at(i)->gestureType() == type)
+            return gestures_.at(i);
+    return 0;
+}
+
+QList<QGesture*> QGestureEvent::activeGestures() const
+{
+    return gestures_;
+}
+
+QList<QGesture*> QGestureEvent::canceledGestures() const
+{
+    return gestures_;
+}
+
+void QGestureEvent::setAccepted(QGesture *gesture, bool value)
+{
+    setAccepted(false);
+    if (gesture)
+        gesture->d_func()->accept = value;
+}
+
+void QGestureEvent::accept(QGesture *gesture)
+{
+    setAccepted(gesture, true);
+}
+
+void QGestureEvent::ignore(QGesture *gesture)
+{
+    setAccepted(gesture, false);
+}
+
+bool QGestureEvent::isAccepted(QGesture *gesture) const
+{
+    return gesture ? gesture->d_func()->accept : false;
 }
 
 QT_END_NAMESPACE

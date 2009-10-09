@@ -39,58 +39,19 @@
 **
 ****************************************************************************/
 
-#ifndef IMAGEWIDGET_H
-#define IMAGEWIDGET_H
+#ifndef MOUSEPANGESTURERECOGNIZER_H
+#define MOUSEPANGESTURERECOGNIZER_H
 
-#include <QWidget>
-#include <QImage>
-#include <QtGui>
+#include <QGestureRecognizer>
 
-class QGestureEvent;
-class QPanGesture;
-class QPinchGesture;
-class QSwipeGesture;
-
-class ImageWidget : public QWidget
+class MousePanGestureRecognizer : public QGestureRecognizer
 {
-    Q_OBJECT
-
 public:
-    ImageWidget(QWidget *parent = 0);
+    MousePanGestureRecognizer();
 
-    void openDirectory(const QString &path);
-
-protected:
-    bool event(QEvent*);
-    bool gestureEvent(QGestureEvent*);
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-
-private:
-    void panTriggered(QPanGesture*);
-    void pinchTriggered(QPinchGesture*);
-    void swipeTriggered(QSwipeGesture*);
-
-private:
-    void updateImage();
-    QImage loadImage(const QString &fileName);
-    void loadImage();
-    void goNextImage();
-    void goPrevImage();
-    void goToImage(int index);
-
-    QString path;
-    QStringList files;
-    int position;
-
-    QImage prevImage, nextImage;
-    QImage currentImage;
-
-    float horizontalOffset;
-    float verticalOffset;
-    float rotationAngle;
-    float scaleFactor;
+    QGesture* createGesture(QObject *target) const;
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
 };
 
-#endif
+#endif // MOUSEPANGESTURERECOGNIZER_H
