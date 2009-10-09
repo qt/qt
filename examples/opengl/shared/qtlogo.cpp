@@ -39,6 +39,12 @@
 **
 ****************************************************************************/
 
+#include <QGLWidget>
+#include <QMatrix4x4>
+#include <QVector3D>
+
+#include <qmath.h>
+
 #include "qtlogo.h"
 
 static const qreal tee_height = 0.311126;
