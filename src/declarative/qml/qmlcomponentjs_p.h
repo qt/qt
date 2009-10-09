@@ -73,10 +73,10 @@ class Q_DECLARATIVE_EXPORT QmlComponentJS : public QmlComponent
 public:
     QmlComponentJS(QmlEngine *, const QUrl &url, QObject *parent = 0);
     QmlComponentJS(QmlEngine *, QObject *parent=0);
-    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged);
-    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged);
-    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged);
-    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged);
+    Q_PROPERTY(bool isNull READ isNull NOTIFY isNullChanged)
+    Q_PROPERTY(bool isReady READ isReady NOTIFY isReadyChanged)
+    Q_PROPERTY(bool isError READ isError NOTIFY isErrorChanged)
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY isLoadingChanged)
 
     Q_INVOKABLE QScriptValue createObject();
     Q_INVOKABLE QString errorsString() const;

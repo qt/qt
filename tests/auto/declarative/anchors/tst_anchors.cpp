@@ -3,6 +3,8 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
 #include <QtDeclarative/qfxrect.h>
+#include <QtDeclarative/private/qfxanchors_p.h>
+
 
 class tst_anchors : public QObject
 {
@@ -28,14 +30,17 @@ template<typename T>
 T *tst_anchors::findItem(QFxItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
-    for (int i = 0; i < parent->QSimpleCanvasItem::children().count(); ++i) {
-        QFxItem *item = qobject_cast<QFxItem*>(parent->QSimpleCanvasItem::children().at(i));
-        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
-            return static_cast<T*>(item);
+    QList<QGraphicsItem *> children = parent->childItems();
+    for (int i = 0; i < children.count(); ++i) {
+        QFxItem *item = qobject_cast<QFxItem *>(children.at(i)->toGraphicsObject());
+        if (item) {
+            if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
+                return static_cast<T*>(item);
+            }
+            item = findItem<T>(item, objectName);
+            if (item)
+                return static_cast<T*>(item);
         }
-        item = findItem<T>(item, objectName);
-        if (item)
-            return static_cast<T*>(item);
     }
 
     return 0;
@@ -97,7 +102,10 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Possible anchor loop detected on horizontal anchor. "); //x5
+        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor. ";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
 
@@ -109,7 +117,8 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QFxImage (unknown location): Possible anchor loop detected on horizontal anchor. ");    //x3
+        QString expect = "QML QFxImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor. ";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
 
@@ -124,7 +133,8 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QFxRect (unknown location): Can't specify left, right, and hcenter anchors. ");
+        QString expect = "QML QFxRect (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors. ";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
 
@@ -136,7 +146,8 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QFxText (unknown location): Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors. ");
+        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors. ";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
 
@@ -148,7 +159,8 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QFxRect (unknown location): Can't anchor to an item that isn't a parent or sibling. ");
+        QString expect = "QML QFxRect (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling. ";
+        QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
 

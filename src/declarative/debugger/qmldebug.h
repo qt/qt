@@ -46,7 +46,7 @@ public:
                                               QObject *parent = 0);
 
 private:
-    Q_DECLARE_PRIVATE(QmlEngineDebug);
+    Q_DECLARE_PRIVATE(QmlEngineDebug)
 };
 
 class Q_DECLARATIVE_EXPORT QmlDebugWatch : public QObject

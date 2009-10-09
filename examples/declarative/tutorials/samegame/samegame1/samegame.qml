@@ -1,3 +1,4 @@
+//![0]
 import Qt 4.6
 
 Rectangle {
@@ -36,3 +37,4 @@ Rectangle {
         }
     }
 }
+//![0]

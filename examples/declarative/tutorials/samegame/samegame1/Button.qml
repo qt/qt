@@ -1,3 +1,4 @@
+//![0]
 import Qt 4.6
 
 Rectangle {
@@ -23,3 +24,4 @@ Rectangle {
         id: txtItem; text: Container.text; anchors.centerIn: Container; color: activePalette.buttonText
     }
 }
+//![0]

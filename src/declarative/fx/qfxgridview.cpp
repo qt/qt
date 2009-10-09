@@ -145,7 +145,7 @@ public:
 
 class QFxGridViewPrivate : public QFxFlickablePrivate
 {
-    Q_DECLARE_PUBLIC(QFxGridView);
+    Q_DECLARE_PUBLIC(QFxGridView)
 
 public:
     QFxGridViewPrivate()

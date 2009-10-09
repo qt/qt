@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlFontLoaderPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlFontLoader);
+    Q_DECLARE_PUBLIC(QmlFontLoader)
 
 public:
     QmlFontLoaderPrivate() : reply(0), status(QmlFontLoader::Null) {}

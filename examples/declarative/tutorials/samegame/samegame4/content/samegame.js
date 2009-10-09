@@ -203,6 +203,7 @@ function createBlock(xIdx,yIdx){
     return true;
 }
 
+//![1]
 function sendHighScore(name) {
     var postman = new XMLHttpRequest()
     var postData = "name="+name+"&score="+gameCanvas.score
@@ -215,3 +216,4 @@ function sendHighScore(name) {
     }
     postman.send(postData);
 }
+//![1]

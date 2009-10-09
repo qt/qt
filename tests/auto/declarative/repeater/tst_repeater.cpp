@@ -53,14 +53,18 @@ void tst_QFxRepeater::stringList()
 
     QCOMPARE(container->childItems().count(), data.count() + 3);
 
+    bool saw_repeater = false;
     for (int i = 0; i < container->childItems().count(); ++i) {
 
         if (i == 0) {
             QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
             QVERIFY(name != 0);
             QCOMPARE(name->text(), QLatin1String("Zero"));
-        } else if (i == 1) {
+        } else if (i == container->childItems().count() - 2) {
             // The repeater itself
+            QFxRepeater *rep = qobject_cast<QFxRepeater*>(container->childItems().at(i));
+            QCOMPARE(rep, repeater);
+            saw_repeater = true;
             continue;
         } else if (i == container->childItems().count() - 1) {
             QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
@@ -69,10 +73,10 @@ void tst_QFxRepeater::stringList()
         } else {
             QFxText *name = qobject_cast<QFxText*>(container->childItems().at(i));
             QVERIFY(name != 0);
-            QCOMPARE(name->text(), data.at(i-2));
+            QCOMPARE(name->text(), data.at(i-1));
         }
-
     }
+    QVERIFY(saw_repeater);
 
     delete canvas;
 }
