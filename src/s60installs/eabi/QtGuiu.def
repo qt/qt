@@ -10640,7 +10640,7 @@ EXPORTS
 	_ZTI17QTextFramePrivate @ 10639 NONAME ABSENT
 	_ZTI17QTextImageHandler @ 10640 NONAME ABSENT
 	_ZTI17QTextTablePrivate @ 10641 NONAME ABSENT
-	_ZTI17QToolBarExtension @ 10642 NONAME ABSENT
+	_ZTI17QToolBarExtension @ 10642 NONAME
 	_ZTI17QToolBarSeparator @ 10643 NONAME ABSENT
 	_ZTI17QUpdateLaterEvent @ 10644 NONAME ABSENT
 	_ZTI17QWhatsThisPrivate @ 10645 NONAME ABSENT
@@ -11051,7 +11051,7 @@ EXPORTS
 	_ZTV17QTextFramePrivate @ 11050 NONAME ABSENT
 	_ZTV17QTextImageHandler @ 11051 NONAME ABSENT
 	_ZTV17QTextTablePrivate @ 11052 NONAME ABSENT
-	_ZTV17QToolBarExtension @ 11053 NONAME ABSENT
+	_ZTV17QToolBarExtension @ 11053 NONAME
 	_ZTV17QToolBarSeparator @ 11054 NONAME ABSENT
 	_ZTV17QUpdateLaterEvent @ 11055 NONAME ABSENT
 	_ZTV17QWhatsThisPrivate @ 11056 NONAME ABSENT
@@ -13102,4 +13102,38 @@ EXPORTS
 	_ZTI28QGraphicsAnchorLayoutPrivate @ 13101 NONAME
 	_ZTV20QGraphicsBloomEffect @ 13102 NONAME
 	_ZTV28QGraphicsAnchorLayoutPrivate @ 13103 NONAME
+	_ZN17QToolBarExtension10paintEventEP11QPaintEvent @ 13104 NONAME
+	_ZN17QToolBarExtension11qt_metacallEN11QMetaObject4CallEiPPv @ 13105 NONAME
+	_ZN17QToolBarExtension11qt_metacastEPKc @ 13106 NONAME
+	_ZN17QToolBarExtension14setOrientationEN2Qt11OrientationE @ 13107 NONAME
+	_ZN17QToolBarExtension16staticMetaObjectE @ 13108 NONAME DATA 16
+	_ZN17QToolBarExtension19getStaticMetaObjectEv @ 13109 NONAME
+	_ZN17QToolBarExtensionC1EP7QWidget @ 13110 NONAME
+	_ZN17QToolBarExtensionC2EP7QWidget @ 13111 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 13112 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 13113 NONAME
+	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 13114 NONAME
+	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 13115 NONAME
+	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 13116 NONAME DATA 16
+	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 13117 NONAME
+	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 13118 NONAME
+	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 13119 NONAME
+	_ZN18QGuiPlatformPlugin7paletteEv @ 13120 NONAME
+	_ZN18QGuiPlatformPlugin9styleNameEv @ 13121 NONAME
+	_ZN18QGuiPlatformPluginC1EP7QObject @ 13122 NONAME
+	_ZN18QGuiPlatformPluginC2EP7QObject @ 13123 NONAME
+	_ZN18QGuiPlatformPluginD0Ev @ 13124 NONAME
+	_ZN18QGuiPlatformPluginD1Ev @ 13125 NONAME
+	_ZN18QGuiPlatformPluginD2Ev @ 13126 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate14solveExpandingE5QListIP18QSimplexConstraintE @ 13127 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate21identifyNonFloatItemsE4QSetIP10AnchorDataENS_11OrientationE @ 13128 NONAME
+	_ZN28QGraphicsAnchorLayoutPrivate28identifyNonFloatItems_helperEPK10AnchorDataNS_11OrientationE @ 13129 NONAME
+	_ZNK17QToolBarExtension10metaObjectEv @ 13130 NONAME
+	_ZNK17QToolBarExtension8sizeHintEv @ 13131 NONAME
+	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 13132 NONAME
+	_ZTI18QGuiPlatformPlugin @ 13133 NONAME
+	_ZTI27QGuiPlatformPluginInterface @ 13134 NONAME
+	_ZTV18QGuiPlatformPlugin @ 13135 NONAME
+	_ZThn8_N18QGuiPlatformPluginD0Ev @ 13136 NONAME
+	_ZThn8_N18QGuiPlatformPluginD1Ev @ 13137 NONAME
 

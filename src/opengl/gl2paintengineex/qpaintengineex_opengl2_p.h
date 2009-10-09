@@ -223,6 +223,7 @@ public:
     bool shaderMatrixUniformDirty;
     bool opacityUniformDirty;
 
+    bool stencilClean; // Has the stencil not been used for clipping so far?
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
     uint maxClip;

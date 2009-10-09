@@ -713,7 +713,13 @@
     \omitvalue Dither_Mask
     \omitvalue AlphaDither_Mask
     \omitvalue DitherMode_Mask
-    \omitvalue NoOpaqueDetection
+
+    \value NoOpaqueDetection Do not check whether the image contains non-opaque
+           pixels. Use this if you know that the image is semi-transparent and
+           you want to avoid the overhead of checking the pixels in the image
+           until a non-opaque pixel is found, or if you want the pixmap to
+           retain an alpha channel for some other reason. If the image has no
+           alpha channel this flag has no effect.
 */
 
 /*! \enum Qt::GUIStyle

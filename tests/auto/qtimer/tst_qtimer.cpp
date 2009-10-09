@@ -46,10 +46,6 @@
 #include <qtimer.h>
 #include <qthread.h>
 
-
-
-
-
 #if defined Q_OS_UNIX
 #include <unistd.h>
 #endif
@@ -242,7 +238,6 @@ public:
 
         // sleep for 2ms
         QTest::qSleep(2);
-
         killTimer(te->timerId());
     }
 
@@ -277,9 +272,11 @@ void tst_QTimer::livelock()
 #elif defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN)
     QEXPECT_FAIL("zero timer", "", Continue);
     QEXPECT_FAIL("non-zero timer", "", Continue);
-#elif defined(Q_OS_WIN)
+#elif defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
 	if (QSysInfo::WindowsVersion < QSysInfo::WV_XP)
 		QEXPECT_FAIL("non-zero timer", "Multimedia timers are not available on Windows 2000", Continue);
+#elif defined(Q_OS_WINCE)
+	QEXPECT_FAIL("non-zero timer", "Windows CE devices often too slow", Continue);
 #endif
     QVERIFY(tester.postEventAtRightTime);
 }

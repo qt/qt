@@ -980,26 +980,28 @@ void tst_QSpinBox::sizeHint()
     sizeHint_SpinBox *spinBox = new sizeHint_SpinBox;
     layout->addWidget(spinBox);
     widget->show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(widget);
 
     // Prefix
     spinBox->sizeHintRequests = 0;
     spinBox->setPrefix(QLatin1String("abcdefghij"));
     qApp->processEvents();
-    QVERIFY(spinBox->sizeHintRequests > 0);
+    QTRY_VERIFY(spinBox->sizeHintRequests > 0);
 
     // Suffix
     spinBox->sizeHintRequests = 0;
     spinBox->setSuffix(QLatin1String("abcdefghij"));
     qApp->processEvents();
-    QVERIFY(spinBox->sizeHintRequests > 0);
+    QTRY_VERIFY(spinBox->sizeHintRequests > 0);
 
     // Range
     spinBox->sizeHintRequests = 0;
     spinBox->setRange(0, 1234567890);
     spinBox->setValue(spinBox->maximum());
     qApp->processEvents();
-    QVERIFY(spinBox->sizeHintRequests > 0);
+    QTRY_VERIFY(spinBox->sizeHintRequests > 0);
+
+    delete widget;
 }
 
 QTEST_MAIN(tst_QSpinBox)

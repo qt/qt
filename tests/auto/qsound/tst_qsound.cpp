@@ -43,6 +43,10 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
+
 class tst_QSound : public QObject
 {
     Q_OBJECT
