@@ -51,6 +51,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QGraphicsObject;
+class QFxGraphicsObjectContainerPrivate;
 
 class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
 {
@@ -74,12 +75,9 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
     bool eventFilter(QObject *watched, QEvent *e);
 
-private Q_SLOTS:
-    void _q_updateSize();
-
 private:
-    QGraphicsObject *_graphicsObject;
-    bool _syncedResize;
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSize())
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxGraphicsObjectContainer)
 };
 
 QT_END_NAMESPACE
