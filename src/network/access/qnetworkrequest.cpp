@@ -484,7 +484,7 @@ void QNetworkRequest::setSslConfiguration(const QSslConfiguration &config)
 /*!
     \since 4.6
 
-    Allows setting a reference to the object initiating
+    Allows setting a reference to the \a object initiating
     the request.
 
     For example QtWebKit sets the originating object to the
