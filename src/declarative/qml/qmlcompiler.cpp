@@ -2253,10 +2253,13 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
     data.append((const char *)&idObject->idIndex, sizeof(idObject->idIndex));
     data.append((const char *)&propIdx, sizeof(propIdx));
 
+    const char *typeName = aliasProperty.typeName();
+    if (aliasProperty.isEnumType()) 
+        typeName = "int";  // Avoid introducing a dependency on the aliased metaobject
+
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 
-        builder.addProperty(prop.name, aliasProperty.typeName(), 
-                            builder.methodCount() - 1);
+        builder.addProperty(prop.name, typeName, builder.methodCount() - 1);
     propBuilder.setScriptable(true);
     return true;
 }
