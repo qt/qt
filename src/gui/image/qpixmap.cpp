@@ -947,6 +947,9 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 /*!
     Fills the pixmap with the given \a color.
 
+    The effect of this function is undefined when the pixmap is
+    being painted on.
+
     \sa {QPixmap#Pixmap Transformations}{Pixmap Transformations}
 */
 
@@ -954,6 +957,13 @@ void QPixmap::fill(const QColor &color)
 {
     if (isNull())
         return;
+
+    // Some people are probably already calling fill while a painter is active, so to not break
+    // their programs, only print a warning and return when the fill operation could cause a crash.
+    if (paintingActive() && (color.alpha() != 255) && !hasAlphaChannel()) {
+        qWarning("QPixmap::fill: Cannot fill while pixmap is being painted on");
+        return;
+    }
 
     detach();
     data->fill(color);
