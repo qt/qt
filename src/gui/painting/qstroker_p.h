@@ -366,16 +366,16 @@ inline void QStroker::emitCubicTo(qfixed c1x, qfixed c1y,
  */
 inline void QDashStroker::begin(void *data)
 {
-    Q_ASSERT(m_stroker);
-    m_stroker->begin(data);
+    if (m_stroker)
+        m_stroker->begin(data);
     QStrokerOps::begin(data);
 }
 
 inline void QDashStroker::end()
 {
-    Q_ASSERT(m_stroker);
     QStrokerOps::end();
-    m_stroker->end();
+    if (m_stroker)
+        m_stroker->end();
 }
 
 QT_END_NAMESPACE
