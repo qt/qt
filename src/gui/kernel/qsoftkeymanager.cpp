@@ -200,6 +200,7 @@ bool QSoftKeyManager::event(QEvent *e)
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
+    nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
     QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
     int position = -1;

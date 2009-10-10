@@ -1225,8 +1225,6 @@
     \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
     touch events to be sent to the widget.
 
-    \value WA_DontUseStandardGestures Disables standard gestures on Qt widgets.
-
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys

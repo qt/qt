@@ -96,7 +96,6 @@ class QIcon;
 class QWindowSurface;
 class QLocale;
 class QGraphicsProxyWidget;
-class QGestureManager;
 class QGraphicsEffect;
 #if defined(Q_WS_X11)
 class QX11Info;
@@ -354,6 +353,8 @@ public:
 
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
+
+    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);
@@ -737,6 +738,8 @@ private:
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
     friend struct QWidgetExceptionCleaner;
+    friend class QGestureManager;
+    friend class QWinNativePanGestureRecognizer;
 
 #ifdef Q_WS_MAC
     friend class QCoreGraphicsPaintEnginePrivate;

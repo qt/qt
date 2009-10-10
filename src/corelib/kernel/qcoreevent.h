@@ -283,6 +283,9 @@ public:
 
         UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
 
+        Gesture = 198,
+        GestureOverride = 202,
+
         // 512 reserved for Qt Jambi's MetaCall event
         // 513 reserved for Qt Jambi's DeleteOnMainThread event
 
@@ -324,6 +327,7 @@ private:
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
     friend class QGraphicsScenePrivate;
+    friend class QGestureManager;
 };
 
 class Q_CORE_EXPORT QTimerEvent : public QEvent

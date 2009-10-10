@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,36 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef TAPANDHOLDGESTURE_H
-#define TAPANDHOLDGESTURE_H
+#include <QtGui>
+#include "window.h"
 
-#include <QtCore/QBasicTimer>
-#include <QtGui/QGesture>
-#include <QtGui/QWidget>
-
-class TapAndHoldGesture : public QGesture
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-    Q_PROPERTY(QPoint pos READ pos)
-
-public:
-    TapAndHoldGesture(QWidget *parent);
-
-    bool filterEvent(QEvent *event);
-    void reset();
-
-    QPoint pos() const;
-
-protected:
-    void timerEvent(QTimerEvent *event);
-
-private:
-    QBasicTimer timer;
-    int iteration;
-    QPoint position;
-    QPoint startPosition;
-    static const int iterationCount;
-    static const int iterationTimeout;
-};
-
-#endif // TAPANDHOLDGESTURE_H
+    QApplication app(argc, argv);
+    Window window;
+    window.setFixedSize(640, 215);
+    window.show();
+    return app.exec();
+}

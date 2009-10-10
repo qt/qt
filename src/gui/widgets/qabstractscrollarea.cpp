@@ -52,11 +52,6 @@
 #include "qboxlayout.h"
 #include "qpainter.h"
 
-#ifdef Q_WS_WIN
-#include "qstandardgestures.h"
-#include <private/qstandardgestures_p.h>
-#endif
-
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
 
@@ -165,7 +160,7 @@ QAbstractScrollAreaPrivate::QAbstractScrollAreaPrivate()
      viewport(0), cornerWidget(0), left(0), top(0), right(0), bottom(0),
      xoffset(0), yoffset(0), viewportFilter(0)
 #ifdef Q_WS_WIN
-     , panGesture(0), singleFingerPanEnabled(false)
+     , singleFingerPanEnabled(false)
 #endif
 {
 }
@@ -298,14 +293,6 @@ void QAbstractScrollAreaPrivate::init()
     q->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     q->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     layoutChildren();
-
-#ifdef Q_WS_WIN
-    panGesture = new QPanGesture(viewport, q);
-    panGesture->d_func()->implicitGesture = true;
-    QObject::connect(panGesture, SIGNAL(started()), q, SLOT(_q_gestureTriggered()));
-    QObject::connect(panGesture, SIGNAL(triggered()), q, SLOT(_q_gestureTriggered()));
-    QObject::connect(panGesture, SIGNAL(finished()), q, SLOT(_q_gestureTriggered()));
-#endif // Q_WS_WIN
 }
 
 #ifdef Q_WS_WIN
@@ -556,9 +543,6 @@ void QAbstractScrollArea::setViewport(QWidget *widget)
         if (isVisible())
             d->viewport->show();
         QMetaObject::invokeMethod(this, "setupViewport", Q_ARG(QWidget *, widget));
-#ifdef Q_WS_WIN
-        d->panGesture->setGestureTarget(widget);
-#endif
         delete oldViewport;
     }
 }
@@ -1351,26 +1335,24 @@ void QAbstractScrollArea::setupViewport(QWidget *viewport)
     Q_UNUSED(viewport);
 }
 
-#ifdef Q_WS_WIN
-void QAbstractScrollAreaPrivate::_q_gestureTriggered()
-{
-    Q_Q(QAbstractScrollArea);
-    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-    if (!g)
-        return;
-    QScrollBar *hBar = q->horizontalScrollBar();
-    QScrollBar *vBar = q->verticalScrollBar();
-    QSizeF delta = g->lastOffset();
-    if (!delta.isNull()) {
-        if (QApplication::isRightToLeft())
-            delta.rwidth() *= -1;
-        int newX = hBar->value() - delta.width();
-        int newY = vBar->value() - delta.height();
-        hbar->setValue(newX);
-        vbar->setValue(newY);
-    }
-}
-#endif
+//void QAbstractScrollAreaPrivate::_q_gestureTriggered()
+//{
+//    Q_Q(QAbstractScrollArea);
+//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+//    if (!g)
+//        return;
+//    QScrollBar *hBar = q->horizontalScrollBar();
+//    QScrollBar *vBar = q->verticalScrollBar();
+//    QSizeF delta = g->lastOffset();
+//    if (!delta.isNull()) {
+//        if (QApplication::isRightToLeft())
+//            delta.rwidth() *= -1;
+//        int newX = hBar->value() - delta.width();
+//        int newY = vBar->value() - delta.height();
+//        hbar->setValue(newX);
+//        vbar->setValue(newY);
+//    }
+//}
 
 QT_END_NAMESPACE
 

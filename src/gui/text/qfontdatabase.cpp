@@ -1351,7 +1351,11 @@ static void match(int script, const QFontDef &request,
 
     unsigned int score = ~0u;
 
+#ifdef Q_WS_X11
     load(family_name, script, forceXLFD);
+#else
+    load(family_name, script);
+#endif
 
     QFontDatabasePrivate *db = privateDb();
     for (int x = 0; x < db->count; ++x) {

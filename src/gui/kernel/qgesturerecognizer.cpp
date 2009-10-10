@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,40 +39,33 @@
 **
 ****************************************************************************/
 
-#ifndef PINCHWIDGET_H
-#define PINCHWIDGET_H
+#include "qgesturerecognizer.h"
 
-#include <QWidget>
-#include <QTransform>
+#include "private/qgesture_p.h"
 
-class QPanGesture;
-class QPinchGesture;
+QT_BEGIN_NAMESPACE
 
-class PinchWidget : public QWidget
+QGestureRecognizer::QGestureRecognizer()
 {
-    Q_OBJECT
-public:
-    PinchWidget(const QImage &image, QWidget *parent = 0);
+}
 
-private Q_SLOTS:
-    void acceptTouchEvents();
-    void onPanTriggered();
-    void onPanFinished();
-    void onPinchTriggered();
-    void onPinchFinished();
+QGestureRecognizer::~QGestureRecognizer()
+{
+}
 
-private:
-    void paintEvent(QPaintEvent *);
-    QSize sizeHint() const;
+QGesture *QGestureRecognizer::createGesture(QObject *)
+{
+    return new QGesture;
+}
 
-    QImage image;
+void QGestureRecognizer::reset(QGesture *state)
+{
+    if (state) {
+        QGesturePrivate *d = state->d_func();
+        d->state = Qt::NoGesture;
+        d->hotSpot = QPointF();
+        d->targetObject = 0;
+    }
+}
 
-    QPanGesture *pan;
-    QPinchGesture *pinch;
-
-    QTransform worldTransform;
-    QTransform currentPanTransform;
-    QTransform currentPinchTransform;
-};
-
-#endif // PINCHWIDGET_H
+QT_END_NAMESPACE

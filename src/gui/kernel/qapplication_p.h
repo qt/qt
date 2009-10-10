@@ -83,8 +83,8 @@ class QGraphicsSystem;
 class QInputContext;
 class QObject;
 class QWidget;
-class QGestureManager;
 class QSocketNotifier;
+class QGestureManager;
 
 extern bool qt_is_gui_used;
 #ifndef QT_NO_CLIPBOARD
@@ -264,20 +264,6 @@ typedef struct tagGESTURECONFIG
 #endif
 
 #endif // Q_WS_WIN
-
-class QPanGesture;
-class QPinchGesture;
-class QSwipeGesture;
-
-struct QStandardGestures
-{
-    QPanGesture *pan;
-    QPinchGesture *pinch;
-    QSwipeGesture *swipe;
-
-    QStandardGestures() : pan(0), pinch(0), swipe(0) { }
-};
-
 
 class QScopedLoopLevelCounter
 {
@@ -522,6 +508,8 @@ public:
     void sendSyntheticEnterLeave(QWidget *widget);
 #endif
 
+    QGestureManager *gestureManager;
+
     QMap<int, QWidget *> widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;
     static void updateTouchPointsForWidget(QWidget *widget, QTouchEvent *touchEvent);
@@ -535,9 +523,6 @@ public:
     static void translateRawTouchEvent(QWidget *widget,
                                        QTouchEvent::DeviceType deviceType,
                                        const QList<QTouchEvent::TouchPoint> &touchPoints);
-
-    typedef QMap<QWidget*, QStandardGestures> WidgetStandardGesturesMap;
-    WidgetStandardGesturesMap widgetGestures;
 
 #if defined(Q_WS_WIN)
     static PtrRegisterTouchWindow RegisterTouchWindow;
@@ -555,7 +540,6 @@ public:
     PtrBeginPanningFeedback BeginPanningFeedback;
     PtrUpdatePanningFeedback UpdatePanningFeedback;
     PtrEndPanningFeedback EndPanningFeedback;
-    QWidget *gestureWidget;
 #endif
 
 #ifdef QT_RX71_MULTITOUCH
