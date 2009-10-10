@@ -70,7 +70,7 @@ public:
     QFxTextEditPrivate()
       : color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
       dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
-      preserveSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
+      persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
       cursorComponent(0), cursor(0), format(QFxTextEdit::AutoText), document(0)
     {
     }
@@ -98,7 +98,7 @@ public:
     bool richText;
     bool cursorVisible;
     bool focusOnPress;
-    bool preserveSelection;
+    bool persistentSelection;
     qreal textMargin;
     int lastSelectionStart;
     int lastSelectionEnd;

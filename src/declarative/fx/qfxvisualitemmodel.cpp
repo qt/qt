@@ -239,6 +239,10 @@ class QFxVisualDataModelPrivate : public QObjectPrivate
 public:
     QFxVisualDataModelPrivate(QmlContext *);
 
+    static QFxVisualDataModelPrivate *get(QFxVisualDataModel *m) {
+        return static_cast<QFxVisualDataModelPrivate *>(QObjectPrivate::get(m));
+    }
+
     QGuard<QListModelInterface> m_listModelInterface;
     QGuard<QAbstractItemModel> m_abstractItemModel;
     QGuard<QFxVisualDataModel> m_visualItemModel;
@@ -264,10 +268,10 @@ public:
                 }
                 if (m_roles.count() == 1)
                     m_roleNames.insert(QLatin1String("modelData"), m_roles.at(0));
-            } else if (m_modelList) {
+            } else if (m_listAccessor) {
                 m_roleNames.insert(QLatin1String("modelData"), 0);
-                if (m_modelList->type() == QmlListAccessor::Instance) {
-                    if (QObject *object = m_modelList->at(0).value<QObject*>()) {
+                if (m_listAccessor->type() == QmlListAccessor::Instance) {
+                    if (QObject *object = m_listAccessor->at(0).value<QObject*>()) {
                         int count = object->metaObject()->propertyCount();
                         for (int ii = 1; ii < count; ++ii) {
                             const QMetaProperty &prop = object->metaObject()->property(ii);
@@ -330,7 +334,7 @@ public:
     QFxVisualDataModelData *data(QObject *item);
 
     QVariant m_modelVariant;
-    QmlListAccessor *m_modelList;
+    QmlListAccessor *m_listAccessor;
 
     int modelCount() const {
         if (m_visualItemModel)
@@ -339,8 +343,8 @@ public:
             return m_listModelInterface->count();
         if (m_abstractItemModel)
             return m_abstractItemModel->rowCount();
-        if (m_modelList)
-            return m_modelList->count();
+        if (m_listAccessor)
+            return m_listAccessor->count();
         return 0;
     }
 };
@@ -363,7 +367,8 @@ class QFxVisualDataModelData : public QObject
 {
 Q_OBJECT
 public:
-    QFxVisualDataModelData(int index, QFxVisualDataModelPrivate *model);
+    QFxVisualDataModelData(int index, QFxVisualDataModel *model);
+    ~QFxVisualDataModelData();
 
     Q_PROPERTY(int index READ index NOTIFY indexChanged)
     int index() const;
@@ -379,7 +384,7 @@ Q_SIGNALS:
 private:
     friend class QFxVisualDataModelDataMetaObject;
     int m_index;
-    QFxVisualDataModelPrivate *m_model;
+    QGuard<QFxVisualDataModel> m_model;
     QFxVisualDataModelDataMetaObject *m_meta;
 };
 
@@ -404,15 +409,19 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
     QFxVisualDataModelData *data =
         static_cast<QFxVisualDataModelData *>(object());
 
-    if ((!data->m_model->m_listModelInterface || !data->m_model->m_abstractItemModel)
-            && data->m_model->m_modelList) {
-        data->m_model->ensureRoles();
-        if (data->m_model->m_roleNames.contains(QLatin1String(name)))
+    if (!data->m_model)
+        return -1;
+
+    QFxVisualDataModelPrivate *model = QFxVisualDataModelPrivate::get(data->m_model);
+
+    if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
+        model->ensureRoles();
+        if (model->m_roleNames.contains(QLatin1String(name)))
             return QmlOpenMetaObject::createProperty(name, type);
     } else {
-        data->m_model->ensureRoles();
+        model->ensureRoles();
         const QLatin1String sname(name);
-        if (data->m_model->m_roleNames.contains(sname))
+        if (model->m_roleNames.contains(sname))
             return QmlOpenMetaObject::createProperty(name, type);
     }
     return -1;
@@ -425,45 +434,48 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
 
     QFxVisualDataModelData *data =
         static_cast<QFxVisualDataModelData *>(object());
+
+    Q_ASSERT(data->m_model);
+    QFxVisualDataModelPrivate *model = QFxVisualDataModelPrivate::get(data->m_model);
+
     QString name = QLatin1String(prop.name());
-    if ((!data->m_model->m_listModelInterface || !data->m_model->m_abstractItemModel)
-            && data->m_model->m_modelList) {
+    if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         if (name == QLatin1String("modelData")) {
-            if (data->m_model->m_modelList->type() == QmlListAccessor::Instance) {
-                QObject *object = data->m_model->m_modelList->at(0).value<QObject*>();
+            if (model->m_listAccessor->type() == QmlListAccessor::Instance) {
+                QObject *object = model->m_listAccessor->at(0).value<QObject*>();
                 return object->metaObject()->property(1).read(object); // the first property after objectName
             }
-            return data->m_model->m_modelList->at(data->m_index);
+            return model->m_listAccessor->at(data->m_index);
         } else {
             // return any property of a single object instance.
-            QObject *object = data->m_model->m_modelList->at(0).value<QObject*>();
+            QObject *object = model->m_listAccessor->at(0).value<QObject*>();
             return object->property(prop.name());
         }
-    } else if (data->m_model->m_listModelInterface) {
-        data->m_model->ensureRoles();
-        QHash<QString,int>::const_iterator it = data->m_model->m_roleNames.find(name);
-        if (it != data->m_model->m_roleNames.end()) {
+    } else if (model->m_listModelInterface) {
+        model->ensureRoles();
+        QHash<QString,int>::const_iterator it = model->m_roleNames.find(name);
+        if (it != model->m_roleNames.end()) {
             roles.append(*it);
-            QHash<int,QVariant> values = data->m_model->m_listModelInterface->data(data->m_index, QList<int>() << *it);
+            QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << *it);
             if (values.isEmpty())
                 return QVariant();
             else
                 return values.value(*it);
-        } else if (data->m_model->m_roles.count() == 1 && name == QLatin1String("modelData")) {
+        } else if (model->m_roles.count() == 1 && name == QLatin1String("modelData")) {
             //for compatability with other lists, assign modelData if there is only a single role
-            QHash<int,QVariant> values = data->m_model->m_listModelInterface->data(data->m_index, QList<int>() << data->m_model->m_roles.first());
+            QHash<int,QVariant> values = model->m_listModelInterface->data(data->m_index, QList<int>() << model->m_roles.first());
             if (values.isEmpty())
                 return QVariant();
             else
                 return *values.begin();
         }
-    } else if (data->m_model->m_abstractItemModel) {
-        data->m_model->ensureRoles();
-        QHash<QString,int>::const_iterator it = data->m_model->m_roleNames.find(name);
-        if (it != data->m_model->m_roleNames.end()) {
+    } else if (model->m_abstractItemModel) {
+        model->ensureRoles();
+        QHash<QString,int>::const_iterator it = model->m_roleNames.find(name);
+        if (it != model->m_roleNames.end()) {
             roles.append(*it);
-            QModelIndex index = data->m_model->m_abstractItemModel->index(data->m_index, 0);
-            return data->m_model->m_abstractItemModel->data(index, *it);
+            QModelIndex index = model->m_abstractItemModel->index(data->m_index, 0);
+            return model->m_abstractItemModel->data(index, *it);
         }
     }
     Q_ASSERT(!"Can never be reached");
@@ -471,9 +483,13 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
 }
 
 QFxVisualDataModelData::QFxVisualDataModelData(int index,
-                                               QFxVisualDataModelPrivate *model)
+                                               QFxVisualDataModel *model)
 : m_index(index), m_model(model), 
   m_meta(new QFxVisualDataModelDataMetaObject(this))
+{
+}
+
+QFxVisualDataModelData::~QFxVisualDataModelData()
 {
 }
 
@@ -531,7 +547,7 @@ QFxVisualDataModelParts::QFxVisualDataModelParts(QFxVisualDataModel *parent)
 
 QFxVisualDataModelPrivate::QFxVisualDataModelPrivate(QmlContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
-, m_context(ctxt), m_parts(0), m_modelList(0)
+, m_context(ctxt), m_parts(0), m_listAccessor(0)
 {
 }
 
@@ -556,8 +572,8 @@ QFxVisualDataModel::QFxVisualDataModel(QmlContext *ctxt)
 QFxVisualDataModel::~QFxVisualDataModel()
 {
     Q_D(QFxVisualDataModel);
-    if (d->m_modelList)
-        delete d->m_modelList;
+    if (d->m_listAccessor)
+        delete d->m_listAccessor;
 }
 
 QVariant QFxVisualDataModel::model() const
@@ -569,8 +585,8 @@ QVariant QFxVisualDataModel::model() const
 void QFxVisualDataModel::setModel(const QVariant &model)
 {
     Q_D(QFxVisualDataModel);
-    delete d->m_modelList;
-    d->m_modelList = 0;
+    delete d->m_listAccessor;
+    d->m_listAccessor = 0;
     d->m_modelVariant = model;
     if (d->m_listModelInterface) {
         // Assume caller has released all items.
@@ -642,8 +658,8 @@ void QFxVisualDataModel::setModel(const QVariant &model)
                          this, SLOT(_q_destroyingPackage(QmlPackage*)));
         return;
     }
-    d->m_modelList = new QmlListAccessor;
-    d->m_modelList->setList(model, d->m_context?d->m_context->engine():qmlEngine(this));
+    d->m_listAccessor = new QmlListAccessor;
+    d->m_listAccessor->setList(model, d->m_context?d->m_context->engine():qmlEngine(this));
     if (d->m_delegate && d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
         emit countChanged();
@@ -752,7 +768,7 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, d);
+        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, this);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->addDefaultObject(data);
         nobj = d->m_delegate->beginCreate(ctxt);
@@ -821,7 +837,7 @@ QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObj
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, d);
+        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, this);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);
         e.setTrackChange(false);

@@ -17,7 +17,7 @@ Rectangle {
             fillMode: "PreserveAspectCrop"
         }
 
-        //![1]
+//![1]
         Item {
             id: gameCanvas
             property int score: 0
@@ -32,12 +32,12 @@ Rectangle {
                 anchors.fill: parent; onClicked: handleClick(mouse.x,mouse.y);
             }
         }
-        //![1]
+//![1]
     }
 
-    //![2]
+//![2]
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
-    //![2]
+//![2]
 
     Rectangle {
         id: ToolBar

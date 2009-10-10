@@ -193,7 +193,7 @@ private Q_SLOTS:
     void updateRect(const QRect &r = QRect());
 
 private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextInput);
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextInput)
 };
 
 QT_END_NAMESPACE

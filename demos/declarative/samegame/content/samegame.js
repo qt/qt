@@ -21,9 +21,14 @@ function timeStr(msecs) {
     return ret;
 }
 
+function getTileSize()
+{
+    return tileSize;
+}
+
 function initBoard()
 {
-    for(i = 0; i<maxIndex; i++){
+    for(var i = 0; i<maxIndex; i++){
         //Delete old blocks
         if(board[i] != null)
             board[i].destroy();
@@ -38,16 +43,19 @@ function initBoard()
     scoreName.forceClose();
     dialog.forceClose();
 
+    var a = new Date();
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        for(yIdx=0; yIdx<maxY; yIdx++){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        for(var yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
             createBlock(xIdx,yIdx);
         }
     }
     timer = new Date();
+
+    print(timer.valueOf() - a.valueOf());
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found
@@ -55,8 +63,8 @@ var floodBoard;//Set to 1 if the floodFill reaches off that node
 //NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
 function handleClick(x,y)
 {
-    xIdx = Math.floor(x/gameCanvas.tileSize);
-    yIdx = Math.floor(y/gameCanvas.tileSize);
+    var xIdx = Math.floor(x/gameCanvas.tileSize);
+    var yIdx = Math.floor(y/gameCanvas.tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
@@ -102,14 +110,14 @@ function floodFill(xIdx,yIdx,type)
 function shuffleDown()
 {
     //Fall down
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        fallDist = 0;
-        for(yIdx=maxY-1; yIdx>=0; yIdx--){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        var fallDist = 0;
+        for(var yIdx=maxY-1; yIdx>=0; yIdx--){
             if(board[index(xIdx,yIdx)] == null){
                 fallDist += 1;
             }else{
                 if(fallDist > 0){
-                    obj = board[index(xIdx,yIdx)];
+                    var obj = board[index(xIdx,yIdx)];
                     obj.targetY += fallDist * gameCanvas.tileSize;
                     board[index(xIdx,yIdx+fallDist)] = obj;
                     board[index(xIdx,yIdx)] = null;
@@ -140,8 +148,8 @@ function shuffleDown()
 function victoryCheck()
 {
     //awards bonuses for no tiles left
-    deservesBonus = true;
-    for(xIdx=maxX-1; xIdx>=0; xIdx--)
+    var deservesBonus = true;
+    for(var xIdx=maxX-1; xIdx>=0; xIdx--)
         if(board[index(xIdx, maxY - 1)] != null)
             deservesBonus = false;
     if(deservesBonus)
@@ -163,7 +171,7 @@ function floodMoveCheck(xIdx, yIdx, type)
         return false;
     if(board[index(xIdx, yIdx)] == null)
         return false;
-    myType = board[index(xIdx, yIdx)].type;
+    var myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
     return floodMoveCheck(xIdx + 1, yIdx, myType) ||
@@ -171,7 +179,7 @@ function floodMoveCheck(xIdx, yIdx, type)
 }
 
 function createBlock(xIdx,yIdx){
-    if(component==null)
+    if(component==null) 
         component = createComponent(tileSrc);
 
     // Note that we don't wait for the component to become ready. This will
@@ -179,7 +187,7 @@ function createBlock(xIdx,yIdx){
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
     if(component.isReady){
-        dynamicObject = component.createObject();
+        var dynamicObject = component.createObject();
         if(dynamicObject == null){
             print("error creating block");
             print(component.errorsString());

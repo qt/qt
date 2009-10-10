@@ -170,15 +170,15 @@ class QFxListViewPrivate : public QFxFlickablePrivate
 
 public:
     QFxListViewPrivate()
-        : model(0), currentItem(0), tmpCurrent(0), orient(Qt::Vertical)
+        : model(0), currentItem(0), orient(Qt::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
+        , highlightMoveSpeed(400), highlightResizeSpeed(400)
         , ownModel(false), wrap(false), autoHighlight(true)
         , haveHighlightRange(false), strictHighlightRange(false)
-        , highlightMoveSpeed(400), highlightResizeSpeed(400)
     {}
 
     void init();
@@ -371,7 +371,6 @@ public:
     QList<FxListItem*> visibleItems;
     QHash<QFxItem*,int> unrequestedItems;
     FxListItem *currentItem;
-    QFxItem *tmpCurrent;
     Qt::Orientation orient;
     int visiblePos;
     int visibleIndex;
@@ -752,10 +751,6 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
         return;
     }
 
-    if (tmpCurrent) {
-        delete tmpCurrent;
-        tmpCurrent = 0;
-    }
     FxListItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
@@ -991,14 +986,8 @@ void QFxListView::setCurrentIndex(int index)
 QFxItem *QFxListView::currentItem()
 {
     Q_D(QFxListView);
-    if (!d->currentItem) {
-        // Always return something valid
-        if (!d->tmpCurrent) {
-            d->tmpCurrent = new QFxItem;
-            d->tmpCurrent->setParent(viewport());
-        }
-        return d->tmpCurrent;
-    }
+    if (!d->currentItem)
+        return 0;
     return d->currentItem->item;
 }
 
@@ -1180,6 +1169,7 @@ void QFxListView::setOrientation(Qt::Orientation orientation)
             setViewportHeight(-1);
         d->clear();
         refill();
+        emit orientationChanged();
         d->updateCurrent(d->currentIndex);
     }
 }

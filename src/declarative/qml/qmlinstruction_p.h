@@ -118,6 +118,7 @@ public:
         StoreInterface,           /* storeObject */
 
         StoreSignal,              /* storeSignal */
+        StoreScript,              /* storeScript */
 
         //
         // Unresolved single assignment
@@ -165,7 +166,7 @@ public:
         struct {
             int bindingsSize;
             int parserStatusSize;
-            int idSize;
+            int contextCache;
         } init;
         struct {
             int type;
@@ -175,8 +176,8 @@ public:
         } create;
         struct {
             int data;
-            int slotData;
             int aliasData;
+            int propertyCache;
         } storeMeta;
         struct {
             int value;
@@ -237,6 +238,11 @@ public:
             int propertyIndex;
             int value;
         } storeString;
+        struct {
+            int value;
+            int fileName;
+            int lineNumber;
+        } storeScript;
         struct {
             int propertyIndex;
             int value;

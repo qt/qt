@@ -67,8 +67,8 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
-    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellSizeChanged)
-    Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellSizeChanged)
+    Q_PROPERTY(int cellWidth READ cellWidth WRITE setCellWidth NOTIFY cellWidthChanged)
+    Q_PROPERTY(int cellHeight READ cellHeight WRITE setCellHeight NOTIFY cellHeightChanged)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -121,7 +121,8 @@ public Q_SLOTS:
 Q_SIGNALS:
     void countChanged();
     void currentIndexChanged();
-    void cellSizeChanged();
+    void cellWidthChanged();
+    void cellHeightChanged();
 
 protected:
     virtual void viewportMoved();

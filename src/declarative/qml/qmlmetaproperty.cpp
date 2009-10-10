@@ -58,56 +58,6 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-QmlMetaObjectCache::QmlMetaObjectCache()
-: propertyCache(0)
-{
-}
-
-void QmlMetaObjectCache::init(const QMetaObject *metaObject)
-{
-    if (propertyCache || !metaObject)
-        return;
-
-    int propCount = metaObject->propertyCount();
-
-    propertyCache = new Data[propCount];
-    for (int ii = 0; ii < propCount; ++ii) {
-        QMetaProperty p = metaObject->property(ii);
-        propertyCache[ii].propType = p.userType();
-        propertyCache[ii].coreIndex = ii;
-        propertyCache[ii].name = QLatin1String(p.name());
-
-        propertyNameCache.insert(propertyCache[ii].name, ii);
-    }
-}
-
-QmlMetaObjectCache::~QmlMetaObjectCache()
-{
-    delete [] propertyCache;
-}
-
-QmlMetaObjectCache::Data *
-QmlMetaObjectCache::property(int index, const QMetaObject *metaObject)
-{
-    init(metaObject);
-
-    return propertyCache + index;
-}
-
-QmlMetaObjectCache::Data *
-QmlMetaObjectCache::property(const QString &name, const QMetaObject *metaObject)
-{
-    init(metaObject);
-
-    QHash<QString, int>::ConstIterator iter = propertyNameCache.find(name);
-
-    if (iter != propertyNameCache.end()) {
-        return propertyCache + *iter;
-    } else {
-        return 0;
-    }
-}
-
 /*!
     \class QmlMetaProperty
     \brief The QmlMetaProperty class abstracts accessing QML properties.
@@ -122,9 +72,7 @@ QmlMetaProperty::QmlMetaProperty()
     d->q = this;
 }
 
-/*!
-  The destructor deletes its heap data.
- */
+/*!  \internal */
 QmlMetaProperty::~QmlMetaProperty()
 {
     delete d; d = 0;
@@ -164,11 +112,9 @@ void QmlMetaPropertyPrivate::initDefault(QObject *obj)
 
     object = obj;
     QMetaProperty p = QmlMetaType::defaultProperty(obj);
-    name = QLatin1String(p.name());
-    propType = p.userType();;
-    coreIdx = p.propertyIndex();
-    if (!name.isEmpty()) 
-        type = QmlMetaProperty::Property | QmlMetaProperty::Default;
+    core.load(p);
+    if (core.isValid())
+        isDefaultProperty = true;
 }
 
 /*!
@@ -179,15 +125,12 @@ void QmlMetaPropertyPrivate::initDefault(QObject *obj)
 QmlMetaProperty::QmlMetaProperty(QObject *obj, int idx, QmlContext *ctxt)
 : d(new QmlMetaPropertyPrivate)
 {
+    Q_ASSERT(obj);
+
     d->q = this;
     d->context = ctxt;
     d->object = obj;
-    d->type = Property;
-    QMetaProperty p = obj->metaObject()->property(idx);
-    d->propType = p.userType();
-    d->coreIdx = idx;
-    if (p.name() != 0)
-        d->name = QLatin1String(p.name());
+    d->core.load(obj->metaObject()->property(idx));
 }
 
 /*!
@@ -218,7 +161,6 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
     if (context && context->engine())
         enginePrivate = QmlEnginePrivate::get(context->engine());
 
-    this->name = name;
     object = obj;
 
     if (name.isEmpty() || !obj)
@@ -235,8 +177,6 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
             enginePrivate->resolveType(typeData->imports, name.toLatin1(), &t, 0, 0, 0, 0);
             if (t && t->attachedPropertiesFunction()) {
                 attachedFunc = t->index();
-                if (attachedFunc != -1)
-                    type  = QmlMetaProperty::Property | QmlMetaProperty::Attached;
             }
             typeData->release();
         }
@@ -250,30 +190,31 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
         QString signalName = name.mid(2);
         signalName[0] = signalName.at(0).toLower();
 
-        findSignalInt(obj, signalName);
-        if (signal.signature() != 0) {
-            type = QmlMetaProperty::SignalProperty;
+        QMetaMethod method = findSignal(obj, signalName);
+        if (method.signature()) {
+            core.load(method);
             return;
         }
     } 
 
     // Property
-    QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
+    QmlPropertyCache *cache = 0;
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);
+    if (ddata)
+        cache = ddata->propertyCache;
+    if (!cache)
+        cache = enginePrivate?enginePrivate->cache(obj):0;
+
     if (cache) {
-        QmlMetaObjectCache::Data *data = 
-            cache->property(name, obj->metaObject());
-        if (data) {
-            type = QmlMetaProperty::Property;
-            propType = data->propType;
-            coreIdx = data->coreIndex;
-        }
+        QmlPropertyCache::Data *data = cache->property(name);
+
+        if (data && !(data->flags & QmlPropertyCache::Data::IsFunction)) 
+            core = *data;
+
     } else {
-        // Can't cache
+        // No cache available
         QMetaProperty p = QmlMetaType::property(obj, name.toUtf8().constData());
-        propType = p.userType();
-        coreIdx = p.propertyIndex();
-        if (p.name())
-            type = QmlMetaProperty::Property;
+        core.load(p);
     }
 }
 
@@ -323,33 +264,31 @@ QmlMetaProperty::PropertyCategory QmlMetaProperty::propertyCategory() const
 QmlMetaProperty::PropertyCategory 
 QmlMetaPropertyPrivate::propertyCategory() const
 {
-    if (category == QmlMetaProperty::Unknown) {
+    uint type = q->type();
+
+    if (type & QmlMetaProperty::ValueTypeProperty) {
+        return QmlMetaProperty::Normal;
+    } else if (type & QmlMetaProperty::Attached) {
+        return QmlMetaProperty::Object;
+    } else if (type & QmlMetaProperty::Property) {
         int type = propertyType();
-        if (type == QmlMetaProperty::Invalid)
-            category = QmlMetaProperty::InvalidProperty;
-        else if (type < QVariant::UserType)
-            category = QmlMetaProperty::Normal;
+        if (type == QVariant::Invalid)
+            return QmlMetaProperty::InvalidProperty;
+        else if ((uint)type < QVariant::UserType)
+            return QmlMetaProperty::Normal;
         else if (type == qMetaTypeId<QmlBinding *>())
-            category = QmlMetaProperty::Bindable;
-        else {
-            QmlMetaType::TypeCategory tc = QmlMetaType::typeCategory(type);
-            switch(tc) {
-            case QmlMetaType::Object:
-                category = QmlMetaProperty::Object;
-                break;
-            case QmlMetaType::QmlList:
-                category = QmlMetaProperty::QmlList;
-                break;
-            case QmlMetaType::List:
-                category = QmlMetaProperty::List;
-                break;
-            case QmlMetaType::Unknown:
-                category = QmlMetaProperty::Normal;
-                break;
-            }
-        }
+            return QmlMetaProperty::Bindable;
+        else if (core.flags & QmlPropertyCache::Data::IsQObjectDerived)
+            return QmlMetaProperty::Object;
+        else if (core.flags & QmlPropertyCache::Data::IsQmlList)
+            return QmlMetaProperty::QmlList;
+        else if (core.flags & QmlPropertyCache::Data::IsQList)
+            return QmlMetaProperty::List;
+        else 
+            return QmlMetaProperty::Normal;
+    } else {
+        return QmlMetaProperty::InvalidProperty;
     }
-    return category;
 }
 
 /*!
@@ -358,8 +297,21 @@ QmlMetaPropertyPrivate::propertyCategory() const
 */
 const char *QmlMetaProperty::propertyTypeName() const
 {
-    if (!d->name.isEmpty() && d->object) {
-        return d->object->metaObject()->property(d->coreIdx).typeName();
+    if (type() & ValueTypeProperty) {
+
+        QmlEnginePrivate *ep = d->context?QmlEnginePrivate::get(d->context->engine()):0;
+        QmlValueType *valueType = 0;
+        if (ep) valueType = ep->valueTypes[d->core.propType];
+        else valueType = QmlValueTypeFactory::valueType(d->core.propType);
+        Q_ASSERT(valueType);
+
+        const char *rv = valueType->metaObject()->property(d->valueTypeCoreIdx).typeName();
+
+        if (!ep) delete valueType;
+
+        return rv;
+    } else if (d->object && type() & Property && d->core.isValid()) {
+        return d->object->metaObject()->property(d->core.coreIndex).typeName();
     } else {
         return 0;
     }
@@ -371,10 +323,13 @@ const char *QmlMetaProperty::propertyTypeName() const
 */
 bool QmlMetaProperty::operator==(const QmlMetaProperty &other) const
 {
-    return d->name == other.d->name &&
-           d->signal.signature() == other.d->signal.signature() &&
-           d->type == other.d->type &&
-           d->object == other.d->object;
+    // category is intentially omitted here as it is generated 
+    // from the other members
+    return d->object == other.d->object &&
+           d->core == other.d->core &&
+           d->valueTypeCoreIdx == other.d->valueTypeCoreIdx &&
+           d->valueTypePropType == other.d->valueTypePropType &&
+           d->attachedFunc == other.d->attachedFunc;
 }
 
 /*!
@@ -388,18 +343,19 @@ int QmlMetaProperty::propertyType() const
 
 int QmlMetaPropertyPrivate::propertyType() const
 {
-    int rv = QVariant::Invalid;
-
-    if (!name.isEmpty()) {
-        if (propType == (int)QVariant::LastType)
-            rv = qMetaTypeId<QVariant>();
+    uint type = q->type();
+    if (type & QmlMetaProperty::ValueTypeProperty) {
+        return valueTypePropType;
+    } else if (type & QmlMetaProperty::Attached) {
+        return qMetaTypeId<QObject *>();
+    } else if (type & QmlMetaProperty::Property) {
+        if (core.propType == (int)QVariant::LastType)
+            return qMetaTypeId<QVariant>();
         else
-            rv = propType;
-    } else if (attachedFunc) {
-        rv = qMetaTypeId<QObject *>();
-    } 
-
-    return rv;
+            return core.propType;
+    } else {
+        return QVariant::Invalid;
+    }
 }
 
 /*!
@@ -407,7 +363,16 @@ int QmlMetaPropertyPrivate::propertyType() const
 */
 QmlMetaProperty::Type QmlMetaProperty::type() const
 {
-    return (Type)d->type;
+    if (d->core.flags & QmlPropertyCache::Data::IsFunction)
+        return SignalProperty;
+    else if (d->attachedFunc != -1)
+        return Attached;
+    else if (d->valueTypeCoreIdx != -1)
+        return (Type)(Property | ValueTypeProperty);
+    else if (d->core.isValid())
+        return (Type)(Property | ((d->isDefaultProperty)?Default:0));
+    else
+        return Invalid;
 }
 
 /*!
@@ -439,17 +404,16 @@ QObject *QmlMetaProperty::object() const
 */
 QmlMetaProperty &QmlMetaProperty::operator=(const QmlMetaProperty &other)
 {
-    d->name = other.d->name;
-    d->signal = other.d->signal;
     d->context = other.d->context;
-    d->coreIdx = other.d->coreIdx;
-    d->valueTypeIdx = other.d->valueTypeIdx;
-    d->valueTypeId = other.d->valueTypeId;
-    d->type = other.d->type;
-    d->attachedFunc = other.d->attachedFunc;
     d->object = other.d->object;
-    d->propType = other.d->propType;
-    d->category = other.d->category;
+
+    d->isDefaultProperty = other.d->isDefaultProperty;
+    d->core = other.d->core;
+
+    d->valueTypeCoreIdx = other.d->valueTypeCoreIdx;
+    d->valueTypePropType = other.d->valueTypePropType;
+
+    d->attachedFunc = other.d->attachedFunc;
     return *this;
 }
 
@@ -458,12 +422,14 @@ QmlMetaProperty &QmlMetaProperty::operator=(const QmlMetaProperty &other)
 */
 bool QmlMetaProperty::isWritable() const
 {
-    if (propertyCategory() == List || propertyCategory() == QmlList)
+    QmlMetaProperty::PropertyCategory category = propertyCategory();
+
+    if (category == List || category == QmlList)
         return true;
     else if (type() & SignalProperty)
         return true;
-    else if (!d->name.isEmpty() && d->object)
-        return d->object->metaObject()->property(d->coreIdx).isWritable();
+    else if (d->core.isValid() && d->object)
+        return d->object->metaObject()->property(d->core.coreIndex).isWritable();
     else
         return false;
 }
@@ -473,8 +439,8 @@ bool QmlMetaProperty::isWritable() const
 */
 bool QmlMetaProperty::isDesignable() const
 {
-    if (!d->name.isEmpty() && d->object)
-        return d->object->metaObject()->property(d->coreIdx).isDesignable();
+    if (type() & Property && d->core.isValid() && d->object)
+        return d->object->metaObject()->property(d->core.coreIndex).isDesignable();
     else
         return false;
 }
@@ -493,6 +459,7 @@ bool QmlMetaProperty::isValid() const
 */
 QStringList QmlMetaProperty::properties(QObject *obj)
 {
+    // ### What is this used for?
     if (!obj)
         return QStringList();
 
@@ -511,7 +478,23 @@ QStringList QmlMetaProperty::properties(QObject *obj)
 */
 QString QmlMetaProperty::name() const
 {
-    return d->name;
+    if (type() & ValueTypeProperty) {
+        QString rv = d->core.name + QLatin1String(".");
+
+        QmlEnginePrivate *ep = d->context?QmlEnginePrivate::get(d->context->engine()):0;
+        QmlValueType *valueType = 0;
+        if (ep) valueType = ep->valueTypes[d->core.propType];
+        else valueType = QmlValueTypeFactory::valueType(d->core.propType);
+        Q_ASSERT(valueType);
+
+        rv += QLatin1String(valueType->metaObject()->property(d->valueTypeCoreIdx).name());
+
+        if (!ep) delete valueType;
+
+        return rv;
+    } else {
+        return d->core.name;
+    }
 }
 
 /*!
@@ -520,11 +503,24 @@ QString QmlMetaProperty::name() const
  */
 QMetaProperty QmlMetaProperty::property() const
 {
-    if (d->object)
-        return d->object->metaObject()->property(d->coreIdx);
+    if (type() & Property && d->core.isValid() && d->object)
+        return d->object->metaObject()->property(d->core.coreIndex);
     else
         return QMetaProperty();
 }
+
+/*!
+    Return the QMetaMethod for this property if it is a SignalProperty, 
+    otherwise returns an invalid QMetaMethod.
+*/
+QMetaMethod QmlMetaProperty::method() const
+{
+    if (type() & SignalProperty && d->object)
+        return d->object->metaObject()->method(d->core.coreIndex);
+    else
+        return QMetaMethod();
+}
+
 
 /*!
     Returns the binding associated with this property, or 0 if no binding 
@@ -539,13 +535,13 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
     if (!data) 
         return 0;
 
-    if (!data->hasBindingBit(d->coreIdx))
+    if (!data->hasBindingBit(d->core.coreIndex))
         return 0;
 
     QmlAbstractBinding *binding = data->bindings;
     while (binding) {
         // ### This wont work for value types
-        if (binding->propertyIndex() == d->coreIdx)
+        if (binding->propertyIndex() == d->core.coreIndex)
             return binding; 
         binding = binding->m_nextBinding;
     }
@@ -568,14 +564,20 @@ QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding) const
     if (!isProperty() || (type() & Attached) || !d->object)
         return 0;
 
-    QmlDeclarativeData *data = 
-        QmlDeclarativeData::get(d->object, 0 != newBinding);
+    return d->setBinding(d->object, d->core, newBinding);
+}
 
-    if (data && data->hasBindingBit(d->coreIdx)) {
+QmlAbstractBinding *
+QmlMetaPropertyPrivate::setBinding(QObject *object, const QmlPropertyCache::Data &core, 
+                                   QmlAbstractBinding *newBinding)
+{
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object, 0 != newBinding);
+
+    if (data && data->hasBindingBit(core.coreIndex)) {
         QmlAbstractBinding *binding = data->bindings;
         while (binding) {
             // ### This wont work for value types
-            if (binding->propertyIndex() == d->coreIdx) {
+            if (binding->propertyIndex() == core.coreIndex) {
                 binding->setEnabled(false);
 
                 if (newBinding) 
@@ -638,15 +640,14 @@ QmlExpression *QmlMetaProperty::setSignalExpression(QmlExpression *expr) const
     }
 
     if (expr) {
-        QmlBoundSignal *signal = new QmlBoundSignal(d->object, d->signal, 
-                                                    d->object);
+        QmlBoundSignal *signal = new QmlBoundSignal(d->object, method(), d->object);
         return signal->setExpression(expr);
     } else {
         return 0;
     }
 }
 
-void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
+QMetaMethod QmlMetaPropertyPrivate::findSignal(QObject *obj, const QString &name)
 {
     const QMetaObject *mo = obj->metaObject();
 
@@ -657,12 +658,10 @@ void QmlMetaPropertyPrivate::findSignalInt(QObject *obj, const QString &name)
         int idx = methodName.indexOf(QLatin1Char('('));
         methodName = methodName.left(idx);
 
-        if (methodName == name) {
-            signal = method;
-            coreIdx = ii;
-            return;
-        }
+        if (methodName == name) 
+            return method;
     }
+    return QMetaMethod();
 }
 
 QObject *QmlMetaPropertyPrivate::attachedObject() const
@@ -687,96 +686,94 @@ QVariant QmlMetaProperty::read() const
 
         for (int ii = 0; ii < children.count(); ++ii) {
             QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
-            if (sig && sig->index() == d->coreIdx) 
+            if (sig && sig->index() == d->core.coreIndex) 
                 return sig->expression()->expression();
         }
+
     } else if (type() & Property) {
-        if (type() & Attached) {
-            return QVariant::fromValue(d->attachedObject());
-        } else if(type() & ValueTypeProperty) {
-            QmlEnginePrivate *ep = d->context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(d->context->engine())):0;
-            QmlValueType *valueType = 0;
-            if (ep)
-                valueType = ep->valueTypes[d->valueTypeId];
-            else
-                valueType = QmlValueTypeFactory::valueType(d->valueTypeId);
-            Q_ASSERT(valueType);
 
-            valueType->read(object(), d->coreIdx);
-            QVariant rv =
-                valueType->metaObject()->property(d->valueTypeIdx).read(valueType);
-            if (!ep)
-                delete valueType;
-            return rv;
+        return d->readValueProperty();
 
-        } else {
-            return d->object->metaObject()->property(d->coreIdx).read(object());
-        }
     }
     return QVariant();
 }
 
-void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
+QVariant QmlMetaPropertyPrivate::readValueProperty()
 {
-    QString expr = value.toString();
-    const QObjectList &children = object->children();
+    uint type = q->type();
+    if (type & QmlMetaProperty::Attached) {
 
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
-        if (sig && sig->index() == coreIdx) {
-            if (expr.isEmpty()) {
-                sig->disconnect();
-                sig->deleteLater();
-            } else {
-                sig->expression()->setExpression(expr);
-            }
-            return;
-        }
-    }
+        return QVariant::fromValue(attachedObject());
 
-    if (!expr.isEmpty()) {
-        // XXX scope
-        (void *)new QmlBoundSignal(qmlContext(object), expr, object, signal, object);
+    } else if(type & QmlMetaProperty::ValueTypeProperty) {
+
+        QmlEnginePrivate *ep = context?QmlEnginePrivate::get(context->engine()):0;
+        QmlValueType *valueType = 0;
+        if (ep) valueType = ep->valueTypes[core.propType];
+        else valueType = QmlValueTypeFactory::valueType(core.propType);
+        Q_ASSERT(valueType);
+
+        valueType->read(object, core.coreIndex);
+
+        QVariant rv =
+            valueType->metaObject()->property(valueTypeCoreIdx).read(valueType);
+
+        if (!ep) delete valueType;
+        return rv;
+
+    } else {
+
+        return object->metaObject()->property(core.coreIndex).read(object.data());
+
     }
 }
 
 void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
                                                 QmlMetaProperty::WriteSource source)
 {
-    QObject *object = this->object;
-    int coreIdx = this->coreIdx;
-    
-    QmlValueType *writeBack = 0;
-    QObject *writeBackObj = 0;
-    int writeBackIdx = -1;
-    bool deleteWriteBack = false;
-
     // Remove any existing bindings on this property
     if (source != QmlMetaProperty::Binding) 
         delete q->setBinding(0);
 
+    uint type = q->type();
     if (type & QmlMetaProperty::ValueTypeProperty) {
-        QmlEnginePrivate *ep = context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(context->engine())):0;
+        QmlEnginePrivate *ep = 
+            context?static_cast<QmlEnginePrivate *>(QObjectPrivate::get(context->engine())):0;
 
+        QmlValueType *writeBack = 0;
         if (ep) {
-            writeBack = ep->valueTypes[valueTypeId];
+            writeBack = ep->valueTypes[core.propType];
         } else {
-            writeBack = QmlValueTypeFactory::valueType(valueTypeId);
-            deleteWriteBack = true;
+            writeBack = QmlValueTypeFactory::valueType(core.propType);
         }
 
-        writeBackObj = this->object;
-        writeBackIdx = this->coreIdx;
-        writeBack->read(writeBackObj, writeBackIdx);
-        object = writeBack;
-        coreIdx = valueTypeIdx;
+        writeBack->read(object, core.coreIndex);
+
+        QmlPropertyCache::Data data = core;
+        data.coreIndex = valueTypeCoreIdx;
+        data.propType = valueTypePropType;
+        write(writeBack, data, value, context);
+
+        writeBack->write(object, core.coreIndex);
+        if (!ep) delete writeBack;
+
+    } else {
+
+        write(object, core, value, context);
+
     }
+}
 
-    QMetaProperty prop = object->metaObject()->property(coreIdx);
+void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data &property, 
+                                   const QVariant &value, QmlContext *context)
+{
+    int coreIdx = property.coreIndex;
 
-    if (prop.isEnumType()) {
+    if (property.flags & QmlPropertyCache::Data::IsEnumType) {
+        QMetaProperty prop = object->metaObject()->property(property.coreIndex);
         QVariant v = value;
-        if (value.type() == QVariant::Double) {   //enum values come through the script engine as doubles
+        // Enum values come through the script engine as doubles
+        if (value.type() == QVariant::Double) { 
             double integral;
             double fractional = modf(value.toDouble(), &integral);
             if (qFuzzyCompare(fractional, (double)0.0))
@@ -784,19 +781,36 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
         }
         prop.write(object, v);
 
-        if (writeBack) {
-            writeBack->write(writeBackObj, writeBackIdx);
-            if (deleteWriteBack) delete writeBack;
-        }
         return;
     }
 
-    int t = propertyType();
+    int t = property.propType;
     int vt = value.userType();
-    int category = propertyCategory();
 
-    if (vt == t
-        && t != QVariant::Url) { // always resolve relative urls
+    if (t == QVariant::Url) {
+
+        QUrl u;
+        bool found = false;
+        if (vt == QVariant::Url) {
+            u = value.toUrl();
+            found = true;
+        } else if (vt == QVariant::ByteArray) {
+            u = QUrl(QLatin1String(value.toByteArray()));
+            found = true;
+        } else if (vt == QVariant::String) {
+            u = QUrl(value.toString());
+            found = true;
+        }
+
+        if (found) {
+            if (context && u.isRelative() && !u.isEmpty())
+                u = context->baseUrl().resolved(u);
+            void *a[1];
+            a[0] = &u;
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
+        }
+
+    } else if (vt == t) {
 
         void *a[1];
         a[0] = (void *)value.constData();
@@ -804,9 +818,11 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
 
     } else if (qMetaTypeId<QVariant>() == t) {
 
-        prop.write(object, value);
+        void *a[1];
+        a[0] = (void *)&value;
+        QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
 
-    } else if (category == QmlMetaProperty::Object) {
+    } else if (property.flags & QmlPropertyCache::Data::IsQObjectDerived) {
 
         QObject *o = QmlMetaType::toQObject(value);
 
@@ -833,9 +849,10 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
 
         }
 
-    } else if (category == QmlMetaProperty::List) {
+    } else if (property.flags & QmlPropertyCache::Data::IsQList) {
 
         int listType = QmlMetaType::listType(t);
+        QMetaProperty prop = object->metaObject()->property(property.coreIndex);
 
         if (value.userType() == qMetaTypeId<QList<QObject *> >()) {
             const QList<QObject *> &list =
@@ -853,9 +870,11 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
             QmlMetaType::clear(listVar);
             QmlMetaType::append(listVar, value);
         }
-    } else if (category == QmlMetaProperty::QmlList) {
+
+    } else if (property.flags & QmlPropertyCache::Data::IsQmlList) {
 
         // XXX - optimize!
+        QMetaProperty prop = object->metaObject()->property(property.coreIndex);
         QVariant list = prop.read(object);
         QmlPrivate::ListInterface *li =
             *(QmlPrivate::ListInterface **)list.constData();
@@ -885,118 +904,25 @@ void QmlMetaPropertyPrivate::writeValueProperty(const QVariant &value,
             void *d = (void *)&obj;
             li->append(d);
         }
-    } else if (category == QmlMetaProperty::Normal) {
+    } else {
+        Q_ASSERT(vt != t);
 
-        bool found = false;
-        switch(t) {
-        case QVariant::Double:
-            {
-                double d;
-                if (vt == QVariant::Int) {
-                    d = value.toInt();
-                    found = true;
-                } else if (vt == QVariant::UInt) {
-                    d = value.toUInt();
-                    found = true;
-                } 
-
-                if (found) {
+        QVariant v = value;
+        if (v.convert((QVariant::Type)t)) {
+            void *a[1];
+            a[0] = (void *)v.constData();
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
+        } else if ((uint)t >= QVariant::UserType && vt == QVariant::String) {
+            QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(t);
+            if (con) {
+                QVariant v = con(value.toString());
+                if (v.userType() == t) {
                     void *a[1];
-                    a[0] = &d;
-                    QMetaObject::metacall(object, 
-                                          QMetaObject::WriteProperty,
-                                          coreIdx, a);
+                    a[0] = (void *)v.constData();
+                    QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
                 }
             }
-            break;
-
-        case QVariant::Int:
-            {
-                int i;
-                if (vt == QVariant::Double) {
-                    i = (int)value.toDouble();
-                    found = true;
-                } else if (vt == QVariant::UInt) {
-                    i = (int)value.toUInt();
-                    found = true;
-                } 
-
-                if (found) {
-                    void *a[1];
-                    a[0] = &i;
-                    QMetaObject::metacall(object, 
-                                          QMetaObject::WriteProperty,
-                                          coreIdx, a);
-                }
-            }
-            break;
-
-        case QVariant::String:
-            {
-                QString s;
-                if (vt == QVariant::ByteArray) {
-                    s = QLatin1String(value.toByteArray());
-                    found = true;
-                } 
-
-                if (found) {
-                    void *a[1];
-                    a[0] = &s;
-                    QMetaObject::metacall(object, 
-                                          QMetaObject::WriteProperty,
-                                          coreIdx, a);
-                }
-            }
-            break;
-
-        case QVariant::Url:
-            {
-                QUrl u;
-                if (vt == QVariant::Url) {
-                    u = value.toUrl();
-                    found = true;
-                } else if (vt == QVariant::ByteArray) {
-                    u = QUrl(QLatin1String(value.toByteArray()));
-                    found = true;
-                } else if (vt == QVariant::String) {
-                    u = QUrl(value.toString());
-                    found = true;
-                }
-
-                if (found) {
-                    if (context && u.isRelative() && !u.isEmpty())
-                        u = context->baseUrl().resolved(u);
-                    void *a[1];
-                    a[0] = &u;
-                    QMetaObject::metacall(object, 
-                                          QMetaObject::WriteProperty,
-                                          coreIdx, a);
-                }
-
-            }
-            break;
-
-
-        default:
-            {
-                if ((uint)t >= QVariant::UserType && vt == QVariant::String) {
-                    QmlMetaType::StringConverter con = QmlMetaType::customStringConverter(t);
-                    if (con) {
-                        QVariant v = con(value.toString());
-                        prop.write(object, v);
-                        found = true;
-                    }
-                }
-            }
-            break;
         }
-        if (!found)
-            prop.write(object, value);
-    }
-
-    if (writeBack) {
-        writeBack->write(writeBackObj, writeBackIdx);
-        if (deleteWriteBack) delete writeBack;
     }
 }
 
@@ -1013,11 +939,7 @@ void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
     if (!d->object)
         return;
 
-    if (type() & SignalProperty) {
-
-        d->writeSignalProperty(value);
-
-    } else if (d->coreIdx != -1) {
+    if (type() & Property && d->core.isValid()) {
 
         d->writeValueProperty(value, source);
 
@@ -1030,7 +952,7 @@ void QmlMetaProperty::write(const QVariant &value, WriteSource source) const
 bool QmlMetaProperty::hasChangedNotifier() const
 {
     if (type() & Property && !(type() & Attached) && d->object) {
-        return d->object->metaObject()->property(d->coreIdx).hasNotifySignal();
+        return d->object->metaObject()->property(d->core.coreIndex).hasNotifySignal();
     }
     return false;
 }
@@ -1061,7 +983,7 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, int method) const
     if (!(type() & Property) || (type() & Attached) || !d->object)
         return false;
 
-    QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);
+    QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
     if (prop.hasNotifySignal()) {
         return QMetaObject::connect(d->object, prop.notifySignalIndex(), dest, method, Qt::DirectConnection);
     } else {
@@ -1082,7 +1004,7 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
     if (!(type() & Property) || (type() & Attached) || !d->object)
         return false;
 
-    QMetaProperty prop = d->object->metaObject()->property(d->coreIdx);
+    QMetaProperty prop = d->object->metaObject()->property(d->core.coreIndex);
     if (prop.hasNotifySignal()) {
         QByteArray signal(QByteArray("2") + prop.notifySignal().signature());
         return QObject::connect(d->object, signal.constData(), dest, slot);
@@ -1096,7 +1018,7 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 */
 int QmlMetaProperty::coreIndex() const
 {
-    return d->coreIdx;
+    return d->core.coreIndex;
 }
 
 Q_GLOBAL_STATIC(QmlValueTypeFactory, qmlValueTypes);
@@ -1111,17 +1033,17 @@ quint32 QmlMetaProperty::save() const
     if (type() & Attached) {
         rv = d->attachedFunc;
     } else if (type() != Invalid) {
-        rv = d->coreIdx;
+        rv = d->core.coreIndex;
     }
 
     Q_ASSERT(rv <= 0x7FF);
     Q_ASSERT(type() <= 0x3F);
-    Q_ASSERT(d->valueTypeIdx <= 0x7F);
+    Q_ASSERT(d->valueTypeCoreIdx <= 0x7F);
 
     rv |= (type() << 18);
 
     if (type() & ValueTypeProperty)
-        rv |= (d->valueTypeIdx << 11);
+        rv |= (d->valueTypeCoreIdx << 11);
 
     return rv;
 }
@@ -1162,12 +1084,12 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
     d->context = ctxt;
 
     id &= 0xFFFFFF;
-    d->type = id >> 18;
+    uint type = id >> 18;
     id &= 0xFFFF;
 
-    if (d->type & Attached) {
+    if (type & Attached) {
         d->attachedFunc = id;
-    } else if (d->type & ValueTypeProperty) {
+    } else if (type & ValueTypeProperty) {
         int coreIdx = id & 0x7FF;
         int valueTypeIdx = id >> 11;
 
@@ -1178,44 +1100,28 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
 
         QMetaProperty p2(valueType->metaObject()->property(valueTypeIdx));
 
-        d->name = QLatin1String(p2.name());
-        d->propType = p2.userType();
-        d->coreIdx = coreIdx;
-        d->valueTypeIdx = valueTypeIdx;
-        d->valueTypeId = p.type();
+        d->core.load(p);
+        d->valueTypeCoreIdx = valueTypeIdx;
+        d->valueTypePropType = p2.userType();
+    } else if (type & Property) {
 
-    } else if (d->type & Property) {
-
-        QmlMetaObjectCache *cache = QmlEnginePrivate::cache(enginePrivate, obj);
-
-        d->coreIdx = id;
+        QmlPropertyCache *cache = enginePrivate?enginePrivate->cache(obj):0;
 
         if (cache) {
-            QmlMetaObjectCache::Data *data = 
-                cache->property(id, obj->metaObject());
-            d->propType = data->propType;
-            d->name = data->name;
+            QmlPropertyCache::Data *data = cache->property(id);
+            if (data) d->core = *data;
         } else {
             QMetaProperty p(obj->metaObject()->property(id));
-            d->name = QLatin1String(p.name());
-            d->propType = p.userType();
+            d->core.load(p);
         }
 
-    } else if (d->type & SignalProperty) {
-        d->signal = obj->metaObject()->method(id);
-        d->coreIdx = id;
+    } else if (type & SignalProperty) {
+
+        QMetaMethod method = obj->metaObject()->method(id);
+        d->core.load(method);
     } else {
         *this = QmlMetaProperty();
     }
-}
-
-/*!
-    Return the QMetaMethod for this property if it is a SignalProperty, 
-    otherwise returns an invalid QMetaMethod.
-*/
-QMetaMethod QmlMetaProperty::method() const
-{
-    return d->signal;
 }
 
 /*!
@@ -1245,17 +1151,11 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
             int idx = typeObject->metaObject()->indexOfProperty(path.last().toUtf8().constData());
             if (idx == -1)
                 return QmlMetaProperty();
+            QMetaProperty vtProp = typeObject->metaObject()->property(idx);
 
-            QmlMetaProperty p;
-            p.d->name = pathName + QLatin1String(".") + path.last();
-            p.d->context = 0;
-            p.d->coreIdx = prop.coreIndex();
-            p.d->valueTypeIdx = idx;
-            p.d->valueTypeId = prop.propertyType();
-            p.d->type = QmlMetaProperty::ValueTypeProperty | 
-                        QmlMetaProperty::Property;
-            p.d->object = obj;
-            p.d->propType = typeObject->metaObject()->property(idx).userType();
+            QmlMetaProperty p = prop;
+            p.d->valueTypeCoreIdx = idx;
+            p.d->valueTypePropType = vtProp.userType();
             return p;
         }
 

@@ -45,6 +45,7 @@ private slots:
     void idProperty();
     void assignSignal();
     void dynamicProperties();
+    void dynamicObjectProperties();
     void dynamicSignalsAndSlots();
     void simpleBindings();
     void autoComponentCreation();
@@ -404,6 +405,19 @@ void tst_qmllanguage::dynamicProperties()
     QCOMPARE(object->property("variantProperty"), QVariant(12));
 }
 
+// Tests the creation and assignment of dynamic object properties
+// ### Not complete
+void tst_qmllanguage::dynamicObjectProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicObjectProperties.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QVERIFY(object->property("objectProperty") == qVariantFromValue((QObject*)0));
+    QVERIFY(object->property("objectProperty2") != qVariantFromValue((QObject*)0));
+}
+
 // Tests the declaration of dynamic signals and slots
 void tst_qmllanguage::dynamicSignalsAndSlots()
 {
@@ -598,6 +612,15 @@ void tst_qmllanguage::aliasProperties()
         delete object;
     }
 
+    // Enum aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.4.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("enumAlias").toInt(), 1);
+    }
 }
 
 class TestType : public QObject {

@@ -33,7 +33,7 @@ private:
     template <class T> void removed();
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id, int index=0);
+    T *findItem(QFxItem *parent, const QString &id, int index=-1);
 };
 
 class TestModel : public QListModelInterface
@@ -188,7 +188,7 @@ void tst_QFxListView::items()
     QFxItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
-    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
         QFxText *name = findItem<QFxText>(viewport, "textName", i);
@@ -262,7 +262,7 @@ void tst_QFxListView::inserted()
     // let transitions settle.
     QTest::qWait(1000);
 
-    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     QFxText *name = findItem<QFxText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -282,7 +282,7 @@ void tst_QFxListView::inserted()
     // let transitions settle.
     QTest::qWait(1000);
 
-    QCOMPARE(viewport->childItems().count(), model.count()); // assumes all are visible
+    QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     name = findItem<QFxText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -338,6 +338,8 @@ void tst_QFxListView::removed()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
         QVERIFY(item->y() == i*20);
     }
 
@@ -357,6 +359,8 @@ void tst_QFxListView::removed()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
         QCOMPARE(item->y(),i*20.0 + 20.0);
     }
 
@@ -368,6 +372,8 @@ void tst_QFxListView::removed()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
         QCOMPARE(item->y(),i*20.0+20.0);
     }
 
@@ -382,6 +388,8 @@ void tst_QFxListView::removed()
     // Confirm items positioned correctly
     for (int i = 2; i < 18; ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
         QCOMPARE(item->y(),40+i*20.0);
     }
 
@@ -392,6 +400,8 @@ void tst_QFxListView::removed()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
         QCOMPARE(item->y(),40+i*20.0);
     }
 
@@ -452,7 +462,7 @@ QmlView *tst_QFxListView::createView(const QString &filename)
 }
 
 /*
-   Find an item with the specified id.  If index is supplied then the
+   Find an item with the specified objectName.  If index is supplied then the
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>

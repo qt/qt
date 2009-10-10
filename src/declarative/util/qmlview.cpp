@@ -235,6 +235,16 @@ void QmlView::setUrl(const QUrl& url)
 }
 
 /*!
+  Returns the source URL, if set.
+
+  \sa setUrl()
+ */
+QUrl QmlView::url() const
+{
+    return d->source;
+}
+
+/*!
   Sets the source to the URL from the \a filename, and sets
   the QML string to \a qml.
  */

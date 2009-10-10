@@ -1,20 +1,31 @@
 TEMPLATE = subdirs
-SUBDIRS += datetimeformatter \
-           numberformatter \
-           qbindablemap \
+SUBDIRS += anchors \
+           animations \
+           datetimeformatter \
            layouts \
            listview \
+           numberformatter \
            pathview \
+           qbindablemap \
+           qfxloader \
+           qfxpixmapcache \
            qfxtext \
            qfxtextedit \
-           simplecanvasitem \
-           repeater \
-           qmllanguage \
+           qfxtextinput \
+           qfxwebview \
+           qmldom \
            qmlecmascript \
-           qmlmetaproperty \
+           qmllanguage \
            qmllist \
            qmllistaccessor \
+           qmlmetaproperty \
+           qmltimer \
+           repeater \
+           sql \
+           states \
            visual
+
+SUBDIRS -= examples # Human-interactive
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

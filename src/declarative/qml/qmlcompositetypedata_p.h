@@ -58,6 +58,7 @@
 
 QT_BEGIN_NAMESPACE
 
+class QmlCompositeTypeResource;
 class QmlCompositeTypeData : public QmlRefCount
 {
 public:
@@ -101,6 +102,7 @@ public:
     };
 
     QList<TypeReference> types;
+    QList<QmlCompositeTypeResource *> resources;
 
     // Add or remove p as a waiter.  When the QmlCompositeTypeData becomes
     // ready, the QmlComponentPrivate::typeDataReady() method will be invoked on
@@ -120,6 +122,26 @@ private:
     QList<QmlComponentPrivate *> waiters;
     QmlComponent *component;
     QmlCompiledData *compiledComponent;
+};
+
+class QmlCompositeTypeResource : public QmlRefCount
+{
+public:
+    QmlCompositeTypeResource();
+    virtual ~QmlCompositeTypeResource();
+
+    enum Status {
+        Invalid,
+        Complete,
+        Error,
+        Waiting
+    };
+    Status status;
+
+    QList<QmlCompositeTypeData *> dependants;
+
+    QString url;
+    QByteArray data;
 };
 
 #endif // QMLCOMPOSITETYPEDATA_P_H

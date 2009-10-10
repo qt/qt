@@ -1,7 +1,7 @@
 /*!
 \page tutorial3.html
-\title Tutorial 3 - States and Transitions
 \target tutorial3
+\title Tutorial 3 - States and Transitions
 
 In this chapter, we make this example a little bit more dynamic by introducing states and transitions.
 
@@ -11,11 +11,11 @@ We want our text to move to the bottom of the screen, rotate and become red when
 
 Here is the QML code:
 
-\snippet examples/declarative/tutorials/helloworld/t3/tutorial3.qml 0
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 0
 
 \section1 Walkthrough
 
-\snippet examples/declarative/tutorials/helloworld/t3/tutorial3.qml 2
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 2
 
 First, we create a new \e down state for our text element.
 This state will be activated when the \l MouseRegion is pressed, and deactivated when it is released.
@@ -24,7 +24,7 @@ The \e down state includes a set of property changes from our implicit \e {defau
 (the items as they were initially defined in the QML).
 Specifically, we set the \c y property of the text to \c 160, the rotation to \c 180 and the \c color to red.
 
-\snippet examples/declarative/tutorials/helloworld/t3/tutorial3.qml 3
+\snippet examples/declarative/tutorials/helloworld/tutorial3.qml 3
 
 Because we don't want the text to appear at the bottom instantly but rather move smoothly,
 we add a transition between our two states.
@@ -44,4 +44,3 @@ For more details on states and transitions, see \l {states-transitions}{States a
 [Previous: \l tutorial2] [\l tutorial]
 
 */
-

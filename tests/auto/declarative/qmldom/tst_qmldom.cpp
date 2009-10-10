@@ -119,7 +119,7 @@ void tst_qmldom::loadComposite()
 void tst_qmldom::testValueSource()
 {
     QByteArray qml = "import Qt 4.6\n"
-                     "Rectangle { height: Follow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
+                     "Rectangle { height: SpringFollow { spring: 1.4; damping: .15; source: Math.min(Math.max(-130, value*2.2 - 130), 133); }}";
 
     QmlEngine freshEngine;
     QmlDomDocument document;
@@ -135,7 +135,7 @@ void tst_qmldom::testValueSource()
     QmlDomObject valueSourceObject = valueSource.object();
     QVERIFY(valueSourceObject.isValid());
 
-    QVERIFY(valueSourceObject.objectType() == "Qt/Follow");
+    QVERIFY(valueSourceObject.objectType() == "Qt/SpringFollow");
     
     const QmlDomValue springValue = valueSourceObject.property("spring").value();
     QVERIFY(!springValue.isInvalid());

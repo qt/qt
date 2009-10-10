@@ -408,12 +408,12 @@ public:
 class QFxKeyNavigationAttached : public QObject, public QFxItemKeyFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxKeyNavigationAttached);
+    Q_DECLARE_PRIVATE(QFxKeyNavigationAttached)
 
-    Q_PROPERTY(QFxItem *left READ left WRITE setLeft NOTIFY changed);
-    Q_PROPERTY(QFxItem *right READ right WRITE setRight NOTIFY changed);
-    Q_PROPERTY(QFxItem *up READ up WRITE setUp NOTIFY changed);
-    Q_PROPERTY(QFxItem *down READ down WRITE setDown NOTIFY changed);
+    Q_PROPERTY(QFxItem *left READ left WRITE setLeft NOTIFY changed)
+    Q_PROPERTY(QFxItem *right READ right WRITE setRight NOTIFY changed)
+    Q_PROPERTY(QFxItem *up READ up WRITE setUp NOTIFY changed)
+    Q_PROPERTY(QFxItem *down READ down WRITE setDown NOTIFY changed)
 public:
     QFxKeyNavigationAttached(QObject * = 0);
 
@@ -1254,12 +1254,6 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
     \endqmltext
 
     \ingroup group_coreitems
-*/
-
-/*!
-    \fn void QFxItem::activeFocusChanged()
-
-    This signal is emitted when this item gains active focus.
 */
 
 /*!
@@ -2257,16 +2251,6 @@ void QFxItem::setKeepMouseGrab(bool keep)
 {
     Q_D(QFxItem);
     d->_keepMouse = keep;
-}
-
-/*!
-  This function emits the \e activeFocusChanged signal.
-  \a flag is not used.
- */
-void QFxItem::activeFocusChanged(bool flag)
-{
-    Q_UNUSED(flag);
-    emit activeFocusChanged();
 }
 
 /*!

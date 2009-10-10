@@ -9,29 +9,29 @@ Rectangle {
     property var label: ""
     onTextChanged: { reset() }
     signal confirmed
-    resources: [
-        Script {
 
-            function edit() {
-                if (!contacts.mouseGrabbed) {
-                    fieldText.state='editing';
-                    contacts.mouseGrabbed=true;
-                }
+    Script {
+
+        function edit() {
+            if (!contacts.mouseGrabbed) {
+                fieldText.state='editing';
+                contacts.mouseGrabbed=true;
             }
-            function confirm() {
-                fieldText.text = textEdit.text;
-                fieldText.state='';
-                contacts.mouseGrabbed=false;
-                fieldText.confirmed();
-            }
-            function reset() {
-                textEdit.text = fieldText.text;
-                fieldText.state='';
-                contacts.mouseGrabbed=false;
-            }
-        
         }
-    ]
+        function confirm() {
+            fieldText.text = textEdit.text;
+            fieldText.state='';
+            contacts.mouseGrabbed=false;
+            fieldText.confirmed();
+        }
+        function reset() {
+            textEdit.text = fieldText.text;
+            fieldText.state='';
+            contacts.mouseGrabbed=false;
+        }
+    
+    }
+    
     Image {
         id: cancelIcon
         width: 22

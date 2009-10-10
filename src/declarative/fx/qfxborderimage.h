@@ -59,8 +59,8 @@ class Q_DECLARATIVE_EXPORT QFxBorderImage : public QFxImageBase
     Q_ENUMS(TileMode)
 
     Q_PROPERTY(QFxScaleGrid *border READ border CONSTANT)
-    Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY tileModeChanged)
-    Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY tileModeChanged)
+    Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY horizontalTileModeChanged)
+    Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY verticalTileModeChanged)
 
 public:
     QFxBorderImage(QFxItem *parent=0);
@@ -80,7 +80,8 @@ public:
     void setSource(const QUrl &url);
 
 Q_SIGNALS:
-    void tileModeChanged();
+    void horizontalTileModeChanged();
+    void verticalTileModeChanged();
 
 protected:
     QFxBorderImage(QFxBorderImagePrivate &dd, QFxItem *parent);

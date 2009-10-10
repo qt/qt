@@ -56,7 +56,7 @@ MainWindow::MainWindow()
     file.close();
 //! [1]
 
-    QNetworkProxyFactory::setUseSystemConfigurationEnabled(true);
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
 
 //! [2]
     view = new QWebView(this);
