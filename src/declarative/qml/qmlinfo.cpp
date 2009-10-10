@@ -88,7 +88,7 @@ QmlInfo::QmlInfo(QObject *object)
         if (ddata->outerContext) {
             location += ddata->outerContext->baseUrl().toString();
         } else {
-            location += "unknown";
+            location += QLatin1String("unknown");
         }
         location += QLatin1String(":");
         location += QString::number(ddata->lineNumber);
