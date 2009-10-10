@@ -524,8 +524,6 @@ QSize QHeaderView::sizeHint() const
     Q_D(const QHeaderView);
     if (d->cachedSizeHint.isValid())
         return d->cachedSizeHint;
-    int width = 0;
-    int height = 0;
     const int sectionCount = count();
     d->executePostedLayout();
 
