@@ -726,6 +726,13 @@ void tst_QImageReader::gifHandlerBugs()
         QVERIFY(!im1.isNull());  QVERIFY(!im2.isNull());
         QCOMPARE(im1.convertToFormat(QImage::Format_ARGB32), im2.convertToFormat(QImage::Format_ARGB32));
     }
+
+    // Check the undocumented feature.
+    {
+        QImageReader io(prefix + "endless-anim.gif");
+        QVERIFY(io.canRead());
+        QCOMPARE(io.loopCount(), -1);
+    }
 }
 
 void tst_QImageReader::animatedGif()

@@ -1214,10 +1214,12 @@ bool QImageReader::jumpToImage(int imageNumber)
 
 /*!
     For image formats that support animation, this function returns
-    the number of times the animation should loop. Otherwise, it
-    returns -1.
+    the number of times the animation should loop. In case of an
+    infinite animation or an error -1 is returned. To differentiate
+    an infinite animation from an error, canRead() should be called
+    before this function.
 
-    \sa supportsAnimation(), QImageIOHandler::loopCount()
+    \sa supportsAnimation(), QImageIOHandler::loopCount(), canRead()
 */
 int QImageReader::loopCount() const
 {
@@ -1231,9 +1233,9 @@ int QImageReader::loopCount() const
     the total number of images in the animation.
 
     Certain animation formats do not support this feature, in which
-    case 0 is returned.
+    case 0 is returned. In case of an error -1 is returned.
 
-    \sa supportsAnimation(), QImageIOHandler::imageCount()
+    \sa supportsAnimation(), QImageIOHandler::imageCount(), canRead()
 */
 int QImageReader::imageCount() const
 {
@@ -1247,7 +1249,9 @@ int QImageReader::imageCount() const
     the number of milliseconds to wait until displaying the next frame
     in the animation. Otherwise, 0 is returned.
 
-    \sa supportsAnimation(), QImageIOHandler::nextImageDelay()
+    In case of an error -1 is returned.
+
+    \sa supportsAnimation(), QImageIOHandler::nextImageDelay(), canRead()
 */
 int QImageReader::nextImageDelay() const
 {
@@ -1258,10 +1262,12 @@ int QImageReader::nextImageDelay() const
 
 /*!
     For image formats that support animation, this function returns
-    the sequence number of the current frame. Otherwise, -1 is
+    the sequence number of the current frame. Otherwise, 0 is
     returned.
 
-    \sa supportsAnimation(), QImageIOHandler::currentImageNumber()
+    In case of an error -1 is returned.
+
+    \sa supportsAnimation(), QImageIOHandler::currentImageNumber(), canRead()
 */
 int QImageReader::currentImageNumber() const
 {
