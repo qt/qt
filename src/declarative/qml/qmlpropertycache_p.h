@@ -132,7 +132,7 @@ QmlPropertyCache::Data::Data()
 {
 }
 
-bool QmlPropertyCache::Data::operator==(const QmlPropertyCache::Data::Data &other)
+bool QmlPropertyCache::Data::operator==(const QmlPropertyCache::Data &other)
 {
     return flags == other.flags &&
            propType == other.propType &&

@@ -96,8 +96,6 @@ public:
     int propertyType() const;
     QmlMetaProperty::PropertyCategory propertyCategory() const;
 
-    void writeSignalProperty(const QVariant &);
-
     QVariant readValueProperty();
     void writeValueProperty(const QVariant &, QmlMetaProperty::WriteFlags);
     static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags);

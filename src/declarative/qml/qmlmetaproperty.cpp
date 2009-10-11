@@ -698,30 +698,6 @@ QVariant QmlMetaProperty::read() const
     return QVariant();
 }
 
-void QmlMetaPropertyPrivate::writeSignalProperty(const QVariant &value)
-{
-    QString expr = value.toString();
-    const QObjectList &children = object->children();
-
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
-        if (sig && sig->index() == core.coreIndex) {
-            if (expr.isEmpty()) {
-                sig->disconnect();
-                sig->deleteLater();
-            } else {
-                sig->expression()->setExpression(expr);
-            }
-            return;
-        }
-    }
-
-    if (!expr.isEmpty()) {
-        // XXX scope
-        (void *)new QmlBoundSignal(qmlContext(object), expr, object, q->method(), object);
-    }
-}
-
 QVariant QmlMetaPropertyPrivate::readValueProperty()
 {
     uint type = q->type();
@@ -1001,11 +977,7 @@ void QmlMetaProperty::write(const QVariant &value, QmlMetaProperty::WriteFlags f
     if (!d->object)
         return;
 
-    if (type() & SignalProperty) {
-
-        d->writeSignalProperty(value);
-
-    } else if (d->core.isValid()) {
+    if (type() & Property && d->core.isValid()) {
 
         d->writeValueProperty(value, flags);
 

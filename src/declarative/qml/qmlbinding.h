@@ -93,7 +93,8 @@ class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression,
 Q_OBJECT
 public:
     QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QUrl &, int, 
+               QObject *parent);
     ~QmlBinding();
 
     void setTarget(const QmlMetaProperty &);

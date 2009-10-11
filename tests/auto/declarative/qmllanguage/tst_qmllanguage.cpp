@@ -612,6 +612,15 @@ void tst_qmllanguage::aliasProperties()
         delete object;
     }
 
+    // Enum aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.4.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("enumAlias").toInt(), 1);
+    }
 }
 
 class TestType : public QObject {

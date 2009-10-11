@@ -61,6 +61,7 @@ private slots:
     void objectToString();
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
+    void scriptErrors();
 
 private:
     QmlEngine engine;
@@ -537,20 +538,35 @@ void tst_qmlecmascript::nonExistantAttachedObject()
 
 void tst_qmlecmascript::scope()
 {
-    QmlComponent component(&engine, TEST_FILE("scope.qml"));
-    QObject *object = component.create();
-    QVERIFY(object != 0);
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
 
-    QCOMPARE(object->property("test1").toInt(), 1);
-    QCOMPARE(object->property("test2").toInt(), 2);
-    QCOMPARE(object->property("test3").toString(), QString("1Test"));
-    QCOMPARE(object->property("test4").toString(), QString("2Test"));
-    QCOMPARE(object->property("test5").toInt(), 1);
-    QCOMPARE(object->property("test6").toInt(), 1);
-    QCOMPARE(object->property("test7").toInt(), 2);
-    QCOMPARE(object->property("test8").toInt(), 2);
-    QCOMPARE(object->property("test9").toInt(), 1);
-    QCOMPARE(object->property("test10").toInt(), 3);
+        QCOMPARE(object->property("test1").toInt(), 1);
+        QCOMPARE(object->property("test2").toInt(), 2);
+        QCOMPARE(object->property("test3").toString(), QString("1Test"));
+        QCOMPARE(object->property("test4").toString(), QString("2Test"));
+        QCOMPARE(object->property("test5").toInt(), 1);
+        QCOMPARE(object->property("test6").toInt(), 1);
+        QCOMPARE(object->property("test7").toInt(), 2);
+        QCOMPARE(object->property("test8").toInt(), 2);
+        QCOMPARE(object->property("test9").toInt(), 1);
+        QCOMPARE(object->property("test10").toInt(), 3);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test1").toInt(), 19);
+        QCOMPARE(object->property("test2").toInt(), 19);
+        QCOMPARE(object->property("test3").toInt(), 11);
+        QCOMPARE(object->property("test4").toInt(), 11);
+        QCOMPARE(object->property("test5").toInt(), 24);
+        QCOMPARE(object->property("test6").toInt(), 24);
+    }
 }
 
 /*
@@ -720,6 +736,25 @@ and no synthesiszed properties).
 void tst_qmlecmascript::extendedObjectPropertyLookup()
 {
     QmlComponent component(&engine, TEST_FILE("extendedObjectPropertyLookup.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+}
+
+/*
+Test file/lineNumbers for binding/Script errors.
+*/
+void tst_qmlecmascript::scriptErrors()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptErrors.qml"));
+    QString url = component.url().toString();
+
+    QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
+    QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
+
+    QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);
 }

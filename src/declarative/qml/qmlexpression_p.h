@@ -136,7 +136,7 @@ public:
     };
 
     void init(QmlContext *, const QString &, QObject *);
-    void init(QmlContext *, void *, QmlRefCount *, QObject *);
+    void init(QmlContext *, void *, QmlRefCount *, QObject *, const QUrl &, int);
 
     QmlExpressionData *data;
 
@@ -150,6 +150,8 @@ public:
     static QmlExpressionPrivate *get(QmlExpression *expr) {
         return static_cast<QmlExpressionPrivate *>(QObjectPrivate::get(expr));
     }
+
+    static void printException(QScriptEngine *);
 };
 
 QT_END_NAMESPACE
