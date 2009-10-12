@@ -491,7 +491,7 @@ glyph_metrics_t QFontEngineXLFD::boundingBox(const QGlyphLayout &glyphs)
             // XCharStruct::rbearing is defined as distance from left edge to rightmost pixel
             xmax = qMax(xmax, overall.xoff + glyphs.offsets[i].x + xcs->rbearing);
             ymax = qMax(ymax, y + xcs->ascent + xcs->descent);
-            overall.xoff += glyphs.advances_x[i];
+            overall.xoff += glyphs.advances_x[i] + QFixed::fromFixed(glyphs.justifications[i].space_18d6);
         } else {
             QFixed size = _fs->ascent;
             overall.x = qMin(overall.x, overall.xoff);
