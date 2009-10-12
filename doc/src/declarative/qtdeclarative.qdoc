@@ -90,6 +90,5 @@
     \list
     \o \l {Extending QML}
     \o \l {qtbinding}{QML/C++ Data Binding}
-    \o \l {cppitem}{C++ Components}
     \endlist
 */
