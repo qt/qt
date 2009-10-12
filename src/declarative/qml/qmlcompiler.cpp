@@ -195,14 +195,14 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QLatin1String(prop.name()) << "is a read-only property");
+        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QString::fromUtf8(prop.name()) << "is a read-only property");
 
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
         if (value == -1)
             COMPILE_EXCEPTION(v, "Invalid property assignment: unknown enumeration");
         return true;
@@ -336,9 +336,9 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
 
         instr.type = QmlInstruction::StoreInteger;
         instr.storeInteger.propertyIndex = prop.propertyIndex();
@@ -595,7 +595,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.ref = tref.unit;
             ref.ref->addref();
         }
-        ref.className = parserRef->name.toLatin1();
+        ref.className = parserRef->name.toUtf8();
         out->types << ref;
     }
 
@@ -2520,7 +2520,7 @@ QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
         return QStringList();
 
     QMetaClassInfo classInfo = mo->classInfo(idx);
-    QStringList rv = QString(QLatin1String(classInfo.value())).split(QLatin1Char(','));
+    QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
 }
 

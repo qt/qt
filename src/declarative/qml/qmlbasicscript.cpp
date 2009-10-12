@@ -369,7 +369,7 @@ bool QmlBasicScript::compile(const Expression &expression)
 {
     if (!expression.expression.asAST()) return false;
 
-    QByteArray expr = expression.expression.asScript().toLatin1();
+    QByteArray expr = expression.expression.asScript().toUtf8();
     const char *src = expr.constData();
 
     QmlBasicScriptCompiler bsc;

@@ -58,7 +58,7 @@ public:
 protected:
     virtual void propertyWrite(int index)
     {
-        map->emitChanged(QLatin1String(name(index)));
+        map->emitChanged(QString::fromUtf8(name(index)));
     }
 
 private:
@@ -130,7 +130,7 @@ QBindableMap::~QBindableMap()
 void QBindableMap::clearValue(const QString &key)
 {
     //m_keys.remove();   //###
-    m_mo->setValue(key.toLatin1(), QVariant());
+    m_mo->setValue(key.toUtf8(), QVariant());
     //emit changed(key);
 }
 
@@ -142,7 +142,7 @@ void QBindableMap::clearValue(const QString &key)
 */
 QVariant QBindableMap::value(const QString &key) const
 {
-    return m_mo->value(key.toLatin1());
+    return m_mo->value(key.toUtf8());
 }
 
 /*!
@@ -154,7 +154,7 @@ void QBindableMap::setValue(const QString &key, QVariant value)
 {
     if (!m_keys.contains(key))
         m_keys.append(key);
-    m_mo->setValue(key.toLatin1(), value);
+    m_mo->setValue(key.toUtf8(), value);
     //emit changed(key);
 }
 

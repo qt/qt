@@ -276,7 +276,7 @@ QmlDebugPropertyWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference 
 
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
-        ds << QByteArray("WATCH_PROPERTY") << queryId << property.objectDebugId() << property.name().toLatin1();
+        ds << QByteArray("WATCH_PROPERTY") << queryId << property.objectDebugId() << property.name().toUtf8();
         d->client->sendMessage(message);
     } else {
         watch->m_state = QmlDebugWatch::Dead;
