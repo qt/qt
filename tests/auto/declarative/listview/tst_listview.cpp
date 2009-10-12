@@ -34,6 +34,8 @@ private:
     QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QFxItem *parent, const QString &id, int index=-1);
+    template<typename T>
+    QList<T*> findItems(QFxItem *parent, const QString &objectName);
 };
 
 class TestModel : public QListModelInterface
@@ -336,7 +338,8 @@ void tst_QFxListView::removed()
     QCOMPARE(number->text(), model.number(1));
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
+    int itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -357,7 +360,8 @@ void tst_QFxListView::removed()
     QCOMPARE(number->text(), model.number(0));
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
+    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -370,7 +374,8 @@ void tst_QFxListView::removed()
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
+    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -398,7 +403,8 @@ void tst_QFxListView::removed()
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    for (int i = 0; i < model.count() && i < viewport->childItems().count(); ++i) {
+    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
         QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
@@ -492,6 +498,26 @@ T *tst_QFxListView::findItem(QFxItem *parent, const QString &objectName, int ind
 
     return 0;
 }
+
+template<typename T>
+QList<T*> tst_QFxListView::findItems(QFxItem *parent, const QString &objectName)
+{
+    QList<T*> items;
+    const QMetaObject &mo = T::staticMetaObject;
+    //qDebug() << parent->QGraphicsObject::children().count() << "children";
+    for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
+        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
+        if(!item)
+            continue;
+        //qDebug() << "try" << item;
+        if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName))
+            items.append(static_cast<T*>(item));
+        items += findItems<T>(item, objectName);
+    }
+
+    return items;
+}
+
 
 QTEST_MAIN(tst_QFxListView)
 
