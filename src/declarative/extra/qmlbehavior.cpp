@@ -62,10 +62,42 @@ public:
     QmlAbstractAnimation *animation;
 };
 
+/*!
+    \qmlclass Behavior QmlBehavior
+    \brief The Behavior element allows you to specify a default animation for a property change.
+
+    In example below, the rect will use a bounce easing curve over 200 millisecond for any changes to its y property:
+    \code
+    Rectangle {
+        width: 20; height: 20
+        color: "#00ff00"
+        y: 200  //initial value
+        y: Behavior {
+            NumberAnimation {
+                easing: "easeOutBounce(amplitude:100)"
+                duration: 200
+            }
+        }
+    }
+    \endcode
+*/
+
+
 QmlBehavior::QmlBehavior(QObject *parent)
     : QObject(*(new QmlBehaviorPrivate), parent)
 {
 }
+
+QmlBehavior::~QmlBehavior()
+{
+}
+
+/*!
+    \qmlproperty Animation Behavior::animation
+    \default
+
+    The animation to use when the behavior is triggered.
+*/
 
 QmlAbstractAnimation *QmlBehavior::animation()
 {
@@ -84,10 +116,6 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
     d->animation = animation;
     if (d->animation)
         d->animation->setTarget(d->property);
-}
-
-QmlBehavior::~QmlBehavior()
-{
 }
 
 void QmlBehavior::write(const QVariant &value)
