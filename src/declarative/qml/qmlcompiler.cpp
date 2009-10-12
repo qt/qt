@@ -809,7 +809,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     if (!obj->metadata.isEmpty()) {
         QmlInstruction meta;
         meta.type = QmlInstruction::StoreMetaObject;
-        meta.line = -1;
+        meta.line = 0;
         meta.storeMeta.data = output->indexForByteArray(obj->metadata);
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
         meta.storeMeta.propertyCache = output->propertyCaches.count();
@@ -822,7 +822,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     if (!obj->id.isEmpty()) {
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = -1;
+        id.line = 0;
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
@@ -832,7 +832,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     for (int ii = 0; ii < obj->scriptBlocks.count(); ++ii) {
         QmlInstruction script;
         script.type = QmlInstruction::StoreScript;
-        script.line = -1; // ###
+        script.line = 0; // ###
         script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
         output->bytecode << script;
     }
@@ -997,7 +997,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     if (!obj->id.isEmpty()) {
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = -1;
+        id.line = 0;
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
