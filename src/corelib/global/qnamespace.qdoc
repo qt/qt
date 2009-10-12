@@ -2816,12 +2816,12 @@
     \value PanGesture        A Pan gesture.
     \value PinchGesture      A Pinch gesture.
     \value SwipeGesture      A Swipe gesture.
-    \value CustomGesture     User-defined gesture id.
-    \value LastGestureType   Last user gesture id
+    \value CustomGesture     User-defined gesture ID.
+    \value LastGestureType   Last user gesture ID.
 
-    User-defined gestures are registered with
-    QApplication::registerGestureRecognizer which generated a custom gesture id
-    within range between CustomGesture and LastGestureType.
+    User-defined gestures are registered with the
+    QApplication::registerGestureRecognizer() function which generates a custom gesture ID
+    in the range of values from CustomGesture to LastGestureType.
 
     \sa QGesture, QWidget::grabGesture()
 */

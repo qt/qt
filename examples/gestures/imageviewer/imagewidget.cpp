@@ -147,6 +147,7 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     update();
 }
 
+//! [swipe slot]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
     if (gesture->horizontalDirection() == QSwipeGesture::Left
@@ -156,6 +157,7 @@ void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
         goNextImage();
     update();
 }
+//! [swipe slot]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {

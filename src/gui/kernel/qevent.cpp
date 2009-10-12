@@ -4196,18 +4196,22 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     \since 4.6
     \ingroup events
 
-    \brief The QGestureEvent class provides the description of triggered
-    gestures.
+    \brief The QGestureEvent class provides the description of triggered gestures.
 
-    The QGestureEvent class contains a list of gestures that are being executed
-    right now (\l{QGestureEvent::}{activeGestures}) and a list of gestures
-    that are \l{QGestureEvent::canceledGestures}{canceled} (a gesture might be
-    canceled if the current window looses focus, or because of a timeout, etc).
+    The QGestureEvent class contains a list of gestures, which can be obtained using the
+    allGestures() function.
 
-    If the event is not \l{QEvent::accept}{accept}ed, all individual QGesture
-    object that were not accepted will be propagated up the parent widget chain
-    until a widget accepts it with \l{QGestureEvent::accept}{accept()}, or an
-    event filter consumes it.
+    The gestures are either active or canceled. A list of those that are currently being
+    executed can be obtained using the activeGestures() function. A list of those which
+    were previously active and have been canceled can be accessed using the
+    canceledGestures() function. A gesture might be canceled if the current window loses
+    focus, for example, or because of a timeout, or for other reasons.
+
+    If the event handler does not accept the event by calling the generic
+    QEvent::accept() function, all individual QGesture object that were not accepted
+    will be propagated up the parent widget chain until a widget accepts them
+    individually, by calling QGestureEvent::accept() for each of them, or an event
+    filter consumes the event.
 
     \sa QGesture, QGestureRecognizer,
         QWidget::grabGesture(), QGraphicsObject::grabGesture()
@@ -4241,7 +4245,7 @@ QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 }
 
 /*!
-    Returns a list of active (i.e. not canceled) gestures.
+    Returns a list of active (not canceled) gestures.
 */
 QList<QGesture *> QGestureEvent::activeGestures() const
 {
@@ -4257,16 +4261,17 @@ QList<QGesture *> QGestureEvent::canceledGestures() const
 }
 
 /*!
-    Sets the accept flag of the \a gesture object
+    Sets the accept flag of the given \a gesture object to the specified \a value.
 
-    Setting the accept parameter indicates that the event receiver wants the \a
-    gesture. Unwanted gestures might be propagated to the parent widget. By
-    default, gestures in events of type QEvent::Gesture are accepted, and
-    gestures in QEvent::GestureOverride events are ignored by default.
+    Setting the accept flag indicates that the event receiver wants the \a gesture.
+    Unwanted gestures may be propagated to the parent widget.
+
+    By default, gestures in events of type QEvent::Gesture are accepted, and
+    gestures in QEvent::GestureOverride events are ignored.
 
     For convenience, the accept flag can also be set with
-    \l{QGestureEvent::accept}{accept(gesture)}, and cleared with
-    \l{QGestureEvent::ignore}{ignore(gesture)}.
+    \l{QGestureEvent::accept()}{accept(gesture)}, and cleared with
+    \l{QGestureEvent::ignore()}{ignore(gesture)}.
 */
 void QGestureEvent::setAccepted(QGesture *gesture, bool value)
 {
@@ -4276,11 +4281,11 @@ void QGestureEvent::setAccepted(QGesture *gesture, bool value)
 }
 
 /*!
-    Sets the accept flag of the \a gesture object, the equivalent of calling
-    \l{QGestureEvent::setAccepted}{setAccepted}(gesture, true).
+    Sets the accept flag of the given \a gesture object, the equivalent of calling
+    \l{QGestureEvent::setAccepted()}{setAccepted(gesture, true)}.
 
-    Setting the accept parameter indicates that the event receiver wants the
-    gesture. Unwanted gestures might be propagated to the parent widget.
+    Setting the accept flag indicates that the event receiver wants the
+    gesture. Unwanted gestures may be propagated to the parent widget.
 
     \sa QGestureEvent::ignore()
 */
@@ -4290,12 +4295,11 @@ void QGestureEvent::accept(QGesture *gesture)
 }
 
 /*!
-    Clears the accept flag parameter of the \a gesture object, the equivalent
-    of calling \l{QGestureEvent::setAccepted}{setAccepted}(gesture, false).
+    Clears the accept flag parameter of the given \a gesture object, the equivalent
+    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
 
-    Clearing the accept parameter indicates that the event receiver does not
-    want the gesture. Unwanted gestures might be propgated to the parent
-    widget.
+    Clearing the accept flag indicates that the event receiver does not
+    want the gesture. Unwanted gestures may be propgated to the parent widget.
 
     \sa QGestureEvent::accept()
 */
@@ -4305,7 +4309,7 @@ void QGestureEvent::ignore(QGesture *gesture)
 }
 
 /*!
-    Returns true if the \a gesture is accepted.
+    Returns true if the \a gesture is accepted; otherwise returns false.
 */
 bool QGestureEvent::isAccepted(QGesture *gesture) const
 {

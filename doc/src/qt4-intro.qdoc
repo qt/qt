@@ -546,29 +546,32 @@
     trigger on signals and \l{QEvent}s. By inserting animations into
     the state machine, it is also easier to use the framework for
     animating GUIs, for instance.
-    
+
     See \l{The State Machine Framework} documentation for more infromation.
 
-    \section1 Multi-touch & Gestures
+    \section1 Multi-Touch and Gestures
 
-    The new multi-touch and gestures support enables user interaction
-    with more than one finger, and combines sequential touch inputs to
-    a 'gesture'.
+    Support for multi-touch input enables users to interact with many
+    parts of a user interface at the same time, and provides the basis
+    for gestures. Additional infrastructure for gesture recognition
+    allows a sequence of touch inputs to be combined to create gestures
+    that can be used to activate features and trigger actions in an
+    application.
 
     \image gestures.png
 
-    The main benefits of this new functionality are:
+    This new functionality brings a number of benefits:
 
     \list
-        \o Allow users to interact with applications in better ways.
-        \o Simplify finger-based interaction with UI components.
-        \o Allowing common basic gestures and multi-touch
-           gestures.
-        \o Enable extensibility.
+        \o Allows users to interact with applications in more natural ways.
+        \o Simplifies finger-based interaction with UI components.
+        \o Combines support for common basic gestures and multi-touch gestures
+           in a single general framework.
+        \o Enables extensibility by design.
     \endlist
 
     See the QTouchEvent class documentation for more information on multi-touch
-    and QGestureEvent for gestures.
+    input and QGestureEvent for gestures.
 
     \section1 DOM access API
 
@@ -628,7 +631,7 @@
     through C++ APIs in the Qt application, or using the xmlpatternsvalidator
     command line utility. The implementation of XML Schema Validation supports
     the specification version 1.0 in large parts.
-    
+
     \img xml-schema.png
 
     See the \l{XML Processing} and QXmlSchema class documentation for more

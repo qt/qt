@@ -7288,10 +7288,9 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 }
 
 /*!
-    Subscribes the graphics object to a given \a gesture with a \a context.
+    Subscribes the graphics object to the given \a gesture for the specified \a context.
 
     \sa QGestureEvent
-    \since 4.6
 */
 
 void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)

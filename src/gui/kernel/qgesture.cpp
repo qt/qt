@@ -48,20 +48,20 @@ QT_BEGIN_NAMESPACE
     \class QGesture
     \since 4.6
 
-    \brief The QGesture class represents a gesture, containing all
-    properties that describe a gesture.
+    \brief The QGesture class represents a gesture, containing properties that
+    describe the corresponding user input.
 
-    QGesture objects are delivered to widgets and
-    \l{QGraphicsObject}{QGraphicsObject}s with a QGestureEvent.
+    QGesture objects are delivered to widgets and \l{QGraphicsObject}s with
+    \l{QGestureEvent}s.
 
     The class has a list of properties that can be queried by the user to get
-    some gesture-specific arguments (i.e. an scale factor of the Pinch
-    gesture).
+    some gesture-specific arguments. For example, the QPinchGesture gesture has a scale
+    factor that is exposed as a property.
 
-    When creating custom gesture recognizers, they might add new dynamic
-    properties to the QGesture object, or custom gesture recognizer developers
-    might subclass the QGesture class (or any of classes that derive from it)
-    to provide additional information.
+    Developers of custom gesture recognizers can add additional properties in
+    order to provide additional information about a gesture. This can be done
+    by adding new dynamic properties to a QGesture object, or by subclassing
+    the QGesture class (or one of its subclasses).
 
     \sa QGestureEvent, QGestureRecognizer
 */
@@ -95,14 +95,12 @@ QGesture::~QGesture()
 
 /*!
     \property QGesture::state
-
-    The current state of the gesture.
+    \brief the current state of the gesture
 */
 
 /*!
     \property QGesture::gestureType
-
-    The type of the gesture.
+    \brief the type of the gesture
 */
 
 /*!
@@ -110,21 +108,19 @@ QGesture::~QGesture()
 
     \brief The point that is used to find the receiver for the gesture event.
 
-    If the hotSpot is not set, targetObject is used as the receiver of the
+    If the hot-spot is not set, the targetObject is used as the receiver of the
     gesture event.
 */
 
 /*!
     \property QGesture::hasHotSpot
-
-    Whether the hotSpot property is set.
+    \brief whether the gesture has a hot-spot
 */
 
 /*!
     \property QGesture::targetObject
-
-    The target object which will receive the gesture event if the hotSpot is
-    not set.
+    \brief the target object which will receive the gesture event if the hotSpot is
+    not set
 */
 
 Qt::GestureType QGesture::gestureType() const
