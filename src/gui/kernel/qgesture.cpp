@@ -335,22 +335,24 @@ QSwipeGesture::QSwipeGesture(QObject *parent)
 
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
 {
-    return d_func()->horizontalDirection;
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle < 0 || d->swipeAngle == 90 || d->swipeAngle == 270)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 90 || d->swipeAngle > 270)
+        return QSwipeGesture::Right;
+    else
+        return QSwipeGesture::Left;
 }
 
 QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
 {
-    return d_func()->verticalDirection;
-}
-
-void QSwipeGesture::setHorizontalDirection(QSwipeGesture::SwipeDirection value)
-{
-    d_func()->horizontalDirection = value;
-}
-
-void QSwipeGesture::setVerticalDirection(QSwipeGesture::SwipeDirection value)
-{
-    d_func()->verticalDirection = value;
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle <= 0 || d->swipeAngle == 180)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 180)
+        return QSwipeGesture::Up;
+    else
+        return QSwipeGesture::Down;
 }
 
 qreal QSwipeGesture::swipeAngle() const
