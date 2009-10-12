@@ -42,7 +42,7 @@
 #ifndef QGESTURERECOGNIZER_H
 #define QGESTURERECOGNIZER_H
 
-#include "qglobal.h"
+#include <QtCore/qglobal.h>
 
 QT_BEGIN_HEADER
 
