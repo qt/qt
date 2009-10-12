@@ -150,7 +150,7 @@ int QmlCompiledData::indexForLocation(const QmlParser::LocationSpan &l)
 }
 
 QmlCompiledData::QmlCompiledData()
-: importCache(0)
+: importCache(0), root(0)
 {
 }
 
@@ -189,7 +189,7 @@ const QMetaObject *QmlCompiledData::TypeReference::metaObject() const
         return type->metaObject();
     } else {
         Q_ASSERT(component);
-        return &static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
+        return static_cast<QmlComponentPrivate *>(QObjectPrivate::get(component))->cc->root;
     }
 }
 

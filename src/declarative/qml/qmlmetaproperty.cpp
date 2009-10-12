@@ -874,7 +874,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
 
             while (valMo) {
-                if (valMo == propMo)
+                if (equal(valMo, propMo))
                     break;
                 valMo = valMo->superClass();
             }
@@ -928,7 +928,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             const QMetaObject *objMo = obj->metaObject();
             bool found = false;
             while(!found && objMo) {
-                if (objMo == mo)
+                if (equal(objMo, mo))
                     found = true;
                 else
                     objMo = objMo->superClass();
@@ -1210,5 +1210,14 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
     else
         return prop;
 }
+
+/*!
+    Returns true if lhs and rhs refer to the same metaobject data
+*/
+bool QmlMetaPropertyPrivate::equal(const QMetaObject *lhs, const QMetaObject *rhs)
+{
+    return lhs == rhs || (1 && lhs && rhs && lhs->d.stringdata == rhs->d.stringdata);
+}
+
 
 QT_END_NAMESPACE

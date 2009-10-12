@@ -647,7 +647,13 @@ void QmlCompiler::compileTree(Object *tree)
     output->importCache = output->imports.cache(engine);
 
     Q_ASSERT(tree->metatype);
-    static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+
+    if (tree->metadata.isEmpty()) {
+        output->root = tree->metatype;
+    } else {
+        static_cast<QMetaObject &>(output->rootData) = *tree->metaObject();
+        output->root = &output->rootData;
+    }
     if (!tree->metadata.isEmpty()) 
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
@@ -1905,7 +1911,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
             while(c) {
-                isAssignable |= (c == propertyMetaObject);
+                isAssignable |= (QmlMetaPropertyPrivate::equal(c, propertyMetaObject));
                 c = c->superClass();
             }
         }
@@ -2101,7 +2107,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
                     Q_ASSERT(tdata->status == QmlCompositeTypeData::Complete);
 
                     QmlCompiledData *data = tdata->toCompiledComponent(engine);
-                    customTypeName = data->root.className();
+                    customTypeName = data->root->className();
                 } else {
                     customTypeName = qmltype->typeName();
                 }
@@ -2473,7 +2479,7 @@ bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2492,7 +2498,7 @@ bool QmlCompiler::canCoerce(int to, int from)
         QmlEnginePrivate::get(engine)->rawMetaObjectForType(from);
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }

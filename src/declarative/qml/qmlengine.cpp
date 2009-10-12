@@ -1379,7 +1379,7 @@ static void *voidptr_constructor(const void *v)
 
 void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
 {
-    QByteArray name = data->root.className();
+    QByteArray name = data->root->className();
 
     QByteArray ptr = name + "*";
     QByteArray lst = "QmlList<" + ptr + ">*";
@@ -1417,7 +1417,7 @@ const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
 {
     QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
     if (iter != m_compositeTypes.end()) {
-        return &(*iter)->root;
+        return (*iter)->root;
     } else {
         return QmlMetaType::rawMetaObjectForType(t);
     }
@@ -1427,7 +1427,7 @@ const QMetaObject *QmlEnginePrivate::metaObjectForType(int t) const
 {
     QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
     if (iter != m_compositeTypes.end()) {
-        return &(*iter)->root;
+        return (*iter)->root;
     } else {
         return QmlMetaType::metaObjectForType(t);
     }

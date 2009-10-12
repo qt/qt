@@ -39,6 +39,7 @@ private slots:
     void assignQmlComponent();
     void assignBasicTypes();
     void assignTypeExtremes();
+    void assignCompositeToType();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -321,6 +322,15 @@ void tst_qmllanguage::assignTypeExtremes()
     QVERIFY(object != 0);
     QCOMPARE(object->uintProperty(), 0xEE6B2800);
     QCOMPARE(object->intProperty(), -0x77359400);
+}
+
+// Test that a composite type can assign to a property of its base type
+void tst_qmllanguage::assignCompositeToType()
+{
+    QmlComponent component(&engine, TEST_FILE("assignCompositeToType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 // Tests that custom parser types can be instantiated
