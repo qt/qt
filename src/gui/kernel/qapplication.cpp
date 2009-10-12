@@ -5619,11 +5619,29 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
 }
 
+/*!
+    Registers \a recognizer in the gesture framework and returns a gesture id.
+
+    QApplication takes ownership of \a recognizer and returns the gesture type
+    id associated with it. For gesture recognizers which handle custom QGesture
+    objects (i.e. return Qt::CustomGesture in a QGesture::gestureType()
+    function, the return value is a gesture id between Qt::CustomGesture and
+    Qt::LastGestureType.
+
+    \sa unregisterGestureRecognizer, QGestureRecognizer::createGesture, QGesture
+    \since 4.6
+*/
 Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *recognizer)
 {
     return QGestureManager::instance()->registerGestureRecognizer(recognizer);
 }
 
+/*!
+    Unregisters all gesture recognizers of specified \a type.
+
+    \sa registerGestureRecognizer
+    \since 4.6
+*/
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QGestureManager::instance()->unregisterGestureRecognizer(type);

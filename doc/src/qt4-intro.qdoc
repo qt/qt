@@ -567,8 +567,8 @@
         \o Enable extensibility.
     \endlist
 
-    See the QTouchEvent class documentation for more information. The
-    Gesture framework API is still subject to change.
+    See the QTouchEvent class documentation for more information on multi-touch
+    and QGestureEvent for gestures.
 
     \section1 DOM access API
 
