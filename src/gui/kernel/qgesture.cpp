@@ -65,22 +65,15 @@ QT_BEGIN_NAMESPACE
     \sa QGestureEvent, QGestureRecognizer
 */
 
-QGesture::QGesture(Qt::GestureType type, QObject *parent)
-    : QObject(*new QGesturePrivate, parent)
-{
-    d_func()->gestureType = type;
-}
-
 QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
     d_func()->gestureType = Qt::CustomGesture;
 }
 
-QGesture::QGesture(QGesturePrivate &dd, Qt::GestureType type, QObject *parent)
+QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
-    d_func()->gestureType = type;
 }
 
 QGesture::~QGesture()
