@@ -241,6 +241,16 @@ static void sendCustomGesture(QObject *object)
         QApplication::sendEvent(object, &ev);
     }
 }
+static void sendCustomGesture(QObject *object, QObject *target)
+{
+    CustomEvent ev;
+    ev.targetObject = target;
+    for (int i = CustomGesture::SerialMaybeThreshold;
+         i <= CustomGesture::SerialFinishedThreshold; ++i) {
+        ev.serial = i;
+        QApplication::sendEvent(object, &ev);
+    }
+}
 
 class tst_Gestures : public QObject
 {
@@ -265,6 +275,7 @@ private slots:
     void finishedWithoutStarted();
     void unknownGesture();
     void graphicsItemGesture();
+    void explicitGraphicsObjectTarget();
 };
 
 tst_Gestures::tst_Gestures()
@@ -622,6 +633,51 @@ void tst_Gestures::graphicsItemGesture()
     QCOMPARE(item->events.updated.size(), TotalGestureEventsCount - 2);
     QCOMPARE(item->events.finished.size(), 1);
     QCOMPARE(item->events.canceled.size(), 0);
+}
+
+void tst_Gestures::explicitGraphicsObjectTarget()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    GestureItem *item1 = new GestureItem;
+    scene.addItem(item1);
+    item1->setPos(100, 100);
+    item1->grabGesture(CustomGesture::GestureType);
+
+    GestureItem *item2 = new GestureItem;
+    scene.addItem(item2);
+    item2->setPos(100, 100);
+    item2->grabGesture(CustomGesture::GestureType);
+
+    GestureItem *item3 = new GestureItem;
+    scene.addItem(item3);
+    item3->setParentItem(item2);
+    item3->setPos(0, 0);
+    item3->grabGesture(CustomGesture::GestureType);
+
+    // sending events to item1, but the targetObject for the gesture is item2.
+    sendCustomGesture(item1, item3);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+    static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
+
+    QCOMPARE(item1->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item3->customEventsReceived, 0);
+    QCOMPARE(item3->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item3->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item3->events.all.size(), TotalGestureEventsCount);
+    for(int i = 0; i < item3->events.all.size(); ++i)
+        QCOMPARE(item3->events.all.at(i), CustomGesture::GestureType);
+    QCOMPARE(item3->events.started.size(), 1);
+    QCOMPARE(item3->events.updated.size(), TotalGestureEventsCount - 2);
+    QCOMPARE(item3->events.finished.size(), 1);
+    QCOMPARE(item3->events.canceled.size(), 0);
+    QCOMPARE(item2->customEventsReceived, 0);
+    QCOMPARE(item2->gestureEventsReceived, 0);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 0);
 }
 
 QTEST_MAIN(tst_Gestures)
