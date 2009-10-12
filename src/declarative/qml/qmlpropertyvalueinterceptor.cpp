@@ -39,45 +39,39 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBEHAVIOR_H
-#define QMLBEHAVIOR_H
-
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlpropertyvalueinterceptor.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlstate.h>
-
-QT_BEGIN_HEADER
+#include "qmlpropertyvalueinterceptor.h"
+#include "qml.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
+/*!
+    \class QmlPropertyValueInterceptor
+    \brief The QmlPropertyValueInterceptor class is inherited by property interceptors such as Behavior.
 
-class QmlAbstractAnimation;
-class QmlBehaviorPrivate;
-class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValueInterceptor
+    This class intercepts property writes, allowing for custom handling. For example, Behavior uses this
+    interception to provide a default animation for all changes to a property's value.
+ */
+
+/*!
+    Constructs a QmlPropertyValueInterceptor.
+*/
+QmlPropertyValueInterceptor::QmlPropertyValueInterceptor()
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QmlBehavior)
+}
 
-    Q_CLASSINFO("DefaultProperty", "animation")
-    Q_PROPERTY(QmlAbstractAnimation *animation READ animation WRITE setAnimation)
+QmlPropertyValueInterceptor::~QmlPropertyValueInterceptor()
+{
+}
 
-public:
-    QmlBehavior(QObject *parent=0);
-    ~QmlBehavior();
+/*!
+    \fn void QmlPropertyValueInterceptor::setTarget(const QmlMetaProperty &property)
+    Set the target \a property for the value interceptor.  This method will
+    be called by the QML engine when assigning a value interceptor.
+*/
 
-    virtual void setTarget(const QmlMetaProperty &);
-    virtual void write(const QVariant &value);
-
-    QmlAbstractAnimation *animation();
-    void setAnimation(QmlAbstractAnimation *);
-};
+/*!
+    \fn void QmlPropertyValueInterceptor::write(const QVariant &value)
+    This method will be called when a new \a value is assigned to the property being intercepted.
+*/
 
 QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlBehavior)
-
-QT_END_HEADER
-
-#endif // QMLBEHAVIOR_H

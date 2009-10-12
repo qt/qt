@@ -155,6 +155,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
     QmlEnginePrivate *ep = QmlEnginePrivate::get(ctxt->engine());
     QmlContextPrivate *cp = (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
+    int status = -1;    //for dbus
+    QmlMetaProperty::WriteFlags flags = QmlMetaProperty::BypassInterceptor;
+
     for (int ii = start; !isError() && ii < (start + count); ++ii) {
         QmlInstruction &instr = comp->bytecode[ii];
 
@@ -275,10 +278,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreVariant:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 // XXX - can be more efficient
                 QVariant v = QmlStringConverters::variantFromString(primitives.at(instr.storeString.value));
-                a[0] = (void *)&v;
+                void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);
             }
@@ -287,8 +289,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreString:
             {
                 QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&primitives.at(instr.storeString.value);
+                void *a[] = { (void *)&primitives.at(instr.storeString.value), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeString.propertyIndex, a);
             }
@@ -297,9 +298,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreUrl:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QUrl u(primitives.at(instr.storeUrl.value));
-                a[0] = (void *)&u;
+                void *a[] = { &u, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeUrl.propertyIndex, a);
             }
@@ -309,8 +309,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
             {
                 QObject *target = stack.top();
                 float f = instr.storeFloat.value;
-                void *a[1];
-                a[0] = &f;
+                void *a[] = { &f, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
                                       instr.storeFloat.propertyIndex, a);
             }
@@ -320,8 +319,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
             {
                 QObject *target = stack.top();
                 double d = instr.storeDouble.value;
-                void *a[1];
-                a[0] = &d;
+                void *a[] = { &d, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
                                       instr.storeDouble.propertyIndex, a);
             }
@@ -330,8 +328,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreBool:
             {
                 QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&instr.storeBool.value;
+                void *a[] = { (void *)&instr.storeBool.value, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeBool.propertyIndex, a);
             }
@@ -340,8 +337,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreInteger:
             {
                 QObject *target = stack.top();
-                void *a[1];
-                a[0] = (void *)&instr.storeInteger.value;
+                void *a[] = { (void *)&instr.storeInteger.value, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeInteger.propertyIndex, a);
             }
@@ -350,9 +346,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreColor:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QColor c = QColor::fromRgba(instr.storeColor.value);
-                a[0] = (void *)&c;
+                void *a[] = { &c, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeColor.propertyIndex, a);
             }
@@ -361,9 +356,8 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreDate:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QDate d = QDate::fromJulianDay(instr.storeDate.value);
-                a[0] = (void *)&d;
+                void *a[] = { &d, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeDate.propertyIndex, a);
             }
@@ -372,13 +366,12 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreTime:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QTime t;
                 t.setHMS(intData.at(instr.storeTime.valueIndex),
                          intData.at(instr.storeTime.valueIndex+1),
                          intData.at(instr.storeTime.valueIndex+2),
                          intData.at(instr.storeTime.valueIndex+3));
-                a[0] = (void *)&t;
+                void *a[] = { &t, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeTime.propertyIndex, a);
             }
@@ -387,14 +380,13 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreDateTime:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QTime t;
                 t.setHMS(intData.at(instr.storeDateTime.valueIndex+1),
                          intData.at(instr.storeDateTime.valueIndex+2),
                          intData.at(instr.storeDateTime.valueIndex+3),
                          intData.at(instr.storeDateTime.valueIndex+4));
                 QDateTime dt(QDate::fromJulianDay(intData.at(instr.storeDateTime.valueIndex)), t);
-                a[0] = (void *)&dt;
+                void *a[] = { &dt, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty,
                                       instr.storeDateTime.propertyIndex, a);
             }
@@ -403,10 +395,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StorePoint:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QPoint p = QPointF(floatData.at(instr.storeRealPair.valueIndex),
                                    floatData.at(instr.storeRealPair.valueIndex+1)).toPoint();
-                a[0] = (void *)&p;
+                void *a[] = { &p, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRealPair.propertyIndex, a);
             }
@@ -415,10 +406,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StorePointF:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QPointF p(floatData.at(instr.storeRealPair.valueIndex),
                           floatData.at(instr.storeRealPair.valueIndex+1));
-                a[0] = (void *)&p;
+                void *a[] = { &p, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRealPair.propertyIndex, a);
             }
@@ -427,10 +417,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreSize:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QSize p = QSizeF(floatData.at(instr.storeRealPair.valueIndex),
                                  floatData.at(instr.storeRealPair.valueIndex+1)).toSize();
-                a[0] = (void *)&p;
+                void *a[] = { &p, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRealPair.propertyIndex, a);
             }
@@ -439,10 +428,9 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreSizeF:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QSizeF s(floatData.at(instr.storeRealPair.valueIndex),
                          floatData.at(instr.storeRealPair.valueIndex+1));
-                a[0] = (void *)&s;
+                void *a[] = { &s, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRealPair.propertyIndex, a);
             }
@@ -451,12 +439,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreRect:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QRect r = QRectF(floatData.at(instr.storeRect.valueIndex),
                                  floatData.at(instr.storeRect.valueIndex+1),
                                  floatData.at(instr.storeRect.valueIndex+2),
                                  floatData.at(instr.storeRect.valueIndex+3)).toRect();
-                a[0] = (void *)&r;
+                void *a[] = { &r, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRect.propertyIndex, a);
             }
@@ -465,12 +452,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreRectF:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QRectF r(floatData.at(instr.storeRect.valueIndex),
                          floatData.at(instr.storeRect.valueIndex+1),
                          floatData.at(instr.storeRect.valueIndex+2),
                          floatData.at(instr.storeRect.valueIndex+3));
-                a[0] = (void *)&r;
+                void *a[] = { &r, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeRect.propertyIndex, a);
             }
@@ -479,11 +465,10 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::StoreVector3D:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QVector3D p(floatData.at(instr.storeVector3D.valueIndex),
                             floatData.at(instr.storeVector3D.valueIndex+1),
                             floatData.at(instr.storeVector3D.valueIndex+2));
-                a[0] = (void *)&p;
+                void *a[] = { &p, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeVector3D.propertyIndex, a);
             }
@@ -494,9 +479,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *assignObj = stack.pop();
                 QObject *target = stack.top();
 
-                void *a[1];
-                a[0] = (void *)&assignObj;
-
+                void *a[] = { (void *)&assignObj, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeObject.propertyIndex, a);
             }
@@ -506,7 +489,6 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
         case QmlInstruction::AssignCustomType:
             {
                 QObject *target = stack.top();
-                void *a[1];
                 QmlCompiledData::CustomTypeData data = customTypeData.at(instr.assignCustomType.valueIndex);
                 const QString &primitive = primitives.at(data.index);
                 QmlMetaType::StringConverter converter = 
@@ -518,7 +500,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 if (v.isNull() || ((int)prop.type() != data.type && prop.userType() != data.type)) 
                     VME_EXCEPTION("Cannot assign value" << primitive << "to property" << prop.name());
 
-                a[0] = (void *)v.data();
+                void *a[] = { (void *)v.data(), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.assignCustomType.propertyIndex, a);
             }
@@ -655,6 +637,20 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
             }
             break;
 
+        case QmlInstruction::StoreValueInterceptor:
+            {
+                QObject *obj = stack.pop();
+                QmlPropertyValueInterceptor *vi = reinterpret_cast<QmlPropertyValueInterceptor *>(reinterpret_cast<char *>(obj) + instr.assignValueInterceptor.castValue);
+                QObject *target = stack.at(stack.count() - 1 - instr.assignValueInterceptor.owner);
+                QmlMetaProperty prop;
+                prop.restore(instr.assignValueInterceptor.property, target, ctxt);
+                obj->setParent(target);
+                vi->setTarget(prop);
+                QmlVMEMetaObject *mo = static_cast<QmlVMEMetaObject *>((QMetaObject*)target->metaObject());
+                mo->registerInterceptor(prop.coreIndex(), vi);
+            }
+            break;
+
         case QmlInstruction::StoreObjectQmlList:
             {
                 QObject *assign = stack.pop();
@@ -706,8 +702,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *target = stack.top();
 
                 QVariant v = QVariant::fromValue(assign);
-                void *a[1];
-                a[0] = (void *)&v;
+                void *a[] = { &v, 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
                                       instr.storeObject.propertyIndex, a);
             }
@@ -726,8 +721,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 if (iid) {
                     void *ptr = assign->qt_metacast(iid);
                     if (ptr) {
-                        void *a[1];
-                        a[0] = &ptr;
+                        void *a[] = { &ptr, 0, &status, &flags };
                         QMetaObject::metacall(target, 
                                               QMetaObject::WriteProperty,
                                               coreIdx, a);
@@ -849,7 +843,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QmlValueType *valueHandler = 
                     static_cast<QmlValueType *>(stack.pop());
                 QObject *target = stack.top();
-                valueHandler->write(target, instr.fetchValue.property);
+                valueHandler->write(target, instr.fetchValue.property, QmlMetaProperty::BypassInterceptor);
             }
             break;
 

@@ -97,9 +97,10 @@ void QmlPointFValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlPointFValueType::write(QObject *obj, int idx)
+void QmlPointFValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &point, 0 };
+    int status = -1;
+    void *a[] = { &point, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -144,9 +145,10 @@ void QmlPointValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlPointValueType::write(QObject *obj, int idx)
+void QmlPointValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &point, 0 };
+    int status = -1;
+    void *a[] = { &point, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -191,9 +193,10 @@ void QmlSizeFValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlSizeFValueType::write(QObject *obj, int idx)
+void QmlSizeFValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &size, 0 };
+    int status = -1;
+    void *a[] = { &size, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -238,9 +241,10 @@ void QmlSizeValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlSizeValueType::write(QObject *obj, int idx)
+void QmlSizeValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &size, 0 };
+    int status = -1;
+    void *a[] = { &size, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -285,9 +289,10 @@ void QmlRectFValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlRectFValueType::write(QObject *obj, int idx)
+void QmlRectFValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &rect, 0 };
+    int status = -1;
+    void *a[] = { &rect, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -352,9 +357,10 @@ void QmlRectValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlRectValueType::write(QObject *obj, int idx)
+void QmlRectValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &rect, 0 };
+    int status = -1;
+    void *a[] = { &rect, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -419,9 +425,10 @@ void QmlVector3DValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlVector3DValueType::write(QObject *obj, int idx)
+void QmlVector3DValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &vector, 0 };
+    int status = -1;
+    void *a[] = { &vector, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 
@@ -476,9 +483,10 @@ void QmlFontValueType::read(QObject *obj, int idx)
     QMetaObject::metacall(obj, QMetaObject::ReadProperty, idx, a);
 }
 
-void QmlFontValueType::write(QObject *obj, int idx)
+void QmlFontValueType::write(QObject *obj, int idx, QmlMetaProperty::WriteFlags flags)
 {
-    void *a[] = { &font, 0 };
+    int status = -1;
+    void *a[] = { &font, 0, &status, &flags };
     QMetaObject::metacall(obj, QMetaObject::WriteProperty, idx, a);
 }
 

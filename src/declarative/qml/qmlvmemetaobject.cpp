@@ -100,6 +100,24 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
 int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 {
     int id = _id;
+    if(c == QMetaObject::WriteProperty) {
+        int flags = *reinterpret_cast<int*>(a[3]);
+        if (!(flags & QmlMetaProperty::BypassInterceptor)
+            && !aInterceptors.isEmpty()
+            && aInterceptors.testBit(id)) {
+            QmlPropertyValueInterceptor *vi = interceptors.value(id);
+            if (id >= propOffset) {
+                id -= propOffset;
+                if (id < metaData->propertyCount) {
+                    vi->write(QVariant(data[id].type(), a[0]));
+                    return -1;
+                }
+            } else {
+                vi->write(QVariant(property(id).type(), a[0]));
+                return -1;
+            }
+        }
+    }
     if(c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty) {
         if (id >= propOffset) {
             id -= propOffset;
@@ -264,5 +282,14 @@ void QmlVMEMetaObject::listChanged(int id)
 {
     activate(object, methodOffset + id, 0);
 }
+
+void QmlVMEMetaObject::registerInterceptor(int index, QmlPropertyValueInterceptor *interceptor)
+{
+    if (aInterceptors.isEmpty())
+        aInterceptors.resize(propertyCount() + metaData->propertyCount);
+    aInterceptors.setBit(index);
+    interceptors.insert(index, interceptor);
+}
+
 
 QT_END_NAMESPACE

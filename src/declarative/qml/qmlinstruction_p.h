@@ -130,6 +130,7 @@ public:
         StoreIdOptBinding,        /* assignIdOptBinding */
         StoreObjPropBinding,      /* assignObjPropBinding */
         StoreValueSource,         /* assignValueSource */
+        StoreValueInterceptor,    /* assignValueInterceptor */
 
         BeginObject,              /* begin */
 
@@ -188,6 +189,11 @@ public:
             int owner;
             int castValue;
         } assignValueSource;
+        struct {
+            int property;
+            int owner;
+            int castValue;
+        } assignValueInterceptor;   //### merge with above
         struct {
             int property;
             int value;

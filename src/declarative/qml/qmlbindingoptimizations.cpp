@@ -69,16 +69,16 @@ QmlBinding_Id::~QmlBinding_Id()
     removeFromContext();
 }
 
-void QmlBinding_Id::setEnabled(bool e)
+void QmlBinding_Id::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 {
     if (e) {
         addToObject(m_object);
-        update();
+        update(flags);
     } else {
         removeFromObject();
     }
 
-    QmlAbstractBinding::setEnabled(e);
+    QmlAbstractBinding::setEnabled(e, flags);
 }
 
 int QmlBinding_Id::propertyIndex()
@@ -86,7 +86,7 @@ int QmlBinding_Id::propertyIndex()
     return m_propertyIdx;
 }
 
-void QmlBinding_Id::update()
+void QmlBinding_Id::update(QmlMetaProperty::WriteFlags flags)
 {
     QmlContextPrivate *ctxtPriv = 
         static_cast<QmlContextPrivate *>(QObjectPrivate::get(context()));
@@ -102,7 +102,8 @@ void QmlBinding_Id::update()
         }
 
         QObject *o = ctxtPriv->idValues[m_id].data();
-        void *a[] = { &o, 0 };
+        int status = -1;
+        void *a[] = { &o, 0, &status, &flags };
         QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
                               m_propertyIdx, a);
     } 
@@ -123,7 +124,9 @@ void QmlBinding_Id::reset()
     removeFromContext();
 
     QObject *o = 0;
-    void *a[] = { &o, 0 };
+    int status = -1;
+    QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding;
+    void *a[] = { &o, 0, &status, &flags };
     QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
                           m_propertyIdx, a);
 }
@@ -150,17 +153,17 @@ QmlBinding_ObjProperty::QmlBinding_ObjProperty(QObject *object, int propertyIdx,
 {
 }
 
-void QmlBinding_ObjProperty::setEnabled(bool e)
+void QmlBinding_ObjProperty::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 {
     m_enabled = e;
     if (e) {
         addToObject(m_object);
-        update();
+        update(flags);
     } else {
         removeFromObject();
     }
 
-    QmlAbstractBinding::setEnabled(e);
+    QmlAbstractBinding::setEnabled(e, flags);
 }
 
 int QmlBinding_ObjProperty::propertyIndex()
@@ -168,21 +171,24 @@ int QmlBinding_ObjProperty::propertyIndex()
     return m_propertyIdx;
 }
 
-void QmlBinding_ObjProperty::update()
+void QmlBinding_ObjProperty::update(QmlMetaProperty::WriteFlags flags)
 {
     if (!m_enabled)
         return;
 
     QObject *value = 0;
-    void *a[] = { &value, 0 };
+    int status = -1;
+    void *ra[] = { &value, 0, &status };
 
     // Read
     QMetaObject::metacall(m_context, QMetaObject::ReadProperty, 
-                          m_contextIdx, a);
+                          m_contextIdx, ra);
+
+    void *wa[] = { &value, 0, &status, &flags };
 
     // Write
     QMetaObject::metacall(m_object, QMetaObject::WriteProperty, 
-                          m_propertyIdx, a);
+                          m_propertyIdx, wa);
 
     // Connect notify if needed.  Only need to connect once, so we set
     // m_notifyIdx back to -1 afterwards

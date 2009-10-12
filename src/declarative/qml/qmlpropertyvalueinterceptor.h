@@ -39,15 +39,10 @@
 **
 ****************************************************************************/
 
-#ifndef QMLBINDING_H
-#define QMLBINDING_H
+#ifndef QMLPROPERTYVALUEINTERCEPTOR_H
+#define QMLPROPERTYVALUEINTERCEPTOR_H
 
-#include <QtCore/QObject>
-#include <QtDeclarative/qfxglobal.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlexpression.h>
-#include <QtCore/QMetaProperty>
+#include <QtCore/qobject.h>
 
 QT_BEGIN_HEADER
 
@@ -55,73 +50,19 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlAbstractBinding 
+class QmlMetaProperty;
+class Q_DECLARATIVE_EXPORT QmlPropertyValueInterceptor
 {
 public:
-    QmlAbstractBinding();
-    virtual ~QmlAbstractBinding();
-
-    virtual QString expression() const;
-
-    void setEnabled(bool e) { setEnabled(e, QmlMetaProperty::DontRemoveBinding); }
-    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags) = 0;
-    virtual int propertyIndex() = 0;
-
-    void update() { update(QmlMetaProperty::DontRemoveBinding); }
-    virtual void update(QmlMetaProperty::WriteFlags) = 0;
-
-    void addToObject(QObject *);
-    void removeFromObject();
-
-private:
-    friend class QmlDeclarativeData;
-    friend class QmlMetaProperty;
-    friend class QmlMetaPropertyPrivate;
-    friend class QmlVME;
-
-    QObject *m_object;
-    QmlAbstractBinding **m_mePtr;
-    QmlAbstractBinding **m_prevBinding;
-    QmlAbstractBinding  *m_nextBinding;
+    QmlPropertyValueInterceptor();
+    virtual ~QmlPropertyValueInterceptor();
+    virtual void setTarget(const QmlMetaProperty &property) = 0;
+    virtual void write(const QVariant &value) = 0;
 };
-
-class QmlContext;
-class QmlBindingPrivate;
-class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression, 
-                                        public QmlAbstractBinding
-{
-Q_OBJECT
-public:
-    QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QUrl &, int, 
-               QObject *parent);
-    ~QmlBinding();
-
-    void setTarget(const QmlMetaProperty &);
-    QmlMetaProperty property() const;
-
-    bool enabled() const;
-
-    // Inherited from  QmlAbstractBinding
-    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
-    virtual int propertyIndex();
-    virtual void update(QmlMetaProperty::WriteFlags flags);
-    virtual QString expression() const;
-
-public Q_SLOTS:
-    void update() { update(QmlMetaProperty::DontRemoveBinding); }
-
-protected:
-    virtual void valueChanged();
-
-private:
-    Q_DECLARE_PRIVATE(QmlBinding)
-};
+Q_DECLARE_INTERFACE(QmlPropertyValueInterceptor, "com.trolltech.qml.QmlPropertyValueInterceptor")
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QmlBinding);
-
 QT_END_HEADER
 
-#endif // QMLBINDING_H
+#endif // QMLPROPERTYVALUEINTERCEPTOR_H
