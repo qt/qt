@@ -196,6 +196,10 @@ private:
 
     static QCoreApplication *self;
     
+#if defined(Q_OS_SYMBIAN)
+    Q_PRIVATE_SLOT(d_func(), void _q_symbianRegisterLocaleNotifier())
+#endif
+
     Q_DISABLE_COPY(QCoreApplication)
 
     friend class QEventDispatcherUNIXPrivate;

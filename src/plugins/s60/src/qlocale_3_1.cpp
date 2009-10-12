@@ -50,6 +50,7 @@ _LIT(KLocaleIndependent, "%F");
 static TBuf<10> dateFormat;
 static TBuf<10> timeFormat;
 
+#define _DEBUG
 static void initialiseDateFormat()
 {
     if(dateFormat.Length())
@@ -145,4 +146,11 @@ EXPORT_C TPtrC defaultGetShortDateFormatSpec(TExtendedLocale&)
 {
     initialiseDateFormat();
     return TPtrC(dateFormat);
+}
+
+EXPORT_C void refreshLocaleInfo()
+{
+    // clear the buffers, so next time we re-read data from the system.
+    dateFormat.Zero();
+    timeFormat.Zero();
 }
