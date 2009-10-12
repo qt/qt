@@ -867,11 +867,16 @@ bool Lexer::isLineTerminator() const
 
 bool Lexer::isIdentLetter(ushort c)
 {
-    /* TODO: allow other legitimate unicode chars */
-    return ((c >= 'a' && c <= 'z')
+    // ASCII-biased, since all reserved words are ASCII, aand hence the
+    // bulk of content to be parsed.
+    if ((c >= 'a' && c <= 'z')
             || (c >= 'A' && c <= 'Z')
             || c == '$'
-            || c == '_');
+            || c == '_')
+        return true;
+    if (c < 128)
+        return false;
+    return QChar(c).isLetterOrNumber();
 }
 
 bool Lexer::isDecimalDigit(ushort c)
