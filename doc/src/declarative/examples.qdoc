@@ -41,7 +41,6 @@
 
 /*!
 \page qmlexamples.html
-\target qmlexamples
 \title QML Examples
 
 A \l {qmlviewer}{viewer} application is included that allows you to quickly explore many of the
