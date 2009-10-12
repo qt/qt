@@ -284,7 +284,7 @@ void QWidgetPrivate::show_sys()
          surface->setVisible(true);
      }
 
-    if (q->windowType() != Qt::Popup)
+    if (q->windowType() != Qt::Popup && q->windowType() != Qt::ToolTip && !(q->windowFlags() & Qt::X11BypassWindowManagerHint))
         q->activateWindow(); //###
 }
 

@@ -219,7 +219,7 @@ bool MyDisplay::handleEvent(XEvent *xe)
         }
     }
     if (!xw) {
-        qWarning() << "Unknown window" << xe->xany.window << "received event" << hex << xe->type;
+        qWarning() << "Unknown window" << hex << xe->xany.window << "received event" <<  xe->type;
         return quit;
     }
 
@@ -358,12 +358,15 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 
     xd->windowList.append(this);
 
-#ifdef MYX11_DEBUG
-    qDebug() << "MyWindow::MyWindow";
-#endif
     window = XCreateSimpleWindow(xd->display, xd->rootWindow(),
                                  x, y, w, h, 0 /*border_width*/,
                                  xd->blackPixel(), xd->whitePixel());
+
+
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::MyWindow" << hex << window;
+#endif
+
 
     width = -1;
     height = -1;
@@ -373,7 +376,8 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
     XSetWindowBackgroundPixmap(xd->display, window, XNone);
 
     XSelectInput(xd->display, window, ExposureMask | KeyPressMask | KeyReleaseMask |
-                 ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask | StructureNotifyMask);
+                 PointerMotionMask | ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask |
+                 StructureNotifyMask);
 
     gc = createGC();
 
@@ -387,6 +391,9 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 
 MyWindow::~MyWindow()
 {
+#ifdef MYX11_DEBUG
+    qDebug() << "~MyWindow" << hex << window;
+#endif
     XFreeGC(xd->display, gc);
     XDestroyWindow(xd->display, window);
 
