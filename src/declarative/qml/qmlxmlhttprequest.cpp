@@ -1105,7 +1105,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
     m_status = 
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     m_statusText =
-        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+        QString::fromUtf8(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
 
     // ### We assume if this is called the headers are now available
     if (m_state < HeadersReceived) {
@@ -1127,7 +1127,7 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
     m_status =
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     m_statusText =
-        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+        QString::fromUtf8(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
 
     m_responseEntityBody = QByteArray();
     m_errorFlag = true;
@@ -1146,7 +1146,7 @@ void QmlXMLHttpRequest::finished()
     m_status =
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     m_statusText =
-        QLatin1String(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
+        QString::fromUtf8(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
 
     if (m_state < HeadersReceived) {
         m_state = HeadersReceived;
