@@ -2945,7 +2945,7 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     view->show();
     QTest::qWaitForWindowShown(view);
 
-    QTRY_VERIFY(spy.count() > 1);
+    QTRY_VERIFY(spy.count() >= 1);
     spy.reset();
     scene.update();
     QApplication::processEvents();

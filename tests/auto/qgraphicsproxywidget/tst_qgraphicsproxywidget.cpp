@@ -3059,8 +3059,10 @@ void tst_QGraphicsProxyWidget::actionsContextMenu()
 
     QGraphicsView view(&scene);
     view.show();
+    QApplication::setActiveWindow(&view);
     QTest::qWaitForWindowShown(&view);
     view.setFocus();
+    QTRY_VERIFY(view.hasFocus());
 
     if (hasFocus)
         scene.addWidget(widget)->setFocus();
