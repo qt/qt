@@ -1531,6 +1531,24 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
             store.assignValueSource.castValue = valueType->propertyValueSourceCast();
             output->bytecode << store;
 
+        } else if (v->type == Value::ValueInterceptor) {
+            genObject(v->object);
+
+            QmlInstruction store;
+            store.type = QmlInstruction::StoreValueInterceptor;
+            store.line = v->object->location.start.line;
+            if (valueTypeProperty) {
+                store.assignValueInterceptor.property = QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, prop->index);
+                store.assignValueInterceptor.owner = 1;
+            } else {
+                store.assignValueInterceptor.property =
+                    QmlMetaPropertyPrivate::saveProperty(prop->index);
+                store.assignValueInterceptor.owner = 0;
+            }
+            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            store.assignValueInterceptor.castValue = valueType->propertyValueInterceptorCast();
+            output->bytecode << store;
+
         } else if (v->type == Value::PropertyBinding) {
 
             genBindingAssignment(v, prop, obj, valueTypeProperty);
@@ -1635,7 +1653,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
 //     font.pointSize: 12
 //     font.family: "Helvetica"
 // }
-// font is a nested property.  size and family are not.
+// font is a nested property.  pointSize and family are not.
 bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
                                        QmlParser::Object *obj,
                                        const BindingContext &ctxt)
@@ -1648,7 +1666,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
             static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
         if (ep->valueTypes[prop->type]) {
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
-                                                 prop->value, ctxt.incr()));
+                                                 prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
             COMPILE_EXCEPTION(prop, "Invalid property access");
@@ -1672,6 +1690,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
 
 bool QmlCompiler::buildValueTypeProperty(QObject *type,
                                          QmlParser::Object *obj,
+                                         QmlParser::Object *baseObj,
                                          const BindingContext &ctxt)
 {
     if (obj->defaultProperty)
@@ -1693,13 +1712,16 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
 
         if (value->object) {
             bool isPropertyValue = output->types.at(value->object->type).type->propertyValueSourceCast() != -1;
-            if (!isPropertyValue) {
+            bool isPropertyInterceptor = output->types.at(value->object->type).type->propertyValueInterceptorCast() != -1;
+            if (!isPropertyValue && !isPropertyInterceptor) {
                 COMPILE_EXCEPTION(prop, "Invalid property use");
             } else {
                 COMPILE_CHECK(buildObject(value->object, ctxt));
-                value->type = Value::ValueSource;
-            }
 
+                if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                    buildDynamicMeta(baseObj, ForceCreation);
+                value->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
+            }
         } else if (value->value.isScript()) {
             // ### Check for writability
             BindingReference reference;
@@ -1864,8 +1886,12 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
 
         // Will be true if the assigned type inherits QmlPropertyValueSource
         bool isPropertyValue = false;
-        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype))
+        // Will be true if the assigned type inherits QmlPropertyValueInterceptor
+        bool isPropertyInterceptor = false;
+        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype)) {
             isPropertyValue = valueType->propertyValueSourceCast() != -1;
+            isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
+        }
 
         // We want to raw metaObject here as the raw metaobject is the
         // actual property type before we applied any extensions that might
@@ -1902,11 +1928,13 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
             component->getDefaultProperty()->addValue(componentValue);
             v->object = component;
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
-        } else if (isPropertyValue) {
+        } else if (isPropertyValue || isPropertyInterceptor) {
             // Assign as a property value source
             COMPILE_CHECK(buildObject(v->object, ctxt));
 
-            v->type = Value::ValueSource;
+            if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                   buildDynamicMeta(prop->parent, ForceCreation);
+            v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
         } else {
             COMPILE_EXCEPTION(v->object, "Cannot assign object to property");
         }
@@ -2012,7 +2040,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     Q_ASSERT(obj);
     Q_ASSERT(obj->metatype);
 
-    if (obj->dynamicProperties.isEmpty() &&
+    if (mode != ForceCreation &&
+        obj->dynamicProperties.isEmpty() &&
         obj->dynamicSignals.isEmpty() &&
         obj->dynamicSlots.isEmpty())
         return true;

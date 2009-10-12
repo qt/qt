@@ -230,17 +230,18 @@ void QmlPropertyChangesPrivate::decode()
         ds >> isScript;
         ds >> data;
 
-        if (isScript) {
-            QmlMetaProperty prop = property(name);      //### can we avoid or reuse?
+        QmlMetaProperty prop = property(name);      //### better way to check for signal property?
+        if (prop.type() == QmlMetaProperty::SignalProperty) {
             QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
             expression->setTrackChange(false);
-            if (prop.type() == QmlMetaProperty::SignalProperty) {
-                QmlReplaceSignalHandler *handler = new QmlReplaceSignalHandler;
-                handler->property = prop;
-                handler->expression = expression;
-                signalReplacements << handler;
-            } else
-                expressions << qMakePair(name, expression);
+            QmlReplaceSignalHandler *handler = new QmlReplaceSignalHandler;
+            handler->property = prop;
+            handler->expression = expression;
+            signalReplacements << handler;
+        } else if (isScript) {
+            QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
+            expression->setTrackChange(false);
+            expressions << qMakePair(name, expression);
         } else {
             properties << qMakePair(name, data);
         }

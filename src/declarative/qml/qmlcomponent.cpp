@@ -573,7 +573,7 @@ void QmlComponentPrivate::completeCreate()
                     bindValues.at(ii);
                 for (int jj = 0; jj < bv.count; ++jj) {
                     if(bv.at(jj)) 
-                        bv.at(jj)->setEnabled(true);
+                        bv.at(jj)->setEnabled(true, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
                 }
                 QmlEnginePrivate::clear(bv);
             }
