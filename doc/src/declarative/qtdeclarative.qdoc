@@ -45,7 +45,7 @@
     \ingroup modules
 
     \brief The Qt Declarative module provides a declarative framework for building
-    highly dynamic and fluid applications.
+    highly dynamic, custom UIs
 
     Qt Declarative is targetted at the sorts of user
     interface (and the sorts of hardware) in embedded devices such as phones, media
