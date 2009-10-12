@@ -168,6 +168,8 @@ namespace QmlParser
 
         // Script blocks that were nested under this object
         QStringList scriptBlocks;
+        QStringList scriptBlocksFile;
+        QList<int> scriptBlocksLineNumber;
 
         // The bytes to cast instances by to get to the QmlParserStatus 
         // interface.  -1 indicates the type doesn't support this interface.
@@ -273,6 +275,8 @@ namespace QmlParser
             PropertyBinding,
             // This is used as a QmlPropertyValueSource assignment
             ValueSource,
+            // This is used as a QmlPropertyValueInterceptor assignment
+            ValueInterceptor,
             // This is used as a property QObject assignment
             CreatedObject,
             // This is used as a signal object assignment

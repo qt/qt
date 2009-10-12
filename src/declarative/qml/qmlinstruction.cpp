@@ -149,6 +149,9 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
     case QmlInstruction::StoreValueSource:
         qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t" << instr->assignValueSource.castValue;
         break;
+    case QmlInstruction::StoreValueInterceptor:
+        qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_INTERCEPTOR\t" << instr->assignValueInterceptor.property << "\t" << instr->assignValueInterceptor.castValue;
+        break;
     case QmlInstruction::BeginObject:
         qWarning() << idx << "\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
         break;

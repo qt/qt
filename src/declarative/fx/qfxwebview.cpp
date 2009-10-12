@@ -1325,9 +1325,8 @@ public Q_SLOTS:
     void qmlLoaded()
     {
         if (component->isError()) {
-            // XXX Could instead give these errors to the WebView to handle.
-            foreach (QmlError err, component->errors())
-                qWarning(err.toString().toLatin1());
+            // ### Could instead give these errors to the WebView to handle.
+            qWarning() << component->errors();
             return;
         }
         item = qobject_cast<QFxItem*>(component->create(qmlContext(webview)));
@@ -1335,7 +1334,7 @@ public Q_SLOTS:
         QString jsObjName;
         for (int i=0; i<propertyNames.count(); ++i) {
             if (propertyNames[i] != QLatin1String("type") && propertyNames[i] != QLatin1String("data")) {
-                item->setProperty(propertyNames[i].toLatin1(),propertyValues[i]);
+                item->setProperty(propertyNames[i].toUtf8(),propertyValues[i]);
                 if (propertyNames[i] == QLatin1String("objectname"))
                     jsObjName = propertyValues[i]; 
             }

@@ -500,7 +500,7 @@
         to receive focus
     \endlist
 
-    The read-only property activeFocus can be used to determine whether a
+    The read-only property focus can be used to determine whether a
     component will receive key input.  Any un-handled keys will be passed to
     the components parent, which in turn will pass keys it doesn't handle up to its
     own ancestors.

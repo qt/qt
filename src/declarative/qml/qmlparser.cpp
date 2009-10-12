@@ -282,6 +282,9 @@ void QmlParser::Value::dump(int indent) const
     case Value::ValueSource:
         type = "ValueSource";
         break;
+    case Value::ValueInterceptor:
+        type = "ValueInterceptor";
+        break;
     case Value::CreatedObject:
         type = "CreatedObject";
         break;

@@ -52,7 +52,7 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
         propType = qMetaTypeId<QVariant>();
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
-    name = QLatin1String(p.name());
+    name = QString::fromUtf8(p.name());
 
     if (p.isConstant())
         flags |= Data::IsConstant;
@@ -76,7 +76,7 @@ void QmlPropertyCache::Data::load(const QMetaProperty &p)
 
 void QmlPropertyCache::Data::load(const QMetaMethod &m)
 {
-    name = QLatin1String(m.signature());
+    name = QString::fromUtf8(m.signature());
     int parenIdx = name.indexOf(QLatin1Char('('));
     Q_ASSERT(parenIdx != -1);
     name = name.left(parenIdx);
@@ -120,7 +120,7 @@ QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject,
     int methodCount = metaObject->methodCount();
     for (int ii = methodCount - 1; ii >= 0; --ii) {
         QMetaMethod m = metaObject->method(ii);
-        QString methodName = QLatin1String(m.signature());
+        QString methodName = QString::fromUtf8(m.signature());
 
         int parenIdx = methodName.indexOf(QLatin1Char('('));
         Q_ASSERT(parenIdx != -1);
@@ -151,7 +151,7 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
     cache->indexCache.resize(propCount);
     for (int ii = propCount - 1; ii >= 0; --ii) {
         QMetaProperty p = metaObject->property(ii);
-        QString propName = QLatin1String(p.name());
+        QString propName = QString::fromUtf8(p.name());
 
         RData *data = new RData;
         data->identifier = enginePriv->objectClass->createPersistentIdentifier(propName);
@@ -172,7 +172,7 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
     int methodCount = metaObject->methodCount();
     for (int ii = methodCount - 1; ii >= 0; --ii) {
         QMetaMethod m = metaObject->method(ii);
-        QString methodName = QLatin1String(m.signature());
+        QString methodName = QString::fromUtf8(m.signature());
 
         int parenIdx = methodName.indexOf(QLatin1Char('('));
         Q_ASSERT(parenIdx != -1);

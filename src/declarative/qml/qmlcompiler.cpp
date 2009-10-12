@@ -195,14 +195,14 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QLatin1String(prop.name()) << "is a read-only property");
+        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QString::fromUtf8(prop.name()) << "is a read-only property");
 
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
         if (value == -1)
             COMPILE_EXCEPTION(v, "Invalid property assignment: unknown enumeration");
         return true;
@@ -336,9 +336,9 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
 
         instr.type = QmlInstruction::StoreInteger;
         instr.storeInteger.propertyIndex = prop.propertyIndex();
@@ -595,7 +595,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.ref = tref.unit;
             ref.ref->addref();
         }
-        ref.className = parserRef->name.toLatin1();
+        ref.className = parserRef->name.toUtf8();
         out->types << ref;
     }
 
@@ -647,7 +647,13 @@ void QmlCompiler::compileTree(Object *tree)
     output->importCache = output->imports.cache(engine);
 
     Q_ASSERT(tree->metatype);
-    static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+
+    if (tree->metadata.isEmpty()) {
+        output->root = tree->metatype;
+    } else {
+        static_cast<QMetaObject &>(output->rootData) = *tree->metaObject();
+        output->root = &output->rootData;
+    }
     if (!tree->metadata.isEmpty()) 
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
@@ -666,7 +672,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     obj->className = tr.className;
 
     // This object is a "Component" element
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         COMPILE_CHECK(buildComponent(obj, ctxt));
         return true;
     } 
@@ -780,7 +786,9 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
 void QmlCompiler::genObject(QmlParser::Object *obj)
 {
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    const QmlCompiledData::TypeReference &tr =
+        output->types.at(obj->type);
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         genComponent(obj);
         return;
     }
@@ -833,6 +841,8 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
         QmlInstruction script;
         script.type = QmlInstruction::StoreScript;
         script.line = 0; // ###
+        script.storeScript.fileName = output->indexForString(obj->scriptBlocksFile.at(ii));
+        script.storeScript.lineNumber = obj->scriptBlocksLineNumber.at(ii);
         script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
         output->bytecode << script;
     }
@@ -1054,6 +1064,8 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
 bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
 {
     QString scriptCode;
+    QString sourceUrl;
+    int lineNumber = 1;
 
     if (script->properties.count() == 1 && 
         script->properties.begin().key() == QByteArray("source")) {
@@ -1066,8 +1078,7 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
             source->values.at(0)->object || !source->values.at(0)->value.isString())
             COMPILE_EXCEPTION(source, "Invalid Script source value");
 
-        QString sourceUrl = 
-            output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
+        sourceUrl = output->url.resolved(QUrl(source->values.at(0)->value.asString())).toString();
 
         for (int ii = 0; ii < unit->resources.count(); ++ii) {
             if (unit->resources.at(ii)->url == sourceUrl) {
@@ -1079,10 +1090,14 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
     } else if (!script->properties.isEmpty()) {
         COMPILE_EXCEPTION(*script->properties.begin(), "Properties cannot be set on Script block");
     } else if (script->defaultProperty) {
+        sourceUrl = output->url.toString();
+
         QmlParser::Location currentLocation;
 
         for (int ii = 0; ii < script->defaultProperty->values.count(); ++ii) {
             Value *v = script->defaultProperty->values.at(ii);
+            if (lineNumber == 1)
+                lineNumber = v->location.start.line;
             if (v->object || !v->value.isString())
                 COMPILE_EXCEPTION(v, "Invalid Script block");
 
@@ -1105,8 +1120,11 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
         }
     }
 
-    if (!scriptCode.isEmpty()) 
+    if (!scriptCode.isEmpty()) {
         obj->scriptBlocks.append(scriptCode);
+        obj->scriptBlocksFile.append(sourceUrl);
+        obj->scriptBlocksLineNumber.append(lineNumber);
+    }
 
     return true;
 }
@@ -1521,6 +1539,24 @@ void QmlCompiler::genPropertyAssignment(QmlParser::Property *prop,
             store.assignValueSource.castValue = valueType->propertyValueSourceCast();
             output->bytecode << store;
 
+        } else if (v->type == Value::ValueInterceptor) {
+            genObject(v->object);
+
+            QmlInstruction store;
+            store.type = QmlInstruction::StoreValueInterceptor;
+            store.line = v->object->location.start.line;
+            if (valueTypeProperty) {
+                store.assignValueInterceptor.property = QmlMetaPropertyPrivate::saveValueType(valueTypeProperty->index, prop->index);
+                store.assignValueInterceptor.owner = 1;
+            } else {
+                store.assignValueInterceptor.property =
+                    QmlMetaPropertyPrivate::saveProperty(prop->index);
+                store.assignValueInterceptor.owner = 0;
+            }
+            QmlType *valueType = QmlMetaType::qmlType(v->object->metatype);
+            store.assignValueInterceptor.castValue = valueType->propertyValueInterceptorCast();
+            output->bytecode << store;
+
         } else if (v->type == Value::PropertyBinding) {
 
             genBindingAssignment(v, prop, obj, valueTypeProperty);
@@ -1625,7 +1661,7 @@ bool QmlCompiler::buildAttachedProperty(QmlParser::Property *prop,
 //     font.pointSize: 12
 //     font.family: "Helvetica"
 // }
-// font is a nested property.  size and family are not.
+// font is a nested property.  pointSize and family are not.
 bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
                                        QmlParser::Object *obj,
                                        const BindingContext &ctxt)
@@ -1638,7 +1674,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
             static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
         if (ep->valueTypes[prop->type]) {
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
-                                                 prop->value, ctxt.incr()));
+                                                 prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
             COMPILE_EXCEPTION(prop, "Invalid property access");
@@ -1662,6 +1698,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
 
 bool QmlCompiler::buildValueTypeProperty(QObject *type,
                                          QmlParser::Object *obj,
+                                         QmlParser::Object *baseObj,
                                          const BindingContext &ctxt)
 {
     if (obj->defaultProperty)
@@ -1683,13 +1720,16 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
 
         if (value->object) {
             bool isPropertyValue = output->types.at(value->object->type).type->propertyValueSourceCast() != -1;
-            if (!isPropertyValue) {
+            bool isPropertyInterceptor = output->types.at(value->object->type).type->propertyValueInterceptorCast() != -1;
+            if (!isPropertyValue && !isPropertyInterceptor) {
                 COMPILE_EXCEPTION(prop, "Invalid property use");
             } else {
                 COMPILE_CHECK(buildObject(value->object, ctxt));
-                value->type = Value::ValueSource;
-            }
 
+                if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                    buildDynamicMeta(baseObj, ForceCreation);
+                value->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
+            }
         } else if (value->value.isScript()) {
             // ### Check for writability
             BindingReference reference;
@@ -1854,8 +1894,12 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
 
         // Will be true if the assigned type inherits QmlPropertyValueSource
         bool isPropertyValue = false;
-        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype))
+        // Will be true if the assigned type inherits QmlPropertyValueInterceptor
+        bool isPropertyInterceptor = false;
+        if (QmlType *valueType = QmlMetaType::qmlType(v->object->metatype)) {
             isPropertyValue = valueType->propertyValueSourceCast() != -1;
+            isPropertyInterceptor = valueType->propertyValueInterceptorCast() != -1;
+        }
 
         // We want to raw metaObject here as the raw metaobject is the
         // actual property type before we applied any extensions that might
@@ -1869,7 +1913,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
             while(c) {
-                isAssignable |= (c == propertyMetaObject);
+                isAssignable |= (QmlMetaPropertyPrivate::equal(c, propertyMetaObject));
                 c = c->superClass();
             }
         }
@@ -1892,11 +1936,13 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
             component->getDefaultProperty()->addValue(componentValue);
             v->object = component;
             COMPILE_CHECK(buildPropertyObjectAssignment(prop, obj, v, ctxt));
-        } else if (isPropertyValue) {
+        } else if (isPropertyValue || isPropertyInterceptor) {
             // Assign as a property value source
             COMPILE_CHECK(buildObject(v->object, ctxt));
 
-            v->type = Value::ValueSource;
+            if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                   buildDynamicMeta(prop->parent, ForceCreation);
+            v->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
         } else {
             COMPILE_EXCEPTION(v->object, "Cannot assign object to property");
         }
@@ -2002,7 +2048,8 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
     Q_ASSERT(obj);
     Q_ASSERT(obj->metatype);
 
-    if (obj->dynamicProperties.isEmpty() &&
+    if (mode != ForceCreation &&
+        obj->dynamicProperties.isEmpty() &&
         obj->dynamicSignals.isEmpty() &&
         obj->dynamicSlots.isEmpty())
         return true;
@@ -2062,7 +2109,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
                     Q_ASSERT(tdata->status == QmlCompositeTypeData::Complete);
 
                     QmlCompiledData *data = tdata->toCompiledComponent(engine);
-                    customTypeName = data->root.className();
+                    customTypeName = data->root->className();
                 } else {
                     customTypeName = qmltype->typeName();
                 }
@@ -2226,28 +2273,44 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
 
     QStringList alias = astNodeToStringList(node);
 
-    if (alias.count() != 2)
+    if (alias.count() != 1 && alias.count() != 2)
         COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     if (!compileState.ids.contains(alias.at(0)))
         COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
 
     Object *idObject = compileState.ids[alias.at(0)];
-    int propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
 
-    if (-1 == propIdx)
-        COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
+    QByteArray typeName;
 
-    QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+    int propIdx = -1;
+    bool writable = false;
+    if (alias.count() == 2) {
+        propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
+
+        if (-1 == propIdx)
+            COMPILE_EXCEPTION(prop.defaultValue, "Invalid alias location");
+
+        QMetaProperty aliasProperty = idObject->metaObject()->property(propIdx);
+        writable = aliasProperty.isWritable();
+
+        if (aliasProperty.isEnumType()) 
+            typeName = "int";  // Avoid introducing a dependency on the aliased metaobject
+        else
+            typeName = aliasProperty.typeName();
+    } else {
+        typeName = idObject->metaObject()->className();
+        typeName += "*";
+    }
 
     data.append((const char *)&idObject->idIndex, sizeof(idObject->idIndex));
     data.append((const char *)&propIdx, sizeof(propIdx));
 
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 
-        builder.addProperty(prop.name, aliasProperty.typeName(), 
-                            builder.methodCount() - 1);
+        builder.addProperty(prop.name, typeName.constData(), builder.methodCount() - 1);
     propBuilder.setScriptable(true);
+    propBuilder.setWritable(writable);
     return true;
 }
 
@@ -2322,7 +2385,7 @@ void QmlCompiler::genBindingAssignment(QmlParser::Value *binding,
     store.assignBinding.value = output->indexForByteArray(ref.compiledData);
     store.assignBinding.context = ref.bindingContext.stack;
     store.assignBinding.owner = ref.bindingContext.owner;
-    store.line = prop->location.end.line;
+    store.line = binding->location.start.line;
 
     Q_ASSERT(ref.bindingContext.owner == 0 ||
              (ref.bindingContext.owner != 0 && valueTypeProperty));
@@ -2418,7 +2481,7 @@ bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2437,7 +2500,7 @@ bool QmlCompiler::canCoerce(int to, int from)
         QmlEnginePrivate::get(engine)->rawMetaObjectForType(from);
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2465,7 +2528,7 @@ QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
         return QStringList();
 
     QMetaClassInfo classInfo = mo->classInfo(idx);
-    QStringList rv = QString(QLatin1String(classInfo.value())).split(QLatin1Char(','));
+    QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
 }
 

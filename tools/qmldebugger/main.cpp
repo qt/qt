@@ -23,9 +23,15 @@ Q_OBJECT
 public:
     Shell(QWidget * = 0);
 
-private slots:
+    void setHost(const QString &host);
+    void setPort(quint16 port);
+    void showEngineTab();
+
+public slots:
     void connectToHost();
     void disconnectFromHost();
+
+private slots:
     void connectionStateChanged();
 
 private:
@@ -38,6 +44,7 @@ private:
     QPushButton *m_disconnectButton;
 
     EnginePane *m_enginePane;
+    QTabWidget *m_tabs;
 };
 
 Shell::Shell(QWidget *parent)
@@ -71,17 +78,32 @@ Shell::Shell(QWidget *parent)
     m_disconnectButton->setEnabled(false);
     connectLayout->addWidget(m_disconnectButton);
 
-    QTabWidget *tabs = new QTabWidget(this);
-    layout->addWidget(tabs);
+    m_tabs = new QTabWidget(this);
+    layout->addWidget(m_tabs);
 
     CanvasFrameRate *cfr = new CanvasFrameRate(&client, this);
-    tabs->addTab(cfr, tr("Frame Rate"));
+    m_tabs->addTab(cfr, tr("Frame Rate"));
 
     m_enginePane = new EnginePane(&client, this);
-    tabs->addTab(m_enginePane, tr("QML Engine"));
+    m_tabs->addTab(m_enginePane, tr("QML Engine"));
 
     QObject::connect(&client, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this, SLOT(connectionStateChanged()));
     connectionStateChanged();
+}
+
+void Shell::setHost(const QString &host)
+{
+    m_host->setText(host);
+}
+
+void Shell::setPort(quint16 port)
+{
+    m_port->setValue(port);
+}
+
+void Shell::showEngineTab()
+{
+    m_tabs->setCurrentWidget(m_enginePane);
 }
 
 void Shell::connectionStateChanged()
@@ -132,9 +154,24 @@ int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
 
-    Shell shell;
-    shell.show();
+    QStringList args = app.arguments();
 
+    Shell shell;
+    if (args.contains("--engine"))
+        shell.showEngineTab();
+
+    if (args.count() > 1 && args.at(1).contains(':')) {
+        QStringList hostAndPort = args.at(1).split(':');
+        bool ok = false;
+        quint16 port = hostAndPort[1].toInt(&ok);
+        if (ok) {
+            shell.setHost(hostAndPort[0]);
+            shell.setPort(port);
+            shell.connectToHost();
+        }
+    }
+
+    shell.show();
 
     return app.exec();
 }

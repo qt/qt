@@ -100,6 +100,24 @@ QmlVMEMetaObject::~QmlVMEMetaObject()
 int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 {
     int id = _id;
+    if(c == QMetaObject::WriteProperty) {
+        int flags = *reinterpret_cast<int*>(a[3]);
+        if (!(flags & QmlMetaProperty::BypassInterceptor)
+            && !aInterceptors.isEmpty()
+            && aInterceptors.testBit(id)) {
+            QmlPropertyValueInterceptor *vi = interceptors.value(id);
+            if (id >= propOffset) {
+                id -= propOffset;
+                if (id < metaData->propertyCount) {
+                    vi->write(QVariant(data[id].type(), a[0]));
+                    return -1;
+                }
+            } else {
+                vi->write(QVariant(property(id).type(), a[0]));
+                return -1;
+            }
+        }
+    }
     if(c == QMetaObject::ReadProperty || c == QMetaObject::WriteProperty) {
         if (id >= propOffset) {
             id -= propOffset;
@@ -181,20 +199,32 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
                 QObject *target = ctxtPriv->idValues[d->contextIdx].data();
-                if (!target) return -1;
+                if (!target) {
+                    if (d->propertyIdx == -1) 
+                        *reinterpret_cast<QObject **>(a[0]) = target;
+                    return -1;
+                }
 
                 if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {
                     int sigIdx = methodOffset + id + metaData->propertyCount;
                     QMetaObject::connect(ctxt, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
 
-                    QMetaProperty prop = 
-                        target->metaObject()->property(d->propertyIdx);
-                    if (prop.hasNotifySignal())
-                        QMetaObject::connect(target, prop.notifySignalIndex(), 
-                                             object, sigIdx);
+                    if (d->propertyIdx != -1) {
+                        QMetaProperty prop = 
+                            target->metaObject()->property(d->propertyIdx);
+                        if (prop.hasNotifySignal())
+                            QMetaObject::connect(target, prop.notifySignalIndex(), 
+                                                 object, sigIdx);
+                    }
                     aConnected.setBit(id);
                 }
-                return QMetaObject::metacall(target, c, d->propertyIdx, a);
+
+                if (d->propertyIdx == -1) {
+                    *reinterpret_cast<QObject **>(a[0]) = target;
+                    return -1;
+                } else {
+                    return QMetaObject::metacall(target, c, d->propertyIdx, a);
+                }
 
             }
             return -1;
@@ -252,5 +282,14 @@ void QmlVMEMetaObject::listChanged(int id)
 {
     activate(object, methodOffset + id, 0);
 }
+
+void QmlVMEMetaObject::registerInterceptor(int index, QmlPropertyValueInterceptor *interceptor)
+{
+    if (aInterceptors.isEmpty())
+        aInterceptors.resize(propertyCount() + metaData->propertyCount);
+    aInterceptors.setBit(index);
+    interceptors.insert(index, interceptor);
+}
+
 
 QT_END_NAMESPACE

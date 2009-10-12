@@ -39,6 +39,7 @@ private slots:
     void assignQmlComponent();
     void assignBasicTypes();
     void assignTypeExtremes();
+    void assignCompositeToType();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -56,6 +57,7 @@ private slots:
     void valueTypes();
     void cppnamespace();
     void aliasProperties();
+    void componentCompositeType();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -321,6 +323,15 @@ void tst_qmllanguage::assignTypeExtremes()
     QVERIFY(object != 0);
     QCOMPARE(object->uintProperty(), 0xEE6B2800);
     QCOMPARE(object->intProperty(), -0x77359400);
+}
+
+// Test that a composite type can assign to a property of its base type
+void tst_qmllanguage::assignCompositeToType()
+{
+    QmlComponent component(&engine, TEST_FILE("assignCompositeToType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 // Tests that custom parser types can be instantiated
@@ -612,6 +623,48 @@ void tst_qmllanguage::aliasProperties()
         delete object;
     }
 
+    // Enum aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.4.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("enumAlias").toInt(), 1);
+
+        delete object;
+    }
+
+    // Id aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.5.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVariant v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        MyQmlObject *o = qvariant_cast<MyQmlObject*>(v);
+        QCOMPARE(o->value(), 10);
+
+        delete o;
+
+        v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        o = qvariant_cast<MyQmlObject*>(v);
+        QVERIFY(o == 0);
+
+        delete object;
+    }
+}
+
+// Test that the root element in a composite type can be a Component
+void tst_qmllanguage::componentCompositeType()
+{
+    QmlComponent component(&engine, TEST_FILE("componentCompositeType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 class TestType : public QObject {

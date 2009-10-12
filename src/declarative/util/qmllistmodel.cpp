@@ -233,7 +233,7 @@ struct ModelNode
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
                 if (!(*it)->values.isEmpty())
-                    objectCache->setValue(it.key().toLatin1(), (*it)->values.first());
+                    objectCache->setValue(it.key().toUtf8(), (*it)->values.first());
             }
         }
         return objectCache;
@@ -252,7 +252,7 @@ struct ModelNode
             properties.insert(prop,n);
         }
         if (objectCache)
-            objectCache->setValue(prop.toLatin1(), val);
+            objectCache->setValue(prop.toUtf8(), val);
     }
 
     QmlListModel *modelCache;
@@ -709,7 +709,7 @@ bool QmlListModelParser::compileProperty(const QmlCustomParserProperty &prop, QL
                 qvariant_cast<QmlParser::Variant>(value);
 
             int ref = data.count();
-            QByteArray d = variant.asScript().toLatin1();
+            QByteArray d = variant.asScript().toUtf8();
             d.append('\0');
             data.append(d);
 
@@ -799,7 +799,7 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
             {
                 ModelNode *n = nodes.top();
                 ModelNode *n2 = new ModelNode;
-                n->properties.insert(QLatin1String(data + instr.dataIdx), n2);
+                n->properties.insert(QString::fromUtf8(data + instr.dataIdx), n2);
                 nodes.push(n2);
             }
             break;

@@ -95,7 +95,7 @@ QmlInfo::QmlInfo(QObject *object)
         location += QLatin1String(":");
         location += QString::number(ddata->columnNumber);
         location += QLatin1String(")");
-        *this << location.toLatin1().constData();
+        *this << qPrintable(location);
     } else {
         *this << "(unknown location):";
     }

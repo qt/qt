@@ -187,8 +187,16 @@ QStringList HelpProjectWriter::keywordDetails(const Node *node) const
         details << node->parent()->name()+"::"+node->name();
     } else if (node->type() == Node::Fake) {
         const FakeNode *fake = static_cast<const FakeNode *>(node);
-        details << fake->fullTitle();
-        details << fake->fullTitle();
+#ifdef QDOC_QML
+        if (fake->subType() == Node::QmlClass) {
+            details << (QmlClassNode::qmlOnly ? fake->name() : fake->fullTitle());
+            details << "QML." + fake->name();
+        } else
+#endif
+        {
+            details << fake->fullTitle();
+            details << fake->fullTitle();
+        }
     } else {
         details << node->name();
         details << node->name();

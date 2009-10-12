@@ -91,10 +91,9 @@ public:
     QObjectList defaultObjects;
     int highPriorityCount;
 
-    QScriptValue scriptValue;
-
     QList<QScriptValue> scripts;
-    void addScript(const QString &script, QObject *scope);
+    void addScript(const QString &script, QObject *scope, 
+                   const QString &fileName = QString(), int lineNumber = 1);
 
     QUrl url;
 

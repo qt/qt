@@ -350,6 +350,7 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
         if (action.event) {
             if (!action.event->isReversable())
                 continue;
+            action.event->saveOriginals();
             for (jj = 0; jj < d->revertList.count(); ++jj) {
                 ActionEvent *event = d->revertList.at(jj).event;
                 if (event && event->typeName() == action.event->typeName()) {
@@ -359,9 +360,6 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
                     }
                 }
             }
-            if (!found)
-                action.event->saveOriginals();
-            //### do we ever need to do saveOriginals when found == true?
         } else {
             action.fromBinding = action.property.binding();
 

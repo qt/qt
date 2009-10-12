@@ -73,7 +73,7 @@ QEasingCurve stringToCurve(const QString &curve)
         QString easeName = curve.trimmed();
         if (!easeName.endsWith(QLatin1Char(')'))) {
             qWarning("QEasingCurve: Unmatched perenthesis in easing function '%s'",
-                     curve.toLatin1().constData());
+                     qPrintable(curve));
             return easingCurve;
         }
 
@@ -83,7 +83,7 @@ QEasingCurve stringToCurve(const QString &curve)
         normalizedCurve = easeName.left(idx);
         if (!normalizedCurve.startsWith(QLatin1String("ease"))) {
             qWarning("QEasingCurve: Easing function '%s' must start with 'ease'",
-                     curve.toLatin1().constData());
+                     qPrintable(curve));
         }
 
         props = prop_str.split(QLatin1Char(','));
@@ -95,10 +95,10 @@ QEasingCurve stringToCurve(const QString &curve)
     static int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
     static QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
 
-    int value = me.keyToValue(normalizedCurve.toLatin1().constData());
+    int value = me.keyToValue(normalizedCurve.toUtf8().constData());
     if (value < 0) {
         qWarning("QEasingCurve: Unknown easing curve '%s'",
-                 curve.toLatin1().constData());
+                 qPrintable(curve));
         value = 0;
     }
     easingCurve.setType((QEasingCurve::Type)value);
@@ -109,7 +109,7 @@ QEasingCurve stringToCurve(const QString &curve)
 
             if (sep == -1) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                        curve.toLatin1().constData());
+                         qPrintable(curve));
                 return easingCurve;
             }
 
@@ -119,7 +119,7 @@ QEasingCurve stringToCurve(const QString &curve)
 
             if (propName.isEmpty() || !isOk) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                        curve.toLatin1().constData());
+                         qPrintable(curve));
                 return easingCurve;
             }
 
@@ -972,7 +972,7 @@ void QmlPropertyAction::setValue(const QVariant &v)
 
 void QmlPropertyActionPrivate::doAction()
 {
-    property.write(value);
+    property.write(value, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
 }
 
 QAbstractAnimation *QmlPropertyAction::qtAnimation()
@@ -1007,9 +1007,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
         {
             for (int ii = 0; ii < actions.count(); ++ii) {
                 const Action &action = actions.at(ii);
-                QmlBehavior::_ignore = true;
-                action.property.write(action.toValue);
-                QmlBehavior::_ignore = false;
+                action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
             }
         }
     };
@@ -1020,9 +1018,11 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
         props.append(d->propertyName);
 
+    bool targetNeedsReset = false;
     if (d->userProperty.isValid() && props.isEmpty() && !target()) {
         props.append(d->userProperty.value.name());
         d->target = d->userProperty.value.object();
+        targetNeedsReset = true;
    }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
@@ -1070,6 +1070,8 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     } else {
         delete data;
     }
+    if (targetNeedsReset)
+        d->target = 0;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PropertyAction,QmlPropertyAction)
@@ -1714,10 +1716,10 @@ void QmlPropertyAnimationPrivate::valueChanged(qreal r)
     }
 
     if (r == 1.) {
-        property.write(to);
+        property.write(to, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
     } else {
         if (interpolator)
-            property.write(interpolator(from.constData(), to.constData(), r));
+            property.write(interpolator(from.constData(), to.constData(), r), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
     }
 }
 
@@ -1773,9 +1775,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
             for (int ii = 0; ii < actions.count(); ++ii) {
                 Action &action = actions[ii];
 
-                QmlBehavior::_ignore = true;
                 if (v == 1.)
-                    action.property.write(action.toValue);
+                    action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
                 else {
                     if (action.fromValue.isNull()) {
                         action.fromValue = action.property.read();
@@ -1790,9 +1791,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                         }
                     }
                     if (interpolator)
-                        action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v));
+                        action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
                 }
-                QmlBehavior::_ignore = false;
             }
         }
     };
@@ -1805,9 +1805,11 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
     bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
+    bool targetNeedsReset = false;
     if (d->userProperty.isValid() && props.isEmpty() && !target()) {
         props.append(d->userProperty.value.name());
         d->target = d->userProperty.value.object();
+        targetNeedsReset = true;
     }
 
     PropertyUpdater *data = new PropertyUpdater;
@@ -1874,6 +1876,8 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     } else {
         delete data;
     }
+    if (targetNeedsReset)
+        d->target = 0;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PropertyAnimation,QmlPropertyAnimation)

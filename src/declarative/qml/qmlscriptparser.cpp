@@ -87,12 +87,12 @@ class ProcessAST: protected AST::Visitor
             const State &state = top();
             if (state.property) {
                 State s(state.property->getValue(),
-                        state.property->getValue()->getProperty(name.toLatin1()));
+                        state.property->getValue()->getProperty(name.toUtf8()));
                 s.property->location = location;
                 push(s);
             } else {
                 State s(state.object,
-                        state.object->getProperty(name.toLatin1()));
+                        state.object->getProperty(name.toUtf8()));
 
                 s.property->location = location;
                 push(s);
@@ -312,7 +312,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
 
         // XXX this doesn't do anything (_scope never builds up)
         _scope.append(resolvableObjectType);
-        obj->typeName = qualifiedNameId().toLatin1();
+        obj->typeName = qualifiedNameId().toUtf8();
         _scope.removeLast();
 
         obj->location = location;

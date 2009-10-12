@@ -88,8 +88,9 @@ public:
 
     QVariant read() const;
     void write(const QVariant &) const;
-    enum WriteSource { Animation, Binding, Other };
-    void write(const QVariant &, WriteSource) const;
+    enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
+    Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
+    void write(const QVariant &, QmlMetaProperty::WriteFlags) const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;
@@ -126,7 +127,8 @@ public:
     QMetaProperty property() const;
 
     QmlAbstractBinding *binding() const;
-    QmlAbstractBinding *setBinding(QmlAbstractBinding *) const;
+    QmlAbstractBinding *setBinding(QmlAbstractBinding *,
+                                   QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding) const;
 
     QmlExpression *signalExpression() const;
     QmlExpression *setSignalExpression(QmlExpression *) const;
@@ -139,6 +141,7 @@ private:
     QmlMetaPropertyPrivate *d;
 };
 typedef QList<QmlMetaProperty> QmlMetaProperties;
+ Q_DECLARE_OPERATORS_FOR_FLAGS(QmlMetaProperty::WriteFlags)
 
 QT_END_NAMESPACE
 

@@ -166,7 +166,6 @@ Q_SIGNALS:
     void stateChanged(const QString &);
     void focusChanged();
     void wantsFocusChanged();
-    void activeFocusChanged();
     void parentChanged();
 
 protected:
@@ -183,7 +182,6 @@ protected:
     virtual void classBegin();
     virtual void componentComplete();
     virtual void focusChanged(bool);
-    virtual void activeFocusChanged(bool);
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void inputMethodEvent(QInputMethodEvent *);

@@ -89,8 +89,11 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
 }
 
 void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
-                                QObject *me)
+                                QObject *me, const QUrl &url, int lineNumber)
 {
+    data->fileName = url.toString();
+    data->line = lineNumber;
+
     quint32 *exprData = (quint32 *)expr;
     Q_ASSERT(*exprData == BasicScriptEngineData || 
              *exprData == PreTransformedQtScriptData);
@@ -107,14 +110,12 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
         QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
         if (!dd->programs.at(progIdx)) {
-            dd->programs[progIdx] = new QScriptProgram(scriptEngine->compile(data->expression));
+            dd->programs[progIdx] = 
+                new QScriptProgram(scriptEngine->compile(data->expression, data->fileName, data->line));
         }
 
-        QmlContextPrivate *ctxtPriv = ctxt->d_func();
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
-        scriptContext->pushScope(ctxtPriv->scriptValue);
-        if (me)
-            scriptContext->pushScope(ep->objectClass->newQObject(me));
+        scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
         data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
 
@@ -145,11 +146,12 @@ QmlExpression::QmlExpression()
 /*!  \internal */
 QmlExpression::QmlExpression(QmlContext *ctxt, void *expr,
                              QmlRefCount *rc, QObject *me, 
+                             const QUrl &url, int lineNumber,
                              QmlExpressionPrivate &dd)
 : QObject(dd, 0)
 {
     Q_D(QmlExpression);
-    d->init(ctxt, expr, rc, me);
+    d->init(ctxt, expr, rc, me, url, lineNumber);
 }
 
 /*!
@@ -210,7 +212,7 @@ QString QmlExpression::expression() const
 {
     Q_D(const QmlExpression);
     if (d->data->sse.isValid())
-        return QLatin1String(d->data->sse.expression());
+        return QString::fromUtf8(d->data->sse.expression());
     else
         return d->data->expression;
 }
@@ -251,6 +253,28 @@ QVariant QmlExpressionPrivate::evalSSE()
     return rv;
 }
 
+void QmlExpressionPrivate::printException(QScriptEngine *scriptEngine)
+{
+    if (scriptEngine->hasUncaughtException() && 
+        scriptEngine->uncaughtException().isError()) {
+
+        QString fileName;
+        int lineNumber = scriptEngine->uncaughtExceptionLineNumber();
+
+        QScriptValue exception = scriptEngine->uncaughtException();
+        QLatin1String fileNameProp("fileName");
+
+        if (!exception.property(fileNameProp).toString().isEmpty()){
+            fileName = exception.property(fileNameProp).toString();
+        } else {
+            fileName = QLatin1String("<Unknown File>");
+        }
+
+        qWarning().nospace() << qPrintable(fileName) << ":" << lineNumber << ": "
+                             << qPrintable(exception.toString());
+    }
+}
+
 QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
@@ -270,10 +294,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
     if (!data->expressionFunctionValid) {
 
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
-        scriptContext->pushScope(ctxtPriv->scriptValue);
-
-        if (data->me)
-            scriptContext->pushScope(ep->objectClass->newQObject(data->me));
+        scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 
@@ -291,19 +312,8 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
 
     QScriptValue svalue = data->expressionFunction.call();
 
-    if (scriptEngine->hasUncaughtException()) {
-        if (scriptEngine->uncaughtException().isError()){
-            QScriptValue exception = scriptEngine->uncaughtException();
-            QLatin1String fileNameProp("fileName");
-            if (!exception.property(fileNameProp).toString().isEmpty()){
-                    qWarning() << exception.property(fileNameProp).toString()
-                               << scriptEngine->uncaughtExceptionLineNumber()
-                               << exception.toString();
-            } else {
-                qWarning() << exception.toString();
-            }
-        }
-    }
+    if (scriptEngine->hasUncaughtException())
+       printException(scriptEngine);
 
     if (secondaryScope)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);

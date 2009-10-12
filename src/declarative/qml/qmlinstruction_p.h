@@ -130,6 +130,7 @@ public:
         StoreIdOptBinding,        /* assignIdOptBinding */
         StoreObjPropBinding,      /* assignObjPropBinding */
         StoreValueSource,         /* assignValueSource */
+        StoreValueInterceptor,    /* assignValueInterceptor */
 
         BeginObject,              /* begin */
 
@@ -190,6 +191,11 @@ public:
         } assignValueSource;
         struct {
             int property;
+            int owner;
+            int castValue;
+        } assignValueInterceptor;   //### merge with above
+        struct {
+            int property;
             int value;
             short context;
             short owner;
@@ -240,6 +246,8 @@ public:
         } storeString;
         struct {
             int value;
+            int fileName;
+            int lineNumber;
         } storeScript;
         struct {
             int propertyIndex;
