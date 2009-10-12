@@ -84,6 +84,12 @@ Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
+#ifdef Q_WS_MAC
+//On mac we get full update. So check that the expected region is contained inside the actual
+#define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
+#else
+#define COMPARE_REGIONS QCOMPARE
+#endif
 
 static void sendMousePress(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
 {
@@ -3179,7 +3185,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-    QCOMPARE(view.lastPaintedRegion, expectedRegion);
+    COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsView::centerOnDirtyItem()
