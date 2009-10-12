@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+DEFINE_BOOL_CONFIG_OPTION(qmlBasicScriptDump, QML_BASICSCRIPT_DUMP);
+
 using namespace QmlJS;
 
 struct ScriptInstruction {
@@ -400,6 +402,8 @@ bool QmlBasicScript::compile(const Expression &expression)
         ::memcpy((char *)d->data(), bsc.data.constData(), bsc.data.count());
     }
 
+    if (d && qmlBasicScriptDump())
+        dump();
     return d != 0;
 }
 
@@ -649,7 +653,7 @@ QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
 
             case ScriptInstruction::FetchRootConstant:
             {
-                QObject *obj = contextPrivate->defaultObjects.at(0);
+                QObject *obj = contextPrivate->defaultObjects.last();
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)
