@@ -71,7 +71,7 @@
 
     Core QML Features:
     \list
-    \o \l {binding}{Data Binding}
+    \o \l {Property Binding}
     \o \l {qmlmodels}{Data Models}
     \o \l {anchor-layout}{Anchor-based Layout}
     \o \l {qmlanimation}{Animation}
