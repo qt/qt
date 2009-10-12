@@ -847,9 +847,9 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         if (found) {
             if (context && u.isRelative() && !u.isEmpty())
                 u = context->baseUrl().resolved(u);
-            void *a[1];
-            a[0] = &u;
-            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
+            int status = -1;
+            void *argv[] = { &u, 0, &status, &flags };
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, argv);
         }
 
     } else if (vt == t) {
