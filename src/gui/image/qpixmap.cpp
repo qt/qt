@@ -322,8 +322,9 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+    Q_ASSERT(data->ref >= 1); // Catch if ref-counting changes again
+    if (data->is_cached && data->ref == 1) // ref will be decrememnted after destructor returns
+        QImagePixmapCleanupHooks::executePixmapDestructionHooks(this);
 }
 
 /*!
@@ -1917,7 +1918,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+        QImagePixmapCleanupHooks::executePixmapModificationHooks(this);
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;

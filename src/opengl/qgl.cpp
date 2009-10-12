@@ -1584,7 +1584,10 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addPixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
@@ -1592,7 +1595,10 @@ QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removePixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->removePixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
@@ -1660,7 +1666,7 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 }
 
 
-void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
+void QGLTextureCache::cleanupTextures(QPixmap* pixmap)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() == QThread::currentThread()) {
@@ -1669,14 +1675,21 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
         if (texture && texture->options & QGLContext::MemoryManagedBindOption)
             instance()->remove(cacheKey);
     }
+}
+
 #if defined(Q_WS_X11)
+void QGLTextureCache::cleanupPixmapSurfaces(QPixmap* pixmap)
+{
+    // Remove any bound textures first:
+    cleanupTextures(pixmap);
+
     QPixmapData *pd = pixmap->data_ptr().data();
     if (pd->classId() == QPixmapData::X11Class) {
         Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
         QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
     }
-#endif
 }
+#endif
 
 void QGLTextureCache::deleteIfEmpty()
 {
