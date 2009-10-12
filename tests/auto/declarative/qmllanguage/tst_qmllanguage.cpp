@@ -58,6 +58,8 @@ private slots:
     void cppnamespace();
     void aliasProperties();
     void componentCompositeType();
+    void i18n();
+    void i18n_data();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -678,6 +680,30 @@ class TestType2 : public QObject {
 public:
     TestType2(QObject *p=0) : QObject(p) {}
 };
+
+void tst_qmllanguage::i18n_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("stringProperty");
+    QTest::newRow("i18nStrings") << "i18nStrings.qml" << QString::fromUtf8("Test áâãäå (5 accented 'a' letters)");
+    QTest::newRow("i18nDeclaredPropertyNames") << "i18nDeclaredPropertyNames.qml" << QString::fromUtf8("Test áâãäå: 10");
+    QTest::newRow("i18nDeclaredPropertyUse") << "i18nDeclaredPropertyUse.qml" << QString::fromUtf8("Test áâãäå: 15");
+    QTest::newRow("i18nScript") << "i18nScript.qml" << QString::fromUtf8("Test áâãäå: 20");
+    QTest::newRow("i18nType") << "i18nType.qml" << QString::fromUtf8("Test áâãäå: 30");
+}
+
+void tst_qmllanguage::i18n()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, stringProperty);
+    QmlComponent component(&engine, TEST_FILE(file));
+    VERIFY_ERRORS(0);
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->stringProperty(), stringProperty);
+
+    delete object;
+}
 
 // Check that first child of qml is of given type. Empty type insists on error.
 void tst_qmllanguage::testType(const QString& qml, const QString& type)

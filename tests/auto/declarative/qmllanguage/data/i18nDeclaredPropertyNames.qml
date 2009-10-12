@@ -1,6 +1,6 @@
-import Qt 4.6
+import Test 1.0
 
-Text {
+MyTypeObject {
     property int áâãäå: 10
-    text: "Test áâãäå: " + áâãäå
+    stringProperty: "Test áâãäå: " + áâãäå
 }

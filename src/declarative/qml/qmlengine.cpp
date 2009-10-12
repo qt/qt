@@ -1106,7 +1106,7 @@ public:
             }
         }
         if (url_return) {
-            *url_return = base.resolved(QUrl(QLatin1String(type + ".qml")));
+            *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
             return true;
         } else {
             return false;

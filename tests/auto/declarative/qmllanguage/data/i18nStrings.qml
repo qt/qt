@@ -1,5 +1,5 @@
-import Qt 4.6
+import Test 1.0
 
-Text {
-    text: "Test áâãäå (5 accented 'a' letters)"
+MyTypeObject {
+    stringProperty: "Test áâãäå (5 accented 'a' letters)"
 }
