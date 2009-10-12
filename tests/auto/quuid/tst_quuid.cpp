@@ -72,6 +72,8 @@ private slots:
     void variants();
     void versions();
 
+    void threadUniqueness();
+
 public:
     // Variables
     QUuid uuidA;
@@ -169,6 +171,30 @@ void tst_QUuid::versions()
     QVERIFY( NCS.version() == QUuid::VerUnknown );
 }
 
+class UuidThread : public QThread
+{
+public:
+    QUuid uuid;
+
+    void run()
+    {
+        uuid = QUuid::createUuid();
+    }
+};
+
+void tst_QUuid::threadUniqueness()
+{
+    QVector<UuidThread *> threads(qMax(2, QThread::idealThreadCount()));
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i] = new UuidThread;
+    for (int i = 0; i < threads.count(); ++i)
+        threads[i]->start();
+    for (int i = 0; i < threads.count(); ++i)
+        QVERIFY(threads[i]->wait(1000));
+    for (int i = 1; i < threads.count(); ++i)
+        QVERIFY(threads[0]->uuid != threads[i]->uuid);
+    qDeleteAll(threads);
+}
 
 QTEST_MAIN(tst_QUuid)
 #include "tst_quuid.moc"

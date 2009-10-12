@@ -5478,11 +5478,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     }
 
     if (itemsNeedingEvents.isEmpty()) {
-        sceneTouchEvent->ignore();
+        sceneTouchEvent->accept();
         return;
     }
 
-    bool acceptSceneTouchEvent = false;
+    bool ignoreSceneTouchEvent = true;
     QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator it = itemsNeedingEvents.constBegin();
     const QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator end = itemsNeedingEvents.constEnd();
     for (; it != end; ++it) {
@@ -5525,19 +5525,20 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             item->d_ptr->acceptedTouchBeginEvent = true;
             bool res = sendTouchBeginEvent(item, &touchEvent)
                        && touchEvent.isAccepted();
-            acceptSceneTouchEvent = acceptSceneTouchEvent || res;
+            if (!res)
+                ignoreSceneTouchEvent = false;
             break;
         }
         default:
             if (item->d_ptr->acceptedTouchBeginEvent) {
                 updateTouchPointsForItem(item, &touchEvent);
                 (void) sendEvent(item, &touchEvent);
-                acceptSceneTouchEvent = true;
+                ignoreSceneTouchEvent = false;
             }
             break;
         }
     }
-    sceneTouchEvent->setAccepted(acceptSceneTouchEvent);
+    sceneTouchEvent->setAccepted(ignoreSceneTouchEvent);
 }
 
 bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEvent *touchEvent)

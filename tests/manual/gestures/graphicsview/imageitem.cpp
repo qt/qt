@@ -39,30 +39,55 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "pinchwidget.h"
+#include "imageitem.h"
+#include "gestures.h"
 
-class MainWindow : public QWidget
-{
-public:
-    MainWindow();
-};
+#include <QPainter>
+#include <QEvent>
 
-MainWindow::MainWindow()
+ImageItem::ImageItem(const QImage &image)
 {
-    QVBoxLayout *l = new QVBoxLayout(this);
-    QPushButton *btn = new QPushButton(QLatin1String("AcceptTouchEvents"));
-    l->addWidget(btn);
-    QImage image(":/images/qt-logo.png");
-    PinchWidget *w = new PinchWidget(image);
-    l->addWidget(w);
-    connect(btn, SIGNAL(clicked()), w, SLOT(acceptTouchEvents()));
+    setImage(image);
 }
 
-int main(int argc, char *argv[])
+void ImageItem::setImage(const QImage &image)
 {
-    QApplication app(argc, argv);
-    MainWindow w;
-    w.show();
-    return app.exec();
+    image_ = image;
+    pixmap_ = QPixmap::fromImage(image.scaled(400, 400, Qt::KeepAspectRatio));
+    update();
 }
+
+QImage ImageItem::image() const
+{
+    return image_;
+}
+
+QRectF ImageItem::boundingRect() const
+{
+    const QSize size = pixmap_.size();
+    return QRectF(0, 0, size.width(), size.height());
+}
+
+void ImageItem::paint(QPainter *painter, const QStyleOptionGraphicsItem*, QWidget*)
+{
+    painter->drawPixmap(0, 0, pixmap_);
+}
+
+
+GestureImageItem::GestureImageItem(const QImage &image)
+    : ImageItem(image)
+{
+    grabGesture(Qt::PanGesture);
+    grabGesture(ThreeFingerSlideGesture::Type);
+}
+
+bool GestureImageItem::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture) {
+        qDebug("gestureimageitem: gesture triggered");
+        return true;
+    }
+    return ImageItem::event(event);
+}
+
+#include "moc_imageitem.cpp"

@@ -176,22 +176,25 @@ QT_BEGIN_NAMESPACE
 
     \section1 Predefined Colors
 
-    There are 20 predefined QColors: Qt::white, Qt::black,
-    Qt::red, Qt::darkRed, Qt::green, Qt::darkGreen, Qt::blue,
-    Qt::darkBlue, Qt::cyan, Qt::darkCyan, Qt::magenta,
-    Qt::darkMagenta, Qt::yellow, Qt::darkYellow, Qt::gray,
-    Qt::darkGray, Qt::lightGray, Qt::color0, Qt::color1, and
-    Qt::transparent.
+    There are 20 predefined QColors described by the Qt::GlobalColor enum,
+    including black, white, primary and secondary colors, darker versions
+    of these colors and three shades of gray. QColor also recognizes a
+    variety of color names; the static colorNames() function returns a
+    QStringList color names that QColor knows about.
 
     \img qt-colors.png Qt Colors
 
-    QColor provides the static colorNames() function which returns a
-    QStringList containing the color names Qt knows about.
+    Additionally, the Qt::color0, Qt::color1 and Qt::transparent colors
+    are used for special purposes.
 
-    The colors Qt::color0 (zero pixel value) and Qt::color1 (non-zero
-    pixel value) are special colors for drawing in QBitmaps. Painting with
-    Qt::color0 sets the bitmap bits to 0 (transparent, i.e. background), and
-    painting with Qt::color1 sets the bits to 1 (opaque, i.e. foreground).
+    Qt::color0 (zero pixel value) and Qt::color1 (non-zero pixel value)
+    are special colors for drawing in QBitmaps. Painting with Qt::color0
+    sets the bitmap bits to 0 (transparent; i.e., background), and painting
+    with Qt::color1 sets the bits to 1 (opaque; i.e., foreground).
+
+    Qt::transparent is used to indicate a transparent pixel. When painting
+    with this value, a pixel value will be used that is appropriate for the
+    underlying pixel format in use.
 
     \section1 The HSV Color Model
 

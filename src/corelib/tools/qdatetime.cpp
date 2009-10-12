@@ -54,6 +54,7 @@
 #ifndef Q_WS_WIN
 #include <locale.h>
 #endif
+
 #include <time.h>
 #if defined(Q_OS_WINCE)
 #include "qfunctions_wince.h"
@@ -66,31 +67,6 @@
 #else
 #  define QDTPDEBUG if (false) qDebug()
 #  define QDTPDEBUGN if (false) qDebug
-#endif
-
-#if defined(Q_OS_SYMBIAN)
-    // Workaround for OpenC bug.
-
-    // OpenC incorrectly caches DST information between localtime_r
-    // calls, i.e. if previous call to localtime_r has been called for DST
-    // affected date, also the second call will be affected by DST even
-    // the date is such that DST should not be applied.
-
-    // The workaround is to call mktime with non-DST affected date before
-    // calling localtime_r. mktime call resets the OpenC internal DST cache
-    // to right value and localtime_r will return correct values.
-#define FIX_OPENC_DSTCACHE \
-    tm localTM; \
-    localTM.tm_sec = 0; \
-    localTM.tm_min = 0; \
-    localTM.tm_hour = 12; \
-    localTM.tm_mday = 1; \
-    localTM.tm_mon = 1; \
-    localTM.tm_year = 2002 - 1900; \
-    localTM.tm_isdst = -1; \
-    time_t temp = mktime(&localTM);
-#else
-#define FIX_OPENC_DSTCACHE
 #endif
 
 #if defined(Q_WS_MAC)
@@ -1162,7 +1138,6 @@ QDate QDate::currentDate()
     // use the reentrant version of localtime() where available
     tzset();
     tm res;
-    FIX_OPENC_DSTCACHE
     t = localtime_r(&ltime, &res);
 #else
     t = localtime(&ltime);
@@ -1859,13 +1834,12 @@ QTime QTime::currentTime()
     // use the reentrant version of localtime() where available
     tzset();
     tm res;
-    FIX_OPENC_DSTCACHE
     t = localtime_r(&ltime, &res);
 #else
     t = localtime(&ltime);
 #endif
     Q_CHECK_PTR(t);
-
+    
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec
              + tv.tv_usec / 1000;
 #else
@@ -2913,7 +2887,6 @@ QDateTime QDateTime::currentDateTime()
     // use the reentrant version of localtime() where available
     tzset();
     tm res;
-    FIX_OPENC_DSTCACHE
     t = localtime_r(&ltime, &res);
 #else
     t = localtime(&ltime);
@@ -3731,7 +3704,6 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     // use the reentrant version of localtime() where available
     tzset();
     tm res;
-    FIX_OPENC_DSTCACHE
     brokenDown = localtime_r(&secsSince1Jan1970UTC, &res);
 #elif defined(_MSC_VER) && _MSC_VER >= 1400
     tm res;

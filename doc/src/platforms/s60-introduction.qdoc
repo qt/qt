@@ -50,12 +50,12 @@
     \tableofcontents
 
     \section1 Required tools
-    
+
     See \l{Qt for Symbian platform Requirements} to see what tools are
-required to use Qt for Symbian platform.
+    required to use Qt for Symbian platform.
 
     \section1 Installing Qt and running demos
-    
+
     Follow the instructions found in \l{Installing Qt on the Symbian platform using binary package} to learn how
     to install Qt using binary package and how to build and run Qt demos.
 
@@ -69,7 +69,7 @@ required to use Qt for Symbian platform.
     Qt application on the Symbian platform compared to any of the other platforms supported
     by Qt is not that big.
 
-    Once you have crated a \c .pro file for your project, generate the
+    Once you have created a \c .pro file for your project, generate the
     Carbide specific \c Bld.inf and \c .mmp files this way:
 
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 0
@@ -78,9 +78,9 @@ required to use Qt for Symbian platform.
     {qmake Tutorial}.
 
     Now you can build the Qt for the Symbian platform application with
-standard build tools. By default, running \c make will produce binaries for
-the emulator. However, the Symbian platform comes with several alternative
-build targets, as shown in the table below:
+    standard build tools. By default, running \c make will produce binaries for
+    the emulator. However, the Symbian platform comes with several alternative
+    build targets, as shown in the table below:
 
     \table
     \row \o \c debug-winscw  \o Build debug binaries for the emulator (default).
@@ -111,19 +111,19 @@ build targets, as shown in the table below:
     target. For example, the following sequence will generate the needed makefiles, 
     build the project for \c debug-winscw and \c release-armv5, and create 
     self-signed \c .sis file for \c release-armv5 target:
-    
+
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 2
 
     If you want to use different certificate information or override the default
     target for \c .sis file creation you can use the environment variables as 
     shown in the table below:
-    
+
     \table
     \row \o \c QT_SIS_OPTIONS      \o Options accepted by \c .sis creation. 
                                        -i, install the package right away using PC suite.
                                        -c=<file>, read certificate information from a file.
-                                       Execute \c{perl createpackage.pl} for more information
-                                       about options.
+                                       Execute the \c{createpackage.pl} script without any 
+                                       parameters for more information about options.
                                        By default no otions are given.
     \row \o \c QT_SIS_TARGET       \o Target for which \c .sis file is created.
                                        Accepted values are build targets listed in 
@@ -135,15 +135,15 @@ build targets, as shown in the table below:
     \row \o \c QT_SIS_PASSPHRASE   \o The certificate's private key file's passphrase.
                                        By default empty. 
     \endtable    
-    
+
     For example:
-    
+
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 4        
 
     The environment variables for \c make can also be given as parameters:
-    
+
     \snippet doc/src/snippets/code/doc_src_s60-introduction.qdoc 3        
-    
+
     If you want to install the program immediately, make sure that the device
     is connected to the computer in "PC Suite" mode, and run \c sis target
     with the \c QT_SIS_OPTIONS=-i, like this:

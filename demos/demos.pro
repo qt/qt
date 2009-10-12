@@ -64,7 +64,7 @@ demos_arthurplugin.subdir = arthurplugin
 demos_sqlbrowser.subdir = sqlbrowser
 demos_undo.subdir = undo
 demos_qtdemo.subdir = qtdemo
-demos_mediaplayer.subdir = mediaplayer
+demos_mediaplayer.subdir = qmediaplayer
 
 demos_browser.subdir = browser
 

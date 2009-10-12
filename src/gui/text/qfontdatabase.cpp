@@ -949,7 +949,7 @@ struct QtFontDesc
 #if !defined(Q_WS_MAC)
 static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>());
+                  QtFontDesc *desc, const QList<int> &blacklistedFamilies = QList<int>(), bool forceXLFD=false);
 
 #if defined(Q_WS_X11) || defined(Q_WS_QWS)
 static void initFontDef(const QtFontDesc &desc, const QFontDef &request, QFontDef *fontDef)
@@ -1316,7 +1316,7 @@ unsigned int bestFoundry(int script, unsigned int score, int styleStrategy,
 */
 static void match(int script, const QFontDef &request,
                   const QString &family_name, const QString &foundry_name, int force_encoding_id,
-                  QtFontDesc *desc, const QList<int> &blacklistedFamilies)
+                  QtFontDesc *desc, const QList<int> &blacklistedFamilies, bool forceXLFD)
 {
     Q_UNUSED(force_encoding_id);
 
@@ -1351,7 +1351,11 @@ static void match(int script, const QFontDef &request,
 
     unsigned int score = ~0u;
 
+#ifdef Q_WS_X11
+    load(family_name, script, forceXLFD);
+#else
     load(family_name, script);
+#endif
 
     QFontDatabasePrivate *db = privateDb();
     for (int x = 0; x < db->count; ++x) {

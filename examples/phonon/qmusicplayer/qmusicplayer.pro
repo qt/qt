@@ -5,9 +5,9 @@ SOURCES   += main.cpp \
              mainwindow.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/phonon/musicplayer
+target.path = $$[QT_INSTALL_EXAMPLES]/phonon/qmusicplayer
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png images
-sources.path = $$[QT_INSTALL_EXAMPLES]/phonon/musicplayer
+sources.path = $$[QT_INSTALL_EXAMPLES]/phonon/qmusicplayer
 INSTALLS += target sources
 
 wince*{

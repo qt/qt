@@ -450,6 +450,7 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
+    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;

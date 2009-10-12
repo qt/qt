@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the documentation of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,40 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef PINCHWIDGET_H
-#define PINCHWIDGET_H
+#include <QtGui>
+#include "window.h"
 
-#include <QWidget>
-#include <QTransform>
-
-class QPanGesture;
-class QPinchGesture;
-
-class PinchWidget : public QWidget
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-public:
-    PinchWidget(const QImage &image, QWidget *parent = 0);
-
-private Q_SLOTS:
-    void acceptTouchEvents();
-    void onPanTriggered();
-    void onPanFinished();
-    void onPinchTriggered();
-    void onPinchFinished();
-
-private:
-    void paintEvent(QPaintEvent *);
-    QSize sizeHint() const;
-
-    QImage image;
-
-    QPanGesture *pan;
-    QPinchGesture *pinch;
-
-    QTransform worldTransform;
-    QTransform currentPanTransform;
-    QTransform currentPinchTransform;
-};
-
-#endif // PINCHWIDGET_H
+    QApplication app(argc, argv);
+    Window window;
+    window.setFixedSize(640, 215);
+    window.show();
+    return app.exec();
+}

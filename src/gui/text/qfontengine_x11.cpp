@@ -488,6 +488,7 @@ glyph_metrics_t QFontEngineXLFD::boundingBox(const QGlyphLayout &glyphs)
             QFixed y = overall.yoff + glyphs.offsets[i].y - xcs->ascent;
             overall.x = qMin(overall.x, x);
             overall.y = qMin(overall.y, y);
+            // XCharStruct::rbearing is defined as distance from left edge to rightmost pixel
             xmax = qMax(xmax, overall.xoff + glyphs.offsets[i].x + xcs->rbearing);
             ymax = qMax(ymax, y + xcs->ascent + xcs->descent);
             overall.xoff += glyphs.advances_x[i];
@@ -511,6 +512,8 @@ glyph_metrics_t QFontEngineXLFD::boundingBox(glyph_t glyph)
     glyph_metrics_t gm;
     XCharStruct *xcs = charStruct(_fs, glyph);
     if (xcs) {
+        // XCharStruct::rbearing is defined as distance from left edge to rightmost pixel
+        // XCharStruct::width is defined as the advance
         gm = glyph_metrics_t(xcs->lbearing, -xcs->ascent, xcs->rbearing- xcs->lbearing, xcs->ascent + xcs->descent,
                               xcs->width, 0);
     } else {

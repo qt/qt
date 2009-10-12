@@ -451,6 +451,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus();
+        glBindTexture(target, 0);
 
         color_buffer = 0;
     } else {
@@ -819,7 +820,8 @@ QGLFramebufferObject::~QGLFramebufferObject()
 
     if (isValid() && ctx) {
         QGLShareContextScope scope(ctx);
-        glDeleteTextures(1, &d->texture);
+        if (d->texture)
+            glDeleteTextures(1, &d->texture);
         if (d->color_buffer)
             glDeleteRenderbuffers(1, &d->color_buffer);
         if (d->depth_stencil_buffer)

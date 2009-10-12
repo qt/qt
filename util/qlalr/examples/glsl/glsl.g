@@ -132,6 +132,9 @@
 %token XOR_ASSIGN
 %token XOR_OP
 %token ERROR
+%token HIGH_PRECISION
+%token MEDIUM_PRECISION
+%token LOW_PRECISION
 %start translation_unit
 
 
@@ -487,30 +490,37 @@ type_qualifier ::= ATTRIBUTE ;           -- Vertex only.
 type_qualifier ::= VARYING ;
 type_qualifier ::= UNIFORM ;
 
-type_specifier ::= VOID ;
-type_specifier ::= FLOAT ;
-type_specifier ::= INT ;
-type_specifier ::= BOOL ;
-type_specifier ::= VEC2 ;
-type_specifier ::= VEC3 ;
-type_specifier ::= VEC4 ;
-type_specifier ::= BVEC2 ;
-type_specifier ::= BVEC3 ;
-type_specifier ::= BVEC4 ;
-type_specifier ::= IVEC2 ;
-type_specifier ::= IVEC3 ;
-type_specifier ::= IVEC4 ;
-type_specifier ::= MAT2 ;
-type_specifier ::= MAT3 ;
-type_specifier ::= MAT4 ;
-type_specifier ::= SAMPLER1D ;
-type_specifier ::= SAMPLER2D ;
-type_specifier ::= SAMPLER3D ;
-type_specifier ::= SAMPLERCUBE ;
-type_specifier ::= SAMPLER1DSHADOW ;
-type_specifier ::= SAMPLER2DSHADOW ;
-type_specifier ::= struct_specifier ;
-type_specifier ::= TYPE_NAME ;
+type_specifier ::= type_specifier_no_prec ;
+type_specifier ::= precision_qualifier type_specifier_no_prec ;
+
+type_specifier_no_prec ::= VOID ;
+type_specifier_no_prec ::= FLOAT ;
+type_specifier_no_prec ::= INT ;
+type_specifier_no_prec ::= BOOL ;
+type_specifier_no_prec ::= VEC2 ;
+type_specifier_no_prec ::= VEC3 ;
+type_specifier_no_prec ::= VEC4 ;
+type_specifier_no_prec ::= BVEC2 ;
+type_specifier_no_prec ::= BVEC3 ;
+type_specifier_no_prec ::= BVEC4 ;
+type_specifier_no_prec ::= IVEC2 ;
+type_specifier_no_prec ::= IVEC3 ;
+type_specifier_no_prec ::= IVEC4 ;
+type_specifier_no_prec ::= MAT2 ;
+type_specifier_no_prec ::= MAT3 ;
+type_specifier_no_prec ::= MAT4 ;
+type_specifier_no_prec ::= SAMPLER1D ;
+type_specifier_no_prec ::= SAMPLER2D ;
+type_specifier_no_prec ::= SAMPLER3D ;
+type_specifier_no_prec ::= SAMPLERCUBE ;
+type_specifier_no_prec ::= SAMPLER1DSHADOW ;
+type_specifier_no_prec ::= SAMPLER2DSHADOW ;
+type_specifier_no_prec ::= struct_specifier ;
+type_specifier_no_prec ::= TYPE_NAME ;
+
+precision_qualifier ::= HIGH_PRECISION ;
+precision_qualifier ::= MEDIUM_PRECISION ;
+precision_qualifier ::= LOW_PRECISION ;
 
 struct_specifier ::= STRUCT IDENTIFIER LEFT_BRACE struct_declaration_list RIGHT_BRACE ;
 /.

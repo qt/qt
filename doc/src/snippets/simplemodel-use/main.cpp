@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     layout->addWidget(title);
     
 //! [0]
-    QDirModel *model = new QDirModel;
+    QFileSystemModel *model = new QFileSystemModel;
     QModelIndex parentIndex = model->index(QDir::currentPath());
     int numRows = model->rowCount(parentIndex);
 //! [0]
