@@ -471,7 +471,6 @@ QImageReaderPrivate::QImageReaderPrivate(QImageReader *qq)
     handler = 0;
     quality = -1;
     imageReaderError = QImageReader::UnknownError;
-    errorString = QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unknown error"));
 
     q = qq;
 }
@@ -1302,6 +1301,8 @@ QImageReader::ImageReaderError QImageReader::error() const
 */
 QString QImageReader::errorString() const
 {
+    if (d->errorString.isEmpty())
+        return QLatin1String(QT_TRANSLATE_NOOP(QImageReader, "Unknown error"));
     return d->errorString;
 }
 
