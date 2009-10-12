@@ -2795,13 +2795,13 @@ void tst_QGraphicsProxyWidget::palettePropagation()
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
     edit->setPalette(QPalette());
     QCOMPARE(editSpy.counts[QEvent::PaletteChange], 2);
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(!edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
 
     // Proxy to widget
     proxy.setPalette(palette);
