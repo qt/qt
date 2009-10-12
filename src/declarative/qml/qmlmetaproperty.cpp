@@ -737,7 +737,6 @@ bool QmlMetaPropertyPrivate::writeEnumProperty(const QMetaProperty &prop, int id
         return false;
 
     QVariant v = value;
-    uint t = QVariant::Invalid;
     if (prop.isEnumType()) {
         QMetaEnum menum = prop.enumerator();
         if (v.type() == QVariant::String

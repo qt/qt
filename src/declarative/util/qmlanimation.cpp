@@ -1767,8 +1767,13 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         int prevInterpolatorType;   //for generic
         QVariantAnimation::Interpolator interpolator;
         bool reverse;
+        bool *wasDeleted;
+        PropertyUpdater() : wasDeleted(0) {}
+        ~PropertyUpdater() { if (wasDeleted) *wasDeleted = true; }
         void setValue(qreal v)
         {
+            bool deleted = false;
+            wasDeleted = &deleted;
             if (reverse)    //QVariantAnimation sends us 1->0 when reversed, but we are expecting 0->1
                 v = 1 - v;
             QmlTimeLineValue::setValue(v);
@@ -1793,7 +1798,10 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
                     if (interpolator)
                         action.property.write(interpolator(action.fromValue.constData(), action.toValue.constData(), v), QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
                 }
+                if (deleted)
+                    return;
             }
+            wasDeleted = 0;
         }
     };
 
