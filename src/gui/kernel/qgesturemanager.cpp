@@ -279,8 +279,10 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
     QSet<QGesture *> notStarted = finishedGestures - activeGestures;
     if (!notStarted.isEmpty()) {
         // there are some gestures that claim to be finished, but never started.
-        qWarning("QGestureManager::filterEvent: some gestures were finished even though they've never started");
-        finishedGestures -= notStarted;
+        // probably those are "singleshot" gestures so we'll fake the started state.
+        foreach (QGesture *gesture, notStarted)
+            gesture->d_func()->state = Qt::GestureStarted;
+        deliverEvents(notStarted, receiver);
     }
 
     activeGestures += startedGestures;
