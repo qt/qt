@@ -111,6 +111,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotion,QFxParticleMotion
     \class QFxParticleMotion
     \ingroup group_effects
     \brief The QFxParticleMotion class is the base class for particle motion.
+    \internal
 
     This class causes the particles to remain static.
 */
