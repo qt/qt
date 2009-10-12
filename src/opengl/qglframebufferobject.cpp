@@ -331,8 +331,22 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
     }
 }
 
+QGLContext *QGLFBOGLPaintDevice::context() const
+{
+    QGLContext *fboContext = const_cast<QGLContext *>(fbo->d_ptr->fbo_guard.context());
+    QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+
+    if (QGLContextPrivate::contextGroup(fboContext) == QGLContextPrivate::contextGroup(currentContext))
+        return currentContext;
+    else
+        return fboContext;
+}
+
 void QGLFBOGLPaintDevice::ensureActiveTarget()
 {
+    if (QGLContext::currentContext() != context())
+        context()->makeCurrent();
+
     QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
     Q_ASSERT(ctx);
     const GLuint fboId = fbo->d_func()->fbo();
@@ -344,6 +358,9 @@ void QGLFBOGLPaintDevice::ensureActiveTarget()
 
 void QGLFBOGLPaintDevice::beginPaint()
 {
+    if (QGLContext::currentContext() != context())
+        context()->makeCurrent();
+
     // We let QFBO track the previously bound FBO rather than doing it
     // ourselves here. This has the advantage that begin/release & bind/end
     // work as expected.
