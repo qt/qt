@@ -115,6 +115,7 @@ public:
     }
 
     int count() const { return _count; }
+    void reset() { _count = 0; }
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event)
@@ -2938,10 +2939,11 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     view->show();
     QTest::qWaitForWindowShown(view);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_VERIFY(spy.count() > 1);
+    spy.reset();
     scene.update();
     QApplication::processEvents();
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 1);
 
     delete view;
 }
