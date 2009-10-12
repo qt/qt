@@ -943,7 +943,7 @@ void QApplicationPrivate::initialize()
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
-#ifdef Q_OS_MAC 
+#ifdef Q_OS_MAC
     QApplicationPrivate::wheel_scroll_lines = 1;
 #else
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -1034,11 +1034,11 @@ QApplication::~QApplication()
 
     d->eventDispatcher->closingDown();
     d->eventDispatcher = 0;
+    QApplicationPrivate::is_app_closing = true;
+    QApplicationPrivate::is_app_running = false;
 
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
-    QApplicationPrivate::is_app_closing = true;
-    QApplicationPrivate::is_app_running = false;
 
 #ifndef QT_NO_CLIPBOARD
     delete qt_clipboard;
