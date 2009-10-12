@@ -40,35 +40,35 @@
 ****************************************************************************/
 
 /*!
-\page qmlexamples.html
-\title QML Examples
+\page qmldocumentanatomy.html
+\title Anatomy of a QML Document
 
-A \l {qmlviewer}{viewer} application is included that allows you to quickly explore many of the
-examples. It has some useful options, revealed by:
+A QML document is a block of QML source code.  QML documents generally correspond to files 
+stored on a disk or network resource, but can be constructed directly from text data.
+
+Syntactically a QML document is self contained; QML does \e not have a preprocessor that 
+modifies the document prior to presentation to the QML runtime.  Type references made within 
+a QML document, including within a \l {ECMAScript Block} contained by the document,  are 
+resolved based exclusively on the import statements present in the document.
+
+A simple QML document looks like this:
 
 \code
-    bin/qmlviewer -help
+import Qt 4.6
+
+Rectangle {
+    Component {
+        id: contactDelegate
+        Text {
+            text: modelData.firstName + " " + modelData.lastName
+        }
+    }
+
+    ListView {
+        model: contactModel
+        delegate: contactDelegate
+    } 
+}
 \endcode
 
-There are several illustrative QML examples available.  From your build
-directory,
-
-\code
-    bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/flickr/flickr-desktop.qml
-\endcode
-or
-\code
-    bin/qmlviewer $QT_SOURCE_DIR/demos/declarative/samegame/samegame.qml
-\endcode
-
-Many other simple examples can be found under the \c examples/declarative sub
-directory.  Some can be run directly using the viewer like those above, and
-others require you to build and run an executable.
-
-More sophisticated demos of large applications can be found under the \c demos/declarative
-sub directory. These are intended to show more integrated functionality rather than
-to be instructive on specific elements.
-
-Finally, check out the \l {tutorial} to learn a little more about writing your
-own QML-based applications.
 */

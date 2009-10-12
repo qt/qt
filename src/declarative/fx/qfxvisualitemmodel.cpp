@@ -264,7 +264,7 @@ public:
                 for (QHash<int,QByteArray>::const_iterator it = m_abstractItemModel->roleNames().begin();
                         it != m_abstractItemModel->roleNames().end(); ++it) {
                     m_roles.append(it.key());
-                    m_roleNames.insert(QLatin1String(*it), it.key());
+                    m_roleNames.insert(QString::fromUtf8(*it), it.key());
                 }
                 if (m_roles.count() == 1)
                     m_roleNames.insert(QLatin1String("modelData"), m_roles.at(0));
@@ -416,11 +416,11 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         model->ensureRoles();
-        if (model->m_roleNames.contains(QLatin1String(name)))
+        if (model->m_roleNames.contains(QString::fromUtf8(name)))
             return QmlOpenMetaObject::createProperty(name, type);
     } else {
         model->ensureRoles();
-        const QLatin1String sname(name);
+        QString sname = QString::fromUtf8(name);
         if (model->m_roleNames.contains(sname))
             return QmlOpenMetaObject::createProperty(name, type);
     }
@@ -438,7 +438,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
     Q_ASSERT(data->m_model);
     QFxVisualDataModelPrivate *model = QFxVisualDataModelPrivate::get(data->m_model);
 
-    QString name = QLatin1String(prop.name());
+    QString name = QString::fromUtf8(prop.name());
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         if (name == QLatin1String("modelData")) {
             if (model->m_listAccessor->type() == QmlListAccessor::Instance) {
@@ -532,7 +532,7 @@ QFxVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &pr
 
     QFxVisualDataModel *m = new QFxVisualDataModel;
     m->setParent(object());
-    m->setPart(QLatin1String(prop.name()));
+    m->setPart(QString::fromUtf8(prop.name()));
     m->setModel(QVariant::fromValue(static_cast<QFxVisualDataModelParts *>(object())->model));
 
     QVariant var = QVariant::fromValue((QObject *)m);
@@ -706,7 +706,7 @@ QFxItem *QFxVisualDataModel::item(int index, bool complete)
 {
     Q_D(QFxVisualDataModel);
     if (d->m_visualItemModel)
-        return d->m_visualItemModel->item(index, d->m_part.toLatin1(), complete);
+        return d->m_visualItemModel->item(index, d->m_part.toUtf8(), complete);
     return item(index, QByteArray(), complete);
 }
 
@@ -790,7 +790,7 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
     if (!item) {
         QmlPackage *package = qobject_cast<QmlPackage *>(nobj);
         if (package) {
-            QObject *o = package->part(QLatin1String(viewId));
+            QObject *o = package->part(QString::fromUtf8(viewId));
             item = qobject_cast<QFxItem *>(o);
             if (item)
                 d->m_packaged.insertMulti(item, package);

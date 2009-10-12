@@ -106,6 +106,8 @@ public:
 
     static quint32 saveValueType(int, int);
     static quint32 saveProperty(int);
+
+    static bool equal(const QMetaObject *, const QMetaObject *);
 };
 
 QT_END_NAMESPACE

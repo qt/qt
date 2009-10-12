@@ -195,14 +195,14 @@ bool QmlCompiler::testLiteralAssignment(const QMetaProperty &prop,
     QString string = v->value.asScript();
 
     if (!prop.isWritable())
-        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QLatin1String(prop.name()) << "is a read-only property");
+        COMPILE_EXCEPTION(v, "Invalid property assignment:" << QString::fromUtf8(prop.name()) << "is a read-only property");
 
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
         if (value == -1)
             COMPILE_EXCEPTION(v, "Invalid property assignment: unknown enumeration");
         return true;
@@ -336,9 +336,9 @@ void QmlCompiler::genLiteralAssignment(const QMetaProperty &prop,
     if (prop.isEnumType()) {
         int value;
         if (prop.isFlagType()) {
-            value = prop.enumerator().keysToValue(string.toLatin1().constData());
+            value = prop.enumerator().keysToValue(string.toUtf8().constData());
         } else
-            value = prop.enumerator().keyToValue(string.toLatin1().constData());
+            value = prop.enumerator().keyToValue(string.toUtf8().constData());
 
         instr.type = QmlInstruction::StoreInteger;
         instr.storeInteger.propertyIndex = prop.propertyIndex();
@@ -595,7 +595,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
             ref.ref = tref.unit;
             ref.ref->addref();
         }
-        ref.className = parserRef->name.toLatin1();
+        ref.className = parserRef->name.toUtf8();
         out->types << ref;
     }
 
@@ -647,7 +647,13 @@ void QmlCompiler::compileTree(Object *tree)
     output->importCache = output->imports.cache(engine);
 
     Q_ASSERT(tree->metatype);
-    static_cast<QMetaObject &>(output->root) = *tree->metaObject();
+
+    if (tree->metadata.isEmpty()) {
+        output->root = tree->metatype;
+    } else {
+        static_cast<QMetaObject &>(output->rootData) = *tree->metaObject();
+        output->root = &output->rootData;
+    }
     if (!tree->metadata.isEmpty()) 
         QmlEnginePrivate::get(engine)->registerCompositeType(output);
 }
@@ -666,7 +672,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     obj->className = tr.className;
 
     // This object is a "Component" element
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         COMPILE_CHECK(buildComponent(obj, ctxt));
         return true;
     } 
@@ -780,7 +786,9 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
 void QmlCompiler::genObject(QmlParser::Object *obj)
 {
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    const QmlCompiledData::TypeReference &tr =
+        output->types.at(obj->type);
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         genComponent(obj);
         return;
     }
@@ -809,7 +817,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     if (!obj->metadata.isEmpty()) {
         QmlInstruction meta;
         meta.type = QmlInstruction::StoreMetaObject;
-        meta.line = -1;
+        meta.line = 0;
         meta.storeMeta.data = output->indexForByteArray(obj->metadata);
         meta.storeMeta.aliasData = output->indexForByteArray(obj->synthdata);
         meta.storeMeta.propertyCache = output->propertyCaches.count();
@@ -822,7 +830,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     if (!obj->id.isEmpty()) {
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = -1;
+        id.line = 0;
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
@@ -832,7 +840,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     for (int ii = 0; ii < obj->scriptBlocks.count(); ++ii) {
         QmlInstruction script;
         script.type = QmlInstruction::StoreScript;
-        script.line = -1; // ###
+        script.line = 0; // ###
         script.storeScript.fileName = output->indexForString(obj->scriptBlocksFile.at(ii));
         script.storeScript.lineNumber = obj->scriptBlocksLineNumber.at(ii);
         script.storeScript.value = output->indexForString(obj->scriptBlocks.at(ii));
@@ -999,7 +1007,7 @@ void QmlCompiler::genComponent(QmlParser::Object *obj)
     if (!obj->id.isEmpty()) {
         QmlInstruction id;
         id.type = QmlInstruction::SetId;
-        id.line = -1;
+        id.line = 0;
         id.setId.value = output->indexForString(obj->id);
         id.setId.index = obj->idIndex;
         output->bytecode << id;
@@ -1905,7 +1913,7 @@ bool QmlCompiler::buildPropertyObjectAssignment(QmlParser::Property *prop,
         if (propertyMetaObject) {
             const QMetaObject *c = v->object->metatype;
             while(c) {
-                isAssignable |= (c == propertyMetaObject);
+                isAssignable |= (QmlMetaPropertyPrivate::equal(c, propertyMetaObject));
                 c = c->superClass();
             }
         }
@@ -2101,7 +2109,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
                     Q_ASSERT(tdata->status == QmlCompositeTypeData::Complete);
 
                     QmlCompiledData *data = tdata->toCompiledComponent(engine);
-                    customTypeName = data->root.className();
+                    customTypeName = data->root->className();
                 } else {
                     customTypeName = qmltype->typeName();
                 }
@@ -2473,7 +2481,7 @@ bool QmlCompiler::canCoerce(int to, QmlParser::Object *from)
     const QMetaObject *fromMo = from->metaObject();
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2492,7 +2500,7 @@ bool QmlCompiler::canCoerce(int to, int from)
         QmlEnginePrivate::get(engine)->rawMetaObjectForType(from);
 
     while (fromMo) {
-        if (fromMo == toMo)
+        if (QmlMetaPropertyPrivate::equal(fromMo, toMo))
             return true;
         fromMo = fromMo->superClass();
     }
@@ -2520,7 +2528,7 @@ QStringList QmlCompiler::deferredProperties(QmlParser::Object *obj)
         return QStringList();
 
     QMetaClassInfo classInfo = mo->classInfo(idx);
-    QStringList rv = QString(QLatin1String(classInfo.value())).split(QLatin1Char(','));
+    QStringList rv = QString::fromUtf8(classInfo.value()).split(QLatin1Char(','));
     return rv;
 }
 

@@ -163,7 +163,7 @@ void QmlConnection::connectIfValid()
         if (lparen >= 0 && d->signal.length() > lparen+2) {
             QStringList l = d->signal.mid(lparen+1,d->signal.length()-lparen-2).split(QLatin1Char(','));
             foreach (const QString &s, l) {
-                sigparams.append(s.toLatin1());
+                sigparams.append(s.toUtf8());
             }
         }
         QString signalname = d->signal.left(lparen);
@@ -172,7 +172,7 @@ void QmlConnection::connectIfValid()
         int methods = mo->methodCount();
         for (int ii = 0; ii < methods; ++ii) {
             QMetaMethod method = mo->method(ii);
-            QString methodName = QLatin1String(method.signature());
+            QString methodName = QString::fromUtf8(method.signature());
             int idx = methodName.indexOf(QLatin1Char('('));
             methodName = methodName.left(idx);
             if (methodName == signalname && (lparen<0 || method.parameterNames() == sigparams)) {

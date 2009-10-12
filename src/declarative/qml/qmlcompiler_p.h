@@ -104,7 +104,8 @@ public:
         int type;
     };
 
-    QAbstractDynamicMetaObject root;
+    const QMetaObject *root;
+    QAbstractDynamicMetaObject rootData;
     QList<QString> primitives;
     QList<float> floatData;
     QList<int> intData;

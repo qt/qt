@@ -212,7 +212,7 @@ QString QmlExpression::expression() const
 {
     Q_D(const QmlExpression);
     if (d->data->sse.isValid())
-        return QLatin1String(d->data->sse.expression());
+        return QString::fromUtf8(d->data->sse.expression());
     else
         return d->data->expression;
 }

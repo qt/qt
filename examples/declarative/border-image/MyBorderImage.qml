@@ -1,9 +1,10 @@
 import Qt 4.6
 
 Item {
-    property var horizontalMode : BorderImage.Stretch
-    property var verticalMode : BorderImage.Stretch
+    property alias horizontalMode: image.horizontalTileMode
+    property alias verticalMode: image.verticalTileMode
     property alias source: image.source
+
     property int minWidth
     property int minHeight
     property int maxWidth
@@ -12,6 +13,7 @@ Item {
 
     id: container
     width: 240; height: 240
+
     BorderImage {
         id: image; x: container.width / 2 - width / 2; y: container.height / 2 - height / 2
 
@@ -27,8 +29,6 @@ Item {
             NumberAnimation { from: container.maxHeight; to: container.minHeight; duration: 2000; easing: "easeInOutQuad" }
         }
 
-        horizontalTileMode: container.horizontalMode
-        verticalTileMode: container.verticalMode
         border.top: container.margin
         border.left: container.margin
         border.bottom: container.margin

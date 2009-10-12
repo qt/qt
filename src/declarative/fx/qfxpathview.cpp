@@ -607,7 +607,7 @@ void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
 {
     if (QObject *obj = QFxPathView::qmlAttachedProperties(item)) {
         foreach(const QString &attr, path->attributes())
-            static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toLatin1(), path->attributeAt(attr, percent));
+            static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
     }
     QPointF pf = path->pointAt(percent);
     item->setX(pf.x() - item->width()*item->scale()/2);
