@@ -1697,7 +1697,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
-        if (command.testFlag(QItemSelectionModel::Toggle)) {
+        if (d->ctrlDragSelectionFlag != QItemSelectionModel::NoUpdate && command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             command |= d->ctrlDragSelectionFlag;
         }
