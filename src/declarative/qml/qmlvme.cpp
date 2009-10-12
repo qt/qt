@@ -515,7 +515,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 int sigIdx = instr.assignSignalObject.signal;
                 const QByteArray &pr = datas.at(sigIdx);
 
-                QmlMetaProperty prop(target, QLatin1String(pr));
+                QmlMetaProperty prop(target, QString::fromUtf8(pr));
                 if (prop.type() & QmlMetaProperty::SignalProperty) {
 
                     QMetaMethod method = QmlMetaType::defaultMethod(assign);

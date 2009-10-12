@@ -42,7 +42,7 @@ GridView {
         width: grid.imageWidth; height: grid.imageHeight;
 
         Image { id: flickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;
-                opacity: (status == Image.Ready)?1:0; /*opacity: Behavior { NumberAnimation { properties: "opacity" } }*/ }
+                opacity: (status == Image.Ready)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } }
         Loading { anchors.centerIn: parent; visible: flickrImage.status!=1 }
 
         states: State {

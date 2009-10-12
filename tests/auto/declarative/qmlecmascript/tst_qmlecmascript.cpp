@@ -62,6 +62,7 @@ private slots:
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
     void scriptErrors();
+    void signalTriggeredBindings();
 
 private:
     QmlEngine engine;
@@ -757,6 +758,33 @@ void tst_qmlecmascript::scriptErrors()
     QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+/*
+Test bindings still work when the reeval is triggered from within
+a signal script.
+*/
+void tst_qmlecmascript::signalTriggeredBindings()
+{
+    QmlComponent component(&engine, TEST_FILE("signalTriggeredBindings.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("base").toReal(), 50.);
+    QCOMPARE(object->property("test1").toReal(), 50.);
+    QCOMPARE(object->property("test2").toReal(), 50.);
+
+    object->basicSignal();
+
+    QCOMPARE(object->property("base").toReal(), 200.);
+    QCOMPARE(object->property("test1").toReal(), 200.);
+    QCOMPARE(object->property("test2").toReal(), 200.);
+
+    object->argumentSignal(10, QString(), 10);
+
+    QCOMPARE(object->property("base").toReal(), 400.);
+    QCOMPARE(object->property("test1").toReal(), 400.);
+    QCOMPARE(object->property("test2").toReal(), 400.);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

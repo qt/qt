@@ -73,7 +73,7 @@ QEasingCurve stringToCurve(const QString &curve)
         QString easeName = curve.trimmed();
         if (!easeName.endsWith(QLatin1Char(')'))) {
             qWarning("QEasingCurve: Unmatched perenthesis in easing function '%s'",
-                     curve.toLatin1().constData());
+                     qPrintable(curve));
             return easingCurve;
         }
 
@@ -83,7 +83,7 @@ QEasingCurve stringToCurve(const QString &curve)
         normalizedCurve = easeName.left(idx);
         if (!normalizedCurve.startsWith(QLatin1String("ease"))) {
             qWarning("QEasingCurve: Easing function '%s' must start with 'ease'",
-                     curve.toLatin1().constData());
+                     qPrintable(curve));
         }
 
         props = prop_str.split(QLatin1Char(','));
@@ -95,10 +95,10 @@ QEasingCurve stringToCurve(const QString &curve)
     static int index = QEasingCurve::staticMetaObject.indexOfEnumerator("Type");
     static QMetaEnum me = QEasingCurve::staticMetaObject.enumerator(index);
 
-    int value = me.keyToValue(normalizedCurve.toLatin1().constData());
+    int value = me.keyToValue(normalizedCurve.toUtf8().constData());
     if (value < 0) {
         qWarning("QEasingCurve: Unknown easing curve '%s'",
-                 curve.toLatin1().constData());
+                 qPrintable(curve));
         value = 0;
     }
     easingCurve.setType((QEasingCurve::Type)value);
@@ -109,7 +109,7 @@ QEasingCurve stringToCurve(const QString &curve)
 
             if (sep == -1) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                        curve.toLatin1().constData());
+                         qPrintable(curve));
                 return easingCurve;
             }
 
@@ -119,7 +119,7 @@ QEasingCurve stringToCurve(const QString &curve)
 
             if (propName.isEmpty() || !isOk) {
                 qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                        curve.toLatin1().constData());
+                         qPrintable(curve));
                 return easingCurve;
             }
 

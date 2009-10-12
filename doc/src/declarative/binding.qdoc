@@ -41,10 +41,12 @@
 
 /*!
 \page binding.html
-\title Data Binding in QML
-\target binding
+\title Property Binding
 
-Data binding provides a declarative way of specifying the data associated with objects, as well as the relationship between data of different objects. For example, you could bind the text of a label to the value of a slider: as the value of the slider changed, the label would be automatically updated with the new value.
+Property binding is a declarative way of specifying the value of a property.  Binding allows
+a property's value to be expressed as an ECMAScript expression that defines the value relative
+to other property values or data accessible in the application.  The property value is 
+automatically kept up to date if the other properties or data values change.
 
 Bindings are created in QML when an expression is assigned to a property. For example, the following produces two rectangles of equal size (\c rect2 is bound to the size of \c rect1):
 \code

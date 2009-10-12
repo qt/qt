@@ -325,8 +325,8 @@ void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArra
             QString objectName = o->objectName();
             if (objectName.isEmpty())
                 objectName = QLatin1String("<unnamed>");
-            v = QLatin1String(o->metaObject()->className()) +
-                    QLatin1String(": ") + objectName;
+            v = QString::fromUtf8(o->metaObject()->className()) +
+                QLatin1String(": ") + objectName;
         }
         if (v.isNull())
             v = value.toString();

@@ -199,20 +199,32 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
                 QObject *target = ctxtPriv->idValues[d->contextIdx].data();
-                if (!target) return -1;
+                if (!target) {
+                    if (d->propertyIdx == -1) 
+                        *reinterpret_cast<QObject **>(a[0]) = target;
+                    return -1;
+                }
 
                 if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {
                     int sigIdx = methodOffset + id + metaData->propertyCount;
                     QMetaObject::connect(ctxt, d->contextIdx + ctxtPriv->notifyIndex, object, sigIdx);
 
-                    QMetaProperty prop = 
-                        target->metaObject()->property(d->propertyIdx);
-                    if (prop.hasNotifySignal())
-                        QMetaObject::connect(target, prop.notifySignalIndex(), 
-                                             object, sigIdx);
+                    if (d->propertyIdx != -1) {
+                        QMetaProperty prop = 
+                            target->metaObject()->property(d->propertyIdx);
+                        if (prop.hasNotifySignal())
+                            QMetaObject::connect(target, prop.notifySignalIndex(), 
+                                                 object, sigIdx);
+                    }
                     aConnected.setBit(id);
                 }
-                return QMetaObject::metacall(target, c, d->propertyIdx, a);
+
+                if (d->propertyIdx == -1) {
+                    *reinterpret_cast<QObject **>(a[0]) = target;
+                    return -1;
+                } else {
+                    return QMetaObject::metacall(target, c, d->propertyIdx, a);
+                }
 
             }
             return -1;

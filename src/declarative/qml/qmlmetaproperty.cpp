@@ -174,7 +174,7 @@ void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
 
         if (typeData) {
             QmlType *t = 0;
-            enginePrivate->resolveType(typeData->imports, name.toLatin1(), &t, 0, 0, 0, 0);
+            enginePrivate->resolveType(typeData->imports, name.toUtf8(), &t, 0, 0, 0, 0);
             if (t && t->attachedPropertiesFunction()) {
                 attachedFunc = t->index();
             }
@@ -467,7 +467,7 @@ QStringList QmlMetaProperty::properties(QObject *obj)
     const QMetaObject *mo = obj->metaObject();
     for (int ii = 0; ii < mo->propertyCount(); ++ii) {
         QMetaProperty prop = mo->property(ii);
-        rv << QLatin1String(prop.name());
+        rv << QString::fromUtf8(prop.name());
     }
 
     return rv;
@@ -487,7 +487,7 @@ QString QmlMetaProperty::name() const
         else valueType = QmlValueTypeFactory::valueType(d->core.propType);
         Q_ASSERT(valueType);
 
-        rv += QLatin1String(valueType->metaObject()->property(d->valueTypeCoreIdx).name());
+        rv += QString::fromUtf8(valueType->metaObject()->property(d->valueTypeCoreIdx).name());
 
         if (!ep) delete valueType;
 
@@ -654,7 +654,7 @@ QMetaMethod QmlMetaPropertyPrivate::findSignal(QObject *obj, const QString &name
     int methods = mo->methodCount();
     for (int ii = methods - 1; ii >= 0; --ii) {
         QMetaMethod method = mo->method(ii);
-        QString methodName = QLatin1String(method.signature());
+        QString methodName = QString::fromUtf8(method.signature());
         int idx = methodName.indexOf(QLatin1Char('('));
         methodName = methodName.left(idx);
 
@@ -837,7 +837,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             u = value.toUrl();
             found = true;
         } else if (vt == QVariant::ByteArray) {
-            u = QUrl(QLatin1String(value.toByteArray()));
+            u = QUrl(QString::fromUtf8(value.toByteArray()));
             found = true;
         } else if (vt == QVariant::String) {
             u = QUrl(value.toString());
@@ -847,9 +847,9 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         if (found) {
             if (context && u.isRelative() && !u.isEmpty())
                 u = context->baseUrl().resolved(u);
-            void *a[1];
-            a[0] = &u;
-            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, a);
+            int status = -1;
+            void *argv[] = { &u, 0, &status, &flags };
+            QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, argv);
         }
 
     } else if (vt == t) {
@@ -874,7 +874,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             const QMetaObject *propMo = QmlMetaType::rawMetaObjectForType(t);
 
             while (valMo) {
-                if (valMo == propMo)
+                if (equal(valMo, propMo))
                     break;
                 valMo = valMo->superClass();
             }
@@ -928,7 +928,7 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             const QMetaObject *objMo = obj->metaObject();
             bool found = false;
             while(!found && objMo) {
-                if (objMo == mo)
+                if (equal(objMo, mo))
                     found = true;
                 else
                     objMo = objMo->superClass();
@@ -1210,5 +1210,14 @@ QmlMetaProperty QmlMetaProperty::createProperty(QObject *obj,
     else
         return prop;
 }
+
+/*!
+    Returns true if lhs and rhs refer to the same metaobject data
+*/
+bool QmlMetaPropertyPrivate::equal(const QMetaObject *lhs, const QMetaObject *rhs)
+{
+    return lhs == rhs || (1 && lhs && rhs && lhs->d.stringdata == rhs->d.stringdata);
+}
+
 
 QT_END_NAMESPACE
