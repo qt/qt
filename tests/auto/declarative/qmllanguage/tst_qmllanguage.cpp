@@ -57,6 +57,7 @@ private slots:
     void valueTypes();
     void cppnamespace();
     void aliasProperties();
+    void componentCompositeType();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -655,6 +656,15 @@ void tst_qmllanguage::aliasProperties()
 
         delete object;
     }
+}
+
+// Test that the root element in a composite type can be a Component
+void tst_qmllanguage::componentCompositeType()
+{
+    QmlComponent component(&engine, TEST_FILE("componentCompositeType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 class TestType : public QObject {

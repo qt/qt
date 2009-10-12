@@ -672,7 +672,7 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
     obj->className = tr.className;
 
     // This object is a "Component" element
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         COMPILE_CHECK(buildComponent(obj, ctxt));
         return true;
     } 
@@ -786,7 +786,9 @@ bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 
 void QmlCompiler::genObject(QmlParser::Object *obj)
 {
-    if (obj->metatype == &QmlComponent::staticMetaObject) {
+    const QmlCompiledData::TypeReference &tr =
+        output->types.at(obj->type);
+    if (tr.type && obj->metatype == &QmlComponent::staticMetaObject) {
         genComponent(obj);
         return;
     }
