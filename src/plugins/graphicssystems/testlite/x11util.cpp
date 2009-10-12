@@ -44,6 +44,7 @@
 
 #include <qdebug.h>
 #include <QTimer>
+#include <QApplication>
 
 #include "x11util.h"
 #include "qwindowsurface_testlite.h"
@@ -385,8 +386,6 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
 			   wmProtocolsAtom,
 			   XA_ATOM, 32, PropModeAppend,
 			   (unsigned char *) &wmDeleteWindowAtom, 1);
-
-
 }
 
 MyWindow::~MyWindow()
@@ -466,7 +465,25 @@ void MyWindow::setGeometry(int x, int y, int w, int h)
 
 void MyWindow::mousePressEvent(XButtonEvent *e)
 {
-    windowSurface->handleMouseEvent(QEvent::MouseButtonPress, e);
+    static long prevTime = 0;
+    static Window prevWindow;
+    static int prevX = -999;
+    static int prevY = -999;
+
+    QEvent::Type type = QEvent::MouseButtonPress;
+
+    if (e->window == prevWindow && long(e->time) - prevTime < QApplication::doubleClickInterval()
+        && qAbs(e->x - prevX) < 5 && qAbs(e->y - prevY) < 5) {
+        type = QEvent::MouseButtonDblClick;
+        prevTime = e->time - QApplication::doubleClickInterval(); //no double click next time
+    } else {
+        prevTime = e->time;
+    }
+    prevWindow = e->window;
+    prevX = e->x;
+    prevY = e->y;
+
+    windowSurface->handleMouseEvent(type, e);
 }
 
 void MyWindow::mouseReleaseEvent(XButtonEvent *e)
