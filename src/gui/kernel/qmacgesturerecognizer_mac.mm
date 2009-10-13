@@ -223,6 +223,12 @@ QMacPanGestureRecognizer::filterEvent(QGesture *gesture, QObject *target, QEvent
                 _lastPos = p;
                 return QGestureRecognizer::GestureTriggered;
             }
+        } else if (_panTimer.isActive()) {
+            // I only want to cancel the pan if the user is pressing
+            // more than one finger, and the pan hasn't started yet:
+            _panCanceled = true;
+            _panTimer.stop();
+            return QGestureRecognizer::NotGesture;
         }
         break;}
     case QEvent::Timer: {
