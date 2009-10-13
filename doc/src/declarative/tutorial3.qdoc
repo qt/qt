@@ -1,6 +1,5 @@
 /*!
 \page tutorial3.html
-\target tutorial3
 \title Tutorial 3 - States and Transitions
 
 In this chapter, we make this example a little bit more dynamic by introducing states and transitions.
@@ -41,6 +40,6 @@ We could also run them one after the other by using \l SequentialAnimation inste
 
 For more details on states and transitions, see \l {states-transitions}{States and Transitions}.
 
-[Previous: \l tutorial2] [\l tutorial]
+[Previous: \l {Tutorial 2 - QML Component}] [\l {Tutorial}]
 
 */
