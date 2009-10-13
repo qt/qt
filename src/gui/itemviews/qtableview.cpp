@@ -1117,6 +1117,9 @@ void QTableView::setHorizontalHeader(QHeaderView *header)
     connect(d->horizontalHeader, SIGNAL(sectionHandleDoubleClicked(int)),
             this, SLOT(resizeColumnToContents(int)));
     connect(d->horizontalHeader, SIGNAL(geometriesChanged()), this, SLOT(updateGeometries()));
+
+    //update the sorting enabled states on the new header
+    setSortingEnabled(d->sortingEnabled);
 }
 
 /*!

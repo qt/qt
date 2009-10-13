@@ -193,6 +193,7 @@ private slots:
     void mouseWheel();
 
     void addColumnWhileEditing();
+    void task234926_setHeaderSorting();
 };
 
 // Testing get/set functions
@@ -3772,6 +3773,42 @@ void tst_QTableView::task191545_dragSelectRows()
                 QVERIFY(!table.selectionModel()->isSelected(index));
             }
     }
+}
+
+void tst_QTableView::task234926_setHeaderSorting()
+{
+    QStringListModel model;
+    QStringList data;
+    data << "orange" << "apple" << "banana" << "lemon" << "pumpkin";
+    QStringList sortedDataA = data;
+    QStringList sortedDataD = data;
+    qSort(sortedDataA);
+    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<const QString &>());
+    model.setStringList(data);
+    QTableView view;
+    view.setModel(&model);
+//    view.show();
+    QTest::qWait(20);
+    QCOMPARE(model.stringList(), data);
+    view.setSortingEnabled(true);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    view.horizontalHeader()->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
+
+    QHeaderView *h = new QHeaderView(Qt::Horizontal);
+    h->setModel(&model);
+    view.setHorizontalHeader(h);
+    h->setSortIndicator(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    h->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
 }
 
 QTEST_MAIN(tst_QTableView)
