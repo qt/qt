@@ -970,7 +970,7 @@ struct QmlEnginePrivate::ImportedNamespace {
             int vmin = minversions.at(i);
 
             if (isBuiltin.at(i)) {
-                QByteArray qt = urls.at(i).toLatin1();
+                QByteArray qt = urls.at(i).toUtf8();
                 qt += "/";
                 qt += type;
                 QmlType *t = QmlMetaType::qmlType(qt,vmaj,vmin);
@@ -982,7 +982,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                     return true;
                 }
             } else {
-                QUrl url = QUrl(urls.at(i) + QLatin1String("/" + type + ".qml"));
+                QUrl url = QUrl(urls.at(i) + QLatin1String("/") + QString::fromUtf8(type) + QLatin1String(".qml"));
                 if (vmaj || vmin) {
                     // Check version file - XXX cache these in QmlEngine!
                     QFile qmldir(QUrl(urls.at(i)+QLatin1String("/qmldir")).toLocalFile());
@@ -1101,12 +1101,12 @@ public:
             if (s->find(unqualifiedtype,vmajor,vminor,type_return,url_return))
                 return true;
             if (s->urls.count() == 1 && !s->isBuiltin[0] && !s->isLibrary[0] && url_return) {
-                *url_return = QUrl(s->urls[0]+QLatin1String("/")).resolved(QUrl(QLatin1String(unqualifiedtype + ".qml")));
+                *url_return = QUrl(s->urls[0]+QLatin1String("/")).resolved(QUrl(QString::fromUtf8(unqualifiedtype) + QLatin1String(".qml")));
                 return true;
             }
         }
         if (url_return) {
-            *url_return = base.resolved(QUrl(QLatin1String(type + ".qml")));
+            *url_return = base.resolved(QUrl(QString::fromUtf8(type + ".qml")));
             return true;
         } else {
             return false;
@@ -1323,7 +1323,7 @@ bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const Q
 */
 bool QmlEnginePrivate::resolveType(const Imports& imports, const QByteArray& type, QmlType** type_return, QUrl* url_return, int *vmaj, int *vmin, ImportedNamespace** ns_return) const
 {
-    ImportedNamespace* ns = imports.d->findNamespace(QLatin1String(type));
+    ImportedNamespace* ns = imports.d->findNamespace(QString::fromUtf8(type));
     if (ns) {
         if (qmlImportTrace())
             qDebug() << "QmlEngine::resolveType" << type << "is namespace for" << ns->urls;
@@ -1379,7 +1379,7 @@ static void *voidptr_constructor(const void *v)
 
 void QmlEnginePrivate::registerCompositeType(QmlCompiledData *data)
 {
-    QByteArray name = data->root.className();
+    QByteArray name = data->root->className();
 
     QByteArray ptr = name + "*";
     QByteArray lst = "QmlList<" + ptr + ">*";
@@ -1417,7 +1417,7 @@ const QMetaObject *QmlEnginePrivate::rawMetaObjectForType(int t) const
 {
     QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
     if (iter != m_compositeTypes.end()) {
-        return &(*iter)->root;
+        return (*iter)->root;
     } else {
         return QmlMetaType::rawMetaObjectForType(t);
     }
@@ -1427,7 +1427,7 @@ const QMetaObject *QmlEnginePrivate::metaObjectForType(int t) const
 {
     QHash<int, QmlCompiledData*>::ConstIterator iter = m_compositeTypes.find(t);
     if (iter != m_compositeTypes.end()) {
-        return &(*iter)->root;
+        return (*iter)->root;
     } else {
         return QmlMetaType::metaObjectForType(t);
     }

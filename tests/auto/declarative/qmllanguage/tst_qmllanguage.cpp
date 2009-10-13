@@ -39,6 +39,7 @@ private slots:
     void assignQmlComponent();
     void assignBasicTypes();
     void assignTypeExtremes();
+    void assignCompositeToType();
     void customParserTypes();
     void rootAsQmlComponent();
     void inlineQmlComponents();
@@ -56,6 +57,9 @@ private slots:
     void valueTypes();
     void cppnamespace();
     void aliasProperties();
+    void componentCompositeType();
+    void i18n();
+    void i18n_data();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -321,6 +325,15 @@ void tst_qmllanguage::assignTypeExtremes()
     QVERIFY(object != 0);
     QCOMPARE(object->uintProperty(), 0xEE6B2800);
     QCOMPARE(object->intProperty(), -0x77359400);
+}
+
+// Test that a composite type can assign to a property of its base type
+void tst_qmllanguage::assignCompositeToType()
+{
+    QmlComponent component(&engine, TEST_FILE("assignCompositeToType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 // Tests that custom parser types can be instantiated
@@ -620,7 +633,40 @@ void tst_qmllanguage::aliasProperties()
         QVERIFY(object != 0);
 
         QCOMPARE(object->property("enumAlias").toInt(), 1);
+
+        delete object;
     }
+
+    // Id aliases
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.5.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVariant v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        MyQmlObject *o = qvariant_cast<MyQmlObject*>(v);
+        QCOMPARE(o->value(), 10);
+
+        delete o;
+
+        v = object->property("otherAlias");
+        QCOMPARE(v.userType(), qMetaTypeId<MyQmlObject*>());
+        o = qvariant_cast<MyQmlObject*>(v);
+        QVERIFY(o == 0);
+
+        delete object;
+    }
+}
+
+// Test that the root element in a composite type can be a Component
+void tst_qmllanguage::componentCompositeType()
+{
+    QmlComponent component(&engine, TEST_FILE("componentCompositeType.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 class TestType : public QObject {
@@ -634,6 +680,30 @@ class TestType2 : public QObject {
 public:
     TestType2(QObject *p=0) : QObject(p) {}
 };
+
+void tst_qmllanguage::i18n_data()
+{
+    QTest::addColumn<QString>("file");
+    QTest::addColumn<QString>("stringProperty");
+    QTest::newRow("i18nStrings") << "i18nStrings.qml" << QString::fromUtf8("Test áâãäå (5 accented 'a' letters)");
+    QTest::newRow("i18nDeclaredPropertyNames") << "i18nDeclaredPropertyNames.qml" << QString::fromUtf8("Test áâãäå: 10");
+    QTest::newRow("i18nDeclaredPropertyUse") << "i18nDeclaredPropertyUse.qml" << QString::fromUtf8("Test áâãäå: 15");
+    QTest::newRow("i18nScript") << "i18nScript.qml" << QString::fromUtf8("Test áâãäå: 20");
+    QTest::newRow("i18nType") << "i18nType.qml" << QString::fromUtf8("Test áâãäå: 30");
+}
+
+void tst_qmllanguage::i18n()
+{
+    QFETCH(QString, file);
+    QFETCH(QString, stringProperty);
+    QmlComponent component(&engine, TEST_FILE(file));
+    VERIFY_ERRORS(0);
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+    QCOMPARE(object->stringProperty(), stringProperty);
+
+    delete object;
+}
 
 // Check that first child of qml is of given type. Empty type insists on error.
 void tst_qmllanguage::testType(const QString& qml, const QString& type)

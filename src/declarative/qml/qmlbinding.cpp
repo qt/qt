@@ -97,7 +97,7 @@ QmlMetaProperty QmlBinding::property() const
    return d->bindingData()->property; 
 }
 
-void QmlBinding::update()
+void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
 {
     Q_D(QmlBinding);
 
@@ -119,23 +119,22 @@ void QmlBinding::update()
             int idx = data->property.coreIndex();
             Q_ASSERT(idx != -1);
 
-            void *a[1];
+
             QmlBinding *t = this;
-            a[0] = (void *)&t;
-            QMetaObject::metacall(data->property.object(), 
+            int status = -1;
+            void *a[] = { &t, 0, &status, &flags };
+            QMetaObject::metacall(data->property.object(),
                                   QMetaObject::WriteProperty,
                                   idx, a);
 
         } else {
-
             QVariant value = this->value();
-            data->property.write(value, QmlMetaProperty::Binding);
+            data->property.write(value, flags);
         }
 
         data->updating = false;
     } else {
-        qmlInfo(data->property.object()) << "Binding loop detected for property" 
-                                         << data->property.name();
+        qmlInfo(tr("Binding loop detected for property \"%1\"").arg(data->property.name()), data->property.object());
     }
 
     data->release();
@@ -146,17 +145,17 @@ void QmlBinding::valueChanged()
     update();
 }
 
-void QmlBinding::setEnabled(bool e)
+void QmlBinding::setEnabled(bool e, QmlMetaProperty::WriteFlags flags)
 {
     Q_D(QmlBinding);
     d->bindingData()->enabled = e;
     setTrackChange(e);
 
-    QmlAbstractBinding::setEnabled(e);
+    QmlAbstractBinding::setEnabled(e, flags);
 
     if (e) {
         addToObject(d->bindingData()->property.object());
-        update();
+        update(flags);
     } else {
         removeFromObject();
     }
@@ -231,7 +230,7 @@ QString QmlAbstractBinding::expression() const
     return QLatin1String("<Unknown>");
 }
 
-void QmlAbstractBinding::setEnabled(bool e)
+void QmlAbstractBinding::setEnabled(bool e, QmlMetaProperty::WriteFlags)
 {
     if (e) m_mePtr = 0;
 }

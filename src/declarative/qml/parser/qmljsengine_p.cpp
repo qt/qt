@@ -164,7 +164,7 @@ double integerFromString(const char *buf, int size, int radix)
 
 double integerFromString(const QString &str, int radix)
 {
-    QByteArray ba = str.trimmed().toUtf8();
+    QByteArray ba = str.trimmed().toLatin1();
     return integerFromString(ba.constData(), ba.size(), radix);
 }
 

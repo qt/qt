@@ -47,6 +47,7 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>
+#include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER
 
@@ -62,10 +63,12 @@ public:
 
     virtual QString expression() const;
 
-    virtual void setEnabled(bool) = 0;
+    void setEnabled(bool e) { setEnabled(e, QmlMetaProperty::DontRemoveBinding); }
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags) = 0;
     virtual int propertyIndex() = 0;
 
-    virtual void update() = 0;
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
+    virtual void update(QmlMetaProperty::WriteFlags) = 0;
 
     void addToObject(QObject *);
     void removeFromObject();
@@ -100,12 +103,13 @@ public:
     bool enabled() const;
 
     // Inherited from  QmlAbstractBinding
-    virtual void setEnabled(bool);
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
     virtual int propertyIndex();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
     virtual QString expression() const;
 
 public Q_SLOTS:
-    void update();
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
 
 protected:
     virtual void valueChanged();

@@ -97,12 +97,17 @@ public:
     QmlMetaProperty::PropertyCategory propertyCategory() const;
 
     QVariant readValueProperty();
-    void writeValueProperty(const QVariant &, QmlMetaProperty::WriteSource);
-    static void write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *);
-    static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *);
+    void writeValueProperty(const QVariant &, QmlMetaProperty::WriteFlags);
+    static bool writeEnumProperty(const QMetaProperty &prop, int idx, QObject *object, const QVariant &value, int flags);
+    static void write(QObject *, const QmlPropertyCache::Data &, const QVariant &, QmlContext *,
+                      QmlMetaProperty::WriteFlags flags = 0);
+    static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *,
+                                          QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding);
 
     static quint32 saveValueType(int, int);
     static quint32 saveProperty(int);
+
+    static bool equal(const QMetaObject *, const QMetaObject *);
 };
 
 QT_END_NAMESPACE

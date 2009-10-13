@@ -152,7 +152,7 @@ void tst_animations::badProperties()
         QFxRect *rect = qobject_cast<QFxRect*>(c.create());
         QVERIFY(rect);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\" ");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
         rect->setState("state1");
     }
 }

@@ -119,7 +119,7 @@ QmlCompositeTypeData::toCompiledComponent(QmlEngine *engine)
 
         compiledComponent = new QmlCompiledData;
         compiledComponent->url = imports.baseUrl();
-        compiledComponent->name = compiledComponent->url.toString().toLatin1(); // ###
+        compiledComponent->name = compiledComponent->url.toString().toUtf8(); 
 
         QmlCompiler compiler;
         if (!compiler.compile(engine, this, compiledComponent)) {
@@ -443,7 +443,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
     int waiting = 0;
     for (int ii = 0; ii < types.count(); ++ii) {
         QmlScriptParser::TypeReference *parserRef = types.at(ii);
-        QByteArray typeName = parserRef->name.toLatin1();
+        QByteArray typeName = parserRef->name.toUtf8();
 
         QmlCompositeTypeData::TypeReference ref;
 
@@ -458,7 +458,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
         if (typeNamespace) {
             QmlError error;
             error.setUrl(unit->imports.baseUrl());
-            error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QLatin1String(typeName)));
+            error.setDescription(tr("Namespace %1 cannot be used as a type").arg(QString::fromUtf8(typeName)));
             if (!parserRef->refObjects.isEmpty()) {
                 QmlParser::Object *obj = parserRef->refObjects.first();
                 error.setLine(obj->location.start.line);
@@ -500,7 +500,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
             {
                 QmlError error;
                 error.setUrl(unit->imports.baseUrl());
-                error.setDescription(tr("Type %1 unavailable").arg(QLatin1String(typeName)));
+                error.setDescription(tr("Type %1 unavailable").arg(QString::fromUtf8(typeName)));
                 if (!parserRef->refObjects.isEmpty()) {
                     QmlParser::Object *obj = parserRef->refObjects.first();
                     error.setLine(obj->location.start.line);

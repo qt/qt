@@ -185,6 +185,13 @@ The following table lists the QML elements provided by the Qt Declarative module
 
 \o
 \list
+\o \l Blur
+\o \l Colorize
+\o \l Grayscale
+\o \l Pixelize
+\o \l DropShadow
+\o \l Opacity
+\o \l Bloom
 \o \l Particles
     \list
     \o \l ParticleMotionLinear
