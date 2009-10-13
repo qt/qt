@@ -3,6 +3,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qbindablemap.h>
 #include <QtDeclarative/qmlcomponent.h>
+#include <QtDeclarative/qfxtext.h>
 #include <QSignalSpy>
 
 class tst_QBindableMap : public QObject
@@ -58,11 +59,13 @@ void tst_QBindableMap::changed()
     //make changes in QML
     QmlEngine engine;
     QmlContext *ctxt = engine.rootContext();
-    ctxt->setContextProperty(QLatin1String("data"), &map);
-    QmlComponent component(&engine, "import Qt 4.6\nScript { script: \"data.key1 = 'Hello World';\" }",
+    ctxt->setContextProperty(QLatin1String("testdata"), &map);
+    QmlComponent component(&engine, "import Qt 4.6\nText { text: { testdata.key1 = 'Hello World'; 'X' } }",
             QUrl("file://"));
     QVERIFY(component.isReady());
-    component.create();
+    QFxText *txt = qobject_cast<QFxText*>(component.create());
+    QVERIFY(txt);
+    QCOMPARE(txt->text(), QString('X'));
     QCOMPARE(spy.count(), 1);
     QList<QVariant> arguments = spy.takeFirst();
     QCOMPARE(arguments.at(0).toString(),QLatin1String("key1"));
