@@ -51,17 +51,37 @@ QT_BEGIN_NAMESPACE
     \brief The QGesture class represents a gesture, containing properties that
     describe the corresponding user input.
 
-    QGesture objects are delivered to widgets and \l{QGraphicsObject}s with
-    \l{QGestureEvent}s.
+    Gesture objects are not constructed directly by developers. They are created by
+    the QGestureRecognizer object that is registered with the application; see
+    QApplication::registerGestureRecognizer().
+
+    \section1 Gesture Properties
 
     The class has a list of properties that can be queried by the user to get
-    some gesture-specific arguments. For example, the QPinchGesture gesture has a scale
+    some gesture-specific arguments. For example, the pinch gesture has a scale
     factor that is exposed as a property.
 
     Developers of custom gesture recognizers can add additional properties in
     order to provide additional information about a gesture. This can be done
     by adding new dynamic properties to a QGesture object, or by subclassing
     the QGesture class (or one of its subclasses).
+
+    \section1 Lifecycle of a Gesture Object
+
+    A QGesture instance is created when the application calls QWidget::grabGesture()
+    or QGraphicsObject::grabGesture() to configure a widget or graphics object (the
+    target object) for gesture input. One gesture object is created for each target
+    object.
+
+    The registered gesture recognizer monitors the input events for the target
+    object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
+    properties of the gesture object as required.
+
+    The gesture object may be delivered to the target object in a QGestureEvent if
+    the corresponding gesture is active or has just been canceled. Each event that
+    is delivered contains a list of gesture objects, since support for more than
+    one gesture may be enabled for the target object. Due to the way events are
+    handled in Qt, gesture events may be filtered by other objects.
 
     \sa QGestureEvent, QGestureRecognizer
 */

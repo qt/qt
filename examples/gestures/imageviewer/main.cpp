@@ -41,36 +41,7 @@
 
 #include <QtGui>
 
-#include "imagewidget.h"
-
-class MainWidget : public QMainWindow
-{
-    Q_OBJECT
-
-public:
-    MainWidget(QWidget *parent = 0);
-
-public slots:
-    void openDirectory(const QString &path);
-
-private:
-    bool loadImage(const QString &fileName);
-
-    ImageWidget *imageWidget;
-};
-
-MainWidget::MainWidget(QWidget *parent)
-    : QMainWindow(parent)
-{
-    resize(400, 300);
-    imageWidget = new ImageWidget(this);
-    setCentralWidget(imageWidget);
-}
-
-void MainWidget::openDirectory(const QString &path)
-{
-    imageWidget->openDirectory(path);
-}
+#include "mainwidget.h"
 
 int main(int argc, char *argv[])
 {
@@ -86,5 +57,3 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
-
-#include "main.moc"

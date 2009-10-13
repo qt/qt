@@ -1072,18 +1072,17 @@
 /*!
     \page examples-gestures.html
     \title Gestures Examples
-    
+
     \previouspage Animation Framework Examples
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
     The API of the gesture framework is not yet finalized and
     still subject to change.
-\omit
+
     \list
-    \o \l{widgets/imageviewer}{Image Viewer}
+    \o \l{gestures/imagegestures}{Image Gestures}
     \endlist
-\endomit
 */
 
 /*!
