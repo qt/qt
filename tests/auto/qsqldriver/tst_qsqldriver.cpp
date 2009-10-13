@@ -160,7 +160,11 @@ void tst_QSqlDriver::record()
 
     //check that we can't get records using incorrect tablename casing that's been quoted
     rec = db.driver()->record(db.driver()->escapeIdentifier(tablename,QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS") || tst_Databases::isSqlServer(db))
+    if (tst_Databases::isMySQL(db)
+      || db.driverName().startsWith("QSQLITE")
+      || db.driverName().startsWith("QTDS")
+      || tst_Databases::isSqlServer(db)
+      || tst_Databases::isMSAccess(db))
         QCOMPARE(rec.count(), 4); //mysql, sqlite and tds will match
     else
         QCOMPARE(rec.count(), 0);
@@ -208,7 +212,11 @@ void tst_QSqlDriver::primaryIndex()
         tablename = tablename.toUpper();
 
     index = db.driver()->primaryIndex(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    if (tst_Databases::isMySQL(db) || db.driverName().startsWith("QSQLITE") || db.driverName().startsWith("QTDS") || tst_Databases::isSqlServer(db))
+    if (tst_Databases::isMySQL(db)
+      || db.driverName().startsWith("QSQLITE")
+      || db.driverName().startsWith("QTDS")
+      || tst_Databases::isSqlServer(db)
+      || tst_Databases::isMSAccess(db))
         QCOMPARE(index.count(), 1); //mysql will always find the table name regardless of casing
     else
         QCOMPARE(index.count(), 0);
