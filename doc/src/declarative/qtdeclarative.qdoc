@@ -73,10 +73,10 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \section1 Getting Started:
 \list
 \o \l {Introduction to the QML language}
-\o \l {tutorial}{Tutorial: 'Hello World'}
+\o \l {Tutorial}{Tutorial: 'Hello World'}
 \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
 \o \l {advtutorial.html}{Advanced Tutorial: 'Same Game'}
-\o \l {QML Examples}
+\o \l {QML Examples and Walkthroughs}
 \endlist
 
 \section1 Core QML Features:
