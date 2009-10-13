@@ -43,17 +43,21 @@
 \page qmlecmascript.html
 \title ECMAScript Blocks
 
-QML encourages building UIs declaratively, using \l {Property Binding} and existing 
-\l {QML Elements}.  When imperative code is required to implementing more advanced 
-behavior, the \l Script element can be used to add ECMAScript code directly to a
-QML file, or to include an external ECMAScript file.
+QML encourages building UIs declaratively, using \l {Property Binding} and the 
+composition of existing \l {QML Elements}.  If imperative code is required to implement 
+more advanced behavior, the \l Script element can be used to add ECMAScript code directly 
+to a QML file, or to include an external ECMAScript file.
 
 The \l Script element is a QML language \e intrinsic.  It can be used anywhere in a
-QML file. \e except as the root element of a file or sub-component.  The included 
-ECMAScript is evaluated in a scope chain.  The \l {QML Scope} documentation covers
-the specifics of scoping in QML.  
+QML file, \e except as the root element of a file or sub-component, but cannot be 
+assigned to an object property or given an id.  The included ECMAScript is evaluated 
+in a scope chain.  The \l {QML Scope} documentation covers the specifics of scoping 
+in QML.  
 
-\section1 Inline ECMAScript
+\section1 Inline Script
+
+Small blocks of ECMAScript can be included directly inside a \l {QML Document} as
+the body of the \l Script element.
 
 \code
 Rectangle {
@@ -69,6 +73,110 @@ Rectangle {
 }
 \endcode
 
-\section1 Including a ECMAScript File
+Good programming practice dictates that only small script snippets should be written 
+inline.  QML prohibits the declaration of anything other than functions in an inline
+script block.  For example, the following script is illegal as an inline script block 
+as it declares the non-function variable \c lastResult.
+
+\code
+// Illegal inline code block
+var lastResult = 0
+function factorial(var a) {
+    a = Integer(a);
+    if (a <= 0) 
+        lastResult = 1;
+    else 
+        lastResult = a * factorial(a - 1);
+    return lastResult;
+}
+\endcode
+
+\section1 Including an External File
+
+To avoid cluttering the QML file, large script blocks should be in a separate file.
+The \l Script element's \c source property is used to load script from an external
+file.
+
+If the previous factorial code that was illegal as an inline script block was saved
+into a "factorial.js" file, it could be included like this.
+
+\code
+Rectangle {
+    Script { 
+        source: "factorial.js"
+    }
+}
+\endcode
+
+The \c source property may reference a relative file, or an absolute path.  In the
+case of a relative file, the location is resolved relative to the location of the
+\l {QML Document} that contains the \l Script element.  If the script file is not 
+accessible, an error will occur.  If the source is on a network resource, the
+enclosing QML document will remain in the \l {QmlComponent::status()}{waiting state}
+until the script has been retrieved.
+
+\section1 QML Script Restrictions
+
+QML \l Script blocks contain standard ECMAScript code.  QML introduces the following
+restrictions.
+
+\list
+\o Script code cannot modify the global object.
+
+In QML, the global object is constant - existing properties cannot be modified or 
+deleted, and no new properties may be created.
+
+Most ECMAScript programs do not explicitly modify the global object.  However, 
+ECMAScript's automatic creation of undeclared variables is an implicit modification
+of the global object, and is prohibited in QML.
+
+Assuming that the \c a variable does not exist in the scope chain, the following code 
+is illegal in QML.
+
+\code
+// Illegal modification of undeclared variable
+a = 1;
+for (var ii = 1; ii < 10; ++ii) a = a * ii;
+print("Result: " + a);
+\endcode
+
+It can be trivially modified to this legal code.
+
+\code
+var a = 1;
+for (var ii = 1; ii < 10; ++ii) a = a * ii;
+print("Result: " + a);
+\endcode
+
+Any attempt to modify the global object - either implicitly or explicitly - will 
+cause an exception.  If uncaught, this will result in an warning being printed, 
+that includes the file and line number of the offending code.
+
+\o Global code is run in a reduced scope
+
+During startup, if a \l Script block includes an external file with "global"
+code, it is executed in a scope that contains only the external file itself and
+the global object.  That is, it will not have access to the QML objects and 
+properties it \l {QML Scope}{normally would}.
+
+Global code that only accesses script local variable is permitted.  This is an 
+example of valid global code.
+
+\code
+var colors = [ "red", "blue", "green", "orange", "purple" ];
+\endcode
+
+Global code that accesses QML objects will not run correctly.
+
+\code
+// Invalid global code - the "rootObject" variable is undefined
+var initialPosition = { rootObject.x, rootObject.y }
+\endcode
+
+This restriction exists as the QML environment is not yet fully established.  
+To run code after the environment setup has completed - at "startup" - use
+the \l Component \c onCompleted attached property.
+
+\endlist
 
 */
