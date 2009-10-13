@@ -1554,6 +1554,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         QRectF rect(points[0], points[1], points[2] - points[0],
                     points[5] - points[1]);
         clip(rect.toRect(), op);
+    } else {
+        // The best we can do is clip to the bounding rectangle
+        // of all control points.
+        clip(path.controlPointRect().toRect(), op);
     }
 }
 
