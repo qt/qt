@@ -929,7 +929,7 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
-void QSymbianControl::setFocusSafely(bool focus)
+void QSymbianControl::setFocusSafely(bool focus, bool resetLastFocused)
 {
     // The stack hack in here is very unfortunate, but it is the only way to ensure proper
     // focus in Symbian. If this is not executed, the control which happens to be on
@@ -939,17 +939,19 @@ void QSymbianControl::setFocusSafely(bool focus)
         S60->appUi()->RemoveFromStack(this);
         // Symbian doesn't automatically remove focus from the last focused control, so we need to
         // remember it and clear focus ourselves.
-        if (lastFocusedControl && lastFocusedControl != this)
+        if (resetLastFocused && lastFocusedControl && lastFocusedControl != this)
             lastFocusedControl->SetFocus(false);
         QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
                 ECoeStackPriorityDefault + 1, ECoeStackFlagStandard)); // Note the + 1
-        lastFocusedControl = this;
+        if (resetLastFocused)
+            lastFocusedControl = this;
         this->SetFocus(true);
     } else {
         S60->appUi()->RemoveFromStack(this);
         QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
                 ECoeStackPriorityDefault, ECoeStackFlagStandard));
-        lastFocusedControl = 0;
+        if (resetLastFocused)
+            lastFocusedControl = 0;
         this->SetFocus(false);
     }
 }

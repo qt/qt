@@ -370,7 +370,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             control->MakeVisible(false);
             QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
             // Avoid keyboard focus to a hidden window.
-            control->setFocusSafely(false);
+            control->setFocusSafely(false, false);
 
             RDrawableWindow *const drawableWindow = control->DrawableWindow();
             // Request mouse move events.

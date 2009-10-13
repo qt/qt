@@ -157,7 +157,7 @@ public:
     void setIgnoreFocusChanged(bool enabled) { m_ignoreFocusChanged = enabled; }
     void CancelLongTapTimer();
 
-    void setFocusSafely(bool focus);
+    void setFocusSafely(bool focus, bool resetLastFocused = true);
 
 protected:
     void Draw(const TRect& aRect) const;
@@ -199,7 +199,7 @@ inline void QS60Data::updateScreenSize()
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
     S60->screenHeightInTwips = params.iTwipsSize.iHeight;
-    
+
     S60->virtualMouseMaxAccel = qMax(S60->screenHeightInPixels, S60->screenWidthInPixels) / 20;
 
     TReal inches = S60->screenHeightInTwips / (TReal)KTwipsPerInch;

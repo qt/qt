@@ -119,7 +119,7 @@ void QMainWindowPrivate::init()
     q->setAttribute(Qt::WA_Hover);
 #ifdef QT_SOFTKEYS_ENABLED
     menuBarAction = QSoftKeyManager::createAction(QSoftKeyManager::MenuSoftKey, q);
-    menuBarAction->setObjectName("_q_menuSoftKeyAction");
+    menuBarAction->setObjectName(QLatin1String("_q_menuSoftKeyAction"));
 #endif
 }
 
@@ -933,7 +933,7 @@ static bool checkDockWidgetArea(Qt::DockWidgetArea area, const char *where)
 }
 
 #ifndef QT_NO_TABBAR
-/*! 
+/*!
     \property QMainWindow::documentMode
     \brief whether the tab bar for tabbed dockwidgets is set to document mode.
     \since 4.5
@@ -954,7 +954,7 @@ void QMainWindow::setDocumentMode(bool enabled)
 #endif // QT_NO_TABBAR
 
 #ifndef QT_NO_TABWIDGET
-/*! 
+/*!
     \property QMainWindow::tabShape
     \brief the tab shape used for tabbed dock widgets.
     \since 4.5
