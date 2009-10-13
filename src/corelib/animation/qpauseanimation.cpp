@@ -75,6 +75,7 @@ class QPauseAnimationPrivate : public QAbstractAnimationPrivate
 public:
     QPauseAnimationPrivate() : QAbstractAnimationPrivate(), duration(0)
     {
+        isPause = true;
     }
 
     int duration;

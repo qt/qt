@@ -1377,6 +1377,7 @@ void tst_QSslSocket::waitForMinusOne()
 
     // connect to the server
     QSslSocket socket;
+    QTest::qSleep(100);
     socket.connectToHost("127.0.0.1", server.serverPort);
     QVERIFY(socket.waitForConnected(-1));
     socket.ignoreSslErrors();

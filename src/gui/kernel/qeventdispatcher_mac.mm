@@ -942,7 +942,7 @@ Boolean QEventDispatcherMacPrivate::postedEventSourceEqualCallback(const void *i
 
 inline static void processPostedEvents(QEventDispatcherMacPrivate *const d, const bool blockSendPostedEvents)
 {
-    if (blockSendPostedEvents) {
+    if (blockSendPostedEvents || d->interrupt) {
         CFRunLoopSourceSignal(d->postedEventsSource);
     } else {
         if (!d->threadData->canWait || (d->serialNumber != d->lastSerial)) {

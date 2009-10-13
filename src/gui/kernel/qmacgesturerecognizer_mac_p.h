@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,47 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QANIMATIONGROUP_P_H
-#define QANIMATIONGROUP_P_H
+#ifndef QMACSWIPEGESTURERECOGNIZER_MAC_P_H
+#define QMACSWIPEGESTURERECOGNIZER_MAC_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of QIODevice. This header file may change from version to
+// of other Qt classes.  This header file may change from version to
 // version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include "qanimationgroup.h"
-
-#include <QtCore/qlist.h>
-
-#include "private/qabstractanimation_p.h"
-
-#ifndef QT_NO_ANIMATION
+#include "qtimer.h"
+#include "qpoint.h"
+#include "qgesturerecognizer.h"
 
 QT_BEGIN_NAMESPACE
 
-class QAnimationGroupPrivate : public QAbstractAnimationPrivate
+class QMacSwipeGestureRecognizer : public QGestureRecognizer
 {
-    Q_DECLARE_PUBLIC(QAnimationGroup)
 public:
-    QAnimationGroupPrivate()
-    {
-        isGroup = true;
-    }
+    QMacSwipeGestureRecognizer();
 
-    virtual void animationInsertedAt(int index) { Q_UNUSED(index) };
-    virtual void animationRemovedAt(int index);
-
-    QList<QAbstractAnimation *> animations;
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
 };
+
+class QMacPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QMacPinchGestureRecognizer();
+
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
+
+#if defined(QT_MAC_USE_COCOA)
+
+class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
+{
+public:
+    QMacPanGestureRecognizer();
+
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+private:
+    QPointF _startPos;
+    QPointF _lastPos;
+    QBasicTimer _panTimer;
+    bool _panCanceled;
+};
+
+#endif
 
 QT_END_NAMESPACE
 
-#endif //QT_NO_ANIMATION
-
-#endif //QANIMATIONGROUP_P_H
+#endif // QMACSWIPEGESTURERECOGNIZER_MAC_P_H

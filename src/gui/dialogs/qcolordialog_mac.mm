@@ -44,6 +44,7 @@
 #include <qapplication.h>
 #include <qtimer.h>
 #include <qdialogbuttonbox.h>
+#include <qabstracteventdispatcher.h>
 #include <private/qapplication_p.h>
 #include <private/qt_mac_p.h>
 #include <qdebug.h>
@@ -319,6 +320,7 @@ QT_USE_NAMESPACE
     QMacCocoaAutoReleasePool pool;
     mDialogIsExecuting = true;
     [NSApp runModalForWindow:mColorPanel];
+    QAbstractEventDispatcher::instance()->interrupt();
     if (mResultCode == NSCancelButton)
         mPriv->colorDialog()->reject();
     else
@@ -411,7 +413,7 @@ void QColorDialogPrivate::openCocoaColorPanel(const QColor &initial,
 
 void QColorDialogPrivate::closeCocoaColorPanel()
 {
-    [[static_cast<QCocoaColorPanelDelegate *>(delegate) colorPanel] close];
+    [static_cast<QCocoaColorPanelDelegate *>(delegate) onCancelClicked];
 }
 
 void QColorDialogPrivate::releaseCocoaColorPanelDelegate()

@@ -104,10 +104,10 @@ bool ImageWidget::gestureEvent(QGestureEvent *event)
         panTriggered(static_cast<QPanGesture*>(pan));
         return true;
     } else if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
-        pinchTriggered(static_cast<QPinchGesture*>(pan));
+        pinchTriggered(static_cast<QPinchGesture*>(pinch));
         return true;
     } else if (QGesture *swipe = event->gesture(Qt::SwipeGesture)) {
-        swipeTriggered(static_cast<QSwipeGesture*>(pan));
+        swipeTriggered(static_cast<QSwipeGesture*>(swipe));
         return true;
     }
     return false;
@@ -125,7 +125,7 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
             setCursor(Qt::ArrowCursor);
     }
 #endif
-    QSizeF lastOffset = gesture->property("lastOffset").toSizeF();
+    QSizeF lastOffset = gesture->offset();
     horizontalOffset += lastOffset.width();
     verticalOffset += lastOffset.height();
     update();
@@ -133,7 +133,7 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
 
 void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
-    QPinchGesture::WhatChanged whatChanged = gesture->property("whatChanged").value<QPinchGesture::WhatChanged>();
+    QPinchGesture::WhatChanged whatChanged = gesture->whatChanged();
     if (whatChanged & QPinchGesture::RotationAngleChanged) {
         qreal value = gesture->property("rotationAngle").toReal();
         qreal lastValue = gesture->property("lastRotationAngle").toReal();

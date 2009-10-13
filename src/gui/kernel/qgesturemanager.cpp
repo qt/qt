@@ -48,6 +48,10 @@
 #include "qevent.h"
 #include "qgraphicsitem.h"
 
+#ifdef Q_WS_MAC
+#include "qmacgesturerecognizer_mac_p.h"
+#endif
+
 #include "qdebug.h"
 
 // #define GESTURE_DEBUG
@@ -64,7 +68,15 @@ QGestureManager::QGestureManager(QObject *parent)
 {
     qRegisterMetaType<Qt::GestureState>();
 
+#if defined(Q_WS_MAC)
+    registerGestureRecognizer(new QMacSwipeGestureRecognizer);
+    registerGestureRecognizer(new QMacPinchGestureRecognizer);
+  #if defined(QT_MAC_USE_COCOA)
+    registerGestureRecognizer(new QMacPanGestureRecognizer);
+  #endif
+#else
     registerGestureRecognizer(new QPanGestureRecognizer);
+#endif
 }
 
 QGestureManager::~QGestureManager()
