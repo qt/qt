@@ -53,6 +53,10 @@
     For a list list of known bugs in Qt %VERSION%, see the \l{Task Tracker}
     on the Qt website.
 
+    An overview of known issues may also be found at:
+    \l{http://qt.gitorious.org/qt/pages/Qt460BetaKnownIssues}
+    {Known Issues Wiki}.
+
     \section1 Installation Issues
 
     \section2 Building the Source Package on Windows 7
