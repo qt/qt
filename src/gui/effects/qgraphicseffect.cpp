@@ -893,15 +893,8 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
         return;
     }
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap);
-        return;
-    }
-
     // Draw pixmap in device coordinates to avoid pixmap scaling.
+    QPoint offset;
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
@@ -1084,15 +1077,8 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
         return;
     }
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap);
-        return;
-    }
-
     // Draw pixmap in device coordinates to avoid pixmap scaling.
+    QPoint offset;
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
@@ -1486,10 +1472,8 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
         return;
     }
 
-    const Qt::CoordinateSystem system = source->isPixmap()
-                                        ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
     QPoint offset;
-    QPixmap pixmap = source->pixmap(system, &offset);
+    QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QImage result = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
 
     // Blur.
@@ -1514,14 +1498,10 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
     compPainter.drawImage(0, 0, overlay);
     compPainter.end();
 
-    if (system == Qt::DeviceCoordinates) {
-        QTransform restoreTransform = painter->worldTransform();
-        painter->setWorldTransform(QTransform());
-        painter->drawImage(offset, result);
-        painter->setWorldTransform(restoreTransform);
-    } else {
-        painter->drawImage(offset, result);
-    }
+    QTransform restoreTransform = painter->worldTransform();
+    painter->setWorldTransform(QTransform());
+    painter->drawImage(offset, result);
+    painter->setWorldTransform(restoreTransform);
 }
 
 QT_END_NAMESPACE
