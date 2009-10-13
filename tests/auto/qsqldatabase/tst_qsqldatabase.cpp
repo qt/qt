@@ -2449,8 +2449,8 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toInt()<4.1 )
+        QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("begin"));
