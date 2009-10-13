@@ -1354,7 +1354,6 @@ static void match(int script, const QFontDef &request,
 #ifdef Q_WS_X11
     load(family_name, script, forceXLFD);
 #else
-    Q_UNUSED(forceXLFD);
     load(family_name, script);
 #endif
 

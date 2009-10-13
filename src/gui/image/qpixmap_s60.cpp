@@ -716,8 +716,6 @@ void QS60PixmapData::beginDataAccess()
 
 void QS60PixmapData::endDataAccess(bool readOnly) const
 {
-    Q_UNUSED(readOnly);
-
     if(!cfbsBitmap)
         return;
 
