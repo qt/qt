@@ -792,8 +792,8 @@ void tst_QSqlDatabase::checkValues(const FieldDef fieldDefs[], QSqlDatabase db)
             if (val1.type() == QVariant::DateTime || val1.type() == QVariant::Time)
                qDebug("Received Time: " + val1.toTime().toString("hh:mm:ss.zzz"));
             QFAIL(QString(" Expected: '%1' Received: '%2' for field %3 (etype %4 rtype %5) in checkValues").arg(
-            val2.toString()).arg(
-            val1.toString()).arg(
+            val2.type() == QVariant::ByteArray ? val2.toByteArray().toHex() : val2.toString()).arg(
+            val1.type() == QVariant::ByteArray ? val1.toByteArray().toHex() : val1.toString()).arg(
             fieldDefs[ i ].fieldName()).arg(
             val2.typeName()).arg(
             val1.typeName())
@@ -1292,9 +1292,9 @@ void tst_QSqlDatabase::recordAccess()
     FieldDef("varchar(20)", QVariant::String, QString("Blah1")),
     FieldDef("single", QVariant::Double, 1.12345),
     FieldDef("double", QVariant::Double, 1.123456),
-        FieldDef("byte", QVariant::Int, 255),
+    FieldDef("byte", QVariant::UInt, 255),
 #ifdef QT3_SUPPORT
-    FieldDef("binary", QVariant::ByteArray, Q3CString("Blah2")),
+    FieldDef("binary(5)", QVariant::ByteArray, Q3CString("Blah2")),
 #endif
     FieldDef("long", QVariant::Int, 2147483647),
         FieldDef("memo", QVariant::String, memo),
@@ -1643,7 +1643,10 @@ void tst_QSqlDatabase::precisionPolicy()
         QSKIP("Driver or database doesn't support setting precision policy", SkipSingle);
 
     // Create a test table with some data
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
+    if(tst_Databases::isMSAccess(db))
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num number)").arg(tableName)));
+    else
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
     q.bindValue(0, 1);
     q.bindValue(1, 123);
@@ -2007,6 +2010,7 @@ void tst_QSqlDatabase::odbc_bindBoolean()
         QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
         return;
     }
+
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool") + "(id int, boolvalue bit)"));
 
@@ -2038,6 +2042,8 @@ void tst_QSqlDatabase::odbc_testqGetString()
     QSqlQuery q(db);
     if (tst_Databases::isSqlServer(db))
         QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(MAX))"));
+    else if(tst_Databases::isMSAccess(db))
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue memo)"));
     else
         QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
 
@@ -2264,7 +2270,10 @@ void tst_QSqlDatabase::odbc_uintfield()
     unsigned int val = 4294967295U;
 
     QSqlQuery q(db);
-    q.exec(QString("CREATE TABLE %1(num numeric(10))").arg(tableName));
+    if ( tst_Databases::isMSAccess( db ) )
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(num number)").arg(tableName)));
+    else
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(num numeric(10))").arg(tableName)));
     q.prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName));
     q.addBindValue(val);
     QVERIFY_SQL(q, exec());
