@@ -75,8 +75,10 @@ public:
     enum ClassId { RasterClass, X11Class, MacClass, DirectFBClass,
                    OpenGLClass, OpenVGClass, CustomClass = 1024 };
 
-    QPixmapData(PixelType pixelpType, int classId);
+    QPixmapData(PixelType pixelType, int classId);
     virtual ~QPixmapData();
+
+    virtual QPixmapData *createCompatiblePixmapData() const;
 
     virtual void resize(int width, int height) = 0;
     virtual void fromImage(const QImage &image,

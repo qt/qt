@@ -240,6 +240,11 @@ QGLPixmapData::~QGLPixmapData()
     }
 }
 
+QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
+{
+    return new QGLPixmapData(pixelType());
+}
+
 bool QGLPixmapData::isValid() const
 {
     return w > 0 && h > 0;

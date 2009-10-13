@@ -64,6 +64,11 @@ QRasterPixmapData::~QRasterPixmapData()
 {
 }
 
+QPixmapData *QRasterPixmapData::createCompatiblePixmapData() const
+{
+    return new QRasterPixmapData(pixelType());
+}
+
 void QRasterPixmapData::resize(int width, int height)
 {
     QImage::Format format;

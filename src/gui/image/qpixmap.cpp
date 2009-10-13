@@ -361,13 +361,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
     const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
 
-    QPixmapData *d;
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(data->pixelType());
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
-
+    QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);
     return QPixmap(d);
 }
