@@ -2913,7 +2913,7 @@ void QAbstractItemView::update(const QModelIndex &index)
         //this test is important for peformance reason
         //For example in dataChanged we simply update all the cells without checking
         //it can be a major bottleneck to update rects that aren't even part of the viewport
-        if (d->viewport->geometry().intersects(rect))
+        if (d->viewport->rect().intersects(rect))
             d->viewport->update(rect);
     }
 }
