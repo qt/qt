@@ -75,9 +75,13 @@ QT_BEGIN_NAMESPACE
 
 void qmlInfo(const QString& msg, QObject* object)
 {
-    QString pos = QLatin1String("QML ") + QLatin1String(object->metaObject()->className());
+    QString pos = QLatin1String("QML");
+    if (object) {
+        pos += " ";
+        pos += QLatin1String(object->metaObject()->className());
+    }
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
-    pos += QLatin1String("(");
+    pos += QLatin1String(" (");
     if (ddata) {
         if (ddata->outerContext) {
             pos += ddata->outerContext->baseUrl().toString();
@@ -91,7 +95,7 @@ void qmlInfo(const QString& msg, QObject* object)
     } else {
         pos += qApp->translate("QmlInfo","unknown location");
     }
-    pos += QLatin1String(")");
+    pos += QLatin1String(") ");
     qWarning((pos + msg).toLocal8Bit()); // XXX allow other processing?
 }
 

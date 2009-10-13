@@ -102,7 +102,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor. ";
+        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -117,7 +117,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML QFxImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor. ";
+        QString expect = "QML QFxImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
@@ -133,7 +133,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
 
-        QString expect = "QML QFxRect (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors. ";
+        QString expect = "QML QFxRect (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
@@ -146,7 +146,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
 
-        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors. ";
+        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
@@ -159,7 +159,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
 
-        QString expect = "QML QFxRect (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling. ";
+        QString expect = "QML QFxRect (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
@@ -187,7 +187,7 @@ void tst_anchors::nullItem()
 {
     QFxAnchorLine anchor;
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QFxItem (unknown location): Can't anchor to a null item. ");
+    QTest::ignoreMessage(QtWarningMsg, "QML QFxItem (unknown location) Can't anchor to a null item.");
     QFxItem *item = new QFxItem;
     item->anchors()->setBottom(anchor);
 }

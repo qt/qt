@@ -142,7 +142,7 @@
 ****************************************************************************/
 
 #include <QtCore/QtDebug>
-#include <QApplication>
+#include <QtGui/QApplication>
 
 #include <string.h>
 
