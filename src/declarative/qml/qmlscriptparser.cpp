@@ -298,6 +298,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                 error.setLine(typeLocation.startLine);
                 error.setColumn(typeLocation.startColumn);
                 _parser->_errors << error;
+                return 0;
             }
         }
 
