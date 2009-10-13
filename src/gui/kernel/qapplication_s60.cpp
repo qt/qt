@@ -949,7 +949,8 @@ void QSymbianControl::setFocusSafely(bool focus)
         S60->appUi()->RemoveFromStack(this);
         QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
                 ECoeStackPriorityDefault, ECoeStackFlagStandard));
-        lastFocusedControl = 0;
+        if(this == lastFocusedControl)
+            lastFocusedControl = 0;
         this->SetFocus(false);
     }
 }
