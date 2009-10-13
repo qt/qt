@@ -62,7 +62,7 @@ existing QObject based type system, adds support for automatic
 level.
 
 The \l {QML Elements} are a sophisticated set of graphical and behavioral building
-blocks.  \l {QML Elements} are combined together in QML files to build components 
+blocks.  \l {QML Elements} are combined together in \l {QML Documents} to build components 
 ranging in complexity from simple pushbuttons and sliders, to complete 
 internet-enabled applications like a \l {http://www.flickr.com}{flickr} photo browser.
 
