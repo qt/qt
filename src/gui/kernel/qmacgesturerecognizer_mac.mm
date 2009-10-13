@@ -192,9 +192,12 @@ QMacPanGestureRecognizer::filterEvent(QGesture *gesture, QObject *target, QEvent
         }
         break;}
     case QEvent::TouchEnd: {
+        if (_panCanceled)
+            break;
+
         const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
-        if (!_panCanceled && ev->touchPoints().size() == 1)
-                return QGestureRecognizer::GestureFinished;
+        if (ev->touchPoints().size() == 1)
+            return QGestureRecognizer::GestureFinished;
         break;}
     case QEvent::TouchUpdate: {
         if (_panCanceled)
