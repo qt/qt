@@ -48,6 +48,8 @@
 #include "qmljslexer_p.h"
 #include "qmljsgrammar_p.h"
 
+#include <QtGui/qapplication.h>
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -548,7 +550,7 @@ int Lexer::lex()
                 else {
                     setDone(Bad);
                     err = IllegalCharacter;
-                    errmsg = QLatin1String("Illegal character");
+                    errmsg = qApp->translate("QmlParser", "Illegal character");
                 }
             }
             break;
@@ -562,7 +564,7 @@ int Lexer::lex()
             } else if (current == 0 || isLineTerminator()) {
                 setDone(Bad);
                 err = UnclosedStringLiteral;
-                errmsg = QLatin1String("Unclosed string at end of line");
+                errmsg = qApp->translate("QmlParser", "Unclosed string at end of line");
             } else if (current == '\\') {
                 state = InEscapeSequence;
             } else {
@@ -588,7 +590,7 @@ int Lexer::lex()
                 } else {
                     setDone(Bad);
                     err = IllegalEscapeSequence;
-                    errmsg = QLatin1String("Illegal escape squence");
+                    errmsg = qApp->translate("QmlParser", "Illegal escape squence");
                 }
             } else if (current == 'x')
                 state = InHexEscape;
@@ -634,7 +636,7 @@ int Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalUnicodeEscapeSequence;
-                errmsg = QLatin1String("Illegal unicode escape sequence");
+                errmsg = qApp->translate("QmlParser", "Illegal unicode escape sequence");
             }
             break;
         case InSingleLineComment:
@@ -660,7 +662,7 @@ int Lexer::lex()
             if (current == 0) {
                 setDone(Bad);
                 err = UnclosedComment;
-                errmsg = QLatin1String("Unclosed comment at end of file");
+                errmsg = qApp->translate("QmlParser", "Unclosed comment at end of file");
                 driver->addComment(startpos, tokenLength(), startlineno, startcolumn);
             } else if (isLineTerminator()) {
                 shiftWindowsLineBreak();
@@ -747,7 +749,7 @@ int Lexer::lex()
             } else {
                 setDone(Bad);
                 err = IllegalExponentIndicator;
-                errmsg = QLatin1String("Illegal syntax for exponential number");
+                errmsg = qApp->translate("QmlParser", "Illegal syntax for exponential number");
             }
             break;
         case InExponent:
@@ -773,7 +775,7 @@ int Lexer::lex()
          && isIdentLetter(current)) {
         state = Bad;
         err = IllegalIdentifier;
-        errmsg = QLatin1String("Identifier cannot start with numeric literal");
+        errmsg = qApp->translate("QmlParser", "Identifier cannot start with numeric literal");
     }
 
     // terminate string
@@ -1104,7 +1106,7 @@ bool Lexer::scanRegExp(RegExpBodyPrefix prefix)
 
     while (1) {
         if (isLineTerminator() || current == 0) {
-            errmsg = QLatin1String("Unterminated regular expression literal");
+            errmsg = qApp->translate("QmlParser", "Unterminated regular expression literal");
             return false;
         }
         else if (current != '/' || lastWasEscape == true)
@@ -1128,7 +1130,7 @@ bool Lexer::scanRegExp(RegExpBodyPrefix prefix)
     while (isIdentLetter(current)) {
         int flag = Ecma::RegExp::flagFromChar(current);
         if (flag == 0) {
-            errmsg = QString::fromLatin1("Invalid regular expression flag '%0'")
+            errmsg = qApp->translate("QmlParser", "Invalid regular expression flag '%0'")
                      .arg(QChar(current));
             return false;
         }

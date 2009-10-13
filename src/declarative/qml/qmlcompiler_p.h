@@ -135,7 +135,7 @@ private:
 };
 
 class QMetaObjectBuilder;
-class Q_DECLARATIVE_EXPORT QmlCompiler 
+class Q_DECLARATIVE_EXPORT QmlCompiler
 {
 public:
     QmlCompiler();

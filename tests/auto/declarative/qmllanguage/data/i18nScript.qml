@@ -1,12 +1,12 @@
-import Qt 4.6
+import Test 1.0
 
-Text {
+MyTypeObject {
     Script {
         function val() {
-            var áâãäå = 10
+            var áâãäå = 20
             return "Test áâãäå: " + áâãäå
         }
         
     }
-    text: val()
+    stringProperty: val()
 }

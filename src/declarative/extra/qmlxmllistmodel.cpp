@@ -109,7 +109,7 @@ public:
     void setQuery(const QString &query)
     {
         if (query.startsWith(QLatin1Char('/'))) {
-            qmlInfo(this) << "An XmlRole query must not start with '/'";
+            qmlInfo(tr("An XmlRole query must not start with '/'"),this);
             return;
         }
         m_query = query;
@@ -545,7 +545,7 @@ void QmlXmlListModel::setQuery(const QString &query)
 {
     Q_D(QmlXmlListModel);
     if (!query.startsWith(QLatin1Char('/'))) {
-        qmlInfo(this) << "An XmlListModel query must start with '/' or \"//\"";
+        qmlInfo(tr("An XmlListModel query must start with '/' or \"//\""),this);
         return;
     }
 

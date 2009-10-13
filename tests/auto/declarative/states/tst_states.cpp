@@ -13,6 +13,7 @@ private slots:
     void basicChanges();
     void basicExtension();
     void basicBinding();
+    void signalOverride();
 };
 
 void tst_states::basicChanges()
@@ -259,6 +260,56 @@ void tst_states::basicBinding()
 
         rect->setState("");
         QCOMPARE(rect->color(),QColor("red"));
+    }
+}
+
+class MyRect : public QFxRect
+{
+   Q_OBJECT
+public:
+    MyRect() {}
+    void doSomething() { emit didSomething(); }
+Q_SIGNALS:
+    void didSomething();
+};
+
+QML_DECLARE_TYPE(MyRect)
+QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyRectangle,MyRect);
+
+void tst_states::signalOverride()
+{
+    QmlEngine engine;
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/signalOverride.qml");
+        MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("green");
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("green"));
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/signalOverride2.qml");
+        MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("white"));
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        QFxRect *innerRect = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("extendedRect"));
+
+        innerRect->setState("green");
+        rect->doSomething();
+        QCOMPARE(rect->color(),QColor("blue"));
+        QCOMPARE(innerRect->color(),QColor("green"));
+        QCOMPARE(innerRect->property("extendedColor").value<QColor>(),QColor("green"));
     }
 }
 

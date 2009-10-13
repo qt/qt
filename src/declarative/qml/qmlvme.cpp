@@ -63,6 +63,7 @@
 #include "private/qmlvmemetaobject_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qvarlengtharray.h>
+#include <QtGui/qapplication.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlbindingoptimizations_p.h>
@@ -75,12 +76,8 @@ QmlVME::QmlVME()
 
 #define VME_EXCEPTION(desc) \
     { \
-        QString str; \
-        QDebug d(&str); \
-        d << desc; \
-        str = str.trimmed(); \
         QmlError error; \
-        error.setDescription(str); \
+        error.setDescription(desc.trimmed()); \
         error.setLine(instr.line); \
         error.setUrl(comp->url); \
         vmeErrors << error; \
@@ -191,7 +188,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                     if(types.at(instr.create.type).component)
                         vmeErrors << types.at(instr.create.type).component->errors();
 
-                    VME_EXCEPTION("Unable to create object of type" << types.at(instr.create.type).className);
+                    VME_EXCEPTION(qApp->translate("QmlVME","Unable to create object of type %1").arg(QString::fromLatin1(types.at(instr.create.type).className)));
                 }
 
                 QmlDeclarativeData *ddata = QmlDeclarativeData::get(o);
@@ -498,7 +495,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QMetaProperty prop = 
                         target->metaObject()->property(instr.assignCustomType.propertyIndex);
                 if (v.isNull() || ((int)prop.type() != data.type && prop.userType() != data.type)) 
-                    VME_EXCEPTION("Cannot assign value" << primitive << "to property" << prop.name());
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign value %1 to property %2").arg(primitive).arg(QString::fromUtf8(prop.name())));
 
                 void *a[] = { (void *)v.data(), 0, &status, &flags };
                 QMetaObject::metacall(target, QMetaObject::WriteProperty, 
@@ -520,15 +517,15 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
 
                     QMetaMethod method = QmlMetaType::defaultMethod(assign);
                     if (method.signature() == 0)
-                        VME_EXCEPTION("Cannot assign object type" << assign->metaObject()->className() << "with no default method");
+                        VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign object type %1 with no default method").arg(QString::fromLatin1(assign->metaObject()->className())));
 
                     if (!QMetaObject::checkConnectArgs(prop.method().signature(), method.signature()))
-                        VME_EXCEPTION("Cannot connect mismatched signal/slot" << method.signature() << prop.method().signature());
+                        VME_EXCEPTION(qApp->translate("QmlVME","Cannot connect mismatched signal/slot %1 %vs. %2").arg(QString::fromLatin1(method.signature())).arg(QString::fromLatin1(prop.method().signature())));
 
                     QMetaObject::connect(target, prop.coreIndex(), assign, method.methodIndex());
 
                 } else {
-                    VME_EXCEPTION("Cannot assign an object to signal property" << pr);
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign an object to signal property %1").arg(QString::fromUtf8(pr)));
                 }
 
 
@@ -684,7 +681,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 if (iid) 
                     ptr = assign->qt_metacast(iid);
                 if (!ptr) 
-                    VME_EXCEPTION("Cannot assign object to list");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign object to list"));
 
 
                 if (list.qmlListInterface) {
@@ -730,7 +727,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 } 
 
                 if (!ok) 
-                    VME_EXCEPTION("Cannot assign object to interface property");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign object to interface property"));
             }
             break;
             
@@ -741,7 +738,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QObject *qmlObject = qmlAttachedPropertiesObjectById(instr.fetchAttached.id, target);
 
                 if (!qmlObject)
-                    VME_EXCEPTION("Unable to create attached object");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Unable to create attached object"));
 
                 stack.push(qmlObject);
             }
@@ -759,7 +756,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QMetaObject::metacall(target, QMetaObject::ReadProperty, 
                                       instr.fetchQmlList.property, a);
                 if (!list) 
-                    VME_EXCEPTION("Cannot assign to null list");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign to null list"));
 
                 qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
@@ -777,7 +774,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QMetaObject::metacall(target, QMetaObject::ReadProperty, 
                                       instr.fetchQmlList.property, a);
                 if (!list) 
-                    VME_EXCEPTION("Cannot assign to null list");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot assign to null list"));
 
                 qliststack.push(ListInstance(list, instr.fetchQmlList.type));
             }
@@ -796,7 +793,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                                       instr.fetch.property, a);
 
                 if (!obj)
-                    VME_EXCEPTION("Cannot set properties on" << target->metaObject()->property(instr.fetch.property).name() << "as it is null");
+                    VME_EXCEPTION(qApp->translate("QmlVME","Cannot set properties on %1 as it is null").arg(QString::fromUtf8(target->metaObject()->property(instr.fetch.property).name())));
 
                 stack.push(obj);
             }

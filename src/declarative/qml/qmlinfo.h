@@ -50,17 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QmlInfo : public QDebug
-{
-public:
-    QmlInfo(QObject *);
-    ~QmlInfo();
-};
-
-Q_DECLARATIVE_EXPORT inline QmlInfo qmlInfo(QObject *me)
-{
-    return QmlInfo(me);
-}
+Q_DECLARATIVE_EXPORT void qmlInfo(const QString& msg, QObject *me=0);
 
 QT_END_NAMESPACE
 

@@ -224,10 +224,10 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
     Q_Q(QmlAbstractAnimation);
     QmlMetaProperty prop = QmlMetaProperty::createProperty(obj, str);
     if (!prop.isValid()) {
-        qmlInfo(q) << "Cannot animate non-existant property" << str;
+        qmlInfo(QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str), q);
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(q) << "Cannot animate read-only property" << str;
+        qmlInfo(QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str), q);
         return QmlMetaProperty();
     }
     return prop;
