@@ -81,7 +81,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 
 \section1 Core QML Features:
 \list
-\o \l {Anatomy of a QML Document}
+\o \l {QML Documents}
 \o \l {Property Binding}
 \o \l {ECMAScript Blocks}
 \o \l {Network Transparency}
