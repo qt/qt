@@ -6183,7 +6183,7 @@ void tst_QGraphicsItem::opacity2()
     MyGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(view.repaints, 1);
+    QTRY_VERIFY(view.repaints >= 1);
 
 #define RESET_REPAINT_COUNTERS \
     parent->repaints = 0; \

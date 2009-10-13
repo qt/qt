@@ -2185,6 +2185,9 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             } else {
                 d->selectionModel->setCurrentIndex(newCurrent, command);
                 d->pressedPosition = visualRect(newCurrent).center() + d->offset();
+                // We copy the same behaviour as for mousePressEvent().
+                QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
+                setSelection(rect, command);
             }
             return;
         }

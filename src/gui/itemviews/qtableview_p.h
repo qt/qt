@@ -135,7 +135,8 @@ public:
           rowSectionAnchor(-1), columnSectionAnchor(-1),
           columnResizeTimerID(0), rowResizeTimerID(0),
           horizontalHeader(0), verticalHeader(0),
-          sortingEnabled(false), geometryRecursionBlock(false)
+          sortingEnabled(false), geometryRecursionBlock(false),
+          visualCursor(QPoint())
  {
     wrapItemText = true;
 #ifndef QT_NO_DRAGANDDROP
@@ -183,6 +184,7 @@ public:
     QWidget *cornerWidget;
     bool sortingEnabled;
     bool geometryRecursionBlock;
+    QPoint visualCursor;  // (Row,column) cell coordinates to track through span navigation.
 
     QSpanCollection spans;
 

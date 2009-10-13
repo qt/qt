@@ -100,6 +100,9 @@ private slots:
     void moveCursor_data();
     void moveCursor();
 
+    void moveCursorStrikesBack_data();
+    void moveCursorStrikesBack();
+
     void hideRows_data();
     void hideRows();
 
@@ -252,11 +255,42 @@ public:
           row_count(rows),
           column_count(columns),
           can_fetch_more(false),
-          fetch_more_count(0) {}
+          fetch_more_count(0),
+          disabled_rows(),
+          disabled_columns() {}
 
     int rowCount(const QModelIndex& = QModelIndex()) const { return row_count; }
     int columnCount(const QModelIndex& = QModelIndex()) const { return column_count; }
     bool isEditable(const QModelIndex &) const { return true; }
+
+    Qt::ItemFlags flags(const QModelIndex &index) const
+    {
+        Qt::ItemFlags index_flags = QAbstractTableModel::flags(index);
+        if (disabled_rows.contains(index.row())
+            || disabled_columns.contains(index.column()))
+            index_flags &= ~Qt::ItemIsEnabled;
+        return index_flags;
+    }
+
+    void disableRow(int row)
+    {
+        disabled_rows.insert(row);
+    }
+
+    void enableRow(int row)
+    {
+        disabled_rows.remove(row);
+    }
+
+    void disableColumn(int column)
+    {
+        disabled_columns.insert(column);
+    }
+
+    void enableColumn(int column)
+    {
+        disabled_columns.remove(column);
+    }
 
     QVariant data(const QModelIndex &idx, int role) const
     {
@@ -363,6 +397,8 @@ public:
     int column_count;
     bool can_fetch_more;
     int fetch_more_count;
+    QSet<int> disabled_rows;
+    QSet<int> disabled_columns;
 };
 
 class QtTestTableView : public QTableView
@@ -834,7 +870,7 @@ void tst_QTableView::moveCursor_data()
         << 4 << 4 << -1 << 2
         << 0 << 2
         << int(QtTestTableView::MoveNext) << int(Qt::NoModifier)
-        << 1 << 0 << IntPair(0,0) << IntPair(3,0);
+        << 1 << 3 << IntPair(0,0) << IntPair(3,0);
 
     // MoveLeft
     QTest::newRow("MoveLeft (0,0)")
@@ -1135,6 +1171,132 @@ void tst_QTableView::moveCursor()
         return;
     QCOMPARE(newIndex.row(), expectedRow);
     QCOMPARE(newIndex.column(), expectedColumn);
+}
+
+void tst_QTableView::moveCursorStrikesBack_data()
+{
+    QTest::addColumn<int>("hideRow");
+    QTest::addColumn<int>("hideColumn");
+    QTest::addColumn<IntList>("disableRows");
+    QTest::addColumn<IntList>("disableColumns");
+    QTest::addColumn<QRect>("span");
+
+    QTest::addColumn<int>("startRow");
+    QTest::addColumn<int>("startColumn");
+    QTest::addColumn<IntList>("cursorMoveActions");
+    QTest::addColumn<int>("expectedRow");
+    QTest::addColumn<int>("expectedColumn");
+
+    QTest::newRow("Last column disabled. Task QTBUG-3878") << -1 << -1
+            << IntList()
+            << (IntList() << 6)
+            << QRect()
+            << 0 << 5 << (IntList() << int(QtTestTableView::MoveNext))
+            << 1 << 0;
+
+    QTest::newRow("Span, anchor column hidden") << -1 << 1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 2 << 0 << (IntList() << int(QtTestTableView::MoveNext))
+            << 2 << 2;
+
+    QTest::newRow("Span, anchor column disabled") << -1 << -1
+            << IntList()
+            << (IntList() << 1)
+            << QRect(1, 2, 2, 3)
+            << 2 << 0 << (IntList() << int(QtTestTableView::MoveNext))
+            << 2 << 2;
+
+    QTest::newRow("Span, anchor row hidden") << 2 << -1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 1 << 2 << (IntList() << int(QtTestTableView::MoveDown))
+            << 3 << 2;
+
+    QTest::newRow("Span, anchor row disabled") << -1 << -1
+            << (IntList() << 2)
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 1 << 2 << (IntList() << int(QtTestTableView::MoveDown))
+            << 3 << 2;
+
+    QTest::newRow("Move through span right") << -1 << -1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 3 << 0 << (IntList() << int(QtTestTableView::MoveRight) << int(QtTestTableView::MoveRight))
+            << 3 << 3;
+
+    QTest::newRow("Move through span left") << -1 << -1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 3 << 3 << (IntList() << int(QtTestTableView::MoveLeft) << int(QtTestTableView::MoveLeft))
+            << 3 << 0;
+
+    QTest::newRow("Move through span down") << -1 << -1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 1 << 2 << (IntList() << int(QtTestTableView::MoveDown) << int(QtTestTableView::MoveDown))
+            << 5 << 2;
+
+    QTest::newRow("Move through span up") << -1 << -1
+            << IntList()
+            << IntList()
+            << QRect(1, 2, 2, 3)
+            << 5 << 2 << (IntList() << int(QtTestTableView::MoveUp) << int(QtTestTableView::MoveUp))
+            << 1 << 2;
+}
+
+void tst_QTableView::moveCursorStrikesBack()
+{
+    QFETCH(int, hideRow);
+    QFETCH(int, hideColumn);
+    QFETCH(IntList, disableRows);
+    QFETCH(IntList, disableColumns);
+    QFETCH(QRect, span);
+
+    QFETCH(int, startRow);
+    QFETCH(int, startColumn);
+    QFETCH(IntList, cursorMoveActions);
+    QFETCH(int, expectedRow);
+    QFETCH(int, expectedColumn);
+
+    QtTestTableModel model(7, 7);
+    QtTestTableView view;
+    view.setModel(&model);
+    view.hideRow(hideRow);
+    view.hideColumn(hideColumn);
+
+    foreach (int row, disableRows)
+        model.disableRow(row);
+    foreach (int column, disableColumns)
+        model.disableColumn(column);
+
+    if (span.height() && span.width())
+        view.setSpan(span.top(), span.left(), span.height(), span.width());
+    view.show();
+
+    QModelIndex index = model.index(startRow, startColumn);
+    view.setCurrentIndex(index);
+
+    int newRow = -1;
+    int newColumn = -1;
+    foreach (int cursorMoveAction, cursorMoveActions) {
+        QModelIndex newIndex = view.moveCursor((QtTestTableView::CursorAction)cursorMoveAction, 0);
+        view.setCurrentIndex(newIndex);
+        newRow = newIndex.row();
+        newColumn = newIndex.column();
+    }
+
+    // expected fails, task 119433
+    if(newRow == -1)
+        return;
+    QCOMPARE(newRow, expectedRow);
+    QCOMPARE(newColumn, expectedColumn);
 }
 
 void tst_QTableView::hideRows_data()

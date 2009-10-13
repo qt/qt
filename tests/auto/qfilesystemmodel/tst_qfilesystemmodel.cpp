@@ -874,7 +874,7 @@ void tst_QFileSystemModel::sort()
     } else {
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
-            QVERIFY(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString() == expectedOrder.at(i));
+            QTRY_COMPARE(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString(), expectedOrder.at(i));
         }
     }
 
