@@ -294,10 +294,11 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         if (isScript) {
             if (_stateStack.isEmpty() || _stateStack.top().property) {
                 QmlError error;
-                error.setDescription(QLatin1String("Invalid use of Script block"));
+                error.setDescription(QCoreApplication::translate("QmlParser","Invalid use of Script block"));
                 error.setLine(typeLocation.startLine);
                 error.setColumn(typeLocation.startColumn);
                 _parser->_errors << error;
+                return 0;
             }
         }
 
@@ -474,7 +475,7 @@ bool ProcessAST::visit(AST::UiImport *node)
         import.qualifier = node->importId->asString();
         if (!import.qualifier.at(0).isUpper()) {
             QmlError error;
-            error.setDescription(QLatin1String("Invalid import qualifier ID"));
+            error.setDescription(QCoreApplication::translate("QmlParser","Invalid import qualifier ID"));
             error.setLine(node->importIdToken.startLine);
             error.setColumn(node->importIdToken.startColumn);
             _parser->_errors << error;
@@ -483,6 +484,14 @@ bool ProcessAST::visit(AST::UiImport *node)
     }
     if (node->versionToken.isValid())
         import.version = textAt(node->versionToken);
+    else if (import.type == QmlScriptParser::Import::Library) {
+        QmlError error;
+        error.setDescription(QCoreApplication::translate("QmlParser","Library import requires a version"));
+        error.setLine(node->importIdToken.startLine);
+        error.setColumn(node->importIdToken.startColumn);
+        _parser->_errors << error;
+        return false;
+    }
 
     import.location = location(startLoc, endLoc);
     import.uri = uri;
