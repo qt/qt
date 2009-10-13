@@ -303,12 +303,12 @@ QmlMetaProperty
 QmlPropertyChangesPrivate::property(const QByteArray &property)
 {
     Q_Q(QmlPropertyChanges);
-    QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromLatin1(property));
+    QmlMetaProperty prop = QmlMetaProperty::createProperty(object, QString::fromUtf8(property));
     if (!prop.isValid()) {
-        qmlInfo(q) << "Cannot assign to non-existant property" << property;
+        qmlInfo(QmlPropertyChanges::tr("Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(q) << "Cannot assign to read-only property" << property;
+        qmlInfo(QmlPropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
     }
     return prop;

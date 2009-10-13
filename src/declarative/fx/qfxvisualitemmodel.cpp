@@ -275,7 +275,7 @@ public:
                         int count = object->metaObject()->propertyCount();
                         for (int ii = 1; ii < count; ++ii) {
                             const QMetaProperty &prop = object->metaObject()->property(ii);
-                            m_roleNames.insert(prop.name(), 0);
+                            m_roleNames.insert(QString::fromUtf8(prop.name()), 0);
                         }
                     }
                 }
@@ -798,7 +798,7 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
     }
     if (!item) {
         d->m_cache.releaseItem(nobj);
-        qmlInfo(d->m_delegate) << "Delegate component must be Item type.";
+        qmlInfo(QFxVisualDataModel::tr("Delegate component must be Item type."), d->m_delegate);
     }
 
     return item;
