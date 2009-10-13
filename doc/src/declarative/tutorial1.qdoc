@@ -1,6 +1,5 @@
 /*!
 \page tutorial1.html
-\target tutorial1
 \title Tutorial 1 - Basic Types
 
 This first program is a very simple "Hello world" example that introduces some basic QML concepts.
@@ -52,6 +51,6 @@ For example, to run the provided completed Tutorial 1 example from the install l
 bin/qmlviewer $QTDIR/examples/declarative/tutorials/helloworld/tutorial1.qml
 \endcode
 
-[\l tutorial] [Next: \l tutorial2]
+[\l {Tutorial}] [Next: \l {Tutorial 2 - QML Component}]
 
 */
