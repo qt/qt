@@ -2051,8 +2051,7 @@ QPoint QPainter::brushOrigin() const
     Sets the brush origin to \a position.
 
     The brush origin specifies the (0, 0) coordinate of the painter's
-    brush. This setting only applies to pattern brushes and pixmap
-    brushes.
+    brush.
 
     Note that while the brushOrigin() was necessary to adopt the
     parent's background for a widget in Qt 3, this is no longer the
