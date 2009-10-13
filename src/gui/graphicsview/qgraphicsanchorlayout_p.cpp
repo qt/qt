@@ -506,35 +506,45 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
                                     const QVector<AnchorVertex*> &vertices,
                                     AnchorVertex *after)
 {
-    int i;
+    AnchorData *data = graph->edgeData(before, vertices.first());
+    Q_ASSERT(data);
+
+    const bool forward = (before == data->from);
+    QVector<AnchorVertex *> orderedVertices;
+
+    if (forward) {
+        orderedVertices = vertices;
+    } else {
+        qSwap(before, after);
+        for (int i = vertices.count() - 1; i >= 0; --i)
+            orderedVertices.append(vertices.at(i));
+    }
+
 #if defined(QT_DEBUG) && 0
     QString strVertices;
-    for (i = 0; i < vertices.count(); ++i)
-        strVertices += QString::fromAscii("%1 - ").arg(vertices.at(i)->toString());
+    for (int i = 0; i < orderedVertices.count(); ++i) {
+        strVertices += QString::fromAscii("%1 - ").arg(orderedVertices.at(i)->toString());
+    }
     QString strPath = QString::fromAscii("%1 - %2%3").arg(before->toString(), strVertices, after->toString());
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
 #endif
 
     SequentialAnchorData *sequence = new SequentialAnchorData;
     AnchorVertex *prev = before;
-    AnchorData *data;
-    for (i = 0; i <= vertices.count(); ++i) {
-        AnchorVertex *next = (i < vertices.count()) ? vertices.at(i) : after;
-        data = graph->takeEdge(prev, next);
-        sequence->m_edges.append(data);
+
+    for (int i = 0; i <= orderedVertices.count(); ++i) {
+        AnchorVertex *next = (i < orderedVertices.count()) ? orderedVertices.at(i) : after;
+        AnchorData *ad = graph->takeEdge(prev, next);
+        Q_ASSERT(ad);
+        sequence->m_edges.append(ad);
         prev = next;
     }
-    sequence->setVertices(vertices);
+
+    sequence->setVertices(orderedVertices);
     sequence->from = before;
     sequence->to = after;
 
     sequence->refreshSizeHints_helper(0, false);
-
-    // data here is the last edge in the sequence
-    // ### this seems to be here for supporting reverse order sequences,
-    // but doesnt seem to be used right now
-    if (data->from != vertices.last())
-        qSwap(sequence->from, sequence->to);
 
     // Note that since layout 'edges' can't be simplified away from
     // the graph, it's safe to assume that if there's a layout
@@ -590,15 +600,6 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
    2. Go to (1)
    3. Done
 
-
-   * Gathering sequential anchors *
-   The algorithm walks the graph in depth-first order, and only collects vertices that has two
-   edges connected to it. If the vertex does not have two edges or if it is a layout edge,
-   it will take all the previously collected vertices and try to create a simplified sequential
-   anchor representing all the previously collected vertices.
-   Once the simplified anchor is inserted, the collected list is cleared in order to find the next
-   sequence to simplify.
-   Note that there are some catches to this that are not covered by the above explanation.
 */
 void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
@@ -615,9 +616,7 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
            orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
-    AnchorVertex *rootVertex = graph[orientation].rootVertex();
-
-    if (!rootVertex)
+    if (!graph[orientation].rootVertex())
         return;
 
     bool dirty;
@@ -626,164 +625,171 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
     } while (dirty);
 }
 
+/*!
+    \internal
+
+    One iteration of the simplification algorithm. Returns true if another iteration is needed.
+
+    The algorithm walks the graph in depth-first order, and only collects vertices that has two
+    edges connected to it.  If the vertex does not have two edges or if it is a layout edge, it
+    will take all the previously collected vertices and try to create a simplified sequential
+    anchor representing all the previously collected vertices.  Once the simplified anchor is
+    inserted, the collected list is cleared in order to find the next sequence to simplify.
+
+    Note that there are some catches to this that are not covered by the above explanation, see
+    the function comments for more details.
+*/
 bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-    AnchorVertex *v = g.rootVertex();
 
     QSet<AnchorVertex *> visited;
-    QStack<AnchorVertex *> stack;
-    stack.push(v);
+    QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
+    stack.push(qMakePair(static_cast<AnchorVertex *>(0), g.rootVertex()));
     QVector<AnchorVertex*> candidates;
+    bool candidatesForward;
 
     const Qt::AnchorPoint centerEdge = pickEdge(Qt::AnchorHorizontalCenter, orientation);
-    const Qt::AnchorPoint layoutEdge = oppositeEdge(v->m_edge);
 
-    bool dirty = false;
-
-    // walk depth-first.
+    // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
+    // and the vertex to be visited.
     while (!stack.isEmpty()) {
-        v = stack.pop();
-        QList<AnchorVertex *> vertices = g.adjacentVertices(v);
-        const int count = vertices.count();
-        bool endOfSequence = (v->m_item == q && v->m_edge == layoutEdge) || count != 2;
-        if (count == 2 && v->m_item != q) {
-            candidates.append(v);
-            if (visited.contains(vertices.first()) && visited.contains(vertices.last())) {
-                // in case of a cycle
-                endOfSequence = true;
-            }
-        }
-        if (endOfSequence && candidates.count() >= 1) {
-            int i;
-            AnchorVertex *afterSequence= 0;
-            AnchorVertex *beforeSequence = 0;
-            // find the items before and after the valid sequence
-            if (candidates.count() == 1) {
-                QList<AnchorVertex *> beforeAndAfterVertices = g.adjacentVertices(candidates.at(0));
-                Q_ASSERT(beforeAndAfterVertices.count() == 2);
-                // Since we only have one vertex, we can pick
-                // any of the two vertices to become before/after.
-                afterSequence = beforeAndAfterVertices.last();
-                beforeSequence = beforeAndAfterVertices.first();
-            } else {
-                QList<AnchorVertex *> adjacentOfSecondLastVertex = g.adjacentVertices(candidates.last());
-                Q_ASSERT(adjacentOfSecondLastVertex.count() == 2);
-                if (adjacentOfSecondLastVertex.first() == candidates.at(candidates.count() - 2))
-                    afterSequence = adjacentOfSecondLastVertex.last();
-                else
-                    afterSequence = adjacentOfSecondLastVertex.first();
+        QPair<AnchorVertex *, AnchorVertex *> pair = stack.pop();
+        AnchorVertex *beforeSequence = pair.first;
+        AnchorVertex *v = pair.second;
 
-                QList<AnchorVertex *> adjacentOfSecondVertex = g.adjacentVertices(candidates.first());
-                Q_ASSERT(adjacentOfSecondVertex.count() == 2);
-                if (adjacentOfSecondVertex.first() == candidates.at(1))
-                    beforeSequence = adjacentOfSecondVertex.last();
-                else
-                    beforeSequence = adjacentOfSecondVertex.first();
-            }
-            // The complete path of the sequence to simplify is: beforeSequence, <candidates>, afterSequence
-            // where beforeSequence and afterSequence are the endpoints where the anchor is inserted
-            // between.
-#if defined(QT_DEBUG) && 0
-            // ### DEBUG
-            QString strCandidates;
-            for (i = 0; i < candidates.count(); ++i)
-                strCandidates += QString::fromAscii("%1 - ").arg(candidates.at(i)->toString());
-            QString strPath = QString::fromAscii("%1 - %2%3").arg(beforeSequence->toString(), strCandidates, afterSequence->toString());
-            qDebug("candidate list for sequential simplification:\n[%s]", qPrintable(strPath));
-#endif
+        // The basic idea is to determine whether we found an end of sequence,
+        // if that's the case, we stop adding vertices to the candidate list
+        // and do a simplification step.
+        //
+        // A vertex can trigger an end of sequence if
+        // (a) it is a layout vertex, we don't simplify away the layout vertices;
+        // (b) it does not have exactly 2 adjacents;
+        // (c) it will change the direction of the sequence;
+        // (d) its next adjacent is already visited (a cycle in the graph).
 
-            bool forward = true;
-            AnchorVertex *prev = beforeSequence;
-            int intervalFrom = 0;
+        const QList<AnchorVertex *> &adjacents = g.adjacentVertices(v);
+        const bool isLayoutVertex = v->m_item == q;
+        AnchorVertex *afterSequence = v;
+        bool endOfSequence = false;
 
-            // Check for directionality (from). We don't want to destroy that information,
-            // thus we only combine anchors with the same direction.
+        //
+        // Identify the end cases.
+        //
 
-            // "i" is the index *including* the beforeSequence and afterSequence vertices.
-            for (i = 1; i <= candidates.count() + 1; ++i) {
-                bool atVertexAfter = i > candidates.count();
-                AnchorVertex *v1 = atVertexAfter ? afterSequence : candidates.at(i - 1);
-                AnchorData *data = g.edgeData(prev, v1);
+        // Identifies cases (a) and (b)
+        endOfSequence = isLayoutVertex || adjacents.count() != 2;
+
+        if (!endOfSequence) {
+            // If this is the first vertice, determine what is the direction to use for this
+            // sequence.
+            if (candidates.isEmpty()) {
+                const AnchorData *data = g.edgeData(beforeSequence, v);
                 Q_ASSERT(data);
-                if (i == 1) {
-                    forward = (prev == data->from ? true : false);
-                } else if (forward != (prev == data->from) || atVertexAfter) {
-                    int intervalTo = i;
-                    if (forward != (prev == data->from))
-                        --intervalTo;
-
-                    // intervalFrom and intervalTo should now be indices to the vertex before and
-                    // after the sequential anchor.
-                    if (intervalTo - intervalFrom >= 2) {
-                        // simplify in the range [intervalFrom, intervalTo]
-
-                        // Trim off internal center anchors (Left-Center/Center-Right) from the
-                        // start and the end of the sequence. We never want to simplify internal
-                        // center anchors where there is an external anchor connected to the center.
-                        AnchorVertex *intervalVertexFrom = intervalFrom == 0 ? beforeSequence : candidates.at(intervalFrom - 1);
-                        int effectiveIntervalFrom = intervalFrom;
-                        if (intervalVertexFrom->m_edge == centerEdge
-                            && intervalVertexFrom->m_item == candidates.at(effectiveIntervalFrom)->m_item) {
-                            ++effectiveIntervalFrom;
-                            intervalVertexFrom = candidates.at(effectiveIntervalFrom - 1);
-                        }
-                        AnchorVertex *intervalVertexTo = intervalTo <= candidates.count() ? candidates.at(intervalTo - 1) : afterSequence;
-                        int effectiveIntervalTo = intervalTo;
-                        if (intervalVertexTo->m_edge == centerEdge
-                            && intervalVertexTo->m_item == candidates.at(effectiveIntervalTo - 2)->m_item) {
-                            --effectiveIntervalTo;
-                            intervalVertexTo = candidates.at(effectiveIntervalTo - 1);
-                        }
-                        if (effectiveIntervalTo - effectiveIntervalFrom >= 2) {
-                            QVector<AnchorVertex*> subCandidates;
-                            if (forward) {
-                               subCandidates = candidates.mid(effectiveIntervalFrom, effectiveIntervalTo - effectiveIntervalFrom - 1);
-                            } else {
-                                // reverse the order of the candidates.
-                                qSwap(intervalVertexFrom, intervalVertexTo);
-                                do {
-                                    ++effectiveIntervalFrom;
-                                    subCandidates.prepend(candidates.at(effectiveIntervalFrom - 1));
-                                } while (effectiveIntervalFrom < effectiveIntervalTo - 1);
-                            }
-                            if (simplifySequentialChunk(&g, intervalVertexFrom, subCandidates, intervalVertexTo)) {
-                                dirty = true;
-                                break;
-                            }
-                            // finished simplification of chunk with same direction
-                        }
-                    }
-                    if (forward == (prev == data->from))
-                        --intervalTo;
-                    intervalFrom = intervalTo;
-
-                    forward = !forward;
-                }
-                prev = v1;
+                candidatesForward = (beforeSequence == data->from);
             }
 
-            if (dirty)
-                break;
+            // This is a tricky part. We peek at the next vertex to find out
+            //
+            // - whether the edge from this vertex to the next vertex has the same direction;
+            // - whether we already visited the next vertex.
+            //
+            // Those are needed to identify (c) and (d). Note that unlike (a) and (b), we preempt
+            // the end of sequence by looking into the next vertex.
+
+            // Peek at the next vertex
+            AnchorVertex *after;
+            if (candidates.isEmpty())
+                after = (beforeSequence == adjacents.last() ? adjacents.first() : adjacents.last());
+            else
+                after = (candidates.last() == adjacents.last() ? adjacents.first() : adjacents.last());
+
+            // ### At this point we assumed that candidates will not contain 'after', this may not hold
+            // when simplifying FLOATing anchors.
+            Q_ASSERT(!candidates.contains(after));
+
+            const AnchorData *data = g.edgeData(v, after);
+            Q_ASSERT(data);
+            const bool willChangeDirection = (candidatesForward != (v == data->from));
+            const bool cycleFound = visited.contains(after);
+
+            // Now cases (c) and (d)...
+            endOfSequence = willChangeDirection || cycleFound;
+
+            if (endOfSequence) {
+                if (!willChangeDirection) {
+                    // If the direction will not change, we can add the current vertex to the
+                    // candidates list and we know that 'after' can be used as afterSequence.
+                    candidates.append(v);
+                    afterSequence = after;
+                }
+            } else {
+                // If it's not an end of sequence, then the vertex didn't trigger neither of the
+                // previously four cases, so it can be added to the candidates list.
+                candidates.append(v);
+            }
         }
 
-        if (endOfSequence)
-            candidates.clear();
-
-        for (int i = 0; i < count; ++i) {
-            AnchorVertex *next = vertices.at(i);
-            if (next->m_item == q && next->m_edge == centerEdge)
-                continue;
+        //
+        // Add next non-visited vertices to the stack.
+        //
+        for (int i = 0; i < adjacents.count(); ++i) {
+            AnchorVertex *next = adjacents.at(i);
             if (visited.contains(next))
                 continue;
-            stack.push(next);
+
+            // If current vertex is an end of sequence, and it'll reset the candidates list. So
+            // the next vertices will build candidates lists with the current vertex as 'before'
+            // vertex. If it's not an end of sequence, we keep the original 'before' vertex,
+            // since we are keeping the candidates list.
+            if (endOfSequence)
+                stack.push(qMakePair(v, next));
+            else
+                stack.push(qMakePair(beforeSequence, next));
         }
 
         visited.insert(v);
+
+        if (!endOfSequence || candidates.isEmpty())
+            continue;
+
+        //
+        // Create a sequence for (beforeSequence, candidates, afterSequence).
+        //
+
+        // One restriction we have is to not simplify half of an anchor and let the other half
+        // unsimplified. So we remove center edges before and after the sequence.
+        if (beforeSequence->m_edge == centerEdge && beforeSequence->m_item == candidates.first()->m_item) {
+            beforeSequence = candidates.first();
+            candidates.remove(0);
+
+            // If there's not candidates to be simplified, leave.
+            if (candidates.isEmpty())
+                continue;
+        }
+
+        if (afterSequence->m_edge == centerEdge && afterSequence->m_item == candidates.last()->m_item) {
+            afterSequence = candidates.last();
+            candidates.remove(candidates.count() - 1);
+
+            if (candidates.isEmpty())
+                continue;
+        }
+
+        // This function will remove the candidates from the graph and create one edge between
+        // beforeSequence and afterSequence. This function returns true if the sequential
+        // simplification also caused a parallel simplification to be created. In this case we end
+        // the iteration and start again (since all the visited state we have may be outdated).
+        if (simplifySequentialChunk(&g, beforeSequence, candidates, afterSequence))
+            return true;
+
+        // If there was no parallel simplification, we'll keep walking the graph. So we clear the
+        // candidates list to start again.
+        candidates.clear();
     }
 
-    return dirty;
+    return false;
 }
 
 static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
