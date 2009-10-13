@@ -50,12 +50,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+//![0]
 PvrEglScreen::PvrEglScreen(int displayId)
     : QGLScreen(displayId)
 {
     setOptions(NativeWindows);
     setSupportsBlitInClients(true);
     setSurfaceFunctions(new PvrEglScreenSurfaceFunctions(this, displayId));
+//![0]
     fd = -1;
     ttyfd = -1;
     doGraphicsMode = true;
@@ -183,6 +185,7 @@ bool PvrEglScreen::hasOpenGL()
     return true;
 }
 
+//![1]
 QWSWindowSurface* PvrEglScreen::createSurface(QWidget *widget) const
 {
     if (qobject_cast<QGLWidget*>(widget))
@@ -198,6 +201,7 @@ QWSWindowSurface* PvrEglScreen::createSurface(const QString &key) const
 
     return QScreen::createSurface(key);
 }
+//![1]
 
 void PvrEglScreen::sync()
 {
@@ -253,8 +257,10 @@ void PvrEglScreen::closeTty()
     ttyfd = -1;
 }
 
+//![2]
 bool PvrEglScreenSurfaceFunctions::createNativeWindow(QWidget *widget, EGLNativeWindowType *native)
 {
+//![2]
     QWSWindowSurface *surface =
         static_cast<QWSWindowSurface *>(widget->windowSurface());
     if (!surface) {
