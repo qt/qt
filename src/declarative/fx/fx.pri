@@ -44,6 +44,7 @@ HEADERS += \
            fx/qfxlistview.h \
            fx/qfxgraphicsobjectcontainer.h \
            fx/qfxlayoutitem.h \
+           fx/qfxeffects.cpp
 
 SOURCES += \
            fx/qfxanchors.cpp \
