@@ -88,7 +88,8 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
 {
     QGesture *dummy = recognizer->createGesture(0);
     if (!dummy) {
-        qWarning("QGestureManager::registerGestureRecognizer: the recognizer doesn't provide gesture object");
+        qWarning("QGestureManager::registerGestureRecognizer: "
+                 "the recognizer doesn't provide gesture object");
         return Qt::GestureType(0);
     }
     Qt::GestureType type = dummy->gestureType();
@@ -107,7 +108,7 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType)
 
 }
 
-QGesture* QGestureManager::getState(QObject *object, Qt::GestureType type)
+QGesture *QGestureManager::getState(QObject *object, Qt::GestureType type)
 {
     // if the widget is being deleted we should be carefull and not to
     // create a new state, as it will create QWeakPointer which doesnt work
@@ -115,9 +116,14 @@ QGesture* QGestureManager::getState(QObject *object, Qt::GestureType type)
     if (object->isWidgetType()) {
         if (static_cast<QWidget *>(object)->d_func()->data.in_destructor)
             return 0;
+    } else if (QGesture *g = qobject_cast<QGesture *>(object)) {
+        return g;
+    } else {
+        Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
     }
 
-    QWeakPointer<QGesture> state = objectGestures.value(QGestureManager::ObjectGesture(object, type));
+    QWeakPointer<QGesture> state =
+            objectGestures.value(QGestureManager::ObjectGesture(object, type));
     if (!state) {
         QGestureRecognizer *recognizer = recognizers.value(type);
         if (recognizer) {
@@ -136,7 +142,9 @@ QGesture* QGestureManager::getState(QObject *object, Qt::GestureType type)
     return state.data();
 }
 
-bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
+bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
+                                                 Qt::GestureType> &contexts,
+                                                 QObject *receiver, QEvent *event)
 {
     QSet<QGesture *> triggeredGestures;
     QSet<QGesture *> finishedGestures;
@@ -144,93 +152,20 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
     QSet<QGesture *> canceledGestures;
     QSet<QGesture *> notGestures;
 
-    QGraphicsObject *graphicsObject = qobject_cast<QGraphicsObject *>(receiver);
-    if (receiver->isWidgetType() || graphicsObject) {
-        QMap<QObject *, Qt::GestureType> contexts;
-        if (receiver->isWidgetType()) {
-            QWidget *w = static_cast<QWidget *>(receiver);
-            if (!w->d_func()->gestureContext.isEmpty()) {
-                typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
-                for(ContextIterator it = w->d_func()->gestureContext.begin(),
-                    e = w->d_func()->gestureContext.end(); it != e; ++it) {
-                    contexts.insertMulti(w, it.key());
-                }
-            }
-            // find all gesture contexts for the widget tree
-            w = w->parentWidget();
-            while (w)
-            {
-                typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
-                for (ContextIterator it = w->d_func()->gestureContext.begin(),
-                     e = w->d_func()->gestureContext.end(); it != e; ++it) {
-                    if (it.value() == Qt::WidgetWithChildrenGesture)
-                        contexts.insertMulti(w, it.key());
-                }
-                w = w->parentWidget();
-            }
-        } else {
-            QGraphicsObject *item = graphicsObject;
-            if (!item->QGraphicsItem::d_func()->gestureContext.isEmpty()) {
-                typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
-                for(ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
-                    e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
-                    contexts.insertMulti(item, it.key());
-                }
-            }
-            // find all gesture contexts for the widget tree
-            item = item->parentObject();
-            while (item)
-            {
-                typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
-                for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
-                     e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
-                    if (it.value() == Qt::WidgetWithChildrenGesture)
-                        contexts.insertMulti(item, it.key());
-                }
-                item = item->parentObject();
-            }
-        }
-        // filter the event through recognizers
-        typedef QMap<QObject *, Qt::GestureType>::const_iterator ContextIterator;
-        for (ContextIterator cit = contexts.begin(), ce = contexts.end(); cit != ce; ++cit) {
-            Qt::GestureType gestureType = cit.value();
-            QMap<Qt::GestureType, QGestureRecognizer *>::const_iterator
-                    rit = recognizers.lowerBound(gestureType),
-                    re = recognizers.upperBound(gestureType);
-            for (; rit != re; ++rit) {
-                QGestureRecognizer *recognizer = rit.value();
-                QObject *target = cit.key();
-                QGesture *state = getState(target, gestureType);
-                if (!state)
-                    continue;
-                QGestureRecognizer::Result result = recognizer->filterEvent(state, target, event);
-                QGestureRecognizer::Result type = result & QGestureRecognizer::ResultState_Mask;
-                if (type == QGestureRecognizer::GestureTriggered) {
-                    DEBUG() << "QGestureManager: gesture triggered: " << state;
-                    triggeredGestures << state;
-                } else if (type == QGestureRecognizer::GestureFinished) {
-                    DEBUG() << "QGestureManager: gesture finished: " << state;
-                    finishedGestures << state;
-                } else if (type == QGestureRecognizer::MaybeGesture) {
-                    DEBUG() << "QGestureManager: maybe gesture: " << state;
-                    newMaybeGestures << state;
-                } else if (type == QGestureRecognizer::NotGesture) {
-                    DEBUG() << "QGestureManager: not gesture: " << state;
-                    notGestures << state;
-                } else if (type == QGestureRecognizer::Ignore) {
-                    DEBUG() << "QGestureManager: gesture ignored the event: " << state;
-                } else {
-                    DEBUG() << "QGestureManager: hm, lets assume the recognizer ignored the event: " << state;
-                }
-                if (result & QGestureRecognizer::ConsumeEventHint) {
-                    DEBUG() << "QGestureManager: we were asked to consume the event: " << state;
-                    //TODO: consume events if asked
-                }
-            }
-        }
-    } else if (QGesture *state = qobject_cast<QGesture*>(receiver)) {
-        if (QGestureRecognizer *recognizer = gestureToRecognizer.value(state)) {
-            QGestureRecognizer::Result result = recognizer->filterEvent(state, state, event);
+    // filter the event through recognizers
+    typedef QMap<QObject *, Qt::GestureType>::const_iterator ContextIterator;
+    for (ContextIterator cit = contexts.begin(), ce = contexts.end(); cit != ce; ++cit) {
+        Qt::GestureType gestureType = cit.value();
+        QMap<Qt::GestureType, QGestureRecognizer *>::const_iterator
+                rit = recognizers.lowerBound(gestureType),
+                re = recognizers.upperBound(gestureType);
+        for (; rit != re; ++rit) {
+            QGestureRecognizer *recognizer = rit.value();
+            QObject *target = cit.key();
+            QGesture *state = getState(target, gestureType);
+            if (!state)
+                continue;
+            QGestureRecognizer::Result result = recognizer->filterEvent(state, target, event);
             QGestureRecognizer::Result type = result & QGestureRecognizer::ResultState_Mask;
             if (type == QGestureRecognizer::GestureTriggered) {
                 DEBUG() << "QGestureManager: gesture triggered: " << state;
@@ -247,11 +182,15 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
             } else if (type == QGestureRecognizer::Ignore) {
                 DEBUG() << "QGestureManager: gesture ignored the event: " << state;
             } else {
-                DEBUG() << "QGestureManager: hm, lets assume the recognizer ignored the event: " << state;
+                DEBUG() << "QGestureManager: hm, lets assume the recognizer"
+                        << "ignored the event: " << state;
+            }
+            if (result & QGestureRecognizer::ConsumeEventHint) {
+                DEBUG() << "QGestureManager: we were asked to consume the event: "
+                        << state;
+                //TODO: consume events if asked
             }
         }
-    } else {
-        return false;
     }
 
     QSet<QGesture *> startedGestures = triggeredGestures - activeGestures;
@@ -260,7 +199,8 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
     // check if a running gesture switched back to maybe state
     QSet<QGesture *> activeToMaybeGestures = activeGestures & newMaybeGestures;
 
-    // check if a running gesture switched back to not gesture state, i.e. were canceled
+    // check if a running gesture switched back to not gesture state,
+    // i.e. were canceled
     QSet<QGesture *> activeToCancelGestures = activeGestures & notGestures;
     canceledGestures += activeToCancelGestures;
 
@@ -271,7 +211,9 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
             timer.start(3000, this);
     }
     // kill timers for gestures that were in maybe state
-    QSet<QGesture *> notMaybeGestures = (startedGestures | triggeredGestures | finishedGestures | canceledGestures | notGestures);
+    QSet<QGesture *> notMaybeGestures = (startedGestures | triggeredGestures
+                                         | finishedGestures | canceledGestures
+                                         | notGestures);
     foreach(QGesture *gesture, notMaybeGestures) {
         QMap<QGesture *, QBasicTimer>::iterator it =
                 maybeGestures.find(gesture);
@@ -294,7 +236,9 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
         // probably those are "singleshot" gestures so we'll fake the started state.
         foreach (QGesture *gesture, notStarted)
             gesture->d_func()->state = Qt::GestureStarted;
-        deliverEvents(notStarted, receiver);
+        QSet<QGesture *> undeliveredGestures;
+        deliverEvents(notStarted, receiver, &undeliveredGestures);
+        finishedGestures -= undeliveredGestures;
     }
 
     activeGestures += startedGestures;
@@ -328,10 +272,15 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
                 << "\n\tcanceled:" << canceledGestures;
     }
 
-    deliverEvents(startedGestures+triggeredGestures+finishedGestures+canceledGestures, receiver);
+    QSet<QGesture *> undeliveredGestures;
+    deliverEvents(startedGestures+triggeredGestures+finishedGestures+canceledGestures,
+                  receiver, &undeliveredGestures);
+
+    activeGestures -= undeliveredGestures;
 
     // reset gestures that ended
-    QSet<QGesture *> endedGestures = finishedGestures + canceledGestures;
+    QSet<QGesture *> endedGestures =
+            finishedGestures + canceledGestures + undeliveredGestures;
     foreach (QGesture *gesture, endedGestures) {
         if (QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0)) {
             recognizer->reset(gesture);
@@ -341,7 +290,68 @@ bool QGestureManager::filterEvent(QObject *receiver, QEvent *event)
     return false;
 }
 
-void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures, QObject *lastReceiver)
+bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
+{
+    QMap<QObject *, Qt::GestureType> contexts;
+    QWidget *w = receiver;
+    if (!w->d_func()->gestureContext.isEmpty()) {
+        typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
+        for(ContextIterator it = w->d_func()->gestureContext.begin(),
+            e = w->d_func()->gestureContext.end(); it != e; ++it) {
+            contexts.insertMulti(w, it.key());
+        }
+    }
+    // find all gesture contexts for the widget tree
+    w = w->parentWidget();
+    while (w)
+    {
+        typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
+        for (ContextIterator it = w->d_func()->gestureContext.begin(),
+             e = w->d_func()->gestureContext.end(); it != e; ++it) {
+            if (it.value() == Qt::WidgetWithChildrenGesture)
+                contexts.insertMulti(w, it.key());
+        }
+        w = w->parentWidget();
+    }
+    return filterEventThroughContexts(contexts , receiver, event);
+}
+
+bool QGestureManager::filterEvent(QGraphicsObject *graphicsObject, QEvent *event)
+{
+    QMap<QObject *, Qt::GestureType> contexts;
+    QGraphicsObject *item = graphicsObject;
+    if (!item->QGraphicsItem::d_func()->gestureContext.isEmpty()) {
+        typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
+        for(ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
+            e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
+            contexts.insertMulti(item, it.key());
+        }
+    }
+    // find all gesture contexts for the graphics object tree
+    item = item->parentObject();
+    while (item)
+    {
+        typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
+        for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
+             e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
+            if (it.value() == Qt::ItemWithChildrenGesture)
+                contexts.insertMulti(item, it.key());
+        }
+        item = item->parentObject();
+    }
+    return filterEventThroughContexts(contexts, graphicsObject, event);
+}
+
+bool QGestureManager::filterEvent(QGesture *state, QEvent *event)
+{
+    QMap<QObject *, Qt::GestureType> contexts;
+    contexts.insert(state, state->gestureType());
+    return filterEventThroughContexts(contexts, 0, event);
+}
+
+void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures,
+                                    QObject *lastReceiver,
+                                    QSet<QGesture *> *undeliveredGestures)
 {
     if (gestures.isEmpty())
         return;
@@ -360,16 +370,12 @@ void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures, QObject *la
             if (gesture->hasHotSpot()) {
                 // guess the target using the hotspot of the gesture
                 QPoint pt = gesture->hotSpot().toPoint();
-                if (!pt.isNull()) {
-                    if (QWidget *w = qApp->topLevelAt(pt))
-                        target = w->childAt(w->mapFromGlobal(pt));
+                if (QWidget *w = qApp->topLevelAt(pt)) {
+                    target = w->childAt(w->mapFromGlobal(pt));
                 }
             }
-            if (!target) {
-                target = gesture->targetObject();
-                if (!target)
-                    target = lastReceiver;
-            }
+            if (!target)
+                target = lastReceiver;
         }
         if (target) {
             gestureTargets.insert(gesture, target);
@@ -379,11 +385,13 @@ void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures, QObject *la
         } else {
             qWarning() << "QGestureManager::deliverEvent: could not find the target for gesture"
                     << gesture->gestureType();
+            undeliveredGestures->insert(gesture);
         }
     }
 
     typedef QMultiHash<QObject *, QGesture *>::const_iterator ObjectGesturesIterator;
-    for (ObjectGesturesIterator it = objectGestures.begin(), e = objectGestures.end(); it != e; ++it) {
+    for (ObjectGesturesIterator it = objectGestures.begin(),
+         e = objectGestures.end(); it != e; ++it) {
         QObject *object1 = it.key();
         QWidget *widget1 = qobject_cast<QWidget *>(object1);
         QGraphicsObject *item1 = qobject_cast<QGraphicsObject *>(object1);

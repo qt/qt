@@ -4318,6 +4318,22 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
     return gesture ? gesture->d_func()->accept : false;
 }
 
+/*!
+    \internal
+*/
+void QGestureEvent::setWidget(QWidget *widget)
+{
+    widget_ = widget;
+}
+
+/*!
+    \internal
+*/
+QWidget *QGestureEvent::widget() const
+{
+    return widget_;
+}
+
 #ifdef Q_NO_USING_KEYWORD
 /*!
     \fn void QGestureEvent::setAccepted(bool accepted)

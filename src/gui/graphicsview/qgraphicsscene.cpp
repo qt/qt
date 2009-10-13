@@ -242,7 +242,6 @@
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qgesture.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
 #include <private/qapplication_p.h>
@@ -251,6 +250,7 @@
 #include <private/qt_x11_p.h>
 #endif
 #include <private/qgraphicseffect_p.h>
+#include <private/qgesturemanager_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -1052,6 +1052,14 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
+    if (QGraphicsObject *object = item->toGraphicsObject()) {
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+        if (qAppPriv->gestureManager) {
+            if (qAppPriv->gestureManager->filterEvent(object, event))
+                return true;
+        }
+    }
+
     if (filterEvent(item, event))
         return false;
     if (filterDescendantEvent(item, event))
@@ -3364,6 +3372,10 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
         d->touchEventHandler(static_cast<QTouchEvent *>(event));
+        break;
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+        d->gestureEventHandler(static_cast<QGestureEvent *>(event));
         break;
     default:
         return QObject::event(event);
@@ -5697,6 +5709,32 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
     QGraphicsSceneHoverEvent hoverEvent;
     hoverEvent.setScenePos(lastSceneMousePos);
     dispatchHoverEvent(&hoverEvent);
+}
+
+void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
+{
+    QWidget *viewport = event->widget();
+    QList<QGesture *> gestures = event->allGestures();
+    for (int i = 0; i < gestures.size(); ++i) {
+        QGesture *gesture = gestures.at(i);
+        Qt::GestureType gestureType = gesture->gestureType();
+        QPoint screenPos = gesture->hotSpot().toPoint();
+        QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
+        for (int j = 0; j < items.size(); ++j) {
+            QGraphicsObject *item = items.at(j)->toGraphicsObject();
+            if (!item)
+                continue;
+            QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
+            if (d->gestureContext.contains(gestureType)) {
+                QGestureEvent ev(QList<QGesture *>() << gesture);
+                ev.t = event->t;
+                ev.spont = event->spont;
+                ev.setWidget(event->widget());
+                sendEvent(item, &ev);
+                break;
+            }
+        }
+    }
 }
 
 QT_END_NAMESPACE

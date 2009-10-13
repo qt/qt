@@ -282,6 +282,8 @@ public:
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
 
+    void gestureEventHandler(QGestureEvent *event);
+
     void updateInputMethodSensitivityInViews();
 
     QList<QGraphicsItem *> modalPanels;

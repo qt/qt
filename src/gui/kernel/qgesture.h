@@ -67,7 +67,6 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_PROPERTY(Qt::GestureType gestureType READ gestureType)
     Q_PROPERTY(QPointF hotSpot READ hotSpot WRITE setHotSpot RESET unsetHotSpot)
     Q_PROPERTY(bool hasHotSpot READ hasHotSpot)
-    Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject)
 
 public:
     explicit QGesture(QObject *parent = 0);
@@ -76,9 +75,6 @@ public:
     Qt::GestureType gestureType() const;
 
     Qt::GestureState state() const;
-
-    QObject *targetObject() const;
-    void setTargetObject(QObject *value);
 
     QPointF hotSpot() const;
     void setHotSpot(const QPointF &value);

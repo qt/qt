@@ -61,6 +61,7 @@
 QT_BEGIN_NAMESPACE
 
 class QBasicTimer;
+class QGraphicsObject;
 class QGestureManager : public QObject
 {
     Q_OBJECT
@@ -71,13 +72,17 @@ public:
     Qt::GestureType registerGestureRecognizer(QGestureRecognizer *recognizer);
     void unregisterGestureRecognizer(Qt::GestureType type);
 
-    bool filterEvent(QObject *receiver, QEvent *event);
+    bool filterEvent(QWidget *receiver, QEvent *event);
+    bool filterEvent(QGesture *receiver, QEvent *event);
+    bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 
     // declared in qapplication.cpp
     static QGestureManager* instance();
 
 protected:
     void timerEvent(QTimerEvent *event);
+    bool filterEventThroughContexts(const QMap<QObject *, Qt::GestureType> &contexts,
+                                    QObject *receiver, QEvent *event);
 
 private:
     QMultiMap<Qt::GestureType, QGestureRecognizer *> recognizers;
@@ -117,7 +122,8 @@ private:
     int lastCustomGestureId;
 
     QGesture *getState(QObject *widget, Qt::GestureType gesture);
-    void deliverEvents(const QSet<QGesture *> &gestures, QObject *lastReceiver);
+    void deliverEvents(const QSet<QGesture *> &gestures, QObject *lastReceiver,
+                       QSet<QGesture *> *undeliveredGestures);
 };
 
 QT_END_NAMESPACE

@@ -154,16 +154,6 @@ Qt::GestureState QGesture::state() const
     return d_func()->state;
 }
 
-QObject *QGesture::targetObject() const
-{
-    return d_func()->targetObject;
-}
-
-void QGesture::setTargetObject(QObject *value)
-{
-    d_func()->targetObject = value;
-}
-
 QPointF QGesture::hotSpot() const
 {
     return d_func()->hotSpot;

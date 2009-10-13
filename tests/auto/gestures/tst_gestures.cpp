@@ -56,6 +56,11 @@
 //TESTED_CLASS=
 //TESTED_FILES=
 
+static QPointF mapToGlobal(const QPointF &pt, QGraphicsItem *item, QGraphicsView *view)
+{
+    return view->mapToGlobal(view->mapFromScene(item->mapToScene(pt)));
+}
+
 class CustomGesture : public QGesture
 {
     Q_OBJECT
@@ -63,11 +68,10 @@ public:
     static Qt::GestureType GestureType;
 
     CustomGesture(QObject *parent = 0)
-        : QGesture(parent), target(0), serial(0)
+        : QGesture(parent), serial(0)
     {
     }
 
-    QObject *target;
     int serial;
 
     static const int SerialMaybeThreshold;
@@ -86,13 +90,13 @@ public:
 
     CustomEvent(int serial_ = 0)
         : QEvent(QEvent::Type(CustomEvent::EventType)),
-          serial(serial_), targetObject(0)
+          serial(serial_), hasHotSpot(false)
     {
     }
 
     int serial;
-    QObject *targetObject;
-    QPoint hotSpot;
+    QPointF hotSpot;
+    bool hasHotSpot;
 };
 int CustomEvent::EventType = 0;
 
@@ -117,8 +121,8 @@ public:
             CustomGesture *g = static_cast<CustomGesture*>(state);
             CustomEvent *e = static_cast<CustomEvent*>(event);
             g->serial = e->serial;
-            g->setTargetObject(e->targetObject);
-            g->setHotSpot(e->hotSpot);
+            if (e->hasHotSpot)
+                g->setHotSpot(e->hotSpot);
             ++eventsCounter;
             if (g->serial >= CustomGesture::SerialFinishedThreshold)
                 result |= QGestureRecognizer::GestureFinished;
@@ -231,24 +235,15 @@ protected:
     }
 };
 
-static void sendCustomGesture(QObject *object)
+static void sendCustomGesture(CustomEvent *event, QObject *object, QGraphicsScene *scene = 0)
 {
-    CustomEvent ev;
-    ev.targetObject = object;
     for (int i = CustomGesture::SerialMaybeThreshold;
          i <= CustomGesture::SerialFinishedThreshold; ++i) {
-        ev.serial = i;
-        QApplication::sendEvent(object, &ev);
-    }
-}
-static void sendCustomGesture(QObject *object, QObject *target)
-{
-    CustomEvent ev;
-    ev.targetObject = target;
-    for (int i = CustomGesture::SerialMaybeThreshold;
-         i <= CustomGesture::SerialFinishedThreshold; ++i) {
-        ev.serial = i;
-        QApplication::sendEvent(object, &ev);
+        event->serial = i;
+        if (scene)
+            scene->sendEvent(qobject_cast<QGraphicsObject *>(object), event);
+        else
+            QApplication::sendEvent(object, event);
     }
 }
 
@@ -276,6 +271,7 @@ private slots:
     void unknownGesture();
     void graphicsItemGesture();
     void explicitGraphicsObjectTarget();
+    void gestureOverChildGraphicsItem();
 };
 
 tst_Gestures::tst_Gestures()
@@ -309,7 +305,8 @@ void tst_Gestures::customGesture()
 {
     GestureWidget widget;
     widget.grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
-    sendCustomGesture(&widget);
+    CustomEvent event;
+    sendCustomGesture(&event, &widget);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
@@ -354,7 +351,8 @@ void tst_Gestures::gestureOverChild()
 
     widget.grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
 
-    sendCustomGesture(child);
+    CustomEvent event;
+    sendCustomGesture(&event, child);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
@@ -372,7 +370,7 @@ void tst_Gestures::gestureOverChild()
     widget.reset();
     child->reset();
 
-    sendCustomGesture(child);
+    sendCustomGesture(&event, child);
 
     QCOMPARE(child->customEventsReceived, TotalCustomEventsCount);
     QCOMPARE(widget.customEventsReceived, 0);
@@ -403,7 +401,8 @@ void tst_Gestures::multipleWidgetOnlyGestureInTree()
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
 
     // sending events to the child and making sure there is no conflict
-    sendCustomGesture(child);
+    CustomEvent event;
+    sendCustomGesture(&event, child);
 
     QCOMPARE(child->customEventsReceived, TotalCustomEventsCount);
     QCOMPARE(parent.customEventsReceived, 0);
@@ -416,7 +415,7 @@ void tst_Gestures::multipleWidgetOnlyGestureInTree()
     child->reset();
 
     // same for the parent widget
-    sendCustomGesture(&parent);
+    sendCustomGesture(&event, &parent);
 
     QCOMPARE(child->customEventsReceived, 0);
     QCOMPARE(parent.customEventsReceived, TotalCustomEventsCount);
@@ -443,7 +442,8 @@ void tst_Gestures::conflictingGestures()
     child->acceptGestureOverride = true;
 
     // sending events to the child and making sure there is no conflict
-    sendCustomGesture(child);
+    CustomEvent event;
+    sendCustomGesture(&event, child);
 
     QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
     QCOMPARE(child->gestureEventsReceived, 0);
@@ -458,7 +458,7 @@ void tst_Gestures::conflictingGestures()
     child->acceptGestureOverride = false;
 
     // sending events to the child and making sure there is no conflict
-    sendCustomGesture(child);
+    sendCustomGesture(&event, child);
 
     QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
     QCOMPARE(child->gestureEventsReceived, 0);
@@ -473,7 +473,7 @@ void tst_Gestures::conflictingGestures()
     child->acceptGestureOverride = false;
 
     // sending events to the child and making sure there is no conflict
-    sendCustomGesture(child);
+    sendCustomGesture(&event, child);
 
     QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
     QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
@@ -508,7 +508,8 @@ void tst_Gestures::unknownGesture()
     widget.grabGesture(Qt::CustomGesture, Qt::WidgetGesture);
     widget.grabGesture(Qt::GestureType(Qt::PanGesture+512), Qt::WidgetGesture);
 
-    sendCustomGesture(&widget);
+    CustomEvent event;
+    sendCustomGesture(&event, &widget);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
 
@@ -553,6 +554,15 @@ public:
     bool acceptGestureOverride;
 
     QRectF size;
+
+    void reset()
+    {
+        customEventsReceived = 0;
+        gestureEventsReceived = 0;
+        gestureOverrideEventsReceived = 0;
+        events.clear();
+        overrideEvents.clear();
+    }
 
 protected:
     QRectF boundingRect() const
@@ -616,12 +626,36 @@ void tst_Gestures::graphicsItemGesture()
     scene.addItem(item);
     item->setPos(100, 100);
 
-    item->grabGesture(CustomGesture::GestureType);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
 
-    sendCustomGesture(item);
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+    item->grabGesture(CustomGesture::GestureType);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
+
+    CustomEvent event;
+    sendCustomGesture(&event, item, &scene);
+
+    QCOMPARE(item->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item->events.all.size(), TotalGestureEventsCount);
+    for(int i = 0; i < item->events.all.size(); ++i)
+        QCOMPARE(item->events.all.at(i), CustomGesture::GestureType);
+    QCOMPARE(item->events.started.size(), 1);
+    QCOMPARE(item->events.updated.size(), TotalGestureEventsCount - 2);
+    QCOMPARE(item->events.finished.size(), 1);
+    QCOMPARE(item->events.canceled.size(), 0);
+
+    item->reset();
+
+    // make sure the event is properly delivered if only the hotspot is set.
+    event.hotSpot = mapToGlobal(QPointF(10, 10), item, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item, &scene);
 
     QCOMPARE(item->customEventsReceived, TotalCustomEventsCount);
     QCOMPARE(item->gestureEventsReceived, TotalGestureEventsCount);
@@ -643,41 +677,112 @@ void tst_Gestures::explicitGraphicsObjectTarget()
     GestureItem *item1 = new GestureItem;
     scene.addItem(item1);
     item1->setPos(100, 100);
-    item1->grabGesture(CustomGesture::GestureType);
 
     GestureItem *item2 = new GestureItem;
     scene.addItem(item2);
     item2->setPos(100, 100);
-    item2->grabGesture(CustomGesture::GestureType);
 
-    GestureItem *item3 = new GestureItem;
-    scene.addItem(item3);
-    item3->setParentItem(item2);
-    item3->setPos(0, 0);
-    item3->grabGesture(CustomGesture::GestureType);
+    GestureItem *item2_child1 = new GestureItem;
+    scene.addItem(item2_child1);
+    item2_child1->setParentItem(item2);
+    item2_child1->setPos(10, 10);
 
-    // sending events to item1, but the targetObject for the gesture is item2.
-    sendCustomGesture(item1, item3);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+    item1->grabGesture(CustomGesture::GestureType, Qt::ItemGesture);
+    item2->grabGesture(CustomGesture::GestureType, Qt::ItemGesture);
+    item2_child1->grabGesture(CustomGesture::GestureType, Qt::ItemGesture);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    // sending events to item1, but the hotSpot is set to item2
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(15, 15), item2, &view);
+    event.hasHotSpot = true;
+
+    sendCustomGesture(&event, item1, &scene);
+
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item2_child1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item2_child1->events.all.size(), TotalGestureEventsCount);
+    for(int i = 0; i < item2_child1->events.all.size(); ++i)
+        QCOMPARE(item2_child1->events.all.at(i), CustomGesture::GestureType);
+    QCOMPARE(item2_child1->events.started.size(), 1);
+    QCOMPARE(item2_child1->events.updated.size(), TotalGestureEventsCount - 2);
+    QCOMPARE(item2_child1->events.finished.size(), 1);
+    QCOMPARE(item2_child1->events.canceled.size(), 0);
+    QCOMPARE(item2->gestureEventsReceived, 0);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 0);
+}
+
+void tst_Gestures::gestureOverChildGraphicsItem()
+{
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    GestureItem *item0 = new GestureItem;
+    scene.addItem(item0);
+    item0->setPos(0, 0);
+
+    GestureItem *item1 = new GestureItem;
+    scene.addItem(item1);
+    item1->setPos(100, 100);
+
+    GestureItem *item2 = new GestureItem;
+    scene.addItem(item2);
+    item2->setPos(100, 100);
+
+    GestureItem *item2_child1 = new GestureItem;
+    scene.addItem(item2_child1);
+    item2_child1->setParentItem(item2);
+    item2_child1->setPos(0, 0);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+    item1->grabGesture(CustomGesture::GestureType);
 
     static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
 
-    QCOMPARE(item1->customEventsReceived, TotalCustomEventsCount);
-    QCOMPARE(item1->gestureEventsReceived, 0);
-    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
-    QCOMPARE(item3->customEventsReceived, 0);
-    QCOMPARE(item3->gestureEventsReceived, TotalGestureEventsCount);
-    QCOMPARE(item3->gestureOverrideEventsReceived, 0);
-    QCOMPARE(item3->events.all.size(), TotalGestureEventsCount);
-    for(int i = 0; i < item3->events.all.size(); ++i)
-        QCOMPARE(item3->events.all.at(i), CustomGesture::GestureType);
-    QCOMPARE(item3->events.started.size(), 1);
-    QCOMPARE(item3->events.updated.size(), TotalGestureEventsCount - 2);
-    QCOMPARE(item3->events.finished.size(), 1);
-    QCOMPARE(item3->events.canceled.size(), 0);
-    QCOMPARE(item2->customEventsReceived, 0);
+    CustomEvent event;
+    event.hotSpot = mapToGlobal(QPointF(10, 10), item2_child1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
+    QCOMPARE(item0->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item2_child1->gestureEventsReceived, 0);
+    QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
     QCOMPARE(item2->gestureEventsReceived, 0);
     QCOMPARE(item2->gestureOverrideEventsReceived, 0);
+    QEXPECT_FAIL("", "need to fix gesture event propagation inside graphicsview", Continue);
+    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 0);
+
+    item0->reset(); item1->reset(); item2->reset(); item2_child1->reset();
+    item2->grabGesture(CustomGesture::GestureType);
+
+    event.hotSpot = mapToGlobal(QPointF(10, 10), item2_child1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
+    QCOMPARE(item0->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item2_child1->gestureEventsReceived, 0);
+    QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
+    QEXPECT_FAIL("", "need to fix gesture event propagation inside graphicsview", Continue);
+    QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount);
+    QEXPECT_FAIL("", "need to fix gesture event propagation inside graphicsview", Continue);
+    QCOMPARE(item2->gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureEventsReceived, 0);
+    QEXPECT_FAIL("", "need to fix gesture event propagation inside graphicsview", Continue);
+    QCOMPARE(item1->gestureOverrideEventsReceived, TotalGestureEventsCount);
 }
 
 QTEST_MAIN(tst_Gestures)

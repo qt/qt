@@ -3639,8 +3639,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     // walk through parents and check for gestures
     if (d->gestureManager) {
-        if (d->gestureManager->filterEvent(receiver, e))
-            return true;
+        if (receiver->isWidgetType()) {
+            if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                return true;
+        } else if (QGesture *gesture = qobject_cast<QGesture *>(receiver)) {
+            if (d->gestureManager->filterEvent(gesture, e))
+                return true;
+        }
     }
 
 

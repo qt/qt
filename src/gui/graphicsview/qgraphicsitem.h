@@ -555,7 +555,7 @@ public:
     using QObject::children;
 #endif
 
-    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
+    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::ItemWithChildrenGesture);
 
 Q_SIGNALS:
     void parentChanged();
