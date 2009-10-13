@@ -819,13 +819,16 @@ void qt_init(QApplicationPrivate *priv, int)
 
     priv->GetGestureInfo = 0;
     priv->GetGestureExtraArgs = 0;
+    priv->CloseGestureInfoHandle = 0;
+    priv->SetGestureConfig = 0;
+    priv->GetGestureConfig = 0;
+    priv->BeginPanningFeedback = 0;
+    priv->UpdatePanningFeedback = 0;
+    priv->EndPanningFeedback = 0;
 
 #if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
     priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
-    priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle) 0;
-    priv->SetGestureConfig = (PtrSetGestureConfig) 0;
-    priv->GetGestureConfig = (PtrGetGestureConfig) 0;
 #elif !defined(Q_WS_WINCE)
     priv->GetGestureInfo =
             (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
