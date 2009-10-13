@@ -82,9 +82,12 @@ x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
-                    qgl_egl.cpp
+                    qgl_egl.cpp \
+                    qpixmapdata_x11gl_egl.cpp
 
-        HEADERS +=  qgl_egl_p.h
+        HEADERS +=  qgl_egl_p.h \
+                    qpixmapdata_x11gl_p.h
+
 
     } else {
         SOURCES +=  qgl_x11.cpp \

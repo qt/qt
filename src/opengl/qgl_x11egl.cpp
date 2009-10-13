@@ -513,8 +513,11 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
                                            pixmapConfig,
                                            (EGLNativePixmapType) pixmapData->handle(),
                                            pixmapAttribs.properties());
+//    qDebug("qt_createEGLSurfaceForPixmap() created surface 0x%x for pixmap 0x%x",
+//           pixmapSurface, pixmapData->handle());
     if (pixmapSurface == EGL_NO_SURFACE) {
-        qWarning("Failed to create a pixmap surface using config %d", (int)pixmapConfig);
+        qWarning() << "Failed to create a pixmap surface using config" << (int)pixmapConfig
+                   << ":" << QEglContext::errorString(eglGetError());
         return false;
     }
 

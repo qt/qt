@@ -39,44 +39,50 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_gl_p.h"
+#ifndef QPIXMAPDATA_X11GL_P_H
+#define QPIXMAPDATA_X11GL_P_H
 
-#include "private/qpixmap_raster_p.h"
-#include "private/qpixmapdata_gl_p.h"
-#include "private/qwindowsurface_gl_p.h"
-#include "private/qgl_p.h"
-#include <private/qwindowsurface_raster_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#ifdef Q_WS_X11
-#include "private/qpixmapdata_x11gl_p.h"
-#endif
+#include <private/qpixmapdata_p.h>
+#include <private/qpixmap_x11_p.h>
+#include <private/qglpaintdevice_p.h>
+
+#include <qgl.h>
 
 QT_BEGIN_NAMESPACE
 
-extern QGLWidget *qt_gl_getShareWidget();
-
-QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
 {
-#ifdef Q_WS_X11
-    if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
-        return new QX11GLPixmapData();
-#endif
+public:
+    QX11GLPixmapData();
+    virtual ~QX11GLPixmapData();
 
-    return new QGLPixmapData(type);
-}
+    // Re-implemented from QGLPaintDevice
+    QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
+    void beginPaint();
+    void endPaint();
+    QGLContext* context() const;
+    QSize size() const;
 
-QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-#ifdef Q_WS_WIN
-    // On Windows the QGLWindowSurface class can't handle
-    // drop shadows and native effects, e.g. fading a menu in/out using
-    // top level window opacity.
-    if (widget->windowType() == Qt::Popup)
-        return new QRasterWindowSurface(widget);
-#endif
 
-    return new QGLWindowSurface(widget);
-}
+    static bool hasX11GLPixmaps();
+    static QGLFormat glFormat();
+private:
+    static void createPixmapSharedContext(EGLConfig config);
+    mutable QGLContext* ctx;
+};
+
 
 QT_END_NAMESPACE
 
+#endif // QPIXMAPDATA_X11GL_P_H
