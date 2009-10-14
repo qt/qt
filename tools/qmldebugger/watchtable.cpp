@@ -1,15 +1,26 @@
-#include "watchtablemodel.h"
+#include "watchtable.h"
 
 #include <QtCore/qdebug.h>
+#include <QtGui/qevent.h>
+#include <QtGui/qaction.h>
+#include <QtGui/qmenu.h>
+
 #include <QtDeclarative/qmldebug.h>
 #include <QtDeclarative/qmlmetatype.h>
 
 QT_BEGIN_NAMESPACE
 
 
-WatchTableModel::WatchTableModel(QObject *parent)
-    : QAbstractTableModel(parent)
+WatchTableModel::WatchTableModel(QmlEngineDebug *client, QObject *parent)
+    : QAbstractTableModel(parent),
+      m_client(client)
 {
+}
+
+WatchTableModel::~WatchTableModel()
+{
+    for (int i=0; i<m_columns.count(); i++)
+        delete m_columns[i].watch;
 }
 
 void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
@@ -18,8 +29,10 @@ void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
     if (qobject_cast<QmlDebugPropertyWatch *>(watch))
         property = qobject_cast<QmlDebugPropertyWatch *>(watch)->name();
 
-    // Watch will be automatically removed when its state is Inactive
-    QObject::connect(watch, SIGNAL(stateChanged(State)), SLOT(watchStateChanged()));
+    connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
+            SLOT(watchedValueChanged(QByteArray,QVariant)));
+
+    connect(watch, SIGNAL(stateChanged(State)), SLOT(watchStateChanged()));
 
     int col = columnCount(QModelIndex());
     beginInsertColumns(QModelIndex(), col, col);
@@ -87,14 +100,6 @@ QmlDebugWatch *WatchTableModel::findWatch(int objectDebugId, const QString &prop
     return 0;
 }
 
-QList<QmlDebugWatch *> WatchTableModel::watches() const
-{
-    QList<QmlDebugWatch *> watches;
-    for (int i=0; i<m_columns.count(); i++)
-        watches << m_columns[i].watch;
-    return watches;
-}
-
 int WatchTableModel::rowCount(const QModelIndex &) const
 {
     return m_values.count();
@@ -156,8 +161,11 @@ QVariant WatchTableModel::data(const QModelIndex &idx, int role) const
 void WatchTableModel::watchStateChanged()
 {
     QmlDebugWatch *watch = qobject_cast<QmlDebugWatch*>(sender());
-    if (watch && watch->state() == QmlDebugWatch::Inactive)
+
+    if (watch && watch->state() == QmlDebugWatch::Inactive) {
         removeWatch(watch);
+        watch->deleteLater();
+    }
 }
 
 int WatchTableModel::columnForWatch(QmlDebugWatch *watch) const
@@ -181,6 +189,111 @@ void WatchTableModel::addValue(int column, const QVariant &value)
     m_values.append(v);
 
     endInsertRows();
+}
+
+void WatchTableModel::togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property)
+{
+    QmlDebugWatch *watch = findWatch(object.debugId(), property.name());
+    if (watch) {
+        // watch will be deleted in watchStateChanged()
+        m_client->removeWatch(watch);
+        return;
+    }
+
+    watch = m_client->addWatch(property, this);
+    if (watch->state() == QmlDebugWatch::Dead) {
+        delete watch;
+        watch = 0;
+    } else {
+        QString desc = property.name()
+                + QLatin1String(" on\n")
+                + object.className()
+                + QLatin1String(": ")
+                + (object.name().isEmpty() ? QLatin1String("<unnamed>") : object.name());
+        addWatch(watch, desc);
+        emit watchCreated(watch);
+    }
+}
+
+void WatchTableModel::watchedValueChanged(const QByteArray &propertyName, const QVariant &value)
+{
+    Q_UNUSED(propertyName);
+    QmlDebugWatch *watch = qobject_cast<QmlDebugWatch*>(sender());
+    if (watch)
+        updateWatch(watch, value);
+}
+
+void WatchTableModel::expressionWatchRequested(const QmlDebugObjectReference &obj, const QString &expr)
+{
+    QmlDebugWatch *watch = m_client->addWatch(obj, expr, this);
+
+    if (watch->state() == QmlDebugWatch::Dead) {
+        delete watch;
+        watch = 0;
+    } else {
+        addWatch(watch, expr);
+        emit watchCreated(watch);
+    }
+}
+
+void WatchTableModel::stopWatching(int column)
+{
+    QmlDebugWatch *watch = findWatch(column);
+    if (watch) {
+        m_client->removeWatch(watch);
+        delete watch;
+        watch = 0;
+    }
+}
+
+
+//----------------------------------------------
+
+WatchTableHeaderView::WatchTableHeaderView(WatchTableModel *model, QWidget *parent)
+    : QHeaderView(Qt::Horizontal, parent),
+      m_model(model)
+{
+    setClickable(true);
+}
+
+void WatchTableHeaderView::mousePressEvent(QMouseEvent *me)
+{
+    QHeaderView::mousePressEvent(me);
+
+    if (me->button() == Qt::RightButton && me->type() == QEvent::MouseButtonPress) {
+        int col = logicalIndexAt(me->pos());
+        if (col >= 0) {
+            QAction action(tr("Stop watching"), 0);
+            QList<QAction *> actions;
+            actions << &action;
+            if (QMenu::exec(actions, me->globalPos()))
+                m_model->stopWatching(col);
+        }
+    } 
+}
+
+
+//----------------------------------------------
+
+WatchTableView::WatchTableView(WatchTableModel *model, QWidget *parent)
+    : QTableView(parent),
+      m_model(model)
+{
+    connect(model, SIGNAL(watchCreated(QmlDebugWatch*)), SLOT(watchCreated(QmlDebugWatch*)));
+    connect(this, SIGNAL(activated(QModelIndex)), SLOT(indexActivated(QModelIndex)));
+}
+
+void WatchTableView::indexActivated(const QModelIndex &index)
+{
+    QmlDebugWatch *watch = m_model->findWatch(index.column());
+    if (watch)
+        emit objectActivated(watch->objectDebugId());
+}
+
+void WatchTableView::watchCreated(QmlDebugWatch *watch)
+{
+    int column = m_model->columnForWatch(watch);
+    resizeColumnToContents(column);
 }
 
 QT_END_NAMESPACE

@@ -870,6 +870,7 @@ bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
     const QString fileName = url.toString();
 
     QTextStream stream(qmldata, QIODevice::ReadOnly);
+    stream.setCodec("UTF-8");
     const QString code = stream.readAll();
 
     data = new QmlScriptParserJsASTData(fileName);

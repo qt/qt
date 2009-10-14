@@ -201,6 +201,7 @@ QDebug operator<<(QDebug debug, const QmlError &error)
         if (f.open(QIODevice::ReadOnly)) {
             QByteArray data = f.readAll();
             QTextStream stream(data, QIODevice::ReadOnly);
+            stream.setCodec("UTF-8");
             const QString code = stream.readAll();
             const QStringList lines = code.split(QLatin1Char('\n'));
 
