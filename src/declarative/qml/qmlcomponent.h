@@ -59,6 +59,7 @@ class QmlCompiledData;
 class QByteArray;
 class QmlComponentPrivate;
 class QmlEngine;
+class QmlComponentAttached;
 class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
 {
     Q_OBJECT
@@ -94,6 +95,8 @@ public:
 
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
+
+    static QmlComponentAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void statusChanged(QmlComponent::Status);

@@ -60,6 +60,7 @@ private slots:
     void componentCompositeType();
     void i18n();
     void i18n_data();
+    void onCompleted();
 
     void importsBuiltin_data();
     void importsBuiltin();
@@ -703,6 +704,18 @@ void tst_qmllanguage::i18n()
     QCOMPARE(object->stringProperty(), stringProperty);
 
     delete object;
+}
+
+// Check that the Component::onCompleted attached property works
+void tst_qmllanguage::onCompleted()
+{
+    QmlComponent component(&engine, TEST_FILE("onCompleted.qml"));
+    VERIFY_ERRORS(0);
+    QTest::ignoreMessage(QtDebugMsg, "Completed 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Completed 6 10");
+    QTest::ignoreMessage(QtDebugMsg, "Completed 10 11");
+    QObject *object = component.create();
+    QVERIFY(object != 0);
 }
 
 // Check that first child of qml is of given type. Empty type insists on error.

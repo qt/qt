@@ -125,8 +125,8 @@ static QString userLocalDataPath(const QString& app)
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
-  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), rootComponent(0),
-  networkAccessManager(0), typeManager(e), uniqueId(1)
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), 
+  componentAttacheds(0), rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());

@@ -86,7 +86,7 @@ void tst_animations::dotProperty()
     QTest::qWait(animation.duration() + 50);
     QCOMPARE(rect.border()->width(), 10);
 
-    rect.border()->setWidth(1);
+    rect.border()->setWidth(0);
     animation.start();
     animation.pause();
     animation.setCurrentTime(125);
