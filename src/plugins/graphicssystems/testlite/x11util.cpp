@@ -450,6 +450,9 @@ void MyWindow::resizeEvent(XConfigureEvent *e)
     width = e->width;
     height = e->height;
 
+#ifdef MYX11_DEBUG
+    qDebug() << hex << window << dec << "ConfigureNotify" << e->x << e->y << e->width << e->height << "geometry" << xpos << ypos << width << height;
+#endif
     windowSurface->handleGeometryChange(xpos, ypos, width, height);
 }
 

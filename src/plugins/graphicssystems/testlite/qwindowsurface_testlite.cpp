@@ -89,13 +89,26 @@ void QTestLiteWindowSurface::flush(QWidget *widget, const QRegion &region, const
     xw->paintEvent();
 }
 
-void QTestLiteWindowSurface::setGeometry(const QRect &rect)
+
+void QTestLiteWindowSurface::geometryChanged(const QRect &rect)
 {
-    //qDebug() << "QTestLiteWindowSurface::setGeometry:" << rect << xw->window;
     QWindowSurface::setGeometry(rect);
 
-    if (xw->img.size() != rect.size())
+    if (xw->img.size() != rect.size()) {
         xw->img = QImage(rect.size(), mScreen->format());
+        window()->update(); //### this is the wrong place for this...
+    }
+
+}
+
+
+void QTestLiteWindowSurface::setGeometry(const QRect &rect)
+{
+    QRect oldRect = geometry();
+    if (rect == oldRect)
+        return;
+
+    QTestLiteWindowSurface::geometryChanged(rect);
 
     //if unchanged ###
 //    xw->setSize(rect.width(), rect.height());
@@ -212,6 +225,7 @@ void QTestLiteWindowSurface::handleMouseEvent(QEvent::Type type, void *ev)
 
 void QTestLiteWindowSurface::handleGeometryChange(int x, int y, int w, int h)
 {
+    geometryChanged(QRect(x,y,w,h));
     QApplicationPrivate::handleGeometryChange(window(), QRect(x,y,w,h));
 }
 
