@@ -39,64 +39,47 @@
 **
 ****************************************************************************/
 
-#include "qmlinfo.h"
-#include <private/qmldeclarativedata_p.h>
-#include <QtDeclarative/qmlcontext.h>
-#include <QtGui/qapplication.h>
+#ifndef QMLLISTSCRIPTCLASS_P_H
+#define QMLLISTSCRIPTCLASS_P_H
+
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qscriptdeclarativeclass_p.h>
 
 QT_BEGIN_NAMESPACE
 
-/*!
-    \fn void qmlInfo(const QString& message, QObject *object)
-
-    \brief Prints warnings messages that include the file and line number for QML types.
-
-    When QML types display warning messages, it improves tracibility
-    if they include the QML file and line number on which the
-    particular instance was instantiated.
-    
-    To include the file and line number, an object must be passed.  If
-    the file and line number is not available for that instance
-    (either it was not instantiated by the QML engine or location
-    information is disabled), "unknown location" will be used instead.
-
-    For example, 
-
-    \code
-    qmlInfo(tr("component property is a write-once property"), object);
-    \endcode
-
-    prints
-
-    \code
-    QML ComponentInstance (unknown location): component property is a write-once property
-    \endcode
-*/
-
-void qmlInfo(const QString& msg, QObject* object)
+class QmlEngine;
+class QmlListScriptClass : public QScriptDeclarativeClass
 {
-    QString pos = QLatin1String("QML");
-    if (object) {
-        pos += QLatin1Char(' ');
-        pos += QLatin1String(object->metaObject()->className());
-    }
-    QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
-    pos += QLatin1String(" (");
-    if (ddata) {
-        if (ddata->outerContext) {
-            pos += ddata->outerContext->baseUrl().toString();
-        } else {
-            pos += qApp->translate("QmlInfo","unknown");
-        }
-        pos += QLatin1String(":");
-        pos += QString::number(ddata->lineNumber);
-        pos += QLatin1String(":");
-        pos += QString::number(ddata->columnNumber);
-    } else {
-        pos += qApp->translate("QmlInfo","unknown location");
-    }
-    pos += QLatin1String(") ");
-    qWarning((pos + msg).toLocal8Bit()); // XXX allow other processing?
-}
+public:
+    QmlListScriptClass(QmlEngine *);
+    ~QmlListScriptClass();
+
+    enum ListType { QListPtr, QmlListPtr };
+    QScriptValue newList(QObject *, int, ListType);
+
+protected:
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
+                                                   QScriptClass::QueryFlags flags);
+    virtual QScriptValue property(Object *, const Identifier &);
+
+private:
+    PersistentIdentifier m_lengthId;
+    QmlEngine *engine;
+
+    quint32 lastIndex;
+};
 
 QT_END_NAMESPACE
+
+#endif // QMLLISTSCRIPTCLASS_P_H
+

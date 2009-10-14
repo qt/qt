@@ -63,6 +63,7 @@ private slots:
     void extendedObjectPropertyLookup();
     void scriptErrors();
     void signalTriggeredBindings();
+    void listProperties();
 
 private:
     QmlEngine engine;
@@ -785,6 +786,25 @@ void tst_qmlecmascript::signalTriggeredBindings()
     QCOMPARE(object->property("base").toReal(), 400.);
     QCOMPARE(object->property("test1").toReal(), 400.);
     QCOMPARE(object->property("test2").toReal(), 400.);
+}
+
+/*
+Test that list properties can be iterated from ECMAScript
+*/
+void tst_qmlecmascript::listProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("listProperties.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toInt(), 21);
+    QCOMPARE(object->property("test2").toInt(), 2);
+    QCOMPARE(object->property("test3").toInt(), 50);
+    QCOMPARE(object->property("test4").toInt(), 3);
+    QCOMPARE(object->property("test5").toBool(), true);
+    QCOMPARE(object->property("test6").toBool(), true);
+    QCOMPARE(object->property("test7").toBool(), true);
+    QCOMPARE(object->property("test8").toBool(), true);
 }
 
 QTEST_MAIN(tst_qmlecmascript)
