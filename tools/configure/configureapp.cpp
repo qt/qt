@@ -1465,6 +1465,9 @@ void Configure::applySpecSpecifics()
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
 
+        // Disable building docs and translations for now
+        disabledBuildParts << "docs" << "translations";
+
     } else if(dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
