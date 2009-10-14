@@ -86,6 +86,7 @@
 #include <private/qmlxmlhttprequest_p.h>
 #include <private/qmlsqldatabase_p.h>
 #include <private/qmltypenamescriptclass_p.h>
+#include <private/qmllistscriptclass_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"
@@ -173,6 +174,8 @@ QmlEnginePrivate::~QmlEnginePrivate()
     valueTypeClass = 0;
     delete typeNameClass;
     typeNameClass = 0;
+    delete listClass;
+    listClass = 0;
     delete networkAccessManager;
     networkAccessManager = 0;
     delete nodeListClass;
@@ -218,6 +221,7 @@ void QmlEnginePrivate::init()
     objectClass = new QmlObjectScriptClass(q);
     valueTypeClass = new QmlValueTypeScriptClass(q);
     typeNameClass = new QmlTypeNameScriptClass(q);
+    listClass = new QmlListScriptClass(q);
     rootContext = new QmlContext(q,true);
 #ifdef QT_SCRIPTTOOLS_LIB
     if (qmlDebugger()){

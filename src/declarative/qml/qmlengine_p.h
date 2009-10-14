@@ -96,6 +96,7 @@ class QScriptDeclarativeClass;
 class QmlTypeNameScriptClass;
 class QmlTypeNameCache;
 class QmlComponentAttached;
+class QmlListScriptClass;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -129,6 +130,7 @@ public:
     QmlObjectScriptClass *objectClass;
     QmlValueTypeScriptClass *valueTypeClass;
     QmlTypeNameScriptClass *typeNameClass;
+    QmlListScriptClass *listClass;
     // Global script class
     QScriptClass *globalClass;
     // Used by DOM Core 3 API

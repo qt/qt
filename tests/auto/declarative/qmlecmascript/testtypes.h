@@ -6,6 +6,7 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
+#include <QtDeclarative/qmllist.h>
 #include <QtCore/qrect.h>
 
 class MyQmlAttachedObject : public QObject
@@ -23,11 +24,14 @@ class MyQmlObject : public QObject
     Q_OBJECT
     Q_ENUMS(MyEnum)
     Q_ENUMS(MyEnum2)
-    Q_PROPERTY(int deleteOnSet READ deleteOnSet WRITE setDeleteOnSet);
+    Q_PROPERTY(int deleteOnSet READ deleteOnSet WRITE setDeleteOnSet)
     Q_PROPERTY(bool trueProperty READ trueProperty CONSTANT)
     Q_PROPERTY(bool falseProperty READ falseProperty CONSTANT)
     Q_PROPERTY(QString stringProperty READ stringProperty WRITE setStringProperty NOTIFY stringChanged)
-    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged);
+    Q_PROPERTY(QObject *objectProperty READ objectProperty WRITE setObjectProperty NOTIFY objectChanged)
+    Q_PROPERTY(QmlList<QObject *> *objectQmlListProperty READ objectQmlListProperty CONSTANT)
+    Q_PROPERTY(QList<QObject *> *objectListProperty READ objectListProperty CONSTANT)
+
 public:
     MyQmlObject(): m_methodCalled(false), m_methodIntCalled(false), m_object(0) {}
 
@@ -53,6 +57,9 @@ public:
         m_object = obj;
         emit objectChanged();
     }
+
+    QmlList<QObject *> *objectQmlListProperty() { return &m_objectQmlList; }
+    QList<QObject *> *objectListProperty() { return &m_objectQList; }
 
     bool methodCalled() const { return m_methodCalled; }
     bool methodIntCalled() const { return m_methodIntCalled; }
@@ -84,6 +91,8 @@ private:
 
     QObject *m_object;
     QString m_string;
+    QmlConcreteList<QObject *> m_objectQmlList;
+    QList<QObject *> m_objectQList;
 };
 
 QML_DECLARE_TYPE(MyQmlObject);
