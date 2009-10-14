@@ -955,6 +955,15 @@ QVariant QmlScriptClass::toVariant(QmlEngine *engine, const QScriptValue &val)
     return QVariant();
 }
 
+// XXX this beyonds in QUrl::toLocalFile()
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
 /////////////////////////////////////////////////////////////
 struct QmlEnginePrivate::ImportedNamespace {
     QStringList urls;
@@ -985,7 +994,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                 QUrl url = QUrl(urls.at(i) + QLatin1String("/") + QString::fromUtf8(type) + QLatin1String(".qml"));
                 if (vmaj || vmin) {
                     // Check version file - XXX cache these in QmlEngine!
-                    QFile qmldir(QUrl(urls.at(i)+QLatin1String("/qmldir")).toLocalFile());
+                    QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
                     if (qmldir.open(QIODevice::ReadOnly)) {
                         do {
                             QByteArray lineba = qmldir.readLine();
@@ -1016,7 +1025,7 @@ struct QmlEnginePrivate::ImportedNamespace {
                     }
                 } else {
                     // XXX search non-files too! (eg. zip files, see QT-524)
-                    QFileInfo f(url.toLocalFile());
+                    QFileInfo f(toLocalFileOrQrc(url));
                     if (f.exists()) {
                         if (url_return)
                             *url_return = url;

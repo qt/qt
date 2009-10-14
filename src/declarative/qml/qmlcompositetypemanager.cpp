@@ -262,13 +262,22 @@ void QmlCompositeTypeManager::resourceReplyFinished()
     reply->deleteLater();
 }
 
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
 void QmlCompositeTypeManager::loadResource(QmlCompositeTypeResource *resource)
 {
     QUrl url(resource->url);
 
-    if (url.scheme() == QLatin1String("file")) {
+    QString lf = toLocalFileOrQrc(url);
+    if (!lf.isEmpty()) {
 
-        QFile file(url.toLocalFile());
+        QFile file(lf);
         if (file.open(QFile::ReadOnly)) {
             resource->data = file.readAll();
             resource->status = QmlCompositeTypeResource::Complete;
@@ -290,9 +299,10 @@ void QmlCompositeTypeManager::loadSource(QmlCompositeTypeData *unit)
 {
     QUrl url(unit->imports.baseUrl());
 
-    if (url.scheme() == QLatin1String("file")) {
+    QString lf = toLocalFileOrQrc(url);
+    if (!lf.isEmpty()) {
 
-        QFile file(url.toLocalFile());
+        QFile file(lf);
         if (file.open(QFile::ReadOnly)) {
             QByteArray data = file.readAll();
             setData(unit, data, url);
