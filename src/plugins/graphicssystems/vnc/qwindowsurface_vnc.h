@@ -64,10 +64,13 @@ public:
 
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
+    inline const QImage image() { return mImage; }
 
 private:
     QVNCGraphicsSystem *mGraphicsSystem;
     QVNCGraphicsSystemScreen *mScreen;
+    QRect oldGeometry;
+    QImage mImage;
 };
 
 QT_END_NAMESPACE

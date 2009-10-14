@@ -43,6 +43,7 @@
 #define QGRAPHICSSYSTEM_VNC_H
 
 #include <QtGui/private/qgraphicssystem_p.h>
+#include "qwindowsurface_vnc.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -68,6 +69,9 @@ public:
 
     void setDirty(const QRect &rect);
 
+    void removeWindowSurface(QVNCWindowSurface * surface);
+    void addWindowSurface(QVNCWindowSurface * surface) { windowStack.append(surface); }
+
 public:
     QRect mGeometry;
     int mDepth;
@@ -77,6 +81,8 @@ public:
     QVNCServer *server;
 
     QVNCGraphicsSystemScreenPrivate *d_ptr;
+private:
+    QList<QVNCWindowSurface *> windowStack;
 };
 
 class QVNCGraphicsSystemPrivate;
@@ -91,6 +97,7 @@ public:
     QWindowSurface *createWindowSurface(QWidget *widget) const;
 
     QList<QGraphicsSystemScreen *> screens() const { return mScreens; }
+
 
 private:
     QVNCGraphicsSystemScreen *mPrimaryScreen;

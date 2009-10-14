@@ -53,15 +53,17 @@ QVNCWindowSurface::QVNCWindowSurface(QVNCGraphicsSystem *graphicsSystem,
     : QWindowSurface(window),
       mScreen(screen)
 {
+    mImage = QImage(window->size(), mScreen->format());
 }
 
 QVNCWindowSurface::~QVNCWindowSurface()
 {
+    mScreen->removeWindowSurface(this);
 }
 
 QPaintDevice *QVNCWindowSurface::paintDevice()
 {
-    return mScreen->mScreenImage;
+    return &mImage;
 }
 
 void QVNCWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoint &offset)
@@ -69,20 +71,30 @@ void QVNCWindowSurface::flush(QWidget *widget, const QRegion &region, const QPoi
     Q_UNUSED(widget);
     Q_UNUSED(offset);
 
-    QRect rect = geometry();
-    QPoint topLeft = rect.topLeft();
+    QRect currentGeometry = geometry();
+    // If this is a move, redraw the previous location
+    if (oldGeometry != currentGeometry) {
+        mScreen->setDirty(oldGeometry);
+        oldGeometry = currentGeometry;
+    }
 
-    mScreen->setDirty(region.boundingRect());
-    // server->flush(region);
-
+    QRect dirtyClient = region.boundingRect();
+    QRect dirtyRegion(currentGeometry.left() + dirtyClient.left(),
+                      currentGeometry.top() + dirtyClient.top(),
+                      dirtyClient.width(),
+                      dirtyClient.height());
+    mScreen->setDirty(dirtyRegion);
 }
 
-void QVNCWindowSurface::setGeometry(const QRect &)
+void QVNCWindowSurface::setGeometry(const QRect &rect)
 {
+    // store previous geometry for screen update
+    oldGeometry = geometry();
 
-// any size you like as long as it's full-screen...
+    // change the widget's QImage if this is a resize
+    if (mImage.size() != rect.size())
+        mImage = QImage(rect.size(), mScreen->format());
 
-    QRect rect(mScreen->availableGeometry());
     QApplicationPrivate::handleGeometryChange(this->window(), rect);
 
     QWindowSurface::setGeometry(rect);

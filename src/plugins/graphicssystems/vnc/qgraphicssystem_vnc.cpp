@@ -45,6 +45,7 @@
 #include <QtCore/qdebug.h>
 
 #include <qvncserver.h>
+#include <QtGui/QPainter>
 
 
 
@@ -77,6 +78,23 @@ QVNCDirtyMap *QVNCGraphicsSystemScreen::dirtyMap()
 
 void QVNCGraphicsSystemScreen::setDirty(const QRect &rect)
 {
+    QPainter compositePainter(mScreenImage);
+
+    // Blank the affected area, just in case there's nothing to display here
+    // Question - What's the background color?
+    // Another option would be to push a base level window that is the size of the display
+
+    compositePainter.fillRect(rect, Qt::black);
+
+    for (int i = 0; i < windowStack.length(); i++) {
+        QRect windowRect = windowStack[i]->geometry();
+        QRect intersect = windowRect.intersected(rect);
+        QRect windowIntersect = intersect.translated(-windowRect.left(),
+                                                     -windowRect.top());
+        compositePainter.drawImage(intersect, windowStack[i]->image(),
+                                   windowIntersect);
+    }
+
     d_ptr->setDirty(rect);
 }
 
@@ -104,6 +122,14 @@ QWindowSurface *QVNCGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
-    return new QVNCWindowSurface
+    QVNCWindowSurface * newSurface = new QVNCWindowSurface
         (const_cast<QVNCGraphicsSystem *>(this), mPrimaryScreen, widget);
+    mPrimaryScreen->addWindowSurface(newSurface);
+    return newSurface;
+}
+
+void QVNCGraphicsSystemScreen::removeWindowSurface(QVNCWindowSurface * surface)
+{
+    windowStack.removeOne(surface);
+    setDirty(surface->geometry());
 }
