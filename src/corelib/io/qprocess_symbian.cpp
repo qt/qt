@@ -791,7 +791,7 @@ void QProcessPrivate::startProcess()
     TInt err = qt_create_symbian_process(&symbianProcess, program, arguments);
 
     if (err == KErrNone) {
-        pid = symbianProcess->Id();
+        pid = symbianProcess->Id().Id();
 
         ::fcntl(deathPipe[0], F_SETFL, ::fcntl(deathPipe[0], F_GETFL) | O_NONBLOCK);
 
@@ -816,7 +816,7 @@ void QProcessPrivate::startProcess()
 
     symbianProcess->Resume();
 
-    QPROCESS_DEBUG_PRINT("QProcessPrivate::startProcess(): this: 0x%x, pid: %d", this, (TUint)pid);
+    QPROCESS_DEBUG_PRINT("QProcessPrivate::startProcess(): this: 0x%x, pid: %ld", this, pid);
 
     // Notify child start
     _q_startupNotification();
@@ -1021,7 +1021,7 @@ bool QProcessPrivate::startDetached(const QString &program, const QStringList &a
 
     if (err == KErrNone) {
         if (pid)
-            *pid = (qint64)newProc->Id();
+            *pid = newProc->Id().Id();
 
         newProc->Resume();
         newProc->Close();
