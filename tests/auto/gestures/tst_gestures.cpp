@@ -105,8 +105,8 @@ class CustomGestureRecognizer : public QGestureRecognizer
 public:
     CustomGestureRecognizer()
     {
-        CustomEvent::EventType = QEvent::registerEventType();
-        eventsCounter = 0;
+        if (!CustomEvent::EventType)
+            CustomEvent::EventType = QEvent::registerEventType();
     }
 
     QGesture* createGesture(QObject *)
@@ -123,7 +123,6 @@ public:
             g->serial = e->serial;
             if (e->hasHotSpot)
                 g->setHotSpot(e->hotSpot);
-            ++eventsCounter;
             if (g->serial >= CustomGesture::SerialFinishedThreshold)
                 result |= QGestureRecognizer::GestureFinished;
             else if (g->serial >= CustomGesture::SerialStartedThreshold)
@@ -143,9 +142,6 @@ public:
         g->serial = 0;
         QGestureRecognizer::reset(state);
     }
-
-    int eventsCounter;
-    QString name;
 };
 
 class GestureWidget : public QWidget
@@ -272,6 +268,7 @@ private slots:
     void graphicsItemGesture();
     void explicitGraphicsObjectTarget();
     void gestureOverChildGraphicsItem();
+    void multipleGestures();
 };
 
 tst_Gestures::tst_Gestures()
@@ -783,6 +780,42 @@ void tst_Gestures::gestureOverChildGraphicsItem()
     QCOMPARE(item1->gestureEventsReceived, 0);
     QEXPECT_FAIL("", "need to fix gesture event propagation inside graphicsview", Continue);
     QCOMPARE(item1->gestureOverrideEventsReceived, TotalGestureEventsCount);
+}
+
+void tst_Gestures::multipleGestures()
+{
+    GestureWidget parent("parent");
+    QVBoxLayout *l = new QVBoxLayout(&parent);
+    GestureWidget *child = new GestureWidget("child");
+    l->addWidget(child);
+
+    Qt::GestureType SecondGesture = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+
+    parent.grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture);
+    child->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);
+
+    CustomEvent event;
+    // sending events that form a gesture to one widget, but they will be
+    // filtered by two different gesture recognizers and will generate two
+    // QGesture objects. Check that those gesture objects are delivered to
+    // different widgets properly.
+    sendCustomGesture(&event, child);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+    static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
+
+    QCOMPARE(child->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(child->gestureOverrideEventsReceived, 0);
+    QCOMPARE(child->events.all.size(), TotalGestureEventsCount);
+    for(int i = 0; i < child->events.all.size(); ++i)
+        QCOMPARE(child->events.all.at(i), SecondGesture);
+
+    QCOMPARE(parent.gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 0);
+    QCOMPARE(parent.events.all.size(), TotalGestureEventsCount);
+    for(int i = 0; i < child->events.all.size(); ++i)
+        QCOMPARE(parent.events.all.at(i), CustomGesture::GestureType);
 }
 
 QTEST_MAIN(tst_Gestures)

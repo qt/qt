@@ -4183,7 +4183,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     res = d->notify_helper(w, &ge);
                     gestureEvent->spont = false;
                     eventAccepted = ge.isAccepted();
-                    if (res && eventAccepted)
+                    if (res && eventAccepted && allGestures.isEmpty())
                         break;
                     if (!eventAccepted) {
                         // ### two ways to ignore the event/gesture

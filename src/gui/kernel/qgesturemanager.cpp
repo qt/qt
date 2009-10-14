@@ -361,7 +361,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures,
     GesturesPerReceiver groupedGestures;
     // for conflicted gestures the key is always the innermost widget (i.e. the child)
     GesturesPerReceiver conflictedGestures;
-    QMultiHash<QObject *, QGesture *> objectGestures;
+    typedef QMultiHash<QWidget *, QGesture *> WidgetMultiGestures;
+    WidgetMultiGestures widgetMultiGestures;
 
     foreach (QGesture *gesture, gestures) {
         QObject *target = gestureTargets.value(gesture, 0);
@@ -380,7 +381,7 @@ void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures,
         if (target) {
             gestureTargets.insert(gesture, target);
             if (target->isWidgetType())
-                objectGestures.insert(target, gesture);
+                widgetMultiGestures.insert(static_cast<QWidget *>(target), gesture);
             groupedGestures[target].append(gesture);
         } else {
             qWarning() << "QGestureManager::deliverEvent: could not find the target for gesture"
@@ -389,30 +390,26 @@ void QGestureManager::deliverEvents(const QSet<QGesture*> &gestures,
         }
     }
 
-    typedef QMultiHash<QObject *, QGesture *>::const_iterator ObjectGesturesIterator;
-    for (ObjectGesturesIterator it = objectGestures.begin(),
-         e = objectGestures.end(); it != e; ++it) {
-        QObject *object1 = it.key();
-        QWidget *widget1 = qobject_cast<QWidget *>(object1);
-        QGraphicsObject *item1 = qobject_cast<QGraphicsObject *>(object1);
+    typedef WidgetMultiGestures::const_iterator WidgetMultiGesturesIterator;
+    for (WidgetMultiGesturesIterator it = widgetMultiGestures.begin(),
+         e = widgetMultiGestures.end(); it != e; ++it) {
+        QWidget *widget1 = it.key();
         QGesture *gesture1 = it.value();
-        ObjectGesturesIterator cit = it;
+        WidgetMultiGesturesIterator cit = it;
         for (++cit; cit != e; ++cit) {
-            QObject *object2 = cit.key();
-            QWidget *widget2 = qobject_cast<QWidget *>(object2);
-            QGraphicsObject *item2 = qobject_cast<QGraphicsObject *>(object2);
+            QWidget *widget2 = cit.key();
             QGesture *gesture2 = cit.value();
+            if (gesture1->gestureType() != gesture2->gestureType())
+                continue;
             // TODO: ugly, rewrite this.
-            if ((widget1 && widget2 && widget2->isAncestorOf(widget1)) ||
-                (item1 && item2 && item2->isAncestorOf(item1))) {
-                groupedGestures[object2].removeOne(gesture2);
-                groupedGestures[object1].removeOne(gesture1);
-                conflictedGestures[object1].append(gesture1);
-            } else if ((widget1 && widget2 && widget1->isAncestorOf(widget2)) ||
-                       (item1 && item2 && item1->isAncestorOf(item2))) {
-                groupedGestures[object2].removeOne(gesture2);
-                groupedGestures[object1].removeOne(gesture1);
-                conflictedGestures[object2].append(gesture2);
+            if ((widget1 && widget2 && widget2->isAncestorOf(widget1))) {
+                groupedGestures[widget2].removeOne(gesture2);
+                groupedGestures[widget1].removeOne(gesture1);
+                conflictedGestures[widget1].append(gesture1);
+            } else if ((widget1 && widget2 && widget1->isAncestorOf(widget2))) {
+                groupedGestures[widget2].removeOne(gesture2);
+                groupedGestures[widget1].removeOne(gesture1);
+                conflictedGestures[widget2].append(gesture2);
             }
         }
     }
