@@ -11994,3 +11994,10 @@ void QWidget::clearMask()
     XRender extension is not supported on the X11 display, or if the
     handle could not be created.
 */
+
+#ifdef Q_OS_SYMBIAN
+void QWidgetPrivate::_q_delayedDestroy(WId winId)
+{
+    delete winId;
+}
+#endif

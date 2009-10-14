@@ -56,6 +56,12 @@
 #include <aknappui.h>
 #endif
 
+// This is necessary in order to be able to perform delayed invokation on slots
+// which take arguments of type WId.  One example is
+// QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
+// CCoeControl objects until after the CONE event handler has finished running.
+Q_DECLARE_METATYPE(WId)
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_nograb();
@@ -438,7 +444,12 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
     if (destroyw) {
         destroyw->ControlEnv()->AppUi()->RemoveFromStack(destroyw);
-        CBase::Delete(destroyw);
+
+        // Delay deletion of the control in case this function is called in the
+        // context of a CONE event handler such as
+        // CCoeControl::ProcessPointerEventL
+        QMetaObject::invokeMethod(q, "_q_delayedDestroy",
+            Qt::QueuedConnection, Q_ARG(WId, destroyw));
     }
 
     if (q->testAttribute(Qt::WA_AcceptTouchEvents))

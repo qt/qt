@@ -1122,6 +1122,11 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             ;
     }
 */
+
+    // Register WId with the metatype system.  This is to enable
+    // QWidgetPrivate::create_sys to used delayed slot invokation in order
+    // to destroy WId objects during reparenting.
+    qRegisterMetaType<WId>("WId");
 }
 
 /*****************************************************************************
