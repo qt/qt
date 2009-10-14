@@ -2703,6 +2703,7 @@ void tst_QTableView::indexAt()
     QtTestTableView view;
 
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     //some styles change the scroll mode in their polish
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -2718,9 +2719,10 @@ void tst_QTableView::indexAt()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(0); // ### needed to pass the test
+    QTest::qWait(20);
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
+    QTest::qWait(20);
 
     QModelIndex index = view.indexAt(QPoint(x, y));
     QCOMPARE(index.row(), expectedRow);
