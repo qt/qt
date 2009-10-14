@@ -640,6 +640,7 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
     bool tool = (type == Qt::Tool || type == Qt::SplashScreen
                  || type == Qt::ToolTip || type == Qt::Drawer);
 
+    bool tooltip = (type == Qt::ToolTip);
 
     XSetWindowAttributes wsa;
 
@@ -723,7 +724,7 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
 
 //##### only if initializeWindow???
 
-    if (popup) {                        // popup widget
+    if (popup || tooltip) {                        // popup widget
 #ifdef MYX11_DEBUG
         qDebug() << "Doing XChangeWindowAttributes for popup" << wsa.override_redirect;
 #endif
