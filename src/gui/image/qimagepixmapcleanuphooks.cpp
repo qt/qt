@@ -124,6 +124,7 @@ void QImagePixmapCleanupHooks::executePixmapDestructionHooks(QPixmap* pm)
 
 void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
 {
+    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
     for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->imageHooks.count(); ++i)
         qt_image_and_pixmap_cleanup_hooks->imageHooks[i](key);
 
