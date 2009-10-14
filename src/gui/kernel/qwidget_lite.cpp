@@ -78,6 +78,9 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
     if ((windowType() == Qt::Popup))
         qApp->d_func()->closePopup(this);
 
+    //### we don't have proper focus event handling yet
+    if (this == QApplicationPrivate::active_window)
+        QApplication::setActiveWindow(0);
 }
 
 void QWidgetPrivate::setParent_sys(QWidget *newparent, Qt::WindowFlags f)

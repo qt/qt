@@ -220,7 +220,9 @@ bool MyDisplay::handleEvent(XEvent *xe)
         }
     }
     if (!xw) {
+#ifdef MYX11_DEBUG
         qWarning() << "Unknown window" << hex << xe->xany.window << "received event" <<  xe->type;
+#endif
         return quit;
     }
 

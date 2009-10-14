@@ -1444,7 +1444,7 @@ QWidget::~QWidget()
         }
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) //### LITE
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
 #ifdef Q_WS_QWS
@@ -2319,7 +2319,10 @@ WId QWidget::effectiveWinId() const
         return id;
     QWidget *realParent = nativeParentWidget();
     Q_ASSERT(realParent);
+#ifndef Q_WS_LITE
+    //### we really need to implement winId functionality
     Q_ASSERT(realParent->internalWinId());
+#endif
     return realParent->internalWinId();
 }
 
@@ -4004,6 +4007,9 @@ QWidget *QWidget::window() const
 */
 QWidget *QWidget::nativeParentWidget() const
 {
+#ifdef Q_WS_LITE
+    return window(); //### we don't have native child widgets yet
+#endif
     QWidget *parent = parentWidget();
     while (parent && !parent->internalWinId())
         parent = parent->parentWidget();
@@ -10145,6 +10151,11 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
     Q_ASSERT_X(sizeof(d->high_attributes)*8 >= (Qt::WA_AttributeCount - sizeof(uint)*8),
                "QWidget::setAttribute(WidgetAttribute, bool)",
                "QWidgetPrivate::high_attributes[] too small to contain all attributes in WidgetAttribute");
+#ifdef Q_WS_LITE
+    //### we don't have native child widgets, and WinId isn't really there yet
+    if (attribute == Qt::WA_NativeWindow)
+        return;
+#endif
 
 #ifdef Q_WS_WIN
     // ### Don't use PaintOnScreen+paintEngine() to do native painting in 5.0
@@ -11454,7 +11465,7 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     QWidget *targetWidget = 0;
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
-    
+
         if (targetCandidate->focusProxy()) //skip if focus proxy set
             continue;
 

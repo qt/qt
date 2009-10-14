@@ -1689,8 +1689,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 
     In addition, on Symbian, the QPixmap class supports conversion to
     and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
-    CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
-    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a 
+    CFbsBitmap equivalent to the QPixmap, based on given mode and returns
+    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a
     QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations
@@ -1874,6 +1874,8 @@ int QPixmap::defaultDepth()
     return 32;
 #elif defined(Q_OS_SYMBIAN)
     return S60->screenDepth;
+#elif defined(Q_WS_LITE)
+    return 32; //LITE: use graphicssystem (we should do that in general)
 #endif
 }
 
