@@ -16,7 +16,7 @@ Rectangle {
     }
     states: State {
         name: "state1"
-        PropertyChanges { target: MyRect; pen.color: "blue" }
+        PropertyChanges { target: MyRect; border.color: "blue" }
     }
     transitions: Transition {
         ColorAnimation { target: MyRect; to: "red"; properties: "pen.colr"; duration: 1000 }
