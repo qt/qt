@@ -36,7 +36,7 @@ class SVGElementInstanceList;
 class JSSVGElementInstanceList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSSVGElementInstanceList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGElementInstanceList>);
+    JSSVGElementInstanceList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGElementInstanceList>);
     virtual ~JSSVGElementInstanceList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGElementInstanceListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGElementInstanceListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

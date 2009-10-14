@@ -23,6 +23,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AudioEqualizer
+  \internal
+*/
+
 AudioEqualizer::AudioEqualizer(QObject *parent) : AbstractAudioEffect::AbstractAudioEffect(parent, createParams())
 {
 }
@@ -32,18 +36,16 @@ void AudioEqualizer::parameterChanged(const int pid,
 {
     // There is no way to return an error from this function, so we just
     // have to trap and ignore exceptions.
-    TRAP_IGNORE(eq()->SetBandLevelL(pid, value.toInt()));
+    TRAP_IGNORE(static_cast<CAudioEqualizer *>(m_effect.data())->SetBandLevelL(pid, value.toInt()));
 }
 
 bool AudioEqualizer::activateOn(CPlayerType *player)
 {
-    m_effect.reset(CAudioEqualizer::NewL(*player));
-    return true;
-}
+    CAudioEqualizer *ptr = 0;
+    QT_TRAP_THROWING(ptr = CAudioEqualizer::NewL(*player));
+    m_effect.reset(ptr);
 
-CAudioEqualizer *AudioEqualizer::eq() const
-{
-    return static_cast<CAudioEqualizer *>(m_effect.data());
+    return true;
 }
 
 QList<EffectParameter> AudioEqualizer::createParams()
@@ -53,18 +55,21 @@ QList<EffectParameter> AudioEqualizer::createParams()
     // We temporarily create an AudioPlayer, and run the effect on it, so
     // we can extract the readonly data we need.
     AudioPlayer dummyPlayer;
-    activateOn(dummyPlayer.player());
+
+    CAudioEqualizer *eqPtr = 0;
+    QT_TRAP_THROWING(eqPtr = CAudioEqualizer::NewL(*dummyPlayer.player());)
+    QScopedPointer<CAudioEqualizer> e(eqPtr);
 
     TInt32 dbMin;
     TInt32 dbMax;
-    eq()->DbLevelLimits(dbMin, dbMax);
+    e->DbLevelLimits(dbMin, dbMax);
 
-    const int bandCount = eq()->NumberOfBands();
+    const int bandCount = e->NumberOfBands();
 
     for (int i = 0; i < bandCount; ++i) {
-        const qint32 hz = eq()->CenterFrequency(i);
+        const qint32 hz = e->CenterFrequency(i);
 
-        const qint32 defVol = eq()->BandLevel(i);
+        const qint32 defVol = e->BandLevel(i);
 
         retval.append(EffectParameter(i,
                                       tr("Frequency band, %1 Hz").arg(hz),
@@ -76,10 +81,7 @@ QList<EffectParameter> AudioEqualizer::createParams()
                                       QString()));
     }
 
-    m_effect.reset();
-
     return retval;
 }
 
 QT_END_NAMESPACE
-

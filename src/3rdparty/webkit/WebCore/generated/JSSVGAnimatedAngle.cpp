@@ -73,7 +73,7 @@ JSObject* JSSVGAnimatedAnglePrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSSVGAnimatedAngle::s_info = { "SVGAnimatedAngle", 0, &JSSVGAnimatedAngleTable, 0 };
 
-JSSVGAnimatedAngle::JSSVGAnimatedAngle(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedAngle> impl, SVGElement* context)
+JSSVGAnimatedAngle::JSSVGAnimatedAngle(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedAngle> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

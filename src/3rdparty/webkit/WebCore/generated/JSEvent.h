@@ -33,7 +33,7 @@ class Event;
 class JSEvent : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Event>);
+    JSEvent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Event>);
     virtual ~JSEvent();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +72,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

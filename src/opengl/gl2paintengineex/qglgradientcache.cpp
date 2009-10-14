@@ -57,13 +57,9 @@ QGL2GradientCache *QGL2GradientCache::cacheForContext(const QGLContext *context)
 {
     QGL2GradientCache *p = reinterpret_cast<QGL2GradientCache *>(qt_gradient_caches()->value(context));
     if (!p) {
-        QGLContext *oldContext = const_cast<QGLContext *>(QGLContext::currentContext());
-        if (oldContext != context)
-            const_cast<QGLContext *>(context)->makeCurrent();
+        QGLShareContextScope scope(context);
         p = new QGL2GradientCache;
         qt_gradient_caches()->insert(context, p);
-        if (oldContext && oldContext != context)
-            oldContext->makeCurrent();
     }
     return p;
 }

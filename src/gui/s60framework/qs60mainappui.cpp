@@ -51,30 +51,38 @@
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
 #include <QtGui/qmenu.h>
-#include <QtGui/private/qt_s60_p.h>
+#include <private/qmenu_p.h>
+#include <private/qt_s60_p.h>
+#include <qdebug.h>
 
 QT_BEGIN_NAMESPACE
 
 /*!
- * \class QS60MainAppUi
- * \obsolete
- * \since 4.6
- * \brief Helper class for S60 migration
- *
- * The QS60MainAppUi provides a helper class for use in migrating from existing S60 based
- * applications to Qt based applications. It is used in the exact same way as the
- * \c CAknAppUi class from Symbian, but internally provides extensions used by Qt.
- *
- * When modifying old S60 applications that rely on implementing functions in \c CAknAppUi,
- * the class should be modified to inherit from this class instead of \c CAknAppUi. Then the
- * application can choose to override only certain functions.
- *
- * For more information on \c CAknAppUi, please see the S60 documentation.
- *
- * Unlike other Qt classes, QS60MainAppUi behaves like an S60 class, and can throw Symbian
- * leaves.
- *
- * \sa QS60MainDocument, QS60MainApplication
+  \class QS60MainAppUi
+  \since 4.6
+  \brief Helper class for S60 migration
+
+  \warning This class is provided only to get access to S60 specific
+  functionality in the application framework classes. It is not
+  portable. We strongly recommend against using it in new applications.
+
+  The QS60MainAppUi provides a helper class for use in migrating from
+  existing S60 based applications to Qt based applications. It is used
+  in the exact same way as the \c CAknAppUi class from Symbian, but
+  internally provides extensions used by Qt.
+
+  When modifying old S60 applications that rely on implementing
+  functions in \c CAknAppUi, the class should be modified to inherit
+  from this class instead of \c CAknAppUi. Then the application can
+  choose to override only certain functions.
+
+  For more information on \c CAknAppUi, please see the S60
+  documentation.
+
+  Unlike other Qt classes, QS60MainAppUi behaves like an S60 class,
+  and can throw Symbian leaves.
+
+  \sa QS60MainDocument, QS60MainApplication
  */
 
 /*!
@@ -226,17 +234,14 @@ void QS60MainAppUi::DynInitMenuPaneL(TInt resourceId, CEikMenuPane *menuPane)
  */
 void QS60MainAppUi::RestoreMenuL(CCoeControl* menuWindow, TInt resourceId, TMenuType menuType)
 {
-    if ((resourceId == R_QT_WRAPPERAPP_MENUBAR) || (resourceId == R_AVKON_MENUPANE_FEP_DEFAULT)) {
-        TResourceReader reader;
-        iCoeEnv->CreateResourceReaderLC(reader, resourceId);
-        menuWindow->ConstructFromResourceL(reader);
-        CleanupStack::PopAndDestroy();
+    if (resourceId >= QT_SYMBIAN_FIRST_MENU_ITEM && resourceId <= QT_SYMBIAN_LAST_MENU_ITEM) {
+        if (menuType == EMenuPane)
+            DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
+        else
+            DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
+    } else {
+        CAknAppUi::RestoreMenuL(menuWindow, resourceId, menuType);
     }
-
-    if (menuType == EMenuPane)
-        DynInitMenuPaneL(resourceId, (CEikMenuPane*)menuWindow);
-    else
-        DynInitMenuBarL(resourceId, (CEikMenuBar*)menuWindow);
 }
 
 QT_END_NAMESPACE

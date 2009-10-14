@@ -60,7 +60,6 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_SCROLLAREA
 
-class QPanGesture;
 class QScrollBar;
 class QAbstractScrollAreaScrollBarContainer;
 class Q_AUTOTEST_EXPORT QAbstractScrollAreaPrivate: public QFramePrivate
@@ -102,8 +101,6 @@ public:
     QScopedPointer<QObject> viewportFilter;
 
 #ifdef Q_WS_WIN
-    QPanGesture *panGesture;
-    virtual void _q_gestureTriggered();
     bool singleFingerPanEnabled;
     void setSingleFingerPanEnabled(bool on = true);
 #endif

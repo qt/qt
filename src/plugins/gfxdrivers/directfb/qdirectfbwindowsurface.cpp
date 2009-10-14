@@ -81,18 +81,23 @@ QDirectFBWindowSurface::QDirectFBWindowSurface(DFBSurfaceFlipFlags flip, QDirect
     , flipFlags(flip)
     , boundingRectFlip(scr->directFBFlags() & QDirectFBScreen::BoundingRectFlip)
 {
+    SurfaceFlags flags = 0;
+    if (!widget || widget->window()->windowOpacity() == 0xff)
+        flags |= Opaque;
 #ifdef QT_NO_DIRECTFB_WM
     if (widget && widget->testAttribute(Qt::WA_PaintOnScreen)) {
-        setSurfaceFlags(Opaque | RegionReserved);
+        flags = RegionReserved;
         mode = Primary;
     } else {
         mode = Offscreen;
-        setSurfaceFlags(Opaque | Buffered);
+        flags = Buffered;
     }
 #else
-    setSurfaceFlags(Opaque | Buffered);
+    noSystemBackground = widget && widget->testAttribute(Qt::WA_NoSystemBackground);
+    if (noSystemBackground)
+        flags &= ~Opaque;
 #endif
-
+    setSurfaceFlags(flags);
 #ifdef QT_DIRECTFB_TIMING
     frames = 0;
     timer.start();
@@ -135,6 +140,16 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
 
     description.caps = DWCAPS_NODECORATION|DWCAPS_DOUBLEBUFFER;
     description.flags = DWDESC_CAPS|DWDESC_SURFACE_CAPS|DWDESC_PIXELFORMAT|DWDESC_HEIGHT|DWDESC_WIDTH|DWDESC_POSX|DWDESC_POSY;
+#if (Q_DIRECTFB_VERSION >= 0x010200)
+    description.flags |= DWDESC_OPTIONS;
+#endif
+
+    if (noSystemBackground) {
+        description.caps |= DWCAPS_ALPHACHANNEL;
+#if (Q_DIRECTFB_VERSION >= 0x010200)
+        description.options |= DWOP_ALPHACHANNEL;
+#endif
+    }
 
     description.posx = rect.x();
     description.posy = rect.y();
@@ -143,7 +158,7 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     description.surface_caps = DSCAPS_NONE;
     if (screen->directFBFlags() & QDirectFBScreen::VideoOnly)
         description.surface_caps |= DSCAPS_VIDEOONLY;
-    const QImage::Format format = screen->pixelFormat();
+    const QImage::Format format = (noSystemBackground ? screen->alphaPixmapFormat() : screen->pixelFormat());
     description.pixelformat = QDirectFBScreen::getSurfacePixelFormat(format);
     if (QDirectFBScreen::isPremultiplied(format))
         description.surface_caps = DSCAPS_PREMULTIPLIED;
@@ -153,9 +168,7 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     if (result != DFB_OK)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
 
-    if (dfbSurface)
-        dfbSurface->Release(dfbSurface);
-
+    Q_ASSERT(!dfbSurface);
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
     updateFormat();
 }
@@ -200,10 +213,6 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (sizeChanged) {
         delete engine;
         engine = 0;
-        unlockSurface();
-#ifdef QT_DIRECTFB_SUBSURFACE
-        releaseSubSurface();
-#endif
         releaseSurface();
         Q_ASSERT(!dfbSurface);
     }
@@ -253,7 +262,11 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (oldSurface != dfbSurface)
         updateFormat();
 
-    QWSWindowSurface::setGeometry(rect);
+    if (oldRect.size() != rect.size()) {
+        QWSWindowSurface::setGeometry(rect);
+    } else {
+        QWindowSurface::setGeometry(rect);
+    }
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
@@ -267,6 +280,8 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
     if (state.size() == sizeof(this)) {
         sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
+        Q_ASSERT(sibling);
+        sibling->setSurfaceFlags(surfaceFlags());
     }
 }
 
@@ -301,29 +316,20 @@ bool QDirectFBWindowSurface::move(const QPoint &moveBy)
     return true;
 }
 
-// hw: XXX: copied from QWidgetPrivate::isOpaque()
-inline bool isWidgetOpaque(const QWidget *w)
+void QDirectFBWindowSurface::setOpaque(bool opaque)
 {
-    if (w->testAttribute(Qt::WA_OpaquePaintEvent)
-        || w->testAttribute(Qt::WA_PaintOnScreen))
-        return true;
-
-    const QPalette &pal = w->palette();
-
-    if (w->autoFillBackground()) {
-        const QBrush &autoFillBrush = pal.brush(w->backgroundRole());
-        if (autoFillBrush.style() != Qt::NoBrush && autoFillBrush.isOpaque())
-            return true;
+    SurfaceFlags flags = surfaceFlags();
+    if (opaque != (flags & Opaque)) {
+        if (opaque) {
+            flags |= Opaque;
+        } else {
+            flags &= ~Opaque;
+        }
+        setSurfaceFlags(flags);
     }
-
-    if (!w->testAttribute(Qt::WA_NoSystemBackground)) {
-        const QBrush &windowBrush = w->palette().brush(QPalette::Window);
-        if (windowBrush.style() != Qt::NoBrush && windowBrush.isOpaque())
-            return true;
-    }
-
-    return false;
 }
+
+
 void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
                                    const QPoint &offset)
 {
@@ -335,37 +341,39 @@ void QDirectFBWindowSurface::flush(QWidget *widget, const QRegion &region,
     if (extra && extra->proxyWidget)
         return;
 
-    // hw: make sure opacity information is updated before compositing
-    const bool opaque = isWidgetOpaque(win);
-    if (opaque != isOpaque()) {
-        SurfaceFlags flags = surfaceFlags();
-        if (opaque) {
-            flags |= Opaque;
-        } else {
-            flags &= ~Opaque;
-        }
-        setSurfaceFlags(flags);
+    const quint8 windowOpacity = quint8(win->windowOpacity() * 0xff);
+    const QRect windowGeometry = geometry();
+#ifdef QT_DIRECTFB_WM
+    const bool wasNoSystemBackground = noSystemBackground;
+    noSystemBackground = win->testAttribute(Qt::WA_NoSystemBackground);
+    quint8 currentOpacity;
+    Q_ASSERT(dfbWindow);
+    dfbWindow->GetOpacity(dfbWindow, &currentOpacity);
+    if (currentOpacity != windowOpacity) {
+        dfbWindow->SetOpacity(dfbWindow, windowOpacity);
     }
 
-#ifndef QT_NO_DIRECTFB_WM
-    const quint8 winOpacity = quint8(win->windowOpacity() * 255);
-    quint8 opacity;
-
-    if (dfbWindow) {
-        dfbWindow->GetOpacity(dfbWindow, &opacity);
-        if (winOpacity != opacity)
-            dfbWindow->SetOpacity(dfbWindow, winOpacity);
+    setOpaque(noSystemBackground || windowOpacity != 0xff);
+    if (wasNoSystemBackground != noSystemBackground) {
+        releaseSurface();
+        dfbWindow->Release(dfbWindow);
+        dfbWindow = 0;
+        createWindow(windowGeometry);
+        win->update();
+        return;
     }
-#endif
-
-    const QRect windowGeometry = QDirectFBWindowSurface::geometry();
-#ifdef QT_NO_DIRECTFB_WM
+    screen->flipSurface(dfbSurface, flipFlags, region, offset);
+    if (noSystemBackground) {
+        dfbSurface->Clear(dfbSurface, 0, 0, 0, 0);
+    }
+#else
+    setOpaque(windowOpacity != 0xff);
     if (mode == Offscreen) {
         screen->exposeRegion(region.translated(offset + geometry().topLeft()), 0);
-
-    } else
-#endif
+    } else {
         screen->flipSurface(dfbSurface, flipFlags, region, offset);
+    }
+#endif
 
 #ifdef QT_DIRECTFB_TIMING
     enum { Secs = 3 };
@@ -430,9 +438,10 @@ void QDirectFBWindowSurface::updateFormat()
 void QDirectFBWindowSurface::releaseSurface()
 {
     if (dfbSurface) {
-#ifdef QT_NO_DIRECTFB_SUBSURFACE
-        if (lockFlgs)
-            unlockSurface();
+#ifdef QT_DIRECTFB_SUBSURFACE
+        releaseSubSurface();
+#else
+        unlockSurface();
 #endif
 #ifdef QT_NO_DIRECTFB_WM
         Q_ASSERT(screen->primarySurface());

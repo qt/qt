@@ -37,6 +37,14 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::VolumeObserver
+  \internal
+*/
+
+/*! \class MMF::Backend
+  \internal
+*/
+
 Backend::Backend(QObject *parent)   : QObject(parent)
 {
     TRACE_CONTEXT(Backend::Backend, EBackend);
@@ -99,6 +107,12 @@ QList<int> Backend::objectDescriptionIndexes(ObjectDescriptionType type) const
     {
         case EffectType:
             retval.append(EffectFactory::effectIndexes());
+            break;
+        case AudioOutputDeviceType:
+            // We only have one possible output device, but we need at least
+            // one.
+            retval.append(AudioOutput::AudioOutputDeviceID);
+            break;
         default:
             ;
     }
@@ -111,10 +125,14 @@ QHash<QByteArray, QVariant> Backend::objectDescriptionProperties(ObjectDescripti
 {
     TRACE_CONTEXT(Backend::connectNodes, EBackend);
 
-    if (type == EffectType)
-        return EffectFactory::audioEffectDescriptions(AbstractAudioEffect::Type(index));
-    else 
-        return QHash<QByteArray, QVariant>();
+    switch (type) {
+        case EffectType:
+            return EffectFactory::audioEffectDescriptions(AbstractAudioEffect::Type(index));
+        case AudioOutputDeviceType:
+            return AudioOutput::audioOutputDescription(index);
+        default:
+            return QHash<QByteArray, QVariant>();
+    }
 }
 
 bool Backend::startConnectionChange(QSet<QObject *>)

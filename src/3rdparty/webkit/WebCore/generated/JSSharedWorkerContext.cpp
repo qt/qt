@@ -84,7 +84,7 @@ static const HashTable* getJSSharedWorkerContextTable(ExecState* exec)
 }
 const ClassInfo JSSharedWorkerContext::s_info = { "SharedWorkerContext", &JSWorkerContext::s_info, 0, getJSSharedWorkerContextTable };
 
-JSSharedWorkerContext::JSSharedWorkerContext(PassRefPtr<Structure> structure, PassRefPtr<SharedWorkerContext> impl)
+JSSharedWorkerContext::JSSharedWorkerContext(NonNullPassRefPtr<Structure> structure, PassRefPtr<SharedWorkerContext> impl)
     : JSWorkerContext(structure, impl)
 {
 }
@@ -113,7 +113,7 @@ JSValue jsSharedWorkerContextOnconnect(ExecState* exec, const Identifier&, const
     UNUSED_PARAM(exec);
     SharedWorkerContext* imp = static_cast<SharedWorkerContext*>(castedThis->impl());
     if (EventListener* listener = imp->onconnect()) {
-        if (JSObject* jsFunction = listener->jsFunction())
+        if (JSObject* jsFunction = listener->jsFunction(imp))
             return jsFunction;
     }
     return jsNull();

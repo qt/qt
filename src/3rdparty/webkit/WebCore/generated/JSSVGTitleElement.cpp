@@ -94,7 +94,7 @@ bool JSSVGTitleElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const
 
 const ClassInfo JSSVGTitleElement::s_info = { "SVGTitleElement", &JSSVGElement::s_info, &JSSVGTitleElementTable, 0 };
 
-JSSVGTitleElement::JSSVGTitleElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTitleElement> impl)
+JSSVGTitleElement::JSSVGTitleElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGTitleElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

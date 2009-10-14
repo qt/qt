@@ -130,7 +130,7 @@ bool JSTextPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifier
 
 const ClassInfo JSText::s_info = { "Text", &JSCharacterData::s_info, &JSTextTable, 0 };
 
-JSText::JSText(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Text> impl)
+JSText::JSText(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Text> impl)
     : JSCharacterData(structure, globalObject, impl)
 {
 }

@@ -157,7 +157,9 @@ private slots:
     void shortcutsDeletion();
     void painterStateProtectionOnWindowFrame();
     void ensureClipping();
+    void widgetSendsGeometryChanges();
     void respectHFW();
+    void addChildInpolishEvent();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -1456,7 +1458,7 @@ void tst_QGraphicsWidget::verifyFocusChain()
         scene.addItem(w1_4);
         QTRY_VERIFY(w1_3->hasFocus());
         QTest::qWait(25);
-        QVERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
+        QTRY_VERIFY(compareFocusChain(view, QList<QGraphicsItem*>() << w1_3 << w1_4));
         QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
         QTest::qWait(25);
         QTRY_VERIFY(lineEdit->hasFocus());
@@ -2562,6 +2564,76 @@ void tst_QGraphicsWidget::ensureClipping()
     QVERIFY(scene.drawnItems.contains(childitem));
 }
 
+class ItemChangeTester : public QGraphicsWidget
+{
+public:
+    ItemChangeTester()
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+    ItemChangeTester(QGraphicsItem *parent) : QGraphicsWidget(parent)
+    { setFlag(ItemSendsGeometryChanges); clear(); }
+
+    void clear()
+    {
+        changes.clear();
+        values.clear();
+        oldValues.clear();
+    }
+    QList<GraphicsItemChange> changes;
+    QList<QVariant> values;
+    QList<QVariant> oldValues;
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value)
+    {
+        changes << change;
+        values << value;
+        switch (change) {
+        case QGraphicsItem::ItemPositionChange:
+            oldValues << pos();
+            break;
+        case QGraphicsItem::ItemPositionHasChanged:
+            break;
+        default:
+            break;
+        }
+        return value;
+    }
+};
+
+void tst_QGraphicsWidget::widgetSendsGeometryChanges()
+{
+    ItemChangeTester widget;
+    widget.setFlags(0);
+    widget.clear();
+
+    QPointF pos(10, 10);
+    widget.setPos(pos);
+
+    QCOMPARE(widget.pos(), pos);
+    QCOMPARE(widget.changes.size(), 0);
+
+    widget.setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    QCOMPARE(widget.changes.size(), 2);
+
+    widget.setPos(QPointF());
+    QCOMPARE(widget.changes.size(), 4);
+
+    QCOMPARE(widget.pos(), QPointF());
+
+    QRectF geometry(20, 20, 50, 50);
+    widget.setGeometry(geometry);
+    QCOMPARE(widget.changes.size(), 6);
+
+    QCOMPARE(widget.geometry(), geometry);
+
+    QCOMPARE(widget.changes, QList<QGraphicsItem::GraphicsItemChange>()
+         << QGraphicsItem::ItemFlagsChange
+         << QGraphicsItem::ItemFlagsHaveChanged
+         << QGraphicsItem::ItemPositionChange
+         << QGraphicsItem::ItemPositionHasChanged
+         << QGraphicsItem::ItemPositionChange
+         << QGraphicsItem::ItemPositionHasChanged);
+}
+
 class HFWWidget : public QGraphicsWidget
 {
 public:
@@ -2644,6 +2716,58 @@ void tst_QGraphicsWidget::respectHFW()
     QVERIFY(qAbs(minHFW - winSize.height()) < 1);
 #endif
 }
+
+class PolishWidget : public QGraphicsWidget
+{
+public:
+
+    PolishWidget(Qt::GlobalColor color, QGraphicsItem *parent=0) :
+    QGraphicsWidget(parent), mColor(color)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(QBrush(mColor));
+        painter->drawRect(boundingRect());
+    }
+
+    void polishEvent()
+    {
+        if (!parentWidget()) {
+            //We add a child in the polish event for the parent
+            PolishWidget *childWidget = new PolishWidget(Qt::black, this);
+            childWidget->setGeometry(QRectF(10,10,30,30));
+        }
+
+        QGraphicsWidget::polishEvent();
+        mColor = Qt::red;
+        update();
+        numberOfPolish++;
+    }
+
+    static int numberOfPolish;
+
+private:
+    Qt::GlobalColor mColor;
+};
+
+int PolishWidget::numberOfPolish = 0;
+
+void tst_QGraphicsWidget::addChildInpolishEvent()
+{
+    QGraphicsScene scene;
+
+    PolishWidget *parentWidget = new PolishWidget(Qt::white);
+    scene.addItem(parentWidget);
+
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QCOMPARE(PolishWidget::numberOfPolish, 2);
+}
+
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

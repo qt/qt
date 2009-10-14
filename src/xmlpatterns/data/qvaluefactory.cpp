@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXmlPatterns of the Qt Toolkit.
+** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -66,7 +66,7 @@ public:
     }
 
     AtomicValue::Ptr operator()(const AtomicValue::Ptr &lexicalValue,
-                                const SchemaType::Ptr &type,
+                                const SchemaType::Ptr & /*type*/,
                                 const ReportContext::Ptr &context)
     {
         prepareCasting(context, BuiltinTypes::xsString);

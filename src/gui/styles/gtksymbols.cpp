@@ -58,6 +58,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QTextStream>
 #include <QtCore/QHash>
+#include <QtCore/QUrl>
 
 #include <private/qapplication_p.h>
 #include <private/qiconloader_p.h>
@@ -124,6 +125,7 @@ Ptr_gtk_progress_set_adjustment QGtk::gtk_progress_set_adjustment = 0;
 Ptr_gtk_range_set_adjustment QGtk::gtk_range_set_adjustment = 0;
 Ptr_gtk_range_set_inverted QGtk::gtk_range_set_inverted = 0;
 Ptr_gtk_icon_factory_lookup_default QGtk::gtk_icon_factory_lookup_default = 0;
+Ptr_gtk_icon_theme_get_default QGtk::gtk_icon_theme_get_default = 0;
 Ptr_gtk_widget_style_get QGtk::gtk_widget_style_get = 0;
 Ptr_gtk_icon_set_render_icon QGtk::gtk_icon_set_render_icon = 0;
 Ptr_gtk_fixed_new QGtk::gtk_fixed_new = 0;
@@ -195,6 +197,9 @@ Ptr_gdk_x11_drawable_get_xdisplay QGtk::gdk_x11_drawable_get_xdisplay = 0;
 Ptr_gconf_client_get_default QGtk::gconf_client_get_default = 0;
 Ptr_gconf_client_get_string QGtk::gconf_client_get_string = 0;
 Ptr_gconf_client_get_bool QGtk::gconf_client_get_bool = 0;
+
+Ptr_gnome_icon_lookup_sync QGtk::gnome_icon_lookup_sync = 0;
+Ptr_gnome_vfs_init QGtk::gnome_vfs_init = 0;
 
 static QString classPath(GtkWidget *widget)
 {
@@ -281,6 +286,7 @@ static void resolveGtk()
     QGtk::gtk_range_set_inverted = (Ptr_gtk_range_set_inverted)libgtk.resolve("gtk_range_set_inverted");
     QGtk::gtk_container_add = (Ptr_gtk_container_add)libgtk.resolve("gtk_container_add");
     QGtk::gtk_icon_factory_lookup_default = (Ptr_gtk_icon_factory_lookup_default)libgtk.resolve("gtk_icon_factory_lookup_default");
+    QGtk::gtk_icon_theme_get_default = (Ptr_gtk_icon_theme_get_default)libgtk.resolve("gtk_icon_theme_get_default");
     QGtk::gtk_widget_style_get = (Ptr_gtk_widget_style_get)libgtk.resolve("gtk_widget_style_get");
     QGtk::gtk_icon_set_render_icon = (Ptr_gtk_icon_set_render_icon)libgtk.resolve("gtk_icon_set_render_icon");
     QGtk::gtk_fixed_new = (Ptr_gtk_fixed_new)libgtk.resolve("gtk_fixed_new");
@@ -325,6 +331,9 @@ static void resolveGtk()
     QGtk::pango_font_description_get_weight = (Ptr_pango_font_description_get_weight)libgtk.resolve("pango_font_description_get_weight");
     QGtk::pango_font_description_get_family = (Ptr_pango_font_description_get_family)libgtk.resolve("pango_font_description_get_family");
     QGtk::pango_font_description_get_style = (Ptr_pango_font_description_get_style)libgtk.resolve("pango_font_description_get_style");
+
+    QGtk::gnome_icon_lookup_sync = (Ptr_gnome_icon_lookup_sync)QLibrary::resolve( QLS("gnomeui-2"), 0, "gnome_icon_lookup_sync");
+    QGtk::gnome_vfs_init= (Ptr_gnome_vfs_init)QLibrary::resolve( QLS("gnomevfs-2"), 0, "gnome_vfs_init");
 }
 
 void QGtk::cleanup_gtk_widgets()
@@ -967,6 +976,28 @@ QString QGtk::saveFilename(QWidget *parent, const QString &caption, const QStrin
     QApplicationPrivate::leaveModal(&modal_widget);
     gtk_widget_destroy (gtkFileChooser);
     return filename;
+}
+
+QIcon QGtk::getFilesystemIcon(const QFileInfo &info)
+{
+    QIcon icon;
+    if (QGtk::gnome_vfs_init && QGtk::gnome_icon_lookup_sync) {
+        QGtk::gnome_vfs_init();
+        GtkIconTheme *theme = QGtk::gtk_icon_theme_get_default();
+        QByteArray fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toEncoded();
+        char * icon_name = QGtk::gnome_icon_lookup_sync(theme,
+                                                        NULL,
+                                                        fileurl.data(),
+                                                        NULL,
+                                                        GNOME_ICON_LOOKUP_FLAGS_NONE,
+                                                        NULL);
+        QString iconName = QString::fromUtf8(icon_name);
+        g_free(icon_name);
+        if (iconName.startsWith(QLatin1Char('/')))
+            return QIcon(iconName);
+        return QIcon::fromTheme(iconName);
+    }
+    return icon;
 }
 
 QT_END_NAMESPACE

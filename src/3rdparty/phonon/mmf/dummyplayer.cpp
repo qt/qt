@@ -23,6 +23,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::DummyPlayer
+  \internal
+*/
+
 //-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
@@ -115,16 +119,6 @@ void MMF::DummyPlayer::setNextSource(const MediaSource &)
 
 
 //-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
-void MMF::DummyPlayer::volumeChanged(qreal)
-{
-
-}
-
-
-//-----------------------------------------------------------------------------
 // AbstractPlayer
 //-----------------------------------------------------------------------------
 
@@ -133,6 +127,9 @@ void MMF::DummyPlayer::doSetTickInterval(qint32)
 
 }
 
+void MMF::DummyPlayer::changeState(PrivateState)
+{
+}
 
 QT_END_NAMESPACE
 

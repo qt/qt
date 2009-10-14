@@ -57,7 +57,7 @@ JSObject* JSCanvasShortArrayPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSCanvasShortArray::s_info = { "CanvasShortArray", &JSCanvasArray::s_info, 0, 0 };
 
-JSCanvasShortArray::JSCanvasShortArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasShortArray> impl)
+JSCanvasShortArray::JSCanvasShortArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasShortArray> impl)
     : JSCanvasArray(structure, globalObject, impl)
 {
 }

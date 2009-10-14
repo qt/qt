@@ -173,10 +173,11 @@ void tst_QButtonGroup::arrowKeyNavigation()
 
     dlg.show();
     qApp->setActiveWindow(&dlg);
+    QTest::qWaitForWindowShown(&dlg);
 
     bt1.setFocus();
 
-    QVERIFY(bt1.hasFocus());
+    QTRY_VERIFY(bt1.hasFocus());
 
     QTest::keyClick(&bt1, Qt::Key_Right);
     QVERIFY(pb.hasFocus());
@@ -405,7 +406,7 @@ void tst_QButtonGroup::task106609()
 
     QTestEventLoop::instance().enterLoop(1);
     QApplication::setActiveWindow(&dlg);
-    QTRY_COMPARE(QApplication::activeWindow(), &dlg);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget*>(&dlg));
 
     //qDebug() << "int:" << spy2.count() << "QAbstractButton*:" << spy1.count();
     QCOMPARE(spy2.count(), 2);

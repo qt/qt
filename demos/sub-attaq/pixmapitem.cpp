@@ -43,17 +43,34 @@
 #include "pixmapitem.h"
 
 //Qt
-#include <QtCore/QDir>
+#include <QPainter>
 
-PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsPixmapItem(parent),name(fileName)
-{
-    loadPixmap(mode);
-}
-
-void PixmapItem::loadPixmap(GraphicsScene::Mode mode)
+PixmapItem::PixmapItem(const QString &fileName,GraphicsScene::Mode mode, QGraphicsItem * parent) : QGraphicsObject(parent)
 {
     if (mode == GraphicsScene::Big)
-        setPixmap(":/big/" + name);
+        pix  = ":/big/" + fileName;
     else
-        setPixmap(":/small/" + name);
+        pix = ":/small/" + fileName;
 }
+
+PixmapItem::PixmapItem(const QString &fileName, QGraphicsScene *scene) : QGraphicsObject(), pix(fileName)
+{
+    scene->addItem(this);
+}
+
+QSizeF PixmapItem::size() const
+{
+    return pix.size();
+}
+
+QRectF PixmapItem::boundingRect() const
+{
+    return QRectF(QPointF(0, 0), pix.size());
+}
+
+void PixmapItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+{
+    painter->drawPixmap(0, 0, pix);
+}
+
+

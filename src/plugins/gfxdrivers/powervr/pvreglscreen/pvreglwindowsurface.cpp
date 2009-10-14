@@ -53,7 +53,6 @@ PvrEglWindowSurface::PvrEglWindowSurface
 
     this->widget = widget;
     this->screen = screen;
-    this->holder = 0;
     this->pdevice = 0;
 
     QPoint pos = offset(widget);
@@ -78,7 +77,7 @@ PvrEglWindowSurface::PvrEglWindowSurface
         drawable = pvrQwsCreateWindow(screenNum, (long)widget, &pvrRect);
 }
 
-PvrEglWindowSurface::PvrEglWindowSurface(PvrEglSurfaceHolder *holder)
+PvrEglWindowSurface::PvrEglWindowSurface()
     : QWSGLWindowSurface()
 {
     setSurfaceFlags(QWSWindowSurface::Opaque);
@@ -86,9 +85,6 @@ PvrEglWindowSurface::PvrEglWindowSurface(PvrEglSurfaceHolder *holder)
     widget = 0;
     screen = 0;
     pdevice = 0;
-
-    this->holder = holder;
-    holder->addSurface();
 }
 
 PvrEglWindowSurface::~PvrEglWindowSurface()
@@ -100,8 +96,6 @@ PvrEglWindowSurface::~PvrEglWindowSurface()
     if (drawable && pvrQwsReleaseWindow(drawable))
         pvrQwsDestroyDrawable(drawable);
 
-    if (holder)
-        holder->removeSurface();
     delete pdevice;
 }
 
@@ -149,6 +143,18 @@ void PvrEglWindowSurface::setPermanentState(const QByteArray &state)
     Q_UNUSED(state);
 }
 
+void PvrEglWindowSurface::flush
+        (QWidget *widget, const QRegion &region, const QPoint &offset)
+{
+    // The GL paint engine is responsible for the swapBuffers() call.
+    // If we were to call the base class's implementation of flush()
+    // then it would fetch the image() and manually blit it to the
+    // screeen instead of using the fast PVR2D blit.
+    Q_UNUSED(widget);
+    Q_UNUSED(region);
+    Q_UNUSED(offset);
+}
+
 QImage PvrEglWindowSurface::image() const
 {
     if (drawable) {
@@ -157,19 +163,15 @@ QImage PvrEglWindowSurface::image() const
         void *data = pvrQwsGetRenderBuffer(drawable);
         if (data) {
             return QImage((uchar *)data, pvrRect.width, pvrRect.height,
-                          pvrQwsGetStride(drawable), QImage::Format_RGB16);
+                          pvrQwsGetStride(drawable), screen->pixelFormat());
         }
     }
-    return QImage();
+    return QImage(16, 16, screen->pixelFormat());
 }
 
 QPaintDevice *PvrEglWindowSurface::paintDevice()
 {
-    // Return a dummy paint device because the widget itself
-    // cannot be painted to this way.
-    if (!pdevice)
-        pdevice = new QImage(50, 50, QImage::Format_RGB16);
-    return pdevice;
+    return widget;
 }
 
 void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)

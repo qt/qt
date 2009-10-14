@@ -127,15 +127,15 @@ private:
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : depth_stencil_buffer(0), valid(false), ctx(0), previous_fbo(0), engine(0) {}
+    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_stencil_buffer(0), color_buffer(0), valid(false), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(QGLFramebufferObject *q, const QSize& sz,
               QGLFramebufferObject::Attachment attachment,
               GLenum internal_format, GLenum texture_target, GLint samples = 0);
     bool checkFramebufferStatus() const;
+    QGLSharedResourceGuard fbo_guard;
     GLuint texture;
-    GLuint fbo;
     GLuint depth_stencil_buffer;
     GLuint color_buffer;
     GLenum target;
@@ -143,10 +143,11 @@ public:
     QGLFramebufferObjectFormat format;
     uint valid : 1;
     QGLFramebufferObject::Attachment fbo_attachment;
-    QGLContextGroup *ctx; // for Windows extension ptrs
     GLuint previous_fbo;
     mutable QPaintEngine *engine;
     QGLFBOGLPaintDevice glDevice;
+
+    inline GLuint fbo() const { return fbo_guard.id(); }
 };
 
 

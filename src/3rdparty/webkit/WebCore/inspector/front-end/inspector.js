@@ -42,7 +42,8 @@ var Preferences = {
     heapProfilerPresent: false,
     samplingCPUProfiler: false,
     showColorNicknames: true,
-    colorFormat: "hex"
+    colorFormat: "hex",
+    eventListenersFilter: "all"
 }
 
 var WebInspector = {
@@ -353,6 +354,10 @@ WebInspector.loaded = function()
     var colorFormat = InspectorController.setting("color-format");
     if (colorFormat)
         Preferences.colorFormat = colorFormat;
+
+    var eventListenersFilter = InspectorController.setting("event-listeners-filter");
+    if (eventListenersFilter)
+        Preferences.eventListenersFilter = eventListenersFilter;
 
     this.drawer = new WebInspector.Drawer();
     this.console = new WebInspector.ConsoleView(this.drawer);
@@ -914,10 +919,8 @@ WebInspector.addResource = function(identifier, payload)
     this.resources[identifier] = resource;
     this.resourceURLMap[resource.url] = resource;
 
-    if (resource.mainResource) {
+    if (resource.mainResource)
         this.mainResource = resource;
-        this.panels.elements.reset();
-    }
 
     if (this.panels.resources)
         this.panels.resources.addResource(resource);
@@ -1115,6 +1118,12 @@ WebInspector.resourceURLChanged = function(resource, oldURL)
 {
     delete this.resourceURLMap[oldURL];
     this.resourceURLMap[resource.url] = resource;
+}
+
+WebInspector.didCommitLoad = function()
+{
+    // Cleanup elements panel early on inspected page refresh.
+    WebInspector.setDocument(null);
 }
 
 WebInspector.addMessageToConsole = function(payload)

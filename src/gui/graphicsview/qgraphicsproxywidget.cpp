@@ -973,7 +973,7 @@ void QGraphicsProxyWidget::hideEvent(QHideEvent *event)
 void QGraphicsProxyWidget::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     Q_D(QGraphicsProxyWidget);
-    if (!event || !d->widget || !d->widget->isVisible())
+    if (!event || !d->widget || !d->widget->isVisible() || !hasFocus())
         return;
 
     // Find widget position and receiver.

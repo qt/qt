@@ -1,7 +1,12 @@
 load(qttest_p4)
 QT = core gui script
 SOURCES += tst_qscriptengine.cpp 
-!symbian:DEFINES += SRCDIR=\\\"$$PWD\\\"
+
+wince* {
+    DEFINES += SRCDIR=\\\"./\\\"
+} else:!symbian {
+    DEFINES += SRCDIR=\\\"$$PWD\\\"
+}
 
 wince*|symbian*: {
    addFiles.sources = script

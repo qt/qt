@@ -32,7 +32,7 @@ class WorkerContext;
 class JSWorkerContext : public JSWorkerContextBase {
     typedef JSWorkerContextBase Base;
 public:
-    JSWorkerContext(PassRefPtr<JSC::Structure>, PassRefPtr<WorkerContext>);
+    JSWorkerContext(NonNullPassRefPtr<JSC::Structure>, PassRefPtr<WorkerContext>);
     virtual ~JSWorkerContext();
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -76,7 +76,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
     }
-    JSWorkerContextPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSWorkerContextPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

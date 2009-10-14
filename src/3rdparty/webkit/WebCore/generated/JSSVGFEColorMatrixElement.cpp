@@ -156,7 +156,7 @@ bool JSSVGFEColorMatrixElementPrototype::getOwnPropertyDescriptor(ExecState* exe
 
 const ClassInfo JSSVGFEColorMatrixElement::s_info = { "SVGFEColorMatrixElement", &JSSVGElement::s_info, &JSSVGFEColorMatrixElementTable, 0 };
 
-JSSVGFEColorMatrixElement::JSSVGFEColorMatrixElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEColorMatrixElement> impl)
+JSSVGFEColorMatrixElement::JSSVGFEColorMatrixElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEColorMatrixElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

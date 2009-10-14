@@ -196,7 +196,7 @@ bool QVFbScreen::connect(const QString &displaySpec)
     if (displayArgs.contains(QLatin1String("Gray")))
         grayscale = true;
 
-    key_t key = ftok(QByteArray(QT_VFB_MOUSE_PIPE).replace("%1", QByteArray::number(displayId)), 'b');
+    key_t key = ftok(QT_VFB_MOUSE_PIPE(displayId).toLocal8Bit(), 'b');
 
     if (key == -1)
         return false;
@@ -330,8 +330,7 @@ void QVFbScreen::disconnect()
 bool QVFbScreen::initDevice()
 {
 #ifndef QT_NO_QWS_MOUSE_QVFB
-    const QString mouseDev = QString::fromLatin1(QT_VFB_MOUSE_PIPE)
-                             .arg(displayId);
+    const QString mouseDev = QT_VFB_MOUSE_PIPE(displayId);
     d_ptr->mouse = new QVFbMouseHandler(QLatin1String("QVFbMouse"), mouseDev);
     qwsServer->setDefaultMouse("None");
     if (d_ptr->mouse)
@@ -339,8 +338,7 @@ bool QVFbScreen::initDevice()
 #endif
 
 #if !defined(QT_NO_QWS_KBD_QVFB) && !defined(QT_NO_QWS_KEYBOARD)
-    const QString keyboardDev = QString::fromLatin1(QT_VFB_KEYBOARD_PIPE)
-                                .arg(displayId);
+    const QString keyboardDev = QT_VFB_KEYBOARD_PIPE(displayId);
     d_ptr->keyboard = new QVFbKeyboardHandler(keyboardDev);
     qwsServer->setDefaultKeyboard("None");
 #endif

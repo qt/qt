@@ -73,7 +73,7 @@ JSObject* JSSVGAnimatedRectPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSSVGAnimatedRect::s_info = { "SVGAnimatedRect", 0, &JSSVGAnimatedRectTable, 0 };
 
-JSSVGAnimatedRect::JSSVGAnimatedRect(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedRect> impl, SVGElement* context)
+JSSVGAnimatedRect::JSSVGAnimatedRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedRect> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

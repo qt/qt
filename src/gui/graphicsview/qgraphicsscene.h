@@ -311,6 +311,7 @@ private:
     friend class QGraphicsSceneBspTreeIndex;
     friend class QGraphicsSceneBspTreeIndexPrivate;
     friend class QGraphicsItemEffectSourcePrivate;
+    friend class QGesture;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsScene::SceneLayers)

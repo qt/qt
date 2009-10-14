@@ -92,8 +92,6 @@ extern void qt_wince_hide_taskbar(HWND hwnd); //defined in qguifunctions_wince.c
 #include <private/qkeymapper_p.h>
 #include <private/qlocale_p.h>
 #include "qevent_p.h"
-#include "qstandardgestures.h"
-#include "qstandardgestures_p.h"
 
 //#define ALIEN_DEBUG
 
@@ -171,10 +169,13 @@ typedef struct tagTOUCHINPUT
 #include <mywinsock.h>
 #endif
 
+#ifndef IMR_RECONVERTSTRING
+#define IMR_RECONVERTSTRING 4
+#endif
+
 #ifndef IMR_CONFIRMRECONVERTSTRING
 #define IMR_CONFIRMRECONVERTSTRING 0x0005
 #endif
-
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_WINCE
@@ -818,13 +819,16 @@ void qt_init(QApplicationPrivate *priv, int)
 
     priv->GetGestureInfo = 0;
     priv->GetGestureExtraArgs = 0;
+    priv->CloseGestureInfoHandle = 0;
+    priv->SetGestureConfig = 0;
+    priv->GetGestureConfig = 0;
+    priv->BeginPanningFeedback = 0;
+    priv->UpdatePanningFeedback = 0;
+    priv->EndPanningFeedback = 0;
 
 #if defined(Q_WS_WINCE_WM) && defined(QT_WINCE_GESTURES)
     priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
-    priv->CloseGestureInfoHandle = (PtrCloseGestureInfoHandle) 0;
-    priv->SetGestureConfig = (PtrSetGestureConfig) 0;
-    priv->GetGestureConfig = (PtrGetGestureConfig) 0;
 #elif !defined(Q_WS_WINCE)
     priv->GetGestureInfo =
             (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
@@ -851,7 +855,6 @@ void qt_init(QApplicationPrivate *priv, int)
         (PtrEndPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                    "EndPanningFeedback");
 #endif
-    priv->gestureWidget = 0;
 }
 
 /*****************************************************************************
@@ -1752,78 +1755,17 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                         case APPCOMMAND_BASS_UP:
                             key = Qt::Key_BassUp;
                             break;
-                        case APPCOMMAND_BROWSER_BACKWARD:
-                            key = Qt::Key_Back;
-                            break;
-                        case APPCOMMAND_BROWSER_FAVORITES:
-                            key = Qt::Key_Favorites;
-                            break;
-                        case APPCOMMAND_BROWSER_FORWARD:
-                            key = Qt::Key_Forward;
-                            break;
-                        case APPCOMMAND_BROWSER_HOME:
-                            key = Qt::Key_HomePage;
-                            break;
-                        case APPCOMMAND_BROWSER_REFRESH:
-                            key = Qt::Key_Refresh;
-                            break;
-                        case APPCOMMAND_BROWSER_SEARCH:
-                            key = Qt::Key_Search;
-                            break;
-                        case APPCOMMAND_BROWSER_STOP:
-                            key = Qt::Key_Stop;
-                            break;
-                        case APPCOMMAND_LAUNCH_APP1:
-                            key = Qt::Key_Launch0;
-                            break;
-                        case APPCOMMAND_LAUNCH_APP2:
-                            key = Qt::Key_Launch1;
-                            break;
-                        case APPCOMMAND_LAUNCH_MAIL:
-                            key = Qt::Key_LaunchMail;
-                            break;
-                        case APPCOMMAND_LAUNCH_MEDIA_SELECT:
-                            key = Qt::Key_LaunchMedia;
-                            break;
-                        case APPCOMMAND_MEDIA_NEXTTRACK:
-                            key = Qt::Key_MediaNext;
-                            break;
-                        case APPCOMMAND_MEDIA_PLAY_PAUSE:
-                            key = Qt::Key_MediaPlay;
-                            break;
-                        case APPCOMMAND_MEDIA_PREVIOUSTRACK:
-                            key = Qt::Key_MediaPrevious;
-                            break;
-                        case APPCOMMAND_MEDIA_STOP:
-                            key = Qt::Key_MediaStop;
-                            break;
                         case APPCOMMAND_TREBLE_DOWN:
                             key = Qt::Key_TrebleDown;
                             break;
                         case APPCOMMAND_TREBLE_UP:
                             key = Qt::Key_TrebleUp;
                             break;
-                        case APPCOMMAND_VOLUME_DOWN:
-                            key = Qt::Key_VolumeDown;
-                            break;
-                        case APPCOMMAND_VOLUME_MUTE:
-                            key = Qt::Key_VolumeMute;
-                            break;
-                        case APPCOMMAND_VOLUME_UP:
-                            key = Qt::Key_VolumeUp;
-                            break;
-                        // Commands new in Windows XP
                         case APPCOMMAND_HELP:
                             key = Qt::Key_Help;
                             break;
                         case APPCOMMAND_FIND:
                             key = Qt::Key_Search;
-                            break;
-                        case APPCOMMAND_PRINT:
-                            key = Qt::Key_Print;
-                            break;
-                        case APPCOMMAND_MEDIA_PLAY:
-                            key = Qt::Key_MediaPlay;
                             break;
                         default:
                             break;
@@ -2028,12 +1970,21 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
                 // where it got it from; it would simply get a 0 value as the old focus widget.
 #ifdef Q_WS_WINCE
                 {
-                    if (widget->windowState() & Qt::WindowMinimized) {
-                        if (widget->windowState() & Qt::WindowMaximized)
-                            widget->showMaximized();
-                        else
-                            widget->show();
+#ifdef Q_WS_WINCE_WM
+                    // On Windows mobile we do not receive WM_SYSCOMMAND / SC_MINIMIZE messages.
+                    // Thus we have to unset the minimized state explicitly. We must do this for all
+                    // top-level widgets, because we get the HWND of a random widget here.
+                    foreach (QWidget* tlw, QApplication::topLevelWidgets()) {
+                        if (tlw->isMinimized())
+                            tlw->setWindowState(tlw->windowState() & ~Qt::WindowMinimized);
                     }
+#else
+                    // On Windows CE we do not receive WM_SYSCOMMAND / SC_MINIMIZE messages.
+                    // Thus we have to unset the minimized state explicitly.
+                    if (widget->windowState() & Qt::WindowMinimized)
+                        widget->setWindowState(widget->windowState() & ~Qt::WindowMinimized);
+#endif  // Q_WS_WINCE_WM
+
 #else
                 if (!(widget->windowState() & Qt::WindowMinimized)) {
 #endif
@@ -2548,24 +2499,24 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             if (qAppPriv->GetGestureInfo)
                 bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
             if (bResult) {
-                if (gi.dwID == GID_BEGIN) {
-                    // find the alien widget for the gesture position.
-                    // This might not be accurate as the position is the center
-                    // point of two fingers for multi-finger gestures.
-                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
-                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
-                    qAppPriv->gestureWidget = w ? w : widget;
-                }
-                if (qAppPriv->gestureWidget)
-                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
-                if (qAppPriv->CloseGestureInfoHandle)
-                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
-                if (gi.dwID == GID_END)
-                    qAppPriv->gestureWidget = 0;
-            } else {
-                DWORD dwErr = GetLastError();
-                if (dwErr > 0)
-                    qWarning() << "translateGestureEvent: error = " << dwErr;
+//                if (gi.dwID == GID_BEGIN) {
+//                    // find the alien widget for the gesture position.
+//                    // This might not be accurate as the position is the center
+//                    // point of two fingers for multi-finger gestures.
+//                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
+//                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
+//                    qAppPriv->gestureWidget = w ? w : widget;
+//                }
+//                if (qAppPriv->gestureWidget)
+//                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
+//                if (qAppPriv->CloseGestureInfoHandle)
+//                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+//                if (gi.dwID == GID_END)
+//                    qAppPriv->gestureWidget = 0;
+//            } else {
+//                DWORD dwErr = GetLastError();
+//                if (dwErr > 0)
+//                    qWarning() << "translateGestureEvent: error = " << dwErr;
             }
             result = true;
             break;

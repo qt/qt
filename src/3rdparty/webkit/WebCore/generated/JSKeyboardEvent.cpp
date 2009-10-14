@@ -135,7 +135,7 @@ bool JSKeyboardEventPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSKeyboardEvent::s_info = { "KeyboardEvent", &JSUIEvent::s_info, &JSKeyboardEventTable, 0 };
 
-JSKeyboardEvent::JSKeyboardEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<KeyboardEvent> impl)
+JSKeyboardEvent::JSKeyboardEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<KeyboardEvent> impl)
     : JSUIEvent(structure, globalObject, impl)
 {
 }

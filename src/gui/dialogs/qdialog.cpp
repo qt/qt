@@ -673,28 +673,6 @@ void QDialog::keyPressEvent(QKeyEvent *e)
         case Qt::Key_Escape:
             reject();
             break;
-        case Qt::Key_Up:
-        case Qt::Key_Left:
-            if (focusWidget() &&
-                 (focusWidget()->focusPolicy() == Qt::StrongFocus ||
-                   focusWidget()->focusPolicy() == Qt::WheelFocus)) {
-                e->ignore();
-                break;
-            }
-            // call ours, since c++ blocks us from calling the one
-            // belonging to focusWidget().
-            focusNextPrevChild(false);
-            break;
-        case Qt::Key_Down:
-        case Qt::Key_Right:
-            if (focusWidget() &&
-                 (focusWidget()->focusPolicy() == Qt::StrongFocus ||
-                   focusWidget()->focusPolicy() == Qt::WheelFocus)) {
-                e->ignore();
-                break;
-            }
-            focusNextPrevChild(true);
-            break;
         default:
             e->ignore();
             return;

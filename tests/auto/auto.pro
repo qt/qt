@@ -203,6 +203,7 @@ SUBDIRS += \
            qmainwindow \
            qmake \
            qmap \
+           qmath \
            qmatrixnxn \
            qmdiarea \
            qmdisubwindow \
@@ -233,6 +234,7 @@ SUBDIRS += \
            qpainterpath \
            qpalette \
            qparallelanimationgroup \
+           qpauseanimation \
            qpathclipper \
            qpen \
            qpicture \
@@ -397,7 +399,8 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           utf8
+           utf8 \
+           gestures
            
 !wince*:SUBDIRS += $$Q3SUBDIRS
 

@@ -433,6 +433,23 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
     Qt::NoModifier,                                             // Fall-back to raw Key_*
 };
 
+/**
+  Remap return or action key to select key for windows mobile.
+*/
+inline int winceKeyBend(int keyCode)
+{
+#ifdef Q_OS_WINCE_WM
+    // remap return or action key to select key for windows mobile.
+    // will be changed to a table remapping function in the next version (4.6/7).
+    if (keyCode == 13)
+        return Qt::Key_Select;
+    else
+        return KeyTbl[keyCode];
+#else
+    return KeyTbl[keyCode];
+#endif
+}
+
 #if defined(Q_OS_WINCE)
     // Use the KeyTbl to resolve a Qt::Key out of the virtual keys.
     // In case it is not resolvable, continue using the virtual key itself.
@@ -472,7 +489,7 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
     // Qt::Key_*'s are not encoded below 0x20, so try again, and DEL keys (0x7f) is encoded with a
     // proper Qt::Key_ code
     if (code < 0x20 || code == 0x7f) // Handles res==0 too
-        code = KeyTbl[vk];
+        code = winceKeyBend(vk);
 
     if (isDeadkey)
         *isDeadkey = (res == -1);
@@ -482,7 +499,7 @@ static inline int toKeyOrUnicode(int vk, int scancode, unsigned char *kbdBuffer,
 
 Q_GUI_EXPORT int qt_translateKeyCode(int vk)
 {
-    int code = (vk < 0 || vk > 255) ? 0 : KeyTbl[vk];
+    int code = winceKeyBend((vk < 0 || vk > 255) ? 0 : vk);
     return code == Qt::Key_unknown ? 0 : code;
 }
 
@@ -689,7 +706,7 @@ void QKeyMapperPrivate::updatePossibleKeyCodes(unsigned char *kbdBuffer, quint32
     keyLayout[vk_key]->qtKey[7] = toKeyOrUnicode(vk_key, scancode, buffer, &isDeadKey);
     keyLayout[vk_key]->deadkeys |= isDeadKey ? 0x80 : 0;
     // Add a fall back key for layouts which don't do composition and show non-latin1 characters
-    int fallbackKey = KeyTbl[vk_key];
+    int fallbackKey = winceKeyBend(vk_key);
     if (!fallbackKey || fallbackKey == Qt::Key_unknown) {
         fallbackKey = 0;
         if (vk_key != keyLayout[vk_key]->qtKey[0] && vk_key < 0x5B && vk_key > 0x2F)
@@ -888,8 +905,8 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
         if(msg.wParam == VK_PROCESSKEY)
             return true;
 
-        // Ignore invalid virtual keycode (see bug 127424)
-        if (msg.wParam == 0xFF)
+        // Ignore invalid virtual keycodes (see bugs 127424, QTBUG-3630)
+        if (msg.wParam == 0 || msg.wParam == 0xFF)
             return true;
 
         // Translate VK_* (native) -> Key_* (Qt) keys
@@ -898,7 +915,7 @@ bool QKeyMapperPrivate::translateKeyEvent(QWidget *widget, const MSG &msg, bool 
         // ..also if we're typing numbers on the keypad, while holding down the Alt modifier.
         int code = 0;
         if (isNumpad && (nModifiers & AltAny)) {
-            code = KeyTbl[msg.wParam];
+            code = winceKeyBend(msg.wParam);
         } else if (!isDeadKey) {
             unsigned char kbdBuffer[256]; // Will hold the complete keyboard state
             GetKeyboardState(kbdBuffer);

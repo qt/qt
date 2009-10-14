@@ -75,6 +75,50 @@ public:
         return QVariant();
     }
 
+    bool insertRows(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start > row_count)
+            return false;
+
+        beginInsertRows(parent, start, start + count - 1);
+        row_count += count;
+        endInsertRows();
+        return true;
+    }
+
+    bool removeRows(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start >= row_count || row_count < count)
+            return false;
+
+        beginRemoveRows(parent, start, start + count - 1);
+        row_count -= count;
+        endRemoveRows();
+        return true;
+    }
+
+    bool insertColumns(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start > column_count)
+            return false;
+
+        beginInsertColumns(parent, start, start + count - 1);
+        column_count += count;
+        endInsertColumns();
+        return true;
+    }
+
+    bool removeColumns(int start, int count, const QModelIndex &parent = QModelIndex())
+    {
+        if (start < 0 || start >= column_count || column_count < count)
+            return false;
+
+        beginRemoveColumns(parent, start, start + count - 1);
+        column_count -= count;
+        endRemoveColumns();
+        return true;
+    }
+
     int row_count;
     int column_count;
 };
@@ -99,6 +143,14 @@ private slots:
     void spanDraw();
     void spanSelectColumn();
     void spanSelectAll();
+    void rowInsertion_data();
+    void rowInsertion();
+    void rowRemoval_data();
+    void rowRemoval();
+    void columnInsertion_data();
+    void columnInsertion();
+    void columnRemoval_data();
+    void columnRemoval();
 private:
     static inline void spanInit_helper(QTableView *);
 };
@@ -186,6 +238,128 @@ void tst_QTableView::spanSelectColumn()
     
     QBENCHMARK {
         v.selectColumn(22);
+    }
+}
+
+typedef QVector<QRect> SpanList;
+Q_DECLARE_METATYPE(SpanList)
+
+void spansData()
+{
+    QTest::addColumn<SpanList>("spans");
+
+    QTest::newRow("Without spans")
+        << SpanList();
+
+    QTest::newRow("With spans")
+            << (SpanList()
+                  << QRect(0, 1, 1, 2)
+                  << QRect(1, 2, 1, 2)
+                  << QRect(2, 2, 1, 5)
+                  << QRect(2, 8, 1, 2)
+                  << QRect(3, 4, 1, 2)
+                  << QRect(4, 4, 1, 4)
+                  << QRect(5, 6, 1, 3)
+                  << QRect(6, 7, 1, 3));
+}
+
+void tst_QTableView::rowInsertion_data()
+{
+    spansData();
+}
+
+void tst_QTableView::rowInsertion()
+{
+    QFETCH(SpanList, spans);
+
+    QtTestTableModel model(10, 10);
+    QTableView view;
+    view.setModel(&model);
+
+    foreach (QRect span, spans)
+        view.setSpan(span.top(), span.left(), span.height(), span.width());
+    view.show();
+    QTest::qWait(50);
+
+    QBENCHMARK_ONCE {
+        view.model()->insertRows(0, 2);
+        view.model()->insertRows(5, 2);
+        view.model()->insertRows(8, 2);
+        view.model()->insertRows(12, 2);
+    }
+}
+
+void tst_QTableView::rowRemoval_data()
+{
+    spansData();
+}
+
+void tst_QTableView::rowRemoval()
+{
+    QFETCH(SpanList, spans);
+
+    QtTestTableModel model(10, 10);
+    QTableView view;
+    view.setModel(&model);
+
+    foreach (QRect span, spans)
+        view.setSpan(span.top(), span.left(), span.height(), span.width());
+    view.show();
+    QTest::qWait(50);
+
+    QBENCHMARK_ONCE {
+        view.model()->removeRows(3, 3);
+    }
+}
+
+void tst_QTableView::columnInsertion_data()
+{
+    spansData();
+}
+
+void tst_QTableView::columnInsertion()
+{
+    QFETCH(SpanList, spans);
+
+    QtTestTableModel model(10, 10);
+    QTableView view;
+    view.setModel(&model);
+
+    // Same set as for rowInsertion, just swapping columns and rows.
+    foreach (QRect span, spans)
+        view.setSpan(span.left(), span.top(), span.width(), span.height());
+    view.show();
+    QTest::qWait(50);
+
+    QBENCHMARK_ONCE {
+        view.model()->insertColumns(0, 2);
+        view.model()->insertColumns(5, 2);
+        view.model()->insertColumns(8, 2);
+        view.model()->insertColumns(12, 2);
+    }
+}
+
+void tst_QTableView::columnRemoval_data()
+{
+    spansData();
+}
+
+void tst_QTableView::columnRemoval()
+{
+    QFETCH(SpanList, spans);
+
+    QtTestTableModel model(10, 10);
+    QTableView view;
+    view.setModel(&model);
+
+    // Same set as for rowRemoval, just swapping columns and rows.
+    foreach (QRect span, spans)
+        view.setSpan(span.left(), span.top(), span.width(), span.height());
+    view.show();
+    QTest::qWait(50);
+
+    QBENCHMARK_ONCE {
+        view.model()->removeColumns(3, 3);
     }
 }
 

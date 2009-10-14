@@ -795,6 +795,8 @@ void tst_QFileSystemModel::sort()
     model->sort(0, Qt::DescendingOrder);
     QVERIFY(idx.column() != 0);
 
+    model->setRootPath(QDir::homePath());
+
     QFETCH(bool, fileDialogMode);
 
     MyFriendFileSystemModel *myModel = new MyFriendFileSystemModel();
@@ -806,6 +808,19 @@ void tst_QFileSystemModel::sort()
     QDir dir(QDir::tempPath());
     dir.mkdir("sortTemp");
     dir.cd("sortTemp");
+    QTRY_VERIFY(dir.exists());
+
+    //To be sure we clean the dir if it was there before
+    QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot);
+    while(it.hasNext())
+    {
+        it.next();
+        QFileInfo info = it.fileInfo();
+        if (info.isDir())
+            dir.rmdir(info.fileName());
+        else
+            QFile::remove(info.absoluteFilePath());
+    }
     const QString dirPath = dir.absolutePath();
     QVERIFY(dir.exists());
 
@@ -859,7 +874,7 @@ void tst_QFileSystemModel::sort()
     } else {
         for(int i = 0; i < myModel->rowCount(parent); ++i)
         {
-            QVERIFY(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString() == expectedOrder.at(i));
+            QTRY_COMPARE(dirPath + QChar('/') + myModel->index(i, 1, parent).data(QFileSystemModel::FileNameRole).toString(), expectedOrder.at(i));
         }
     }
 

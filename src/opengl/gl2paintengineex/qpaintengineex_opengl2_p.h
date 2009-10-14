@@ -61,11 +61,13 @@
 #include <private/qglpaintdevice_p.h>
 #include <private/qglpixmapfilter_p.h>
 #include <private/qfontengine_p.h>
+#include <private/qdatabuffer_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
     TextDrawingMode,
-    BrushDrawingMode
+    BrushDrawingMode,
+    ImageArrayDrawingMode
 };
 
 QT_BEGIN_NAMESPACE
@@ -80,17 +82,18 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
-    bool needsDepthBufferClear;
-    qreal depthBufferClearValue;
+    uint isNew : 1;
+    uint needsClipBufferClear : 1;
+    uint clipTestEnabled : 1;
+    uint canRestoreClip : 1;
+    uint matrixChanged : 1;
+    uint compositionModeChanged : 1;
+    uint opacityChanged : 1;
+    uint renderHintsChanged : 1;
+    uint clipChanged : 1;
+    uint currentClip : 8;
 
-    bool depthTestEnabled;
-    bool scissorTestEnabled;
-    uint maxDepth;
-    uint currentDepth;
-
-    bool canRestoreClip;
     QRect rectangleClip;
-    bool hasRectangleClip;
 };
 
 class Q_OPENGL_EXPORT QGL2PaintEngineEx : public QPaintEngineEx
@@ -125,6 +128,8 @@ public:
     virtual void drawTexture(const QRectF &r, GLuint textureId, const QSize &size, const QRectF &sr);
 
     virtual void drawTextItem(const QPointF &p, const QTextItem &textItem);
+
+    virtual void drawPixmaps(const QDrawPixmaps::Data *drawingData, int dataCount, const QPixmap &pixmap, QDrawPixmaps::DrawingHints hints);
 
     Type type() const { return OpenGL2; }
 
@@ -195,9 +200,9 @@ public:
         // ^ returns whether the current program changed or not
 
     inline void useSimpleShader();
-    inline QColor premultiplyColor(QColor c, GLfloat opacity);
 
-    float zValueForRenderText() const;
+    void prepareDepthRangeForRenderText();
+    void restoreDepthRangeForRenderText();
 
     static QGLEngineShaderManager* shaderManagerForEngine(QGL2PaintEngineEx *engine) { return engine->d_func()->shaderManager; }
 
@@ -208,8 +213,6 @@ public:
     EngineMode mode;
     QFontEngineGlyphCache::Type glyphCacheType;
 
-    mutable QOpenGL2PaintEngineState *last_created_state;
-
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
     bool compositionModeDirty;
@@ -217,12 +220,12 @@ public:
     bool brushUniformsDirty;
     bool simpleShaderMatrixUniformDirty;
     bool shaderMatrixUniformDirty;
-    bool depthUniformDirty;
-    bool simpleShaderDepthUniformDirty;
     bool opacityUniformDirty;
 
+    bool stencilClean; // Has the stencil not been used for clipping so far?
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
+    uint maxClip;
 
     const QBrush*    currentBrush; // May not be the state's brush!
 
@@ -230,6 +233,7 @@ public:
 
     QGL2PEXVertexArray vertexCoordinateArray;
     QGL2PEXVertexArray textureCoordinateArray;
+    QDataBuffer<GLfloat> opacityArray;
 
     GLfloat staticVertexCoordinateArray[8];
     GLfloat staticTextureCoordinateArray[8];
@@ -238,25 +242,15 @@ public:
 
     QGLEngineShaderManager* shaderManager;
 
-    void writeClip(const QVectorPath &path, uint depth);
-    void updateDepthScissorTest();
+    void clearClip(uint value);
+    void writeClip(const QVectorPath &path, uint value);
+    void resetClipIfNeeded();
+
+    void updateClipScissorTest();
     void setScissor(const QRect &rect);
-    void regenerateDepthClip();
+    void regenerateClip();
     void systemStateChanged();
     uint use_system_clip : 1;
-
-    static inline GLfloat rawDepth(uint depth)
-    {
-        // assume at least 16 bits in the depth buffer, and
-        // use 2^15 depth levels to be safe with regard to
-        // rounding issues etc
-        return depth * (1.0f / GLfloat((1 << 15) - 1));
-    }
-
-    static inline GLfloat normalizedDeviceDepth(uint depth)
-    {
-        return 2.0f * rawDepth(depth) - 1.0f;
-    }
 
     uint location(QGLEngineShaderManager::Uniform uniform)
     {
@@ -268,12 +262,16 @@ public:
     bool needsSync;
     bool inRenderText;
 
+    GLfloat depthRange[2];
+
     float textureInvertedY;
 
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
     QScopedPointer<QPixmapFilter> fastBlurFilter;
+    QScopedPointer<QPixmapFilter> dropShadowFilter;
+    QScopedPointer<QPixmapFilter> fastDropShadowFilter;
 };
 
 QT_END_NAMESPACE

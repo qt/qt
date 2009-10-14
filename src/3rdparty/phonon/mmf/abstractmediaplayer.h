@@ -45,7 +45,6 @@ class AbstractMediaPlayer : public AbstractPlayer
 protected:
     AbstractMediaPlayer();
     explicit AbstractMediaPlayer(const AbstractPlayer& player);
-    ~AbstractMediaPlayer();
 
 public:
     // MediaObjectInterface
@@ -54,9 +53,6 @@ public:
     virtual void stop();
     virtual void seek(qint64 milliseconds);
     virtual bool isSeekable() const;
-    virtual Phonon::ErrorType errorType() const;
-    virtual QString errorString() const;
-    virtual Phonon::State state() const;
     virtual MediaSource source() const;
     virtual void setFileSource(const Phonon::MediaSource&, RFile&);
     virtual void setNextSource(const MediaSource &source);
@@ -76,44 +72,16 @@ protected:
     virtual int openFile(RFile& file) = 0;
     virtual void close() = 0;
 
+    /**
+     * Changes state and emits stateChanged()
+     */
+    virtual void changeState(PrivateState newState);
+
 protected:
     bool tickTimerRunning() const;
     void startTickTimer();
     void stopTickTimer();
     void maxVolumeChanged(int maxVolume);
-
-    /**
-     * Defined private state enumeration in order to add GroundState
-     */
-    enum PrivateState {
-        LoadingState    = Phonon::LoadingState,
-        StoppedState    = Phonon::StoppedState,
-        PlayingState    = Phonon::PlayingState,
-        BufferingState  = Phonon::BufferingState,
-        PausedState     = Phonon::PausedState,
-        ErrorState      = Phonon::ErrorState,
-        GroundState
-    };
-
-    /**
-     * Converts PrivateState into the corresponding Phonon::State
-     */
-    Phonon::State phononState() const;
-
-    /**
-     * Converts PrivateState into the corresponding Phonon::State
-     */
-    static Phonon::State phononState(PrivateState state);
-
-    /**
-     * Changes state and emits stateChanged()
-     */
-    void changeState(PrivateState newState);
-
-    /**
-     * Records error and changes state to ErrorState
-     */
-    void setError(Phonon::ErrorType error);
 
     static qint64 toMilliSeconds(const TTimeIntervalMicroSeconds &);
 
@@ -127,9 +95,6 @@ private Q_SLOTS:
     void tick();
 
 private:
-    PrivateState                m_state;
-    Phonon::ErrorType           m_error;
-
     /**
      * This flag is set to true if play is called when the object is
      * in a Loading state.  Once loading is complete, playback will
@@ -139,7 +104,6 @@ private:
 
     QScopedPointer<QTimer>      m_tickTimer;
 
-    qreal                       m_volume;
     int                         m_mmfMaxVolume;
 
     MediaSource                 m_source;

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore of the Qt Toolkit.
+** This file is part of the QtCore module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -749,11 +749,11 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             block = false;
             if (timeState == TimeStarted && time.elapsed() > 100) {
                 priority = m_processHandle.Priority();
-                m_processHandle.SetPriority(EPriorityLow);
+                m_processHandle.SetPriority(EPriorityBackground);
                 time.start();
                 // Slight chance of race condition in the next lines, but nothing fatal
                 // will happen, just wrong priority.
-                if (m_processHandle.Priority() == EPriorityLow) {
+                if (m_processHandle.Priority() == EPriorityBackground) {
                     m_processHandle.SetPriority(priority);
                 }
             }

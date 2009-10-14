@@ -67,6 +67,9 @@
 #include <bitdev.h>
 #endif
 
+#ifdef Q_WS_X11
+#include <QX11Info>
+#endif
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -163,6 +166,8 @@ private slots:
     void fromImage_crash();
 
     void fromData();
+
+    void preserveDepth();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -175,6 +180,12 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
 
     int size = actual.width() * actual.height();
 
+    int threshold = 2;
+#ifdef Q_WS_X11
+    if (QX11Info::appDepth() == 16)
+        threshold = 10;
+#endif
+
     QRgb *a = (QRgb *)actualImage.bits();
     QRgb *e = (QRgb *)expectedImage.bits();
     for (int i = 0; i < size; ++i) {
@@ -183,11 +194,11 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
 
         bool result = true;
 
-        if (qAbs(ca.red() - ce.red()) > 2)
+        if (qAbs(ca.red() - ce.red()) > threshold)
             result = false;
-        if (qAbs(ca.green() - ce.green()) > 2)
+        if (qAbs(ca.green() - ce.green()) > threshold)
             result = false;
-        if (qAbs(ca.blue() - ce.blue()) > 2)
+        if (qAbs(ca.blue() - ce.blue()) > threshold)
             result = false;
 
         if (!result)
@@ -293,15 +304,23 @@ void tst_QPixmap::setAlphaChannel()
 
 void tst_QPixmap::fromImage_data()
 {
+    bool is16bit = false;
+#ifdef Q_WS_X11
+    if (QX11Info::appDepth() == 16)
+        is16bit = true;
+#endif
+
     QTest::addColumn<QImage::Format>("format");
 
     QTest::newRow("Format_Mono") << QImage::Format_Mono;
     QTest::newRow("Format_MonoLSB") << QImage::Format_MonoLSB;
 //    QTest::newRow("Format_Indexed8") << QImage::Format_Indexed8;
-    QTest::newRow("Format_RGB32") << QImage::Format_RGB32;
+    if (!is16bit)
+        QTest::newRow("Format_RGB32") << QImage::Format_RGB32;
     QTest::newRow("Format_ARGB32") << QImage::Format_ARGB32;
     QTest::newRow("Format_ARGB32_Premultiplied") << QImage::Format_ARGB32_Premultiplied;
-    QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
+    if (!is16bit)
+        QTest::newRow("Format_RGB16") << QImage::Format_RGB16;
 }
 
 void tst_QPixmap::fromImage()
@@ -986,7 +1005,7 @@ static void compareImages(const QImage &image1, const QImage &image2)
             QRgb p1 = image1.pixel(x, y);
             QRgb p2 = image2.pixel(x, y);
 
-            bool pixelMatches = 
+            bool pixelMatches =
                 qAbs(qRed(p1) - qRed(p2)) <= fuzz
                 && qAbs(qGreen(p1) - qGreen(p2)) <= fuzz
                 && qAbs(qBlue(p1) - qBlue(p2)) <= fuzz
@@ -1017,6 +1036,10 @@ void tst_QPixmap::toWinHICON_data()
 
 void tst_QPixmap::toWinHICON()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+#endif
+
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1057,6 +1080,10 @@ void tst_QPixmap::fromWinHICON_data()
 
 void tst_QPixmap::fromWinHICON()
 {
+#ifdef Q_OS_WINCE
+    QSKIP("Test shall be enabled for Windows CE shortly.", SkipAll);
+
+#else
     QFETCH(int, width);
     QFETCH(int, height);
     QFETCH(QString, image);
@@ -1073,6 +1100,7 @@ void tst_QPixmap::fromWinHICON()
 
     // QVERIFY(imageFromHICON == imageFromFile);
     compareImages(imageFromHICON, imageFromFile);
+#endif
 }
 
 #endif // Q_WS_WIN
@@ -1422,6 +1450,23 @@ void tst_QPixmap::task_246446()
     QVERIFY(pm.mask().isNull());
 }
 
+void tst_QPixmap::preserveDepth()
+{
+    QPixmap target(64, 64);
+    target.fill(Qt::transparent);
+
+    QPixmap source(64, 64);
+    source.fill(Qt::white);
+
+    int depth = source.depth();
+
+    QPainter painter(&target);
+    painter.setBrush(source);
+    painter.drawRect(target.rect());
+    painter.end();
+
+    QCOMPARE(depth, source.depth());
+}
 
 QTEST_MAIN(tst_QPixmap)
 #include "tst_qpixmap.moc"

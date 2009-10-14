@@ -123,7 +123,7 @@ static const HashTable* getJSXMLHttpRequestProgressEventTable(ExecState* exec)
 }
 const ClassInfo JSXMLHttpRequestProgressEvent::s_info = { "XMLHttpRequestProgressEvent", &JSProgressEvent::s_info, 0, getJSXMLHttpRequestProgressEventTable };
 
-JSXMLHttpRequestProgressEvent::JSXMLHttpRequestProgressEvent(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestProgressEvent> impl)
+JSXMLHttpRequestProgressEvent::JSXMLHttpRequestProgressEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<XMLHttpRequestProgressEvent> impl)
     : JSProgressEvent(structure, globalObject, impl)
 {
 }

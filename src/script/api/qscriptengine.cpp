@@ -382,65 +382,6 @@ private:
     bool m_shouldAbortEvaluation;
 };
 
-/*Helper class. Main purpose is to give debugger feedback about unloading and loading scripts.
-  It keeps pointer to JSGlobalObject assuming that it is always the same - there is no way to update
-  this data. Class is internal and used as an implementation detail in and only in QScriptEngine::evaluate.*/
-class UStringSourceProviderWithFeedback: public JSC::UStringSourceProvider
-{
-public:
-
-    static PassRefPtr<UStringSourceProviderWithFeedback> create(const JSC::UString& source, const JSC::UString& url, int lineNumber, QScriptEnginePrivate* engine)
-    {
-        return adoptRef(new UStringSourceProviderWithFeedback(source, url, lineNumber, engine));
-    }
-
-    /* Destruction means that there is no more copies of script so create scriptUnload event
-       and unregister script in QScriptEnginePrivate::loadedScripts */
-    virtual ~UStringSourceProviderWithFeedback()
-    {
-        if (m_ptr) {
-            if (JSC::Debugger* debugger = this->debugger())
-                debugger->scriptUnload(asID());
-            m_ptr->loadedScripts.remove(this);
-        }
-    }
-
-    /* set internal QScriptEnginePrivate pointer to null and create unloadScript event, should be called
-       only if QScriptEnginePrivate is about to be  destroyed.*/
-    void disconnectFromEngine()
-    {        
-        if (JSC::Debugger* debugger = this->debugger())
-            debugger->scriptUnload(asID());
-        m_ptr = 0;
-    }
-
-protected:
-    UStringSourceProviderWithFeedback(const JSC::UString& source, const JSC::UString& url, int lineNumber, QScriptEnginePrivate* engine)
-            : UStringSourceProvider(source, url),
-            m_ptr(engine)
-    {
-        if (JSC::Debugger* debugger = this->debugger())
-            debugger->scriptLoad(asID(), source, url, lineNumber);
-        if (m_ptr)
-            m_ptr->loadedScripts.insert(this);
-    }
-
-    JSC::Debugger* debugger()
-    {
-        //if m_ptr is null it mean that QScriptEnginePrivate was destroyed and scriptUnload was called
-        //else m_ptr is stable and we can use it as normal pointer without hesitation
-        if(!m_ptr)
-            return 0; //we are in ~QScriptEnginePrivate
-        else
-            return m_ptr->originalGlobalObject()->debugger(); //QScriptEnginePrivate is still alive
-    }
-
-    //trace global object and debugger instance
-    QScriptEnginePrivate* m_ptr;
-};
-
-
-
 static int toDigit(char c)
 {
     if ((c >= '0') && (c <= '9'))
@@ -864,7 +805,6 @@ QScriptEnginePrivate::QScriptEnginePrivate()
     JSC::JSGlobalObject *globalObject = new (globalData)QScript::GlobalObject();
 
     JSC::ExecState* exec = globalObject->globalExec();
-    *thisRegisterForFrame(exec) = JSC::JSValue();
 
     scriptObjectStructure = QScriptObject::createStructure(globalObject->objectPrototype());
 
@@ -900,11 +840,9 @@ QScriptEnginePrivate::QScriptEnginePrivate()
 QScriptEnginePrivate::~QScriptEnginePrivate()
 {
     //disconnect all loadedScripts and generate all jsc::debugger::scriptUnload events
-    QSet<QScript::UStringSourceProviderWithFeedback*>::const_iterator i = loadedScripts.constBegin();
-    while(i!=loadedScripts.constEnd()) {
-        (*i)->disconnectFromEngine();
-        i++;
-    }
+    QHash<intptr_t,QScript::UStringSourceProviderWithFeedback*>::const_iterator it;
+    for (it = loadedScripts.constBegin(); it != loadedScripts.constEnd(); ++it)
+        it.value()->disconnectFromEngine();
 
     while (!ownedAgents.isEmpty())
         delete ownedAgents.takeFirst();
@@ -1055,7 +993,7 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
 
 QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
 {
-    if (frame && frame->callerFrame()->hasHostCallFrameFlag()
+    if (frame && frame->callerFrame()->hasHostCallFrameFlag() && !frame->callee()
         && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
         //skip the "fake" context created in Interpreter::execute.
         frame = frame->callerFrame()->removeHostCallFrameFlag();
@@ -1140,12 +1078,13 @@ JSC::JSValue QScriptEnginePrivate::toUsableValue(JSC::JSValue value)
 /*!
     \internal
     Return the 'this' value for a given context
-    The result may be null for the global context
 */
 JSC::JSValue QScriptEnginePrivate::thisForContext(JSC::ExecState *frame)
 {
     if (frame->codeBlock() != 0) {
         return frame->thisValue();
+    } else if(frame == frame->lexicalGlobalObject()->globalExec()) {
+        return frame->globalThisValue();
     } else {
         JSC::Register *thisRegister = thisRegisterForFrame(frame);
         return thisRegister->jsValue();
@@ -1177,8 +1116,7 @@ uint QScriptEnginePrivate::contextFlags(JSC::ExecState *exec)
 void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
 {
     Q_ASSERT(!exec->codeBlock());
-    quintptr flag_ptr = flags;
-    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::JSValue(reinterpret_cast<JSC::JSObject*>(flag_ptr));
+    exec->registers()[JSC::RegisterFile::ReturnValueRegister] = JSC::Register::withInt(flags);
 }
 
 
@@ -2229,7 +2167,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     exec->clearException();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
-    JSC::EvalExecutable executable(source);
+    JSC::EvalExecutable executable(exec, source);
     JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
     if (error) {
         exec->setException(error);
@@ -2246,6 +2184,8 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
     JSC::JSValue exceptionValue;
     d->timeoutChecker()->setShouldAbort(false);
+    if (d->processEventsInterval > 0)
+        d->timeoutChecker()->reset();
     JSC::JSValue result = exec->interpreter()->execute(&executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
 
     if (d->timeoutChecker()->shouldAbort()) {

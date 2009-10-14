@@ -295,6 +295,8 @@
 
     \o \image animation-examples.png
     \o
+    These examples show to to use the \l{The Animation Framework}{animation framework}
+    to build highly animated, high-performance GUIs.
 
     \row
     \o{2,1} \l{Gestures Examples}{\bold{Gestures}}
@@ -322,6 +324,8 @@
 
     \o \image activeqt-examples.png ActiveQt
     \o
+    These examples demonstrate how to write ActiveX controls and control servers
+    with Qt, and how to use ActiveX controls and COM objects in a Qt application.
 
     \row
     \o{2,1} \l{Qt Quarterly}{\bold{Qt Quarterly}}
@@ -823,7 +827,7 @@
 
     \list
     \o \l{phonon/capabilities}{Capabilities}\raisedaster
-    \o \l{phonon/musicplayer}{Music Player}\raisedaster
+    \o \l{phonon/qmusicplayer}{Music Player}\raisedaster
     \endlist
 */
 
@@ -1073,9 +1077,13 @@
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
+    The API of the gesture framework is not yet finalized and
+    still subject to change.
+\omit
     \list
     \o \l{widgets/imageviewer}{Image Viewer}
     \endlist
+\endomit
 */
 
 /*!
@@ -1113,7 +1121,6 @@
     \o \l{qws/svgalib}{Accelerated Graphics Driver}\raisedaster
     \o \l{qws/dbscreen}{Double Buffered Graphics Driver}\raisedaster
     \o \l{qws/mousecalibration}{Mouse Calibration}\raisedaster
-    \o \l{qws/ahigl}{OpenGL for Embedded Systems}\raisedaster
     \o \l{qws/simpledecoration}{Simple Decoration}\raisedaster
     \endlist
 */

@@ -130,7 +130,7 @@ bool JSFileListPrototype::getOwnPropertyDescriptor(ExecState* exec, const Identi
 
 const ClassInfo JSFileList::s_info = { "FileList", 0, &JSFileListTable, 0 };
 
-JSFileList::JSFileList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<FileList> impl)
+JSFileList::JSFileList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<FileList> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

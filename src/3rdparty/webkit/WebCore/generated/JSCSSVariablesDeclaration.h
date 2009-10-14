@@ -33,7 +33,7 @@ class CSSVariablesDeclaration;
 class JSCSSVariablesDeclaration : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSCSSVariablesDeclaration(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSVariablesDeclaration>);
+    JSCSSVariablesDeclaration(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CSSVariablesDeclaration>);
     virtual ~JSCSSVariablesDeclaration();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +72,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCSSVariablesDeclarationPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCSSVariablesDeclarationPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

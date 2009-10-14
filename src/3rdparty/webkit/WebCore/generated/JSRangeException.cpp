@@ -134,7 +134,7 @@ bool JSRangeExceptionPrototype::getOwnPropertyDescriptor(ExecState* exec, const 
 
 const ClassInfo JSRangeException::s_info = { "RangeException", 0, &JSRangeExceptionTable, 0 };
 
-JSRangeException::JSRangeException(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<RangeException> impl)
+JSRangeException::JSRangeException(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<RangeException> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

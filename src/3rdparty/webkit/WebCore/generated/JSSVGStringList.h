@@ -36,7 +36,7 @@ class SVGStringList;
 class JSSVGStringList : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGStringList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStringList>, SVGElement* context);
+    JSSVGStringList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGStringList>, SVGElement* context);
     virtual ~JSSVGStringList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -70,7 +70,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGStringListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGStringListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

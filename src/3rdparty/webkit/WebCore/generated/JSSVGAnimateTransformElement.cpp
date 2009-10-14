@@ -56,7 +56,7 @@ JSObject* JSSVGAnimateTransformElementPrototype::self(ExecState* exec, JSGlobalO
 
 const ClassInfo JSSVGAnimateTransformElement::s_info = { "SVGAnimateTransformElement", &JSSVGAnimationElement::s_info, 0, 0 };
 
-JSSVGAnimateTransformElement::JSSVGAnimateTransformElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateTransformElement> impl)
+JSSVGAnimateTransformElement::JSSVGAnimateTransformElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateTransformElement> impl)
     : JSSVGAnimationElement(structure, globalObject, impl)
 {
 }

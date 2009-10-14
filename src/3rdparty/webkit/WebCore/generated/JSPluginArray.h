@@ -33,7 +33,7 @@ class PluginArray;
 class JSPluginArray : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSPluginArray(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<PluginArray>);
+    JSPluginArray(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<PluginArray>);
     virtual ~JSPluginArray();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -74,7 +74,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSPluginArrayPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSPluginArrayPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

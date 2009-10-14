@@ -30,7 +30,7 @@ class CharacterData;
 class JSCharacterData : public JSNode {
     typedef JSNode Base;
 public:
-    JSCharacterData(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CharacterData>);
+    JSCharacterData(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<CharacterData>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -59,7 +59,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSCharacterDataPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSCharacterDataPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

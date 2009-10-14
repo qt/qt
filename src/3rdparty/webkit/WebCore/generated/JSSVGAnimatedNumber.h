@@ -34,7 +34,7 @@ namespace WebCore {
 class JSSVGAnimatedNumber : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGAnimatedNumber(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedNumber>, SVGElement* context);
+    JSSVGAnimatedNumber(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGAnimatedNumber>, SVGElement* context);
     virtual ~JSSVGAnimatedNumber();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -63,7 +63,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSSVGAnimatedNumberPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGAnimatedNumberPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

@@ -10,7 +10,6 @@ HEADERS += boat.h \
     states.h \
     boat_p.h \
     submarine_p.h \
-    custompropertyanimation.h \
     qanimationstate.h \
     progressitem.h \
     textinformationitem.h
@@ -24,20 +23,19 @@ SOURCES += boat.cpp \
     graphicsscene.cpp \
     animationmanager.cpp \
     states.cpp \
-    custompropertyanimation.cpp \
     qanimationstate.cpp \
     progressitem.cpp \
     textinformationitem.cpp
 RESOURCES += subattaq.qrc
 
 # install
-target.path = $$[QT_INSTALL_DEMOS]/animation/sub-attaq
+target.path = $$[QT_INSTALL_DEMOS]/sub-attaq
 sources.files = $$SOURCES \
     $$HEADERS \
     $$RESOURCES \
     $$FORMS \
     sub-attaq.pro \
     pics
-sources.path = $$[QT_INSTALL_DEMOS]/animation/sub-attaq
+sources.path = $$[QT_INSTALL_DEMOS]/sub-attaq
 INSTALLS += target \
     sources

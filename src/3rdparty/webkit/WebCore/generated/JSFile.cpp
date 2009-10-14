@@ -117,7 +117,7 @@ JSObject* JSFilePrototype::self(ExecState* exec, JSGlobalObject* globalObject)
 
 const ClassInfo JSFile::s_info = { "File", 0, &JSFileTable, 0 };
 
-JSFile::JSFile(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<File> impl)
+JSFile::JSFile(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<File> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

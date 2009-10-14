@@ -117,7 +117,7 @@ JSObject* JSCounterPrototype::self(ExecState* exec, JSGlobalObject* globalObject
 
 const ClassInfo JSCounter::s_info = { "Counter", 0, &JSCounterTable, 0 };
 
-JSCounter::JSCounter(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Counter> impl)
+JSCounter::JSCounter(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Counter> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

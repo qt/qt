@@ -46,7 +46,6 @@
 #define DO_PROPERTYMAP_CONSTENCY_CHECK 0
 #endif
 
-using namespace std;
 using namespace WTF;
 
 namespace JSC {
@@ -556,7 +555,7 @@ PassRefPtr<Structure> Structure::getterSetterTransition(Structure* structure)
 
 PassRefPtr<Structure> Structure::toDictionaryTransition(Structure* structure, DictionaryKind kind)
 {
-    ASSERT(!structure->isDictionary());
+    ASSERT(!structure->isUncacheableDictionary());
     
     RefPtr<Structure> transition = create(structure->m_prototype, structure->typeInfo());
     transition->m_dictionaryKind = kind;

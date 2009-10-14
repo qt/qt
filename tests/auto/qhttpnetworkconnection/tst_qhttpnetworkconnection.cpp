@@ -106,6 +106,7 @@ private Q_SLOTS:
     void getMultiple_data();
     void getMultiple();
     void getMultipleWithPipeliningAndMultiplePriorities();
+    void getMultipleWithPriorities();
 };
 
 tst_QHttpNetworkConnection::tst_QHttpNetworkConnection()
@@ -898,15 +899,85 @@ void tst_QHttpNetworkConnection::getMultipleWithPipeliningAndMultiplePriorities(
 
     } while (finishedCount != replies.length());
 
-    // redundant
-    for (int i = 0; i < replies.length(); i++)
+    int pipelinedCount = 0;
+    for (int i = 0; i < replies.length(); i++) {
         QVERIFY(replies.at(i)->isFinished());
+        QVERIFY (!(replies.at(i)->request().isPipeliningAllowed() == false
+            && replies.at(i)->isPipeliningUsed()));
+
+        if (replies.at(i)->isPipeliningUsed())
+            pipelinedCount++;
+    }
+
+    // We allow pipelining for every 2nd,3rd,4th,6th,8th,9th,10th etc request.
+    // Assume that half of the requests had been pipelined.
+    // (this is a very relaxed condition, when last measured 79 of 100
+    // requests had been pipelined)
+    QVERIFY(pipelinedCount >= requestCount / 2);
 
     qDebug() << "===" << stopWatch.elapsed() << "msec ===";
 
     qDeleteAll(requests);
     qDeleteAll(replies);
 }
+
+class GetMultipleWithPrioritiesReceiver : public QObject
+{
+    Q_OBJECT
+public:
+    int highPrioReceived;
+    int lowPrioReceived;
+    int requestCount;
+    GetMultipleWithPrioritiesReceiver(int rq) : highPrioReceived(0), lowPrioReceived(0), requestCount(rq) { }
+public Q_SLOTS:
+    void finishedSlot() {
+        QHttpNetworkReply *reply = (QHttpNetworkReply*) sender();
+        if (reply->request().priority() == QHttpNetworkRequest::HighPriority)
+            highPrioReceived++;
+        else if (reply->request().priority() == QHttpNetworkRequest::LowPriority)
+            lowPrioReceived++;
+        else
+            QFAIL("Wrong priority!?");
+
+        QVERIFY(highPrioReceived >= lowPrioReceived);
+
+        if (highPrioReceived + lowPrioReceived == requestCount)
+            QTestEventLoop::instance().exitLoop();
+    }
+};
+
+void tst_QHttpNetworkConnection::getMultipleWithPriorities()
+{
+    quint16 requestCount = 100;
+    // use 2 connections.
+    QHttpNetworkConnection connection(2, QtNetworkSettings::serverName());
+    GetMultipleWithPrioritiesReceiver receiver(requestCount);
+    QUrl url("http://" + QtNetworkSettings::serverName() + "/qtest/rfc3252.txt");
+    QList<QHttpNetworkRequest*> requests;
+    QList<QHttpNetworkReply*> replies;
+
+    for (int i = 0; i < requestCount; i++) {
+        QHttpNetworkRequest *request = new QHttpNetworkRequest(url);;
+
+        if (i % 2)
+            request->setPriority(QHttpNetworkRequest::HighPriority);
+        else
+            request->setPriority(QHttpNetworkRequest::LowPriority);
+
+        requests.append(request);
+        QHttpNetworkReply *reply = connection.sendRequest(*request);
+        connect(reply, SIGNAL(finished()), &receiver, SLOT(finishedSlot()));
+        replies.append(reply);
+    }
+
+    QTestEventLoop::instance().enterLoop(40);
+    QVERIFY(!QTestEventLoop::instance().timeout());
+
+    qDeleteAll(requests);
+    qDeleteAll(replies);
+}
+
+
 
 QTEST_MAIN(tst_QHttpNetworkConnection)
 #include "tst_qhttpnetworkconnection.moc"

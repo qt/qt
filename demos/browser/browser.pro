@@ -80,6 +80,16 @@ mac {
     ICON = browser.icns
     QMAKE_INFO_PLIST = Info_mac.plist
     TARGET = Browser
+
+    # No 64-bit Flash on Mac, so build the browser 32-bit
+    contains(QT_CONFIG, x86) {
+        CONFIG -= x86_64
+        CONFIG += x86
+    }
+    contains(QT_CONFIG, ppc) {
+        CONFIG -= ppc64
+        CONFIG += ppc
+    }
 }
 
 wince*: {
@@ -93,6 +103,6 @@ sources.path = $$[QT_INSTALL_DEMOS]/browser
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000CF70
+    include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
 }

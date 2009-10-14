@@ -60,27 +60,32 @@ CApaApplication *newS60Application()
 _LIT(KQtWrapperResourceFile, "\\resource\\apps\\s60main.rsc");
 
 /*!
- * \class QS60MainApplication
- * \obsolete
- * \since 4.6
- * \brief Helper class for S60 migration
- *
- * The QS60MainApplication provides a helper class for use in migrating from existing S60 based
- * applications to Qt based applications. It is used in the exact same way as the
- * \c CAknApplication class from Symbian, but internally provides extensions used by Qt.
- *
- * When modifying old S60 applications that rely on implementing functions in \c CAknApplication,
- * the class should be modified to inherit from this class instead of \c CAknApplication. Then the
- * application can choose to override only certain functions. To make Qt use the custom application
- * objects, pass a factory function to
- * QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **).
- *
- * For more information on \c CAknApplication, please see the S60 documentation.
- *
- * Unlike other Qt classes, QS60MainApplication behaves like an S60 class, and can throw Symbian
- * leaves.
- *
- * \sa QS60MainDocument, QS60MainAppUi, QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+  \class QS60MainApplication
+  \since 4.6
+  \brief The QS60MainApplication class provides support for migration from S60.
+ 
+  \warning This class is provided only to get access to S60 specific
+  functionality in the application framework classes. It is not
+  portable. We strongly recommend against using it in new applications.
+ 
+  The QS60MainApplication provides a helper class for use in migrating
+  from existing S60 based applications to Qt based applications. It is
+  used in the exact same way as the \c CAknApplication class from
+  Symbian, but internally provides extensions used by Qt.
+
+  When modifying old S60 applications that rely on implementing
+  functions in \c CAknApplication, the class should be modified to
+  inherit from this class instead of \c CAknApplication. Then the
+  application can choose to override only certain functions. To make
+  Qt use the custom application objects, pass a factory function to
+  \c{QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)}.
+
+  For more information on \c CAknApplication, please see the S60 documentation.
+
+  Unlike other Qt classes, QS60MainApplication behaves like an S60 class, and can throw Symbian
+  leaves.
+
+  \sa QS60MainDocument, QS60MainAppUi, QApplication::QS60MainApplicationFactory
  */
 
 /*!

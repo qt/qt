@@ -1166,12 +1166,12 @@ QNetworkProxyFactory::~QNetworkProxyFactory()
     sets an application-wide proxy factory. For this reason, this method
     is mutually exclusive with setApplicationProxyFactory: calling
     setApplicationProxyFactory overrides the use of the system-wide proxy,
-    and calling setUseSystemConfigurationEnabled overrides any
+    and calling setUseSystemConfiguration overrides any
     application proxy or proxy factory that was previously set.
 
     \since 4.6
 */
-void QNetworkProxyFactory::setUseSystemConfigurationEnabled(bool enable)
+void QNetworkProxyFactory::setUseSystemConfiguration(bool enable)
 {
     if (enable) {
         setApplicationProxyFactory(new QSystemConfigurationProxyFactory);

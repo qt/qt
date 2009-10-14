@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXmlPatterns of the Qt Toolkit.
+** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -230,14 +230,14 @@ bool XsdTypeChecker::isValidString(const QString &normalizedString, const AnySim
         // special QName check
         if (BuiltinTypes::xsQName->wxsTypeMatches(type)) {
             if (!XPathHelper::isQName(normalizedString)) {
-                errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2").arg(formatData(normalizedString)).arg(formatType(m_namePool, type));
+                errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2.").arg(formatData(normalizedString)).arg(formatType(m_namePool, type));
                 return false;
             }
         }
 
         const AtomicValue::Ptr value = fromLexical(normalizedString, type, m_context, m_reflection);
         if (value->hasError()) {
-            errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2").arg(formatData(normalizedString)).arg(formatType(m_namePool, type));
+            errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2.").arg(formatData(normalizedString)).arg(formatType(m_namePool, type));
             return false;
         }
 
@@ -258,7 +258,7 @@ bool XsdTypeChecker::isValidString(const QString &normalizedString, const AnySim
 
             const AtomicValue::Ptr value = fromLexical(normalizedString, targetType, m_context, m_reflection);
             if (value->hasError()) {
-                errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2").arg(formatData(normalizedString)).arg(formatType(m_namePool, targetType));
+                errorMsg = QtXmlPatterns::tr("%1 is not valid according to %2.").arg(formatData(normalizedString)).arg(formatType(m_namePool, targetType));
                 return false;
             }
 
@@ -425,7 +425,7 @@ bool XsdTypeChecker::checkConstrainingFacetsString(const QString &value, const X
         const XsdFacet::Ptr facet = facets.value(XsdFacet::Length);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() != value.length()) {
-            errorMsg = QtXmlPatterns::tr("string content does not match the length facet");
+            errorMsg = QtXmlPatterns::tr("String content does not match the length facet.");
             return false;
         }
     }
@@ -433,7 +433,7 @@ bool XsdTypeChecker::checkConstrainingFacetsString(const QString &value, const X
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumLength);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() > value.length()) {
-            errorMsg = QtXmlPatterns::tr("string content does not match the minLength facet");
+            errorMsg = QtXmlPatterns::tr("String content does not match the minLength facet.");
             return false;
         }
     }
@@ -441,7 +441,7 @@ bool XsdTypeChecker::checkConstrainingFacetsString(const QString &value, const X
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumLength);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() < value.length()) {
-            errorMsg = QtXmlPatterns::tr("string content does not match the maxLength facet");
+            errorMsg = QtXmlPatterns::tr("String content does not match the maxLength facet.");
             return false;
         }
     }
@@ -459,7 +459,7 @@ bool XsdTypeChecker::checkConstrainingFacetsString(const QString &value, const X
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("string content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("String content does not match pattern facet.");
             return false;
         }
     }
@@ -477,7 +477,7 @@ bool XsdTypeChecker::checkConstrainingFacetsString(const QString &value, const X
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("string content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("String content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -494,7 +494,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsLong, m_context, m_reflection);
         if (facetValue->toInteger() < value) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match the maxInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match the maxInclusive facet.");
             return false;
         }
     }
@@ -502,7 +502,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsLong, m_context, m_reflection);
         if (facetValue->toInteger() <= value) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match the maxExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match the maxExclusive facet.");
             return false;
         }
     }
@@ -510,7 +510,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsLong, m_context, m_reflection);
         if (facetValue->toInteger() > value) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match the minInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match the minInclusive facet.");
             return false;
         }
     }
@@ -518,7 +518,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsLong, m_context, m_reflection);
         if (facetValue->toInteger() >= value) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match the minExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match the minExclusive facet.");
             return false;
         }
     }
@@ -536,7 +536,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("signed integer content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -554,7 +554,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match pattern facet.");
             return false;
         }
     }
@@ -563,7 +563,7 @@ bool XsdTypeChecker::checkConstrainingFacetsSignedInteger(long long value, const
         const DerivedInteger<TypePositiveInteger>::Ptr facetValue = facet->value();
 
         if (totalDigitsForSignedLongLong(value) > facetValue->toInteger()) {
-            errorMsg = QtXmlPatterns::tr("signed integer content does not match in the totalDigits facet");
+            errorMsg = QtXmlPatterns::tr("Signed integer content does not match in the totalDigits facet.");
             return false;
         }
     }
@@ -580,7 +580,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsUnsignedLong, m_context, m_reflection);
         if (facetValue->toUnsignedInteger() < value) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match the maxInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match the maxInclusive facet.");
             return false;
         }
     }
@@ -588,7 +588,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsUnsignedLong, m_context, m_reflection);
         if (facetValue->toUnsignedInteger() <= value) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match the maxExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match the maxExclusive facet.");
             return false;
         }
     }
@@ -596,7 +596,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsUnsignedLong, m_context, m_reflection);
         if (facetValue->toUnsignedInteger() > value) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match the minInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match the minInclusive facet.");
             return false;
         }
     }
@@ -604,7 +604,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsUnsignedLong, m_context, m_reflection);
         if (facetValue->toUnsignedInteger() >= value) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match the minExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match the minExclusive facet.");
             return false;
         }
     }
@@ -622,7 +622,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -640,7 +640,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match pattern facet.");
             return false;
         }
     }
@@ -649,7 +649,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnsignedInteger(unsigned long long v
         const DerivedInteger<TypePositiveInteger>::Ptr facetValue = facet->value();
 
         if (totalDigitsForUnsignedLongLong(value) > facetValue->toInteger()) {
-            errorMsg = QtXmlPatterns::tr("unsigned integer content does not match in the totalDigits facet");
+            errorMsg = QtXmlPatterns::tr("Unsigned integer content does not match in the totalDigits facet.");
             return false;
         }
     }
@@ -666,7 +666,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsDouble, m_context, m_reflection);
         if (facetValue->toDouble() < value) {
-            errorMsg = QtXmlPatterns::tr("double content does not match the maxInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Double content does not match the maxInclusive facet.");
             return false;
         }
     }
@@ -674,7 +674,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsDouble, m_context, m_reflection);
         if (facetValue->toDouble() <= value) {
-            errorMsg = QtXmlPatterns::tr("double content does not match the maxExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Double content does not match the maxExclusive facet.");
             return false;
         }
     }
@@ -682,7 +682,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumInclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsDouble, m_context, m_reflection);
         if (facetValue->toDouble() > value) {
-            errorMsg = QtXmlPatterns::tr("double content does not match the minInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Double content does not match the minInclusive facet.");
             return false;
         }
     }
@@ -690,7 +690,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumExclusive);
         const Numeric::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), BuiltinTypes::xsDouble, m_context, m_reflection);
         if (facetValue->toDouble() >= value) {
-            errorMsg = QtXmlPatterns::tr("double content does not match the minExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Double content does not match the minExclusive facet.");
             return false;
         }
     }
@@ -708,7 +708,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("double content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Double content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -726,7 +726,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDouble(double value, const QString &
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("double content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Double content does not match pattern facet.");
             return false;
         }
     }
@@ -744,7 +744,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDecimal(const AtomicValue::Ptr &valu
         const DerivedInteger<TypePositiveInteger>::Ptr facetValue = facet->value();
 
         if (fractionDigitsForDecimal(lexicalValue) > facetValue->toInteger()) {
-            errorMsg = QtXmlPatterns::tr("decimal content does not match in the fractionDigits facet");
+            errorMsg = QtXmlPatterns::tr("Decimal content does not match in the fractionDigits facet.");
             return false;
         }
     }
@@ -753,7 +753,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDecimal(const AtomicValue::Ptr &valu
         const DerivedInteger<TypePositiveInteger>::Ptr facetValue = facet->value();
 
         if (totalDigitsForDecimal(lexicalValue) > facetValue->toInteger()) {
-            errorMsg = QtXmlPatterns::tr("decimal content does not match in the totalDigits facet");
+            errorMsg = QtXmlPatterns::tr("Decimal content does not match in the totalDigits facet.");
             return false;
         }
     }
@@ -767,7 +767,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumInclusive);
         const AbstractDateTime::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), type, m_context, m_reflection);
         if (facetValue->toDateTime() < value) {
-            errorMsg = QtXmlPatterns::tr("date time content does not match the maxInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Date time content does not match the maxInclusive facet.");
             return false;
         }
     }
@@ -775,7 +775,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumExclusive);
         const AbstractDateTime::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), type, m_context, m_reflection);
         if (facetValue->toDateTime() <= value) {
-            errorMsg = QtXmlPatterns::tr("date time content does not match the maxExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Date time content does not match the maxExclusive facet.");
             return false;
         }
     }
@@ -783,7 +783,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumInclusive);
         const AbstractDateTime::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), type, m_context, m_reflection);
         if (facetValue->toDateTime() > value) {
-            errorMsg = QtXmlPatterns::tr("date time content does not match the minInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Date time content does not match the minInclusive facet.");
             return false;
         }
     }
@@ -791,7 +791,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumExclusive);
         const AbstractDateTime::Ptr facetValue = ValueFactory::fromLexical(facet->value()->as<DerivedString<TypeString> >()->stringValue(), type, m_context, m_reflection);
         if (facetValue->toDateTime() >= value) {
-            errorMsg = QtXmlPatterns::tr("date time content does not match the minExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Date time content does not match the minExclusive facet.");
             return false;
         }
     }
@@ -809,7 +809,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("date time content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Date time content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -827,7 +827,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDateTime(const QDateTime &value, con
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("date time content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Date time content does not match pattern facet.");
             return false;
         }
     }
@@ -842,7 +842,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         const DerivedString<TypeString>::Ptr value = DerivedString<TypeString>::fromLexical(m_namePool, lexicalValue);
 
         if (XsdSchemaHelper::constructAndCompare(facets.value(XsdFacet::MaximumInclusive)->value(), AtomicComparator::OperatorLessThan, value, BuiltinTypes::xsDuration, m_context, m_reflection)) {
-            errorMsg = QtXmlPatterns::tr("duration content does not match the maxInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Duration content does not match the maxInclusive facet.");
             return false;
         }
     }
@@ -851,7 +851,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         const DerivedString<TypeString>::Ptr value = DerivedString<TypeString>::fromLexical(m_namePool, lexicalValue);
 
         if (XsdSchemaHelper::constructAndCompare(facets.value(XsdFacet::MaximumExclusive)->value(), AtomicComparator::OperatorLessOrEqual, value, BuiltinTypes::xsDuration, m_context, m_reflection)) {
-            errorMsg = QtXmlPatterns::tr("duration content does not match the maxExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Duration content does not match the maxExclusive facet.");
             return false;
         }
     }
@@ -860,7 +860,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         const DerivedString<TypeString>::Ptr value = DerivedString<TypeString>::fromLexical(m_namePool, lexicalValue);
 
         if (XsdSchemaHelper::constructAndCompare(facets.value(XsdFacet::MinimumInclusive)->value(), AtomicComparator::OperatorGreaterThan, value, BuiltinTypes::xsDuration, m_context, m_reflection)) {
-            errorMsg = QtXmlPatterns::tr("duration content does not match the minInclusive facet");
+            errorMsg = QtXmlPatterns::tr("Duration content does not match the minInclusive facet.");
             return false;
         }
     }
@@ -869,7 +869,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         const DerivedString<TypeString>::Ptr value = DerivedString<TypeString>::fromLexical(m_namePool, lexicalValue);
 
         if (XsdSchemaHelper::constructAndCompare(facets.value(XsdFacet::MinimumExclusive)->value(), AtomicComparator::OperatorGreaterOrEqual, value, BuiltinTypes::xsDuration, m_context, m_reflection)) {
-            errorMsg = QtXmlPatterns::tr("duration content does not match the minExclusive facet");
+            errorMsg = QtXmlPatterns::tr("Duration content does not match the minExclusive facet.");
             return false;
         }
     }
@@ -887,7 +887,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("duration content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Duration content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -905,7 +905,7 @@ bool XsdTypeChecker::checkConstrainingFacetsDuration(const AtomicValue::Ptr&, co
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("duration content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Duration content does not match pattern facet.");
             return false;
         }
     }
@@ -932,7 +932,7 @@ bool XsdTypeChecker::checkConstrainingFacetsBoolean(bool, const QString &lexical
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("boolean content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Boolean content does not match pattern facet.");
             return false;
         }
     }
@@ -949,7 +949,7 @@ bool XsdTypeChecker::checkConstrainingFacetsBinary(const QByteArray &value, cons
         const XsdFacet::Ptr facet = facets.value(XsdFacet::Length);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() != value.length()) {
-            errorMsg = QtXmlPatterns::tr("binary content does not match the length facet");
+            errorMsg = QtXmlPatterns::tr("Binary content does not match the length facet.");
             return false;
         }
     }
@@ -957,7 +957,7 @@ bool XsdTypeChecker::checkConstrainingFacetsBinary(const QByteArray &value, cons
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MinimumLength);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() > value.length()) {
-            errorMsg = QtXmlPatterns::tr("binary content does not match the minLength facet");
+            errorMsg = QtXmlPatterns::tr("Binary content does not match the minLength facet.");
             return false;
         }
     }
@@ -965,7 +965,7 @@ bool XsdTypeChecker::checkConstrainingFacetsBinary(const QByteArray &value, cons
         const XsdFacet::Ptr facet = facets.value(XsdFacet::MaximumLength);
         const DerivedInteger<TypeNonNegativeInteger>::Ptr length = facet->value();
         if (length->toInteger() < value.length()) {
-            errorMsg = QtXmlPatterns::tr("binary content does not match the maxLength facet");
+            errorMsg = QtXmlPatterns::tr("Binary content does not match the maxLength facet.");
             return false;
         }
     }
@@ -983,7 +983,7 @@ bool XsdTypeChecker::checkConstrainingFacetsBinary(const QByteArray &value, cons
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("binary content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Binary content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -1010,7 +1010,7 @@ bool XsdTypeChecker::checkConstrainingFacetsQName(const QXmlName &value, const Q
     }
     if (facets.contains(XsdFacet::Enumeration)) {
         if (!XPathHelper::isQName(lexicalValue)) {
-            errorMsg = QtXmlPatterns::tr("invalid QName content: %1").arg(formatData(lexicalValue));
+            errorMsg = QtXmlPatterns::tr("Invalid QName content: %1.").arg(formatData(lexicalValue));
             return false;
         }
 
@@ -1027,7 +1027,7 @@ bool XsdTypeChecker::checkConstrainingFacetsQName(const QXmlName &value, const Q
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("QName content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("QName content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -1045,7 +1045,7 @@ bool XsdTypeChecker::checkConstrainingFacetsQName(const QXmlName &value, const Q
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("QName content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("QName content does not match pattern facet.");
             return false;
         }
     }
@@ -1081,7 +1081,7 @@ bool XsdTypeChecker::checkConstrainingFacetsNotation(const QXmlName &value, cons
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("notation content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Notation content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -1100,21 +1100,21 @@ bool XsdTypeChecker::checkConstrainingFacetsList(const QStringList &values, cons
     if (facets.contains(XsdFacet::Length)) {
         const DerivedInteger<TypeNonNegativeInteger>::Ptr value = facets.value(XsdFacet::Length)->value();
         if (value->toInteger() != values.count()) {
-            errorMsg = QtXmlPatterns::tr("list content does not match length facet");
+            errorMsg = QtXmlPatterns::tr("List content does not match length facet.");
             return false;
         }
     }
     if (facets.contains(XsdFacet::MinimumLength)) {
         const DerivedInteger<TypeNonNegativeInteger>::Ptr value = facets.value(XsdFacet::MinimumLength)->value();
         if (value->toInteger() > values.count()) {
-            errorMsg = QtXmlPatterns::tr("list content does not match minLength facet");
+            errorMsg = QtXmlPatterns::tr("List content does not match minLength facet.");
             return false;
         }
     }
     if (facets.contains(XsdFacet::MaximumLength)) {
         const DerivedInteger<TypeNonNegativeInteger>::Ptr value = facets.value(XsdFacet::MaximumLength)->value();
         if (value->toInteger() < values.count()) {
-            errorMsg = QtXmlPatterns::tr("list content does not match maxLength facet");
+            errorMsg = QtXmlPatterns::tr("List content does not match maxLength facet.");
             return false;
         }
     }
@@ -1204,7 +1204,7 @@ bool XsdTypeChecker::checkConstrainingFacetsList(const QStringList &values, cons
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("list content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("List content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -1222,7 +1222,7 @@ bool XsdTypeChecker::checkConstrainingFacetsList(const QStringList &values, cons
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("list content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("List content does not match pattern facet.");
             return false;
         }
     }
@@ -1261,7 +1261,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnion(const QString &value, const QS
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("union content is not listed in the enumeration facet");
+            errorMsg = QtXmlPatterns::tr("Union content is not listed in the enumeration facet.");
             return false;
         }
     }
@@ -1279,7 +1279,7 @@ bool XsdTypeChecker::checkConstrainingFacetsUnion(const QString &value, const QS
         }
 
         if (!found) {
-            errorMsg = QtXmlPatterns::tr("union content does not match pattern facet");
+            errorMsg = QtXmlPatterns::tr("Union content does not match pattern facet.");
             return false;
         }
     }
@@ -1294,7 +1294,7 @@ AtomicValue::Ptr XsdTypeChecker::fromLexical(const QString &value, const SchemaT
 {
     if (type->name(m_namePool) == BuiltinTypes::xsNOTATION->name(m_namePool) || type->name(m_namePool) == BuiltinTypes::xsQName->name(m_namePool)) {
         if (value.simplified().isEmpty())
-            return ValidationError::createError(QtXmlPatterns::tr("data of type %1 are not allowed to be empty").arg(formatType(m_namePool, BuiltinTypes::xsNOTATION)));
+            return ValidationError::createError(QtXmlPatterns::tr("Data of type %1 are not allowed to be empty.").arg(formatType(m_namePool, BuiltinTypes::xsNOTATION)));
 
         const QXmlName valueName = convertToQName(value);
         return QNameValue::fromValue(m_namePool, valueName);

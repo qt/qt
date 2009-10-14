@@ -41,6 +41,7 @@
 
 #include "qvfb.h"
 #include "qvfbview.h"
+#include "qvfbhdr.h"
 #ifdef Q_WS_X11
 #include "qvfbx11view.h"
 #endif
@@ -134,7 +135,7 @@ static const char *red_off_led_xpm[] = {
 
 static bool copyButtonConfiguration(const QString &prefix, int displayId)
 {
-    const QString destDir = QString(QLatin1String("/tmp/qtembedded-%1/")).arg(displayId);
+    const QString destDir = QT_VFB_DATADIR(displayId).append("/");
     const QFileInfo src(prefix + QLatin1String("defaultbuttons.conf"));
     const QFileInfo dst(destDir + QLatin1String("defaultbuttons.conf"));
     unlink(dst.absoluteFilePath().toLatin1().constData());
@@ -351,9 +352,9 @@ void QVFb::init( int display_id, int pw, int ph, int d, int r, const QString& sk
 	ph += 2;					// avoid scrollbar
 	scroller->show();
 	// delete defaultbuttons.conf if it was left behind...
-	unlink(QFileInfo(QString("/tmp/qtembedded-%1/defaultbuttons.conf").arg(view->displayId())).absoluteFilePath().toLatin1().constData());
+        unlink(QFileInfo(QT_VFB_DATADIR(view->displayId()).append("/defaultbuttons.conf")).absoluteFilePath().toLatin1().constData());
         if (secondaryView)
-            unlink(QFileInfo(QString("/tmp/qtembedded-%1/defaultbuttons.conf").arg(view->displayId()+1)).absoluteFilePath().toLatin1().constData());
+            unlink(QFileInfo(QT_VFB_DATADIR(view->displayId() + 1).append("/defaultbuttons.conf")).absoluteFilePath().toLatin1().constData());
     }
     view->setRate(refreshRate);
     if (secondaryView) {

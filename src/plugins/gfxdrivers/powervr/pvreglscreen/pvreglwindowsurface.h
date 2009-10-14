@@ -46,13 +46,12 @@
 #include "pvrqwsdrawable.h"
 
 class QScreen;
-class PvrEglSurfaceHolder;
 
 class PvrEglWindowSurface : public QWSGLWindowSurface
 {
 public:
     PvrEglWindowSurface(QWidget *widget, QScreen *screen, int screenNum);
-    PvrEglWindowSurface(PvrEglSurfaceHolder *holder);
+    PvrEglWindowSurface();
     ~PvrEglWindowSurface();
 
     QString key() const { return QLatin1String("PvrEgl"); }
@@ -65,6 +64,8 @@ public:
     QByteArray permanentState() const;
     void setPermanentState(const QByteArray &state);
 
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+
     QImage image() const;
     QPaintDevice *paintDevice();
 
@@ -76,7 +77,6 @@ private:
     QWidget *widget;
     PvrQwsDrawable *drawable;
     QScreen *screen;
-    PvrEglSurfaceHolder *holder;
     QPaintDevice *pdevice;
 };
 

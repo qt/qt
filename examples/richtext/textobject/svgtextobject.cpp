@@ -46,7 +46,7 @@
 #include "window.h"
 
 //![0]
-QSizeF SvgTextObject::intrinsicSize(QTextDocument *doc, int posInDocument,
+QSizeF SvgTextObject::intrinsicSize(QTextDocument * /*doc*/, int /*posInDocument*/,
                                     const QTextFormat &format)
 {
     QImage bufferedImage = qVariantValue<QImage>(format.property(Window::SvgData));
@@ -61,7 +61,7 @@ QSizeF SvgTextObject::intrinsicSize(QTextDocument *doc, int posInDocument,
 
 //![1]
 void SvgTextObject::drawObject(QPainter *painter, const QRectF &rect,
-                               QTextDocument *doc, int posInDocument,
+                               QTextDocument * /*doc*/, int /*posInDocument*/,
                                const QTextFormat &format)
 {
     QImage bufferedImage = qVariantValue<QImage>(format.property(Window::SvgData));

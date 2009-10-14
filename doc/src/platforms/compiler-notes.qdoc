@@ -204,9 +204,21 @@
 
     \section2 Sun Studio
 
-    Qt is tested using Sun Studio 8 (Sun CC 5.5). Go to
+    Qt is tested using Sun Studio 12 (Sun CC 5.9). Go to
     \l{Sun Studio Patches} page on Sun's Web site to download
     the latest patches for your Sun compiler.
+
+    Please note that Qt 4.6 is stricter in its STL requirements and
+    that the default STL implementation used by Sun CC does not pass
+    those requirements. This does not affect binary compatibility and
+    you can continue to use STL in your own code, but Qt's
+    STL-compatibility functions will be disabled.
+
+    Sun CC ships with a secondary STL implementation (called stlport4)
+    which is standards-compliant and can be used by Qt. You can enable
+    it by passing the -library=stlport4 option to the compiler. Note
+    that this does not affect Qt's binary compatibility, but it may
+    affect that of other libraries and programs that use STL.
 
     \section2 Sun WorkShop 5.0
 

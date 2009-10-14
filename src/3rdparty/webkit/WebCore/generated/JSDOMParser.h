@@ -33,7 +33,7 @@ class DOMParser;
 class JSDOMParser : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDOMParser(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMParser>);
+    JSDOMParser(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DOMParser>);
     virtual ~JSDOMParser();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -68,7 +68,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSDOMParserPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDOMParserPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

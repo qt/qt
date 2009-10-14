@@ -650,7 +650,7 @@ qint64 QAudioOutputPrivate::clock() const
     if(!handle)
         return 0;
 
-    if(deviceState != QAudio::ActiveState)
+    if (deviceState == QAudio::StopState)
         return 0;
 
     snd_pcm_status_t* status;

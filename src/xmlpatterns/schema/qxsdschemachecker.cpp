@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXmlPatterns of the Qt Toolkit.
+** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -224,12 +224,12 @@ void XsdSchemaChecker::checkBasicCircularInheritances()
 
         if (wxsTypeMatches(type, type->wxsSuperType(), visitedTypes, conflictingType)) {
             if (conflictingType)
-                m_context->error(QtXmlPatterns::tr("%1 has inheritance loop in its base type %2")
+                m_context->error(QtXmlPatterns::tr("%1 has inheritance loop in its base type %2.")
                                                   .arg(formatType(m_namePool, type))
                                                   .arg(formatType(m_namePool, conflictingType)),
                                  XsdSchemaContext::XSDError, location);
             else
-                m_context->error(QtXmlPatterns::tr("circular inheritance of base type %1").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
+                m_context->error(QtXmlPatterns::tr("Circular inheritance of base type %1.").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
 
             return;
         }
@@ -253,7 +253,7 @@ void XsdSchemaChecker::checkCircularInheritances()
         // check normal base type inheritance
         QSet<SchemaType::Ptr> visitedTypes;
         if (matchesType(type, type->wxsSuperType(), visitedTypes)) {
-            m_context->error(QtXmlPatterns::tr("circular inheritance of base type %1").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
+            m_context->error(QtXmlPatterns::tr("Circular inheritance of base type %1.").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
             return;
         }
 
@@ -264,7 +264,7 @@ void XsdSchemaChecker::checkCircularInheritances()
                 const XsdSimpleType::List memberTypes = simpleType->memberTypes();
                 for (int j = 0; j < memberTypes.count(); ++j) {
                     if (hasCircularUnionInheritance(simpleType, memberTypes.at(j), m_namePool)) {
-                        m_context->error(QtXmlPatterns::tr("circular inheritance of union %1").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
+                        m_context->error(QtXmlPatterns::tr("Circular inheritance of union %1.").arg(formatType(m_namePool, type)), XsdSchemaContext::XSDError, location);
                         return;
                     }
                 }
@@ -289,12 +289,12 @@ void XsdSchemaChecker::checkInheritanceRestrictions()
         const SchemaType::Ptr baseType = type->wxsSuperType();
         if (baseType->isDefinedBySchema()) {
             if ((type->derivationMethod() == SchemaType::DerivationRestriction) && (baseType->derivationConstraints() & SchemaType::RestrictionConstraint)) {
-                m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by restriction as the latter defines it as final")
+                m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by restriction as the latter defines it as final.")
                                                   .arg(formatType(m_namePool, type))
                                                   .arg(formatType(m_namePool, baseType)), XsdSchemaContext::XSDError, location);
                 return;
             } else if ((type->derivationMethod() == SchemaType::DerivationExtension) && (baseType->derivationConstraints() & SchemaType::ExtensionConstraint)) {
-                m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by extension as the latter defines it as final")
+                m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by extension as the latter defines it as final.")
                                                   .arg(formatType(m_namePool, type))
                                                   .arg(formatType(m_namePool, baseType)), XsdSchemaContext::XSDError, location);
                 return;
@@ -325,7 +325,7 @@ void XsdSchemaChecker::checkBasicSimpleTypeConstraints()
         const SchemaType::Ptr baseType = simpleType->wxsSuperType();
 
         if (baseType->isComplexType() && (simpleType->name(m_namePool) != BuiltinTypes::xsAnySimpleType->name(m_namePool))) {
-            m_context->error(QtXmlPatterns::tr("base type of simple type %1 cannot be complex type %2")
+            m_context->error(QtXmlPatterns::tr("Base type of simple type %1 cannot be complex type %2.")
                                               .arg(formatType(m_namePool, simpleType))
                                               .arg(formatType(m_namePool, baseType)),
                              XsdSchemaContext::XSDError, location);
@@ -334,7 +334,7 @@ void XsdSchemaChecker::checkBasicSimpleTypeConstraints()
 
         if (baseType == BuiltinTypes::xsAnyType) {
             if (type->name(m_namePool) != BuiltinTypes::xsAnySimpleType->name(m_namePool)) {
-                m_context->error(QtXmlPatterns::tr("simple type %1 cannot have direct base type %2")
+                m_context->error(QtXmlPatterns::tr("Simple type %1 cannot have direct base type %2.")
                                                   .arg(formatType(m_namePool, simpleType))
                                                   .arg(formatType(m_namePool, BuiltinTypes::xsAnyType)),
                                  XsdSchemaContext::XSDError, location);
@@ -367,7 +367,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
             // check that no user defined type has xs:AnySimpleType as base type (except xs:AnyAtomicType)
             if (simpleType->wxsSuperType()->name(m_namePool) == BuiltinTypes::xsAnySimpleType->name(m_namePool)) {
                 if (simpleType->name(m_namePool) != BuiltinTypes::xsAnyAtomicType->name(m_namePool)) {
-                    m_context->error(QtXmlPatterns::tr("simple type %1 is not allowed to have base type %2")
+                    m_context->error(QtXmlPatterns::tr("Simple type %1 is not allowed to have base type %2.")
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatType(m_namePool, simpleType->wxsSuperType())),
                                      XsdSchemaContext::XSDError, location);
@@ -376,7 +376,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
             }
             // check that no user defined type has xs:AnyAtomicType as base type
             if (simpleType->wxsSuperType()->name(m_namePool) == BuiltinTypes::xsAnyAtomicType->name(m_namePool)) {
-                m_context->error(QtXmlPatterns::tr("simple type %1 is not allowed to have base type %2")
+                m_context->error(QtXmlPatterns::tr("Simple type %1 is not allowed to have base type %2.")
                                                   .arg(formatType(m_namePool, simpleType))
                                                   .arg(formatType(m_namePool, simpleType->wxsSuperType())),
                                  XsdSchemaContext::XSDError, location);
@@ -388,13 +388,13 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
         if (simpleType->category() == XsdSimpleType::SimpleTypeAtomic) {
             // 1.1
             if ((simpleType->wxsSuperType()->category() != XsdSimpleType::SimpleTypeAtomic) && (simpleType->name(m_namePool) != BuiltinTypes::xsAnyAtomicType->name(m_namePool))) {
-                m_context->error(QtXmlPatterns::tr("simple type %1 can only have simple atomic type as base type")
+                m_context->error(QtXmlPatterns::tr("Simple type %1 can only have simple atomic type as base type.")
                                                   .arg(formatType(m_namePool, simpleType)),
                                  XsdSchemaContext::XSDError, location);
             }
             // 1.2
             if (simpleType->wxsSuperType()->derivationConstraints() & SchemaType::RestrictionConstraint) {
-                m_context->error(QtXmlPatterns::tr("simple type %1 cannot derive from %2 as the latter defines restriction as final")
+                m_context->error(QtXmlPatterns::tr("Simple type %1 cannot derive from %2 as the latter defines restriction as final.")
                                                   .arg(formatType(m_namePool, simpleType->wxsSuperType()))
                                                   .arg(formatType(m_namePool, simpleType)),
                                  XsdSchemaContext::XSDError, location);
@@ -407,7 +407,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
 
             // 2.1 or @see http://www.w3.org/TR/xmlschema-2/#cos-list-of-atomic
             if (itemType->category() != SchemaType::SimpleTypeAtomic && itemType->category() != SchemaType::SimpleTypeUnion) {
-                m_context->error(QtXmlPatterns::tr("variety of item type of %1 must be either atomic or union").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
+                m_context->error(QtXmlPatterns::tr("Variety of item type of %1 must be either atomic or union.").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
                 return;
             }
 
@@ -417,7 +417,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                 const AnySimpleType::List memberTypes = simpleItemType->memberTypes();
                 for (int j = 0; j < memberTypes.count(); ++j) {
                     if (memberTypes.at(j)->category() != SchemaType::SimpleTypeAtomic) {
-                        m_context->error(QtXmlPatterns::tr("variety of member types of %1 must be atomic").arg(formatType(m_namePool, simpleItemType)), XsdSchemaContext::XSDError, location);
+                        m_context->error(QtXmlPatterns::tr("Variety of member types of %1 must be atomic.").arg(formatType(m_namePool, simpleItemType)), XsdSchemaContext::XSDError, location);
                         return;
                     }
                 }
@@ -430,7 +430,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
 
                     // 2.2.1.1
                     if (simpleItemType->derivationConstraints() & XsdSimpleType::ListConstraint) {
-                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by list as the latter defines it as final")
+                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by list as the latter defines it as final.")
                                                           .arg(formatType(m_namePool, simpleType))
                                                           .arg(formatType(m_namePool, simpleItemType)), XsdSchemaContext::XSDError, location);
                         return;
@@ -450,7 +450,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                     }
 
                     if (invalidFacetFound) {
-                        m_context->error(QtXmlPatterns::tr("simple type %1 is only allowed to have %2 facet")
+                        m_context->error(QtXmlPatterns::tr("Simple type %1 is only allowed to have %2 facet.")
                                                           .arg(formatType(m_namePool, simpleType))
                                                           .arg(formatKeyword("whiteSpace")),
                                          XsdSchemaContext::XSDError, location);
@@ -460,19 +460,19 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
             } else { // 2.2.2
                 // 2.2.2.1
                 if (simpleType->wxsSuperType()->category() != XsdSimpleType::SimpleTypeList) {
-                    m_context->error(QtXmlPatterns::tr("base type of simple type %1 must have variety of type list").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
+                    m_context->error(QtXmlPatterns::tr("Base type of simple type %1 must have variety of type list.").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
                     return;
                 }
 
                 // 2.2.2.2
                 if (simpleType->wxsSuperType()->derivationConstraints() & SchemaType::RestrictionConstraint) {
-                    m_context->error(QtXmlPatterns::tr("base type of simple type %1 has defined derivation by restriction as final").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
+                    m_context->error(QtXmlPatterns::tr("Base type of simple type %1 has defined derivation by restriction as final.").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
                     return;
                 }
 
                 // 2.2.2.3
                 if (!XsdSchemaHelper::isSimpleDerivationOk(itemType, XsdSimpleType::Ptr(simpleType->wxsSuperType())->itemType(), SchemaType::DerivationConstraints())) {
-                    m_context->error(QtXmlPatterns::tr("item type of base type does not match item type of %1").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
+                    m_context->error(QtXmlPatterns::tr("Item type of base type does not match item type of %1.").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
                     return;
                 }
 
@@ -498,7 +498,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                 }
 
                 if (invalidFacetFound) {
-                    m_context->error(QtXmlPatterns::tr("simple type %1 contains not allowed facet type %2")
+                    m_context->error(QtXmlPatterns::tr("Simple type %1 contains not allowed facet type %2.")
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatKeyword(XsdFacet::typeName(invalidFacetType))),
                                      XsdSchemaContext::XSDError, location);
@@ -519,7 +519,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                     const AnySimpleType::Ptr memberType = memberTypes.at(i);
 
                     if (memberType->derivationConstraints() & XsdSimpleType::UnionConstraint) {
-                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by union as the latter defines it as final")
+                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by union as the latter defines it as final.")
                                                           .arg(formatType(m_namePool, simpleType))
                                                           .arg(formatType(m_namePool, memberType)), XsdSchemaContext::XSDError, location);
                         return;
@@ -528,7 +528,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
 
                 // 3.3.1.2
                 if (!simpleType->facets().isEmpty()) {
-                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to have any facets")
+                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to have any facets.")
                                                       .arg(formatType(m_namePool, simpleType)),
                                      XsdSchemaContext::XSDError, location);
                     return;
@@ -536,7 +536,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
             } else {
                 // 3.1.2.1
                 if (simpleType->wxsSuperType()->category() != SchemaType::SimpleTypeUnion) {
-                    m_context->error(QtXmlPatterns::tr("base type %1 of simple type %2 must have variety of union")
+                    m_context->error(QtXmlPatterns::tr("Base type %1 of simple type %2 must have variety of union.")
                                                       .arg(formatType(m_namePool, simpleType->wxsSuperType()))
                                                       .arg(formatType(m_namePool, simpleType)),
                                      XsdSchemaContext::XSDError, location);
@@ -545,7 +545,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
 
                 // 3.1.2.2
                 if (simpleType->wxsSuperType()->derivationConstraints() & SchemaType::DerivationRestriction) {
-                    m_context->error(QtXmlPatterns::tr("base type %1 of simple type %2 is not allowed to have restriction in %3 attribute")
+                    m_context->error(QtXmlPatterns::tr("Base type %1 of simple type %2 is not allowed to have restriction in %3 attribute.")
                                                       .arg(formatType(m_namePool, simpleType->wxsSuperType()))
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatAttribute("final")),
@@ -563,7 +563,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                         const AnySimpleType::Ptr baseMemberType = baseMemberTypes.at(i);
 
                         if (!XsdSchemaHelper::isSimpleDerivationOk(memberType, baseMemberType, SchemaType::DerivationConstraints())) {
-                            m_context->error(QtXmlPatterns::tr("member type %1 cannot be derived from member type %2 of %3's base type %4")
+                            m_context->error(QtXmlPatterns::tr("Member type %1 cannot be derived from member type %2 of %3's base type %4.")
                                                               .arg(formatType(m_namePool, memberType))
                                                               .arg(formatType(m_namePool, baseMemberType))
                                                               .arg(formatType(m_namePool, simpleType))
@@ -591,7 +591,7 @@ void XsdSchemaChecker::checkSimpleTypeConstraints()
                 }
 
                 if (invalidFacetFound) {
-                    m_context->error(QtXmlPatterns::tr("simple type %1 contains not allowed facet type %2")
+                    m_context->error(QtXmlPatterns::tr("Simple type %1 contains not allowed facet type %2.")
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatKeyword(XsdFacet::typeName(invalidFacetType))),
                                      XsdSchemaContext::XSDError, location);
@@ -628,7 +628,7 @@ void XsdSchemaChecker::checkBasicComplexTypeConstraints()
 
         // @see http://www.w3.org/TR/xmlschema11-1/#ct-props-correct 2)
         if (baseType->isSimpleType() && (complexType->derivationMethod() != XsdComplexType::DerivationExtension)) {
-            m_context->error(QtXmlPatterns::tr("derivation method of %1 must be extension because the base type %2 is a simple type")
+            m_context->error(QtXmlPatterns::tr("Derivation method of %1 must be extension because the base type %2 is a simple type.")
                                               .arg(formatType(m_namePool, complexType))
                                               .arg(formatType(m_namePool, baseType)),
                              XsdSchemaContext::XSDError, location);
@@ -658,7 +658,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
         if (complexType->contentType()->particle()) {
             XsdElement::Ptr duplicatedElement;
             if (XsdParticleChecker::hasDuplicatedElements(complexType->contentType()->particle(), m_namePool, duplicatedElement)) {
-                m_context->error(QtXmlPatterns::tr("complex type %1 has duplicated element %2 in its content model")
+                m_context->error(QtXmlPatterns::tr("Complex type %1 has duplicated element %2 in its content model.")
                                                   .arg(formatType(m_namePool, complexType))
                                                   .arg(formatKeyword(duplicatedElement->displayName(m_namePool))),
                                  XsdSchemaContext::XSDError, location);
@@ -666,7 +666,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
             }
 
             if (!XsdParticleChecker::isUPAConform(complexType->contentType()->particle(), m_namePool)) {
-                m_context->error(QtXmlPatterns::tr("complex type %1 has non-deterministic content")
+                m_context->error(QtXmlPatterns::tr("Complex type %1 has non-deterministic content.")
                                                   .arg(formatType(m_namePool, complexType)),
                                  XsdSchemaContext::XSDError, location);
                 return;
@@ -687,7 +687,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
                 QString errorMsg;
                 if (!XsdSchemaHelper::isValidAttributeUsesExtension(complexType->attributeUses(), complexBaseType->attributeUses(),
                                                                     complexType->attributeWildcard(), complexBaseType->attributeWildcard(), m_context, errorMsg)) {
-                    m_context->error(QtXmlPatterns::tr("attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3")
+                    m_context->error(QtXmlPatterns::tr("Attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3.")
                                                       .arg(formatType(m_namePool, complexType))
                                                       .arg(formatType(m_namePool, baseType))
                                                       .arg(errorMsg),
@@ -724,7 +724,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
                 // 1.5 WTF?!?
 
                 if (!validContentType) {
-                    m_context->error(QtXmlPatterns::tr("content model of complex type %1 is not a valid extension of content model of %2")
+                    m_context->error(QtXmlPatterns::tr("Content model of complex type %1 is not a valid extension of content model of %2.")
                                                       .arg(formatType(m_namePool, complexType))
                                                       .arg(formatType(m_namePool, complexBaseType)),
                                      XsdSchemaContext::XSDError, location);
@@ -734,14 +734,14 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
             } else if (baseType->isSimpleType()) {
                 // 2.1
                 if (complexType->contentType()->variety() != XsdComplexType::ContentType::Simple) {
-                    m_context->error(QtXmlPatterns::tr("complex type %1 must have simple content")
+                    m_context->error(QtXmlPatterns::tr("Complex type %1 must have simple content.")
                                                       .arg(formatType(m_namePool, complexType)),
                                      XsdSchemaContext::XSDError, location);
                     return;
                 }
 
                 if (complexType->contentType()->simpleType() != baseType) {
-                    m_context->error(QtXmlPatterns::tr("complex type %1 must have the same simple type as its base class %2")
+                    m_context->error(QtXmlPatterns::tr("Complex type %1 must have the same simple type as its base class %2.")
                                                       .arg(formatType(m_namePool, complexType))
                                                       .arg(formatType(m_namePool, baseType)),
                                      XsdSchemaContext::XSDError, location);
@@ -808,7 +808,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
             }
 
             if (!derivationOk) {
-                m_context->error(QtXmlPatterns::tr("complex type %1 cannot be derived from base type %2%3")
+                m_context->error(QtXmlPatterns::tr("Complex type %1 cannot be derived from base type %2%3.")
                                                   .arg(formatType(m_namePool, complexType))
                                                   .arg(formatType(m_namePool, baseType))
                                                   .arg(errorMsg.isEmpty() ? QString() : QLatin1String(": ") + errorMsg),
@@ -822,7 +822,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
                 QString errorMsg;
                 if (!XsdSchemaHelper::isValidAttributeUsesRestriction(complexType->attributeUses(), complexBaseType->attributeUses(),
                                                                       complexType->attributeWildcard(), complexBaseType->attributeWildcard(), m_context, errorMsg)) {
-                    m_context->error(QtXmlPatterns::tr("attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3")
+                    m_context->error(QtXmlPatterns::tr("Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.")
                                                       .arg(formatType(m_namePool, complexType))
                                                       .arg(formatType(m_namePool, baseType))
                                                       .arg(errorMsg),
@@ -836,7 +836,7 @@ void XsdSchemaChecker::checkComplexTypeConstraints()
         // built in complex type xs:AnyType
         if (complexType->contentType()->variety() == XsdComplexType::ContentType::Simple) {
             if (baseType->name(m_namePool) == BuiltinTypes::xsAnyType->name(m_namePool)) {
-                m_context->error(QtXmlPatterns::tr("complex type %1 with simple content cannot be derived from complex base type %2")
+                m_context->error(QtXmlPatterns::tr("Complex type %1 with simple content cannot be derived from complex base type %2.")
                                                   .arg(formatType(m_namePool, complexType))
                                                   .arg(formatType(m_namePool, baseType)),
                                  XsdSchemaContext::XSDError, location);
@@ -871,7 +871,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
             const AnySimpleType::Ptr itemType = simpleType->itemType();
 
             if (itemType->isComplexType()) {
-                m_context->error(QtXmlPatterns::tr("item type of simple type %1 cannot be a complex type")
+                m_context->error(QtXmlPatterns::tr("Item type of simple type %1 cannot be a complex type.")
                                                   .arg(formatType(m_namePool, simpleType)),
                                  XsdSchemaContext::XSDError, location);
                 return;
@@ -881,7 +881,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
             if (itemType->isSimpleType() && itemType->isDefinedBySchema()) {
                 const XsdSimpleType::Ptr simpleItemType = itemType;
                 if (simpleItemType->derivationConstraints() & XsdSimpleType::ListConstraint) {
-                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by list as the latter defines it as final")
+                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by list as the latter defines it as final.")
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatType(m_namePool, simpleItemType)),
                                      XsdSchemaContext::XSDError, location);
@@ -891,7 +891,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
 
             // @see http://www.w3.org/TR/xmlschema-2/#cos-list-of-atomic
             if (itemType->category() != SchemaType::SimpleTypeAtomic && itemType->category() != SchemaType::SimpleTypeUnion) {
-                m_context->error(QtXmlPatterns::tr("variety of item type of %1 must be either atomic or union").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
+                m_context->error(QtXmlPatterns::tr("Variety of item type of %1 must be either atomic or union.").arg(formatType(m_namePool, simpleType)), XsdSchemaContext::XSDError, location);
                 return;
             }
 
@@ -900,7 +900,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
                 const AnySimpleType::List memberTypes = simpleItemType->memberTypes();
                 for (int j = 0; j < memberTypes.count(); ++j) {
                     if (memberTypes.at(j)->category() != SchemaType::SimpleTypeAtomic) {
-                        m_context->error(QtXmlPatterns::tr("variety of member types of %1 must be atomic").arg(formatType(m_namePool, simpleItemType)), XsdSchemaContext::XSDError, location);
+                        m_context->error(QtXmlPatterns::tr("Variety of member types of %1 must be atomic.").arg(formatType(m_namePool, simpleItemType)), XsdSchemaContext::XSDError, location);
                         return;
                     }
                 }
@@ -915,7 +915,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
                 const AnySimpleType::Ptr memberType = memberTypes.at(i);
 
                 if (memberType->isComplexType()) {
-                    m_context->error(QtXmlPatterns::tr("member type of simple type %1 cannot be a complex type")
+                    m_context->error(QtXmlPatterns::tr("Member type of simple type %1 cannot be a complex type.")
                                                       .arg(formatType(m_namePool, simpleType)),
                                      XsdSchemaContext::XSDError, location);
                     return;
@@ -923,7 +923,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
 
                 // @see http://www.w3.org/TR/xmlschema-2/#cos-no-circular-unions
                 if (simpleType->name(m_namePool) == memberType->name(m_namePool)) {
-                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to have a member type with the same name as itself")
+                    m_context->error(QtXmlPatterns::tr("%1 is not allowed to have a member type with the same name as itself.")
                                                       .arg(formatType(m_namePool, simpleType)),
                                      XsdSchemaContext::XSDError, location);
                     return;
@@ -932,7 +932,7 @@ void XsdSchemaChecker::checkSimpleDerivationRestrictions()
                 if (memberType->isSimpleType() && memberType->isDefinedBySchema()) {
                     const XsdSimpleType::Ptr simpleMemberType = memberType;
                     if (simpleMemberType->derivationConstraints() & XsdSimpleType::UnionConstraint) {
-                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by union as the latter defines it as final")
+                        m_context->error(QtXmlPatterns::tr("%1 is not allowed to derive from %2 by union as the latter defines it as final.")
                                                           .arg(formatType(m_namePool, simpleType))
                                                           .arg(formatType(m_namePool, simpleMemberType)),
                                          XsdSchemaContext::XSDError, location);
@@ -1006,7 +1006,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             }
 
             if ((minLengthValue->toInteger() > lengthValue->toInteger()) || !foundSuperMinimumLength) {
-                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet")
+                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet.")
                                                   .arg(formatKeyword("length"))
                                                   .arg(formatKeyword("minLength")),
                                  XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1035,7 +1035,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             }
 
             if ((maxLengthValue->toInteger() < lengthValue->toInteger()) || !foundSuperMaximumLength) {
-                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet")
+                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet.")
                                                   .arg(formatKeyword("length"))
                                                   .arg(formatKeyword("maxLength")),
                                  XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1049,7 +1049,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             if (baseFacets.contains(XsdFacet::Length)) {
                 const DerivedInteger<TypeNonNegativeInteger>::Ptr baseValue = baseFacets.value(XsdFacet::Length)->value();
                 if (lengthValue->toInteger() != baseValue->toInteger()) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must have the same value as %2 facet of base type")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must have the same value as %2 facet of base type.")
                                                       .arg(formatKeyword("length"))
                                                       .arg(formatKeyword("length")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1069,7 +1069,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
 
             // @see http://www.w3.org/TR/xmlschema-2/#minLength-less-than-equal-to-maxLength
             if (maxLengthValue->toInteger() < minLengthValue->toInteger()) {
-                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet")
+                m_context->error(QtXmlPatterns::tr("%1 facet collides with %2 facet.")
                                                   .arg(formatKeyword("minLength"))
                                                   .arg(formatKeyword("maxLength")),
                                  XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1086,7 +1086,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             if (baseFacets.contains(XsdFacet::MinimumLength)) {
                 const DerivedInteger<TypeNonNegativeInteger>::Ptr baseValue = baseFacets.value(XsdFacet::MinimumLength)->value();
                 if (minLengthValue->toInteger() < baseValue->toInteger()) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be equal or greater than %2 facet of base type")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be equal or greater than %2 facet of base type.")
                                                       .arg(formatKeyword("minLength"))
                                                       .arg(formatKeyword("minLength")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1105,7 +1105,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             if (baseFacets.contains(XsdFacet::MaximumLength)) {
                 const DerivedInteger<TypeNonNegativeInteger>::Ptr baseValue(baseFacets.value(XsdFacet::MaximumLength)->value());
                 if (maxLengthValue->toInteger() > baseValue->toInteger()) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                       .arg(formatKeyword("maxLength"))
                                                       .arg(formatKeyword("maxLength")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1126,7 +1126,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             const DerivedString<TypeString>::Ptr value = multiValue.at(i);
             const QRegExp exp = PatternPlatform::parsePattern(value->stringValue(), m_context, &reflection);
             if (!exp.isValid()) {
-                m_context->error(QtXmlPatterns::tr("%1 facet contains invalid regular expression").arg(formatKeyword("pattern")), XsdSchemaContext::XSDError, sourceLocation(simpleType));
+                m_context->error(QtXmlPatterns::tr("%1 facet contains invalid regular expression").arg(formatKeyword("pattern.")), XsdSchemaContext::XSDError, sourceLocation(simpleType));
                 return;
             }
         }
@@ -1141,7 +1141,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             for (int k = 0; k < notationNames.count(); ++k) {
                 const QNameValue::Ptr notationName = notationNames.at(k);
                 if (!m_schema->notation(notationName->qName())) {
-                    m_context->error(QtXmlPatterns::tr("unknown notation %1 used in %2 facet")
+                    m_context->error(QtXmlPatterns::tr("Unknown notation %1 used in %2 facet.")
                                                       .arg(formatKeyword(m_namePool, notationName->qName()))
                                                       .arg(formatKeyword("enumeration")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1161,7 +1161,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
 
                 QString errorMsg;
                 if (!checker.isValidString(actualValue, baseType, errorMsg)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet contains invalid value %2: %3")
+                    m_context->error(QtXmlPatterns::tr("%1 facet contains invalid value %2: %3.")
                                                       .arg(formatKeyword("enumeration"))
                                                       .arg(formatData(stringValue))
                                                       .arg(errorMsg),
@@ -1183,7 +1183,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const QString baseValue = DerivedString<TypeString>::Ptr(baseFacets.value(XsdFacet::WhiteSpace)->value())->stringValue();
                 if (value == XsdSchemaToken::toString(XsdSchemaToken::Replace) || value == XsdSchemaToken::toString(XsdSchemaToken::Preserve)) {
                     if (baseValue == XsdSchemaToken::toString(XsdSchemaToken::Collapse)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet cannot be %2 or %3 if %4 facet of base type is %5")
+                        m_context->error(QtXmlPatterns::tr("%1 facet cannot be %2 or %3 if %4 facet of base type is %5.")
                                                           .arg(formatKeyword("whiteSpace"))
                                                           .arg(formatData("replace"))
                                                           .arg(formatData("preserve"))
@@ -1194,7 +1194,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                     }
                 }
                 if (value == XsdSchemaToken::toString(XsdSchemaToken::Preserve) && baseValue == XsdSchemaToken::toString(XsdSchemaToken::Replace)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet cannot be %2 if %3 facet of base type is %4")
+                    m_context->error(QtXmlPatterns::tr("%1 facet cannot be %2 if %3 facet of base type is %4.")
                                                       .arg(formatKeyword("whiteSpace"))
                                                       .arg(formatData("preserve"))
                                                       .arg(formatKeyword("whiteSpace"))
@@ -1214,7 +1214,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
 
             if (comparableBaseType) {
                 if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterThan, maxFacet->value(), comparableBaseType, m_context, &reflection)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet.")
                                                       .arg(formatKeyword("minInclusive"))
                                                       .arg(formatKeyword("maxInclusive")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1230,7 +1230,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorGreaterThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("maxInclusive"))
                                                           .arg(formatKeyword("maxInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1242,7 +1242,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorGreaterOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type.")
                                                           .arg(formatKeyword("maxInclusive"))
                                                           .arg(formatKeyword("maxExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1257,7 +1257,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
 
         // @see http://www.w3.org/TR/xmlschema-2/#maxInclusive-maxExclusive
         if (facets.contains(XsdFacet::MaximumInclusive)) {
-            m_context->error(QtXmlPatterns::tr("%1 facet and %2 facet cannot appear together")
+            m_context->error(QtXmlPatterns::tr("%1 facet and %2 facet cannot appear together.")
                                               .arg(formatKeyword("maxExclusive"))
                                               .arg(formatKeyword("maxInclusive")),
                              XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1269,7 +1269,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             const XsdFacet::Ptr minFacet = facets.value(XsdFacet::MinimumExclusive);
             if (comparableBaseType) {
                 if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterThan, maxFacet->value(), comparableBaseType, m_context, &reflection)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet.")
                                                       .arg(formatKeyword("minExclusive"))
                                                       .arg(formatKeyword("maxExclusive")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1285,7 +1285,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorGreaterThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("maxExclusive"))
                                                           .arg(formatKeyword("maxExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1297,7 +1297,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorGreaterThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("maxExclusive"))
                                                           .arg(formatKeyword("maxInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1309,7 +1309,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MinimumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorLessOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type.")
                                                           .arg(formatKeyword("maxExclusive"))
                                                           .arg(formatKeyword("minInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1321,7 +1321,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MinimumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(maxFacet->value(), AtomicComparator::OperatorLessOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type.")
                                                           .arg(formatKeyword("maxExclusive"))
                                                           .arg(formatKeyword("minExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1336,7 +1336,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
 
         // @see http://www.w3.org/TR/xmlschema-2/#minInclusive-minExclusive
         if (facets.contains(XsdFacet::MinimumInclusive)) {
-            m_context->error(QtXmlPatterns::tr("%1 facet and %2 facet cannot appear together")
+            m_context->error(QtXmlPatterns::tr("%1 facet and %2 facet cannot appear together.")
                                               .arg(formatKeyword("minExclusive"))
                                               .arg(formatKeyword("minInclusive")),
                              XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1348,7 +1348,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             const XsdFacet::Ptr maxFacet = facets.value(XsdFacet::MaximumInclusive);
             if (comparableBaseType) {
                 if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterOrEqual, maxFacet->value(), comparableBaseType, m_context, &reflection)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet.")
                                                       .arg(formatKeyword("minExclusive"))
                                                       .arg(formatKeyword("maxInclusive")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1364,7 +1364,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MinimumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorLessThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("minExclusive"))
                                                           .arg(formatKeyword("minExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1376,7 +1376,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type.")
                                                           .arg(formatKeyword("minExclusive"))
                                                           .arg(formatKeyword("maxExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1388,7 +1388,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("minExclusive"))
                                                           .arg(formatKeyword("maxInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1406,7 +1406,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             const XsdFacet::Ptr maxFacet = facets.value(XsdFacet::MaximumExclusive);
             if (comparableBaseType) {
                 if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterOrEqual, maxFacet->value(), comparableBaseType, m_context, &reflection)) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet.")
                                                       .arg(formatKeyword("minInclusive"))
                                                       .arg(formatKeyword("maxExclusive")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1422,7 +1422,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MinimumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorLessThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("minInclusive"))
                                                           .arg(formatKeyword("minInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1434,7 +1434,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MinimumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorLessOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be greater than %2 facet of base type.")
                                                           .arg(formatKeyword("minInclusive"))
                                                           .arg(formatKeyword("minExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1446,7 +1446,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumInclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterThan, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                           .arg(formatKeyword("minInclusive"))
                                                           .arg(formatKeyword("maxInclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1458,7 +1458,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const XsdFacet::Ptr baseFacet = baseFacets.value(XsdFacet::MaximumExclusive);
                 if (comparableBaseType) {
                     if (XsdSchemaHelper::constructAndCompare(minFacet->value(), AtomicComparator::OperatorGreaterOrEqual, baseFacet->value(), comparableBaseType, m_context, &reflection)) {
-                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type")
+                        m_context->error(QtXmlPatterns::tr("%1 facet must be less than %2 facet of base type.")
                                                           .arg(formatKeyword("minInclusive"))
                                                           .arg(formatKeyword("maxExclusive")),
                                          XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1480,7 +1480,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const DerivedInteger<TypeNonNegativeInteger>::Ptr baseValue = baseFacet->value();
 
                 if (totalDigitsValue->toInteger() > baseValue->toInteger()) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                       .arg(formatKeyword("totalDigits"))
                                                       .arg(formatKeyword("totalDigits")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1499,7 +1499,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             const DerivedInteger<TypeNonNegativeInteger>::Ptr totalDigitsValue = totalDigitsFacet->value();
 
             if (fractionDigitsValue->toInteger() > totalDigitsValue->toInteger()) {
-                m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet")
+                m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet.")
                                                   .arg(formatKeyword("fractionDigits"))
                                                   .arg(formatKeyword("totalDigits")),
                                  XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1515,7 +1515,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const DerivedInteger<TypeNonNegativeInteger>::Ptr baseValue = baseFacet->value();
 
                 if (fractionDigitsValue->toInteger() > baseValue->toInteger()) {
-                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type")
+                    m_context->error(QtXmlPatterns::tr("%1 facet must be less than or equal to %2 facet of base type.")
                                                       .arg(formatKeyword("fractionDigits"))
                                                       .arg(formatKeyword("fractionDigits")),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1535,7 +1535,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 QSet<XsdFacet::Type> availableFacets = facets.keys().toSet();
 
                 if (!availableFacets.subtract(allowedFacets).isEmpty()) {
-                    m_context->error(QtXmlPatterns::tr("simple type contains not allowed facet %1")
+                    m_context->error(QtXmlPatterns::tr("Simple type contains not allowed facet %1.")
                                                       .arg(formatKeyword(XsdFacet::typeName(availableFacets.toList().first()))),
                                      XsdSchemaContext::XSDError, sourceLocation(simpleType));
                     return;
@@ -1547,7 +1547,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             facets.contains(XsdFacet::MaximumExclusive) || facets.contains(XsdFacet::MinimumExclusive) ||
             facets.contains(XsdFacet::TotalDigits) || facets.contains(XsdFacet::FractionDigits))
         {
-            m_context->error(QtXmlPatterns::tr("%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list")
+            m_context->error(QtXmlPatterns::tr("%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list.")
                                               .arg(formatKeyword("maxInclusive"))
                                               .arg(formatKeyword("maxExclusive"))
                                               .arg(formatKeyword("minInclusive"))
@@ -1563,7 +1563,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
             facets.contains(XsdFacet::MinimumLength) || facets.contains(XsdFacet::MaximumLength) ||
             facets.contains(XsdFacet::Length) || facets.contains(XsdFacet::WhiteSpace))
         {
-            m_context->error(QtXmlPatterns::tr("only %1 and %2 facets are allowed when derived by union")
+            m_context->error(QtXmlPatterns::tr("Only %1 and %2 facets are allowed when derived by union.")
                                               .arg(formatKeyword("pattern"))
                                               .arg(formatKeyword("enumeration")),
                              XsdSchemaContext::XSDError, sourceLocation(simpleType));
@@ -1586,7 +1586,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                 const DerivedString<TypeString>::Ptr stringValue = facet->value();
                 const AtomicValue::Ptr value = ValueFactory::fromLexical(stringValue->stringValue(), baseType, m_context, &reflection);
                 if (value->hasError()) {
-                    m_context->error(QtXmlPatterns::tr("%1 contains %2 facet with invalid data: %3")
+                    m_context->error(QtXmlPatterns::tr("%1 contains %2 facet with invalid data: %3.")
                                                       .arg(formatType(m_namePool, simpleType))
                                                       .arg(formatKeyword(XsdFacet::typeName(facet->type())))
                                                       .arg(formatData(stringValue->stringValue())),
@@ -1602,7 +1602,7 @@ void XsdSchemaChecker::checkConstrainingFacets(const XsdFacet::Hash &facets, con
                     const QString stringValue = DerivedString<TypeString>::Ptr(multiValue.at(j))->stringValue();
                     const AtomicValue::Ptr value = ValueFactory::fromLexical(stringValue, baseType, m_context, &reflection);
                     if (value->hasError()) {
-                        m_context->error(QtXmlPatterns::tr("%1 contains %2 facet with invalid data: %3")
+                        m_context->error(QtXmlPatterns::tr("%1 contains %2 facet with invalid data: %3.")
                                                           .arg(formatType(m_namePool, simpleType))
                                                           .arg(formatKeyword(XsdFacet::typeName(XsdFacet::Enumeration)))
                                                           .arg(formatData(stringValue)),
@@ -1626,7 +1626,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
         // @see http://www.w3.org/TR/xmlschema11-1/#ct-props-correct 4)
         XsdAttribute::Ptr conflictingAttribute;
         if (hasDuplicatedAttributeUses(uses, conflictingAttribute)) {
-            m_context->error(QtXmlPatterns::tr("attribute group %1 contains attribute %2 twice")
+            m_context->error(QtXmlPatterns::tr("Attribute group %1 contains attribute %2 twice.")
                                               .arg(formatKeyword(attributeGroup->displayName(m_namePool)))
                                               .arg(formatKeyword(conflictingAttribute->displayName(m_namePool))),
                              XsdSchemaContext::XSDError, sourceLocation(attributeGroup));
@@ -1635,7 +1635,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
 
         // @see http://www.w3.org/TR/xmlschema11-1/#ct-props-correct 5)
         if (hasMultipleIDAttributeUses(uses)) {
-            m_context->error(QtXmlPatterns::tr("attribute group %1 contains two different attributes that both have types derived from %2")
+            m_context->error(QtXmlPatterns::tr("Attribute group %1 contains two different attributes that both have types derived from %2.")
                                               .arg(formatKeyword(attributeGroup->displayName(m_namePool)))
                                               .arg(formatType(m_namePool, BuiltinTypes::xsID)),
                              XsdSchemaContext::XSDError, sourceLocation(attributeGroup));
@@ -1643,7 +1643,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
         }
 
         if (hasConstraintIDAttributeUse(uses, conflictingAttribute)) {
-            m_context->error(QtXmlPatterns::tr("attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3")
+            m_context->error(QtXmlPatterns::tr("Attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3.")
                                               .arg(formatKeyword(attributeGroup->displayName(m_namePool)))
                                               .arg(formatKeyword(conflictingAttribute->displayName(m_namePool)))
                                               .arg(formatType(m_namePool, BuiltinTypes::xsID)),
@@ -1666,7 +1666,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
         // @see http://www.w3.org/TR/xmlschema11-1/#ct-props-correct 4)
         XsdAttribute::Ptr conflictingAttribute;
         if (hasDuplicatedAttributeUses(attributeUses, conflictingAttribute)) {
-            m_context->error(QtXmlPatterns::tr("complex type %1 contains attribute %2 twice")
+            m_context->error(QtXmlPatterns::tr("Complex type %1 contains attribute %2 twice.")
                                               .arg(formatType(m_namePool, complexType))
                                               .arg(formatKeyword(conflictingAttribute->displayName(m_namePool))),
                              XsdSchemaContext::XSDError, sourceLocation(complexType));
@@ -1675,7 +1675,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
 
         // @see http://www.w3.org/TR/xmlschema11-1/#ct-props-correct 5)
         if (hasMultipleIDAttributeUses(attributeUses)) {
-            m_context->error(QtXmlPatterns::tr("complex type %1 contains two different attributes that both have types derived from %2")
+            m_context->error(QtXmlPatterns::tr("Complex type %1 contains two different attributes that both have types derived from %2.")
                                               .arg(formatType(m_namePool, complexType))
                                               .arg(formatType(m_namePool, BuiltinTypes::xsID)),
                              XsdSchemaContext::XSDError, sourceLocation(complexType));
@@ -1683,7 +1683,7 @@ void XsdSchemaChecker::checkDuplicatedAttributeUses()
         }
 
         if (hasConstraintIDAttributeUse(attributeUses, conflictingAttribute)) {
-            m_context->error(QtXmlPatterns::tr("complex type %1 contains attribute %2 that has value constraint but type that inherits from %3")
+            m_context->error(QtXmlPatterns::tr("Complex type %1 contains attribute %2 that has value constraint but type that inherits from %3.")
                                               .arg(formatType(m_namePool, complexType))
                                               .arg(formatKeyword(conflictingAttribute->displayName(m_namePool)))
                                               .arg(formatType(m_namePool, BuiltinTypes::xsID)),
@@ -1726,14 +1726,14 @@ void XsdSchemaChecker::checkElementConstraints()
                             targetType = XsdSimpleType::Ptr(simpleType)->primitiveType();
                     }
                 } else if (complexType->contentType()->variety() != XsdComplexType::ContentType::Mixed) {
-                    m_context->error(QtXmlPatterns::tr("element %1 is not allowed to have a value constraint if its base type is complex")
+                    m_context->error(QtXmlPatterns::tr("Element %1 is not allowed to have a value constraint if its base type is complex.")
                                                       .arg(formatKeyword(element->displayName(m_namePool))),
                                      XsdSchemaContext::XSDError, sourceLocation(element));
                     return;
                 }
             }
             if ((targetType == BuiltinTypes::xsID) || BuiltinTypes::xsID->wxsTypeMatches(type)) {
-                m_context->error(QtXmlPatterns::tr("element %1 is not allowed to have a value constraint if its type is derived from %2")
+                m_context->error(QtXmlPatterns::tr("Element %1 is not allowed to have a value constraint if its type is derived from %2.")
                                                   .arg(formatKeyword(element->displayName(m_namePool)))
                                                   .arg(formatType(m_namePool, BuiltinTypes::xsID)),
                                  XsdSchemaContext::XSDError, sourceLocation(element));
@@ -1743,7 +1743,7 @@ void XsdSchemaChecker::checkElementConstraints()
             if (type->isSimpleType()) {
                 QString errorMsg;
                 if (!isValidValue(element->valueConstraint()->value(), type, errorMsg)) {
-                    m_context->error(QtXmlPatterns::tr("value constraint of element %1 is not of elements type: %2")
+                    m_context->error(QtXmlPatterns::tr("Value constraint of element %1 is not of elements type: %2.")
                                                       .arg(formatKeyword(element->displayName(m_namePool)))
                                                       .arg(errorMsg),
                                      XsdSchemaContext::XSDError, sourceLocation(element));
@@ -1754,7 +1754,7 @@ void XsdSchemaChecker::checkElementConstraints()
                 if (complexType->contentType()->variety() == XsdComplexType::ContentType::Simple) {
                     QString errorMsg;
                     if (!isValidValue(element->valueConstraint()->value(), complexType->contentType()->simpleType(), errorMsg)) {
-                        m_context->error(QtXmlPatterns::tr("value constraint of element %1 is not of elements type: %2")
+                        m_context->error(QtXmlPatterns::tr("Value constraint of element %1 is not of elements type: %2.")
                                                           .arg(formatKeyword(element->displayName(m_namePool)))
                                                           .arg(errorMsg),
                                          XsdSchemaContext::XSDError, sourceLocation(element));
@@ -1767,7 +1767,7 @@ void XsdSchemaChecker::checkElementConstraints()
         if (!element->substitutionGroupAffiliations().isEmpty()) {
             // 3
             if (!element->scope() || element->scope()->variety() != XsdElement::Scope::Global) {
-                m_context->error(QtXmlPatterns::tr("element %1 is not allowed to have substitution group affiliation as it is no global element").arg(formatKeyword(element->displayName(m_namePool))),
+                m_context->error(QtXmlPatterns::tr("Element %1 is not allowed to have substitution group affiliation as it is no global element.").arg(formatKeyword(element->displayName(m_namePool))),
                                  XsdSchemaContext::XSDError, sourceLocation(element));
                 return;
             }
@@ -1795,7 +1795,7 @@ void XsdSchemaChecker::checkElementConstraints()
                 }
 
                 if (!derivationOk) {
-                    m_context->error(QtXmlPatterns::tr("type of element %1 cannot be derived from type of substitution group affiliation").arg(formatKeyword(element->displayName(m_namePool))),
+                    m_context->error(QtXmlPatterns::tr("Type of element %1 cannot be derived from type of substitution group affiliation.").arg(formatKeyword(element->displayName(m_namePool))),
                                      XsdSchemaContext::XSDError, sourceLocation(element));
                     return;
                 }
@@ -1836,7 +1836,7 @@ void XsdSchemaChecker::checkAttributeConstraints()
 
             QString errorMsg;
             if (!isValidValue(attribute->valueConstraint()->value(), attribute->type(), errorMsg)) {
-                m_context->error(QtXmlPatterns::tr("value constraint of attribute %1 is not of attributes type: %2")
+                m_context->error(QtXmlPatterns::tr("Value constraint of attribute %1 is not of attributes type: %2.")
                                                   .arg(formatKeyword(attribute->displayName(m_namePool)))
                                                   .arg(errorMsg),
                                  XsdSchemaContext::XSDError, sourceLocation(attribute));
@@ -1845,7 +1845,7 @@ void XsdSchemaChecker::checkAttributeConstraints()
         }
 
         if (BuiltinTypes::xsID->wxsTypeMatches(attribute->type())) {
-            m_context->error(QtXmlPatterns::tr("attribute %1 has value constraint but has type derived from %2")
+            m_context->error(QtXmlPatterns::tr("Attribute %1 has value constraint but has type derived from %2.")
                                               .arg(formatKeyword(attribute->displayName(m_namePool)))
                                               .arg(formatType(m_namePool, BuiltinTypes::xsID)),
                              XsdSchemaContext::XSDError, sourceLocation(attribute));
@@ -1901,7 +1901,7 @@ void XsdSchemaChecker::checkAttributeUseConstraints()
 
                 if (baseAttributeUse->useType() == XsdAttributeUse::RequiredUse) {
                     if (attributeUse->useType() == XsdAttributeUse::OptionalUse || attributeUse->useType() == XsdAttributeUse::ProhibitedUse) {
-                        m_context->error(QtXmlPatterns::tr("%1 attribute in derived complex type must be %2 like in base type")
+                        m_context->error(QtXmlPatterns::tr("%1 attribute in derived complex type must be %2 like in base type.")
                                                           .arg(formatAttribute("use"))
                                                           .arg(formatData("required")),
                                          XsdSchemaContext::XSDError, sourceLocation(complexType));
@@ -1912,7 +1912,7 @@ void XsdSchemaChecker::checkAttributeUseConstraints()
                 if (baseAttributeUse->valueConstraint()) {
                     if (baseAttributeUse->valueConstraint()->variety() == XsdAttributeUse::ValueConstraint::Fixed) {
                         if (!attributeUse->valueConstraint()) {
-                            m_context->error(QtXmlPatterns::tr("attribute %1 in derived complex type must have %2 value constraint like in base type")
+                            m_context->error(QtXmlPatterns::tr("Attribute %1 in derived complex type must have %2 value constraint like in base type.")
                                                               .arg(formatKeyword(attributeUse->attribute()->displayName(m_namePool)))
                                                               .arg(formatData("fixed")),
                                              XsdSchemaContext::XSDError, sourceLocation(complexType));
@@ -1921,14 +1921,14 @@ void XsdSchemaChecker::checkAttributeUseConstraints()
                             if (attributeUse->valueConstraint()->variety() == XsdAttributeUse::ValueConstraint::Fixed) {
                                 const XsdTypeChecker checker(m_context, QVector<QXmlName>(), sourceLocation(complexType));
                                 if (!checker.valuesAreEqual(attributeUse->valueConstraint()->value(), baseAttributeUse->valueConstraint()->value(), attributeUse->attribute()->type())) {
-                                    m_context->error(QtXmlPatterns::tr("attribute %1 in derived complex type must have the same %2 value constraint like in base type")
+                                    m_context->error(QtXmlPatterns::tr("Attribute %1 in derived complex type must have the same %2 value constraint like in base type.")
                                                                       .arg(formatKeyword(attributeUse->attribute()->displayName(m_namePool)))
                                                                       .arg(formatData("fixed")),
                                                      XsdSchemaContext::XSDError, sourceLocation(complexType));
                                     return;
                                 }
                             } else {
-                                m_context->error(QtXmlPatterns::tr("attribute %1 in derived complex type must have %2 value constraint")
+                                m_context->error(QtXmlPatterns::tr("Attribute %1 in derived complex type must have %2 value constraint.")
                                                                   .arg(formatKeyword(attributeUse->attribute()->displayName(m_namePool)))
                                                                   .arg(formatData("fixed")),
                                                  XsdSchemaContext::XSDError, sourceLocation(complexType));
@@ -1946,7 +1946,7 @@ void XsdSchemaChecker::checkAttributeUseConstraints()
         const XsdWildcard::Ptr derivedWildcard(complexType->attributeWildcard());
         if (baseWildcard && derivedWildcard) {
             if (!XsdSchemaHelper::checkWildcardProcessContents(baseWildcard, derivedWildcard)) {
-                m_context->error(QtXmlPatterns::tr("processContent of base wildcard must be weaker than derived wildcard"), XsdSchemaContext::XSDError, sourceLocation(complexType));
+                m_context->error(QtXmlPatterns::tr("processContent of base wildcard must be weaker than derived wildcard."), XsdSchemaContext::XSDError, sourceLocation(complexType));
                 return;
             }
         }
@@ -1985,7 +1985,7 @@ void XsdSchemaChecker::checkElementDuplicates(const XsdParticle::Ptr &particle, 
 
         if (elementMap.contains(element->name(m_namePool))) {
             if (element->type() != elementMap.value(element->name(m_namePool))) {
-                m_context->error(QtXmlPatterns::tr("element %1 exists twice with different types")
+                m_context->error(QtXmlPatterns::tr("Element %1 exists twice with different types.")
                                                   .arg(formatKeyword(element->displayName(m_namePool))),
                                  XsdSchemaContext::XSDError, sourceLocation(element));
                 return;
@@ -2000,7 +2000,7 @@ void XsdSchemaChecker::checkElementDuplicates(const XsdParticle::Ptr &particle, 
             const XsdElement::Ptr substElement = substElements.at(i);
             if (elementMap.contains(substElement->name(m_namePool))) {
                 if (substElement->type() != elementMap.value(substElement->name(m_namePool))) {
-                    m_context->error(QtXmlPatterns::tr("element %1 exists twice with different types")
+                    m_context->error(QtXmlPatterns::tr("Element %1 exists twice with different types.")
                                                       .arg(formatKeyword(substElement->displayName(m_namePool))),
                                      XsdSchemaContext::XSDError, sourceLocation(element));
                     return;
@@ -2028,7 +2028,7 @@ void XsdSchemaChecker::checkElementDuplicates(const XsdParticle::Ptr &particle, 
         }
 
         if (error) {
-            m_context->error(QtXmlPatterns::tr("particle contains non-deterministic wildcards"), XsdSchemaContext::XSDError, sourceLocation(wildcard));
+            m_context->error(QtXmlPatterns::tr("Particle contains non-deterministic wildcards."), XsdSchemaContext::XSDError, sourceLocation(wildcard));
             return;
         } else {
             wildcardMap.insert(wildcard->namespaceConstraint()->variety(), wildcard);

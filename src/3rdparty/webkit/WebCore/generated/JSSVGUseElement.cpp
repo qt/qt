@@ -124,7 +124,7 @@ bool JSSVGUseElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSSVGUseElement::s_info = { "SVGUseElement", &JSSVGElement::s_info, &JSSVGUseElementTable, 0 };
 
-JSSVGUseElement::JSSVGUseElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUseElement> impl)
+JSSVGUseElement::JSSVGUseElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGUseElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

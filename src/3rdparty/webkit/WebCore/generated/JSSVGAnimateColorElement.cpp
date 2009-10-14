@@ -56,7 +56,7 @@ JSObject* JSSVGAnimateColorElementPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSSVGAnimateColorElement::s_info = { "SVGAnimateColorElement", &JSSVGAnimationElement::s_info, 0, 0 };
 
-JSSVGAnimateColorElement::JSSVGAnimateColorElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateColorElement> impl)
+JSSVGAnimateColorElement::JSSVGAnimateColorElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimateColorElement> impl)
     : JSSVGAnimationElement(structure, globalObject, impl)
 {
 }

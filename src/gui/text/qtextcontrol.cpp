@@ -505,9 +505,13 @@ void QTextControlPrivate::startDrag()
     drag->setMimeData(data);
 
     Qt::DropActions actions = Qt::CopyAction;
-    if (interactionFlags & Qt::TextEditable)
+    Qt::DropAction action;
+    if (interactionFlags & Qt::TextEditable) {
         actions |= Qt::MoveAction;
-    Qt::DropAction action = drag->exec(actions, Qt::MoveAction);
+        action = drag->exec(actions, Qt::MoveAction);
+    } else {
+        action = drag->exec(actions, Qt::CopyAction);
+    }
 
     if (action == Qt::MoveAction && drag->target() != contextWidget)
         cursor.removeSelectedText();
@@ -1223,11 +1227,13 @@ void QTextControlPrivate::keyPressEvent(QKeyEvent *e)
         cursor.deleteChar();
     }
     else if (e == QKeySequence::DeleteEndOfWord) {
-        cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
+        if (!cursor.hasSelection())
+            cursor.movePosition(QTextCursor::NextWord, QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
     else if (e == QKeySequence::DeleteStartOfWord) {
-        cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
+        if (!cursor.hasSelection())
+            cursor.movePosition(QTextCursor::PreviousWord, QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
     else if (e == QKeySequence::DeleteEndOfLine) {

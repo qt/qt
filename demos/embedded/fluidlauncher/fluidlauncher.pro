@@ -59,13 +59,14 @@ symbian {
     load(data_caging_paths)
 
     TARGET.UID3 = 0xA000A641
+    ICON = ../../../src/s60installs/qt.svg
 
     executables.sources = \
         styledemo.exe \
         deform.exe \
         pathstroke.exe \
         wiggly.exe \
-        ftp.exe \
+        qftp.exe \
         saxbookmarks.exe \
         desktopservices.exe \
         fridgemagnets.exe \
@@ -84,7 +85,7 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/deform_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/pathstroke_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/wiggly_reg.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/ftp_reg.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/qftp_reg.rsc\
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/saxbookmarks_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/desktopservices_reg.rsc \
         $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/fridgemagnets_reg.rsc \
@@ -108,7 +109,7 @@ symbian {
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/deform.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/pathstroke.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/wiggly.rsc \
-        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/ftp.rsc\
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qftp.rsc\
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/saxbookmarks.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/desktopservices.rsc \
         $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/fridgemagnets.rsc \
@@ -122,6 +123,11 @@ symbian {
 
     
     resource.path = $$APP_RESOURCE_DIR
+
+    mifs.sources = \
+        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000A641.mif \ #fluidlauncher
+	$${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000C611.mif   #desktopservices
+    mifs.path = $$APP_RESOURCE_DIR
 
     contains(QT_CONFIG, svg) { 
         executables.sources += \ 
@@ -143,6 +149,7 @@ symbian {
     }
 
     contains(QT_CONFIG, phonon) {
+        executables.sources += qmediaplayer.exe
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/qmediaplayer.rsc
     }
 
@@ -151,10 +158,6 @@ symbian {
         reg_resource.sources += $${EPOCROOT}$$HW_ZDIR$$REG_RESOURCE_IMPORT_DIR/context2d_reg.rsc
         resource.sources += $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/context2d.rsc
     }
-
-    mifs.sources = \
-        $${EPOCROOT}$$HW_ZDIR$$APP_RESOURCE_DIR/0xA000C611.mif
-    mifs.path = $$APP_RESOURCE_DIR
 
     files.sources = $$PWD/screenshots $$PWD/slides
     files.path = .
@@ -165,6 +168,7 @@ symbian {
     viewerimages.sources = $$PWD/../embeddedsvgviewer/shapes.svg
     viewerimages.path = /data/images/qt/demos/embeddedsvgviewer
 
+    # demos/mediaplayer make also use of these files.
     desktopservices_music.sources = \
         $$PWD/../desktopservices/data/*.mp3 \
         $$PWD/../desktopservices/data/*.wav

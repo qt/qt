@@ -60,6 +60,7 @@
 #include "qregexp.h"
 #include "private/q3membuf_p.h"
 #include "private/qobject_p.h"
+#include "private/qcore_unix_p.h"
 
 #include <stdlib.h>
 #include <errno.h>
@@ -160,11 +161,11 @@ public:
 	    process->d->proc = 0;
 	}
 	if( socketStdin )
-	    ::close( socketStdin );
+	    qt_safe_close( socketStdin );
 	if( socketStdout )
-	    ::close( socketStdout );
+	    qt_safe_close( socketStdout );
 	if( socketStderr )
-	    ::close( socketStderr );
+	    qt_safe_close( socketStderr );
     }
 
     pid_t pid;
@@ -213,7 +214,7 @@ static void q3process_cleanup()
 }
 
 #ifdef Q_OS_QNX6
-#define BAILOUT close(tmpSocket);close(socketFD[1]);return -1;
+#define BAILOUT qt_safe_close(tmpSocket);qt_safe_close(socketFD[1]);return -1;
 int qnx6SocketPairReplacement (int socketFD[2]) {
     int tmpSocket;
     tmpSocket = socket (AF_INET, SOCK_STREAM, 0);
@@ -252,7 +253,7 @@ int qnx6SocketPairReplacement (int socketFD[2]) {
     if(socketFD[0] == -1) { BAILOUT };
 
     // We're done
-    close(tmpSocket);
+    qt_safe_close(tmpSocket);
 
     // Restore original flags , ie return to blocking
     fcntl(socketFD[1], F_SETFL, originalFlags);
@@ -319,9 +320,9 @@ Q3ProcessManager::~Q3ProcessManager()
     delete procList;
 
     if ( sigchldFd[0] != 0 )
-	::close( sigchldFd[0] );
+	qt_safe_close( sigchldFd[0] );
     if ( sigchldFd[1] != 0 )
-	::close( sigchldFd[1] );
+	qt_safe_close( sigchldFd[1] );
 
     // restore SIGCHLD handler
 #if defined(QT_Q3PROCESS_DEBUG)
@@ -384,7 +385,7 @@ void Q3ProcessManager::sigchldHnd( int fd )
     }
 
     char tmp;
-    ::read( fd, &tmp, sizeof(tmp) );
+    qt_safe_read( fd, &tmp, sizeof(tmp) );
 #if defined(QT_Q3PROCESS_DEBUG)
     qDebug( "Q3ProcessManager::sigchldHnd()" );
 #endif
@@ -434,13 +435,13 @@ void Q3ProcessManager::sigchldHnd( int fd )
 		// close filedescriptors if open, and disable the
 		// socket notifiers
 		if ( proc->socketStdout ) {
-		    ::close( proc->socketStdout );
+		    qt_safe_close( proc->socketStdout );
 		    proc->socketStdout = 0;
 		    if (process->d->notifierStdout)
 			process->d->notifierStdout->setEnabled(false);
 		}
 		if ( proc->socketStderr ) {
-		    ::close( proc->socketStderr );
+		    qt_safe_close( proc->socketStderr );
 		    proc->socketStderr = 0;
 		    if (process->d->notifierStderr)
 			process->d->notifierStderr->setEnabled(false);
@@ -509,7 +510,7 @@ Q3ProcessPrivate::~Q3ProcessPrivate()
 
     if ( proc != 0 ) {
 	if ( proc->socketStdin != 0 ) {
-	    ::close( proc->socketStdin );
+	    qt_safe_close( proc->socketStdin );
 	    proc->socketStdin = 0;
 	}
 	proc->process = 0;
@@ -532,15 +533,15 @@ void Q3ProcessPrivate::closeOpenSocketsForChild()
 {
     if ( procManager != 0 ) {
 	if ( procManager->sigchldFd[0] != 0 )
-	    ::close( procManager->sigchldFd[0] );
+	    qt_safe_close( procManager->sigchldFd[0] );
 	if ( procManager->sigchldFd[1] != 0 )
-	    ::close( procManager->sigchldFd[1] );
+	    qt_safe_close( procManager->sigchldFd[1] );
 
 	// close also the sockets from other Q3Process instances
 	for ( QProc *p=procManager->procList->first(); p!=0; p=procManager->procList->next() ) {
-	    ::close( p->socketStdin );
-	    ::close( p->socketStdout );
-	    ::close( p->socketStderr );
+	    qt_safe_close( p->socketStdin );
+	    qt_safe_close( p->socketStdout );
+	    qt_safe_close( p->socketStderr );
 	}
     }
 }
@@ -569,7 +570,7 @@ static QT_SIGNAL_RETTYPE qt_C_sigchldHnd(QT_SIGNAL_ARGS)
 	return;
 
     char a = 1;
-    ::write( Q3ProcessPrivate::procManager->sigchldFd[0], &a, sizeof(a) );
+    qt_safe_write( Q3ProcessPrivate::procManager->sigchldFd[0], &a, sizeof(a) );
 }
 
 
@@ -682,8 +683,8 @@ bool Q3Process::start( QStringList *env )
     if ( (comms & Stderr) && qnx6SocketPairReplacement(sStderr) == -1 ) {
 #endif
 	if ( comms & Stdin ) {
-	    ::close( sStdin[0] );
-	    ::close( sStdin[1] );
+	    qt_safe_close( sStdin[0] );
+	    qt_safe_close( sStdin[1] );
 	}
 	return false;
     }
@@ -693,12 +694,12 @@ bool Q3Process::start( QStringList *env )
     if ( (comms & Stdout) && qnx6SocketPairReplacement(sStdout) == -1 ) {
 #endif
 	if ( comms & Stdin ) {
-	    ::close( sStdin[0] );
-	    ::close( sStdin[1] );
+	    qt_safe_close( sStdin[0] );
+	    qt_safe_close( sStdin[1] );
 	}
 	if ( comms & Stderr ) {
-	    ::close( sStderr[0] );
-	    ::close( sStderr[1] );
+	    qt_safe_close( sStderr[0] );
+	    qt_safe_close( sStderr[1] );
 	}
 	return false;
     }
@@ -758,15 +759,15 @@ bool Q3Process::start( QStringList *env )
 	// child
 	d->closeOpenSocketsForChild();
 	if ( comms & Stdin ) {
-	    ::close( sStdin[1] );
+	    qt_safe_close( sStdin[1] );
 	    ::dup2( sStdin[0], STDIN_FILENO );
 	}
 	if ( comms & Stdout ) {
-	    ::close( sStdout[0] );
+	    qt_safe_close( sStdout[0] );
 	    ::dup2( sStdout[1], STDOUT_FILENO );
 	}
 	if ( comms & Stderr ) {
-	    ::close( sStderr[0] );
+	    qt_safe_close( sStderr[0] );
 	    ::dup2( sStderr[1], STDERR_FILENO );
 	}
 	if ( comms & DupStderr ) {
@@ -776,7 +777,7 @@ bool Q3Process::start( QStringList *env )
 	::chdir( workingDir.absPath().latin1() );
 #endif
 	if ( fd[0] )
-	    ::close( fd[0] );
+	    qt_safe_close( fd[0] );
 	if ( fd[1] )
 	    ::fcntl( fd[1], F_SETFD, FD_CLOEXEC ); // close on exec shows success
 
@@ -850,8 +851,8 @@ bool Q3Process::start( QStringList *env )
 	}
 	if ( fd[1] ) {
 	    char buf = 0;
-	    ::write( fd[1], &buf, 1 );
-	    ::close( fd[1] );
+	    qt_safe_write( fd[1], &buf, 1 );
+	    qt_safe_close( fd[1] );
 	}
 	::_exit( -1 );
     } else if ( pid == -1 ) {
@@ -861,7 +862,7 @@ bool Q3Process::start( QStringList *env )
 
     // test if exec was successful
     if ( fd[1] )
-	::close( fd[1] );
+	qt_safe_close( fd[1] );
     if ( fd[0] ) {
 	char buf;
 	for ( ;; ) {
@@ -882,13 +883,13 @@ bool Q3Process::start( QStringList *env )
 	    }
 	    break;
 	}
-	::close( fd[0] );
+	qt_safe_close( fd[0] );
     }
 
     d->newProc( pid, this );
 
     if ( comms & Stdin ) {
-	::close( sStdin[0] );
+	qt_safe_close( sStdin[0] );
 	d->proc->socketStdin = sStdin[1];
 
 	// Select non-blocking mode
@@ -904,7 +905,7 @@ bool Q3Process::start( QStringList *env )
 	}
     }
     if ( comms & Stdout ) {
-	::close( sStdout[1] );
+	qt_safe_close( sStdout[1] );
 	d->proc->socketStdout = sStdout[0];
 	d->notifierStdout = new QSocketNotifier( sStdout[0], QSocketNotifier::Read );
 	connect( d->notifierStdout, SIGNAL(activated(int)),
@@ -913,7 +914,7 @@ bool Q3Process::start( QStringList *env )
 	    d->notifierStdout->setEnabled( true );
     }
     if ( comms & Stderr ) {
-	::close( sStderr[1] );
+	qt_safe_close( sStderr[1] );
 	d->proc->socketStderr = sStderr[0];
 	d->notifierStderr = new QSocketNotifier( sStderr[0], QSocketNotifier::Read );
 	connect( d->notifierStderr, SIGNAL(activated(int)),
@@ -934,19 +935,19 @@ error:
     if ( d->procManager )
 	d->procManager->cleanup();
     if ( comms & Stdin ) {
-	::close( sStdin[1] );
-	::close( sStdin[0] );
+	qt_safe_close( sStdin[1] );
+	qt_safe_close( sStdin[0] );
     }
     if ( comms & Stdout ) {
-	::close( sStdout[0] );
-	::close( sStdout[1] );
+	qt_safe_close( sStdout[0] );
+	qt_safe_close( sStdout[1] );
     }
     if ( comms & Stderr ) {
-	::close( sStderr[0] );
-	::close( sStderr[1] );
+	qt_safe_close( sStderr[0] );
+	qt_safe_close( sStderr[1] );
     }
-    ::close( fd[0] );
-    ::close( fd[1] );
+    qt_safe_close( fd[0] );
+    qt_safe_close( fd[1] );
     delete[] arglistQ;
     delete[] arglist;
     return false;
@@ -1049,7 +1050,7 @@ void Q3Process::closeStdin()
 	d->notifierStdin->setEnabled(false);
 	qDeleteInEventHandler(d->notifierStdin);
 	d->notifierStdin = 0;
-	if ( ::close( d->proc->socketStdin ) != 0 ) {
+	if ( qt_safe_close( d->proc->socketStdin ) != 0 ) {
 	    qWarning( "Could not close stdin of child process" );
 	}
 #if defined(QT_Q3PROCESS_DEBUG)
@@ -1115,7 +1116,7 @@ void Q3Process::socketRead( int fd )
 	    d->notifierStdout->setEnabled( false );
 	    qDeleteInEventHandler(d->notifierStdout);
 	    d->notifierStdout = 0;
-	    ::close( d->proc->socketStdout );
+	    qt_safe_close( d->proc->socketStdout );
 	    d->proc->socketStdout = 0;
 	    return;
 	} else if ( fd == d->proc->socketStderr ) {
@@ -1125,7 +1126,7 @@ void Q3Process::socketRead( int fd )
 	    d->notifierStderr->setEnabled( false );
 	    qDeleteInEventHandler(d->notifierStderr);
 	    d->notifierStderr = 0;
-	    ::close( d->proc->socketStderr );
+	    qt_safe_close( d->proc->socketStderr );
 	    d->proc->socketStderr = 0;
 	    return;
 	}

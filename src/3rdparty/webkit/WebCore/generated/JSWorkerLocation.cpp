@@ -145,7 +145,7 @@ static const HashTable* getJSWorkerLocationTable(ExecState* exec)
 }
 const ClassInfo JSWorkerLocation::s_info = { "WorkerLocation", 0, 0, getJSWorkerLocationTable };
 
-JSWorkerLocation::JSWorkerLocation(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WorkerLocation> impl)
+JSWorkerLocation::JSWorkerLocation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WorkerLocation> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

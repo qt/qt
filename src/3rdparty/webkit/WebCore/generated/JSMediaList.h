@@ -33,7 +33,7 @@ class MediaList;
 class JSMediaList : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSMediaList(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MediaList>);
+    JSMediaList(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<MediaList>);
     virtual ~JSMediaList();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -72,7 +72,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSMediaListPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSMediaListPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

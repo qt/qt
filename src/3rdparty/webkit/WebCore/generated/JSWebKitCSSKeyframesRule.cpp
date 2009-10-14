@@ -134,7 +134,7 @@ bool JSWebKitCSSKeyframesRulePrototype::getOwnPropertyDescriptor(ExecState* exec
 
 const ClassInfo JSWebKitCSSKeyframesRule::s_info = { "WebKitCSSKeyframesRule", &JSCSSRule::s_info, &JSWebKitCSSKeyframesRuleTable, 0 };
 
-JSWebKitCSSKeyframesRule::JSWebKitCSSKeyframesRule(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSKeyframesRule> impl)
+JSWebKitCSSKeyframesRule::JSWebKitCSSKeyframesRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<WebKitCSSKeyframesRule> impl)
     : JSCSSRule(structure, globalObject, impl)
 {
 }

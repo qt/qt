@@ -65,11 +65,6 @@
 #include <limits.h>
 #include <qtexttable.h>
 #include <qvariant.h>
-
-#ifdef Q_WS_WIN
-#include <qstandardgestures.h>
-#endif
-
 #include <qinputcontext.h>
 
 #ifndef QT_NO_TEXTEDIT
@@ -519,6 +514,9 @@ QTextBlock QPlainTextEditControl::firstVisibleBlock() const
 int QPlainTextEditControl::hitTest(const QPointF &point, Qt::HitTestAccuracy ) const {
     int currentBlockNumber = topBlock;
     QTextBlock currentBlock = document()->findBlockByNumber(currentBlockNumber);
+    if (!currentBlock.isValid())
+        return -1;
+
     QPlainTextDocumentLayout *documentLayout = qobject_cast<QPlainTextDocumentLayout*>(document()->documentLayout());
     Q_ASSERT(documentLayout);
 
@@ -1578,7 +1576,35 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
     }
 #endif
 
-    if (!(d->control->textInteractionFlags() & Qt::TextEditable)) {
+#ifndef QT_NO_SHORTCUT
+
+    Qt::TextInteractionFlags tif = d->control->textInteractionFlags();
+
+    if (tif & Qt::TextSelectableByKeyboard){
+        if (e == QKeySequence::SelectPreviousPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Up, QTextCursor::KeepAnchor);
+            return;
+        } else if (e ==QKeySequence::SelectNextPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Down, QTextCursor::KeepAnchor);
+            return;
+        }
+    }
+    if (tif & (Qt::TextSelectableByKeyboard | Qt::TextEditable)) {
+        if (e == QKeySequence::MoveToPreviousPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Up, QTextCursor::MoveAnchor);
+            return;
+        } else if (e == QKeySequence::MoveToNextPage) {
+            e->accept();
+            d->pageUpDown(QTextCursor::Down, QTextCursor::MoveAnchor);
+            return;
+        }
+    }
+#endif // QT_NO_SHORTCUT
+
+    if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
             case Qt::Key_Space:
                 e->accept();
@@ -1604,27 +1630,6 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
-
-#ifndef QT_NO_SHORTCUT
-    if (e == QKeySequence::MoveToPreviousPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Up, QTextCursor::MoveAnchor);
-            return;
-    } else if (e == QKeySequence::MoveToNextPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Down, QTextCursor::MoveAnchor);
-            return;
-    } else if (e == QKeySequence::SelectPreviousPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Up, QTextCursor::KeepAnchor);
-            return;
-    } else if (e ==QKeySequence::SelectNextPage) {
-            e->accept();
-            d->pageUpDown(QTextCursor::Down, QTextCursor::KeepAnchor);
-            return;
-    }
-#endif // QT_NO_SHORTCUT
-
 
     d->sendControlEvent(e);
 #ifdef QT_KEYPAD_NAVIGATION
@@ -2927,33 +2932,29 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     (\a available is true) or unavailable (\a available is false).
 */
 
-#ifdef Q_WS_WIN
-
-void QPlainTextEditPrivate::_q_gestureTriggered()
-{
-    Q_Q(QPlainTextEdit);
-    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-    if (!g)
-        return;
-    QScrollBar *hBar = q->horizontalScrollBar();
-    QScrollBar *vBar = q->verticalScrollBar();
-    if (g->state() == Qt::GestureStarted)
-        originalOffsetY = vBar->value();
-    QSizeF totalOffset = g->totalOffset();
-    if (!totalOffset.isNull()) {
-        if (QApplication::isRightToLeft())
-            totalOffset.rwidth() *= -1;
-        // QPlainTextEdit scrolls by lines only in vertical direction
-        QFontMetrics fm(q->document()->defaultFont());
-        int lineHeight = fm.height();
-        int newX = hBar->value() - g->lastOffset().width();
-        int newY = originalOffsetY - totalOffset.height()/lineHeight;
-        hbar->setValue(newX);
-        vbar->setValue(newY);
-    }
-}
-
-#endif
+//void QPlainTextEditPrivate::_q_gestureTriggered()
+//{
+//    Q_Q(QPlainTextEdit);
+//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+//    if (!g)
+//        return;
+//    QScrollBar *hBar = q->horizontalScrollBar();
+//    QScrollBar *vBar = q->verticalScrollBar();
+//    if (g->state() == Qt::GestureStarted)
+//        originalOffsetY = vBar->value();
+//    QSizeF totalOffset = g->totalOffset();
+//    if (!totalOffset.isNull()) {
+//        if (QApplication::isRightToLeft())
+//            totalOffset.rwidth() *= -1;
+//        // QPlainTextEdit scrolls by lines only in vertical direction
+//        QFontMetrics fm(q->document()->defaultFont());
+//        int lineHeight = fm.height();
+//        int newX = hBar->value() - g->lastOffset().width();
+//        int newY = originalOffsetY - totalOffset.height()/lineHeight;
+//        hbar->setValue(newX);
+//        vbar->setValue(newY);
+//    }
+//}
 
 QT_END_NAMESPACE
 

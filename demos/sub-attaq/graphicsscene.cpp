@@ -47,7 +47,6 @@
 #include "torpedo.h"
 #include "bomb.h"
 #include "pixmapitem.h"
-#include "custompropertyanimation.h"
 #include "animationmanager.h"
 #include "qanimationstate.h"
 #include "progressitem.h"
@@ -68,39 +67,10 @@
 #include <QtGui/QGraphicsSceneMouseEvent>
 #include <QtCore/QXmlStreamReader>
 
-//helper function that creates an animation for position and inserts it into group
-static CustomPropertyAnimation *addGraphicsItemPosAnimation(QSequentialAnimationGroup *group,
-                                                              QGraphicsItem *item, const QPointF &endPos)
-{
-    CustomPropertyAnimation *ret = new CustomPropertyAnimation(group);
-    ret->setMemberFunctions(item, &QGraphicsItem::pos, &QGraphicsItem::setPos);
-    ret->setEndValue(endPos);
-    ret->setDuration(200);
-    ret->setEasingCurve(QEasingCurve::OutElastic);
-    group->addPause(50);
-    return ret;
-}
-
-//helper function that creates an animation for opacity and inserts it into group
-static void addGraphicsItemFadeoutAnimation(QAnimationGroup *group, QGraphicsItem *item)
-{
-#if QT_VERSION >=0x040500
-    CustomPropertyAnimation *anim = new CustomPropertyAnimation(group);
-    anim->setMemberFunctions(item, &QGraphicsItem::opacity, &QGraphicsItem::setOpacity);
-    anim->setDuration(800);
-    anim->setEndValue(0);
-    anim->setEasingCurve(QEasingCurve::OutQuad);
-#else
-    // work around for a bug where we don't transition if the duration is zero.
-    QtPauseAnimation *anim = new QtPauseAnimation(group);
-    anim->setDuration(1);
-#endif
-}
-
 GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
-    : QGraphicsScene(x,y,width,height), mode(mode), newAction(0), quitAction(0), boat(0)
+    : QGraphicsScene(x , y, width, height), mode(mode), boat(new Boat)
 {
-    backgroundItem = new PixmapItem(QString("background"),mode);
+    PixmapItem *backgroundItem = new PixmapItem(QString("background"),mode);
     backgroundItem->setZValue(1);
     backgroundItem->setPos(0,0);
     addItem(backgroundItem);
@@ -116,7 +86,6 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
     textInformationItem = new TextInformationItem(backgroundItem);
     textInformationItem->hide();
     //We create the boat
-    boat = new Boat();
     addItem(boat);
     boat->setPos(this->width()/2, sealLevel() - boat->size().height());
     boat->hide();
@@ -130,28 +99,21 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
     while (!reader.atEnd()) {
          reader.readNext();
          if (reader.tokenType() == QXmlStreamReader::StartElement) {
-             if (reader.name() == "submarine")
-             {
+             if (reader.name() == "submarine") {
                  SubmarineDescription desc;
                  desc.name = reader.attributes().value("name").toString();
                  desc.points = reader.attributes().value("points").toString().toInt();
                  desc.type = reader.attributes().value("type").toString().toInt();
                  submarinesData.append(desc);
-             }
-             if (reader.name() == "level")
-             {
+             } else if (reader.name() == "level") {
                  currentLevel.id = reader.attributes().value("id").toString().toInt();
                  currentLevel.name = reader.attributes().value("name").toString();
+             } else if (reader.name() == "subinstance") {
+                 currentLevel.submarines.append(qMakePair(reader.attributes().value("type").toString().toInt(), reader.attributes().value("nb").toString().toInt()));
              }
-             if (reader.name() == "subinstance")
-             {
-                 currentLevel.submarines.append(qMakePair(reader.attributes().value("type").toString().toInt(),reader.attributes().value("nb").toString().toInt()));
-             }
-         }
-         if (reader.tokenType() == QXmlStreamReader::EndElement) {
-            if (reader.name() == "level")
-            {
-                levelsData.insert(currentLevel.id,currentLevel);
+         } else if (reader.tokenType() == QXmlStreamReader::EndElement) {
+            if (reader.name() == "level") {
+                levelsData.insert(currentLevel.id, currentLevel);
                 currentLevel.submarines.clear();
             }
          }
@@ -160,80 +122,52 @@ GraphicsScene::GraphicsScene(int x, int y, int width, int height, Mode mode)
 
 qreal GraphicsScene::sealLevel() const
 {
-     if (mode == Big)
-        return 220;
-     else
-        return 160;
+    return (mode == Big) ? 220 : 160;
 }
 
-void GraphicsScene::setupScene(const QList<QAction *> &actions)
+void GraphicsScene::setupScene(QAction *newAction, QAction *quitAction)
 {
-    newAction = actions.at(0);
-    quitAction = actions.at(1);
-
-    QGraphicsItem *logo_s = addWelcomeItem(QPixmap(":/logo-s"));
-    QGraphicsItem *logo_u = addWelcomeItem(QPixmap(":/logo-u"));
-    QGraphicsItem *logo_b = addWelcomeItem(QPixmap(":/logo-b"));
-    QGraphicsItem *logo_dash = addWelcomeItem(QPixmap(":/logo-dash"));
-    QGraphicsItem *logo_a = addWelcomeItem(QPixmap(":/logo-a"));
-    QGraphicsItem *logo_t = addWelcomeItem(QPixmap(":/logo-t"));
-    QGraphicsItem *logo_t2 = addWelcomeItem(QPixmap(":/logo-t2"));
-    QGraphicsItem *logo_a2 = addWelcomeItem(QPixmap(":/logo-a2"));
-    QGraphicsItem *logo_q = addWelcomeItem(QPixmap(":/logo-q"));
-    QGraphicsItem *logo_excl = addWelcomeItem(QPixmap(":/logo-excl"));
-    logo_s->setZValue(3);
-    logo_u->setZValue(4);
-    logo_b->setZValue(5);
-    logo_dash->setZValue(6);
-    logo_a->setZValue(7);
-    logo_t->setZValue(8);
-    logo_t2->setZValue(9);
-    logo_a2->setZValue(10);
-    logo_q->setZValue(11);
-    logo_excl->setZValue(12);
-    logo_s->setPos(QPointF(-1000, -1000));
-    logo_u->setPos(QPointF(-800, -1000));
-    logo_b->setPos(QPointF(-600, -1000));
-    logo_dash->setPos(QPointF(-400, -1000));
-    logo_a->setPos(QPointF(1000, 2000));
-    logo_t->setPos(QPointF(800, 2000));
-    logo_t2->setPos(QPointF(600, 2000));
-    logo_a2->setPos(QPointF(400, 2000));
-    logo_q->setPos(QPointF(200, 2000));
-    logo_excl->setPos(QPointF(0, 2000));
+    static const int nLetters = 10;
+    static struct {
+        char const *pix;
+        qreal initX, initY;
+        qreal destX, destY;
+    } logoData[nLetters] = {
+        {"s",   -1000, -1000, 300, 150 },
+        {"u",    -800, -1000, 350, 150 },
+        {"b",    -600, -1000, 400, 120 },
+        {"dash", -400, -1000, 460, 150 },
+        {"a",    1000,  2000, 350, 250 },
+        {"t",     800,  2000, 400, 250 },
+        {"t2",    600,  2000, 430, 250 },
+        {"a2",    400,  2000, 465, 250 },
+        {"q",     200,  2000, 510, 250 },
+        {"excl",    0,  2000, 570, 220 } };
 
     QSequentialAnimationGroup * lettersGroupMoving = new QSequentialAnimationGroup(this);
     QParallelAnimationGroup * lettersGroupFading = new QParallelAnimationGroup(this);
 
-    //creation of the animations for moving letters
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_s, QPointF(300, 150));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_u, QPointF(350, 150));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_b, QPointF(400, 120));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_dash, QPointF(460, 150));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_a, QPointF(350, 250));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_t, QPointF(400, 250));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_t2, QPointF(430, 250));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_a2, QPointF(465, 250));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_q, QPointF(510, 250));
-    addGraphicsItemPosAnimation(lettersGroupMoving, logo_excl, QPointF(570, 220));
-
-    //creation of the animations for fading out the letters
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_s);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_u);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_b);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_dash);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_a);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_t);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_t2);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_a2);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_q);
-    addGraphicsItemFadeoutAnimation(lettersGroupFading, logo_excl);
-    connect(lettersGroupFading, SIGNAL(finished()), this, SLOT(onIntroAnimationFinished()));
+    for (int i = 0; i < nLetters; ++i) {
+        PixmapItem *logo = new PixmapItem(QLatin1String(":/logo-") + logoData[i].pix, this);
+        logo->setPos(logoData[i].initX, logoData[i].initY);
+        logo->setZValue(i + 3);
+        //creation of the animations for moving letters
+        QPropertyAnimation *moveAnim = new QPropertyAnimation(logo, "pos", lettersGroupMoving);
+        moveAnim->setEndValue(QPointF(logoData[i].destX, logoData[i].destY));
+        moveAnim->setDuration(200);
+        moveAnim->setEasingCurve(QEasingCurve::OutElastic);
+        lettersGroupMoving->addPause(50);
+        //creation of the animations for fading out the letters
+        QPropertyAnimation *fadeAnim = new QPropertyAnimation(logo, "opacity", lettersGroupFading);
+        fadeAnim->setDuration(800);
+        fadeAnim->setEndValue(0);
+        fadeAnim->setEasingCurve(QEasingCurve::OutQuad);
+    }
 
     QStateMachine *machine = new QStateMachine(this);
 
     //This state is when the player is playing
-    PlayState *gameState = new PlayState(this,machine);
+    PlayState *gameState = new PlayState(this, machine);
 
     //Final state
     QFinalState *final = new QFinalState(machine);
@@ -263,7 +197,7 @@ void GraphicsScene::setupScene(const QList<QAction *> &actions)
     machine->start();
 
     //We reach the final state, then we quit
-    connect(machine,SIGNAL(finished()),this, SLOT(onQuitGameTriggered()));
+    connect(machine, SIGNAL(finished()), qApp, SLOT(quit()));
 }
 
 void GraphicsScene::addItem(Bomb *bomb)
@@ -292,16 +226,6 @@ void GraphicsScene::addItem(QGraphicsItem *item)
     QGraphicsScene::addItem(item);
 }
 
-void GraphicsScene::mousePressEvent (QGraphicsSceneMouseEvent * event)
-{
-    event->ignore();
-}
-
-void GraphicsScene::onQuitGameTriggered()
-{
-    qApp->closeAllWindows();
-}
-
 void GraphicsScene::onBombExecutionFinished()
 {
     Bomb *bomb = qobject_cast<Bomb *>(sender());
@@ -322,32 +246,26 @@ void GraphicsScene::onSubMarineExecutionFinished()
 {
     SubMarine *submarine = qobject_cast<SubMarine *>(sender());
     submarines.remove(submarine);
-    if (submarines.count() == 0) {
+    if (submarines.count() == 0)
         emit allSubMarineDestroyed(submarine->points());
-    } else {
+    else
         emit subMarineDestroyed(submarine->points());
-    }
     submarine->deleteLater();
-}
-
-int GraphicsScene::remainingSubMarines() const
-{
-    return submarines.count();
 }
 
 void GraphicsScene::clearScene()
 {
-    foreach (SubMarine *sub,submarines) {
+    foreach (SubMarine *sub, submarines) {
         sub->destroy();
         sub->deleteLater();
     }
 
-    foreach (Torpedo *torpedo,torpedos) {
+    foreach (Torpedo *torpedo, torpedos) {
         torpedo->destroy();
         torpedo->deleteLater();
     }
 
-    foreach (Bomb *bomb,bombs) {
+    foreach (Bomb *bomb, bombs) {
         bomb->destroy();
         bomb->deleteLater();
     }
@@ -361,17 +279,3 @@ void GraphicsScene::clearScene()
     boat->stop();
     boat->hide();
 }
-
-QGraphicsPixmapItem *GraphicsScene::addWelcomeItem(const QPixmap &pm)
-{
-    QGraphicsPixmapItem *item = addPixmap(pm);
-    welcomeItems << item;
-    return item;
-}
-
-void GraphicsScene::onIntroAnimationFinished()
-{
-    qDeleteAll(welcomeItems);
-    welcomeItems.clear();
-}
-

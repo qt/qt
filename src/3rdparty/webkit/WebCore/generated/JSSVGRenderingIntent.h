@@ -36,7 +36,7 @@ class SVGRenderingIntent;
 class JSSVGRenderingIntent : public DOMObjectWithSVGContext {
     typedef DOMObjectWithSVGContext Base;
 public:
-    JSSVGRenderingIntent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGRenderingIntent>, SVGElement* context);
+    JSSVGRenderingIntent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<SVGRenderingIntent>, SVGElement* context);
     virtual ~JSSVGRenderingIntent();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -71,7 +71,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSSVGRenderingIntentPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSSVGRenderingIntentPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

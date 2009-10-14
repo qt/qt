@@ -309,6 +309,7 @@ private:
     friend class QPicturePaintEngine;
     friend class QPainterReplayer;
     friend class QPaintBufferEngine;
+    friend class QCommandLinkButtonPrivate;
 
 #ifndef QT_NO_DATASTREAM
     friend Q_GUI_EXPORT QDataStream &operator<<(QDataStream &, const QFont &);

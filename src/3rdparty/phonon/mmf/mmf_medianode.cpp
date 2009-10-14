@@ -25,6 +25,10 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::MediaNode
+  \internal
+*/
+
 MMF::MediaNode::MediaNode(QObject *parent) : QObject::QObject(parent)
                                            , m_source(0)
                                            , m_target(0)
@@ -45,7 +49,7 @@ bool MMF::MediaNode::disconnectMediaNode(MediaNode *target)
     Q_UNUSED(target);
     m_target = 0;
     m_isApplied = false;
-    return false;
+    return true;
 }
 
 void MMF::MediaNode::setSource(MediaNode *source)

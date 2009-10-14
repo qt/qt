@@ -140,23 +140,34 @@ QFont QCommandLinkButtonPrivate::titleFont() const
     Q_Q(const QCommandLinkButton);
     QFont font = q->font();
     if (usingVistaStyle()) {
-        if (!q->testAttribute(Qt::WA_SetFont))
-            font.setPointSizeF(12.0);
+        font.setPointSizeF(12.0);
     } else {
         font.setBold(true);
-        if (!q->testAttribute(Qt::WA_SetFont))
-            font.setPointSizeF(9.0);
+        font.setPointSizeF(9.0);
     }
-    return font;
+
+    // Note the font will be resolved against
+    // QPainters font, so we need to restore the mask
+    int resolve_mask = font.resolve_mask;
+    QFont modifiedFont = q->font().resolve(font);
+    modifiedFont.detach();
+    modifiedFont.resolve_mask = resolve_mask;
+    return modifiedFont;
 }
 
 QFont QCommandLinkButtonPrivate::descriptionFont() const
 {
     Q_Q(const QCommandLinkButton);
     QFont font = q->font();
-    if (!q->testAttribute(Qt::WA_SetFont))
-        font.setPointSizeF(9.0);
-    return font;
+    font.setPointSizeF(9.0);
+
+    // Note the font will be resolved against
+    // QPainters font, so we need to restore the mask
+    int resolve_mask = font.resolve_mask;
+    QFont modifiedFont = q->font().resolve(font);
+    modifiedFont.detach();
+    modifiedFont.resolve_mask = resolve_mask;
+    return modifiedFont;
 }
 
 QRect QCommandLinkButtonPrivate::titleRect() const

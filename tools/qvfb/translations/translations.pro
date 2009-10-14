@@ -9,10 +9,10 @@ HEADERS  = ../qvfb.h \
            ../qvfbprotocol.h \
            ../qvfbshmem.h \
            ../qvfbmmap.h \
-           ../qvfbhdr.h \
-           ../qlock_p.h \
-           ../qwssignalhandler_p.h \
-           ../../shared/deviceskin/deviceskin.cpp
+           ../../../src/gui/embedded/qvfbhdr.h \
+           ../../../src/gui/embedded/qlock_p.h \
+           ../../../src/gui/embedded/qwssignalhandler_p.h \
+           ../../shared/deviceskin/deviceskin.h
 
 SOURCES =  ../qvfb.cpp \
            ../qvfbview.cpp \
@@ -22,12 +22,13 @@ SOURCES =  ../qvfb.cpp \
            ../qvfbprotocol.cpp \
            ../qvfbshmem.cpp \
            ../qvfbmmap.cpp \
-           ../qlock.cpp \
-           ../qwssignalhandler.cpp \
+           ../../../src/gui/embedded/qlock.cpp \
+           ../../../src/gui/embedded/qwssignalhandler.cpp \
            ../../shared/deviceskin/deviceskin.cpp
 
-TRANSLATIONS=$$[QT_INSTALL_TRANSLATIONS]/qvfb_pl.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_ru.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_untranslated.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_CN.ts \
-             $$[QT_INSTALL_TRANSLATIONS]/qvfb_zh_TW.ts
+TR_DIR = $$PWD/../../../translations
+TRANSLATIONS = \
+    $$TR_DIR/qvfb_pl.ts \
+    $$TR_DIR/qvfb_ru.ts \
+    $$TR_DIR/qvfb_zh_CN.ts \
+    $$TR_DIR/qvfb_zh_TW.ts

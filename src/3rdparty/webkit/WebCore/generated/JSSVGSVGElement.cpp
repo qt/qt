@@ -170,7 +170,7 @@ bool JSSVGSVGElementPrototype::getOwnPropertyDescriptor(ExecState* exec, const I
 
 const ClassInfo JSSVGSVGElement::s_info = { "SVGSVGElement", &JSSVGElement::s_info, &JSSVGSVGElementTable, 0 };
 
-JSSVGSVGElement::JSSVGSVGElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSVGElement> impl)
+JSSVGSVGElement::JSSVGSVGElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGSVGElement> impl)
     : JSSVGElement(structure, globalObject, impl)
 {
 }

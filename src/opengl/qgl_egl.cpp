@@ -75,7 +75,7 @@ void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f
         props.setValue(EGL_STENCIL_SIZE, f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize());
     if (f.sampleBuffers()) {
         props.setValue(EGL_SAMPLE_BUFFERS, 1);
-        props.setValue(EGL_SAMPLES, f.samples());
+        props.setValue(EGL_SAMPLES, f.samples() == -1 ? 1 : f.samples());
     } else {
         props.setValue(EGL_SAMPLE_BUFFERS, 0);
     }
@@ -142,8 +142,19 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
     if (d->eglContext) {
-        if (d->eglSurface != EGL_NO_SURFACE)
-            eglDestroySurface(d->eglContext->display(), d->eglSurface);
+        if (d->eglSurface != EGL_NO_SURFACE) {
+#ifdef Q_WS_X11
+            // Make sure we don't call eglDestroySurface on a surface which
+            // was created for a different winId:
+            if (d->paintDevice->devType() == QInternal::Widget) {
+                QGLWidget* w = static_cast<QGLWidget*>(d->paintDevice);
+
+                if (w->d_func()->eglSurfaceWindowId == w->winId())
+                    eglDestroySurface(d->eglContext->display(), d->eglSurface);
+            } else
+#endif
+                eglDestroySurface(d->eglContext->display(), d->eglSurface);
+        }
         delete d->eglContext;
     }
     d->eglContext = 0;

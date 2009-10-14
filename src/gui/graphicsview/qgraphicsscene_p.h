@@ -108,7 +108,7 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QList<QGraphicsItem *> unpolishedItems;
+    QSet<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
     bool holesInTopLevelSiblingIndex;
@@ -160,6 +160,7 @@ public:
     Qt::DropAction lastDropAction;
     QList<QGraphicsItem *> cachedItemsUnderMouse;
     QList<QGraphicsItem *> hoverItems;
+    QPointF lastSceneMousePos;
     bool allItemsIgnoreHoverEvents;
     bool allItemsUseDefaultCursor;
     void enableMouseTrackingOnViews();
@@ -282,6 +283,11 @@ public:
     void enableTouchEventsOnViews();
 
     void updateInputMethodSensitivityInViews();
+
+    QList<QGraphicsItem *> modalPanels;
+    void enterModal(QGraphicsItem *item,
+                    QGraphicsItem::PanelModality panelModality = QGraphicsItem::NonModal);
+    void leaveModal(QGraphicsItem *item);
 };
 
 // QRectF::intersects() returns false always if either the source or target

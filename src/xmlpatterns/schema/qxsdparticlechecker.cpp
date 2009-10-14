@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXmlPatterns of the Qt Toolkit.
+** This file is part of the QtXmlPatterns module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -162,7 +162,7 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
     // check that an empty particle can not be derived from a non-empty particle
     if (derivedParticle && baseParticle) {
         if (XsdSchemaHelper::isParticleEmptiable(derivedParticle) && !XsdSchemaHelper::isParticleEmptiable(baseParticle)) {
-            errorMsg = QtXmlPatterns::tr("empty particle cannot be derived from non-empty particle");
+            errorMsg = QtXmlPatterns::tr("Empty particle cannot be derived from non-empty particle.");
             return false;
         }
     }
@@ -177,33 +177,33 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
 
             // check names are equal
             if (element->name(namePool) != derivedElement->name(namePool)) {
-                errorMsg = QtXmlPatterns::tr("derived particle is missing element %1").arg(formatKeyword(element->displayName(namePool)));
+                errorMsg = QtXmlPatterns::tr("Derived particle is missing element %1.").arg(formatKeyword(element->displayName(namePool)));
                 return false;
             }
 
             // check value constraints are equal (if available)
             if (element->valueConstraint() && element->valueConstraint()->variety() == XsdElement::ValueConstraint::Fixed) {
                 if (!derivedElement->valueConstraint()) {
-                    errorMsg = QtXmlPatterns::tr("derived element %1 is missing value constraint as defined in base particle").arg(formatKeyword(derivedElement->displayName(namePool)));
+                    errorMsg = QtXmlPatterns::tr("Derived element %1 is missing value constraint as defined in base particle.").arg(formatKeyword(derivedElement->displayName(namePool)));
                     return false;
                 }
 
                 if (derivedElement->valueConstraint()->variety() != XsdElement::ValueConstraint::Fixed) {
-                    errorMsg = QtXmlPatterns::tr("derived element %1 has weaker value constraint than base particle").arg(formatKeyword(derivedElement->displayName(namePool)));
+                    errorMsg = QtXmlPatterns::tr("Derived element %1 has weaker value constraint than base particle.").arg(formatKeyword(derivedElement->displayName(namePool)));
                     return false;
                 }
 
                 const QSourceLocation dummyLocation(QUrl(QLatin1String("http://dummy.org")), 1, 1);
                 const XsdTypeChecker checker(context, QVector<QXmlName>(), dummyLocation);
                 if (!checker.valuesAreEqual(element->valueConstraint()->value(), derivedElement->valueConstraint()->value(), derivedElement->type())) {
-                    errorMsg = QtXmlPatterns::tr("fixed value constraint of element %1 differs from value constraint in base particle").arg(formatKeyword(derivedElement->displayName(namePool)));
+                    errorMsg = QtXmlPatterns::tr("Fixed value constraint of element %1 differs from value constraint in base particle.").arg(formatKeyword(derivedElement->displayName(namePool)));
                     return false;
                 }
             }
 
             // check that a derived element can not be nillable if the base element is not nillable
             if (!element->isNillable() && derivedElement->isNillable()) {
-                errorMsg = QtXmlPatterns::tr("derived element %1 cannot be nillable as base element is not nillable").arg(formatKeyword(derivedElement->displayName(namePool)));
+                errorMsg = QtXmlPatterns::tr("Derived element %1 cannot be nillable as base element is not nillable.").arg(formatKeyword(derivedElement->displayName(namePool)));
                 return false;
             }
 
@@ -213,7 +213,7 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
             if (((baseConstraints & XsdElement::RestrictionConstraint) && !(derivedConstraints & XsdElement::RestrictionConstraint)) ||
                 ((baseConstraints & XsdElement::ExtensionConstraint) && !(derivedConstraints & XsdElement::ExtensionConstraint)) ||
                 ((baseConstraints & XsdElement::SubstitutionConstraint) && !(derivedConstraints & XsdElement::SubstitutionConstraint))) {
-                errorMsg = QtXmlPatterns::tr("block constraints of derived element %1 must not be more weaker than in the base element").arg(formatKeyword(derivedElement->displayName(namePool)));
+                errorMsg = QtXmlPatterns::tr("Block constraints of derived element %1 must not be more weaker than in the base element.").arg(formatKeyword(derivedElement->displayName(namePool)));
                 return false;
             }
 
@@ -224,12 +224,12 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
             // check that the type of the derived element can validly derived from the type of the base element
             if (derivedElement->type()->isSimpleType()) {
                 if (!XsdSchemaHelper::isSimpleDerivationOk(derivedElement->type(), element->type(), SchemaType::DerivationConstraints())) {
-                    errorMsg = QtXmlPatterns::tr("simple type of derived element %1 cannot be validly derived from base element").arg(formatKeyword(derivedElement->displayName(namePool)));
+                    errorMsg = QtXmlPatterns::tr("Simple type of derived element %1 cannot be validly derived from base element.").arg(formatKeyword(derivedElement->displayName(namePool)));
                     return false;
                 }
             } else if (derivedElement->type()->isComplexType()) {
                 if (!XsdSchemaHelper::isComplexDerivationOk(derivedElement->type(), element->type(), SchemaType::DerivationConstraints())) {
-                    errorMsg = QtXmlPatterns::tr("complex type of derived element %1 cannot be validly derived from base element").arg(formatKeyword(derivedElement->displayName(namePool)));
+                    errorMsg = QtXmlPatterns::tr("Complex type of derived element %1 cannot be validly derived from base element.").arg(formatKeyword(derivedElement->displayName(namePool)));
                     return false;
                 }
             }
@@ -253,7 +253,7 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
             return true;
         } else if (derivedTerm->isWildcard()) {
             // derive a wildcard from an element is not allowed
-            errorMsg = QtXmlPatterns::tr("element %1 is missing in derived particle").arg(formatKeyword(element->displayName(namePool)));
+            errorMsg = QtXmlPatterns::tr("Element %1 is missing in derived particle.").arg(formatKeyword(element->displayName(namePool)));
             return false;
         }
     } else if (baseTerm->isWildcard()) {
@@ -271,7 +271,7 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
 
             // check that name of the element is allowed by the wildcards namespace constraint
             if (!XsdSchemaHelper::wildcardAllowsExpandedName(name, wildcard, namePool)) {
-                errorMsg = QtXmlPatterns::tr("element %1 does not match namespace constraint of wildcard in base particle").arg(formatKeyword(derivedElement->displayName(namePool)));
+                errorMsg = QtXmlPatterns::tr("Element %1 does not match namespace constraint of wildcard in base particle.").arg(formatKeyword(derivedElement->displayName(namePool)));
                 return false;
             }
 
@@ -282,12 +282,12 @@ static bool derivedTermValid(const XsdTerm::Ptr &baseTerm, const XsdTerm::Ptr &d
 
             // check that the derived wildcard is a valid subset of the base wildcard
             if (!XsdSchemaHelper::isWildcardSubset(derivedWildcard, wildcard)) {
-                errorMsg = QtXmlPatterns::tr("wildcard in derived particle is not a valid subset of wildcard in base particle");
+                errorMsg = QtXmlPatterns::tr("Wildcard in derived particle is not a valid subset of wildcard in base particle.");
                 return false;
             }
 
             if (!XsdSchemaHelper::checkWildcardProcessContents(wildcard, derivedWildcard)) {
-                errorMsg = QtXmlPatterns::tr("processContent of wildcard in derived particle is weaker than wildcard in base particle");
+                errorMsg = QtXmlPatterns::tr("processContent of wildcard in derived particle is weaker than wildcard in base particle.");
                 return false;
             }
         }
@@ -527,7 +527,7 @@ bool XsdParticleChecker::subsumes(const XsdParticle::Ptr &particle, const XsdPar
                 if (processedSet.at(i).second == it.key() &&
                     (baseStates.value(processedSet.at(i).first) != XsdStateMachine<XsdTerm::Ptr>::EndState &&
                      baseStates.value(processedSet.at(i).first) != XsdStateMachine<XsdTerm::Ptr>::StartEndState)) {
-                    errorMsg = QtXmlPatterns::tr("derived particle allows content that is not allowed in the base particle");
+                    errorMsg = QtXmlPatterns::tr("Derived particle allows content that is not allowed in the base particle.");
                     return false;
                 }
             }

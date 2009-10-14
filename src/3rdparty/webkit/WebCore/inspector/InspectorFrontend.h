@@ -62,6 +62,7 @@ namespace WebCore {
         ScriptArray newScriptArray();
         ScriptObject newScriptObject();
 
+        void didCommitLoad();
         void addMessageToConsole(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
         void clearConsoleMessages();
 
@@ -115,6 +116,7 @@ namespace WebCore {
         void attributesUpdated(int id, const ScriptArray& attributes);
         void didGetChildNodes(int callId);
         void didApplyDomChange(int callId, bool success);
+        void didGetEventListenersForNode(int callId, int nodeId, ScriptArray& listenersArray);
 
         void timelineWasEnabled();
         void timelineWasDisabled();
@@ -124,6 +126,8 @@ namespace WebCore {
         void didDispatchOnInjectedScript(int callId, const String& result, bool isException);
 
         void addNodesToSearchResult(const String& nodeIds);
+
+        ScriptState* scriptState() const { return m_scriptState; }
 
     private:
         PassOwnPtr<ScriptFunctionCall> newFunctionCall(const String& functionName);

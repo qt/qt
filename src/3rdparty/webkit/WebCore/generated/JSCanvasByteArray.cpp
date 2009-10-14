@@ -57,7 +57,7 @@ JSObject* JSCanvasByteArrayPrototype::self(ExecState* exec, JSGlobalObject* glob
 
 const ClassInfo JSCanvasByteArray::s_info = { "CanvasByteArray", &JSCanvasArray::s_info, 0, 0 };
 
-JSCanvasByteArray::JSCanvasByteArray(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasByteArray> impl)
+JSCanvasByteArray::JSCanvasByteArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasByteArray> impl)
     : JSCanvasArray(structure, globalObject, impl)
 {
 }

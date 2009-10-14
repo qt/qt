@@ -43,6 +43,10 @@
 #include <QtTest/QtTest>
 #include <QtGui>
 
+#if defined(Q_OS_SYMBIAN)
+#define SRCDIR ""
+#endif
+
 class tst_QSound : public QObject
 {
     Q_OBJECT
@@ -56,7 +60,7 @@ private slots:
 
 void tst_QSound::checkFinished()
 {
-            QSound sound("4.wav");
+            QSound sound(SRCDIR"4.wav");
             sound.setLoops(3);
             sound.play();
             QTest::qWait(5000);

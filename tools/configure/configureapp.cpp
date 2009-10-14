@@ -1465,6 +1465,9 @@ void Configure::applySpecSpecifics()
         dictionary[ "SQL_SQLITE" ]          = "yes";
         dictionary[ "SQL_SQLITE_LIB" ]      = "system";
 
+        // Disable building docs and translations for now
+        disabledBuildParts << "docs" << "translations";
+
     } else if(dictionary[ "XQMAKESPEC" ].startsWith("linux")) { //TODO actually wrong.
       //TODO
         dictionary[ "STYLE_WINDOWSXP" ]     = "no";
@@ -3717,7 +3720,7 @@ void Configure::readLicense()
        (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
         dictionary["PLATFORM NAME"] = "Qt for Windows CE";
     else if (dictionary.value("XQMAKESPEC").startsWith("symbian"))
-        dictionary["PLATFORM NAME"] = "Qt for S60";
+        dictionary["PLATFORM NAME"] = "Qt for Symbian";
     else
         dictionary["PLATFORM NAME"] = "Qt for Windows";
     dictionary["LICENSE FILE"] = sourcePath;

@@ -541,9 +541,10 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             else {
                 lastPath = parentPath;
             }
-
-            if (func)
+            if (func) {
                 func->borrowParameterNames(clone);
+                func->setParentPath(clone->parentPath());
+            }
             delete clone;
         }
         return func;
@@ -1371,6 +1372,7 @@ bool CppCodeParser::matchFunctionDecl(InnerNode *parent,
     func->setAccess(access);
     func->setLocation(location());
     func->setReturnType(returnType.toString());
+    func->setParentPath(parentPath);
     func->setTemplateStuff(templateStuff);
     if (compat)
         func->setStatus(Node::Compat);

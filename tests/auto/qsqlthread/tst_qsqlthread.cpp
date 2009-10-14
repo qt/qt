@@ -404,6 +404,8 @@ void tst_QSqlThread::readWriteThreading()
 
     if (db.databaseName() == ":memory:")
         QSKIP("does not work with in-memory databases", SkipSingle);
+    else if (tst_Databases::isMSAccess(db))
+        QSKIP("does not work with MS Access databases", SkipSingle);
 
     SqlProducer producer(db);
     SqlConsumer consumer(db);

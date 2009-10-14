@@ -47,6 +47,10 @@ public:
 
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
+    virtual void setInputMethodEnabled(bool enable);
+#if QT_VERSION >= 0x040600
+    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
+#endif
 
     virtual QCursor cursor() const;
     virtual void updateCursor(const QCursor& cursor);
@@ -71,6 +75,20 @@ void QWebViewPrivate::update(const QRect & dirtyRect)
 {
     view->update(dirtyRect);
 }
+
+void QWebViewPrivate::setInputMethodEnabled(bool enable)
+{
+    view->setAttribute(Qt::WA_InputMethodEnabled, enable);
+}
+#if QT_VERSION >= 0x040600
+void QWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
+{
+    if (enable)
+        view->setInputMethodHints(view->inputMethodHints() | hint);
+    else
+        view->setInputMethodHints(view->inputMethodHints() & ~hint);
+}
+#endif
 
 QCursor QWebViewPrivate::cursor() const
 {
@@ -198,7 +216,7 @@ QWebView::QWebView(QWidget *parent)
 {
     d = new QWebViewPrivate(this);
 
-#if !defined(Q_WS_QWS)
+#if !defined(Q_WS_QWS) && !defined(Q_OS_SYMBIAN)
     setAttribute(Qt::WA_InputMethodEnabled);
 #endif
 
@@ -650,6 +668,7 @@ qreal QWebView::textSizeMultiplier() const
     return page()->mainFrame()->textSizeMultiplier();
 }
 
+#if !defined(Q_OS_SYMBIAN)
 /*!
     \property QWebView::renderHints
     \since 4.6
@@ -661,6 +680,7 @@ qreal QWebView::textSizeMultiplier() const
 
     \sa QPainter::renderHints()
 */
+#endif
 QPainter::RenderHints QWebView::renderHints() const
 {
     return d->renderHints;

@@ -671,6 +671,26 @@ void tst_QUrl::setUrl()
     }
 
 /*
+   The tests below are copied from kdelibs/kdecore/tests/kurltest.cpp (an old version of)
+
+    Copyright (c) 1999-2005 Waldo Bastian <bastian@kde.org>
+    Copyright (c) 2000-2005 David Faure <faure@kde.org>
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License version 2 as published by the Free Software Foundation.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public License
+    along with this library; see the file COPYING.LIB.  If not, write to
+    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+    Boston, MA 02110-1301, USA.
+ */
+/*
     ### File / directory specifics
 
     KURL u2( QCString("/home/dfaure/") );
@@ -2242,6 +2262,9 @@ void tst_QUrl::ipv6_2_data()
     QTest::newRow("[::ffff:129.144.52.38]")
         << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi")
         << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi");
+    QTest::newRow("[::FFFF:129.144.52.38]")
+        << QString("http://[::FFFF:129.144.52.38]/cgi/test.cgi")
+        << QString("http://[::ffff:129.144.52.38]/cgi/test.cgi");
 }
 
 void tst_QUrl::ipv6_2()
@@ -2600,6 +2623,13 @@ void tst_QUrl::tolerantParser()
         QByteArray tsdgeosExpected("http://google.com/c?c=Translation+%C2%BB+trunk%7C");
         //QCOMPARE(tsdgeosQUrl.toEncoded(), tsdgeosExpected); // unusable output from qtestlib...
         QCOMPARE(QString(tsdgeosQUrl.toEncoded()), QString(tsdgeosExpected));
+    }
+
+    {
+        QUrl url;
+        url.setUrl("http://strange<username>@hostname/", QUrl::TolerantMode);
+        QVERIFY(url.isValid());
+        QCOMPARE(QString(url.toEncoded()), QString("http://strange%3Cusername%3E@hostname/"));
     }
 }
 
@@ -3571,9 +3601,9 @@ void tst_QUrl::setAuthority()
 
 void tst_QUrl::errorString()
 {
-    QUrl u = QUrl::fromEncoded("http://strange<username>@ok_hostname/", QUrl::StrictMode);
+    QUrl u = QUrl::fromEncoded("http://strange<username>@bad_hostname/", QUrl::StrictMode);
     QVERIFY(!u.isValid());
-    QString errorString = "Invalid URL \"http://strange<username>@ok_hostname/\": "
+    QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
                           "error at position 14: expected end of URL, but found '<'";
     QCOMPARE(u.errorString(), errorString);
 

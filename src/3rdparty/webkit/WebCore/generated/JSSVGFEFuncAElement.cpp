@@ -56,7 +56,7 @@ JSObject* JSSVGFEFuncAElementPrototype::self(ExecState* exec, JSGlobalObject* gl
 
 const ClassInfo JSSVGFEFuncAElement::s_info = { "SVGFEFuncAElement", &JSSVGComponentTransferFunctionElement::s_info, 0, 0 };
 
-JSSVGFEFuncAElement::JSSVGFEFuncAElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFuncAElement> impl)
+JSSVGFEFuncAElement::JSSVGFEFuncAElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGFEFuncAElement> impl)
     : JSSVGComponentTransferFunctionElement(structure, globalObject, impl)
 {
 }

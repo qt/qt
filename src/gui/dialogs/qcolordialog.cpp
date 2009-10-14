@@ -62,6 +62,7 @@
 #include "qmime.h"
 #include "qspinbox.h"
 #include "qdialogbuttonbox.h"
+#include "private/qguiplatformplugin_p.h"
 
 #ifdef Q_WS_S60
 #include "private/qt_s60_p.h"
@@ -1454,6 +1455,8 @@ void QColorDialogPrivate::init(const QColor &initial)
     q->setSizeGripEnabled(false);
     q->setWindowTitle(QColorDialog::tr("Select Color"));
 
+    nativeDialogInUse = false;
+
     nextCust = 0;
     QVBoxLayout *mainLay = new QVBoxLayout(q);
     // there's nothing in this dialog that benefits from sizing up
@@ -1719,6 +1722,8 @@ void QColorDialog::setCurrentColor(const QColor &color)
     d->setCurrentQColor(color);
     d->setCocoaPanelColor(color);
 #endif
+    if (d->nativeDialogInUse)
+        qt_guiPlatformPlugin()->colorDialogSetCurrentColor(this, color);
 }
 
 QColor QColorDialog::currentColor() const
@@ -1871,6 +1876,17 @@ void QColorDialog::setVisible(bool visible)
             setAttribute(Qt::WA_DontShowOnScreen, false);
         }
     }
+#else
+
+    if (!(d->opts & DontUseNativeDialog) && qt_guiPlatformPlugin()->colorDialogSetVisible(this, visible)) {
+        d->nativeDialogInUse = true;
+        // Set WA_DontShowOnScreen so that QDialog::setVisible(visible) below
+        // updates the state correctly, but skips showing the non-native version:
+        setAttribute(Qt::WA_DontShowOnScreen);
+    } else {
+        d->nativeDialogInUse = false;
+        setAttribute(Qt::WA_DontShowOnScreen, false);
+    }
 #endif
 
     QDialog::setVisible(visible);
@@ -1970,8 +1986,8 @@ QRgb QColorDialog::getRgba(QRgb initial, bool *ok, QWidget *parent)
 
 QColorDialog::~QColorDialog()
 {
-#if defined(Q_WS_MAC)
     Q_D(QColorDialog);
+#if defined(Q_WS_MAC)
     if (d->delegate) {
         d->releaseCocoaColorPanelDelegate();
         QColorDialogPrivate::sharedColorPanelAvailable = true;
@@ -1985,6 +2001,9 @@ QColorDialog::~QColorDialog()
             settings.setValue(QLatin1String("Qt/customColors/") + QString::number(i), cusrgb[i]);
     }
 #endif
+    if (d->nativeDialogInUse)
+        qt_guiPlatformPlugin()->colorDialogDelete(this);
+
 }
 
 

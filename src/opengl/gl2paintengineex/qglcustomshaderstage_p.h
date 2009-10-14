@@ -64,7 +64,7 @@ QT_MODULE(OpenGL)
 class QGLCustomShaderStagePrivate;
 class Q_OPENGL_EXPORT QGLCustomShaderStage
 {
-    Q_DECLARE_PRIVATE(QGLCustomShaderStage);
+    Q_DECLARE_PRIVATE(QGLCustomShaderStage)
 public:
     QGLCustomShaderStage();
     virtual ~QGLCustomShaderStage();

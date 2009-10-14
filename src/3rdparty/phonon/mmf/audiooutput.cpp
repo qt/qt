@@ -18,6 +18,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <e32debug.h>
 
+#include <QCoreApplication>
+
 #include "audiooutput.h"
 #include "defs.h"
 #include "mediaobject.h"
@@ -29,6 +31,9 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AudioOutput
+  \internal
+*/
 
 //-----------------------------------------------------------------------------
 // Constructor / destructor
@@ -71,16 +76,13 @@ void MMF::AudioOutput::setVolume(qreal volume)
 
 int MMF::AudioOutput::outputDevice() const
 {
-    return 0;
+    return AudioOutputDeviceID;
 }
 
-bool MMF::AudioOutput::setOutputDevice(int)
+bool MMF::AudioOutput::setOutputDevice(int index)
 {
-    return true;
-}
-
-bool MMF::AudioOutput::setOutputDevice(const Phonon::AudioOutputDevice &)
-{
+    Q_ASSERT_X(index == AudioOutputDeviceID, Q_FUNC_INFO,
+               "We only support one output device, with id 0");
     return true;
 }
 
@@ -96,6 +98,19 @@ bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
 {
     setVolumeObserver(mo);
     return true;
+}
+
+QHash<QByteArray, QVariant> MMF::AudioOutput::audioOutputDescription(int index)
+{
+    if (index == AudioOutputDeviceID) {
+        QHash<QByteArray, QVariant> retval;
+
+        retval.insert("name", QCoreApplication::translate("Phonon::MMF", "Audio Output"));
+        retval.insert("description", QCoreApplication::translate("Phonon::MMF", "The audio output device"));
+        retval.insert("available", true);
+
+        return retval;
+    }
 }
 
 QT_END_NAMESPACE

@@ -91,6 +91,8 @@ extern QDesktopWidget *qt_desktopWidget; // qapplication.cpp
 
 QWidget *qt_button_down = 0;                     // widget got last button-down
 
+QSymbianControl *QSymbianControl::lastFocusedControl = 0;
+
 QS60Data* qGlobalS60Data()
 {
     return qt_s60Data();
@@ -350,6 +352,8 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
+    if (!QApplicationPrivate::is_app_closing)
+        setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -685,7 +689,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                false, 1, keyEvent.iScanCode, s60Keysym, mods);
+                false, 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
 //        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
 //        if (!wid)
 //             Could happen if window isn't shown yet.
@@ -777,13 +781,18 @@ TCoeInputCapabilities QSymbianControl::InputCapabilities() const
 }
 #endif
 
-void QSymbianControl::Draw(const TRect& r) const
+void QSymbianControl::Draw(const TRect& controlRect) const
 {
     QWindowSurface *surface = qwidget->windowSurface();
     QPaintEngine *engine = surface ? surface->paintDevice()->paintEngine() : NULL;
 
     if (!engine)
         return;
+
+    // Map source rectangle into coordinates of the backing store.
+    const QPoint controlBase(controlRect.iTl.iX, controlRect.iTl.iY);
+    const QPoint backingStoreBase = qwidget->mapTo(qwidget->window(), controlBase);
+    const TRect backingStoreRect(TPoint(backingStoreBase.x(), backingStoreBase.y()), controlRect.Size());
 
     if (engine->type() == QPaintEngine::Raster) {
         QS60WindowSurface *s60Surface = static_cast<QS60WindowSurface *>(qwidget->windowSurface());
@@ -793,10 +802,10 @@ void QSymbianControl::Draw(const TRect& r) const
         if(!qwidget->d_func()->extraData()->disableBlit) {
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
-            gc.BitBlt(r.iTl, bitmap, r);
-	}
+            gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
+	    }
     } else {
-        surface->flush(qwidget, QRegion(qt_TRect2QRect(r)), QPoint());
+        surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
 }
 
@@ -860,8 +869,23 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             || (qwidget->windowType() & Qt::Popup) == Qt::Popup)
         return;
 
-    QEvent *deferredFocusEvent = new QEvent(QEvent::SymbianDeferredFocusChanged);
-    QApplication::postEvent(qwidget, deferredFocusEvent);
+    if (IsFocused() && IsVisible()) {
+        QApplication::setActiveWindow(qwidget->window());
+#ifdef Q_WS_S60
+        // If widget is fullscreen, hide status pane and button container
+        // otherwise show them.
+        CEikStatusPane* statusPane = S60->statusPane();
+        CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
+        bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
+        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+            statusPane->MakeVisible(!isFullscreen);
+        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+            buttonGroup->MakeVisible(!isFullscreen);
+#endif
+    } else if (QApplication::activeWindow() == qwidget->window()) {
+        QApplication::setActiveWindow(0);
+    }
+    // else { We don't touch the active window unless we were explicitly activated or deactivated }
 }
 
 void QSymbianControl::HandleResourceChange(int resourceType)
@@ -905,15 +929,42 @@ TTypeUid::Ptr QSymbianControl::MopSupplyObject(TTypeUid id)
     return CCoeControl::MopSupplyObject(id);
 }
 
+void QSymbianControl::setFocusSafely(bool focus)
+{
+    // The stack hack in here is very unfortunate, but it is the only way to ensure proper
+    // focus in Symbian. If this is not executed, the control which happens to be on
+    // the top of the stack may randomly be assigned focus by Symbian, for example
+    // when creating new windows (specifically in CCoeAppUi::HandleStackChanged()).
+    if (focus) {
+        S60->appUi()->RemoveFromStack(this);
+        // Symbian doesn't automatically remove focus from the last focused control, so we need to
+        // remember it and clear focus ourselves.
+        if (lastFocusedControl && lastFocusedControl != this)
+            lastFocusedControl->SetFocus(false);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault + 1, ECoeStackFlagStandard)); // Note the + 1
+        lastFocusedControl = this;
+        this->SetFocus(true);
+    } else {
+        S60->appUi()->RemoveFromStack(this);
+        QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
+                ECoeStackPriorityDefault, ECoeStackFlagStandard));
+        if(this == lastFocusedControl)
+            lastFocusedControl = 0;
+        this->SetFocus(false);
+    }
+}
+
 /*!
     \typedef QApplication::QS60MainApplicationFactory
+    \since 4.6
 
     This is a typedef for a pointer to a function with the following
     signature:
 
     \snippet doc/src/snippets/code/src_corelib_global_qglobal.cpp 47
 
-    \sa QApplication::QApplication(QApplication::QS60MainApplicationFactory, int &, char **)
+    \sa QApplication::QApplication()
 */
 
 /*!
@@ -983,6 +1034,11 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
 	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
+    // HAL::Get(HALData::EPen, TInt& result) may set 'result' to 1 on some 3.1 systems (e.g. N95).
+    // But we know that S60 systems below 5.0 did not support touch.
+    static const bool touchIsUnsupportedOnSystem =
+        QSysInfo::s60Version() == QSysInfo::SV_S60_3_1
+        || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2;
     TInt machineUID;
     TInt mouse;
     TInt touch;
@@ -994,7 +1050,7 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     if (err != KErrNone)
         machineUID = 0;
     err = HAL::Get(HALData::EPen, touch);
-    if (err != KErrNone)
+    if (err != KErrNone || touchIsUnsupportedOnSystem)
         touch = 0;
     if (mouse || machineUID == KMachineUidSamsungI8510) {
         S60->hasTouchscreen = false;
@@ -1041,6 +1097,10 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
     }
 #endif
+
+    QFont systemFont;
+    systemFont.setFamily(systemFont.defaultFamily());
+    QApplicationPrivate::setSystemFont(systemFont);
 
 /*
  ### Commented out for now as parameter handling not needed in SOS(yet). Code below will break testlib with -o flag

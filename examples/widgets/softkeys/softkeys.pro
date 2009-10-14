@@ -10,6 +10,6 @@ sources.path = $$[QT_INSTALL_EXAMPLES]/widgets/softkeys
 INSTALLS += target sources
 
 symbian {
-    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.UID3 = 0xA000CF6B
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
 }

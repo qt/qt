@@ -115,7 +115,7 @@ JSObject* JSHTMLQuoteElementPrototype::self(ExecState* exec, JSGlobalObject* glo
 
 const ClassInfo JSHTMLQuoteElement::s_info = { "HTMLQuoteElement", &JSHTMLElement::s_info, &JSHTMLQuoteElementTable, 0 };
 
-JSHTMLQuoteElement::JSHTMLQuoteElement(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLQuoteElement> impl)
+JSHTMLQuoteElement::JSHTMLQuoteElement(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<HTMLQuoteElement> impl)
     : JSHTMLElement(structure, globalObject, impl)
 {
 }

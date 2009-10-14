@@ -53,83 +53,20 @@
 // We mean it.
 //
 
-#include "qevent.h"
-#include "qbasictimer.h"
-#include "qdebug.h"
-
-#include "qgesture.h"
-#include "qgesture_p.h"
-
-#include "qstandardgestures.h"
-#include "qbasictimer.h"
+#include "qgesturerecognizer.h"
+#include "private/qgesture_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QPanGesturePrivate : public QGesturePrivate
+class QPanGestureRecognizer : public QGestureRecognizer
 {
-    Q_DECLARE_PUBLIC(QPanGesture)
-
 public:
-    void setupGestureTarget(QObject *o);
+    QPanGestureRecognizer();
 
-    QSizeF totalOffset;
-    QSizeF lastOffset;
-    QSizeF offset;
-    QPointF lastPosition;
+    QGesture *createGesture(QObject *target);
 
-#if defined(QT_MAC_USE_COCOA)
-    QBasicTimer singleTouchPanTimer;
-    QPointF prevMousePos;
-#endif
-};
-
-class QPinchGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QPinchGesture)
-
-public:
-    QPinchGesturePrivate()
-        : changes(0), totalScaleFactor(0.), lastScaleFactor(0.), scaleFactor(0.),
-          totalRotationAngle(0.), lastRotationAngle(0.), rotationAngle(0.)
-#ifdef Q_WS_WIN
-          ,initialDistance(0), lastSequenceId(0)
-#endif
-    {
-    }
-
-    void setupGestureTarget(QObject *o);
-
-    QPinchGesture::WhatChanged changes;
-
-    qreal totalScaleFactor; // total scale factor, excluding the current sequence.
-    qreal lastScaleFactor;
-    qreal scaleFactor; // scale factor in the current sequence.
-
-    qreal totalRotationAngle; // total rotation angle, excluding the current sequence.
-    qreal lastRotationAngle;
-    qreal rotationAngle; // rotation angle in the current sequence.
-
-    QPointF startCenterPoint;
-    QPointF lastCenterPoint;
-    QPointF centerPoint;
-#ifdef Q_WS_WIN
-    int initialDistance;
-    ulong lastSequenceId;
-#endif
-};
-
-class QSwipeGesturePrivate : public QGesturePrivate
-{
-    Q_DECLARE_PUBLIC(QSwipeGesture)
-
-public:
-    QSwipeGesturePrivate()
-        : swipeAngle(-1)
-    {
-    }
-
-    void setupGestureTarget(QObject *o);
-    qreal swipeAngle;
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
 };
 
 QT_END_NAMESPACE

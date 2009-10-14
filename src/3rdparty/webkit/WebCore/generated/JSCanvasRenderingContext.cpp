@@ -115,7 +115,7 @@ JSObject* JSCanvasRenderingContextPrototype::self(ExecState* exec, JSGlobalObjec
 
 const ClassInfo JSCanvasRenderingContext::s_info = { "CanvasRenderingContext", 0, &JSCanvasRenderingContextTable, 0 };
 
-JSCanvasRenderingContext::JSCanvasRenderingContext(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext> impl)
+JSCanvasRenderingContext::JSCanvasRenderingContext(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

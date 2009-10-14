@@ -56,6 +56,8 @@
 #include <unistd.h>
 #endif
 
+#include "qvfbshmem.h"
+
 QT_BEGIN_NAMESPACE
 
 QVFbViewProtocol::QVFbViewProtocol(int display_id, QObject *parent) :
@@ -90,7 +92,7 @@ static int openPipe(const char *fileName)
 QVFbKeyPipeProtocol::QVFbKeyPipeProtocol(int display_id)
     : QVFbKeyProtocol(display_id)
 {
-    fileName = QString(QT_VFB_KEYBOARD_PIPE).arg(display_id);
+    fileName = QT_VFB_KEYBOARD_PIPE(display_id);
     fd = openPipe(fileName.toLocal8Bit().constData());
 
     if (fd == -1)
@@ -119,7 +121,7 @@ void QVFbKeyPipeProtocol::sendKeyboardData(QString unicode, int keycode,
 QVFbMousePipe::QVFbMousePipe(int display_id)
     : QVFbMouseProtocol(display_id)
 {
-    fileName = QString(QT_VFB_MOUSE_PIPE).arg(display_id);
+    fileName = QT_VFB_MOUSE_PIPE(display_id);
     fd = openPipe(fileName.toLocal8Bit().constData());
 
     if (fd == -1)

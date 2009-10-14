@@ -73,7 +73,7 @@ JSObject* JSSVGAnimatedNumberListPrototype::self(ExecState* exec, JSGlobalObject
 
 const ClassInfo JSSVGAnimatedNumberList::s_info = { "SVGAnimatedNumberList", 0, &JSSVGAnimatedNumberListTable, 0 };
 
-JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedNumberList> impl, SVGElement* context)
+JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<SVGAnimatedNumberList> impl, SVGElement* context)
     : DOMObjectWithSVGContext(structure, globalObject, context)
     , m_impl(impl)
 {

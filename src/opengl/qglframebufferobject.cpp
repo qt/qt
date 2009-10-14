@@ -64,7 +64,8 @@ QT_BEGIN_NAMESPACE
 
 extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
 
-#define QGL_FUNC_CONTEXT QGLContextGroup *ctx = d_ptr->ctx;
+#define QGL_FUNC_CONTEXT const QGLContext *ctx = d_ptr->fbo_guard.context();
+#define QGL_FUNCP_CONTEXT const QGLContext *ctx = fbo_guard.context();
 
 #ifndef QT_NO_DEBUG
 #define QT_RESET_GLERROR()                                \
@@ -317,7 +318,7 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
                                  QGLFramebufferObject::Attachment attachment)
 {
     fbo = f;
-    m_thisFBO = fbo->d_func()->fbo; // This shouldn't be needed
+    m_thisFBO = fbo->d_func()->fbo(); // This shouldn't be needed
 
     // The context that the fbo was created in may not have depth
     // and stencil buffers, but the fbo itself might.
@@ -334,7 +335,7 @@ void QGLFBOGLPaintDevice::ensureActiveTarget()
 {
     QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
     Q_ASSERT(ctx);
-    const GLuint fboId = fbo->d_func()->fbo;
+    const GLuint fboId = fbo->d_func()->fbo();
     if (ctx->d_func()->current_fbo != fboId) {
         ctx->d_func()->current_fbo = fboId;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, fboId);
@@ -359,6 +360,9 @@ void QGLFBOGLPaintDevice::endPaint()
 
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 {
+    QGL_FUNCP_CONTEXT;
+    if (!ctx)
+        return false;   // Context no longer exists.
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT);
     switch(status) {
     case GL_NO_ERROR:
@@ -405,11 +409,11 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
                                        QGLFramebufferObject::Attachment attachment,
                                        GLenum texture_target, GLenum internal_format, GLint samples)
 {
-    QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
-    ctx = QGLContextPrivate::contextGroup(currentContext);
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    fbo_guard.setContext(ctx);
 
     bool ext_detected = (QGLExtensions::glExtensions & QGLExtensions::FramebufferObject);
-    if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(currentContext)))
+    if (!ext_detected || (ext_detected && !qt_resolve_framebufferobject_extensions(ctx)))
         return;
 
     size = sz;
@@ -417,8 +421,10 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     // texture dimensions
 
     QT_RESET_GLERROR(); // reset error state
+    GLuint fbo = 0;
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
+    fbo_guard.setId(fbo);
 
     glDevice.setFBO(q, attachment);
 
@@ -445,6 +451,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus();
+        glBindTexture(target, 0);
 
         color_buffer = 0;
     } else {
@@ -535,13 +542,14 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
         fbo_attachment = QGLFramebufferObject::NoAttachment;
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, currentContext->d_ptr->current_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, ctx->d_ptr->current_fbo);
     if (!valid) {
         if (color_buffer)
             glDeleteRenderbuffers(1, &color_buffer);
         else
             glDeleteTextures(1, &texture);
         glDeleteFramebuffers(1, &fbo);
+        fbo_guard.setId(0);
     }
     QT_CHECK_GLERROR();
 
@@ -810,19 +818,16 @@ QGLFramebufferObject::~QGLFramebufferObject()
 
     delete d->engine;
 
-    if (isValid()) {
-        const QGLContext *oldContext = QGLContext::currentContext();
-        bool switchContext = !oldContext || QGLContextPrivate::contextGroup(oldContext) != ctx;
-        if (switchContext)
-            const_cast<QGLContext *>(ctx->context())->makeCurrent();
-        glDeleteTextures(1, &d->texture);
+    if (isValid() && ctx) {
+        QGLShareContextScope scope(ctx);
+        if (d->texture)
+            glDeleteTextures(1, &d->texture);
         if (d->color_buffer)
             glDeleteRenderbuffers(1, &d->color_buffer);
         if (d->depth_stencil_buffer)
             glDeleteRenderbuffers(1, &d->depth_stencil_buffer);
-        glDeleteFramebuffers(1, &d->fbo);
-        if (oldContext && switchContext)
-            const_cast<QGLContext *>(oldContext)->makeCurrent();
+        GLuint fbo = d->fbo();
+        glDeleteFramebuffers(1, &fbo);
     }
 }
 
@@ -838,11 +843,16 @@ QGLFramebufferObject::~QGLFramebufferObject()
     The non-power of two limitation does not apply if the OpenGL version
     is 2.0 or higher, or if the GL_ARB_texture_non_power_of_two extension
     is present.
+
+    The framebuffer can also become invalid if the QGLContext that
+    the framebuffer was created within is destroyed and there are
+    no other shared contexts that can take over ownership of the
+    framebuffer.
 */
 bool QGLFramebufferObject::isValid() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->valid;
+    return d->valid && d->fbo_guard.context();
 }
 
 /*!
@@ -867,15 +877,17 @@ bool QGLFramebufferObject::bind()
 	return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
-    glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo);
+    if (!ctx)
+        return false;   // Context no longer exists.
+    glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo());
     d->valid = d->checkFramebufferStatus();
     const QGLContext *context = QGLContext::currentContext();
     if (d->valid && context) {
-        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == QGLContextPrivate::contextGroup(ctx));
         // Save the previous setting to automatically restore in release().
-        if (context->d_ptr->current_fbo != d->fbo) {
+        if (context->d_ptr->current_fbo != d->fbo()) {
             d->previous_fbo = context->d_ptr->current_fbo;
-            context->d_ptr->current_fbo = d->fbo;
+            context->d_ptr->current_fbo = d->fbo();
         }
     }
     return d->valid;
@@ -900,10 +912,12 @@ bool QGLFramebufferObject::release()
 	return false;
     Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
+    if (!ctx)
+        return false;   // Context no longer exists.
 
     const QGLContext *context = QGLContext::currentContext();
     if (context) {
-        Q_ASSERT(QGLContextPrivate::contextGroup(context) == ctx);
+        Q_ASSERT(QGLContextPrivate::contextGroup(context) == QGLContextPrivate::contextGroup(ctx));
         // Restore the previous setting for stacked framebuffer objects.
         if (d->previous_fbo != context->d_ptr->current_fbo) {
             context->d_ptr->current_fbo = d->previous_fbo;
@@ -976,7 +990,7 @@ QImage QGLFramebufferObject::toImage() const
     bool wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, format().textureTarget() != GL_RGB, true);
+    QImage image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 
@@ -1144,7 +1158,7 @@ int QGLFramebufferObject::metric(PaintDeviceMetric metric) const
 GLuint QGLFramebufferObject::handle() const
 {
     Q_D(const QGLFramebufferObject);
-    return d->fbo;
+    return d->fbo();
 }
 
 /*! \fn int QGLFramebufferObject::devType() const
@@ -1175,7 +1189,7 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    return QGLContext::currentContext()->d_ptr->current_fbo == d->fbo;
+    return QGLContext::currentContext()->d_ptr->current_fbo == d->fbo();
 }
 
 /*!

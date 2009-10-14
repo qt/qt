@@ -229,7 +229,7 @@ private:
         const QList<QHelpSearchQuery> &query =
                 queryHist->queries.at(queryHist->curQuery);
         foreach (const QHelpSearchQuery &queryPart, query) {
-            QLineEdit *lineEdit;
+            QLineEdit *lineEdit = 0;
             switch (queryPart.fieldName) {
             case QHelpSearchQuery::DEFAULT:
                 lineEdit = defaultQuery;

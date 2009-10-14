@@ -26,18 +26,21 @@ QT_BEGIN_NAMESPACE
 using namespace Phonon;
 using namespace Phonon::MMF;
 
+/*! \class MMF::AudioPlayer
+  \internal
+*/
+
 //-----------------------------------------------------------------------------
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::AudioPlayer::AudioPlayer() : m_player(0)
+MMF::AudioPlayer::AudioPlayer()
 {
     construct();
 }
 
 MMF::AudioPlayer::AudioPlayer(const AbstractPlayer& player)
         : AbstractMediaPlayer(player)
-        , m_player(0)
 {
     construct();
 }
@@ -47,7 +50,7 @@ void MMF::AudioPlayer::construct()
     TRACE_CONTEXT(AudioPlayer::AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
 
-    TRAPD(err, m_player = CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone));
+    TRAPD(err, m_player.reset(CPlayerType::NewL(*this, 0, EMdaPriorityPreferenceNone)));
     if (KErrNone != err) {
         changeState(ErrorState);
     }
@@ -59,8 +62,6 @@ MMF::AudioPlayer::~AudioPlayer()
 {
     TRACE_CONTEXT(AudioPlayer::~AudioPlayer, EAudioApi);
     TRACE_ENTRY_0();
-
-    delete m_player;
 
     TRACE_EXIT_0();
 }
@@ -97,7 +98,7 @@ int MMF::AudioPlayer::setDeviceVolume(int mmfVolume)
      * stack by doing a runtime check of the SDK version. */
 #if !defined(__SERIES60_31__)
     const int err = m_player->SetVolume(mmfVolume);
-    if (QSysInfo::s60Version() > QSysInfo::SV_S60_3_1)
+    if (QSysInfo::s60Version() >= QSysInfo::SV_S60_5_0)
         return err;
     else
         return KErrNone;
@@ -233,7 +234,7 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
 
 CPlayerType *MMF::AudioPlayer::player() const
 {
-    return m_player;
+    return m_player.data();
 }
 
 

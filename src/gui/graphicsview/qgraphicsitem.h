@@ -146,6 +146,13 @@ public:
         DeviceCoordinateCache
     };
 
+    enum PanelModality
+    {
+        NonModal,
+        PanelModal,
+        SceneModal
+    };
+
     QGraphicsItem(QGraphicsItem *parent = 0
 #ifndef Q_QDOC
                   // ### obsolete argument
@@ -182,6 +189,10 @@ public:
 
     CacheMode cacheMode() const;
     void setCacheMode(CacheMode mode, const QSize &cacheSize = QSize());
+
+    PanelModality panelModality() const;
+    void setPanelModality(PanelModality panelModality);
+    bool isBlockedByModalPanel(QGraphicsItem **blockingPanel = 0) const;
 
 #ifndef QT_NO_TOOLTIP
     QString toolTip() const;
@@ -453,6 +464,7 @@ private:
     friend class QGraphicsSceneBspTree;
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
+    friend class QGraphicsObject;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
     friend class QGraphicsProxyWidgetPrivate;
@@ -462,6 +474,7 @@ private:
     friend class QGraphicsSceneBspTreeIndexPrivate;
     friend class QGraphicsItemEffectSourcePrivate;
     friend class QGraphicsTransformPrivate;
+    friend class QGestureManager;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);
@@ -541,6 +554,8 @@ public:
 #else
     using QObject::children;
 #endif
+
+    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
 
 Q_SIGNALS:
     void parentChanged();

@@ -898,7 +898,7 @@ bool JSCanvasRenderingContext3DPrototype::getOwnPropertyDescriptor(ExecState* ex
 
 const ClassInfo JSCanvasRenderingContext3D::s_info = { "CanvasRenderingContext3D", &JSCanvasRenderingContext::s_info, &JSCanvasRenderingContext3DTable, 0 };
 
-JSCanvasRenderingContext3D::JSCanvasRenderingContext3D(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext3D> impl)
+JSCanvasRenderingContext3D::JSCanvasRenderingContext3D(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<CanvasRenderingContext3D> impl)
     : JSCanvasRenderingContext(structure, globalObject, impl)
 {
 }

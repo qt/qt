@@ -338,7 +338,7 @@ void QGLOffscreen::initialize()
 
     int dim = qMax(2048, static_cast<int>(qt_next_power_of_two(qMax(device->size().width(), device->size().height()))));
 
-    bool shared_context = qgl_share_reg()->checkSharing(device->context(), ctx);
+    bool shared_context = QGLContext::areSharing(device->context(), ctx);
     bool would_fail = last_failed_size.isValid() &&
                       (device->size().width() >= last_failed_size.width() ||
                        device->size().height() >= last_failed_size.height());
@@ -555,7 +555,7 @@ public:
         QList<const QGLContext *> contexts = programs.uniqueKeys();
         for (int i=0; i<contexts.size(); ++i) {
             const QGLContext *cx = contexts.at(i);
-            if (cx != ctx && qgl_share_reg()->checkSharing(cx, ctx)) {
+            if (cx != ctx && QGLContext::areSharing(cx, ctx)) {
                 QList<GLProgram> progs = programs.values(cx);
                 for (int k=0; k<progs.size(); ++k) {
                     const GLProgram &prg = progs.at(k);
@@ -1015,7 +1015,7 @@ public:
     }
 
     inline GLuint getBuffer(const QGradient &gradient, qreal opacity, QGLContext *ctx) {
-        if (buffer_ctx && !qgl_share_reg()->checkSharing(buffer_ctx, ctx))
+        if (buffer_ctx && !QGLContext::areSharing(buffer_ctx, ctx))
             cleanCache();
 
         buffer_ctx = ctx;
@@ -1365,7 +1365,7 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 #ifdef QT_OPENGL_ES
     d->max_texture_size = ctx->d_func()->maxTextureSize();
 #else
-    bool shared_ctx = qgl_share_reg()->checkSharing(d->device->context(), d->shader_ctx);
+    bool shared_ctx = QGLContext::areSharing(d->device->context(), d->shader_ctx);
 
     if (shared_ctx) {
         d->max_texture_size = d->shader_ctx->d_func()->maxTextureSize();
@@ -2311,7 +2311,7 @@ void QOpenGLPaintEnginePrivate::updateDepthClip()
 void QOpenGLPaintEnginePrivate::systemStateChanged()
 {
     Q_Q(QOpenGLPaintEngine);
-    if (q->state()->hasClipping)
+    if (q->painter()->hasClipping())
         q->updateClipRegion(q->painter()->clipRegion(), Qt::ReplaceClip);
     else
         q->updateClipRegion(QRegion(), Qt::NoClip);
@@ -4683,7 +4683,7 @@ void QGLGlyphCache::cacheGlyphs(QGLContext *context, const QTextItemInt &ti,
         QList<const QGLContext *> contexts = qt_context_cache.keys();
         for (int i=0; i<contexts.size(); ++i) {
             const QGLContext *ctx = contexts.at(i);
-            if (ctx != context && qgl_share_reg()->checkSharing(context, ctx)) {
+            if (ctx != context && QGLContext::areSharing(context, ctx)) {
                 context_key = ctx;
                 dev_it = qt_context_cache.constFind(context_key);
                 break;

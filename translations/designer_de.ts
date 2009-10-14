@@ -401,9 +401,7 @@
         <translation>Seite</translation>
     </message>
     <message>
-        <location line="-121"/>
-        <location line="+309"/>
-        <location line="+672"/>
+        <location line="+860"/>
         <source>page</source>
         <translation>Seite</translation>
     </message>
@@ -416,12 +414,7 @@
         <translation>Seite einfügen</translation>
     </message>
     <message>
-        <location line="-856"/>
-        <source>tab</source>
-        <translation>Seite</translation>
-    </message>
-    <message>
-        <location line="+209"/>
+        <location line="-647"/>
         <source>Change Tab order</source>
         <translation>Seite ändern</translation>
     </message>
@@ -524,7 +517,7 @@
     </message>
     <message>
         <location line="+89"/>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+905"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_menubar.cpp" line="+907"/>
         <source>Move action</source>
         <translation>Aktion verschieben</translation>
     </message>
@@ -825,7 +818,7 @@
         <translation>Bitte wandeln Sie sie mit dem Befehl &lt;b&gt;uic3&amp;nbsp;-convert&lt;/b&gt; zum Format von Qt 4.</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qsimpleresource.cpp" line="+337"/>
+        <location filename="../tools/designer/src/lib/shared/qsimpleresource.cpp" line="+339"/>
         <source>Custom Widgets</source>
         <translation>Benutzerdefinierte Widgets</translation>
     </message>
@@ -1192,7 +1185,7 @@
 <context>
     <name>IconSelector</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+353"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="+352"/>
         <source>All Pixmaps (</source>
         <translation>Alle Pixmap-Dateien (</translation>
     </message>
@@ -1450,12 +1443,12 @@ This indicates an inconsistency in the ui-file.</source>
         <translation>Fehler beim Setzen der Tabulatorreihenfolge: Es konnte kein Widget mit dem Namen &apos;%1&apos; gefunden werden.</translation>
     </message>
     <message>
-        <location line="+749"/>
+        <location line="+908"/>
         <source>Invalid QButtonGroup reference &apos;%1&apos; referenced by &apos;%2&apos;.</source>
         <translation>Ungültige Referenz der Buttongruppe &apos;%1&apos;, referenziert von &apos;%2&apos;.</translation>
     </message>
     <message>
-        <location line="+518"/>
+        <location line="+511"/>
         <source>This version of the uitools library is linked without script support.</source>
         <translation>Dies Version der uitools-Bibliothek unterstützt keine Skripte.</translation>
     </message>
@@ -1951,17 +1944,17 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerFormBuilder</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_formbuilder.cpp" line="+88"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_formbuilder.cpp" line="+89"/>
         <source>Script errors occurred:</source>
         <translation>Es sind Skriptfehler aufgetreten:</translation>
     </message>
     <message>
-        <location line="+304"/>
+        <location line="+307"/>
         <source>The preview failed to build.</source>
         <translation>Es konnte keine Vorschau erzeugt werden.</translation>
     </message>
     <message>
-        <location line="+63"/>
+        <location line="+65"/>
         <source>Designer</source>
         <translation>Designer</translation>
     </message>
@@ -2092,7 +2085,7 @@ Möchten Sie es noch einmal versuchen?</translation>
 <context>
     <name>QDesignerPropertySheet</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+747"/>
+        <location filename="../tools/designer/src/lib/shared/qdesigner_propertysheet.cpp" line="+754"/>
         <source>Dynamic Properties</source>
         <translation>Dynamische Eigenschaften</translation>
     </message>
@@ -2469,7 +2462,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtBoolPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1477"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1469"/>
         <source>True</source>
         <translation>Wahr</translation>
     </message>
@@ -2482,7 +2475,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtCharEdit</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1601"/>
+        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+1581"/>
         <source>Clear Char</source>
         <translation>Zeichen löschen</translation>
     </message>
@@ -2490,7 +2483,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtColorEditWidget</name>
     <message>
-        <location line="+611"/>
+        <location line="+605"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -2498,7 +2491,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtColorPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4777"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+4743"/>
         <source>Red</source>
         <translation>Rot</translation>
     </message>
@@ -2619,7 +2612,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtFontEditWidget</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+201"/>
+        <location filename="../tools/shared/qtpropertybrowser/qteditorfactory.cpp" line="+198"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -2632,7 +2625,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtFontPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-353"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-351"/>
         <source>Family</source>
         <translation>Familie</translation>
     </message>
@@ -2730,7 +2723,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Winkel</translation>
     </message>
     <message>
-        <location line="+289"/>
+        <location line="+288"/>
         <source>Linear</source>
         <translation>Linear</translation>
     </message>
@@ -2983,7 +2976,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtGradientStopsWidget</name>
     <message>
-        <location filename="../tools/shared/qtgradienteditor/qtgradientstopswidget.cpp" line="+949"/>
+        <location filename="../tools/shared/qtgradienteditor/qtgradientstopswidget.cpp" line="+947"/>
         <source>New Stop</source>
         <translation>Neuer Bezugspunkt</translation>
     </message>
@@ -3084,7 +3077,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtLocalePropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-3561"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-3541"/>
         <source>%1, %2</source>
         <translation>%1, %2</translation>
     </message>
@@ -3102,7 +3095,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtPointFPropertyManager</name>
     <message>
-        <location line="+415"/>
+        <location line="+411"/>
         <source>(%1, %2)</source>
         <translation>(%1, %2)</translation>
     </message>
@@ -3120,7 +3113,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtPointPropertyManager</name>
     <message>
-        <location line="-322"/>
+        <location line="-320"/>
         <source>(%1, %2)</source>
         <translation>(%1, %2)</translation>
     </message>
@@ -3151,7 +3144,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtRectFPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1716"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="+1706"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation>[(%1, %2), %3 x %4]</translation>
     </message>
@@ -3179,7 +3172,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtRectPropertyManager</name>
     <message>
-        <location line="-614"/>
+        <location line="-612"/>
         <source>[(%1, %2), %3 x %4]</source>
         <translation>[(%1, %2), %3 x %4]</translation>
     </message>
@@ -3207,7 +3200,7 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
 <context>
     <name>QtResourceEditorDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="+1962"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="+1961"/>
         <source>Edit Resources</source>
         <translation>Ressourcen bearbeiten</translation>
     </message>
@@ -3217,13 +3210,13 @@ Container-Seiten sollten ausschließlich im XML der domXML()-Methode spezifizier
         <translation>Neu...</translation>
     </message>
     <message>
-        <location line="-566"/>
-        <location line="+567"/>
+        <location line="-565"/>
+        <location line="+566"/>
         <source>New Resource File</source>
         <translation>Neue Ressourcendatei</translation>
     </message>
     <message>
-        <location line="-414"/>
+        <location line="-413"/>
         <source>&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; The file&lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;is outside of the current resource file&apos;s parent directory.&lt;/p&gt;</source>
         <translation>&lt;p&gt;&lt;b&gt;Hinweis:&lt;/b&gt;&lt;p&gt;Die gewählte Datei: &lt;/p&gt;&lt;p&gt;%1&lt;/p&gt;&lt;p&gt;befindet sich außerhalb des Verzeichnisses der Ressourcendatei:&lt;/p&gt;</translation>
     </message>
@@ -3251,7 +3244,7 @@ zu:
  %4</translation>
     </message>
     <message>
-        <location line="+84"/>
+        <location line="+83"/>
         <source>Open...</source>
         <translation>Öffnen...</translation>
     </message>
@@ -3315,7 +3308,7 @@ zu:
         <translation>Sprache / Alias</translation>
     </message>
     <message>
-        <location line="+119"/>
+        <location line="+117"/>
         <source>&lt;html&gt;&lt;p&gt;&lt;b&gt;Warning:&lt;/b&gt; There have been problems while reloading the resources:&lt;/p&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;p&gt;&lt;b&gt;Warnung:&lt;/b&gt; Beim Neuladen der Ressourcen traten Fehler auf:&lt;/p&gt;&lt;pre&gt;%1&lt;/pre&gt;&lt;/html&gt;</translation>
     </message>
@@ -3370,7 +3363,7 @@ zu:
         <translation>Datei oder Ressource löschen</translation>
     </message>
     <message>
-        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="-2094"/>
+        <location filename="../tools/designer/src/lib/shared/qtresourceeditordialog.cpp" line="-2091"/>
         <source>%1 already exists.
 Do you want to replace it?</source>
         <translation>Die Datei %1 existiert bereits.
@@ -3485,7 +3478,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
         <translation>Die Datei %1konnte nicht geschrieben werden: %2</translation>
     </message>
     <message>
-        <location line="+72"/>
+        <location line="+71"/>
         <source>Open Resource File</source>
         <translation>Ressourcendatei öffnen</translation>
     </message>
@@ -3518,7 +3511,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtResourceViewDialog</name>
     <message>
-        <location line="+252"/>
+        <location line="+250"/>
         <source>Select Resource</source>
         <translation>Ressource auswählen</translation>
     </message>
@@ -3526,7 +3519,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtSizeFPropertyManager</name>
     <message>
-        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-537"/>
+        <location filename="../tools/shared/qtpropertybrowser/qtpropertymanager.cpp" line="-535"/>
         <source>%1 x %2</source>
         <translation>%1 x %2</translation>
     </message>
@@ -3544,7 +3537,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtSizePolicyPropertyManager</name>
     <message>
-        <location line="+1719"/>
+        <location line="+1709"/>
         <location line="+1"/>
         <source>&lt;Invalid&gt;</source>
         <translation>&lt;Ungültig&gt;</translation>
@@ -3578,7 +3571,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtSizePropertyManager</name>
     <message>
-        <location line="-2298"/>
+        <location line="-2286"/>
         <source>%1 x %2</source>
         <translation>%1 x %2</translation>
     </message>
@@ -3596,7 +3589,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
 <context>
     <name>QtToolBarDialog</name>
     <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1789"/>
+        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="+1784"/>
         <source>&lt; S E P A R A T O R &gt;</source>
         <translation>&lt; T R E N N E R &gt;</translation>
     </message>
@@ -3661,7 +3654,7 @@ Dies kann zum Beispiel eine Sprachkennung wie &quot;_de&quot; sein.</translation
         <translation>Aktionen</translation>
     </message>
     <message>
-        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="-545"/>
+        <location filename="../tools/shared/qttoolbardialog/qttoolbardialog.cpp" line="-544"/>
         <source>Custom Toolbar</source>
         <translation>Benutzerdefinierte Werkzeugleiste</translation>
     </message>
@@ -3927,7 +3920,7 @@ Möchten Sie sie überschreiben?</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>%1&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <source>%1&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -4063,7 +4056,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::BrushManagerProxy</name>
     <message>
-        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+221"/>
+        <location filename="../tools/designer/src/components/formeditor/brushmanagerproxy.cpp" line="+219"/>
         <source>The element &apos;%1&apos; is missing the required attribute &apos;%2&apos;.</source>
         <translation>Bei dem Element fehlt das erforderliche Attribut &apos;%2&apos;.</translation>
     </message>
@@ -5120,7 +5113,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Fehler beim Lesen der Pixmap</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+54"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -5185,7 +5178,7 @@ Möchten Sie sie überschreiben?</translation>
         <translation>Alle rücksetzen</translation>
     </message>
     <message>
-        <location line="-86"/>
+        <location line="-85"/>
         <source>Choose a Pixmap</source>
         <translation>Pixmap-Datei auswählen</translation>
     </message>
@@ -5265,7 +5258,7 @@ Möchten Sie sie überschreiben?</translation>
 <context>
     <name>qdesigner_internal::LanguageResourceDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-259"/>
+        <location filename="../tools/designer/src/lib/shared/iconselector.cpp" line="-258"/>
         <source>Choose Resource</source>
         <translation>Ressource auswählen</translation>
     </message>
@@ -5557,14 +5550,17 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+316"/>
-        <source>Change Current Page</source>
-        <translation>Seite wechseln</translation>
-    </message>
-    <message>
-        <location line="+438"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+754"/>
         <source>&amp;Find in Text...</source>
         <translation>&amp;Suchen...</translation>
+    </message>
+</context>
+<context>
+    <name>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate</name>
+    <message>
+        <location line="-438"/>
+        <source>Change Current Page</source>
+        <translation>Seite wechseln</translation>
     </message>
 </context>
 <context>
@@ -5779,6 +5775,9 @@ Please select another name.</source>
         <source>Browse...</source>
         <translation>Durchsuchen...</translation>
     </message>
+</context>
+<context>
+    <name>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate</name>
     <message>
         <location line="+118"/>
         <source>Load Custom Device Skin</source>
@@ -6419,17 +6418,17 @@ Klasse: %2</translation>
 <context>
     <name>qdesigner_internal::ScriptDialog</name>
     <message>
-        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+64"/>
+        <location filename="../tools/designer/src/lib/shared/scriptdialog.cpp" line="+66"/>
         <source>Edit script</source>
         <translation>Skript bearbeiten</translation>
     </message>
     <message>
-        <location line="+55"/>
+        <location line="+56"/>
         <source>Syntax error</source>
         <translation>Syntaxfehler</translation>
     </message>
     <message>
-        <location line="-50"/>
+        <location line="-51"/>
         <source>&lt;html&gt;Enter a Qt Script snippet to be executed while loading the form.&lt;br&gt;The widget and its children are accessible via the variables &lt;i&gt;widget&lt;/i&gt; and &lt;i&gt;childWidgets&lt;/i&gt;, respectively.</source>
         <translation>&lt;html&gt;Geben Sie ein Qt-Skript zur Ausführung während des Formularaufbaus ein.&lt;br&gt;Auf das Widget und seine untergeordneten Widgets kann durch die Variablen &lt;i&gt;widget&lt;/i&gt; und &lt;i&gt;childWidgets&lt;/i&gt; zugegriffen werden.</translation>
     </message>
@@ -6512,7 +6511,7 @@ Klasse: %2</translation>
     </message>
     <message>
         <location line="-7"/>
-        <location line="+283"/>
+        <location line="+280"/>
         <source>Valid Style Sheet</source>
         <translation>Stylesheet gültig</translation>
     </message>
@@ -6522,7 +6521,7 @@ Klasse: %2</translation>
         <translation>Stylesheet ungültig</translation>
     </message>
     <message>
-        <location line="-284"/>
+        <location line="-281"/>
         <source>Add Resource...</source>
         <translation>Ressource hinzufügen...</translation>
     </message>

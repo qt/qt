@@ -131,6 +131,7 @@ public:
         subFocusItem(0),
         focusScopeItem(0),
         imHints(Qt::ImhNone),
+        panelModality(QGraphicsItem::NonModal),
         acceptedMouseButtons(0x1f),
         visible(1),
         explicitlyHidden(0),
@@ -448,6 +449,8 @@ public:
     QGraphicsItem *subFocusItem;
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
+    QGraphicsItem::PanelModality panelModality;
+    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;

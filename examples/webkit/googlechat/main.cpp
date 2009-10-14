@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 {
     QApplication app(argc, argv);
 
-    QNetworkProxyFactory::setUseSystemConfigurationEnabled(true);
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     GoogleChat *chat = new GoogleChat;
     chat->show();

@@ -1172,7 +1172,7 @@ void VcprojGenerator::initDeploymentTool()
     if (targetPath.isEmpty())
         targetPath = QString("%CSIDL_PROGRAM_FILES%\\") + project->first("TARGET");
     if (targetPath.endsWith("/") || targetPath.endsWith("\\"))
-        targetPath = targetPath.mid(0,targetPath.size()-1);
+        targetPath.chop(1);
 
     // Only deploy Qt libs for shared build
     if (!project->values("QMAKE_QT_DLL").isEmpty()) {
@@ -1261,13 +1261,7 @@ void VcprojGenerator::initDeploymentTool()
                 searchPath = info.absoluteFilePath();
             } else {
                 nameFilter = source.split('\\').last();
-                if (source.contains('*')) {
-                    source = source.split('*').first();
-                    info = QFileInfo(source);
-                 }
-                 searchPath = info.absolutePath();
-                 if (!info.exists())
-                    fprintf(stderr, "Deployment file is missing %s\n", source.toLatin1().constData());
+                searchPath = info.absolutePath();
             }
 
             int pathSize = searchPath.size();

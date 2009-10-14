@@ -183,7 +183,7 @@ bool JSRangePrototype::getOwnPropertyDescriptor(ExecState* exec, const Identifie
 
 const ClassInfo JSRange::s_info = { "Range", 0, &JSRangeTable, 0 };
 
-JSRange::JSRange(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Range> impl)
+JSRange::JSRange(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<Range> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

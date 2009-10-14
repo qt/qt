@@ -280,7 +280,7 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
@@ -303,7 +303,7 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, index, slot)) {
@@ -464,22 +464,6 @@ void QScriptValuePrivate::detachFromEngine()
     if (isJSC())
         jscValue = JSC::JSValue();
     engine = 0;
-}
-
-void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
-{
-    if (engine)
-        return engine->allocateScriptValuePrivate(size);
-    return qMalloc(size);
-}
-
-void QScriptValuePrivate::operator delete(void *ptr)
-{
-    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
-    if (d->engine)
-        d->engine->freeScriptValuePrivate(d);
-    else
-        qFree(d);
 }
 
 /*!
@@ -1738,7 +1722,7 @@ QScriptValue QScriptValue::property(quint32 arrayIndex,
 void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
                                const PropertyFlags &flags)
 {
-    Q_D(const QScriptValue);
+    Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
     if (value.engine() && (value.engine() != engine())) {
@@ -1752,7 +1736,9 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
         JSC::asObject(d->jscValue)->deleteProperty(exec, arrayIndex, /*checkDontDelete=*/false);
     } else {
         if ((flags & QScriptValue::PropertyGetter) || (flags & QScriptValue::PropertySetter)) {
-            Q_ASSERT_X(false, Q_FUNC_INFO, "property getters and setters not implemented");
+            // fall back to string-based setProperty(), since there is no
+            // JSC::JSObject::defineGetter(unsigned)
+            d->setProperty(JSC::Identifier::from(exec, arrayIndex), value, flags);
         } else {
             if (flags != QScriptValue::KeepExistingFlags) {
 //                if (JSC::asObject(d->jscValue)->hasOwnProperty(exec, arrayIndex))

@@ -32,7 +32,7 @@ class ErrorEvent;
 class JSErrorEvent : public JSEvent {
     typedef JSEvent Base;
 public:
-    JSErrorEvent(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ErrorEvent>);
+    JSErrorEvent(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<ErrorEvent>);
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertyDescriptor&);
@@ -60,7 +60,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSErrorEventPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSErrorEventPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Functions

@@ -61,7 +61,7 @@ class QGraphicsAnchorLayoutPrivate;
 class Q_GUI_EXPORT QGraphicsAnchor : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing)
+    Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing RESET unsetSpacing)
 public:
     void setSpacing(qreal spacing);
     void unsetSpacing();

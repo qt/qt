@@ -150,6 +150,9 @@ icst ({dec}|0{oct}*|0[xX]{hex}+)
 "while" { return WHILE; }
 "^=" { return XOR_ASSIGN; }
 "^" { return XOR_OP; }
+"highp" { return HIGH_PRECISION; }
+"mediump" { return MEDIUM_PRECISION; }
+"lowp" { return LOW_PRECISION; }
 
 #[ \t]+[0-9]+.* {
   char *eptr = 0;

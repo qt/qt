@@ -33,7 +33,7 @@ class Geoposition;
 class JSGeoposition : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSGeoposition(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geoposition>);
+    JSGeoposition(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<Geoposition>);
     virtual ~JSGeoposition();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -61,7 +61,7 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
-    JSGeopositionPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSGeopositionPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes

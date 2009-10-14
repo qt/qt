@@ -66,8 +66,6 @@ QT_BEGIN_NAMESPACE
 typedef QMultiHash<QWidget *, QMenuBarPrivate *> MenuBarHash;
 Q_GLOBAL_STATIC(MenuBarHash, menubars)
 
-#define QT_FIRST_MENU_ITEM 32000
-
 struct SymbianMenuItem
 {
     int id;
@@ -76,12 +74,13 @@ struct SymbianMenuItem
     QAction* action;
 };
 
+Q_GLOBAL_STATIC_WITH_ARGS(QAction, contextAction, (0))
+
 static QList<SymbianMenuItem*> symbianMenus;
 static QList<QMenuBar*> nativeMenuBars;
-static uint qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+static uint qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
 static QPointer<QWidget> widgetWithContextMenu;
 static QList<QAction*> contextMenuActionList;
-static QAction contextAction(0);
 static int contexMenuCommand=0;
 
 bool menuExists()
@@ -144,6 +143,9 @@ static void qt_symbian_insert_action(QSymbianMenuAction* action, QList<SymbianMe
     if (action->action->isVisible()) {
         if (action->action->isSeparator())
             return;
+
+        Q_ASSERT_X(action->command <= QT_SYMBIAN_LAST_MENU_ITEM, "qt_symbian_insert_action",
+                "Too many menu actions");
 
         const int underlineShortCut = QApplication::style()->styleHint(QStyle::SH_UnderlineShortcut);
         QString iconText = action->action->iconText();
@@ -213,7 +215,7 @@ static void rebuildMenu()
 
     if (w) {
         mb = menubars()->value(w);
-        qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+        qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
         deleteAll( &symbianMenus );
         if (!mb)
             return;
@@ -250,12 +252,12 @@ void QMenuBarPrivate::symbianCommands(int command)
 
     int size = nativeMenuBars.size();
     for (int i = 0; i < nativeMenuBars.size(); ++i) {
-    SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
-    if (!menu)
+        SymbianMenuItem* menu = qt_symbian_find_menu_item(command, symbianMenus);
+        if (!menu)
             continue;
 
         emit nativeMenuBars.at(i)->triggered(menu->action);
-    menu->action->activate(QAction::Trigger);
+        menu->action->activate(QAction::Trigger);
         break;
     }
 }
@@ -289,6 +291,7 @@ QMenuBarPrivate::QSymbianMenuBarPrivate::QSymbianMenuBarPrivate(QMenuBarPrivate 
 
 QMenuBarPrivate::QSymbianMenuBarPrivate::~QSymbianMenuBarPrivate()
 {
+    qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     symbianMenus.clear();
     d = 0;
@@ -390,16 +393,16 @@ void QMenuBarPrivate::QSymbianMenuBarPrivate::insertNativeMenuItems(const QList<
 void QMenuBarPrivate::QSymbianMenuBarPrivate::rebuild()
 {
     contexMenuCommand = 0;
-    qt_symbian_menu_static_cmd_id = QT_FIRST_MENU_ITEM;
+    qt_symbian_menu_static_cmd_id = QT_SYMBIAN_FIRST_MENU_ITEM;
     deleteAll( &symbianMenus );
     if (d)
         insertNativeMenuItems(d->actions);
 
     contextMenuActionList.clear();
     if (widgetWithContextMenu) {
-        contexMenuCommand = qt_symbian_menu_static_cmd_id;
-        contextAction.setText(QMenuBar::tr("Actions"));
-        contextMenuActionList.append(&contextAction);
+        contexMenuCommand = qt_symbian_menu_static_cmd_id; // Increased inside insertNativeMenuItems
+        contextAction()->setText(QMenuBar::tr("Actions"));
+        contextMenuActionList.append(contextAction());
         insertNativeMenuItems(contextMenuActionList);
     }
 }

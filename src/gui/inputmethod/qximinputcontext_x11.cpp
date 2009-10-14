@@ -612,7 +612,7 @@ void QXIMInputContext::setFocusWidget(QWidget *w)
 
     QInputContext::setFocusWidget(w);
 
-    if (!w || w->inputMethodHints() & Qt::ImhExclusiveInputMask)
+    if (!w || w->inputMethodHints() & (Qt::ImhExclusiveInputMask | Qt::ImhHiddenText))
         return;
 
     ICData *data = ximData.value(w->effectiveWinId());

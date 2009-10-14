@@ -154,8 +154,8 @@ public:
                              OpenMode openMode = ReadWrite);
 
     // ### Qt 5: Make virtual?
-    void setSocketOption(QAbstractSocket::SocketOption o, QVariant v);
-    QVariant socketOption(QAbstractSocket::SocketOption o);
+    void setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value);
+    QVariant socketOption(QAbstractSocket::SocketOption option);
 
     SocketType socketType() const;
     SocketState state() const;

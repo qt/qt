@@ -1554,7 +1554,7 @@ void tst_QPainter::drawClippedEllipse_data()
 void tst_QPainter::drawClippedEllipse()
 {
     QFETCH(QRect, rect);
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     if (sizeof(qreal) != sizeof(double))
         QSKIP("Test only works for qreal==double", SkipAll);
 #endif

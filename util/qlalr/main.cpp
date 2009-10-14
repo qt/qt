@@ -142,7 +142,7 @@ int main (int argc, char *argv[])
 
   CppGenerator gen (p, grammar, aut, generate_report);
   gen.setDebugInfo (debug_info);
-  gen.setTrollCopyright (troll_copyright);
+  gen.setCopyright (troll_copyright);
   gen ();
 
   if (generate_dot)

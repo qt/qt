@@ -30,8 +30,12 @@ symbian*: {
     images.sources = images
     images.path = .
 
-    imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
-    imagePlugins.path = imageformats
+    DEPLOYMENT += images
 
-    DEPLOYMENT += images imagePlugins
+    qt_not_deployed {
+        imagePlugins.sources = qjpeg.dll qgif.dll qmng.dll
+        imagePlugins.path = imageformats
+
+        DEPLOYMENT += imagePlugins
+    }
 }

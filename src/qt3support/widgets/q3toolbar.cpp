@@ -422,7 +422,7 @@ void Q3ToolBar::addSeparator()
 }
 
 /*!
-    \reimp
+    \internal
 */
 
 void Q3ToolBar::styleChange(QStyle &oldStyle)

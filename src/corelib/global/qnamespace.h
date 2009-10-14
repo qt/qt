@@ -71,8 +71,8 @@ Qt {
     Q_ENUMS(ArrowType ToolButtonStyle PenStyle PenCapStyle PenJoinStyle BrushStyle)
     Q_ENUMS(FillRule MaskMode BGMode ClipOperation SizeMode)
     Q_ENUMS(BackgroundMode) // Qt3
-    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation)
-    Q_FLAGS(Alignment Orientations)
+    Q_ENUMS(Axis Corner LayoutDirection SizeHint Orientation DropAction)
+    Q_FLAGS(Alignment Orientations DropActions)
     Q_FLAGS(DockWidgetAreas ToolBarAreas)
     Q_ENUMS(DockWidgetArea ToolBarArea)
     Q_ENUMS(TextFormat)
@@ -194,9 +194,9 @@ public:
     };
 
     enum TileRule {
-        Stretch,
-        Repeat,
-        Round
+        StretchTile,
+        RepeatTile,
+        RoundTile
     };
 
     // Text formatting flags for QPainter::drawText and QLabel.
@@ -500,8 +500,6 @@ public:
         WA_AcceptTouchEvents = 121,
         WA_WState_AcceptedTouchBeginEvent = 122,
         WA_TouchPadAcceptSingleTouchEvents = 123,
-
-        WA_DontUseStandardGestures = 124,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -1431,6 +1429,7 @@ public:
         ImhLowercaseOnly = 0x80000,
         ImhDialableCharactersOnly = 0x100000,
         ImhEmailCharactersOnly = 0x200000,
+        ImhUrlCharactersOnly = 0x400000,
 
         ImhExclusiveInputMask = 0xffff0000
     };
@@ -1614,9 +1613,29 @@ public:
     enum GestureState
     {
         NoGesture,
-        GestureStarted = 1,
-        GestureUpdated = 2,
-        GestureFinished = 3
+        GestureStarted  = 1,
+        GestureUpdated  = 2,
+        GestureFinished = 3,
+        GestureCanceled = 4
+    };
+
+    enum GestureType
+    {
+        TapGesture        = 1,
+        TapAndHoldGesture = 2,
+        PanGesture        = 3,
+        PinchGesture      = 4,
+        SwipeGesture      = 5,
+
+        CustomGesture     = 0x0100,
+
+        LastGestureType   = ~0u
+    };
+
+    enum GestureContext
+    {
+        WidgetGesture             = 0,
+        WidgetWithChildrenGesture = 3
     };
 
     enum NavigationMode
@@ -1627,11 +1646,15 @@ public:
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
     };
+
+    enum RenderHint {
+        QualityHint,
+        PerformanceHint
+    };
 }
 #ifdef Q_MOC_RUN
  ;
 #endif
-
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseButtons)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Orientations)

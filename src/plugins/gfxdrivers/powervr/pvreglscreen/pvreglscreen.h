@@ -59,24 +59,6 @@ private:
     int displayId;
 };
 
-class PvrEglSurfaceHolder : public QObject
-{
-    Q_OBJECT
-public:
-    PvrEglSurfaceHolder(QObject *parent=0);
-    ~PvrEglSurfaceHolder();
-
-    void addSurface();
-    void removeSurface();
-
-private:
-    int numRealSurfaces;
-    PvrQwsDrawable *tempSurface;
-    EGLDisplay dpy;
-    EGLConfig config;
-    EGLSurface surface;
-};
-
 class PvrEglScreen : public QGLScreen
 {
 public:
@@ -105,7 +87,6 @@ private:
 
     int fd;
     int ttyfd, oldKdMode;
-    PvrEglSurfaceHolder *holder;
     QString ttyDevice;
     bool doGraphicsMode;
 };

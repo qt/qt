@@ -140,7 +140,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
     // Not ready for painting yet, bail out. This can happen in
     // QWidget::create_sys()
-    if (!d->image)
+    if (!d->image || rgn.numRects() == 0)
         return;
 
 #ifdef Q_WS_WIN
@@ -203,9 +203,11 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         wrgn.translate(-wOffset);
     QRect wbr = wrgn.boundingRect();
 
-    int num;
-    XRectangle *rects = (XRectangle *)qt_getClipRects(wrgn, num);
-    XSetClipRectangles(X11->display, d_ptr->gc, 0, 0, rects, num, YXBanded);
+    if (wrgn.numRects() != 1) {
+        int num;
+        XRectangle *rects = (XRectangle *)qt_getClipRects(wrgn, num);
+        XSetClipRectangles(X11->display, d_ptr->gc, 0, 0, rects, num, YXBanded);
+    }
 
     QRect br = rgn.boundingRect().translated(offset);
 #ifndef QT_NO_MITSHM
@@ -219,17 +221,23 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         const QImage &src = d->image->image;
         br = br.intersected(src.rect());
         if (src.format() != QImage::Format_RGB32 || widget->x11Info().depth() < 24) {
+            Q_ASSERT(src.depth() >= 16);
+            const QImage sub_src(src.scanLine(br.y()) + br.x() * (uint(src.depth()) / 8),
+                                 br.width(), br.height(), src.bytesPerLine(), src.format());
             QX11PixmapData *data = new QX11PixmapData(QPixmapData::PixmapType);
             data->xinfo = widget->x11Info();
-            data->fromImage(src, Qt::AutoColor);
+            data->fromImage(sub_src, Qt::NoOpaqueDetection);
             QPixmap pm = QPixmap(data);
-            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, br.x() , br.y() , br.width(), br.height(), wbr.x(), wbr.y());
+            XCopyArea(X11->display, pm.handle(), widget->handle(), d_ptr->gc, 0 , 0 , br.width(), br.height(), wbr.x(), wbr.y());
         } else {
             // qpaintengine_x11.cpp
             extern void qt_x11_drawImage(const QRect &rect, const QPoint &pos, const QImage &image, Drawable hd, GC gc, Display *dpy, Visual *visual, int depth);
             qt_x11_drawImage(br, wbr.topLeft(), src, widget->handle(), d_ptr->gc, X11->display, (Visual *)widget->x11Info().visual(), widget->x11Info().depth());
         }
     }
+
+    if (wrgn.numRects() != 1)
+        XSetClipMask(X11->display, d_ptr->gc, XNone);
 #endif // FALCON
 
 #ifdef Q_WS_MAC

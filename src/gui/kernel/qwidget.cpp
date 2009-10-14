@@ -115,6 +115,7 @@
 #include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -901,9 +902,8 @@ void QWidget::setAutoFillBackground(bool enabled)
     \sa QEvent, QPainter, QGridLayout, QBoxLayout
 
     \section1 Softkeys
-    \since 4.6
 
-    Softkeys are usually physical keys on a device that have a corresponding label or
+    Since Qt 4.6, Softkeys are usually physical keys on a device that have a corresponding label or
     other visual representation on the screen that is generally located next to its
     physical counterpart. They are most often found on mobile phone platforms. In
     modern touch based user interfaces it is also possible to have softkeys that do
@@ -923,7 +923,7 @@ void QWidget::setAutoFillBackground(bool enabled)
 
     Note: Currently softkeys are only supported on the Symbian Platform.
 
-    \sa addAction, QAction, QMenuBar
+    \sa addAction(), QAction, QMenuBar
 
 */
 
@@ -1176,10 +1176,6 @@ void QWidgetPrivate::init(QWidget *parentWidget, Qt::WindowFlags f)
     // Widgets with Qt::MSWindowsOwnDC (typically QGLWidget) must have a window handle.
     if (f & Qt::MSWindowsOwnDC)
         q->setAttribute(Qt::WA_NativeWindow);
-
-#ifdef Q_WS_WINCE
-    data.window_state_internal = 0;
-#endif
 
     q->setAttribute(Qt::WA_QuitOnClose); // might be cleared in adjustQuitOnCloseAttribute()
     adjustQuitOnCloseAttribute();
@@ -5140,7 +5136,8 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground))
+        if (!(renderFlags & QWidget::DrawWindowBackground)
+            || !q->palette().brush(q->backgroundRole()).isOpaque())
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 
@@ -8342,12 +8339,9 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
-    case QEvent::SymbianDeferredFocusChanged: {
-#ifdef Q_OS_SYMBIAN
-        d->handleSymbianDeferredFocusChanged();
-#endif
+    case QEvent::Gesture:
+        event->ignore();
         break;
-    }
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11466,18 +11460,31 @@ QWidget *QWidgetPrivate::widgetInNavigationDirection(Direction direction)
     int shortestDistance = INT_MAX;
     foreach(QWidget *targetCandidate, QApplication::allWidgets()) {
 
-        if (targetCandidate->focusProxy()) //skip if focus proxy set
+        const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+
+        // For focus proxies, the child widget handling the focus can have keypad navigation focus,
+        // but the owner of the proxy cannot.
+        // Additionally, empty widgets should be ignored.
+        if (targetCandidate->focusProxy() || targetCandidateRect.isEmpty())
             continue;
 
-        const QRect targetCandidateRect = targetCandidate->rect().translated(targetCandidate->mapToGlobal(QPoint()));
+        // Only navigate to a target widget that...
         if (       targetCandidate != sourceWidget
+                   // ...takes the focus,
                 && targetCandidate->focusPolicy() & Qt::TabFocus
+                   // ...is above if DirectionNorth,
                 && !(direction == DirectionNorth && targetCandidateRect.bottom() > sourceRect.top())
+                   // ...is on the right if DirectionEast,
                 && !(direction == DirectionEast  && targetCandidateRect.left()   < sourceRect.right())
+                   // ...is below if DirectionSouth,
                 && !(direction == DirectionSouth && targetCandidateRect.top()    < sourceRect.bottom())
+                   // ...is on the left if DirectionWest,
                 && !(direction == DirectionWest  && targetCandidateRect.right()  > sourceRect.left())
+                   // ...is enabled,
                 && targetCandidate->isEnabled()
+                   // ...is visible,
                 && targetCandidate->isVisible()
+                   // ...is in the same window,
                 && targetCandidate->window() == sourceWindow) {
             const int targetCandidateDistance = pointToRect(sourcePoint, targetCandidateRect);
             if (targetCandidateDistance < shortestDistance) {
@@ -11675,6 +11682,19 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 
     Synonym for QList<QWidget *>.
 */
+
+/*!
+    Subscribes the widget to a given \a gesture with a \a context.
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+{
+    Q_D(QWidget);
+    d->gestureContext.insert(gesture, context);
+    (void)QGestureManager::instance(); // create a gesture manager
+}
 
 QT_END_NAMESPACE
 

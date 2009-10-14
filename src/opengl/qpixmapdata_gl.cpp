@@ -48,8 +48,11 @@
 
 #include <private/qgl_p.h>
 #include <private/qdrawhelper_p.h>
+#include <private/qimage_p.h>
 
 #include <private/qpaintengineex_opengl2_p.h>
+
+#include <qdesktopwidget.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -248,7 +251,7 @@ bool QGLPixmapData::isValidContext(const QGLContext *ctx) const
         return true;
 
     const QGLContext *share_ctx = qt_gl_share_widget()->context();
-    return ctx == share_ctx || qgl_share_reg()->checkSharing(ctx, share_ctx);
+    return ctx == share_ctx || QGLContext::areSharing(ctx, share_ctx);
 }
 
 void QGLPixmapData::resize(int width, int height)
@@ -315,7 +318,7 @@ void QGLPixmapData::ensureCreated() const
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
-                              Qt::ImageConversionFlags)
+                              Qt::ImageConversionFlags /*flags*/)
 {
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);
@@ -323,20 +326,26 @@ void QGLPixmapData::fromImage(const QImage &image,
 
     if (pixelType() == BitmapType) {
         m_source = image.convertToFormat(QImage::Format_MonoLSB);
+
     } else {
-        m_source = image.hasAlphaChannel()
-            ? image.convertToFormat(QImage::Format_ARGB32_Premultiplied)
-            : image.convertToFormat(QImage::Format_RGB32);
+        QImage::Format format = QImage::Format_RGB32;
+        if (qApp->desktop()->depth() == 16)
+            format = QImage::Format_RGB16;
+
+        if (image.hasAlphaChannel() && const_cast<QImage &>(image).data_ptr()->checkForAlphaPixels())
+            format = QImage::Format_ARGB32_Premultiplied;;
+
+        m_source = image.convertToFormat(format);
     }
 
     m_dirty = true;
     m_hasFillColor = false;
 
-    m_hasAlpha = image.hasAlphaChannel();
+    m_hasAlpha = m_source.hasAlphaChannel();
     w = image.width();
     h = image.height();
     is_null = (w <= 0 || h <= 0);
-    d = pixelType() == QPixmapData::PixmapType ? 32 : 1;
+    d = m_source.depth();
 
     if (m_texture.id) {
         QGLShareContextScope ctx(qt_gl_share_widget()->context());

@@ -93,7 +93,7 @@ bool JSJavaScriptCallFramePrototype::getOwnPropertyDescriptor(ExecState* exec, c
 
 const ClassInfo JSJavaScriptCallFrame::s_info = { "JavaScriptCallFrame", 0, &JSJavaScriptCallFrameTable, 0 };
 
-JSJavaScriptCallFrame::JSJavaScriptCallFrame(PassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JavaScriptCallFrame> impl)
+JSJavaScriptCallFrame::JSJavaScriptCallFrame(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* globalObject, PassRefPtr<JavaScriptCallFrame> impl)
     : DOMObjectWithGlobalPointer(structure, globalObject)
     , m_impl(impl)
 {

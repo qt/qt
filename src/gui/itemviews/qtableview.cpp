@@ -191,6 +191,359 @@ QList<QSpanCollection::Span *> QSpanCollection::spansInRect(int x, int y, int w,
     return list.toList();
 }
 
+#undef DEBUG_SPAN_UPDATE
+
+#ifdef DEBUG_SPAN_UPDATE
+QDebug operator<<(QDebug str, const QSpanCollection::Span &span)
+{
+    str << "(" << span.top() << "," << span.left() << "," << span.bottom() << "," << span.right() << ")";
+    return str;
+}
+#endif
+
+/** \internal
+* Updates the span collection after row insertion.
+*/
+void QSpanCollection::updateInsertedRows(int start, int end)
+{
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << start << end;
+    qDebug() << index;
+#endif
+    if (spans.isEmpty())
+        return;
+
+    int delta = end - start + 1;
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("Before");
+#endif
+    for (SpanList::iterator it = spans.begin(); it != spans.end(); ++it) {
+        Span *span = *it;
+#ifdef DEBUG_SPAN_UPDATE
+        qDebug() << span << *span;
+#endif
+        if (span->m_bottom < start)
+            continue;
+        if (span->m_top >= start)
+            span->m_top += delta;
+        span->m_bottom += delta;
+    }
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("After");
+    foreach (QSpanCollection::Span *span, spans)
+        qDebug() << span << *span;
+#endif
+
+    for (Index::iterator it_y = index.begin(); it_y != index.end(); ) {
+        int y = -it_y.key();
+        if (y < start) {
+            ++it_y;
+            continue;
+        }
+
+        index.insert(-y - delta, it_y.value());
+        it_y = index.erase(it_y);
+    }
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << index;
+#endif
+}
+
+/** \internal
+* Updates the span collection after column insertion.
+*/
+void QSpanCollection::updateInsertedColumns(int start, int end)
+{
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << start << end;
+    qDebug() << index;
+#endif
+    if (spans.isEmpty())
+        return;
+
+    int delta = end - start + 1;
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("Before");
+#endif
+    for (SpanList::iterator it = spans.begin(); it != spans.end(); ++it) {
+        Span *span = *it;
+#ifdef DEBUG_SPAN_UPDATE
+        qDebug() << span << *span;
+#endif
+        if (span->m_right < start)
+            continue;
+        if (span->m_left >= start)
+            span->m_left += delta;
+        span->m_right += delta;
+    }
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("After");
+    foreach (QSpanCollection::Span *span, spans)
+        qDebug() << span << *span;
+#endif
+
+    for (Index::iterator it_y = index.begin(); it_y != index.end(); ++it_y) {
+        SubIndex &subindex = it_y.value();
+        for (SubIndex::iterator it = subindex.begin(); it != subindex.end(); ) {
+            int x = -it.key();
+            if (x < start) {
+                ++it;
+                continue;
+            }
+            subindex.insert(-x - delta, it.value());
+            it = subindex.erase(it);
+        }
+    }
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << index;
+#endif
+}
+
+/** \internal
+* Cleans a subindex from to be deleted spans. The update argument is used
+* to move the spans inside the subindex, in case their anchor changed.
+* \return true if no span in this subindex starts at y, and should thus be deleted.
+*/
+bool QSpanCollection::cleanSpanSubIndex(QSpanCollection::SubIndex &subindex, int y, bool update)
+{
+    if (subindex.isEmpty())
+        return true;
+
+    bool should_be_deleted = true;
+    SubIndex::iterator it = subindex.end();
+    do {
+        --it;
+        int x = -it.key();
+        Span *span = it.value();
+        if (span->will_be_deleted) {
+            it = subindex.erase(it);
+            continue;
+        }
+        if (update && span->m_left != x) {
+            subindex.insert(-span->m_left, span);
+            it = subindex.erase(it);
+        }
+        if (should_be_deleted && span->m_top == y)
+            should_be_deleted = false;
+    } while (it != subindex.begin());
+
+    return should_be_deleted;
+}
+
+/** \internal
+* Updates the span collection after row removal.
+*/
+void QSpanCollection::updateRemovedRows(int start, int end)
+{
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << start << end;
+    qDebug() << index;
+#endif
+    if (spans.isEmpty())
+        return;
+
+    SpanList spansToBeDeleted;
+    int delta = end - start + 1;
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("Before");
+#endif
+    for (SpanList::iterator it = spans.begin(); it != spans.end(); ) {
+        Span *span = *it;
+#ifdef DEBUG_SPAN_UPDATE
+        qDebug() << span << *span;
+#endif
+        if (span->m_bottom < start) {
+            ++it;
+            continue;
+        }
+        if (span->m_top < start) {
+            if (span->m_bottom <= end)
+                span->m_bottom = start - 1;
+            else
+                span->m_bottom -= delta;
+        } else {
+            if (span->m_bottom > end) {
+                if (span->m_top <= end)
+                    span->m_top = start;
+                else
+                    span->m_top -= delta;
+                span->m_bottom -= delta;
+            } else {
+                span->will_be_deleted = true;
+            }
+        }
+        if (span->m_top == span->m_bottom && span->m_left == span->m_right)
+            span->will_be_deleted = true;
+        if (span->will_be_deleted) {
+            spansToBeDeleted.append(span);
+            it = spans.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("After");
+    foreach (QSpanCollection::Span *span, spans)
+        qDebug() << span << *span;
+#endif
+    if (spans.isEmpty()) {
+        qDeleteAll(spansToBeDeleted);
+        index.clear();
+        return;
+    }
+
+    Index::iterator it_y = index.end();
+    do {
+        --it_y;
+        int y = -it_y.key();
+        SubIndex &subindex = it_y.value();
+        if (y < start) {
+            if (cleanSpanSubIndex(subindex, y))
+                it_y = index.erase(it_y);
+        } else if (y >= start && y <= end) {
+            bool span_at_start = false;
+            SubIndex spansToBeMoved;
+            for (SubIndex::iterator it = subindex.begin(); it != subindex.end(); ++it) {
+                Span *span = it.value();
+                if (span->will_be_deleted)
+                    continue;
+                if (!span_at_start && span->m_top == start)
+                    span_at_start = true;
+                spansToBeMoved.insert(it.key(), span);
+            }
+
+            if (y == start && span_at_start)
+                subindex.clear();
+            else
+                it_y = index.erase(it_y);
+
+            if (span_at_start) {
+                Index::iterator it_start;
+                if (y == start)
+                    it_start = it_y;
+                else {
+                    it_start = index.find(-start);
+                    if (it_start == index.end())
+                        it_start = index.insert(-start, SubIndex());
+                }
+                SubIndex &start_subindex = it_start.value();
+                for (SubIndex::iterator it = spansToBeMoved.begin(); it != spansToBeMoved.end(); ++it)
+                    start_subindex.insert(it.key(), it.value());
+            }
+        } else {
+            if (y == end + 1) {
+                Index::iterator it_top = index.find(-y + delta);
+                if (it_top == index.end())
+                    it_top = index.insert(-y + delta, SubIndex());
+                for (SubIndex::iterator it = subindex.begin(); it != subindex.end(); ) {
+                    Span *span = it.value();
+                    if (!span->will_be_deleted)
+                        it_top.value().insert(it.key(), span);
+                    ++it;
+                }
+            } else {
+                index.insert(-y + delta, subindex);
+            }
+            it_y = index.erase(it_y);
+        }
+    } while (it_y != index.begin());
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << index;
+    qDebug("Deleted");
+    foreach (QSpanCollection::Span *span, spansToBeDeleted)
+        qDebug() << span << *span;
+#endif
+    qDeleteAll(spansToBeDeleted);
+}
+
+/** \internal
+* Updates the span collection after column removal.
+*/
+void QSpanCollection::updateRemovedColumns(int start, int end)
+{
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << Q_FUNC_INFO;
+    qDebug() << start << end;
+    qDebug() << index;
+#endif
+    if (spans.isEmpty())
+        return;
+
+    SpanList toBeDeleted;
+    int delta = end - start + 1;
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("Before");
+#endif
+    for (SpanList::iterator it = spans.begin(); it != spans.end(); ) {
+        Span *span = *it;
+#ifdef DEBUG_SPAN_UPDATE
+        qDebug() << span << *span;
+#endif
+        if (span->m_right < start) {
+            ++it;
+            continue;
+        }
+        if (span->m_left < start) {
+            if (span->m_right <= end)
+                span->m_right = start - 1;
+            else
+                span->m_right -= delta;
+        } else {
+            if (span->m_right > end) {
+                if (span->m_left <= end)
+                    span->m_left = start;
+                else
+                    span->m_left -= delta;
+                span->m_right -= delta;
+            } else {
+                span->will_be_deleted = true;
+            }
+        }
+        if (span->m_top == span->m_bottom && span->m_left == span->m_right)
+            span->will_be_deleted = true;
+        if (span->will_be_deleted) {
+            toBeDeleted.append(span);
+            it = spans.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug("After");
+    foreach (QSpanCollection::Span *span, spans)
+        qDebug() << span << *span;
+#endif
+    if (spans.isEmpty()) {
+        qDeleteAll(toBeDeleted);
+        index.clear();
+        return;
+    }
+
+    for (Index::iterator it_y = index.begin(); it_y != index.end(); ) {
+        int y = -it_y.key();
+        if (cleanSpanSubIndex(it_y.value(), y, true))
+            it_y = index.erase(it_y);
+        else
+            ++it_y;
+    }
+
+#ifdef DEBUG_SPAN_UPDATE
+    qDebug() << index;
+    qDebug("Deleted");
+    foreach (QSpanCollection::Span *span, toBeDeleted)
+        qDebug() << span << *span;
+#endif
+    qDeleteAll(toBeDeleted);
+}
+
 class QTableCornerButton : public QAbstractButton
 {
     Q_OBJECT
@@ -298,6 +651,9 @@ void QTableViewPrivate::setSpan(int row, int column, int rowSpan, int columnSpan
         sp->m_bottom = row + rowSpan - 1;
         sp->m_right = column + columnSpan - 1;
         spans.updateSpan(sp, old_height);
+        return;
+    } else if (rowSpan == 1 && columnSpan == 1) {
+        qWarning() << "QTableView::setSpan: single cell span won't be added";
         return;
     }
     sp = new QSpanCollection::Span(row, column, rowSpan, columnSpan);
@@ -423,8 +779,6 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
     foreach (QSpanCollection::Span *span, visibleSpans) {
         int row = span->top();
         int col = span->left();
-        if (isHidden(row, col))
-            continue;
         QModelIndex index = model->index(row, col, root);
         if (!index.isValid())
             continue;
@@ -456,6 +810,46 @@ void QTableViewPrivate::drawAndClipSpans(const QRegion &area, QPainter *painter,
 
     }
     painter->setClipRegion(region);
+}
+
+/*!
+  \internal
+  Updates spans after row insertion.
+*/
+void QTableViewPrivate::_q_updateSpanInsertedRows(const QModelIndex &parent, int start, int end)
+{
+    Q_UNUSED(parent)
+    spans.updateInsertedRows(start, end);
+}
+
+/*!
+  \internal
+  Updates spans after column insertion.
+*/
+void QTableViewPrivate::_q_updateSpanInsertedColumns(const QModelIndex &parent, int start, int end)
+{
+    Q_UNUSED(parent)
+    spans.updateInsertedColumns(start, end);
+}
+
+/*!
+  \internal
+  Updates spans after row removal.
+*/
+void QTableViewPrivate::_q_updateSpanRemovedRows(const QModelIndex &parent, int start, int end)
+{
+    Q_UNUSED(parent)
+    spans.updateRemovedRows(start, end);
+}
+
+/*!
+  \internal
+  Updates spans after column removal.
+*/
+void QTableViewPrivate::_q_updateSpanRemovedColumns(const QModelIndex &parent, int start, int end)
+{
+    Q_UNUSED(parent)
+    spans.updateRemovedColumns(start, end);
 }
 
 /*!
@@ -629,6 +1023,14 @@ QTableView::~QTableView()
 void QTableView::setModel(QAbstractItemModel *model)
 {
     Q_D(QTableView);
+    connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_updateSpanInsertedRows(QModelIndex,int,int)));
+    connect(model, SIGNAL(columnsInserted(QModelIndex,int,int)),
+            this, SLOT(_q_updateSpanInsertedColumns(QModelIndex,int,int)));
+    connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_updateSpanRemovedRows(QModelIndex,int,int)));
+    connect(model, SIGNAL(columnsRemoved(QModelIndex,int,int)),
+            this, SLOT(_q_updateSpanRemovedColumns(QModelIndex,int,int)));
     d->verticalHeader->setModel(model);
     d->horizontalHeader->setModel(model);
     QAbstractItemView::setModel(model);
@@ -1076,12 +1478,30 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
             ++column;
         while (isRowHidden(d->logicalRow(row)) && row < bottom)
             ++row;
+        d->visualCursor = QPoint(column, row);
         return d->model->index(d->logicalRow(row), d->logicalColumn(column), d->root);
     }
 
-    int visualRow = d->visualRow(current.row());
+    // Update visual cursor if current index has changed.
+    QPoint visualCurrent(d->visualColumn(current.column()), d->visualRow(current.row()));
+    if (visualCurrent != d->visualCursor) {
+        if (d->hasSpans()) {
+            QSpanCollection::Span span = d->span(current.row(), current.column());
+            if (span.top() > d->visualCursor.y() || d->visualCursor.y() > span.bottom()
+                || span.left() > d->visualCursor.x() || d->visualCursor.x() > span.right())
+                d->visualCursor = visualCurrent;
+        } else {
+            d->visualCursor = visualCurrent;
+        }
+    }
+
+    int visualRow = d->visualCursor.y();
+    if (visualRow > bottom)
+        visualRow = bottom;
     Q_ASSERT(visualRow != -1);
-    int visualColumn = d->visualColumn(current.column());
+    int visualColumn = d->visualCursor.x();
+    if (visualColumn > right)
+        visualColumn = right;
     Q_ASSERT(visualColumn != -1);
 
     if (isRightToLeft()) {
@@ -1092,22 +1512,33 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
     }
 
     switch (cursorAction) {
-    case MoveUp:
+    case MoveUp: {
+        int originalRow = visualRow;
 #ifdef QT_KEYPAD_NAVIGATION
         if (QApplication::keypadNavigationEnabled() && visualRow == 0)
             visualRow = d->visualRow(model()->rowCount() - 1) + 1;
+            // FIXME? visualRow = bottom + 1;
 #endif
-        --visualRow;
-        while (visualRow > 0 && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
-            --visualRow;
-        if (d->hasSpans()) {
-            int row = d->logicalRow(visualRow);
-            QSpanCollection::Span span = d->span(row, current.column());
-            visualRow = d->visualRow(span.top());
-            visualColumn = d->visualColumn(span.left());
+        int r = d->logicalRow(visualRow);
+        int c = d->logicalColumn(visualColumn);
+        if (r != -1 && d->hasSpans()) {
+            QSpanCollection::Span span = d->span(r, c);
+            if (span.width() > 1 || span.height() > 1)
+                visualRow = d->visualRow(span.top());
         }
+        while (visualRow >= 0) {
+            --visualRow;
+            r = d->logicalRow(visualRow);
+            c = d->logicalColumn(visualColumn);
+            if (r == -1 || (!isRowHidden(r) && d->isCellEnabled(r, c)))
+                break;
+        }
+        if (visualRow < 0)
+            visualRow = originalRow;
         break;
-    case MoveDown:
+    }
+    case MoveDown: {
+        int originalRow = visualRow;
         if (d->hasSpans()) {
             QSpanCollection::Span span = d->span(current.row(), current.column());
             visualRow = d->visualRow(d->rowSpanEndLogical(span.top(), span.height()));
@@ -1116,71 +1547,106 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         if (QApplication::keypadNavigationEnabled() && visualRow >= bottom)
             visualRow = -1;
 #endif
-        ++visualRow;
-        while (visualRow < bottom && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
+        int r = d->logicalRow(visualRow);
+        int c = d->logicalColumn(visualColumn);
+        if (r != -1 && d->hasSpans()) {
+            QSpanCollection::Span span = d->span(r, c);
+            if (span.width() > 1 || span.height() > 1)
+                visualRow = d->visualRow(d->rowSpanEndLogical(span.top(), span.height()));
+        }
+        while (visualRow <= bottom) {
             ++visualRow;
-        if (d->hasSpans()) {
-            int row = d->logicalRow(visualRow);
-            QSpanCollection::Span span = d->span(row, current.column());
-            visualColumn = d->visualColumn(span.left());
+            r = d->logicalRow(visualRow);
+            c = d->logicalColumn(visualColumn);
+            if (r == -1 || (!isRowHidden(r) && d->isCellEnabled(r, c)))
+                break;
         }
+        if (visualRow > bottom)
+            visualRow = originalRow;
         break;
-    case MovePrevious: {
-        int left = 0;
-        while (d->isVisualColumnHiddenOrDisabled(visualRow, left) && left < right)
-            ++left;
-        if (visualColumn == left) {
-            visualColumn = right;
-            int top = 0;
-            while (top < bottom && d->isVisualRowHiddenOrDisabled(top, visualColumn))
-                ++top;
-            if (visualRow == top)
-                visualRow = bottom;
-            else
-                --visualRow;
-            while (visualRow > 0 && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
-                --visualRow;
-            break;
-        } // else MoveLeft
     }
-    case MoveLeft:
-        --visualColumn;
-        while (visualColumn > 0 && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
-            --visualColumn;
-        if (d->hasSpans()) {
-            int column = d->logicalColumn(visualColumn);
-            QSpanCollection::Span span = d->span(current.row(), column);
-            visualRow = d->visualRow(span.top());
-            visualColumn = d->visualColumn(span.left());
-        }
+    case MovePrevious:
+    case MoveLeft: {
+        int originalRow = visualRow;
+        int originalColumn = visualColumn;
+        bool firstTime = true;
+        bool looped = false;
+        bool wrapped = false;
+        do {
+            int r = d->logicalRow(visualRow);
+            int c = d->logicalColumn(visualColumn);
+            if (firstTime && c != -1 && d->hasSpans()) {
+                firstTime = false;
+                QSpanCollection::Span span = d->span(r, c);
+                if (span.width() > 1 || span.height() > 1)
+                    visualColumn = d->visualColumn(span.left());
+            }
+            while (visualColumn >= 0) {
+                --visualColumn;
+                r = d->logicalRow(visualRow);
+                c = d->logicalColumn(visualColumn);
+                if (r == -1 || c == -1 || (!isRowHidden(r) && !isColumnHidden(c) && d->isCellEnabled(r, c)))
+                    break;
+                if (wrapped && (originalRow < visualRow || (originalRow == visualRow && originalColumn <= visualColumn))) {
+                    looped = true;
+                    break;
+                }
+            }
+            if (cursorAction == MoveLeft || visualColumn >= 0)
+                break;
+            visualColumn = right + 1;
+            if (visualRow == 0) {
+                wrapped == true;
+                visualRow = bottom;
+            } else {
+                --visualRow;
+            }
+        } while (!looped);
+        if (visualColumn < 0)
+            visualColumn = originalColumn;
         break;
+    }
     case MoveNext:
-        if (visualColumn == right) {
-            visualColumn = 0;
-            while (visualColumn < right && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
+    case MoveRight: {
+        int originalRow = visualRow;
+        int originalColumn = visualColumn;
+        bool firstTime = true;
+        bool looped = false;
+        bool wrapped = false;
+        do {
+            int r = d->logicalRow(visualRow);
+            int c = d->logicalColumn(visualColumn);
+            if (firstTime && c != -1 && d->hasSpans()) {
+                firstTime = false;
+                QSpanCollection::Span span = d->span(r, c);
+                if (span.width() > 1 || span.height() > 1)
+                    visualColumn = d->visualColumn(d->columnSpanEndLogical(span.left(), span.width()));
+            }
+            while (visualColumn <= right) {
                 ++visualColumn;
-            if (visualRow == bottom)
+                r = d->logicalRow(visualRow);
+                c = d->logicalColumn(visualColumn);
+                if (r == -1 || c == -1 || (!isRowHidden(r) && !isColumnHidden(c) && d->isCellEnabled(r, c)))
+                    break;
+                if (wrapped && (originalRow > visualRow || (originalRow == visualRow && originalColumn >= visualColumn))) {
+                    looped = true;
+                    break;
+                }
+            }
+            if (cursorAction == MoveRight || visualColumn <= right)
+                break;
+            visualColumn = -1;
+            if (visualRow == bottom) {
+                wrapped = true;
                 visualRow = 0;
-            else
+            } else {
                 ++visualRow;
-            while (visualRow < bottom && d->isVisualRowHiddenOrDisabled(visualRow, visualColumn))
-                ++visualRow;
-            break;
-        } // else MoveRight
-    case MoveRight:
-        if (d->hasSpans()) {
-            QSpanCollection::Span span = d->span(current.row(), current.column());
-            visualColumn = d->visualColumn(d->columnSpanEndLogical(span.left(), span.width()));
-        }
-        ++visualColumn;
-        while (visualColumn < right && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
-            ++visualColumn;
-        if (d->hasSpans()) {
-            int column = d->logicalColumn(visualColumn);
-            QSpanCollection::Span span = d->span(current.row(), column);
-            visualRow = d->visualRow(span.top());
-        }
+            }
+        } while (!looped);
+        if (visualColumn > right)
+            visualColumn = originalColumn;
         break;
+    }
     case MoveHome:
         visualColumn = 0;
         while (visualColumn < right && d->isVisualColumnHiddenOrDisabled(visualRow, visualColumn))
@@ -1209,14 +1675,15 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
         return d->model->index(newRow, current.column(), d->root);
     }}
 
+    d->visualCursor = QPoint(visualColumn, visualRow);
     int logicalRow = d->logicalRow(visualRow);
     int logicalColumn = d->logicalColumn(visualColumn);
     if (!d->model->hasIndex(logicalRow, logicalColumn, d->root))
         return QModelIndex();
 
     QModelIndex result = d->model->index(logicalRow, logicalColumn, d->root);
-    if (!isIndexHidden(result) && d->isIndexEnabled(result))
-        return d->model->index(logicalRow, logicalColumn, d->root);
+    if (!d->isRowHidden(logicalRow) && !d->isColumnHidden(logicalColumn) && d->isIndexEnabled(result))
+        return result;
 
     return QModelIndex();
 }
@@ -1971,7 +2438,8 @@ bool QTableView::isCornerButtonEnabled() const
 QRect QTableView::visualRect(const QModelIndex &index) const
 {
     Q_D(const QTableView);
-    if (!d->isIndexValid(index) || index.parent() != d->root || isIndexHidden(index) )
+    if (!d->isIndexValid(index) || index.parent() != d->root
+        || (!d->hasSpans() && isIndexHidden(index)))
         return QRect();
 
     d->executePostedLayout();

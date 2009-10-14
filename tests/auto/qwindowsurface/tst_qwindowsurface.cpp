@@ -51,6 +51,9 @@
 #include <QDesktopWidget>
 #include <QX11Info>
 
+
+#include "../../shared/util.h"
+
 class tst_QWindowSurface : public QObject
 {
     Q_OBJECT
@@ -106,18 +109,26 @@ public:
     QRegion r;
 };
 
-#define VERIFY_COLOR(region, color) {                                   \
-    const QRegion r = QRegion(region);                                  \
-    for (int i = 0; i < r.rects().size(); ++i) {                        \
-        const QRect rect = r.rects().at(i);                             \
-        const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(), \
-                                                   rect.left(), rect.top(), \
-                                                   rect.width(), rect.height()); \
-        QCOMPARE(pixmap.size(), rect.size());                           \
-        QPixmap expectedPixmap(pixmap); /* ensure equal formats */      \
-        expectedPixmap.fill(color);                                     \
-        QCOMPARE(pixmap, expectedPixmap);                               \
-    }                                                                   \
+//from tst_qwidget.cpp
+static void VERIFY_COLOR(const QRegion &region, const QColor &color)
+{
+    const QRegion r = QRegion(region);
+    for (int i = 0; i < r.rects().size(); ++i) {
+        const QRect rect = r.rects().at(i);
+        for (int t = 0; t < 5; t++) {
+            const QPixmap pixmap = QPixmap::grabWindow(QDesktopWidget().winId(),
+                                                   rect.left(), rect.top(),
+                                                   rect.width(), rect.height());
+            QCOMPARE(pixmap.size(), rect.size());
+            QPixmap expectedPixmap(pixmap); /* ensure equal formats */
+            expectedPixmap.fill(color);
+            if (pixmap.toImage().pixel(0,0) != QColor(color).rgb() && t < 4 )
+            { QTest::qWait(200); continue; }
+            QCOMPARE(pixmap.toImage().pixel(0,0), QColor(color).rgb());
+            QCOMPARE(pixmap, expectedPixmap);
+            break;
+        }
+    }
 }
 
 void tst_QWindowSurface::getSetWindowSurface()
@@ -230,9 +241,9 @@ void tst_QWindowSurface::grabWidget()
     parentWidget.show();
     QTest::qWaitForWindowShown(&parentWidget);
 
-    QTest::qWait(120);
-
-    QPixmap parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget);
+    QPixmap parentPixmap;
+    QTRY_COMPARE((parentPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget)).size(),
+                  QSize(300,300));
     QPixmap childPixmap = childWidget.windowSurface()->grabWidget(&childWidget);
     QPixmap babyPixmap = babyWidget.windowSurface()->grabWidget(&babyWidget);
     QPixmap parentSubPixmap = parentWidget.windowSurface()->grabWidget(&parentWidget, QRect(25, 25, 100, 100));

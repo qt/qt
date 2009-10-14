@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qdatastream.h"
+#include "qdatastream_p.h"
 
 #ifndef QT_NO_DATASTREAM
 #include "qbuffer.h"
@@ -193,6 +194,21 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+  \enum QDataStream::FloatingPointPrecision
+
+  The precision of floating point numbers used for reading/writing the data. This will only have
+  an effect if the version of the data stream is Qt_4_6 or higher.
+
+  \warning The floating point precision must be set to the same value on the object that writes
+  and the object that reads the data stream.
+
+  \value SinglePrecision All floating point numbers in the data stream have 32-bit precision.
+  \value DoublePrecision All floating point numbers in the data stream have 64-bit precision.
+
+  \sa setFloatingPointPrecision(), floatingPointPrecision()
+*/
+
+/*!
     \enum QDataStream::Status
 
     This enum describes the current status of the data stream.
@@ -222,7 +238,7 @@ QT_BEGIN_NAMESPACE
 #endif
 
 enum {
-    DefaultStreamVersion = QDataStream::Qt_4_5
+    DefaultStreamVersion = QDataStream::Qt_4_6
 };
 
 // ### 5.0: when streaming invalid QVariants, just the type should
@@ -414,6 +430,42 @@ bool QDataStream::atEnd() const
 }
 
 /*!
+    Returns the floating point precision of the data stream.
+
+    \since 4.6
+
+    \sa FloatingPointPrecision setFloatingPointPrecision()
+*/
+QDataStream::FloatingPointPrecision QDataStream::floatingPointPrecision() const
+{
+    return d == 0 ? QDataStream::DoublePrecision : d->floatingPointPrecision;
+}
+
+/*!
+    Sets the floating point precision of the data stream to \a precision. If the floating point precision is
+    DoublePrecision and the version of the data stream is Qt_4_6 or higher, all floating point
+    numbers will be written and read with 64-bit precision. If the floating point precision is
+    SinglePrecision and the version is Qt_4_6 or higher, all floating point numbers will be written
+    and read with 32-bit precision.
+
+    For versions prior to Qt_4_6, the precision of floating point numbers in the data stream depends
+    on the stream operator called.
+
+    The default is DoublePrecision.
+
+    \warning This property must be set to the same value on the object that writes and the object
+    that reads the data stream.
+
+    \since 4.6
+*/
+void QDataStream::setFloatingPointPrecision(QDataStream::FloatingPointPrecision precision)
+{
+    if (d == 0)
+        d.reset(new QDataStreamPrivate());
+    d->floatingPointPrecision = precision;
+}
+
+/*!
     Returns the status of the data stream.
 
     \sa Status setStatus() resetStatus()
@@ -517,7 +569,7 @@ void QDataStream::setByteOrder(ByteOrder bo)
     \value Qt_4_3 Version 9 (Qt 4.3)
     \value Qt_4_4 Version 10 (Qt 4.4)
     \value Qt_4_5 Version 11 (Qt 4.5)
-    \omitvalue Qt_4_6
+    \value Qt_4_6 Version 12 (Qt 4.6)
 
     \sa setVersion(), version()
 */
@@ -754,13 +806,23 @@ QDataStream &QDataStream::operator>>(bool &i)
 /*!
     \overload
 
-    Reads a 32-bit floating point number from the stream into \a f,
+    Reads a floating point number from the stream into \a f,
     using the standard IEEE 754 format. Returns a reference to the
     stream.
+
+    \sa setFloatingPointPrecision()
 */
 
 QDataStream &QDataStream::operator>>(float &f)
-{
+{    
+    if (version() >= QDataStream::Qt_4_6
+        && floatingPointPrecision() == QDataStream::DoublePrecision) {
+        double d;
+        *this >> d;
+        f = d;
+        return *this;
+    }
+
     f = 0.0f;
     CHECK_STREAM_PRECOND(*this)
     if (noswap) {
@@ -796,13 +858,23 @@ QDataStream &QDataStream::operator>>(float &f)
 /*!
     \overload
 
-    Reads a 64-bit floating point number from the stream into \a f,
+    Reads a floating point number from the stream into \a f,
     using the standard IEEE 754 format. Returns a reference to the
     stream.
+
+    \sa setFloatingPointPrecision()
 */
 
 QDataStream &QDataStream::operator>>(double &f)
 {
+    if (version() >= QDataStream::Qt_4_6
+        && floatingPointPrecision() == QDataStream::SinglePrecision) {
+        float d;
+        *this >> d;
+        f = d;
+        return *this;
+    }
+
     f = 0.0;
     CHECK_STREAM_PRECOND(*this)
 #ifndef Q_DOUBLE_FORMAT
@@ -1115,12 +1187,20 @@ QDataStream &QDataStream::operator<<(bool i)
 /*!
     \overload
 
-    Writes a 32-bit floating point number, \a f, to the stream using
+    Writes a floating point number, \a f, to the stream using
     the standard IEEE 754 format. Returns a reference to the stream.
+
+    \sa setFloatingPointPrecision()
 */
 
 QDataStream &QDataStream::operator<<(float f)
 {
+    if (version() >= QDataStream::Qt_4_6
+        && floatingPointPrecision() == QDataStream::DoublePrecision) {
+        *this << double(f);
+        return *this;
+    }
+
     CHECK_STREAM_PRECOND(*this)
     float g = f;                                // fixes float-on-stack problem
     if (noswap) {                                // no conversion needed
@@ -1146,12 +1226,20 @@ QDataStream &QDataStream::operator<<(float f)
 /*!
     \overload
 
-    Writes a 64-bit floating point number, \a f, to the stream using
+    Writes a floating point number, \a f, to the stream using
     the standard IEEE 754 format. Returns a reference to the stream.
+
+    \sa setFloatingPointPrecision()
 */
 
 QDataStream &QDataStream::operator<<(double f)
 {
+    if (version() >= QDataStream::Qt_4_6
+        && floatingPointPrecision() == QDataStream::SinglePrecision) {
+        *this << float(f);
+        return *this;
+    }
+
     CHECK_STREAM_PRECOND(*this)
 #ifndef Q_DOUBLE_FORMAT
     if (noswap) {

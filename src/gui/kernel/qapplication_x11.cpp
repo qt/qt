@@ -85,6 +85,7 @@
 #include "qtimer.h"
 #include "qlibrary.h"
 #include <private/qgraphicssystemfactory_p.h>
+#include "qguiplatformplugin_p.h"
 #include "qkde_p.h"
 
 #if !defined (QT_NO_TABLET)
@@ -919,7 +920,7 @@ bool QApplicationPrivate::x11_apply_settings()
     QString stylename = settings.value(QLatin1String("style")).toString();
 
     if (stylename.isEmpty() && QApplicationPrivate::styleOverride.isNull() && X11->use_xrender) {
-        stylename = x11_desktop_style();
+        stylename = qt_guiPlatformPlugin()->styleName();
     }
 
     static QString currentStyleName = stylename;
@@ -1313,8 +1314,7 @@ static void qt_set_x11_resources(const char* font = 0, const char* fg = 0,
             pal.setColor(QPalette::Disabled, QPalette::Highlight, Qt::darkBlue);
         }
 
-        if (kdeColors)
-            pal = QKde::kdePalette().resolve(pal);
+        pal = qt_guiPlatformPlugin()->palette().resolve(pal);
         QApplicationPrivate::setSystemPalette(pal);
         QColor::setAllowX11ColorNames(allowX11ColorNames);
     }
@@ -2256,8 +2256,13 @@ void qt_init(QApplicationPrivate *priv, int,
             unsigned long length, after;
             uchar *data = 0;
 
-            if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
-                                   0, 1, False, AnyPropertyType, &type, &format, &length,
+            QString session = QString::fromLocal8Bit(qgetenv("DESKTOP_SESSION"));
+            if (session == QLatin1String("kde")) {
+                X11->desktopEnvironment = DE_KDE;
+            } else if (session == QLatin1String("gnome") || session == QLatin1String("xfce")) {
+                X11->desktopEnvironment = DE_GNOME;
+            } else if (XGetWindowProperty(X11->display, QX11Info::appRootWindow(), ATOM(DTWM_IS_RUNNING),
+                                          0, 1, False, AnyPropertyType, &type, &format, &length,
                                    &after, &data) == Success && length) {
                 // DTWM is running, meaning most likely CDE is running...
                 X11->desktopEnvironment = DE_CDE;
@@ -2553,42 +2558,6 @@ void qt_init(QApplicationPrivate *priv, int,
         }
     }
 #endif
-}
-
-
-    // run-time search for default style
-/*!
-    \internal
-*/
-QString QApplicationPrivate::x11_desktop_style()
-{
-    QString stylename;
-    switch(X11->desktopEnvironment) {
-    case DE_KDE:
-        stylename = QKde::kdeStyle();
-        break;
-    case DE_GNOME: {
-        QStringList availableStyles = QStyleFactory::keys();
-        // Set QGtkStyle for GNOME if available
-        QString gtkStyleKey = QString::fromLatin1("GTK+");
-        if (availableStyles.contains(gtkStyleKey)) {
-            stylename = gtkStyleKey;
-            break;
-        }
-        if (X11->use_xrender)
-            stylename = QLatin1String("cleanlooks");
-        else
-            stylename = QLatin1String("windows");
-        break;
-        }
-    case DE_CDE:
-        stylename = QLatin1String("cde");
-        break;
-    default:
-        // Don't do anything
-        break;
-    }
-    return stylename;
 }
 
 void QApplicationPrivate::initializeWidgetPaletteHash()

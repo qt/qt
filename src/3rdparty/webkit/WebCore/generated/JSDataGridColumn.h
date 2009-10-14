@@ -35,7 +35,7 @@ class DataGridColumn;
 class JSDataGridColumn : public DOMObjectWithGlobalPointer {
     typedef DOMObjectWithGlobalPointer Base;
 public:
-    JSDataGridColumn(PassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DataGridColumn>);
+    JSDataGridColumn(NonNullPassRefPtr<JSC::Structure>, JSDOMGlobalObject*, PassRefPtr<DataGridColumn>);
     virtual ~JSDataGridColumn();
     static JSC::JSObject* createPrototype(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual bool getOwnPropertySlot(JSC::ExecState*, const JSC::Identifier& propertyName, JSC::PropertySlot&);
@@ -71,7 +71,7 @@ public:
     {
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
     }
-    JSDataGridColumnPrototype(PassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+    JSDataGridColumnPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
 };
 
 // Attributes
