@@ -3717,7 +3717,7 @@ void Configure::readLicense()
        (dictionary.value("QMAKESPEC").startsWith("wince") || dictionary.value("XQMAKESPEC").startsWith("wince")))
         dictionary["PLATFORM NAME"] = "Qt for Windows CE";
     else if (dictionary.value("XQMAKESPEC").startsWith("symbian"))
-        dictionary["PLATFORM NAME"] = "Qt for S60";
+        dictionary["PLATFORM NAME"] = "Qt for Symbian";
     else
         dictionary["PLATFORM NAME"] = "Qt for Windows";
     dictionary["LICENSE FILE"] = sourcePath;
