@@ -10,21 +10,15 @@
 
 QT_BEGIN_NAMESPACE
 
+class ObjectPropertiesView;
 class QmlDebugConnection;
 class QmlDebugPropertyReference;
 class QmlDebugWatch;
-class QmlObjectTree;
-class EngineClientPlugin;
-class PropertyView;
+class ObjectTree;
 class WatchTableModel;
-class QLineEdit;
-class QModelIndex;
-class QTreeWidget;
-class QTreeWidgetItem;
+class WatchTableView;
+
 class QTabWidget;
-class QTableWidget;
-class QTableView;
-class QTableWidgetItem;
 
 class EnginePane : public QWidget
 {
@@ -41,42 +35,23 @@ private slots:
     void queryContext(int);
     void contextChanged();
 
-    void fetchObject(int);
-    void objectFetched();
-
     void engineSelected(int);
 
-    void itemClicked(QTreeWidgetItem *);
-    void showProperties();
-    void addExpressionWatch(int debugId, const QString &expr);
-
-    void valueChanged(const QByteArray &property, const QVariant &value);
-
-    void propertyActivated(const QmlDebugPropertyReference &property);
-    void propertyWatchStateChanged();
-    void watchedItemActivated(const QModelIndex &index);
-    void stopWatching(int column);
-
 private:
-    void dump(const QmlDebugContextReference &, int);
-    void dump(const QmlDebugObjectReference &, int);
-    void buildTree(const QmlDebugObjectReference &, QTreeWidgetItem *parent);
-
-    QmlEngineDebug m_client;
+    QmlEngineDebug *m_client;
     QmlDebugEnginesQuery *m_engines;
     QmlDebugRootContextQuery *m_context;
-    QmlDebugObjectQuery *m_object;
 
-    QmlObjectTree *m_objTree;
+    ObjectTree *m_objTree;
     QTabWidget *m_tabs;
-    PropertyView *m_propView;
-    QTableView *m_watchTable;
+    WatchTableView *m_watchTableView;
 
     QmlView *m_engineView;
     QList<QObject *> m_engineItems;
 
-    QmlDebugWatch *m_watchedObject;
     WatchTableModel *m_watchTableModel;
+
+    ObjectPropertiesView *m_propertiesView;
 };
 
 QT_END_NAMESPACE
