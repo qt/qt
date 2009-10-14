@@ -475,6 +475,9 @@ static const unsigned int keyTbl[] = {
 
 static int lookupCode(unsigned int xkeycode)
 {
+    if (xkeycode >= XK_F1 && xkeycode <= XK_F35)
+        return Qt::Key_F1 + (int(xkeycode) - XK_F1);
+
     const unsigned int *p = keyTbl;
     while (*p) {
         if (*p == xkeycode)
