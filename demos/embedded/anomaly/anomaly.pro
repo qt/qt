@@ -29,3 +29,8 @@ symbian {
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
+
+target.path = $$[QT_INSTALL_DEMOS]/embedded/anomaly
+sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro src/images
+sources.path = $$[QT_INSTALL_DEMOS]/embedded/anomaly
+INSTALLS += target sources
