@@ -55,9 +55,12 @@ public:
 private slots:
     void s60_hard_complex_data();
     void s60_hard_complex();
+    void linearVsAnchorSizeHints_data();
+    void linearVsAnchorSizeHints();
+    void linearVsAnchorSetGeometry_data();
+    void linearVsAnchorSetGeometry();
     void linearVsAnchorNested_data();
     void linearVsAnchorNested();
-
 };
 
 
@@ -193,6 +196,128 @@ void tst_QGraphicsAnchorLayout::s60_hard_complex()
     QBENCHMARK {
         l->invalidate();
         sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    }
+}
+
+static QGraphicsLayout* createLayouts(int whichLayout)
+{
+    QSizeF min(0, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *d = createItem(min, pref, max, "d");
+
+    QGraphicsLayout *l;
+    if (whichLayout == 0) {
+        l = new QGraphicsLinearLayout;
+        QGraphicsLinearLayout *linear = static_cast<QGraphicsLinearLayout *>(l);
+        linear->setContentsMargins(0, 0, 0, 0);
+
+        linear->addItem(a);
+        linear->addItem(b);
+        linear->addItem(c);
+        linear->addItem(d);
+    } else {
+        l = new QGraphicsAnchorLayout;
+        QGraphicsAnchorLayout *anchor = static_cast<QGraphicsAnchorLayout *>(l);
+        anchor->setContentsMargins(0, 0, 0, 0);
+
+        // Horizontal
+        setAnchor(anchor, anchor, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+        setAnchor(anchor, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
+        setAnchor(anchor, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
+        setAnchor(anchor, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
+        setAnchor(anchor, d, Qt::AnchorRight, anchor, Qt::AnchorRight, 0);
+
+        // Vertical
+        anchor->addAnchors(anchor, a, Qt::Vertical);
+        anchor->addAnchors(anchor, b, Qt::Vertical);
+        anchor->addAnchors(anchor, c, Qt::Vertical);
+        anchor->addAnchors(anchor, d, Qt::Vertical);
+    }
+
+    return l;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSizeHints_data()
+{
+    QTest::addColumn<int>("whichLayout");
+    QTest::addColumn<int>("whichSizeHint");
+
+    QTest::newRow("QGraphicsLinearLayout::minimum")
+        << 0 << int(Qt::MinimumSize);
+    QTest::newRow("QGraphicsLinearLayout::preferred")
+        << 0 << int(Qt::PreferredSize);
+    QTest::newRow("QGraphicsLinearLayout::maximum")
+        << 0 << int(Qt::MaximumSize);
+    QTest::newRow("QGraphicsLinearLayout::noSizeHint")
+        << 0 << -1;
+
+    QTest::newRow("QGraphicsAnchorLayout::minimum")
+        << 1 << int(Qt::MinimumSize);
+    QTest::newRow("QGraphicsAnchorLayout::preferred")
+        << 1 << int(Qt::PreferredSize);
+    QTest::newRow("QGraphicsAnchorLayout::maximum")
+        << 1 << int(Qt::MaximumSize);
+    QTest::newRow("QGraphicsAnchorLayout::noSizeHint")
+        << 1 << -1;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSizeHints()
+{
+    QFETCH(int, whichSizeHint);
+    QFETCH(int, whichLayout);
+
+    QGraphicsLayout *l = createLayouts(whichLayout);
+
+    QSizeF sizeHint;
+    // warm up instruction cache
+    l->invalidate();
+    sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    // ...then measure...
+
+    QBENCHMARK {
+        l->invalidate();
+        sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    }
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSetGeometry_data()
+{
+    QTest::addColumn<int>("whichLayout");
+
+    QTest::newRow("QGraphicsLinearLayout")
+        << 0;
+    QTest::newRow("QGraphicsAnchorLayout")
+        << 1;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSetGeometry()
+{
+    QFETCH(int, whichLayout);
+
+    QGraphicsLayout *l = createLayouts(whichLayout);
+
+    QRectF sizeHint;
+    qreal maxWidth;
+    qreal increment;
+    // warm up instruction cache
+    l->invalidate();
+    sizeHint.setSize(l->effectiveSizeHint(Qt::MinimumSize));
+    maxWidth = l->effectiveSizeHint(Qt::MaximumSize).width();
+    increment = (maxWidth - sizeHint.width()) / 100;
+    l->setGeometry(sizeHint);
+    // ...then measure...
+
+    QBENCHMARK {
+        l->invalidate();
+        for (qreal width = sizeHint.width(); width <= maxWidth; width += increment) {
+            sizeHint.setWidth(width);
+            l->setGeometry(sizeHint);
+        }
     }
 }
 
