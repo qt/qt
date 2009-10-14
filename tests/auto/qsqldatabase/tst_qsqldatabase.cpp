@@ -304,10 +304,11 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec("set table_type=innodb");
-    if (tst_Databases::isSqlServer(db)) {
+    else if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
         QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
-    }
+    } else if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     // please never ever change this table; otherwise fix all tests ;)
     if (tst_Databases::isMSAccess(db)) {
@@ -334,6 +335,12 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
 {
     if (!db.isValid())
         return;
+
+    if(tst_Databases::isPostgreSQL(db)) {
+        QSqlQuery q(db);
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+    }
+
     // drop the view first, otherwise we'll get dependency problems
     tst_Databases::safeDropViews(db, QStringList() << qTableName("qtest_view") << qTableName("qtest_view2"));
 
@@ -1019,6 +1026,10 @@ void tst_QSqlDatabase::recordPSQL()
     };
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+
     q.exec("drop sequence " + qTableName("qtestfields") + "_t_bigserial_seq");
     q.exec("drop sequence " + qTableName("qtestfields") + "_t_serial_seq");
     // older psql cut off the table name
@@ -1494,6 +1505,11 @@ void tst_QSqlDatabase::psql_schemas()
         QSKIP("server does not support schemas", SkipSingle);
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db)) {
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+    }
+
     QVERIFY_SQL(q, exec("CREATE SCHEMA " + qTableName("qtestschema")));
 
     QString table = qTableName("qtestschema") + '.' + qTableName("qtesttable");
@@ -1528,6 +1544,9 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
         QSKIP("server does not support schemas", SkipSingle);
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     QString schemaName = qTableName("qtestScHeMa");
     QString tableName = qTableName("qtest");
