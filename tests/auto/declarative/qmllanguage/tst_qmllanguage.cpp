@@ -24,6 +24,8 @@ public:
     }
 
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
 
     void errors_data();
     void errors();
@@ -114,6 +116,24 @@ inline QUrl TEST_FILE(const QString &filename)
 inline QUrl TEST_FILE(const char *filename)
 {
     return TEST_FILE(QLatin1String(filename));
+}
+
+void tst_qmllanguage::initTestCase()
+{
+    // Create locale-specific file
+    // For POSIX, this will just be data/I18nType.qml, since POSIX is 7-bit
+    // For iso8859-1 locale, this will just be data/I18nType?????.qml where ????? is 5 8-bit characters
+    // For utf-8 locale, this will be data/I18nType??????????.qml where ?????????? is 5 8-bit characters, UTF-8 encoded
+    QFile in(TEST_FILE(QLatin1String("I18nType30.qml")).toLocalFile());
+    QVERIFY(in.open(QIODevice::ReadOnly));
+    QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile());
+    QVERIFY(out.open(QIODevice::WriteOnly));
+    out.write(in.readAll());
+}
+
+void tst_qmllanguage::cleanupTestCase()
+{
+    QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
 }
 
 void tst_qmllanguage::errors_data()
@@ -686,11 +706,11 @@ void tst_qmllanguage::i18n_data()
 {
     QTest::addColumn<QString>("file");
     QTest::addColumn<QString>("stringProperty");
-    QTest::newRow("i18nStrings") << "i18nStrings.qml" << QString::fromUtf8("Test áâãäå (5 accented 'a' letters)");
-    QTest::newRow("i18nDeclaredPropertyNames") << "i18nDeclaredPropertyNames.qml" << QString::fromUtf8("Test áâãäå: 10");
-    QTest::newRow("i18nDeclaredPropertyUse") << "i18nDeclaredPropertyUse.qml" << QString::fromUtf8("Test áâãäå: 15");
-    QTest::newRow("i18nScript") << "i18nScript.qml" << QString::fromUtf8("Test áâãäå: 20");
-    QTest::newRow("i18nType") << "i18nType.qml" << QString::fromUtf8("Test áâãäå: 30");
+    QTest::newRow("i18nStrings") << "i18nStrings.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245 (5 accented 'a' letters)");
+    QTest::newRow("i18nDeclaredPropertyNames") << "i18nDeclaredPropertyNames.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 10");
+    QTest::newRow("i18nDeclaredPropertyUse") << "i18nDeclaredPropertyUse.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 15");
+    QTest::newRow("i18nScript") << "i18nScript.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 20");
+    QTest::newRow("i18nType") << "i18nType.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 30");
 }
 
 void tst_qmllanguage::i18n()

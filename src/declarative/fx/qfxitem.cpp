@@ -1483,8 +1483,8 @@ void QFxItemPrivate::resources_removeAt(int)
 
 int QFxItemPrivate::resources_count() const
 {
-    // ###
-    return 0;
+    Q_Q(const QFxItem);
+    return q->children().count();
 }
 
 void QFxItemPrivate::resources_append(QObject *o)
@@ -1498,10 +1498,14 @@ void QFxItemPrivate::resources_insert(int, QObject *)
     // ###
 }
 
-QObject *QFxItemPrivate::resources_at(int) const
+QObject *QFxItemPrivate::resources_at(int idx) const
 {
-    // ###
-    return 0;
+    Q_Q(const QFxItem);
+    QObjectList children = q->children();
+    if (idx < children.count())
+        return children.at(idx);
+    else
+        return 0;
 }
 
 void QFxItemPrivate::resources_clear()
@@ -1516,8 +1520,8 @@ void QFxItemPrivate::children_removeAt(int)
 
 int QFxItemPrivate::children_count() const
 {
-    // ###
-    return 0;
+    Q_Q(const QFxItem);
+    return q->childItems().count();
 }
 
 void QFxItemPrivate::children_append(QFxItem *i)
@@ -1531,10 +1535,14 @@ void QFxItemPrivate::children_insert(int, QFxItem *)
     // ###
 }
 
-QFxItem *QFxItemPrivate::children_at(int) const
+QFxItem *QFxItemPrivate::children_at(int idx) const
 {
-    // ###
-    return 0;
+    Q_Q(const QFxItem);
+    QList<QGraphicsItem *> children = q->childItems();
+    if (idx < children.count())
+        return qobject_cast<QFxItem *>(children.at(idx));
+    else
+        return 0;
 }
 
 void QFxItemPrivate::children_clear()

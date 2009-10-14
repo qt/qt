@@ -25,9 +25,6 @@ SUBDIRS += anchors \
            states \
            visual
 
-SUBDIRS -= examples # Human-interactive
-
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS
-PULSE_TESTS -= visual # All except 'visual' tests, allegedly too flaky
 

@@ -103,6 +103,7 @@ public:
     PersistentIdentifier createPersistentIdentifier(const Identifier &);
 
     QString toString(const Identifier &);
+    quint32 toArrayIndex(const Identifier &, bool *ok);
 
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
                                                    QScriptClass::QueryFlags flags);
