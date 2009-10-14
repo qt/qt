@@ -48,11 +48,14 @@
 #include <QtDeclarative/qmlinfo.h>
 #include <private/qfxanchors_p.h>
 #include <private/qfxitem_p.h>
+#include <QtGui/qgraphicsitem.h>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlParentChangePrivate : public QObjectPrivate
 {
+    Q_DECLARE_PUBLIC(QmlParentChange)
 public:
     QmlParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0) {}
 
@@ -67,53 +70,37 @@ public:
 void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefore)
 {
     if (targetParent && target && target->parentItem()) {
-        QPointF me = target->parentItem()->mapToScene(QPointF(0,0));
-        QPointF them = targetParent->mapToScene(QPointF(0,0));
-
-        QPointF themx = targetParent->mapToScene(QPointF(1,0));
-        QPointF themy = targetParent->mapToScene(QPointF(0,1));
-
-        themx -= them;
-        themy -= them;
-
-        target->setParentItem(targetParent);
-
-        // XXX - this is silly and will only work in a few cases
-
-        /*
-            xDiff = rx * themx_x + ry * themy_x
-            yDiff = rx * themx_y + ry * themy_y
-         */
-
-        qreal rx = 0;
-        qreal ry = 0;
-        qreal xDiff = them.x() - me.x();
-        qreal yDiff = them.y() - me.y();
-
-
-        if (themx.x() == 0.) {
-            ry = xDiff / themy.x();
-            rx = (yDiff - ry * themy.y()) / themx.y();
-        } else if (themy.x() == 0.) {
-            rx = xDiff / themx.x();
-            ry = (yDiff - rx * themx.y()) / themy.y();
-        } else if (themx.y() == 0.) {
-            ry = yDiff / themy.y();
-            rx = (xDiff - ry * themy.x()) / themx.x();
-        } else if (themy.y() == 0.) {
-            rx = yDiff / themx.y();
-            ry = (xDiff - rx * themx.x()) / themy.x();
-        } else {
-            qreal div = (themy.x() * themx.y() - themy.y() * themx.x());
-
-            if (div != 0.)
-                rx = (themx.y() * xDiff - themx.x() * yDiff) / div;
-
-           if (themy.y() != 0.) ry = (yDiff - rx * themx.y()) / themy.y();
+        //### for backwards direction, we can just restore original x, y, scale, rotation
+        Q_Q(QmlParentChange);
+        const QTransform &transform = target->itemTransform(targetParent);
+        if (transform.type() >= QTransform::TxShear) {
+            qmlInfo(QObject::tr("Unable to preserve appearance under complex transform"), q);
         }
 
-        target->setX(target->x() - rx);
-        target->setY(target->y() - ry);
+        qreal scale = 1;
+        qreal rotation = 0;
+        if (transform.type() != QTransform::TxRotate) {
+            if (transform.m11() == transform.m22())
+                scale = transform.m11();
+            else
+                qmlInfo(QObject::tr("Unable to preserve appearance under non-uniform scale"), q);
+        } else if (transform.type() == QTransform::TxRotate) {
+            if (transform.m11() == transform.m22())
+                scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
+            else
+                qmlInfo(QObject::tr("Unable to preserve appearance under non-uniform scale"), q);
+
+            if (scale != 0)
+                rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
+            else
+                qmlInfo(QObject::tr("Unable to preserve appearance under scale of 0"), q);
+        }
+        target->setParentItem(targetParent);
+        //qDebug() << transform.dx() << transform.dy() << rotation << scale;
+        target->setX(transform.dx());
+        target->setY(transform.dy());
+        target->setRotation(rotation);
+        target->setScale(scale);
     } else if (target) {
         target->setParentItem(targetParent);
     }
