@@ -70,12 +70,13 @@ class QmlComponent;
 class QmlEngine;
 class QmlCompiledData;
 
+class QmlComponentAttached;
 class QmlComponentPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlComponent)
         
 public:
-    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), completePending(false), engine(0) {}
+    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), completePending(false), componentAttacheds(0), engine(0) {}
 
 
     QObject *create(QmlContext *context, const QBitField &);
@@ -98,6 +99,7 @@ public:
 
     QList<QmlEnginePrivate::SimpleList<QmlAbstractBinding> > bindValues;
     QList<QmlEnginePrivate::SimpleList<QmlParserStatus> > parserStatus;
+    QmlComponentAttached *componentAttacheds;
 
     bool completePending;
 
@@ -108,6 +110,23 @@ public:
     static QmlComponentPrivate *get(QmlComponent *c) {
         return static_cast<QmlComponentPrivate *>(QObjectPrivate::get(c));
     }
+};
+
+class QmlComponentAttached : public QObject
+{
+    Q_OBJECT
+public:
+    QmlComponentAttached(QObject *parent = 0);
+    ~QmlComponentAttached();
+
+    QmlComponentAttached **prev;
+    QmlComponentAttached *next;
+
+signals:
+    void completed();
+
+private:
+    friend class QmlComponentPrivate;
 };
 
 QT_END_NAMESPACE

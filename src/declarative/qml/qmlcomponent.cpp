@@ -95,6 +95,27 @@ Item {
     Loader { sourceComponent: RedSquare; x: 20 }
 }
     \endqml
+
+    \section1 Attached Properties
+
+    \e onCompleted
+
+    Emitted after component "startup" has completed.  This can be used to
+    execute script code at startup, once the full QML environment has been 
+    established.
+
+    The \c {Component::onCompleted} attached property can be applied to
+    any element.  The order of running the \c onCompleted scripts is
+    undefined.
+
+    \qml
+    Rectangle {
+        Component.onCompleted: print("Completed Running!")
+        Rectangle {
+            Component.onCompleted: print("Nested Completed Running!")
+        }
+    }
+    \endqml
 */
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Component,QmlComponent);
 
@@ -532,6 +553,11 @@ QmlComponentPrivate::beginCreate(QmlContext *context, const QBitField &bindings)
 
         bindValues = ep->bindValues;
         parserStatus = ep->parserStatus;
+        componentAttacheds = ep->componentAttacheds;
+        if (componentAttacheds)
+            componentAttacheds->prev = &componentAttacheds;
+
+        ep->componentAttacheds = 0;
         ep->bindValues.clear();
         ep->parserStatus.clear();
         completePending = true;
@@ -593,10 +619,49 @@ void QmlComponentPrivate::completeCreate()
             QmlEnginePrivate::clear(ps);
         }
 
+        while (componentAttacheds) {
+            QmlComponentAttached *a = componentAttacheds;
+            if (a->next) a->next->prev = &componentAttacheds;
+            componentAttacheds = a->next;
+            a->prev = 0; a->next = 0;
+            emit a->completed();
+        }
+
         bindValues.clear();
         parserStatus.clear();
         completePending = false;
     }
+}
+
+QmlComponentAttached::QmlComponentAttached(QObject *parent)
+: QObject(parent), prev(0), next(0)
+{
+}
+
+QmlComponentAttached::~QmlComponentAttached()
+{
+    if (prev) *prev = next;
+    if (next) next->prev = prev;
+    prev = 0;
+    next = 0;
+}
+
+QmlComponentAttached *QmlComponent::qmlAttachedProperties(QObject *obj)
+{
+    QmlComponentAttached *a = new QmlComponentAttached(obj);
+
+    QmlEngine *engine = qmlEngine(obj);
+    if (!engine || !QmlEnginePrivate::get(engine)->rootComponent)
+        return a;
+
+    QmlEnginePrivate *p = QmlEnginePrivate::get(engine);
+
+    a->next = p->componentAttacheds;
+    a->prev = &p->componentAttacheds;
+    if (a->next) a->next->prev = &a->next;
+    p->componentAttacheds = a;
+
+    return a;
 }
 
 QT_END_NAMESPACE
