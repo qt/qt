@@ -62,6 +62,7 @@
 #include <qvarlengtharray.h>
 #include <qdesktopwidget.h>
 #include <stdlib.h>
+#include <qabstracteventdispatcher.h>
 #include "ui_qfiledialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -245,6 +246,8 @@ QT_USE_NAMESPACE
     mReturnCode = [mSavePanel 
         runModalForDirectory:mCurrentDir
         file:selectable ? filename : @"untitled"];
+
+    QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSOKButton);
 }
 

@@ -664,9 +664,10 @@
 
     See the \l{QtMultimedia Module} documentation for more information.
 
-    \section1 Classes, functions, etc new in 4.6
+    \section1 New Classes, Functions, Macros, etc
 
-    Links to classes, functions, and other items that are new in 4.6.
+    Links to new classes, functions, macros, and other items
+    introduced in Qt 4.6.
 
     \sincelist 4.6
 
