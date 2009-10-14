@@ -114,7 +114,16 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefor
 /*!
     \preliminary
     \qmlclass ParentChange
-    \brief The ParentChange element allows you to reparent an object in a state.
+    \brief The ParentChange element allows you to reparent an Item in a state change.
+
+    ParentChange reparents an Item while preserving its visual appearance (position, rotation,
+    and scale) on screen. You can then specify a transition to move/rotate/scale the Item to
+    its final intended appearance.
+
+    ParentChange can only preserve visual appearance if no complex transforms are involved.
+    More specifically, it will not work if the transform property has been set for any
+    Items involved in the reparenting (defined as any Items in the common ancestor tree
+    for the original and new parent).
 */
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChange,QmlParentChange)
