@@ -40,8 +40,12 @@
 ****************************************************************************/
 
 #include "qmlrewrite_p.h"
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(rewriteDump, QML_REWRITE_DUMP);
 
 namespace QmlRewrite {
 
@@ -76,7 +80,19 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     _writer->replace(startOfStatement, 0, QLatin1String("(function() { "));
     _writer->replace(endOfStatement, 0, QLatin1String(" })"));
 
+    if (rewriteDump()) {
+        qWarning() << "=============================================================";
+        qWarning() << "Rewrote:";
+        qWarning() << qPrintable(code);
+    }
+
     w.write(&code);
+
+    if (rewriteDump()) {
+        qWarning() << "To:";
+        qWarning() << qPrintable(code);
+        qWarning() << "=============================================================";
+    }
 
     return code;
 }
