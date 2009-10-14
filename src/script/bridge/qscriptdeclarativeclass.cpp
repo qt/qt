@@ -258,6 +258,13 @@ QString QScriptDeclarativeClass::toString(const Identifier &identifier)
     return QString((QChar *)r->data(), r->size());
 }
 
+quint32 QScriptDeclarativeClass::toArrayIndex(const Identifier &identifier, bool *ok)
+{
+    JSC::UString::Rep *r = (JSC::UString::Rep *)identifier;
+    JSC::UString s(r);
+    return s.toArrayIndex(ok);
+}
+
 QScriptClass::QueryFlags 
 QScriptDeclarativeClass::queryProperty(Object *object, const Identifier &name, 
                                        QScriptClass::QueryFlags flags)
