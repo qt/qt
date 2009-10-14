@@ -189,8 +189,8 @@ class Q_GUI_EXPORT QSwipeGesture : public QGesture
     Q_DECLARE_PRIVATE(QSwipeGesture)
     Q_ENUMS(SwipeDirection)
 
-    Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection WRITE setHorizontalDirection)
-    Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection WRITE setVerticalDirection)
+    Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection STORED false)
+    Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection STORED false)
     Q_PROPERTY(qreal swipeAngle READ swipeAngle WRITE setSwipeAngle)
 
 public:
@@ -199,8 +199,6 @@ public:
 
     SwipeDirection horizontalDirection() const;
     SwipeDirection verticalDirection() const;
-    void setHorizontalDirection(SwipeDirection value);
-    void setVerticalDirection(SwipeDirection value);
 
     qreal swipeAngle() const;
     void setSwipeAngle(qreal value);

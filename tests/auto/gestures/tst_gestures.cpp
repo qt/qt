@@ -474,17 +474,20 @@ void tst_Gestures::finishedWithoutStarted()
 {
     GestureWidget widget;
     widget.grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+
     // the gesture will claim it finished, but it was never started.
     CustomEvent ev;
-    QTest::ignoreMessage(QtWarningMsg, "QGestureManager::filterEvent: some gestures were finished even though they've never started");
-    for (int i = CustomGesture::SerialFinishedThreshold;
-         i < CustomGesture::SerialFinishedThreshold+1; ++i) {
-        ev.serial = i;
-        QApplication::sendEvent(&widget, &ev);
-    }
+    ev.serial = CustomGesture::SerialFinishedThreshold;
+    QApplication::sendEvent(&widget, &ev);
 
-    QCOMPARE(widget.gestureEventsReceived, 0);
+    QCOMPARE(widget.customEventsReceived, 1);
+    QCOMPARE(widget.gestureEventsReceived, 2);
     QCOMPARE(widget.gestureOverrideEventsReceived, 0);
+    QCOMPARE(widget.events.all.size(), 2);
+    QCOMPARE(widget.events.started.size(), 1);
+    QCOMPARE(widget.events.updated.size(), 0);
+    QCOMPARE(widget.events.finished.size(), 1);
+    QCOMPARE(widget.events.canceled.size(), 0);
 }
 
 void tst_Gestures::unknownGesture()

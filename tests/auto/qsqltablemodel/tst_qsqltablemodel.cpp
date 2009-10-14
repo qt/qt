@@ -897,6 +897,8 @@ void tst_QSqlTableModel::sqlite_attachedDatabase()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
+    if(db.databaseName() == ":memory:")
+        QSKIP(":memory: database, skipping test", SkipSingle);
 
     QSqlDatabase attachedDb = QSqlDatabase::cloneDatabase(db, db.driverName() + QLatin1String("attached"));
     attachedDb.setDatabaseName(db.databaseName()+QLatin1String("attached.dat"));

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the plugins of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,4 @@
 **
 ****************************************************************************/
 
-#include "hybridscreen.h"
-
-#include <QScreenDriverPlugin>
-#include <QStringList>
-
-class HybridPlugin : public QScreenDriverPlugin
-{
-public:
-    HybridPlugin();
-
-    QStringList keys() const;
-    QScreen *create(const QString&, int displayId);
-};
-
-HybridPlugin::HybridPlugin()
-    : QScreenDriverPlugin()
-{
-}
-
-QStringList HybridPlugin::keys() const
-{
-    return (QStringList() << "hybrid");
-}
-
-QScreen* HybridPlugin::create(const QString &driver, int displayId)
-{
-    if (driver.toLower() != "hybrid")
-        return 0;
-
-    return new HybridScreen(displayId);
-}
-
-Q_EXPORT_STATIC_PLUGIN(Hybrid)
-Q_EXPORT_PLUGIN2(hybridscreendriver, HybridPlugin)
+#include "../../linux-g++/qplatformdefs.h"

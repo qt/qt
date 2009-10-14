@@ -2673,7 +2673,7 @@ int qrand()
     \relates <QtGlobal>
 
     Marks the string literal \a sourceText for dynamic translation in
-    the given \a context, i.e the stored \a sourceText will not be
+    the given \a context; i.e, the stored \a sourceText will not be
     altered. The \a context is typically a class and also needs to
     be specified as string literal.
 

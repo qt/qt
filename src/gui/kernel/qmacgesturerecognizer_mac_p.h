@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,54 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_AHIGL_P_H
-#define QWINDOWSURFACE_AHIGL_P_H
+#ifndef QMACSWIPEGESTURERECOGNIZER_MAC_P_H
+#define QMACSWIPEGESTURERECOGNIZER_MAC_P_H
 
 //
 //  W A R N I N G
 //  -------------
 //
 // This file is not part of the Qt API.  It exists for the convenience
-// of the QAhiGLWindowSurface class.  This header file may change from
-// version to version without notice, or even be removed.
+// of other Qt classes.  This header file may change from version to
+// version without notice, or even be removed.
 //
 // We mean it.
 //
 
-#include <QtOpenGL/private/qglwindowsurface_qws_p.h>
-#include <GLES/gl.h>
-#include <GLES/egl.h>
+#include "qtimer.h"
+#include "qpoint.h"
+#include "qgesturerecognizer.h"
 
 QT_BEGIN_NAMESPACE
-class QAhiGLWindowSurfacePrivate;
-QT_END_NAMESPACE
 
-//! [0]
-class QAhiGLWindowSurface : public QWSGLWindowSurface
+class QMacSwipeGestureRecognizer : public QGestureRecognizer
 {
 public:
-    QAhiGLWindowSurface(QWidget *widget, EGLDisplay eglDisplay,
-                        EGLSurface eglSurface, EGLContext eglContext);
-    QAhiGLWindowSurface(EGLDisplay eglDisplay, EGLSurface eglSurface,
-                        EGLContext eglContext);
-    ~QAhiGLWindowSurface();
+    QMacSwipeGestureRecognizer();
 
-    QString key() const { return QLatin1String("ahigl"); }
-    void setGeometry(const QRect &rect);
-    QPaintDevice *paintDevice();
-    void beginPaint(const QRegion &region);
-    bool isValid() const;
-
-    QByteArray permanentState() const;
-    void setPermanentState(const QByteArray &);
-
-    QImage image() const { return QImage(); }
-
-    GLuint textureId() const;
-
-private:
-    QAhiGLWindowSurfacePrivate *d_ptr;
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
 };
-//! [0]
 
-#endif // QWINDOWSURFACE_AHIGL_P_H
+class QMacPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QMacPinchGestureRecognizer();
+
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+};
+
+#if defined(QT_MAC_USE_COCOA)
+
+class QMacPanGestureRecognizer : public QObject, public QGestureRecognizer
+{
+public:
+    QMacPanGestureRecognizer();
+
+    QGesture *createGesture(QObject *target);
+    QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event);
+    void reset(QGesture *gesture);
+private:
+    QPointF _startPos;
+    QPointF _lastPos;
+    QBasicTimer _panTimer;
+    bool _panCanceled;
+};
+
+#endif
+
+QT_END_NAMESPACE
+
+#endif // QMACSWIPEGESTURERECOGNIZER_MAC_P_H

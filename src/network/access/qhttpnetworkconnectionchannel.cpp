@@ -69,6 +69,11 @@ void QHttpNetworkConnectionChannel::init()
     socket = new QTcpSocket;
 #endif
 
+    // limit the socket read buffer size. we will read everything into
+    // the QHttpNetworkReply anyway, so let's grow only that and not
+    // here and there.
+    socket->setReadBufferSize(64*1024);
+
     QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
                      this, SLOT(_q_bytesWritten(qint64)),
                      Qt::DirectConnection);

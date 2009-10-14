@@ -7287,10 +7287,16 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     QGraphicsItem::d_ptr->isObject = true;
 }
 
-void QGraphicsObject::grabGesture(Qt::GestureType type, Qt::GestureContext context)
+/*!
+    Subscribes the graphics object to the given \a gesture for the specified \a context.
+
+    \sa QGestureEvent
+*/
+
+void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
 {
     QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
-    d->gestureContext.insert(type, context);
+    d->gestureContext.insert(gesture, context);
     (void)QGestureManager::instance(); // create a gesture manager
 }
 

@@ -11672,10 +11672,16 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
     Synonym for QList<QWidget *>.
 */
 
-void QWidget::grabGesture(Qt::GestureType type, Qt::GestureContext context)
+/*!
+    Subscribes the widget to a given \a gesture with a \a context.
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
 {
     Q_D(QWidget);
-    d->gestureContext.insert(type, context);
+    d->gestureContext.insert(gesture, context);
     (void)QGestureManager::instance(); // create a gesture manager
 }
 

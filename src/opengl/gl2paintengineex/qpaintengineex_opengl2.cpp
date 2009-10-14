@@ -1625,7 +1625,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
-    d->last_created_state = 0;
     d->mode = BrushDrawingMode;
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
@@ -2023,27 +2022,32 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     QPaintEngineEx::setState(s);
 
-    if (s == d->last_created_state) {
-        d->last_created_state = 0;
+    if (s->isNew) {
+        // Newly created state object.  The call to setState()
+        // will either be followed by a call to begin(), or we are
+        // setting the state as part of a save().
+        s->isNew = false;
         return;
     }
 
-    if (old_state == s || s->renderHintsChanged)
+    // Setting the state as part of a restore().
+
+    if (old_state == s || old_state->renderHintsChanged)
         renderHintsChanged();
 
-    if (old_state == s || s->matrixChanged) {
+    if (old_state == s || old_state->matrixChanged) {
         d->matrixDirty = true;
         d->simpleShaderMatrixUniformDirty = true;
         d->shaderMatrixUniformDirty = true;
     }
 
-    if (old_state == s || s->compositionModeChanged)
+    if (old_state == s || old_state->compositionModeChanged)
         d->compositionModeDirty = true;
 
-    if (old_state == s || s->opacityChanged)
+    if (old_state == s || old_state->opacityChanged)
         d->opacityUniformDirty = true;
 
-    if (old_state == s || s->clipChanged) {
+    if (old_state == s || old_state->clipChanged) {
         if (old_state && old_state != s && old_state->canRestoreClip) {
             d->updateClipScissorTest();
             glDepthFunc(GL_LEQUAL);
@@ -2055,8 +2059,6 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
 QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
 {
-    Q_D(const QGL2PaintEngineEx);
-
     if (orig)
         const_cast<QGL2PaintEngineEx *>(this)->ensureActive();
 
@@ -2072,7 +2074,6 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
     s->renderHintsChanged = false;
     s->clipChanged = false;
 
-    d->last_created_state = s;
     return s;
 }
 
@@ -2085,6 +2086,7 @@ void QGL2PaintEngineEx::setRenderTextActive(bool active)
 QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other)
     : QPainterState(other)
 {
+    isNew = true;
     needsClipBufferClear = other.needsClipBufferClear;
     clipTestEnabled = other.clipTestEnabled;
     currentClip = other.currentClip;
@@ -2094,6 +2096,7 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &oth
 
 QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 {
+    isNew = true;
     needsClipBufferClear = true;
     clipTestEnabled = false;
     canRestoreClip = true;

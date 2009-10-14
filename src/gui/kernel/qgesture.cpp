@@ -48,37 +48,80 @@ QT_BEGIN_NAMESPACE
     \class QGesture
     \since 4.6
 
-    \brief The QGesture class represents a gesture, containing all
-    properties that describe a gesture.
+    \brief The QGesture class represents a gesture, containing properties that
+    describe the corresponding user input.
 
-    The widget receives a QGestureEvent with a list of QGesture
-    objects that represent gestures that are occuring on it. The class
-    has a list of properties that can be queried by the user to get
-    some gesture-specific arguments (i.e. position of the tap in the
-    DoubleTap gesture).
+    QGesture objects are delivered to widgets and \l{QGraphicsObject}s with
+    \l{QGestureEvent}s.
 
-    When creating custom gesture recognizers, they might add new
-    properties to the gesture object, or custom gesture developers
-    might subclass the QGesture objects to provide some extended
-    information.
+    The class has a list of properties that can be queried by the user to get
+    some gesture-specific arguments. For example, the QPinchGesture gesture has a scale
+    factor that is exposed as a property.
+
+    Developers of custom gesture recognizers can add additional properties in
+    order to provide additional information about a gesture. This can be done
+    by adding new dynamic properties to a QGesture object, or by subclassing
+    the QGesture class (or one of its subclasses).
 
     \sa QGestureEvent, QGestureRecognizer
 */
 
+/*!
+    Constructs a new gesture object with the given \a parent.
+
+    QGesture objects are created by gesture recognizers in the
+    QGestureRecognizer::createGesture() function.
+*/
 QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
 {
     d_func()->gestureType = Qt::CustomGesture;
 }
 
+/*!
+    \internal
+*/
 QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
 {
 }
 
+/*!
+    Destroys the gesture object.
+*/
 QGesture::~QGesture()
 {
 }
+
+/*!
+    \property QGesture::state
+    \brief the current state of the gesture
+*/
+
+/*!
+    \property QGesture::gestureType
+    \brief the type of the gesture
+*/
+
+/*!
+    \property QGesture::hotSpot
+
+    \brief The point that is used to find the receiver for the gesture event.
+
+    If the hot-spot is not set, the targetObject is used as the receiver of the
+    gesture event.
+*/
+
+/*!
+    \property QGesture::hasHotSpot
+    \brief whether the gesture has a hot-spot
+*/
+
+/*!
+    \property QGesture::targetObject
+    \brief the target object which will receive the gesture event if the hotSpot is
+    not set
+*/
 
 Qt::GestureType QGesture::gestureType() const
 {
@@ -292,22 +335,24 @@ QSwipeGesture::QSwipeGesture(QObject *parent)
 
 QSwipeGesture::SwipeDirection QSwipeGesture::horizontalDirection() const
 {
-    return d_func()->horizontalDirection;
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle < 0 || d->swipeAngle == 90 || d->swipeAngle == 270)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 90 || d->swipeAngle > 270)
+        return QSwipeGesture::Right;
+    else
+        return QSwipeGesture::Left;
 }
 
 QSwipeGesture::SwipeDirection QSwipeGesture::verticalDirection() const
 {
-    return d_func()->verticalDirection;
-}
-
-void QSwipeGesture::setHorizontalDirection(QSwipeGesture::SwipeDirection value)
-{
-    d_func()->horizontalDirection = value;
-}
-
-void QSwipeGesture::setVerticalDirection(QSwipeGesture::SwipeDirection value)
-{
-    d_func()->verticalDirection = value;
+    Q_D(const QSwipeGesture);
+    if (d->swipeAngle <= 0 || d->swipeAngle == 180)
+        return QSwipeGesture::NoDirection;
+    else if (d->swipeAngle < 180)
+        return QSwipeGesture::Up;
+    else
+        return QSwipeGesture::Down;
 }
 
 qreal QSwipeGesture::swipeAngle() const
