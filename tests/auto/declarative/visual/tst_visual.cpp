@@ -7,6 +7,8 @@
 #include <QProcess>
 #include <QFile>
 
+enum Mode { Record, Play, TestVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
+
 static QString testdir;
 class tst_visual : public QObject
 {
@@ -14,7 +16,7 @@ class tst_visual : public QObject
 public:
     tst_visual();
 
-    static QString toTestScript(const QString &);
+    static QString toTestScript(const QString &, Mode=Test);
     static QString viewer();
 
 private slots:
@@ -84,7 +86,7 @@ void tst_visual::visual()
     QCOMPARE(p.exitCode(), 0);
 }
 
-QString tst_visual::toTestScript(const QString &file)
+QString tst_visual::toTestScript(const QString &file, Mode mode)
 {
     if (!file.endsWith(".qml"))
         return QString();
@@ -93,9 +95,43 @@ QString tst_visual::toTestScript(const QString &file)
     if (index == -1)
         return QString();
 
+    const char* platformsuffix=0; // platforms with different fonts
+#if defined(Q_WS_MACX)
+    platformsuffix = "-MAC";
+#elif defined(Q_WS_X11)
+    platformsuffix = "-X11";
+#elif defined(Q_WS_WIN32)
+    platformsuffix = "-WIN";
+#elif defined(Q_WS_QWS)
+    platformsuffix = "-QWS";
+#elif defined(Q_WS_S60)
+    platformsuffix = "-S60";
+#endif
+
     QString testdata = file.left(index + 1) + 
-                       QString("data") + QDir::separator() +
-                       file.mid(index + 1, file.length() - index - 5);
+                       QString("data");
+    QString testname = file.mid(index + 1, file.length() - index - 5);
+
+    if (platformsuffix && (mode == UpdatePlatformVisuals || QDir(testdata+QLatin1String(platformsuffix)).exists())) {
+        QString platformdir = testdata + QLatin1String(platformsuffix);
+        if (mode == UpdatePlatformVisuals) {
+            Q_ASSERT(QDir().mkpath(platformdir));
+            // Copy from base
+            QDir dir(testdata,testname+".*");
+            dir.setFilter(QDir::Files);
+            QFileInfoList list = dir.entryInfoList();
+            for (int i = 0; i < list.size(); ++i) {
+                QFile in(list.at(i).filePath());
+                Q_ASSERT(in.open(QIODevice::ReadOnly));
+                QFile out(platformdir + QDir::separator() + list.at(i).fileName());
+                Q_ASSERT(out.open(QIODevice::WriteOnly));
+                out.write(in.readAll());
+            }
+        }
+        testdata = platformdir;
+    }
+
+    testdata += QDir::separator() + testname;
 
     return testdata;
 }
@@ -115,7 +151,7 @@ QStringList tst_visual::findQmlFiles(const QDir &d)
     QStringList dirs = d.entryList(QDir::Dirs | QDir::NoDotAndDotDot | 
                                    QDir::NoSymLinks);
     foreach (const QString &dir, dirs) {
-        if (dir == "data")
+        if (dir.left(4) == "data")
             continue;
 
         QDir sub = d;
@@ -126,13 +162,11 @@ QStringList tst_visual::findQmlFiles(const QDir &d)
     return rv;
 }
 
-enum Mode { Record, Play, TestVisuals, UpdateVisuals, Test };
-
 void action(Mode mode, const QString &file)
 {
     Q_ASSERT(mode != Test);
 
-    QString testdata = tst_visual::toTestScript(file);
+    QString testdata = tst_visual::toTestScript(file,mode);
 
     if (Record == mode) {
         QStringList arguments;
@@ -161,7 +195,7 @@ void action(Mode mode, const QString &file)
         p.setProcessChannelMode(QProcess::ForwardedChannels);
         p.start(tst_visual::viewer(), arguments);
         p.waitForFinished();
-    } else if (UpdateVisuals == mode) {
+    } else if (UpdateVisuals == mode || UpdatePlatformVisuals == mode) {
         QStringList arguments;
         arguments << "-script" << testdata
                   << "-scriptopts" << "play,record,exitoncomplete,saveonexit"
@@ -177,10 +211,11 @@ void usage()
 {
     fprintf(stderr, "\n");
     fprintf(stderr, "QML related options\n");
-    fprintf(stderr, " -record file        : record new test data for file\n");
-    fprintf(stderr, " -play file          : playback test data for file, printing errors\n");
-    fprintf(stderr, " -testvisuals file   : playback test data for file, without errors\n");
-    fprintf(stderr, " -updatevisuals file : playback test data for file, accept new visuals for file\n");
+    fprintf(stderr, " -record file                : record new test data for file\n");
+    fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
+    fprintf(stderr, " -testvisuals file           : playback test data for file, without errors\n");
+    fprintf(stderr, " -updatevisuals file         : playback test data for file, accept new visuals for file\n");
+    fprintf(stderr, " -updateplatformvisuals file : playback test data for file, accept new visuals for file only on current platform (MacOSX/Win32/X11/QWS/S60)\n");
 }
 
 int main(int argc, char **argv)
@@ -208,6 +243,9 @@ int main(int argc, char **argv)
             file = argv[++ii];
         } else if (arg == "-updatevisuals" && (ii + 1) < argc) {
             mode = UpdateVisuals;
+            file = argv[++ii];
+        } else if (arg == "-updateplatformvisuals" && (ii + 1) < argc) {
+            mode = UpdatePlatformVisuals;
             file = argv[++ii];
         } else {
             newArgv[newArgc++] = argv[ii];
