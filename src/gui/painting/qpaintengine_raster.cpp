@@ -2376,6 +2376,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
@@ -2389,6 +2390,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));

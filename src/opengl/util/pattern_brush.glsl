@@ -17,8 +17,6 @@ vec4 brush()
 
     coords *= inv_brush_texture_size;
 
-    coords.y = -coords.y;
-
     float alpha = texture2D(brush_texture, coords).r;
 
     return gl_Color * alpha;

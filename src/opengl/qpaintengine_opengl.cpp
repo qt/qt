@@ -1596,7 +1596,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             qreal   realRadius = g->radius();
             QTransform translate(1, 0, 0, 1, -realFocal.x(), -realFocal.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1609,7 +1610,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realCenter = g->center();
             QTransform translate(1, 0, 0, 1, -realCenter.x(), -realCenter.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1621,8 +1623,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realFinal = g->finalStop();
             QTransform translate(1, 0, 0, 1, -realStart.x(), -realStart.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1633,10 +1635,9 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
 
             linear_data[2] = 1.0f / (l.x() * l.x() + l.y() * l.y());
         } else if (style != Qt::SolidPattern) {
-            QTransform translate(1, 0, 0, 1, brush_origin.x(), brush_origin.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted();
 
             setInvMatrixData(inv_matrix);
         }
