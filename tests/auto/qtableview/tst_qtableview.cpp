@@ -3783,7 +3783,7 @@ void tst_QTableView::task234926_setHeaderSorting()
     QStringList sortedDataA = data;
     QStringList sortedDataD = data;
     qSort(sortedDataA);
-    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<const QString &>());
+    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
     model.setStringList(data);
     QTableView view;
     view.setModel(&model);
