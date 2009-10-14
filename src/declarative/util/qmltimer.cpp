@@ -207,7 +207,6 @@ void QmlTimer::setTriggeredOnStart(bool triggeredOnStart)
 */
 void QmlTimer::start()
 {
-    Q_D(QmlTimer);
     setRunning(true);
 }
 
@@ -220,7 +219,6 @@ void QmlTimer::start()
 */
 void QmlTimer::stop()
 {
-    Q_D(QmlTimer);
     setRunning(false);
 }
 

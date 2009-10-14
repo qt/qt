@@ -144,9 +144,9 @@ void QmlTransitionManager::transition(const QList<Action> &list,
         for (int ii = 0; ii < applyList.size(); ++ii) {
             const Action &action = applyList.at(ii);
             if (action.toBinding) {
-                action.property.setBinding(action.toBinding);
+                action.property.setBinding(action.toBinding, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
             } else if (!action.event) {
-                action.property.write(action.toValue);
+                action.property.write(action.toValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
             } else if (action.event->isReversable()) {
                 if (action.reverseEvent)
                     action.event->reverse();
@@ -187,7 +187,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
             if (action.toBinding)
                 action.property.setBinding(0); // Make sure this is disabled during the transition
 
-            action.property.write(action.fromValue);
+            action.property.write(action.fromValue, QmlMetaProperty::BypassInterceptor | QmlMetaProperty::DontRemoveBinding);
         }
     }
 
@@ -223,7 +223,7 @@ void QmlTransitionManager::transition(const QList<Action> &list,
     }
 
     // Any actions remaining have not been handled by the transition and should
-    // be applied immediately.  We skip applying transitions, as they are all
+    // be applied immediately.  We skip applying bindings, as they are all
     // applied at the end in applyBindings() to avoid any nastiness mid 
     // transition
     foreach(const Action &action, applyList) {
@@ -232,13 +232,12 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 action.event->reverse();
             else
                 action.event->execute();
-        } else if (!action.event) {
+        } else if (!action.event && !action.toBinding) {
             action.property.write(action.toValue);
         }
     }
     if (!transition)
         d->applyBindings();
-
 }
 
 void QmlTransitionManager::cancel()

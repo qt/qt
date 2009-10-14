@@ -334,7 +334,7 @@ void QFxAnchors::setFill(QFxItem *f)
         return;
     }
     if (f != d->item->parentItem() && f->parentItem() != d->item->parentItem()){
-        qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
+        qmlInfo(tr("Can't anchor to an item that isn't a parent or sibling."), d->item);
         return;
     }
     d->remDepend(d->fill);
@@ -359,7 +359,7 @@ void QFxAnchors::setCenterIn(QFxItem* c)
         return;
     }
     if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
-        qmlInfo(d->item) << "Can't anchor to an item that isn't a parent or sibling.";
+        qmlInfo(tr("Can't anchor to an item that isn't a parent or sibling."), d->item);
         return;
     }
 
@@ -460,7 +460,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
         --updatingVerticalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(item) << "Possible anchor loop detected on vertical anchor.";
+        qmlInfo(QFxAnchors::tr("Possible anchor loop detected on vertical anchor."), item);
     }
 }
 
@@ -519,7 +519,7 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
         --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(item) << "Possible anchor loop detected on horizontal anchor.";
+        qmlInfo(QFxAnchors::tr("Possible anchor loop detected on horizontal anchor."), item);
     }
 }
 
@@ -891,7 +891,7 @@ bool QFxAnchorsPrivate::checkHValid() const
     if (usedAnchors & QFxAnchors::HasLeftAnchor &&
         usedAnchors & QFxAnchors::HasRightAnchor &&
         usedAnchors & QFxAnchors::HasHCenterAnchor) {
-        qmlInfo(item) << "Can't specify left, right, and hcenter anchors.";
+        qmlInfo(QFxAnchors::tr("Can't specify left, right, and hcenter anchors."), item);
         return false;
     }
 
@@ -901,16 +901,16 @@ bool QFxAnchorsPrivate::checkHValid() const
 bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(item) << "Can't anchor to a null item.";
+        qmlInfo(QFxAnchors::tr("Can't anchor to a null item."), item);
         return false;
     } else if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
-        qmlInfo(item) << "Can't anchor a horizontal edge to a vertical edge.";
+        qmlInfo(QFxAnchors::tr("Can't anchor a horizontal edge to a vertical edge."), item);
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
+        qmlInfo(QFxAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
         return false;
     } else if (anchor.item == item) {
-        qmlInfo(item) << "Can't anchor item to self.";
+        qmlInfo(QFxAnchors::tr("Can't anchor item to self."), item);
         return false;
     }
 
@@ -922,13 +922,13 @@ bool QFxAnchorsPrivate::checkVValid() const
     if (usedAnchors & QFxAnchors::HasTopAnchor &&
         usedAnchors & QFxAnchors::HasBottomAnchor &&
         usedAnchors & QFxAnchors::HasVCenterAnchor) {
-        qmlInfo(item) << "Can't specify top, bottom, and vcenter anchors.";
+        qmlInfo(QFxAnchors::tr("Can't specify top, bottom, and vcenter anchors."), item);
         return false;
     } else if (usedAnchors & QFxAnchors::HasBaselineAnchor &&
                (usedAnchors & QFxAnchors::HasTopAnchor ||
                 usedAnchors & QFxAnchors::HasBottomAnchor ||
                 usedAnchors & QFxAnchors::HasVCenterAnchor)) {
-        qmlInfo(item) << "Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
+        qmlInfo(QFxAnchors::tr("Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors."), item);
         return false;
     }
 
@@ -938,16 +938,16 @@ bool QFxAnchorsPrivate::checkVValid() const
 bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(item) << "Can't anchor to a null item.";
+        qmlInfo(QFxAnchors::tr("Can't anchor to a null item."), item);
         return false;
     } else if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
-        qmlInfo(item) << "Can't anchor a vertical edge to a horizontal edge.";
+        qmlInfo(QFxAnchors::tr("Can't anchor a vertical edge to a horizontal edge."), item);
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(item) << "Can't anchor to an item that isn't a parent or sibling.";
+        qmlInfo(QFxAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
         return false;
     } else if (anchor.item == item){
-        qmlInfo(item) << "Can't anchor item to self.";
+        qmlInfo(QFxAnchors::tr("Can't anchor item to self."), item);
         return false;
     }
 

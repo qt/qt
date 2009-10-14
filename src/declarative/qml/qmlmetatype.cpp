@@ -128,6 +128,7 @@ public:
     const QMetaObject *m_attachedPropertiesType;
     int m_parserStatusCast;
     int m_propertyValueSourceCast;
+    int m_propertyValueInterceptorCast;
     QmlPrivate::CreateFunc m_extFunc;
     const QMetaObject *m_extMetaObject;
     int m_index;
@@ -140,8 +141,8 @@ public:
 QmlTypePrivate::QmlTypePrivate()
 : m_isInterface(false), m_iid(0), m_typeId(0), m_listId(0), m_qmlListId(0),
   m_opFunc(0), m_baseMetaObject(0), m_attachedPropertiesFunc(0), m_attachedPropertiesType(0),
-  m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_extFunc(0), m_extMetaObject(0),
-  m_index(-1), m_customParser(0), m_isSetup(false)
+  m_parserStatusCast(-1), m_propertyValueSourceCast(-1), m_propertyValueInterceptorCast(-1),
+  m_extFunc(0), m_extMetaObject(0), m_index(-1), m_customParser(0), m_isSetup(false)
 {
 }
 
@@ -169,7 +170,8 @@ QmlType::QmlType(int type, int listType, int qmlListType,
                  const QMetaObject *metaObject,
                  QmlAttachedPropertiesFunc attachedPropertiesFunc,
                  const QMetaObject *attachedType,
-                 int parserStatusCast, int propertyValueSourceCast, QmlPrivate::CreateFunc extFunc,
+                 int parserStatusCast, int propertyValueSourceCast, int propertyValueInterceptorCast,
+                 QmlPrivate::CreateFunc extFunc,
                  const QMetaObject *extMetaObject, int index,
                  QmlCustomParser *customParser)
 : d(new QmlTypePrivate)
@@ -187,6 +189,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_attachedPropertiesType = attachedType;
     d->m_parserStatusCast = parserStatusCast;
     d->m_propertyValueSourceCast = propertyValueSourceCast;
+    d->m_propertyValueInterceptorCast = propertyValueInterceptorCast;
     d->m_extFunc = extFunc;
     d->m_index = index;
     d->m_customParser = customParser;
@@ -412,6 +415,11 @@ int QmlType::propertyValueSourceCast() const
     return d->m_propertyValueSourceCast;
 }
 
+int QmlType::propertyValueInterceptorCast() const
+{
+    return d->m_propertyValueInterceptorCast;
+}
+
 QVariant QmlType::fromObject(QObject *obj) const
 {
     QVariant rv;
@@ -467,7 +475,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
 int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
         const char *uri, int version_maj, int version_min_from, int version_min_to, const char *cname,
         const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
-        int pStatus, int object, int valueSource, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
+        int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
     Q_UNUSED(object);
 
@@ -492,7 +500,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
                                 func, name, version_maj, version_min_from, version_min_to, mo, attach, attachMo, pStatus,
-                                valueSource, extFunc, extmo, index, parser);
+                                valueSource, valueInterceptor, extFunc, extmo, index, parser);
 
     data->types.append(type);
     data->idToType.insert(type->typeId(), type);
@@ -535,6 +543,17 @@ int QmlMetaType::qmlPropertyValueSourceCast(int userType)
     QmlType *type = data->idToType.value(userType);
     if (type && type->typeId() == userType)
         return type->propertyValueSourceCast();
+    else
+        return -1;
+}
+
+int QmlMetaType::qmlPropertyValueInterceptorCast(int userType)
+{
+    QReadLocker lock(metaTypeDataLock());
+    QmlMetaTypeData *data = metaTypeData();
+    QmlType *type = data->idToType.value(userType);
+    if (type && type->typeId() == userType)
+        return type->propertyValueInterceptorCast();
     else
         return -1;
 }

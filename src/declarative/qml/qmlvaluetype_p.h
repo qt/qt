@@ -58,6 +58,7 @@
 #include <QtCore/qvariant.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qfont.h>
+#include <QmlMetaProperty>
 
 QT_BEGIN_NAMESPACE
 
@@ -67,7 +68,7 @@ class QmlValueType : public QObject
 public:
     QmlValueType(QObject *parent = 0);
     virtual void read(QObject *, int) = 0;
-    virtual void write(QObject *, int) = 0;
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags flags) = 0;
     virtual QVariant value() = 0;
     virtual void setValue(QVariant) = 0;
 };
@@ -92,7 +93,7 @@ public:
     QmlPointFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -114,7 +115,7 @@ public:
     QmlPointValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -136,7 +137,7 @@ public:
     QmlSizeFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -158,7 +159,7 @@ public:
     QmlSizeValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -182,7 +183,7 @@ public:
     QmlRectFValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -211,7 +212,7 @@ public:
     QmlRectValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -239,7 +240,7 @@ public:
     QmlVector3DValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 
@@ -267,7 +268,7 @@ public:
     QmlFontValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
-    virtual void write(QObject *, int);
+    virtual void write(QObject *, int, QmlMetaProperty::WriteFlags);
     virtual QVariant value();
     virtual void setValue(QVariant value);
 

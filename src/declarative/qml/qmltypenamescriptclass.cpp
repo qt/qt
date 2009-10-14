@@ -115,11 +115,11 @@ QmlTypeNameScriptClass::queryProperty(Object *obj, const Identifier &name,
             // Must be an enum
             if (data->mode == IncludeEnums) {
                 // ### Optimize
-                const char *enumName = strName.toUtf8().constData();
+                QByteArray enumName = strName.toUtf8();
                 const QMetaObject *metaObject = data->type->baseMetaObject();
                 for (int ii = metaObject->enumeratorCount() - 1; ii >= 0; --ii) {
                     QMetaEnum e = metaObject->enumerator(ii);
-                    int value = e.keyToValue(enumName);
+                    int value = e.keyToValue(enumName.constData());
                     if (value != -1) {
                         enumValue = value;
                         return QScriptClass::HandlesReadAccess;

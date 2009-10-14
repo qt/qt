@@ -63,7 +63,7 @@ There are a number of QML elements that operate using data models:
 \o ListView
 \o GridView
 \o PathView
-\o \l {qml-repeater}{Repeater}
+\o \l Repeater
 \endlist
 
 QML supports several types of data model, which may be provided by QML
@@ -71,14 +71,87 @@ or C++ (via QmlContext::setContextProperty(), for example).
 
 \section1 QML Data Models
 
-\list
-\o ListModel is a simple hierarchy of elements specified in QML.  The
+\section2 ListModel
+
+ListModel is a simple hierarchy of elements specified in QML.  The
 available roles are specified by the \l ListElement properties.
-\o XmlListModel allows construction of a model from an XML data source. The roles
+
+\code
+ListModel {
+    id: fruitModel
+    ListElement {
+        name: "Apple"
+        cost: 2.45
+    }
+    ListElement {
+        name: "Orange"
+        cost: 3.25
+    }
+    ListElement {
+        name: "Banana"
+        cost: 1.95
+    }
+}
+\endcode
+
+The above model has two roles, \e name and \e cost.  These can be bound
+bound to by a ListView delegate, for example:
+
+\code
+Component {
+    id: fruitDelegate
+    Row {
+        Text { text: "Fruit: " + name }
+        Text { text: "Cost: $" + cost }
+    }
+}
+ListView {
+    model: fruitModel
+    delegate: fruitDelegate
+}
+\endcode
+
+
+\section2 XmlListModel
+
+XmlListModel allows construction of a model from an XML data source. The roles
 are specified via the \l XmlRole element.
-\o VisualItemModel allows QML items to be provided as a model.  This model contains
+
+The following model has three roles, \e title, \e link and \e description:
+\code
+XmlListModel {
+     id: feedModel
+     source: "http://rss.news.yahoo.com/rss/oceania"
+     query: "/rss/channel/item"
+     XmlRole { name: "title"; query: "title/string()" }
+     XmlRole { name: "link"; query: "link/string()" }
+     XmlRole { name: "description"; query: "description/string()" }
+}
+\endcode
+
+
+\section2 VisualItemModel
+
+VisualItemModel allows QML items to be provided as a model.  This model contains
 both the data and delegate (its child items).  This model does not provide any roles.
-\endlist
+
+\code
+ VisualItemModel {
+     id: itemModel
+     Rectangle { height: 30; width: 80; color: "red" }
+     Rectangle { height: 30; width: 80; color: "green" }
+     Rectangle { height: 30; width: 80; color: "blue" }
+ }
+
+ ListView {
+     anchors.fill: parent
+     model: itemModel
+ }
+\endcode
+
+Note that in the above example there is no delegate required.
+The items of the model itself provide the visual elements that
+will be positioned by the view.
 
 
 \section1 C++ Data Models
@@ -92,11 +165,28 @@ both the data and delegate (its child items).  This model does not provide any r
 
 \section1 Other Data Models
 
-\list
-\o An Integer specifies a model containing the integer number of elements.
+
+\section2 An Integer
+
+An Integer specifies a model containing the integer number of elements.
 There are no data roles.
-\o An Object Instance specifies a model with a single Object element.  The
+
+The following example creates a ListView with five elements:
+\code
+Component {
+    id: itemDelegate
+    Text { text: "I am item number: " + index }
+}
+ListView {
+    model: 5
+    delegate: itemDelegate
+}
+\endcode
+
+
+\section2 An Object Instance
+
+An Object Instance specifies a model with a single Object element.  The
 properties of the object are provided as roles.
-\endlist
 
 */

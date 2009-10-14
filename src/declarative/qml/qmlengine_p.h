@@ -95,6 +95,7 @@ class QmlAbstractBinding;
 class QScriptDeclarativeClass;
 class QmlTypeNameScriptClass;
 class QmlTypeNameCache;
+class QmlComponentAttached;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -174,6 +175,7 @@ public:
 
     QList<SimpleList<QmlAbstractBinding> > bindValues;
     QList<SimpleList<QmlParserStatus> > parserStatus;
+    QmlComponentAttached *componentAttacheds;
 
     QmlComponent *rootComponent;
     mutable QNetworkAccessManager *networkAccessManager;

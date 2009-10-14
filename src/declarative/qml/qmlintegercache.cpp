@@ -87,7 +87,7 @@ QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engin
         QMetaEnum enumerator = mo->enumerator(ii);
 
         for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QLatin1String(enumerator.key(jj));
+            QString name = QString::fromUtf8(enumerator.key(jj));
             int value = enumerator.value(jj);
 
             if (!name.at(0).isUpper())

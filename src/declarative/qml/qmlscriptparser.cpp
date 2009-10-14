@@ -87,12 +87,12 @@ class ProcessAST: protected AST::Visitor
             const State &state = top();
             if (state.property) {
                 State s(state.property->getValue(),
-                        state.property->getValue()->getProperty(name.toLatin1()));
+                        state.property->getValue()->getProperty(name.toUtf8()));
                 s.property->location = location;
                 push(s);
             } else {
                 State s(state.object,
-                        state.object->getProperty(name.toLatin1()));
+                        state.object->getProperty(name.toUtf8()));
 
                 s.property->location = location;
                 push(s);
@@ -294,10 +294,11 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
         if (isScript) {
             if (_stateStack.isEmpty() || _stateStack.top().property) {
                 QmlError error;
-                error.setDescription(QLatin1String("Invalid use of Script block"));
+                error.setDescription(QCoreApplication::translate("QmlParser","Invalid use of Script block"));
                 error.setLine(typeLocation.startLine);
                 error.setColumn(typeLocation.startColumn);
                 _parser->_errors << error;
+                return 0;
             }
         }
 
@@ -312,7 +313,7 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
 
         // XXX this doesn't do anything (_scope never builds up)
         _scope.append(resolvableObjectType);
-        obj->typeName = qualifiedNameId().toLatin1();
+        obj->typeName = qualifiedNameId().toUtf8();
         _scope.removeLast();
 
         obj->location = location;
@@ -474,7 +475,7 @@ bool ProcessAST::visit(AST::UiImport *node)
         import.qualifier = node->importId->asString();
         if (!import.qualifier.at(0).isUpper()) {
             QmlError error;
-            error.setDescription(QLatin1String("Invalid import qualifier ID"));
+            error.setDescription(QCoreApplication::translate("QmlParser","Invalid import qualifier ID"));
             error.setLine(node->importIdToken.startLine);
             error.setColumn(node->importIdToken.startColumn);
             _parser->_errors << error;
@@ -483,6 +484,14 @@ bool ProcessAST::visit(AST::UiImport *node)
     }
     if (node->versionToken.isValid())
         import.version = textAt(node->versionToken);
+    else if (import.type == QmlScriptParser::Import::Library) {
+        QmlError error;
+        error.setDescription(QCoreApplication::translate("QmlParser","Library import requires a version"));
+        error.setLine(node->importIdToken.startLine);
+        error.setColumn(node->importIdToken.startColumn);
+        _parser->_errors << error;
+        return false;
+    }
 
     import.location = location(startLoc, endLoc);
     import.uri = uri;

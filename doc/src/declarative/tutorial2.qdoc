@@ -1,6 +1,5 @@
 /*!
 \page tutorial2.html
-\target tutorial2
 \title Tutorial 2 - QML Component
 
 This chapter adds a color picker to change the color of the text.
@@ -65,7 +64,7 @@ We create the color picker by putting 6 cells with different colors in a grid.
 When the \e clicked signal of our cell is triggered, we want to set the color of the text to the color passed as a parameter.
 We can react to any signal of our component through a property of the name \e 'onSignalName' (see \l{Signal Handlers}).
 
-[Previous: \l tutorial1] [Next: \l tutorial3]
+[Previous: \l {Tutorial 1 - Basic Types}] [Next: \l {Tutorial 3 - States and Transitions}]
 
 */
 

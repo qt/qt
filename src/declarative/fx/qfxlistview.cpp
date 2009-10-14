@@ -1169,6 +1169,7 @@ void QFxListView::setOrientation(Qt::Orientation orientation)
             setViewportHeight(-1);
         d->clear();
         refill();
+        emit orientationChanged();
         d->updateCurrent(d->currentIndex);
     }
 }

@@ -7,6 +7,7 @@ include(qt-defines.qdocconf)
 project                 = Qml
 description             = Qml Reference Documentation
 url                     = http://doc.qtsoftware.com/4.6
+qmlonly                 = true
 
 edition.Console.modules = QtCore QtDBus QtNetwork QtScript QtSql QtXml \
                           QtXmlPatterns QtTest
@@ -72,6 +73,8 @@ HTML.postheader         = "<table border=\"0\" cellpadding=\"0\" cellspacing=\"0
                           "<td width=\"1\">&nbsp;&nbsp;</td>" \
                           "<td class=\"postheader\" valign=\"center\" align=\"left\">" \
                           "<a href=\"qmlreference.html\">" \
-                          "<font color=\"#004faf\">Home</font></a>" \
+                          "<font color=\"#004faf\">Home</font></a>&nbsp;&middot;" \
+                          " <a href=\"qmlelements.html\">" \
+                          "<font color=\"#004faf\">Elements</font></a>" \
                           "</td>\n" \
                           "</tr></table>"

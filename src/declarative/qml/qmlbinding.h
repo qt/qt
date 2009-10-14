@@ -47,6 +47,7 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>
+#include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER
 
@@ -62,10 +63,12 @@ public:
 
     virtual QString expression() const;
 
-    virtual void setEnabled(bool) = 0;
+    void setEnabled(bool e) { setEnabled(e, QmlMetaProperty::DontRemoveBinding); }
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags) = 0;
     virtual int propertyIndex() = 0;
 
-    virtual void update() = 0;
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
+    virtual void update(QmlMetaProperty::WriteFlags) = 0;
 
     void addToObject(QObject *);
     void removeFromObject();
@@ -90,7 +93,8 @@ class Q_DECLARATIVE_EXPORT QmlBinding : public QmlExpression,
 Q_OBJECT
 public:
     QmlBinding(const QString &, QObject *, QmlContext *, QObject *parent=0);
-    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, QObject *parent);
+    QmlBinding(void *, QmlRefCount *, QObject *, QmlContext *, const QUrl &, int, 
+               QObject *parent);
     ~QmlBinding();
 
     void setTarget(const QmlMetaProperty &);
@@ -99,12 +103,13 @@ public:
     bool enabled() const;
 
     // Inherited from  QmlAbstractBinding
-    virtual void setEnabled(bool);
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
     virtual int propertyIndex();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
     virtual QString expression() const;
 
 public Q_SLOTS:
-    void update();
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
 
 protected:
     virtual void valueChanged();

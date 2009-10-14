@@ -61,6 +61,8 @@ private slots:
     void objectToString();
     void selfDeletingBinding();
     void extendedObjectPropertyLookup();
+    void scriptErrors();
+    void signalTriggeredBindings();
 
 private:
     QmlEngine engine;
@@ -152,7 +154,7 @@ void tst_qmlecmascript::methods()
 void tst_qmlecmascript::bindingLoop()
 {
     QmlComponent component(&engine, TEST_FILE("bindingLoop.qml"));
-    QString warning = "QML MyQmlObject (" + component.url().toString() + ":9:9) Binding loop detected for property \"stringProperty\" ";
+    QString warning = "QML MyQmlObject (" + component.url().toString() + ":9:9) Binding loop detected for property \"stringProperty\"";
     QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
     QObject *object = component.create();
     QVERIFY(object != 0);
@@ -537,20 +539,35 @@ void tst_qmlecmascript::nonExistantAttachedObject()
 
 void tst_qmlecmascript::scope()
 {
-    QmlComponent component(&engine, TEST_FILE("scope.qml"));
-    QObject *object = component.create();
-    QVERIFY(object != 0);
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
 
-    QCOMPARE(object->property("test1").toInt(), 1);
-    QCOMPARE(object->property("test2").toInt(), 2);
-    QCOMPARE(object->property("test3").toString(), QString("1Test"));
-    QCOMPARE(object->property("test4").toString(), QString("2Test"));
-    QCOMPARE(object->property("test5").toInt(), 1);
-    QCOMPARE(object->property("test6").toInt(), 1);
-    QCOMPARE(object->property("test7").toInt(), 2);
-    QCOMPARE(object->property("test8").toInt(), 2);
-    QCOMPARE(object->property("test9").toInt(), 1);
-    QCOMPARE(object->property("test10").toInt(), 3);
+        QCOMPARE(object->property("test1").toInt(), 1);
+        QCOMPARE(object->property("test2").toInt(), 2);
+        QCOMPARE(object->property("test3").toString(), QString("1Test"));
+        QCOMPARE(object->property("test4").toString(), QString("2Test"));
+        QCOMPARE(object->property("test5").toInt(), 1);
+        QCOMPARE(object->property("test6").toInt(), 1);
+        QCOMPARE(object->property("test7").toInt(), 2);
+        QCOMPARE(object->property("test8").toInt(), 2);
+        QCOMPARE(object->property("test9").toInt(), 1);
+        QCOMPARE(object->property("test10").toInt(), 3);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("scope.2.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("test1").toInt(), 19);
+        QCOMPARE(object->property("test2").toInt(), 19);
+        QCOMPARE(object->property("test3").toInt(), 11);
+        QCOMPARE(object->property("test4").toInt(), 11);
+        QCOMPARE(object->property("test5").toInt(), 24);
+        QCOMPARE(object->property("test6").toInt(), 24);
+    }
 }
 
 /*
@@ -722,6 +739,52 @@ void tst_qmlecmascript::extendedObjectPropertyLookup()
     QmlComponent component(&engine, TEST_FILE("extendedObjectPropertyLookup.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
+}
+
+/*
+Test file/lineNumbers for binding/Script errors.
+*/
+void tst_qmlecmascript::scriptErrors()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptErrors.qml"));
+    QString url = component.url().toString();
+
+    QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
+    QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
+
+    QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+}
+
+/*
+Test bindings still work when the reeval is triggered from within
+a signal script.
+*/
+void tst_qmlecmascript::signalTriggeredBindings()
+{
+    QmlComponent component(&engine, TEST_FILE("signalTriggeredBindings.qml"));
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("base").toReal(), 50.);
+    QCOMPARE(object->property("test1").toReal(), 50.);
+    QCOMPARE(object->property("test2").toReal(), 50.);
+
+    object->basicSignal();
+
+    QCOMPARE(object->property("base").toReal(), 200.);
+    QCOMPARE(object->property("test1").toReal(), 200.);
+    QCOMPARE(object->property("test2").toReal(), 200.);
+
+    object->argumentSignal(10, QString(), 10);
+
+    QCOMPARE(object->property("base").toReal(), 400.);
+    QCOMPARE(object->property("test1").toReal(), 400.);
+    QCOMPARE(object->property("test2").toReal(), 400.);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

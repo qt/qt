@@ -353,7 +353,7 @@ QString QmlDebugService::objectToString(QObject *obj)
     if(objectName.isEmpty())
         objectName = QLatin1String("<unnamed>");
 
-    QString rv = QLatin1String(obj->metaObject()->className()) + 
+    QString rv = QString::fromUtf8(obj->metaObject()->className()) + 
                  QLatin1String(": ") + objectName;
 
     return rv;

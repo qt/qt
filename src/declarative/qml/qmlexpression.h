@@ -89,8 +89,8 @@ Q_SIGNALS:
 protected:
     QmlExpression(QmlContext *, const QString &, QObject *, 
                   QmlExpressionPrivate &dd);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, 
-                  QmlExpressionPrivate &dd);
+    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QUrl &,
+                  int, QmlExpressionPrivate &dd);
 
 private Q_SLOTS:
     void __q_notify();

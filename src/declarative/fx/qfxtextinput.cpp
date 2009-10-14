@@ -508,7 +508,7 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qmlInfo(q) << "Could not load cursor delegate";
+        qmlInfo(QFxTextInput::tr("Could not load cursor delegate"), q);
         qWarning() << cursorComponent->errors();
     }
 }
@@ -517,7 +517,7 @@ void QFxTextInput::createCursor()
 {
     Q_D(QFxTextInput);
     if(d->cursorComponent->isError()){
-        qmlInfo(this) << "Could not load cursor delegate";
+        qmlInfo(tr("Could not load cursor delegate"),this);
         qWarning() << d->cursorComponent->errors();
         return;
     }
@@ -529,7 +529,7 @@ void QFxTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qmlInfo(this) << "Could not instantiate cursor delegate";
+        qmlInfo(tr("Could not instantiate cursor delegate"),this);
         //The failed instantiation should print its own error messages
         return;
     }

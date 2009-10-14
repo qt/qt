@@ -1057,6 +1057,8 @@ bool TargetNode::isInnerNode() const
 }
 
 #ifdef QDOC_QML
+bool QmlClassNode::qmlOnly = false;
+
 /*!
   Constructor for the Qml class node.
  */
@@ -1065,7 +1067,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle("QML " + name + " Element Reference");
+    setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
 }
 
 /*!

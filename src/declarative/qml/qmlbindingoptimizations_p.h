@@ -69,9 +69,9 @@ public:
     virtual ~QmlBinding_Id();
 
     // Inherited from QmlAbstractBinding
-    virtual void setEnabled(bool);
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
     virtual int propertyIndex();
-    virtual void update();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
 
     void reset();
 
@@ -96,11 +96,12 @@ public:
                            QObject *context, int contextIdx, int notifyIdx);
 
     // Inherited from QmlAbstractBinding
-    virtual void setEnabled(bool);
+    virtual void setEnabled(bool, QmlMetaProperty::WriteFlags flags);
     virtual int propertyIndex();
+    virtual void update(QmlMetaProperty::WriteFlags flags);
 
 private Q_SLOTS:
-    virtual void update();
+    void update() { update(QmlMetaProperty::DontRemoveBinding); }
 
 private:
     bool m_enabled;

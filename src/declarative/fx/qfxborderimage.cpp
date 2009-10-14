@@ -138,6 +138,15 @@ QFxBorderImage::~QFxBorderImage()
     The URL may be absolute, or relative to the URL of the component.
 */
 
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
+
 void QFxBorderImage::setSource(const QUrl &url)
 {
     Q_D(QFxBorderImage);
@@ -180,8 +189,9 @@ void QFxBorderImage::setSource(const QUrl &url)
         d->status = Loading;
         if (d->url.path().endsWith(QLatin1String(".sci"))) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-            if (d->url.scheme() == QLatin1String("file")) {
-                QFile file(d->url.toLocalFile());
+            QString lf = toLocalFileOrQrc(d->url);
+            if (!lf.isEmpty()) {
+                QFile file(lf);
                 file.open(QIODevice::ReadOnly);
                 setGridScaledImage(QFxGridScaledImage(&file));
             } else
@@ -273,7 +283,7 @@ void QFxBorderImage::setHorizontalTileMode(TileMode t)
     Q_D(QFxBorderImage);
     if (t != d->horizontalTileMode) {
         d->horizontalTileMode = t;
-        emit tileModeChanged();
+        emit horizontalTileModeChanged();
         update();
     }
 }
@@ -289,7 +299,7 @@ void QFxBorderImage::setVerticalTileMode(TileMode t)
     Q_D(QFxBorderImage);
     if (t != d->verticalTileMode) {
         d->verticalTileMode = t;
-        emit tileModeChanged();
+        emit verticalTileModeChanged();
         update();
     }
 }

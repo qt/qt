@@ -132,7 +132,7 @@ void QmlValueTypeScriptClass::setProperty(QScriptValue &object,
     ref.type->read(ref.object, ref.property);
     QMetaProperty p = ref.type->metaObject()->property(id);
     p.write(ref.type, v);
-    ref.type->write(ref.object, ref.property);
+    ref.type->write(ref.object, ref.property, 0);
 }
 
 QVariant QmlValueTypeScriptClass::toVariant(const QScriptValue &val)

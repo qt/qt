@@ -92,6 +92,15 @@ QmlFontLoader::~QmlFontLoader()
 {
 }
 
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
+
 /*!
     \qmlproperty url FontLoader::source
     The url of the font to load.
@@ -112,8 +121,9 @@ void QmlFontLoader::setSource(const QUrl &url)
     d->status = Loading;
     emit statusChanged();
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    if (d->url.scheme() == QLatin1String("file")) {
-        QFile file(d->url.toLocalFile());
+    QString lf = toLocalFileOrQrc(d->url);
+    if (!lf.isEmpty()) {
+        QFile file(lf);
         file.open(QIODevice::ReadOnly);
         QByteArray ba = file.readAll();
         d->addFontToDatabase(ba);

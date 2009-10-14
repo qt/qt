@@ -124,6 +124,14 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
     This class is NOT reentrant.
  */
 
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
 /*!
     Finds the cached pixmap corresponding to \a url.
     A previous call to get() must have requested the URL,
@@ -142,8 +150,9 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
     bool ok = true;
     if (!QPixmapCache::find(key,pixmap)) {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-        if (url.scheme()==QLatin1String("file")) {
-            QFile f(url.toLocalFile());
+        QString lf = toLocalFileOrQrc(url);
+        if (!lf.isEmpty()) {
+            QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;
@@ -207,10 +216,11 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
-    if (url.scheme()==QLatin1String("file")) {
+    QString lf = toLocalFileOrQrc(url);
+    if (!lf.isEmpty()) {
         QString key = url.toString();
         if (!QPixmapCache::find(key,pixmap)) {
-            QFile f(url.toLocalFile());
+            QFile f(lf);
             if (f.open(QIODevice::ReadOnly)) {
                 if (!readImage(&f, pixmap)) {
                     qWarning() << "Format error loading" << url;

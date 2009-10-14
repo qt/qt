@@ -142,7 +142,7 @@ void QFxFlipable::setFront(QFxItem *front)
 {
     Q_D(QFxFlipable);
     if (d->front) {
-        qmlInfo(this) << "front is a write-once property";
+        qmlInfo(tr("front is a write-once property"),this);
         return;
     }
     d->front = front;
@@ -161,7 +161,7 @@ void QFxFlipable::setBack(QFxItem *back)
 {
     Q_D(QFxFlipable);
     if (d->back) {
-        qmlInfo(this) << "back is a write-once property";
+        qmlInfo(tr("back is a write-once property"),this);
         return;
     }
     d->back = back;

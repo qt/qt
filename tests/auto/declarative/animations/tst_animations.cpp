@@ -86,7 +86,7 @@ void tst_animations::dotProperty()
     QTest::qWait(animation.duration() + 50);
     QCOMPARE(rect.border()->width(), 10);
 
-    rect.border()->setWidth(1);
+    rect.border()->setWidth(0);
     animation.start();
     animation.pause();
     animation.setCurrentTime(125);
@@ -152,7 +152,7 @@ void tst_animations::badProperties()
         QFxRect *rect = qobject_cast<QFxRect*>(c.create());
         QVERIFY(rect);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\" ");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
         rect->setState("state1");
     }
 }
