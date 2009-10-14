@@ -115,6 +115,37 @@ accessible, an error will occur.  If the source is on a network resource, the
 enclosing QML document will remain in the \l {QmlComponent::status()}{waiting state}
 until the script has been retrieved.
 
+\section1 Running Script at Startup
+
+It is occasionally necessary to run a block of ECMAScript code at application (or
+component instance) "startup".  While it is tempting to just include the startup
+script as \e {global code} in an external script file, this can have sever limitations
+as the QML environment may not have been fully established.  For example, some objects 
+might not have been created or some \l {Property Binding}s may not have been run.
+\l {QML Script Restrictions} covers the exact limitations of global script code.
+
+The QML \l Component element provides an \e attached \c onCompleted property that
+can be used to trigger the execution of script code at startup after the
+QML environment has been completely established.
+
+The following QML code shows how to use the \c Component::onCompleted property.
+
+\code
+Rectangle {
+    Script {
+        function startupFunction() {
+            // ... startup code
+        }
+    }
+
+    Component.onCompleted: startupFunction();
+}
+\endcode
+
+Any element in a QML file - including nested elements and nested QML component 
+instances - can use this attached property.  If there is more than one script to
+execute at startup, they are run sequentially in an undefined order.
+
 \section1 QML Script Restrictions
 
 QML \l Script blocks contain standard ECMAScript code.  QML introduces the following
@@ -174,8 +205,8 @@ var initialPosition = { rootObject.x, rootObject.y }
 \endcode
 
 This restriction exists as the QML environment is not yet fully established.  
-To run code after the environment setup has completed - at "startup" - use
-the \l Component \c onCompleted attached property.
+To run code after the environment setup has completed, refer to 
+\l {Running Script at Startup}.
 
 \endlist
 
