@@ -137,6 +137,7 @@ private slots:
     void ipv6();
     void ipv6_2_data();
     void ipv6_2();
+    void moreIpv6();
     void toPercentEncoding_data();
     void toPercentEncoding();
     void isRelative_data();
@@ -2274,6 +2275,13 @@ void tst_QUrl::ipv6_2()
 
     QUrl url(input);
     QCOMPARE(url.toString(), output);
+}
+
+void tst_QUrl::moreIpv6()
+{
+    QUrl waba1("http://www.kde.org/cgi/test.cgi");
+    waba1.setHost("::ffff:129.144.52.38");
+    QCOMPARE(QString::fromLatin1(waba1.toEncoded()), QString::fromLatin1("http://[::ffff:129.144.52.38]/cgi/test.cgi"));
 }
 
 void tst_QUrl::punycode_data()

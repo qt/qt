@@ -2210,9 +2210,11 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
     QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(15, 15));
     QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(15, 15));
+#endif
 
     // Set full update mode.
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -3431,10 +3433,12 @@ void tst_QGraphicsView::exposeRegion()
 
     // Make sure it triggers correct repaint on the view.
     QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
-    QTRY_COMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+    COMPARE_REGIONS(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
+#ifndef QT_MAC_USE_COCOA
     QCOMPARE(item->paints, 0);
+#endif
 }
 
 void tst_QGraphicsView::update_data()

@@ -4524,9 +4524,6 @@ void tst_QWidget::update()
         QCOMPARE(child.paintedRegion, child.visibleRegion());
         QCOMPARE(w.numPaintEvents, 1);
         QCOMPARE(w.visibleRegion(), QRegion(w.rect()));
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion, child.visibleRegion().translated(childOffset));
 
         w.reset();
@@ -5136,15 +5133,6 @@ void tst_QWidget::windowMoveResize()
         // now hide
         widget.hide();
         QTest::qWait(10);
-#if defined (Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
-        QEXPECT_FAIL("130,100 0x200, flags 800",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-
-        QEXPECT_FAIL("130,100 0x200, flags 0",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-#endif
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -7466,8 +7454,8 @@ void tst_QWidget::updateWhileMinimized()
     UpdateWidget widget;
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
-    widget.show();
     widget.reset();
+    widget.show();
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
@@ -9267,7 +9255,8 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QPixmap correct(main.size());
     correct.fill(Qt::green);
 
-    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage(), correct.toImage());
+    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage().convertToFormat(QImage::Format_RGB32),
+                 correct.toImage().convertToFormat(QImage::Format_RGB32));
     QApplication::restoreOverrideCursor();
 }
 
