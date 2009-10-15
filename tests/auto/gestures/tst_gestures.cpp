@@ -148,7 +148,8 @@ class GestureWidget : public QWidget
 {
     Q_OBJECT
 public:
-    GestureWidget(const char *name = 0)
+    GestureWidget(const char *name = 0, QWidget *parent = 0)
+        : QWidget(parent)
     {
         if (name)
             setObjectName(QLatin1String(name));
@@ -186,14 +187,18 @@ public:
     } events, overrideEvents;
 
     bool acceptGestureOverride;
+    QSet<Qt::GestureType> ignoredGestures;
 
 protected:
     bool event(QEvent *event)
     {
         Events *eventsPtr = 0;
         if (event->type() == QEvent::Gesture) {
+            QGestureEvent *e = static_cast<QGestureEvent*>(event);
             ++gestureEventsReceived;
             eventsPtr = &events;
+            foreach(Qt::GestureType type, ignoredGestures)
+                e->ignore(e->gesture(type));
         } else if (event->type() == QEvent::GestureOverride) {
             ++gestureOverrideEventsReceived;
             eventsPtr = &overrideEvents;
@@ -268,7 +273,9 @@ private slots:
     void graphicsItemGesture();
     void explicitGraphicsObjectTarget();
     void gestureOverChildGraphicsItem();
-    void multipleGestures();
+    void twoGesturesOnDifferentLevel();
+    void multipleGesturesInTree();
+    void multipleGesturesInComplexTree();
 };
 
 tst_Gestures::tst_Gestures()
@@ -442,7 +449,7 @@ void tst_Gestures::conflictingGestures()
     CustomEvent event;
     sendCustomGesture(&event, child);
 
-    QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QCOMPARE(child->gestureEventsReceived, 0);
     QCOMPARE(parent.gestureOverrideEventsReceived, 0);
     QCOMPARE(parent.gestureEventsReceived, 0);
@@ -457,9 +464,9 @@ void tst_Gestures::conflictingGestures()
     // sending events to the child and making sure there is no conflict
     sendCustomGesture(&event, child);
 
-    QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QCOMPARE(child->gestureEventsReceived, 0);
-    QCOMPARE(parent.gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 1);
     QCOMPARE(parent.gestureEventsReceived, 0);
 
     parent.reset();
@@ -472,9 +479,9 @@ void tst_Gestures::conflictingGestures()
     // sending events to the child and making sure there is no conflict
     sendCustomGesture(&event, child);
 
-    QCOMPARE(child->gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
-    QCOMPARE(parent.gestureOverrideEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 1);
     QCOMPARE(parent.gestureEventsReceived, 0);
 }
 
@@ -782,7 +789,7 @@ void tst_Gestures::gestureOverChildGraphicsItem()
     QCOMPARE(item1->gestureOverrideEventsReceived, TotalGestureEventsCount);
 }
 
-void tst_Gestures::multipleGestures()
+void tst_Gestures::twoGesturesOnDifferentLevel()
 {
     GestureWidget parent("parent");
     QVBoxLayout *l = new QVBoxLayout(&parent);
@@ -816,6 +823,167 @@ void tst_Gestures::multipleGestures()
     QCOMPARE(parent.events.all.size(), TotalGestureEventsCount);
     for(int i = 0; i < child->events.all.size(); ++i)
         QCOMPARE(parent.events.all.at(i), CustomGesture::GestureType);
+}
+
+void tst_Gestures::multipleGesturesInTree()
+{
+    GestureWidget a("A");
+    GestureWidget *A = &a;
+    GestureWidget *B = new GestureWidget("B", A);
+    GestureWidget *C = new GestureWidget("C", B);
+    GestureWidget *D = new GestureWidget("D", C);
+
+    Qt::GestureType FirstGesture  = CustomGesture::GestureType;
+    Qt::GestureType SecondGesture = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType ThirdGesture  = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+
+    A->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // A [1   3]
+    A->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
+    B->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // B [  2 3]
+    B->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
+    C->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // C [1 2 3]
+    C->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // |
+    C->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // D [1   3]
+    D->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);
+    D->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
+
+    // make sure all widgets ignore events, so they get propagated.
+    A->ignoredGestures << FirstGesture << ThirdGesture;
+    B->ignoredGestures << SecondGesture << ThirdGesture;
+    C->ignoredGestures << FirstGesture << SecondGesture << ThirdGesture;
+    D->ignoredGestures << FirstGesture << ThirdGesture;
+
+    CustomEvent event;
+    sendCustomGesture(&event, D);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    // gesture override events
+    QCOMPARE(D->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(D->overrideEvents.all.count(SecondGesture), 0);
+    QCOMPARE(D->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(C->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(C->overrideEvents.all.count(SecondGesture), 1);
+    QCOMPARE(C->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(B->overrideEvents.all.count(FirstGesture), 0);
+    QCOMPARE(B->overrideEvents.all.count(SecondGesture), 1);
+    QCOMPARE(B->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(A->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(A->overrideEvents.all.count(SecondGesture), 0);
+    QCOMPARE(A->overrideEvents.all.count(ThirdGesture), 1);
+
+    // normal gesture events
+    QCOMPARE(D->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(D->events.all.count(SecondGesture), 0);
+    QCOMPARE(D->events.all.count(ThirdGesture), TotalGestureEventsCount);
+
+    QCOMPARE(C->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(SecondGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(ThirdGesture), TotalGestureEventsCount);
+
+    QCOMPARE(B->events.all.count(FirstGesture), 0);
+    QCOMPARE(B->events.all.count(SecondGesture), TotalGestureEventsCount);
+    QCOMPARE(B->events.all.count(ThirdGesture), TotalGestureEventsCount);
+
+    QCOMPARE(A->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(A->events.all.count(SecondGesture), 0);
+    QCOMPARE(A->events.all.count(ThirdGesture), TotalGestureEventsCount);
+}
+
+void tst_Gestures::multipleGesturesInComplexTree()
+{
+    GestureWidget a("A");
+    GestureWidget *A = &a;
+    GestureWidget *B = new GestureWidget("B", A);
+    GestureWidget *C = new GestureWidget("C", B);
+    GestureWidget *D = new GestureWidget("D", C);
+
+    Qt::GestureType FirstGesture   = CustomGesture::GestureType;
+    Qt::GestureType SecondGesture  = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType ThirdGesture   = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType FourthGesture  = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType FifthGesture   = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType SixthGesture   = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+    Qt::GestureType SeventhGesture = qApp->registerGestureRecognizer(new CustomGestureRecognizer);
+
+    A->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // A [1,3,4]
+    A->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
+    A->grabGesture(FourthGesture, Qt::WidgetWithChildrenGesture);  // B [2,3,5]
+    B->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // |
+    B->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // C [1,2,3,6]
+    B->grabGesture(FifthGesture, Qt::WidgetWithChildrenGesture);   // |
+    C->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // D [1,3,7]
+    C->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);
+    C->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
+    C->grabGesture(SixthGesture, Qt::WidgetWithChildrenGesture);
+    D->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);
+    D->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
+    D->grabGesture(SeventhGesture, Qt::WidgetWithChildrenGesture);
+
+    // make sure all widgets ignore events, so they get propagated.
+    QSet<Qt::GestureType> allGestureTypes;
+    allGestureTypes << FirstGesture << SecondGesture << ThirdGesture
+            << FourthGesture << FifthGesture << SixthGesture << SeventhGesture;
+    A->ignoredGestures = B->ignoredGestures = allGestureTypes;
+    C->ignoredGestures = D->ignoredGestures = allGestureTypes;
+
+    CustomEvent event;
+    sendCustomGesture(&event, D);
+
+    static const int TotalGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialStartedThreshold + 1;
+
+    // gesture override events
+    QCOMPARE(D->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(D->overrideEvents.all.count(SecondGesture), 0);
+    QCOMPARE(D->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(C->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(C->overrideEvents.all.count(SecondGesture), 1);
+    QCOMPARE(C->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(B->overrideEvents.all.count(FirstGesture), 0);
+    QCOMPARE(B->overrideEvents.all.count(SecondGesture), 1);
+    QCOMPARE(B->overrideEvents.all.count(ThirdGesture), 1);
+
+    QCOMPARE(A->overrideEvents.all.count(FirstGesture), 1);
+    QCOMPARE(A->overrideEvents.all.count(SecondGesture), 0);
+    QCOMPARE(A->overrideEvents.all.count(ThirdGesture), 1);
+
+    // normal gesture events
+    QCOMPARE(D->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(D->events.all.count(SecondGesture), 0);
+    QCOMPARE(D->events.all.count(ThirdGesture), TotalGestureEventsCount);
+    QCOMPARE(D->events.all.count(FourthGesture), 0);
+    QCOMPARE(D->events.all.count(FifthGesture), 0);
+    QCOMPARE(D->events.all.count(SixthGesture), 0);
+    QCOMPARE(D->events.all.count(SeventhGesture), TotalGestureEventsCount);
+
+    QCOMPARE(C->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(SecondGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(ThirdGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(FourthGesture), 0);
+    QCOMPARE(C->events.all.count(FifthGesture), 0);
+    QCOMPARE(C->events.all.count(SixthGesture), TotalGestureEventsCount);
+    QCOMPARE(C->events.all.count(SeventhGesture), 0);
+
+    QCOMPARE(B->events.all.count(FirstGesture), 0);
+    QCOMPARE(B->events.all.count(SecondGesture), TotalGestureEventsCount);
+    QCOMPARE(B->events.all.count(ThirdGesture), TotalGestureEventsCount);
+    QCOMPARE(B->events.all.count(FourthGesture), 0);
+    QCOMPARE(B->events.all.count(FifthGesture), TotalGestureEventsCount);
+    QCOMPARE(B->events.all.count(SixthGesture), 0);
+    QCOMPARE(B->events.all.count(SeventhGesture), 0);
+
+    QCOMPARE(A->events.all.count(FirstGesture), TotalGestureEventsCount);
+    QCOMPARE(A->events.all.count(SecondGesture), 0);
+    QCOMPARE(A->events.all.count(ThirdGesture), TotalGestureEventsCount);
+    QCOMPARE(A->events.all.count(FourthGesture), TotalGestureEventsCount);
+    QCOMPARE(A->events.all.count(FifthGesture), 0);
+    QCOMPARE(A->events.all.count(SixthGesture), 0);
+    QCOMPARE(A->events.all.count(SeventhGesture), 0);
 }
 
 QTEST_MAIN(tst_Gestures)

@@ -4204,6 +4204,7 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 w = w->parentWidget();
             }
             gestureEvent->m_accept = eventAccepted;
+            gestureEvent->gestures_ = allGestures;
         } else {
             res = d->notify_helper(receiver, e);
         }

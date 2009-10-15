@@ -82,7 +82,7 @@ public:
 protected:
     void timerEvent(QTimerEvent *event);
     bool filterEventThroughContexts(const QMap<QObject *, Qt::GestureType> &contexts,
-                                    QObject *receiver, QEvent *event);
+                                    QEvent *event);
 
 private:
     QMultiMap<Qt::GestureType, QGestureRecognizer *> recognizers;
@@ -114,16 +114,20 @@ private:
         }
     };
 
-    QMap<ObjectGesture, QWeakPointer<QGesture> > objectGestures;
+    QMap<ObjectGesture, QGesture *> objectGestures;
     QMap<QGesture *, QGestureRecognizer *> gestureToRecognizer;
+    QHash<QGesture *, QObject *> gestureOwners;
 
-    QHash<QGesture *, QObject *> gestureTargets;
+    QHash<QGesture *, QWidget *> gestureTargets;
 
     int lastCustomGestureId;
 
     QGesture *getState(QObject *widget, Qt::GestureType gesture);
-    void deliverEvents(const QSet<QGesture *> &gestures, QObject *lastReceiver,
+    void deliverEvents(const QSet<QGesture *> &gestures,
                        QSet<QGesture *> *undeliveredGestures);
+    void getGestureTargets(const QSet<QGesture*> &gestures,
+                           QMap<QWidget *, QList<QGesture *> > *conflicts,
+                           QMap<QWidget *, QList<QGesture *> > *normal);
 };
 
 QT_END_NAMESPACE

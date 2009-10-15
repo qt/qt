@@ -856,6 +856,8 @@ public:
 private:
     QList<QGesture *> gestures_;
     QWidget *widget_;
+
+    friend class QApplication;
 };
 
 QT_END_NAMESPACE
