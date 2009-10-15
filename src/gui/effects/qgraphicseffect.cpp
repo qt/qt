@@ -1504,7 +1504,7 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
 
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
-    painter->drawImage(offset, pixmap);
+    painter->drawPixmap(offset, pixmap);
     painter->setWorldTransform(restoreTransform);
 }
 
