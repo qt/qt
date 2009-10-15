@@ -369,7 +369,7 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 	ao.Cancel();
 	if (region) {
 		qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
-		for(int i=0; i<region->Count(); ++i) {
+		for (int i=0; i<region->Count(); ++i) {
 			const TRect& rect = region->RectangleList()[i];
 			qDebug() << "Phonon::MMF::getDsaRegion rect"
                 << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;

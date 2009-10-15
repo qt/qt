@@ -363,7 +363,7 @@ void QVisitorPrivate::dumpRecursive
     // Recurse down tree
     const Node::child_iterator begin = node.m_children.begin();
     const Node::child_iterator end = node.m_children.end();
-    for(Node::child_iterator i = begin; end != i; ++i) {
+    for (Node::child_iterator i = begin; end != i; ++i) {
 
         isLastChild = (end == i + 1);
 
@@ -394,7 +394,7 @@ void QVisitorPrivate::dumpNode
     }
     else {
         // Dump annotations
-        for(QList<QByteArray>::const_iterator i = begin; end != i; ++i) {
+        for (QList<QByteArray>::const_iterator i = begin; end != i; ++i) {
             const bool isNodeLine = (begin == i);
             QByteArray buffer = branchBuffer(branches, isNodeLine, isLastChild);
             buffer.append(*i);

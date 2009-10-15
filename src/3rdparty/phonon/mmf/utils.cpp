@@ -138,7 +138,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
 // Debugging: for debugging video visibility
 void MMF::Utils::dumpScreenPixelSample()
 {
-    for(int i=0; i<20; ++i) {
+    for (int i=0; i<20; ++i) {
         const QPoint pos(i*10, i*10);
         const QColor pixel = Utils::getScreenPixel(pos);
         RDebug::Printf(

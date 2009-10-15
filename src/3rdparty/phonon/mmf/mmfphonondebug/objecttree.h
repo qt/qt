@@ -104,7 +104,7 @@ void visit(Iterator begin, Iterator end, Visitor& visitor)
 {
     visitor.visitPrepare();
 
-    for( ; begin != end; ++begin)
+    for ( ; begin != end; ++begin)
         visitor.visitNode(*begin);
 
     visitor.visitComplete();
