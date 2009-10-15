@@ -381,7 +381,7 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 	) {
 		// Ensure initial volume is set on MMF API before starting playback
 		doVolumeChanged();
-	
+
 		// Check whether play() was called while clip was being loaded.  If so,
 	    // playback should be started now
 	    if (m_playPending) {

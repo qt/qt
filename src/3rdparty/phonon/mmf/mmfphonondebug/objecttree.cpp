@@ -28,38 +28,38 @@ namespace ObjectTree
 DepthFirstConstIterator::DepthFirstConstIterator()
     :   m_pointee(0)
 {
-    
+
 }
 
 DepthFirstConstIterator::DepthFirstConstIterator
     (const QObject& root)
     :   m_pointee(&root)
 {
-    
+
 }
-    
+
 DepthFirstConstIterator&
     DepthFirstConstIterator::operator++()
 {
     const QObjectList& children = m_pointee->children();
-    
+
     if (children.count() == 0) {
         backtrack();
     }
     else {
         m_history.push(0);
-        m_pointee = children.first(); 
+        m_pointee = children.first();
     }
-    
+
     return *this;
 }
 
 void DepthFirstConstIterator::backtrack()
-{    
+{
     if (m_history.count()) {
         const int index = m_history.top();
         m_history.pop();
-        
+
         const QObjectList& siblings = m_pointee->parent()->children();
         if (siblings.count() > index + 1) {
             m_history.push(index + 1);
@@ -70,7 +70,7 @@ void DepthFirstConstIterator::backtrack()
             backtrack();
         }
     }
-    else {      
+    else {
         // Reached end of search
         m_pointee = 0;
     }
@@ -80,7 +80,7 @@ void DepthFirstConstIterator::backtrack()
 
 AncestorConstIterator::AncestorConstIterator()
 {
-    
+
 }
 
 AncestorConstIterator::AncestorConstIterator(const QObject& leaf)
