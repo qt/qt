@@ -78,6 +78,8 @@ static QString fallbackTheme()
         return X11->desktopVersion >= 4
             ? QString::fromLatin1("oxygen")
             : QString::fromLatin1("crystalsvg");
+    } else {
+        return QLatin1String("hicolor");
     }
 #endif
     return QString();
