@@ -1978,6 +1978,32 @@ GLuint QGLContext::bindTexture(const QString &fileName)
     return tx_id;
 }
 
+static inline QRgb qt_gl_convertToGLFormatHelper(QRgb src_pixel, GLenum texture_format)
+{
+    if (texture_format == GL_BGRA) {
+        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+            return ((src_pixel << 24) & 0xff000000)
+                   | ((src_pixel >> 24) & 0x000000ff)
+                   | ((src_pixel << 8) & 0x00ff0000)
+                   | ((src_pixel >> 8) & 0x0000ff00);
+        } else {
+            return src_pixel;
+        }
+    } else {  // GL_RGBA
+        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+            return (src_pixel << 8) | ((src_pixel >> 24) & 0xff);
+        } else {
+            return ((src_pixel << 16) & 0xff0000)
+                   | ((src_pixel >> 16) & 0xff)
+                   | (src_pixel & 0xff00ff00);
+        }
+    }
+}
+
+QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format)
+{
+    return qt_gl_convertToGLFormatHelper(src_pixel, texture_format);
+}
 
 static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum texture_format)
 {
@@ -2006,25 +2032,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
             const uint *src = (const quint32 *) (srcPixels - (srcy >> 16) * sbpl);
             int srcx = basex;
             for (int x=0; x<target_width; ++x) {
-                uint src_pixel = src[srcx >> 16];
-                if (texture_format == GL_BGRA) {
-                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-                        dest[x] = ((src_pixel << 24) & 0xff000000)
-                                  | ((src_pixel >> 24) & 0x000000ff)
-                                  | ((src_pixel << 8) & 0x00ff0000)
-                                  | ((src_pixel >> 8) & 0x0000ff00);
-                    } else {
-                        dest[x] = src_pixel;
-                    }
-                } else {  // GL_RGBA
-                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-                        dest[x] = (src_pixel << 8) | ((src_pixel >> 24) & 0xff);
-                    } else {
-                        dest[x] = ((src_pixel << 16) & 0xff0000)
-                                  | ((src_pixel >> 16) & 0xff)
-                                  | (src_pixel & 0xff00ff00);
-                    }
-                }
+                dest[x] = qt_gl_convertToGLFormatHelper(src[srcx >> 16], texture_format);
                 srcx += ix;
             }
             dest = (quint32 *)(((uchar *) dest) + dbpl);
