@@ -10,9 +10,9 @@ SOURCES   += main.cpp \
              videoitem.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/video/videographicsitem
+target.path = $$[QT_INSTALL_EXAMPLES]/multimedia/videographicsitem
 sources.files = $$SOURCES $$HEADERS $$FORMS $$RESOURCES *.pro *.png images
-sources.path = $$[QT_INSTALL_EXAMPLES]/video/videographicsitem
+sources.path = $$[QT_INSTALL_EXAMPLES]/multimedia/videographicsitem
 INSTALLS += target sources
 
 symbian {

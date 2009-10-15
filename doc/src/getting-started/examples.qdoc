@@ -806,16 +806,16 @@
     Audio API in Qt applications.
 
     \list
-    \o \l{multimedia/audio/audiodevices}{Audio Devices}
-    \o \l{multimedia/audio/audiooutput}{Audio Output}
-    \o \l{multimedia/audio/audioinput}{Audio Input}
+    \o \l{multimedia/audiodevices}{Audio Devices}
+    \o \l{multimedia/audiooutput}{Audio Output}
+    \o \l{multimedia/audioinput}{Audio Input}
     \endlist
 
     \section1 Video Output
 
     \list
-    \o \l{video/videowidget}{Video Widget}\raisedaster
-    \o \l{video/videographicsitem}{Video Graphics Item}
+    \o \l{multimedia/videowidget}{Video Widget}\raisedaster
+    \o \l{multimedia/videographicsitem}{Video Graphics Item}
     \endlist
 
     \section1 Phonon
