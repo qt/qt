@@ -151,6 +151,7 @@ private slots:
     void subControlRectsWithOffset_data();
     void subControlRectsWithOffset();
     void task260974_menuItemRectangleForComboBoxPopup();
+    void removeItem();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2396,6 +2397,23 @@ void tst_QComboBox::task260974_menuItemRectangleForComboBoxPopup()
         QTRY_VERIFY(style.discoveredRect.width() <= comboBox.width());
     }
 #endif
+}
+
+void tst_QComboBox::removeItem()
+{
+    QComboBox cb;
+    cb.removeItem(-1);
+    cb.removeItem(1);
+    cb.removeItem(0);
+    QCOMPARE(cb.count(), 0);
+
+    cb.addItem("foo");
+    cb.removeItem(-1);
+    QCOMPARE(cb.count(), 1);
+    cb.removeItem(1);
+    QCOMPARE(cb.count(), 1);
+    cb.removeItem(0);
+    QCOMPARE(cb.count(), 0);
 }
 
 QTEST_MAIN(tst_QComboBox)
