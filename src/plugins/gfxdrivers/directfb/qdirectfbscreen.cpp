@@ -1061,6 +1061,26 @@ static inline bool setIntOption(const QStringList &arguments, const QString &var
     return false;
 }
 
+static inline QColor colorFromName(const QString &name)
+{
+    QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
+    rx.setCaseSensitivity(Qt::CaseInsensitive);
+    if (rx.exactMatch(name)) {
+        Q_ASSERT(rx.numCaptures() == 4);
+        int ints[4];
+        int i;
+        for (i=0; i<4; ++i) {
+            bool ok;
+            ints[i] = rx.cap(i + 1).toUInt(&ok, 16);
+            if (!ok || ints[i] > 255)
+                break;
+        }
+        if (i == 4)
+            return QColor(ints[0], ints[1], ints[2], ints[3]);
+    }
+    return QColor(name);
+}
+
 bool QDirectFBScreen::connect(const QString &displaySpec)
 {
     DFBResult result = DFB_OK;
@@ -1293,18 +1313,50 @@ bool QDirectFBScreen::connect(const QString &displaySpec)
 #endif
 #ifdef QT_DIRECTFB_WM
     surface->Release(surface);
+    QColor backgroundColor;
 #else
-    QRegExp backgroundColorRegExp(QLatin1String("bgcolor=?(.+)"));
+    QColor &backgroundColor = d_ptr->backgroundColor;
+#endif
+
+    QRegExp backgroundColorRegExp(QLatin1String("bgcolor=(.+)"));
     backgroundColorRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     if (displayArgs.indexOf(backgroundColorRegExp) != -1) {
-        d_ptr->backgroundColor.setNamedColor(backgroundColorRegExp.cap(1));
+        backgroundColor = colorFromName(backgroundColorRegExp.cap(1));
     }
-    if (!d_ptr->backgroundColor.isValid())
-        d_ptr->backgroundColor = Qt::green;
-    d_ptr->primarySurface->Clear(d_ptr->primarySurface, d_ptr->backgroundColor.red(),
-                                 d_ptr->backgroundColor.green(), d_ptr->backgroundColor.blue(),
-                                 d_ptr->backgroundColor.alpha());
+#ifdef QT_NO_DIRECTFB_WM
+    if (!backgroundColor.isValid())
+        backgroundColor = Qt::green;
+    d_ptr->primarySurface->Clear(d_ptr->primarySurface, backgroundColor.red(),
+                                 backgroundColor.green(), backgroundColor.blue(),
+                                 backgroundColor.alpha());
     d_ptr->primarySurface->Flip(d_ptr->primarySurface, 0, d_ptr->flipFlags);
+#else
+    if (backgroundColor.isValid()) {
+        DFBResult result = d_ptr->dfbLayer->SetCooperativeLevel(d_ptr->dfbLayer, DLSCL_ADMINISTRATIVE);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect "
+                          "Unable to set cooperative level", result);
+        }
+        result = d_ptr->dfbLayer->SetBackgroundColor(d_ptr->dfbLayer, backgroundColor.red(), backgroundColor.green(),
+                                                     backgroundColor.blue(), backgroundColor.alpha());
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::connect: "
+                          "Unable to set background color", result);
+        }
+
+        result = d_ptr->dfbLayer->SetBackgroundMode(d_ptr->dfbLayer, DLBM_COLOR);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreenCursor::connect: "
+                          "Unable to set background mode", result);
+        }
+
+        result = d_ptr->dfbLayer->SetCooperativeLevel(d_ptr->dfbLayer, DLSCL_SHARED);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBScreen::connect "
+                          "Unable to set cooperative level", result);
+        }
+
+    }
 #endif
 
     return true;
