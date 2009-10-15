@@ -72,11 +72,7 @@ QWSGLPaintDevice::~QWSGLPaintDevice()
 
 QPaintEngine* QWSGLPaintDevice::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
     return qt_qgl_paint_engine();
-#else
-    return 0; // XXX
-#endif
 }
 
 int QWSGLPaintDevice::metric(PaintDeviceMetric m) const
