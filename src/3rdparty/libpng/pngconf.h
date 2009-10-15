@@ -354,7 +354,7 @@
 #  endif /* __linux__ */
 #endif /* PNG_SETJMP_SUPPORTED */
 
-#ifdef BSD
+#if defined(BSD) && !defined(VXWORKS)
 #  include <strings.h>
 #else
 #  include <string.h>
@@ -1357,7 +1357,9 @@ typedef z_stream FAR *  png_zstreamp;
        defined(WIN32) || defined(_WIN32) || defined(__WIN32__) ))
 
 #  ifndef PNGAPI
-#     if defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))
+#     if (defined(__GNUC__) && defined(__arm__)) || defined (__ARMCC__)
+#        define PNGAPI
+#     elif defined(__GNUC__) || (defined (_MSC_VER) && (_MSC_VER >= 800))  || defined(__WINSCW__)
 #        define PNGAPI __cdecl
 #     else
 #        define PNGAPI _cdecl
@@ -1407,6 +1409,14 @@ typedef z_stream FAR *  png_zstreamp;
 #      if 0 /* ... other platforms, with other meanings */
 #      endif
 #   endif
+
+#   if !defined(PNG_IMPEXP)
+#       include <qconfig.h>
+#       if defined(QT_VISIBILITY_AVAILABLE)
+#           define PNG_IMPEXP __attribute__((visibility("default")))
+#       endif
+#   endif
+
 #endif
 
 #ifndef PNGAPI
