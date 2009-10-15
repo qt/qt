@@ -77,6 +77,9 @@ class QSocketNotifier;
 class QWindowsPipeWriter;
 class QWinEventNotifier;
 class QTimer;
+#if defined(Q_OS_SYMBIAN)
+class RProcess;
+#endif
 
 class QProcessEnvironmentPrivate: public QSharedData
 {

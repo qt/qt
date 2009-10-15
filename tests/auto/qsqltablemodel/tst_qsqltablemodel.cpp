@@ -143,6 +143,8 @@ void tst_QSqlTableModel::dropTestTables()
     for (int i = 0; i < dbs.dbNames.count(); ++i) {
         QSqlDatabase db = QSqlDatabase::database(dbs.dbNames.at(i));
         QSqlQuery q(db);
+        if(tst_Databases::isPostgreSQL(db))
+            QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         QStringList tableNames;
         tableNames << qTableName("test")
@@ -658,6 +660,9 @@ void tst_QSqlTableModel::primaryKeyOrder()
     CHECK_DATABASE(db);
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     QVERIFY_SQL( q, exec("create table "+qTableName("foo")+"(a varchar(20), id int not null primary key, b varchar(20))"));
 

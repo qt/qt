@@ -85,6 +85,9 @@ void tst_QSqlDriver::recreateTestTables(QSqlDatabase db)
 {
     QSqlQuery q(db);
 
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+
     tst_Databases::safeDropTable( db, qTableName( "relTEST1" ) );
 
     QVERIFY_SQL( q, exec("create table " + qTableName("relTEST1") +

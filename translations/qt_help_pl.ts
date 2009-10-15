@@ -111,19 +111,16 @@
 <context>
     <name>QHelpDBReader</name>
     <message>
-        <source>Cannot open DB!</source>
-        <translation type="obsolete">Nie można otworzyć bazy danych!</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+95"/>
+        <location filename="../tools/assistant/lib/qhelpdbreader.cpp" line="+98"/>
         <source>Cannot open database &apos;%1&apos; &apos;%2&apos;: %3</source>
+        <extracomment>The placeholders are: %1 - The name of the database which cannot be opened %2 - The unique id for the connection %3 - The actual error string</extracomment>
         <translation>Nie można otworzyć bazy danych &apos;%1&apos; &apos;%2&apos;: %3</translation>
     </message>
 </context>
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+524"/>
         <source>The specified namespace does not exist!</source>
         <translation>Podana przestrzeń nazw nie istnieje!</translation>
     </message>
@@ -131,17 +128,9 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-394"/>
+        <location line="-402"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>Nie można otworzyć pliku z dokumentacją %1: %2!</translation>
-    </message>
-    <message>
-        <source>Cannot open collection file %1!</source>
-        <translation type="obsolete">Nie można otworzyć pliku z kolekcją: %1!</translation>
-    </message>
-    <message>
-        <source>Cannot open documentation file %1!</source>
-        <translation type="obsolete">Nie można otworzyć pliku z dokumentacją %1!</translation>
     </message>
 </context>
 <context>
@@ -157,17 +146,9 @@
         <translation>Nie podano nazwy pliku wyjściowego!</translation>
     </message>
     <message>
-        <source>The file %1 already exists!</source>
-        <translation type="obsolete">Plik %1 już istnieje!</translation>
-    </message>
-    <message>
         <location line="+14"/>
         <source>Building up file structure...</source>
         <translation>Budowanie struktury plików...</translation>
-    </message>
-    <message>
-        <source>Cannot open DB!</source>
-        <translation type="obsolete">Nie można otworzyć bazy danych!</translation>
     </message>
     <message>
         <location line="-7"/>
@@ -220,17 +201,22 @@
         <translation>Wstaw pliki...</translation>
     </message>
     <message>
-        <location line="+41"/>
+        <location line="+42"/>
+        <source>The referenced file %1 must be inside or within a subdirectory of (%2). Skipping it.</source>
+        <translation>Plik %1 do którego się odwołano musi być wewnątrz poddrzewa (%2). Plik ten został pominięty.</translation>
+    </message>
+    <message>
+        <location line="+7"/>
         <source>The file %1 does not exist! Skipping it.</source>
         <translation>Plik %1 nie istnieje! Zostaje on opuszczony.</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+6"/>
         <source>Cannot open file %1! Skipping it.</source>
         <translation>Nie można otworzyć pliku %1! Zostaje on opuszczony.</translation>
     </message>
     <message>
-        <location line="+134"/>
+        <location line="+131"/>
         <source>The filter %1 is already registered!</source>
         <translation>Filtr %1 jest już zarejestrowany!</translation>
     </message>
@@ -263,9 +249,19 @@
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+200"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
         <source>Search for:</source>
         <translation>Wyszukaj:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Previous search</source>
+        <translation>Poprzednie wyszukiwanie</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Next search</source>
+        <translation>Następne wyszukiwanie</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -273,7 +269,7 @@
         <translation>Wyszukaj</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+20"/>
         <source>Advanced search</source>
         <translation>Wyszukiwanie zaawansowane</translation>
     </message>
@@ -283,22 +279,22 @@
         <translation>słowa &lt;B&gt;podobne&lt;/B&gt; do:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
         <translation>&lt;B&gt;bez&lt;/B&gt; słów:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
         <translation>z &lt;B&gt;dokładnym wyrażeniem&lt;/B&gt;:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
         <translation>ze &lt;B&gt;wszystkimi&lt;/B&gt; słowami:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
         <translation>z &lt;B&gt;przynajmniej jednym&lt;/B&gt; ze słów:</translation>
     </message>
@@ -327,15 +323,7 @@
         <translation>Nienazwany</translation>
     </message>
     <message>
-        <source>Unknown token at line %1.</source>
-        <translation type="obsolete">Nieznany znak w linii %1.</translation>
-    </message>
-    <message>
-        <source>Unknown token at line %1. Expected &quot;QtHelpProject&quot;!</source>
-        <translation type="obsolete">Nieznany znak w linii %1. Spodziewano się &quot;QtHelpProject&quot;!</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+80"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
         <source>Unknown token.</source>
         <translation>Nieznany znak.</translation>
     </message>
@@ -375,7 +363,7 @@
         <translation>Brak atrybutu w słowie kluczowym w linii %1.</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+123"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Nie można otworzyć pliku wejściowego %1!</translation>
     </message>

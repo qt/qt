@@ -136,14 +136,19 @@ void QEventDispatcherMacPrivate::activateTimer(CFRunLoopTimerRef, void *info)
     if (tmr == 0 || tmr->pending == true)
         return; // Can't send another timer event if it's pending.
 
-    tmr->pending = true;
-    QTimerEvent e(tmr->id);
-    qt_sendSpontaneousEvent(tmr->obj, &e);
 
-    // Get the value again in case the timer gets unregistered during the sendEvent.
-    tmr = macTimerHash.value(timerID);
-    if (tmr != 0)
-        tmr->pending = false;
+    if (blockSendPostedEvents) {
+        QCoreApplication::postEvent(tmr->obj, new QTimerEvent(tmr->id));
+    } else {
+        tmr->pending = true;
+        QTimerEvent e(tmr->id);
+        qt_sendSpontaneousEvent(tmr->obj, &e);
+        // Get the value again in case the timer gets unregistered during the sendEvent.
+        tmr = macTimerHash.value(timerID);
+        if (tmr != 0)
+            tmr->pending = false;
+    }
+
 }
 
 void QEventDispatcherMac::registerTimer(int timerId, int interval, QObject *obj)
@@ -767,7 +772,7 @@ NSModalSession QEventDispatcherMacPrivate::currentModalSession()
         // Sadly, we need to introduce this little event flush
         // to stop dialogs from blinking/poping in front if a 
         // modal session restart was needed:
-        while (NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask
+        while (NSEvent *event = [NSApp nextEventMatchingMask:0
                 untilDate:nil
                 inMode:NSDefaultRunLoopMode
                 dequeue: YES]) {

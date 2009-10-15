@@ -122,6 +122,12 @@ void tst_QSidebar::addUrls()
     QSidebar qsidebar;
     qsidebar.init(&fsmodel, emptyUrls);
     QAbstractItemModel *model = qsidebar.model();
+#if defined(Q_OS_SYMBIAN)
+    // On Symbian, QDir::rootPath() and QDir::home() are same.
+    QDir testDir = QDir::currentPath();
+#else
+    QDir testDir = QDir::home();
+#endif
 
     // default
     QCOMPARE(model->rowCount(), 0);
@@ -146,13 +152,13 @@ void tst_QSidebar::addUrls()
 
     // test inserting with already existing rows
     QList<QUrl> moreUrls;
-    moreUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    moreUrls << QUrl::fromLocalFile(testDir.absolutePath());
     qsidebar.addUrls(moreUrls, -1);
     QCOMPARE(model->rowCount(), 3);
 
     // make sure invalid urls are still added
     QList<QUrl> badUrls;
-    badUrls << QUrl::fromLocalFile(QDir::home().absolutePath() + "/I used to exist");
+    badUrls << QUrl::fromLocalFile(testDir.absolutePath() + "/I used to exist");
     qsidebar.addUrls(badUrls, 0);
     QCOMPARE(model->rowCount(), 4);
 
@@ -179,30 +185,30 @@ void tst_QSidebar::addUrls()
 
     QList<QUrl> doubleUrls;
     //tow exact same paths, we have only one entry
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
     qsidebar.setUrls(emptyUrls);
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 1);
 
     // Two paths that are effectively pointing to the same location
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath() + "/.");
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath() + "/.");
     qsidebar.setUrls(emptyUrls);
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 1);
 
 #if defined(Q_OS_WIN)
     //Windows is case insensitive so no duplicate entries in that case
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath().toUpper());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath().toUpper());
     qsidebar.setUrls(emptyUrls);
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 1);
 #else
     //Two different paths we should have two entries
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath());
-    doubleUrls << QUrl::fromLocalFile(QDir::home().absolutePath().toUpper());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath());
+    doubleUrls << QUrl::fromLocalFile(testDir.absolutePath().toUpper());
     qsidebar.setUrls(emptyUrls);
     qsidebar.addUrls(doubleUrls, 1);
     QCOMPARE(qsidebar.urls().size(), 2);
