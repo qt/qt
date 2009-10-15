@@ -426,6 +426,10 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
 
+        img.setNumColors(2);
+        img.setColor(0, QColor(Qt::color0).rgba());
+        img.setColor(1, QColor(Qt::color1).rgba());
+
         if (color == Qt::color1)
             img.fill(1);
         else
