@@ -310,6 +310,7 @@ void tst_qfxtextinput::navigation()
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
+    canvas->setFocus();
 
     QVERIFY(canvas->root() != 0);
 
