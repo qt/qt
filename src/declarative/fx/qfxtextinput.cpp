@@ -501,17 +501,19 @@ void QFxTextInput::setCursorDelegate(QmlComponent* c)
 {
     Q_D(QFxTextInput);
     d->cursorComponent = c;
-    d->startCreatingCursor();
+    if(!c){
+        //note that the components are owned by something else
+        disconnect(d->control, SIGNAL(cursorPositionChanged(int, int)),
+                this, SLOT(moveCursor()));
+        delete d->cursorItem;
+    }else{
+        d->startCreatingCursor();
+    }
 }
 
 void QFxTextInputPrivate::startCreatingCursor()
 {
     Q_Q(QFxTextInput);
-    if(!cursorComponent){
-        q->disconnect(control, SIGNAL(cursorPositionChanged(int, int)),
-                q, SLOT(moveCursor()));
-        return;
-    }
     q->connect(control, SIGNAL(cursorPositionChanged(int, int)),
             q, SLOT(moveCursor()));
     if(cursorComponent->isReady()){

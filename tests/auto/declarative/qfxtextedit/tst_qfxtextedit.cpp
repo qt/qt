@@ -433,10 +433,10 @@ void tst_qfxtextedit::selection()
 
 void tst_qfxtextedit::cursorDelegate()
 {
-    QmlView* view = new QmlView(0);
-    view->show();
-    view->setUrl(QUrl("data/cursorTest.qml"));
+    QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->execute();
+    view->show();
+    view->setFocus();
     QFxTextEdit *textEditObject = view->root()->findChild<QFxTextEdit*>("textEditObject");
     QVERIFY(textEditObject != 0);
     QVERIFY(textEditObject->findChild<QFxItem*>("cursorInstance"));

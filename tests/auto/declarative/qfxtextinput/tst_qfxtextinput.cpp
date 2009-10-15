@@ -330,7 +330,30 @@ void tst_qfxtextinput::navigation()
 
 void tst_qfxtextinput::cursorDelegate()
 {
-    //TODO:Get the QFxTextEdit test passing first
+    QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
+    view->execute();
+    view->show();
+    view->setFocus();
+    QFxTextInput *textInputObject = view->root()->findChild<QFxTextInput*>("textInputObject");
+    QVERIFY(textInputObject != 0);
+    QVERIFY(textInputObject->findChild<QFxItem*>("cursorInstance"));
+    //Test Delegate gets created
+    textInputObject->setFocus(true);
+    QFxItem* delegateObject = textInputObject->findChild<QFxItem*>("cursorInstance");
+    QVERIFY(delegateObject);
+    //Test Delegate gets moved
+    for(int i=0; i<= textInputObject->text().length(); i++){
+        textInputObject->setCursorPosition(i);
+        //+5 is because the TextInput cursorRect is just a 10xHeight area centered on cursor position
+        QCOMPARE(textInputObject->cursorRect().x() + 5, qRound(delegateObject->x()));
+        QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+    }
+    textInputObject->setCursorPosition(0);
+    QCOMPARE(textInputObject->cursorRect().x()+5, qRound(delegateObject->x()));
+    QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
+    //Test Delegate gets deleted
+    textInputObject->setCursorDelegate(0);
+    QVERIFY(!textInputObject->findChild<QFxItem*>("cursorInstance"));
 }
 
 void tst_qfxtextinput::simulateKey(QmlView *view, int key)
