@@ -954,7 +954,10 @@ void QHttpNetworkConnectionPrivate::removeReply(QHttpNetworkReply *reply)
     for (int i = 0; i < channelCount; ++i) {
         if (channels[i].reply == reply) {
             channels[i].reply = 0;
-            if (reply->d_func()->connectionCloseEnabled())
+            // if HTTP mandates we should close
+            // or the reply is not finished yet, e.g. it was aborted
+            // we have to close that connection
+            if (reply->d_func()->connectionCloseEnabled() || !reply->isFinished())
                 closeChannel(i);
             QMetaObject::invokeMethod(q, "_q_startNextRequest", Qt::QueuedConnection);
             return;
