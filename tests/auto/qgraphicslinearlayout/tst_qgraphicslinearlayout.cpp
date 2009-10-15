@@ -146,7 +146,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
 #ifdef Q_WS_S60
-    QApplication::setStyle(new QWindowsStyle);    
+    QApplication::setStyle(new QWindowsStyle);
 #else
     QApplication::setStyle(new QPlastiqueStyle);
 #endif
@@ -332,6 +332,7 @@ void tst_QGraphicsLinearLayout::alignment()
         widget->resize(newSize);
     view.show();
     widget->show();
+    QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
 
     int x = 0;
