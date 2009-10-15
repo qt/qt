@@ -195,6 +195,15 @@ void QmlFolderListModel::setFolder(const QString &folder)
     }
 }
 
+QString QmlFolderListModel::parentFolder() const
+{
+    Q_D(const QmlFolderListModel);
+    int pos = d->folder.lastIndexOf('/');
+    if (pos == -1)
+        return QString();
+    return d->folder.left(pos);
+}
+
 /*!
     \qmlproperty list<string> FolderListModel::nameFilters
 

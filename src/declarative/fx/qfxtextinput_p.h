@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 class QFxTextInputPrivate : public QFxPaintedItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxTextInput);
+    Q_DECLARE_PUBLIC(QFxTextInput)
 public:
     QFxTextInputPrivate() : control(new QLineControl(QString())),
                  color((QRgb)0), style(QFxText::Normal),

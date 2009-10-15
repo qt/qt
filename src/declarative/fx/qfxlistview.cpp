@@ -166,7 +166,7 @@ public:
 
 class QFxListViewPrivate : public QFxFlickablePrivate
 {
-    Q_DECLARE_PUBLIC(QFxListView);
+    Q_DECLARE_PUBLIC(QFxListView)
 
 public:
     QFxListViewPrivate()

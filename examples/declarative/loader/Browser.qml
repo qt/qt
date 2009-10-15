@@ -2,13 +2,14 @@ import Qt 4.6
 
 Rectangle {
     id: root
+    property bool keyPressed: false
     width: parent.width
     height: parent.height
-    color: palette.base
+    color: palette.window
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
-//        folder: "E:"
+        folder: "E:"
     }
 
     SystemPalette { id: palette; colorGroup: Qt.Active }
@@ -25,7 +26,7 @@ Rectangle {
                 }
             }
             width: root.width
-            height: 32
+            height: 48
             color: "transparent"
             Rectangle {
                 id: highlight; visible: false
@@ -36,15 +37,15 @@ Rectangle {
                 }
             }
             Item {
-                width: 32; height: 32
+                width: 46; height: 46
                 Image { source: "images/fileopen.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
                 id: nameText
                 anchors.fill: parent; verticalAlignment: "AlignVCenter"
-                text: fileName; anchors.leftMargin: 32
-                font.pointSize: 10
-                color: palette.windowText
+                text: fileName; anchors.leftMargin: 48
+                font.pixelSize: 32
+                color: wrapper.isCurrentItem ? palette.highlightedText : palette.text
             }
             MouseRegion {
                 id: mouseRegion
@@ -62,13 +63,6 @@ Rectangle {
         }
     }
 
-    Script {
-        function up(path) {
-            var pos = path.toString().lastIndexOf("/");
-            return path.toString().substring(0, pos);
-        }
-    }
-
     ListView {
         id: view
         anchors.top: titleBar.bottom
@@ -77,37 +71,59 @@ Rectangle {
         anchors.bottom: parent.bottom
         model: folders
         delegate: folderDelegate
-        highlight: Rectangle { color: "#FFFBAF" }
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
         clip: true
         focus: true
+        pressDelay: 100
+
         Keys.onPressed: {
-            if (event.key == Qt.Key_Return || event.key == Qt.Key_Select) {
+            root.keyPressed = true;
+            if (event.key == Qt.Key_Return || event.key == Qt.Key_Select || event.key == Qt.Key_Right) {
                 view.currentItem.launch();
                 event.accepted = true;
             }
         }
+        Keys.onLeftPressed: folders.folder = up(folders.folder)
     }
 
     Rectangle {
         id: titleBar
         width: parent.width
-        height: 32
-        color: palette.button; border.color: palette.mid
+        height: 48
+        color: palette.lighter(palette.window); border.color: palette.mid
 
         Rectangle {
             id: upButton
-            width: 30
+            width: 48
             height: titleBar.height
             border.color: palette.mid; color: "transparent"
-            MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
+
+            Script {
+                function up(path) {
+                    var pos = path.toString().lastIndexOf("/");
+                    return path.toString().substring(0, pos);
+                }
+            }
+
             Image { anchors.centerIn: parent; source: "images/up.png" }
+            MouseRegion { id: upRegion; anchors.fill: parent
+                onClicked: if (folders.parentFolder != "") folders.folder = folders.parentFolder
+            }
+            states: [
+                State {
+                    name: "pressed"
+                    when: upRegion.pressed
+                    PropertyChanges { target: upButton; color: palette.highlightedText }
+                }
+            ]
         }
 
         Text {
             anchors.left: upButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
-            text: folders.folder; color: palette.buttonText
+            text: folders.folder; color: palette.text
             elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
+            font.pixelSize: 32
         }
     }
 }

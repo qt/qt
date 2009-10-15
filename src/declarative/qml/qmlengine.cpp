@@ -1099,7 +1099,7 @@ public:
         int slash = type.indexOf('/');
         if (slash >= 0) {
             while (!s) {
-                s = set.value(QString::fromLatin1(type.left(slash)));
+                s = set.value(QString::fromUtf8(type.left(slash)));
                 int nslash = type.indexOf('/',slash+1);
                 if (nslash > 0)
                     slash = nslash;
