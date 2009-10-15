@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <QApplication>	// for QApplication::activeWindow
+#include <QApplication>    // for QApplication::activeWindow
 #include <QUrl>
 #include <QTimer>
 #include <QWidget>
@@ -71,7 +71,7 @@ void MMF::VideoPlayer::construct()
     TRACE_ENTRY_0();
 
     if (m_videoOutput)
-    	m_videoOutput->setObserver(this);
+        m_videoOutput->setObserver(this);
 
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
@@ -152,17 +152,17 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
 
     bool wasPlaying = false;
     if (state() == PlayingState) {
-		// The call to SetPositionL does not have any effect if playback is
-		// ongoing, so we pause before seeking.
-		doPause();
-		wasPlaying = true;
+        // The call to SetPositionL does not have any effect if playback is
+        // ongoing, so we pause before seeking.
+        doPause();
+        wasPlaying = true;
     }
 
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
 
     if (KErrNone == err) {
-		if (wasPlaying)
-			doPlay();
+        if (wasPlaying)
+            doPlay();
     }
     else {
         TRACE("SetPositionL error %d", err);
@@ -252,7 +252,7 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
         maxVolumeChanged(m_player->MaxVolume());
 
         if (m_videoOutput)
-        	m_videoOutput->setFrameSize(m_frameSize);
+            m_videoOutput->setFrameSize(m_frameSize);
 
         // See comment in updateMmfOutput
         if (m_mmfOutputChangePending) {
@@ -350,32 +350,32 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
 class CDummyAO : public CActive
 {
 public:
-	CDummyAO() : CActive(CActive::EPriorityStandard) { CActiveScheduler::Add(this); }
-	void RunL() { }
-	void DoCancel() { }
-	TRequestStatus& Status() { return iStatus; }
-	void SetActive() { CActive::SetActive(); }
+    CDummyAO() : CActive(CActive::EPriorityStandard) { CActiveScheduler::Add(this); }
+    void RunL() { }
+    void DoCancel() { }
+    TRequestStatus& Status() { return iStatus; }
+    void SetActive() { CActive::SetActive(); }
 };
 
 void getDsaRegion(RWsSession &session, const RWindowBase &window)
 {
-	RDirectScreenAccess dsa(session);
-	TInt err = dsa.Construct();
-	CDummyAO ao;
-	RRegion* region;
-	err = dsa.Request(region, ao.Status(), window);
-	ao.SetActive();
-	dsa.Close();
-	ao.Cancel();
-	if (region) {
-		qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
-		for (int i=0; i<region->Count(); ++i) {
-			const TRect& rect = region->RectangleList()[i];
-			qDebug() << "Phonon::MMF::getDsaRegion rect"
+    RDirectScreenAccess dsa(session);
+    TInt err = dsa.Construct();
+    CDummyAO ao;
+    RRegion* region;
+    err = dsa.Request(region, ao.Status(), window);
+    ao.SetActive();
+    dsa.Close();
+    ao.Cancel();
+    if (region) {
+        qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
+        for (int i=0; i<region->Count(); ++i) {
+            const TRect& rect = region->RectangleList()[i];
+            qDebug() << "Phonon::MMF::getDsaRegion rect"
                 << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;
-		}
-		region->Close();
-	}
+        }
+        region->Close();
+    }
 }
 
 #endif // _DEBUG
@@ -426,8 +426,8 @@ void MMF::VideoPlayer::videoOutputChanged()
     TRACE_ENTRY_0();
 
     if (m_videoOutput) {
-		m_videoOutput->setObserver(this);
-		m_videoOutput->setFrameSize(m_frameSize);
+        m_videoOutput->setObserver(this);
+        m_videoOutput->setFrameSize(m_frameSize);
     }
 
     videoOutputRegionChanged();
@@ -443,11 +443,11 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
     CCoeControl *control = 0;
 
     if (m_videoOutput)
-    	// Create native window
-    	control = m_videoOutput->winId();
+        // Create native window
+        control = m_videoOutput->winId();
     else
-    	// Get top-level window
-    	control = QApplication::activeWindow()->effectiveWinId();
+        // Get top-level window
+        control = QApplication::activeWindow()->effectiveWinId();
 
 #ifndef QT_NO_DEBUG
     if (m_videoOutput) {

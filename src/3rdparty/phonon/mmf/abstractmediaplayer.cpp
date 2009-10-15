@@ -376,20 +376,20 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
     setState(newState);
 
     if (
-		LoadingState == oldPhononState
-		and StoppedState == newPhononState
-	) {
-		// Ensure initial volume is set on MMF API before starting playback
-		doVolumeChanged();
+        LoadingState == oldPhononState
+        and StoppedState == newPhononState
+    ) {
+        // Ensure initial volume is set on MMF API before starting playback
+        doVolumeChanged();
 
-		// Check whether play() was called while clip was being loaded.  If so,
-	    // playback should be started now
-	    if (m_playPending) {
-	        TRACE_0("play was called while loading; starting playback now");
-	        m_playPending = false;
-	        play();
-	    }
-	}
+        // Check whether play() was called while clip was being loaded.  If so,
+        // playback should be started now
+        if (m_playPending) {
+            TRACE_0("play was called while loading; starting playback now");
+            m_playPending = false;
+            play();
+        }
+    }
 
     TRACE_EXIT_0();
 }
@@ -400,7 +400,7 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 
 void MMF::AbstractMediaPlayer::tick()
 {
-	// For the MWC compiler, we need to qualify the base class.
+    // For the MWC compiler, we need to qualify the base class.
     emit MMF::AbstractPlayer::tick(currentTime());
 }
 
