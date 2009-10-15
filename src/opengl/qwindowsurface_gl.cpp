@@ -283,19 +283,9 @@ int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
     return d->q_ptr->window()->metric(m);
 }
 
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
-
-#if !defined (QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
-
 QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
-    return qt_gl_window_surface_2_engine();
+    return qt_qgl_paint_engine();
 }
 
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
