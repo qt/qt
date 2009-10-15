@@ -250,6 +250,7 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     Q_ASSERT(lastData);
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    Q_ASSERT(enginePriv->currentExpression);
 
     // ### Can well known types be optimized?
     QVariant v = QmlScriptClass::toVariant(engine, value);
