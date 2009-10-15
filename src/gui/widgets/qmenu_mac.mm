@@ -1413,7 +1413,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         SetMenuItemProperty(data.submenuHandle, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
         NSMenu *subMenu  = static_cast<NSMenu *>(action->action->menu()->macMenu());
-        if ([subMenu supermenu] != nil) {
+        if ([subMenu supermenu] && [subMenu supermenu] != [item menu]) {
             // The menu is already a sub-menu of another one. Cocoa will throw an exception,
             // in such cases. For the time being, a new QMenu with same set of actions is the
             // only workaround.
@@ -1686,7 +1686,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
             GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
             SetMenuItemProperty(submenu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-            if ([submenu supermenu] != nil)
+            if ([submenu supermenu] && [submenu supermenu] != [item menu])
                 return;
             else
                 [item setSubmenu:submenu];
