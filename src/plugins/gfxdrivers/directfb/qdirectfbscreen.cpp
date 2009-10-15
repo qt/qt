@@ -99,7 +99,10 @@ public:
     qint64 cursorImageKey;
 
     QDirectFBScreen *q;
+    static QDirectFBScreen *instance;
 };
+
+QDirectFBScreen *QDirectFBScreenPrivate::instance = 0;
 
 QDirectFBScreenPrivate::QDirectFBScreenPrivate(QDirectFBScreen *qptr)
     : QWSGraphicsSystem(qptr), dfb(0), flipFlags(DSFLIP_NONE),
@@ -802,11 +805,19 @@ void QDirectFBScreenCursor::set(const QImage &image, int hotx, int hoty)
 QDirectFBScreen::QDirectFBScreen(int display_id)
     : QScreen(display_id, DirectFBClass), d_ptr(new QDirectFBScreenPrivate(this))
 {
+    QDirectFBScreenPrivate::instance = this;
 }
 
 QDirectFBScreen::~QDirectFBScreen()
 {
+    if (QDirectFBScreenPrivate::instance == this)
+        QDirectFBScreenPrivate::instance = 0;
     delete d_ptr;
+}
+
+QDirectFBScreen *QDirectFBScreen::instance()
+{
+    return QDirectFBScreenPrivate::instance;
 }
 
 int QDirectFBScreen::depth(DFBSurfacePixelFormat format)

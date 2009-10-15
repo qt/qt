@@ -163,12 +163,7 @@ public:
     QWSWindowSurface *createSurface(QWidget *widget) const;
     QWSWindowSurface *createSurface(const QString &key) const;
 
-    static inline QDirectFBScreen *instance() {
-        QScreen *inst = QScreen::instance();
-        Q_ASSERT(!inst || inst->classId() == QScreen::DirectFBClass);
-        return static_cast<QDirectFBScreen*>(inst);
-    }
-
+    static QDirectFBScreen *instance();
     void waitIdle();
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
 #ifdef QT_DIRECTFB_SUBSURFACE
