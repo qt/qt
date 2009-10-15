@@ -1287,6 +1287,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(70);
 
     SubQGraphicsProxyWidget proxy;
 
@@ -1297,14 +1298,14 @@ void tst_QGraphicsProxyWidget::paintEvent()
     w->show();
     QTest::qWaitForWindowShown(w);
     QApplication::processEvents();
-    QTest::qWait(50);
+    QTest::qWait(100);
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
     QTest::qWait(70);
     QTRY_VERIFY(proxy.paintCount > 1);
-    QTest::qWait(70);
+    QTest::qWait(110);
     proxy.paintCount = 0;
 
     w->update();
@@ -2705,7 +2706,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::sendPostedEvents();
-    QTest::qWait(50);
+    QTest::qWait(150);
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));

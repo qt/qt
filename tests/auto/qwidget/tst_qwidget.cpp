@@ -7459,11 +7459,11 @@ void tst_QWidget::updateWhileMinimized()
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
-    QTest::qWait(50);
+    QTest::qWait(150);
 
     // Minimize window.
     widget.showMinimized();
-    QTest::qWait(70);
+    QTest::qWait(110);
 
     widget.reset();
 
@@ -8164,7 +8164,7 @@ public:
 
         static bool firstTime = true;
         if (firstTime)
-            QTimer::singleShot(150, this, SLOT(resizeMe()));
+            QTimer::singleShot(250, this, SLOT(resizeMe()));
 
         firstTime = false;
     }
@@ -8181,7 +8181,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(160);
+    QTest::qWait(300);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);
