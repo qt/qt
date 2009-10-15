@@ -76,7 +76,6 @@
 #endif
 
 #ifdef Q_WS_QWS
-#include <private/qglpaintdevice_qws_p.h>
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
