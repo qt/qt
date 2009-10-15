@@ -77,7 +77,7 @@ void qmlInfo(const QString& msg, QObject* object)
 {
     QString pos = QLatin1String("QML");
     if (object) {
-        pos += " ";
+        pos += QLatin1String(" ");
         pos += QLatin1String(object->metaObject()->className());
     }
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
