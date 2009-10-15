@@ -252,7 +252,6 @@ bool MyDisplay::handleEvent(XEvent *xe)
         if (xw)
             xw->resizeEvent(&xe->xconfigure);
         break;
-#if 1
 
     case ButtonPress:
         xw->mousePressEvent(&xe->xbutton);
@@ -273,16 +272,24 @@ bool MyDisplay::handleEvent(XEvent *xe)
     case XKeyRelease:
         xw->keyReleaseEvent(&xe->xkey);
         break;
-#endif
+
+    case EnterNotify:
+        xw->enterEvent(&xe->xcrossing);
+        break;
+
+    case LeaveNotify:
+        xw->leaveEvent(&xe->xcrossing);
+        break;
 
     default:
 #ifdef MYX11_DEBUG
-        qDebug() << "Other X event" << hex << xe->type;
+        qDebug() << hex << xe->xany.window << "Other X event" << xe->type;
 #endif
         break;
     }
     return quit;
 };
+
 
 
 MyDisplay::MyDisplay()
@@ -379,6 +386,7 @@ MyWindow::MyWindow(MyDisplay *display, int x, int y, int w, int h)
     XSetWindowBackgroundPixmap(xd->display, window, XNone);
 
     XSelectInput(xd->display, window, ExposureMask | KeyPressMask | KeyReleaseMask |
+                 EnterWindowMask | LeaveWindowMask | FocusChangeMask |
                  PointerMotionMask | ButtonPressMask |  ButtonReleaseMask | ButtonMotionMask |
                  StructureNotifyMask);
 
@@ -456,17 +464,37 @@ void MyWindow::resizeEvent(XConfigureEvent *e)
     windowSurface->handleGeometryChange(xpos, ypos, width, height);
 }
 
-
+#if 0
 void MyWindow::setSize(int w, int h)
 {
     XResizeWindow(xd->display, window, w, h);
 }
+#endif
 
 void MyWindow::setGeometry(int x, int y, int w, int h)
 {
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::setGeometry" << hex << window << dec << x << y << w << h;
+#endif
     XMoveResizeWindow(xd->display, window, x, y, w, h);
 }
 
+
+void MyWindow::enterEvent(XCrossingEvent *e)
+{
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::enterEvent" << hex << window;
+#endif
+    windowSurface->handleEnterEvent();
+}
+
+void MyWindow::leaveEvent(XCrossingEvent *e)
+{
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::enterEvent" << hex << window;
+#endif
+    windowSurface->handleLeaveEvent();
+}
 
 void MyWindow::mousePressEvent(XButtonEvent *e)
 {
@@ -623,7 +651,7 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
     }
 
 #ifdef MYX11_DEBUG
-    qDebug() << "MyWindow::setWindowFlags" << hex << mwm_hint_atom << "flags" << flags;
+    qDebug() << "MyWindow::setWindowFlags" << hex << window << "flags" << flags;
 #endif
     Qt::WindowType type = static_cast<Qt::WindowType>(int(flags & Qt::WindowType_Mask));
 
@@ -746,7 +774,9 @@ Qt::WindowFlags MyWindow::setWindowFlags(Qt::WindowFlags flags)
 
 void MyWindow::setVisible(bool visible)
 {
-//    qDebug() << "MyWindow::setVisible" << visible << hex << window;
+#ifdef MYX11_DEBUG
+    qDebug() << "MyWindow::setVisible" << visible << hex << window;
+#endif
     if (visible)
          XMapWindow(xd->display, window);
     else

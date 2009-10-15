@@ -236,7 +236,15 @@ void QTestLiteWindowSurface::handleCloseEvent()
 }
 
 
+void QTestLiteWindowSurface::handleEnterEvent()
+{
+    QApplicationPrivate::handleEnterEvent(window());
+}
 
+void QTestLiteWindowSurface::handleLeaveEvent()
+{
+    QApplicationPrivate::handleLeaveEvent(window());
+}
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

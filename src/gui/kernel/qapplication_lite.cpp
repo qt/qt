@@ -451,9 +451,6 @@ void qt_init(QApplicationPrivate *priv, int type)
     }
 #endif
 
-
-    qDebug() << pluginList;
-
     init_plugins(pluginList);
 
     QColormap::initialize();
@@ -507,6 +504,17 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 
 */
 
+
+void QApplicationPrivate::handleEnterEvent(QWidget *tlw)
+{
+    dispatchEnterLeave(tlw, 0);
+}
+
+void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
+{
+    dispatchEnterLeave(0, tlw);
+}
+
 void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
 {
 //    qDebug() << "handleMouseEvent" << tlw << ev.pos() << hex << ev.buttons();
@@ -516,15 +524,15 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();
     bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
-    QWidget *mouseWidget = tlw;
+    QWidget *mouseWindow = tlw;
 
     qt_last_x = globalPoint.x();
     qt_last_y = globalPoint.y();
 
     if (self->inPopupMode()) {
         //popup mouse handling is magical...
-        mouseWidget = qApp->activePopupWidget();
-        trustLocalPoint = (mouseWidget == tlw);
+        mouseWindow = qApp->activePopupWidget();
+        trustLocalPoint = (mouseWindow == tlw);
 
         //### how should popup mode and implicit mouse grab interact?
 
@@ -532,41 +540,40 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
         //even if we're blocked by modality, we should deliver the mouse release event..
         //### this code is not completely correct: multiple buttons can be pressed simultaneously
         if (!(implicit_mouse_grabber && ev.buttons() == Qt::NoButton)) {
-            //qDebug() << "modal blocked mouse event to" << tlw;
+            qDebug() << "modal blocked mouse event to" << tlw;
             return;
         }
-    } else {
-        QWidget *mouseWindow = tlw;
+    }
 
-        // find the tlw if we didn't get it from the plugin
-        if (!mouseWindow) {
-            mouseWindow = QApplication::topLevelAt(globalPoint);
-        }
+    // find the tlw if we didn't get it from the plugin
+    if (!mouseWindow) {
+        mouseWindow = QApplication::topLevelAt(globalPoint);
+    }
 
-        if (!mouseWindow && !implicit_mouse_grabber)
-            return; //nowhere to send it
+    if (!mouseWindow && !implicit_mouse_grabber)
+        return; //nowhere to send it
 
-        // which child should have it?
-        mouseWidget = mouseWindow;
-        if (mouseWindow) {
-            QWidget *w =  mouseWindow->childAt(ev.pos());
-            if (w) {
-                mouseWidget = w;
-            }
-        }
-
-        //handle implicit mouse grab
-        if (ev.type() == QEvent::MouseButtonPress && !implicit_mouse_grabber) {
-            implicit_mouse_grabber = mouseWidget;
-
-            Q_ASSERT(mouseWindow);
-            mouseWindow->activateWindow(); //focus
-        } else if (implicit_mouse_grabber) {
-            mouseWidget = implicit_mouse_grabber;
-            mouseWindow = mouseWidget->window();
-            trustLocalPoint = (mouseWindow == tlw);
+    // which child should have it?
+    QWidget *mouseWidget = mouseWindow;
+    if (mouseWindow) {
+        QWidget *w =  mouseWindow->childAt(ev.pos());
+        if (w) {
+            mouseWidget = w;
         }
     }
+
+    //handle implicit mouse grab
+    if (ev.type() == QEvent::MouseButtonPress && !implicit_mouse_grabber) {
+        implicit_mouse_grabber = mouseWidget;
+
+        Q_ASSERT(mouseWindow);
+        mouseWindow->activateWindow(); //focus
+    } else if (implicit_mouse_grabber) {
+        mouseWidget = implicit_mouse_grabber;
+        mouseWindow = mouseWidget->window();
+        trustLocalPoint = (mouseWindow == tlw);
+    }
+
     Q_ASSERT(mouseWidget);
 
     if (trustLocalPoint) {

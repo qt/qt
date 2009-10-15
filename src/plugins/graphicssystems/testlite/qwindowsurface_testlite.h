@@ -72,6 +72,8 @@ public:
     void handleKeyEvent(QEvent::Type, void *);
     void handleGeometryChange(int x, int y, int w, int h);
     void handleCloseEvent();
+    void handleEnterEvent();
+    void handleLeaveEvent();
 
     Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     Qt::WindowFlags windowFlags() const;

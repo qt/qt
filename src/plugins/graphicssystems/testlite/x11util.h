@@ -96,10 +96,13 @@ public:
     void keyPressEvent(XKeyEvent*);
     void keyReleaseEvent(XKeyEvent*);
 
+    void enterEvent(XCrossingEvent*);
+    void leaveEvent(XCrossingEvent*);
+
     void closeEvent();
     void paintEvent();
     void resizeEvent(XConfigureEvent *configure_event);
-    void setSize(int w, int h);
+//    void setSize(int w, int h);
     void setGeometry(int x, int y, int w, int h);
 
     GC createGC();
