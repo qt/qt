@@ -1066,7 +1066,10 @@ extern "C" {
         sendToPopup = true;
     }
 
-    if (widgetToGetKey->testAttribute(Qt::WA_InputMethodEnabled)) {
+    if (widgetToGetKey->testAttribute(Qt::WA_InputMethodEnabled)
+            && !(widgetToGetKey->inputMethodHints() & Qt::ImhDigitsOnly
+                 || widgetToGetKey->inputMethodHints() & Qt::ImhFormattedNumbersOnly
+                 || widgetToGetKey->inputMethodHints() & Qt::ImhHiddenText)) {
         [qt_mac_nativeview_for(widgetToGetKey) interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
     }
     if (sendKeyEvents && !composing) {
