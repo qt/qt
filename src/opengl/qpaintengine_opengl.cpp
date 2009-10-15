@@ -1222,7 +1222,7 @@ inline void QOpenGLPaintEnginePrivate::setGradientOps(const QBrush &brush, const
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_CONICAL;
             else if (current_style == Qt::SolidPattern)
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_SOLID;
-            else if (current_style == Qt::TexturePattern)
+            else if (current_style == Qt::TexturePattern && !brush.texture().isQBitmap())
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_TEXTURE;
             else
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_PATTERN;
@@ -4311,6 +4311,16 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
 void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &offset)
 {
     Q_D(QOpenGLPaintEngine);
+    if (pm.depth() == 1) {
+        QPixmap tpx(pm.size());
+        tpx.fill(Qt::transparent);
+        QPainter p(&tpx);
+        p.setPen(d->cpen);
+        p.drawPixmap(0, 0, pm);
+        p.end();
+        drawTiledPixmap(r, tpx, offset);
+        return;
+    }
 
     QImage scaled;
     const int sz = d->max_texture_size;
@@ -5207,7 +5217,7 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
             device->context()->d_func()->bindTexture(cbrush.textureImage(), GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
         else
-            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, true),
+            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, false),
                                                      GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
 
