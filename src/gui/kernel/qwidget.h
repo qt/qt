@@ -726,14 +726,11 @@ private:
     friend class QGLContext;
     friend class QGLWidget;
     friend class QGLWindowSurface;
-    friend class QGLWindowSurfaceGLPaintDevice;
-    friend class QVGWindowSurface;
     friend class QX11PaintEngine;
     friend class QWin32PaintEngine;
     friend class QShortcutPrivate;
     friend class QShortcutMap;
     friend class QWindowSurface;
-    friend class QD3DWindowSurface;
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;

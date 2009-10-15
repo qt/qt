@@ -280,7 +280,7 @@ QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
 
 int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
 {
-    return d->q_ptr->window()->metric(m);
+    return qt_paint_device_metric(d->q_ptr->window(), m);
 }
 
 QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
