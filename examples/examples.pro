@@ -39,8 +39,7 @@ symbian: SUBDIRS = \
                 xml
 
 contains(QT_CONFIG, multimedia) {
-    SUBDIRS += video
-    !static: SUBDIRS += multimedia
+    SUBDIRS += multimedia
 }
 
 contains(QT_CONFIG, script): SUBDIRS += script
