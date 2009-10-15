@@ -35,11 +35,11 @@ QList<QByteArray> QAnnotatorWidget::annotation(const QObject& object)
     QList<QByteArray> result;
 
     const QWidget* widget = qobject_cast<const QWidget*>(&object);
-    if(widget) {
+    if (widget) {
 
         const QWExtra* extra = qt_widget_private(const_cast<QWidget *>(widget))->extraData();
 
-        if(extra) {
+        if (extra) {
 
             QByteArray array;
             QTextStream stream(&array);
@@ -61,10 +61,10 @@ QList<QByteArray> QAnnotatorControl::annotation(const QObject& object)
     QList<QByteArray> result;
 
     const QWidget* widget = qobject_cast<const QWidget*>(&object);
-    if(widget) {
+    if (widget) {
 
         const CCoeControl* control = widget->effectiveWinId();
-        if(control) {
+        if (control) {
 
             QByteArray array;
             QTextStream stream(&array);
@@ -72,7 +72,7 @@ QList<QByteArray> QAnnotatorControl::annotation(const QObject& object)
             stream << "control: " << control << ' ';
             stream << "parent " << control->Parent() << ' ';
 
-            if(control->IsVisible())
+            if (control->IsVisible())
                 stream << "visible ";
             else
                 stream << "invisible ";
@@ -80,7 +80,7 @@ QList<QByteArray> QAnnotatorControl::annotation(const QObject& object)
             stream << control->Position().iX << ',' << control->Position().iY << ' ';
             stream << control->Size().iWidth << 'x' << control->Size().iHeight;
 
-            if(control->OwnsWindow())
+            if (control->OwnsWindow())
                 stream << " ownsWindow ";
 
             stream.flush();
@@ -96,12 +96,12 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
     QList<QByteArray> result;
 
     const QWidget* widget = qobject_cast<const QWidget*>(&object);
-    if(widget) {
+    if (widget) {
 
         const CCoeControl* control = widget->effectiveWinId();
         RDrawableWindow *window = 0;
 
-        if(control && (window = control->DrawableWindow())) {
+        if (control && (window = control->DrawableWindow())) {
 
             QByteArray array;
             QTextStream stream(&array);

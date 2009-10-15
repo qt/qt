@@ -55,10 +55,10 @@ QList<QByteArray> QAnnotatorBasic::annotation(const QObject& object)
     stream << ' ';
     stream << object.metaObject()->className();
 
-    if(object.objectName() != "")
+    if (object.objectName() != "")
         stream << " \"" << object.objectName() << '"';
 
-    if(object.isWidgetType())
+    if (object.isWidgetType())
         stream << " isWidget";
 
     stream.flush();
@@ -71,14 +71,14 @@ QList<QByteArray> QAnnotatorWidget::annotation(const QObject& object)
     QList<QByteArray> result;
 
     const QWidget* widget = qobject_cast<const QWidget*>(&object);
-    if(widget) {
+    if (widget) {
 
         QByteArray array;
         QTextStream stream(&array);
 
         stream << "widget: ";
 
-        if(widget->isVisible())
+        if (widget->isVisible())
             stream << "visible ";
         else
             stream << "invisible ";
@@ -288,7 +288,7 @@ void QVisitorPrivate::visitNode(const QObject& object)
     m_hash.insert(&object, node);
 
     // Insert node into internal tree
-    if(nodeParent)
+    if (nodeParent)
     {
         nodeParent->m_children.append(nodePtr.take());
     }
@@ -330,18 +330,18 @@ QByteArray QVisitorPrivate::branchBuffer
     QTextStream stream(&buffer);
 
     for (int i=0; i<depth-1; ++i) {
-        if(branches[i])
+        if (branches[i])
             stream << '|';
         else
             stream << ' ';
         stream << indent;
     }
 
-    if(depth) {
-        if(isNodeLine)
+    if (depth) {
+        if (isNodeLine)
             stream << '+' << horiz;
         else {
-            if(!isLastChild)
+            if (!isLastChild)
                 stream << '|';
             else
                 stream << ' ';
@@ -367,7 +367,7 @@ void QVisitorPrivate::dumpRecursive
 
         isLastChild = (end == i + 1);
 
-        if(begin == i)
+        if (begin == i)
             branches.push_back(!isLastChild);
         else
             branches.back() = !isLastChild;
@@ -386,7 +386,7 @@ void QVisitorPrivate::dumpNode
     const QList<QByteArray>::const_iterator
         begin = node.m_annotation.begin(), end = node.m_annotation.end();
 
-    if(begin == end) {
+    if (begin == end) {
         // No annotations - just dump the object pointer
         const bool isNodeLine = true;
         QByteArray buffer = branchBuffer(branches, isNodeLine, isLastChild);

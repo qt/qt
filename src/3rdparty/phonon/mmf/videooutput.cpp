@@ -150,7 +150,7 @@ bool MMF::VideoOutput::event(QEvent* event)
 {
     TRACE_CONTEXT(VideoOutput::event, EVideoInternal);
 
-    if(event->type() == QEvent::WinIdChange) {
+    if (event->type() == QEvent::WinIdChange) {
         TRACE_0("WinIdChange");
         videoOutputRegionChanged();
         return true;

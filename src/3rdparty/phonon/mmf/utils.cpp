@@ -111,7 +111,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
     TScreenInfo info;
     TRAPD(err, getScreenInfoL(info));
     QColor pixel;
-    if(err == KErrNone and pos.x() < info.width and pos.y() < info.height)
+    if (err == KErrNone and pos.x() < info.width and pos.y() < info.height)
     {
         const int bytesPerPixel = info.bpp / 8;
         Q_ASSERT(bytesPerPixel >= 3);
@@ -129,7 +129,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
         pixel.setGreen(*ptr++);
         pixel.setRed(*ptr++);
 
-        if(bytesPerPixel == 4)
+        if (bytesPerPixel == 4)
             pixel.setAlpha(*ptr++);
     }
     return pixel;

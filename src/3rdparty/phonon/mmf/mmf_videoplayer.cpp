@@ -70,7 +70,7 @@ void MMF::VideoPlayer::construct()
     TRACE_CONTEXT(VideoPlayer::VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
-    if(m_videoOutput)
+    if (m_videoOutput)
     	m_videoOutput->setObserver(this);
 
     const TInt priority = 0;
@@ -122,7 +122,7 @@ void MMF::VideoPlayer::doPlay()
     TRACE_CONTEXT(VideoPlayer::doPlay, EVideoApi);
 
     // See comment in updateMmfOutput
-    if(m_mmfOutputChangePending) {
+    if (m_mmfOutputChangePending) {
         TRACE_0("MMF output change pending - pushing now");
         updateMmfOutput();
     }
@@ -151,7 +151,7 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
     TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
 
     bool wasPlaying = false;
-    if(state() == PlayingState) {
+    if (state() == PlayingState) {
 		// The call to SetPositionL does not have any effect if playback is
 		// ongoing, so we pause before seeking.
 		doPause();
@@ -160,8 +160,8 @@ void MMF::VideoPlayer::doSeek(qint64 ms)
 
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
 
-    if(KErrNone == err) {
-		if(wasPlaying)
+    if (KErrNone == err) {
+		if (wasPlaying)
 			doPlay();
     }
     else {
@@ -251,11 +251,11 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
     if (KErrNone == err) {
         maxVolumeChanged(m_player->MaxVolume());
 
-        if(m_videoOutput)
+        if (m_videoOutput)
         	m_videoOutput->setFrameSize(m_frameSize);
 
         // See comment in updateMmfOutput
-        if(m_mmfOutputChangePending) {
+        if (m_mmfOutputChangePending) {
             TRACE_0("MMF output change pending - pushing now");
             updateMmfOutput();
         }
@@ -330,8 +330,8 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     const bool changed = getNativeWindowSystemHandles();
 
     // See comment in updateMmfOutput
-    if(changed) {
-        if(state() == LoadingState)
+    if (changed) {
+        if (state() == LoadingState)
             m_mmfOutputChangePending = true;
         else
             updateMmfOutput();
@@ -367,7 +367,7 @@ void getDsaRegion(RWsSession &session, const RWindowBase &window)
 	ao.SetActive();
 	dsa.Close();
 	ao.Cancel();
-	if(region) {
+	if (region) {
 		qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
 		for(int i=0; i<region->Count(); ++i) {
 			const TRect& rect = region->RectangleList()[i];
@@ -425,7 +425,7 @@ void MMF::VideoPlayer::videoOutputChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputChanged, EVideoInternal);
     TRACE_ENTRY_0();
 
-    if(m_videoOutput) {
+    if (m_videoOutput) {
 		m_videoOutput->setObserver(this);
 		m_videoOutput->setFrameSize(m_frameSize);
     }
@@ -442,7 +442,7 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
 
     CCoeControl *control = 0;
 
-    if(m_videoOutput)
+    if (m_videoOutput)
     	// Create native window
     	control = m_videoOutput->winId();
     else
@@ -450,7 +450,7 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
     	control = QApplication::activeWindow()->effectiveWinId();
 
 #ifndef QT_NO_DEBUG
-    if(m_videoOutput) {
+    if (m_videoOutput) {
         QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
         dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
         ObjectDump::addDefaultAnnotators(*dumper);
@@ -478,7 +478,7 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
 
     bool changed = false;
 
-    if(window != m_window || rect != m_rect) {
+    if (window != m_window || rect != m_rect) {
         m_window = window;
         m_rect = rect;
         changed = true;
