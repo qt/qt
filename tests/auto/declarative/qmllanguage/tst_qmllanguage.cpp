@@ -126,14 +126,14 @@ void tst_qmllanguage::initTestCase()
     // For utf-8 locale, this will be data/I18nType??????????.qml where ?????????? is 5 8-bit characters, UTF-8 encoded
     QFile in(TEST_FILE(QLatin1String("I18nType30.qml")).toLocalFile());
     QVERIFY(in.open(QIODevice::ReadOnly));
-    QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile());
+    QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile());
     QVERIFY(out.open(QIODevice::WriteOnly));
     out.write(in.readAll());
 }
 
 void tst_qmllanguage::cleanupTestCase()
 {
-    QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
+    QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
 }
 
 void tst_qmllanguage::errors_data()
