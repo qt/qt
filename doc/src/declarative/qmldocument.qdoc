@@ -71,6 +71,8 @@ Rectangle {
 }
 \endcode
 
+QML documents are always encoded in UTF-8 format.
+
 A QML document always begins with one or more import statements.  To prevent elements 
 introduced in later versions from affecting existing QML programs, the element types 
 available within a document are controlled by the imported QML \l {Modules}.  That is, 

@@ -75,10 +75,10 @@ void ObjectTree::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *
     QTreeWidgetItem *item = parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(this);
     item->setText(0, obj.className());
     item->setData(0, Qt::UserRole, qVariantFromValue(obj));
-    item->setData(0, ObjectTree::ContextIdRole, obj.contextDebugId());
 
     if (parent && obj.contextDebugId() >= 0
-            && obj.contextDebugId() != parent->data(0, ObjectTree::ContextIdRole).toInt()) {
+            && obj.contextDebugId() != parent->data(0, Qt::UserRole
+                    ).value<QmlDebugObjectReference>().contextDebugId()) {
         QmlDebugFileReference source = obj.source();
         if (!source.url().isEmpty()) {
             QString toolTipString = QLatin1String("URL: ") + source.url().toString();

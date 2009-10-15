@@ -17,10 +17,6 @@ class ObjectTree : public QTreeWidget
 {
     Q_OBJECT
 public:
-    enum AdditionalRoles {
-        ContextIdRole = Qt::UserRole + 1
-    };
-
     ObjectTree(QmlEngineDebug *client, QWidget *parent = 0);
 
 signals:

@@ -42,7 +42,14 @@
 /*!
 \page qtbinding.html
 \target qtbinding
-\title QML/C++ Data Binding
+\title Using QML in C++ Applications
+
+\list
+\o QmlEngine and QmlComponent
+\o QmlContext and data
+\o QBindableMap
+\o QAbstractItemModel Data models
+\endlist
 
 The QML mechanisms of data binding can also be used to bind Qt C++ objects.
 

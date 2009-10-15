@@ -1,3 +1,5 @@
+#include <QtCore/qdebug.h>
+
 #include <QtGui/qtreewidget.h>
 #include <QtGui/qlayout.h>
 
@@ -53,6 +55,9 @@ ObjectPropertiesView::ObjectPropertiesView(QmlEngineDebug *client, QWidget *pare
 
 void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
 {
+    if (m_query)
+        delete m_query;
+
     m_query = m_client->queryObjectRecursive(obj, this);
     if (!m_query->isWaiting())
         queryFinished();
@@ -63,16 +68,20 @@ void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
 
 void ObjectPropertiesView::queryFinished()
 {
-    if (m_watch) {
-        m_client->removeWatch(m_watch);
-        delete m_watch;
-        m_watch = 0;
-    }
+    if (!m_query)
+        return;
 
     QmlDebugObjectReference obj = m_query->object();
 
     QmlDebugWatch *watch = m_client->addWatch(obj, this);
-    if (watch->state() != QmlDebugWatch::Dead) {
+    if (watch->state() == QmlDebugWatch::Dead) {
+        delete watch;
+        watch = 0;
+    } else {
+        if (m_watch) {
+            m_client->removeWatch(m_watch);
+            delete m_watch;
+        }
         m_watch = watch;
         QObject::connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
                         this, SLOT(valueChanged(QByteArray,QVariant)));
@@ -88,6 +97,7 @@ void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
 {
     m_object = object;
     m_tree->clear();
+
 
     QList<QmlDebugPropertyReference> properties = object.properties();
     for (int i=0; i<properties.count(); i++) {
