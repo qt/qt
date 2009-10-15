@@ -318,7 +318,7 @@ void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArra
     QByteArray reply;
     QVariant v;
     QDataStream rs(&reply, QIODevice::WriteOnly);
-    
+
     if (value.type() == QVariant::UserType || QmlMetaType::isObject(value.userType())) {
         QObject *o = QmlMetaType::toQObject(value);
         if (o) {
@@ -327,9 +327,15 @@ void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArra
                 objectName = QLatin1String("<unnamed>");
             v = QString::fromUtf8(o->metaObject()->className()) +
                 QLatin1String(": ") + objectName;
+        } else {
+            v = QString::fromUtf8(value.typeName());
         }
-        if (v.isNull())
-            v = value.toString();
+        if (v.isNull()) {
+            QString s = value.toString();
+            if (s.isEmpty())
+                s = QLatin1String("<unknown>");
+            v = s;
+        }
     } else {
         v = value;
     }

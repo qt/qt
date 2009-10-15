@@ -109,7 +109,7 @@ void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
         item->setText(0, p.name());
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
         if (!p.hasNotifySignal())
-            item->setForeground(0, Qt::lightGray);
+            item->setForeground(0, Qt::gray);
 
         if (!p.binding().isEmpty()) {
             PropertiesViewItem *binding = new PropertiesViewItem(item);
@@ -159,8 +159,18 @@ void ObjectPropertiesView::valueChanged(const QByteArray &name, const QVariant &
 {
     for (int i=0; i<m_tree->topLevelItemCount(); i++) {
         PropertiesViewItem *item = static_cast<PropertiesViewItem *>(m_tree->topLevelItem(i));
-        if (item->property.name() == name)
-            item->setText(1, value.toString());
+        if (item->property.name() == name) {
+            if (value.isNull()) {
+                item->setText(1, QLatin1String("null"));
+                item->setForeground(1, Qt::gray);
+            } else {
+                QString s = value.toString();
+                if (s.isEmpty())
+                    s = QString::fromUtf8(value.typeName());
+                item->setText(1, s);
+                item->setForeground(1, QBrush());
+            }
+        }
     }
 }
 
