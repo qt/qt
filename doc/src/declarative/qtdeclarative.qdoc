@@ -77,6 +77,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
 \o \l {advtutorial.html}{Advanced Tutorial: 'Same Game'}
 \o \l {QML Examples and Walkthroughs}
+\o \l {Using QML in C++ Applications} 
 \endlist
 
 \section1 Core QML Features:

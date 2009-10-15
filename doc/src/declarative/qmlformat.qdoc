@@ -192,6 +192,10 @@ different property bindings.
 
 \section1 Syntax
 
+\section2 Encoding
+
+QML files are always encoded in UTF-8 format.
+
 \section2 Commenting
 
 The commenting rules in QML are the same as for ECMAScript.  Both \e {MultiLineComment} blocks and \e {SingleLineComment}'s are supported.

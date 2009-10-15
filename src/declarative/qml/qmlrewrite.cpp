@@ -40,8 +40,12 @@
 ****************************************************************************/
 
 #include "qmlrewrite_p.h"
+#include <QtDeclarative/qfxglobal.h>
+#include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
+
+DEFINE_BOOL_CONFIG_OPTION(rewriteDump, QML_REWRITE_DUMP);
 
 namespace QmlRewrite {
 
@@ -76,7 +80,19 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     _writer->replace(startOfStatement, 0, QLatin1String("(function() { "));
     _writer->replace(endOfStatement, 0, QLatin1String(" })"));
 
+    if (rewriteDump()) {
+        qWarning() << "=============================================================";
+        qWarning() << "Rewrote:";
+        qWarning() << qPrintable(code);
+    }
+
     w.write(&code);
+
+    if (rewriteDump()) {
+        qWarning() << "To:";
+        qWarning() << qPrintable(code);
+        qWarning() << "=============================================================";
+    }
 
     return code;
 }
@@ -95,10 +111,78 @@ bool RewriteBinding::visit(AST::Block *ast)
 
 bool RewriteBinding::visit(AST::ExpressionStatement *ast)
 {
-    unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
-    _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
+    if (_loopStack.isEmpty()) {
+        unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
+        _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
+    }
 
     return false;
+}
+
+bool RewriteBinding::visit(AST::DoWhileStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::DoWhileStatement *)
+{
+    _loopStack.removeLast();
+}
+
+bool RewriteBinding::visit(AST::WhileStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::WhileStatement *)
+{
+    _loopStack.removeLast();
+}
+
+bool RewriteBinding::visit(AST::ForStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::ForStatement *)
+{
+    _loopStack.removeLast();
+}
+
+bool RewriteBinding::visit(AST::LocalForStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::LocalForStatement *)
+{
+    _loopStack.removeLast();
+}
+
+bool RewriteBinding::visit(AST::ForEachStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::ForEachStatement *)
+{
+    _loopStack.removeLast();
+}
+
+bool RewriteBinding::visit(AST::LocalForEachStatement *ast)
+{
+    _loopStack.append(ast);
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::LocalForEachStatement *)
+{
+    _loopStack.removeLast();
 }
 
 } // namespace QmlRewrite

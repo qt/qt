@@ -45,6 +45,7 @@
 #include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>
 #include <private/qmltypenamescriptclass_p.h>
+#include <private/qmllistscriptclass_p.h>
 #include <QtDeclarative/qmlbinding.h>
 #include <QtCore/qtimer.h>
 
@@ -64,8 +65,7 @@ QmlObjectScriptClass::QmlObjectScriptClass(QmlEngine *bindEngine)
 : QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), lastData(0),
   engine(bindEngine)
 {
-    engine = bindEngine;
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(bindEngine);
+    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     m_destroy = scriptEngine->newFunction(destroy);
     m_destroyId = createPersistentIdentifier(QLatin1String("destroy"));
@@ -214,7 +214,13 @@ QScriptValue QmlObjectScriptClass::property(QObject *obj, const Identifier &name
                 return enginePriv->valueTypeClass->newObject(obj, lastData->coreIndex, valueType);
         }
 
-        if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
+        if (lastData->flags & QmlPropertyCache::Data::IsQList) {
+            return enginePriv->listClass->newList(obj, lastData->coreIndex, 
+                                                  QmlListScriptClass::QListPtr);
+        } else if (lastData->flags & QmlPropertyCache::Data::IsQmlList) {
+            return enginePriv->listClass->newList(obj, lastData->coreIndex, 
+                                                  QmlListScriptClass::QmlListPtr);
+        } if (lastData->flags & QmlPropertyCache::Data::IsQObjectDerived) {
             QObject *rv = 0;
             void *args[] = { &rv, 0 };
             QMetaObject::metacall(obj, QMetaObject::ReadProperty, lastData->coreIndex, args);

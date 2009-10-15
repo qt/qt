@@ -906,7 +906,6 @@ void QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
         } else if (vt == listType ||
                   value.userType() == listType) {
             QVariant listVar = prop.read(object);
-            QmlMetaType::clear(listVar);
             QmlMetaType::append(listVar, value);
         }
 
