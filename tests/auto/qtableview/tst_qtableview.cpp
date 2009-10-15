@@ -3253,7 +3253,7 @@ void tst_QTableView::resizeToContents()
 }
 
 QT_BEGIN_NAMESPACE
-    extern bool qt_tab_all_widgets; // qapplication_mac.cpp
+extern bool Q_GUI_EXPORT qt_tab_all_widgets; // qapplication.cpp
 QT_END_NAMESPACE
 
 void tst_QTableView::tabFocus()

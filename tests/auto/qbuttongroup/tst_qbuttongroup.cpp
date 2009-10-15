@@ -129,7 +129,7 @@ void tst_QButtonGroup::cleanup()
 }
 
 QT_BEGIN_NAMESPACE
-extern bool qt_tab_all_widgets;
+extern bool Q_GUI_EXPORT qt_tab_all_widgets;
 QT_END_NAMESPACE
 
 
