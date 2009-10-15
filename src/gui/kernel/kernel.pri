@@ -45,10 +45,11 @@ HEADERS += \
 	kernel/qkeymapper_p.h \
 	kernel/qgesture.h \
 	kernel/qgesture_p.h \
-	kernel/qstandardgestures.h \
-        kernel/qstandardgestures_p.h \
-        kernel/qsoftkeymanager_p.h \
-        kernel/qguiplatformplugin_p.h
+	kernel/qstandardgestures_p.h \
+	kernel/qgesturerecognizer.h \
+	kernel/qgesturemanager_p.h \
+	kernel/qsoftkeymanager_p.h \
+	kernel/qguiplatformplugin_p.h
 
 SOURCES += \
 	kernel/qaction.cpp \
@@ -79,12 +80,17 @@ SOURCES += \
 	kernel/qwidgetaction.cpp \
 	kernel/qkeymapper.cpp \
 	kernel/qgesture.cpp \
-        kernel/qstandardgestures.cpp \
-        kernel/qsoftkeymanager.cpp \
-        kernel/qguiplatformplugin.cpp
+	kernel/qstandardgestures.cpp \
+	kernel/qgesturerecognizer.cpp \
+	kernel/qgesturemanager.cpp \
+	kernel/qsoftkeymanager.cpp \
+	kernel/qguiplatformplugin.cpp
 
 win32 {
 	DEFINES += QT_NO_DIRECTDRAW
+
+        HEADERS += \
+                kernel/qwinnativepangesturerecognizer_win_p.h
 
 	SOURCES += \
 		kernel/qapplication_win.cpp \
@@ -96,7 +102,8 @@ win32 {
 		kernel/qsound_win.cpp \
 		kernel/qwidget_win.cpp \
 		kernel/qole_win.cpp \
-		kernel/qkeymapper_win.cpp
+                kernel/qkeymapper_win.cpp \
+                kernel/qwinnativepangesturerecognizer_win.cpp
 
         !contains(DEFINES, QT_NO_DIRECTDRAW):LIBS += ddraw.lib
 }
@@ -198,6 +205,7 @@ embedded {
                 qcocoaview_mac_p.h \
                 qcocoaapplication_mac_p.h \
                 qcocoaapplicationdelegate_mac_p.h \
+                qmacgesturerecognizer_mac_p.h \
                 qmultitouch_mac_p.h
 
         OBJECTIVE_SOURCES += \
@@ -217,7 +225,8 @@ embedded {
                 kernel/qdesktopwidget_mac.mm \
                 kernel/qeventdispatcher_mac.mm \
                 kernel/qcocoawindowcustomthemeframe_mac.mm \
-                kernel/qmultitouch_mac.mm \
+                kernel/qmacgesturerecognizer_mac.mm \
+                kernel/qmultitouch_mac.mm
 
         HEADERS += \
                 kernel/qt_cocoa_helpers_mac_p.h \

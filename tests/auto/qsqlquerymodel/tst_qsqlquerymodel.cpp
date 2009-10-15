@@ -158,6 +158,8 @@ void tst_QSqlQueryModel::createTestTables(QSqlDatabase db)
 {
     dropTestTables(db);
     QSqlQuery q(db);
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test") + "(id integer not null, name varchar(20), title integer, primary key (id))"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test2") + "(id integer not null, title varchar(20), primary key (id))"));
     QVERIFY_SQL( q, exec("create table " + qTableName("test3") + "(id integer not null, primary key (id))"));

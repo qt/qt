@@ -46,6 +46,11 @@
 #include <QImage>
 #include <QtGui>
 
+class QGestureEvent;
+class QPanGesture;
+class QPinchGesture;
+class QSwipeGesture;
+
 class ImageWidget : public QWidget
 {
     Q_OBJECT
@@ -56,14 +61,16 @@ public:
     void openDirectory(const QString &path);
 
 protected:
+    bool event(QEvent*);
+    bool gestureEvent(QGestureEvent*);
     void paintEvent(QPaintEvent*);
     void resizeEvent(QResizeEvent*);
     void mouseDoubleClickEvent(QMouseEvent*);
 
-private slots:
-    void panTriggered();
-    void pinchTriggered();
-    void swipeTriggered();
+private:
+    void panTriggered(QPanGesture*);
+    void pinchTriggered(QPinchGesture*);
+    void swipeTriggered(QSwipeGesture*);
 
 private:
     void updateImage();

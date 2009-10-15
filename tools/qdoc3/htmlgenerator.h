@@ -67,13 +67,34 @@ struct NavigationBar
 };
 #endif
 
-typedef QMultiMap<QString, Node*> SinceNodeMultiMap;
-typedef QMap<QString, SinceNodeMultiMap> SinceVersionMap;
+typedef QMultiMap<QString, Node*> NodeMultiMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
+typedef QMap<QString, const Node*> NodeMap;
+typedef QMap<QString, NodeMap> NewClassMaps;
 
 class HelpProjectWriter;
 
 class HtmlGenerator : public PageGenerator
 {
+ public:
+    enum SinceType { 
+        Namespace, 
+        Class, 
+        MemberFunction,
+        NamespaceFunction,
+        GlobalFunction,
+        Macro,
+        Enum, 
+        Typedef, 
+        Property,
+        Variable, 
+        QmlProperty,
+        QmlSignal,
+        QmlMethod,
+        LastSinceType
+    };
+
  public:
     HtmlGenerator();
     ~HtmlGenerator();
@@ -85,6 +106,7 @@ class HtmlGenerator : public PageGenerator
 
     static QString protect(const QString& string);
     static QString cleanRef(const QString& ref);
+    static QString sinceTitle(int i) { return sinceTitles[i]; }
 
  protected:
     virtual void startText(const Node *relative, CodeMarker *marker);
@@ -134,13 +156,14 @@ class HtmlGenerator : public PageGenerator
                                         CodeMarker::Status status);
     void generateClassHierarchy(const Node *relative, 
                                 CodeMarker *marker,
-				const QMap<QString,const Node *> &classMap);
+				const NodeMap &classMap);
     void generateAnnotatedList(const Node *relative, 
                                CodeMarker *marker,
-			       const QMap<QString, const Node *> &nodeMap);
+			       const NodeMap &nodeMap);
     void generateCompactList(const Node *relative, 
                              CodeMarker *marker,
-			     const QMap<QString, const Node *> &classMap);
+			     const NodeMap &classMap,
+                             QString commonPrefix = QString());
     void generateFunctionIndex(const Node *relative, CodeMarker *marker);
     void generateLegaleseList(const Node *relative, CodeMarker *marker);
     void generateOverviewList(const Node *relative, CodeMarker *marker);
@@ -273,23 +296,25 @@ class HtmlGenerator : public PageGenerator
     QString navigationLinks;
     QStringList stylesheets;
     QStringList customHeadElements;
-    const Tree *tre;
+    const Tree *myTree;
     bool slow;
     bool obsoleteLinks;
-    QMap<QString, QMap<QString, const Node *> > moduleClassMap;
-    QMap<QString, QMap<QString, const Node *> > moduleNamespaceMap;
-    QMap<QString, const Node *> nonCompatClasses;
-    QMap<QString, const Node *> mainClasses;
-    QMap<QString, const Node *> compatClasses;
-    QMap<QString, const Node *> obsoleteClasses;
-    QMap<QString, const Node *> namespaceIndex;
-    QMap<QString, const Node *> serviceClasses;
+    QMap<QString, NodeMap > moduleClassMap;
+    QMap<QString, NodeMap > moduleNamespaceMap;
+    NodeMap nonCompatClasses;
+    NodeMap mainClasses;
+    NodeMap compatClasses;
+    NodeMap obsoleteClasses;
+    NodeMap namespaceIndex;
+    NodeMap serviceClasses;
 #ifdef QDOC_QML    
-    QMap<QString, const Node *> qmlClasses;
+    NodeMap qmlClasses;
 #endif
-    QMap<QString, QMap<QString, const Node *> > funcIndex;
+    QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
-    SinceVersionMap sinceVersions;
+    NewSinceMaps newSinceMaps;
+    static QString sinceTitles[];
+    NewClassMaps newClassMaps;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"
@@ -303,3 +328,4 @@ class HtmlGenerator : public PageGenerator
 QT_END_NAMESPACE
 
 #endif
+

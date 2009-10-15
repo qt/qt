@@ -761,7 +761,7 @@ void QAbstractItemView::setItemDelegate(QAbstractItemDelegate *delegate)
         }
     }
     d->itemDelegate = delegate;
-    update();
+    viewport()->update();
 }
 
 /*!
@@ -826,7 +826,7 @@ void QAbstractItemView::setItemDelegateForRow(int row, QAbstractItemDelegate *de
         }
         d->rowDelegates.insert(row, delegate);
     }
-    update();
+    viewport()->update();
 }
 
 /*!
@@ -883,7 +883,7 @@ void QAbstractItemView::setItemDelegateForColumn(int column, QAbstractItemDelega
         }
         d->columnDelegates.insert(column, delegate);
     }
-    update();
+    viewport()->update();
 }
 
 /*!
@@ -2185,6 +2185,9 @@ void QAbstractItemView::keyPressEvent(QKeyEvent *event)
             } else {
                 d->selectionModel->setCurrentIndex(newCurrent, command);
                 d->pressedPosition = visualRect(newCurrent).center() + d->offset();
+                // We copy the same behaviour as for mousePressEvent().
+                QRect rect(d->pressedPosition - d->offset(), QSize(1, 1));
+                setSelection(rect, command);
             }
             return;
         }

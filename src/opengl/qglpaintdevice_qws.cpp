@@ -52,13 +52,6 @@ public:
     QWidget *widget;
 };
 
-class QMetricAccessor : public QWidget {
-public:
-    int metric(PaintDeviceMetric m) {
-        return QWidget::metric(m);
-    }
-};
-
 QWSGLPaintDevice::QWSGLPaintDevice(QWidget *widget) :
     d_ptr(new QWSGLPaintDevicePrivate)
 {
@@ -72,11 +65,7 @@ QWSGLPaintDevice::~QWSGLPaintDevice()
 
 QPaintEngine* QWSGLPaintDevice::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
     return qt_qgl_paint_engine();
-#else
-    return 0; // XXX
-#endif
 }
 
 int QWSGLPaintDevice::metric(PaintDeviceMetric m) const
@@ -84,7 +73,7 @@ int QWSGLPaintDevice::metric(PaintDeviceMetric m) const
     Q_D(const QWSGLPaintDevice);
     Q_ASSERT(d->widget);
 
-    return ((QMetricAccessor *) d->widget)->metric(m);
+    return qt_paint_device_metric(d->widget, m);
 }
 
 QWSGLWindowSurface* QWSGLPaintDevice::windowSurface() const

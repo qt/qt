@@ -229,24 +229,15 @@ static CFbsBitmap* uncompress(CFbsBitmap* bitmap)
 
         lock.relock();
 
-        CBitmapContext *bitmapContext = 0;
         CFbsBitmapDevice* bitmapDevice = 0;
+        CFbsBitGc *bitmapGc = 0;
         QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(uncompressed));
-        TInt err = bitmapDevice->CreateBitmapContext(bitmapContext);
-        if (err != KErrNone) {
-            delete bitmap;
-            delete bitmapDevice;
-            bitmap = 0;
-            bitmapDevice = 0;
+        QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
+        bitmapGc->Activate(bitmapDevice);
 
-            lock.relock();
+        bitmapGc->DrawBitmap(TPoint(), bitmap);
 
-            return bitmap;
-        }
-
-        bitmapContext->DrawBitmap(TPoint(), bitmap);
-
-        delete bitmapContext;
+        delete bitmapGc;
         delete bitmapDevice;
 
         return uncompressed;
@@ -355,7 +346,7 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     symbianBitmapDataAccess(new QSymbianBitmapDataAccess),
     cfbsBitmap(0),
     bitmapDevice(0),
-    bitmapContext(0),
+    bitmapGc(0),
     pengine(0),
     bytes(0)
 {
@@ -365,6 +356,7 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
 QS60PixmapData::~QS60PixmapData()
 {
     release();
+    delete symbianBitmapDataAccess;
 }
 
 void QS60PixmapData::resize(int width, int height)
@@ -391,6 +383,8 @@ void QS60PixmapData::resize(int width, int height)
 
         if(cfbsBitmap->SizeInPixels() != newSize) {
             cfbsBitmap->Resize(TSize(width, height));
+            bitmapDevice->Resize(TSize(width, height));
+            bitmapGc->Resized();
             if(pengine) {
                 delete pengine;
                 pengine = 0;
@@ -404,12 +398,9 @@ void QS60PixmapData::resize(int width, int height)
 bool QS60PixmapData::initSymbianBitmapContext()
 {
     QT_TRAP_THROWING(bitmapDevice = CFbsBitmapDevice::NewL(cfbsBitmap));
-    TInt err = bitmapDevice->CreateBitmapContext(bitmapContext);
-    if (err != KErrNone) {
-        delete bitmapDevice;
-        bitmapDevice = 0;
-        return false;
-    }
+    QT_TRAP_THROWING(bitmapGc = CFbsBitGc::NewL());
+    bitmapGc->Activate(bitmapDevice);
+
     return true;
 }
 
@@ -417,7 +408,7 @@ void QS60PixmapData::release()
 {
     if (cfbsBitmap) {
         QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
-        delete bitmapContext;
+        delete bitmapGc;
         delete bitmapDevice;
         delete cfbsBitmap;
         lock.relock();
@@ -426,7 +417,7 @@ void QS60PixmapData::release()
     delete pengine;
     image = QImage();
     cfbsBitmap = 0;
-    bitmapContext = 0;
+    bitmapGc = 0;
     bitmapDevice = 0;
     pengine = 0;
     bytes = 0;
@@ -559,13 +550,15 @@ void QS60PixmapData::copy(const QPixmapData *data, const QRect &rect)
     resize(rect.width(), rect.height());
     cfbsBitmap->SetDisplayMode(s60Data->cfbsBitmap->DisplayMode());
 
-    bitmapContext->BitBlt(TPoint(0, 0), s60Data->cfbsBitmap, qt_QRect2TRect(rect));
+    bitmapGc->BitBlt(TPoint(0, 0), s60Data->cfbsBitmap, qt_QRect2TRect(rect));
 }
 
 bool QS60PixmapData::scroll(int dx, int dy, const QRect &rect)
 {
-    bitmapContext->CopyRect(TPoint(dx, dy), qt_QRect2TRect(rect));
-    return true;
+    beginDataAccess();
+    bool res = QRasterPixmapData::scroll(dx, dy, rect);
+    endDataAccess();
+    return res;
 }
 
 int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
@@ -723,6 +716,8 @@ void QS60PixmapData::beginDataAccess()
 
 void QS60PixmapData::endDataAccess(bool readOnly) const
 {
+    Q_UNUSED(readOnly);
+
     if(!cfbsBitmap)
         return;
 

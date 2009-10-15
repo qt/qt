@@ -6,7 +6,7 @@ SUBDIRS       = blockingfortuneclient \
                 downloadmanager \
                 fortuneclient \
                 fortuneserver \
-                ftp \
+                qftp \
                 http \
                 loopback \
                 threadedfortuneserver \
@@ -16,7 +16,7 @@ SUBDIRS       = blockingfortuneclient \
 # no QProcess
 !vxworks:!qnx:SUBDIRS += network-chat
 
-symbian: SUBDIRS = ftp
+symbian: SUBDIRS = qftp
 
 contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
 

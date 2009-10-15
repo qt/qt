@@ -1085,10 +1085,6 @@ QT_END_NAMESPACE
 
 void tst_QTextLayout::testTabDPIScale()
 {
-    #ifdef Q_OS_WINCE
-    QSKIP("This test fails for large DPIs.", SkipAll);
-    #endif
-
     class MyPaintDevice : public QPaintDevice {
         QPaintEngine *paintEngine () const { return 0; }
         int metric (QPaintDevice::PaintDeviceMetric metric) const {
@@ -1118,14 +1114,14 @@ void tst_QTextLayout::testTabDPIScale()
     QTextOption option = layout.textOption();
     QList<QTextOption::Tab> tabs;
     QTextOption::Tab tab;
-    tab.position = 100;
+    tab.position = 200;
     tabs.append(tab);
 
-    tab.position = 200;
+    tab.position = 400;
     tab.type = QTextOption::RightTab;
     tabs.append(tab);
 
-    tab.position = 300;
+    tab.position = 600;
     tab.type = QTextOption::CenterTab;
     tabs.append(tab);
     option.setTabs(tabs);
@@ -1133,7 +1129,7 @@ void tst_QTextLayout::testTabDPIScale()
 
     layout.beginLayout();
     QTextLine line = layout.createLine();
-    line.setLineWidth(500.);
+    line.setLineWidth(1500.);
     layout.endLayout();
     QCOMPARE(line.cursorToX(0), 0.);
     QCOMPARE(line.cursorToX(1), (double) TESTFONT_SIZE); // check that the font does not resize
@@ -1142,9 +1138,9 @@ void tst_QTextLayout::testTabDPIScale()
     int fixedScale = (int)( scale * qreal(64)); // into a QFixed
     scale = ((qreal)fixedScale)/(qreal)64;      // and out of a QFixed
 
-    QCOMPARE(line.cursorToX(6), 100 * scale);
-    QCOMPARE(line.cursorToX(12), 200 * scale - TESTFONT_SIZE * 5);
-    QCOMPARE(line.cursorToX(18), 300 * scale - TESTFONT_SIZE * 3 / 2.0);
+    QCOMPARE(line.cursorToX(6),  tabs.at(0).position * scale);
+    QCOMPARE(line.cursorToX(12), tabs.at(1).position * scale - TESTFONT_SIZE * 5);
+    QCOMPARE(line.cursorToX(18), tabs.at(2).position * scale - TESTFONT_SIZE * 3 / 2.0);
 }
 
 void tst_QTextLayout::tabHeight()

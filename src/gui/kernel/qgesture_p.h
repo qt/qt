@@ -61,29 +61,83 @@
 
 QT_BEGIN_NAMESPACE
 
-class QObject;
-class QGraphicsItem;
 class QGesturePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGesture)
 
 public:
     QGesturePrivate()
-        : gestureTarget(0), graphicsItem(0), eventFilterProxyGraphicsItem(0),
-          state(Qt::NoGesture), implicitGesture(false)
+        : gestureType(Qt::CustomGesture), state(Qt::NoGesture), isHotSpotSet(false),
+          targetObject(0), accept(true)
     {
     }
 
-    virtual void setupGestureTarget(QObject *o);
-
-    QPointer<QObject> gestureTarget;
-    QGraphicsItem *graphicsItem;
-    QGraphicsItem *eventFilterProxyGraphicsItem;
-
+    Qt::GestureType gestureType;
     Qt::GestureState state;
+    QPointF hotSpot;
+    bool isHotSpotSet;
+    QObject *targetObject;
+    bool accept;
+};
 
-    // the flag specifies if the gesture was created implicitely by Qt.
-    bool implicitGesture;
+class QPanGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QPanGesture)
+
+public:
+    QPanGesturePrivate()
+        : acceleration(0)
+    {
+    }
+
+    QSizeF totalOffset;
+    QSizeF lastOffset;
+    QSizeF offset;
+    QPoint lastPosition;
+    qreal acceleration;
+};
+
+class QPinchGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QPinchGesture)
+
+public:
+    QPinchGesturePrivate()
+        : whatChanged(0), totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0)
+    {
+    }
+
+    QPinchGesture::WhatChanged whatChanged;
+
+    QPointF startCenterPoint;
+    QPointF lastCenterPoint;
+    QPointF centerPoint;
+
+    qreal totalScaleFactor;
+    qreal lastScaleFactor;
+    qreal scaleFactor;
+
+    qreal totalRotationAngle;
+    qreal lastRotationAngle;
+    qreal rotationAngle;
+};
+
+class QSwipeGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QSwipeGesture)
+
+public:
+    QSwipeGesturePrivate()
+        : horizontalDirection(QSwipeGesture::NoDirection),
+          verticalDirection(QSwipeGesture::NoDirection),
+          swipeAngle(0)
+    {
+    }
+
+    QSwipeGesture::SwipeDirection horizontalDirection;
+    QSwipeGesture::SwipeDirection verticalDirection;
+    qreal swipeAngle;
 };
 
 QT_END_NAMESPACE

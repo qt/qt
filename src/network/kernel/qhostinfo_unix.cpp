@@ -173,38 +173,28 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
 #endif
 
         char hbuf[NI_MAXHOST];
-        if (!sa || getnameinfo(sa, saSize, hbuf, sizeof(hbuf), 0, 0, 0) != 0) {
-            results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(tr("Host not found"));
-            return results;
-        }
-        results.setHostName(QString::fromLatin1(hbuf));
+        if (sa && getnameinfo(sa, saSize, hbuf, sizeof(hbuf), 0, 0, 0) == 0)
+            results.setHostName(QString::fromLatin1(hbuf));
 #else
         in_addr_t inetaddr = qt_safe_inet_addr(hostName.toLatin1().constData());
         struct hostent *ent = gethostbyaddr((const char *)&inetaddr, sizeof(inetaddr), AF_INET);
-        if (!ent) {
-            results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(tr("Host not found"));
-            return results;
-        }
-        results.setHostName(QString::fromLatin1(ent->h_name));
+        if (ent)
+            results.setHostName(QString::fromLatin1(ent->h_name));
 #endif
+
+        if (results.hostName().isEmpty())
+            results.setHostName(address.toString());
+        results.setAddresses(QList<QHostAddress>() << address);
+        return results;
     }
 
     // IDN support
-    QByteArray aceHostname;
-    if (results.hostName().isEmpty()) {
-        // it's a hostname resolution
-        aceHostname = QUrl::toAce(hostName);
-        results.setHostName(hostName);
-        if (aceHostname.isEmpty()) {
-            results.setError(QHostInfo::HostNotFound);
-            results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
-            return results;
-        }
-    } else {
-        // it's an IP reverse resolution
-        aceHostname = results.hostName().toLatin1();
+    QByteArray aceHostname = QUrl::toAce(hostName);
+    results.setHostName(hostName);
+    if (aceHostname.isEmpty()) {
+        results.setError(QHostInfo::HostNotFound);
+        results.setErrorString(hostName.isEmpty() ? QObject::tr("No host name given") : QObject::tr("Invalid hostname"));
+        return results;
     }
 
 #if !defined (QT_NO_GETADDRINFO)

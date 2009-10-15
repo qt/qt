@@ -420,8 +420,12 @@ void QGraphicsScenePrivate::unregisterTopLevelItem(QGraphicsItem *item)
 */
 void QGraphicsScenePrivate::_q_polishItems()
 {
+    QSet<QGraphicsItem *>::Iterator it;
     const QVariant booleanTrueVariant(true);
-    foreach (QGraphicsItem *item, unpolishedItems) {
+    while (!unpolishedItems.isEmpty()) {
+        it = unpolishedItems.begin();
+        QGraphicsItem *item = *it;
+        unpolishedItems.erase(it);
         if (!item->d_ptr->explicitlyHidden) {
             item->itemChange(QGraphicsItem::ItemVisibleChange, booleanTrueVariant);
             item->itemChange(QGraphicsItem::ItemVisibleHasChanged, booleanTrueVariant);
@@ -431,7 +435,6 @@ void QGraphicsScenePrivate::_q_polishItems()
             QApplication::sendEvent((QGraphicsWidget *)item, &event);
         }
     }
-    unpolishedItems.clear();
 }
 
 void QGraphicsScenePrivate::_q_processDirtyItems()
@@ -549,7 +552,7 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
     selectedItems.remove(item);
     hoverItems.removeAll(item);
     cachedItemsUnderMouse.removeAll(item);
-    unpolishedItems.removeAll(item);
+    unpolishedItems.remove(item);
     resetDirtyItem(item);
 
     //We remove all references of item from the sceneEventFilter arrays
@@ -2484,7 +2487,7 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     if (!item->d_ptr->explicitlyHidden) {
        if (d->unpolishedItems.isEmpty())
            QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems << item;
+       d->unpolishedItems.insert(item);
     }
 
     // Reenable selectionChanged() for individual items
@@ -5475,11 +5478,11 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
     }
 
     if (itemsNeedingEvents.isEmpty()) {
-        sceneTouchEvent->ignore();
+        sceneTouchEvent->accept();
         return;
     }
 
-    bool acceptSceneTouchEvent = false;
+    bool ignoreSceneTouchEvent = true;
     QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator it = itemsNeedingEvents.constBegin();
     const QHash<QGraphicsItem *, StatesAndTouchPoints>::ConstIterator end = itemsNeedingEvents.constEnd();
     for (; it != end; ++it) {
@@ -5522,19 +5525,20 @@ void QGraphicsScenePrivate::touchEventHandler(QTouchEvent *sceneTouchEvent)
             item->d_ptr->acceptedTouchBeginEvent = true;
             bool res = sendTouchBeginEvent(item, &touchEvent)
                        && touchEvent.isAccepted();
-            acceptSceneTouchEvent = acceptSceneTouchEvent || res;
+            if (!res)
+                ignoreSceneTouchEvent = false;
             break;
         }
         default:
             if (item->d_ptr->acceptedTouchBeginEvent) {
                 updateTouchPointsForItem(item, &touchEvent);
                 (void) sendEvent(item, &touchEvent);
-                acceptSceneTouchEvent = true;
+                ignoreSceneTouchEvent = false;
             }
             break;
         }
     }
-    sceneTouchEvent->setAccepted(acceptSceneTouchEvent);
+    sceneTouchEvent->setAccepted(ignoreSceneTouchEvent);
 }
 
 bool QGraphicsScenePrivate::sendTouchBeginEvent(QGraphicsItem *origin, QTouchEvent *touchEvent)

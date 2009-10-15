@@ -152,7 +152,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
         if (platforms == 'X') {
             dictionary["LICENSE_EXTENSION"] = "-ALLOS";
-        } else if (strchr("3679ACDEHJKMSUWX", platforms)) {
+        } else if (strchr("2346789ABCDEGHJKMPQSTUVWX", platforms)) {
             dictionary["LICENSE_EXTENSION"] = "-EMBEDDED";
         } else if (strchr("4BFPQRTY", platforms)) {
             dictionary["LICENSE_EXTENSION"] = "-DESKTOP";

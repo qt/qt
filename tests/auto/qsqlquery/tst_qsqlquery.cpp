@@ -333,6 +333,8 @@ void tst_QSqlQuery::createTestTables( QSqlDatabase db )
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec( "set table_type=innodb" );
+    else if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     if(tst_Databases::isPostgreSQL(db))
         QVERIFY_SQL( q, exec( "create table " + qTableName( "qtest" ) + " (id serial NOT NULL, t_varchar varchar(20), t_char char(20), primary key(id)) WITH OIDS" ) );
@@ -1644,6 +1646,9 @@ void tst_QSqlQuery::prepare_bind_exec()
             useUnicode = false;
 
         QString createQuery;
+
+        if(tst_Databases::isPostgreSQL(db))
+            QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
             createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int primary key, name nvarchar(20) null)";

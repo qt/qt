@@ -24,8 +24,13 @@ RESOURCES += src/anomaly.qrc
 symbian {
     TARGET.UID3 = 0xA000CF71
     include($$QT_SOURCE_TREE/demos/symbianpkgrules.pri)
-    HEADERS += $$QT_SOURCE_TREE/examples/network/ftp/sym_iap_util.h
+    HEADERS += $$QT_SOURCE_TREE/examples/network/qftp/sym_iap_util.h
     LIBS += -lesock -linsock -lconnmon
     TARGET.CAPABILITY = NetworkServices
     TARGET.EPOCHEAPSIZE = 0x20000 0x2000000
 }
+
+target.path = $$[QT_INSTALL_DEMOS]/embedded/anomaly
+sources.files = $$SOURCES $$HEADERS $$RESOURCES *.pro src/images
+sources.path = $$[QT_INSTALL_DEMOS]/embedded/anomaly
+INSTALLS += target sources

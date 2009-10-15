@@ -129,6 +129,9 @@ public:
     RequestSoftwareInputPanelStyle()
         : m_rsipBehavior(RSIP_OnMouseClickAndAlreadyFocused)
     {
+#ifdef Q_OS_WINCE
+        qApp->setAutoSipEnabled(true);
+#endif
     }
     ~RequestSoftwareInputPanelStyle()
     {

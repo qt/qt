@@ -280,7 +280,7 @@ QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolv
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
@@ -303,7 +303,7 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 {
     Q_ASSERT(isObject());
     JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = jscValue.getObject();
+    JSC::JSObject *object = JSC::asObject(jscValue);
     JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
     if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, index, slot)) {
@@ -464,22 +464,6 @@ void QScriptValuePrivate::detachFromEngine()
     if (isJSC())
         jscValue = JSC::JSValue();
     engine = 0;
-}
-
-void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
-{
-    if (engine)
-        return engine->allocateScriptValuePrivate(size);
-    return qMalloc(size);
-}
-
-void QScriptValuePrivate::operator delete(void *ptr)
-{
-    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
-    if (d->engine)
-        d->engine->freeScriptValuePrivate(d);
-    else
-        qFree(d);
 }
 
 /*!

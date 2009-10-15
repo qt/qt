@@ -520,7 +520,12 @@ void QWidgetPrivate::hide_sys()
     QSymbianControl *id = static_cast<QSymbianControl *>(q->internalWinId());
 
     if (id) {
-        if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
+        //Incorrect optimisation - for popup windows, Qt's focus is moved before
+        //hide_sys is called, resulting in the popup window keeping its elevated
+        //position in the CONE control stack.
+        //This can result in keyboard focus being in an invisible widget in some
+        //conditions - e.g. QTBUG-4733
+        //if(id->IsFocused()) // Avoid unnecessary calls to FocusChanged()
             id->setFocusSafely(false);
         id->MakeVisible(false);
         if (QWidgetBackingStore *bs = maybeBackingStore())

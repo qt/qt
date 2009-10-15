@@ -266,6 +266,7 @@ private slots:
     void dispatchHoverOnPress();
     void initialFocus_data();
     void initialFocus();
+    void polishItems();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -2819,17 +2820,15 @@ void tst_QGraphicsScene::update2()
     CustomView view;
     view.setScene(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
-    QTest::qWait(250);
+    QTest::qWaitForWindowShown(&view);
+    QTRY_VERIFY(view.repaints >= 1);
     view.repaints = 0;
 
     // Make sure QGraphicsScene::update only requires one event-loop iteration
     // before the view is updated.
     scene.update();
     qApp->processEvents();
-    QCOMPARE(view.repaints, 1);
+    QTRY_COMPARE(view.repaints, 1);
     view.repaints = 0;
 
     // The same for partial scene updates.
@@ -3882,6 +3881,33 @@ void tst_QGraphicsScene::initialFocus()
     }
 
     QCOMPARE(rect->hasFocus(), shouldHaveFocus);
+}
+
+class PolishItem : public QGraphicsTextItem
+{
+public:
+    PolishItem(QGraphicsItem *parent = 0) : QGraphicsTextItem(parent) { }
+
+protected:
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value)
+    {
+        if (change == ItemVisibleChange) {
+            if (value.toBool())
+                qDeleteAll(childItems());
+        }
+        return QGraphicsItem::itemChange(change, value);
+    }
+};
+
+void tst_QGraphicsScene::polishItems()
+{
+    QGraphicsScene scene;
+    PolishItem *parent = new PolishItem;
+    scene.addItem(parent);
+    PolishItem *child = new PolishItem(parent);
+    Q_UNUSED(child)
+    // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
+    QMetaObject::invokeMethod(&scene,"_q_polishItems");
 }
 
 QTEST_MAIN(tst_QGraphicsScene)

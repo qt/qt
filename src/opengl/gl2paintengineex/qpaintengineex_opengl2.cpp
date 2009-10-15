@@ -391,7 +391,6 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
 }
 
 
-// Unless this gets used elsewhere, it's probably best to merge it into fillStencilWithVertexArray
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
     shaderManager->simpleProgram()->enable();
@@ -881,26 +880,36 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
              || path.shape() == QVectorPath::ConvexPolygonHint)
     {
         vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale);
+        vertexCoordinateArray.addPath(path, inverseScale, false);
         prepareForDraw(currentBrush->isOpaque());
         drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
     } else {
         // The path is too complicated & needs the stencil technique
         vertexCoordinateArray.clear();
-        vertexCoordinateArray.addPath(path, inverseScale);
+        vertexCoordinateArray.addPath(path, inverseScale, false);
 
         fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
 
-        // Stencil the brush onto the dest buffer
-        glStencilFunc(GL_EQUAL, GL_STENCIL_HIGH_BIT, GL_STENCIL_HIGH_BIT); // Pass if stencil buff value != 0
-        glStencilOp(GL_KEEP, GL_ZERO, GL_ZERO);
-        glStencilMask(GL_STENCIL_HIGH_BIT);
+        glStencilMask(0xff);
+        glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+
+        if (q->state()->clipTestEnabled) {
+            // Pass when high bit is set, replace stencil value with current clip
+            glStencilFunc(GL_NOTEQUAL, q->state()->currentClip, GL_STENCIL_HIGH_BIT);
+        } else if (path.hasWindingFill()) {
+            // Pass when any bit is set, replace stencil value with 0
+            glStencilFunc(GL_NOTEQUAL, 0, 0xff);
+        } else {
+            // Pass when high bit is set, replace stencil value with 0
+            glStencilFunc(GL_NOTEQUAL, 0, GL_STENCIL_HIGH_BIT);
+        }
 
         prepareForDraw(currentBrush->isOpaque());
 
         if (inRenderText)
             prepareDepthRangeForRenderText();
 
+        // Stencil the brush onto the dest buffer
         composite(vertexCoordinateArray.boundingRect());
 
         if (inRenderText)
@@ -916,7 +925,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
 void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill)
 {
 //     qDebug("QGL2PaintEngineExPrivate::fillStencilWithVertexArray()");
-    glStencilMask(0xffff); // Enable stencil writes
+    glStencilMask(0xff); // Enable stencil writes
 
     if (dirtyStencilRegion.intersects(currentScissorBounds)) {
         QVector<QRect> clearRegion = dirtyStencilRegion.intersected(currentScissorBounds).rects();
@@ -948,39 +957,30 @@ void QGL2PaintEngineExPrivate::fillStencilWithVertexArray(QGL2PEXVertexArray& ve
 
     if (useWindingFill) {
         if (q->state()->clipTestEnabled) {
+            // Flatten clip values higher than current clip, and set high bit to match current clip
             glStencilFunc(GL_LEQUAL, GL_STENCIL_HIGH_BIT | q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
             glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
             composite(vertexArray.boundingRect());
 
             glStencilFunc(GL_EQUAL, GL_STENCIL_HIGH_BIT, GL_STENCIL_HIGH_BIT);
-        } else {
-            glStencilFunc(GL_ALWAYS, 0, 0xffff);
+        } else if (!stencilClean) {
+            // Clear stencil buffer within bounding rect
+            glStencilFunc(GL_ALWAYS, 0, 0xff);
             glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
             composite(vertexArray.boundingRect());
         }
 
         // Inc. for front-facing triangle
         glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_INCR_WRAP, GL_INCR_WRAP);
-        //Dec. for back-facing "holes"
+        // Dec. for back-facing "holes"
         glStencilOpSeparate(GL_BACK, GL_KEEP, GL_DECR_WRAP, GL_DECR_WRAP);
         glStencilMask(~GL_STENCIL_HIGH_BIT);
         drawVertexArrays(vertexArray, GL_TRIANGLE_FAN);
 
         if (q->state()->clipTestEnabled) {
-            // clear high bit of stencil outside of path
-            glStencilFunc(GL_EQUAL, GL_STENCIL_HIGH_BIT | q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
-            glStencilOp(GL_KEEP, GL_INVERT, GL_INVERT);
-            glStencilMask(GL_STENCIL_HIGH_BIT);
-            composite(vertexArray.boundingRect());
-            // reset lower bits of stencil inside path to current clip
-            glStencilFunc(GL_EQUAL, GL_STENCIL_HIGH_BIT | q->state()->currentClip, GL_STENCIL_HIGH_BIT);
+            // Clear high bit of stencil outside of path
+            glStencilFunc(GL_EQUAL, q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
             glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-            glStencilMask(~GL_STENCIL_HIGH_BIT);
-            composite(vertexArray.boundingRect());
-        } else {
-            // set high bit of stencil inside path
-            glStencilFunc(GL_NOTEQUAL, 0, 0xffff);
-            glStencilOp(GL_KEEP, GL_INVERT, GL_INVERT);
             glStencilMask(GL_STENCIL_HIGH_BIT);
             composite(vertexArray.boundingRect());
         }
@@ -1020,7 +1020,7 @@ void QGL2PaintEngineExPrivate::resetClipIfNeeded()
     QGLRect rect(bounds.left(), bounds.top(), bounds.right(), bounds.bottom());
 
     // Set high bit on clip region
-    glStencilFunc(GL_LEQUAL, q->state()->currentClip, 0xffff);
+    glStencilFunc(GL_LEQUAL, q->state()->currentClip, 0xff);
     glStencilOp(GL_KEEP, GL_INVERT, GL_INVERT);
     glStencilMask(GL_STENCIL_HIGH_BIT);
     composite(rect);
@@ -1028,7 +1028,7 @@ void QGL2PaintEngineExPrivate::resetClipIfNeeded()
     // Reset clipping to 1 and everything else to zero
     glStencilFunc(GL_NOTEQUAL, 0x01, GL_STENCIL_HIGH_BIT);
     glStencilOp(GL_ZERO, GL_REPLACE, GL_REPLACE);
-    glStencilMask(0xFFFF);
+    glStencilMask(0xff);
     composite(rect);
 
     q->state()->currentClip = 1;
@@ -1625,7 +1625,6 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     const QSize sz = d->device->size();
     d->width = sz.width();
     d->height = sz.height();
-    d->last_created_state = 0;
     d->mode = BrushDrawingMode;
     d->brushTextureDirty = true;
     d->brushUniformsDirty = true;
@@ -1636,6 +1635,7 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     d->use_system_clip = !systemClip().isEmpty();
 
     d->dirtyStencilRegion = QRect(0, 0, d->width, d->height);
+    d->stencilClean = true;
 
     // Calling begin paint should make the correct context current. So, any
     // code which calls into GL or otherwise needs a current context *must*
@@ -1731,7 +1731,7 @@ void QGL2PaintEngineExPrivate::updateClipScissorTest()
         glStencilFunc(GL_LEQUAL, q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
     } else {
         glDisable(GL_STENCIL_TEST);
-        glStencilFunc(GL_ALWAYS, 0, 0xffff);
+        glStencilFunc(GL_ALWAYS, 0, 0xff);
     }
 
 #ifdef QT_GL_NO_SCISSOR_TEST
@@ -1787,7 +1787,7 @@ void QGL2PaintEngineExPrivate::clearClip(uint value)
 {
     dirtyStencilRegion -= currentScissorBounds;
 
-    glStencilMask(0xffff);
+    glStencilMask(0xff);
     glClearStencil(value);
     glClear(GL_STENCIL_BUFFER_BIT);
     glStencilMask(0x0);
@@ -1801,6 +1801,8 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 
     if (matrixDirty)
         updateMatrix();
+
+    stencilClean = false;
 
     const bool singlePass = !path.hasWindingFill()
         && (((q->state()->currentClip == maxClip - 1) && q->state()->clipTestEnabled)
@@ -1819,10 +1821,10 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
     if (q->state()->clipTestEnabled)
         glStencilFunc(GL_LEQUAL, q->state()->currentClip, ~GL_STENCIL_HIGH_BIT);
     else
-        glStencilFunc(GL_ALWAYS, 0, 0xffff);
+        glStencilFunc(GL_ALWAYS, 0, 0xff);
 
     vertexCoordinateArray.clear();
-    vertexCoordinateArray.addPath(path, inverseScale);
+    vertexCoordinateArray.addPath(path, inverseScale, false);
 
     if (!singlePass)
         fillStencilWithVertexArray(vertexCoordinateArray, path.hasWindingFill());
@@ -1841,9 +1843,17 @@ void QGL2PaintEngineExPrivate::writeClip(const QVectorPath &path, uint value)
 
         drawVertexArrays(vertexCoordinateArray, GL_TRIANGLE_FAN);
     } else {
-        glStencilFunc(GL_NOTEQUAL, value, GL_STENCIL_HIGH_BIT);
         glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
-        glStencilMask(0xffff);
+        glStencilMask(0xff);
+
+        if (!q->state()->clipTestEnabled && path.hasWindingFill()) {
+            // Pass when any clip bit is set, set high bit
+            glStencilFunc(GL_NOTEQUAL, GL_STENCIL_HIGH_BIT, ~GL_STENCIL_HIGH_BIT);
+            composite(vertexCoordinateArray.boundingRect());
+        }
+
+        // Pass when high bit is set, replace stencil value with new clip value
+        glStencilFunc(GL_NOTEQUAL, value, GL_STENCIL_HIGH_BIT);
 
         composite(vertexCoordinateArray.boundingRect());
     }
@@ -2012,27 +2022,32 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
     QPaintEngineEx::setState(s);
 
-    if (s == d->last_created_state) {
-        d->last_created_state = 0;
+    if (s->isNew) {
+        // Newly created state object.  The call to setState()
+        // will either be followed by a call to begin(), or we are
+        // setting the state as part of a save().
+        s->isNew = false;
         return;
     }
 
-    if (old_state == s || s->renderHintsChanged)
+    // Setting the state as part of a restore().
+
+    if (old_state == s || old_state->renderHintsChanged)
         renderHintsChanged();
 
-    if (old_state == s || s->matrixChanged) {
+    if (old_state == s || old_state->matrixChanged) {
         d->matrixDirty = true;
         d->simpleShaderMatrixUniformDirty = true;
         d->shaderMatrixUniformDirty = true;
     }
 
-    if (old_state == s || s->compositionModeChanged)
+    if (old_state == s || old_state->compositionModeChanged)
         d->compositionModeDirty = true;
 
-    if (old_state == s || s->opacityChanged)
+    if (old_state == s || old_state->opacityChanged)
         d->opacityUniformDirty = true;
 
-    if (old_state == s || s->clipChanged) {
+    if (old_state == s || old_state->clipChanged) {
         if (old_state && old_state != s && old_state->canRestoreClip) {
             d->updateClipScissorTest();
             glDepthFunc(GL_LEQUAL);
@@ -2044,8 +2059,6 @@ void QGL2PaintEngineEx::setState(QPainterState *new_state)
 
 QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
 {
-    Q_D(const QGL2PaintEngineEx);
-
     if (orig)
         const_cast<QGL2PaintEngineEx *>(this)->ensureActive();
 
@@ -2061,7 +2074,6 @@ QPainterState *QGL2PaintEngineEx::createState(QPainterState *orig) const
     s->renderHintsChanged = false;
     s->clipChanged = false;
 
-    d->last_created_state = s;
     return s;
 }
 
@@ -2074,6 +2086,7 @@ void QGL2PaintEngineEx::setRenderTextActive(bool active)
 QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &other)
     : QPainterState(other)
 {
+    isNew = true;
     needsClipBufferClear = other.needsClipBufferClear;
     clipTestEnabled = other.clipTestEnabled;
     currentClip = other.currentClip;
@@ -2083,6 +2096,7 @@ QOpenGL2PaintEngineState::QOpenGL2PaintEngineState(QOpenGL2PaintEngineState &oth
 
 QOpenGL2PaintEngineState::QOpenGL2PaintEngineState()
 {
+    isNew = true;
     needsClipBufferClear = true;
     clipTestEnabled = false;
     canRestoreClip = true;
