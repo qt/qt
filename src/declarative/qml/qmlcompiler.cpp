@@ -2039,7 +2039,7 @@ bool QmlCompiler::mergeDynamicMetaProperties(QmlParser::Object *obj)
     return true;
 }
 
-static QAtomicInt classIndexCounter;
+Q_GLOBAL_STATIC(QAtomicInt, classIndexCounter)
 
 bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 {
@@ -2058,7 +2058,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
 
     QByteArray newClassName = obj->metatype->className();
     newClassName.append("_QML_");
-    int idx = classIndexCounter.fetchAndAddRelaxed(1);
+    int idx = classIndexCounter()->fetchAndAddRelaxed(1);
     newClassName.append(QByteArray::number(idx));
 
     QMetaObjectBuilder builder;
