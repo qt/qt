@@ -1554,6 +1554,10 @@ void QVGPaintEngine::clip(const QVectorPath &path, Qt::ClipOperation op)
         QRectF rect(points[0], points[1], points[2] - points[0],
                     points[5] - points[1]);
         clip(rect.toRect(), op);
+    } else {
+        // The best we can do is clip to the bounding rectangle
+        // of all control points.
+        clip(path.controlPointRect().toRect(), op);
     }
 }
 
@@ -2947,6 +2951,121 @@ void QVGPaintEngine::drawTiledPixmap
     xform.translate(-s.x(), -s.y());
     brush.setTransform(xform);
     fillRect(r, brush);
+}
+
+// Best performance will be achieved with QDrawPixmaps::OpaqueHint
+// (i.e. no opacity), no rotation or scaling, and drawing the full
+// pixmap rather than parts of the pixmap.  Even having just one of
+// these conditions will improve performance.
+void QVGPaintEngine::drawPixmaps
+    (const QDrawPixmaps::Data *drawingData, int dataCount,
+     const QPixmap &pixmap, QFlags<QDrawPixmaps::DrawingHint> hints)
+{
+#if !defined(QT_SHIVAVG)
+    Q_D(QVGPaintEngine);
+
+    // If the pixmap is not VG, or the transformation is projective,
+    // then fall back to the default implementation.
+    QPixmapData *pd = pixmap.pixmapData();
+    if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
+        QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+        return;
+    }
+
+    // Bail out if nothing to do.
+    if (dataCount <= 0)
+        return;
+
+    // Bail out if we don't have a usable VGImage for the pixmap.
+    QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
+    if (!vgpd->isValid())
+        return;
+    VGImage vgImg = vgpd->toVGImage();
+    if (vgImg == VG_INVALID_HANDLE)
+        return;
+
+    // We cache the results of any vgChildImage() calls because the
+    // same child is very likely to be used over and over in particle
+    // systems.  However, performance is even better if vgChildImage()
+    // isn't needed at all, so use full source rects where possible.
+    QVarLengthArray<VGImage> cachedImages;
+    QVarLengthArray<QRect> cachedSources;
+
+    // Select the opacity paint object.
+    if ((hints & QDrawPixmaps::OpaqueHint) != 0 && d->opacity == 1.0f) {
+        d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+    }  else {
+        hints = 0;
+        if (d->fillPaint != d->opacityPaint) {
+            vgSetPaint(d->opacityPaint, VG_FILL_PATH);
+            d->fillPaint = d->opacityPaint;
+        }
+    }
+
+    for (int i = 0; i < dataCount; ++i) {
+        QTransform transform(d->imageTransform);
+        transform.translate(drawingData[i].point.x(), drawingData[i].point.y());
+        transform.rotate(drawingData[i].rotation);
+
+        VGImage child;
+        QSize imageSize = vgpd->size();
+        QRectF sr = drawingData[i].source;
+        if (sr.topLeft().isNull() && sr.size() == imageSize) {
+            child = vgImg;
+        } else {
+            // Look for a previous child with the same source rectangle
+            // to avoid constantly calling vgChildImage()/vgDestroyImage().
+            QRect src = sr.toRect();
+            int j;
+            for (j = 0; j < cachedSources.size(); ++j) {
+                if (cachedSources[j] == src)
+                    break;
+            }
+            if (j < cachedSources.size()) {
+                child = cachedImages[j];
+            } else {
+                child = vgChildImage
+                    (vgImg, src.x(), src.y(), src.width(), src.height());
+                cachedImages.append(child);
+                cachedSources.append(src);
+            }
+        }
+
+        VGfloat scaleX = drawingData[i].scaleX;
+        VGfloat scaleY = drawingData[i].scaleY;
+        transform.translate(-0.5 * scaleX * sr.width(),
+                            -0.5 * scaleY * sr.height());
+        transform.scale(scaleX, scaleY);
+        d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+
+        if ((hints & QDrawPixmaps::OpaqueHint) == 0) {
+            qreal opacity = d->opacity * drawingData[i].opacity;
+            if (opacity != 1.0f) {
+                if (d->paintOpacity != opacity) {
+                    VGfloat values[4];
+                    values[0] = 1.0f;
+                    values[1] = 1.0f;
+                    values[2] = 1.0f;
+                    values[3] = opacity;
+                    d->paintOpacity = opacity;
+                    vgSetParameterfv
+                        (d->opacityPaint, VG_PAINT_COLOR, 4, values);
+                }
+                d->setImageMode(VG_DRAW_IMAGE_MULTIPLY);
+            } else {
+                d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+            }
+        }
+
+        vgDrawImage(child);
+    }
+
+    // Destroy the cached child sub-images.
+    for (int i = 0; i < cachedImages.size(); ++i)
+        vgDestroyImage(cachedImages[i]);
+#else
+    QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
+#endif
 }
 
 QVGFontEngineCleaner::QVGFontEngineCleaner(QVGPaintEnginePrivate *d)

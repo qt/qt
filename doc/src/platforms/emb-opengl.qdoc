@@ -57,20 +57,20 @@ of the \l {http://www.opengl.org}{OpenGL} standard.
 Because it is meant for use in embedded systems, it has a smaller,
 more constrained API. 
 
-For reference, Nokia provides a plugin which integrates \l
-{http://www.khronos.org/opengles}{OpenGL ES} with Qt for Embedded Linux,
-but Qt for Embedded Linux can be adapted to a wide range of OpenGL
-versions.
+For reference, Nokia provides support for integrating \l
+{http://www.khronos.org/opengles}{OpenGL ES} with Qt for Embedded Linux
+for drawing into a QGLWidget.
 
-There are three ways to use OpenGL with Qt for Embedded Linux:
-\list
-  \o Perform OpenGL 3D graphics operations in applications;
-  \o Accelerate normal 2D painting operations; 
-  \o Implement window compositing and special effects.
-\endlist
+The current implementation supports OpenGL and 2D painting within a
+QGLWidget.  Using OpenGL to accelerate regular widgets and compositing
+top-level windows with OpenGL are not currently supported.  These issues
+will be addressed in future versions of Qt.
 
-Qt for Embedded Linux is shipped with a reference integration example
-that demonstrates all three uses.
+It is recommended that Qt for Embedded Linux is configured with the
+\c{-DQT_QWS_CLIENTBLIT} and \c{-DQT_NO_QWS_CURSOR} options for optimum
+performance.  OpenGL is rendered direct to the screen and these options
+prevent Qt for Embedded Linux from trying to do its own non-OpenGL
+compositing on the QGLWidget contents.
 
 \section2 Using OpenGL 3D Graphics in Applications
 
@@ -82,146 +82,149 @@ To use OpenGL-enabled widgets in a Qt for Embedded Linux application,
 all that is required is to subclass the QGLWidget and draw into instances of
 the subclass with standard OpenGL functions. 
 
+Note that on most embedded hardware, the OpenGL implementation is
+actually \l{http://www.khronos.org/opengles/1_X/}{OpenGL/ES 1.1} or
+\l{http://www.khronos.org/opengles/2_X/}{OpenGL/ES 2.0}.  When painting
+within a QGLWidget::paintGL() override, it is necessary to limit the
+application to only the features that are present in the OpenGL/ES
+implementation.
+
 \section2 Using OpenGL to Accelerate Normal 2D Painting
 
-Qt provides QOpenGLPaintEngine, a subclass of QPaintEngine that
-translates QPainter operations into OpenGL calls. This specialized
-paint engine can be used to improve 2D rendering performance on
-appropriate hardware. It can also overlay controls and decorations
-onto 3D scenes drawn using OpenGL.
+Qt provides a subclass of QPaintEngine that translates QPainter operations
+into OpenGL calls (there are actually two subclasses, one for OpenGL/ES 1.1
+and another for OpenGL/ES 2.0).  This specialized paint engine can be used
+to improve 2D rendering performance on appropriate hardware.  It can also
+overlay controls and decorations onto 3D scenes drawn using OpenGL.
+
+As mentioned above, the OpenGL paint engine is not currently supported
+in regular widgets.  However, any application that uses QGraphicsView
+can set a QGLWidget as the viewport and obtain access to the
+OpenGL paint engine that way:
+
+\code
+QGraphicsView view(&scene);
+view.setViewport(new QGLWidget);
+view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+view.showFullScreen();
+\endcode
+
+It is recommended that the QGraphicsView::FullViewportUpdate flag
+be set because the default double-buffered behavior of QGLWidget
+does not support partial updates.  It is also recommended that the
+window be shown full-screen because that usually has the best
+performance on current OpenGL/ES implementations.
+
+Once a QGraphicsView has been initialized as above, regular widgets
+can be added to the canvas using QGraphicsProxyWidget if the
+application requires them.
 
 \section2 Using OpenGL to Implement Window Compositing and Effects
 
-Qt for Embedded Linux includes a complete windowing system, which implements
-real transparency. The windowing system can be accelerated using
-OpenGL to implement top level window compositing. This makes it easy
-to add 3D effects to applications, for instance when windows are
-minimized or maximized.
+Compositing effects can be simulated by adjusting the opacity and
+other parameters of the items within a QGraphicsView canvas on a
+QGLWidget viewport.
 
-\section1 Acceleration Architecture
+While Qt for Embedded Linux does include a complete windowing system,
+using OpenGL to composite regular window surfaces can be quite difficult.
+Most of Qt for Embedded Linux assumes that the window surface is a plain
+raster memory buffer, with QGLWidget being the sole exception.
+The need to constantly re-upload the raster memory buffers into OpenGL
+textures for compositing can have a significant impact on performance,
+which is why we do not recommend implementing that form of compositing.
+We intend to address this problem in future versions of Qt.
 
-The diagram below shows the Qt for Embedded Linux painting architecture.
+\section1 Integrating OpenGL/ES into Qt for Embedded Linux
 
-\image qt-embedded-opengl3.png
+\section2 Reference Integration
 
-A client process widget uses a paint engine to draw into a window
-surface. The server then combines the window surfaces and displays the
-composition on the screen. This architecture lets you
-control the steps of the painting process by subclassing. 
+The reference integration for OpenGL into Qt for Embedded Linux
+is for the PowerVR chipset from \l{http://www.imgtec.com/}{Imagination
+Technologies}.  It consists of two components: \c{pvreglscreen} which
+provides the Qt for Embedded Linux screen driver, and \c{QWSWSEGL}
+which implements a plug-in to the PowerVR EGL implementation to
+implement low-level OpenGL drawing surfaces.
 
-Subclassing QPaintEngine allows you to implement the QPainter API
-using accelerated hardware.  Subclassing QWindowSurface lets you
-decide the properties of the space your widgets will draw themselves
-into, as well as which paint engine they should use to draw themselves
-into that space.  Subclassing QScreen lets you control the creation of
-window surfaces and lets you decide how to implement window
-compositing.  Using subclassing, your implementation work is minimized
-since you can reuse base class functionality you don't need to change.
+\section2 Integrating Other Chipsets
 
-The elements of an accelerated Qt for Embedded Linux system are shown in the
-diagram below.
+In this section we discuss the essential features of the reference
+integration that need to be provided for any other chipset integration.
 
-\image qt-embedded-opengl1.png
+The QtOpenGL module assumes that a QGLWidget can be represented
+by a \c EGLNativeWindowType value in some underlying window system
+implementation, and that \c{eglSwapBuffers()} is sufficient to copy
+the contents of the native window to the screen when requested.
 
-The applications, using the Qt API, do not depend on the presence of
-the acceleration plugin. The plugin uses the graphics hardware to
-accelerate painting primitives. Any operations not accelerated by the
-plugin are done in software by the software paint engine.
+However, many EGL implementations do not have a pre-existing window system.
+Usually only a single full-screen window is provided, and everything else
+must be simulated some other way.  This can be a problem because
+of QtOpenGL's assumptions.  We intend to address these assumptions in a
+future version of Qt, but for now it is the responsibility of the integrator
+to provide a rudimentary window system within the EGL implementation.
+This is the purpose of \c{QWSWSEGL} in the reference integration.
 
-To integrate an OpenGL implementation into Qt for Embedded Linux for a
-particular platform, you use the same mechanisms you would use for
-writing any other accelerated driver. Base classes, e.g., QGLScreen
-and QWSGLWindowSurface, are provided to minimize the need for
-reimplementing common functionality.
+If it isn't possible for the EGL implementation to provide a rudimentary
+window system, then full-screen windows using QGLWidget can be supported,
+but very little else.
 
-\section1 The Reference Integration
+The screen driver needs to inherit from QGLScreen and perform the
+following operations in its constructor:
 
-The \l{OpenGL for Embedded Systems Example} is the reference implementation
-for integrating OpenGL ES and \l{http://www.khronos.org/egl/}{EGL} with
-the graphics acceleration architecture of Qt for Embedded Linux.
-(\l{http://www.khronos.org/egl/}{EGL} is a library that binds OpenGL ES to
-native windowing systems.)
+\snippet src/plugins/gfxdrivers/powervr/pvreglscreen/pvreglscreen.cpp 0
 
-The diagram below shows how OpenGL ES is used within the acceleration architecture:
+The \c{setSurfaceFunctions()} call supplies an object that takes care
+of converting Qt paint devices such as widgets and pixmaps into
+\c EGLNativeWindowType and \c EGLNativePixmapType values.  Here we
+only support native windows.  Because OpenGL rendering is direct to
+the screen, we also indicate that client blit is supported.
 
-\image qt-embedded-opengl2.png
+Next, we override the \c{createSurface()} functions in QGLScreen:
 
-The example implements a screen driver plugin that demonstrates all
-three uses of OpenGL in Qt for Embedded Linux: 2D graphics acceleration, 3D
-graphics operations using the \l {QtOpenGL module}, and top-level
-window compositing and special effects. The applications still do
-not talk directly to the accelerated plugin. 
+\snippet src/plugins/gfxdrivers/powervr/pvreglscreen/pvreglscreen.cpp 1
 
-For 2D graphics, applications use the normal Qt painting API. The example accelerates 2D
-painting by using the QOpenGLPaintEngine, which is included in the \l {QtOpenGL module}.
+Even if Qt for Embedded Linux is used in single-process mode, it is
+necessary to create both client-side and server-side versions of the
+window surface.  In our case, the server-side is just a stub because
+the client side directly renders to the screen.
 
-For 3D graphics applications use the OpenGL API directly, together with the functionality
-in the Qt OpenGL support classes. The example supports this by creating a
-QWSGLWindowSurface whenever a QGLWidget is instantiated.
+Note that we only create a \c{PvrEglWindowSurface} if the widget is a
+QGLWidget.  All other widgets use the normal raster processing.
+It can be tempting to make \c{createSurface()} create an OpenGL
+window surface for other widget types as well.  This has not been
+extensively tested and we do not recommend its use at this time.
 
-All access to the display is done through OpenGL. The example subclasses
-QWSGLWindowSurface implementation and uses the \l
-{http://oss.sgi.com/projects/ogl-sample/registry/EXT/framebuffer_object.txt} 
-{OpenGL Framebuffer Object extension} to draw windows into an offscreen buffer. This
-lets the example use OpenGL to implement top level window compositing of opaque and
-semi-transparent windows, and to provide a 3D animated transition effect as each new
-window is shown.
+The other main piece is the creation of the \c EGLNativeWindowType
+value for the widget.  This is done in the \c{createNativeWindow()}
+override:
 
-The specific OpenGL library being used by the example restricts all
-OpenGL operations to occur in a single process. Hence the example
-creates instances of QWSGLWindowSurface only in the server process.
-Other processes then perform 2D graphics by creating instances
-of the standard QWindowSurface classes for client processes.  The
-standard window surface performs software-based rendering into a
-shared memory segment. The server then transfers the contents of this
-shared memory into an OpenGL texture before they are drawn onto the
-screen during window compositing.
+\snippet src/plugins/gfxdrivers/powervr/pvreglscreen/pvreglscreen.cpp 2
 
-\omit
+The details of what needs to be placed in this function will vary
+from chipset to chipset.  The simplest is to return the native window
+handle corresponding to the "root" full-screen window:
 
-\section1 Future Directions
+\code
+*native = rootWindowHandle;
+return true;
+\endcode
 
-\section2 API Improvements
+The most common value for \c rootWindowHandle is zero, but this may
+not always be the case.  Consult the chipset documentation for the
+actual value to use.  The important thing is that whatever value is
+returned must be suitable for passing to the \c{eglCreateWindowSurface()}
+function of the chipset's EGL implementation.
 
-Nokia is now working on enhancing the API for integrating OpenGL
-with Qt for Embedded Linux. The current design plan includes the following
-features:
+In the case of PowerVR, the rudimentary window system in \c{QWSWSEGL}
+provides a \c PvrQwsDrawable object to represent the \c EGLNativeWindowType
+value for the widget.
 
-\list
-
-  \o Provide convenience classes, e.g., QEGLScreen and
-  QWSEGLWindowSurface, which implement common uses of the EGL
-  API. These classes will simplify implementing an OpenGL ES 
-  integration.
-
-  \o Extend the screen driver API to provide more control over window
-  properties and animations, and provide a software-based integration
-  to enable testing on the desktop.
-
-  \o Improve performance as opportunities arise.
-
-\endlist
-
-\section2 OpenVG Support
+\section1 OpenVG Support
 
 \l {http://www.khronos.org/openvg} {OpenVG} is a dedicated API for 2D
 graphics on mobile devices. It is therefore more likely to be a better
-alternative for 2D acceleration than OpenGL. Until recently, no
-OpenVG-capable hardware has been available, so Nokia has not yet
-included an OpenVG solution in Qt for Embedded Linux.
-
-However, Nokia has done a feasibility study, implementing an
-OpenVG paint engine on top of a software OpenVG implementation.
-Assuming availability of the appropriate hardware, this OpenVG paint
-engine can easily be completed and integrated using the existing
-acceleration architecture. Since OpenVG shares the same EGL layer as
-OpenGL ES, the work already done on the OpenGL integration can be
-reused.
-
-Related technologies included in the \l
-{http://www.khronos.org/openkode} {OpenKODE} API set will also be
-considered.
-
-\endomit
+alternative for 2D acceleration than OpenGL/ES.  Acceleration of
+regular widgets is supported with OpenVG, unlike with OpenGL/ES.
+See \l{OpenVG Rendering in Qt} for more information on the
+OpenVG support in Qt.
 
 */

@@ -193,6 +193,7 @@ private slots:
     void mouseWheel();
 
     void addColumnWhileEditing();
+    void task234926_setHeaderSorting();
 };
 
 // Testing get/set functions
@@ -2702,6 +2703,7 @@ void tst_QTableView::indexAt()
     QtTestTableView view;
 
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     //some styles change the scroll mode in their polish
     view.setHorizontalScrollMode(QAbstractItemView::ScrollPerItem);
@@ -2717,9 +2719,10 @@ void tst_QTableView::indexAt()
     for (int c = 0; c < columnCount; ++c)
         view.setColumnWidth(c, columnWidth);
 
-    QTest::qWait(0); // ### needed to pass the test
+    QTest::qWait(20);
     view.horizontalScrollBar()->setValue(horizontalScroll);
     view.verticalScrollBar()->setValue(verticalScroll);
+    QTest::qWait(20);
 
     QModelIndex index = view.indexAt(QPoint(x, y));
     QCOMPARE(index.row(), expectedRow);
@@ -3249,9 +3252,15 @@ void tst_QTableView::resizeToContents()
 
 }
 
+QT_BEGIN_NAMESPACE
+extern bool Q_GUI_EXPORT qt_tab_all_widgets; // qapplication.cpp
+QT_END_NAMESPACE
 
 void tst_QTableView::tabFocus()
 {
+    if (!qt_tab_all_widgets)
+        QSKIP("This test requires full keyboard control to be enabled.", SkipAll);
+
     // QTableView enables tabKeyNavigation by default, but you should be able
     // to change focus on an empty table view, or on a table view that doesn't
     // have this property set.
@@ -3772,6 +3781,42 @@ void tst_QTableView::task191545_dragSelectRows()
                 QVERIFY(!table.selectionModel()->isSelected(index));
             }
     }
+}
+
+void tst_QTableView::task234926_setHeaderSorting()
+{
+    QStringListModel model;
+    QStringList data;
+    data << "orange" << "apple" << "banana" << "lemon" << "pumpkin";
+    QStringList sortedDataA = data;
+    QStringList sortedDataD = data;
+    qSort(sortedDataA);
+    qSort(sortedDataD.begin(), sortedDataD.end(), qGreater<QString>());
+    model.setStringList(data);
+    QTableView view;
+    view.setModel(&model);
+//    view.show();
+    QTest::qWait(20);
+    QCOMPARE(model.stringList(), data);
+    view.setSortingEnabled(true);
+    view.sortByColumn(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    view.horizontalHeader()->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
+
+    QHeaderView *h = new QHeaderView(Qt::Horizontal);
+    h->setModel(&model);
+    view.setHorizontalHeader(h);
+    h->setSortIndicator(0, Qt::AscendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataA);
+
+    h->setSortIndicator(0, Qt::DescendingOrder);
+    QApplication::processEvents();
+    QCOMPARE(model.stringList() , sortedDataD);
 }
 
 QTEST_MAIN(tst_QTableView)

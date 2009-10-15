@@ -2490,7 +2490,7 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     for (int i = 0; i < indexes.count(); ++i) {
         QModelIndex index = indexes.at(i);
         QRect rect = dd->rectForIndex(index);
-        viewport()->update(mapToViewport(rect));
+        viewport()->update(dd->mapToViewport(rect, false));
         QPoint dest = rect.topLeft() + delta;
         if (qq->isRightToLeft())
             dest.setX(dd->flipX(dest.x()) - rect.width());

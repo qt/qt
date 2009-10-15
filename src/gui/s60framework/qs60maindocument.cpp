@@ -47,25 +47,31 @@
 QT_BEGIN_NAMESPACE
 
 /*!
- * \class QS60MainDocument
- * \obsolete
- * \since 4.6
- * \brief Helper class for S60 migration
- *
- * The QS60MainDocument provides a helper class for use in migrating from existing S60 based
- * applications to Qt based applications. It is used in the exact same way as the
- * \c CAknDocument class from Symbian, but internally provides extensions used by Qt.
- *
- * When modifying old S60 applications that rely on implementing functions in \c CAknDocument,
- * the class should be modified to inherit from this class instead of \c CAknDocument. Then the
- * application can choose to override only certain functions.
- *
- * For more information on \c CAknDocument, please see the S60 documentation.
- *
- * Unlike other Qt classes, QS60MainDocument behaves like an S60 class, and can throw Symbian
- * leaves.
- *
- * \sa QS60MainApplication, QS60MainAppUi
+  \class QS60MainDocument
+  \since 4.6
+  \brief Helper class for S60 migration
+
+  \warning This class is provided only to get access to S60 specific
+  functionality in the application framework classes. It is not
+  portable. We strongly recommend against using it in new applications.
+
+  The QS60MainDocument provides a helper class for use in migrating
+  from existing S60 based applications to Qt based applications. It is
+  used in the exact same way as the \c CAknDocument class from
+  Symbian, but internally provides extensions used by Qt.
+
+  When modifying old S60 applications that rely on implementing
+  functions in \c CAknDocument, the class should be modified to
+  inherit from this class instead of \c CAknDocument. Then the
+  application can choose to override only certain functions.
+
+  For more information on \c CAknDocument, please see the S60
+  documentation.
+
+  Unlike other Qt classes, QS60MainDocument behaves like an S60 class,
+  and can throw Symbian leaves.
+
+  \sa QS60MainApplication, QS60MainAppUi
  */
 
 /*!

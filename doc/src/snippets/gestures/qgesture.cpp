@@ -64,7 +64,7 @@ private:
     QGesture *gesture;
 };
 
-/*!
+/*
     \class QGesture
     \since 4.6
 
@@ -100,7 +100,7 @@ private:
     \sa QPanGesture
 */
 
-/*! \fn bool QGesture::filterEvent(QEvent *event)
+/* \fn bool QGesture::filterEvent(QEvent *event)
 
     Parses input \a event and emits a signal when detects a gesture.
 
@@ -111,7 +111,7 @@ private:
     This is a pure virtual function that needs to be implemented in subclasses.
 */
 
-/*! \fn void QGesture::started()
+/* \fn void QGesture::started()
 
     The signal is emitted when the gesture is started. Extended information
     about the gesture is contained in the signal sender object.
@@ -119,19 +119,19 @@ private:
     In addition to started(), a triggered() signal should also be emitted.
 */
 
-/*! \fn void QGesture::triggered()
+/* \fn void QGesture::triggered()
 
     The signal is emitted when the gesture is detected. Extended information
     about the gesture is contained in the signal sender object.
 */
 
-/*! \fn void QGesture::finished()
+/* \fn void QGesture::finished()
 
     The signal is emitted when the gesture is finished. Extended information
     about the gesture is contained in the signal sender object.
 */
 
-/*! \fn void QGesture::cancelled()
+/* \fn void QGesture::cancelled()
 
     The signal is emitted when the gesture is cancelled, for example the reset()
     function is called while the gesture was in the process of emitting a
@@ -140,7 +140,7 @@ private:
 */
 
 
-/*!
+/*
     Creates a new gesture handler object and marks it as a child of \a parent.
 
     The \a parent object is also the default event source for the gesture,
@@ -156,7 +156,7 @@ QGesture::QGesture(QObject *parent)
         parent->installEventFilter(this);
 }
 
-/*! \internal
+/* \internal
  */
 QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
     : QObject(dd, parent)
@@ -165,14 +165,14 @@ QGesture::QGesture(QGesturePrivate &dd, QObject *parent)
         parent->installEventFilter(this);
 }
 
-/*!
+/*
     Destroys the gesture object.
 */
 QGesture::~QGesture()
 {
 }
 
-/*! \internal
+/* \internal
  */
 bool QGesture::eventFilter(QObject *receiver, QEvent *event)
 {
@@ -182,13 +182,13 @@ bool QGesture::eventFilter(QObject *receiver, QEvent *event)
     return filterEvent(event);
 }
 
-/*!
+/*
     \property QGesture::state
 
     \brief The current state of the gesture.
 */
 
-/*!
+/*
   Returns the gesture recognition state.
  */
 Qt::GestureState QGesture::state() const
@@ -196,7 +196,7 @@ Qt::GestureState QGesture::state() const
     return d_func()->state;
 }
 
-/*!
+/*
   Sets this gesture's recognition state to \a state and emits appropriate
   signals.
 
@@ -237,7 +237,7 @@ void QGesture::updateState(Qt::GestureState state)
     }
 }
 
-/*!
+/*
     Sets the \a graphicsItem the gesture is filtering events for.
 
     The gesture will install an event filter to the \a graphicsItem and
@@ -257,7 +257,7 @@ void QGesture::setGraphicsItem(QGraphicsItem *graphicsItem)
         graphicsItem->installSceneEventFilter(d->eventFilterProxyGraphicsItem);
 }
 
-/*!
+/*
     Returns the graphics item the gesture is filtering events for.
 
     \sa setGraphicsItem()
@@ -267,7 +267,7 @@ QGraphicsItem* QGesture::graphicsItem() const
     return d_func()->graphicsItem;
 }
 
-/*! \fn void QGesture::reset()
+/* \fn void QGesture::reset()
 
     Resets the internal state of the gesture. This function might be called by
     the filterEvent() implementation in a derived class, or by the user to

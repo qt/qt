@@ -286,11 +286,6 @@ Assistant nie będzie działał!</translation>
     </message>
     <message>
         <location/>
-        <source>Enter searchword(s).</source>
-        <translation>Wprowadź wyrażenie(a) do szukania.</translation>
-    </message>
-    <message>
-        <location/>
         <source>&lt;b&gt;Enter search word(s).&lt;/b&gt;&lt;p&gt;Enter here the word(s) you are looking for. The words may contain wildcards (*). For a sequence of words quote them.&lt;/p&gt;</source>
         <translation>&lt;b&gt;Wprowadź wyrażenie(a) do szukania.&lt;b&gt;&lt;p&gt;Wprowadź w tym okienku wyrażenia, których szukasz. Wyrażenia mogą zawierać znaczniki (*). Dla wyszukania ciągu wyrażeń umieść całość w cudzysłowie.&lt;/p&gt;</translation>
     </message>
@@ -306,11 +301,6 @@ Assistant nie będzie działał!</translation>
     </message>
     <message>
         <location/>
-        <source>Display the help page.</source>
-        <translation>Pokaż stronę pomocy.</translation>
-    </message>
-    <message>
-        <location/>
         <source>Display the help page for the full text search.</source>
         <translation>Pokaż stronę pomocy dla pełnego wyszukiwania.</translation>
     </message>
@@ -318,11 +308,6 @@ Assistant nie będzie działał!</translation>
         <location/>
         <source>He&amp;lp</source>
         <translation>&amp;Pomoc</translation>
-    </message>
-    <message>
-        <location/>
-        <source>Start searching.</source>
-        <translation>Rozpocznij wyszukiwanie.</translation>
     </message>
     <message>
         <location/>
@@ -342,6 +327,21 @@ Assistant nie będzie działał!</translation>
             <numerusform>Znaleziono %n dokumenty.</numerusform>
             <numerusform>Znaleziono %n dokumentów.</numerusform>
         </translation>
+    </message>
+    <message>
+        <location filename="../tools/assistant/compat/helpdialog.ui"/>
+        <source>Enter searchword(s)</source>
+        <translation>Wprowadź wyrażenie(a) do szukania</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Display the help page</source>
+        <translation>Pokaż stronę pomocy</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Start searching</source>
+        <translation>Rozpocznij wyszukiwanie</translation>
     </message>
 </context>
 <context>
@@ -425,7 +425,7 @@ Assistant nie będzie działał!</translation>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location line="+34"/>
+        <location line="+44"/>
         <source>Initializing Qt Assistant...</source>
         <translation>Inicjalizowanie Qt Assistant...</translation>
     </message>
@@ -480,15 +480,7 @@ Assistant nie będzie działał!</translation>
         <translation>Pokazuje główną stronę wybranego zestawu dokumentacji.</translation>
     </message>
     <message>
-        <source>Open Source Edition</source>
-        <translation type="obsolete">Wydanie Open Source</translation>
-    </message>
-    <message>
-        <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation type="obsolete">Ta wersja Qt Assistant jest częścią wydania Qt Open Source, przeznaczonego do tworzenia aplikacji Open Source. Qt zawiera obszerny zestaw bibliotek wykorzystywanych do pisania przenośnych aplikacji.</translation>
-    </message>
-    <message>
-        <location line="+49"/>
+        <location line="+39"/>
         <location line="+1"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
@@ -499,7 +491,7 @@ Assistant nie będzie działał!</translation>
         <translation>Nie można otworzyć pliku: &apos;%1&apos; z informacjami o aplikacji</translation>
     </message>
     <message>
-        <location line="+201"/>
+        <location line="+203"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -515,13 +507,9 @@ Assistant nie będzie działał!</translation>
         <translation>Nie można otworzyć pliku do zapisu!</translation>
     </message>
     <message>
-        <source>Qt Assistant by Trolltech</source>
-        <translation type="obsolete">Qt Assistant Trolltech&apos;a</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/mainwindow.ui"/>
         <source>Qt Assistant by Nokia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Assistant Nokii</translation>
     </message>
     <message>
         <location/>
@@ -858,21 +846,13 @@ Assistant nie będzie działał!</translation>
         <source>Font Settings...</source>
         <translation>Ustawienia czcionki...</translation>
     </message>
-    <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/model&quot;&gt;qt.nokia.com/company/model&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt;.</translation>
-    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <source>Qt Assistant by Trolltech</source>
-        <translation type="obsolete">Qt Assistant Trolltech&apos;a</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/config.cpp" line="+350"/>
         <source>Qt Assistant by Nokia</source>
-        <translation type="unfinished"></translation>
+        <translation>Qt Assistant Nokii</translation>
     </message>
 </context>
 <context>

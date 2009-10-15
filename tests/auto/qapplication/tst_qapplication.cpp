@@ -1242,6 +1242,10 @@ public slots:
     }
     void deleteLaterAndExitLoop()
     {
+        // Check that 'p' is not deleted before exec returns, since the call
+        // to QEventLoop::quit() should stop 'eventLoop' from processing
+        // any more events (that is, delete later) until we return to the
+        // _current_ event loop:
         QEventLoop eventLoop;
         QPointer<QObject> p(this);
         QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
