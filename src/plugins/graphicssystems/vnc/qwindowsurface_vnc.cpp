@@ -51,7 +51,8 @@ QT_BEGIN_NAMESPACE
 QVNCWindowSurface::QVNCWindowSurface(QVNCGraphicsSystem *graphicsSystem,
                                      QVNCGraphicsSystemScreen *screen, QWidget *window)
     : QWindowSurface(window),
-      mScreen(screen)
+      mScreen(screen),
+      visibleFlag(false)
 {
     mImage = QImage(window->size(), mScreen->format());
 }
@@ -115,4 +116,9 @@ void QVNCWindowSurface::endPaint(const QRegion &region)
     Q_UNUSED(region);
 }
 
+void QVNCWindowSurface::setVisible(bool visible)
+{
+    visibleFlag = visible;
+    mScreen->setDirty(geometry());
+}
 QT_END_NAMESPACE

@@ -87,10 +87,14 @@ void QVNCGraphicsSystemScreen::setDirty(const QRect &rect)
     compositePainter.fillRect(rect, Qt::black);
 
     for (int i = 0; i < windowStack.length(); i++) {
+        if (!windowStack[i]->visible())
+            continue;
         QRect windowRect = windowStack[i]->geometry();
         QRect intersect = windowRect.intersected(rect);
         QRect windowIntersect = intersect.translated(-windowRect.left(),
                                                      -windowRect.top());
+        if (intersect.isNull())
+            continue;
         compositePainter.drawImage(intersect, windowStack[i]->image(),
                                    windowIntersect);
     }

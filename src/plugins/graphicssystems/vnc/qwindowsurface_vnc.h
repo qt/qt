@@ -65,12 +65,14 @@ public:
     void beginPaint(const QRegion &region);
     void endPaint(const QRegion &region);
     inline const QImage image() { return mImage; }
-
+    void setVisible(bool visible);
+    bool visible() { return visibleFlag; }
 private:
     QVNCGraphicsSystem *mGraphicsSystem;
     QVNCGraphicsSystemScreen *mScreen;
     QRect oldGeometry;
     QImage mImage;
+    bool visibleFlag;
 };
 
 QT_END_NAMESPACE
