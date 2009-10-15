@@ -289,6 +289,18 @@ void QFxTextInput::setCursorPosition(int cp)
 }
 
 /*!
+  \internal
+
+  Returns a Rect which encompasses the cursor, but which may be larger than is
+  required. Ignores custom cursor delegates.
+*/
+QRect QFxTextInput::cursorRect() const
+{
+    Q_D(const QFxTextInput);
+    return d->control->cursorRect();
+}
+
+/*!
     \qmlproperty int TextInput::selectionStart
 
     The cursor position before the first character in the current selection.
