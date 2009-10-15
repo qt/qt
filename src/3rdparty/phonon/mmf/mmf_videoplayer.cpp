@@ -27,7 +27,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mmf_videoplayer.h"
 #include "utils.h"
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #include "objectdump.h"
 #endif
 
@@ -341,7 +341,7 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
 }
 
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 
 // The following code is for debugging problems related to video visibility.  It allows
 // the VideoPlayer instance to query the window server in order to determine the
@@ -392,7 +392,7 @@ void MMF::VideoPlayer::updateMmfOutput()
     // MvpuoPrepareComplete, at which point the MMF controller has been
     // loaded.
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
     getDsaRegion(m_wsSession, *m_window);
 #endif
 
@@ -449,7 +449,7 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
     	// Get top-level window
     	control = QApplication::activeWindow()->effectiveWinId();
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
     if(m_videoOutput) {
         QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
         dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs

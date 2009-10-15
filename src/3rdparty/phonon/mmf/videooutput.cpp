@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 #include "videooutputobserver.h"
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #include "objectdump.h"
 #endif
 
@@ -173,7 +173,7 @@ void MMF::VideoOutput::videoOutputRegionChanged()
 
 void MMF::VideoOutput::dump() const
 {
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
     TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
     QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
     visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs

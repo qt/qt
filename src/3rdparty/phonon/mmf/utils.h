@@ -54,7 +54,7 @@ void panic(PanicCode code);
  */
 MediaType mimeTypeToMediaType(const TDesC& mimeType);
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 /**
  * Retrieve color of specified pixel from the screen.
  */
@@ -138,7 +138,7 @@ public:
 #define _TRACE_MODULE Phonon::MMF
 
 // Macros available for use by implementation code
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #define TRACE_CONTEXT(_fn, _cat) const ::Phonon::MMF::TTraceContext _tc((TText*)L ## #_fn, (TUint)this, _cat);
 #define TRACE_ENTRY_0() { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x]"), _tc.iFunction, _tc.iAddr); }
 #define TRACE_ENTRY(string, args...) { if(_tc.Enabled()) _TRACE_PRINT(_TRACE_TEXT(L ## "+ Phonon::MMF::%s [0x%08x] " L ## string), _tc.iFunction, _tc.iAddr, args); }

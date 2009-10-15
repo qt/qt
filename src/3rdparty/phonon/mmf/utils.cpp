@@ -62,7 +62,7 @@ MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 }
 
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 
 #include <hal.h>
 #include <hal_data.h>
