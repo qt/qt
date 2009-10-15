@@ -89,6 +89,8 @@ QIconLoader::QIconLoader() :
         m_themeKey(1), m_supportsSvg(false)
 {
     m_systemTheme = qt_guiPlatformPlugin()->systemIconThemeName();
+    if (m_systemTheme.isEmpty())
+        m_systemTheme = fallbackTheme();
 
     QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterfaceV2_iid,
                                      QLatin1String("/iconengines"),
@@ -109,6 +111,8 @@ void QIconLoader::updateSystemTheme()
     // Only change if this is not explicitly set by the user
     if (m_userTheme.isEmpty()) {
         QString theme = qt_guiPlatformPlugin()->systemIconThemeName();
+        if (theme.isEmpty())
+            theme = fallbackTheme();
         if (theme != m_systemTheme) {
             m_systemTheme = theme;
             invalidateKey();
