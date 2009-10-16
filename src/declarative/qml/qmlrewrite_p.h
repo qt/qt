@@ -76,8 +76,30 @@ protected:
 
     void accept(AST::Node *node);
     QString rewrite(QString code, unsigned position, AST::Statement *node);
+
     virtual bool visit(AST::Block *ast);
     virtual bool visit(AST::ExpressionStatement *ast);
+
+    virtual bool visit(AST::DoWhileStatement *ast);
+    virtual void endVisit(AST::DoWhileStatement *ast);
+
+    virtual bool visit(AST::WhileStatement *ast);
+    virtual void endVisit(AST::WhileStatement *ast);
+
+    virtual bool visit(AST::ForStatement *ast);
+    virtual void endVisit(AST::ForStatement *ast);
+
+    virtual bool visit(AST::LocalForStatement *ast);
+    virtual void endVisit(AST::LocalForStatement *ast);
+
+    virtual bool visit(AST::ForEachStatement *ast);
+    virtual void endVisit(AST::ForEachStatement *ast);
+
+    virtual bool visit(AST::LocalForEachStatement *ast);
+    virtual void endVisit(AST::LocalForEachStatement *ast);
+
+private:
+    int _inLoop;
 };
 
 } // namespace QmlRewrite

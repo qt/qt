@@ -427,9 +427,13 @@ void QFxText::setTextFormat(TextFormat format)
 
     This property cannot be used with wrap enabled or with rich text.
 
-    Eliding can be ElideNone, ElideLeft, ElideMiddle, or ElideRight.
+    Eliding can be ElideNone (the default), ElideLeft, ElideMiddle, or ElideRight.
 
-    ElideNone is the default.
+    If the text is a multi-length string, and the mode is not ElideNone,
+    the first string that fits will be used, otherwise the last will be elided.
+
+    Multi-length strings are ordered from longest to shortest, separated by the
+    Unicode "String Terminator" character U009C (write this in QML with "\\x9C").
 */
 Qt::TextElideMode QFxText::elideMode() const
 {

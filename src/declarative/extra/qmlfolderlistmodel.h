@@ -61,6 +61,7 @@ class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, publ
     Q_INTERFACES(QmlParserStatus)
 
     Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
+    Q_PROPERTY(QString parentFolder READ parentFolder NOTIFY folderChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
     Q_PROPERTY(SortField sortField READ sortField WRITE setSortField)
     Q_PROPERTY(bool sortReversed READ sortReversed WRITE setSortReversed)
@@ -76,6 +77,8 @@ public:
 
     QString folder() const;
     void setFolder(const QString &folder);
+
+    QString parentFolder() const;
 
     QStringList nameFilters() const;
     void setNameFilters(const QStringList &filters);
