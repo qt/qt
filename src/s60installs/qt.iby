@@ -53,6 +53,8 @@ file=ABI_DIR\BUILD_DIR\QtXml.dll             SHARED_LIB_DIR\QtXml.dll        PAG
 file=ABI_DIR\BUILD_DIR\QtNetwork.dll         SHARED_LIB_DIR\QtNetwork.dll    PAGED
 file=ABI_DIR\BUILD_DIR\QtScript.dll          SHARED_LIB_DIR\QtScript.dll     PAGED
 file=ABI_DIR\BUILD_DIR\QtTest.dll            SHARED_LIB_DIR\QtTest.dll       PAGED
+file=ABI_DIR\BUILD_DIR\QtXmlPatterns.dll     SHARED_LIB_DIR\QtXmlPatterns.dll        PAGED
+file=ABI_DIR\BUILD_DIR\QtDeclarative.dll     SHARED_LIB_DIR\QtDeclarative.dll       PAGED
 
 // imageformats
 file=ABI_DIR\BUILD_DIR\qgif.dll              SHARED_LIB_DIR\qgif.dll         PAGED
