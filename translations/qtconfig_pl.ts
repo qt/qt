@@ -97,15 +97,11 @@
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2</source>
-        <translation type="obsolete">&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Wersja %2</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location line="+3"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
@@ -137,19 +133,19 @@
         <translation>&amp;Anuluj</translation>
     </message>
     <message>
-        <location line="-578"/>
+        <location line="-575"/>
         <source>No changes to be saved.</source>
         <translation>Brak zmian do zapisania.</translation>
     </message>
     <message>
         <location line="-259"/>
         <source>Desktop Settings (Default)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustawienia pulpitu (domyślne)</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Choose style and palette based on your desktop settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wybierz styl i paletę na podstawie ustawień Twojego pulpitu.</translation>
     </message>
     <message>
         <location line="+258"/>
@@ -827,7 +823,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
         <source>Desktop settings will only take effect after an application restart.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ustawienia pulpitu zostaną zaaplikowane po ponownym uruchomieniu aplikacji.</translation>
     </message>
 </context>
 <context>

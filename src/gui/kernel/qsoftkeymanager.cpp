@@ -125,7 +125,6 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         break;
     }
     action->setSoftKeyRole(softKeyRole);
-    action->setEnabled(actionWidget->isEnabled());
     return action;
 }
 
@@ -210,7 +209,7 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
     for (int index = 0; index < softkeys.count(); index++) {
         const QAction* softKeyAction = softkeys.at(index);
         switch (softKeyAction->softKeyRole()) {
-        // Positive Actions go on LSK
+        // Positive Actions on the LSK
         case QAction::PositiveSoftKey:
             position = 0;
             break;
@@ -253,7 +252,8 @@ bool QSoftKeyManager::handleCommand(int command)
             QAction *action = softKeys.at(i);
             if (action->softKeyRole() != QAction::NoSoftKey) {
                 if (j == index) {
-                    if (action->isEnabled()) {
+                    QWidget *parent = action->parentWidget();
+                    if (parent && parent->isEnabled()) {
                         action->activate(QAction::Trigger);
                         return true;
                     }

@@ -82,6 +82,14 @@ Q_DECLARE_METATYPE(QRectF)
 #define Q_CHECK_PAINTEVENTS
 #endif
 
+#if defined(Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
+// On mac (cocoa) we always get full update.
+// So check that the expected region is contained inside the actual
+#define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
+#else
+#define COMPARE_REGIONS QTRY_COMPARE
+#endif
+
 static void sendMousePress(QGraphicsScene *scene, const QPointF &point, Qt::MouseButton button = Qt::LeftButton)
 {
     QGraphicsSceneMouseEvent event(QEvent::GraphicsSceneMousePress);
@@ -6183,7 +6191,7 @@ void tst_QGraphicsItem::opacity2()
     MyGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTRY_COMPARE(view.repaints, 1);
+    QTRY_VERIFY(view.repaints >= 1);
 
 #define RESET_REPAINT_COUNTERS \
     parent->repaints = 0; \
@@ -6290,7 +6298,7 @@ void tst_QGraphicsItem::opacityZeroUpdates()
     QRegion expectedRegion = parentDeviceBoundingRect.adjusted(-2, -2, 2, 2);
     expectedRegion += childDeviceBoundingRect.adjusted(-2, -2, 2, 2);
 
-    QTRY_COMPARE(view.paintedRegion, expectedRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedRegion);
 }
 
 class StacksBehindParentHelper : public QGraphicsRectItem
@@ -7117,7 +7125,7 @@ void tst_QGraphicsItem::update()
     qApp->processEvents();
     QCOMPARE(item->repaints, 1);
     QCOMPARE(view.repaints, 1);
-    QCOMPARE(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
+    COMPARE_REGIONS(view.paintedRegion, expectedRegion + expectedRegion.translated(50, 50));
 
     // Make sure moving a parent item triggers an update on the children
     // (even though the parent itself is outside the viewport).
@@ -7392,7 +7400,7 @@ void tst_QGraphicsItem::moveItem()
     QRegion expectedParentRegion = parentDeviceBoundingRect; // old position
     parentDeviceBoundingRect.translate(20, 20);
     expectedParentRegion += parentDeviceBoundingRect; // new position
-    QCOMPARE(view.paintedRegion, expectedParentRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedParentRegion);
 
     RESET_COUNTERS
 
@@ -7402,7 +7410,7 @@ void tst_QGraphicsItem::moveItem()
     QCOMPARE(child->repaints, 1);
     QCOMPARE(view.repaints, 1);
     const QRegion expectedChildRegion = expectedParentRegion.translated(20, 20);
-    QCOMPARE(view.paintedRegion, expectedChildRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedChildRegion);
 
     RESET_COUNTERS
 
@@ -7413,7 +7421,7 @@ void tst_QGraphicsItem::moveItem()
     QCOMPARE(grandChild->repaints, 1);
     QCOMPARE(view.repaints, 1);
     const QRegion expectedGrandChildRegion = expectedParentRegion.translated(40, 40);
-    QCOMPARE(view.paintedRegion, expectedGrandChildRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedGrandChildRegion);
 
     RESET_COUNTERS
 
@@ -7426,7 +7434,7 @@ void tst_QGraphicsItem::moveItem()
     expectedParentRegion.translate(20, 20);
     expectedParentRegion += expectedChildRegion.translated(20, 20);
     expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
-    QCOMPARE(view.paintedRegion, expectedParentRegion);
+    COMPARE_REGIONS(view.paintedRegion, expectedParentRegion);
 }
 
 void tst_QGraphicsItem::sorting_data()

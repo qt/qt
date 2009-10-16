@@ -44,33 +44,42 @@
 #include "pvrqwsdrawable_p.h"
 #include <QRegExp>
 #include <qwindowsystem_qws.h>
+#ifndef QT_NO_QWS_TRANSFORMED
+#include <qscreentransformed_qws.h>
+#endif
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/kd.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+//![0]
 PvrEglScreen::PvrEglScreen(int displayId)
     : QGLScreen(displayId)
 {
     setOptions(NativeWindows);
     setSupportsBlitInClients(true);
     setSurfaceFunctions(new PvrEglScreenSurfaceFunctions(this, displayId));
+//![0]
     fd = -1;
     ttyfd = -1;
     doGraphicsMode = true;
     oldKdMode = KD_TEXT;
-    if (QWSServer::instance())
-        holder = new PvrEglSurfaceHolder();
-    else
-        holder = 0;
+    parent = 0;
+
+    // Make sure that the EGL layer is initialized and the drivers loaded.
+    EGLDisplay dpy = eglGetDisplay((EGLNativeDisplayType)EGL_DEFAULT_DISPLAY);
+    if (!eglInitialize(dpy, 0, 0))
+        qWarning("Could not initialize EGL display - are the drivers loaded?");
+
+    // Make sure that screen 0 is initialized.
+    pvrQwsScreenWindow(0);
 }
 
 PvrEglScreen::~PvrEglScreen()
 {
     if (fd >= 0)
         ::close(fd);
-    delete holder;
 }
 
 bool PvrEglScreen::initDevice()
@@ -183,10 +192,11 @@ bool PvrEglScreen::hasOpenGL()
     return true;
 }
 
+//![1]
 QWSWindowSurface* PvrEglScreen::createSurface(QWidget *widget) const
 {
     if (qobject_cast<QGLWidget*>(widget))
-        return new PvrEglWindowSurface(widget, (QScreen *)this, displayId);
+        return new PvrEglWindowSurface(widget, (PvrEglScreen *)this, displayId);
 
     return QScreen::createSurface(widget);
 }
@@ -194,10 +204,72 @@ QWSWindowSurface* PvrEglScreen::createSurface(QWidget *widget) const
 QWSWindowSurface* PvrEglScreen::createSurface(const QString &key) const
 {
     if (key == QLatin1String("PvrEgl"))
-        return new PvrEglWindowSurface(holder);
+        return new PvrEglWindowSurface();
 
     return QScreen::createSurface(key);
 }
+//![1]
+
+#ifndef QT_NO_QWS_TRANSFORMED
+
+static const QScreen *parentScreen
+    (const QScreen *current, const QScreen *lookingFor)
+{
+    if (!current)
+        return 0;
+    switch (current->classId()) {
+    case QScreen::ProxyClass:
+    case QScreen::TransformedClass: {
+        const QScreen *child =
+            static_cast<const QProxyScreen *>(current)->screen();
+        if (child == lookingFor)
+            return current;
+        else
+            return parentScreen(child, lookingFor);
+    }
+    // Not reached.
+
+    case QScreen::MultiClass: {
+        QList<QScreen *> screens = current->subScreens();
+        foreach (QScreen *screen, screens) {
+            if (screen == lookingFor)
+                return current;
+            const QScreen *parent = parentScreen(screen, lookingFor);
+            if (parent)
+                return parent;
+        }
+    }
+    break;
+
+    default: break;
+    }
+    return 0;
+}
+
+int PvrEglScreen::transformation() const
+{
+    // We need to search for our parent screen, which is assumed to be
+    // "Transformed".  If it isn't, then there is no transformation.
+    // There is no direct method to get the parent screen so we need
+    // to search every screen until we find ourselves.
+    if (!parent && qt_screen != this)
+        parent = parentScreen(qt_screen, this);
+    if (!parent)
+        return 0;
+    if (parent->classId() != QScreen::TransformedClass)
+        return 0;
+    return 90 * static_cast<const QTransformedScreen *>(parent)
+                    ->transformation();
+}
+
+#else
+
+int PvrEglScreen::transformation() const
+{
+    return 0;
+}
+
+#endif
 
 void PvrEglScreen::sync()
 {
@@ -253,8 +325,10 @@ void PvrEglScreen::closeTty()
     ttyfd = -1;
 }
 
+//![2]
 bool PvrEglScreenSurfaceFunctions::createNativeWindow(QWidget *widget, EGLNativeWindowType *native)
 {
+//![2]
     QWSWindowSurface *surface =
         static_cast<QWSWindowSurface *>(widget->windowSurface());
     if (!surface) {
@@ -274,117 +348,4 @@ bool PvrEglScreenSurfaceFunctions::createNativeWindow(QWidget *widget, EGLNative
     PvrEglWindowSurface *nsurface = static_cast<PvrEglWindowSurface*>(surface);
     *native = (EGLNativeWindowType)(nsurface->nativeDrawable());
     return true;
-}
-
-// The PowerVR engine on the device needs to allocate about 2Mb of
-// contiguous physical memory to manage drawing into a surface.
-//
-// The problem is that once Qtopia begins its startup sequence,
-// it allocates enough memory to severely fragment the physical
-// address space on the device.  This leaves the PowerVR engine
-// unable to allocate the necessary contiguous physical memory
-// when an EGL surface is created.
-//
-// A solution to this is to pre-allocate a dummy surface early
-// in the startup sequence before memory becomes fragmented,
-// reserving it for any future EGL applications to use.
-//
-// However, the PowerVR engine has problems managing multiple
-// surfaces concurrently, and so real EGL applications end up
-// with unacceptably slow frame rates unless the dummy surface
-// is destroyed while the real EGL applications are running.
-//
-// In summary, we need to try to ensure that there is always at
-// least one EGL surface active at any given time to reserve the
-// memory but destroy the temporary surface when a real surface
-// is using the device.  That is the purpose of PvrEglSurfaceHolder.
-
-PvrEglSurfaceHolder::PvrEglSurfaceHolder(QObject *parent)
-    : QObject(parent)
-{
-    numRealSurfaces = 0;
-
-    PvrQwsRect rect;
-    rect.x = 0;
-    rect.y = 0;
-    rect.width = 16;
-    rect.height = 16;
-    tempSurface = pvrQwsCreateWindow(0, -1, &rect);
-
-    dpy = EGL_NO_DISPLAY;
-    config = 0;
-    surface = EGL_NO_SURFACE;
-
-    dpy = eglGetDisplay((EGLNativeDisplayType)EGL_DEFAULT_DISPLAY);
-    if (!eglInitialize(dpy, 0, 0)) {
-        qWarning("Could not initialize EGL display - are the drivers loaded?");
-        dpy = EGL_NO_DISPLAY;
-        return;
-    }
-
-    EGLint attribList[16];
-    int temp = 0;
-    attribList[temp++] = EGL_LEVEL;     // Framebuffer level 0
-    attribList[temp++] = 0;
-    attribList[temp++] = EGL_SURFACE_TYPE;
-    attribList[temp++] = EGL_WINDOW_BIT;
-    attribList[temp++] = EGL_NONE;
-
-    EGLint numConfigs = 0;
-    if (!eglChooseConfig(dpy, attribList, &config, 1, &numConfigs) || numConfigs != 1) {
-        qWarning("Could not find a matching a EGL configuration");
-        eglTerminate(dpy);
-        dpy = EGL_NO_DISPLAY;
-        return;
-    }
-
-    surface = eglCreateWindowSurface
-        (dpy, config, (EGLNativeWindowType)(-1), NULL);
-    if (surface == EGL_NO_SURFACE)
-        qWarning("Could not create the temporary EGL surface");
-}
-
-PvrEglSurfaceHolder::~PvrEglSurfaceHolder()
-{
-    if (surface != EGL_NO_SURFACE)
-        eglDestroySurface(dpy, surface);
-    if (dpy != EGL_NO_DISPLAY)
-        eglTerminate(dpy);
-    if (tempSurface)
-        pvrQwsDestroyDrawable(tempSurface);
-}
-
-// Add a real EGL surface to the system.
-void PvrEglSurfaceHolder::addSurface()
-{
-    ++numRealSurfaces;
-    if (numRealSurfaces == 1) {
-        // Destroy the temporary surface while some other application
-        // is making use of the EGL sub-system for 3D rendering.
-        if (surface != EGL_NO_SURFACE) {
-            eglDestroySurface(dpy, surface);
-            surface = EGL_NO_SURFACE;
-        }
-    }
-}
-
-// Remove an actual EGL surface from the system.
-void PvrEglSurfaceHolder::removeSurface()
-{
-    if (numRealSurfaces > 0) {
-        --numRealSurfaces;
-        if (numRealSurfaces == 0) {
-            // The last real EGL surface has been destroyed, so re-create
-            // the temporary surface.  There is a race condition here in
-            // that Qtopia could allocate a lot of memory just after
-            // the real EGL surface is destroyed but before we could
-            // create the temporary surface again.
-            if (surface == EGL_NO_SURFACE && dpy != EGL_NO_DISPLAY) {
-                surface = eglCreateWindowSurface
-                    (dpy, config, (EGLNativeWindowType)(-1), NULL);
-                if (surface == EGL_NO_SURFACE)
-                    qWarning("Could not re-create the temporary EGL surface");
-            }
-        }
-    }
 }

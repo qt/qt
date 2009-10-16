@@ -223,6 +223,7 @@ private slots:
     void task257481_emptyEditor();
     void shiftArrowSelectionAfterScrolling();
     void shiftSelectionAfterRubberbandSelection();
+    void ctrlRubberbandSelection();
 };
 
 class MyAbstractItemDelegate : public QAbstractItemDelegate
@@ -1385,6 +1386,50 @@ void tst_QAbstractItemView::shiftSelectionAfterRubberbandSelection()
     selected = view.selectionModel()->selectedIndexes();
     QCOMPARE(selected.count(), 2);
     QVERIFY(selected.contains(index1));
+    QVERIFY(selected.contains(index2));
+}
+
+void tst_QAbstractItemView::ctrlRubberbandSelection()
+{
+    QStandardItemModel model;
+    for (int i=0; i<3; ++i) {
+        QStandardItem *item = new QStandardItem(QString("%1").arg(i));
+        model.setItem(i, 0, item);
+    }
+
+    QListView view;
+    view.setFixedSize(150, 450);
+    view.setFlow(QListView::LeftToRight);
+    view.setGridSize(QSize(100, 100));
+    view.setSelectionMode(QListView::ExtendedSelection);
+    view.setViewMode(QListView::IconMode);
+    view.setModel(&model);
+    view.show();
+    QTest::qWait(30);
+
+    QModelIndex index1 = model.index(1, 0);
+    QModelIndex index2 = model.index(2, 0);
+
+    // Select item 1
+    view.setCurrentIndex(index1);
+    QModelIndexList selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
+    QVERIFY(selected.contains(index1));
+
+    // Now press control and draw a rubberband around items 1 and 2.
+    // The mouse move event has to be created manually because the QTest framework does not
+    // contain a function for mouse moves with buttons pressed.
+    QPoint pressPos = view.visualRect(index1).topLeft() - QPoint(1, 1);
+    QPoint releasePos = view.visualRect(index2).bottomRight() + QPoint(1, 1);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, Qt::ControlModifier, pressPos);
+    QMouseEvent moveEvent(QEvent::MouseMove, releasePos, Qt::NoButton, Qt::LeftButton, Qt::ControlModifier);
+    bool moveEventReceived = qApp->notify(view.viewport(), &moveEvent);
+    QVERIFY(moveEventReceived);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, Qt::ControlModifier, releasePos);
+
+    // Verify that item 2 is selected now
+    selected = view.selectionModel()->selectedIndexes();
+    QCOMPARE(selected.count(), 1);
     QVERIFY(selected.contains(index2));
 }
 

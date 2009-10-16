@@ -943,7 +943,7 @@ void QApplicationPrivate::initialize()
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
-#ifdef Q_OS_MAC 
+#ifdef Q_OS_MAC
     QApplicationPrivate::wheel_scroll_lines = 1;
 #else
     QApplicationPrivate::wheel_scroll_lines = 3;
@@ -1034,11 +1034,11 @@ QApplication::~QApplication()
 
     d->eventDispatcher->closingDown();
     d->eventDispatcher = 0;
+    QApplicationPrivate::is_app_closing = true;
+    QApplicationPrivate::is_app_running = false;
 
     delete qt_desktopWidget;
     qt_desktopWidget = 0;
-    QApplicationPrivate::is_app_closing = true;
-    QApplicationPrivate::is_app_running = false;
 
 #ifndef QT_NO_CLIPBOARD
     delete qt_clipboard;
@@ -5619,11 +5619,32 @@ Q_GUI_EXPORT void qt_translateRawTouchEvent(QWidget *window,
     QApplicationPrivate::translateRawTouchEvent(window, deviceType, touchPoints);
 }
 
+/*!
+    \since 4.6
+
+    Registers the given \a recognizer in the gesture framework and returns a gesture ID
+    for it.
+
+    The application takes ownership of the \a recognizer and returns the gesture type
+    ID associated with it. For gesture recognizers which handle custom QGesture
+    objects (i.e., those which return Qt::CustomGesture in a QGesture::gestureType()
+    function) the return value is a gesture ID between Qt::CustomGesture and
+    Qt::LastGestureType, inclusive.
+
+    \sa unregisterGestureRecognizer(), QGestureRecognizer::createGesture(), QGesture
+*/
 Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *recognizer)
 {
     return QGestureManager::instance()->registerGestureRecognizer(recognizer);
 }
 
+/*!
+    \since 4.6
+
+    Unregisters all gesture recognizers of the specified \a type.
+
+    \sa registerGestureRecognizer()
+*/
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QGestureManager::instance()->unregisterGestureRecognizer(type);

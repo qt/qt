@@ -826,7 +826,7 @@ public:
     QGestureEvent(const QList<QGesture *> &gestures);
 
     QList<QGesture *> allGestures() const;
-    QGesture *gesture(Qt::GestureType type);
+    QGesture *gesture(Qt::GestureType type) const;
 
     QList<QGesture *> activeGestures() const;
     QList<QGesture *> canceledGestures() const;

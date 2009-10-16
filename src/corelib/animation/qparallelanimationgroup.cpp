@@ -136,7 +136,9 @@ void QParallelAnimationGroup::updateCurrentTime(int currentTime)
         int dura = duration();
         if (dura > 0) {
             for (int i = 0; i < d->animations.size(); ++i) {
-                d->animations.at(i)->setCurrentTime(dura);   // will stop
+                QAbstractAnimation *animation = d->animations.at(i);
+                if (animation->state() != QAbstractAnimation::Stopped)
+                    d->animations.at(i)->setCurrentTime(dura);   // will stop
             }
         }
     } else if (d->currentLoop < d->lastLoop) {
@@ -160,7 +162,7 @@ void QParallelAnimationGroup::updateCurrentTime(int currentTime)
         QAbstractAnimation *animation = d->animations.at(i);
         const int dura = animation->totalDuration();
         //if the loopcount is bigger we should always start all animations
-        if (d->currentLoop > d->lastLoop 
+        if (d->currentLoop > d->lastLoop
             //if we're at the end of the animation, we need to start it if it wasn't already started in this loop
             //this happens in Backward direction where not all animations are started at the same time
             || d->shouldAnimationStart(animation, d->lastCurrentTime > dura /*startIfAtEnd*/)) {
@@ -283,7 +285,7 @@ bool QParallelAnimationGroupPrivate::shouldAnimationStart(QAbstractAnimation *an
 
 void QParallelAnimationGroupPrivate::applyGroupState(QAbstractAnimation *animation)
 {
-    switch (state) 
+    switch (state)
     {
     case QAbstractAnimation::Running:
         animation->start();

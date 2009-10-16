@@ -296,7 +296,8 @@ public:
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
-    void activateSymbianWindow();
+    void activateSymbianWindow(WId wid = 0);
+    void _q_delayedDestroy(WId winId);
 #endif
 
     void raise_sys();

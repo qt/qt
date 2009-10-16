@@ -49,6 +49,9 @@
 #include <qheaderview.h>
 #include <qlineedit.h>
 #include <QScrollBar>
+#include <QStyledItemDelegate>
+
+#include "../../shared/util.h"
 
 
 //TESTED_CLASS=
@@ -163,6 +166,7 @@ private slots:
     void task217309();
     void setCurrentItemExpandsParent();
     void task239150_editorWidth();
+    void setTextUpdate();
 
 public slots:
     void itemSelectionChanged();
@@ -3231,6 +3235,41 @@ void tst_QTreeWidget::task239150_editorWidth()
     }
 }
 
+
+
+void tst_QTreeWidget::setTextUpdate()
+{
+    QTreeWidget treeWidget;
+    treeWidget.setColumnCount(2);
+
+    class MyItemDelegate : public QStyledItemDelegate
+    {
+    public:
+        MyItemDelegate() : numPaints(0) { }
+        void paint(QPainter *painter,
+               const QStyleOptionViewItem &option, const QModelIndex &index) const
+        {
+            numPaints++;
+            QStyledItemDelegate::paint(painter, option, index);
+        }
+
+        mutable int numPaints;
+    } delegate;
+
+    treeWidget.setItemDelegate(&delegate);
+    treeWidget.show();
+    QStringList strList;
+    strList << "variable1" << "0";
+    QTreeWidgetItem *item = new QTreeWidgetItem(strList);
+    treeWidget.insertTopLevelItem(0, item);
+    QTest::qWait(50);
+    QTRY_VERIFY(delegate.numPaints > 0);
+    delegate.numPaints = 0;
+
+    item->setText(1, "42");
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.numPaints > 0);
+}
 
 
 

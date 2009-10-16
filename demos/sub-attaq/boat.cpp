@@ -87,7 +87,7 @@ Boat::Boat() : PixmapItem(QString("boat"), GraphicsScene::Big),
     speed(0), bombsAlreadyLaunched(0), direction(Boat::None), movementAnimation(0)
 {
     setZValue(4);
-    setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsFocusable);
+    setFlags(QGraphicsItem::ItemIsFocusable);
 
     //The movement animation used to animate the boat
     movementAnimation = new QPropertyAnimation(this, "pos");

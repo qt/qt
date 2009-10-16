@@ -26,7 +26,7 @@ SUBDIRS += demos_boxes
 }
 
 mac*: SUBDIRS += demos_macmainwindow
-wince*|symbian|embedded: SUBDIRS += embedded
+wince*|symbian|embedded|x11: SUBDIRS += embedded
 
 !contains(QT_EDITION, Console):!cross_compile:!embedded:!wince*:SUBDIRS += demos_arthurplugin
 

@@ -45,7 +45,7 @@
     <message>
         <location line="+31"/>
         <source>Phonon GStreamer backend not available.</source>
-        <translation type="unfinished">Модуль Phonon поддержки GStreamer не доступен.</translation>
+        <translation type="unfinished">Модуль Phonon поддержки GStreamer недоступен.</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -56,18 +56,18 @@
         <location line="+2"/>
         <location line="+1"/>
         <source>X11</source>
-        <translation type="unfinished"></translation>
+        <translation>X11</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Use X11 Overlays</source>
-        <translation type="unfinished">Использовать оверлеи X11</translation>
+        <translation>Использовать оверлеи X11</translation>
     </message>
     <message>
         <location line="+3"/>
         <location line="+1"/>
         <source>OpenGL</source>
-        <translation type="unfinished"></translation>
+        <translation>OpenGL</translation>
     </message>
     <message>
         <location line="+0"/>
@@ -117,11 +117,11 @@
     </message>
     <message>
         <location line="+17"/>
-        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).&lt;br/&gt;&lt;br/&gt;The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.&lt;br/&gt; </source>
-        <translation type="unfinished"></translation>
+        <source>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Version %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).</source>
+        <translation>&lt;h3&gt;%1&lt;/h3&gt;&lt;br/&gt;Версия %2&lt;br/&gt;&lt;br/&gt;Copyright (C) 2009 Корпорация Nokia и/или её дочерние подразделения.</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+3"/>
         <location line="+1"/>
         <location line="+8"/>
         <source>Qt Configuration</source>
@@ -150,7 +150,7 @@
     <message>
         <location line="+0"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Отмена</translation>
+        <translation>От&amp;мена</translation>
     </message>
 </context>
 <context>
@@ -183,7 +183,7 @@
     <message>
         <location line="+12"/>
         <source>&amp;3-D Effects:</source>
-        <translation>Эффекты &amp;3-D:</translation>
+        <translation>Эффекты &amp;3D:</translation>
     </message>
     <message>
         <location line="+31"/>
@@ -238,17 +238,17 @@
     <message>
         <location line="+45"/>
         <source>&amp;Style:</source>
-        <translation>&amp;Стиль:</translation>
+        <translation>&amp;Начертание:</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>&amp;Point Size:</source>
-        <translation>&amp;Размер в точках:</translation>
+        <translation>&amp;Размер:</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>F&amp;amily:</source>
-        <translation>Семе&amp;йство:</translation>
+        <translation>&amp;Шрифт:</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -263,12 +263,12 @@
     <message>
         <location line="+20"/>
         <source>S&amp;elect or Enter a Family:</source>
-        <translation>&amp;Выберите или введите семейство:</translation>
+        <translation>&amp;Выберите шрифт для замены:</translation>
     </message>
     <message>
         <location line="+38"/>
         <source>Current Substitutions:</source>
-        <translation type="unfinished">Текущие замены:</translation>
+        <translation>Текущие замены:</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -291,7 +291,7 @@
     <message>
         <location line="-464"/>
         <source>Select s&amp;ubstitute Family:</source>
-        <translation>Выберите п&amp;одставляемое семейство:</translation>
+        <translation>&amp;Заменять на шрифт:</translation>
     </message>
     <message>
         <location line="+20"/>
@@ -518,7 +518,11 @@
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://phonon.kde.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://phonon.kde.org&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -532,7 +536,11 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;http://gstreamer.freedesktop.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://gstreamer.freedesktop.org/&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location line="+17"/>
@@ -556,7 +564,7 @@ p, li { white-space: pre-wrap; }
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Note: changes to these settings may prevent applications from starting up correctly.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Sans Serif&apos;; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -628,7 +636,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+6"/>
         <source>&lt;b&gt;Edit Palette&lt;/b&gt;&lt;p&gt;Change the palette of the current widget or form.&lt;/p&gt;&lt;p&gt;Use a generated palette or select colors for each color group and each color role.&lt;/p&gt;&lt;p&gt;The palette can be tested with different widget layouts in the preview section.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;b&gt;Изменение палитры&lt;/b&gt;&lt;p&gt;Изменение палитры текущего виджета или формы.&lt;/p&gt;&lt;p&gt;Используйте сформированную палитру или выберите цвета для каждой группы цветов и каждой их роли.&lt;/p&gt;&lt;p&gt;Палитру можно проверить на виджетах в разных режимах отображения в разделе предпросмотра.&lt;/p&gt;</translation>
+        <translation>&lt;b&gt;Изменение палитры&lt;/b&gt;&lt;p&gt;Изменение палитры текущего виджета или формы.&lt;/p&gt;&lt;p&gt;Используйте сформированную палитру или выберите цвета для каждой группы цветов и каждой их роли.&lt;/p&gt;&lt;p&gt;Палитру можно проверить на виджетах в разных режимах отображения в разделе предпросмотра.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -653,7 +661,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+21"/>
         <source>Auto</source>
-        <translation type="unfinished">Автоматически</translation>
+        <translation>Автоматически</translation>
     </message>
     <message>
         <location line="+18"/>
@@ -832,7 +840,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="../tools/qtconfig/previewframe.cpp" line="+81"/>
         <source>Desktop settings will only take effect after an application restart.</source>
-        <translation type="unfinished">Настройки рабочего стола применятся после перезапуска приложения.</translation>
+        <translation>Настройки рабочего стола применятся после перезапуска приложения.</translation>
     </message>
 </context>
 <context>
@@ -845,52 +853,52 @@ p, li { white-space: pre-wrap; }
     <message>
         <location line="+40"/>
         <source>ButtonGroup</source>
-        <translation type="unfinished"></translation>
+        <translation>ButtonGroup</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>RadioButton1</source>
-        <translation type="unfinished"></translation>
+        <translation>RadioButton1</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>RadioButton2</source>
-        <translation type="unfinished"></translation>
+        <translation>RadioButton2</translation>
     </message>
     <message>
         <location line="+10"/>
         <source>RadioButton3</source>
-        <translation type="unfinished"></translation>
+        <translation>RadioButton3</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>ButtonGroup2</source>
-        <translation type="unfinished"></translation>
+        <translation>ButtonGroup2</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>CheckBox1</source>
-        <translation type="unfinished"></translation>
+        <translation>CheckBox1</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>CheckBox2</source>
-        <translation type="unfinished"></translation>
+        <translation>CheckBox2</translation>
     </message>
     <message>
         <location line="+36"/>
         <source>LineEdit</source>
-        <translation type="unfinished"></translation>
+        <translation>LineEdit</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>ComboBox</source>
-        <translation type="unfinished"></translation>
+        <translation>ComboBox</translation>
     </message>
     <message>
         <location line="+29"/>
         <source>PushButton</source>
-        <translation type="unfinished"></translation>
+        <translation>PushButton</translation>
     </message>
     <message>
         <location line="+41"/>
@@ -900,7 +908,12 @@ p, li { white-space: pre-wrap; }
 &lt;p&gt;
 &lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
 &lt;/p&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;p&gt;
+&lt;a href=&quot;http://qtsoftware.com&quot;&gt;http://qtsoftware.com&lt;/a&gt;
+&lt;/p&gt;
+&lt;p&gt;
+&lt;a href=&quot;http://www.kde.org&quot;&gt;http://www.kde.org&lt;/a&gt;
+&lt;/p&gt;</translation>
     </message>
 </context>
 </TS>

@@ -47,6 +47,10 @@ public:
 
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
+    virtual void setInputMethodEnabled(bool enable);
+#if QT_VERSION >= 0x040600
+    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
+#endif
 
     virtual QCursor cursor() const;
     virtual void updateCursor(const QCursor& cursor);
@@ -71,6 +75,20 @@ void QWebViewPrivate::update(const QRect & dirtyRect)
 {
     view->update(dirtyRect);
 }
+
+void QWebViewPrivate::setInputMethodEnabled(bool enable)
+{
+    view->setAttribute(Qt::WA_InputMethodEnabled, enable);
+}
+#if QT_VERSION >= 0x040600
+void QWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
+{
+    if (enable)
+        view->setInputMethodHints(view->inputMethodHints() | hint);
+    else
+        view->setInputMethodHints(view->inputMethodHints() & ~hint);
+}
+#endif
 
 QCursor QWebViewPrivate::cursor() const
 {
@@ -119,7 +137,7 @@ void QWebViewPrivate::_q_pageDestroyed()
     It can be used in various applications to display web content live from the
     Internet.
 
-    The image below shows QWebView previewed in \QD with the Trolltech website.
+    The image below shows QWebView previewed in \QD with a Nokia website.
 
     \image qwebview-url.png
 

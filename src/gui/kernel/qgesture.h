@@ -51,11 +51,11 @@
 
 QT_BEGIN_HEADER
 
+Q_DECLARE_METATYPE(Qt::GestureState)
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
-
-Q_DECLARE_METATYPE(Qt::GestureState)
 
 class QGesturePrivate;
 class Q_GUI_EXPORT QGesture : public QObject
@@ -70,8 +70,7 @@ class Q_GUI_EXPORT QGesture : public QObject
     Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject)
 
 public:
-    explicit QGesture(Qt::GestureType type = Qt::CustomGesture, QObject *parent = 0);
-    explicit QGesture(QObject *parent);
+    explicit QGesture(QObject *parent = 0);
     ~QGesture();
 
     Qt::GestureType gestureType() const;
@@ -87,7 +86,7 @@ public:
     void unsetHotSpot();
 
 protected:
-    QGesture(QGesturePrivate &dd, Qt::GestureType type, QObject *parent);
+    QGesture(QGesturePrivate &dd, QObject *parent);
 
 private:
     friend class QGestureEvent;
@@ -181,7 +180,11 @@ public:
     friend class QPinchGestureRecognizer;
 };
 
+QT_END_NAMESPACE
+
 Q_DECLARE_METATYPE(QPinchGesture::WhatChanged)
+
+QT_BEGIN_NAMESPACE
 
 class QSwipeGesturePrivate;
 class Q_GUI_EXPORT QSwipeGesture : public QGesture
@@ -190,8 +193,8 @@ class Q_GUI_EXPORT QSwipeGesture : public QGesture
     Q_DECLARE_PRIVATE(QSwipeGesture)
     Q_ENUMS(SwipeDirection)
 
-    Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection WRITE setHorizontalDirection)
-    Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection WRITE setVerticalDirection)
+    Q_PROPERTY(SwipeDirection horizontalDirection READ horizontalDirection STORED false)
+    Q_PROPERTY(SwipeDirection verticalDirection READ verticalDirection STORED false)
     Q_PROPERTY(qreal swipeAngle READ swipeAngle WRITE setSwipeAngle)
 
 public:
@@ -200,8 +203,6 @@ public:
 
     SwipeDirection horizontalDirection() const;
     SwipeDirection verticalDirection() const;
-    void setHorizontalDirection(SwipeDirection value);
-    void setVerticalDirection(SwipeDirection value);
 
     qreal swipeAngle() const;
     void setSwipeAngle(qreal value);

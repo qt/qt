@@ -1072,18 +1072,17 @@
 /*!
     \page examples-gestures.html
     \title Gestures Examples
-    
+
     \previouspage Animation Framework Examples
     \contentspage Qt Examples
     \nextpage D-Bus Examples
 
     The API of the gesture framework is not yet finalized and
     still subject to change.
-\omit
+
     \list
-    \o \l{widgets/imageviewer}{Image Viewer}
+    \o \l{gestures/imagegestures}{Image Gestures}
     \endlist
-\endomit
 */
 
 /*!
@@ -1121,7 +1120,6 @@
     \o \l{qws/svgalib}{Accelerated Graphics Driver}\raisedaster
     \o \l{qws/dbscreen}{Double Buffered Graphics Driver}\raisedaster
     \o \l{qws/mousecalibration}{Mouse Calibration}\raisedaster
-    \o \l{qws/ahigl}{OpenGL for Embedded Systems}\raisedaster
     \o \l{qws/simpledecoration}{Simple Decoration}\raisedaster
     \endlist
 */

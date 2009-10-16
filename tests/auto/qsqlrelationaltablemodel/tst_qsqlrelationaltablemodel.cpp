@@ -837,10 +837,10 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
     QVERIFY_SQL(model, select());
 
     if (db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2")) {
-        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name")).toUpper()).toString(),
+        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name_2")).toUpper()).toString(),
             QString("Trondheim"));
     } else {
-        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name"))).toString(),
+        QCOMPARE(model.record(1).value(qTableName("reltest4").append(QLatin1String("_name_2"))).toString(),
             QString("Trondheim"));
     }
 
@@ -859,9 +859,9 @@ void tst_QSqlRelationalTableModel::insertRecordDuplicateFieldNames()
 
     // The duplicate field names is aliased because it's comes from the relation's display column.
     if(db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2"))
-        QCOMPARE(rec.fieldName(2), (qTableName("reltest4").append(QLatin1String("_name"))).toUpper());
+        QCOMPARE(rec.fieldName(2), (qTableName("reltest4").append(QLatin1String("_name_2"))).toUpper());
     else
-        QCOMPARE(rec.fieldName(2), qTableName("reltest4").append(QLatin1String("_name")));
+        QCOMPARE(rec.fieldName(2), qTableName("reltest4").append(QLatin1String("_name_2")));
 
     QVERIFY(model.insertRecord(-1, rec));
     QCOMPARE(model.data(model.index(2, 2)).toString(), QString("Oslo"));

@@ -16,7 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include <QApplication>	// for QApplication::activeWindow
+#include <QApplication>    // for QApplication::activeWindow
 #include <QUrl>
 #include <QTimer>
 #include <QWidget>
@@ -27,7 +27,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "mmf_videoplayer.h"
 #include "utils.h"
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #include "objectdump.h"
 #endif
 
@@ -45,8 +45,8 @@ using namespace Phonon::MMF;
 //-----------------------------------------------------------------------------
 
 MMF::VideoPlayer::VideoPlayer()
-        :   m_wsSession(0)
-        ,   m_screenDevice(0)
+        :   m_wsSession(CCoeEnv::Static()->WsSession())
+        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
@@ -56,8 +56,8 @@ MMF::VideoPlayer::VideoPlayer()
 
 MMF::VideoPlayer::VideoPlayer(const AbstractPlayer& player)
         :   AbstractMediaPlayer(player)
-        ,   m_wsSession(0)
-        ,   m_screenDevice(0)
+        ,   m_wsSession(CCoeEnv::Static()->WsSession())
+        ,   m_screenDevice(*CCoeEnv::Static()->ScreenDevice())
         ,   m_window(0)
         ,   m_totalTime(0)
         ,   m_mmfOutputChangePending(false)
@@ -70,37 +70,37 @@ void MMF::VideoPlayer::construct()
     TRACE_CONTEXT(VideoPlayer::VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
-    if(m_videoOutput)
-    	m_videoOutput->setObserver(this);
+    if (m_videoOutput)
+        m_videoOutput->setObserver(this);
 
     const TInt priority = 0;
     const TMdaPriorityPreference preference = EMdaPriorityPreferenceNone;
 
+    // Ignore return value - first call must always return true
     getNativeWindowSystemHandles();
 
     // TODO: is this the correct way to handle errors which occur when
     // creating a Symbian object in the constructor of a Qt object?
-    
-    // TODO: check whether videoOutput is visible?  If not, then the 
-    // corresponding window will not be active, meaning that the 
+
+    // TODO: check whether videoOutput is visible?  If not, then the
+    // corresponding window will not be active, meaning that the
     // clipping region will be set to empty and the video will not be
     // visible.  If this is the case, we should set m_mmfOutputChangePending
     // and respond to future showEvents from the videoOutput widget.
-    
-    TRAPD(err,
-          m_player.reset(CVideoPlayerUtility::NewL
-                     (
-                         *this,
-                         priority, preference,
-                         *m_wsSession, *m_screenDevice,
-                         *m_window,
-                         m_windowRect, m_clipRect
-                     ))
-         );
 
-    if (KErrNone != err) {
+    TRAPD(err,
+        m_player.reset(CVideoPlayerUtility::NewL
+            (
+                 *this,
+                 priority, preference,
+                 m_wsSession, m_screenDevice,
+                 *m_window,
+                 m_rect, m_rect
+            ))
+        );
+
+    if (KErrNone != err)
         changeState(ErrorState);
-    }
 
     TRACE_EXIT_0();
 }
@@ -120,13 +120,13 @@ MMF::VideoPlayer::~VideoPlayer()
 void MMF::VideoPlayer::doPlay()
 {
     TRACE_CONTEXT(VideoPlayer::doPlay, EVideoApi);
-    
+
     // See comment in updateMmfOutput
-    if(m_mmfOutputChangePending) {
+    if (m_mmfOutputChangePending) {
         TRACE_0("MMF output change pending - pushing now");
         updateMmfOutput();
     }
-    
+
     m_player->Play();
 }
 
@@ -149,20 +149,20 @@ void MMF::VideoPlayer::doStop()
 void MMF::VideoPlayer::doSeek(qint64 ms)
 {
     TRACE_CONTEXT(VideoPlayer::doSeek, EVideoApi);
-    
+
     bool wasPlaying = false;
-    if(state() == PlayingState) {
-		// The call to SetPositionL does not have any effect if playback is
-		// ongoing, so we pause before seeking.
-		doPause();
-		wasPlaying = true;
+    if (state() == PlayingState) {
+        // The call to SetPositionL does not have any effect if playback is
+        // ongoing, so we pause before seeking.
+        doPause();
+        wasPlaying = true;
     }
 
     TRAPD(err, m_player->SetPositionL(TTimeIntervalMicroSeconds(ms * 1000)));
 
-    if(KErrNone == err) {
-		if(wasPlaying)
-			doPlay();
+    if (KErrNone == err) {
+        if (wasPlaying)
+            doPlay();
     }
     else {
         TRACE("SetPositionL error %d", err);
@@ -251,15 +251,15 @@ void MMF::VideoPlayer::MvpuoPrepareComplete(TInt aError)
     if (KErrNone == err) {
         maxVolumeChanged(m_player->MaxVolume());
 
-        if(m_videoOutput)
-        	m_videoOutput->setFrameSize(m_frameSize);
+        if (m_videoOutput)
+            m_videoOutput->setFrameSize(m_frameSize);
 
         // See comment in updateMmfOutput
-        if(m_mmfOutputChangePending) {
+        if (m_mmfOutputChangePending) {
             TRACE_0("MMF output change pending - pushing now");
             updateMmfOutput();
-        }       
-        
+        }
+
         emit totalTimeChanged(totalTime());
         changeState(StoppedState);
     } else {
@@ -327,82 +327,91 @@ void MMF::VideoPlayer::videoOutputRegionChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputRegionChanged, EVideoInternal);
     TRACE_ENTRY("state %d", state());
 
-    getNativeWindowSystemHandles();
+    const bool changed = getNativeWindowSystemHandles();
 
     // See comment in updateMmfOutput
-    if(state() == LoadingState)
-        m_mmfOutputChangePending = true;
-    else
-        updateMmfOutput();
-        
+    if (changed) {
+        if (state() == LoadingState)
+            m_mmfOutputChangePending = true;
+        else
+            updateMmfOutput();
+    }
+
     TRACE_EXIT_0();
 }
 
-// DEBUGGING *** DO NOT INTEGRATE ***
+
+#ifndef QT_NO_DEBUG
+
+// The following code is for debugging problems related to video visibility.  It allows
+// the VideoPlayer instance to query the window server in order to determine the
+// DSA drawing region for the video window.
+
 class CDummyAO : public CActive
 {
 public:
-	CDummyAO() : CActive(CActive::EPriorityStandard) { CActiveScheduler::Add(this); }
-	void RunL() { }
-	void DoCancel() { }
-	TRequestStatus& Status() { return iStatus; }
-	void SetActive() { CActive::SetActive(); }
+    CDummyAO() : CActive(CActive::EPriorityStandard) { CActiveScheduler::Add(this); }
+    void RunL() { }
+    void DoCancel() { }
+    TRequestStatus& Status() { return iStatus; }
+    void SetActive() { CActive::SetActive(); }
 };
 
-// DEBUGGING *** DO NOT INTEGRATE ***
 void getDsaRegion(RWsSession &session, const RWindowBase &window)
 {
-	RDirectScreenAccess dsa(session);
-	TInt err = dsa.Construct();
-	CDummyAO ao;
-	RRegion* region;
-	err = dsa.Request(region, ao.Status(), window);
-	ao.SetActive();
-	dsa.Close();
-	ao.Cancel(); 
-	if(region) {
-		qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
-		for(int i=0; i<region->Count(); ++i) {
-			const TRect& rect = region->RectangleList()[i];
-			qDebug() << "Phonon::MMF::getDsaRegion rect" << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;
-		}
-		region->Close();
-	}
+    RDirectScreenAccess dsa(session);
+    TInt err = dsa.Construct();
+    CDummyAO ao;
+    RRegion* region;
+    err = dsa.Request(region, ao.Status(), window);
+    ao.SetActive();
+    dsa.Close();
+    ao.Cancel();
+    if (region) {
+        qDebug() << "Phonon::MMF::getDsaRegion count" << region->Count();
+        for (int i=0; i<region->Count(); ++i) {
+            const TRect& rect = region->RectangleList()[i];
+            qDebug() << "Phonon::MMF::getDsaRegion rect"
+                << rect.iTl.iX << rect.iTl.iY << rect.iBr.iX << rect.iBr.iY;
+        }
+        region->Close();
+    }
 }
+
+#endif // _DEBUG
 
 void MMF::VideoPlayer::updateMmfOutput()
 {
     TRACE_CONTEXT(VideoPlayer::updateMmfOutput, EVideoInternal);
     TRACE_ENTRY_0();
-    
-    // Calling SetDisplayWindowL is a no-op unless the MMF controller has 
+
+    // Calling SetDisplayWindowL is a no-op unless the MMF controller has
     // been loaded, so we shouldn't do it.  Instead, the
     // m_mmfOutputChangePending flag is used to record the fact that we
-    // need to call SetDisplayWindowL, and this is checked in 
+    // need to call SetDisplayWindowL, and this is checked in
     // MvpuoPrepareComplete, at which point the MMF controller has been
     // loaded.
-    
-    getNativeWindowSystemHandles();
-    
-// DEBUGGING *** DO NOT INTEGRATE ***
-getDsaRegion(*m_wsSession, *m_window);
+
+#ifndef QT_NO_DEBUG
+    getDsaRegion(m_wsSession, *m_window);
+#endif
 
     TRAPD(err,
-          m_player->SetDisplayWindowL
-          (
-              *m_wsSession, *m_screenDevice,
-              *m_window,
-              m_windowRect, m_clipRect
-          )
-         );
+        m_player->SetDisplayWindowL
+        (
+            m_wsSession, m_screenDevice,
+            *m_window,
+            m_rect, m_rect
+        )
+    );
 
     if (KErrNone != err) {
         TRACE("SetDisplayWindowL error %d", err);
         setError(NormalError);
     }
-    
+
     m_mmfOutputChangePending = false;
-    
+
     TRACE_EXIT_0();
 }
 
@@ -416,9 +425,9 @@ void MMF::VideoPlayer::videoOutputChanged()
     TRACE_CONTEXT(VideoPlayer::videoOutputChanged, EVideoInternal);
     TRACE_ENTRY_0();
 
-    if(m_videoOutput) {
-		m_videoOutput->setObserver(this);
-		m_videoOutput->setFrameSize(m_frameSize);
+    if (m_videoOutput) {
+        m_videoOutput->setObserver(this);
+        m_videoOutput->setFrameSize(m_frameSize);
     }
 
     videoOutputRegionChanged();
@@ -426,58 +435,56 @@ void MMF::VideoPlayer::videoOutputChanged()
     TRACE_EXIT_0();
 }
 
-void MMF::VideoPlayer::getNativeWindowSystemHandles()
+bool MMF::VideoPlayer::getNativeWindowSystemHandles()
 {
     TRACE_CONTEXT(VideoPlayer::getNativeWindowSystemHandles, EVideoInternal);
     TRACE_ENTRY_0();
-    
+
     CCoeControl *control = 0;
-    
-    if(m_videoOutput)
-    	// Create native window
-    	control = m_videoOutput->winId();
+
+    if (m_videoOutput)
+        // Create native window
+        control = m_videoOutput->winId();
     else
-    	// Get top-level window
-    	control = QApplication::activeWindow()->effectiveWinId();
+        // Get top-level window
+        control = QApplication::activeWindow()->effectiveWinId();
 
-    CCoeEnv* const coeEnv = control->ControlEnv();
-    m_wsSession = &(coeEnv->WsSession());
-    m_screenDevice = coeEnv->ScreenDevice();
-    m_window = control->DrawableWindow();
-
-#ifdef _DEBUG
-    if(m_videoOutput) {
-		QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
-		dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
-		ObjectDump::addDefaultAnnotators(*dumper);
-		TRACE_0("Dumping VideoOutput:");
-		dumper->dumpObject(*m_videoOutput);
+#ifndef QT_NO_DEBUG
+    if (m_videoOutput) {
+        QScopedPointer<ObjectDump::QDumper> dumper(new ObjectDump::QDumper);
+        dumper->setPrefix("Phonon::MMF"); // to aid searchability of logs
+        ObjectDump::addDefaultAnnotators(*dumper);
+        TRACE_0("Dumping VideoOutput:");
+        dumper->dumpObject(*m_videoOutput);
     }
     else {
-    	TRACE_0("m_videoOutput is null - dumping top-level control info:");
-		TRACE("control %08x", control);
-		TRACE("control.parent %08x", control->Parent());
-		TRACE("control.isVisible %d", control->IsVisible());
-		TRACE("control.rect %d,%d %dx%d",
-			control->Position().iX, control->Position().iY,
-			control->Size().iWidth, control->Size().iHeight);
-		TRACE("control.ownsWindow %d", control->OwnsWindow());
+        TRACE_0("m_videoOutput is null - dumping top-level control info:");
+        TRACE("control %08x", control);
+        TRACE("control.parent %08x", control->Parent());
+        TRACE("control.isVisible %d", control->IsVisible());
+        TRACE("control.rect %d,%d %dx%d",
+            control->Position().iX, control->Position().iY,
+            control->Size().iWidth, control->Size().iHeight);
+        TRACE("control.ownsWindow %d", control->OwnsWindow());
     }
 #endif
 
-    m_windowRect = TRect(
-        control->DrawableWindow()->AbsPosition(),
-        control->DrawableWindow()->Size());
-        m_clipRect = m_windowRect;
+    RWindowBase *const window = control->DrawableWindow();
+    const TRect rect(window->AbsPosition(), window->Size());
 
-    TRACE("windowRect            %d %d - %d %d",
-        m_windowRect.iTl.iX, m_windowRect.iTl.iY,
-        m_windowRect.iBr.iX, m_windowRect.iBr.iY);
-    TRACE("clipRect              %d %d - %d %d",
-        m_clipRect.iTl.iX, m_clipRect.iTl.iY,
-        m_clipRect.iBr.iX, m_clipRect.iBr.iY);
-    
-    TRACE_EXIT_0();
+    TRACE("rect                  %d %d - %d %d",
+        rect.iTl.iX, rect.iTl.iY,
+        rect.iBr.iX, rect.iBr.iY);
+
+    bool changed = false;
+
+    if (window != m_window || rect != m_rect) {
+        m_window = window;
+        m_rect = rect;
+        changed = true;
+    }
+
+    TRACE_RETURN("changed %d", changed);
 }
 
 

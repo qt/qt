@@ -56,6 +56,12 @@
 #include <aknappui.h>
 #endif
 
+// This is necessary in order to be able to perform delayed invokation on slots
+// which take arguments of type WId.  One example is
+// QWidgetPrivate::_q_delayedDestroy, which is used to delay destruction of
+// CCoeControl objects until after the CONE event handler has finished running.
+Q_DECLARE_METATYPE(WId)
+
 QT_BEGIN_NAMESPACE
 
 extern bool qt_nograb();
@@ -318,8 +324,6 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     bool desktop = (type == Qt::Desktop);
     //bool tool = (type == Qt::Tool || type == Qt::Drawer);
 
-    WId id = 0;
-
     if (popup)
         flags |= Qt::WindowStaysOnTopHint; // a popup stays on top
 
@@ -341,13 +345,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         data.crect.setSize(QSize(width, height));
     }
 
-    CCoeControl *destroyw = 0;
+    CCoeControl *const destroyw = destroyOldWindow ? data.winid : 0;
 
     createExtra();
     if (window) {
-        if (destroyOldWindow)
-            destroyw = data.winid;
-        id = window;
         setWinId(window);
         TRect tr = window->Rect();
         data.crect.setRect(tr.iTl.iX, tr.iTl.iY, tr.Width(), tr.Height());
@@ -355,10 +356,15 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
     } else if (topLevel) {
         if (!q->testAttribute(Qt::WA_Moved) && !q->testAttribute(Qt::WA_DontShowOnScreen))
             data.crect.moveTopLeft(QPoint(clientRect.iTl.iX, clientRect.iTl.iY));
-        QSymbianControl *control= q_check_ptr(new QSymbianControl(q));
-        id = (WId)control;
-        setWinId(id);
-        QT_TRAP_THROWING(control->ConstructL(true,desktop));
+
+        QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
+        QT_TRAP_THROWING(control->ConstructL(true, desktop));
+
+        // Symbian windows are always created in an inactive state
+        // We perform this assignment for the case where the window is being re-created
+        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // ancestors.
+        extra->activated = 0;
 
         if (!desktop) {
             TInt stackingFlags;
@@ -368,7 +374,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
                 stackingFlags = ECoeStackFlagStandard;
             }
             control->MakeVisible(false);
-            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+            QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
             // Avoid keyboard focus to a hidden window.
             control->setFocusSafely(false);
 
@@ -391,10 +397,21 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         int x, y, w, h;
         data.crect.getRect(&x, &y, &w, &h);
         control->SetRect(TRect(TPoint(x, y), TSize(w, h)));
+
+        // We wait until the control is fully constructed before calling setWinId, because
+        // this generates a WinIdChanged event.
+        setWinId(control.take());
+
     } else if (q->testAttribute(Qt::WA_NativeWindow) || paintOnScreen()) { // create native child widget
-        QSymbianControl *control = new QSymbianControl(q);
-        setWinId(control);
+
+        QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(!parentWidget));
+
+        // Symbian windows are always created in an inactive state
+        // We perform this assignment for the case where the window is being re-created
+        // as aa result of a call to setParent_sys, on either this widget or one of its
+        // ancestors.
+        extra->activated = 0;
 
         TInt stackingFlags;
         if ((q->windowType() & Qt::Popup) == Qt::Popup) {
@@ -403,7 +420,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             stackingFlags = ECoeStackFlagStandard;
         }
         control->MakeVisible(false);
-        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control, ECoeStackPriorityDefault, stackingFlags));
+        QT_TRAP_THROWING(control->ControlEnv()->AppUi()->AddToStackL(control.data(), ECoeStackPriorityDefault, stackingFlags));
         // Avoid keyboard focus to a hidden window.
         control->setFocusSafely(false);
 
@@ -418,12 +435,21 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
             | EPointerFilterMove | EPointerFilterDrag, 0);
 
         if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
-            activateSymbianWindow();
+            activateSymbianWindow(control.data());
+
+        // We wait until the control is fully constructed before calling setWinId, because
+        // this generates a WinIdChanged event.
+        setWinId(control.take());
     }
 
     if (destroyw) {
         destroyw->ControlEnv()->AppUi()->RemoveFromStack(destroyw);
-        CBase::Delete(destroyw);
+
+        // Delay deletion of the control in case this function is called in the
+        // context of a CONE event handler such as
+        // CCoeControl::ProcessPointerEventL
+        QMetaObject::invokeMethod(q, "_q_delayedDestroy",
+            Qt::QueuedConnection, Q_ARG(WId, destroyw));
     }
 
     if (q->testAttribute(Qt::WA_AcceptTouchEvents))
@@ -468,7 +494,7 @@ void QWidgetPrivate::show_sys()
     invalidateBuffer(q->rect());
 }
 
-void QWidgetPrivate::activateSymbianWindow()
+void QWidgetPrivate::activateSymbianWindow(WId wid)
 {
     Q_Q(QWidget);
 
@@ -476,8 +502,12 @@ void QWidgetPrivate::activateSymbianWindow()
     Q_ASSERT(q->testAttribute(Qt::WA_Mapped));
     Q_ASSERT(!extra->activated);
 
-    WId id = q->internalWinId();
-    QT_TRAP_THROWING(id->ActivateL());
+    if(!wid)
+        wid = q->internalWinId();
+
+    Q_ASSERT(wid);
+
+    QT_TRAP_THROWING(wid->ActivateL());
     extra->activated = 1;
 }
 
@@ -571,8 +601,14 @@ void QWidgetPrivate::reparentChildren()
                 w->d_func()->invalidateBuffer(w->rect());
                 WId parent = q->effectiveWinId();
                 WId child = w->effectiveWinId();
-                if (parent != child)
-                    child->SetParent(parent);
+                if (parent != child) {
+                    // Child widget is native.  Because Symbian windows cannot be
+                    // re-parented, we must re-create the window.
+                    const WId window = 0;
+                    const bool initializeWindow = false;
+                    const bool destroyOldWindow = true;
+                    w->d_func()->create_sys(window, initializeWindow, destroyOldWindow);
+                }
                 // ### TODO: We probably also need to update the component array here
                 w->d_func()->reparentChildren();
             } else {

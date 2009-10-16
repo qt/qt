@@ -277,7 +277,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
     qApp->installEventFilter(this);
 
-    global_accepted_action = Qt::MoveAction;
+    global_accepted_action = defaultAction(dragPrivate()->possible_actions, Qt::NoModifier);
     qt_symbian_dnd_dragging = true;
 
     eventLoop = new QEventLoop;
@@ -288,7 +288,7 @@ Qt::DropAction QDragManager::drag(QDrag *o)
 
 #ifndef QT_NO_CURSOR
     qt_symbian_set_cursor_visible(false);
-    
+
     overrideCursor = QCursor(); //deref the cursor data
     qt_symbian_dnd_dragging = false;
 #endif

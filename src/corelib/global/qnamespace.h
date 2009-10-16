@@ -44,10 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_SYMBIAN
-# include <e32def.h>
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -1634,8 +1630,8 @@ public:
 
     enum GestureContext
     {
-        WidgetGesture = WidgetShortcut,
-        WidgetWithChildrenGesture = WidgetWithChildrenShortcut,
+        WidgetGesture             = 0,
+        WidgetWithChildrenGesture = 3
     };
 
     enum NavigationMode

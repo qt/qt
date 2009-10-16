@@ -32,7 +32,7 @@ namespace ObjectDump
 {
 
 /**
- * Abstract base for annotator classes invoked by QVisitor. 
+ * Abstract base for annotator classes invoked by QVisitor.
  */
 class OBJECTDUMP_EXPORT QAnnotator : public QObject
 {
@@ -72,29 +72,29 @@ class OBJECTDUMP_EXPORT QDumper : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QDumper)
-    
+
 public:
     QDumper();
     ~QDumper();
-    
+
     /**
      * Specify a prefix, to be printed on each line of output.
      */
     void setPrefix(const QString& prefix);
-    
+
     /**
      * Takes ownership of annotator.
      */
     void addAnnotator(QAnnotator* annotator);
-    
+
     /**
      * Invoke each annotator on the object and write to debug output.
      */
     void dumpObject(const QObject& object);
-    
+
 private:
     QScopedPointer<QDumperPrivate> d_ptr;
-    
+
 };
 
 
@@ -107,36 +107,36 @@ class OBJECTDUMP_EXPORT QVisitor : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QVisitor)
-    
+
 public:
     QVisitor();
     ~QVisitor();
-    
+
     /**
      * Specify a prefix, to be printed on each line of output.
      */
     void setPrefix(const QString& prefix);
-    
+
     /**
      * Set number of spaces by which each level of the tree is indented.
      */
     void setIndent(unsigned indent);
-    
+
     /**
      * Called by the visitor algorithm before starting the visit.
      */
     void visitPrepare();
-    
+
     /**
      * Called by the visitor algorithm as each node is visited.
      */
     void visitNode(const QObject& object);
-    
+
     /**
      * Called by the visitor algorithm when the visit is complete.
      */
     void visitComplete();
-    
+
     /**
      * Takes ownership of annotator.
      */
@@ -144,7 +144,7 @@ public:
 
 private:
     QScopedPointer<QVisitorPrivate> d_ptr;
-    
+
 };
 
 

@@ -234,6 +234,7 @@ SUBDIRS += \
            qpainterpath \
            qpalette \
            qparallelanimationgroup \
+           qpauseanimation \
            qpathclipper \
            qpen \
            qpicture \

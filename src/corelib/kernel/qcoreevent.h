@@ -283,6 +283,7 @@ public:
 
         UpdateSoftKeys = 201,                   // Internal for compressing soft key updates
 
+        WinIdChange = 203,
         Gesture = 198,
         GestureOverride = 202,
 
