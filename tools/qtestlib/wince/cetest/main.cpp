@@ -237,6 +237,8 @@ int main(int argc, char **argv)
         debugOutput(QString::fromLatin1("Using Project File:").append(proFile),1);
     }
 
+    Option::before_user_vars.append("CONFIG+=build_pass");
+
     // read target and deployment rules
     int qmakeArgc = 1;
     char* qmakeArgv[] = { "qmake.exe" };
