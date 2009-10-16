@@ -701,8 +701,6 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     QVector<AnchorVertex*> candidates;
     bool candidatesForward;
 
-    const Qt::AnchorPoint centerEdge = pickEdge(Qt::AnchorHorizontalCenter, orientation);
-
     // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
     // and the vertex to be visited.
     while (!stack.isEmpty()) {
@@ -811,7 +809,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
 
         // One restriction we have is to not simplify half of an anchor and let the other half
         // unsimplified. So we remove center edges before and after the sequence.
-        if (beforeSequence->m_edge == centerEdge && beforeSequence->m_item == candidates.first()->m_item) {
+        const AnchorData *firstAnchor = g.edgeData(beforeSequence, candidates.first());
+        if (firstAnchor->isCenterAnchor) {
             beforeSequence = candidates.first();
             candidates.remove(0);
 
@@ -820,7 +819,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                 continue;
         }
 
-        if (afterSequence->m_edge == centerEdge && afterSequence->m_item == candidates.last()->m_item) {
+        const AnchorData *lastAnchor = g.edgeData(candidates.last(), afterSequence);
+        if (lastAnchor->isCenterAnchor) {
             afterSequence = candidates.last();
             candidates.remove(candidates.count() - 1);
 
