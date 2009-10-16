@@ -49,6 +49,14 @@
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT;
 
+public:
+    tst_QGraphicsAnchorLayout() : QObject() {
+        hasSimplification = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
+    }
+
+private:
+    bool hasSimplification;
+
 private slots:
     void simple();
     void simple_center();
@@ -185,8 +193,10 @@ void tst_QGraphicsAnchorLayout::simple()
     p.setLayout(l);
     p.adjustSize();
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::simple_center()
@@ -226,8 +236,10 @@ void tst_QGraphicsAnchorLayout::simple_center()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize, QSizeF(200, 20));
 
-    QVERIFY(usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     delete p;
 }
@@ -417,8 +429,10 @@ void tst_QGraphicsAnchorLayout::diagonal()
     QCOMPARE(e->geometry(), QRectF(100.0, 200.0, 75.0, 100.0));
     QCOMPARE(p.size(), testA);
 
-    QVERIFY(usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     QCOMPARE(checkReverseDirection(&p), true);
 
@@ -496,6 +510,9 @@ void tst_QGraphicsAnchorLayout::parallel()
     QCOMPARE(f->geometry(), QRectF(350, 500, 100, 100));
     QCOMPARE(p.size(), layoutMinimumSize);
 
+    if (!hasSimplification)
+        return;
+
     p.resize(layoutPreferredSize);
     QCOMPARE(a->geometry(), QRectF(0, 0, 150, 100));
     QCOMPARE(b->geometry(), QRectF(150, 100, 150, 100));
@@ -565,8 +582,10 @@ void tst_QGraphicsAnchorLayout::parallel2()
     p.resize(layoutMaximumSize);
     QCOMPARE(p.size(), layoutMaximumSize);
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::snake()
@@ -758,6 +777,8 @@ void tst_QGraphicsAnchorLayout::fairDistribution()
     QCOMPARE(layoutMaximumSize, QSizeF(300.0, 400.0));
 
     p.resize(layoutMinimumSize);
+    if (!hasSimplification)
+        QEXPECT_FAIL("", "Without simplification there is no fair distribution.", Abort);
     QCOMPARE(a->geometry(), QRectF(0.0, 0.0, 20.0, 100.0));
     QCOMPARE(b->geometry(), QRectF(20.0, 100.0, 20.0, 100.0));
     QCOMPARE(c->geometry(), QRectF(40.0, 200.0, 20.0, 100.0));
@@ -778,8 +799,10 @@ void tst_QGraphicsAnchorLayout::fairDistribution()
     QCOMPARE(d->geometry(), QRectF(0.0, 300.0, 300.0, 100.0));
     QCOMPARE(p.size(), layoutMaximumSize);
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
@@ -835,6 +858,9 @@ void tst_QGraphicsAnchorLayout::fairDistributionOppositeDirections()
     QCOMPARE(layoutMinimumSize, QSizeF(60.0, 500.0));
     QCOMPARE(layoutPreferredSize, QSizeF(220.0, 500.0));
     QCOMPARE(layoutMaximumSize, QSizeF(400.0, 500.0));
+
+    if (!hasSimplification)
+        return;
 
     p.resize(layoutMinimumSize);
     QCOMPARE(a->size(), b->size());
@@ -922,8 +948,10 @@ void tst_QGraphicsAnchorLayout::proportionalPreferred()
     QCOMPARE(c->size().width(), 14 * factor);
     QCOMPARE(p.size(), QSizeF(12, 400));
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::example()
@@ -1008,8 +1036,10 @@ void tst_QGraphicsAnchorLayout::example()
     QCOMPARE(b->size(), d->size());
     QCOMPARE(f->size(), g->size());
 
-    QVERIFY(usedSimplex(l, Qt::Horizontal));
-    QVERIFY(usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(usedSimplex(l, Qt::Horizontal));
+        QVERIFY(usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::setSpacing()
@@ -1331,8 +1361,10 @@ void tst_QGraphicsAnchorLayout::sizePolicy()
     QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(100, 100));
     QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     delete p;
     delete view;
@@ -1425,8 +1457,10 @@ void tst_QGraphicsAnchorLayout::expandingSequence()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize.width(), qreal(200));
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
@@ -1488,8 +1522,10 @@ void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
     QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
     QCOMPARE(layoutMaximumSize.width(), qreal(400));
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     // Now we change D to have more "room for growth" from its preferred size
     // to its maximum size. We expect a proportional fair distribution. Note that
@@ -1514,8 +1550,10 @@ void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
     QCOMPARE(c->geometry().size(), pref);
     QCOMPARE(d->geometry().size(), pref + QSizeF(50, 0));
 
-    QVERIFY(!usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 }
 
 void tst_QGraphicsAnchorLayout::expandingParallel()
@@ -1671,6 +1709,9 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QCOMPARE(b->geometry(), QRectF(50, 0, 50, 10));
     QCOMPARE(c->geometry(), QRectF(100, 0, 50, 10));
     QCOMPARE(d->geometry(), QRectF(150, 0, 50, 10));
+
+    if (!hasSimplification)
+        QEXPECT_FAIL("", "Without simplification there is no fair distribution.", Abort);
 
     p.resize(1000, 10);
     QCOMPARE(a->geometry(), QRectF(0, 0, 450, 10));
