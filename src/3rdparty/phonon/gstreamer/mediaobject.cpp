@@ -392,6 +392,7 @@ bool MediaObject::createPipefromURL(const QUrl &url)
  */
 bool MediaObject::createPipefromStream(const MediaSource &source)
 {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     // Remove any existing data source
     if (m_datasource) {
         gst_bin_remove(GST_BIN(m_pipeline), m_datasource);
@@ -413,6 +414,10 @@ bool MediaObject::createPipefromStream(const MediaSource &source)
         return false;
     }
     return true;
+#else //QT_NO_PHONON_ABSTRACTMEDIASTREAM
+    Q_UNUSED(source);
+    return false;
+#endif
 }
 
 void MediaObject::createPipeline()

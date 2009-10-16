@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include <phonon/streaminterface.h>
 
 QT_BEGIN_NAMESPACE
-
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
 namespace Phonon
 {
 namespace Gstreamer
@@ -49,5 +49,6 @@ bool StreamReader::read(quint64 pos, int length, char * buffer)
 
 }
 }
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
 
 QT_END_NAMESPACE
