@@ -338,20 +338,17 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
             rv = QVariant::fromValue(list);
         }
     } else if (svalue.isObject() &&
-               !svalue.isNumber() &&
-               !svalue.isString() &&
-               !svalue.isDate() &&
-               !svalue.isError() &&
-               !svalue.isFunction() &&
-               !svalue.isNull() &&
-               !svalue.isQMetaObject() &&
-               !svalue.isQObject() &&
-               !svalue.isRegExp()) {
-
+               ep->objectClass->scriptClass(svalue) == ep->objectClass) {
         QObject *o = svalue.toQObject();
-        if (o)
-            return qVariantFromValue(o);
+        int type = QMetaType::QObjectStar;
+        // If the object is null, we extract the predicted type.  While this isn't
+        // 100% reliable, in many cases it gives us better error messages if we
+        // assign this null-object to an incompatible property
+        if (!o) type = ep->objectClass->objectType(svalue);
+
+        return QVariant(type, &o);
     }
+
     if (rv.isNull())
         rv = svalue.toVariant();
 
@@ -455,6 +452,26 @@ void QmlExpression::setTrackChange(bool trackChange)
 {
     Q_D(QmlExpression);
     d->data->trackChange = trackChange;
+}
+
+/*!
+    Returns the source file URL for this expression.  The source location must
+    have been previously set by calling setSourceLocation().
+*/
+QUrl QmlExpression::sourceFile() const
+{
+    Q_D(const QmlExpression);
+    return QUrl(d->data->fileName);
+}
+
+/*!
+    Returns the source file line number for this expression.  The source location 
+    must have been previously set by calling setSourceLocation().
+*/
+int QmlExpression::lineNumber() const
+{
+    Q_D(const QmlExpression);
+    return d->data->line;
 }
 
 /*!

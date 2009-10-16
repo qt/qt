@@ -642,6 +642,9 @@ QVariant QmlMetaType::fromObject(QObject *obj, int typeId)
 
 const QMetaObject *QmlMetaType::rawMetaObjectForType(int id)
 {
+    if (id == QMetaType::QObjectStar)
+        return &QObject::staticMetaObject;
+
     QReadLocker lock(metaTypeDataLock());
     QmlMetaTypeData *data = metaTypeData();
 

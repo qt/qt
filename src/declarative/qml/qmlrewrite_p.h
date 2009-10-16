@@ -99,7 +99,7 @@ protected:
     virtual void endVisit(AST::LocalForEachStatement *ast);
 
 private:
-    QList<AST::Statement *> _loopStack;
+    int _inLoop;
 };
 
 } // namespace QmlRewrite

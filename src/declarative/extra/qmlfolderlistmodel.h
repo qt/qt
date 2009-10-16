@@ -60,11 +60,14 @@ class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, publ
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QString folder READ folder WRITE setFolder NOTIFY folderChanged)
+    Q_PROPERTY(QUrl folder READ folder WRITE setFolder NOTIFY folderChanged)
     Q_PROPERTY(QString parentFolder READ parentFolder NOTIFY folderChanged)
     Q_PROPERTY(QStringList nameFilters READ nameFilters WRITE setNameFilters)
     Q_PROPERTY(SortField sortField READ sortField WRITE setSortField)
     Q_PROPERTY(bool sortReversed READ sortReversed WRITE setSortReversed)
+    Q_PROPERTY(bool showDirs READ showDirs WRITE setShowDirs)
+    Q_PROPERTY(bool showDotAndDotDot READ showDotAndDotDot WRITE setShowDotAndDotDot)
+    Q_PROPERTY(bool showOnlyReadable READ showOnlyReadable WRITE setShowOnlyReadable)
 
 public:
     QmlFolderListModel(QObject *parent = 0);
@@ -75,10 +78,10 @@ public:
     virtual QList<int> roles() const;
     virtual QString toString(int role) const;
 
-    QString folder() const;
-    void setFolder(const QString &folder);
+    QUrl folder() const;
+    void setFolder(const QUrl &folder);
 
-    QString parentFolder() const;
+    QUrl parentFolder() const;
 
     QStringList nameFilters() const;
     void setNameFilters(const QStringList &filters);
@@ -94,6 +97,13 @@ public:
 
     bool sortReversed() const;
     void setSortReversed(bool rev);
+
+    bool showDirs() const;
+    void  setShowDirs(bool);
+    bool showDotAndDotDot() const;
+    void  setShowDotAndDotDot(bool);
+    bool showOnlyReadable() const;
+    void  setShowOnlyReadable(bool);
 
 Q_SIGNALS:
     void folderChanged();

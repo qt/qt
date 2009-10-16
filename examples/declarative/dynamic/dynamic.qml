@@ -8,6 +8,7 @@ Rectangle {
     Script { source: "dynamic.js" }
 
     property bool extendStars: false
+    property var fourthBox: undefined
 
     Item { id: targetItem; x: 100; y: 100; }
     Item { id: targetItem2; x: 0; y: 300; }
@@ -20,7 +21,7 @@ Rectangle {
 
         MouseRegion {
             anchors.fill: parent
-            onClicked: { a = createWithComponent(); }
+            onClicked: { var a = createWithComponent(); }
         }
     }
 
@@ -47,8 +48,8 @@ Rectangle {
         MouseRegion {
             anchors.fill: parent
             onClicked: { 
-                if (fourthBox == null) {
-                    a = createQml(targetItem2);
+                if (fourthBox == null || fourthBox == undefined) {
+                    var a = createQml(targetItem2);
                     if (a != null) {
                         a.parent = targetItem2;//BUG: this should happen automatically
                         fourthBox = a;
@@ -68,6 +69,7 @@ Rectangle {
     Particles {
         x: 0 
         y: 0
+        z: 10
         count: 20
         lifeSpan: 500
         width: 100
