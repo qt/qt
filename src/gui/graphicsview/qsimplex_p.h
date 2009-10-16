@@ -63,7 +63,7 @@ struct QSimplexVariable
     QSimplexVariable() : result(0), index(0) {}
 
     qreal result;
-    uint index;
+    int index;
 };
 
 
@@ -95,7 +95,8 @@ struct QSimplexConstraint
     QPair<QSimplexVariable *, qreal> helper;
     QSimplexVariable * artificial;
 
-#ifdef QT_DEBUG
+    void invert();
+
     bool isSatisfied() {
         qreal leftHandSide(0);
 
@@ -119,6 +120,7 @@ struct QSimplexConstraint
         }
     }
 
+#ifdef QT_DEBUG
     QString toString() {
         QString result;
         result += QString::fromAscii("-- QSimplexConstraint %1 --").arg(int(this), 0, 16);
@@ -167,6 +169,7 @@ private:
     void combineRows(int toIndex, int fromIndex, qreal factor);
 
     // Simplex
+    bool simplifyConstraints(QList<QSimplexConstraint *> *constraints);
     int findPivotColumn();
     int pivotRowForColumn(int column);
     void reducedRowEchelon();

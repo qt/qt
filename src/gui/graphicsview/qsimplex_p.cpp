@@ -146,6 +146,13 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
         constraints << c;
     }
 
+    // Remove constraints of type Var == K and replace them for their value.
+    if (!simplifyConstraints(&constraints)) {
+        qWarning() << "QSimplex: No feasible solution!";
+        clearDataStructures();
+        return false;
+    }
+
     ///////////////////////////////////////
     // Prepare variables and constraints //
     ///////////////////////////////////////
@@ -515,11 +522,21 @@ qreal QSimplex::solver(solverFactor factor)
     // Remove old objective
     clearRow(0);
 
-    // Set new objective
+    // Set new objective in the first row of the simplex matrix
+    qreal resultOffset = 0;
     QHash<QSimplexVariable *, qreal>::const_iterator iter;
     for (iter = objective->variables.constBegin();
          iter != objective->variables.constEnd();
          ++iter) {
+
+        // Check if the variable was removed in the simplification process.
+        // If so, we save its offset to the objective function and skip adding
+        // it to the matrix.
+        if (iter.key()->index == -1) {
+            resultOffset += iter.value() * iter.key()->result;
+            continue;
+        }
+
         setValueAt(0, iter.key()->index, -1 * factor * iter.value());
     }
 
@@ -532,7 +549,9 @@ qreal QSimplex::solver(solverFactor factor)
     }
 #endif
 
-    return factor * valueAt(0, columns - 1);
+    // Return the value calculated by the simplex plus the value of the
+    // fixed variables.
+    return (factor * valueAt(0, columns - 1)) + resultOffset;
 }
 
 /*!
@@ -575,6 +594,79 @@ void QSimplex::collectResults()
         int index = valueAt(i, 0) - 1;
         if (index < variables.size())
             variables[index]->result = valueAt(i, columns - 1);
+    }
+}
+
+/*!
+  \internal
+
+  Looks for single-valued variables and remove them from the constraints list.
+*/
+bool QSimplex::simplifyConstraints(QList<QSimplexConstraint *> *constraints)
+{
+    QHash<QSimplexVariable *, qreal> results;   // List of single-valued variables
+    bool modified = true;                       // Any chance more optimization exists?
+
+    while (modified) {
+        modified = false;
+
+        // For all constraints
+        QList<QSimplexConstraint *>::iterator iter = constraints->begin();
+        while (iter != constraints->end()) {
+            QSimplexConstraint *c = *iter;
+            if ((c->ratio == QSimplexConstraint::Equal) && (c->variables.count() == 1)) {
+                // Check whether this is a constraint of type Var == K
+                // If so, save its value to "results".
+                QSimplexVariable *variable = c->variables.constBegin().key();
+                qreal result = c->constant / c->variables.value(variable);
+
+                results.insert(variable, result);
+                variable->result = result;
+                variable->index = -1;
+                modified = true;
+
+            }
+
+            // Replace known values among their variables
+            QHash<QSimplexVariable *, qreal>::const_iterator r;
+            for (r = results.constBegin(); r != results.constEnd(); ++r) {
+                if (c->variables.contains(r.key())) {
+                    c->constant -= r.value() * c->variables.take(r.key());
+                    modified = true;
+                }
+            }
+
+            // Keep it normalized
+            if (c->constant < 0)
+                c->invert();
+
+            if (c->variables.isEmpty()) {
+                // If constraint became empty due to substitution, delete it.
+                if (c->isSatisfied() == false)
+                    // We must ensure that the constraint soon to be deleted would not
+                    // make the problem unfeasible if left behind. If that's the case,
+                    // we return false so the simplex solver can properly report that.
+                    return false;
+
+                delete c;
+                iter = constraints->erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+    }
+
+    return true;
+}
+
+void QSimplexConstraint::invert()
+{
+    constant = -constant;
+    ratio = Ratio(2 - ratio);
+
+    QHash<QSimplexVariable *, qreal>::iterator iter;
+    for (iter = variables.begin(); iter != variables.end(); ++iter) {
+        iter.value() = -iter.value();
     }
 }
 
