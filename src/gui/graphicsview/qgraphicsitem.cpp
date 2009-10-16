@@ -2482,12 +2482,14 @@ void QGraphicsItem::setOpacity(qreal opacity)
     itemChange(ItemOpacityHasChanged, newOpacityVariant);
 
     // Update.
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
+        d_ptr->invalidateGraphicsEffectsRecursively();
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+    }
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->opacityChanged();
@@ -4949,6 +4951,22 @@ int QGraphicsItemPrivate::depth() const
 /*!
     \internal
 */
+void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
+{
+    QGraphicsItemPrivate *itemPrivate = this;
+    do {
+        if (itemPrivate->graphicsEffect) {
+            itemPrivate->notifyInvalidated = 1;
+
+            if (!itemPrivate->updateDueToGraphicsEffect)
+                static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+    } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
+}
+
+/*!
+    \internal
+*/
 void QGraphicsItemPrivate::invalidateDepthRecursively()
 {
     if (itemDepth == -1)
@@ -5280,11 +5298,7 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
-    QGraphicsItem *item = this;
-    do {
-        if (item->d_ptr->graphicsEffect)
-            item->d_ptr->notifyInvalidated = 1;
-    } while ((item = item->d_ptr->parent));
+    d_ptr->invalidateGraphicsEffectsRecursively();
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -10721,6 +10735,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     }
 
     pixmapPainter.end();
+
     return pixmap;
 }
 
