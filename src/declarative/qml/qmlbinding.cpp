@@ -129,7 +129,18 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
 
         } else {
             QVariant value = this->value();
-            data->property.write(value, flags);
+            if (data->property.object() && !data->property.write(value, flags)) {
+                QString fileName = data->fileName;
+                int line = data->line;
+                if (fileName.isEmpty()) fileName = QLatin1String("<Unknown File>");
+
+                const char *valueType = 0;
+                if (value.userType() == QVariant::Invalid) valueType = "null";
+                else valueType = QMetaType::typeName(value.userType());
+                qWarning().nospace() << qPrintable(fileName) << ":" << line 
+                                     << " Unable to assign " << valueType << " to " 
+                                     << QMetaType::typeName(data->property.propertyType());
+            }
         }
 
         data->updating = false;

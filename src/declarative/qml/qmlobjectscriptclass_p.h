@@ -70,8 +70,9 @@ public:
     QmlObjectScriptClass(QmlEngine *);
     ~QmlObjectScriptClass();
 
-    QScriptValue newQObject(QObject *);
+    QScriptValue newQObject(QObject *, int type = QMetaType::QObjectStar);
     QObject *toQObject(const QScriptValue &) const;
+    int objectType(const QScriptValue &) const;
 
     enum QueryMode { IncludeAttachedProperties, SkipAttachedProperties };
 

@@ -181,19 +181,24 @@ static QVariant fetch_value(QObject *o, int idx, int type)
             break;
         default:
             {
+                // If the object is null, we extract the predicted type.  While this isn't
+                // 100% reliable, in many cases it gives us better error messages if we
+                // assign this null-object to an incompatible property
                 if (QmlMetaType::isObject(type)) {
                     // NOTE: This assumes a cast to QObject does not alter the
                     // object pointer
                     QObject *val = 0;
                     void *args[] = { &val, 0 };
                     QMetaObject::metacall(o, QMetaObject::ReadProperty, idx, args);
-                    return QVariant::fromValue(val);
+                    if (!val) return QVariant(type, &val);
+                    else return QVariant::fromValue(val);
                 } else {
                     QVariant var = o->metaObject()->property(idx).read(o);
                     if (QmlMetaType::isObject(var.userType())) {
                         QObject *obj = 0;
                         obj = *(QObject **)var.data();
-                        var = QVariant::fromValue(obj);
+                        if (!obj) var = QVariant(var.userType(), &obj);
+                        else var = QVariant::fromValue(obj);
                     }
                     return var;
                 }
@@ -665,7 +670,7 @@ QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
             case ScriptInstruction::FetchConstant:
             {
                 QVariant o = stack.pop();
-                QObject *obj = qvariant_cast<QObject *>(o);
+                QObject *obj = *(QObject **)o.constData();
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)
