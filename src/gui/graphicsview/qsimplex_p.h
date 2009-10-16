@@ -118,6 +118,29 @@ struct QSimplexConstraint
             return false;
         }
     }
+
+    QString toString() {
+        QString result;
+        result += QString::fromAscii("-- QSimplexConstraint %1 --").arg(int(this), 0, 16);
+
+        QHash<QSimplexVariable *, qreal>::const_iterator iter;
+        for (iter = variables.constBegin(); iter != variables.constEnd(); ++iter) {
+            result += QString::fromAscii("  %1 x %2").arg(iter.value()).arg(int(iter.key()), 0, 16);
+        }
+
+        switch (ratio) {
+        case LessOrEqual:
+            result += QString::fromAscii("  (less) <= %1").arg(constant);
+            break;
+        case MoreOrEqual:
+            result += QString::fromAscii("  (more) >= %1").arg(constant);
+            break;
+        default:
+            result += QString::fromAscii("  (eqal) == %1").arg(constant);
+        }
+
+        return result;
+    }
 #endif
 };
 
