@@ -44,10 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_SYMBIAN
-# include <e32def.h>
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
