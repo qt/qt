@@ -98,6 +98,5 @@ of bindings.  In some advanced cases, it is necessary to create bindings explici
 \l Binding element.
 
 One such example is included in the \l {Passing Data Between C++ and QML} documentation.
-\sa {QML/C++ Data Binding}
 */
 

@@ -40,47 +40,24 @@
 ****************************************************************************/
 
 /*!
-\page qmlscope.html
-\title QML Scope
+\page qmlglobalobject.html
+\title QML Global Object
 
-\l {Property Binding}s and \l {ECMAScript Blocks} are executed in a scope chain automatically 
-established by QML when constructing a component instance.  QML is a \e {dynamically scoped} 
-language.  Different object instances instantiated from the same component can exist in 
-dramatically different scope chains.
+Contains all the properties of the ECMAScript global object, plus:
 
-\image qml-scope.png
+\list
+\o Qt
+\o createQmlObject
+\o createComponent
+\o XMLHttpRequest
+\o openDatabase
+\endlist
 
-\section1 Variable object
 
-Where local variables are stored.  Not really applicable to bindings.
+\section1 Qt Object
 
-\section1 QML Scope object
+\section1 Asynchronous JavaScript and XML 
 
-Principally for the \c parent property.
+\section1 Offline Storage API
 
-\code
-Item {
-    anchors.fill: parent
-}
-\endcode
-
-vs
-
-\code
-Item {
-    anchors.fill: this.parent
-}
-\endcode
-
-\section1 QML Component chain
-
-Principally for propogating properties around the component.
-
-\section1 QmlContext chain
-
-App provided data.
-
-\section1 QML Global Object
-
-Contains all the properties ECMAScript defines, plus some QML ones.  Documented \l {QML Global Object}.
 */
