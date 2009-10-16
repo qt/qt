@@ -6,31 +6,53 @@ my $dllFile = $ARGV[2];
 my $target = $ARGV[3];
 
 my @exports;
+my @isData;
 open (HANDLE, "< $deffile") or die ("Could not open $deffile");
 while (<HANDLE>) {
-    while (/(_Z[^ ]+)/xg) {
+    if (/([a-z0-9_]+)[ ]+\@/ixg) {
         push (@exports, $1);
+        if (/\bDATA\b/x) {
+            push (@isData, 1);
+        } else {
+            push (@isData, 0);
+        }
     }
 }
 close(HANDLE);
 
 my @ordinalfiles;
+my $vtblExports;
+open($vtblExports, "> $objects_dir/VtblExports.s") or die("Could not open $objects_dir/VtblExports.s");
+print($vtblExports "\tAREA |.directive|, NOALLOC, READONLY, ALIGN=2\n");
+print($vtblExports "\tDCB \"#\<SYMEDIT\>#\\n\"\n");
 
-for (my $c = 0; $c < scalar(@exports); $c++) {
-    my $symbol = $exports[$c];
+for (my $c = 1; $c < scalar(@exports) + 1; $c++) {
+    my $symbol = $exports[$c - 1];
     my $genstubs;
-    open ($genstubs, "| winewrapper genstubs.exe") or die ("Could not execute genstubs");
-    print ($genstubs "$objects_dir/ordinal-$c.o $symbol #<DLL>$dllFile#<\\DLL>$c\n");
-    push (@ordinalfiles, "$objects_dir/ordinal-$c.o");
-    close ($genstubs);
+    my $dllFileWithId = $dllFile;
+    $dllFileWithId =~ s/^(.*)(\.dll)$/$1\{00010000\}\[e001b2dc\]$2/x;
+    if ($isData[$c - 1]) {
+        printf ($vtblExports "\tDCB \"IMPORT #<DLL>$dllFileWithId#<\\\\DLL>%x AS $symbol \\n\"\n", $c);
+    } else {
+        open ($genstubs, "| winewrapper genstubs.exe") or die ("Could not execute genstubs");
+        printf ($genstubs "$objects_dir/ordinal-$c.o $symbol #<DLL>$dllFileWithId#<\\DLL>%x\n", $c);
+        push (@ordinalfiles, "$objects_dir/ordinal-$c.o");
+        close ($genstubs);
+    }
 }
+
+print($vtblExports "\tEND\n");
+close($vtblExports);
+my $result = system("armasm --apcs /inter -o $objects_dir/VtblExports.o $objects_dir/VtblExports.s");
+die("Could not execute armar") if ($result);
 
 my $via;
 open ($via, "> $objects_dir/input.via") or die("Could not open $objects_dir/input.via");
 print ($via join("\n", @ordinalfiles));
+print ($via "\n$objects_dir/VtblExports.o\n");
 close($via);
 
-my $result = system("armar --create $target --via $objects_dir/input.via");
+$result = system("armar --create $target --via $objects_dir/input.via");
 die("Could not execute armar") if ($result);
 
 exit 0
