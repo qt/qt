@@ -428,6 +428,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         return;
     }
 
+    //### Find out why d_ptr->geometry_updated isn't always false.
+    // flush() should not be called when d_ptr->geometry_updated is true. It assumes that either
+    // d_ptr->fbo or d_ptr->pb is allocated and has the correct size.
+    if (d_ptr->geometry_updated)
+        return;
+
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);
 
