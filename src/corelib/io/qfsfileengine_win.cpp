@@ -450,13 +450,27 @@ bool QFSFileEnginePrivate::nativeClose()
 
     // Windows native mode.
     bool ok = true;
+
+#ifndef Q_OS_WINCE
+    if (cachedFd != -1) {
+        if (::_close(cachedFd) && !::CloseHandle(fileHandle)) {
+            q->setError(QFile::UnspecifiedError, qt_error_string());
+            ok = false;
+        }
+
+        // System handle is closed with associated file descriptor.
+        fileHandle = INVALID_HANDLE_VALUE;
+        cachedFd = -1;
+
+        return ok;
+    }
+#endif
+
     if ((fileHandle == INVALID_HANDLE_VALUE || !::CloseHandle(fileHandle))) {
         q->setError(QFile::UnspecifiedError, qt_error_string());
         ok = false;
     }
     fileHandle = INVALID_HANDLE_VALUE;
-    cachedFd = -1;              // gets closed by CloseHandle above
-
     return ok;
 }
 
