@@ -56,6 +56,19 @@ QT_MODULE(Declarative)
 
 typedef QObject *(*QmlAttachedPropertiesFunc)(QObject *);
 
+//template<typename T>
+//struct qml_hasAttached { static bool const value = false; };
+
+template <typename TYPE>
+class QmlTypeInfo
+{
+public:
+    enum {
+        hasAttachedProperties = 0
+    };
+};
+
+
 namespace QmlPrivate
 {
     class ListInterface
@@ -101,11 +114,7 @@ namespace QmlPrivate
     template<class From, class To>
     struct StaticCastSelectorClass<From, To, sizeof(int)>
     {
-#ifndef Q_OS_SYMBIAN
         static inline int cast() { return (int)((intptr_t)static_cast<To *>((From *)0x10000000)) - 0x10000000; }
-#else
-        static inline int cast() { return (int)(static_cast<To *>((From *)0x10000000)) - 0x10000000; }
-#endif
     };
 
     template<class From, class To>
@@ -135,6 +144,12 @@ namespace QmlPrivate
             static bool const value = false;
         }
     };
+#elif defined(Q_OS_SYMBIAN)
+    template <typename T>
+    struct has_attachedPropertiesMember
+    {
+        static bool const value = QmlTypeInfo<T>::hasAttachedProperties;
+    };
 #else
     template <typename T>  
     class has_attachedPropertiesMember
@@ -147,8 +162,8 @@ namespace QmlPrivate
         template <typename S> 
         static yes_type test(Selector<sizeof(&S::qmlAttachedProperties)>*); 
 
-        template <typename S> 
-        static no_type test(...); 
+        template <typename S>
+        static no_type test(...);
 
     public: 
         static bool const value = sizeof(test<T>(0)) == sizeof(yes_type);

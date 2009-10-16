@@ -72,6 +72,20 @@ QT_MODULE(Declarative)
 #define QML_DECLARE_INTERFACE_HASMETATYPE(INTERFACE) \
     QML_DECLARE_TYPE_HASMETATYPE(INTERFACE)
 
+enum { /* TYPEINFO flags */
+    QML_HAS_ATTACHED_PROPERTIES = 0x01,
+};
+
+#define QML_DECLARE_TYPEINFO(TYPE, FLAGS) \
+template <> \
+class QmlTypeInfo<TYPE > \
+{ \
+public: \
+    enum { \
+        hasAttachedProperties = (((FLAGS) & QML_HAS_ATTACHED_PROPERTIES) == QML_HAS_ATTACHED_PROPERTIES) \
+    }; \
+};
+
 QT_BEGIN_NAMESPACE
 
 #if defined(Q_OS_SYMBIAN)

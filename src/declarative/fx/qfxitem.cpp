@@ -2860,6 +2860,7 @@ int QFxItemPrivate::restart(QTime &t)
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QFxKeysAttached)
+QML_DECLARE_TYPEINFO(QFxKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QFxKeysAttached)
 QML_DECLARE_TYPE(QFxKeyNavigationAttached)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QFxKeyNavigationAttached)
