@@ -517,13 +517,12 @@ void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
 
 void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
 {
-//    qDebug() << "handleMouseEvent" << tlw << ev.pos() << hex << ev.buttons();
+    // qDebug() << "handleMouseEvent" << tlw << ev.pos() << ev.globalPos() << hex << ev.buttons();
 
     static QWidget *implicit_mouse_grabber=0;
 
     QPoint localPoint = ev.pos();
     QPoint globalPoint = ev.globalPos();
-    bool trustLocalPoint = !!tlw; //is there something the local point can be local to?
     QWidget *mouseWindow = tlw;
 
     qt_last_x = globalPoint.x();
@@ -532,8 +531,8 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     if (self->inPopupMode()) {
         //popup mouse handling is magical...
         mouseWindow = qApp->activePopupWidget();
-        trustLocalPoint = (mouseWindow == tlw);
 
+        implicit_mouse_grabber = 0;
         //### how should popup mode and implicit mouse grab interact?
 
     } else if (tlw && app_do_modal && !qt_try_modal(tlw, &ev) ) {
@@ -553,10 +552,15 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     if (!mouseWindow && !implicit_mouse_grabber)
         return; //nowhere to send it
 
+    if (mouseWindow && mouseWindow != tlw) {
+        //we did not get a sensible localPoint from the window system, so let's calculate it
+        localPoint = mouseWindow->mapFromGlobal(globalPoint);
+    }
+
     // which child should have it?
     QWidget *mouseWidget = mouseWindow;
     if (mouseWindow) {
-        QWidget *w =  mouseWindow->childAt(ev.pos());
+        QWidget *w =  mouseWindow->childAt(localPoint);
         if (w) {
             mouseWidget = w;
         }
@@ -571,20 +575,14 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     } else if (implicit_mouse_grabber) {
         mouseWidget = implicit_mouse_grabber;
         mouseWindow = mouseWidget->window();
-        trustLocalPoint = (mouseWindow == tlw);
+        if (mouseWindow != tlw)
+            localPoint = mouseWindow->mapFromGlobal(globalPoint);
     }
 
     Q_ASSERT(mouseWidget);
 
-    if (trustLocalPoint) {
-        // we have a sensible localPoint, so we prefer that, since the
-        // window system may know more than we do
-        localPoint = mouseWidget->mapFrom(tlw, localPoint);
-    } else {
-        // we don't want to map a local point from a different toplevel
-        // and we definitely don't want to map from the null pointer
-        localPoint = mouseWidget->mapFromGlobal(globalPoint);
-    }
+    //localPoint is local to mouseWindow, but it needs to be local to mouseWidget
+    localPoint = mouseWidget->mapFrom(mouseWindow, localPoint);
 
     if (ev.buttons() == Qt::NoButton) {
         //qDebug() << "resetting mouse grabber";
