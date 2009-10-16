@@ -112,7 +112,11 @@ public:
     HANDLE fileHandle;
     HANDLE mapHandle;
     QHash<uchar *, DWORD /* offset % AllocationGranularity */> maps;
+
+#ifndef Q_OS_WINCE
     mutable int cachedFd;
+#endif
+
     mutable DWORD fileAttrib;
 #else
     QHash<uchar *, QPair<int /*offset % PageSize*/, size_t /*length + offset % PageSize*/> > maps;
