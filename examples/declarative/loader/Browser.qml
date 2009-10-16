@@ -146,9 +146,8 @@ Rectangle {
         id: view2
         anchors.top: titleBar.bottom
         anchors.bottom: parent.bottom
-        x: parent.right
+        x: parent.width
         width: parent.width
-//        state: "exitRight"
         model: folders2
         delegate: folderDelegate
         highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
@@ -199,9 +198,9 @@ Rectangle {
 
         Rectangle {
             id: upButton
-            width: 48
-            height: titleBar.height
-            border.color: palette.mid; color: "transparent"
+            width: 40
+            height: titleBar.height - 7
+            color: "transparent"
 
             Image { anchors.centerIn: parent; source: "images/up.png" }
             MouseRegion { id: upRegion; anchors.fill: parent
@@ -214,6 +213,12 @@ Rectangle {
                     PropertyChanges { target: upButton; color: palette.highlightedText }
                 }
             ]
+        }
+        Rectangle {
+            color: "gray"
+            x: 40
+            width: 1
+            height: 40
         }
 
         Text {
