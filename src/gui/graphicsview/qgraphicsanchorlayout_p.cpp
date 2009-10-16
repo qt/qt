@@ -143,31 +143,25 @@ static void internalSizeHints(QSizePolicy::Policy policy,
 
 bool AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    const bool isInternalAnchor = from->m_item == to->m_item;
-
     QSizePolicy::Policy policy;
     qreal minSizeHint;
     qreal prefSizeHint;
     qreal maxSizeHint;
 
-    if (isInternalAnchor) {
+    // It is an internal anchor
+    if (item) {
         const QGraphicsAnchorLayoutPrivate::Orientation orient =
             QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
-        const Qt::AnchorPoint centerEdge =
-            QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
-        bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (isLayoutAnchor) {
             minSize = 0;
             prefSize = 0;
             expSize = 0;
             maxSize = QWIDGETSIZE_MAX;
-            if (hasCenter)
+            if (isCenterAnchor)
                 maxSize /= 2;
             return true;
         } else {
-
-            QGraphicsLayoutItem *item = from->m_item;
             if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
                 policy = item->sizePolicy().horizontalPolicy();
                 minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
@@ -180,7 +174,7 @@ bool AnchorData::refreshSizeHints(qreal effectiveSpacing)
                 maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
             }
 
-            if (hasCenter) {
+            if (isCenterAnchor) {
                 minSizeHint /= 2;
                 prefSizeHint /= 2;
                 maxSizeHint /= 2;
@@ -1063,11 +1057,13 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     AnchorData *data = new AnchorData;
     c->variables.insert(data, 1.0);
     addAnchor_helper(item, firstEdge, item, centerEdge, data);
+    data->isCenterAnchor = true;
     data->refreshSizeHints(0);
 
     data = new AnchorData;
     c->variables.insert(data, -1.0);
     addAnchor_helper(item, centerEdge, item, lastEdge, data);
+    data->isCenterAnchor = true;
     data->refreshSizeHints(0);
 
     itemCenterConstraints[orientation].append(c);
@@ -1303,6 +1299,10 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     if (graph[edgeOrientation(firstEdge)].edgeData(v1, v2)) {
         removeAnchor_helper(v1, v2);
     }
+
+    // If its an internal anchor, set the associated item
+    if (firstItem == secondItem)
+        data->item = firstItem;
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
@@ -2188,8 +2188,8 @@ void QGraphicsAnchorLayoutPrivate::identifyNonFloatItems_helper(const AnchorData
 
     switch(ad->type) {
     case AnchorData::Normal:
-        if (ad->from->m_item == ad->to->m_item && ad->to->m_item != q)
-            nonFloatingItemsIdentifiedSoFar->insert(ad->to->m_item);
+        if (ad->item && ad->item != q)
+            nonFloatingItemsIdentifiedSoFar->insert(ad->item);
         break;
     case AnchorData::Sequential:
         foreach (const AnchorData *d, static_cast<const SequentialAnchorData *>(ad)->m_edges)

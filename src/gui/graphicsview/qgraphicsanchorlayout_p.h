@@ -151,12 +151,13 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), from(0), to(0),
+        : QSimplexVariable(), item(0), from(0), to(0),
           minSize(0), prefSize(0), expSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false) {}
+          type(Normal), hasSize(true), isLayoutAnchor(false),
+          isCenterAnchor(false) {}
 
     virtual void updateChildrenSizes() {}
     virtual bool refreshSizeHints(qreal effectiveSpacing);
@@ -179,6 +180,9 @@ struct AnchorData : public QSimplexVariable {
     {
         hasSize = false;
     }
+
+    // Internal anchors have associated items
+    QGraphicsLayoutItem *item;
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -206,6 +210,7 @@ struct AnchorData : public QSimplexVariable {
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
+    uint isCenterAnchor : 1;
 };
 
 #ifdef QT_DEBUG
