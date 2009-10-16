@@ -53,7 +53,16 @@
 QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
         : mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0)
 {
-    mGeometry = QRect(0,0,800, 600);
+    int w = 800;
+    int h = 600;
+    int ew, eh;
+    const char *str;
+    if ((str=::getenv("QT_VNC_SIZE")) && sscanf(str,"%dx%d",&ew,&eh)==2) {
+        w = ew;
+        h = eh;
+    }
+
+    mGeometry = QRect(0,0,w, h);
 
     mDepth = 32;
     mFormat = QImage::Format_RGB32;
