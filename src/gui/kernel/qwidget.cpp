@@ -1354,6 +1354,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         d->setWindowIcon_sys(true);
     if (isWindow() && !d->topData()->iconText.isEmpty())
         d->setWindowIconText_helper(d->topData()->iconText);
+    if (isWindow() && !d->topData()->caption.isEmpty())
+        d->setWindowTitle_helper(d->topData()->caption);
     if (windowType() != Qt::Desktop) {
         d->updateSystemBackground();
 
@@ -5664,9 +5666,8 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
 void QWidgetPrivate::setWindowTitle_helper(const QString &title)
 {
     Q_Q(QWidget);
-    if (!q->testAttribute(Qt::WA_WState_Created))
-        createWinId();
-    setWindowTitle_sys(qt_setWindowTitle_helperHelper(title, q));
+    if (q->testAttribute(Qt::WA_WState_Created))
+        setWindowTitle_sys(qt_setWindowTitle_helperHelper(title, q));
 }
 
 void QWidgetPrivate::setWindowIconText_helper(const QString &title)
