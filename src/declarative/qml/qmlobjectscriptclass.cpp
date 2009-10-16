@@ -242,7 +242,8 @@ void QmlObjectScriptClass::setProperty(Object *object,
 
 void QmlObjectScriptClass::setProperty(QObject *obj, 
                                        const Identifier &name, 
-                                       const QScriptValue &value)
+                                       const QScriptValue &value,
+                                       QmlContext *evalContext)
 {
     Q_UNUSED(name);
 
@@ -250,12 +251,20 @@ void QmlObjectScriptClass::setProperty(QObject *obj,
     Q_ASSERT(lastData);
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
-    Q_ASSERT(enginePriv->currentExpression);
+
+    if (!evalContext && context()) {
+        // Global object, QScriptContext activation object, QmlContext object
+        QScriptValue scopeNode = scopeChainValue(context(), -3);         
+        Q_ASSERT(scopeNode.isValid());
+        Q_ASSERT(scriptClass(scopeNode) == enginePriv->contextClass);
+
+        evalContext = enginePriv->contextClass->contextFromValue(scopeNode);
+    }
 
     // ### Can well known types be optimized?
     QVariant v = QmlScriptClass::toVariant(engine, value);
     delete QmlMetaPropertyPrivate::setBinding(obj, *lastData, 0);
-    QmlMetaPropertyPrivate::write(obj, *lastData, v, enginePriv->currentExpression->context());
+    QmlMetaPropertyPrivate::write(obj, *lastData, v, evalContext);
 }
 
 QObject *QmlObjectScriptClass::toQObject(Object *object, bool *ok)

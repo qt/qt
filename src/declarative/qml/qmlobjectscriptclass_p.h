@@ -79,7 +79,8 @@ public:
                                            QScriptClass::QueryFlags flags, 
                                            QmlContext *evalContext);
     QScriptValue property(QObject *, const Identifier &);
-    void setProperty(QObject *, const Identifier &name, const QScriptValue &);
+    void setProperty(QObject *, const Identifier &name, const QScriptValue &,
+                     QmlContext *evalContext = 0);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
