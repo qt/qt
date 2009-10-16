@@ -106,14 +106,14 @@ Rectangle {
         id: view1
         anchors.top: titleBar.bottom
         anchors.bottom: parent.bottom
-        x: parent.left
+        x: 0
         width: parent.width
         model: folders1
         delegate: folderDelegate
         highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
         focus: true
         pressDelay: 100
-        state: current
+        state: "current"
         states: [
             State {
                 name: "current"
