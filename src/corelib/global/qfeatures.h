@@ -43,6 +43,7 @@
  * All features and their dependencies.
  *
  * This list is generated from $QTDIR/src/corelib/global/qfeatures.txt
+ * by $QTSRCDIR/util/scripts/make_qfeatures_dot_h
  */
 
 // QAction
@@ -521,11 +522,6 @@
 #define QT_NO_LIBRARY
 #endif
 
-// QPrinter
-#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
-#define QT_NO_PRINTER
-#endif
-
 // QScrollArea
 #if !defined(QT_NO_SCROLLAREA) && (defined(QT_NO_SCROLLBAR))
 #define QT_NO_SCROLLAREA
@@ -559,6 +555,11 @@
 // QMdiArea
 #if !defined(QT_NO_MDIAREA) && (defined(QT_NO_SCROLLAREA))
 #define QT_NO_MDIAREA
+#endif
+
+// QPrinter
+#if !defined(QT_NO_PRINTER) && (defined(QT_NO_TEXTSTREAM) || defined(QT_NO_PICTURE) || defined(QT_NO_TEMPORARYFILE))
+#define QT_NO_PRINTER
 #endif
 
 // QSpinBox
@@ -731,11 +732,6 @@
 #define QT_NO_COMPLETER
 #endif
 
-// Common UNIX Printing System
-#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
-#define QT_NO_CUPS
-#endif
-
 // QDataWidgetMapper
 #if !defined(QT_NO_DATAWIDGETMAPPER) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_PROPERTIES))
 #define QT_NO_DATAWIDGETMAPPER
@@ -766,9 +762,9 @@
 #define QT_NO_TREEWIDGET
 #endif
 
-// QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_TOOLBAR) || defined(QT_NO_MAINWINDOW))
-#define QT_NO_PRINTPREVIEWWIDGET
+// Common UNIX Printing System
+#if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
+#define QT_NO_CUPS
 #endif
 
 // QToolBar
@@ -829,6 +825,11 @@
 // QFontDialog
 #if !defined(QT_NO_FONTDIALOG) && (defined(QT_NO_STRINGLISTMODEL) || defined(QT_NO_COMBOBOX) || defined(QT_NO_VALIDATOR) || defined(QT_NO_GROUPBOX))
 #define QT_NO_FONTDIALOG
+#endif
+
+// QPrintPreviewWidget
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_TOOLBAR) || defined(QT_NO_MAINWINDOW))
+#define QT_NO_PRINTPREVIEWWIDGET
 #endif
 
 // QWorkSpace

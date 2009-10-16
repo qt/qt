@@ -175,6 +175,7 @@ print OUT
  * All features and their dependencies.
  *
  * This list is generated from $QTDIR/src/corelib/global/qfeatures.txt
+ * by $QTSRCDIR/util/scripts/make_qfeatures_dot_h
  */
 
 ';
