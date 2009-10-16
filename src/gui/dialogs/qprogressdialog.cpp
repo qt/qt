@@ -453,7 +453,7 @@ void QProgressDialog::setCancelButton(QPushButton *cancelButton)
         cancelButton->show();
 #else
     {
-        d->cancelAction = new QAction(cancelButton->text(), this);
+        d->cancelAction = new QAction(cancelButton->text(), cancelButton);
         d->cancelAction->setSoftKeyRole(QAction::NegativeSoftKey);
         connect(d->cancelAction, SIGNAL(triggered()), this, SIGNAL(canceled()));
         addAction(d->cancelAction);
