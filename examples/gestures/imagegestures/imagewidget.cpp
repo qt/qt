@@ -43,6 +43,7 @@
 
 #include <QtGui>
 
+//! [constructor]
 ImageWidget::ImageWidget(QWidget *parent)
     : QWidget(parent),
     position(0),
@@ -52,12 +53,7 @@ ImageWidget::ImageWidget(QWidget *parent)
     scaleFactor(1)
 
 {
-    setObjectName("ImageWidget");
     setMinimumSize(QSize(100,100));
-
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoSystemBackground);
 
 //! [enable gestures]
     grabGesture(Qt::PanGesture);
@@ -65,6 +61,7 @@ ImageWidget::ImageWidget(QWidget *parent)
     grabGesture(Qt::SwipeGesture);
 //! [enable gestures]
 }
+//! [constructor]
 
 //! [event handler]
 bool ImageWidget::event(QEvent *event)

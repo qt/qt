@@ -44,6 +44,8 @@
 
 #include <QMainWindow>
 
+class ImageWidget;
+
 class MainWidget : public QMainWindow
 {
     Q_OBJECT

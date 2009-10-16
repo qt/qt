@@ -53,28 +53,28 @@ class QPinchGesture;
 class QSwipeGesture;
 QT_END_NAMESPACE
 
+//! [class definition begin]
 class ImageWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     ImageWidget(QWidget *parent = 0);
-
     void openDirectory(const QString &path);
 
 protected:
-    bool event(QEvent*);
-    bool gestureEvent(QGestureEvent*);
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
+    bool event(QEvent *event);
+    void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
 private:
+    bool gestureEvent(QGestureEvent *event);
     void panTriggered(QPanGesture*);
     void pinchTriggered(QPinchGesture*);
     void swipeTriggered(QSwipeGesture*);
+//! [class definition begin]
 
-private:
     void updateImage();
     QImage loadImage(const QString &fileName);
     void loadImage();
@@ -93,6 +93,8 @@ private:
     float verticalOffset;
     float rotationAngle;
     float scaleFactor;
+//! [class definition end]
 };
+//! [class definition end]
 
 #endif

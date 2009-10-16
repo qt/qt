@@ -41,10 +41,9 @@
 
 /*!
     \page gestures-overview.html
-    \startpage index.html Qt Reference Documentation
-
     \title Gestures Programming
     \ingroup frameworks-technologies
+    \startpage index.html Qt Reference Documentation
 
     \brief An overview of the Qt support for Gesture programming.
 
@@ -60,10 +59,11 @@
     \section1 Overview
 
     QGesture is the central class in Qt's gesture framework, providing a container
-    for information about gestures performed by the user, such as panning, pinching
-    and swiping. QGesture exposes properties that give general information that is
-    common to all gestures, and these can be extended to provide additional
-    gesture-specific information.
+    for information about gestures performed by the user. QGesture exposes
+    properties that give general information that is common to all gestures, and
+    these can be extended to provide additional gesture-specific information.
+    Common panning, pinching and swiping gestures are represented by specialized
+    classes: QPanGesture, QPinchGesture and QSwipeGesture.
 
     Developers can also implement new gestures by subclassing and extending the
     QGestureRecognizer class. Adding support for a new gesture involves implementing
@@ -80,7 +80,7 @@
     required gesture type. The standard types are defined by the Qt::GestureType
     enum and include many commonly used gestures.
 
-    \snippet examples/gestures/imageviewer/imagewidget.cpp enable gestures
+    \snippet examples/gestures/imagegestures/imagewidget.cpp enable gestures
 
     In the above code, the gesture is set up in the constructor of the target object
     itself.
@@ -93,18 +93,18 @@
     \l{QWidget::}{event()} handler function and delegates gesture events to a
     specialized gestureEvent() function:
 
-    \snippet examples/gestures/imageviewer/imagewidget.cpp event handler
+    \snippet examples/gestures/imagegestures/imagewidget.cpp event handler
 
     The gesture events delivered to the target object can be examined individually
     and dealt with appropriately:
 
-    \snippet examples/gestures/imageviewer/imagewidget.cpp gesture event handler
+    \snippet examples/gestures/imagegestures/imagewidget.cpp gesture event handler
 
     Responding to a gesture is simply a matter of obtaining the QGesture object
     delivered in the QGestureEvent sent to the target object and examining the
     information it contains.
 
-    \snippet examples/gestures/imageviewer/imagewidget.cpp swipe function
+    \snippet examples/gestures/imagegestures/imagewidget.cpp swipe function
 
     Here, we examine the direction in which the user swiped the widget and modify
     its contents accordingly.

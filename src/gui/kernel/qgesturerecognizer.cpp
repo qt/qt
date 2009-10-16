@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
    \class QGestureRecognizer
    \since 4.6
    \brief The QGestureRecognizer class provides the infrastructure for gesture recognition.
+   \ingroup gestures
 
    Gesture recognizers are responsible for creating and managing QGesture objects and
    monitoring input events sent to QWidget and QGraphicsObject subclasses.
