@@ -150,9 +150,6 @@ bool AnchorData::refreshSizeHints(qreal effectiveSpacing)
 
     // It is an internal anchor
     if (item) {
-        const QGraphicsAnchorLayoutPrivate::Orientation orient =
-            QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
-
         if (isLayoutAnchor) {
             minSize = 0;
             prefSize = 0;
@@ -162,7 +159,7 @@ bool AnchorData::refreshSizeHints(qreal effectiveSpacing)
                 maxSize /= 2;
             return true;
         } else {
-            if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
+            if (orientation == QGraphicsAnchorLayoutPrivate::Horizontal) {
                 policy = item->sizePolicy().horizontalPolicy();
                 minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
                 prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
@@ -1285,9 +1282,11 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 {
     Q_Q(QGraphicsAnchorLayout);
 
+    const Orientation orientation = edgeOrientation(firstEdge);
+
     // Guarantee that the graph is no simplified when adding this anchor,
     // anchor manipulation always happen in the full graph
-    restoreSimplifiedGraph(edgeOrientation(firstEdge));
+    restoreSimplifiedGraph(orientation);
 
     // Is the Vertex (firstItem, firstEdge) already represented in our
     // internal structure?
@@ -1296,13 +1295,15 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 
     // Remove previous anchor
     // ### Could we update the existing edgeData rather than creating a new one?
-    if (graph[edgeOrientation(firstEdge)].edgeData(v1, v2)) {
+    if (graph[orientation].edgeData(v1, v2)) {
         removeAnchor_helper(v1, v2);
     }
 
     // If its an internal anchor, set the associated item
     if (firstItem == secondItem)
         data->item = firstItem;
+
+    data->orientation = orientation;
 
     // Create a bi-directional edge in the sense it can be transversed both
     // from v1 or v2. "data" however is shared between the two references
@@ -1315,7 +1316,7 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     // Keep track of anchors that are connected to the layout 'edges'
     data->isLayoutAnchor = (v1->m_item == q || v2->m_item == q);
 
-    graph[edgeOrientation(firstEdge)].createEdge(v1, v2, data);
+    graph[orientation].createEdge(v1, v2, data);
 }
 
 QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *firstItem,
@@ -1480,7 +1481,7 @@ void QGraphicsAnchorLayoutPrivate::anchorSize(const AnchorData *data,
     Q_ASSERT(minSize || prefSize || maxSize);
     Q_ASSERT(data);
     QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate *>(this);
-    that->restoreSimplifiedGraph(edgeOrientation(data->from->m_edge));
+    that->restoreSimplifiedGraph(Orientation(data->orientation));
 
     if (minSize)
         *minSize = data->minSize;

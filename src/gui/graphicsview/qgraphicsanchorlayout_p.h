@@ -157,7 +157,7 @@ struct AnchorData : public QSimplexVariable {
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
           type(Normal), hasSize(true), isLayoutAnchor(false),
-          isCenterAnchor(false) {}
+          isCenterAnchor(false), orientation(0) {}
 
     virtual void updateChildrenSizes() {}
     virtual bool refreshSizeHints(qreal effectiveSpacing);
@@ -211,6 +211,7 @@ struct AnchorData : public QSimplexVariable {
     uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
     uint isCenterAnchor : 1;
+    uint orientation : 1;
 };
 
 #ifdef QT_DEBUG
