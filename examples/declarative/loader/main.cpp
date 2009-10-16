@@ -92,7 +92,7 @@ public:
     Q_INVOKABLE void launch(const QString &fileName)
     {
         QUrl url(fileName);
-        QFileInfo fi(fileName);
+        QFileInfo fi(url.path());
         if (fi.exists()) {
             url = QUrl::fromLocalFile(fi.absoluteFilePath());
             QmlContext *ctxt = canvas->rootContext();
