@@ -69,6 +69,9 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsProxyWidget>
+
 #include "../../shared/util.h"
 
 
@@ -285,6 +288,7 @@ private slots:
 #ifdef Q_WS_X11
     void minAndMaxSizeWithX11BypassWindowManagerHint();
     void showHideShow();
+    void clean_qt_x11_enforce_cursor();
 #endif
 
     void compatibilityChildInsertedEvents();
@@ -6047,6 +6051,35 @@ void tst_QWidget::showHideShow()
     eventLoop.exec();
 
     QVERIFY(w.gotExpectedMapNotify);
+}
+
+void tst_QWidget::clean_qt_x11_enforce_cursor()
+{
+    {
+        QWidget window;
+        QWidget *w = new QWidget(&window);
+        QWidget *child = new QWidget(w);
+        child->setAttribute(Qt::WA_SetCursor, true);
+
+        window.show();
+        QApplication::setActiveWindow(&window);
+        QTest::qWaitForWindowShown(&window);
+        QTest::qWait(100);
+        QCursor::setPos(window.geometry().center());
+        QTest::qWait(100);
+
+        child->setFocus();
+        QApplication::processEvents();
+        QTest::qWait(100);
+
+        delete w;
+    }
+
+    QGraphicsScene scene;
+    QLineEdit *edit = new QLineEdit;
+    scene.addWidget(edit);
+
+    // If the test didn't crash, then it passed.
 }
 #endif
 

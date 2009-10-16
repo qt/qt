@@ -2662,7 +2662,10 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         if (!isAlien(w))
             break;
         if (w->testAttribute(Qt::WA_SetCursor)) {
-            parentOfLeavingCursor = w->parentWidget();
+            QWidget *parent = w->parentWidget();
+            while (parent && parent->d_func()->data.in_destructor)
+                parent = parent->parentWidget();
+            parentOfLeavingCursor = parent;
             //continue looping, we need to find the downest alien widget with a cursor.
             // (downest on the screen)
         }
