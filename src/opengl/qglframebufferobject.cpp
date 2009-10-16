@@ -1204,7 +1204,8 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    return QGLContext::currentContext()->d_ptr->current_fbo == d->fbo();
+    const QGLContext *current = QGLContext::currentContext();
+    return current ? current->d_ptr->current_fbo == d->fbo() : false;
 }
 
 /*!
