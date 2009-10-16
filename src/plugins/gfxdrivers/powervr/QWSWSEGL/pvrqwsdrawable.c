@@ -617,6 +617,16 @@ void pvrQwsGetGeometry(PvrQwsDrawable *drawable, PvrQwsRect *rect)
     *rect = drawable->rect;
 }
 
+void pvrQwsSetRotation(PvrQwsDrawable *drawable, int angle)
+{
+    if (drawable->rotationAngle != angle) {
+        drawable->rotationAngle = angle;
+
+        /* Force the buffers to be recreated if the rotation angle changes */
+        pvrQwsInvalidateBuffers(drawable);
+    }
+}
+
 int pvrQwsGetStride(PvrQwsDrawable *drawable)
 {
     if (drawable->backBuffersValid)
