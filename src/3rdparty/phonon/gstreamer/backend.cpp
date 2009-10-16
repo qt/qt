@@ -117,9 +117,10 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             m_audioOutputs.append(ao);
             return ao;
         }
+#ifndef QT_NO_PHONON_EFFECT
     case EffectClass:
         return new AudioEffect(this, args[0].toInt(), parent);
-
+#endif //QT_NO_PHONON_EFFECT
     case AudioDataOutputClass:
         logMessage("createObject() : AudioDataOutput not implemented");
         break;
