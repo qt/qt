@@ -72,7 +72,39 @@ QT_MODULE(Declarative)
 #define QML_DECLARE_INTERFACE_HASMETATYPE(INTERFACE) \
     QML_DECLARE_TYPE_HASMETATYPE(INTERFACE)
 
+enum { /* TYPEINFO flags */
+    QML_HAS_ATTACHED_PROPERTIES = 0x01,
+};
+
+#define QML_DECLARE_TYPEINFO(TYPE, FLAGS) \
+template <> \
+class QmlTypeInfo<TYPE > \
+{ \
+public: \
+    enum { \
+        hasAttachedProperties = (((FLAGS) & QML_HAS_ATTACHED_PROPERTIES) == QML_HAS_ATTACHED_PROPERTIES) \
+    }; \
+};
+
 QT_BEGIN_NAMESPACE
+
+#if defined(Q_OS_SYMBIAN)
+#define QML_DEFINE_INTERFACE(INTERFACE) \
+    static int defineInterface##INTERFACE = qmlRegisterInterface<INTERFACE>(#INTERFACE);
+
+#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE, EXTENSION) \
+    static int registerExtended##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE);
+
+#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE) \
+    static int defineType##TYPE = qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE);
+
+#define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
+    static int registerExtendedNoCreate##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE);
+
+#define QML_DEFINE_NOCREATE_TYPE(TYPE) \
+    static int registerNoCreate##TYPE = qmlRegisterType<TYPE>(#TYPE);
+
+#else
 
 #define QML_DEFINE_INTERFACE(INTERFACE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *,0,0,0>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
@@ -88,6 +120,8 @@ QT_BEGIN_NAMESPACE
 
 #define QML_DEFINE_NOCREATE_TYPE(TYPE) \
     template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0,0>::instance(qmlRegisterType<TYPE>(#TYPE));
+
+#endif
 
 class QmlContext;
 class QmlEngine;

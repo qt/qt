@@ -71,6 +71,7 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     TextWriter w;
     _writer = &w;
     _position = position;
+    _inLoop = 0;
 
     accept(node);
 
@@ -111,7 +112,7 @@ bool RewriteBinding::visit(AST::Block *ast)
 
 bool RewriteBinding::visit(AST::ExpressionStatement *ast)
 {
-    if (_loopStack.isEmpty()) {
+    if (! _inLoop) {
         unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
         _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
     }
@@ -121,68 +122,68 @@ bool RewriteBinding::visit(AST::ExpressionStatement *ast)
 
 bool RewriteBinding::visit(AST::DoWhileStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::DoWhileStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 bool RewriteBinding::visit(AST::WhileStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::WhileStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 bool RewriteBinding::visit(AST::ForStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::ForStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 bool RewriteBinding::visit(AST::LocalForStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::LocalForStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 bool RewriteBinding::visit(AST::ForEachStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::ForEachStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 bool RewriteBinding::visit(AST::LocalForEachStatement *ast)
 {
-    _loopStack.append(ast);
+    ++_inLoop;
     return true;
 }
 
 void RewriteBinding::endVisit(AST::LocalForEachStatement *)
 {
-    _loopStack.removeLast();
+    --_inLoop;
 }
 
 } // namespace QmlRewrite

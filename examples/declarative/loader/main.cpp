@@ -15,6 +15,15 @@
 #include <QDebug>
 #include <QNetworkDiskCache>
 #include <QNetworkAccessManager>
+#include <QtCore>
+
+#if defined (Q_OS_SYMBIAN)
+#define SYMBIAN_NETWORK_INIT
+#endif
+
+#if defined (SYMBIAN_NETWORK_INIT)
+#include "sym_iap_util.h"
+#endif
 
 QmlView *canvas = 0;
 
@@ -30,13 +39,11 @@ public:
         setLayout(layout);
 #ifdef Q_OS_SYMBIAN
         QAction *closeAction = new QAction("Close", this);
-        closeAction->setSoftKeyRole(QAction::BackSoftKey);
+        closeAction->setSoftKeyRole(QAction::NegativeSoftKey);
         connect(closeAction, SIGNAL(triggered()), this, SLOT(close()));
-
-        QList<QAction*> softKeys;
-        softKeys.append(closeAction);
-        setSoftKeys(softKeys);
+        addAction(closeAction);
 #endif
+        connect(logText, SIGNAL(textChanged()), this, SIGNAL(textChanged()));
     }
 
     void append(const QString &text) {
@@ -49,6 +56,9 @@ public:
             logger = new Logger();
         return logger;
     }
+
+signals:
+    void textChanged();
 
 private:
     QPlainTextEdit *logText;
@@ -112,7 +122,7 @@ public:
             }
         }
 
-        canvas->setUrl(fileName);
+        canvas->setUrl(url);
         canvas->execute();
     }
 
@@ -124,8 +134,9 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
-    MainWindow() : QMainWindow() {}
-
+    MainWindow() : QMainWindow()
+    {
+    }
 
 public slots:
     void toggleFullScreen()
@@ -147,6 +158,13 @@ public slots:
         Logger::instance()->showMaximized();
 #else
         Logger::instance()->show();
+#endif
+    }
+
+    void enableNetwork()
+    {
+#if defined(SYMBIAN_NETWORK_INIT)
+        qt_SetDefaultIap();
 #endif
     }
 };
@@ -185,8 +203,6 @@ int main(int argc, char *argv[])
     canvas->setFocusPolicy(Qt::StrongFocus);
     canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager);
 
-    mw->setCentralWidget(canvas);
-
     QMenuBar *mb = mw->menuBar();
     QAction *showLogAction = new QAction("View Log...", mw);
     mb->addAction(showLogAction);
@@ -194,6 +210,11 @@ int main(int argc, char *argv[])
     QAction *toggleFSAction = new QAction("Fullscreen", mw);
     mb->addAction(toggleFSAction);
     QObject::connect(toggleFSAction, SIGNAL(triggered()), mw, SLOT(toggleFullScreen()));
+#if defined(SYMBIAN_NETWORK_INIT)
+    QAction *enableNetworkAction = new QAction("Enable Network", mw);
+    mb->addAction(enableNetworkAction);
+    QObject::connect(enableNetworkAction, SIGNAL(triggered()), mw, SLOT(enableNetwork()));
+#endif
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("qmlLauncher", launcher);
@@ -205,6 +226,7 @@ int main(int argc, char *argv[])
     mw->show();
 #endif
     canvas->execute();
+    mw->setCentralWidget(canvas);
 
     return app.exec();
 }

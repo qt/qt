@@ -87,10 +87,10 @@ public:
     QString name() const;
 
     QVariant read() const;
-    void write(const QVariant &) const;
+    bool write(const QVariant &) const;
     enum WriteFlag { BypassInterceptor = 0x01, DontRemoveBinding = 0x02 };
     Q_DECLARE_FLAGS(WriteFlags, WriteFlag)
-    void write(const QVariant &, QmlMetaProperty::WriteFlags) const;
+    bool write(const QVariant &, QmlMetaProperty::WriteFlags) const;
 
     bool hasChangedNotifier() const;
     bool needsChangedNotifier() const;

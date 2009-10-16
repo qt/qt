@@ -131,6 +131,8 @@ public:
     int cursorPosition() const;
     void setCursorPosition(int cp);
 
+    QRect cursorRect() const;
+
     int selectionStart() const;
     void setSelectionStart(int);
 

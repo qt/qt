@@ -43,6 +43,7 @@
 #include <QDirModel>
 #include <qdebug.h>
 #include "qmlfolderlistmodel.h"
+#include <QtDeclarative/qmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -51,7 +52,6 @@ class QmlFolderListModelPrivate : public QObjectPrivate
 public:
     QmlFolderListModelPrivate()
         : sortField(QmlFolderListModel::Name), sortReversed(false), count(0) {
-        folder = QDir::currentPath();
         nameFilters << QLatin1String("*");
     }
 
@@ -82,7 +82,7 @@ public:
     }
 
     QDirModel model;
-    QString folder;
+    QUrl folder;
     QStringList nameFilters;
     QModelIndex folderIndex;
     QmlFolderListModel::SortField sortField;
@@ -116,7 +116,7 @@ QmlFolderListModel::QmlFolderListModel(QObject *parent)
     : QListModelInterface(*(new QmlFolderListModelPrivate), parent)
 {
     Q_D(QmlFolderListModel);
-    d->model.setFilter(QDir::AllDirs | QDir::Files | QDir::Drives);
+    d->model.setFilter(QDir::AllDirs | QDir::Files | QDir::Drives | QDir::NoDotAndDotDot);
     connect(&d->model, SIGNAL(rowsInserted(const QModelIndex&,int,int))
             , this, SLOT(inserted(const QModelIndex&,int,int)));
     connect(&d->model, SIGNAL(rowsRemoved(const QModelIndex&,int,int))
@@ -139,7 +139,7 @@ QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles)
     QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
     if (modelIndex.isValid()) {
         folderData[QDirModel::FileNameRole] = d->model.data(modelIndex, QDirModel::FileNameRole);
-        folderData[QDirModel::FilePathRole] = d->model.data(modelIndex, QDirModel::FilePathRole);
+        folderData[QDirModel::FilePathRole] = QUrl::fromLocalFile(d->model.data(modelIndex, QDirModel::FilePathRole).toString());
     }
 
     return folderData;
@@ -175,24 +175,37 @@ QString QmlFolderListModel::toString(int role) const
     \qmlproperty string FolderListModel::folder
 
     The \a folder property holds the folder the model is currently providing.
+
+    It is a URL, but must be a file: or qrc: URL (or relative to such a URL).
 */
-QString QmlFolderListModel::folder() const
+QUrl QmlFolderListModel::folder() const
 {
     Q_D(const QmlFolderListModel);
     return d->folder;
 }
 
-void QmlFolderListModel::setFolder(const QString &folder)
+void QmlFolderListModel::setFolder(const QUrl &folder)
 {
     Q_D(QmlFolderListModel);
     if (folder == d->folder)
         return;
-    QModelIndex index = d->model.index(folder);
+    QModelIndex index = d->model.index(folder.toLocalFile());
     if (index.isValid() && d->model.isDir(index)) {
         d->folder = folder;
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
         emit folderChanged();
     }
+}
+
+QUrl QmlFolderListModel::parentFolder() const
+{
+    Q_D(const QmlFolderListModel);
+    int pos = d->folder.path().lastIndexOf(QLatin1Char('/'));
+    if (pos == -1)
+        return QUrl();
+    QUrl r = d->folder;
+    r.setPath(d->folder.path().left(pos));
+    return r;
 }
 
 /*!
@@ -225,6 +238,9 @@ void QmlFolderListModel::setNameFilters(const QStringList &filters)
 void QmlFolderListModel::componentComplete()
 {
     Q_D(QmlFolderListModel);
+    if (!d->folder.isValid() || !QDir().exists(d->folder.toLocalFile()))
+        setFolder(QUrl(QLatin1String("file://")+QDir::currentPath()));
+
     if (!d->folderIndex.isValid())
         QMetaObject::invokeMethod(this, "refresh", Qt::QueuedConnection);
 }
@@ -285,7 +301,7 @@ void QmlFolderListModel::refresh()
         d->count = 0;
         emit itemsRemoved(0, tmpCount);
     }
-    d->folderIndex = d->model.index(d->folder);
+    d->folderIndex = d->model.index(d->folder.toLocalFile());
     d->count = d->model.rowCount(d->folderIndex);
     if (d->count) {
         emit itemsInserted(0, d->count);
@@ -317,6 +333,79 @@ void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex
     if (start.parent() == d->folderIndex)
         emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
 }
+
+/*!
+    \qmlproperty bool FolderListModel::showDirs
+
+    If true (the default), directories are included in the model.
+
+    Note that the nameFilters are ignored for directories.
+*/
+bool QmlFolderListModel::showDirs() const
+{
+    Q_D(const QmlFolderListModel);
+    return d->model.filter() & QDir::AllDirs;
+}
+
+void  QmlFolderListModel::setShowDirs(bool on)
+{
+    Q_D(QmlFolderListModel);
+    if (!(d->model.filter() & QDir::AllDirs) == !on)
+        return;
+    if (on)
+        d->model.setFilter(d->model.filter() | QDir::AllDirs | QDir::Drives);
+    else
+        d->model.setFilter(d->model.filter() & ~(QDir::AllDirs | QDir::Drives));
+}
+
+/*!
+    \qmlproperty bool FolderListModel::showDotAndDotDot
+
+    If true, the "." and ".." directories are included in the model.
+
+    The default is false.
+*/
+bool QmlFolderListModel::showDotAndDotDot() const
+{
+    Q_D(const QmlFolderListModel);
+    return !(d->model.filter() & QDir::NoDotAndDotDot);
+}
+
+void  QmlFolderListModel::setShowDotAndDotDot(bool on)
+{
+    Q_D(QmlFolderListModel);
+    if (!(d->model.filter() & QDir::NoDotAndDotDot) == on)
+        return;
+    if (on)
+        d->model.setFilter(d->model.filter() & ~QDir::NoDotAndDotDot);
+    else
+        d->model.setFilter(d->model.filter() | QDir::NoDotAndDotDot);
+}
+
+/*!
+    \qmlproperty bool FolderListModel::showOnlyReadable
+
+    If true, only readable files and directories are shown.
+
+    The default is false.
+*/
+bool QmlFolderListModel::showOnlyReadable() const
+{
+    Q_D(const QmlFolderListModel);
+    return d->model.filter() & QDir::Readable;
+}
+
+void  QmlFolderListModel::setShowOnlyReadable(bool on)
+{
+    Q_D(QmlFolderListModel);
+    if (!(d->model.filter() & QDir::Readable) == !on)
+        return;
+    if (on)
+        d->model.setFilter(d->model.filter() | QDir::Readable);
+    else
+        d->model.setFilter(d->model.filter() & ~QDir::Readable);
+}
+
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FolderListModel,QmlFolderListModel)
 
