@@ -2032,17 +2032,27 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
 {
     QList<QSimplexConstraint *> anchorConstraints;
     for (int i = 0; i < anchors.size(); ++i) {
-        QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(anchors[i], 1.0);
-        c->constant = anchors[i]->minSize;
-        c->ratio = QSimplexConstraint::MoreOrEqual;
-        anchorConstraints += c;
+        AnchorData *ad = anchors[i];
 
-        c = new QSimplexConstraint;
-        c->variables.insert(anchors[i], 1.0);
-        c->constant = anchors[i]->maxSize;
-        c->ratio = QSimplexConstraint::LessOrEqual;
-        anchorConstraints += c;
+        if ((ad->minSize == ad->maxSize) || qFuzzyCompare(ad->minSize, ad->maxSize)) {
+            QSimplexConstraint *c = new QSimplexConstraint;
+            c->variables.insert(ad, 1.0);
+            c->constant = ad->minSize;
+            c->ratio = QSimplexConstraint::Equal;
+            anchorConstraints += c;
+        } else {
+            QSimplexConstraint *c = new QSimplexConstraint;
+            c->variables.insert(ad, 1.0);
+            c->constant = ad->minSize;
+            c->ratio = QSimplexConstraint::MoreOrEqual;
+            anchorConstraints += c;
+
+            c = new QSimplexConstraint;
+            c->variables.insert(ad, 1.0);
+            c->constant = ad->maxSize;
+            c->ratio = QSimplexConstraint::LessOrEqual;
+            anchorConstraints += c;
+        }
     }
 
     return anchorConstraints;
@@ -2608,7 +2618,7 @@ void QGraphicsAnchorLayoutPrivate::solveExpanding(const QList<QSimplexConstraint
             hasExpanding = true;
 
         // Lock anchor between boundedExpSize and sizeAtMaximum (ensure 3.a)
-        if (boundedExpSize == ad->sizeAtMaximum) {
+        if (boundedExpSize == ad->sizeAtMaximum || qFuzzyCompare(boundedExpSize, ad->sizeAtMaximum)) {
             // The interval has only one possible value, we can use an "Equal"
             // constraint and don't need to add this variable to the objective.
             QSimplexConstraint *itemC = new QSimplexConstraint;
