@@ -1296,19 +1296,8 @@ void tst_QGraphicsAnchorLayout::sizePolicy()
     l->setSpacing(0);
     l->setContentsMargins(0, 0, 0, 0);
 
-    // horizontal
-    QGraphicsAnchor *anchor = l->addAnchor(l, Qt::AnchorLeft, w1, Qt::AnchorLeft);
-    anchor->setSpacing(0);
-
-    anchor = l->addAnchor(w1, Qt::AnchorRight, l, Qt::AnchorRight);
-    anchor->setSpacing(0);
-
-    // vertical
-    anchor = l->addAnchor(l, Qt::AnchorTop, w1, Qt::AnchorTop);
-    anchor->setSpacing(0);
-
-    anchor = l->addAnchor(w1, Qt::AnchorBottom, l, Qt::AnchorBottom);
-    anchor->setSpacing(0);
+    // horizontal and vertical
+    l->addAnchors(l, w1);
 
     QGraphicsWidget *p = new QGraphicsWidget;
     p->setLayout(l);
@@ -1358,8 +1347,47 @@ void tst_QGraphicsAnchorLayout::sizePolicy()
     w1->adjustSize();
 
     QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(0, 0));
-    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(100, 100));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(0, 0));
     QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(100, 100));
+
+    // Anchor size policies
+    w1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    QGraphicsAnchor *anchor = l->anchor(l, Qt::AnchorLeft, w1, Qt::AnchorLeft);
+    anchor->setSpacing(10);
+
+    // QSizePolicy::Minimum
+    anchor->setSizePolicy(QSizePolicy::Minimum);
+    QApplication::processEvents();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(60, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(60, 50));
+    // The layout has a maximum size of QWIDGETSIZE_MAX, so the result won't exceed that value.
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(QWIDGETSIZE_MAX, 50));
+
+    // QSizePolicy::Preferred
+    anchor->setSizePolicy(QSizePolicy::Preferred);
+    QApplication::processEvents();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(60, 50));
+    // The layout has a maximum size of QWIDGETSIZE_MAX, so the result won't exceed that value.
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(QWIDGETSIZE_MAX, 50));
+
+    // QSizePolicy::Maximum
+    anchor->setSizePolicy(QSizePolicy::Maximum);
+    QApplication::processEvents();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(60, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(60, 50));
+
+    // QSizePolicy::Ignored
+    anchor->setSizePolicy(QSizePolicy::Ignored);
+    QApplication::processEvents();
+
+    QCOMPARE(l->effectiveSizeHint(Qt::MinimumSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::PreferredSize), QSizeF(50, 50));
+    QCOMPARE(l->effectiveSizeHint(Qt::MaximumSize), QSizeF(QWIDGETSIZE_MAX, 50));
 
     if (hasSimplification) {
         QVERIFY(!usedSimplex(l, Qt::Horizontal));

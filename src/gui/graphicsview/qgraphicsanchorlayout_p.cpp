@@ -53,13 +53,22 @@ QT_BEGIN_NAMESPACE
 
 
 QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
-    : QObjectPrivate(version), layoutPrivate(0), data(0)
+    : QObjectPrivate(version), layoutPrivate(0), data(0),
+      sizePolicy(QSizePolicy::Fixed)
 {
 }
 
 QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
 {
     layoutPrivate->removeAnchor(data->from, data->to);
+}
+
+void QGraphicsAnchorPrivate::setSizePolicy(QSizePolicy::Policy policy)
+{
+    if (sizePolicy != policy) {
+        sizePolicy = policy;
+        layoutPrivate->q_func()->invalidate();
+    }
 }
 
 void QGraphicsAnchorPrivate::setSpacing(qreal value)
@@ -92,28 +101,11 @@ qreal QGraphicsAnchorPrivate::spacing() const
 }
 
 
-static void sizeHintsFromItem(QGraphicsLayoutItem *item,
-                             const QGraphicsAnchorLayoutPrivate::Orientation orient,
-                             qreal *minSize, qreal *prefSize,
-                             qreal *expSize, qreal *maxSize)
+static void internalSizeHints(QSizePolicy::Policy policy,
+                              qreal minSizeHint, qreal prefSizeHint, qreal maxSizeHint,
+                              qreal *minSize, qreal *prefSize,
+                              qreal *expSize, qreal *maxSize)
 {
-    QSizePolicy::Policy policy;
-    qreal minSizeHint;
-    qreal prefSizeHint;
-    qreal maxSizeHint;
-
-    if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
-        policy = item->sizePolicy().horizontalPolicy();
-        minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
-        prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
-        maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).width();
-    } else {
-        policy = item->sizePolicy().verticalPolicy();
-        minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).height();
-        prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).height();
-        maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
-    }
-
     // minSize, prefSize and maxSize are initialized
     // with item's preferred Size: this is QSizePolicy::Fixed.
     //
@@ -139,7 +131,7 @@ static void sizeHintsFromItem(QGraphicsLayoutItem *item,
 
     // Note that these two initializations are affected by the previous flags
     if (policy & QSizePolicy::IgnoreFlag)
-        *prefSize = *maxSize;
+        *prefSize = *minSize;
     else
         *prefSize = prefSizeHint;
 
@@ -153,38 +145,63 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
     const bool isInternalAnchor = from->m_item == to->m_item;
 
+    QSizePolicy::Policy policy;
+    qreal minSizeHint;
+    qreal prefSizeHint;
+    qreal maxSizeHint;
+
     if (isInternalAnchor) {
         const QGraphicsAnchorLayoutPrivate::Orientation orient =
             QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge);
+        const Qt::AnchorPoint centerEdge =
+            QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
+        bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
 
         if (isLayoutAnchor) {
             minSize = 0;
             prefSize = 0;
             expSize = 0;
             maxSize = QWIDGETSIZE_MAX;
+            if (hasCenter)
+                maxSize /= 2;
+            return;
         } else {
+
             QGraphicsLayoutItem *item = from->m_item;
-            sizeHintsFromItem(item, orient, &minSize, &prefSize, &expSize, &maxSize);
+            if (orient == QGraphicsAnchorLayoutPrivate::Horizontal) {
+                policy = item->sizePolicy().horizontalPolicy();
+                minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).width();
+                prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).width();
+                maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).width();
+            } else {
+                policy = item->sizePolicy().verticalPolicy();
+                minSizeHint = item->effectiveSizeHint(Qt::MinimumSize).height();
+                prefSizeHint = item->effectiveSizeHint(Qt::PreferredSize).height();
+                maxSizeHint = item->effectiveSizeHint(Qt::MaximumSize).height();
+            }
+
+            if (hasCenter) {
+                minSizeHint /= 2;
+                prefSizeHint /= 2;
+                maxSizeHint /= 2;
+            }
         }
-
-        const Qt::AnchorPoint centerEdge =
-            QGraphicsAnchorLayoutPrivate::pickEdge(Qt::AnchorHorizontalCenter, orient);
-        bool hasCenter = (from->m_edge == centerEdge || to->m_edge == centerEdge);
-
-        if (hasCenter) {
-            minSize /= 2;
-            prefSize /= 2;
-            expSize /= 2;
-            maxSize /= 2;
+    } else {
+        Q_ASSERT(graphicsAnchor);
+        policy = graphicsAnchor->sizePolicy();
+        minSizeHint = 0;
+        if (hasSize) {
+            // One can only configure the preferred size of a normal anchor. Their minimum and
+            // maximum "size hints" are always 0 and QWIDGETSIZE_MAX, correspondingly. However,
+            // their effective size hints might be narrowed down due to their size policies.
+            prefSizeHint = prefSize;
+        } else {
+            prefSizeHint = effectiveSpacing;
         }
-
-    } else if (!hasSize) {
-        // Anchor has no size defined, use given default information
-        minSize = effectiveSpacing;
-        prefSize = effectiveSpacing;
-        expSize = effectiveSpacing;
-        maxSize = effectiveSpacing;
+        maxSizeHint = QWIDGETSIZE_MAX;
     }
+    internalSizeHints(policy, minSizeHint, prefSizeHint, maxSizeHint, 
+                      &minSize, &prefSize, &expSize, &maxSize);
 
     // Set the anchor effective sizes to preferred.
     //
@@ -1191,18 +1208,18 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
             || secondItem == q
             || pickEdge(firstEdge, Horizontal) == Qt::AnchorHorizontalCenter
             || oppositeEdge(firstEdge) != secondEdge) {
-            data->setFixedSize(0);
+            data->setPreferredSize(0);
         } else {
             data->unsetSize();
         }
         addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
 
     } else if (*spacing >= 0) {
-        data->setFixedSize(*spacing);
+        data->setPreferredSize(*spacing);
         addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
 
     } else {
-        data->setFixedSize(-*spacing);
+        data->setPreferredSize(-*spacing);
         addAnchor_helper(secondItem, secondEdge, firstItem, firstEdge, data);
     }
 
@@ -1389,9 +1406,9 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSize(AnchorData *data, const qreal *
         // positive by definition.
         // "negative spacing" is handled by inverting the standard item order.
         if (*anchorSize >= 0) {
-            data->setFixedSize(*anchorSize);
+            data->setPreferredSize(*anchorSize);
         } else {
-            data->setFixedSize(-*anchorSize);
+            data->setPreferredSize(-*anchorSize);
             qSwap(data->from, data->to);
         }
     } else {

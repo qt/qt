@@ -169,16 +169,9 @@ struct AnchorData : public QSimplexVariable {
     QString name;
 #endif
 
-    inline void setFixedSize(qreal size)
+    inline void setPreferredSize(qreal size)
     {
-        minSize = size;
         prefSize = size;
-        expSize = size;
-        maxSize = size;
-        sizeAtMinimum = size;
-        sizeAtPreferred = size;
-        sizeAtExpanding = size;
-        sizeAtMaximum = size;
         hasSize = true;
     }
 
@@ -316,8 +309,11 @@ public:
     void unsetSpacing();
     qreal spacing() const;
 
+    void setSizePolicy(QSizePolicy::Policy policy);
+
     QGraphicsAnchorLayoutPrivate *layoutPrivate;
     AnchorData *data;
+    QSizePolicy::Policy sizePolicy;
 };
 
 
@@ -528,6 +524,8 @@ public:
 #endif
 
     uint calculateGraphCacheDirty : 1;
+
+    friend class QGraphicsAnchorPrivate;
 };
 
 QT_END_NAMESPACE

@@ -118,6 +118,23 @@ QGraphicsAnchor::~QGraphicsAnchor()
 }
 
 /*!
+    Sets the size policy of the anchor to \a policy.
+*/
+void QGraphicsAnchor::setSizePolicy(QSizePolicy::Policy policy)
+{
+    Q_D(QGraphicsAnchor);
+    d->setSizePolicy(policy);
+}
+/*!
+    Returns the size policy of the anchor. The default size policy is QSizePolicy::Fixed
+*/
+QSizePolicy::Policy QGraphicsAnchor::sizePolicy() const
+{
+    Q_D(const QGraphicsAnchor);
+    return d->sizePolicy;
+}
+
+/*!
     \property QGraphicsAnchor::spacing
     \brief the space between items in the QGraphicsAnchorLayout.
 
