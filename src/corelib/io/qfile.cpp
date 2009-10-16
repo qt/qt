@@ -1064,7 +1064,7 @@ bool QFile::open(FILE *fh, OpenMode mode)
         if (mode & Append) {
             seek(size());
         } else {
-            long pos = ftell(fh);
+            qint64 pos = (qint64)QT_FTELL(fh);
             if (pos != -1)
                 seek(pos);
         }

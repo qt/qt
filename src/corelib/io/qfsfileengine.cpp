@@ -564,6 +564,9 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
     if (lastIOCommand != QFSFileEnginePrivate::IOFlushCommand && !q->flush())
         return false;
 
+    if (pos < 0 || pos != qint64(QT_OFF_T(pos)))
+        return false;
+
     if (fh) {
         // Buffered stdlib mode.
         int ret;
@@ -577,7 +580,7 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
         }
     } else {
         // Unbuffered stdio mode.
-        if (QT_LSEEK(fd, pos, SEEK_SET) == -1) {
+        if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
             qWarning() << "QFile::at: Cannot set file position" << pos;
             q->setError(QFile::PositionError, qt_error_string(errno));
             return false;
