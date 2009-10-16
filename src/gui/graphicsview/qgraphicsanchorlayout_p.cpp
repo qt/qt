@@ -519,18 +519,51 @@ inline static qreal checkAdd(qreal a, qreal b)
 }
 
 /*!
- * \internal
- *
- * Takes the sequence of vertices described by (\a before, \a vertices, \a after) and replaces
- * all anchors connected to the vertices in \a vertices with one simplified anchor between
- * \a before and \a after. The simplified anchor will be a placeholder for all the previous
- * anchors between \a before and \a after, and can be restored back to the anchors it is a
- * placeholder for.
- */
-static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
-                                    AnchorVertex *before,
-                                    const QVector<AnchorVertex*> &vertices,
-                                    AnchorVertex *after)
+    \internal
+
+    Adds \a newAnchor to the graph \a g.
+
+    Returns the newAnchor itself if it could be added without further changes to the graph. If a
+    new parallel anchor had to be created, then returns the new parallel anchor. In case the
+    addition is unfeasible -- because a parallel setup is not possible, returns 0.
+*/
+static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
+                                          AnchorData *newAnchor)
+{
+    bool feasible = true;
+
+    // If already exists one anchor where newAnchor is supposed to be, we create a parallel
+    // anchor.
+    if (AnchorData *oldAnchor = g->takeEdge(newAnchor->from, newAnchor->to)) {
+        ParallelAnchorData *parallel = new ParallelAnchorData(oldAnchor, newAnchor);
+        parallel->isLayoutAnchor = (oldAnchor->isLayoutAnchor
+                                        || newAnchor->isLayoutAnchor);
+
+        // At this point we can identify that the parallel anchor is not feasible, e.g. one
+        // anchor minimum size is bigger than the other anchor maximum size.
+        feasible = parallel->refreshSizeHints_helper(0, false);
+        newAnchor = parallel;
+    }
+
+    g->createEdge(newAnchor->from, newAnchor->to, newAnchor);
+    return feasible ? newAnchor : 0;
+}
+
+
+/*!
+    \internal
+
+    Takes the sequence of vertices described by (\a before, \a vertices, \a after) and removes
+    all anchors connected to the vertices in \a vertices, returning one simplified anchor between
+    \a before and \a after.
+
+    Note that this function doesn't add the created anchor to the graph. This should be done by
+    the caller.
+*/
+static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
+                                  AnchorVertex *before,
+                                  const QVector<AnchorVertex*> &vertices,
+                                  AnchorVertex *after)
 {
     AnchorData *data = graph->edgeData(before, vertices.first());
     Q_ASSERT(data);
@@ -578,18 +611,7 @@ static bool simplifySequentialChunk(Graph<AnchorVertex, AnchorData> *graph,
     sequence->isLayoutAnchor = (sequence->m_edges.first()->isLayoutAnchor
                                 || sequence->m_edges.last()->isLayoutAnchor);
 
-    AnchorData *newAnchor = sequence;
-    if (AnchorData *oldAnchor = graph->takeEdge(before, after)) {
-        ParallelAnchorData *parallel = new ParallelAnchorData(oldAnchor, sequence);
-        parallel->isLayoutAnchor = (oldAnchor->isLayoutAnchor
-                                     || sequence->isLayoutAnchor);
-        parallel->refreshSizeHints_helper(0, false);
-        newAnchor = parallel;
-    }
-    graph->createEdge(before, after, newAnchor);
-
-    // True if we created a parallel anchor
-    return newAnchor != sequence;
+    return sequence;
 }
 
 /*!
@@ -803,11 +825,21 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                 continue;
         }
 
-        // This function will remove the candidates from the graph and create one edge between
-        // beforeSequence and afterSequence. This function returns true if the sequential
-        // simplification also caused a parallel simplification to be created. In this case we end
-        // the iteration and start again (since all the visited state we have may be outdated).
-        if (simplifySequentialChunk(&g, beforeSequence, candidates, afterSequence))
+        //
+        // Add the sequence to the graph.
+        //
+
+        AnchorData *sequence = createSequence(&g, beforeSequence, candidates, afterSequence);
+
+        // If 'beforeSequence' and 'afterSequence' already had an anchor between them, we'll
+        // create a parallel anchor between the new sequence and the old anchor.
+        AnchorData *newAnchor = addAnchorMaybeParallel(&g, sequence);
+
+        // When a new parallel anchor is create in the graph, we finish the iteration and return
+        // true to indicate a new iteration is needed. This happens because a parallel anchor
+        // changes the number of adjacents one vertex has, possibly opening up oportunities for
+        // building candidate lists (when adjacents == 2).
+        if (newAnchor != sequence)
             return true;
 
         // If there was no parallel simplification, we'll keep walking the graph. So we clear the
