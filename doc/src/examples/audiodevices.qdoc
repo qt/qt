@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example multimedia/audio/audiodevices
+    \example multimedia/audiodevices
     \title Audio Devices Example
 
     The Audio Devices example demonstrates the basic use of QAudioDeviceInfo class

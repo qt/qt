@@ -5,9 +5,9 @@ SOURCES       = audioinput.cpp \
 QT           += multimedia
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audio/audioinput
+target.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audioinput
 sources.files = $$SOURCES *.h $$RESOURCES $$FORMS audioinput.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audio/audioinput
+sources.path = $$[QT_INSTALL_EXAMPLES]/multimedia/audioinput
 INSTALLS += target sources
 
 symbian {

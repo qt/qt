@@ -1,5 +1,15 @@
-TEMPLATE      = subdirs
-SUBDIRS       = audio
+TEMPLATE = subdirs
+
+!static {
+    SUBDIRS += \
+        audiodevices \
+        audioinput \
+        audiooutput
+}
+
+SUBDIRS += \
+    videographicsitem \
+    videowidget
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/multimedia
