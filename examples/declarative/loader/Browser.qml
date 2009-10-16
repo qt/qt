@@ -3,16 +3,55 @@ import Qt 4.6
 Rectangle {
     id: root
     property bool keyPressed: false
+    property var folders: folders1
+    property var view: view1
     width: parent.width
     height: parent.height
     color: palette.window
     FolderListModel {
-        id: folders
+        id: folders1
+        nameFilters: [ "*.qml" ]
+        folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
+    }
+    FolderListModel {
+        id: folders2
         nameFilters: [ "*.qml" ]
         folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
     }
 
     SystemPalette { id: palette; colorGroup: Qt.Active }
+
+    Script {
+        function down(path) {
+            if (folders == folders1) {
+                view = view2
+                folders = folders2;
+                view1.state = "exitLeft";
+            } else {
+                view = view1
+                folders = folders1;
+                view2.state = "exitLeft";
+            }
+            view.x = root.width;
+            view.state = "current";
+            folders.folder = path;
+        }
+        function up() {
+            var path = folders.parentFolder;
+            if (folders == folders1) {
+                view = view2
+                folders = folders2;
+                view1.state = "exitRight";
+            } else {
+                view = view1
+                folders = folders1;
+                view2.state = "exitRight";
+            }
+            view.x = -root.width;
+            view.state = "current";
+            folders.folder = path;
+        }
+    }
 
     Component {
         id: folderDelegate
@@ -20,7 +59,7 @@ Rectangle {
             id: wrapper
             function launch() {
                 if (folders.isFolder(index)) {
-                    folders.folder = filePath;
+                    down(filePath);
                 } else {
                     qmlLauncher.launch(filePath);
                 }
@@ -38,7 +77,7 @@ Rectangle {
             }
             Item {
                 width: 46; height: 46
-                Image { source: "images/fileopen.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
+                Image { source: "images/folder.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
                 id: nameText
@@ -64,27 +103,93 @@ Rectangle {
     }
 
     ListView {
-        id: view
+        id: view1
         anchors.top: titleBar.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
         anchors.bottom: parent.bottom
-        model: folders
+        x: parent.left
+        width: parent.width
+        model: folders1
         delegate: folderDelegate
         highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
         clip: true
         focus: true
         pressDelay: 100
-
-        Keys.onPressed: {
-            root.keyPressed = true;
-            if (event.key == Qt.Key_Return || event.key == Qt.Key_Select || event.key == Qt.Key_Right) {
-                view.currentItem.launch();
-                event.accepted = true;
+        state: current
+        states: [
+            State {
+                name: "current"
+                PropertyChanges { target: view1; x: 0 }
+            },
+            State {
+                name: "exitLeft"
+                PropertyChanges { target: view1; x: -root.width }
+            },
+            State {
+                name: "exitRight"
+                PropertyChanges { target: view1; x: root.width }
             }
-        }
-        Keys.onLeftPressed: folders.folder = up(folders.folder)
+        ]
+        transitions: [
+            Transition {
+                to: "current"
+                SequentialAnimation {
+                    NumberAnimation { properties: "x"; duration: 250 }
+                }
+            },
+            Transition {
+                NumberAnimation { properties: "x"; duration: 250 }
+                NumberAnimation { properties: "x"; duration: 250 }
+            }
+        ]
     }
+
+    ListView {
+        id: view2
+        anchors.top: titleBar.bottom
+        anchors.bottom: parent.bottom
+        x: parent.right
+        width: parent.width
+        model: folders2
+        delegate: folderDelegate
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
+        clip: true
+        focus: true
+        pressDelay: 100
+        states: [
+            State {
+                name: "current"
+                PropertyChanges { target: view2; x: 0 }
+            },
+            State {
+                name: "exitLeft"
+                PropertyChanges { target: view2; x: -root.width }
+            },
+            State {
+                name: "exitRight"
+                PropertyChanges { target: view2; x: root.width }
+            }
+        ]
+        transitions: [
+            Transition {
+                to: "current"
+                SequentialAnimation {
+                    NumberAnimation { properties: "x"; duration: 250 }
+                }
+            },
+            Transition {
+                NumberAnimation { properties: "x"; duration: 250 }
+            }
+        ]
+    }
+
+    Keys.onPressed: {
+        root.keyPressed = true;
+        if (event.key == Qt.Key_Return || event.key == Qt.Key_Select || event.key == Qt.Key_Right) {
+            view.currentItem.launch();
+            event.accepted = true;
+        }
+    }
+    Keys.onLeftPressed: up()
 
     Rectangle {
         id: titleBar
@@ -98,16 +203,9 @@ Rectangle {
             height: titleBar.height
             border.color: palette.mid; color: "transparent"
 
-            Script {
-                function up(path) {
-                    var pos = path.toString().lastIndexOf("/");
-                    return path.toString().substring(0, pos);
-                }
-            }
-
             Image { anchors.centerIn: parent; source: "images/up.png" }
             MouseRegion { id: upRegion; anchors.fill: parent
-                onClicked: if (folders.parentFolder != "") folders.folder = folders.parentFolder
+                onClicked: if (folders.parentFolder != "") up()
             }
             states: [
                 State {
