@@ -523,7 +523,7 @@ public:
     bool graphHasConflicts[2];
     QSet<QGraphicsLayoutItem *> m_floatItems[2];
 
-#ifdef QT_DEBUG
+#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
     bool lastCalculationUsedSimplex[2];
 #endif
 

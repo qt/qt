@@ -1781,7 +1781,7 @@ bool QGraphicsAnchorLayoutPrivate::calculateTrunk(Orientation orientation, const
         sizeAtExpanding[orientation] = ad->sizeAtExpanding;
     }
 
-#ifdef QT_DEBUG
+#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
     lastCalculationUsedSimplex[orientation] = needsSimplex;
 #endif
 
