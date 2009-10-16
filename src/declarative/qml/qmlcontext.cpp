@@ -469,7 +469,7 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 }
 
 /*!
-    Explicitly sets the url resolveUrl() will use for relative references to \a baseUrl.
+    Explicitly sets the url resolvedUrl() will use for relative references to \a baseUrl.
 
     Calling this function will override the url of the containing
     component used by default.

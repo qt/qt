@@ -9,7 +9,7 @@ Rectangle {
     FolderListModel {
         id: folders
         nameFilters: [ "*.qml" ]
-        folder: "E:"
+        folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
     }
 
     SystemPalette { id: palette; colorGroup: Qt.Active }
