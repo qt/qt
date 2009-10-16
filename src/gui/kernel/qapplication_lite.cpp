@@ -72,6 +72,7 @@ extern QWidgetList *qt_modal_stack;              // stack of modal widgets
 
 int qt_last_x = 0;
 int qt_last_y = 0;
+QPointer<QWidget> qt_last_mouse_receiver = 0;
 
 QString QApplicationPrivate::appName() const
 {
@@ -508,11 +509,15 @@ void QApplication::setMainWidget(QWidget *mainWidget)
 void QApplicationPrivate::handleEnterEvent(QWidget *tlw)
 {
     dispatchEnterLeave(tlw, 0);
+    qt_last_mouse_receiver = tlw;
 }
 
 void QApplicationPrivate::handleLeaveEvent(QWidget *tlw)
 {
-    dispatchEnterLeave(0, tlw);
+    dispatchEnterLeave(0, qt_last_mouse_receiver);
+    if (!tlw->isAncestorOf(qt_last_mouse_receiver)) //(???) this should not happen
+        dispatchEnterLeave(0, tlw);
+    qt_last_mouse_receiver = 0;
 }
 
 void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
@@ -587,6 +592,11 @@ void QApplicationPrivate::handleMouseEvent(QWidget *tlw, const QMouseEvent &ev)
     if (ev.buttons() == Qt::NoButton) {
         //qDebug() << "resetting mouse grabber";
         implicit_mouse_grabber = 0;
+    }
+
+    if (mouseWidget != qt_last_mouse_receiver) {
+        dispatchEnterLeave(mouseWidget, qt_last_mouse_receiver);
+        qt_last_mouse_receiver = mouseWidget;
     }
 
     // Remember, we might enter a modal event loop when sending the event,

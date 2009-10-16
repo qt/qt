@@ -1440,13 +1440,13 @@ QWidget::~QWidget()
         }
     }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) //### LITE
+#if defined(Q_WS_WIN) || defined(Q_WS_X11)
     else if (!internalWinId() && isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
-#ifdef Q_WS_QWS
-    } else if (isVisible()) {
+    }
+#elif defined(Q_WS_QWS) || defined(Q_WS_LITE)
+    else if (isVisible()) {
         qApp->d_func()->sendSyntheticEnterLeave(this);
-#endif
     }
 #endif
 
@@ -7200,7 +7200,7 @@ void QWidgetPrivate::hide_helper()
     // next bit tries to move the focus if the focus widget is now
     // hidden.
     if (wasVisible) {
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_LITE)
         qApp->d_func()->sendSyntheticEnterLeave(q);
 #endif
 
@@ -7332,7 +7332,7 @@ void QWidget::setVisible(bool visible)
 
             d->show_helper();
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_LITE)
             qApp->d_func()->sendSyntheticEnterLeave(this);
 #endif
         }
@@ -7447,7 +7447,7 @@ void QWidgetPrivate::hideChildren(bool spontaneous)
                 widget->d_func()->hide_sys();
             }
         }
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS) || defined(Q_WS_LITE)
         qApp->d_func()->sendSyntheticEnterLeave(widget);
 #endif
 #ifndef QT_NO_ACCESSIBILITY

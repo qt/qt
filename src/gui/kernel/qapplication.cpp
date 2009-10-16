@@ -498,7 +498,7 @@ inline bool QApplicationPrivate::isAlien(QWidget *widget)
         return false;
 #if defined(Q_WS_MAC) // Fake alien behavior on the Mac :)
     return !widget->isWindow() && widget->window()->testAttribute(Qt::WA_DontShowOnScreen);
-#elif defined(Q_WS_QWS)
+#elif defined(Q_WS_QWS) || defined(Q_WS_LITE)
     return !widget->isWindow()
 # ifdef Q_BACKINGSTORE_SUBSURFACES
         && !(widget->d_func()->maybeTopData() && widget->d_func()->maybeTopData()->windowSurface)
@@ -3004,7 +3004,7 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     return result;
 }
 
-#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS)
+#if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined(Q_WS_QWS) || defined(Q_WS_LITE)
 /*
     This function should only be called when the widget changes visibility, i.e.
     when the \a widget is shown, hidden or deleted. This function does nothing
@@ -3016,7 +3016,7 @@ extern QWidget *qt_button_down;
 void QApplicationPrivate::sendSyntheticEnterLeave(QWidget *widget)
 {
 #ifndef QT_NO_CURSOR
-#ifdef Q_WS_QWS
+#if defined(Q_WS_QWS) || defined(Q_WS_LITE)
     if (!widget || widget->isWindow())
         return;
 #else
