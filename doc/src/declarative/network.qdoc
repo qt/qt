@@ -47,7 +47,7 @@ QML supports network transparency by using URLs (rather than file names) for all
 references from a QML document to other content. Since a \i relative URL is the same
 as a relative file, development of QML on regular file systems remains simple.
 
-\section1 Accessing Network Reesources from QML
+\section1 Accessing Network Resources from QML
 
 Whenever an object has a property of type URL (QUrl), assigning a string to that
 property will actually assign an absolute URL - by resolving the string against
@@ -105,7 +105,7 @@ The \c import statement only works network transparently if it has an "as" claus
 All network access from QML is managed by a QNetworkAccessManager set on the QmlEngine which executes the QML.
 By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager using
 QmlEngine::setNetworkAccessManager() as appropriate for the policies of your application.
-For eample, the \l qmlviewer tool sets a new QNetworkAccessManager which
+For example, the \l qmlviewer tool sets a new QNetworkAccessManager which
 trusts HTTP Expiry headers to avoid network cache checks, allows HTTP Pipelining, adds a persistent HTTP CookieJar,
 a simple disk cache, and supports proxy settings.
 
