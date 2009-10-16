@@ -440,6 +440,7 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         // If we don't accept hover, we need to reset containsMouse.
         if (!acceptHoverEvents())
             setHovered(false);
+        setKeepMouseGrab(false);
     }
 }
 
