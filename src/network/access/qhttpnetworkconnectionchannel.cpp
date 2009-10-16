@@ -105,6 +105,9 @@ void QHttpNetworkConnectionChannel::init()
         QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
                          this, SLOT(_q_sslErrors(const QList<QSslError>&)),
                          Qt::DirectConnection);
+        QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
+                         this, SLOT(_q_encryptedBytesWritten(qint64)),
+                         Qt::DirectConnection);
     }
 #endif
 }
@@ -880,6 +883,15 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
         return;
     //QNetworkReply::NetworkError errorCode = QNetworkReply::ProtocolFailure;
     emit connection->sslErrors(errors);
+}
+
+void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
+{
+    Q_UNUSED(bytes);
+    // bytes have been written to the socket. write even more of them :)
+    if (isSocketWriting())
+        sendRequest();
+    // otherwise we do nothing
 }
 #endif
 

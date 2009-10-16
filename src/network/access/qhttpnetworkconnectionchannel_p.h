@@ -180,6 +180,7 @@ public:
 #ifndef QT_NO_OPENSSL
     void _q_encrypted(); // start sending request (https)
     void _q_sslErrors(const QList<QSslError> &errors); // ssl errors from the socket
+    void _q_encryptedBytesWritten(qint64 bytes); // proceed sending
 #endif
 };
 

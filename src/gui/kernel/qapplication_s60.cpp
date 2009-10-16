@@ -464,12 +464,47 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
+typedef QPair<QWidget*,QMouseEvent> Event;
+
+/*
+ * Helper function called by HandlePointerEvent - separated to keep that function readable
+ */
+static void generateEnterLeaveEvents(QList<Event> &events, QWidget *widgetUnderPointer,
+    QPoint globalPos, Qt::MouseButton button, Qt::KeyboardModifiers modifiers)
+{
+    //moved to another widget, create enter and leave events
+    if (S60->lastPointerEventTarget) {
+        QMouseEvent mEventLeave(QEvent::Leave, S60->lastPointerEventTarget->mapFromGlobal(
+            S60->lastCursorPos), S60->lastCursorPos, button, QApplicationPrivate::mouse_buttons,
+            modifiers);
+        events.append(Event(S60->lastPointerEventTarget, mEventLeave));
+    }
+    if (widgetUnderPointer) {
+        QMouseEvent mEventEnter(QEvent::Enter, widgetUnderPointer->mapFromGlobal(globalPos),
+            globalPos, button, QApplicationPrivate::mouse_buttons, modifiers);
+
+        events.append(Event(widgetUnderPointer, mEventEnter));
+#ifndef QT_NO_CURSOR
+        S60->curWin = widgetUnderPointer->effectiveWinId();
+        if (!QApplication::overrideCursor()) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_set_pointer_sprite(widgetUnderPointer->cursor());
+            else
+#endif
+                qt_symbian_setWindowCursor(widgetUnderPointer->cursor(), S60->curWin);
+        }
+#endif
+    }
+}
+
+
 void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 {
-    //### refactor me, getting too complex
     QMouseEvent::Type type;
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
+    Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
 
     if (m_previousEventLongTap)
         if (type == QEvent::MouseButtonRelease){
@@ -481,79 +516,76 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
         return;
 
     // store events for later sending/saving
-    QWidget *alienWidget;
-    typedef QPair<QWidget*,QMouseEvent> Event;
     QList<Event > events;
 
     QPoint widgetPos = QPoint(pEvent.iPosition.iX, pEvent.iPosition.iY);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
 
-    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
-    {
-        // get the widget where the event happened
-        alienWidget = qwidget->childAt(widgetPos);
-        if (!alienWidget)
-            alienWidget = qwidget;
-        S60->mousePressTarget = alienWidget;
+    // widgets interested in the event
+    QWidget *widgetUnderPointer = qwidget->childAt(widgetPos);
+    if (!widgetUnderPointer)
+        widgetUnderPointer = qwidget; //i.e. this container widget
+
+    QWidget *widgetWithMouseGrab = QWidget::mouseGrabber();
+
+    // handle auto grab of pointer when pressing / releasing
+    if (!widgetWithMouseGrab && type == QEvent::MouseButtonPress) {
+        //if previously auto-grabbed, generate a fake mouse release (platform bug: mouse release event was lost)
+        if (S60->mousePressTarget) {
+            QMouseEvent mEvent(QEvent::MouseButtonRelease, S60->mousePressTarget->mapFromGlobal(globalPos), globalPos,
+                button, QApplicationPrivate::mouse_buttons, modifiers);
+            events.append(Event(S60->mousePressTarget,mEvent));
+        }
+        //auto grab the mouse
+        widgetWithMouseGrab = S60->mousePressTarget = widgetUnderPointer;
+        widgetWithMouseGrab->grabMouse();
+    }
+    if (widgetWithMouseGrab && widgetWithMouseGrab == S60->mousePressTarget && type == QEvent::MouseButtonRelease) {
+        //release the auto grab - note this release event still goes to the autograb widget
+        S60->mousePressTarget = 0;
+        widgetWithMouseGrab->releaseMouse();
     }
 
-    alienWidget = S60->mousePressTarget;
+    QWidget *widgetToReceiveMouseEvent;
+    if (widgetWithMouseGrab)
+        widgetToReceiveMouseEvent = widgetWithMouseGrab;
+    else
+        widgetToReceiveMouseEvent = widgetUnderPointer;
 
-    if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
-        {
-            //moved to another widget, create enter and leave events
-            if (S60->lastPointerEventTarget)
-            {
-                QMouseEvent mEventLeave(QEvent::Leave, S60->lastPointerEventTarget->mapFromGlobal(S60->lastCursorPos), S60->lastCursorPos,
-                    button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
-                events.append(Event(S60->lastPointerEventTarget,mEventLeave));
-            }
-            if (alienWidget) {
-                QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos),
-                    globalPos, button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(
-                        pEvent.iModifiers));
+    //queue QEvent::Enter and QEvent::Leave, if the pointer has moved
+    if (widgetUnderPointer != S60->lastPointerEventTarget && (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove))
+        generateEnterLeaveEvents(events, widgetUnderPointer, globalPos, button, modifiers);
 
-                events.append(Event(alienWidget, mEventEnter));
-#ifndef QT_NO_CURSOR
-                S60->curWin = alienWidget->effectiveWinId();
-                if (!QApplication::overrideCursor()) {
-#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
-                    if (S60->brokenPointerCursors)
-                        qt_symbian_set_pointer_sprite(alienWidget->cursor());
-                    else
-#endif
-                        qt_symbian_setWindowCursor(alienWidget->cursor(), S60->curWin);
-                }
-#endif
-            }
-        }
+    //save global state
     S60->lastCursorPos = globalPos;
+    S60->lastPointerEventPos = widgetPos;
+    S60->lastPointerEventTarget = widgetUnderPointer;
+
 #if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
     if (S60->brokenPointerCursors)
         qt_symbian_move_cursor_sprite();
 #endif
-    S60->lastPointerEventPos = widgetPos;
-    S60->lastPointerEventTarget = alienWidget;
-    if (alienWidget)
-    {
-        QMouseEvent mEvent(type, alienWidget->mapFromGlobal(globalPos), globalPos,
-            button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
-        events.append(Event(alienWidget,mEvent));
-        QEventDispatcherS60 *dispatcher;
-        // It is theoretically possible for someone to install a different event dispatcher.
-        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) != 0) {
-            if (dispatcher->excludeUserInputEvents()) {
-                for (int i=0;i < events.count();++i)
-                {
-                    Event next = events[i];
-                    dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
-                }
-                return;
+
+    //queue this event.
+    Q_ASSERT(widgetToReceiveMouseEvent);
+    QMouseEvent mEvent(type, widgetToReceiveMouseEvent->mapFromGlobal(globalPos), globalPos,
+        button, QApplicationPrivate::mouse_buttons, modifiers);
+    events.append(Event(widgetToReceiveMouseEvent,mEvent));
+    QEventDispatcherS60 *dispatcher;
+    // It is theoretically possible for someone to install a different event dispatcher.
+    if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widgetToReceiveMouseEvent->d_func()->threadData->eventDispatcher)) != 0) {
+        if (dispatcher->excludeUserInputEvents()) {
+            for (int i=0;i < events.count();++i)
+            {
+                Event next = events[i];
+                dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
             }
+            return;
         }
     }
+
+    //send events in the queue
     for (int i=0;i < events.count();++i)
     {
         Event next = events[i];

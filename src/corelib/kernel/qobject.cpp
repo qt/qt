@@ -3332,6 +3332,7 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
 
     QObjectConnectionListVector *connectionLists = sender->d_func()->connectionLists;
     if (!connectionLists) {
+        locker.unlock();
         if (qt_signal_spy_callback_set.signal_end_callback != 0)
             qt_signal_spy_callback_set.signal_end_callback(sender, signal_absolute_index);
         return;
@@ -3401,10 +3402,10 @@ void QMetaObject::activate(QObject *sender, const QMetaObject *m, int local_sign
             }
 #endif
 
-            locker.relock();
-
             if (qt_signal_spy_callback_set.slot_end_callback != 0)
                 qt_signal_spy_callback_set.slot_end_callback(receiver, method);
+
+            locker.relock();
 
             QObjectPrivate::resetCurrentSender(receiver, &currentSender, previousSender);
 

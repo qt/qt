@@ -47,7 +47,9 @@
 class Geometry;
 class Cube;
 class Tile;
+QT_BEGIN_NAMESPACE
 class QGLPixelBuffer;
+QT_END_NAMESPACE
 
 class GLWidget : public QGLWidget
 {

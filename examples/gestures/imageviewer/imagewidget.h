@@ -46,10 +46,12 @@
 #include <QImage>
 #include <QtGui>
 
+QT_BEGIN_NAMESPACE
 class QGestureEvent;
 class QPanGesture;
 class QPinchGesture;
 class QSwipeGesture;
+QT_END_NAMESPACE
 
 class ImageWidget : public QWidget
 {

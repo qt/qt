@@ -46,7 +46,7 @@
 #include <QWSDisplay>
 
 PvrEglWindowSurface::PvrEglWindowSurface
-        (QWidget *widget, QScreen *screen, int screenNum)
+        (QWidget *widget, PvrEglScreen *screen, int screenNum)
     : QWSGLWindowSurface(widget)
 {
     setSurfaceFlags(QWSWindowSurface::Opaque);
@@ -63,6 +63,7 @@ PvrEglWindowSurface::PvrEglWindowSurface
     pvrRect.y = pos.y();
     pvrRect.width = size.width();
     pvrRect.height = size.height();
+    transformRects(&pvrRect, 1);
 
     // Try to recover a previous PvrQwsDrawable object for the widget
     // if there is one.  This can happen when a PvrEglWindowSurface
@@ -75,6 +76,7 @@ PvrEglWindowSurface::PvrEglWindowSurface
         pvrQwsSetGeometry(drawable, &pvrRect);
     else
         drawable = pvrQwsCreateWindow(screenNum, (long)widget, &pvrRect);
+    pvrQwsSetRotation(drawable, screen->transformation());
 }
 
 PvrEglWindowSurface::PvrEglWindowSurface()
@@ -113,7 +115,9 @@ void PvrEglWindowSurface::setGeometry(const QRect &rect)
         pvrRect.y = rect.y();
         pvrRect.width = rect.width();
         pvrRect.height = rect.height();
+        transformRects(&pvrRect, 1);
         pvrQwsSetGeometry(drawable, &pvrRect);
+        pvrQwsSetRotation(drawable, screen->transformation());
     }
     QWSGLWindowSurface::setGeometry(rect);
 }
@@ -127,7 +131,9 @@ bool PvrEglWindowSurface::move(const QPoint &offset)
         pvrRect.y = rect.y();
         pvrRect.width = rect.width();
         pvrRect.height = rect.height();
+        transformRects(&pvrRect, 1);
         pvrQwsSetGeometry(drawable, &pvrRect);
+        pvrQwsSetRotation(drawable, screen->transformation());
     }
     return QWSGLWindowSurface::move(offset);
 }
@@ -200,7 +206,9 @@ void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)
         pvrRect.y = rect.y();
         pvrRect.width = rect.width();
         pvrRect.height = rect.height();
+        transformRects(&pvrRect, 1);
         pvrQwsSetVisibleRegion(drawable, &pvrRect, 1);
+        pvrQwsSetRotation(drawable, screen->transformation());
         if (!pvrQwsSwapBuffers(drawable, 1))
             screen->solidFill(QColor(0, 0, 0), region);
     } else {
@@ -213,9 +221,53 @@ void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)
             pvrRects[index].width = rect.width();
             pvrRects[index].height = rect.height();
         }
+        transformRects(pvrRects, rects.size());
         pvrQwsSetVisibleRegion(drawable, pvrRects, rects.size());
+        pvrQwsSetRotation(drawable, screen->transformation());
         if (!pvrQwsSwapBuffers(drawable, 1))
             screen->solidFill(QColor(0, 0, 0), region);
         delete [] pvrRects;
+    }
+}
+
+void PvrEglWindowSurface::transformRects(PvrQwsRect *rects, int count) const
+{
+    switch (screen->transformation()) {
+    case 0: break;
+
+    case 90:
+    {
+        for (int index = 0; index < count; ++index) {
+            int x = rects[index].y;
+            int y = screen->height() - (rects[index].x + rects[index].width);
+            rects[index].x = x;
+            rects[index].y = y;
+            qSwap(rects[index].width, rects[index].height);
+        }
+    }
+    break;
+
+    case 180:
+    {
+        for (int index = 0; index < count; ++index) {
+            int x = screen->width() - (rects[index].x + rects[index].width);
+            int y = screen->height() - (rects[index].y + rects[index].height);
+            rects[index].x = x;
+            rects[index].y = y;
+        }
+    }
+    break;
+
+    case 270:
+    {
+        for (int index = 0; index < count; ++index) {
+            int x = screen->width() - (rects[index].y + rects[index].height);
+            int y = rects[index].x;
+            rects[index].x = x;
+            rects[index].y = y;
+            qSwap(rects[index].width, rects[index].height);
+        }
+    }
+    break;
     }
 }

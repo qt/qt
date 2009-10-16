@@ -8513,12 +8513,12 @@ Proszę wybrać inną nazwę pliku.</translation>
         <location line="+5"/>
         <location line="+24"/>
         <source>Circular inheritance of base type %1.</source>
-        <translation>Zapętlenie w dziedziczeniu podstawowego typu %1.</translation>
+        <translation>Cykliczne dziedziczenie podstawowego typu %1.</translation>
     </message>
     <message>
         <location line="+11"/>
         <source>Circular inheritance of union %1.</source>
-        <translation>Zapętlenie w dziedziczeniu unii %1.</translation>
+        <translation>Cykliczne dziedziczenie unii %1.</translation>
     </message>
     <message>
         <location line="+25"/>
@@ -9143,7 +9143,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+7"/>
         <source>Fixed value constraint of element %1 differs from value constraint in base particle.</source>
-        <translation>Ostateczne ograniczenie wartości elementu %1 różni się od ograniczenia wartości w podstawowym elemencie.</translation>
+        <translation>Ograniczenie stałej wartości elementu %1 różni się od ograniczenia wartości w podstawowym elemencie.</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -9793,7 +9793,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+6"/>
         <source>Fixed value constrained not allowed if element is nillable.</source>
-        <translation>Ograniczenie sztywnej wartości jest niedozwolone gdy element jest zerowalny.</translation>
+        <translation>Ograniczenie stałej wartości jest niedozwolone gdy element jest zerowalny.</translation>
     </message>
     <message>
         <location line="+32"/>
@@ -9842,7 +9842,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+18"/>
         <source>Element %1 can not contain other elements, as it has a fixed content.</source>
-        <translation>Element %1 nie może zawierać innych elementów ponieważ posiada on sztywną zawartość.</translation>
+        <translation>Element %1 nie może zawierać innych elementów ponieważ posiada on stałą zawartość.</translation>
     </message>
     <message>
         <location line="+43"/>
