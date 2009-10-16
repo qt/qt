@@ -5,5 +5,7 @@
         <file>images/up.png</file>
         <file>Button.qml</file>
         <file>images/folder.png</file>
+        <file>images/titlebar.sci</file>
+        <file>images/titlebar.png</file>
     </qresource>
 </RCC>

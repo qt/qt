@@ -111,7 +111,6 @@ Rectangle {
         model: folders1
         delegate: folderDelegate
         highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
-        clip: true
         focus: true
         pressDelay: 100
         state: current
@@ -149,10 +148,10 @@ Rectangle {
         anchors.bottom: parent.bottom
         x: parent.right
         width: parent.width
+//        state: "exitRight"
         model: folders2
         delegate: folderDelegate
         highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
-        clip: true
         focus: true
         pressDelay: 100
         states: [
@@ -191,11 +190,12 @@ Rectangle {
     }
     Keys.onLeftPressed: up()
 
-    Rectangle {
-        id: titleBar
-        width: parent.width
+    BorderImage {
+        source: "images/titlebar.sci";
+        width: parent.width;
         height: 48
-        color: palette.lighter(palette.window); border.color: palette.mid
+        y: -7
+        id: titleBar
 
         Rectangle {
             id: upButton
@@ -219,7 +219,7 @@ Rectangle {
         Text {
             anchors.left: upButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
-            text: folders.folder; color: palette.text
+            text: folders.folder; color: "white"
             elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
             font.pixelSize: 32
         }
