@@ -320,6 +320,7 @@ private slots:
     void twoGesturesOnDifferentLevel();
     void multipleGesturesInTree();
     void multipleGesturesInComplexTree();
+    void testMapToScene();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1044,6 +1045,31 @@ void tst_Gestures::multipleGesturesInComplexTree()
     QCOMPARE(A->events.all.count(FifthGesture), 0);
     QCOMPARE(A->events.all.count(SixthGesture), 0);
     QCOMPARE(A->events.all.count(SeventhGesture), 0);
+}
+
+void tst_Gestures::testMapToScene()
+{
+    QGesture gesture;
+    QList<QGesture*> list;
+    list << &gesture;
+    QGestureEvent event(list);
+    QCOMPARE(event.mapToScene(gesture.hotSpot()), QPointF()); // not set, can't do much
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+
+    GestureItem *item0 = new GestureItem;
+    scene.addItem(item0);
+    item0->setPos(14, 16);
+
+    view.show(); // need to show to give it a global coordinate
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    QPoint origin = view.mapToGlobal(QPoint());
+    event.setWidget(view.viewport());
+
+    QCOMPARE(event.mapToScene(origin + QPoint(100, 200)), view.mapToScene(QPoint(100, 200)));
 }
 
 QTEST_MAIN(tst_Gestures)

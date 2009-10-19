@@ -855,6 +855,8 @@ public:
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
+    QPointF mapToScene(const QPointF &gesturePoint) const;
+
 private:
     QGestureEventPrivate *d_func();
     const QGestureEventPrivate *d_func() const;

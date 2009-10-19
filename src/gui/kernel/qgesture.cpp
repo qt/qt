@@ -129,6 +129,10 @@ QGesture::~QGesture()
 
     \brief The point that is used to find the receiver for the gesture event.
 
+    The hot-spot is a point in the global coordinate system, use
+    QWidget::mapFromGlobal() or QGestureEvent::mapToScene() to get a
+    local hot-spot.
+
     If the hot-spot is not set, the targetObject is used as the receiver of the
     gesture event.
 */

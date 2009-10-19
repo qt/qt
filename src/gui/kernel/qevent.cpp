@@ -45,6 +45,7 @@
 #include "private/qapplication_p.h"
 #include "private/qkeysequence_p.h"
 #include "qwidget.h"
+#include "qgraphicsview.h"
 #include "qdebug.h"
 #include "qmime.h"
 #include "qdnd_p.h"
@@ -4342,6 +4343,23 @@ void QGestureEvent::setWidget(QWidget *widget)
 QWidget *QGestureEvent::widget() const
 {
     return d_func()->widget;
+}
+
+/*!
+    Returns the scene-local coordinates if the \a gesturePoint is inside a graphics view.
+
+    \sa QPointF::isNull().
+*/
+QPointF QGestureEvent::mapToScene(const QPointF &gesturePoint) const
+{
+    QWidget *w = widget();
+    if (w) // we get the viewport as widget, not the graphics view
+        w = w->parentWidget();
+    QGraphicsView *view = qobject_cast<QGraphicsView*>(w);
+    if (view) {
+        return view->mapToScene(view->mapFromGlobal(gesturePoint.toPoint()));
+    }
+    return QPointF();
 }
 
 /*!
