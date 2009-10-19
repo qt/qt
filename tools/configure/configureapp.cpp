@@ -1164,7 +1164,7 @@ void Configure::parseCmdLine()
     dictionary["QTBUILDINSTRUCTION"] = dictionary["MAKE"];
     if (dictionary.contains("XQMAKESPEC")) {
         if (dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv5|release-armv5");
+            dictionary["QTBUILDINSTRUCTION"] = QString("make debug-winscw|debug-armv6|release-armv6");
         } else if (dictionary["XQMAKESPEC"].startsWith("wince")) {
             dictionary["QTBUILDINSTRUCTION"] =
                 QString("setcepaths.bat ") + dictionary["XQMAKESPEC"] + QString(" && ") + dictionary["MAKE"];

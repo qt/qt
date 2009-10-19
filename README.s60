@@ -148,7 +148,7 @@ many example programs in Qt's examples directory.
 
     To build Qt for the device, type:
 
-        make release-armv5
+        make release-armv6
  
     Congratulations, Qt is now ready to use.
 
@@ -159,7 +159,7 @@ many example programs in Qt's examples directory.
     a real device, you first have to install the Qt libraries on the device:
 
         cd src\s60installs
-        createpackage -i Qt_for_S60_template.pkg release-armv5 <certificate file> <certificate key file>
+        createpackage -i Qt_for_S60_template.pkg release-armv6 <certificate file> <certificate key file>
 
     Note: You will need to supply certificate that allows installation of 
           binaries with "All -Tcb" capability to your device.
@@ -167,9 +167,9 @@ many example programs in Qt's examples directory.
     Similarly, install fluidlauncher to the device:
 
         cd embedded\fluidlauncher
-        createpackage -i fluidlauncher_template.pkg release-armv5
+        createpackage -i fluidlauncher_template.pkg release-armv6
 
-    This will create a self-signed fluidlauncher_release-armv5.sis and install it to your device.
+    This will create a self-signed fluidlauncher_release-armv6.sis and install it to your device.
 
     To run the demos on the emulator simply navigate to the directory of the demo and run:
 
