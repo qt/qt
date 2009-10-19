@@ -51,20 +51,10 @@ QT_BEGIN_NAMESPACE
 extern EGLConfig qt_chooseEGLConfigForPixmap(bool hasAlpha, bool readOnly); // in qgl_x11egl.cpp
 extern bool qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnly); // in qgl_x11egl.cpp
 
-static EGLContext qPixmapSharedEglContext = EGL_NO_CONTEXT;
-
-void QX11GLPixmapData::createPixmapSharedContext(EGLConfig config)
-{
-    eglBindAPI(EGL_OPENGL_ES_API);
-    EGLint contextAttribs[] = {
-#if defined(QT_OPENGL_ES_2)
-        EGL_CONTEXT_CLIENT_VERSION, 2,
-#endif
-        EGL_NONE
-    };
-    qPixmapSharedEglContext = eglCreateContext(QEglContext::defaultDisplay(0), config, 0, contextAttribs);
-//    qDebug("QX11GLPixmapData::createPixmapSharedContext() Created ctx 0x%x for config %d", qPixmapSharedEglContext, config);
-}
+// On 16bpp systems, RGB & ARGB pixmaps are different bit-depths and therefore need
+// different contexts:
+static EGLContext qPixmapARGBSharedEglContext = EGL_NO_CONTEXT;
+static EGLContext qPixmapRGBSharedEglContext = EGL_NO_CONTEXT;
 
 bool QX11GLPixmapData::hasX11GLPixmaps()
 {
@@ -76,36 +66,113 @@ bool QX11GLPixmapData::hasX11GLPixmaps()
 
     checkedForX11Pixmaps = true;
 
+    QX11PixmapData *argbPixmapData = 0;
+    QX11PixmapData *rgbPixmapData = 0;
     do {
         if (qgetenv("QT_USE_X11GL_PIXMAPS").isEmpty())
             break;
 
-        // First, check we actually have an EGL config which supports pixmaps
-        EGLConfig config = qt_chooseEGLConfigForPixmap(true, false);
-        if (config == 0)
+        // Check we actually have EGL configs which support pixmaps
+        EGLConfig argbConfig = qt_chooseEGLConfigForPixmap(true, false);
+        EGLConfig rgbConfig = qt_chooseEGLConfigForPixmap(false, false);
+
+        if (argbConfig == 0 || rgbConfig == 0)
             break;
 
-        // Now try to actually create an EGL pixmap surface
-        QX11PixmapData *pd = new QX11PixmapData(QPixmapData::PixmapType);
-        pd->resize(100, 100);
-        bool success = qt_createEGLSurfaceForPixmap(pd, false);
-        if (!success)
-            break;
+        // Create the shared contexts:
+        eglBindAPI(EGL_OPENGL_ES_API);
+        EGLint contextAttribs[] = {
+#if defined(QT_OPENGL_ES_2)
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+#endif
+            EGL_NONE
+        };
+        qPixmapARGBSharedEglContext = eglCreateContext(QEglContext::defaultDisplay(0),
+                                                       argbConfig, 0, contextAttribs);
 
-        createPixmapSharedContext(config);
+        if (argbConfig == rgbConfig) {
+            // If the configs are the same, we can re-use the same context.
+            qPixmapRGBSharedEglContext = qPixmapARGBSharedEglContext;
+        } else {
+            qPixmapRGBSharedEglContext = eglCreateContext(QEglContext::defaultDisplay(0),
+                                                           rgbConfig, 0, contextAttribs);
+        }
+
+        argbPixmapData = new QX11PixmapData(QPixmapData::PixmapType);
+        argbPixmapData->resize(100, 100);
+        argbPixmapData->fill(Qt::transparent); // Force ARGB
+
+        if (!qt_createEGLSurfaceForPixmap(argbPixmapData, false))
+            break;
 
         haveX11Pixmaps = eglMakeCurrent(QEglContext::defaultDisplay(0),
-                                        (EGLSurface)pd->gl_surface, (EGLSurface)pd->gl_surface,
-                                         qPixmapSharedEglContext);
+                                        (EGLSurface)argbPixmapData->gl_surface,
+                                        (EGLSurface)argbPixmapData->gl_surface,
+                                        qPixmapARGBSharedEglContext);
+        if (!haveX11Pixmaps) {
+            EGLint err = eglGetError();
+            qWarning() << "Unable to make pixmap config current:" << err << QEglContext::errorString(err);
+            break;
+        }
 
+        // If the ARGB & RGB configs are the same, we don't need to check RGB too
+        if (haveX11Pixmaps && (argbConfig != rgbConfig)) {
+            rgbPixmapData = new QX11PixmapData(QPixmapData::PixmapType);
+            rgbPixmapData->resize(100, 100);
+            rgbPixmapData->fill(Qt::red);
+
+            // Try to actually create an EGL pixmap surface
+            if (!qt_createEGLSurfaceForPixmap(rgbPixmapData, false))
+                break;
+
+            haveX11Pixmaps = eglMakeCurrent(QEglContext::defaultDisplay(0),
+                                            (EGLSurface)rgbPixmapData->gl_surface,
+                                            (EGLSurface)rgbPixmapData->gl_surface,
+                                            qPixmapRGBSharedEglContext);
+            if (!haveX11Pixmaps) {
+                EGLint err = eglGetError();
+                qWarning() << "Unable to make pixmap config current:" << err << QEglContext::errorString(err);
+                break;
+            }
+        }
+    } while (0);
+
+    if (qPixmapARGBSharedEglContext || qPixmapRGBSharedEglContext) {
         eglMakeCurrent(QEglContext::defaultDisplay(0),
                        EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-        QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
-        delete pd;
-    } while (0);
+    }
+
+    if (argbPixmapData) {
+        if (argbPixmapData->gl_surface)
+            QGLContextPrivate::destroyGlSurfaceForPixmap(argbPixmapData);
+        delete argbPixmapData;
+        argbPixmapData = 0;
+    }
+    if (rgbPixmapData) {
+        if (rgbPixmapData->gl_surface)
+            QGLContextPrivate::destroyGlSurfaceForPixmap(rgbPixmapData);
+        delete rgbPixmapData;
+        rgbPixmapData = 0;
+    }
+
+    if (!haveX11Pixmaps) {
+        // Clean up the context(s) if we can't use X11GL pixmaps
+        if (qPixmapARGBSharedEglContext != EGL_NO_CONTEXT)
+            eglDestroyContext(QEglContext::defaultDisplay(0), qPixmapARGBSharedEglContext);
+
+        if (qPixmapRGBSharedEglContext != qPixmapARGBSharedEglContext &&
+            qPixmapRGBSharedEglContext != EGL_NO_CONTEXT)
+        {
+            eglDestroyContext(QEglContext::defaultDisplay(0), qPixmapRGBSharedEglContext);
+        }
+        qPixmapRGBSharedEglContext = EGL_NO_CONTEXT;
+        qPixmapARGBSharedEglContext = EGL_NO_CONTEXT;
+    }
 
     if (haveX11Pixmaps)
         qDebug("QX11GLPixmapData is supported");
+    else
+        qDebug("QX11GLPixmapData is *NOT* being used");
 
     return haveX11Pixmaps;
 }
@@ -131,7 +198,8 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
             ctx->d_func()->eglContext = new QEglContext();
         ctx->d_func()->eglContext->openDisplay(0); // ;-)
         ctx->d_func()->eglContext->setApi(QEgl::OpenGL);
-        ctx->d_func()->eglContext->setContext(qPixmapSharedEglContext);
+        ctx->d_func()->eglContext->setContext(hasAlphaChannel() ? qPixmapARGBSharedEglContext
+                                                                : qPixmapRGBSharedEglContext);
     }
 
     if (!qt_gl2_engine_for_pixmaps)
@@ -139,6 +207,7 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
 
     // Support multiple painters on multiple pixmaps simultaniously
     if (qt_gl2_engine_for_pixmaps->isActive()) {
+        qWarning("Pixmap paint engine already active");
         QPaintEngine* engine = new QGL2PaintEngineEx();
         engine->setAutoDestruct(true);
         return engine;
@@ -149,12 +218,12 @@ QPaintEngine* QX11GLPixmapData::paintEngine() const
 
 void QX11GLPixmapData::beginPaint()
 {
+//    qDebug("QX11GLPixmapData::beginPaint()");
     if ((EGLSurface)gl_surface == EGL_NO_SURFACE) {
         qt_createEGLSurfaceForPixmap(this, false);
         ctx->d_func()->eglSurface = (EGLSurface)gl_surface;
         ctx->d_func()->valid = true; // ;-)
     }
-
     QGLPaintDevice::beginPaint();
 }
 
