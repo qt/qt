@@ -70,6 +70,13 @@ Requires:
 Name: QAction
 SeeAlso: ???
 
+Feature: SOFTKEYMANAGER
+Description: Supports softkeys.
+Section: Gui
+Requires: ACTION
+Name: QSoftKeyManager
+SeeAlso: ???
+
 Feature: CURSOR
 Description: Supports mouse cursors.
 Section: Kernel
@@ -1146,7 +1153,7 @@ SeeAlso: ???
 Feature: ACCESSIBILITY
 Description: Provides accessibility support.
 Section: Utilities
-Requires: PROPERTIES
+Requires: PROPERTIES ACTION
 Name: Accessibility
 SeeAlso: ???
 
@@ -1403,7 +1410,7 @@ SeeAlso: ???
 Feature: PHONON_VOLUMESLIDER
 Description: Support for the Volume Slider class
 Section: Phonon
-Requires: SLIDER
+Requires: SLIDER ACTION
 Name: Phonon::VolumeSlider
 SeeAlso: ???
 

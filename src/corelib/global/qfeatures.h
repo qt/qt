@@ -307,11 +307,6 @@
 // 
 //#define QT_NO_XMLSTREAM
 
-// Accessibility
-#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES))
-#define QT_NO_ACCESSIBILITY
-#endif
-
 // Animation
 #if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES))
 #define QT_NO_ANIMATION
@@ -387,11 +382,6 @@
 #define QT_NO_PHONON_VOLUMEFADEREFFECT
 #endif
 
-// Phonon::VolumeSlider
-#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER))
-#define QT_NO_PHONON_VOLUMESLIDER
-#endif
-
 // QProcess
 #if !defined(QT_NO_PROCESS) && (defined(QT_NO_THREAD))
 #define QT_NO_PROCESS
@@ -440,6 +430,11 @@
 //  SOCKS5
 #if !defined(QT_NO_SOCKS5) && (defined(QT_NO_NETWORKPROXY))
 #define QT_NO_SOCKS5
+#endif
+
+// QSoftKeyManager
+#if !defined(QT_NO_SOFTKEYMANAGER) && (defined(QT_NO_ACTION))
+#define QT_NO_SOFTKEYMANAGER
 #endif
 
 // QSplitter
@@ -497,6 +492,11 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
+// Accessibility
+#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_ACTION))
+#define QT_NO_ACCESSIBILITY
+#endif
+
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
@@ -520,6 +520,11 @@
 // QLibrary
 #if !defined(QT_NO_LIBRARY) && (defined(QT_NO_SETTINGS))
 #define QT_NO_LIBRARY
+#endif
+
+// Phonon::VolumeSlider
+#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_ACTION))
+#define QT_NO_PHONON_VOLUMESLIDER
 #endif
 
 // QScrollArea

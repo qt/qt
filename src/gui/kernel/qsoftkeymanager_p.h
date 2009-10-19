@@ -58,6 +58,7 @@
 
 QT_BEGIN_HEADER
 
+#ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
 class QSoftKeyManagerPrivate;
@@ -100,6 +101,7 @@ private Q_SLOTS:
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_SOFTKEYMANAGER
 
 QT_END_HEADER
 
