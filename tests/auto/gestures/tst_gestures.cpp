@@ -703,18 +703,16 @@ void tst_Gestures::graphicsItemGesture()
     static const int TotalCustomEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
 
     CustomEvent event;
+    // gesture without hotspot should not be delivered to items in the view
+    QTest::ignoreMessage(QtWarningMsg, "QGestureManager::deliverEvent: could not find the target for gesture");
+    QTest::ignoreMessage(QtWarningMsg, "QGestureManager::deliverEvent: could not find the target for gesture");
+    QTest::ignoreMessage(QtWarningMsg, "QGestureManager::deliverEvent: could not find the target for gesture");
+    QTest::ignoreMessage(QtWarningMsg, "QGestureManager::deliverEvent: could not find the target for gesture");
     sendCustomGesture(&event, item, &scene);
 
     QCOMPARE(item->customEventsReceived, TotalCustomEventsCount);
-    QCOMPARE(item->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item->gestureEventsReceived, 0);
     QCOMPARE(item->gestureOverrideEventsReceived, 0);
-    QCOMPARE(item->events.all.size(), TotalGestureEventsCount);
-    for(int i = 0; i < item->events.all.size(); ++i)
-        QCOMPARE(item->events.all.at(i), CustomGesture::GestureType);
-    QCOMPARE(item->events.started.size(), 1);
-    QCOMPARE(item->events.updated.size(), TotalGestureEventsCount - 2);
-    QCOMPARE(item->events.finished.size(), 1);
-    QCOMPARE(item->events.canceled.size(), 0);
 
     item->reset();
 
