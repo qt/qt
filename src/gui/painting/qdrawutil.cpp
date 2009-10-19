@@ -1147,8 +1147,8 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     yTarget[rows - 1] = targetCenterBottom;
     yTarget[rows] = targetRect.top() + targetRect.height();
 
-    qreal dx;
-    qreal dy;
+    qreal dx = targetCenterWidth;
+    qreal dy = targetCenterHeight;
 
     switch (rules.horizontal) {
     case Qt::StretchTile:

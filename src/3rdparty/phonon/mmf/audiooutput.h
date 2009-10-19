@@ -19,6 +19,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PHONON_MMF_AUDIOOUTPUT_H
 #define PHONON_MMF_AUDIOOUTPUT_H
 
+#include <QHash>
+
 #include "mmf_medianode.h"
 #include <phonon/audiooutputinterface.h>
 
@@ -65,10 +67,12 @@ public:
      */
     virtual bool setOutputDevice(int);
 
-    /**
-     * Has no effect.
-     */
-    virtual bool setOutputDevice(const Phonon::AudioOutputDevice &);
+    static QHash<QByteArray, QVariant> audioOutputDescription(int index);
+
+    enum Constants
+    {
+        AudioOutputDeviceID = 0
+    };
 
 protected:
     virtual bool activateOnMediaObject(MediaObject *mo);
@@ -78,6 +82,7 @@ Q_SIGNALS:
     void audioDeviceFailed();
 
 private:
+
     void setVolumeObserver(VolumeObserver* observer);
 
     qreal                           m_volume;

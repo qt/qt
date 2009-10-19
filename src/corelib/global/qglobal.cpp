@@ -46,6 +46,7 @@
 #include "qthreadstorage.h"
 #include "qdir.h"
 #include "qstringlist.h"
+#include "qdatetime.h"
 
 #ifndef QT_NO_QOBJECT
 #include <private/qthread_p.h>
@@ -2523,6 +2524,33 @@ void qsrand(uint seed)
 #endif
 }
 
+/*! \internal
+    \relates <QtGlobal>
+    \since 4.6
+
+    Seed the PRNG, but only if it has not already been seeded.
+
+    The default seed is a combination of current time, a stack address and a
+    serial counter (since thread stack addresses are re-used).
+*/
+void qsrand()
+{
+#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+    SeedStorageType *pseed = randTLS()->localData();
+    if (pseed) {
+        // already seeded
+        return;
+    }
+    randTLS()->setLocalData(pseed = new SeedStorageType);
+    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
+    *pseed = QDateTime::currentDateTime().toTime_t()
+             + quintptr(&pseed)
+             + serial.fetchAndAddRelaxed(1);
+#else
+    // On Windows, we assume that rand() already does the right thing
+#endif
+}
+
 /*!
     \relates <QtGlobal>
     \since 4.2
@@ -2645,7 +2673,7 @@ int qrand()
     \relates <QtGlobal>
 
     Marks the string literal \a sourceText for dynamic translation in
-    the given \a context, i.e the stored \a sourceText will not be
+    the given \a context; i.e, the stored \a sourceText will not be
     altered. The \a context is typically a class and also needs to
     be specified as string literal.
 

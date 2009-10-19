@@ -82,6 +82,7 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
+    uint isNew : 1;
     uint needsClipBufferClear : 1;
     uint clipTestEnabled : 1;
     uint canRestoreClip : 1;
@@ -212,8 +213,6 @@ public:
     EngineMode mode;
     QFontEngineGlyphCache::Type glyphCacheType;
 
-    mutable QOpenGL2PaintEngineState *last_created_state;
-
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
     bool compositionModeDirty;
@@ -223,6 +222,7 @@ public:
     bool shaderMatrixUniformDirty;
     bool opacityUniformDirty;
 
+    bool stencilClean; // Has the stencil not been used for clipping so far?
     QRegion dirtyStencilRegion;
     QRect currentScissorBounds;
     uint maxClip;

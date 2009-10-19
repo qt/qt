@@ -138,9 +138,10 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
 
     QCFString name;
     ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
-    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pointSize);
-    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pointSize, 0);
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pointSize, 0, symbolicTraits, symbolicTraits);
+
+    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
+    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, 0);
+    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, 0, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)

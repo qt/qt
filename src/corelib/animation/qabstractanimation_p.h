@@ -70,12 +70,14 @@ public:
     QAbstractAnimationPrivate()
         : state(QAbstractAnimation::Stopped),
           direction(QAbstractAnimation::Forward),
-          deleteWhenStopped(false),
           totalCurrentTime(0),
           currentTime(0),
           loopCount(1),
           currentLoop(0),
+          deleteWhenStopped(false),
           hasRegisteredTimer(false),
+          isPause(false),
+          isGroup(false),
           group(0)
     {
     }
@@ -89,7 +91,6 @@ public:
 
     QAbstractAnimation::State state;
     QAbstractAnimation::Direction direction;
-    bool deleteWhenStopped;
     void setState(QAbstractAnimation::State state);
 
     int totalCurrentTime;
@@ -97,7 +98,10 @@ public:
     int loopCount;
     int currentLoop;
 
+    bool deleteWhenStopped;
     bool hasRegisteredTimer;
+    bool isPause;
+    bool isGroup;
 
     QAnimationGroup *group;
 
@@ -115,14 +119,14 @@ public:
     //XXX this is needed by dui
     static Q_CORE_EXPORT QUnifiedTimer *instance();
 
-    void registerAnimation(QAbstractAnimation *animation);
+    void registerAnimation(QAbstractAnimation *animation, bool isTopLevel);
     void unregisterAnimation(QAbstractAnimation *animation);
 
     //defines the timing interval. Default is DEFAULT_TIMER_INTERVAL
     void setTimingInterval(int interval)
     {
         timingInterval = interval;
-        if (animationTimer.isActive()) {
+        if (animationTimer.isActive() && !isPauseTimerActive) {
             //we changed the timing interval
             animationTimer.start(timingInterval, this);
         }
@@ -134,22 +138,46 @@ public:
     */
     void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
 
-    int elapsedTime() const { return lastTick; }
+    /*
+        this is used for updating the currentTime of all animations in case the pause
+        timer is active or, otherwise, only of the animation passed as parameter.
+    */
+    void ensureTimerUpdate(QAbstractAnimation *animation);
+
+    /*
+        this will evaluate the need of restarting the pause timer in case there is still
+        some pause animations running.
+    */
+    void restartAnimationTimer();
 
 protected:
     void timerEvent(QTimerEvent *);
 
 private:
-    // timer used for all active animations
+    // timer used for all active (running) animations
     QBasicTimer animationTimer;
-    // timer used to delay the check if we should start/stop the global timer
+    // timer used to delay the check if we should start/stop the animation timer
     QBasicTimer startStopAnimationTimer;
+
     QTime time;
     int lastTick;
     int timingInterval;
     int currentAnimationIdx;
     bool consistentTiming;
+    // bool to indicate that only pause animations are active
+    bool isPauseTimerActive;
+
     QList<QAbstractAnimation*> animations, animationsToStart;
+
+    // this is the count of running animations that are not a group neither a pause animation
+    int runningLeafAnimations;
+    QList<QAbstractAnimation*> runningPauseAnimations;
+
+    void registerRunningAnimation(QAbstractAnimation *animation);
+    void unregisterRunningAnimation(QAbstractAnimation *animation);
+
+    void updateAnimationsTime();
+    int closestPauseAnimationTimeToFinish();
 };
 
 QT_END_NAMESPACE

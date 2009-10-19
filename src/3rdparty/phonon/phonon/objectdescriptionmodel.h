@@ -139,6 +139,21 @@ namespace Phonon
             ObjectDescriptionModelDataPrivate *const d;
     };
 
+/* Required to ensure template class vtables are exported on both symbian
+and existing builds. */
+#if defined(Q_OS_SYMBIAN) && defined(Q_CC_RVCT)
+// RVCT compiler (2.2.686) requires the export declaration to be on the class to export vtables
+// MWC compiler works both ways
+// GCCE compiler is unknown (it can't compile QtCore yet)
+#define PHONON_TEMPLATE_CLASS_EXPORT PHONON_EXPORT
+#define PHONON_TEMPLATE_CLASS_MEMBER_EXPORT
+#else
+// Windows builds (at least) do not support export declaration on templated class
+// But if you export a member function, the vtable is implicitly exported
+#define PHONON_TEMPLATE_CLASS_EXPORT
+#define PHONON_TEMPLATE_CLASS_MEMBER_EXPORT PHONON_EXPORT
+#endif
+
     /** \class ObjectDescriptionModel objectdescriptionmodel.h Phonon/ObjectDescriptionModel
      * \short The ObjectDescriptionModel class provides a model from
      * a list of ObjectDescription objects.
@@ -175,7 +190,7 @@ namespace Phonon
      * \author Matthias Kretz <kretz@kde.org>
      */
     template<ObjectDescriptionType type>
-    class ObjectDescriptionModel : public QAbstractListModel
+    class PHONON_TEMPLATE_CLASS_EXPORT ObjectDescriptionModel : public QAbstractListModel
     {
         public:
             Q_OBJECT_CHECK
@@ -188,11 +203,11 @@ namespace Phonon
  */
 #if !defined(Q_CC_MINGW) || __MINGW32_MAJOR_VERSION >= 4
             /** \internal */
-            static PHONON_EXPORT const QMetaObject staticMetaObject;
+            static PHONON_TEMPLATE_CLASS_MEMBER_EXPORT const QMetaObject staticMetaObject;
             /** \internal */
-            PHONON_EXPORT const QMetaObject *metaObject() const;
+            PHONON_TEMPLATE_CLASS_MEMBER_EXPORT const QMetaObject *metaObject() const;
             /** \internal */
-            PHONON_EXPORT void *qt_metacast(const char *_clname);
+            PHONON_TEMPLATE_CLASS_MEMBER_EXPORT void *qt_metacast(const char *_clname);
             //int qt_metacall(QMetaObject::Call _c, int _id, void **_a);
 #endif
 

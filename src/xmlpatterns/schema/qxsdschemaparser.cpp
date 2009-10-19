@@ -123,6 +123,7 @@ class ElementNamespaceHandler
             : m_parser(parser)
         {
             Q_ASSERT(m_parser->isStartElement() && (XsdSchemaToken::toToken(m_parser->name()) == tag) && (XsdSchemaToken::toToken(m_parser->namespaceUri()) == XsdSchemaToken::XML_NS_SCHEMA_URI));
+            Q_UNUSED(tag)
             m_parser->m_namespaceSupport.pushContext();
             m_parser->m_namespaceSupport.setPrefixes(m_parser->namespaceDeclarations());
         }

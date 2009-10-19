@@ -411,6 +411,8 @@ Qt::PenStyle QPen::style() const
     pattern using the setDashPattern() function which implicitly
     converts the style of the pen to Qt::CustomDashLine.
 
+    \note This function resets the dash offset to zero.
+
     \sa style(), {QPen#Pen Style}{Pen Style}
 */
 
@@ -420,7 +422,9 @@ void QPen::setStyle(Qt::PenStyle s)
         return;
     detach();
     d->style = s;
-    static_cast<QPenData *>(d)->dashPattern.clear();
+    QPenData *dd = static_cast<QPenData *>(d);
+    dd->dashPattern.clear();
+    dd->dashOffset = 0;
 }
 
 /*!
@@ -538,8 +542,12 @@ void QPen::setDashOffset(qreal offset)
     if (qFuzzyCompare(offset, static_cast<QPenData *>(d)->dashOffset))
         return;
     detach();
-    static_cast<QPenData *>(d)->dashOffset = offset;
-    d->style = Qt::CustomDashLine;
+    QPenData *dd = static_cast<QPenData *>(d);
+    dd->dashOffset = offset;
+    if (d->style != Qt::CustomDashLine) {
+        dd->dashPattern = dashPattern();
+        d->style = Qt::CustomDashLine;
+    }
 }
 
 /*!

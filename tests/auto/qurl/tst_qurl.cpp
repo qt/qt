@@ -137,6 +137,7 @@ private slots:
     void ipv6();
     void ipv6_2_data();
     void ipv6_2();
+    void moreIpv6();
     void toPercentEncoding_data();
     void toPercentEncoding();
     void isRelative_data();
@@ -2276,6 +2277,13 @@ void tst_QUrl::ipv6_2()
     QCOMPARE(url.toString(), output);
 }
 
+void tst_QUrl::moreIpv6()
+{
+    QUrl waba1("http://www.kde.org/cgi/test.cgi");
+    waba1.setHost("::ffff:129.144.52.38");
+    QCOMPARE(QString::fromLatin1(waba1.toEncoded()), QString::fromLatin1("http://[::ffff:129.144.52.38]/cgi/test.cgi"));
+}
+
 void tst_QUrl::punycode_data()
 {
     QTest::addColumn<QString>("original");
@@ -2623,6 +2631,13 @@ void tst_QUrl::tolerantParser()
         QByteArray tsdgeosExpected("http://google.com/c?c=Translation+%C2%BB+trunk%7C");
         //QCOMPARE(tsdgeosQUrl.toEncoded(), tsdgeosExpected); // unusable output from qtestlib...
         QCOMPARE(QString(tsdgeosQUrl.toEncoded()), QString(tsdgeosExpected));
+    }
+
+    {
+        QUrl url;
+        url.setUrl("http://strange<username>@hostname/", QUrl::TolerantMode);
+        QVERIFY(url.isValid());
+        QCOMPARE(QString(url.toEncoded()), QString("http://strange%3Cusername%3E@hostname/"));
     }
 }
 
@@ -3594,9 +3609,9 @@ void tst_QUrl::setAuthority()
 
 void tst_QUrl::errorString()
 {
-    QUrl u = QUrl::fromEncoded("http://strange<username>@ok_hostname/", QUrl::StrictMode);
+    QUrl u = QUrl::fromEncoded("http://strange<username>@bad_hostname/", QUrl::StrictMode);
     QVERIFY(!u.isValid());
-    QString errorString = "Invalid URL \"http://strange<username>@ok_hostname/\": "
+    QString errorString = "Invalid URL \"http://strange<username>@bad_hostname/\": "
                           "error at position 14: expected end of URL, but found '<'";
     QCOMPARE(u.errorString(), errorString);
 

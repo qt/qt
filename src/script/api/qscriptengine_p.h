@@ -468,6 +468,22 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
     return property(JSC::Identifier(exec, name), resolveMode);
 }
 
+inline void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
+{
+    if (engine)
+        return engine->allocateScriptValuePrivate(size);
+    return qMalloc(size);
+}
+
+inline void QScriptValuePrivate::operator delete(void *ptr)
+{
+    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
+    if (d->engine)
+        d->engine->freeScriptValuePrivate(d);
+    else
+        qFree(d);
+}
+
 inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)
 {
     Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);

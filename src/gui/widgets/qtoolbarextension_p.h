@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_TOOLBUTTON
 
-class QToolBarExtension : public QToolButton
+class Q_AUTOTEST_EXPORT QToolBarExtension : public QToolButton
 {
     Q_OBJECT
     Qt::Orientation orientation;

@@ -29,6 +29,16 @@ namespace Symbian
 {
 
 /**
+ * Annotator which returns Symbian-specific widget information
+ */
+class QAnnotatorWidget : public QAnnotator
+{
+    Q_OBJECT
+public:
+    QList<QByteArray> annotation(const QObject& object);
+};
+
+/**
  * Annotator which returns control information
  */
 class QAnnotatorControl : public QAnnotator

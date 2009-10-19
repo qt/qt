@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class CFbsBitmap;
 class CFbsBitmapDevice;
-class CBitmapContext;
+class CFbsBitGc;
 
 class QSymbianBitmapDataAccess;
 
@@ -114,7 +114,7 @@ private:
 
     CFbsBitmap *cfbsBitmap;
     CFbsBitmapDevice *bitmapDevice;
-    CBitmapContext *bitmapContext;
+    CFbsBitGc *bitmapGc;
     QPaintEngine *pengine;
     uchar* bytes;
 

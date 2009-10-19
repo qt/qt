@@ -76,7 +76,6 @@
 #endif
 
 #ifdef Q_WS_QWS
-#include <private/qglpaintdevice_qws_p.h>
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
@@ -150,7 +149,25 @@ QGLSignalProxy *QGLSignalProxy::instance()
 class QGLEngineSelector
 {
 public:
-    QGLEngineSelector() : engineType(QPaintEngine::MaxUser) { }
+    QGLEngineSelector() : engineType(QPaintEngine::MaxUser)
+    {
+#ifdef Q_WS_MAC
+        // The ATI X1600 driver for Mac OS X does not support return
+        // values from functions in GLSL. Since working around this in
+        // the GL2 engine would require a big, ugly rewrite, we're
+        // falling back to the GL 1 engine..
+        QGLWidget *tmp = 0;
+        if (!QGLContext::currentContext()) {
+            tmp = new QGLWidget();
+            tmp->makeCurrent();
+        }
+        if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
+            setPreferredPaintEngine(QPaintEngine::OpenGL);
+        if (tmp)
+            delete tmp;
+#endif
+
+    }
 
     void setPreferredPaintEngine(QPaintEngine::Type type) {
         if (type == QPaintEngine::OpenGL || type == QPaintEngine::OpenGL2)
@@ -4717,24 +4734,7 @@ Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 #endif
 
-#ifdef Q_WS_QWS
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
-{
-#if !defined(QT_OPENGL_ES_2)
-    return qt_gl_engine();
-#else
-    return 0; // XXX
-#endif
-}
-#endif
-
-/*!
-    \internal
-
-    Returns the GL widget's paint engine. This is normally a
-    QOpenGLPaintEngine.
-*/
-QPaintEngine *QGLWidget::paintEngine() const
 {
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
     return qt_gl_engine();
@@ -4746,6 +4746,17 @@ QPaintEngine *QGLWidget::paintEngine() const
     else
         return qt_gl_engine();
 #endif
+}
+
+/*!
+    \internal
+
+    Returns the GL widget's paint engine. This is normally a
+    QOpenGLPaintEngine.
+*/
+QPaintEngine *QGLWidget::paintEngine() const
+{
+    return qt_qgl_paint_engine();
 }
 
 #ifdef QT3_SUPPORT

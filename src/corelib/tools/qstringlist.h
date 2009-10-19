@@ -47,6 +47,7 @@
 #include <QtCore/qlist.h>
 #include <QtCore/qregexp.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qstringmatcher.h>
 #ifdef QT_INCLUDE_COMPAT
 #include <Qt3Support/q3valuelist.h>
 #endif

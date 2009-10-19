@@ -75,7 +75,7 @@ void qt_egl_set_format(QEglProperties& props, int deviceType, const QGLFormat& f
         props.setValue(EGL_STENCIL_SIZE, f.stencilBufferSize() == -1 ? 1 : f.stencilBufferSize());
     if (f.sampleBuffers()) {
         props.setValue(EGL_SAMPLE_BUFFERS, 1);
-        props.setValue(EGL_SAMPLES, f.samples());
+        props.setValue(EGL_SAMPLES, f.samples() == -1 ? 1 : f.samples());
     } else {
         props.setValue(EGL_SAMPLE_BUFFERS, 0);
     }

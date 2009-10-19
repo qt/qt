@@ -112,7 +112,7 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
 {
     const char* text = standardSoftKeyText(standardKey);
     QAction *action = new QAction(QSoftKeyManager::tr(text), actionWidget);
-    QAction::SoftKeyRole softKeyRole;
+    QAction::SoftKeyRole softKeyRole = QAction::NoSoftKey;
     switch (standardKey) {
     case OkSoftKey:
     case SelectSoftKey:
@@ -121,12 +121,10 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
         softKeyRole = QAction::PositiveSoftKey;
         break;
     case CancelSoftKey:
-    default:
         softKeyRole = QAction::NegativeSoftKey;
         break;
     }
     action->setSoftKeyRole(softKeyRole);
-    action->setEnabled(actionWidget->isEnabled());
     return action;
 }
 
@@ -201,6 +199,7 @@ bool QSoftKeyManager::event(QEvent *e)
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
+    nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
     QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
     int position = -1;
@@ -210,7 +209,7 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
     for (int index = 0; index < softkeys.count(); index++) {
         const QAction* softKeyAction = softkeys.at(index);
         switch (softKeyAction->softKeyRole()) {
-        // Positive Actions go on LSK
+        // Positive Actions on the LSK
         case QAction::PositiveSoftKey:
             position = 0;
             break;
@@ -253,7 +252,8 @@ bool QSoftKeyManager::handleCommand(int command)
             QAction *action = softKeys.at(i);
             if (action->softKeyRole() != QAction::NoSoftKey) {
                 if (j == index) {
-                    if (action->isEnabled()) {
+                    QWidget *parent = action->parentWidget();
+                    if (parent && parent->isEnabled()) {
                         action->activate(QAction::Trigger);
                         return true;
                     }

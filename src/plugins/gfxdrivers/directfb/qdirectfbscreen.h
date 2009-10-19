@@ -54,8 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
 
-#if !defined QT_NO_DIRECTFB_SUBSURFACE && !defined QT_DIRECTFB_SUBSURFACE
-#define QT_DIRECTFB_SUBSURFACE
+#if !defined QT_DIRECTFB_SUBSURFACE && !defined QT_NO_DIRECTFB_SUBSURFACE
+#define QT_NO_DIRECTFB_SUBSURFACE
 #endif
 #if !defined QT_NO_DIRECTFB_LAYER && !defined QT_DIRECTFB_LAYER
 #define QT_DIRECTFB_LAYER
@@ -163,12 +163,7 @@ public:
     QWSWindowSurface *createSurface(QWidget *widget) const;
     QWSWindowSurface *createSurface(const QString &key) const;
 
-    static inline QDirectFBScreen *instance() {
-        QScreen *inst = QScreen::instance();
-        Q_ASSERT(!inst || inst->classId() == QScreen::DirectFBClass);
-        return static_cast<QDirectFBScreen*>(inst);
-    }
-
+    static QDirectFBScreen *instance();
     void waitIdle();
     IDirectFBSurface *surfaceForWidget(const QWidget *widget, QRect *rect) const;
 #ifdef QT_DIRECTFB_SUBSURFACE

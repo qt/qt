@@ -189,7 +189,6 @@ void QAudioOutputPrivate::stop()
 {
     if(deviceState == QAudio::StopState)
         return;
-    deviceState = QAudio::StopState;
     close();
     if(!pullMode && audioSource) {
         delete audioSource;
@@ -465,13 +464,15 @@ bool QAudioOutputPrivate::deviceReady()
         } else if(l == 0) {
             bytesAvailable = bytesFree();
 
+            int check = 0;
             EnterCriticalSection(&waveOutCriticalSection);
-            if(waveFreeBlockCount == buffer_size/period_size) {
+            check = waveFreeBlockCount;
+            LeaveCriticalSection(&waveOutCriticalSection);
+            if(check == buffer_size/period_size) {
                 errorState = QAudio::UnderrunError;
                 deviceState = QAudio::IdleState;
                 emit stateChanged(deviceState);
             }
-            LeaveCriticalSection(&waveOutCriticalSection);
 
         } else if(l < 0) {
             bytesAvailable = bytesFree();

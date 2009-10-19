@@ -1623,11 +1623,11 @@ Q_CORE_EXPORT_INLINE QDebug qCritical();
 inline QNoDebug qDebug();
 #endif
 
-#define QT_NO_QDEBUG_MACRO if(1) {} else qDebug
+#define QT_NO_QDEBUG_MACRO while (false) qDebug
 #ifdef QT_NO_DEBUG_OUTPUT
 #  define qDebug QT_NO_QDEBUG_MACRO
 #endif
-#define QT_NO_QWARNING_MACRO if(1) {} else qWarning
+#define QT_NO_QWARNING_MACRO while (false) qWarning
 #ifdef QT_NO_WARNING_OUTPUT
 #  define qWarning QT_NO_QWARNING_MACRO
 #endif

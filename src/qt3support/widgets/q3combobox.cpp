@@ -2234,7 +2234,8 @@ bool Q3ComboBox::autoCompletion() const
     return d->useCompletion;
 }
 
-/*!\reimp
+/*!
+  \internal
  */
 void Q3ComboBox::styleChange( QStyle& s )
 {

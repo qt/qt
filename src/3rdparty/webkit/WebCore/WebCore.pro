@@ -13,6 +13,9 @@ symbian: {
 
     TARGET.UID3 = 0x200267C2
 }
+# RO-section in qtwebkit.dll exceeds allocated space in SBSv2. Move RW-section
+# base address to start from 0x800000 instead of the toolchain default 0x400000.
+symbian-sbsv2: MMP_RULES += "LINKEROPTION  armcc --rw-base 0x800000"
 
 include($$PWD/../WebKit.pri)
 
@@ -82,6 +85,19 @@ win32-g++ {
     QMAKE_INCDIR_POST += $$split(TMPPATH,";")
     TMPPATH            = $$quote($$(LIB))
     QMAKE_LIBDIR_POST += $$split(TMPPATH,";")
+}
+
+# Temporary workaround to pick up the DEF file from the same place as all the others
+symbian {
+    shared {
+        MMP_RULES -= defBlock
+
+        MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
+                    "DEFFILE ../../../s60installs/bwins/$${TARGET}.def" \
+                    "$${LITERAL_HASH}elif defined EABI" \
+                    "DEFFILE ../../../s60installs/eabi/$${TARGET}.def" \
+                    "$${LITERAL_HASH}endif"
+    }
 }
 
 # Assume that symbian OS always comes with sqlite

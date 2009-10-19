@@ -1204,9 +1204,9 @@ static void loadFontConfig()
 
 static void initializeDb();
 
-static void load(const QString &family = QString(), int script = -1)
+static void load(const QString &family = QString(), int script = -1, bool forceXLFD = false)
 {
-    if (X11->has_fontconfig) {
+    if (X11->has_fontconfig && !forceXLFD) {
         initializeDb();
         return;
     }
@@ -1784,7 +1784,7 @@ QFontEngine *QFontDatabase::loadXlfd(int screen, int script, const QFontDef &req
         QString family, foundry;
         QT_PREPEND_NAMESPACE(parseFontName)(families_and_foundries.at(i), foundry, family);
         FM_DEBUG("loadXlfd: >>>>>>>>>>>>>>trying to match '%s' encoding=%d", family.toLatin1().data(), force_encoding_id);
-        QT_PREPEND_NAMESPACE(match)(script, request, family, foundry, force_encoding_id, &desc);
+        QT_PREPEND_NAMESPACE(match)(script, request, family, foundry, force_encoding_id, &desc, QList<int>(), true);
         if (desc.family)
             break;
     }
@@ -1847,23 +1847,26 @@ QFontEngine *QFontDatabase::loadXlfd(int screen, int script, const QFontDef &req
         }
     } else {
         QList<int> encodings;
-        if (desc.encoding)
-            encodings.append(int(desc.encoding->encoding));
+        if (desc.encoding) {
+            if (desc.encoding->encoding >= 0)
+                encodings.append(int(desc.encoding->encoding));
+        }
 
         if (desc.size) {
             // append all other encodings for the matched font
             for (int i = 0; i < desc.size->count; ++i) {
                 QtFontEncoding *e = desc.size->encodings + i;
-                if (e == desc.encoding)
-                    continue;
+                if (e == desc.encoding || e->encoding < 0)
+                    continue;                
                 encodings.append(int(e->encoding));
             }
         }
         // fill in the missing encodings
         const XlfdEncoding *enc = xlfd_encoding;
         for (; enc->name; ++enc) {
-            if (!encodings.contains(enc->id))
+            if (!encodings.contains(enc->id) && enc->id >= 0) {
                 encodings.append(enc->id);
+            }
         }
 
 #if defined(FONT_MATCH_DEBUG)
@@ -1925,6 +1928,13 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
 #ifndef QT_NO_FONTCONFIG
         } else if (X11->has_fontconfig) {
             fe = loadFc(d, script, req);
+
+            if (fe != 0 && fe->fontDef.pixelSize != req.pixelSize) {
+                delete fe;
+                fe = loadXlfd(d->screen, script, req);
+            }
+
+
 #endif
         } else if (mainThread) {
             fe = loadXlfd(d->screen, script, req);

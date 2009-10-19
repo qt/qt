@@ -1,3 +1,0 @@
-include( qt-build-docs.qdocconf )
-
-HTML.generatemacrefs       = "true"

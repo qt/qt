@@ -48,29 +48,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QString Node::typeNames[] =
-    {
-        "Namespaces", 
-        "Classes", 
-        "Fake", 
-        "Enums", 
-        "Typedefs", 
-        "Functions and Macros", 
-        "Properties",
-        "Variables", 
-        "Targets",
-        "Qml Properties",
-        "Qml Signals",
-        "Qml Methods",
-        ""
-    };
-
 /*!
   \class Node
-  \brief A node in a Tree.
+  \brief The Node class is a node in the Tree.
+
+  A Node represents a class or function or something else
+  from the source code..
  */
 
 /*!
+  When this Node is destroyed, if it has a parent Node, it
+  removes itself from the parent node's child list.
  */
 Node::~Node()
 {
@@ -81,6 +69,11 @@ Node::~Node()
 }
 
 /*!
+  Sets this Node's Doc to \a doc. If \a replace is false and
+  this Node already has a Doc, a warning is reported that the
+  Doc is being overridden, and it reports where the previous
+  Doc was found. If \a replace is true, the Doc is replaced
+  silently.
  */
 void Node::setDoc(const Doc& doc, bool replace)
 {
@@ -840,9 +833,17 @@ void TypedefNode::setAssociatedEnum(const EnumNode *enume)
 
 /*!
   \class Parameter
+  \brief The class Parameter contains one parameter.
+
+  A parameter can be a function parameter or a macro
+  parameter.
  */
 
 /*!
+  Constructs this parameter from the left and right types
+  \a leftType and rightType, the parameter \a name, and the
+  \a defaultValue. In practice, \a rightType is not used,
+  and I don't know what is was meant for.
  */
 Parameter::Parameter(const QString& leftType,
                      const QString& rightType,
@@ -853,6 +854,7 @@ Parameter::Parameter(const QString& leftType,
 }
 
 /*!
+  The standard copy constructor copies the strings from \a p.
  */
 Parameter::Parameter(const Parameter& p)
     : lef(p.lef), rig(p.rig), nam(p.nam), def(p.def)
@@ -860,6 +862,8 @@ Parameter::Parameter(const Parameter& p)
 }
 
 /*!
+  Assigning Parameter \a p to this Parameter copies the
+  strings across. 
  */
 Parameter& Parameter::operator=(const Parameter& p)
 {
@@ -869,6 +873,23 @@ Parameter& Parameter::operator=(const Parameter& p)
     def = p.def;
     return *this;
 }
+
+/*!
+  Reconstructs the text describing the parameter and
+  returns it. If \a value is true, the default value
+  will be included, if there is one.
+ */
+QString Parameter::reconstruct(bool value) const
+{
+    QString p = lef + rig;
+    if (!p.endsWith(QChar('*')) && !p.endsWith(QChar('&')) && !p.endsWith(QChar(' ')))
+        p += " ";
+    p += nam;
+    if (value)
+        p += def;
+    return p;
+}
+
 
 /*!
   \class FunctionNode
@@ -924,6 +945,8 @@ void FunctionNode::borrowParameterNames(const FunctionNode *source)
 }
 
 /*!
+  If this function is a reimplementation, \a from points
+  to the FunctionNode of the function being reimplemented.
  */
 void FunctionNode::setReimplementedFrom(FunctionNode *from)
 {
@@ -932,6 +955,8 @@ void FunctionNode::setReimplementedFrom(FunctionNode *from)
 }
 
 /*!
+  Sets the "associated" property to \a property. The function
+  might be the setter or getter for a property, for example.
  */
 void FunctionNode::setAssociatedProperty(PropertyNode *property)
 {
@@ -939,6 +964,8 @@ void FunctionNode::setAssociatedProperty(PropertyNode *property)
 }
 
 /*!
+  Returns the overload number for this function obtained
+  from the parent.
  */
 int FunctionNode::overloadNumber() const
 {
@@ -946,6 +973,8 @@ int FunctionNode::overloadNumber() const
 }
 
 /*!
+  Returns the number of times this function name has been
+  overloaded, obtained from the parent.
  */
 int FunctionNode::numOverloads() const
 {
@@ -953,6 +982,7 @@ int FunctionNode::numOverloads() const
 }
 
 /*!
+  Returns the list of parameter names.
  */
 QStringList FunctionNode::parameterNames() const
 {
@@ -964,6 +994,46 @@ QStringList FunctionNode::parameterNames() const
     }
     return names;
 }
+
+/*!
+  Returns the list of reconstructed parameters. If \a values
+  is true, the default values are included, if any are present.
+ */
+QStringList FunctionNode::reconstructParams(bool values) const
+{
+    QStringList params;
+    QList<Parameter>::ConstIterator p = parameters().begin();
+    while (p != parameters().end()) {
+        params << (*p).reconstruct(values);
+        ++p;
+    }
+    return params;
+}
+
+/*!
+  Reconstructs and returns the function's signature. If \a values
+  is true, the default values of the parameters are included, if
+  present.
+ */
+QString FunctionNode::signature(bool values) const
+{
+    QString s;
+    if (!returnType().isEmpty())
+        s = returnType() + " ";
+    s += name() + "(";
+    QStringList params = reconstructParams(values);
+    int p = params.size();
+    if (p > 0) {
+        for (int i=0; i<p; i++) {
+            s += params[i];
+            if (i < (p-1))
+                s += ", ";
+        }
+    }
+    s += ")";
+    return s;
+}
+
 
 /*!
   \class PropertyNode

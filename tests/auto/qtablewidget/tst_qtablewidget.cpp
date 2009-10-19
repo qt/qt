@@ -102,6 +102,7 @@ private slots:
     void cellWidget();
     void task231094();
     void task219380_removeLastRow();
+    void task262056_sortDuplicate();
 
 private:
     QTableWidget *testWidget;
@@ -1472,6 +1473,26 @@ void tst_QTableWidget::task219380_removeLastRow()
 
     //we make sure the editor is at the cell position
     QCOMPARE(testWidget->cellWidget(18, 0)->geometry(), testWidget->visualItemRect(&item));
+}
+
+void tst_QTableWidget::task262056_sortDuplicate()
+{
+    testWidget->setColumnCount(2);
+    testWidget->setRowCount(8);
+    testWidget->setSortingEnabled(true);
+    QStringList items = (QStringList() << "AAA" << "BBB" << "CCC" << "CCC" << "DDD"\
+                         << "EEE" << "FFF" << "GGG");
+    for (int i = 0; i<8; i++ ) {
+        QTableWidgetItem *twi = new QTableWidgetItem(items.at(i));
+        testWidget->setItem(i,0,twi);
+        testWidget->setItem(i,1,new QTableWidgetItem(QString("item %1").arg(i)));
+    }
+    testWidget->sortItems(0, Qt::AscendingOrder);
+    QSignalSpy layoutChangedSpy(testWidget->model(), SIGNAL(layoutChanged()));
+    testWidget->item(3,0)->setBackgroundColor(Qt::red);
+
+    QCOMPARE(layoutChangedSpy.count(),0);
+
 }
 
 

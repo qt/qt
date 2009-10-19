@@ -42,6 +42,9 @@
 /*!
     \group i18n
     \title Qt Classes for Internationalization
+
+    See \l{Internationalization with Qt} for information on how to use these classes
+    in your applications.
 */
 
 /*!

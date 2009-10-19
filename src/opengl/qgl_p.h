@@ -505,9 +505,7 @@ private:
 };
 
 
-#ifdef Q_WS_QWS
-extern QPaintEngine* qt_qgl_paint_engine();
-#endif
+extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
 
 bool qt_gl_preferGL2Engine();
 

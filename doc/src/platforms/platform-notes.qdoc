@@ -67,6 +67,8 @@
     \tableofcontents{1 Platform Notes - Windows}
     \o \l{Platform Notes - Mac OS X}
     \tableofcontents{1 Platform Notes - Mac OS X}
+    \o \l{Platform Notes - Symbian}
+    \tableofcontents{1 Platform Notes - Symbian}
     \o \l{Platform Notes - Embedded Linux}
     \tableofcontents{1 Platform Notes - Embedded Linux}
     \o \l{Platform Notes - Windows CE}
@@ -409,7 +411,7 @@
     to run on. More information about the combinations of platforms and compilers
     supported by Qt can be found on the \l{Supported Platforms} page.
 
-    For information about mixing exceptions with symbian leaves,
+    For information about mixing exceptions with Symbian leaves,
     see \l{Exception Safety with Symbian}
 
     \section1 Multimedia and Phonon Support

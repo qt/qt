@@ -170,6 +170,7 @@ private slots:
     void dontCrashWhenDie();
     void createProxyForChildWidget();
     void actionsContextMenu();
+    void actionsContextMenu_data();
     void deleteProxyForChildWidget();
     void bypassGraphicsProxyWidget_data();
     void bypassGraphicsProxyWidget();
@@ -1531,7 +1532,7 @@ void tst_QGraphicsProxyWidget::setWidget_simple()
 
     // Properties
     // QCOMPARE(proxy.focusPolicy(), lineEdit->focusPolicy());
-    QCOMPARE(proxy.palette(), lineEdit->palette());
+    // QCOMPARE(proxy.palette(), lineEdit->palette());
 #ifndef QT_NO_CURSOR
     QCOMPARE(proxy.cursor().shape(), lineEdit->cursor().shape());
 #endif
@@ -1756,6 +1757,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
     QTRY_VERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
@@ -1878,6 +1881,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     QVERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
@@ -1988,6 +1993,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
@@ -2156,6 +2163,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
@@ -2222,6 +2231,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     // Symmetry
     editProxy->clearFocus();
     QVERIFY(!edit->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
@@ -2272,6 +2283,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     QVERIFY(!editProxy->hasFocus());
     QVERIFY(edit2->hasFocus());
     QVERIFY(edit2Proxy->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
@@ -2391,6 +2404,8 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusIn], 0);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusOut], 0);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::popup_basic()
@@ -2780,13 +2795,13 @@ void tst_QGraphicsProxyWidget::palettePropagation()
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
     edit->setPalette(QPalette());
     QCOMPARE(editSpy.counts[QEvent::PaletteChange], 2);
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(!edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
 
     // Proxy to widget
     proxy.setPalette(palette);
@@ -2896,6 +2911,9 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
     QTest::qWait(100);
     QTest::mouseMove(w->view->viewport(), w->view->mapFromScene(w->widget->mapToScene(w->widget->boundingRect().center())));
     delete w->item;
+
+    QApplication::processEvents();
+    delete w;
 }
 
 void tst_QGraphicsProxyWidget::createProxyForChildWidget()
@@ -3014,30 +3032,67 @@ private slots:
     }
 };
 
+void tst_QGraphicsProxyWidget::actionsContextMenu_data()
+{
+    QTest::addColumn<bool>("actionsContextMenu");
+    QTest::addColumn<bool>("hasFocus");
+
+    QTest::newRow("without actionsContextMenu and with focus") << false << true;
+    QTest::newRow("without actionsContextMenu and without focus") << false << false;
+    QTest::newRow("with actionsContextMenu and focus") << true << true;
+    QTest::newRow("with actionsContextMenu without focus") << true << false;
+}
+
 void tst_QGraphicsProxyWidget::actionsContextMenu()
 {
-    ContextMenuWidget *widget = new ContextMenuWidget;
-    widget->addAction(new QAction("item 1", widget));
-    widget->addAction(new QAction("item 2", widget));
-    widget->addAction(new QAction("item 3", widget));
-    widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    QFETCH(bool, hasFocus);
+    QFETCH(bool, actionsContextMenu);
 
+    ContextMenuWidget *widget = new ContextMenuWidget;
+    if (actionsContextMenu) {
+        widget->addAction(new QAction("item 1", widget));
+        widget->addAction(new QAction("item 2", widget));
+        widget->addAction(new QAction("item 3", widget));
+        widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    }
     QGraphicsScene scene;
-    scene.addWidget(widget);
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    view.setFocus();
+    QTRY_VERIFY(view.hasFocus());
+
+    if (hasFocus)
+        scene.addWidget(widget)->setFocus();
+    else
+        scene.addWidget(widget)->clearFocus();
+
+    QApplication::processEvents();
+
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse,
                                        view.viewport()->rect().center(),
                                        view.viewport()->mapToGlobal(view.viewport()->rect().center()));
     contextMenuEvent.accept();
     qApp->sendEvent(view.viewport(), &contextMenuEvent);
 
-    QVERIFY(widget->embeddedPopup);
-    QVERIFY(!widget->gotContextMenuEvent);
+    if (hasFocus) {
+        if (actionsContextMenu) {
+            //actionsContextMenu embedded popup but no contextMenuEvent (widget has focus)
+            QVERIFY(widget->embeddedPopup);
+            QVERIFY(!widget->gotContextMenuEvent);
+        } else {
+            //no embedded popup but contextMenuEvent (widget has focus)
+            QVERIFY(!widget->embeddedPopup);
+            QVERIFY(widget->gotContextMenuEvent);
+        }
+    } else {
+        //qgraphicsproxywidget doesn't have the focus, the widget must not receive any contextMenuEvent and must not create any QMenu
+        QVERIFY(!widget->embeddedPopup);
+        QVERIFY(!widget->gotContextMenuEvent);
+    }
+
 }
 
 

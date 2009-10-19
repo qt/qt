@@ -530,16 +530,18 @@ void tst_QGraphicsAnchorLayout1::testIsValid()
     TestWidget *widget1 = new TestWidget();
     TestWidget *widget2 = new TestWidget();
 
+    // Vertically the layout has floating items. Therefore, we have a conflict
     layout->setAnchor(layout, Qt::AnchorLeft, widget1, Qt::AnchorLeft, 0.1);
     layout->setAnchor(layout, Qt::AnchorRight, widget1, Qt::AnchorRight, -0.1);
 
+    // Horizontally the layout has floating items. Therefore, we have a conflict
     layout->setAnchor(layout, Qt::AnchorTop, widget2, Qt::AnchorTop, 0.1);
     layout->setAnchor(layout, Qt::AnchorBottom, widget2, Qt::AnchorBottom, -0.1);
 
     widget->setLayout(layout);
 
     widget->setGeometry(QRectF(0,0,100,100));
-    QCOMPARE(layout->isValid(), true);
+    QCOMPARE(layout->isValid(), false);
     delete widget;
     }
 }
@@ -1413,9 +1415,6 @@ void tst_QGraphicsAnchorLayout1::testMixedSpacing_data()
         QTest::newRow("One widget, unsolvable") << QSizeF(10, 10) << theData << theResult;
     }
 
-    // ### BUG. We are not handling "floating" elements properly. Ie. elements that
-    //     have no anchors in a given orientation.
-    if (0)
     // Two widgets, one has fixed size
     {
         BasicLayoutTestDataList theData;

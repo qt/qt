@@ -47,7 +47,7 @@ QT_BEGIN_NAMESPACE
 class QS60PaintEnginePrivate : public QRasterPaintEnginePrivate
 {
 public:
-    QS60PaintEnginePrivate(QS60PaintEngine *engine) { }
+    QS60PaintEnginePrivate(QS60PaintEngine *engine) { Q_UNUSED(engine); }
 };
 
 QS60PaintEngine::QS60PaintEngine(QPaintDevice *device, QS60PixmapData *data)

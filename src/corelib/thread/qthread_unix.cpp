@@ -624,6 +624,7 @@ void QThread::setTerminationEnabled(bool enabled)
     Q_ASSERT_X(thr != 0, "QThread::setTerminationEnabled()",
                "Current thread was not started with QThread.");
 #ifndef Q_OS_SYMBIAN
+    Q_UNUSED(thr)
     pthread_setcancelstate(enabled ? PTHREAD_CANCEL_ENABLE : PTHREAD_CANCEL_DISABLE, NULL);
     if (enabled)
         pthread_testcancel();

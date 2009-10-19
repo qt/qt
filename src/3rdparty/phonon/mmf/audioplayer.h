@@ -86,6 +86,9 @@ public:
     virtual void MapcPlayComplete(TInt aError);
 #endif
 
+    /**
+     * This class owns the pointer.
+     */
     CPlayerType *player() const;
 
 private:
@@ -96,7 +99,7 @@ private:
      * Using CPlayerType typedef in order to be able to easily switch between
      * CMdaAudioPlayerUtility and CDrmPlayerUtility
      */
-    CPlayerType*         m_player;
+    QScopedPointer<CPlayerType> m_player;
 };
 }
 }

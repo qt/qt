@@ -64,6 +64,8 @@
 #include "QtGui/qapplication.h"
 #include <private/qgraphicseffect_p.h>
 
+#include <private/qgesture_p.h>
+
 #ifdef Q_WS_WIN
 #include "QtCore/qt_windows.h"
 #include <private/qdnd_p.h>
@@ -294,7 +296,8 @@ public:
     void setMask_sys(const QRegion &);
 #ifdef Q_OS_SYMBIAN
     void setSoftKeys_sys(const QList<QAction*> &softkeys);
-    void activateSymbianWindow();
+    void activateSymbianWindow(WId wid = 0);
+    void _q_delayedDestroy(WId winId);
 #endif
 
     void raise_sys();
@@ -578,6 +581,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
+    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
 
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
@@ -604,6 +608,7 @@ public:
     bool isBackgroundInherited() const;
 #elif defined(Q_WS_WIN) // <--------------------------------------------------------- WIN
     uint noPaintOnScreen : 1; // see qwidget_win.cpp ::paintEngine()
+    uint nativeGesturePanEnabled : 1;
 
     bool shouldShowMaximizeButton();
     void winUpdateIsOpaque();
