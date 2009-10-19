@@ -527,8 +527,6 @@ static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
     // anchor.
     if (AnchorData *oldAnchor = g->takeEdge(newAnchor->from, newAnchor->to)) {
         ParallelAnchorData *parallel = new ParallelAnchorData(oldAnchor, newAnchor);
-        parallel->isLayoutAnchor = (oldAnchor->isLayoutAnchor
-                                        || newAnchor->isLayoutAnchor);
 
         // At this point we can identify that the parallel anchor is not feasible, e.g. one
         // anchor minimum size is bigger than the other anchor maximum size.
@@ -595,12 +593,6 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
     sequence->to = after;
 
     sequence->refreshSizeHints_helper(0, false);
-
-    // Note that since layout 'edges' can't be simplified away from
-    // the graph, it's safe to assume that if there's a layout
-    // 'edge', it'll be in the boundaries of the sequence.
-    sequence->isLayoutAnchor = (sequence->m_edges.first()->isLayoutAnchor
-                                || sequence->m_edges.last()->isLayoutAnchor);
 
     return sequence;
 }
@@ -1313,8 +1305,9 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 #ifdef QT_DEBUG
     data->name = QString::fromAscii("%1 --to--> %2").arg(v1->toString()).arg(v2->toString());
 #endif
-    // Keep track of anchors that are connected to the layout 'edges'
-    data->isLayoutAnchor = (v1->m_item == q || v2->m_item == q);
+    // ### bit to track internal anchors, since inside AnchorData methods
+    // we don't have access to the 'q' pointer.
+    data->isLayoutAnchor = (data->item == q);
 
     graph[orientation].createEdge(v1, v2, data);
 }

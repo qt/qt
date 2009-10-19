@@ -209,7 +209,7 @@ struct AnchorData : public QSimplexVariable {
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
-    uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
+    uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;
     uint orientation : 1;
 };
