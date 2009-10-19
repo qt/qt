@@ -4362,11 +4362,13 @@ public:
 
     }
 protected:
-    bool event(QEvent *e){
-        if(e->type() == QEvent::WinIdChange)
+    bool event(QEvent *e)
+    {
+        if (e->type() == QEvent::WinIdChange) {
             ++m_winIdChangeEventCount;
-        else
-            return QWidget::event(e);
+            return true;
+        }
+        return QWidget::event(e);
     }
 public:
     int m_winIdChangeEventCount;
