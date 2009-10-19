@@ -177,7 +177,7 @@ void ObjectPropertiesView::valueChanged(const QByteArray &name, const QVariant &
 void ObjectPropertiesView::itemActivated(QTreeWidgetItem *i)
 {
     PropertiesViewItem *item = static_cast<PropertiesViewItem *>(i);
-    if (!item->property.name().isEmpty() && item->property.hasNotifySignal())
+    if (!item->property.name().isEmpty())
         emit activated(m_object, item->property);
 }
 
