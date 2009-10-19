@@ -1240,7 +1240,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker, true);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
 
-#ifdef QDOC_QML    
+#ifdef QDOC_QML
     if (classe && !classe->qmlElement().isEmpty()) {
         generateInstantiatedBy(classe,marker);
     }
@@ -3468,12 +3468,12 @@ QString HtmlGenerator::refForNode(const Node *node)
         }
         break;
     case Node::Property:
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
     case Node::QmlProperty:
 #endif        
         ref = node->name() + "-prop";
         break;
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
     case Node::QmlSignal:
         ref = node->name() + "-signal";
         break;

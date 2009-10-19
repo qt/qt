@@ -1697,7 +1697,7 @@ void QAbstractItemView::mouseMoveEvent(QMouseEvent *event)
     if ((event->buttons() & Qt::LeftButton) && d->selectionAllowed(index) && d->selectionModel) {
         setState(DragSelectingState);
         QItemSelectionModel::SelectionFlags command = selectionCommand(index, event);
-        if (command.testFlag(QItemSelectionModel::Toggle)) {
+        if (d->ctrlDragSelectionFlag != QItemSelectionModel::NoUpdate && command.testFlag(QItemSelectionModel::Toggle)) {
             command &= ~QItemSelectionModel::Toggle;
             command |= d->ctrlDragSelectionFlag;
         }
@@ -3029,7 +3029,7 @@ void QAbstractItemView::update(const QModelIndex &index)
         //this test is important for peformance reason
         //For example in dataChanged we simply update all the cells without checking
         //it can be a major bottleneck to update rects that aren't even part of the viewport
-        if (d->viewport->geometry().intersects(rect))
+        if (d->viewport->rect().intersects(rect))
             d->viewport->update(rect);
     }
 }

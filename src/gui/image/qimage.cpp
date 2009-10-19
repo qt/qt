@@ -377,6 +377,9 @@ bool QImageData::checkForAlphaPixels() const
     \note If you would like to load QImage objects in a static build of Qt,
     refer to the \l{How To Create Qt Plugins#Static Plugins}{Plugin HowTo}.
 
+    \warning Painting on a QImage with the format
+    QImage::Format_Indexed8 is not supported.
+
     \tableofcontents
 
     \section1 Reading and Writing Image Files

@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkRequest
-    \brief The QNetworkRequest class holds one request to be sent with the Network Access API.
+    \brief The QNetworkRequest class holds a request to be sent with QNetworkAccessManager.
     \since 4.4
 
     \ingroup network

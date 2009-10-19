@@ -4709,7 +4709,7 @@ Czy chcesz nadpisać szablon?</translation>
     <message>
         <location line="+1"/>
         <source>The file &quot;%1&quot; has changed outside Designer. Do you want to reload it?</source>
-        <translation>Plik &quot;%1&quot; zmienił się na zewnątrz Designera. Czy chcesz go ponownie załadować?</translation>
+        <translation type="unfinished">Plik &quot;%1&quot; zmienił się na zewnątrz Designera. Czy chcesz go ponownie załadować?</translation>
     </message>
 </context>
 <context>

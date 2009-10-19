@@ -105,6 +105,7 @@
 #include <QtGui/qpainter.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qdebug.h>
+#include <private/qdrawhelper_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -893,15 +894,8 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
         return;
     }
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap);
-        return;
-    }
-
     // Draw pixmap in device coordinates to avoid pixmap scaling.
+    QPoint offset;
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
@@ -1084,15 +1078,8 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
         return;
     }
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap);
-        return;
-    }
-
     // Draw pixmap in device coordinates to avoid pixmap scaling.
+    QPoint offset;
     const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
@@ -1475,6 +1462,8 @@ void QGraphicsBloomEffect::setStrength(qreal strength)
     The \a strength parameter holds the effect's new strength.
 */
 
+extern QPixmap qt_toRasterPixmap(const QPixmap &pixmap);
+
 /*!
     \reimp
 */
@@ -1486,42 +1475,37 @@ void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source
         return;
     }
 
-    const Qt::CoordinateSystem system = source->isPixmap()
-                                        ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
     QPoint offset;
-    QPixmap pixmap = source->pixmap(system, &offset);
-    QImage result = pixmap.toImage().convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    QPixmap pixmap = qt_toRasterPixmap(source->pixmap(Qt::DeviceCoordinates, &offset));
 
     // Blur.
-    QPainter blurPainter(&pixmap);
+    QImage overlay(pixmap.size(), QImage::Format_ARGB32_Premultiplied);
+    overlay.fill(0);
+
+    QPainter blurPainter(&overlay);
     d->blurFilter.draw(&blurPainter, QPointF(), pixmap);
     blurPainter.end();
 
     // Brighten.
-    QImage overlay = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
     const int numBits = overlay.width() * overlay.height();
     QRgb *bits = reinterpret_cast<QRgb *>(overlay.bits());
     for (int i = 0; i < numBits; ++i) {
-        const QRgb bit = bits[i];
-        bits[i] = qRgba(d->colorTable[qRed(bit)], d->colorTable[qGreen(bit)],
-                        d->colorTable[qBlue(bit)], qAlpha(bit));
+        const QRgb pixel = INV_PREMUL(bits[i]);
+        bits[i] = PREMUL(qRgba(d->colorTable[qRed(pixel)], d->colorTable[qGreen(pixel)],
+                               d->colorTable[qBlue(pixel)], qAlpha(pixel)));
     }
 
     // Composite.
-    QPainter compPainter(&result);
+    QPainter compPainter(&pixmap);
     compPainter.setCompositionMode(QPainter::CompositionMode_Overlay);
     compPainter.setOpacity(d->strength);
     compPainter.drawImage(0, 0, overlay);
     compPainter.end();
 
-    if (system == Qt::DeviceCoordinates) {
-        QTransform restoreTransform = painter->worldTransform();
-        painter->setWorldTransform(QTransform());
-        painter->drawImage(offset, result);
-        painter->setWorldTransform(restoreTransform);
-    } else {
-        painter->drawImage(offset, result);
-    }
+    QTransform restoreTransform = painter->worldTransform();
+    painter->setWorldTransform(QTransform());
+    painter->drawPixmap(offset, pixmap);
+    painter->setWorldTransform(restoreTransform);
 }
 
 QT_END_NAMESPACE

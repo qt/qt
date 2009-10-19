@@ -806,21 +806,13 @@ void tst_QFileSystemModel::sort()
         myModel->d_func()->disableRecursiveSort = true;
 
     QDir dir(QDir::tempPath());
-    dir.mkdir("sortTemp");
-    dir.cd("sortTemp");
+    //initialize the randomness
+    qsrand(QDateTime::currentDateTime().toTime_t());
+    QString tempName = QLatin1String("sortTemp.") + QString::number(qrand());
+    dir.mkdir(tempName);
+    dir.cd(tempName);
     QTRY_VERIFY(dir.exists());
 
-    //To be sure we clean the dir if it was there before
-    QDirIterator it(dir.absolutePath(), QDir::NoDotAndDotDot);
-    while(it.hasNext())
-    {
-        it.next();
-        QFileInfo info = it.fileInfo();
-        if (info.isDir())
-            dir.rmdir(info.fileName());
-        else
-            QFile::remove(info.absoluteFilePath());
-    }
     const QString dirPath = dir.absolutePath();
     QVERIFY(dir.exists());
 
@@ -882,11 +874,11 @@ void tst_QFileSystemModel::sort()
     delete myModel;
 
     dir.setPath(QDir::tempPath());
-    dir.cd("sortTemp");
+    dir.cd(tempName);
     tempFile.remove();
     tempFile2.remove();
     dir.cdUp();
-    dir.rmdir("sortTemp");
+    dir.rmdir(tempName);
 
 }
 

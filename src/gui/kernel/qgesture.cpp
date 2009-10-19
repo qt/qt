@@ -47,21 +47,42 @@ QT_BEGIN_NAMESPACE
  /*!
     \class QGesture
     \since 4.6
+    \ingroup gestures
 
     \brief The QGesture class represents a gesture, containing properties that
     describe the corresponding user input.
 
-    QGesture objects are delivered to widgets and \l{QGraphicsObject}s with
-    \l{QGestureEvent}s.
+    Gesture objects are not constructed directly by developers. They are created by
+    the QGestureRecognizer object that is registered with the application; see
+    QApplication::registerGestureRecognizer().
+
+    \section1 Gesture Properties
 
     The class has a list of properties that can be queried by the user to get
-    some gesture-specific arguments. For example, the QPinchGesture gesture has a scale
+    some gesture-specific arguments. For example, the pinch gesture has a scale
     factor that is exposed as a property.
 
     Developers of custom gesture recognizers can add additional properties in
     order to provide additional information about a gesture. This can be done
     by adding new dynamic properties to a QGesture object, or by subclassing
     the QGesture class (or one of its subclasses).
+
+    \section1 Lifecycle of a Gesture Object
+
+    A QGesture instance is created when the application calls QWidget::grabGesture()
+    or QGraphicsObject::grabGesture() to configure a widget or graphics object (the
+    target object) for gesture input. One gesture object is created for each target
+    object.
+
+    The registered gesture recognizer monitors the input events for the target
+    object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
+    properties of the gesture object as required.
+
+    The gesture object may be delivered to the target object in a QGestureEvent if
+    the corresponding gesture is active or has just been canceled. Each event that
+    is delivered contains a list of gesture objects, since support for more than
+    one gesture may be enabled for the target object. Due to the way events are
+    handled in Qt, gesture events may be filtered by other objects.
 
     \sa QGestureEvent, QGestureRecognizer
 */
@@ -165,8 +186,55 @@ void QGesture::unsetHotSpot()
     d_func()->isHotSpotSet = false;
 }
 
-// QPanGesture
+/*!
+    \class QPanGesture
+    \since 4.6
+    \brief The QPanGesture class describes a panning gesture made by the user.
+    \ingroup gestures
 
+    \image pangesture.png
+
+    \sa {Gestures Programming}, QPinchGesture, QSwipeGesture
+*/
+
+/*!
+    \property QPanGesture::totalOffset
+    \brief the total offset from the first input position to the current input
+    position
+
+    The total offset measures the total change in position of the user's input
+    covered by the gesture on the input device.
+*/
+
+/*!
+    \property QPanGesture::lastOffset
+    \brief the last offset recorded for this gesture
+
+    The last offset contains the change in position of the user's input as
+    reported in the \l offset property when a previous gesture event was
+    delivered for this gesture.
+
+    If no previous event was delivered with information about this gesture
+    (i.e., this gesture object contains information about the first movement
+    in the gesture) then this property contains a zero size.
+*/
+
+/*!
+    \property QPanGesture::offset
+    \brief the offset from the previous input position to the current input
+    position
+
+    The offset measures the change in position of the user's input on the
+    input device.
+*/
+
+/*!
+    \property QPanGesture::acceleration
+*/
+
+/*!
+    \internal
+*/
 QPanGesture::QPanGesture(QObject *parent)
     : QGesture(*new QPanGesturePrivate, parent)
 {
@@ -214,8 +282,139 @@ void QPanGesture::setAcceleration(qreal value)
     d_func()->acceleration = value;
 }
 
-// QPinchGesture
+/*!
+    \class QPinchGesture
+    \since 4.6
+    \brief The QPinchGesture class describes a pinch gesture made my the user.
+    \ingroup multitouch
+    \ingroup gestures
 
+    A pinch gesture is a form of multitouch user input in which the user typically
+    touches two points on the input device with a thumb and finger, before moving
+    them closer together or further apart to change the scale factor, zoom, or level
+    of detail of the user interface.
+
+    \image pinchgesture.png
+
+    Instead of repeatedly applying the same pinching gesture, the user may
+    continue to touch the input device in one place, and apply a second touch
+    to a new point, continuing the gesture. When this occurs, gesture events
+    will continue to be delivered to the target object, containing an instance
+    of QPinchGesture in the Qt::GestureUpdated state.
+
+    \sa {Gestures Programming}, QPanGesture, QSwipeGesture
+*/
+
+/*!
+    \enum QPinchGesture::WhatChange
+    
+    This enum describes the changes that can occur to the properties of
+    the gesture object.
+
+    \value ScaleFactorChanged The scale factor held by scaleFactor changed.
+    \value RotationAngleChanged The rotation angle held by rotationAngle changed.
+    \value CenterPointChanged The center point held by centerPoint changed.
+
+    \sa whatChanged
+*/
+
+/*!
+    \property QPinchGesture::whatChanged
+    \brief the property of the gesture that has changed
+
+    This property indicates which of the other properties has changed since
+    the previous gesture event included information about this gesture. You
+    can use this information to determine which aspect of your user interface
+    needs to be updated.
+
+    \sa scaleFactor, rotationAngle, centerPoint
+*/
+
+/*!
+    \property QPinchGesture::totalScaleFactor
+    \brief the total scale factor
+
+    The total scale factor measures the total change in scale factor from the
+    original value to the current scale factor.
+
+    \sa scaleFactor, lastScaleFactor
+*/
+/*!
+    \property QPinchGesture::lastScaleFactor
+    \brief the last scale factor recorded for this gesture
+
+    The last scale factor contains the scale factor reported in the
+    \l scaleFactor property when a previous gesture event included
+    information about this gesture.
+
+    If no previous event was delivered with information about this gesture
+    (i.e., this gesture object contains information about the first movement
+    in the gesture) then this property contains zero.
+
+    \sa scaleFactor, totalScaleFactor
+*/
+/*!
+    \property QPinchGesture::scaleFactor
+    \brief the current scale factor
+
+    The scale factor measures the scale factor associated with the distance
+    between two of the user's inputs on a multitouch device.
+
+    \sa totalScaleFactor, lastScaleFactor
+*/
+
+/*!
+    \property QPinchGesture::totalRotationAngle
+    \brief the total angle covered by the gesture
+
+    This total angle measures the complete angle covered by the gesture. Usually, this
+    is equal to the value held by the \l rotationAngle property, except in the case where
+    the user performs multiple rotations by removing and repositioning one of the touch
+    points, as described above. In this case, the total angle will be the sum of the
+    rotation angles for the multiple stages of the gesture.
+
+    \sa rotationAngle, lastRotationAngle
+*/
+/*!
+    \property QPinchGesture::lastRotationAngle
+    \brief the last reported angle covered by the gesture motion
+
+    The last rotation angle is the angle as reported in the \l rotationAngle property
+    when a previous gesture event was delivered for this gesture.
+
+    \sa rotationAngle, totalRotationAngle
+*/
+/*!
+    \property QPinchGesture::rotationAngle
+    \brief the angle covered by the gesture motion
+
+    \sa totalRotationAngle, lastRotationAngle
+*/
+
+/*!
+    \property QPinchGesture::startCenterPoint
+    \brief the starting position of the center point
+
+    \sa centerPoint, lastCenterPoint
+*/
+/*!
+    \property QPinchGesture::lastCenterPoint
+    \brief the last position of the center point recorded for this gesture
+
+    \sa centerPoint, startCenterPoint
+*/
+/*!
+    \property QPinchGesture::centerPoint
+    \brief the current center point
+
+    The center point is the midpoint between the two input points in the gesture.
+
+    \sa startCenterPoint, lastCenterPoint
+*/
+
+/*!
+    \internal
+*/
 QPinchGesture::QPinchGesture(QObject *parent)
     : QGesture(*new QPinchGesturePrivate, parent)
 {
@@ -325,8 +524,65 @@ void QPinchGesture::setRotationAngle(qreal value)
     d_func()->rotationAngle = value;
 }
 
-// QSwipeGesture
+/*!
+    \class QSwipeGesture
+    \since 4.6
+    \brief The QSwipeGesture class describes a swipe gesture made by the user.
+    \ingroup gestures
 
+    \image swipegesture.png
+
+    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+*/
+
+/*!
+    \enum QSwipeGesture::SwipeDirection
+
+    This enum describes the possible directions for the gesture's motion
+    along the horizontal and vertical axes.
+
+    \value NoDirection The gesture had no motion associated with it on a particular axis.
+    \value Left     The gesture involved a horizontal motion to the left.
+    \value Right    The gesture involved a horizontal motion to the right.
+    \value Up       The gesture involved an upward vertical motion.
+    \value Down     The gesture involved a downward vertical motion.
+*/
+
+/*!
+    \property QSwipeGesture::horizontalDirection
+    \brief the horizontal direction of the gesture
+
+    If the gesture has a horizontal component, the horizontal direction
+    is either Left or Right; otherwise, it is NoDirection.
+
+    \sa verticalDirection, swipeAngle
+*/
+
+/*!
+    \property QSwipeGesture::verticalDirection
+    \brief the vertical direction of the gesture
+
+    If the gesture has a vertical component, the vertical direction
+    is either Up or Down; otherwise, it is NoDirection.
+
+    \sa horizontalDirection, swipeAngle
+*/
+
+/*!
+    \property QSwipeGesture::swipeAngle
+    \brief the angle of the motion associated with the gesture
+
+    If the gesture has either a horizontal or vertical component, the
+    swipe angle describes the angle between the direction of motion and the
+    x-axis as defined using the standard widget
+    \l{The Coordinate System}{coordinate system}.
+
+    \sa horizontalDirection, verticalDirection
+*/
+
+/*!
+    \internal
+*/
 QSwipeGesture::QSwipeGesture(QObject *parent)
     : QGesture(*new QSwipeGesturePrivate, parent)
 {
