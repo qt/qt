@@ -12,6 +12,7 @@ class QmlDebugObjectExpressionWatch;
 class QmlDebugEnginesQuery;
 class QmlDebugRootContextQuery;
 class QmlDebugObjectQuery;
+class QmlDebugExpressionQuery;
 class QmlDebugPropertyReference;
 class QmlDebugContextReference;
 class QmlDebugObjectReference;
@@ -44,6 +45,9 @@ public:
                                      QObject *parent = 0);
     QmlDebugObjectQuery *queryObjectRecursive(const QmlDebugObjectReference &, 
                                               QObject *parent = 0);
+    QmlDebugExpressionQuery *queryExpressionResult(int objectDebugId, 
+                                                   const QString &expr,
+                                                   QObject *parent = 0);
 
 private:
     Q_DECLARE_PRIVATE(QmlEngineDebug)
@@ -284,6 +288,24 @@ private:
     QmlEngineDebug *m_client;
     int m_queryId;
     QmlDebugObjectReference m_object;
+
+};
+
+class Q_DECLARATIVE_EXPORT QmlDebugExpressionQuery : public QmlDebugQuery
+{
+Q_OBJECT
+public:
+    virtual ~QmlDebugExpressionQuery();
+    QString expression() const;
+    QVariant result() const;
+private:
+    friend class QmlEngineDebug;
+    friend class QmlEngineDebugPrivate;
+    QmlDebugExpressionQuery(QObject *);
+    QmlEngineDebug *m_client;
+    int m_queryId;
+    QString m_expr;
+    QVariant m_result;
 
 };
 
