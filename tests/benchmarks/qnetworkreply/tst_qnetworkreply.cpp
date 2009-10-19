@@ -53,7 +53,10 @@ class tst_qnetworkreply : public QObject
     Q_OBJECT
 private slots:
     void httpLatency();
-
+#ifndef QT_NO_OPENSSL
+    void echoPerformance_data();
+    void echoPerformance();
+#endif
 };
 
 void tst_qnetworkreply::httpLatency()
@@ -68,6 +71,40 @@ void tst_qnetworkreply::httpLatency()
         delete reply;
     }
 }
+
+#ifndef QT_NO_OPENSSL
+void tst_qnetworkreply::echoPerformance_data()
+{
+     QTest::addColumn<bool>("ssl");
+     QTest::newRow("no_ssl") << false;
+     QTest::newRow("ssl") << true;
+}
+
+void tst_qnetworkreply::echoPerformance()
+{
+    QFETCH(bool, ssl);
+    QNetworkAccessManager manager;
+    QNetworkRequest request(QUrl((ssl ? "https://" : "http://") + QtNetworkSettings::serverName() + "/qtest/cgi-bin/echo.cgi"));
+
+    QByteArray data;
+    data.resize(1024*1024*10); // 10 MB
+    // init with garbage. needed so ssl cannot compress it in an efficient way.
+    for (int i = 0; i < data.size() / sizeof(int); i++) {
+        int r = qrand();
+        data.data()[i*sizeof(int)] = r;
+    }
+
+    QBENCHMARK{
+        QNetworkReply* reply = manager.post(request, data);
+        connect(reply, SIGNAL(sslErrors( const QList<QSslError> &)), reply, SLOT(ignoreSslErrors()));
+        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
+        QTestEventLoop::instance().enterLoop(5);
+        QVERIFY(!QTestEventLoop::instance().timeout());
+        QVERIFY(reply->error() == QNetworkReply::NoError);
+        delete reply;
+    }
+}
+#endif
 
 QTEST_MAIN(tst_qnetworkreply)
 
