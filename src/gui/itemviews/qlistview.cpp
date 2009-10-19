@@ -1105,13 +1105,13 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             ++row;
         if (row >= rowCount)
             return QModelIndex();
-        return d->model->index(row, 0, d->root);
+        return d->model->index(row, d->column, d->root);
     }
 
     const QRect initialRect = rectForIndex(current);
     QRect rect = initialRect;
     if (rect.isEmpty()) {
-        return d->model->index(0, 0, d->root);
+        return d->model->index(0, d->column, d->root);
     }
     if (d->gridSize().isValid()) rect.setSize(d->gridSize());
 
