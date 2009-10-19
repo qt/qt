@@ -72,7 +72,8 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
             screenNumber = 0;
         screen = screen->subScreens()[screenNumber];
     }
-    while (screen->classId() == QScreen::ProxyClass) {
+    while (screen->classId() == QScreen::ProxyClass ||
+           screen->classId() == QScreen::TransformedClass) {
         screen = static_cast<QProxyScreen *>(screen)->screen();
     }
     if (screen->classId() == QScreen::GLClass)
