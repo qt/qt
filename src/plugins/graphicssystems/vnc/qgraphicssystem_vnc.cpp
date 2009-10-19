@@ -47,7 +47,7 @@
 #include <qvncserver.h>
 #include <QtGui/QPainter>
 
-
+#include <QtCore/QTimer>
 
 
 QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
@@ -71,12 +71,20 @@ QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
 
     mScreenImage = new QImage(mGeometry.size(), mFormat);
     d_ptr = new QVNCGraphicsSystemScreenPrivate(this);
+
+    helper = new QVNCGraphicsSystemScreenTimerHelper(this);
+    repaintTimer = new QTimer();
+    repaintTimer->setSingleShot(true);
+    repaintTimer->setInterval(0);
+    QObject::connect(repaintTimer, SIGNAL(timeout()), helper, SLOT(fireSlot()));
 }
 
 
 QVNCGraphicsSystemScreen::~QVNCGraphicsSystemScreen()
 {
     delete mScreenImage;
+    delete repaintTimer;
+    delete helper;
 }
 
 QVNCDirtyMap *QVNCGraphicsSystemScreen::dirtyMap()
@@ -87,28 +95,43 @@ QVNCDirtyMap *QVNCGraphicsSystemScreen::dirtyMap()
 
 void QVNCGraphicsSystemScreen::setDirty(const QRect &rect)
 {
+    repaintRegion += rect;
+    if (!repaintTimer->isActive()) {
+        repaintTimer->start();
+    }
+}
+
+void QVNCGraphicsSystemScreen::doRedraw()
+{
+    if (repaintRegion.isEmpty())
+        return;
     QPainter compositePainter(mScreenImage);
 
-    // Blank the affected area, just in case there's nothing to display here
-    // Question - What's the background color?
-    // Another option would be to push a base level window that is the size of the display
+    QVector<QRect> rects = repaintRegion.rects();
 
-    compositePainter.fillRect(rect, Qt::black);
+    for (int rectIndex = 0; rectIndex < repaintRegion.numRects(); rectIndex++) {
+        QRect rect = rects[rectIndex];
+        // Blank the affected area, just in case there's nothing to display
+        // Question - What's the background color?
+        // Another option - a base level window that is the size of the display
+        compositePainter.fillRect(rect, Qt::black);
+        for (int i = 0; i < windowStack.length(); i++) {
+            if (!windowStack[i]->visible())
+                continue;
+            QRect windowRect = windowStack[i]->geometry();
+            QRect intersect = windowRect.intersected(rect);
+            QRect windowIntersect = intersect.translated(-windowRect.left(),
+                                                         -windowRect.top());
+            if (intersect.isNull())
+                continue;
+            compositePainter.drawImage(intersect, windowStack[i]->image(),
+                                       windowIntersect);
+            d_ptr->setDirty(rect);
+        }
 
-    for (int i = 0; i < windowStack.length(); i++) {
-        if (!windowStack[i]->visible())
-            continue;
-        QRect windowRect = windowStack[i]->geometry();
-        QRect intersect = windowRect.intersected(rect);
-        QRect windowIntersect = intersect.translated(-windowRect.left(),
-                                                     -windowRect.top());
-        if (intersect.isNull())
-            continue;
-        compositePainter.drawImage(intersect, windowStack[i]->image(),
-                                   windowIntersect);
     }
 
-    d_ptr->setDirty(rect);
+    repaintRegion = QRegion();
 }
 
 

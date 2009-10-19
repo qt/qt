@@ -50,8 +50,9 @@ QT_BEGIN_NAMESPACE
 class QVNCServer;
 class QVNCDirtyMap;
 
-
 class QVNCGraphicsSystemScreenPrivate;
+
+class QVNCGraphicsSystemScreenTimerHelper;
 
 class QVNCGraphicsSystemScreen : public QGraphicsSystemScreen
 {
@@ -83,6 +84,23 @@ public:
     QVNCGraphicsSystemScreenPrivate *d_ptr;
 private:
     QList<QVNCWindowSurface *> windowStack;
+    QRegion repaintRegion;
+    QTimer * repaintTimer;
+    QVNCGraphicsSystemScreenTimerHelper * helper;
+    void doRedraw();
+    friend class QVNCGraphicsSystemScreenTimerHelper;
+};
+
+class QVNCGraphicsSystemScreenTimerHelper : public QObject
+{
+    Q_OBJECT
+public:
+    QVNCGraphicsSystemScreenTimerHelper(QVNCGraphicsSystemScreen * s)
+        { screen = s; }
+public slots:
+    void fireSlot() { screen->doRedraw(); }
+private:
+    QVNCGraphicsSystemScreen * screen;
 };
 
 class QVNCGraphicsSystemPrivate;
