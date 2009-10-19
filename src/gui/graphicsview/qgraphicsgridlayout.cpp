@@ -154,6 +154,10 @@ void QGraphicsGridLayout::addItem(QGraphicsLayoutItem *item, int row, int column
         qWarning("QGraphicsGridLayout::addItem: cannot add null item");
         return;
     }
+    if (item == this) {
+        qWarning("QGraphicsGridLayout::addItem: cannot insert itself");
+        return;
+    }
 
     d->addChildLayoutItem(item);
 
