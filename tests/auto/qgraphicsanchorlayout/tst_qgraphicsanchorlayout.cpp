@@ -82,6 +82,7 @@ private slots:
     void expandingParallel();
     void floatConflict();
     void infiniteMaxSizes();
+    void simplifiableUnfeasible();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1753,6 +1754,56 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QCOMPARE(b->geometry(), QRectF(expMaxSize, 0, 50, 10));
     QCOMPARE(c->geometry(), QRectF(expMaxSize + 50, 0, expMaxSize, 10));
     QCOMPARE(d->geometry(), QRectF(QWIDGETSIZE_MAX - 50, 0, 50, 10));
+}
+
+void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
+{
+    QGraphicsWidget *a = createItem(QSizeF(70.0, 100.0),
+                                    QSizeF(100.0, 100.0),
+                                    QSizeF(100.0, 100.0), "A");
+
+    QGraphicsWidget *b = createItem(QSizeF(110.0, 100.0),
+                                    QSizeF(150.0, 100.0),
+                                    QSizeF(190.0, 100.0), "B");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(0);
+
+    l->addAnchor(l, Qt::AnchorTop, a, Qt::AnchorTop);
+    l->addAnchor(a, Qt::AnchorBottom, b, Qt::AnchorTop);
+    l->addAnchor(b, Qt::AnchorBottom, l, Qt::AnchorBottom);
+
+    l->addAnchors(l, a, Qt::Horizontal);
+    l->addAnchor(l, Qt::AnchorLeft, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    QCOMPARE(l->count(), 2);
+
+    QGraphicsWidget p;
+    p.setLayout(l);
+
+    l->invalidate();
+    QVERIFY(layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+
+    // Now we make it valid again
+    b->setMinimumWidth(100);
+
+    l->invalidate();
+    QVERIFY(!layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+
+    // And make it invalid again
+    a->setPreferredWidth(70);
+    a->setMaximumWidth(70);
+
+    l->invalidate();
+    QVERIFY(layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

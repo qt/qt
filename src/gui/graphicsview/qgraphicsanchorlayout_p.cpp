@@ -648,15 +648,17 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
    2. Go to (1)
    3. Done
 
+   When creating the parallel anchors, the algorithm might identify unfeasible situations. In this
+   case the simplification process stops and returns false. Otherwise returns true.
 */
-void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
+bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
     static bool noSimplification = !qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
     if (noSimplification || items.isEmpty())
-        return;
+        return true;
 
     if (graphSimplified[orientation])
-        return;
+        return true;
     graphSimplified[orientation] = true;
 
 #if 0
@@ -665,12 +667,18 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 #endif
 
     if (!graph[orientation].rootVertex())
-        return;
+        return true;
 
     bool dirty;
+    bool feasible = true;
     do {
-        dirty = simplifyGraphIteration(orientation);
-    } while (dirty);
+        dirty = simplifyGraphIteration(orientation, &feasible);
+    } while (dirty && feasible);
+
+    if (!feasible)
+        graphSimplified[orientation] = false;
+
+    return feasible;
 }
 
 /*!
@@ -687,7 +695,8 @@ void QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
     Note that there are some catches to this that are not covered by the above explanation, see
     the function comments for more details.
 */
-bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutPrivate::Orientation orientation)
+bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutPrivate::Orientation orientation,
+                                                          bool *feasible)
 {
     Q_Q(QGraphicsAnchorLayout);
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
@@ -834,6 +843,11 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // If 'beforeSequence' and 'afterSequence' already had an anchor between them, we'll
         // create a parallel anchor between the new sequence and the old anchor.
         AnchorData *newAnchor = addAnchorMaybeParallel(&g, sequence);
+
+        if (!newAnchor) {
+            *feasible = false;
+            return false;
+        }
 
         // When a new parallel anchor is create in the graph, we finish the iteration and return
         // true to indicate a new iteration is needed. This happens because a parallel anchor
@@ -1679,38 +1693,52 @@ QList<AnchorData *> getVariables(QList<QSimplexConstraint *> constraints)
 }
 
 /*!
-  \internal
+    \internal
 
-  Calculate graphs is the method that puts together all the helper routines
-  so that the AnchorLayout can calculate the sizes of each item.
+    Calculate graphs is the method that puts together all the helper routines
+    so that the AnchorLayout can calculate the sizes of each item.
 
-  In a nutshell it should do:
+    In a nutshell it should do:
 
-  1) Update anchor nominal sizes, that is, the size that each anchor would
-     have if no other restrictions applied. This is done by quering the
-     layout style and the sizeHints of the items belonging to the layout.
+    1) Refresh anchor nominal sizes, that is, the size that each anchor would
+       have if no other restrictions applied. This is done by quering the
+       layout style and the sizeHints of the items belonging to the layout.
 
-  2) Simplify the graph by grouping together parallel and sequential anchors
-     into "group anchors". These have equivalent minimum, preferred and maximum
-     sizeHints as the anchors they replace.
+    2) Simplify the graph by grouping together parallel and sequential anchors
+       into "group anchors". These have equivalent minimum, preferred and maximum
+       sizeHints as the anchors they replace.
 
-  3) Check if we got to a trivial case. In some cases, the whole graph can be
-     simplified into a single anchor. If so, use this information. If not,
-     then call the Simplex solver to calculate the anchors sizes.
+    3) Check if we got to a trivial case. In some cases, the whole graph can be
+       simplified into a single anchor. If so, use this information. If not,
+       then call the Simplex solver to calculate the anchors sizes.
 
-  4) Once the root anchors had its sizes calculated, propagate that to the
-     anchors they represent.
+    4) Once the root anchors had its sizes calculated, propagate that to the
+       anchors they represent.
 */
 void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     QGraphicsAnchorLayoutPrivate::Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    // Simplify the graph
-    simplifyGraph(orientation);
+#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
+    lastCalculationUsedSimplex[orientation] = false;
+#endif
 
-    // Reset the nominal sizes of each anchor based on the current item sizes
-    setAnchorSizeHintsFromItems(orientation);
+    // Reset the nominal sizes of each anchor based on the current item sizes.  This function
+    // works with both simplified and non-simplified graphs, so it'll work when the
+    // simplification is going to be reused.
+    if (!refreshAllSizeHints(orientation)) {
+        qWarning("QGraphicsAnchorLayout: anchor setup is not feasible.");
+        graphHasConflicts[orientation] = true;
+        return;
+    }
+
+    // Simplify the graph
+    if (!simplifyGraph(orientation)) {
+        qWarning("QGraphicsAnchorLayout: anchor setup is not feasible.");
+        graphHasConflicts[orientation] = true;
+        return;
+    }
 
     // Traverse all graph edges and store the possible paths to each vertex
     findPaths(orientation);
@@ -1878,12 +1906,16 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
 }
 
 /*!
-  \internal
+    \internal
 
-  For graph edges ("anchors") that represent items, this method updates their
-  intrinsic size restrictions, based on the item size hints.
+    Traverse the graph refreshing the size hints. Complex anchors will call the
+    refresh method of their children anchors. Simple anchors, if are internal
+    anchors, will query the associated item for their size hints.
+
+    Returns false if some unfeasibility was found in the graph regarding the
+    complex anchors.
 */
-void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orientation)
+bool QGraphicsAnchorLayoutPrivate::refreshAllSizeHints(Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     QList<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
@@ -1893,8 +1925,13 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
     for (int i = 0; i < vertices.count(); ++i) {
         AnchorData *data = g.edgeData(vertices.at(i).first, vertices.at(i).second);;
         Q_ASSERT(data->from && data->to);
-        data->refreshSizeHints(spacing);
+
+        // During the traversal we check the feasibility of the complex anchors.
+        if (!data->refreshSizeHints(spacing))
+            return false;
     }
+
+    return true;
 }
 
 /*!

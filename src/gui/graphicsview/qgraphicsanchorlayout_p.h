@@ -428,8 +428,8 @@ public:
     qreal effectiveSpacing(Orientation orientation) const;
 
     // Activation methods
-    void simplifyGraph(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation);
+    bool simplifyGraph(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
     void restoreSimplifiedGraph(Orientation orientation);
 
     void calculateGraphs();
@@ -441,7 +441,7 @@ public:
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
-    void setAnchorSizeHintsFromItems(Orientation orientation);
+    bool refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
