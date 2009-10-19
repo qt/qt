@@ -873,9 +873,11 @@ QVariant QSystemLocale::query(QueryType type, QVariant in = QVariant()) const
             }
         case NegativeSign:
         case PositiveSign:
-        case AMText:
-        case PMText:
             break;
+        case AMText:
+            return qt_TDes2QString(TAmPmName(TAmPm(EAm)));
+        case PMText:
+            return qt_TDes2QString(TAmPmName(TAmPm(EPm)));
         default:
             break;
     }
