@@ -174,8 +174,10 @@ public:
     void setMaxLength(int maxLength);
     int maxLength() const;
 
+#ifndef QT_NO_VALIDATOR
     const QValidator *validator() const;
     void setValidator(const QValidator *);
+#endif
 
 #ifndef QT_NO_COMPLETER
     QCompleter *completer() const;
@@ -282,7 +284,9 @@ private:
 
     bool finishChange(int validateFromState = -1, bool update = false, bool edited = true);
 
+#ifndef QT_NO_VALIDATOR
     QPointer<QValidator> m_validator;
+#endif
     QPointer<QCompleter> m_completer;
 #ifndef QT_NO_COMPLETER
     bool advanceToEnabledItem(int dir);
@@ -623,6 +627,7 @@ inline int QLineControl::maxLength() const
     return m_maxLength;
 }
 
+#ifndef QT_NO_VALIDATOR
 inline const QValidator *QLineControl::validator() const
 {
     return m_validator;
@@ -632,6 +637,7 @@ inline void QLineControl::setValidator(const QValidator *v)
 {
     m_validator = const_cast<QValidator*>(v);
 }
+#endif
 
 #ifndef QT_NO_COMPLETER
 inline QCompleter *QLineControl::completer() const
