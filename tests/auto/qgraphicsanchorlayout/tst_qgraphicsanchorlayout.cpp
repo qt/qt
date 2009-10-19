@@ -1896,14 +1896,14 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QGraphicsWidget p;
     p.setLayout(l);
 
+    QCOMPARE(int(p.effectiveSizeHint(Qt::MaximumSize).width()),
+             QWIDGETSIZE_MAX);
+
     p.resize(200, 10);
     QCOMPARE(a->geometry(), QRectF(0, 0, 50, 10));
     QCOMPARE(b->geometry(), QRectF(50, 0, 50, 10));
     QCOMPARE(c->geometry(), QRectF(100, 0, 50, 10));
     QCOMPARE(d->geometry(), QRectF(150, 0, 50, 10));
-
-    if (!hasSimplification)
-        QEXPECT_FAIL("", "Without simplification there is no fair distribution.", Abort);
 
     p.resize(1000, 10);
     QCOMPARE(a->geometry(), QRectF(0, 0, 450, 10));
