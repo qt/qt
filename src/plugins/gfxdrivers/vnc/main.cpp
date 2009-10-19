@@ -68,9 +68,12 @@ QStringList GfxVncDriver::keys() const
 
 QScreen* GfxVncDriver::create(const QString& driver, int displayId)
 {
+#ifndef QT_NO_QWS_VNC
     if (driver.toLower() == "vnc")
         return new QVNCScreen(displayId);
-
+#else //QT_NO_QWS_VNC
+    printf("QT buildt with QT_NO_QWS_VNC. No screen driver returned\n");
+#endif //QT_NO_QWS_VNC
     return 0;
 }
 

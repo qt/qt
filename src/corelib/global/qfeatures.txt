@@ -1153,7 +1153,7 @@ SeeAlso: ???
 Feature: ACCESSIBILITY
 Description: Provides accessibility support.
 Section: Utilities
-Requires: PROPERTIES ACTION
+Requires: PROPERTIES ACTION MENU
 Name: Accessibility
 SeeAlso: ???
 
@@ -1322,6 +1322,20 @@ Description: Provides a proxy helper class used by some screen drivers.
 Section: Qt for Embedded Linux
 Requires:
 Name: QProxyScreen
+SeeAlso: ???
+
+Feature: QWS_VNC
+Description: Provides VNC screen driver
+Section: Qt for Embedded Linux
+Requires: QWS_PROXYSCREEN
+Name: QVncScreen
+SeeAlso: ???
+
+Feature: QWS_TRANSFORMED
+Description: Provides Transformed screen driver
+Section: Qt for Embedded Linux
+Requires: QWS_PROXYSCREEN
+Name: QVncTransformed
 SeeAlso: ???
 
 Feature: QWS_DYNAMICSCREENTRANSFORMATION

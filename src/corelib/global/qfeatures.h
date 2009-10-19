@@ -417,6 +417,16 @@
 #define QT_NO_QWS_MANAGER
 #endif
 
+// QVncTransformed
+#if !defined(QT_NO_QWS_TRANSFORMED) && (defined(QT_NO_QWS_PROXYSCREEN))
+#define QT_NO_QWS_TRANSFORMED
+#endif
+
+// QVncScreen
+#if !defined(QT_NO_QWS_VNC) && (defined(QT_NO_QWS_PROXYSCREEN))
+#define QT_NO_QWS_VNC
+#endif
+
 // QScrollBar
 #if !defined(QT_NO_SCROLLBAR) && (defined(QT_NO_SLIDER))
 #define QT_NO_SCROLLBAR
@@ -490,11 +500,6 @@
 // QXmlStreamWriter
 #if !defined(QT_NO_XMLSTREAMWRITER) && (defined(QT_NO_XMLSTREAM))
 #define QT_NO_XMLSTREAMWRITER
-#endif
-
-// Accessibility
-#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_ACTION))
-#define QT_NO_ACCESSIBILITY
 #endif
 
 // Context menu
@@ -615,6 +620,11 @@
 // QUndoGroup
 #if !defined(QT_NO_UNDOGROUP) && (defined(QT_NO_UNDOCOMMAND) || defined(QT_NO_UNDOSTACK))
 #define QT_NO_UNDOGROUP
+#endif
+
+// Accessibility
+#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_ACTION) || defined(QT_NO_MENU))
+#define QT_NO_ACCESSIBILITY
 #endif
 
 // The Model/View Framework

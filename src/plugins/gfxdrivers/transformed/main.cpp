@@ -68,9 +68,12 @@ QStringList GfxTransformedDriver::keys() const
 
 QScreen* GfxTransformedDriver::create(const QString& driver, int displayId)
 {
+#ifndef QT_NO_QWS_TRANSFORMED
     if (driver.toLower() == "transformed")
         return new QTransformedScreen(displayId);
-
+#else //QT_NO_QWS_TRANSFORMED
+    printf("QT buildt with QT_NO_QWS_TRANSFORMED. No screen driver returned\n");
+#endif //QT_NO_QWS_TRANSFORMED
     return 0;
 }
 
