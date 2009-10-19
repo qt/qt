@@ -518,14 +518,18 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
     if (!window)
         initializeWindow = true;
 
+    QX11Info *parentXinfo = parentWidget ? &parentWidget->d_func()->xinfo : 0;
+
     if (desktop &&
         qt_x11_create_desktop_on_screen >= 0 &&
         qt_x11_create_desktop_on_screen != xinfo.screen()) {
         // desktop on a certain screen other than the default requested
         QX11InfoData *xd = &X11->screens[qt_x11_create_desktop_on_screen];
         xinfo.setX11Data(xd);
-    } else if (parentWidget && parentWidget->d_func()->xinfo.screen() != xinfo.screen()) {
-        xinfo = parentWidget->d_func()->xinfo;
+    } else if (parentXinfo && (parentXinfo->screen() != xinfo.screen()
+                               || parentXinfo->visual() != xinfo.visual()))
+    {
+        xinfo = *parentXinfo;
     }
 
     //get display, screen number, root window and desktop geometry for
@@ -920,6 +924,43 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool destroyO
 #endif
 }
 
+static void qt_x11_recreateWidget(QWidget *widget)
+{
+    if (widget->inherits("QGLWidget")) {
+        // We send QGLWidgets a ParentChange event which causes them to
+        // recreate their GL context, which in turn causes them to choose
+        // their visual again. Now that WA_TranslucentBackground is set,
+        // QGLContext::chooseVisual will select an ARGB visual.
+        QEvent e(QEvent::ParentChange);
+        QApplication::sendEvent(widget, &e);
+    } else {
+        // For regular widgets, reparent them with their parent which
+        // also triggers a recreation of the native window
+        QPoint pos = widget->pos();
+        bool visible = widget->isVisible();
+        if (visible)
+            widget->hide();
+
+        widget->setParent(widget->parentWidget(), widget->windowFlags());
+        widget->move(pos);
+        if (visible)
+            widget->show();
+    }
+}
+
+static void qt_x11_recreateNativeWidgetsRecursive(QWidget *widget)
+{
+    if (widget->testAttribute(Qt::WA_NativeWindow))
+        qt_x11_recreateWidget(widget);
+
+    const QObjectList &children = widget->children();
+    for (int i = 0; i < children.size(); ++i) {
+        QWidget *child = qobject_cast<QWidget*>(children.at(i));
+        if (child)
+            qt_x11_recreateNativeWidgetsRecursive(child);
+    }
+}
+
 void QWidgetPrivate::x11UpdateIsOpaque()
 {
 #ifndef QT_NO_XRENDER
@@ -930,29 +971,9 @@ void QWidgetPrivate::x11UpdateIsOpaque()
     bool topLevel = (data.window_flags & Qt::Window);
     int screen = xinfo.screen();
     if (topLevel && X11->use_xrender
-        && X11->argbVisuals[screen] && xinfo.depth() != 32) {
-
-        if (q->inherits("QGLWidget")) {
-            // We send QGLWidgets a ParentChange event which causes them to
-            // recreate their GL context, which in turn causes them to choose
-            // their visual again. Now that WA_TranslucentBackground is set,
-            // QGLContext::chooseVisual will select an ARGB visual.
-            QEvent e(QEvent::ParentChange);
-            QApplication::sendEvent(q, &e);
-        }
-        else {
-            // For regular widgets, reparent them with their parent which
-            // also triggers a recreation of the native window
-            QPoint pos = q->pos();
-            bool visible = q->isVisible();
-            if (visible)
-                q->hide();
-
-            q->setParent(q->parentWidget(), q->windowFlags());
-            q->move(pos);
-            if (visible)
-                q->show();
-        }
+        && X11->argbVisuals[screen] && xinfo.depth() != 32)
+    {
+        qt_x11_recreateNativeWidgetsRecursive(q);
     }
 #endif
 }

@@ -54,6 +54,8 @@ QT_BEGIN_NAMESPACE
 
 QT_USE_NAMESPACE
 
+#define TAB "    "
+
 typedef QPair<QString, QString> QStringPair;
 
 QString readSourceFile(const QString &sourceFile, bool fragmentProgram = false)
@@ -243,6 +245,30 @@ QString trimmed(QString source)
     return result;
 }
 
+void writeVariablesEnum(QTextStream &out, const char *name, const QSet<QString> &s)
+{
+    out << "enum " << name << " {";
+    QSet<QString>::const_iterator it = s.begin();
+    if (it != s.end()) {
+        out << "\n" TAB "VAR_" << it->toUpper();
+        for (++it; it != s.end(); ++it)
+            out << ",\n" TAB "VAR_" << it->toUpper();
+    }
+    out << "\n};\n\n";
+}
+
+void writeTypesEnum(QTextStream &out, const char *name, const QList<QStringPair> &s)
+{
+    out << "enum " << name << " {";
+    QList<QStringPair>::const_iterator it = s.begin();
+    if (it != s.end()) {
+        out << "\n" TAB << it->first;
+        for (++it; it != s.end(); ++it)
+            out << ",\n" TAB << it->first;
+    }
+    out << "\n};\n\n";
+}
+
 void writeIncludeFile(const QSet<QString> &variables,
                       const QList<QStringPair> &brushes,
                       const QList<QStringPair> &compositionModes,
@@ -257,7 +283,7 @@ void writeIncludeFile(const QSet<QString> &variables,
 
     QTextStream out(&includeFile);
 
-    QLatin1String tab("    ");
+    QLatin1String tab(TAB);
 
     out << "/****************************************************************************\n"
            "**\n"
@@ -265,7 +291,7 @@ void writeIncludeFile(const QSet<QString> &variables,
            "** All rights reserved.\n"
            "** Contact: Nokia Corporation (qt-info@nokia.com)\n"
            "**\n"
-           "** This file is part of the test suite of the Qt Toolkit.\n"
+           "** This file is part of the QtOpenGL module of the Qt Toolkit.\n"
            "**\n"
            "** $QT_BEGIN_LICENSE:LGPL$\n"
            "** No Commercial Usage\n"
@@ -315,25 +341,10 @@ void writeIncludeFile(const QSet<QString> &variables,
            "//\n"
            "\n";
 
-    out << "enum FragmentVariable {\n";
-    foreach (QString str, variables)
-        out << tab << "VAR_" << str.toUpper() << ",\n";
-    out << "};\n\n";
-
-    out << "enum FragmentBrushType {\n";
-    foreach (QStringPair brush, brushes)
-        out << tab << brush.first << ",\n";
-    out << "};\n\n";
-
-    out << "enum FragmentCompositionModeType {\n";
-    foreach (QStringPair mode, compositionModes)
-        out << tab << mode.first << ",\n";
-    out << "};\n\n";
-
-    out << "enum FragmentMaskType {\n";
-    foreach (QStringPair mask, masks)
-        out << tab << mask.first << ",\n";
-    out << "};\n\n";
+    writeVariablesEnum(out, "FragmentVariable", variables);
+    writeTypesEnum(out, "FragmentBrushType", brushes);
+    writeTypesEnum(out, "FragmentCompositionModeType", compositionModes);
+    writeTypesEnum(out, "FragmentMaskType", masks);
 
     out << "static const unsigned int num_fragment_variables = " << variables.size() << ";\n\n";
     out << "static const unsigned int num_fragment_brushes = " << brushes.size() << ";\n";

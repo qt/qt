@@ -1578,6 +1578,13 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
+#ifndef QT_NO_OPENSSL
+    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
+        sslSocket->setSocketOption(option, value);
+        return;
+    }
+#endif
+
     if (!d_func()->socketEngine)
         return;
 
@@ -1600,6 +1607,12 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
 */
 QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 {
+#ifndef QT_NO_OPENSSL
+    if (QSslSocket *sslSocket = qobject_cast<QSslSocket*>(this)) {
+        return sslSocket->socketOption(option);
+    }
+#endif
+
     if (!d_func()->socketEngine)
         return QVariant();
 

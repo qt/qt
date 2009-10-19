@@ -70,6 +70,7 @@ typedef QList<QScriptValue> QScriptValueList;
 typedef double qsreal;
 
 class QScriptValuePrivate;
+class QScriptEnginePrivate;
 struct QScriptValuePrivatePointerDeleter;
 class Q_SCRIPT_EXPORT QScriptValue
 {
@@ -226,6 +227,8 @@ private:
     QExplicitlySharedDataPointer<QScriptValuePrivate> d_ptr;
 
     Q_DECLARE_PRIVATE(QScriptValue)
+
+    friend class QScriptEnginePrivate;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QScriptValue::ResolveFlags)
