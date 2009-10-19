@@ -81,7 +81,7 @@ public:
     QObject *scopeObject() const;
 
 public Q_SLOTS:
-    QVariant value();
+    QVariant value(bool *isUndefined = 0);
 
 Q_SIGNALS:
     virtual void valueChanged();
