@@ -126,9 +126,8 @@ void QVNCGraphicsSystemScreen::doRedraw()
                 continue;
             compositePainter.drawImage(intersect, windowStack[i]->image(),
                                        windowIntersect);
-            d_ptr->setDirty(rect);
         }
-
+        d_ptr->setDirty(rect);
     }
 
     repaintRegion = QRegion();
