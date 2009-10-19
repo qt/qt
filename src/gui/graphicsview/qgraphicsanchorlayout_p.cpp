@@ -141,7 +141,7 @@ static void internalSizeHints(QSizePolicy::Policy policy,
         *expSize = *prefSize;
 }
 
-void AnchorData::refreshSizeHints(qreal effectiveSpacing)
+bool AnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
     const bool isInternalAnchor = from->m_item == to->m_item;
 
@@ -164,7 +164,7 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
             maxSize = QWIDGETSIZE_MAX;
             if (hasCenter)
                 maxSize /= 2;
-            return;
+            return true;
         } else {
 
             QGraphicsLayoutItem *item = from->m_item;
@@ -214,6 +214,8 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
     sizeAtPreferred = prefSize;
     sizeAtExpanding = prefSize;
     sizeAtMaximum = prefSize;
+
+    return true;
 }
 
 void ParallelAnchorData::updateChildrenSizes()
@@ -227,25 +229,28 @@ void ParallelAnchorData::updateChildrenSizes()
     secondEdge->updateChildrenSizes();
 }
 
-void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
+bool ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    refreshSizeHints_helper(effectiveSpacing);
+    return refreshSizeHints_helper(effectiveSpacing);
 }
 
-void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+bool ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
                                                  bool refreshChildren)
 {
-    if (refreshChildren) {
-        firstEdge->refreshSizeHints(effectiveSpacing);
-        secondEdge->refreshSizeHints(effectiveSpacing);
+    if (refreshChildren && (!firstEdge->refreshSizeHints(effectiveSpacing)
+                            || !secondEdge->refreshSizeHints(effectiveSpacing))) {
+        return false;
     }
-
-    // ### should we warn if the parallel connection is invalid?
-    // e.g. 1-2-3 with 10-20-30, the minimum of the latter is
-    // bigger than the maximum of the former.
 
     minSize = qMax(firstEdge->minSize, secondEdge->minSize);
     maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
+
+    // This condition means that the maximum size of one anchor being simplified is smaller than
+    // the minimum size of the other anchor. The consequence is that there won't be a valid size
+    // for this parallel setup.
+    if (minSize > maxSize) {
+        return false;
+    }
 
     expSize = qMax(firstEdge->expSize, secondEdge->expSize);
     expSize = qMin(expSize, maxSize);
@@ -258,6 +263,8 @@ void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
     sizeAtPreferred = prefSize;
     sizeAtExpanding = prefSize;
     sizeAtMaximum = prefSize;
+
+    return true;
 }
 
 /*!
@@ -362,12 +369,12 @@ void SequentialAnchorData::updateChildrenSizes()
     }
 }
 
-void SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
+bool SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
 {
-    refreshSizeHints_helper(effectiveSpacing);
+    return refreshSizeHints_helper(effectiveSpacing);
 }
 
-void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+bool SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
                                                    bool refreshChildren)
 {
     minSize = 0;
@@ -379,8 +386,8 @@ void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
         AnchorData *edge = m_edges.at(i);
 
         // If it's the case refresh children information first
-        if (refreshChildren)
-            edge->refreshSizeHints(effectiveSpacing);
+        if (refreshChildren && !edge->refreshSizeHints(effectiveSpacing))
+            return false;
 
         minSize += edge->minSize;
         prefSize += edge->prefSize;
@@ -393,6 +400,8 @@ void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
     sizeAtPreferred = prefSize;
     sizeAtExpanding = prefSize;
     sizeAtMaximum = prefSize;
+
+    return true;
 }
 
 #ifdef QT_DEBUG

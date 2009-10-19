@@ -159,7 +159,7 @@ struct AnchorData : public QSimplexVariable {
           type(Normal), hasSize(true), isLayoutAnchor(false) {}
 
     virtual void updateChildrenSizes() {}
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual bool refreshSizeHints(qreal effectiveSpacing);
 
     virtual ~AnchorData() {}
 
@@ -226,9 +226,9 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual bool refreshSizeHints(qreal effectiveSpacing);
 
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+    bool refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -261,9 +261,9 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual bool refreshSizeHints(qreal effectiveSpacing);
 
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+    bool refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
