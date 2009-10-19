@@ -300,8 +300,8 @@ void MMF::VideoPlayer::MvpuoPlayComplete(TInt aError)
     TRACE_CONTEXT(VideoPlayer::MvpuoPlayComplete, EVideoApi)
     TRACE_ENTRY("state %d error %d", state(), aError);
 
-    // TODO
     Q_UNUSED(aError);   // suppress warnings in release builds
+    changeState(StoppedState);
 
     TRACE_EXIT_0();
 }
