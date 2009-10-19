@@ -317,10 +317,10 @@ void QTestLog::warn(const char *msg)
 
 void QTestLog::info(const char *msg, const char *file, int line)
 {
-    QTEST_ASSERT(QTest::testLogger);
     QTEST_ASSERT(msg);
 
-    QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg, file, line);
+    if (QTest::testLogger)
+        QTest::testLogger->addMessage(QAbstractTestLogger::Info, msg, file, line);
 }
 
 void QTestLog::setLogMode(LogMode mode)
