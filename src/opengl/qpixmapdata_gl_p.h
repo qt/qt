@@ -101,6 +101,8 @@ public:
     QGLPixmapData(PixelType type);
     ~QGLPixmapData();
 
+    QPixmapData *createCompatiblePixmapData() const;
+
     // Re-implemented from QPixmapData:
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);

@@ -166,6 +166,11 @@ QMacPixmapData::QMacPixmapData(PixelType type)
 {
 }
 
+QPixmapData *QMacPixmapData::createCompatiblePixmapData() const
+{
+    return new QMacPixmapData(pixelType());
+}
+
 #define BEST_BYTE_ALIGNMENT 16
 #define COMPTUE_BEST_BYTES_PER_ROW(bpr) \
     (((bpr) + (BEST_BYTE_ALIGNMENT - 1)) & ~(BEST_BYTE_ALIGNMENT - 1))
