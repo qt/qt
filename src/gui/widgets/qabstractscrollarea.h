@@ -129,10 +129,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_vslide(int))
     Q_PRIVATE_SLOT(d_func(), void _q_showOrHideScrollBars())
 
-#ifdef Q_WS_WIN
-    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
-#endif
-
     friend class QStyleSheetStyle;
     friend class QWidgetPrivate;
 };

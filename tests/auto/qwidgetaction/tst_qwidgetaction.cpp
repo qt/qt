@@ -125,6 +125,7 @@ void tst_QWidgetAction::defaultWidget()
         tb1.addAction(action);
         QVERIFY(combo->parent() == &tb1);
         qApp->processEvents();
+        qApp->processEvents();
         QVERIFY(combo->isVisible());
 
         // not supported, not supposed to work, hence the parent() check
@@ -139,6 +140,7 @@ void tst_QWidgetAction::defaultWidget()
 
         tb2.addAction(action);
         qApp->processEvents(); //the call to hide is delayd by the toolbar layout
+        qApp->processEvents();
         QVERIFY(combo->parent() == &tb2);
         QVERIFY(combo->isVisible());
 

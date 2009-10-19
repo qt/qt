@@ -2174,11 +2174,14 @@ void QComboBox::insertSeparator(int index)
 /*!
     Removes the item at the given \a index from the combobox.
     This will update the current index if the index is removed.
+
+    This function does nothing if \a index is out of range.
 */
 void QComboBox::removeItem(int index)
 {
-    Q_ASSERT(index >= 0 && index < count());
     Q_D(QComboBox);
+    if (index < 0 || index >= count())
+        return;
     d->model->removeRows(index, 1, d->root);
 }
 

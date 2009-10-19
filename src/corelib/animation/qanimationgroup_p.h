@@ -68,7 +68,9 @@ class QAnimationGroupPrivate : public QAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QAnimationGroup)
 public:
     QAnimationGroupPrivate()
-    { }
+    {
+        isGroup = true;
+    }
 
     virtual void animationInsertedAt(int index) { Q_UNUSED(index) };
     virtual void animationRemovedAt(int index);

@@ -54,6 +54,7 @@
 //
 
 #include <QtGui/qpaintengine.h>
+#include <QtGui/qdrawutil.h>
 
 #include <private/qpaintengine_p.h>
 #include <private/qstroker_p.h>
@@ -70,12 +71,6 @@ QT_MODULE(Gui)
 class QPainterState;
 class QPaintEngineExPrivate;
 struct StrokeHandler;
-
-namespace QDrawPixmaps
-{
-    struct Data;
-    enum DrawingHint;
-}
 
 struct QIntRect {
     int x1, y1, x2, y2;

@@ -4215,13 +4215,6 @@ void QRasterBuffer::prepare(QCustomRasterPaintDevice *device)
         drawHelper = qDrawHelper + format;
 }
 
-class MetricAccessor : public QWidget {
-public:
-    int metric(PaintDeviceMetric m) {
-        return QWidget::metric(m);
-    }
-};
-
 int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
 {
     switch (m) {
@@ -4233,7 +4226,7 @@ int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
         break;
     }
 
-    return (static_cast<MetricAccessor*>(widget)->metric(m));
+    return qt_paint_device_metric(widget, m);
 }
 
 int QCustomRasterPaintDevice::bytesPerLine() const

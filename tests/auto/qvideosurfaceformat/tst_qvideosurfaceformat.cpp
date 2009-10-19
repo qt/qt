@@ -120,7 +120,7 @@ void tst_QVideoSurfaceFormat::constructNull()
     QCOMPARE(format.frameHeight(), -1);
     QCOMPARE(format.viewport(), QRect());
     QCOMPARE(format.scanLineDirection(), QVideoSurfaceFormat::TopToBottom);
-    QCOMPARE(format.frameRate(), QVideoSurfaceFormat::FrameRate());
+    QCOMPARE(format.frameRate(), 0.0);
     QCOMPARE(format.pixelAspectRatio(), QSize(1, 1));
     QCOMPARE(format.yuvColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
 }
@@ -159,7 +159,7 @@ void tst_QVideoSurfaceFormat::construct()
     QCOMPARE(format.frameHeight(), frameSize.height());
     QCOMPARE(format.viewport(), viewport);
     QCOMPARE(format.scanLineDirection(), QVideoSurfaceFormat::TopToBottom);
-    QCOMPARE(format.frameRate(), QVideoSurfaceFormat::FrameRate());
+    QCOMPARE(format.frameRate(), 0.0);
     QCOMPARE(format.pixelAspectRatio(), QSize(1, 1));
     QCOMPARE(format.yuvColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
 }
@@ -315,21 +315,21 @@ void tst_QVideoSurfaceFormat::scanLineDirection()
 
 void tst_QVideoSurfaceFormat::frameRate_data()
 {
-    QTest::addColumn<QVideoSurfaceFormat::FrameRate>("frameRate");
+    QTest::addColumn<qreal>("frameRate");
 
     QTest::newRow("null")
-            << QVideoSurfaceFormat::FrameRate(0, 0);
+            << 0.0;
     QTest::newRow("1/1")
-            << QVideoSurfaceFormat::FrameRate(1, 1);
+            << 1.0;
     QTest::newRow("24/1")
-            << QVideoSurfaceFormat::FrameRate(24, 1);
+            << 24.0;
     QTest::newRow("15/2")
-            << QVideoSurfaceFormat::FrameRate(15, 2);
+            << 7.5;
 }
 
 void tst_QVideoSurfaceFormat::frameRate()
 {
-    QFETCH(QVideoSurfaceFormat::FrameRate, frameRate);
+    QFETCH(qreal, frameRate);
 
     {
         QVideoSurfaceFormat format(QSize(64, 64), QVideoFrame::Format_RGB32);
@@ -337,29 +337,16 @@ void tst_QVideoSurfaceFormat::frameRate()
         format.setFrameRate(frameRate);
 
         QCOMPARE(format.frameRate(), frameRate);
-        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::FrameRate>(format.property("frameRate")),
-                frameRate);
-    }
-    {
-        QVideoSurfaceFormat format(QSize(64, 64), QVideoFrame::Format_RGB32);
-
-        format.setFrameRate(frameRate.first, frameRate.second);
-
-        QCOMPARE(format.frameRate(), frameRate);
-        QCOMPARE(
-                qvariant_cast<QVideoSurfaceFormat::FrameRate>(format.property("frameRate")),
-                frameRate);
+        QCOMPARE(qvariant_cast<qreal>(format.property("frameRate")), frameRate);
     }
     {
         QVideoSurfaceFormat format(QSize(64, 64), QVideoFrame::Format_RGB32);
 
         format.setFrameRate(frameRate);
-        format.setProperty(
-                "frameRate", qVariantFromValue<QVideoSurfaceFormat::FrameRate>(frameRate));
+        format.setProperty("frameRate", frameRate);
 
         QCOMPARE(format.frameRate(), frameRate);
-        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::FrameRate>(format.property("frameRate")),
-                frameRate);
+        QCOMPARE(qvariant_cast<qreal>(format.property("frameRate")), frameRate);
     }
 }
 
@@ -609,13 +596,13 @@ void tst_QVideoSurfaceFormat::compare()
     QCOMPARE(format1 == format2, true);
     QCOMPARE(format1 != format2, false);
 
-    format1.setFrameRate(QVideoSurfaceFormat::FrameRate(15, 2));
+    format1.setFrameRate(7.5);
 
     // Not equal frame rate differs.
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format2.setFrameRate(15, 2);
+    format2.setFrameRate(7.50001);
 
     // Equal.
     QCOMPARE(format1 == format2, true);

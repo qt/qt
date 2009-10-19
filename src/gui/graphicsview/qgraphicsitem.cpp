@@ -663,6 +663,8 @@
 #include <private/qpixmap_x11_p.h>
 #endif
 
+#include <private/qgesturemanager_p.h>
+
 #include <math.h>
 
 QT_BEGIN_NAMESPACE
@@ -7283,6 +7285,19 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
     : QGraphicsItem(dd, parent, scene)
 {
     QGraphicsItem::d_ptr->isObject = true;
+}
+
+/*!
+    Subscribes the graphics object to the given \a gesture for the specified \a context.
+
+    \sa QGestureEvent
+*/
+
+void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+{
+    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
+    d->gestureContext.insert(gesture, context);
+    (void)QGestureManager::instance(); // create a gesture manager
 }
 
 /*!

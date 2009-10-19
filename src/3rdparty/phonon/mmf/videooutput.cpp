@@ -20,7 +20,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 #include "videooutput.h"
 #include "videooutputobserver.h"
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 #include "objectdump.h"
 #endif
 
@@ -52,19 +52,19 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     TRACE_ENTRY("parent 0x%08x", parent);
 
     setPalette(QPalette(Qt::black));
-	setAttribute(Qt::WA_OpaquePaintEvent, true);
-	setAttribute(Qt::WA_NoSystemBackground, true);
-	setAutoFillBackground(false);
+    setAttribute(Qt::WA_OpaquePaintEvent, true);
+    setAttribute(Qt::WA_NoSystemBackground, true);
+    setAutoFillBackground(false);
 
-	// Causes QSymbianControl::Draw not to BitBlt this widget's region of the
-	// backing store.  Since the backing store is (by default) a 16MU bitmap,
-	// blitting it results in this widget's screen region in the final
-	// framebuffer having opaque alpha values.  This in turn causes the video
-	// to be invisible when running on the target device.
-	qt_widget_private(this)->extraData()->disableBlit = true;
+    // Causes QSymbianControl::Draw not to BitBlt this widget's region of the
+    // backing store.  Since the backing store is (by default) a 16MU bitmap,
+    // blitting it results in this widget's screen region in the final
+    // framebuffer having opaque alpha values.  This in turn causes the video
+    // to be invisible when running on the target device.
+    qt_widget_private(this)->extraData()->disableBlit = true;
 
     dump();
-    
+
     TRACE_EXIT_0();
 }
 
@@ -123,9 +123,7 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("regions %d", event->region().numRects());
     TRACE("type %d", event->type());
 
-    dump();
-    
-    // Do not paint anything
+    // Do nothing
 }
 
 void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
@@ -135,10 +133,7 @@ void MMF::VideoOutput::resizeEvent(QResizeEvent* event)
           event->oldSize().width(), event->oldSize().height(),
           event->size().width(), event->size().height());
 
-    QWidget::resizeEvent(event);
-
-    if (m_observer)
-        m_observer->videoOutputRegionChanged();
+    videoOutputRegionChanged();
 }
 
 void MMF::VideoOutput::moveEvent(QMoveEvent* event)
@@ -148,10 +143,20 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
           event->oldPos().x(), event->oldPos().y(),
           event->pos().x(), event->pos().y());
 
-    QWidget::moveEvent(event);
+    videoOutputRegionChanged();
+}
 
-    if (m_observer)
-        m_observer->videoOutputRegionChanged();
+bool MMF::VideoOutput::event(QEvent* event)
+{
+    TRACE_CONTEXT(VideoOutput::event, EVideoInternal);
+
+    if (event->type() == QEvent::WinIdChange) {
+        TRACE_0("WinIdChange");
+        videoOutputRegionChanged();
+        return true;
+    }
+    else
+        return QWidget::event(event);
 }
 
 
@@ -159,9 +164,16 @@ void MMF::VideoOutput::moveEvent(QMoveEvent* event)
 // Private functions
 //-----------------------------------------------------------------------------
 
-void VideoOutput::dump() const
+void MMF::VideoOutput::videoOutputRegionChanged()
 {
-#ifdef _DEBUG
+    dump();
+    if (m_observer)
+        m_observer->videoOutputRegionChanged();
+}
+
+void MMF::VideoOutput::dump() const
+{
+#ifndef QT_NO_DEBUG
     TRACE_CONTEXT(VideoOutput::dump, EVideoInternal);
     QScopedPointer<ObjectDump::QVisitor> visitor(new ObjectDump::QVisitor);
     visitor->setPrefix("Phonon::MMF"); // to aid searchability of logs

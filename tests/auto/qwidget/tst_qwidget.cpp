@@ -239,7 +239,12 @@ private slots:
     void setFixedSize();
 
     void ensureCreated();
+    void winIdChangeEvent();
+#ifdef Q_OS_SYMBIAN
+    void reparentCausesChildWinIdChange();
+#else
     void persistentWinId();
+#endif
     void qobject_castInDestroyedSlot();
 
     void showHideEvent_data();
@@ -4348,6 +4353,144 @@ void tst_QWidget::ensureCreated()
     }
 }
 
+class WinIdChangeWidget : public QWidget {
+public:
+    WinIdChangeWidget(QWidget *p = 0)
+        : QWidget(p)
+        , m_winIdChangeEventCount(0)
+    {
+
+    }
+protected:
+    bool event(QEvent *e){
+        if(e->type() == QEvent::WinIdChange)
+            ++m_winIdChangeEventCount;
+        else
+            return QWidget::event(e);
+    }
+public:
+    int m_winIdChangeEventCount;
+};
+
+void tst_QWidget::winIdChangeEvent()
+{
+    {
+        // Transforming an alien widget into a native widget
+        WinIdChangeWidget widget;
+        const WId winIdBefore = widget.internalWinId();
+        const WId winIdAfter = widget.winId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(widget.m_winIdChangeEventCount, 1);
+    }
+
+    {
+        // Changing parent of a native widget
+        QWidget parent1, parent2;
+        WinIdChangeWidget child(&parent1);
+        const WId winIdBefore = child.winId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+#ifdef Q_OS_SYMBIAN
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+#else
+        QCOMPARE(winIdBefore, winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+#endif
+    }
+
+    {
+        // Changing parent of an alien widget
+        QWidget parent1, parent2;
+        WinIdChangeWidget child(&parent1);
+        const WId winIdBefore = child.internalWinId();
+        child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+        QCOMPARE(winIdBefore, winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 0);
+    }
+
+    {
+        // Making native child widget into a top-level window
+        QWidget parent;
+        WinIdChangeWidget child(&parent);
+        child.winId();
+        const WId winIdBefore = child.internalWinId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        const Qt::WindowFlags flags = child.windowFlags();
+        child.setWindowFlags(flags | Qt::Window);
+        const WId winIdAfter = child.internalWinId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+    }
+}
+
+#ifdef Q_OS_SYMBIAN
+void tst_QWidget::reparentCausesChildWinIdChange()
+{
+    QWidget *parent = new QWidget;
+    QWidget *w1 = new QWidget;
+    QWidget *w2 = new QWidget;
+    QWidget *w3 = new QWidget;
+    w1->setParent(parent);
+    w2->setParent(w1);
+    w3->setParent(w2);
+
+    WId winId1 = w1->winId();
+    WId winId2 = w2->winId();
+    WId winId3 = w3->winId();
+
+    // reparenting causes winIds of the widget being reparented, and all of its children, to change
+    w1->setParent(0);
+    QVERIFY(w1->winId() != winId1);
+    winId1 = w1->winId();
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w1->setParent(parent);
+    QVERIFY(w1->winId() != winId1);
+    winId1 = w1->winId();
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(0);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(parent);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w2->setParent(w1);
+    QVERIFY(w2->winId() != winId2);
+    winId2 = w2->winId();
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(0);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(w1);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    w3->setParent(w2);
+    QVERIFY(w3->winId() != winId3);
+    winId3 = w3->winId();
+
+    delete parent;
+}
+#else
 void tst_QWidget::persistentWinId()
 {
     QWidget *parent = new QWidget;
@@ -4404,6 +4547,7 @@ void tst_QWidget::persistentWinId()
 
     delete parent;
 }
+#endif // Q_OS_SYMBIAN
 
 class ShowHideEventWidget : public QWidget
 {
@@ -4524,9 +4668,6 @@ void tst_QWidget::update()
         QCOMPARE(child.paintedRegion, child.visibleRegion());
         QCOMPARE(w.numPaintEvents, 1);
         QCOMPARE(w.visibleRegion(), QRegion(w.rect()));
-#ifdef QT_MAC_USE_COCOA
-        QEXPECT_FAIL(0, "Cocoa compositor paints the content view", Continue);
-#endif
         QCOMPARE(w.paintedRegion, child.visibleRegion().translated(childOffset));
 
         w.reset();
@@ -5136,15 +5277,6 @@ void tst_QWidget::windowMoveResize()
         // now hide
         widget.hide();
         QTest::qWait(10);
-#if defined (Q_WS_MAC) && defined(QT_MAC_USE_COCOA)
-        QEXPECT_FAIL("130,100 0x200, flags 800",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-
-        QEXPECT_FAIL("130,100 0x200, flags 0",
-                     "Cocoa's Delegate sends a spurios move event when the window has a width of zero and non-zero height",
-                     Abort);
-#endif
         QTRY_COMPARE(widget.pos(), rect.topLeft());
         QTRY_COMPARE(widget.size(), rect.size());
 
@@ -7466,8 +7598,8 @@ void tst_QWidget::updateWhileMinimized()
     UpdateWidget widget;
    // Filter out activation change and focus events to avoid update() calls in QWidget.
     widget.updateOnActivationChangeAndFocusIn = false;
-    widget.show();
     widget.reset();
+    widget.show();
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
@@ -9267,7 +9399,8 @@ void tst_QWidget::rectOutsideCoordinatesLimit_task144779()
     QPixmap correct(main.size());
     correct.fill(Qt::green);
 
-    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage(), correct.toImage());
+    QTRY_COMPARE(QPixmap::grabWindow(main.winId()).toImage().convertToFormat(QImage::Format_RGB32),
+                 correct.toImage().convertToFormat(QImage::Format_RGB32));
     QApplication::restoreOverrideCursor();
 }
 

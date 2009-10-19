@@ -159,6 +159,7 @@ private slots:
     void ensureClipping();
     void widgetSendsGeometryChanges();
     void respectHFW();
+    void addChildInpolishEvent();
 
     // Task fixes
     void task236127_bspTreeIndexFails();
@@ -2715,6 +2716,58 @@ void tst_QGraphicsWidget::respectHFW()
     QVERIFY(qAbs(minHFW - winSize.height()) < 1);
 #endif
 }
+
+class PolishWidget : public QGraphicsWidget
+{
+public:
+
+    PolishWidget(Qt::GlobalColor color, QGraphicsItem *parent=0) :
+    QGraphicsWidget(parent), mColor(color)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+    {
+        painter->setBrush(QBrush(mColor));
+        painter->drawRect(boundingRect());
+    }
+
+    void polishEvent()
+    {
+        if (!parentWidget()) {
+            //We add a child in the polish event for the parent
+            PolishWidget *childWidget = new PolishWidget(Qt::black, this);
+            childWidget->setGeometry(QRectF(10,10,30,30));
+        }
+
+        QGraphicsWidget::polishEvent();
+        mColor = Qt::red;
+        update();
+        numberOfPolish++;
+    }
+
+    static int numberOfPolish;
+
+private:
+    Qt::GlobalColor mColor;
+};
+
+int PolishWidget::numberOfPolish = 0;
+
+void tst_QGraphicsWidget::addChildInpolishEvent()
+{
+    QGraphicsScene scene;
+
+    PolishWidget *parentWidget = new PolishWidget(Qt::white);
+    scene.addItem(parentWidget);
+
+    QGraphicsView view(&scene);
+    view.resize(200, 200);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    QCOMPARE(PolishWidget::numberOfPolish, 2);
+}
+
 
 QTEST_MAIN(tst_QGraphicsWidget)
 #include "tst_qgraphicswidget.moc"

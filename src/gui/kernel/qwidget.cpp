@@ -115,6 +115,7 @@
 #include "private/qevent_p.h"
 
 #include "private/qgraphicssystem_p.h"
+#include "private/qgesturemanager_p.h"
 
 // widget/widget data creation count
 //#define QWIDGET_EXTRA_DEBUG
@@ -1503,12 +1504,24 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
         mapper->remove(data.winid);
     }
 
+    const WId oldWinId = data.winid;
+
     data.winid = id;
 #if defined(Q_WS_X11)
     hd = id; // X11: hd == ident
 #endif
     if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
+    }
+
+    if(oldWinId != id) {
+        // Do not emit an event when the old winId is destroyed.  This only
+        // happens (a) during widget destruction, and (b) immediately prior
+        // to creation of a new winId, for example as a result of re-parenting.
+        if(id != 0) {
+            QEvent e(QEvent::WinIdChange);
+            QCoreApplication::sendEvent(q, &e);
+        }
     }
 }
 
@@ -2228,8 +2241,8 @@ QWidget *QWidget::find(WId id)
     against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
     is using Cocoa, {WId} is a pointer to an NSView.
 
-    \note We recommend that you do not store this value as it is likely to
-    change at run-time.
+    This value may change at run-time. An event with type QEvent::WinIdChange
+    will be sent to the widget following a change in window system identifier.
 
     \sa find()
 */
@@ -8333,6 +8346,9 @@ bool QWidget::event(QEvent *event)
         (void) QApplication::sendEvent(this, &mouseEvent);
         break;
     }
+    case QEvent::Gesture:
+        event->ignore();
+        break;
 #ifndef QT_NO_PROPERTIES
     case QEvent::DynamicPropertyChange: {
         const QByteArray &propName = static_cast<QDynamicPropertyChangeEvent *>(event)->propertyName();
@@ -11669,6 +11685,19 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
     Synonym for QList<QWidget *>.
 */
 
+/*!
+    Subscribes the widget to a given \a gesture with a \a context.
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+{
+    Q_D(QWidget);
+    d->gestureContext.insert(gesture, context);
+    (void)QGestureManager::instance(); // create a gesture manager
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"
@@ -11982,3 +12011,10 @@ void QWidget::clearMask()
     XRender extension is not supported on the X11 display, or if the
     handle could not be created.
 */
+
+#ifdef Q_OS_SYMBIAN
+void QWidgetPrivate::_q_delayedDestroy(WId winId)
+{
+    delete winId;
+}
+#endif

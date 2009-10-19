@@ -76,7 +76,6 @@
 #endif
 
 #ifdef Q_WS_QWS
-#include <private/qglpaintdevice_qws_p.h>
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
@@ -4743,24 +4742,7 @@ Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 #endif
 
-#ifdef Q_WS_QWS
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
-{
-#if !defined(QT_OPENGL_ES_2)
-    return qt_gl_engine();
-#else
-    return 0; // XXX
-#endif
-}
-#endif
-
-/*!
-    \internal
-
-    Returns the GL widget's paint engine. This is normally a
-    QOpenGLPaintEngine.
-*/
-QPaintEngine *QGLWidget::paintEngine() const
 {
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
     return qt_gl_engine();
@@ -4772,6 +4754,17 @@ QPaintEngine *QGLWidget::paintEngine() const
     else
         return qt_gl_engine();
 #endif
+}
+
+/*!
+    \internal
+
+    Returns the GL widget's paint engine. This is normally a
+    QOpenGLPaintEngine.
+*/
+QPaintEngine *QGLWidget::paintEngine() const
+{
+    return qt_qgl_paint_engine();
 }
 
 #ifdef QT3_SUPPORT

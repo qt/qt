@@ -66,7 +66,6 @@
 #include "util/fragmentprograms_p.h"
 
 #ifdef Q_WS_QWS
-#include "private/qglpaintdevice_qws_p.h"
 #include "private/qglwindowsurface_qws_p.h"
 #include "qwsmanager_qws.h"
 #include "private/qwsmanager_p.h"

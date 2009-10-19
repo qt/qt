@@ -3874,10 +3874,15 @@ QByteArray QUrlPrivate::toEncoded(QUrl::FormattingOptions options) const
             }
         }
 
-        if (host.startsWith(QLatin1Char('[')))
+        if (host.startsWith(QLatin1Char('['))) {
             url += host.toLatin1();
-        else
+        } else if (host.contains(QLatin1Char(':'))) {
+            url += '[';
+            url += host.toLatin1();
+            url += ']';
+        } else {
             url += QUrl::toAce(host);
+        }
         if (!(options & QUrl::RemovePort) && port != -1) {
             url += ':';
             url += QString::number(port).toAscii();

@@ -1,6 +1,6 @@
 TEMPLATE      = subdirs
 CONFIG       += ordered
-SUBDIRS       = musicplayer \
+SUBDIRS       = qmusicplayer \
                 capabilities
 
 # install

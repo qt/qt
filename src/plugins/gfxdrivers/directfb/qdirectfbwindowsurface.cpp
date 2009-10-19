@@ -262,7 +262,11 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (oldSurface != dfbSurface)
         updateFormat();
 
-    QWSWindowSurface::setGeometry(rect);
+    if (oldRect.size() != rect.size()) {
+        QWSWindowSurface::setGeometry(rect);
+    } else {
+        QWindowSurface::setGeometry(rect);
+    }
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
@@ -276,6 +280,8 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
     if (state.size() == sizeof(this)) {
         sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
+        Q_ASSERT(sibling);
+        sibling->setSurfaceFlags(surfaceFlags());
     }
 }
 

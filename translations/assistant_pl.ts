@@ -31,11 +31,11 @@
 <context>
     <name>BookmarkDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+185"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+184"/>
         <location line="+18"/>
-        <location line="+36"/>
-        <location line="+24"/>
-        <location line="+32"/>
+        <location line="+39"/>
+        <location line="+18"/>
+        <location line="+30"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
@@ -65,7 +65,7 @@
         <translation>Nowy katalog</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="-69"/>
+        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="-61"/>
         <source>Delete Folder</source>
         <translation>Usuń katalog</translation>
     </message>
@@ -78,12 +78,12 @@
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+450"/>
+        <location line="+434"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
     <message>
-        <location line="+36"/>
+        <location line="+37"/>
         <source>Remove</source>
         <translation>Usuń</translation>
     </message>
@@ -93,7 +93,7 @@
         <translation>Zamierzasz usunąć katalog co spowoduje również usunięcie jego zawartości. Czy chcesz kontynuować?</translation>
     </message>
     <message>
-        <location line="+109"/>
+        <location line="+143"/>
         <location line="+9"/>
         <source>New Folder</source>
         <translation>Nowy katalog</translation>
@@ -102,25 +102,17 @@
 <context>
     <name>BookmarkWidget</name>
     <message>
-        <location line="-391"/>
+        <location line="-416"/>
         <source>Filter:</source>
         <translation>Filtr:</translation>
     </message>
     <message>
-        <source>Bookmarks</source>
-        <translation type="obsolete">Zakładki</translation>
-    </message>
-    <message>
-        <location line="+32"/>
+        <location line="+33"/>
         <source>Remove</source>
         <translation>Usuń</translation>
     </message>
     <message>
-        <source>You are going to delete a Folder, this will also&lt;br&gt;remove it&apos;s content. Are you sure to continue?</source>
-        <translation type="obsolete">Zamierzasz usunąć katalog co spowoduje również usunięcie jego zawartości. Czy chcesz kontynuować?</translation>
-    </message>
-    <message>
-        <location line="-78"/>
+        <location line="-79"/>
         <source>Delete Folder</source>
         <translation>Usuń katalog</translation>
     </message>
@@ -150,7 +142,7 @@
         <translation>Zmień nazwę zakładki</translation>
     </message>
     <message>
-        <location line="+61"/>
+        <location line="+62"/>
         <source>Add</source>
         <translation>Dodaj</translation>
     </message>
@@ -158,7 +150,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+195"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+238"/>
         <source>Add new page</source>
         <translation>Dodaj nową stronę</translation>
     </message>
@@ -168,38 +160,38 @@
         <translation>Zamknij bieżącą stronę</translation>
     </message>
     <message>
-        <location line="+265"/>
+        <location line="+312"/>
         <source>Print Document</source>
         <translation>Wydrukuj dokument</translation>
     </message>
     <message>
-        <location line="+147"/>
+        <location line="+148"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>nieznany</translation>
     </message>
     <message>
-        <location line="+96"/>
+        <location line="+93"/>
         <source>Add New Page</source>
         <translation>Dodaj nową stronę</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Close This Page</source>
         <translation>Zamknij tą stronę</translation>
     </message>
     <message>
-        <location line="+1"/>
+        <location line="+3"/>
         <source>Close Other Pages</source>
         <translation>Zamknij inne strony</translation>
     </message>
     <message>
-        <location line="+2"/>
+        <location line="+5"/>
         <source>Add Bookmark for this Page...</source>
         <translation>Dodaj zakładkę dla tej strony...</translation>
     </message>
     <message>
-        <location line="+257"/>
+        <location line="+255"/>
         <source>Search</source>
         <translation>Wyszukaj</translation>
     </message>
@@ -207,7 +199,7 @@
 <context>
     <name>ContentWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+155"/>
+        <location filename="../tools/assistant/tools/assistant/contentwindow.cpp" line="+158"/>
         <source>Open Link</source>
         <translation>Otwórz odsyłacz</translation>
     </message>
@@ -219,10 +211,6 @@
 </context>
 <context>
     <name>FilterNameDialogClass</name>
-    <message>
-        <source>FilterNameDialog</source>
-        <translation type="obsolete">FilterNameDialog</translation>
-    </message>
     <message>
         <location filename="../tools/assistant/tools/assistant/filternamedialog.ui"/>
         <source>Add Filter Name</source>
@@ -237,17 +225,17 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-863"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-955"/>
         <source>Previous</source>
         <translation>Poprzedni</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+4"/>
         <source>Next</source>
         <translation>Następny</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+4"/>
         <source>Case Sensitive</source>
         <translation>Uwzględniaj wielkość liter</translation>
     </message>
@@ -293,15 +281,9 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+481"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+492"/>
         <source>Help</source>
         <translation>Pomoc</translation>
-    </message>
-    <message>
-        <source>Unable to launch web browser.
-</source>
-        <translation type="obsolete">Nie można uruchomić przeglądarki internetowej.
-</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -324,12 +306,12 @@
         <translation>Otwórz odsyłacz w nowej karcie	Ctrl+LMB</translation>
     </message>
     <message>
-        <location line="-267"/>
+        <location line="-275"/>
         <source>Open Link in New Tab</source>
         <translation>Otwórz odsyłacz w nowej karcie</translation>
     </message>
     <message>
-        <location line="+201"/>
+        <location line="+209"/>
         <source>Unable to launch external application.
 </source>
         <translation>Nie można uruchomić zewnętrznej aplikacji.
@@ -357,13 +339,13 @@
 <context>
     <name>InstallDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+75"/>
         <location filename="../tools/assistant/tools/assistant/installdialog.ui"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+76"/>
         <source>Install Documentation</source>
         <translation>Zainstaluj dokumentację</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location filename="../tools/assistant/tools/assistant/installdialog.cpp" line="+30"/>
         <source>Downloading documentation info...</source>
         <translation>Pobieranie informacji o dokumentacji...</translation>
     </message>
@@ -457,48 +439,43 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+108"/>
-        <location line="+350"/>
+        <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
+        <location line="+391"/>
         <source>Index</source>
         <translation>Indeks</translation>
     </message>
     <message>
-        <location line="-344"/>
-        <location line="+342"/>
+        <location line="-385"/>
+        <location line="+383"/>
         <source>Contents</source>
         <translation>Spis treści</translation>
     </message>
     <message>
-        <location line="-337"/>
-        <location line="+341"/>
+        <location line="-378"/>
+        <location line="+382"/>
         <source>Bookmarks</source>
         <translation>Zakładki</translation>
     </message>
     <message>
-        <location line="-329"/>
-        <location line="+331"/>
+        <location line="+2"/>
         <source>Search</source>
         <translation>Wyszukaj</translation>
     </message>
     <message>
-        <location line="-319"/>
-        <location line="+192"/>
-        <location line="+470"/>
+        <location line="-372"/>
+        <location line="+215"/>
+        <location line="+512"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-501"/>
-        <location line="+4"/>
+        <location line="-544"/>
+        <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Nieprzefiltrowany</translation>
     </message>
     <message>
-        <source>File</source>
-        <translation type="obsolete">Plik</translation>
-    </message>
-    <message>
-        <location line="+84"/>
+        <location line="+107"/>
         <source>Page Set&amp;up...</source>
         <translation>&amp;Ustawienia strony...</translation>
     </message>
@@ -513,17 +490,9 @@
         <translation>Wy&amp;drukuj...</translation>
     </message>
     <message>
-        <source>CTRL+P</source>
-        <translation type="obsolete">CTRL+P</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>New &amp;Tab</source>
         <translation>Nowa kar&amp;ta</translation>
-    </message>
-    <message>
-        <source>CTRL+T</source>
-        <translation type="obsolete">CTRL+T</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -531,49 +500,24 @@
         <translation>&amp;Zamknij kartę</translation>
     </message>
     <message>
-        <source>CTRL+W</source>
-        <translation type="obsolete">CTRL+W</translation>
-    </message>
-    <message>
         <location line="+4"/>
         <source>&amp;Quit</source>
         <translation>Za&amp;kończ</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>CTRL+Q</source>
-        <translation>CTRL+Q</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Edycja</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Copy selected Text</source>
         <translation>S&amp;kopiuj zaznaczony tekst</translation>
     </message>
     <message>
-        <source>Ctrl+C</source>
-        <translation type="obsolete">Ctrl+C</translation>
-    </message>
-    <message>
-        <location line="+6"/>
+        <location line="+8"/>
         <source>&amp;Find in Text...</source>
         <translation>Znajdź w &amp;tekście...</translation>
     </message>
     <message>
-        <source>Ctrl+F</source>
-        <translation type="obsolete">Ctrl+F</translation>
-    </message>
-    <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Find &amp;Next</source>
         <translation>Znajdź &amp;następny</translation>
-    </message>
-    <message>
-        <source>F3</source>
-        <translation type="obsolete">F3</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -581,17 +525,9 @@
         <translation>Znajdź &amp;poprzedni</translation>
     </message>
     <message>
-        <source>Shift+F3</source>
-        <translation type="obsolete">Shift+F3</translation>
-    </message>
-    <message>
         <location line="+5"/>
         <source>Preferences...</source>
         <translation>Ustawienia...</translation>
-    </message>
-    <message>
-        <source>View</source>
-        <translation type="obsolete">Widok</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -599,17 +535,17 @@
         <translation>Po&amp;większ</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Zoom &amp;out</source>
         <translation>Po&amp;mniejsz</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Normal &amp;Size</source>
         <translation>Normalny &amp;rozmiar</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>Ctrl+0</source>
         <translation>Ctrl+0</translation>
     </message>
@@ -624,17 +560,9 @@
         <translation>ALT+I</translation>
     </message>
     <message>
-        <source>ALT+B</source>
-        <translation type="obsolete">ALT+B</translation>
-    </message>
-    <message>
         <location line="+4"/>
         <source>ALT+S</source>
         <translation>ALT+S</translation>
-    </message>
-    <message>
-        <source>Go</source>
-        <translation type="obsolete">Nawigacja</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -642,12 +570,7 @@
         <translation>Strona &amp;startowa</translation>
     </message>
     <message>
-        <location line="+1"/>
-        <source>Ctrl+Home</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+3"/>
+        <location line="+4"/>
         <source>&amp;Back</source>
         <translation>&amp;Wstecz</translation>
     </message>
@@ -657,12 +580,12 @@
         <translation>W &amp;przód</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>Sync with Table of Contents</source>
         <translation>Znajdź bieżącą stronę w spisie treści</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+7"/>
         <source>Next Page</source>
         <translation>Następna strona</translation>
     </message>
@@ -687,21 +610,17 @@
         <translation>Dodaj zakładkę...</translation>
     </message>
     <message>
-        <source>Help</source>
-        <translation type="obsolete">Pomoc</translation>
-    </message>
-    <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>About...</source>
         <translation>Informacje o programie...</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="+16"/>
         <source>Navigation Toolbar</source>
         <translation>Pasek do nawigacji</translation>
     </message>
     <message>
-        <location line="+74"/>
+        <location line="+76"/>
         <source>Toolbars</source>
         <translation>Paski narzędzi</translation>
     </message>
@@ -726,35 +645,27 @@
         <translation>Adres:</translation>
     </message>
     <message>
-        <location line="+110"/>
+        <location line="+114"/>
         <source>Could not find the associated content item.</source>
         <translation>Nie można znaleźć skojarzonego elementu zawartości.</translation>
     </message>
     <message>
-        <source>Open Source Edition</source>
-        <translation type="obsolete">Edycja Open Source</translation>
-    </message>
-    <message>
-        <source>This version of Qt Assistant is part of the Qt Open Source Edition, for use in the development of Open Source applications. Qt is a comprehensive C++ framework for cross-platform application development.</source>
-        <translation type="obsolete">Ta wersja Qt Assistant jest częścią wydania Qt Open Source, przeznaczonego do tworzenia aplikacji Open Source. Qt zawiera obszerny zestaw bibliotek wykorzystywanych do pisania przenośnych aplikacji.</translation>
-    </message>
-    <message>
-        <location line="+81"/>
+        <location line="+71"/>
         <source>About %1</source>
         <translation>Informacje o %1</translation>
     </message>
     <message>
-        <location line="+115"/>
+        <location line="+114"/>
         <source>Updating search index</source>
         <translation>Uaktualnianie indeksu wyszukiwawczego</translation>
     </message>
     <message>
-        <location line="-597"/>
+        <location line="-638"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Szukanie dokumentacji Qt...</translation>
     </message>
     <message>
-        <location line="+195"/>
+        <location line="+241"/>
         <source>&amp;Window</source>
         <translation>&amp;Okno</translation>
     </message>
@@ -774,36 +685,29 @@
         <translation>Powiększenie</translation>
     </message>
     <message>
-        <source>Add</source>
-        <translation type="obsolete">Dodaj</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="obsolete">Usuń</translation>
-    </message>
-    <message>
-        <source>You need a commercial Qt license for development of proprietary (closed source) applications. Please see &lt;a href=&quot;http://qt.nokia.com/company/about/businessmodel&quot;&gt;http://qt.nokia.com/company/about/businessmodel&lt;/a&gt; for an overview of Qt licensing.</source>
-        <translation type="obsolete">Aby móc tworzyć przy pomocy Qt własne aplikacje bez publikowania kodu (closed source) potrzebujesz wydania komercyjnego. Opis sposobów licencjonowania Qt znajduje się na stronie &lt;a href=&quot;http://qt.nokia.com/company/model.html&quot;&gt;qt.nokia.com/company/model.html&lt;/a&gt;.</translation>
-    </message>
-    <message>
-        <location line="-136"/>
+        <location line="-159"/>
         <source>&amp;File</source>
         <translation>&amp;Plik</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+25"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edycja</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+27"/>
         <source>&amp;View</source>
         <translation>&amp;Widok</translation>
     </message>
     <message>
-        <location line="+27"/>
+        <location line="+30"/>
         <source>&amp;Go</source>
         <translation>&amp;Nawigacja</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>ALT+Home</source>
+        <translation>ALT+Home</translation>
     </message>
     <message>
         <location line="+29"/>
@@ -811,17 +715,17 @@
         <translation>&amp;Zakładki</translation>
     </message>
     <message>
-        <location line="+4"/>
+        <location line="+5"/>
         <source>&amp;Help</source>
         <translation>&amp;Pomoc</translation>
     </message>
     <message>
-        <location line="-37"/>
+        <location line="-40"/>
         <source>ALT+O</source>
         <translation>ALT+O</translation>
     </message>
     <message>
-        <location line="+35"/>
+        <location line="+38"/>
         <source>CTRL+D</source>
         <translation>CTRL+D</translation>
     </message>
@@ -829,49 +733,48 @@
 <context>
     <name>PreferencesDialog</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+237"/>
-        <location line="+7"/>
-        <location line="+6"/>
+        <location filename="../tools/assistant/tools/assistant/preferencesdialog.cpp" line="+259"/>
+        <location line="+43"/>
         <source>Add Documentation</source>
         <translation>Dodaj dokumentację</translation>
     </message>
     <message>
-        <location line="-13"/>
+        <location line="-43"/>
         <source>Qt Compressed Help Files (*.qch)</source>
         <translation>Skompresowane pliki pomocy Qt (*.qch)</translation>
     </message>
     <message>
-        <location line="+8"/>
+        <location line="+37"/>
         <source>The specified file is not a valid Qt Help File!</source>
         <translation>Podany plik nie jest poprawnym plikiem pomocy Qt!</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="-8"/>
         <source>The namespace %1 is already registered!</source>
         <translation>Przestrzeń nazw %1 jest już zarejestrowana!</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+31"/>
         <source>Remove Documentation</source>
-        <translation type="unfinished"></translation>
+        <translation>Usuń dokumentację</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Some documents currently opened in Assistant reference the documentation you are attempting to remove. Removing the documentation will close those documents.</source>
-        <translation type="unfinished"></translation>
+        <translation>Niektóre dokumenty otwarte w Assistant odwołują sie do dokumentacji którą próbujesz usunąć. Usunięcie dokumentacji spowoduje zamknięcie tych dokumentów.</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Cancel</source>
-        <translation type="unfinished">Anuluj</translation>
+        <translation>Anuluj</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>OK</source>
-        <translation type="unfinished">OK</translation>
+        <translation>OK</translation>
     </message>
     <message>
-        <location line="+86"/>
+        <location line="+88"/>
         <source>Use custom settings</source>
         <translation>Użyj własnych ustawień</translation>
     </message>
@@ -949,22 +852,6 @@
         <translation>Dodaj...</translation>
     </message>
     <message>
-        <source>Network</source>
-        <translation type="obsolete">Sieć</translation>
-    </message>
-    <message>
-        <source>Use Http Proxy</source>
-        <translation type="obsolete">Użyj pośrednika http</translation>
-    </message>
-    <message>
-        <source>Http Proxy:</source>
-        <translation type="obsolete">Pośrednik http:</translation>
-    </message>
-    <message>
-        <source>Port:</source>
-        <translation type="obsolete">Port:</translation>
-    </message>
-    <message>
         <location/>
         <source>Options</source>
         <translation>Opcje</translation>
@@ -977,22 +864,43 @@
     <message>
         <location/>
         <source>Restore to default</source>
-        <translation>Przywróć domyślne</translation>
+        <translation>Przywróć domyślną</translation>
     </message>
     <message>
         <location/>
         <source>Homepage</source>
         <translation>Strona startowa</translation>
     </message>
+    <message>
+        <location/>
+        <source>On help start:</source>
+        <translation>Po uruchomieniu</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Show my home page</source>
+        <translation>Pokaż stronę startową</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Show a blank page</source>
+        <translation>Pokaż pustą stronę</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Show my tabs from last session</source>
+        <translation>Pokaż moje karty z ostatniej sesji</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Blank Page</source>
+        <translation>Pusta strona</translation>
+    </message>
 </context>
 <context>
     <name>QObject</name>
     <message>
-        <source>New Folder</source>
-        <translation type="obsolete">Nowy katalog</translation>
-    </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+110"/>
+        <location filename="../tools/assistant/tools/assistant/cmdlineparser.cpp" line="+112"/>
         <source>The specified collection file does not exist!</source>
         <translation>Podany plik z kolekcją nie istnieje!</translation>
     </message>
@@ -1040,10 +948,10 @@
     <message>
         <location line="+7"/>
         <source>Missing filter argument!</source>
-        <translation type="unfinished"></translation>
+        <translation>Brak argumentu filtra!</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+12"/>
         <source>Unknown option: %1</source>
         <translation>Nieznana opcja: %1</translation>
     </message>
@@ -1054,7 +962,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+190"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+217"/>
         <source>Could not register documentation file
 %1
 
@@ -1090,7 +998,7 @@ Powód:
         <translation>Dokumentacja poprawnie wyrejestrowana.</translation>
     </message>
     <message>
-        <location line="+18"/>
+        <location line="+40"/>
         <source>Cannot load sqlite database driver!</source>
         <translation>Nie można odczytać sterownika bazy danych sqlite!</translation>
     </message>
@@ -1099,17 +1007,11 @@ Powód:
         <source>The specified collection file could not be read!</source>
         <translation>Podany plik z kolekcją nie może być odczytany!</translation>
     </message>
-    <message>
-        <location filename="../tools/assistant/tools/assistant/bookmarkmanager.cpp" line="+167"/>
-        <location line="+1"/>
-        <source>Bookmark</source>
-        <translation>Zakładka</translation>
-    </message>
 </context>
 <context>
     <name>RemoteControl</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+157"/>
+        <location filename="../tools/assistant/tools/assistant/remotecontrol.cpp" line="+163"/>
         <source>Debugging Remote Control</source>
         <translation>Zdalne debugowanie</translation>
     </message>
@@ -1122,7 +1024,7 @@ Powód:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+193"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+195"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>
@@ -1132,20 +1034,14 @@ Powód:
         <translation>Skopiuj &amp;odsyłacz</translation>
     </message>
     <message>
-        <location line="+3"/>
-        <location line="+36"/>
+        <location line="+4"/>
         <source>Open Link in New Tab</source>
         <translation>Otwórz odsyłacz w nowej karcie</translation>
     </message>
     <message>
-        <location line="-29"/>
+        <location line="+8"/>
         <source>Select All</source>
         <translation>Zaznacz wszystko</translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <source>Open Link</source>
-        <translation>Otwórz odsyłacz</translation>
     </message>
 </context>
 <context>

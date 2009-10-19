@@ -127,7 +127,7 @@ private:
 class QGLFramebufferObjectPrivate
 {
 public:
-    QGLFramebufferObjectPrivate() : fbo_guard(0), depth_stencil_buffer(0), valid(false), previous_fbo(0), engine(0) {}
+    QGLFramebufferObjectPrivate() : fbo_guard(0), texture(0), depth_stencil_buffer(0), color_buffer(0), valid(false), previous_fbo(0), engine(0) {}
     ~QGLFramebufferObjectPrivate() {}
 
     void init(QGLFramebufferObject *q, const QSize& sz,

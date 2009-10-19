@@ -1340,7 +1340,7 @@ bool QWizardPrivate::ensureButton(QWizard::WizardButton which) const
             pushButton->setText(buttonDefaultText(wizStyle, which, this));
 
 #ifdef QT_SOFTKEYS_ENABLED
-        QAction *softKey = new QAction(pushButton->text(), antiFlickerWidget);
+        QAction *softKey = new QAction(pushButton->text(), pushButton);
         QAction::SoftKeyRole softKeyRole;
         switch(which) {
         case QWizard::NextButton:

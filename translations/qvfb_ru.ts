@@ -4,7 +4,7 @@
 <context>
     <name>AnimationSaveWidget</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="+850"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="+865"/>
         <location line="+204"/>
         <source>Record</source>
         <translation>Записать</translation>
@@ -76,47 +76,47 @@
 <context>
     <name>Config</name>
     <message>
-        <location filename="../tools/qvfb/config.ui" line="+53"/>
+        <location filename="../tools/qvfb/config.ui" line="+54"/>
         <source>Configure</source>
         <translation>Настройка</translation>
     </message>
     <message>
-        <location line="+47"/>
+        <location line="+29"/>
         <source>Size</source>
         <translation>Размер</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+12"/>
         <source>176x220 &quot;SmartPhone&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>176x220 &quot;SmartPhone&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>240x320 &quot;PDA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>240x320 &quot;PDA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>320x240 &quot;TV&quot; / &quot;QVGA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>320x240 &quot;TV&quot; / &quot;QVGA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>640x480 &quot;VGA&quot;</source>
-        <translation type="unfinished"></translation>
+        <translation>640x480 &quot;VGA&quot;</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>800x600</source>
-        <translation type="unfinished"></translation>
+        <translation>800x600</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>1024x768</source>
-        <translation type="unfinished"></translation>
+        <translation>1024x768</translation>
     </message>
     <message>
-        <location line="+30"/>
+        <location line="+21"/>
         <source>Custom</source>
         <translation>Особый</translation>
     </message>
@@ -126,9 +126,14 @@
         <translation>Глубина</translation>
     </message>
     <message>
-        <location line="+21"/>
+        <location line="+6"/>
         <source>1 bit monochrome</source>
         <translation>1 бит (монохромный)</translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>2 bit grayscale</source>
+        <translation>2 бита (градации серого)</translation>
     </message>
     <message>
         <location line="+7"/>
@@ -176,7 +181,17 @@
         <translation>32 бита (ARGB)</translation>
     </message>
     <message>
-        <location line="+29"/>
+        <location line="+7"/>
+        <source>Swap red and blue channels</source>
+        <translation>Поменять синий и красный каналы</translation>
+    </message>
+    <message>
+        <location line="+3"/>
+        <source>BGR format</source>
+        <translation>Формат BGR</translation>
+    </message>
+    <message>
+        <location line="+20"/>
         <source>Skin</source>
         <translation>Обложка</translation>
     </message>
@@ -188,6 +203,7 @@
     <message>
         <location line="+10"/>
         <source>Emulate touch screen (no mouse move)</source>
+        <translatorcomment>указателя?</translatorcomment>
         <translation>Эмулировать тачскрин (без перемещения мыши)</translation>
     </message>
     <message>
@@ -198,7 +214,7 @@
     <message>
         <location line="+26"/>
         <source>&lt;p&gt;Note that any applications using the virtual framebuffer will be terminated if you change the Size or Depth &lt;i&gt;above&lt;/i&gt;. You may freely modify the Gamma &lt;i&gt;below&lt;/i&gt;.</source>
-        <translation>&lt;p&gt;Имейте в виду, что любая программа будет завершена, если изменится размер или глубина экрана. Параметр Гамма можно менять свободно.</translation>
+        <translation>&lt;p&gt;Имейте в виду, что программы, использующие фрэймбуфер, будут завершены, если изменится &lt;i&gt;размер&lt;/i&gt; и/или &lt;i&gt;глубина&lt;/i&gt; экрана.</translation>
     </message>
     <message>
         <location line="+10"/>
@@ -206,7 +222,7 @@
         <translation>Гамма</translation>
     </message>
     <message>
-        <location line="+24"/>
+        <location line="+12"/>
         <source>Blue</source>
         <translation>Синий</translation>
     </message>
@@ -216,7 +232,7 @@
         <location line="+14"/>
         <location line="+496"/>
         <source>1.0</source>
-        <translation type="unfinished"></translation>
+        <translation>1.0</translation>
     </message>
     <message>
         <location line="-999"/>
@@ -239,14 +255,14 @@
         <translation>Выставить все в 1.0</translation>
     </message>
     <message>
-        <location line="+43"/>
+        <location line="+34"/>
         <source>&amp;OK</source>
-        <translation>&amp;Готово</translation>
+        <translation>&amp;ОК</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>&amp;Cancel</source>
-        <translation>&amp;Отмена</translation>
+        <translation>От&amp;мена</translation>
     </message>
 </context>
 <context>
@@ -310,12 +326,12 @@
 <context>
     <name>QVFb</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="-487"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="-501"/>
         <source>Browse...</source>
         <translation>Обзор...</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+140"/>
         <source>Load Custom Skin...</source>
         <translation>Загрузить обложку пользователя...</translation>
     </message>

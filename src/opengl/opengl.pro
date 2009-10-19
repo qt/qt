@@ -126,14 +126,12 @@ wince*: {
 
 embedded {
     SOURCES += qgl_qws.cpp \
-               qglpaintdevice_qws.cpp \
                qglpixelbuffer_egl.cpp \
                qglscreen_qws.cpp \
                qglwindowsurface_qws.cpp \
                qgl_egl.cpp
 
-    HEADERS += qglpaintdevice_qws_p.h \
-               qglscreen_qws.h \
+    HEADERS += qglscreen_qws.h \
                qglwindowsurface_qws_p.h \
                qgl_egl_p.h
 

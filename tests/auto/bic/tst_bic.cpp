@@ -252,6 +252,7 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
     }
     if (proc.exitCode() != 0) {
         qWarning() << "gcc returned with" << proc.exitCode();
+        qDebug() << proc.readAllStandardError();
         return QBic::Info();
     }
 
@@ -268,6 +269,7 @@ QBic::Info tst_Bic::getCurrentInfo(const QString &libName)
         qFatal("Could not locate the GCC output file, update this test");
         return QBic::Info();
     } else if (files.size() > 1) {
+        qDebug() << files;
         qFatal("Located more than one output file, please clean up before running this test");
         return QBic::Info();
     }

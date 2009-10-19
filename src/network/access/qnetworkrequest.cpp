@@ -52,7 +52,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QNetworkRequest
-    \brief The QNetworkRequest class holds one request to be sent with the Network Access API.
+    \brief The QNetworkRequest class holds a request to be sent with QNetworkAccessManager.
     \since 4.4
 
     \ingroup network
@@ -484,7 +484,7 @@ void QNetworkRequest::setSslConfiguration(const QSslConfiguration &config)
 /*!
     \since 4.6
 
-    Allows setting a reference to the object initiating
+    Allows setting a reference to the \a object initiating
     the request.
 
     For example QtWebKit sets the originating object to the

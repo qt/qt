@@ -157,7 +157,7 @@
     \section1 Phonon
 
     \list
-    \o \l{demos/mediaplayer}{Media Player} demonstrates how the \l{Phonon Module} can be
+    \o \l{demos/qmediaplayer}{Media Player} demonstrates how the \l{Phonon Module} can be
     used to implement a basic media player application.
     \endlist
 

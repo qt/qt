@@ -107,9 +107,15 @@ void tst_Q3SqlSelectCursor::createTestTables( QSqlDatabase db )
     if ( !db.isValid() )
 	return;
     QSqlQuery q( db );
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
     // please never ever change this table; otherwise fix all tests ;)
-    QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
-	    "t_char char(40), t_numeric numeric(6, 3), primary key (id, t_varchar) )" ));
+    if (tst_Databases::isMSAccess(db))
+        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+                "t_char char(40), t_numeric number, primary key (id, t_varchar) )" ));
+    else
+        QVERIFY_SQL(q, exec( "create table " + qTableName( "qtest" ) + " ( id int not null, t_varchar varchar(40) not null,"
+                "t_char char(40), t_numeric numeric(6, 3), primary key (id, t_varchar) )" ));
 }
 
 void tst_Q3SqlSelectCursor::dropTestTables( QSqlDatabase db )

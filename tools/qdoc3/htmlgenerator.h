@@ -68,9 +68,10 @@ struct NavigationBar
 #endif
 
 typedef QMultiMap<QString, Node*> NodeMultiMap;
-typedef QMap<QString, NodeMultiMap> NodeMultiMapMap;
+typedef QMap<QString, NodeMultiMap> NewSinceMaps;
+typedef QMap<Node*, NodeMultiMap> ParentMaps;
 typedef QMap<QString, const Node*> NodeMap;
-typedef QMap<QString, NodeMap> NodeMapMap;
+typedef QMap<QString, NodeMap> NewClassMaps;
 
 class HelpProjectWriter;
 
@@ -311,9 +312,9 @@ class HtmlGenerator : public PageGenerator
 #endif
     QMap<QString, NodeMap > funcIndex;
     QMap<Text, const Node *> legaleseTexts;
-    NodeMultiMapMap nodeMultiMapMap;
+    NewSinceMaps newSinceMaps;
     static QString sinceTitles[];
-    NodeMapMap nodeMapMap;
+    NewClassMaps newClassMaps;
 };
 
 #define HTMLGENERATOR_ADDRESS           "address"

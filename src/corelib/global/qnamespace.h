@@ -44,10 +44,6 @@
 
 #include <QtCore/qglobal.h>
 
-#ifdef Q_OS_SYMBIAN
-# include <e32def.h>
-#endif
-
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -500,8 +496,6 @@ public:
         WA_AcceptTouchEvents = 121,
         WA_WState_AcceptedTouchBeginEvent = 122,
         WA_TouchPadAcceptSingleTouchEvents = 123,
-
-        WA_DontUseStandardGestures = 124,
 
         // Add new attributes before this line
         WA_AttributeCount
@@ -1615,9 +1609,29 @@ public:
     enum GestureState
     {
         NoGesture,
-        GestureStarted = 1,
-        GestureUpdated = 2,
-        GestureFinished = 3
+        GestureStarted  = 1,
+        GestureUpdated  = 2,
+        GestureFinished = 3,
+        GestureCanceled = 4
+    };
+
+    enum GestureType
+    {
+        TapGesture        = 1,
+        TapAndHoldGesture = 2,
+        PanGesture        = 3,
+        PinchGesture      = 4,
+        SwipeGesture      = 5,
+
+        CustomGesture     = 0x0100,
+
+        LastGestureType   = ~0u
+    };
+
+    enum GestureContext
+    {
+        WidgetGesture             = 0,
+        WidgetWithChildrenGesture = 3
     };
 
     enum NavigationMode
@@ -1637,7 +1651,6 @@ public:
 #ifdef Q_MOC_RUN
  ;
 #endif
-
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MouseButtons)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::Orientations)

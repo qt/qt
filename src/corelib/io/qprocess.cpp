@@ -97,6 +97,10 @@ QT_END_NAMESPACE
 #include <private/qwineventnotifier_p.h>
 #endif
 
+#ifdef Q_OS_SYMBIAN
+#include <e32std.h>
+#endif
+
 #ifndef QT_NO_PROCESS
 
 QT_BEGIN_NAMESPACE
@@ -412,7 +416,7 @@ void QProcessPrivate::Channel::clear()
 }
 
 /*! \fn bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
-  
+
 \internal
  */
 
@@ -2238,7 +2242,7 @@ QProcessEnvironment QProcessEnvironment::systemEnvironment()
     \relates QProcess
 
     Typedef for the identifiers used to represent processes on the underlying
-    platform. On Unix, this corresponds to \l qint64; on Windows, it
+    platform. On Unix and Symbian, this corresponds to \l qint64; on Windows, it
     corresponds to \c{_PROCESS_INFORMATION*}.
 
     \sa QProcess::pid()

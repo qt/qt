@@ -149,6 +149,13 @@
     This product includes software developed by the OpenSSL Project
     for use in the OpenSSL Toolkit (\l{http://www.openssl.org/}).
 
+    \note Be aware of the difference between the bytesWritten() signal and
+    the encryptedBytesWritten() signal. For a QTcpSocket, bytesWritten()
+    will get emitted as soon as data has been written to the TCP socket.
+    For a QSslSocket, bytesWritten() will get emitted when the data
+    is being encrypted and encryptedBytesWritten()
+    will get emitted as soon as data has been written to the TCP socket.
+
     \sa QSslCertificate, QSslCipher, QSslError
 */
 

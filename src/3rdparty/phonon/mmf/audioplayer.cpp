@@ -213,8 +213,8 @@ void MMF::AudioPlayer::MapcPlayComplete(TInt aError)
     }
 
     /*
-        if(aError == KErrNone) {
-            if(m_nextSource.type() == MediaSource::Empty) {
+        if (aError == KErrNone) {
+            if (m_nextSource.type() == MediaSource::Empty) {
                 emit finished();
             } else {
                 setSource(m_nextSource);
