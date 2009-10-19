@@ -44,6 +44,7 @@
 #include "private/qwidget_p.h"
 #include "private/qgesture_p.h"
 #include "private/qgraphicsitem_p.h"
+#include "private/qevent_p.h"
 #include "qgesture.h"
 #include "qevent.h"
 #include "qgraphicsitem.h"
@@ -478,17 +479,26 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
                 << "gestures:" << gestures;
         QGestureEvent event(gestures);
         event.t = QEvent::GestureOverride;
+        // mark event and individual gestures as ignored
         event.ignore();
+        foreach(QGesture *g, gestures)
+            event.setAccepted(g, false);
+
         QApplication::sendEvent(receiver, &event);
-        if (!event.isAccepted()) {
-            // nobody accepted the GestureOverride, put gestures that were not
-            // accepted back to deliver as usual
-            QList<QGesture *> &gestures = normalStartedGestures[receiver];
-            foreach(QGesture *gesture, event.allGestures()) {
-                if (!event.isAccepted(gesture)) {
-                    DEBUG() << "override event wasn't accepted. putting back:" << gesture;
-                    gestures.append(gesture);
-                }
+        bool eventAccepted = event.isAccepted();
+        foreach(QGesture *gesture, event.allGestures()) {
+            if (eventAccepted || event.isAccepted(gesture)) {
+                QWidget *w = event.d_func()->targetWidgets.value(gesture->gestureType(), 0);
+                Q_ASSERT(w);
+                DEBUG() << "override event: gesture was accepted:" << gesture << w;
+                QList<QGesture *> &gestures = normalStartedGestures[w];
+                gestures.append(gesture);
+                // override the target
+                gestureTargets[gesture] = w;
+            } else {
+                DEBUG() << "override event: gesture wasn't accepted. putting back:" << gesture;
+                QList<QGesture *> &gestures = normalStartedGestures[receiver];
+                gestures.append(gesture);
             }
         }
     }

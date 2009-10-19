@@ -820,10 +820,12 @@ protected:
 };
 
 class QGesture;
+class QGestureEventPrivate;
 class Q_GUI_EXPORT QGestureEvent : public QEvent
 {
 public:
     QGestureEvent(const QList<QGesture *> &gestures);
+    ~QGestureEvent();
 
     QList<QGesture *> allGestures() const;
     QGesture *gesture(Qt::GestureType type) const;
@@ -854,10 +856,11 @@ public:
     QWidget *widget() const;
 
 private:
-    QList<QGesture *> gestures_;
-    QWidget *widget_;
+    QGestureEventPrivate *d_func();
+    const QGestureEventPrivate *d_func() const;
 
     friend class QApplication;
+    friend class QGestureManager;
 };
 
 QT_END_NAMESPACE

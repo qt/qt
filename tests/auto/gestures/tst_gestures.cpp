@@ -144,6 +144,49 @@ public:
     }
 };
 
+// same as CustomGestureRecognizer but triggers early without the maybe state
+class CustomContinuousGestureRecognizer : public QGestureRecognizer
+{
+public:
+    CustomContinuousGestureRecognizer()
+    {
+        if (!CustomEvent::EventType)
+            CustomEvent::EventType = QEvent::registerEventType();
+    }
+
+    QGesture* createGesture(QObject *)
+    {
+        return new CustomGesture;
+    }
+
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject*, QEvent *event)
+    {
+        if (event->type() == CustomEvent::EventType) {
+            QGestureRecognizer::Result result = QGestureRecognizer::ConsumeEventHint;
+            CustomGesture *g = static_cast<CustomGesture*>(state);
+            CustomEvent *e = static_cast<CustomEvent*>(event);
+            g->serial = e->serial;
+            if (e->hasHotSpot)
+                g->setHotSpot(e->hotSpot);
+            if (g->serial >= CustomGesture::SerialFinishedThreshold)
+                result |= QGestureRecognizer::GestureFinished;
+            else if (g->serial >= CustomGesture::SerialMaybeThreshold)
+                result |= QGestureRecognizer::GestureTriggered;
+            else
+                result = QGestureRecognizer::NotGesture;
+            return result;
+        }
+        return QGestureRecognizer::Ignore;
+    }
+
+    void reset(QGesture *state)
+    {
+        CustomGesture *g = static_cast<CustomGesture*>(state);
+        g->serial = 0;
+        QGestureRecognizer::reset(state);
+    }
+};
+
 class GestureWidget : public QWidget
 {
     Q_OBJECT
@@ -163,6 +206,7 @@ public:
         gestureOverrideEventsReceived = 0;
         events.clear();
         overrideEvents.clear();
+        ignoredGestures.clear();
     }
 
     int customEventsReceived;
@@ -450,7 +494,7 @@ void tst_Gestures::conflictingGestures()
     sendCustomGesture(&event, child);
 
     QCOMPARE(child->gestureOverrideEventsReceived, 1);
-    QCOMPARE(child->gestureEventsReceived, 0);
+    QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(parent.gestureOverrideEventsReceived, 0);
     QCOMPARE(parent.gestureEventsReceived, 0);
 
@@ -467,7 +511,7 @@ void tst_Gestures::conflictingGestures()
     QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QCOMPARE(child->gestureEventsReceived, 0);
     QCOMPARE(parent.gestureOverrideEventsReceived, 1);
-    QCOMPARE(parent.gestureEventsReceived, 0);
+    QCOMPARE(parent.gestureEventsReceived, TotalGestureEventsCount);
 
     parent.reset();
     child->reset();
@@ -475,6 +519,7 @@ void tst_Gestures::conflictingGestures()
     // nobody accepts the override, we will send normal events to the closest context (to the child)
     parent.acceptGestureOverride = false;
     child->acceptGestureOverride = false;
+    child->ignoredGestures << CustomGesture::GestureType;
 
     // sending events to the child and making sure there is no conflict
     sendCustomGesture(&event, child);
@@ -482,6 +527,23 @@ void tst_Gestures::conflictingGestures()
     QCOMPARE(child->gestureOverrideEventsReceived, 1);
     QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
     QCOMPARE(parent.gestureOverrideEventsReceived, 1);
+    QCOMPARE(parent.gestureEventsReceived, TotalGestureEventsCount);
+
+    parent.reset();
+    child->reset();
+
+    Qt::GestureType ContinuousGesture = qApp->registerGestureRecognizer(new CustomContinuousGestureRecognizer);
+    static const int ContinuousGestureEventsCount = CustomGesture::SerialFinishedThreshold - CustomGesture::SerialMaybeThreshold + 1;
+    child->grabGesture(ContinuousGesture);
+    // child accepts override. And it also receives another custom gesture.
+    parent.acceptGestureOverride = false;
+    child->acceptGestureOverride = true;
+    sendCustomGesture(&event, child);
+
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
+    QVERIFY(child->gestureEventsReceived > TotalGestureEventsCount);
+    QCOMPARE(child->events.all.count(), TotalGestureEventsCount + ContinuousGestureEventsCount);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 0);
     QCOMPARE(parent.gestureEventsReceived, 0);
 }
 

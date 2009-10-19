@@ -4223,8 +4223,17 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     Creates new QGestureEvent containing a list of \a gestures.
 */
 QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
-    : QEvent(QEvent::Gesture), gestures_(gestures)
+    : QEvent(QEvent::Gesture)
 {
+    d = reinterpret_cast<QEventPrivate *>(new QGestureEventPrivate(gestures));
+}
+
+/*!
+    Destroys QGestureEvent.
+*/
+QGestureEvent::~QGestureEvent()
+{
+    delete reinterpret_cast<QGestureEventPrivate *>(d);
 }
 
 /*!
@@ -4232,7 +4241,7 @@ QGestureEvent::QGestureEvent(const QList<QGesture *> &gestures)
 */
 QList<QGesture *> QGestureEvent::allGestures() const
 {
-    return gestures_;
+    return d_func()->gestures;
 }
 
 /*!
@@ -4240,9 +4249,10 @@ QList<QGesture *> QGestureEvent::allGestures() const
 */
 QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 {
-    for(int i = 0; i < gestures_.size(); ++i)
-        if (gestures_.at(i)->gestureType() == type)
-            return gestures_.at(i);
+    const QGestureEventPrivate *d = d_func();
+    for(int i = 0; i < d->gestures.size(); ++i)
+        if (d->gestures.at(i)->gestureType() == type)
+            return d->gestures.at(i);
     return 0;
 }
 
@@ -4251,7 +4261,7 @@ QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 */
 QList<QGesture *> QGestureEvent::activeGestures() const
 {
-    return gestures_;
+    return d_func()->gestures;
 }
 
 /*!
@@ -4259,7 +4269,7 @@ QList<QGesture *> QGestureEvent::activeGestures() const
 */
 QList<QGesture *> QGestureEvent::canceledGestures() const
 {
-    return gestures_;
+    return d_func()->gestures;
 }
 
 /*!
@@ -4279,7 +4289,7 @@ void QGestureEvent::setAccepted(QGesture *gesture, bool value)
 {
     setAccepted(false);
     if (gesture)
-        gesture->d_func()->accept = value;
+        d_func()->accepted[gesture->gestureType()] = value;
 }
 
 /*!
@@ -4315,7 +4325,7 @@ void QGestureEvent::ignore(QGesture *gesture)
 */
 bool QGestureEvent::isAccepted(QGesture *gesture) const
 {
-    return gesture ? gesture->d_func()->accept : false;
+    return gesture ? d_func()->accepted.value(gesture->gestureType(), true) : false;
 }
 
 /*!
@@ -4323,7 +4333,7 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
 */
 void QGestureEvent::setWidget(QWidget *widget)
 {
-    widget_ = widget;
+    d_func()->widget = widget;
 }
 
 /*!
@@ -4331,7 +4341,23 @@ void QGestureEvent::setWidget(QWidget *widget)
 */
 QWidget *QGestureEvent::widget() const
 {
-    return widget_;
+    return d_func()->widget;
+}
+
+/*!
+    \internal
+*/
+QGestureEventPrivate *QGestureEvent::d_func()
+{
+    return reinterpret_cast<QGestureEventPrivate *>(d);
+}
+
+/*!
+    \internal
+*/
+const QGestureEventPrivate *QGestureEvent::d_func() const
+{
+    return reinterpret_cast<const QGestureEventPrivate *>(d);
 }
 
 #ifdef Q_NO_USING_KEYWORD
