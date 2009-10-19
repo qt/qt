@@ -443,6 +443,7 @@ QObject *Factory::backend(bool createWhenNull)
     return globalFactory->m_backendObject;
 }
 
+#ifndef QT_NO_PROPERTIES
 #define GET_STRING_PROPERTY(name) \
 QString Factory::name() \
 { \
@@ -458,7 +459,7 @@ GET_STRING_PROPERTY(backendComment)
 GET_STRING_PROPERTY(backendVersion)
 GET_STRING_PROPERTY(backendIcon)
 GET_STRING_PROPERTY(backendWebsite)
-
+#endif //QT_NO_PROPERTIES
 QObject *Factory::registerQObject(QObject *o)
 {
     if (o) {

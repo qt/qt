@@ -1190,6 +1190,7 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
                                          const JSC::Identifier &propertyName,
                                          JSC::PropertySlot &slot)
 {
+#ifndef QT_NO_PROPERTIES
     QByteArray name = QString(propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
@@ -1296,12 +1297,16 @@ bool QObjectDelegate::getOwnPropertySlot(QScriptObject *object, JSC::ExecState *
     }
 
     return QScriptObjectDelegate::getOwnPropertySlot(object, exec, propertyName, slot);
+#else //QT_NO_PROPERTIES
+    return false;
+#endif //QT_NO_PROPERTIES
 }
 
 void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
                           const JSC::Identifier& propertyName,
                           JSC::JSValue value, JSC::PutPropertySlot &slot)
 {
+#ifndef QT_NO_PROPERTIES
     QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
@@ -1392,12 +1397,14 @@ void QObjectDelegate::put(QScriptObject *object, JSC::ExecState* exec,
     }
 
     QScriptObjectDelegate::put(object, exec, propertyName, value, slot);
+#endif //QT_NO_PROPERTIES
 }
 
 bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec,
                                      const JSC::Identifier& propertyName,
                                      bool checkDontDelete)
 {
+#ifndef QT_NO_PROPERTIES
     QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
     if (!qobject) {
@@ -1436,6 +1443,9 @@ bool QObjectDelegate::deleteProperty(QScriptObject *object, JSC::ExecState *exec
     }
 
     return QScriptObjectDelegate::deleteProperty(object, exec, propertyName, checkDontDelete);
+#else //QT_NO_PROPERTIES
+    return false;
+#endif //QT_NO_PROPERTIES
 }
 
 bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
@@ -1443,6 +1453,7 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
                                             const JSC::Identifier &propertyName,
                                             unsigned &attributes) const
 {
+#ifndef QT_NO_PROPERTIES
     // ### try to avoid duplicating logic from getOwnPropertySlot()
     QByteArray name = ((QString)propertyName.ustring()).toLatin1();
     QObject *qobject = data->value;
@@ -1511,12 +1522,16 @@ bool QObjectDelegate::getPropertyAttributes(const QScriptObject *object,
     }
 
     return QScriptObjectDelegate::getPropertyAttributes(object, exec, propertyName, attributes);
+#else //QT_NO_PROPERTIES
+    return false;
+#endif //QT_NO_PROPERTIES
 }
 
 void QObjectDelegate::getOwnPropertyNames(QScriptObject *object, JSC::ExecState *exec,
                                           JSC::PropertyNameArray &propertyNames,
                                           bool includeNonEnumerable)
 {
+#ifndef QT_NO_PROPERTIES
     QObject *qobject = data->value;
     if (!qobject) {
         QString message = QString::fromLatin1("cannot get property names of deleted QObject");
@@ -1560,6 +1575,7 @@ void QObjectDelegate::getOwnPropertyNames(QScriptObject *object, JSC::ExecState 
     }
 
     QScriptObjectDelegate::getOwnPropertyNames(object, exec, propertyNames, includeNonEnumerable);
+#endif //QT_NO_PROPERTIES
 }
 
 void QObjectDelegate::markChildren(QScriptObject *object, JSC::MarkStack& markStack)

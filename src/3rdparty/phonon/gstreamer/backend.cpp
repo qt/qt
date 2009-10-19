@@ -55,12 +55,13 @@ Backend::Backend(QObject *parent, const QVariantList &)
         g_error_free(err);
 
     qRegisterMetaType<Message>("Message");
-
+#ifndef QT_NO_PROPERTIES
     setProperty("identifier",     QLatin1String("phonon_gstreamer"));
     setProperty("backendName",    QLatin1String("Gstreamer"));
     setProperty("backendComment", QLatin1String("Gstreamer plugin for Phonon"));
     setProperty("backendVersion", QLatin1String("0.2"));
     setProperty("backendWebsite", QLatin1String("http://qt.nokia.com/"));
+#endif //QT_NO_PROPERTIES
 
     //check if we should enable debug output
     QString debugLevelString = qgetenv("PHONON_GST_DEBUG");
