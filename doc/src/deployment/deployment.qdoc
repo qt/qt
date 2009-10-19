@@ -346,6 +346,7 @@
     are many ways to solve this:
 
     \list
+    
     \o You can install the Qt libraries in one of the system
        library paths (e.g. \c /usr/lib on most systems).
 
@@ -805,6 +806,30 @@
     compiler version against the same C runtime version. This prevents
     deploying errors caused by different versions of the C runtime libraries.
 
+    \section2 Visual Studio 2008 And Manual Installs
+
+    As well as the above details for VS 2005 and onwards, Visual Studio 2008
+    applications may have problems when deploying manually, say to a USB
+    stick.
+
+    The recommended procedure is to configure Qt with the \c -plugin-manifests
+    option using the 'configure' tool. Then follow the \l {http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx}{guidelines}
+    for manually deploying private assemblies.
+
+    In brief the steps are
+
+    \list 1
+    
+        \o create a folder structure on the development computer that will match the target USB stick directory structure, for example '\\app' and for your dlls, '\\app\\lib'.
+        
+        \o on the development computer, from the appropriate 'redist' folder copy over Microsoft.VC80.CRT and Microsoft.VC80.MFC to the directories '\\app' and '\\app\\lib' on the development PC.
+        
+        \o xcopy the \\app folder to the target USB stick.
+    \endlist
+
+    Your application should now run. Also be aware that even with a service
+    pack installed the Windows DLLs that are linked to will be the defaults. See
+    the information on \l {http://msdn.microsoft.com/en-us/library/cc664727.aspx}{how to select the appropriate target DLLs}.
 
     \section1 Application Dependencies
 

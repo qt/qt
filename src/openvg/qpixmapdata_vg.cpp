@@ -101,6 +101,11 @@ QVGPixmapData::~QVGPixmapData()
 #endif
 }
 
+QPixmapData *QVGPixmapData::createCompatiblePixmapData() const
+{
+    return new QVGPixmapData(pixelType());
+}
+
 bool QVGPixmapData::isValid() const
 {
     return (w > 0 && h > 0);
