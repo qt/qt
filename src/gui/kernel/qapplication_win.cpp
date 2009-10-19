@@ -1916,11 +1916,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 #ifndef Q_WS_WINCE
         case WM_ENTERSIZEMOVE:
             autoCaptureWnd = hwnd;
-            QApplicationPrivate::inSizeMove = true;
             break;
         case WM_EXITSIZEMOVE:
             autoCaptureWnd = 0;
-            QApplicationPrivate::inSizeMove = false;
             break;
 #endif
         case WM_MOVE:                                // move window
