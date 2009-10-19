@@ -558,6 +558,8 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             else if (newstate & Qt::WindowMaximized) {
                 ShowWindow(internalWinId(), max);
                 qt_wince_maximize(this);
+            } else {
+                ShowWindow(internalWinId(), normal);
             }
         }
     }
