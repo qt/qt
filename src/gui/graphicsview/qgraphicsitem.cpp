@@ -4737,7 +4737,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
+    return qt_closestItemFirst(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 
