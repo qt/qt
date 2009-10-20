@@ -46,7 +46,7 @@
 \l {Property Binding}s and \l {ECMAScript Blocks} are executed in a scope chain automatically 
 established by QML when constructing a component instance.  QML is a \e {dynamically scoped} 
 language.  Different object instances instantiated from the same component can exist in 
-dramatically different scope chains.
+different scope chains.
 
 \image qml-scope.png
 
@@ -262,15 +262,111 @@ Item {
 
 \section1 QML Component chain
 
-\section2 IDs
-\section2 Script Methods
-\section2 Root Object
+When a QML component is instantiated it is given a parent component instance.  The parent 
+component instance is immutable - it is not effected, for example, by changes in the instance's
+visual parent (in the case of visual elements).  Should name resolution fail within the
+\l {QML Local Scope}, this parent chain is searched.
+
+For each component instance in the chain, the following are examined:
+
+\list 1
+\o IDs
+\o Script Methods
+\o Root Object
+\endlist
+
+This list is a sub-set of that in the \l {QML Local Scope}.
+
+Sub-components used within a component have their parent component instance set to the component
+instance that created them.  In the following example, the two \c Button instances have the 
+\c main.qml instance as their parent component instance.  If the \c Button type was used from
+within another QML file, it may have a difference parent component instance, and consequently
+the \c buttonClicked() method may resolve differently.
+
+\table
+\row
+\o
+\code
+// main.qml
+Item {
+    function buttonClicked(var data) { 
+        print(data + " clicked");
+    }
+
+    Button { text: "Button1" }
+    Button { text: "Button2" }
+}
+\endcode
+\o
+\code
+// Button.qml
+Rectangle {
+    id: root
+    property string text
+    width: 80
+    height: 30
+    Text {
+        anchors.centerIn: parent
+        text: root.text
+    }
+    MouseRegion { 
+        anchors.fill: parent
+        onClicked: buttonClicked(text) 
+    }
+}
+\endcode
+\endtable
+
+The code above discourages the re-use of the \c Button component, as it has a hard dependency
+on the environment in which it is used.  Tightly coupling two types together like this should
+only be used when the components are within the same module, and the author controls the 
+implementations of both.
+
+In the following example, the \l ListView sets the parent component instance of each of its
+delegates to its own component instance.  In this way, the main component can easily pass data
+into the \l ListView delegates.
+
+\code
+Item {
+    property color delegateColor: "red"
+
+    ListView {
+        delegate: Component {
+            Rectangle {
+                color: delegateColor
+            }
+        }
+    }
+}
+\endcode
 
 \section1 QmlContext chain
 
-App provided data.
+The \l QmlContext chain allows C++ applications to pass data into QML applications.  
+\l QmlComponent object instances created from C++ are passed a \l QmlContext in which they
+are created.  Variables defined in this context appear in the scope chain.  Each QmlContext 
+also defines a parent context.  Variables in child QmlContext's shadow those in its parent.
+
+Consider the following QmlContext tree.
+
+\image qml-context-tree.png
+
+The value of \c background in \c {Context 1} would be used if it was instantiated in 
+\c {Context 1}, where as the value of the \c background in the root context would be used if
+the component instance was instantiated in \c {Context 2}.
+
+\code
+import Qt 4.6
+
+Rectangle {
+    id: myRect
+    width: 100; height: 100
+    color: background
+}
+\endcode
 
 \section1 QML Global Object
 
-Contains all the properties ECMAScript defines, plus some QML ones.  Documented \l {QML Global Object}.
+The \l {QML Global Object} contains all the properties of the ECMAScript global object, plus some
+QML specific extensions.
 */
