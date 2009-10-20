@@ -117,6 +117,7 @@ private slots:
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
     void task262152_setModelColumnNavigate();
+    void taskQTBUG_2233_scrollHiddenRows();
 };
 
 // Testing get/set functions
@@ -1790,7 +1791,31 @@ void tst_QListView::task262152_setModelColumnNavigate()
 
 }
 
+void tst_QListView::taskQTBUG_2233_scrollHiddenRows()
+{
+    const int rowCount = 200;
 
+    QListView view;
+    QStringListModel model(&view);
+    QStringList list;
+    for (int i = 0; i < rowCount; ++i)
+        list << QString::fromAscii("Item %1").arg(i);
+
+    model.setStringList(list);
+    view.setModel(&model);
+    view.setViewMode(QListView::ListMode);
+    view.setFlow(QListView::TopToBottom);
+    for (int i = 0; i < rowCount / 2; ++i)
+        view.setRowHidden(2 * i, true);
+    view.resize(250, 130);
+
+    for (int i = 0; i < 10; ++i) {
+        view.verticalScrollBar()->setValue(i);
+        QModelIndex index = view.indexAt(QPoint(20,0));
+        QVERIFY(index.isValid());
+        QCOMPARE(index.row(), 2 * i + 1);
+    }
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

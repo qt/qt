@@ -1900,7 +1900,7 @@ void QListModeViewBase::updateVerticalScrollBar(const QSize &step)
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && !isWrapping())
         || (flow() == QListView::LeftToRight && isWrapping()))) {
-            const int steps = (flow() == QListView::TopToBottom ? flowPositions : segmentPositions).count() - 1;
+            const int steps = (flow() == QListView::TopToBottom ? scrollValueMap : segmentPositions).count() - 1;
             if (steps > 0) {
                 const int pageSteps = perItemScrollingPageSteps(viewport()->height(), contentsSize.height(), isWrapping());
                 verticalScrollBar()->setSingleStep(1);
@@ -1939,7 +1939,7 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
                                           bool above, bool below, const QRect &area, const QRect &rect) const
 {
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
-        int value = qBound(0, verticalScrollBar()->value(), flowPositions.count() - 1);
+        int value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
         if (above)
             hint = QListView::PositionAtTop;
         else if (below)
@@ -1986,9 +1986,9 @@ int QListModeViewBase::verticalOffset() const
             }
         } else if (flow() == QListView::TopToBottom && !flowPositions.isEmpty()) {
             int value = verticalScrollBar()->value();
-            if (value > flowPositions.count())
+            if (value > scrollValueMap.count())
                 return 0;
-            return flowPositions.at(value) - spacing();
+            return flowPositions.at(scrollValueMap.at(value)) - spacing();
         }
     }
     return QCommonListViewBase::verticalOffset();
@@ -2043,8 +2043,8 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
         if (vertical && flow() == QListView::TopToBottom && dy != 0) {
             int currentValue = qBound(0, verticalValue, max);
             int previousValue = qBound(0, currentValue + dy, max);
-            int currentCoordinate = flowPositions.at(currentValue);
-            int previousCoordinate = flowPositions.at(previousValue);
+            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dy = previousCoordinate - currentCoordinate;
         } else if (horizontal && flow() == QListView::LeftToRight && dx != 0) {
             int currentValue = qBound(0, horizontalValue, max);
@@ -2113,6 +2113,7 @@ QPoint QListModeViewBase::initStaticLayout(const QListViewLayoutInfo &info)
         segmentPositions.clear();
         segmentStartRows.clear();
         segmentExtents.clear();
+        scrollValueMap.clear();
         x = info.bounds.left() + info.spacing;
         y = info.bounds.top() + info.spacing;
         segmentPositions.append(info.flow == QListView::LeftToRight ? y : x);
@@ -2204,6 +2205,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
                 deltaSegPosition = 0;
             }
             // save the flow position of this item
+            scrollValueMap.append(flowPositions.count());
             flowPositions.append(flowPosition);
             // prepare for the next item
             deltaSegPosition = qMax(deltaSegHint, deltaSegPosition);
@@ -2229,6 +2231,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
     // if it is the last batch, save the end of the segments
     if (info.last == info.max) {
         segmentExtents.append(flowPosition);
+        scrollValueMap.append(flowPositions.count());
         flowPositions.append(flowPosition);
         segmentPositions.append(info.wrap ? segPosition + deltaSegPosition : INT_MAX);
     }
@@ -2306,7 +2309,14 @@ QRect QListModeViewBase::mapToViewport(const QRect &rect) const
 
 int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wrap) const
 {
-    const QVector<int> positions = (wrap ? segmentPositions : flowPositions);
+    QVector<int> positions;
+    if (wrap)
+        positions = segmentPositions;
+    else {
+        positions.reserve(scrollValueMap.size());
+        foreach (int itemShown, scrollValueMap)
+            positions.append(flowPositions.at(itemShown));
+    }
     if (positions.isEmpty() || bounds <= length)
         return positions.count();
     if (uniformItemSizes()) {
