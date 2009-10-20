@@ -117,7 +117,8 @@ private slots:
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
     void task262152_setModelColumnNavigate();
-    void taskQTBUG_2233_scrollHiddenRows();
+    void taskQTBUG_2233_scrollHiddenItems_data();
+    void taskQTBUG_2233_scrollHiddenItems();
 };
 
 // Testing get/set functions
@@ -1781,18 +1782,27 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
-    QTest::qWait(30);
+    QTest::qWait(100);
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(10);
+    QTest::qWait(100);
     QCOMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(10);
+    QTest::qWait(100);
     QCOMPARE(view.currentIndex(), model.index(2,1));
 
 }
 
-void tst_QListView::taskQTBUG_2233_scrollHiddenRows()
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems_data()
 {
+    QTest::addColumn<int>("flow");
+
+    QTest::newRow("TopToBottom") << static_cast<int>(QListView::TopToBottom);
+    QTest::newRow("LeftToRight") << static_cast<int>(QListView::LeftToRight);
+}
+
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
+{
+    QFETCH(int, flow);
     const int rowCount = 200;
 
     QListView view;
@@ -1804,14 +1814,16 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenRows()
     model.setStringList(list);
     view.setModel(&model);
     view.setViewMode(QListView::ListMode);
-    view.setFlow(QListView::TopToBottom);
     for (int i = 0; i < rowCount / 2; ++i)
         view.setRowHidden(2 * i, true);
-    view.resize(250, 130);
+    view.setFlow(static_cast<QListView::Flow>(flow));
+    view.resize(130, 130);
 
     for (int i = 0; i < 10; ++i) {
-        view.verticalScrollBar()->setValue(i);
-        QModelIndex index = view.indexAt(QPoint(20,0));
+        (view.flow() == QListView::TopToBottom
+            ? view.verticalScrollBar()
+            : view.horizontalScrollBar())->setValue(i);
+        QModelIndex index = view.indexAt(QPoint(0,0));
         QVERIFY(index.isValid());
         QCOMPARE(index.row(), 2 * i + 1);
     }
