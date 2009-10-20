@@ -572,6 +572,10 @@ static void qt_mac_get_accel(quint32 accel_key, quint32 *modif, quint32 *key) {
             *key = kMenuNorthwestArrowGlyph;
         else if (accel_key == Qt::Key_End)
             *key = kMenuSoutheastArrowGlyph;
+        else if (accel_key == Qt::Key_Back)
+            *key = kMenuLeftArrowDashedGlyph;
+        else if (accel_key == Qt::Key_Forward)
+            *key = kMenuRightArrowDashedGlyph;
     }
 }
 #else // Cocoa
@@ -1239,6 +1243,10 @@ NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
         keyEquiv[0] = NSHomeFunctionKey;
     else if (accel_key == Qt::Key_End)
         keyEquiv[0] = NSEndFunctionKey;
+    else if (accel_key == Qt::Key_Back)
+        keyEquiv[0] = kMenuLeftArrowDashedGlyph;  // ### Cocoa has no equivalent - no icon is displayed
+    else if (accel_key == Qt::Key_Forward)
+        keyEquiv[0] = kMenuRightArrowDashedGlyph;  // ### Cocoa has no equivalent - no icon is displayed
     else
         keyEquiv[0] = unichar(QChar(accel_key).toLower().unicode());
     return [NSString stringWithCharacters:keyEquiv length:1];
