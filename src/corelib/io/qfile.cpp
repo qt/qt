@@ -1120,8 +1120,13 @@ bool QFile::open(int fd, OpenMode mode)
     }
     if(d->openExternalFile(mode, fd)) {
         QIODevice::open(mode);
-        if (mode & Append)
+        if (mode & Append) {
             seek(size());
+        } else {
+            qint64 pos = (qint64)QT_LSEEK(fd, QT_OFF_T(0), SEEK_CUR);
+            if (pos != -1)
+                seek(pos);
+        }
         return true;
     }
     return false;

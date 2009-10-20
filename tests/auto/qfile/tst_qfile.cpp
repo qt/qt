@@ -187,6 +187,8 @@ private slots:
     void mapOpenMode_data();
     void mapOpenMode();
 
+    void openStandardStreams();
+
     // --- Task related tests below this line
     void task167217();
 
@@ -2632,6 +2634,59 @@ void tst_QFile::openDirectory()
     QVERIFY(!f1.open(QIODevice::ReadOnly));
     f1.close();
     QVERIFY(!f1.open(QIODevice::ReadOnly|QIODevice::Unbuffered));
+}
+
+void tst_QFile::openStandardStreams()
+{
+    // Using file descriptors
+    {
+        QFile in;
+        in.open(STDIN_FILENO, QIODevice::ReadOnly);
+        QCOMPARE( in.pos(), (qint64)0 );
+        QCOMPARE( in.size(), (qint64)0 );
+        QVERIFY( in.isSequential() );
+    }
+
+    {
+        QFile out;
+        out.open(STDOUT_FILENO, QIODevice::WriteOnly);
+        QCOMPARE( out.pos(), (qint64)0 );
+        QCOMPARE( out.size(), (qint64)0 );
+        QVERIFY( out.isSequential() );
+    }
+
+    {
+        QFile err;
+        err.open(STDERR_FILENO, QIODevice::WriteOnly);
+        QCOMPARE( err.pos(), (qint64)0 );
+        QCOMPARE( err.size(), (qint64)0 );
+        QVERIFY( err.isSequential() );
+    }
+
+    // Using streams
+    {
+        QFile in;
+        in.open(stdin, QIODevice::ReadOnly);
+        QCOMPARE( in.pos(), (qint64)0 );
+        QCOMPARE( in.size(), (qint64)0 );
+        QVERIFY( in.isSequential() );
+    }
+
+    {
+        QFile out;
+        out.open(stdout, QIODevice::WriteOnly);
+        QCOMPARE( out.pos(), (qint64)0 );
+        QCOMPARE( out.size(), (qint64)0 );
+        QVERIFY( out.isSequential() );
+    }
+
+    {
+        QFile err;
+        err.open(stderr, QIODevice::WriteOnly);
+        QCOMPARE( err.pos(), (qint64)0 );
+        QCOMPARE( err.size(), (qint64)0 );
+        QVERIFY( err.isSequential() );
+    }
 }
 
 QTEST_MAIN(tst_QFile)
