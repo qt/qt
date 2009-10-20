@@ -215,6 +215,9 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 
     The spacing can also be set manually by using QGraphicsAnchor::setSpacing() method.
 
+    Calling this function where \a firstItem or \a secondItem are ancestors of the layout have
+    undefined behaviour.
+
     \sa addCornerAnchors(), addAnchors()
  */
 QGraphicsAnchor *

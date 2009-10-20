@@ -1511,6 +1511,8 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
 
+    Calling this function on an item that is an ancestor of \a parent have undefined behaviour.
+
     \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
