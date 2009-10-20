@@ -196,6 +196,7 @@ public:
             return 0;
         }
     } *mac_menubar;
+    bool macWidgetHasNativeMenubar(QWidget *widget);
     void macCreateMenuBar(QWidget *);
     void macDestroyMenuBar();
     OSMenuRef macMenu();

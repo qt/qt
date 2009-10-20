@@ -1370,8 +1370,13 @@ void QMenuBarPrivate::handleReparent()
     oldWindow = newWindow;
 
 #ifdef Q_WS_MAC
-    macDestroyMenuBar();
-    macCreateMenuBar(newParent);
+    if (q->isNativeMenuBar() && !macWidgetHasNativeMenubar(newParent)) {
+        // If the new parent got a native menubar from before, keep that
+        // menubar rather than replace it with this one (because a parents
+        // menubar has precedence over children menubars).
+        macDestroyMenuBar();
+        macCreateMenuBar(newParent);
+    }
 #endif
 
 #ifdef Q_WS_WINCE

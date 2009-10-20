@@ -1599,7 +1599,7 @@ QModelIndex QTableView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifi
                 break;
             visualColumn = right + 1;
             if (visualRow == 0) {
-                wrapped == true;
+                wrapped = true;
                 visualRow = bottom;
             } else {
                 --visualRow;

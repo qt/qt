@@ -81,6 +81,9 @@ QT_BEGIN_NAMESPACE
 // system events seems to start with 0x10
 const TInt KInternalStatusPaneChange = 0x50000000;
 
+//this macro exists because EColor16MAP enum value doesn't exist in Symbian OS 9.2
+#define Q_SYMBIAN_ECOLOR16MAP TDisplayMode(13)
+
 class QS60Data
 {
 public:
@@ -108,6 +111,7 @@ public:
     int mouseInteractionEnabled : 1;
     int virtualMouseRequired : 1;
     int qtOwnsS60Environment : 1;
+    int supportsPremultipliedAlpha : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
 	static inline RWsSession& wsSession();
@@ -199,7 +203,7 @@ inline void QS60Data::updateScreenSize()
     S60->screenHeightInPixels = params.iPixelSize.iHeight;
     S60->screenWidthInTwips = params.iTwipsSize.iWidth;
     S60->screenHeightInTwips = params.iTwipsSize.iHeight;
-    
+
     S60->virtualMouseMaxAccel = qMax(S60->screenHeightInPixels, S60->screenWidthInPixels) / 20;
 
     TReal inches = S60->screenHeightInTwips / (TReal)KTwipsPerInch;
@@ -302,11 +306,9 @@ static inline QImage::Format qt_TDisplayMode2Format(TDisplayMode mode)
     case EColor16MA:
         format = QImage::Format_ARGB32;
         break;
-#if !defined(__SERIES60_31__) && !defined(__S60_32__)
-    case EColor16MAP:
+    case Q_SYMBIAN_ECOLOR16MAP:
         format = QImage::Format_ARGB32_Premultiplied;
         break;
-#endif
     default:
         format = QImage::Format_Invalid;
         break;
