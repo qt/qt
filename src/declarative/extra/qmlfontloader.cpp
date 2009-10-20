@@ -75,13 +75,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontLoader,QmlFontLoader)
     \brief This item allows using fonts by name or url.
 
     Example:
-    \code
+    \qml
     FontLoader { id: FixedFont; name: "Courier" }
     FontLoader { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
 
     Text { text: "Fixed-size font"; font.family: FixedFont.name }
     Text { text: "Fancy font"; font.family: WebFont.name }
-    \endcode
+    \endqml
 */
 QmlFontLoader::QmlFontLoader(QObject *parent)
     : QObject(*(new QmlFontLoaderPrivate), parent)
