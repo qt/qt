@@ -72,7 +72,8 @@ static QGLScreen *glScreenForDevice(QPaintDevice *device)
             screenNumber = 0;
         screen = screen->subScreens()[screenNumber];
     }
-    while (screen->classId() == QScreen::ProxyClass) {
+    while (screen->classId() == QScreen::ProxyClass ||
+           screen->classId() == QScreen::TransformedClass) {
         screen = static_cast<QProxyScreen *>(screen)->screen();
     }
     if (screen->classId() == QScreen::GLClass)
@@ -187,6 +188,8 @@ void QGLContext::reset()
     d->cleanup();
     doneCurrent();
     if (d->eglContext) {
+        if (d->eglContext->surface() != EGL_NO_SURFACE)
+            eglDestroySurface(d->eglContext->display(), d->eglContext->surface());
         delete d->eglContext;
         d->eglContext = 0;
     }

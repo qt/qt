@@ -53,7 +53,6 @@ PvrEglWindowSurface::PvrEglWindowSurface
 
     this->widget = widget;
     this->screen = screen;
-    this->holder = 0;
     this->pdevice = 0;
 
     QPoint pos = offset(widget);
@@ -78,7 +77,7 @@ PvrEglWindowSurface::PvrEglWindowSurface
         drawable = pvrQwsCreateWindow(screenNum, (long)widget, &pvrRect);
 }
 
-PvrEglWindowSurface::PvrEglWindowSurface(PvrEglSurfaceHolder *holder)
+PvrEglWindowSurface::PvrEglWindowSurface()
     : QWSGLWindowSurface()
 {
     setSurfaceFlags(QWSWindowSurface::Opaque);
@@ -86,9 +85,6 @@ PvrEglWindowSurface::PvrEglWindowSurface(PvrEglSurfaceHolder *holder)
     widget = 0;
     screen = 0;
     pdevice = 0;
-
-    this->holder = holder;
-    holder->addSurface();
 }
 
 PvrEglWindowSurface::~PvrEglWindowSurface()
@@ -100,8 +96,6 @@ PvrEglWindowSurface::~PvrEglWindowSurface()
     if (drawable && pvrQwsReleaseWindow(drawable))
         pvrQwsDestroyDrawable(drawable);
 
-    if (holder)
-        holder->removeSurface();
     delete pdevice;
 }
 
