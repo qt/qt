@@ -42,6 +42,7 @@
 #include "qapplication_p.h"
 #include "qsessionmanager.h"
 #include "qevent.h"
+#include "qsymbianevent.h"
 #include "qeventdispatcher_s60_p.h"
 #include "qwidget.h"
 #include "qdesktopwidget.h"
@@ -1426,43 +1427,47 @@ void QApplication::beep()
     \warning This function is only available on Symbian.
     \since 4.6
 
-    This function processes an individual Symbian window server
+    This function processes an individual Symbian event
     \a event. It returns 1 if the event was handled, 0 if
     the \a event was not handled, and -1 if the event was
-    not handled because the event handle (\c{TWsEvent::Handle()})
-    is not known to Qt.
+    not handled because the event is not known to Qt.
  */
-int QApplication::s60ProcessEvent(TWsEvent *event)
+
+int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 {
-    bool handled = s60EventFilter(event);
-    if (handled)
+    Q_D(QApplication);
+
+    QScopedLoopLevelCounter counter(d->threadData);
+
+    QWidget *w = qApp ? qApp->focusWidget() : 0;
+    if (w) {
+        QInputContext *ic = w->inputContext();
+        if (ic && ic->symbianFilterEvent(w, event))
+            return 1;
+    }
+
+    if (symbianEventFilter(event))
         return 1;
 
+    switch (event->type()) {
+    case QSymbianEvent::WindowServerEvent:
+        return d->symbianProcessWsEvent(event->windowServerEvent());
+    case QSymbianEvent::CommandEvent:
+        return d->symbianHandleCommand(event->command());
+    case QSymbianEvent::ResourceChangeEvent:
+        return d->symbianResourceChange(event->resourceChangeType());
+    default:
+        return -1;
+    }
+}
+
+int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
+{
     // Qt event handling. Handle some events regardless of if the handle is in our
     // widget map or not.
     CCoeControl* control = reinterpret_cast<CCoeControl*>(event->Handle());
     const bool controlInMap = QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control);
     switch (event->Type()) {
-#if !defined(QT_NO_IM) && defined(Q_WS_S60)
-    case EEventKey:
-    case EEventKeyUp:
-    case EEventKeyDown:
-    {
-        // The control doesn't seem to be any of our widgets, so rely on the focused
-        // widget instead. If the user needs the control, it can be found inside the
-        // event structure.
-        QWidget *w = qApp ? qApp->focusWidget() : 0;
-        if (w) {
-            QInputContext *ic = w->inputContext();
-            if (ic && ic->s60FilterEvent(w, event)) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-        break;
-    }
-#endif
     case EEventPointerEnter:
         if (controlInMap)
             return 1; // Qt::Enter will be generated in HandlePointerL
@@ -1551,15 +1556,15 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 
   If you create an application that inherits QApplication and reimplement
   this function, you get direct access to events that the are received
-  from the Symbian window server. The events are passed in the TWsEvent
-  \a aEvent parameter.
+  from Symbian. The events are passed in the \a event parameter.
 
   Return true if you want to stop the event from being processed. Return
-  false for normal event dispatching. The default implementation
-  false, and does nothing with \a aEvent.
+  false for normal event dispatching. The default implementation returns
+  false, and does nothing with \a event.
  */
-bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
+bool QApplication::symbianEventFilter(const QSymbianEvent *event)
 {
+    Q_UNUSED(event);
     return false;
 }
 
@@ -1574,32 +1579,39 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 
   \sa s60EventFilter(), s60ProcessEvent()
 */
-void QApplication::symbianHandleCommand(int command)
+int QApplicationPrivate::symbianHandleCommand(int command)
 {
-    QScopedLoopLevelCounter counter(d_func()->threadData);
+    Q_Q(QApplication);
+    int ret = 0;
+
     switch (command) {
 #ifdef Q_WS_S60
     case EAknSoftkeyExit: {
         QCloseEvent ev;
-        QApplication::sendSpontaneousEvent(this, &ev);
-        if (ev.isAccepted())
-            quit();
+        QApplication::sendSpontaneousEvent(q, &ev);
+        if (ev.isAccepted()) {
+            q->quit();
+            ret = 1;
+        }
         break;
     }
 #endif
     case EEikCmdExit:
-        quit();
+        q->quit();
+        ret = 1;
         break;
     default:
         bool handled = QSoftKeyManager::handleCommand(command);
+        if (handled)
+            ret = 1;
 #ifdef Q_WS_S60
-        if (!handled)
-            QMenuBarPrivate::symbianCommands(command);
-#else
-        Q_UNUSED(handled);
+        else
+            ret = QMenuBarPrivate::symbianCommands(command);
 #endif
         break;
     }
+
+    return ret;
 }
 
 /*!
@@ -1611,8 +1623,10 @@ void QApplication::symbianHandleCommand(int command)
   Currently, KEikDynamicLayoutVariantSwitch and
   KAknsMessageSkinChange are handled.
  */
-void QApplication::symbianResourceChange(int type)
+int QApplicationPrivate::symbianResourceChange(int type)
 {
+    int ret = 0;
+
     switch (type) {
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
@@ -1631,22 +1645,28 @@ void QApplication::symbianResourceChange(int type)
 #endif
             s60Style = qobject_cast<QS60Style*>(QApplication::style());
 
-        if (s60Style)
+        if (s60Style) {
             s60Style->d_func()->handleDynamicLayoutVariantSwitch();
+            ret = 1;
+        }
 #endif
         }
         break;
 
 #ifndef QT_NO_STYLE_S60
     case KAknsMessageSkinChange:
-        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
+        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style())) {
             s60Style->d_func()->handleSkinChange();
+            ret = 1;
+        }
         break;
 #endif
 #endif // Q_WS_S60
     default:
         break;
     }
+
+    return ret;
 }
 
 #ifndef QT_NO_WHEELEVENT
