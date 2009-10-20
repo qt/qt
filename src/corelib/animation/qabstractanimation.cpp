@@ -228,11 +228,7 @@ void QUnifiedTimer::updateAnimationsTime()
 
 void QUnifiedTimer::restartAnimationTimer()
 {
-    if (runningLeafAnimations == 0 && !runningPauseAnimations.isEmpty()) {
-        int closestTimeToFinish = closestPauseAnimationTimeToFinish();
-        animationTimer.start(closestTimeToFinish, this);
-        isPauseTimerActive = true;
-    } else if (!animationTimer.isActive() || isPauseTimerActive) {
+    if (!animationTimer.isActive()) {
         animationTimer.start(timingInterval, this);
         isPauseTimerActive = false;
     }
@@ -328,7 +324,7 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->totalDuration() - QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->duration() - QAbstractAnimationPrivate::get(animation)->currentTime;
         else
             timeToFinish = QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
 

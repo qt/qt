@@ -70,10 +70,11 @@ public:
 void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefore)
 {
     if (targetParent && target && target->parentItem()) {
-        //### for backwards direction, we can just restore original x, y, scale, rotation
+        //### for backwards direction, can we just restore original x, y, scale, rotation
         Q_Q(QmlParentChange);
-        const QTransform &transform = target->itemTransform(targetParent);
-        if (transform.type() >= QTransform::TxShear) {
+        bool ok;
+        const QTransform &transform = target->itemTransform(targetParent, &ok);
+        if (transform.type() >= QTransform::TxShear || !ok) {
             qmlInfo(QObject::tr("Unable to preserve appearance under complex transform"), q);
         }
 
@@ -82,25 +83,49 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefor
         if (transform.type() != QTransform::TxRotate) {
             if (transform.m11() == transform.m22())
                 scale = transform.m11();
-            else
+            else {
                 qmlInfo(QObject::tr("Unable to preserve appearance under non-uniform scale"), q);
+                ok = false;
+            }
         } else if (transform.type() == QTransform::TxRotate) {
             if (transform.m11() == transform.m22())
                 scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
-            else
+            else {
                 qmlInfo(QObject::tr("Unable to preserve appearance under non-uniform scale"), q);
+                ok = false;
+            }
 
             if (scale != 0)
                 rotation = atan2(transform.m12()/scale, transform.m11()/scale) * 180/M_PI;
-            else
+            else {
                 qmlInfo(QObject::tr("Unable to preserve appearance under scale of 0"), q);
+                ok = false;
+            }
         }
+
+        qreal xt = transform.dx();
+        qreal yt = transform.dy();
+        if (target->transformOrigin() != QFxItem::TopLeft) {
+            qreal tempxt = target->transformOriginPoint().x();
+            qreal tempyt = target->transformOriginPoint().y();
+            QTransform t;
+            t.translate(-tempxt, -tempyt);
+            t.rotate(rotation);
+            t.scale(scale, scale);
+            t.translate(tempxt, tempyt);
+            QPointF offset = t.map(QPointF(0,0));
+            xt += offset.x();
+            yt += offset.y();
+        }
+
         target->setParentItem(targetParent);
-        //qDebug() << transform.dx() << transform.dy() << rotation << scale;
-        target->setX(transform.dx());
-        target->setY(transform.dy());
-        target->setRotation(rotation);
-        target->setScale(scale);
+        if (ok) {
+            //qDebug() << xt << yt << rotation << scale;
+            target->setX(xt);
+            target->setY(yt);
+            target->setRotation(rotation);
+            target->setScale(scale);
+        }
     } else if (target) {
         target->setParentItem(targetParent);
     }

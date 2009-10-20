@@ -58,12 +58,14 @@ When the user presses or releases a key, the following occurs:
 \o The key event is delivered by the scene to the QML \l Item with \e {active focus}.  If no \l Item has \e {active focus}, the key event is \l {QEvent::ignore()}{ignored} and regular Qt key handling continues.
 \o If the QML \l Item with \e {active focus} accepts the key event, propagation stops.  Otherwise the event is "bubbled up", by recursively passing it to each \l Item's parent until either the event is accepted, or the root \l Item is reached.
 
-If the \c {Rectangle} element in the following example has active focus and the \e A key is pressed, it will bubble up to the \c {KeyActions}.  However, pressing the \e B key will bubble up to the root item and thus subsequently be \l {QEvent::ignore()}{ignored}.
+If the \c {Rectangle} element in the following example has active focus and the \e A key is pressed,
+it will bubble up to its parent.  However, pressing the \e B key will bubble up to the root
+item and thus subsequently be \l {QEvent::ignore()}{ignored}.
 
 \code
 Item {
-    KeyActions {
-        keyA: "print('Key A was pressed')"
+    Item {
+        Keys.onPressed: if (event.key == Qt.Key_A) { print('Key A was pressed'); event.accepted = true }
         Rectangle {}
     }
 }
@@ -91,8 +93,8 @@ An \l Item requests focus by setting the \c {Item::focus} property to true.
 
 For very simple cases simply setting the \c {Item::focus} property is sometimes
 sufficient.  If we run the following example in the \c qmlviewer, we see that
-the \c {KeyActions} element has \e {active focus} and pressing the
-\e A, \e B, or \e C keys modifies the text appropriately.
+the \c {keyHandler} element has \e {active focus} and pressing the 'A', 'B'
+or 'C' keys modifies the text appropriately.
 
 \table
 \row
@@ -100,11 +102,17 @@ the \c {KeyActions} element has \e {active focus} and pressing the
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: myText }
-        KeyActions {
+        Item {
+            id: keyHandler
             focus: true
-            keyA: "myText.text = 'Key A was pressed'"
-            keyB: "myText.text = 'Key B was pressed'"
-            keyC: "myText.text = 'Key C was pressed'"
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
         }
     }
 \endcode
@@ -134,22 +142,34 @@ Rectangle {
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: myText }
-        KeyActions {
+        Item {
+            id: keyHandler
             focus: true
-            keyA: "myText.text = 'Key A was pressed'"
-            keyB: "myText.text = 'Key B was pressed'"
-            keyC: "myText.text = 'Key C was pressed'"
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
         }
     }
     Rectangle {
         y: 30; focus: true
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: myText }
-        KeyActions {
+        Item {
+            id: keyHandler
             focus: true
-            keyA: "myText.text = 'Key A was pressed'"
-            keyB: "myText.text = 'Key B was pressed'"
-            keyC: "myText.text = 'Key C was pressed'"
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
         }
     }
 }
@@ -166,9 +186,9 @@ of \c {Item::focus} in the other two instances is reverted back to false.  This
 is exactly the opposite of what was wanted!
 
 This problem is fundamentally one of visibility.  The \c {MyWidget}
-components each set their \c {KeyActions} as focused as that is all they can
+components each set their \c {keyHandler} Items as focused as that is all they can
 do - they don't know how they are going to be used, but they do know that when
-they're in use their \c {KeyActions} element is what needs focus.  Likewise
+they're in use their \c {keyHandler} element is what needs focus.  Likewise
 the code that uses the \c {MyWidget}'s sets the second \c {MyWidget} as
 focused because, while it doesn't know exactly how the \c {MyWidget} is
 implemented, it knows that it wants the second one to be focused.  No one piece
@@ -191,11 +211,17 @@ FocusScope {
     Rectangle {
         color: "lightsteelblue"; width: 240; height: 25
         Text { id: myText }
-        KeyActions {
+        Item {
+            id: keyHandler
             focus: true
-            keyA: "myText.text = 'Key A was pressed'"
-            keyB: "myText.text = 'Key B was pressed'"
-            keyC: "myText.text = 'Key C was pressed'"
+            Keys.onPressed: {
+                if (event.key == Qt.Key_A)
+                    myText.text = 'Key A was pressed'
+                else if (event.key == Qt.Key_B)
+                    myText.text = 'Key B was pressed'
+                else if (event.key == Qt.Key_C)
+                    myText.text = 'Key C was pressed'
+            }
         }
     }
 }
@@ -205,8 +231,11 @@ FocusScope {
 
 Conceptually \e {focus scopes} are quite simple.
 \list
-\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.  If more than one \l Item has the \c {Item::focus} property set, the first is selected and the others are unset, just like when there are no \e {focus scopes}.
-\o When a \e {focus scope} receives \e {active focus}, the contained element with \c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
+\o Within each \e {focus scope} one element may have \c {Item::focus} set to true.
+If more than one \l Item has the \c {Item::focus} property set, the first is selected
+and the others are unset, just like when there are no \e {focus scopes}.
+\o When a \e {focus scope} receives \e {active focus}, the contained element with
+\c {Item::focus} set (if any) also gets \e {active focus}.  If this element is
 also a \l FocusScope, the proxying behaviour continues.  Both the
 \e {focus scope} and the sub-focused item will have \c {Item::focus} set.
 \endlist
@@ -270,8 +299,11 @@ Rectangle {
         }
         delegate: FocusScope {
             width: contents.width; height: contents.height
-            Text { text: name }
-            KeyActions { return: "print(name)"; focus: true }
+            Text {
+                focus: true
+                text: name
+                Keys.onReturnPressed: print(name)
+            }
         }
     }
 }
@@ -285,7 +317,7 @@ property.  As the \l ListView is a \e {focus scope}, this doesn't effect the
 rest of the application.  However, if the \l ListView itself has
 \e {active focus} this causes the delegate itself to receive \e {active focus}.
 In this example, the root element of the delegate is also a \e {focus scope},
-which in turn gives \e {active focus} to the \c {KeyActions} element that
+which in turn gives \e {active focus} to the \c {Text} element that
 actually performs the work of handling the \e {Return} key.
 
 All of the QML view classes, such as \l PathView and \l GridView, behave
