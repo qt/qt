@@ -756,6 +756,34 @@ void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)
 
 #endif // QT_NO_LINEEDIT
 
+#ifndef QT_NO_PROGRESSBAR
+QAccessibleProgressBar::QAccessibleProgressBar(QWidget *o)
+    : QAccessibleDisplay(o)
+{
+    Q_ASSERT(progressBar());
+}
+
+QVariant QAccessibleProgressBar::currentValue()
+{
+    return progressBar()->value();
+}
+
+QVariant QAccessibleProgressBar::maximumValue()
+{
+    return progressBar()->maximum();
+}
+
+QVariant QAccessibleProgressBar::minimumValue()
+{
+    return progressBar()->minimum();
+}
+
+QProgressBar *QAccessibleProgressBar::progressBar() const
+{
+    return qobject_cast<QProgressBar *>(object());
+}
+#endif
+
 #endif // QT_NO_ACCESSIBILITY
 
 QT_END_NAMESPACE

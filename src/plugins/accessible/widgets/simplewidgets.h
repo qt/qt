@@ -52,6 +52,7 @@ QT_BEGIN_NAMESPACE
 class QAbstractButton;
 class QLineEdit;
 class QToolButton;
+class QProgressBar;
 
 class QAccessibleButton : public QAccessibleWidgetEx
 {
@@ -149,6 +150,24 @@ protected:
     QLineEdit *lineEdit() const;
 };
 #endif // QT_NO_LINEEDIT
+
+#ifndef QT_NO_PROGRESSBAR
+class QAccessibleProgressBar : public QAccessibleDisplay, public QAccessibleValueInterface
+{
+    Q_ACCESSIBLE_OBJECT
+public:
+    explicit QAccessibleProgressBar(QWidget *o);
+
+    // QAccessibleValueInterface
+    QVariant currentValue();
+    QVariant maximumValue();
+    QVariant minimumValue();
+    inline void setCurrentValue(const QVariant &) {}
+
+protected:
+    QProgressBar *progressBar() const;
+};
+#endif
 
 #endif // QT_NO_ACCESSIBILITY
 
