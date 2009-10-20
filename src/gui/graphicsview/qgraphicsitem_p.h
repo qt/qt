@@ -662,19 +662,18 @@ inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem 
     }
 
     // item1Ancestor is now at the same level as item2Ancestor, but not the same.
-    const QGraphicsItem *a1 = t1;
-    const QGraphicsItem *a2 = t2;
-    while (a1) {
-        const QGraphicsItem *p1 = a1;
-        const QGraphicsItem *p2 = a2;
-        a1 = a1->parentItem();
-        a2 = a2->parentItem();
-        if (a1 && a1 == a2)
-            return qt_closestLeaf(p1, p2);
+    const QGraphicsItem *p1 = t1;
+    const QGraphicsItem *p2 = t2;
+    while (t1 && t1 != t2) {
+        p1 = t1;
+        p2 = t2;
+        t1 = t1->d_ptr->parent;
+        t2 = t2->d_ptr->parent;
     }
 
-    // No common ancestor? Then just compare the items' toplevels directly.
-    return qt_closestLeaf(t1->topLevelItem(), t2->topLevelItem());
+    // in case we have a common ancestor, we compare the immediate children in the ancestor's path.
+    // otherwise we compare the respective items' topLevelItems directly.
+    return qt_closestLeaf(p1, p2);
 }
 
 /*!
