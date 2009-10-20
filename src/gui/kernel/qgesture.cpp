@@ -235,17 +235,17 @@ QPanGesture::QPanGesture(QObject *parent)
     d_func()->gestureType = Qt::PanGesture;
 }
 
-QSizeF QPanGesture::totalOffset() const
+QPointF QPanGesture::totalOffset() const
 {
     return d_func()->totalOffset;
 }
 
-QSizeF QPanGesture::lastOffset() const
+QPointF QPanGesture::lastOffset() const
 {
     return d_func()->lastOffset;
 }
 
-QSizeF QPanGesture::offset() const
+QPointF QPanGesture::offset() const
 {
     return d_func()->offset;
 }
@@ -256,17 +256,17 @@ qreal QPanGesture::acceleration() const
 }
 
 
-void QPanGesture::setTotalOffset(const QSizeF &value)
+void QPanGesture::setTotalOffset(const QPointF &value)
 {
     d_func()->totalOffset = value;
 }
 
-void QPanGesture::setLastOffset(const QSizeF &value)
+void QPanGesture::setLastOffset(const QPointF &value)
 {
     d_func()->lastOffset = value;
 }
 
-void QPanGesture::setOffset(const QSizeF &value)
+void QPanGesture::setOffset(const QPointF &value)
 {
     d_func()->offset = value;
 }

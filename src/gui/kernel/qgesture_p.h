@@ -89,9 +89,9 @@ public:
     {
     }
 
-    QSizeF totalOffset;
-    QSizeF lastOffset;
-    QSizeF offset;
+    QPointF totalOffset;
+    QPointF lastOffset;
+    QPointF offset;
     QPoint lastPosition;
     qreal acceleration;
 };
