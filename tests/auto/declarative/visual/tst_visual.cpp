@@ -112,7 +112,7 @@ QString tst_visual::toTestScript(const QString &file, Mode mode)
                        QString("data");
     QString testname = file.mid(index + 1, file.length() - index - 5);
 
-    if (platformsuffix && (mode == UpdatePlatformVisuals || QFile::exists(testdata+QLatin1String(platformsuffix)+QDir::separator()+testname))) {
+    if (platformsuffix && (mode == UpdatePlatformVisuals || QFile::exists(testdata+QLatin1String(platformsuffix)+QDir::separator()+testname+".qml"))) {
         QString platformdir = testdata + QLatin1String(platformsuffix);
         if (mode == UpdatePlatformVisuals) {
             Q_ASSERT(QDir().mkpath(platformdir));
