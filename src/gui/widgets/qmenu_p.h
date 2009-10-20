@@ -192,7 +192,8 @@ public:
     mutable QVector<QRect> actionRects;
     mutable QWidgetList widgetItems;
     void updateActionRects() const;
-    QRect popupGeometry(int screen=-1) const;
+    QRect popupGeometry(const QWidget *widget) const;
+    QRect popupGeometry(int screen = -1) const;
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
