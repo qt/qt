@@ -74,8 +74,9 @@ public:
 
     bool setOnPainter(QPainter*);
     void removeFromPainter(QPainter*);
-    const char* source() const;
+    QByteArray source() const;
 
+    void setInactive();
 protected:
     void setSource(const QByteArray&);
 

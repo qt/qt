@@ -67,8 +67,10 @@ QGLCustomShaderStage::QGLCustomShaderStage()
 QGLCustomShaderStage::~QGLCustomShaderStage()
 {
     Q_D(QGLCustomShaderStage);
-    if (d->m_manager)
-        d->m_manager->removeCustomStage(this);
+    if (d->m_manager) {
+        d->m_manager->removeCustomStage();
+        d->m_manager->sharedShaders->cleanupCustomStage(this);
+    }
 }
 
 void QGLCustomShaderStage::setUniformsDirty()
@@ -85,6 +87,8 @@ bool QGLCustomShaderStage::setOnPainter(QPainter* p)
         qWarning("QGLCustomShaderStage::setOnPainter() - paint engine not OpenGL2");
         return false;
     }
+    if (d->m_manager)
+        qWarning("Custom shader is already set on a painter");
 
     QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx*>(p->paintEngine());
     d->m_manager = QGL2PaintEngineExPrivate::shaderManagerForEngine(engine);
@@ -108,12 +112,21 @@ void QGLCustomShaderStage::removeFromPainter(QPainter* p)
     // This should leave the program in a compiled/linked state
     // if the next custom shader stage is this one again.
     d->m_manager->setCustomStage(0);
+    d->m_manager = 0;
 }
 
-const char* QGLCustomShaderStage::source() const
+QByteArray QGLCustomShaderStage::source() const
 {
     Q_D(const QGLCustomShaderStage);
-    return d->m_source.constData();
+    return d->m_source;
+}
+
+// Called by the shader manager if another custom shader is attached or
+// the manager is deleted
+void QGLCustomShaderStage::setInactive()
+{
+    Q_D(QGLCustomShaderStage);
+    d->m_manager = 0;
 }
 
 void QGLCustomShaderStage::setSource(const QByteArray& s)
