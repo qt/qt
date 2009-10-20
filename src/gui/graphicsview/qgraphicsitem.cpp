@@ -10742,6 +10742,23 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
     return debug;
 }
 
+QDebug operator<<(QDebug debug, QGraphicsObject *item)
+{
+    if (!item) {
+        debug << "QGraphicsObject(0)";
+        return debug;
+    }
+
+    debug.nospace() << item->metaObject()->className() << '(' << (void*)item;
+    if (!item->objectName().isEmpty())
+        debug << ", name = " << item->objectName();
+    debug.nospace() << ", parent = " << ((void*)item->parentItem())
+          << ", pos = " << item->pos()
+          << ", z = " << item->zValue() << ", flags = "
+          << item->flags() << ')';
+    return debug.space();
+}
+
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
 {
     const char *str = "UnknownChange";
