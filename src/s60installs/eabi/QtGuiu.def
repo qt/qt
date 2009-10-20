@@ -2288,7 +2288,7 @@ EXPORTS
 	_ZN13QGestureEvent11setAcceptedEP8QGestureb @ 2287 NONAME
 	_ZN13QGestureEvent6acceptEP8QGesture @ 2288 NONAME
 	_ZN13QGestureEvent6ignoreEP8QGesture @ 2289 NONAME
-	_ZN13QGestureEvent7gestureEN2Qt11GestureTypeE @ 2290 NONAME
+	_ZN13QGestureEvent7gestureEN2Qt11GestureTypeE @ 2290 NONAME ABSENT
 	_ZN13QGestureEventC1ERK5QListIP8QGestureE @ 2291 NONAME
 	_ZN13QGestureEventC2ERK5QListIP8QGestureE @ 2292 NONAME
 	_ZN13QGraphicsItem10addToIndexEv @ 2293 NONAME
@@ -2651,8 +2651,8 @@ EXPORTS
 	_ZN13QSwipeGesture13setSwipeAngleEf @ 2650 NONAME
 	_ZN13QSwipeGesture16staticMetaObjectE @ 2651 NONAME DATA 16
 	_ZN13QSwipeGesture19getStaticMetaObjectEv @ 2652 NONAME
-	_ZN13QSwipeGesture20setVerticalDirectionENS_14SwipeDirectionE @ 2653 NONAME
-	_ZN13QSwipeGesture22setHorizontalDirectionENS_14SwipeDirectionE @ 2654 NONAME
+	_ZN13QSwipeGesture20setVerticalDirectionENS_14SwipeDirectionE @ 2653 NONAME ABSENT
+	_ZN13QSwipeGesture22setHorizontalDirectionENS_14SwipeDirectionE @ 2654 NONAME ABSENT
 	_ZN13QSwipeGestureC1EP7QObject @ 2655 NONAME
 	_ZN13QSwipeGestureC2EP7QObject @ 2656 NONAME
 	_ZN13QTextDocument10adjustSizeEv @ 2657 NONAME
@@ -3124,7 +3124,7 @@ EXPORTS
 	_ZN14QWidgetPrivate20setLayoutItemMarginsEiiii @ 3123 NONAME
 	_ZN14QWidgetPrivate20setWindowIcon_helperEv @ 3124 NONAME
 	_ZN14QWidgetPrivate20setWindowOpacity_sysEf @ 3125 NONAME
-	_ZN14QWidgetPrivate21activateSymbianWindowEv @ 3126 NONAME
+	_ZN14QWidgetPrivate21activateSymbianWindowEv @ 3126 NONAME ABSENT
 	_ZN14QWidgetPrivate21setMaximumSize_helperERiS0_ @ 3127 NONAME
 	_ZN14QWidgetPrivate21setMinimumSize_helperERiS0_ @ 3128 NONAME
 	_ZN14QWidgetPrivate21setWindowIconText_sysERK7QString @ 3129 NONAME
@@ -6369,12 +6369,12 @@ EXPORTS
 	_ZN8QGesture15setTargetObjectEP7QObject @ 6368 NONAME
 	_ZN8QGesture16staticMetaObjectE @ 6369 NONAME DATA 16
 	_ZN8QGesture19getStaticMetaObjectEv @ 6370 NONAME
-	_ZN8QGestureC1EN2Qt11GestureTypeEP7QObject @ 6371 NONAME
+	_ZN8QGestureC1EN2Qt11GestureTypeEP7QObject @ 6371 NONAME ABSENT
 	_ZN8QGestureC1EP7QObject @ 6372 NONAME
-	_ZN8QGestureC1ER15QGesturePrivateN2Qt11GestureTypeEP7QObject @ 6373 NONAME
-	_ZN8QGestureC2EN2Qt11GestureTypeEP7QObject @ 6374 NONAME
+	_ZN8QGestureC1ER15QGesturePrivateN2Qt11GestureTypeEP7QObject @ 6373 NONAME ABSENT
+	_ZN8QGestureC2EN2Qt11GestureTypeEP7QObject @ 6374 NONAME ABSENT
 	_ZN8QGestureC2EP7QObject @ 6375 NONAME
-	_ZN8QGestureC2ER15QGesturePrivateN2Qt11GestureTypeEP7QObject @ 6376 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateN2Qt11GestureTypeEP7QObject @ 6376 NONAME ABSENT
 	_ZN8QGestureD0Ev @ 6377 NONAME
 	_ZN8QGestureD1Ev @ 6378 NONAME
 	_ZN8QGestureD2Ev @ 6379 NONAME
@@ -11557,4 +11557,33 @@ EXPORTS
 	qt_pixmap_cleanup_hook @ 11556 NONAME DATA 4
 	qt_pixmap_cleanup_hook_64 @ 11557 NONAME DATA 4
 	qt_tab_all_widgets @ 11558 NONAME DATA 1
+	_Z22qt_paint_device_metricPK12QPaintDeviceNS_17PaintDeviceMetricE @ 11559 NONAME
+	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11560 NONAME
+	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11561 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 11562 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 11563 NONAME
+	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 11564 NONAME
+	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 11565 NONAME
+	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 11566 NONAME DATA 16
+	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 11567 NONAME
+	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 11568 NONAME
+	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 11569 NONAME
+	_ZN18QGuiPlatformPlugin7paletteEv @ 11570 NONAME
+	_ZN18QGuiPlatformPlugin9styleNameEv @ 11571 NONAME
+	_ZN18QGuiPlatformPluginC1EP7QObject @ 11572 NONAME
+	_ZN18QGuiPlatformPluginC2EP7QObject @ 11573 NONAME
+	_ZN18QGuiPlatformPluginD0Ev @ 11574 NONAME
+	_ZN18QGuiPlatformPluginD1Ev @ 11575 NONAME
+	_ZN18QGuiPlatformPluginD2Ev @ 11576 NONAME
+	_ZN8QGestureC1ER15QGesturePrivateP7QObject @ 11577 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 11578 NONAME
+	_ZNK11QPixmapData26createCompatiblePixmapDataEv @ 11579 NONAME
+	_ZNK13QGestureEvent7gestureEN2Qt11GestureTypeE @ 11580 NONAME
+	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11581 NONAME
+	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 11582 NONAME
+	_ZTI18QGuiPlatformPlugin @ 11583 NONAME
+	_ZTI27QGuiPlatformPluginInterface @ 11584 NONAME
+	_ZTV18QGuiPlatformPlugin @ 11585 NONAME
+	_ZThn8_N18QGuiPlatformPluginD0Ev @ 11586 NONAME
+	_ZThn8_N18QGuiPlatformPluginD1Ev @ 11587 NONAME
 
