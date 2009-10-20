@@ -2908,15 +2908,15 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     layout(item);
     q->setState(oldState);
 
+    if (model->canFetchMore(index))
+        model->fetchMore(index);
     if (emitSignal) {
         emit q->expanded(index);
 #ifndef QT_NO_ANIMATION
-        if (animationsEnabled)
+        if (animationsEnabled && model->hasChildren(index))
             beginAnimatedOperation();
 #endif //QT_NO_ANIMATION
     }
-    if (model->canFetchMore(index))
-        model->fetchMore(index);
 }
 
 void QTreeViewPrivate::collapse(int item, bool emitSignal)
