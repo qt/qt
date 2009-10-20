@@ -50,31 +50,221 @@ dramatically different scope chains.
 
 \image qml-scope.png
 
-\section1 Variable object
+\section1 ECMAScript Variable object
 
-Where local variables are stored.  Not really applicable to bindings.
+Each binding and script block has its own distinct ECMAScript variable object where local 
+variables are stored.  That is, local variables from different bindings and script blocks never 
+conflict.
 
-\section1 QML Scope object
+\section1 Element Type Names
 
-Principally for the \c parent property.
+Bindings or script blocks use element type names when accessing \l {Attached Properties} or 
+enumeration values.  The set of available element names is defined by the import list of the 
+\l {QML Documents}{QML Document} in which the the binding or script block is defined.
+
+These two examples show how to access attached properties and enumeration values with different
+types of import statements.
+\table
+\row
+\o
+\code 
+import Qt 4.6
+
+Text {
+    id: root
+    scale: root.PathView.scale
+    horizontalAlignment: Text.AlignLeft
+}
+\endcode
+\o
+\code
+import Qt 4.6 as MyQt
+
+Text {
+    id: root
+    scale: root.MyQt.PathView.scale
+    horizontalAlignment: MyQt.Text.AlignLeft
+}
+\endcode
+\endtable
+
+\section1 QML Local Scope
+
+Most variables references are resolved in the local scope.  The local scope is controlled by the
+QML component in which the binding or script block was declarated.  The following example shows
+three different bindings, and the component that dictates their local scope.
+
+\table
+\row
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle { // Local scope component for binding 1
+    id: root
+    property string text
+        
+    Button {
+        text: root.text // binding 1
+    }
+
+    ListView {
+        delegate: Component { // Local scope component for binding 2
+            Rectangle { 
+                width: ListView.view.width // binding 2
+            }
+        }
+    }
+
+}
+\endcode
+\o
+\code
+// Button.qml
+import Qt 4.6
+
+Rectangle { // Local scope component for binding 3
+    id: root
+    property string text
+
+    Text { 
+        text: root.text  // binding 3
+    }
+}
+\endcode
+\endtable
+
+Inside the local scope, four "sub-scopes" exist.  Each "sub-scope" is searched in order when
+resolving a name - names in a higher "sub-scopes" shadow those in lower sub-scopes.
+
+\section2 IDs
+
+IDs present in the component take precendence over other names.  The QML engine enforces 
+uniqueness of IDs within a component, so their names cannot conflict with one another.
+
+This is an example of using IDs within bindings.
 
 \code
 Item {
-    anchors.fill: parent
+    id: root
+    width: nested.width
+    Item {
+        id: nested
+        height: root.height
+    }
 }
 \endcode
 
-vs
+\section2 Script Methods
+
+Methods declared in script blocks are searched immediately after IDs.  In the case of multiple
+script blocks in the one component, the blocks are searched in the order in which they were
+declared - the nesting of script blocks within a component is not significant for name 
+resolution.  
+
+In the following example, \c {Method 1} shadows \c {Method 2} for the bindings, but not for
+\c {Method 3}.
 
 \code
 Item {
-    anchors.fill: this.parent
+    Script {
+        function getValue() { return 10; } // Method 1
+    }
+
+    Rectangle {
+        Script {
+            function getValue() { return 11; }  // Method 2
+            function getValue2() { return getValue(); } // Method 3
+        }
+
+        x: getValue()   // Resolves to Method 1, set to 10
+        y: getValue2()  // Resolves to Method 3, set to 11
+    }
+}
+\endcode
+
+\section2 Scope Object
+
+A scope object is associated with each binding and script block.  Properties and methods of the 
+scope object appear in the scope chain, immediately after \l {Script Methods}.
+
+In bindings and script blocks established explicitly in \l {QML Documents}, the scope object is 
+always the element containing the binding or script block.  The following example shows two
+bindings, one using grouped properties, and the corresponding scope object.  These two bindings
+use the scope object to resolve variable references - \c height is a property on \l Rectangle, 
+and \c parent is a property on \l Text.
+
+\code
+Item {
+    Rectangle {           // Scope object for Binding 1
+        width: height * 2 // Binding 1
+    }
+
+    Text {                                  // Scope object for Binding 2
+        font.pixelSize: parent.height * 0.7 // binding 2
+    }
+}
+\endcode
+
+One notable characteristic of the scope object is its interaction with \l {Attached Properties}.
+As attached properties exist on all object, an attached property reference that is not
+explicitly prefixed by an id will \e always resolve to the attached property on the scope 
+object.
+
+In the following example, \c {Binding 1} will resolve to the attached properties of the 
+\l Rectangle element, as intended.  However, due to the property search of the scope object, 
+\c {Binding 2} will resolve to the attached properties of the \l Text element, which
+is probably not what was intended.  This code can be corrected, by replacing \c {Binding 2}
+with this explicit element reference \c {root.ListView.view.width}.
+
+\code
+import Qt 4.6
+
+ListView {
+    delegate: Rectangle {
+        id: root
+        width: ListView.view.width // Binding 1
+        Text {
+            text: contactName
+            width: ListView.view.width // Binding 2
+        }
+    }
+}
+\endcode
+
+\e TODO
+
+\list
+\o scope object for Script {}
+\o scope object for PropertyChanges
+\endlist
+
+\section2 Root Object
+
+Properties and methods on the local scope component's root object appear in the scope chain
+immediately after the \l {Scope Object}.  If the scope object and root object are the same,
+this step has no effect.
+
+This example uses the root object to easily propagate data throughout the component.
+
+\code
+Item {
+    property string description
+    property int fontSize
+
+    Text {
+        text: description
+        font.pixelSize: fontSize
+    }
 }
 \endcode
 
 \section1 QML Component chain
 
-Principally for propogating properties around the component.
+\section2 IDs
+\section2 Script Methods
+\section2 Root Object
 
 \section1 QmlContext chain
 
