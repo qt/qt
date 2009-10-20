@@ -2913,7 +2913,7 @@ void QTreeViewPrivate::expand(int item, bool emitSignal)
     if (emitSignal) {
         emit q->expanded(index);
 #ifndef QT_NO_ANIMATION
-        if (animationsEnabled && model->hasChildren(index))
+        if (animationsEnabled)
             beginAnimatedOperation();
 #endif //QT_NO_ANIMATION
     }
@@ -3005,10 +3005,12 @@ void QTreeViewPrivate::beginAnimatedOperation()
         animatedOperation.setEndValue(animatedOperation.top() + h);
     }
 
-    animatedOperation.after = renderTreeToPixmapForAnimation(rect);
+    if (!rect.isEmpty()) {
+        animatedOperation.after = renderTreeToPixmapForAnimation(rect);
 
-    q->setState(QAbstractItemView::AnimatingState);
-    animatedOperation.start(); //let's start the animation
+        q->setState(QAbstractItemView::AnimatingState);
+        animatedOperation.start(); //let's start the animation
+    }
 }
 
 void QTreeViewPrivate::drawAnimatedOperation(QPainter *painter) const
