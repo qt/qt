@@ -1244,9 +1244,9 @@ NSString *keySequenceToKeyEqivalent(const QKeySequence &accel)
     else if (accel_key == Qt::Key_End)
         keyEquiv[0] = NSEndFunctionKey;
     else if (accel_key == Qt::Key_Back)
-        keyEquiv[0] = kMenuLeftArrowDashedGlyph;  // ### Cocoa has no equivalent - no icon is displayed
+        keyEquiv[0] = 0 ; // ### could not find Cocoa equivalent to kMenuLeftArrowDashedGlyph
     else if (accel_key == Qt::Key_Forward)
-        keyEquiv[0] = kMenuRightArrowDashedGlyph;  // ### Cocoa has no equivalent - no icon is displayed
+        keyEquiv[0] = 0 ; // ### could not find Cocoa equivalent to kMenuRightArrowDashedGlyph
     else
         keyEquiv[0] = unichar(QChar(accel_key).toLower().unicode());
     return [NSString stringWithCharacters:keyEquiv length:1];
