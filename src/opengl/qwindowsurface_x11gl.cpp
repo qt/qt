@@ -53,12 +53,10 @@ QT_BEGIN_NAMESPACE
 QX11GLWindowSurface::QX11GLWindowSurface(QWidget* window)
     : QWindowSurface(window), m_GC(0), m_window(window)
 {
-    QImagePixmapCleanupHooks::instance();
 }
 
 QX11GLWindowSurface::~QX11GLWindowSurface()
 {
-
     if (m_GC)
         XFree(m_GC);
 }

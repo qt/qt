@@ -521,6 +521,14 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
         return false;
     }
 
+    static bool doneOnce = false;
+    if (!doneOnce) {
+        // Make sure QGLTextureCache is instanciated so it can install cleanup hooks
+        // which cleanup the EGL surface.
+        QGLTextureCache::instance();
+        doneOnce = true;
+    }
+
     Q_ASSERT(sizeof(Qt::HANDLE) >= sizeof(EGLSurface)); // Just to make totally sure!
     pixmapData->gl_surface = (Qt::HANDLE)pixmapSurface;
     pixmapData->is_cached = true; // Make sure the cleanup hook gets called
