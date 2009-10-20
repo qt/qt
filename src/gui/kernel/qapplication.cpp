@@ -2495,6 +2495,7 @@ void QApplication::setActiveWindow(QWidget* act)
 /*!internal
  * Helper function that returns the new focus widget, but does not set the focus reason.
  * Returns 0 if a new focus widget could not be found.
+ * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
