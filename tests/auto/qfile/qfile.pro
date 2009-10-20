@@ -5,5 +5,5 @@ wince*:{
   SUBDIRS = test stdinprocess
 }
 
-
+SUBDIRS += largefile
 
