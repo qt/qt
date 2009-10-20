@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,63 +39,18 @@
 **
 ****************************************************************************/
 
-#ifndef QGESTURE_H
-#define QGESTURE_H
+#include "imagewidget.h"
+#include "mainwidget.h"
 
-#include <QtCore/qobject.h>
-#include <QtCore/qlist.h>
-#include <QtCore/qdatetime.h>
-#include <QtCore/qpoint.h>
-#include <QtCore/qrect.h>
-#include <QtCore/qmetatype.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Gui)
-
-class QGraphicsItem;
-class QGesturePrivate;
-class Q_GUI_EXPORT QGesture : public QObject
+MainWidget::MainWidget(QWidget *parent)
+    : QMainWindow(parent)
 {
-    Q_OBJECT
-    Q_DECLARE_PRIVATE(QGesture)
+    resize(400, 300);
+    imageWidget = new ImageWidget(this);
+    setCentralWidget(imageWidget);
+}
 
-    Q_PROPERTY(Qt::GestureState state READ state)
-
-public:
-    explicit QGesture(QObject *parent = 0);
-    ~QGesture();
-
-    virtual bool filterEvent(QEvent *event) = 0;
-
-    void setGraphicsItem(QGraphicsItem *);
-    QGraphicsItem *graphicsItem() const;
-
-    Qt::GestureState state() const;
-
-protected:
-    QGesture(QGesturePrivate &dd, QObject *parent);
-    bool eventFilter(QObject*, QEvent*);
-
-    virtual void reset();
-    void updateState(Qt::GestureState state);
-
-//! [qgesture-signals]
-Q_SIGNALS:
-    void started();
-    void triggered();
-    void finished();
-    void cancelled();
-//! [qgesture-signals]
-
-private:
-    friend class QWidget;
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QGESTURE_H
+void MainWidget::openDirectory(const QString &path)
+{
+    imageWidget->openDirectory(path);
+}

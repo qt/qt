@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example video/videographicsitem
+    \example multimedia/videographicsitem
     \title Video Graphics Item Example
 
     The Video Graphics Item example shows how to implement a QGraphicsItem that displays video on a

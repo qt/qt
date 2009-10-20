@@ -39,36 +39,21 @@
 **
 ****************************************************************************/
 
-#ifndef TAPANDHOLDGESTURE_H
-#define TAPANDHOLDGESTURE_H
+#include <QtGui>
 
-#include <QtCore/QBasicTimer>
-#include <QtGui/QGesture>
-#include <QtGui/QWidget>
+#include "mainwidget.h"
 
-class TapAndHoldGesture : public QGesture
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-    Q_PROPERTY(QPoint pos READ pos)
+    QApplication app(argc, argv);
 
-public:
-    TapAndHoldGesture(QWidget *parent);
+    MainWidget w;
+    w.show();
 
-    bool filterEvent(QEvent *event);
-    void reset();
+    if (QApplication::arguments().size() > 1)
+        w.openDirectory(QApplication::arguments().at(1));
+    else
+        w.openDirectory(QFileDialog::getExistingDirectory(0, "Select image folder"));
 
-    QPoint pos() const;
-
-protected:
-    void timerEvent(QTimerEvent *event);
-
-private:
-    QBasicTimer timer;
-    int iteration;
-    QPoint position;
-    QPoint startPosition;
-    static const int iterationCount;
-    static const int iterationTimeout;
-};
-
-#endif // TAPANDHOLDGESTURE_H
+    return app.exec();
+}

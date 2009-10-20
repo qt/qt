@@ -5297,7 +5297,7 @@ void QGraphicsScene::setActivePanel(QGraphicsItem *item)
 /*!
     \since 4.4
 
-    Returns the current active window, or 0 if there is no window is currently
+    Returns the current active window, or 0 if no window is currently
     active.
 
     \sa QGraphicsScene::setActiveWindow()

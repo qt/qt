@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the examples of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,58 +39,27 @@
 **
 ****************************************************************************/
 
-#include <private/qglpaintdevice_qws_p.h>
-#include <private/qgl_p.h>
-#include <private/qpaintengine_opengl_p.h>
-#include <private/qglwindowsurface_qws_p.h>
+#ifndef MAINWIDGET_H
+#define MAINWIDGET_H
 
-QT_BEGIN_NAMESPACE
+#include <QMainWindow>
 
-class QWSGLPaintDevicePrivate
+class ImageWidget;
+
+class MainWidget : public QMainWindow
 {
+    Q_OBJECT
+
 public:
-    QWidget *widget;
+    MainWidget(QWidget *parent = 0);
+
+public slots:
+    void openDirectory(const QString &path);
+
+private:
+    bool loadImage(const QString &fileName);
+
+    ImageWidget *imageWidget;
 };
 
-class QMetricAccessor : public QWidget {
-public:
-    int metric(PaintDeviceMetric m) {
-        return QWidget::metric(m);
-    }
-};
-
-QWSGLPaintDevice::QWSGLPaintDevice(QWidget *widget) :
-    d_ptr(new QWSGLPaintDevicePrivate)
-{
-    Q_D(QWSGLPaintDevice);
-    d->widget = widget;
-}
-
-QWSGLPaintDevice::~QWSGLPaintDevice()
-{
-}
-
-QPaintEngine* QWSGLPaintDevice::paintEngine() const
-{
-#if !defined(QT_OPENGL_ES_2)
-    return qt_qgl_paint_engine();
-#else
-    return 0; // XXX
 #endif
-}
-
-int QWSGLPaintDevice::metric(PaintDeviceMetric m) const
-{
-    Q_D(const QWSGLPaintDevice);
-    Q_ASSERT(d->widget);
-
-    return ((QMetricAccessor *) d->widget)->metric(m);
-}
-
-QWSGLWindowSurface* QWSGLPaintDevice::windowSurface() const
-{
-     Q_D(const QWSGLPaintDevice);
-     return static_cast<QWSGLWindowSurface*>(d->widget->windowSurface());
-}
-
-QT_END_NAMESPACE

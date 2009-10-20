@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
 class QPauseAnimationPrivate : public QAbstractAnimationPrivate
 {
 public:
-    QPauseAnimationPrivate() : QAbstractAnimationPrivate(), duration(0)
+    QPauseAnimationPrivate() : QAbstractAnimationPrivate(), duration(250)
     {
         isPause = true;
     }
@@ -114,6 +114,7 @@ QPauseAnimation::~QPauseAnimation()
     \brief the duration of the pause.
 
     The duration of the pause. The duration should not be negative.
+    The default duration is 250 milliseconds.
 */
 int QPauseAnimation::duration() const
 {

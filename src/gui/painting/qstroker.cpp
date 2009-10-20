@@ -969,13 +969,31 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
 }
 
 
+static inline void qdashstroker_moveTo(qfixed x, qfixed y, void *data) {
+    ((QStroker *) data)->moveTo(x, y);
+}
+
+static inline void qdashstroker_lineTo(qfixed x, qfixed y, void *data) {
+    ((QStroker *) data)->lineTo(x, y);
+}
+
+static inline void qdashstroker_cubicTo(qfixed, qfixed, qfixed, qfixed, qfixed, qfixed, void *) {
+    Q_ASSERT(0);
+//     ((QStroker *) data)->cubicTo(c1x, c1y, c2x, c2y, ex, ey);
+}
+
+
 /*******************************************************************************
  * QDashStroker members
  */
 QDashStroker::QDashStroker(QStroker *stroker)
-    : m_stroker(stroker), m_dashOffset(0)
+    : m_stroker(stroker), m_dashOffset(0), m_stroke_width(1), m_miter_limit(1)
 {
-
+    if (m_stroker) {
+        setMoveToHook(qdashstroker_moveTo);
+        setLineToHook(qdashstroker_lineTo);
+        setCubicToHook(qdashstroker_cubicTo);
+    }
 }
 
 QVector<qfixed> QDashStroker::patternForStyle(Qt::PenStyle style)
@@ -1012,10 +1030,16 @@ void QDashStroker::processCurrentSubpath()
     int dashCount = qMin(m_dashPattern.size(), 32);
     qfixed dashes[32];
 
+    if (m_stroker) {
+        m_customData = m_stroker;
+        m_stroke_width = m_stroker->strokeWidth();
+        m_miter_limit = m_stroker->miterLimit();
+    }
+
     qreal longestLength = 0;
     qreal sumLength = 0;
     for (int i=0; i<dashCount; ++i) {
-        dashes[i] = qMax(m_dashPattern.at(i), qreal(0)) * m_stroker->strokeWidth();
+        dashes[i] = qMax(m_dashPattern.at(i), qreal(0)) * m_stroke_width;
         sumLength += dashes[i];
         if (dashes[i] > longestLength)
             longestLength = dashes[i];
@@ -1031,7 +1055,7 @@ void QDashStroker::processCurrentSubpath()
     int idash = 0; // Index to current dash
     qreal pos = 0; // The position on the curve, 0 <= pos <= path.length
     qreal elen = 0; // element length
-    qreal doffset = m_dashOffset * m_stroker->strokeWidth();
+    qreal doffset = m_dashOffset * m_stroke_width;
 
     // make sure doffset is in range [0..sumLength)
     doffset -= qFloor(doffset / sumLength) * sumLength;
@@ -1056,7 +1080,7 @@ void QDashStroker::processCurrentSubpath()
     qfixed2d line_to_pos;
 
     // Pad to avoid clipping the borders of thick pens.
-    qfixed padding = qt_real_to_fixed(qMax(m_stroker->strokeWidth(), m_stroker->miterLimit()) * longestLength);
+    qfixed padding = qt_real_to_fixed(qMax(m_stroke_width, m_miter_limit) * longestLength);
     qfixed2d clip_tl = { qt_real_to_fixed(m_clip_rect.left()) - padding,
                          qt_real_to_fixed(m_clip_rect.top()) - padding };
     qfixed2d clip_br = { qt_real_to_fixed(m_clip_rect.right()) + padding ,
@@ -1108,7 +1132,7 @@ void QDashStroker::processCurrentSubpath()
                 // continue the current dash, without starting a
                 // new subpath.
                 if (!has_offset || !hasMoveTo) {
-                    m_stroker->moveTo(move_to_pos.x, move_to_pos.y);
+                    emitMoveTo(move_to_pos.x, move_to_pos.y);
                     hasMoveTo = true;
                 }
 
@@ -1120,7 +1144,7 @@ void QDashStroker::processCurrentSubpath()
                     || (line_to_pos.x > clip_tl.x && line_to_pos.x < clip_br.x
                      && line_to_pos.y > clip_tl.y && line_to_pos.y < clip_br.y))
                 {
-                    m_stroker->lineTo(line_to_pos.x, line_to_pos.y);
+                    emitLineTo(line_to_pos.x, line_to_pos.y);
                 }
             } else {
                 move_to_pos.x = qt_real_to_fixed(p2.x());
@@ -1134,6 +1158,7 @@ void QDashStroker::processCurrentSubpath()
         estart = estop;
         prev = e;
     }
+
 }
 
 QT_END_NAMESPACE

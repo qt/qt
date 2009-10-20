@@ -280,22 +280,12 @@ QGLContext* QGLWindowSurfaceGLPaintDevice::context() const
 
 int QGLWindowSurfaceGLPaintDevice::metric(PaintDeviceMetric m) const
 {
-    return d->q_ptr->window()->metric(m);
+    return qt_paint_device_metric(d->q_ptr->window(), m);
 }
-
-Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_window_surface_2_engine)
-
-#if !defined (QT_OPENGL_ES_2)
-Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_window_surface_engine)
-#endif
 
 QPaintEngine *QGLWindowSurfaceGLPaintDevice::paintEngine() const
 {
-#if !defined(QT_OPENGL_ES_2)
-    if (!qt_gl_preferGL2Engine())
-        return qt_gl_window_surface_engine();
-#endif
-    return qt_gl_window_surface_2_engine();
+    return qt_qgl_paint_engine();
 }
 
 QGLWindowSurface::QGLWindowSurface(QWidget *window)
@@ -427,6 +417,12 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
         qWarning("No native child widget support in GL window surface without FBOs or pixel buffers");
         return;
     }
+
+    //### Find out why d_ptr->geometry_updated isn't always false.
+    // flush() should not be called when d_ptr->geometry_updated is true. It assumes that either
+    // d_ptr->fbo or d_ptr->pb is allocated and has the correct size.
+    if (d_ptr->geometry_updated)
+        return;
 
     QWidget *parent = widget->internalWinId() ? widget : widget->nativeParentWidget();
     Q_ASSERT(parent);

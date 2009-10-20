@@ -183,6 +183,10 @@ public:
 
     void agentDeleted(QScriptEngineAgent *agent);
 
+    void setCurrentException(QScriptValue exception) { m_currentException = exception; }
+    QScriptValue currentException() const { return m_currentException; }
+    void clearCurrentException() { m_currentException.d_ptr.reset(); }
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -263,6 +267,7 @@ public:
     QSet<QString> extensionsBeingImported;
     
     QHash<intptr_t, QScript::UStringSourceProviderWithFeedback*> loadedScripts;
+    QScriptValue m_currentException;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;

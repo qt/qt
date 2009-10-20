@@ -44,46 +44,43 @@
 
 #include <QWidget>
 #include <QImage>
-#include <QPixmap>
-
 #include <QtGui>
 
-#include "tapandholdgesture.h"
+QT_BEGIN_NAMESPACE
+class QGestureEvent;
+class QPanGesture;
+class QPinchGesture;
+class QSwipeGesture;
+QT_END_NAMESPACE
 
+//! [class definition begin]
 class ImageWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     ImageWidget(QWidget *parent = 0);
-
     void openDirectory(const QString &path);
 
 protected:
-    void paintEvent(QPaintEvent*);
-    void resizeEvent(QResizeEvent*);
-    void timerEvent(QTimerEvent*);
-    void mousePressEvent(QMouseEvent*);
-    void mouseDoubleClickEvent(QMouseEvent*);
-
-//! [imagewidget-slots]
-private slots:
-    void gestureTriggered();
-    void gestureFinished();
-    void gestureCancelled();
-//! [imagewidget-slots]
+    bool event(QEvent *event);
+    void paintEvent(QPaintEvent *event);
+    void resizeEvent(QResizeEvent *event);
+    void mouseDoubleClickEvent(QMouseEvent *event);
 
 private:
+    bool gestureEvent(QGestureEvent *event);
+    void panTriggered(QPanGesture*);
+    void pinchTriggered(QPinchGesture*);
+    void swipeTriggered(QSwipeGesture*);
+//! [class definition begin]
+
     void updateImage();
     QImage loadImage(const QString &fileName);
     void loadImage();
-    void setZoomedIn(bool zoomed);
     void goNextImage();
     void goPrevImage();
     void goToImage(int index);
-
-    QPanGesture *panGesture;
-    TapAndHoldGesture *tapAndHoldGesture;
 
     QString path;
     QStringList files;
@@ -91,47 +88,13 @@ private:
 
     QImage prevImage, nextImage;
     QImage currentImage;
-    QPixmap pixmap;
-    QTransform transformation;
 
-    bool zoomedIn;
-    int horizontalOffset;
-    int verticalOffset;
-
-    bool zoomed;
-    qreal zoom;
-    bool rotated;
-    qreal angle;
-
-    struct TouchFeedback
-    {
-        bool tapped;
-        QPoint position;
-        bool sliding;
-        QPoint slidingStartPosition;
-        QBasicTimer tapTimer;
-        int tapState;
-        bool doubleTapped;
-        int tapAndHoldState;
-
-        enum { MaximumNumberOfTouches = 5 };
-        QPoint touches[MaximumNumberOfTouches];
-
-        inline TouchFeedback() { reset(); }
-        inline void reset()
-        {
-            tapped = false;
-            sliding = false;
-            tapTimer.stop();
-            tapState = 0;
-            doubleTapped = false;
-            tapAndHoldState = 0;
-            for (int i = 0; i < MaximumNumberOfTouches; ++i) {
-                touches[i] = QPoint();
-            }
-        }
-    } touchFeedback;
-    QBasicTimer feedbackFadeOutTimer;
+    float horizontalOffset;
+    float verticalOffset;
+    float rotationAngle;
+    float scaleFactor;
+//! [class definition end]
 };
+//! [class definition end]
 
 #endif

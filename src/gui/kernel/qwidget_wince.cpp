@@ -474,7 +474,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
     int normal = SW_SHOWNOACTIVATE;
 
     if ((oldstate & Qt::WindowMinimized) && !(newstate & Qt::WindowMinimized))
-       newstate |= Qt::WindowActive;
+        newstate |= Qt::WindowActive;
     if (newstate & Qt::WindowActive)
         normal = SW_SHOWNORMAL;
     if (isWindow()) {
@@ -490,13 +490,13 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 d->topData()->normalGeometry = geometry();
         }
         if ((oldstate & Qt::WindowMaximized) != (newstate & Qt::WindowMaximized)) {
-             if (!(newstate & Qt::WindowMaximized)) {
+            if (!(newstate & Qt::WindowMaximized)) {
                 int style = GetWindowLong(internalWinId(), GWL_STYLE) | WS_BORDER | WS_POPUP | WS_CAPTION;
                 SetWindowLong(internalWinId(), GWL_STYLE, style);
                 SetWindowLong(internalWinId(), GWL_EXSTYLE, GetWindowLong (internalWinId(), GWL_EXSTYLE) & ~ WS_EX_NODRAG);
             }
-             if (isVisible() && newstate & Qt::WindowMaximized)
-                    qt_wince_maximize(this);
+            if (isVisible() && newstate & Qt::WindowMaximized)
+                qt_wince_maximize(this);
             if (isVisible() && !(newstate & Qt::WindowMinimized)) {
                 ShowWindow(internalWinId(), (newstate & Qt::WindowMaximized) ? max : normal);
                 if (!(newstate & Qt::WindowFullScreen)) {
@@ -558,17 +558,9 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
             else if (newstate & Qt::WindowMaximized) {
                 ShowWindow(internalWinId(), max);
                 qt_wince_maximize(this);
+            } else {
+                ShowWindow(internalWinId(), normal);
             }
-        }
-        if ((newstate & Qt::WindowMaximized) && !(newstate & Qt::WindowFullScreen)) {
-            QRect r = d->topData()->normalGeometry;
-#ifdef Q_WS_WINCE_WM
-            if (!inherits("QDialog") && !inherits("QMdiArea") && !isVisible()) {
-                d->data.crect.setRect(0, 0, -1, -1);
-            }
-#else
-            qt_wince_maximize(this);
-#endif
         }
     }
     data->window_state = newstate;

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenGL module of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,48 +39,29 @@
 **
 ****************************************************************************/
 
-#ifndef QWSGLPAINTDEVICE_GL_P_H
-#define QWSGLPAINTDEVICE_GL_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of the QGLWindowSurface class.  This header file may change from
-// version to version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qscopedpointer.h>
-#include <QPaintDevice>
+#include "qglobal.h"
 
 QT_BEGIN_NAMESPACE
 
-class QWidget;
-class QWSGLWindowSurface;
-class QWSGLPaintDevicePrivate;
+#include "qdesktopwidget.h"
+#include "qwidget_p.h"
 
-class Q_OPENGL_EXPORT QWSGLPaintDevice : public QPaintDevice
+const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {
-    Q_DECLARE_PRIVATE(QWSGLPaintDevice)
-public:
-    QWSGLPaintDevice(QWidget *widget);
-    ~QWSGLPaintDevice();
+    QRect rect = QWidgetPrivate::screenGeometry(widget);
+    if (rect.isNull())
+        return screenGeometry(screenNumber(widget));
+    else return rect;
+}
 
-    QPaintEngine *paintEngine() const;
-
-    int metric(PaintDeviceMetric m) const;
-
-    QWSGLWindowSurface *windowSurface() const;
-
-private:
-    friend class QWSGLWindowSurface;
-    QScopedPointer<QWSGLPaintDevicePrivate> d_ptr;
-};
-
+const QRect QDesktopWidget::availableGeometry(const QWidget *widget) const
+{
+    QRect rect = QWidgetPrivate::screenGeometry(widget);
+    if (rect.isNull())
+        return availableGeometry(screenNumber(widget));
+    else
+        return rect;
+}
 
 QT_END_NAMESPACE
 
-#endif // QWSGLPAINTDEVICE_GL_P_H

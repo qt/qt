@@ -1608,8 +1608,20 @@ void QPainter::restore()
     \warning A paint device can only be painted by one painter at a
     time.
 
+    \warning Painting on a QImage with the format
+    QImage::Format_Indexed8 is not supported.
+
     \sa end(), QPainter()
 */
+
+static inline void qt_cleanup_painter_state(QPainterPrivate *d)
+{
+    d->states.clear();
+    delete d->state;
+    d->state = 0;
+    d->engine = 0;
+    d->device = 0;
+}
 
 bool QPainter::begin(QPaintDevice *pd)
 {
@@ -1656,15 +1668,21 @@ bool QPainter::begin(QPaintDevice *pd)
         printf("QPainter::begin(), device=%p, type=%d\n", pd, pd->devType());
 #endif
 
-
-    d->device = pd;
     if (pd->devType() == QInternal::Pixmap)
         static_cast<QPixmap *>(pd)->detach();
     else if (pd->devType() == QInternal::Image)
         static_cast<QImage *>(pd)->detach();
 
     d->engine = pd->paintEngine();
-    d->extended = d->engine && d->engine->isExtended() ? static_cast<QPaintEngineEx *>(d->engine) : 0;
+
+    if (!d->engine) {
+        qWarning("QPainter::begin: Paint device returned engine == 0, type: %d", pd->devType());
+        return false;
+    }
+
+    d->device = pd;
+
+    d->extended = d->engine->isExtended() ? static_cast<QPaintEngineEx *>(d->engine) : 0;
     if (d->emulationEngine)
         d->emulationEngine->real_engine = d->extended;
 
@@ -1676,11 +1694,6 @@ bool QPainter::begin(QPaintDevice *pd)
 
     d->state->redirectionMatrix.translate(-redirectionOffset.x(), -redirectionOffset.y());
     d->state->brushOrigin = QPointF();
-
-    if (!d->engine) {
-        qWarning("QPainter::begin: Paint device returned engine == 0, type: %d", pd->devType());
-        return false;
-    }
 
     // Slip a painter state into the engine before we do any other operations
     if (d->extended)
@@ -1700,8 +1713,7 @@ bool QPainter::begin(QPaintDevice *pd)
                 && !paintOutsidePaintEvent && !inPaintEvent) {
                 qWarning("QPainter::begin: Widget painting can only begin as a "
                          "result of a paintEvent");
-                d->engine = 0;
-                d->device = 0;
+                qt_cleanup_painter_state(d);
                 return false;
             }
 
@@ -1719,8 +1731,7 @@ bool QPainter::begin(QPaintDevice *pd)
             Q_ASSERT(pm);
             if (pm->isNull()) {
                 qWarning("QPainter::begin: Cannot paint on a null pixmap");
-                d->engine = 0;
-                d->device = 0;
+                qt_cleanup_painter_state(d);
                 return false;
             }
 
@@ -1736,8 +1747,12 @@ bool QPainter::begin(QPaintDevice *pd)
             Q_ASSERT(img);
             if (img->isNull()) {
                 qWarning("QPainter::begin: Cannot paint on a null image");
-                d->engine = 0;
-                d->device = 0;
+                qt_cleanup_painter_state(d);
+                return false;
+            } else if (img->format() == QImage::Format_Indexed8) {
+                // Painting on indexed8 images is not supported.
+                qWarning("QPainter::begin: Cannot paint on an image with the QImage::Format_Indexed8 format");
+                qt_cleanup_painter_state(d);
                 return false;
             }
             if (img->depth() == 1) {
@@ -1760,12 +1775,8 @@ bool QPainter::begin(QPaintDevice *pd)
         if (d->engine->isActive()) {
             end();
         } else {
-            d->states.clear();
-            delete d->state;
-            d->state = 0;
+            qt_cleanup_painter_state(d);
         }
-        d->engine = 0;
-        d->device = 0;
         return false;
     } else {
         d->engine->setActive(begun);
@@ -1828,10 +1839,7 @@ bool QPainter::end()
 
     if (!d->engine) {
         qWarning("QPainter::end: Painter not active, aborted");
-        d->states.clear();
-        delete d->state;
-        d->state = 0;
-        d->device = 0;
+        qt_cleanup_painter_state(d);
         return false;
     }
 
@@ -1862,8 +1870,6 @@ bool QPainter::end()
         delete d->engine;
     }
 
-    d->engine = 0;
-
     if (d->emulationEngine) {
         delete d->emulationEngine;
         d->emulationEngine = 0;
@@ -1873,11 +1879,8 @@ bool QPainter::end()
         d->extended = 0;
     }
 
-    d->states.clear();
-    delete d->state;
-    d->state = 0;
+    qt_cleanup_painter_state(d);
 
-    d->device = 0;
     return ended;
 }
 
@@ -2051,8 +2054,7 @@ QPoint QPainter::brushOrigin() const
     Sets the brush origin to \a position.
 
     The brush origin specifies the (0, 0) coordinate of the painter's
-    brush. This setting only applies to pattern brushes and pixmap
-    brushes.
+    brush.
 
     Note that while the brushOrigin() was necessary to adopt the
     parent's background for a widget in Qt 3, this is no longer the

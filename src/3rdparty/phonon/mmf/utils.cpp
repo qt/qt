@@ -62,7 +62,7 @@ MMF::MediaType MMF::Utils::mimeTypeToMediaType(const TDesC& mimeType)
 }
 
 
-#ifdef _DEBUG
+#ifndef QT_NO_DEBUG
 
 #include <hal.h>
 #include <hal_data.h>
@@ -111,7 +111,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
     TScreenInfo info;
     TRAPD(err, getScreenInfoL(info));
     QColor pixel;
-    if(err == KErrNone and pos.x() < info.width and pos.y() < info.height)
+    if (err == KErrNone and pos.x() < info.width and pos.y() < info.height)
     {
         const int bytesPerPixel = info.bpp / 8;
         Q_ASSERT(bytesPerPixel >= 3);
@@ -129,7 +129,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
         pixel.setGreen(*ptr++);
         pixel.setRed(*ptr++);
 
-        if(bytesPerPixel == 4)
+        if (bytesPerPixel == 4)
             pixel.setAlpha(*ptr++);
     }
     return pixel;
@@ -138,7 +138,7 @@ QColor MMF::Utils::getScreenPixel(const QPoint& pos)
 // Debugging: for debugging video visibility
 void MMF::Utils::dumpScreenPixelSample()
 {
-    for(int i=0; i<20; ++i) {
+    for (int i=0; i<20; ++i) {
         const QPoint pos(i*10, i*10);
         const QColor pixel = Utils::getScreenPixel(pos);
         RDebug::Printf(

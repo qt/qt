@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QGLPaintDevice : public QPaintDevice
+class Q_OPENGL_EXPORT QGLPaintDevice : public QPaintDevice
 {
 public:
     QGLPaintDevice();

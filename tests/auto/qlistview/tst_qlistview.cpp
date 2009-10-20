@@ -116,6 +116,8 @@ private slots:
     void keyboardSearch();
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
+    void task262152_setModelColumnNavigate();
+    void taskQTBUG_2233_scrollHiddenRows();
 };
 
 // Testing get/set functions
@@ -1767,6 +1769,53 @@ void tst_QListView::clickOnViewportClearsSelection()
 
 }
 
+void tst_QListView::task262152_setModelColumnNavigate()
+{
+    QListView view;
+    QStandardItemModel model(3,2);
+    model.setItem(0,1,new QStandardItem("[0,1]"));
+    model.setItem(1,1,new QStandardItem("[1,1]"));
+    model.setItem(2,1,new QStandardItem("[2,1]"));
+
+    view.setModel(&model);
+    view.setModelColumn(1);
+
+    view.show();
+    QTest::qWait(30);
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex(), model.index(2,1));
+
+}
+
+void tst_QListView::taskQTBUG_2233_scrollHiddenRows()
+{
+    const int rowCount = 200;
+
+    QListView view;
+    QStringListModel model(&view);
+    QStringList list;
+    for (int i = 0; i < rowCount; ++i)
+        list << QString::fromAscii("Item %1").arg(i);
+
+    model.setStringList(list);
+    view.setModel(&model);
+    view.setViewMode(QListView::ListMode);
+    view.setFlow(QListView::TopToBottom);
+    for (int i = 0; i < rowCount / 2; ++i)
+        view.setRowHidden(2 * i, true);
+    view.resize(250, 130);
+
+    for (int i = 0; i < 10; ++i) {
+        view.verticalScrollBar()->setValue(i);
+        QModelIndex index = view.indexAt(QPoint(20,0));
+        QVERIFY(index.isValid());
+        QCOMPARE(index.row(), 2 * i + 1);
+    }
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

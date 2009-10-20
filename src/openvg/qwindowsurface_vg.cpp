@@ -111,7 +111,7 @@ QPaintEngine *QVGWindowSurface::paintEngine() const
 
 int QVGWindowSurface::metric(PaintDeviceMetric met) const
 {
-    return window()->metric(met);
+    return qt_paint_device_metric(window(), met);
 }
 
 QT_END_NAMESPACE

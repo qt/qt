@@ -726,14 +726,11 @@ private:
     friend class QGLContext;
     friend class QGLWidget;
     friend class QGLWindowSurface;
-    friend class QGLWindowSurfaceGLPaintDevice;
-    friend class QVGWindowSurface;
     friend class QX11PaintEngine;
     friend class QWin32PaintEngine;
     friend class QShortcutPrivate;
     friend class QShortcutMap;
     friend class QWindowSurface;
-    friend class QD3DWindowSurface;
     friend class QGraphicsProxyWidget;
     friend class QGraphicsProxyWidgetPrivate;
     friend class QStyleSheetStyle;
@@ -776,6 +773,9 @@ private:
 private:
     Q_DISABLE_COPY(QWidget)
     Q_PRIVATE_SLOT(d_func(), void _q_showIfNotHidden())
+#ifdef Q_OS_SYMBIAN
+    Q_PRIVATE_SLOT(d_func(), void _q_delayedDestroy(WId winId))
+#endif
 
     QWidgetData *data;
 

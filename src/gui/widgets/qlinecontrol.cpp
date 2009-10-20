@@ -1290,7 +1290,7 @@ void QLineControl::setCursorBlinkPeriod(int msec)
         m_blinkStatus = 1;
     } else {
         m_blinkTimer = 0;
-        if (m_blinkStatus == 0)
+        if (m_blinkStatus == 1)
             emit updateNeeded(inputMask().isEmpty() ? cursorRect() : QRect());
     }
     m_blinkPeriod = msec;

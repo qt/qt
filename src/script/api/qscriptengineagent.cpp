@@ -156,6 +156,7 @@ void QScriptEngineAgentPrivate::exceptionThrow(const JSC::DebuggerCallFrame& fra
     QScriptValue value(engine->scriptValueFromJSCValue(frame.exception()));
     q_ptr->exceptionThrow(sourceID, value, hasHandler);
     engine->currentFrame = oldFrame;
+    engine->setCurrentException(value);
 };
 
 void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& frame, intptr_t sourceID)
@@ -165,6 +166,7 @@ void QScriptEngineAgentPrivate::exceptionCatch(const JSC::DebuggerCallFrame& fra
     QScriptValue value(engine->scriptValueFromJSCValue(frame.exception()));
     q_ptr->exceptionCatch(sourceID, value);
     engine->currentFrame = oldFrame;
+    engine->clearCurrentException();
 }
 
 void QScriptEngineAgentPrivate::atStatement(const JSC::DebuggerCallFrame& frame, intptr_t sourceID, int lineno, int column)

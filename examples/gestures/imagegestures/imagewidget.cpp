@@ -43,6 +43,7 @@
 
 #include <QtGui>
 
+//! [constructor]
 ImageWidget::ImageWidget(QWidget *parent)
     : QWidget(parent),
     position(0),
@@ -52,24 +53,24 @@ ImageWidget::ImageWidget(QWidget *parent)
     scaleFactor(1)
 
 {
-    setObjectName("ImageWidget");
     setMinimumSize(QSize(100,100));
 
-    setAttribute(Qt::WA_PaintOnScreen);
-    setAttribute(Qt::WA_OpaquePaintEvent);
-    setAttribute(Qt::WA_NoSystemBackground);
-
+//! [enable gestures]
     grabGesture(Qt::PanGesture);
     grabGesture(Qt::PinchGesture);
     grabGesture(Qt::SwipeGesture);
+//! [enable gestures]
 }
+//! [constructor]
 
+//! [event handler]
 bool ImageWidget::event(QEvent *event)
 {
     if (event->type() == QEvent::Gesture)
         return gestureEvent(static_cast<QGestureEvent*>(event));
     return QWidget::event(event);
 }
+//! [event handler]
 
 void ImageWidget::paintEvent(QPaintEvent*)
 {
@@ -98,6 +99,7 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
     update();
 }
 
+//! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
     if (QGesture *pan = event->gesture(Qt::PanGesture)) {
@@ -112,6 +114,7 @@ bool ImageWidget::gestureEvent(QGestureEvent *event)
     }
     return false;
 }
+//! [gesture event handler]
 
 void ImageWidget::panTriggered(QPanGesture *gesture)
 {
@@ -147,7 +150,7 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     update();
 }
 
-//! [swipe slot]
+//! [swipe function]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
     if (gesture->horizontalDirection() == QSwipeGesture::Left
@@ -157,7 +160,7 @@ void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
         goNextImage();
     update();
 }
-//! [swipe slot]
+//! [swipe function]
 
 void ImageWidget::resizeEvent(QResizeEvent*)
 {

@@ -49,6 +49,7 @@ QT_BEGIN_NAMESPACE
    \class QGestureRecognizer
    \since 4.6
    \brief The QGestureRecognizer class provides the infrastructure for gesture recognition.
+   \ingroup gestures
 
    Gesture recognizers are responsible for creating and managing QGesture objects and
    monitoring input events sent to QWidget and QGraphicsObject subclasses.
@@ -65,9 +66,11 @@ QT_BEGIN_NAMESPACE
    about the user's input.
 
    Gestures are created when the framework calls createGesture() to handle user input
-   for a particular target QWidget or QGraphicsObject instance. Once a QGesture has been
-   created for one of these objects, the gesture recognizer will receive events for it
-   in its filterEvent() handler function.
+   for a particular instance of a QWidget or QGraphicsObject subclass. A QGesture object
+   is created for each widget or item that is configured to use gestures.
+
+   Once a QGesture has been created for a target object, the gesture recognizer will
+   receive events for it in its filterEvent() handler function.
 
    When a gesture is canceled, the reset() function is called, giving the recognizer the
    chance to update the appropriate properties in the corresponding QGesture object.
@@ -75,15 +78,18 @@ QT_BEGIN_NAMESPACE
    \section1 Supporting New Gestures
 
    To add support for new gestures, you need to derive from QGestureRecognizer to create
-   a custom recognizer class and register it with the application by calling
-   QApplication::registerGestureRecognizer(). You can also derive from QGesture to create
-   a custom gesture class, or rely on dynamic properties to express specific details
-   of the gesture you want to handle.
+   a custom recognizer class, construct an instance of this class, and register it with
+   the application by calling QApplication::registerGestureRecognizer(). You can also
+   subclass QGesture to create a custom gesture class, or rely on dynamic properties
+   to express specific details of the gesture you want to handle.
 
    Your custom QGestureRecognizer subclass needs to reimplement the filterEvent() function
    to handle and filter the incoming input events for QWidget and QGraphicsObject subclasses.
-   Although the logic for gesture recognition is implemented in this function, the state of
-   recognition for each target object can be recorded in the QGesture object supplied.
+   Although the logic for gesture recognition is implemented in this function, you can
+   store persistent information about the state of the recognition process in the QGesture
+   object supplied. The filterEvent() function must return a value of Qt::GestureState that
+   indicates the state of recognition for a given gesture and target object. This determines
+   whether or not a gesture event will be delivered to a target object.
 
    If you choose to represent a gesture by a custom QGesture subclass, you will need to
    reimplement the createGesture() function to construct instances of your gesture class.

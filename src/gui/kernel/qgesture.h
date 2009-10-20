@@ -51,11 +51,11 @@
 
 QT_BEGIN_HEADER
 
+Q_DECLARE_METATYPE(Qt::GestureState)
+
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Gui)
-
-Q_DECLARE_METATYPE(Qt::GestureState)
 
 class QGesturePrivate;
 class Q_GUI_EXPORT QGesture : public QObject
@@ -180,7 +180,11 @@ public:
     friend class QPinchGestureRecognizer;
 };
 
+QT_END_NAMESPACE
+
 Q_DECLARE_METATYPE(QPinchGesture::WhatChanged)
+
+QT_BEGIN_NAMESPACE
 
 class QSwipeGesturePrivate;
 class Q_GUI_EXPORT QSwipeGesture : public QGesture

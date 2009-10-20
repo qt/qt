@@ -68,9 +68,6 @@
 #include "private/qstylesheetstyle_p.h"
 #include "private/qstyle_p.h"
 #include "qmessagebox.h"
-#include "qlineedit.h"
-#include "qlistview.h"
-#include "qtextedit.h"
 #include <QtGui/qgraphicsproxywidget.h>
 
 #include "qinputcontext.h"
@@ -2498,9 +2495,12 @@ void QApplication::setActiveWindow(QWidget* act)
 /*!internal
  * Helper function that returns the new focus widget, but does not set the focus reason.
  * Returns 0 if a new focus widget could not be found.
+ * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
+    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
+
     QWidget *f = toplevel->focusWidget();
     if (!f)
         f = toplevel;
@@ -2508,22 +2508,11 @@ QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool 
     QWidget *w = f;
     QWidget *test = f->d_func()->focus_next;
     while (test && test != f) {
-        if ((test->focusPolicy() & Qt::TabFocus)
+        if ((test->focusPolicy() & focus_flag) == focus_flag
             && !(test->d_func()->extra && test->d_func()->extra->focus_proxy)
             && test->isVisibleTo(toplevel) && test->isEnabled()
             && !(w->windowType() == Qt::SubWindow && !w->isAncestorOf(test))
-            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))
-            && (qt_tab_all_widgets
-#ifndef QT_NO_LINEEDIT
-                || qobject_cast<QLineEdit*>(test)
-#endif
-#ifndef QT_NO_TEXTEDIT
-                || qobject_cast<QTextEdit*>(test)
-#endif
-#ifndef QT_NO_ITEMVIEWS
-                || qobject_cast<QListView*>(test)
-#endif
-                )) {
+            && (toplevel->windowType() != Qt::SubWindow || toplevel->isAncestorOf(test))) {
             w = test;
             if (next)
                 break;
@@ -5646,7 +5635,7 @@ Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *reco
 
     Unregisters all gesture recognizers of the specified \a type.
 
-    \sa registerGestureRecognizer
+    \sa registerGestureRecognizer()
 */
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {

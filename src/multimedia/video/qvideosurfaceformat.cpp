@@ -58,7 +58,7 @@ public:
         , scanLineDirection(QVideoSurfaceFormat::TopToBottom)
         , pixelAspectRatio(1, 1)
         , yuvColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
-        , frameRate(0, 0)
+        , frameRate(0.0)
     {
     }
 
@@ -73,7 +73,7 @@ public:
         , pixelAspectRatio(1, 1)
         , yuvColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
         , viewport(QPoint(0, 0), size)
-        , frameRate(0, 0)
+        , frameRate(0.0)
     {
     }
 
@@ -100,7 +100,7 @@ public:
             && frameSize == other.frameSize
             && pixelAspectRatio == other.pixelAspectRatio
             && viewport == other.viewport
-            && frameRate == other.frameRate
+            && frameRatesEqual(frameRate, other.frameRate)
             && yuvColorSpace == other.yuvColorSpace
             && propertyNames.count() == other.propertyNames.count()) {
             for (int i = 0; i < propertyNames.count(); ++i) {
@@ -115,6 +115,11 @@ public:
         }
     }
 
+    inline static bool frameRatesEqual(qreal r1, qreal r2)
+    {
+        return qAbs(r1 - r2) <= 0.00001 * qMin(qAbs(r1), qAbs(r2));
+    }
+
     QVideoFrame::PixelFormat pixelFormat;
     QAbstractVideoBuffer::HandleType handleType;
     QVideoSurfaceFormat::Direction scanLineDirection;
@@ -122,7 +127,7 @@ public:
     QSize pixelAspectRatio;
     QVideoSurfaceFormat::YuvColorSpace yuvColorSpace;
     QRect viewport;
-    QVideoSurfaceFormat::FrameRate frameRate;
+    qreal frameRate;
     QList<QByteArray> propertyNames;
     QList<QVariant> propertyValues;
 };
@@ -199,15 +204,6 @@ public:
  
     \value YCbCr_JPEG
     The full range Y'CbCr color space used in JPEG files.
-*/
-
-
-/*!
-    \typedef QVideoSurfaceFormat::FrameRate
-
-    A pair of integers representing the frame rate of a video stream.
-
-    The first number is the numerator and the second the denominator.
 */
 
 /*!
@@ -415,38 +411,21 @@ void QVideoSurfaceFormat::setScanLineDirection(Direction direction)
 }
 
 /*!
-    Returns the frame rate of a video stream.
-
-    The frame rate is a rational number represented by a pair of integers.
-    The first integer is the numerator and the second the denominator.
+    Returns the frame rate of a video stream in frames per second.
 */
 
-QVideoSurfaceFormat::FrameRate QVideoSurfaceFormat::frameRate() const
+qreal QVideoSurfaceFormat::frameRate() const
 {
     return d->frameRate;
 }
 
 /*!
-    Sets the frame \a rate of a video stream.
-
-    The frame rate is a rational number represented by a pair of integers.
-    The first integer is the numerator and the second the denominator.
+    Sets the frame \a rate of a video stream in frames per second.
 */
 
-void QVideoSurfaceFormat::setFrameRate(const FrameRate &rate)
+void QVideoSurfaceFormat::setFrameRate(qreal rate)
 {
     d->frameRate = rate;
-}
-
-/*!
-    \overload
-
-    Sets the \a numerator and \a denominator of the frame rate of a video stream.
-*/
-
-void QVideoSurfaceFormat::setFrameRate(int numerator, int denominator)
-{
-    d->frameRate = qMakePair(numerator, denominator);
 }
 
 /*!
@@ -599,8 +578,8 @@ void QVideoSurfaceFormat::setProperty(const char *name, const QVariant &value)
         if (qVariantCanConvert<Direction>(value))
             d->scanLineDirection = qvariant_cast<Direction>(value);
     } else if (qstrcmp(name, "frameRate") == 0) {
-        if (qVariantCanConvert<FrameRate>(value))
-            d->frameRate = qvariant_cast<FrameRate>(value);
+        if (qVariantCanConvert<qreal>(value))
+            d->frameRate = qvariant_cast<qreal>(value);
     } else if (qstrcmp(name, "pixelAspectRatio") == 0) {
         if (qVariantCanConvert<QSize>(value))
             d->pixelAspectRatio = qvariant_cast<QSize>(value);

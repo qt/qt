@@ -3563,6 +3563,7 @@ QMenubarUpdatedEvent::QMenubarUpdatedEvent(QMenuBar * const menuBar)
     \brief The QTouchEvent class contains parameters that describe a touch event.
     \since 4.6
     \ingroup events
+    \ingroup multitouch
 
     \section1 Enabling Touch Events
 
@@ -4195,6 +4196,7 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     \class QGestureEvent
     \since 4.6
     \ingroup events
+    \ingroup gestures
 
     \brief The QGestureEvent class provides the description of triggered gestures.
 
@@ -4315,5 +4317,45 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
 {
     return gesture ? gesture->d_func()->accept : false;
 }
+
+#ifdef Q_NO_USING_KEYWORD
+/*!
+    \fn void QGestureEvent::setAccepted(bool accepted)
+
+    Sets or clears the event's internal flag that determines whether it should
+    be delivered to other objects.
+
+    Calling this function with a value of true for \a accepted indicates that the
+    caller has accepted the event and that it should not be propagated further.
+    Calling this function with a value of false indicates that the caller has
+    ignored the event and that it should be delivered to other objects.
+
+    For convenience, the accept flag can also be set with accept(), and cleared
+    with ignore().
+
+    \sa QEvent::accepted
+*/
+/*!
+    \fn bool QGestureEvent::isAccepted() const
+
+    Returns true is the event has been accepted; otherwise returns false.
+
+    \sa QEvent::accepted
+*/
+/*!
+    \fn void QGestureEvent::accept()
+
+    Accepts the event, the equivalent of calling setAccepted(true).
+
+    \sa QEvent::accept()
+*/
+/*!
+    \fn void QGestureEvent::ignore()
+
+    Ignores the event, the equivalent of calling setAccepted(false).
+
+    \sa QEvent::ignore()
+*/
+#endif
 
 QT_END_NAMESPACE

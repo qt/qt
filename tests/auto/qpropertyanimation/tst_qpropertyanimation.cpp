@@ -130,6 +130,7 @@ private slots:
     void valueChanged();
     void twoAnimations();
     void deletedInUpdateCurrentTime();
+    void totalDuration();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -1198,6 +1199,19 @@ void tst_QPropertyAnimation::deletedInUpdateCurrentTime()
     QCOMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
     QCOMPARE(o.value(), 1000);
 }
+
+void tst_QPropertyAnimation::totalDuration()
+{
+    QPropertyAnimation anim;
+    QCOMPARE(anim.totalDuration(), 250);
+    anim.setLoopCount(2);
+    QCOMPARE(anim.totalDuration(), 2*250);
+    anim.setLoopCount(-1);
+    QCOMPARE(anim.totalDuration(), -1);
+    anim.setDuration(0);
+    QCOMPARE(anim.totalDuration(), 0);
+}
+
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

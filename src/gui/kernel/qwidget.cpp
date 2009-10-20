@@ -149,24 +149,6 @@ static inline bool hasBackingStoreSupport()
 #endif
 }
 
-/*!
-    \internal
-
-    Returns true if \a p or any of its parents enable the
-    Qt::BypassGraphicsProxyWidget window flag. Used in QWidget::show() and
-    QWidget::setParent() to determine whether it's necessary to embed the
-    widget into a QGraphicsProxyWidget or not.
-*/
-static inline bool bypassGraphicsProxyWidget(QWidget *p)
-{
-    while (p) {
-        if (p->windowFlags() & Qt::BypassGraphicsProxyWidget)
-            return true;
-        p = p->parentWidget();
-    }
-    return false;
-}
-
 #ifdef Q_WS_MAC
 #  define QT_NO_PAINT_DEBUG
 #endif
@@ -1355,6 +1337,8 @@ void QWidget::create(WId window, bool initializeWindow, bool destroyOldWindow)
         d->setWindowIcon_sys(true);
     if (isWindow() && !d->topData()->iconText.isEmpty())
         d->setWindowIconText_helper(d->topData()->iconText);
+    if (isWindow() && !d->topData()->caption.isEmpty())
+        d->setWindowTitle_helper(d->topData()->caption);
     if (windowType() != Qt::Desktop) {
         d->updateSystemBackground();
 
@@ -1502,12 +1486,24 @@ void QWidgetPrivate::setWinId(WId id)                // set widget identifier
         mapper->remove(data.winid);
     }
 
+    const WId oldWinId = data.winid;
+
     data.winid = id;
 #if defined(Q_WS_X11)
     hd = id; // X11: hd == ident
 #endif
     if (mapper && id && !userDesktopWidget) {
         mapper->insert(data.winid, q);
+    }
+
+    if(oldWinId != id) {
+        // Do not emit an event when the old winId is destroyed.  This only
+        // happens (a) during widget destruction, and (b) immediately prior
+        // to creation of a new winId, for example as a result of re-parenting.
+        if(id != 0) {
+            QEvent e(QEvent::WinIdChange);
+            QCoreApplication::sendEvent(q, &e);
+        }
     }
 }
 
@@ -2227,8 +2223,8 @@ QWidget *QWidget::find(WId id)
     against. If Qt is using Carbon, the {WId} is actually an HIViewRef. If Qt
     is using Cocoa, {WId} is a pointer to an NSView.
 
-    \note We recommend that you do not store this value as it is likely to
-    change at run-time.
+    This value may change at run-time. An event with type QEvent::WinIdChange
+    will be sent to the widget following a change in window system identifier.
 
     \sa find()
 */
@@ -5473,6 +5469,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     return pixmap;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 /*!
     \internal
 
@@ -5481,7 +5478,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     If successful, the function returns the proxy that embeds the widget, or 0 if no embedded
     widget was found.
 */
-QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origin)
+QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
 {
     if (origin) {
         QWExtra *extra = origin->d_func()->extra;
@@ -5491,6 +5488,7 @@ QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origi
     }
     return 0;
 }
+#endif
 
 /*!
     \property QWidget::locale
@@ -5665,9 +5663,8 @@ QString qt_setWindowTitle_helperHelper(const QString &title, const QWidget *widg
 void QWidgetPrivate::setWindowTitle_helper(const QString &title)
 {
     Q_Q(QWidget);
-    if (!q->testAttribute(Qt::WA_WState_Created))
-        createWinId();
-    setWindowTitle_sys(qt_setWindowTitle_helperHelper(title, q));
+    if (q->testAttribute(Qt::WA_WState_Created))
+        setWindowTitle_sys(qt_setWindowTitle_helperHelper(title, q));
 }
 
 void QWidgetPrivate::setWindowIconText_helper(const QString &title)
@@ -11998,3 +11995,10 @@ void QWidget::clearMask()
     XRender extension is not supported on the X11 display, or if the
     handle could not be created.
 */
+
+#ifdef Q_OS_SYMBIAN
+void QWidgetPrivate::_q_delayedDestroy(WId winId)
+{
+    delete winId;
+}
+#endif

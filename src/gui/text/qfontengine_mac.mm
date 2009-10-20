@@ -119,6 +119,28 @@ OSStatus QMacFontPath::closePath(void *data)
 }
 
 
+
+void qmacfontengine_gamma_correct(QImage *image)
+{
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    int h = image->height();
+    int w = image->width();
+
+    for (int y=0; y<h; ++y) {
+        uint *pixels = (uint *) image->scanLine(y);
+        for (int x=0; x<w; ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
+}
+
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
@@ -534,7 +556,7 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
@@ -549,9 +571,10 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, fontDef.pointSize > qt_antialiasing_threshold
-				&& !(fontDef.styleStrategy & QFont::NoAntialias));
-    CGContextSetShouldSmoothFonts(ctx, false);
+    CGContextSetShouldAntialias(ctx, aa ||
+                                (fontDef.pointSize > qt_antialiasing_threshold
+                                 && !(fontDef.styleStrategy & QFont::NoAntialias)));
+    CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
 
@@ -586,6 +609,13 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
 
     CGContextRelease(ctx);
 
+    return im;
+}
+
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
+{
+    QImage im = imageForGlyph(glyph, 0, false);
+
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
     for (int i=0; i<256; ++i)
@@ -603,6 +633,16 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
     }
 
     return indexed;
+}
+
+QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &x)
+{
+    if (x.type() >= QTransform::TxScale)
+        return QFontEngine::alphaRGBMapForGlyph(glyph, margin, x);
+
+    QImage im = imageForGlyph(glyph, margin, true);
+    qmacfontengine_gamma_correct(&im);
+    return im;
 }
 
 void QCoreTextFontEngine::recalcAdvances(int numGlyphs, QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
@@ -790,7 +830,6 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
             surrogates += (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00
                            && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
         }
-        Q_ASSERT(*nfo->numGlyphs == item->length - surrogates);
 #endif
         for (nextCharStop = item->from; nextCharStop < item->from + item->length; ++nextCharStop)
             if (item->charAttributes[nextCharStop].charStop)
@@ -816,10 +855,13 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
         QFixed xAdvance = FixedToQFixed(layoutData[glyphIdx + 1].realPos - layoutData[glyphIdx].realPos);
 
         if (glyphId != 0xffff || i == 0) {
-            nfo->glyphs->glyphs[i] = (glyphId & 0x00ffffff) | (fontIdx << 24);
+            if (i < nfo->glyphs->numGlyphs)
+            {
+                nfo->glyphs->glyphs[i] = (glyphId & 0x00ffffff) | (fontIdx << 24);
 
-            nfo->glyphs->advances_y[i] = yAdvance;
-            nfo->glyphs->advances_x[i] = xAdvance;
+                nfo->glyphs->advances_y[i] = yAdvance;
+                nfo->glyphs->advances_x[i] = xAdvance;
+            }
         } else {
             // ATSUI gives us 0xffff as glyph id at the index in the glyph array for
             // a character position that maps to a ligtature. Such a glyph id does not
@@ -989,6 +1031,8 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
     nfo.flags = flags;
     nfo.shaperItem = shaperItem;
 
+    int prevNumGlyphs = *nglyphs;
+
     QVarLengthArray<int> mappedFonts(len);
     for (int i = 0; i < len; ++i)
         mappedFonts[i] = 0;
@@ -1100,6 +1144,8 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
     }
 
     ATSUClearLayoutCache(textLayout, kATSUFromTextBeginning);
+    if (prevNumGlyphs < *nfo.numGlyphs)
+        return false;
     return true;
 }
 
@@ -1505,19 +1551,7 @@ QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTra
         im = im.transformed(t);
     }
 
-    extern uchar qt_pow_rgb_gamma[256];
-
-    // gamma correct the pixels back to linear color space...
-    for (int y=0; y<im.height(); ++y) {
-        uint *pixels = (uint *) im.scanLine(y);
-        for (int x=0; x<im.width(); ++x) {
-            uint p = pixels[x];
-            uint r = qt_pow_rgb_gamma[qRed(p)];
-            uint g = qt_pow_rgb_gamma[qGreen(p)];
-            uint b = qt_pow_rgb_gamma[qBlue(p)];
-            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
-        }
-    }
+    qmacfontengine_gamma_correct(&im);
 
     return im;
 }

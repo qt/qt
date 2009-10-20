@@ -43,6 +43,8 @@
 #include <QtCore/qbuffer.h>
 #include <QtGui/qbitmap.h>
 #include <QtGui/qimagereader.h>
+#include <private/qgraphicssystem_p.h>
+#include <private/qapplication_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,6 +67,17 @@ QPixmapData::QPixmapData(PixelType pixelType, int objectId)
 
 QPixmapData::~QPixmapData()
 {
+}
+
+QPixmapData *QPixmapData::createCompatiblePixmapData() const
+{
+    QPixmapData *d;
+    QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem();
+    if (gs)
+        d = gs->createPixmapData(pixelType());
+    else
+        d = QGraphicsSystem::createDefaultPixmapData(pixelType());
+    return d;
 }
 
 static QImage makeBitmapCompliantIfNeeded(QPixmapData *d, const QImage &image, Qt::ImageConversionFlags flags)
