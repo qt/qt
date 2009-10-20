@@ -278,10 +278,10 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    unregisterRunningAnimation(animation);
-
     if (!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer)
         return;
+
+    unregisterRunningAnimation(animation);
 
     int idx = animations.indexOf(animation);
     if (idx != -1) {
@@ -318,6 +318,7 @@ void QUnifiedTimer::unregisterRunningAnimation(QAbstractAnimation *animation)
         runningPauseAnimations.removeOne(animation);
     else
         runningLeafAnimations--;
+    Q_ASSERT(runningLeafAnimations >= 0);
 }
 
 int QUnifiedTimer::closestPauseAnimationTimeToFinish()
