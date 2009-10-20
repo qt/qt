@@ -4330,7 +4330,7 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
 }
 
 /*!
-    \internal
+    Sets the widget for this event.
 */
 void QGestureEvent::setWidget(QWidget *widget)
 {
@@ -4338,7 +4338,7 @@ void QGestureEvent::setWidget(QWidget *widget)
 }
 
 /*!
-    \internal
+    Returns the widget on which the event occurred.
 */
 QWidget *QGestureEvent::widget() const
 {
