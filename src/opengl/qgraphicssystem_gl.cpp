@@ -47,12 +47,21 @@
 #include "private/qgl_p.h"
 #include <private/qwindowsurface_raster_p.h>
 
+#ifdef Q_WS_X11
+#include "private/qpixmapdata_x11gl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern QGLWidget *qt_gl_getShareWidget();
 
 QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
+#ifdef Q_WS_X11
+    if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
+        return new QX11GLPixmapData();
+#endif
+
     return new QGLPixmapData(type);
 }
 
