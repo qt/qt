@@ -42,6 +42,7 @@
 #ifndef SIMPLEWIDGETS_H
 #define SIMPLEWIDGETS_H
 
+#include <QtCore/qcoreapplication.h>
 #include <QtGui/qaccessible2.h>
 #include <QtGui/qaccessiblewidget.h>
 
@@ -54,8 +55,10 @@ class QLineEdit;
 class QToolButton;
 class QProgressBar;
 
-class QAccessibleButton : public QAccessibleWidgetEx
+class QAccessibleButton : public QAccessibleWidgetEx, public QAccessibleActionInterface
 {
+    Q_ACCESSIBLE_OBJECT
+    Q_DECLARE_TR_FUNCTIONS(QAccessibleButton)
 public:
     QAccessibleButton(QWidget *w, Role r);
 
@@ -64,6 +67,14 @@ public:
 
     QString actionText(int action, Text text, int child) const;
     bool doAction(int action, int child, const QVariantList &params);
+
+    // QAccessibleActionInterface
+    int actionCount();
+    void doAction(int actionIndex);
+    QString description(int actionIndex);
+    QString name(int actionIndex);
+    QString localizedName(int actionIndex);
+    QStringList keyBindings(int actionIndex);
 
 protected:
     QAbstractButton *button() const;
@@ -102,6 +113,7 @@ protected:
 
 class QAccessibleDisplay : public QAccessibleWidgetEx
 {
+    Q_ACCESSIBLE_OBJECT
 public:
     explicit QAccessibleDisplay(QWidget *w, Role role = StaticText);
 

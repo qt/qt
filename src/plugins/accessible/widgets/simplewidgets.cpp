@@ -209,6 +209,62 @@ QAccessible::State QAccessibleButton::state(int child) const
     return state;
 }
 
+int QAccessibleButton::actionCount()
+{
+    return 1;
+}
+
+void QAccessibleButton::doAction(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        button()->click();
+        break;
+    }
+}
+
+QString QAccessibleButton::description(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return QLatin1String("Clicks the button.");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleButton::name(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return QLatin1String("Press");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleButton::localizedName(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return tr("Press");
+    default:
+        return QString();
+    }
+}
+
+QStringList QAccessibleButton::keyBindings(int actionIndex)
+{
+    switch (actionIndex) {
+#ifdef QT_NO_SHORTCUT
+    case 0:
+        return button()->shortcut().toString();
+#endif
+    default:
+        return QStringList();
+    }
+}
+
 #ifndef QT_NO_TOOLBUTTON
 /*!
   \class QAccessibleToolButton
