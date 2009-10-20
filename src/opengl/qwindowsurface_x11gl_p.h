@@ -39,50 +39,43 @@
 **
 ****************************************************************************/
 
-#include "qgraphicssystem_gl_p.h"
+#ifndef QWINDOWSURFACE_X11GL_P_H
+#define QWINDOWSURFACE_X11GL_P_H
 
-#include "private/qpixmap_raster_p.h"
-#include "private/qpixmapdata_gl_p.h"
-#include "private/qwindowsurface_gl_p.h"
-#include "private/qgl_p.h"
-#include <private/qwindowsurface_raster_p.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-#include "private/qpixmapdata_x11gl_p.h"
-#include "private/qwindowsurface_x11gl_p.h"
-#endif
+#include <private/qwindowsurface_p.h>
 
 QT_BEGIN_NAMESPACE
 
-extern QGLWidget *qt_gl_getShareWidget();
-
-QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
+class QX11GLWindowSurface : public QWindowSurface
 {
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-    if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
-        return new QX11GLPixmapData();
-#endif
+public:
+    QX11GLWindowSurface(QWidget* window);
+    virtual ~QX11GLWindowSurface();
 
-    return new QGLPixmapData(type);
-}
+    // Inherreted from QWindowSurface
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void setGeometry(const QRect &rect);
+    bool scroll(const QRegion &area, int dx, int dy);
 
-QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
-{
-#ifdef Q_WS_WIN
-    // On Windows the QGLWindowSurface class can't handle
-    // drop shadows and native effects, e.g. fading a menu in/out using
-    // top level window opacity.
-    if (widget->windowType() == Qt::Popup)
-        return new QRasterWindowSurface(widget);
-#endif
+private:
+    GC      m_GC;
+    QPixmap m_backBuffer;
+    QWidget *m_window;
+};
 
-#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
-    if (QX11GLPixmapData::hasX11GLPixmaps())
-        return new QX11GLWindowSurface(widget);
-#endif
-
-    return new QGLWindowSurface(widget);
-}
 
 QT_END_NAMESPACE
 
+#endif // QWINDOWSURFACE_X11GL_P_H
