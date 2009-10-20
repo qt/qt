@@ -1921,7 +1921,7 @@ void QListModeViewBase::updateHorizontalScrollBar(const QSize &step)
     if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && isWrapping())
         || (flow() == QListView::LeftToRight && !isWrapping()))) {
-            int steps = (flow() == QListView::TopToBottom ? segmentPositions : flowPositions).count() - 1;
+            int steps = (flow() == QListView::TopToBottom ? segmentPositions : scrollValueMap).count() - 1;
             if (steps > 0) {
                 const int pageSteps = perItemScrollingPageSteps(viewport()->width(), contentsSize.width(), isWrapping());
                 horizontalScrollBar()->setSingleStep(1);
@@ -1966,8 +1966,8 @@ int QListModeViewBase::horizontalOffset() const
                 return (isRightToLeft() ? maximum - position : position);
             }
         } else if (flow() == QListView::LeftToRight && !flowPositions.isEmpty()) {
-            int position = flowPositions.at(horizontalScrollBar()->value());
-            int maximum = flowPositions.at(horizontalScrollBar()->maximum());
+            int position = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->value()));
+            int maximum = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->maximum()));
             return (isRightToLeft() ? maximum - position : position);
         }
     }
@@ -2000,7 +2000,7 @@ int QListModeViewBase::horizontalScrollToValue(int index, QListView::ScrollHint 
     if (horizontalScrollMode() != QAbstractItemView::ScrollPerItem)
         return QCommonListViewBase::horizontalScrollToValue(index, hint, leftOf, rightOf, area, rect);
 
-    int value = qBound(0, horizontalScrollBar()->value(), flowPositions.count() - 1);
+    int value = qBound(0, scrollValueMap.at(horizontalScrollBar()->value()), flowPositions.count() - 1);
     if (leftOf)
         hint = QListView::PositionAtTop;
     else if (rightOf)
@@ -2049,8 +2049,8 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
         } else if (horizontal && flow() == QListView::LeftToRight && dx != 0) {
             int currentValue = qBound(0, horizontalValue, max);
             int previousValue = qBound(0, currentValue + dx, max);
-            int currentCoordinate = flowPositions.at(currentValue);
-            int previousCoordinate = flowPositions.at(previousValue);
+            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dx = previousCoordinate - currentCoordinate;
         }
     }
