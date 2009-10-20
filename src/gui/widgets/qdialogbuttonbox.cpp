@@ -560,7 +560,7 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     Q_Q(QDialogButtonBox);
     QAction::SoftKeyRole softkeyRole;
 
-    QAction *action = new QAction(button->text(), q);
+    QAction *action = new QAction(button->text(), button);
 
     switch (role) {
     case ApplyRole:
@@ -581,7 +581,6 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     }
     QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     action->setSoftKeyRole(softkeyRole);
-    action->setEnabled(button->isEnabled());
     return action;
 }
 #endif

@@ -43,8 +43,14 @@
 
 #include "qevent.h"
 #include "qdialog.h"
+#include "qpushbutton.h"
 #include "qdialogbuttonbox.h"
 #include "private/qsoftkeymanager_p.h"
+
+#ifdef Q_WS_S60
+static const int s60CommandStart = 6000;
+#endif
+
 
 class tst_QSoftKeyManager : public QObject
 {
@@ -171,22 +177,52 @@ void tst_QSoftKeyManager::handleCommand()
 }
 
 /*
-    This tests that softkey enable state follows the state of widget that owns the action
-    to which the softkey is related to.
+    This tests that the state of a widget that owns softkey action is respected when handling the softkey
+    command.
 */
 void tst_QSoftKeyManager::checkSoftkeyEnableStates()
 {
-    QWidget w1, w2;
-    w1.setEnabled(false);
-    w2.setEnabled(true);
+    QDialog w;
+    QDialogButtonBox *buttons = new QDialogButtonBox(
+        QDialogButtonBox::RestoreDefaults | QDialogButtonBox::Help,
+        Qt::Horizontal,
+        &w);
+    QPushButton *pBDefaults = buttons->button(QDialogButtonBox::RestoreDefaults);
+    QPushButton *pBHelp = buttons->button(QDialogButtonBox::Help);
+    pBHelp->setEnabled(false);
+    w.show();
+    QApplication::processEvents();
 
-    QAction *disabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w1);
-    QAction *enabledAction = QSoftKeyManager::createAction(QSoftKeyManager::OkSoftKey, &w2);
+    QSignalSpy spy0(w.actions()[0], SIGNAL(triggered())); //restore defaults action
+    QSignalSpy spy1(w.actions()[1], SIGNAL(triggered())); //disabled help action
 
-    QVERIFY(disabledAction->isEnabled()==false);
-    QVERIFY(enabledAction->isEnabled()==true);
+    //Verify that enabled button gets all the action trigger signals and
+    //disabled button gets none.
+    for (int i = 0; i < 10; i++) {
+        //simulate "Restore Defaults" softkey press
+        qApp->symbianHandleCommand(s60CommandStart);
+        //simulate "help" softkey press
+        qApp->symbianHandleCommand(s60CommandStart + 1);
+    }
+    QApplication::processEvents();
+    QCOMPARE(spy0.count(), 10);
+    QCOMPARE(spy1.count(), 0);
+    spy0.clear();
+    spy1.clear();
+
+    for (int i = 0; i < 10; i++) {
+        //simulate "Restore Defaults" softkey press
+        qApp->symbianHandleCommand(s60CommandStart);
+        //simulate "help" softkey press
+        qApp->symbianHandleCommand(s60CommandStart + 1);
+        //switch enabled button to disabled and vice versa
+        pBHelp->setEnabled(!pBHelp->isEnabled());
+        pBDefaults->setEnabled(!pBDefaults->isEnabled());
+    }
+    QApplication::processEvents();
+    QCOMPARE(spy0.count(), 5);
+    QCOMPARE(spy1.count(), 5);    
 }
-
 
 QTEST_MAIN(tst_QSoftKeyManager)
 #include "tst_qsoftkeymanager.moc"

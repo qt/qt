@@ -367,6 +367,9 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::PausedState:
         case Phonon::StoppedState:
             playButton->setIcon(playIcon);
+
+            m_videoWidget->setFullScreen(false);
+
             if (m_MediaObject.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);

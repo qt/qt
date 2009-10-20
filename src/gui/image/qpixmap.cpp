@@ -361,13 +361,7 @@ QPixmap QPixmap::copy(const QRect &rect) const
 
     const QRect r = rect.isEmpty() ? QRect(0, 0, width(), height()) : rect;
 
-    QPixmapData *d;
-    QGraphicsSystem* gs = QApplicationPrivate::graphicsSystem();
-    if (gs)
-        d = gs->createPixmapData(data->pixelType());
-    else
-        d = QGraphicsSystem::createDefaultPixmapData(data->pixelType());
-
+    QPixmapData *d = data->createCompatiblePixmapData();
     d->copy(data.data(), r);
     return QPixmap(d);
 }
@@ -947,6 +941,9 @@ bool QPixmap::doImageIO(QImageWriter *writer, int quality) const
 /*!
     Fills the pixmap with the given \a color.
 
+    The effect of this function is undefined when the pixmap is
+    being painted on.
+
     \sa {QPixmap#Pixmap Transformations}{Pixmap Transformations}
 */
 
@@ -954,6 +951,13 @@ void QPixmap::fill(const QColor &color)
 {
     if (isNull())
         return;
+
+    // Some people are probably already calling fill while a painter is active, so to not break
+    // their programs, only print a warning and return when the fill operation could cause a crash.
+    if (paintingActive() && (color.alpha() != 255) && !hasAlphaChannel()) {
+        qWarning("QPixmap::fill: Cannot fill while pixmap is being painted on");
+        return;
+    }
 
     detach();
     data->fill(color);
@@ -1663,10 +1667,10 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
     identifies the contents of the QPixmap object.
 
     The x11Info() function returns information about the configuration
-    of the X display used to display the widget.  The
-    x11PictureHandle() function returns the X11 Picture handle of the
-    pixmap for XRender support. Note that the two latter functions are
-    only available on x11.
+    of the X display used by the screen to which the pixmap currently
+    belongs. The x11PictureHandle() function returns the X11 Picture
+    handle of the pixmap for XRender support. Note that the two latter
+    functions are only available on x11.
 
     \endtable
 
@@ -2084,7 +2088,7 @@ QPixmapData* QPixmap::pixmapData() const
 
 /*! \fn const QX11Info &QPixmap::x11Info() const
     \bold{X11 only:} Returns information about the configuration of
-    the X display used to display the widget.
+    the X display used by the screen to which the pixmap currently belongs.
 
     \warning This function is only available on X11.
 

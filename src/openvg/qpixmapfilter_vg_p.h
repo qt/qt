@@ -79,11 +79,6 @@ public:
     ~QVGPixmapColorizeFilter();
 
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const;
-
-private:
-    mutable VGfloat matrix[5][4];
-    mutable QColor prevColor;
-    mutable bool firstTime;
 };
 
 class Q_OPENVG_EXPORT QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
@@ -94,11 +89,6 @@ public:
     ~QVGPixmapDropShadowFilter();
 
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src) const;
-
-private:
-    mutable VGfloat matrix[5][4];
-    mutable QColor prevColor;
-    mutable bool firstTime;
 };
 
 class Q_OPENVG_EXPORT QVGPixmapBlurFilter : public QPixmapBlurFilter

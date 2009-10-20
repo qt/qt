@@ -5646,7 +5646,7 @@ Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *reco
 
     Unregisters all gesture recognizers of the specified \a type.
 
-    \sa registerGestureRecognizer
+    \sa registerGestureRecognizer()
 */
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {

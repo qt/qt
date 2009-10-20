@@ -6003,7 +6003,7 @@ void QWindowsMobileStyle::drawComplexControl(ComplexControl control, const QStyl
         }
         painter->restore();
         break;
-#endif // QT_NO_SLIDER
+#endif // QT_NO_SCROLLBAR
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolbutton
                 = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {

@@ -2164,7 +2164,7 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
     if (debugger)
         debugger->evaluateStart(sourceId);
 
-    exec->clearException();
+    clearExceptions();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
     JSC::EvalExecutable executable(exec, source);
@@ -2381,7 +2381,7 @@ bool QScriptEngine::hasUncaughtException() const
 {
     Q_D(const QScriptEngine);
     JSC::ExecState* exec = d->globalExec();
-    return exec->hadException();
+    return exec->hadException() || d->currentException().isValid();
 }
 
 /*!
@@ -2398,8 +2398,13 @@ bool QScriptEngine::hasUncaughtException() const
 QScriptValue QScriptEngine::uncaughtException() const
 {
     Q_D(const QScriptEngine);
+    QScriptValue result;
     JSC::ExecState* exec = d->globalExec();
-    return const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(exec->exception());
+    if (exec->hadException())
+        result = const_cast<QScriptEnginePrivate*>(d)->scriptValueFromJSCValue(exec->exception());
+    else
+        result = d->currentException();
+    return result;
 }
 
 /*!
@@ -2452,6 +2457,7 @@ void QScriptEngine::clearExceptions()
     Q_D(QScriptEngine);
     JSC::ExecState* exec = d->currentFrame;
     exec->clearException();
+    d->clearCurrentException();
 }
 
 /*!

@@ -14,7 +14,7 @@ float quad_aa()
     vec2 invA = gl_TexCoord[0].zw;
 
     // transform right line to left to be able to use same calculations for both
-    vecX.zw = 2 * gl_FragCoord.x - vecX.zw;
+    vecX.zw = 2.0 * gl_FragCoord.x - vecX.zw;
 
     vec2 topX = vec2(vecX.x, vecX.z);
     vec2 bottomX = vec2(vecX.y, vecX.w);
@@ -33,18 +33,18 @@ float quad_aa()
 
     vec2 temp = mix(area - 0.5 * (right - bottomXTemp) * (intersectY.yw - bottom), // left < bottom < right < top
                     (0.5 * (topXTemp + bottomXTemp) - left) * area,    // left < bottom < top < right
-                    step(topXTemp, right));
+                    step(topXTemp, right.xx));
 
     vec2 excluded = 0.5 * (top - intersectY.xz) * (topXTemp - left); // bottom < left < top < right
 
     excluded = mix((top - 0.5 * (intersectY.yw + intersectY.xz)) * (right - left), // bottom < left < right < top
-                   excluded, step(topXTemp, right));
+                   excluded, step(topXTemp, right.xx));
 
     excluded = mix(temp, // left < bottom < right (see calculation of temp)
-                   excluded, step(bottomXTemp, left));
+                   excluded, step(bottomXTemp, left.xx));
 
     excluded = mix(vec2(area, area), // right < bottom < top
-                   excluded, step(bottomXTemp, right));
+                   excluded, step(bottomXTemp, right.xx));
 
     excluded *= step(left, topXTemp);
 
@@ -53,6 +53,6 @@ float quad_aa()
 
 void main()
 {
-    gl_FragColor = quad_aa();
+    gl_FragColor = quad_aa().xxxx;
 }
 

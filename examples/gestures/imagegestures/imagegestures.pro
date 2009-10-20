@@ -1,6 +1,8 @@
-HEADERS += imagewidget.h
-SOURCES += imagewidget.cpp \
-    main.cpp
+HEADERS   = imagewidget.h \
+            mainwidget.h
+SOURCES   = imagewidget.cpp \
+            main.cpp \
+            mainwidget.cpp
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/gestures/imageviewer

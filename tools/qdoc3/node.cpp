@@ -1158,8 +1158,12 @@ QString QmlClassNode::fileBase() const
   Constructor for the Qml property group node. \a parent is
   always a QmlClassNode. 
  */
-QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
-    : FakeNode(parent, name, QmlPropertyGroup), isdefault(false)
+QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent,
+                                   const QString& name,
+                                   bool attached)
+    : FakeNode(parent, name, QmlPropertyGroup),
+      isdefault(false),
+      att(attached)
 {
     // nothing.
 }
@@ -1169,11 +1173,13 @@ QmlPropGroupNode::QmlPropGroupNode(QmlClassNode* parent, const QString& name)
  */
 QmlPropertyNode::QmlPropertyNode(QmlPropGroupNode *parent,
                                  const QString& name,
-                                 const QString& type)
+                                 const QString& type,
+                                 bool attached)
     : LeafNode(QmlProperty, parent, name),
       dt(type),
       sto(Trool_Default),
-      des(Trool_Default)
+      des(Trool_Default),
+      att(attached)
 {
     // nothing.
 }

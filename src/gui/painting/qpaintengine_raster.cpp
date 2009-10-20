@@ -2376,6 +2376,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
@@ -2389,6 +2390,7 @@ void QRasterPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pixmap)
             Q_D(QRasterPaintEngine);
             QRasterPaintEngineState *s = state();
             if (s->matrix.type() <= QTransform::TxTranslate) {
+                ensurePen();
                 drawBitmap(pos + QPointF(s->matrix.dx(), s->matrix.dy()), image, &s->penData);
             } else {
                 drawImage(pos, d->rasterBuffer->colorizeBitmap(image, s->pen.color()));
@@ -4213,13 +4215,6 @@ void QRasterBuffer::prepare(QCustomRasterPaintDevice *device)
         drawHelper = qDrawHelper + format;
 }
 
-class MetricAccessor : public QWidget {
-public:
-    int metric(PaintDeviceMetric m) {
-        return QWidget::metric(m);
-    }
-};
-
 int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
 {
     switch (m) {
@@ -4231,7 +4226,7 @@ int QCustomRasterPaintDevice::metric(PaintDeviceMetric m) const
         break;
     }
 
-    return (static_cast<MetricAccessor*>(widget)->metric(m));
+    return qt_paint_device_metric(widget, m);
 }
 
 int QCustomRasterPaintDevice::bytesPerLine() const

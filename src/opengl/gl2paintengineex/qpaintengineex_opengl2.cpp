@@ -469,8 +469,6 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         QPointF translationPoint;
 
         if (style <= Qt::DiagCrossPattern) {
-            translationPoint = q->state()->brushOrigin;
-
             QColor col = qt_premultiplyColor(currentBrush->color(), (GLfloat)q->state()->opacity);
 
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
@@ -528,8 +526,6 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::HalfViewportSize), halfViewportSize);
         }
         else if (style == Qt::TexturePattern) {
-            translationPoint = q->state()->brushOrigin;
-
             const QPixmap& texPixmap = currentBrush->texture();
 
             if (qHasPixmapTexture(*currentBrush) && currentBrush->texture().isQBitmap()) {
@@ -546,9 +542,13 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
         else
             qWarning("QGL2PaintEngineEx: Unimplemented fill style");
 
+        const QPointF &brushOrigin = q->state()->brushOrigin;
+        QTransform matrix = q->state()->matrix;
+        matrix.translate(brushOrigin.x(), brushOrigin.y());
+
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
         QTransform gl_to_qt(1, 0, 0, -1, 0, height);
-        QTransform inv_matrix = gl_to_qt * (brushQTransform * q->state()->matrix).inverted() * translate;
+        QTransform inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
 
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTransform), inv_matrix);
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTexture), QT_BRUSH_TEXTURE_UNIT);

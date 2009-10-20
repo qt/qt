@@ -122,6 +122,8 @@ QT_END_NAMESPACE
 
 QT_USE_NAMESPACE
 
+#ifdef QT_MAC_USE_COCOA
+
 @class QCocoaPrintPanelDelegate;
 
 @interface QCocoaPrintPanelDelegate : NSObject {
@@ -196,6 +198,8 @@ QT_USE_NAMESPACE
 #endif
 }
 @end
+
+#endif
 
 QT_BEGIN_NAMESPACE
 

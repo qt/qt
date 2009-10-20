@@ -221,6 +221,7 @@ QPMCache::QPMCache()
 }
 QPMCache::~QPMCache()
 {
+    clear();
     free(keyArray);
 }
 

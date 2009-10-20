@@ -87,8 +87,6 @@ public:
 #endif
     };
 
-    typedef QPair<int, int> FrameRate;
-
     QVideoSurfaceFormat();
     QVideoSurfaceFormat(
             const QSize &size,
@@ -120,9 +118,8 @@ public:
     Direction scanLineDirection() const;
     void setScanLineDirection(Direction direction);
 
-    FrameRate frameRate() const;
-    void setFrameRate(const FrameRate &rate);
-    void setFrameRate(int numerator, int denominator = 1);
+    qreal frameRate() const;
+    void setFrameRate(qreal rate);
 
     QSize pixelAspectRatio() const;
     void setPixelAspectRatio(const QSize &ratio);
@@ -147,7 +144,6 @@ Q_MULTIMEDIA_EXPORT QDebug operator<<(QDebug, const QVideoSurfaceFormat &);
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QVideoSurfaceFormat::FrameRate)
 Q_DECLARE_METATYPE(QVideoSurfaceFormat::Direction)
 Q_DECLARE_METATYPE(QVideoSurfaceFormat::YuvColorSpace)
 

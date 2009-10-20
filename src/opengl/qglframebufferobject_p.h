@@ -109,7 +109,7 @@ class QGLFBOGLPaintDevice : public QGLPaintDevice
 public:
     virtual QPaintEngine* paintEngine() const {return fbo->paintEngine();}
     virtual QSize size() const {return fbo->size();}
-    virtual QGLContext* context() const {return const_cast<QGLContext *>(QGLContext::currentContext());}
+    virtual QGLContext* context() const;
     virtual QGLFormat format() const {return fboFormat;}
     virtual void ensureActiveTarget();
     virtual void beginPaint();

@@ -48,7 +48,9 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qvector2d.h>
 
+QT_BEGIN_NAMESPACE
 class QPropertyAnimation;
+QT_END_NAMESPACE
 
 class Geometry
 {
