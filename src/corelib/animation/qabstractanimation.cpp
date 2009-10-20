@@ -328,9 +328,9 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->totalDuration() - QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->duration() - animation->currentTime();
         else
-            timeToFinish = QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->currentTime();
 
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
@@ -648,13 +648,13 @@ int QAbstractAnimation::currentLoop() const
 */
 int QAbstractAnimation::totalDuration() const
 {
-    Q_D(const QAbstractAnimation);
-    if (d->loopCount < 0)
-        return -1;
     int dura = duration();
-    if (dura == -1)
+    if (dura <= 0)
+        return dura;
+    int loopcount = loopCount();
+    if (loopcount < 0)
         return -1;
-    return dura * d->loopCount;
+    return dura * loopcount;
 }
 
 /*!
@@ -685,7 +685,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
 
     // Calculate new time and loop.
     int dura = duration();
-    int totalDura = (d->loopCount < 0 || dura == -1) ? -1 : dura * d->loopCount;
+    int totalDura = dura <= 0 ? dura : ((d->loopCount < 0) ? -1 : dura * d->loopCount);
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
     d->totalCurrentTime = msecs;
