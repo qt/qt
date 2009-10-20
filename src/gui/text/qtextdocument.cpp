@@ -168,6 +168,25 @@ QString Qt::escape(const QString& plain)
     return rich;
 }
 
+static QString escapeXml(const QString &plain)
+{
+    QString rich;
+    rich.reserve(int(plain.length() * 1.1));
+    for (int i = 0; i < plain.length(); ++i) {
+        if (plain.at(i) == QLatin1Char('<'))
+            rich += QLatin1String("&lt;");
+        else if (plain.at(i) == QLatin1Char('>'))
+            rich += QLatin1String("&gt;");
+        else if (plain.at(i) == QLatin1Char('&'))
+            rich += QLatin1String("&amp;");
+        else if (plain.at(i) == QLatin1Char('"'))
+            rich += QLatin1String("&quot;");
+        else
+            rich += plain.at(i);
+    }
+    return rich;
+}
+
 /*!
     \fn QString Qt::convertFromPlainText(const QString &plain, WhiteSpaceMode mode)
 
@@ -2038,7 +2057,7 @@ void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &valu
     html += QLatin1Char(' ');
     html += QLatin1String(attribute);
     html += QLatin1String("=\"");
-    html += value;
+    html += escapeXml(value);
     html += QLatin1Char('"');
 }
 
@@ -2302,12 +2321,12 @@ void QTextHtmlExporter::emitFontFamily(const QString &family)
 {
     html += QLatin1String(" font-family:");
 
-    QLatin1Char quote('\'');
-    if (family.contains(quote))
-        quote = QLatin1Char('\"');
+    QLatin1String quote("\'");
+    if (family.contains(QLatin1Char('\'')))
+        quote = QLatin1String("&quot;");
 
     html += quote;
-    html += family;
+    html += escapeXml(family);
     html += quote;
     html += QLatin1Char(';');
 }
@@ -2341,13 +2360,13 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         const QString name = format.anchorName();
         if (!name.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += name;
+            html += escapeXml(name);
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();
         if (!href.isEmpty()) {
             html += QLatin1String("<a href=\"");
-            html += href;
+            html += escapeXml(href);
             html += QLatin1String("\">");
             closeAnchor = true;
         }

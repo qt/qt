@@ -59,6 +59,7 @@
 #include <qfontmetrics.h>
 #include <qimage.h>
 #include <qtextlayout.h>
+#include <QDomDocument>
 #include "common.h"
 
 
@@ -732,7 +733,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes1") << QTextDocumentFragment(&doc)
-                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:\"Foo's Family\";\">Blah</span></p>");
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:&quot;Foo's Family&quot;;\">Blah</span></p>");
     }
 
     {
@@ -743,7 +744,7 @@ void tst_QTextDocument::toHtml_data()
         cursor.insertText("Blah", fmt);
 
         QTest::newRow("font-family-with-quotes2") << QTextDocumentFragment(&doc)
-                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo\"s Family';\">Blah</span></p>");
+                                  << QString("<p DEFAULTBLOCKSTYLE><span style=\" font-family:'Foo&quot;s Family';\">Blah</span></p>");
     }
 
     {
@@ -969,6 +970,30 @@ void tst_QTextDocument::toHtml_data()
 
         QTest::newRow("href anchor") << QTextDocumentFragment(&doc)
                                   << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/\">Blah</a></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setAnchor(true);
+        fmt.setAnchorHref("http://www.kde.org/?a=1&b=2");
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("href anchor with &") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/?a=1&amp;b=2\">Blah</a></p>");
+    }
+
+    {
+        CREATE_DOC_AND_CURSOR();
+
+        QTextCharFormat fmt;
+        fmt.setAnchor(true);
+        fmt.setAnchorHref("http://www.kde.org/?a='&b=\"");
+        cursor.insertText("Blah", fmt);
+
+        QTest::newRow("href anchor with ' and \"") << QTextDocumentFragment(&doc)
+                                  << QString("<p DEFAULTBLOCKSTYLE><a href=\"http://www.kde.org/?a='&amp;b=&quot;\">Blah</a></p>");
     }
 
     {
@@ -1541,6 +1566,9 @@ void tst_QTextDocument::toHtml()
     QString output = doc->toHtml();
 
     QCOMPARE(output, expectedOutput);
+    
+    QDomDocument document;
+    QVERIFY2(document.setContent(output), "Output was not valid XML");
 }
 
 void tst_QTextDocument::toHtml2()
