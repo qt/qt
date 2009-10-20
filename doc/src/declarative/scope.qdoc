@@ -196,8 +196,15 @@ use the scope object to resolve variable references - \c height is a property on
 and \c parent is a property on \l Text.
 
 \code
-Item {
-    Rectangle {           // Scope object for Binding 1
+Item {       // Scope object for Script block 1
+    Script { // Script block 1
+        function calculateValue() { ... }
+    }
+
+    Rectangle {           // Scope object for Binding 1 and Script block 2
+        Script {          // Script block 2
+            function calculateColor() { ... }
+        }
         width: height * 2 // Binding 1
     }
 
@@ -236,7 +243,6 @@ ListView {
 \e TODO
 
 \list
-\o scope object for Script {}
 \o scope object for PropertyChanges
 \endlist
 
