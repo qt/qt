@@ -2292,8 +2292,9 @@ void QGraphicsScene::clear()
     // NB! We have to clear the index before deleting items; otherwise the
     // index might try to access dangling item pointers.
     d->index->clear();
-    const QList<QGraphicsItem *> items = d->topLevelItems;
-    qDeleteAll(items);
+    // NB! QGraphicsScenePrivate::unregisterTopLevelItem() removes items
+    while (!d->topLevelItems.isEmpty())
+        delete d->topLevelItems.first();
     Q_ASSERT(d->topLevelItems.isEmpty());
     d->lastItemCount = 0;
     d->allItemsIgnoreHoverEvents = true;
