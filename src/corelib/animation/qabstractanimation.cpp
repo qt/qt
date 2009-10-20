@@ -328,7 +328,7 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->totalDuration() - QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->duration() - QAbstractAnimationPrivate::get(animation)->currentTime;
         else
             timeToFinish = QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
 

@@ -60,4 +60,54 @@ Contains all the properties of the ECMAScript global object, plus:
 
 \section1 Offline Storage API
 
+The \c openDatabase() and related functions
+provide the ability to access local offline storage in an SQL database.
+
+These databases are user-specific and QML-specific. They are stored in the \c Databases subdirectory
+of QmlEngine::offlineStoragePath(), currently as SQLite databases.
+
+The API is based on the HTML5 offline storage SQL draft API. The main difference is that this QML
+API is currently synchronous. You should avoid relying on synchronicity to make your scripts more
+portable, both to/from HTML5 and to future QML versions.
+
+The API can be used from JavaScript functions in your QML:
+
+\quotefile declarative/sql/hello.qml
+
+\section2 DbObject openDatabase(string name, string version, string description, int estimatedsize)
+
+Opens a database identified by the given \c name and \c version.
+If a database with this name and version does not exist, it is created. The \c version should
+always be "1.0" until schema upgrade semantics are defined.
+
+The \c description and \c estimatedsize are provided to allow application tools to give the user
+control over the databases created, but are otherwise not used by QML.
+
+The returned DbObject has a \c transaction() method by which SQL transactions can be done.
+
+When a database is first created, an INI file is also created specifying its characteristics:
+
+\table
+\header \o \bold {Key} \o \bold {Value}
+\row \o Name \o The name of the database passed to \c openDatabase()
+\row \o Version \o The version of the database passed to \c openDatabase()
+\row \o Description \o The description of the database passed to \c openDatabase()
+\row \o EstimatedSize \o The estimated size of the database passed to \c openDatabase()
+\row \o DbType \o Currently "QSQLITE"
+\endtable
+
+This data can be used by application tools.
+
+
+\section2 void DbObject::transaction(function usesql(DbTxObject), function errorcb=0, function successcb=0)
+
+Executes \c usesql() in a database transaction. The \c DbTxObject object has a \c executeSql() method by which the
+code of \c usesql can execute SQL. The optional second and third arguments are an error callback and success
+callback respectively (note that the order of these is the opposite to DbTxObject::executeSql()).
+
+\section2 void DbTxObject::executeSql(string sql, function successcb=0, function errorcb=0)
+
+Executes \c sql as an SQL block. The optional second and third arguments are a success callback and error
+callback respectively (note that the order of these is the opposite to DbObject::transaction()).
+
 */

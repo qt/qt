@@ -312,6 +312,9 @@ static QScriptValue qmlsqldatabase_transaction(QScriptContext *context, QScriptE
 }
 
 
+/*
+    Currently documented in doc/src/declarastive/globalobject.qdoc
+*/
 static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *engine)
 {
     QSqlDatabase database;
@@ -343,6 +346,7 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
         ini.setValue(QLatin1String("Version"), dbversion);
         ini.setValue(QLatin1String("Description"), dbdescription);
         ini.setValue(QLatin1String("EstimatedSize"), dbestimatedsize);
+        ini.setValue(QLatin1String("DbType"), QLatin1String("QSQLITE"));
         database.open();
     }
 
