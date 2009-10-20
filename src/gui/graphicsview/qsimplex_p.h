@@ -106,7 +106,7 @@ struct QSimplexConstraint
 
         Q_ASSERT(constant > 0 || qFuzzyCompare(1, 1 + constant));
 
-        if (qFuzzyCompare(1000 + leftHandSide, 1000 + constant))
+        if ((leftHandSide == constant) || qFuzzyCompare(1000 + leftHandSide, 1000 + constant))
             return true;
 
         switch (ratio) {
@@ -152,7 +152,6 @@ public:
 
     qreal solveMin();
     qreal solveMax();
-    QList<QSimplexVariable *> constraintsVariables();
 
     bool setConstraints(const QList<QSimplexConstraint *> constraints);
     void setObjective(QSimplexConstraint *objective);
@@ -190,11 +189,6 @@ private:
 
     qreal *matrix;
 };
-
-inline QList<QSimplexVariable *> QSimplex::constraintsVariables()
-{
-    return variables;
-}
 
 inline qreal QSimplex::valueAt(int rowIndex, int columnIndex)
 {

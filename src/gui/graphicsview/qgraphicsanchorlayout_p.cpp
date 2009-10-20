@@ -2459,7 +2459,7 @@ bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *>
         *min = simplex.solveMin();
 
         // Save sizeAtMinimum results
-        QList<QSimplexVariable *> variables = simplex.constraintsVariables();
+        QList<AnchorData *> variables = getVariables(constraints);
         for (int i = 0; i < variables.size(); ++i) {
             AnchorData *ad = static_cast<AnchorData *>(variables[i]);
             Q_ASSERT(ad->result >= ad->minSize || qFuzzyCompare(ad->result, ad->minSize));

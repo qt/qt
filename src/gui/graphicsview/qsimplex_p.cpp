@@ -108,10 +108,8 @@ void QSimplex::clearDataStructures()
     // Constraints
     for (int i = 0; i < constraints.size(); ++i) {
         delete constraints[i]->helper.first;
-        constraints[i]->helper.first = 0;
-        constraints[i]->helper.second = 0.0;
         delete constraints[i]->artificial;
-        constraints[i]->artificial = 0;
+        delete constraints[i];
     }
     constraints.clear();
 
@@ -137,7 +135,16 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
 
     if (newConstraints.isEmpty())
         return true;    // we are ok with no constraints
-    constraints = newConstraints;
+
+    // Make deep copy of constraints. We need this copy because we may change
+    // them in the simplification method.
+    for (int i = 0; i < newConstraints.size(); ++i) {
+        QSimplexConstraint *c = new QSimplexConstraint;
+        c->constant = newConstraints[i]->constant;
+        c->ratio = newConstraints[i]->ratio;
+        c->variables = newConstraints[i]->variables;
+        constraints << c;
+    }
 
     ///////////////////////////////////////
     // Prepare variables and constraints //
