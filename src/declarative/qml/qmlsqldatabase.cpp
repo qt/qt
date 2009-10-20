@@ -340,7 +340,7 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
         QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath + QLatin1String("/Databases/");
         QDir().mkpath(basename);
         basename += dbid;
-        database.setDatabaseName(basename+QLatin1String(".sqllite"));
+        database.setDatabaseName(basename+QLatin1String(".sqlite"));
         QSettings ini(basename+QLatin1String(".ini"),QSettings::IniFormat);
         ini.setValue(QLatin1String("Name"), dbname);
         ini.setValue(QLatin1String("Version"), dbversion);
