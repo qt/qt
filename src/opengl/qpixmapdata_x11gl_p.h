@@ -74,11 +74,9 @@ public:
     QGLContext* context() const;
     QSize size() const;
 
-
     static bool hasX11GLPixmaps();
     static QGLFormat glFormat();
 private:
-    static void createPixmapSharedContext(EGLConfig config);
     mutable QGLContext* ctx;
 };
 

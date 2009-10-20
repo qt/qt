@@ -57,7 +57,7 @@ extern QGLWidget *qt_gl_getShareWidget();
 
 QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
-#ifdef Q_WS_X11
+#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
     if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
         return new QX11GLPixmapData();
 #endif
