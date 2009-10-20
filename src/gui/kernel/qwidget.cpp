@@ -7726,6 +7726,10 @@ void QWidget::adjustSize()
     Q_D(QWidget);
     ensurePolished();
     QSize s = d->adjustedSize();
+
+    if (d->layout)
+        d->layout->activate();
+
     if (s.isValid())
         resize(s);
 }
