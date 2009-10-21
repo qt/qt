@@ -680,6 +680,8 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
+    else
+        url = QUrl(QLatin1String("DynamicQML"));
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
     url = qmlCtxt->resolvedUrl(url);
