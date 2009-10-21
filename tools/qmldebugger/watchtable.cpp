@@ -193,6 +193,9 @@ void WatchTableModel::addValue(int column, const QVariant &value)
 
 void WatchTableModel::togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property)
 {
+    if (!property.hasNotifySignal())
+        return;
+
     QmlDebugWatch *watch = findWatch(object.debugId(), property.name());
     if (watch) {
         // watch will be deleted in watchStateChanged()

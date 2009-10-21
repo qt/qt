@@ -7,7 +7,8 @@ HEADERS += $$PWD/qmldebugger.h \
            $$PWD/watchtable.h \
            $$PWD/engine.h \
            $$PWD/objecttree.h \
-           $$PWD/objectpropertiesview.h
+           $$PWD/objectpropertiesview.h \
+           $$PWD/expressionquerywidget.h
 
 SOURCES += $$PWD/qmldebugger.cpp \
            $$PWD/main.cpp \
@@ -15,7 +16,8 @@ SOURCES += $$PWD/qmldebugger.cpp \
            $$PWD/watchtable.cpp \
            $$PWD/engine.cpp \
            $$PWD/objecttree.cpp \
-           $$PWD/objectpropertiesview.cpp
+           $$PWD/objectpropertiesview.cpp \
+           $$PWD/expressionquerywidget.cpp
 
 RESOURCES += $$PWD/qmldebugger.qrc
 

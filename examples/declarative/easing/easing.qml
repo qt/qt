@@ -2,92 +2,98 @@ import Qt 4.6
 
 Rectangle {
     id: window
-    width: 640
-    height: layout.height
-    color: "white"
+    width: 600; height: 460; color: "#232323"
 
     ListModel {
         id: easingTypes
-        ListElement { type: "easeLinear" }
-        ListElement { type: "easeInQuad" }
-        ListElement { type: "easeOutQuad" }
-        ListElement { type: "easeInOutQuad" }
-        ListElement { type: "easeOutInQuad" }
-        ListElement { type: "easeInCubic" }
-        ListElement { type: "easeOutCubic" }
-        ListElement { type: "easeInOutCubic" }
-        ListElement { type: "easeOutInCubic" }
-        ListElement { type: "easeInQuart" }
-        ListElement { type: "easeOutQuart" }
-        ListElement { type: "easeInOutQuart" }
-        ListElement { type: "easeOutInQuart" }
-        ListElement { type: "easeInQuint" }
-        ListElement { type: "easeOutQuint" }
-        ListElement { type: "easeInOutQuint" }
-        ListElement { type: "easeOutInQuint" }
-        ListElement { type: "easeInSine" }
-        ListElement { type: "easeOutSine" }
-        ListElement { type: "easeInOutSine" }
-        ListElement { type: "easeOutInSine" }
-        ListElement { type: "easeInExpo" }
-        ListElement { type: "easeOutExpo" }
-        ListElement { type: "easeInOutExpo" }
-        ListElement { type: "easeOutInExpo" }
-        ListElement { type: "easeInCirc" }
-        ListElement { type: "easeOutCirc" }
-        ListElement { type: "easeInOutCirc" }
-        ListElement { type: "easeOutInCirc" }
-        ListElement { type: "easeInElastic" }
-        ListElement { type: "easeOutElastic" }
-        ListElement { type: "easeInOutElastic" }
-        ListElement { type: "easeOutInElastic" }
-        ListElement { type: "easeInBack" }
-        ListElement { type: "easeOutBack" }
-        ListElement { type: "easeInOutBack" }
-        ListElement { type: "easeOutInBack" }
-        ListElement { type: "easeOutBounce" }
-        ListElement { type: "easeInBounce" }
-        ListElement { type: "easeInOutBounce" }
-        ListElement { type: "easeOutInBounce" }
+        ListElement { type: "easeLinear"; ballColor: "DarkRed" }
+        ListElement { type: "easeInQuad"; ballColor: "IndianRed" }
+        ListElement { type: "easeOutQuad"; ballColor: "Salmon" }
+        ListElement { type: "easeInOutQuad"; ballColor: "Tomato" }
+        ListElement { type: "easeOutInQuad"; ballColor: "DarkOrange" }
+        ListElement { type: "easeInCubic"; ballColor: "Gold" }
+        ListElement { type: "easeOutCubic"; ballColor: "Yellow" }
+        ListElement { type: "easeInOutCubic"; ballColor: "PeachPuff" }
+        ListElement { type: "easeOutInCubic"; ballColor: "Thistle" }
+        ListElement { type: "easeInQuart"; ballColor: "Orchid" }
+        ListElement { type: "easeOutQuart"; ballColor: "Purple" }
+        ListElement { type: "easeInOutQuart"; ballColor: "SlateBlue" }
+        ListElement { type: "easeOutInQuart"; ballColor: "Chartreuse" }
+        ListElement { type: "easeInQuint"; ballColor: "LimeGreen" }
+        ListElement { type: "easeOutQuint"; ballColor: "SeaGreen" }
+        ListElement { type: "easeInOutQuint"; ballColor: "DarkGreen" }
+        ListElement { type: "easeOutInQuint"; ballColor: "Olive" }
+        ListElement { type: "easeInSine"; ballColor: "DarkSeaGreen" }
+        ListElement { type: "easeOutSine"; ballColor: "Teal" }
+        ListElement { type: "easeInOutSine"; ballColor: "Turquoise" }
+        ListElement { type: "easeOutInSine"; ballColor: "SteelBlue" }
+        ListElement { type: "easeInExpo"; ballColor: "SkyBlue" }
+        ListElement { type: "easeOutExpo"; ballColor: "RoyalBlue" }
+        ListElement { type: "easeInOutExpo"; ballColor: "MediumBlue" }
+        ListElement { type: "easeOutInExpo"; ballColor: "MidnightBlue" }
+        ListElement { type: "easeInCirc"; ballColor: "CornSilk" }
+        ListElement { type: "easeOutCirc"; ballColor: "Bisque" }
+        ListElement { type: "easeInOutCirc"; ballColor: "RosyBrown" }
+        ListElement { type: "easeOutInCirc"; ballColor: "SandyBrown" }
+        ListElement { type: "easeInElastic"; ballColor: "DarkGoldenRod" }
+        ListElement { type: "easeOutElastic"; ballColor: "Chocolate" }
+        ListElement { type: "easeInOutElastic"; ballColor: "SaddleBrown" }
+        ListElement { type: "easeOutInElastic"; ballColor: "Brown" }
+        ListElement { type: "easeInBack"; ballColor: "Maroon" }
+        ListElement { type: "easeOutBack"; ballColor: "LavenderBlush" }
+        ListElement { type: "easeInOutBack"; ballColor: "MistyRose" }
+        ListElement { type: "easeOutInBack"; ballColor: "Gainsboro" }
+        ListElement { type: "easeOutBounce"; ballColor: "Silver" }
+        ListElement { type: "easeInBounce"; ballColor: "DimGray" }
+        ListElement { type: "easeInOutBounce"; ballColor: "SlateGray" }
+        ListElement { type: "easeOutInBounce"; ballColor: "DarkSlateGray" }
     }
 
-    Column {
-        id: layout
-        anchors.left: window.left
-        anchors.right: window.right
-        Repeater {
-            model: easingTypes
-            Component {
-                Text {
-                    text: type
-                    height: 18
-                    font.italic: true
-                    x: SequentialAnimation {
-                        id: anim
-                        NumberAnimation {
-                            from: 0
-                            to: window.width / 2
-                            easing: type
-                            duration: 1000
-                        }
-                        PauseAnimation {
-                            duration: 300
-                        }
-                        NumberAnimation {
-                            to: 0
-                            from: window.width / 2
-                            easing: type
-                            duration: 1000
-                        }
+    Component {
+        id: delegate
+
+        Item {
+            height: 42; width: window.width
+            Text { text: type; anchors.centerIn: parent; color: "White" }
+            Rectangle {
+                id: slot1; color: "#121212"; x: 10; height: 32; width: 32
+                border.color: "#343434"; border.width: 1; radius: 8; anchors.verticalCenter: parent.verticalCenter
+            }
+            Rectangle {
+                id: slot2; color: "#121212"; x: window.width - 42; height: 32; width: 32
+                border.color: "#343434"; border.width: 1; radius: 8; anchors.verticalCenter: parent.verticalCenter
+            }
+            Rectangle {
+                id: rect; x: 10; color: "#454545"
+                border.color: "White"; border.width: 2
+                height: 32; width: 32; radius: 8; anchors.verticalCenter: parent.verticalCenter
+
+                MouseRegion {
+                    onClicked: if (rect.state == '') rect.state = "right"; else rect.state = ''
+                    anchors.fill: parent
+                }
+
+                states : State {
+                    name: "right"
+                    PropertyChanges { target: rect; x: window.width - 42; color: ballColor }
+                }
+
+                transitions: Transition {
+                    ParallelAnimation {
+                        NumberAnimation { properties: "x"; easing: type; duration: 1000 }
+                        ColorAnimation { properties: "color"; easing: type; duration: 1000 }
                     }
-                    children: [
-                        MouseRegion {
-                            onClicked: { anim.running=true }
-                            anchors.fill: parent
-                        }
-                    ]
                 }
             }
+        }
+    }
+
+    Flickable {
+        anchors.fill: parent; viewportHeight: layout.height
+        Column {
+            id: layout
+            anchors.left: window.left; anchors.right: window.right
+            Repeater { model: easingTypes; delegate: delegate }
         }
     }
 }

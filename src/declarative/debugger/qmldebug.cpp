@@ -32,10 +32,12 @@ public:
     static void remove(QmlEngineDebug *, QmlDebugEnginesQuery *);
     static void remove(QmlEngineDebug *, QmlDebugRootContextQuery *);
     static void remove(QmlEngineDebug *, QmlDebugObjectQuery *);
+    static void remove(QmlEngineDebug *, QmlDebugExpressionQuery *);
 
     QHash<int, QmlDebugEnginesQuery *> enginesQuery;
     QHash<int, QmlDebugRootContextQuery *> rootContextQuery;
     QHash<int, QmlDebugObjectQuery *> objectQuery;
+    QHash<int, QmlDebugExpressionQuery *> expressionQuery;
 
     QHash<int, QmlDebugWatch *> watched;
 };
@@ -81,6 +83,12 @@ void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugObjectQuery *q)
     p->objectQuery.remove(q->m_queryId);
 }
 
+void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugExpressionQuery *q)
+{
+    QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
+    p->expressionQuery.remove(q->m_queryId);
+}
+
 Q_DECLARE_METATYPE(QmlDebugObjectReference);
 void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
                                    bool simple)
@@ -109,6 +117,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         prop.m_name = data.name;
         prop.m_binding = data.binding;
         prop.m_hasNotifySignal = data.hasNotifySignal;
+        prop.m_valueTypeName = data.valueTypeName;
         if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
             prop.m_value = data.value;
         else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
@@ -116,7 +125,6 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
             obj.m_debugId = prop.m_value.toInt();
             prop.m_value = qVariantFromValue(obj);
         }
-
         o.m_properties << prop;
     }
 
@@ -212,6 +220,19 @@ void QmlEngineDebugPrivate::message(const QByteArray &data)
 
         query->m_client = 0;
         query->setState(QmlDebugQuery::Completed);
+    } else if (type == "EVAL_EXPRESSION_R") {
+        int queryId;
+        QVariant result;
+        ds >> queryId >> result;
+
+        QmlDebugExpressionQuery *query = expressionQuery.value(queryId);
+        if (!query)
+            return;
+        expressionQuery.remove(queryId);
+
+        query->m_result = result;
+        query->m_client = 0;
+        query->setState(QmlDebugQuery::Completed);
     } else if (type == "WATCH_PROPERTY_R") {
         int queryId;
         bool ok;
@@ -267,7 +288,6 @@ QmlDebugPropertyWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference 
 
     QmlDebugPropertyWatch *watch = new QmlDebugPropertyWatch(parent);
     if (d->client->isConnected()) {
-        //query->m_client = this;
         int queryId = d->getId();
         watch->m_queryId = queryId;
         watch->m_objectDebugId = property.objectDebugId();
@@ -445,6 +465,29 @@ QmlDebugObjectQuery *QmlEngineDebug::queryObjectRecursive(const QmlDebugObjectRe
     return query;
 }
 
+QmlDebugExpressionQuery *QmlEngineDebug::queryExpressionResult(int objectDebugId, const QString &expr, QObject *parent)
+{
+    Q_D(QmlEngineDebug);
+
+    QmlDebugExpressionQuery *query = new QmlDebugExpressionQuery(parent);
+    if (d->client->isConnected() && objectDebugId != -1) {
+        query->m_client = this;
+        query->m_expr = expr;
+        int queryId = d->getId();
+        query->m_queryId = queryId;
+        d->expressionQuery.insert(queryId, query);
+
+        QByteArray message;
+        QDataStream ds(&message, QIODevice::WriteOnly);
+        ds << QByteArray("EVAL_EXPRESSION") << queryId << objectDebugId << expr;
+        d->client->sendMessage(message);
+    } else {
+        query->m_state = QmlDebugQuery::Error;
+    }
+
+    return query;
+}
+
 QmlDebugWatch::QmlDebugWatch(QObject *parent)
 : QObject(parent), m_state(Waiting), m_queryId(-1), m_objectDebugId(-1)
 {
@@ -564,6 +607,27 @@ QmlDebugObjectQuery::~QmlDebugObjectQuery()
 QmlDebugObjectReference QmlDebugObjectQuery::object() const
 {
     return m_object;
+}
+
+QmlDebugExpressionQuery::QmlDebugExpressionQuery(QObject *parent)
+: QmlDebugQuery(parent), m_client(0), m_queryId(-1)
+{
+}
+
+QmlDebugExpressionQuery::~QmlDebugExpressionQuery()
+{
+    if (m_client && m_queryId != -1) 
+        QmlEngineDebugPrivate::remove(m_client, this);
+}
+
+QString QmlDebugExpressionQuery::expression() const
+{
+    return m_expr;
+}
+
+QVariant QmlDebugExpressionQuery::result() const
+{
+    return m_result;
 }
 
 QmlDebugEngineReference::QmlDebugEngineReference()
@@ -748,13 +812,17 @@ QmlDebugPropertyReference::QmlDebugPropertyReference()
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference(const QmlDebugPropertyReference &o)
-: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding), m_hasNotifySignal(o.m_hasNotifySignal)
+: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value),
+  m_valueTypeName(o.m_valueTypeName), m_binding(o.m_binding),
+  m_hasNotifySignal(o.m_hasNotifySignal)
 {
 }
 
 QmlDebugPropertyReference &QmlDebugPropertyReference::operator=(const QmlDebugPropertyReference &o)
 {
-    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding; m_hasNotifySignal = o.m_hasNotifySignal;
+    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value;
+    m_valueTypeName = o.m_valueTypeName; m_binding = o.m_binding;
+    m_hasNotifySignal = o.m_hasNotifySignal;
     return *this;
 }
 
@@ -766,6 +834,11 @@ int QmlDebugPropertyReference::objectDebugId() const
 QString QmlDebugPropertyReference::name() const
 {
     return m_name;
+}
+
+QString QmlDebugPropertyReference::valueTypeName() const
+{
+    return m_valueTypeName;
 }
 
 QVariant QmlDebugPropertyReference::value() const
