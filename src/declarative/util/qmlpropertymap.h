@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QBINDABLEMAP_H
-#define QBINDABLEMAP_H
+#ifndef QMLPROPERTYMAP_H
+#define QMLPROPERTYMAP_H
 
 #include <QtDeclarative/qfxglobal.h>
 #include <QtCore/QObject>
@@ -54,29 +54,34 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QBindableMapMetaObject;
-class Q_DECLARATIVE_EXPORT QBindableMap : public QObject
+class QmlPropertyMapPrivate;
+class Q_DECLARATIVE_EXPORT QmlPropertyMap : public QObject
 {
     Q_OBJECT
 public:
-    QBindableMap(QObject *parent = 0);
-    virtual ~QBindableMap();
+    QmlPropertyMap(QObject *parent = 0);
+    virtual ~QmlPropertyMap();
 
     QVariant value(const QString &key) const;
-    void setValue(const QString &key, QVariant value);
-    void clearValue(const QString &key);
+    void insert(const QString &key, const QVariant &value);
+    void clear(const QString &key);
 
     Q_INVOKABLE QStringList keys() const;
 
+    int count() const;
+    int size() const;
+    bool isEmpty() const;
+    bool contains(const QString &key) const;
+
+    QVariant &operator[](const QString &key);
+    const QVariant operator[](const QString &key) const;
+
 Q_SIGNALS:
-    void changed(const QString &key);
+    void valueChanged(const QString &key);
 
 private:
-    Q_DISABLE_COPY(QBindableMap)
-    void emitChanged(const QString &key);
-    QBindableMapMetaObject *m_mo;
-    QStringList m_keys;
-    friend class QBindableMapMetaObject;
+    Q_DECLARE_PRIVATE(QmlPropertyMap)
+    Q_DISABLE_COPY(QmlPropertyMap)
 };
 
 QT_END_NAMESPACE

@@ -76,6 +76,7 @@
 #include <QtCore/qdir.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
+#include <QtGui/qsound.h>
 #include <qmlcomponent.h>
 #include "private/qmlcomponentjs_p.h"
 #include "private/qmlmetaproperty_p.h"
@@ -153,12 +154,14 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("darker"), scriptEngine.newFunction(QmlEnginePrivate::darker, 1));
     qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
 
+    //misc methods
+    qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
+
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
-    //scriptEngine.globalObject().setScriptClass(new QmlGlobalScriptClass(&scriptEngine));
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
 
@@ -401,7 +404,12 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
     QmlDeclarativeData *data =
         static_cast<QmlDeclarativeData *>(priv->declarativeData);
 
-    return data?data->context:0;
+    if (!data)
+        return 0;
+    else if (data->outerContext)
+        return data->outerContext;
+    else
+        return data->context;
 }
 
 /*!
@@ -565,6 +573,17 @@ QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object,
 }
 
 /*!
+    Returns the QmlContext for the executing QScript \a ctxt.
+*/
+QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
+{
+    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    Q_ASSERT(scopeNode.isValid());
+    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
+    return contextClass->contextFromValue(scopeNode);
+}
+
+/*!
     This function is intended for use inside QML only. In C++ just create a
     component object as usual.
 
@@ -626,7 +645,7 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
-    QmlContext* context = activeEnginePriv->currentExpression->context();
+    QmlContext* context = activeEnginePriv->getContext(ctxt);
     if(ctxt->argumentCount() != 1) {
         c = new QmlComponentJS(activeEngine);
     }else{
@@ -647,7 +666,7 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
 
     Example (where targetItem is the id of an existing QML item):
     \code
-    newObject = createQmlObject('Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
         targetItem, "dynamicSnippet1");
     \endcode
 
@@ -677,9 +696,16 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
+    else
+        url = QUrl(QLatin1String("DynamicQML"));
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
-    url = qmlCtxt->resolvedUrl(url);
+    if (url.isEmpty()) {
+        url = qmlCtxt->resolvedUrl(QUrl(QLatin1String("<Unknown File>")));
+    } else {
+        url = qmlCtxt->resolvedUrl(url);
+    }
+
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
@@ -834,6 +860,30 @@ QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engin
         return engine->nullValue();
     color = color.darker();
     return qScriptValueFromValue(engine, qVariantFromValue(color));
+}
+
+QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if (ctxt->argumentCount() < 1)
+        return engine->undefinedValue();
+
+    QUrl url(ctxt->argument(0).toString());
+
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    if (url.isRelative()) {
+        QmlContext *context = enginePriv->getContext(ctxt);
+        if (!context)
+            return engine->undefinedValue();
+
+        url = context->resolvedUrl(url);
+    }
+
+    if (url.scheme() == QLatin1String("file")) {
+
+        QSound::play(url.toLocalFile());
+
+    }
+    return engine->undefinedValue();
 }
 
 /*!

@@ -19,8 +19,8 @@ ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
 {
     setHeaderHidden(true);
 
-    connect(this, SIGNAL(itemClicked(QTreeWidgetItem *, int)),
-            this, SLOT(handleItemClicked(QTreeWidgetItem *)));
+    connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
+            this, SLOT(currentItemChanged(QTreeWidgetItem *)));
 }
 
 void ObjectTree::reload(int objectDebugId)
@@ -38,7 +38,7 @@ void ObjectTree::reload(int objectDebugId)
                          this, SLOT(objectFetched()));
 }
 
-void ObjectTree::selectObject(int debugId)
+void ObjectTree::setCurrentObject(int debugId)
 {
     QTreeWidgetItem *item = findItemByObjectId(debugId);
     if (item) {
@@ -57,14 +57,14 @@ void ObjectTree::objectFetched()
     m_query = 0;
 }
 
-void ObjectTree::handleItemClicked(QTreeWidgetItem *item)
+void ObjectTree::currentItemChanged(QTreeWidgetItem *item)
 {
     QmlDebugObjectReference obj = item->data(0, Qt::UserRole).value<QmlDebugObjectReference>();
     if (obj.debugId() < 0) {
         qWarning("QML Object Tree: bad object id");
         return;
     }
-    emit objectSelected(obj);
+    emit currentObjectChanged(obj);
 }
 
 void ObjectTree::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *parent)

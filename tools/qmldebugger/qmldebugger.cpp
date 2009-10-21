@@ -57,6 +57,10 @@ QmlDebugger::QmlDebugger(QWidget *parent)
 
     QObject::connect(&client, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(connectionError(QAbstractSocket::SocketError)));
+
+
+    m_tabs->setCurrentIndex(1);
+    connectToHost();
 }
 
 void QmlDebugger::setHost(const QString &host)

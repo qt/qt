@@ -64,6 +64,7 @@ public:
     void setValue(const QByteArray &, const QVariant &);
     QVariant value(int) const;
     void setValue(int, const QVariant &);
+    QVariant &operator[](const QByteArray &);
 
     int count() const;
     QByteArray name(int) const;

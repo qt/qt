@@ -50,12 +50,18 @@ creates an instance for each item in the model.  Models may be static, or
 have items modified, inserted, removed or moved dynamically.
 
 Data is provided to the delegate via named data roles which the
-delegate may bind to.  A special \e index role containing the
-index of the item in the model is also available.  Models that do
-not have named roles will have the data provided via the \e modelData
-role.  The \e modelData role is also provided for Models that have
-only one role.  In this case the \e modelData role contains the same
-data as the named role.
+delegate may bind to.  The roles are exposed as properties of the
+\model property, though this property is set as a default property
+of the delegate so, unless there is a naming clash with a
+property in the delegate, the roles are usually accessed unqualified.
+
+A special \e index role containing the index of the item in the model
+is also available.
+
+Models that do not have named roles will have the data provided via
+the \e modelData role.  The \e modelData role is also provided for
+Models that have only one role.  In this case the \e modelData role
+contains the same data as the named role.
 
 There are a number of QML elements that operate using data models:
 
@@ -188,5 +194,32 @@ ListView {
 
 An Object Instance specifies a model with a single Object element.  The
 properties of the object are provided as roles.
+
+The example below creates a list with one item, showing the color of the
+\e myText text.  Note the use of the \e model property to specify the model
+data rather than the \e color property of the Text element in the delegate.
+
+\code
+Rectangle {
+    Text {
+        id: myText
+        text: "Hello"
+        color: "#dd44ee"
+    }
+
+    Component {
+        id: myDelegate
+        Text {
+            text: model.color
+        }
+    }
+    ListView {
+        anchors.fill: parent
+        anchors.topMargin: 30
+        model: myText
+        delegate: myDelegate
+    }
+}
+\endcode
 
 */

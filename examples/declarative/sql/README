@@ -1,7 +1,0 @@
-Simple demonstration of HTML5-compatible SQL database interface.
-Adds another "hello, world" every time you run it.
-Database is stored in:
- - %APPDATA%/Nokia/Qt/QML/Databases/ (Windows)
- - ~/.local/share/Nokia/Qt/QML/Databases/ (Unix)
- - ~/Library/Application Support/Nokia/Qt/QML/Databases/ (Mac OS X)
-No quota management.

@@ -3,11 +3,9 @@ SOURCES += \
            extra/qmlnumberformatter.cpp \
            extra/qmldatetimeformatter.cpp \
            extra/qfxintegermodel.cpp \
-           extra/qmlfolderlistmodel.cpp \
            extra/qfxanimatedimageitem.cpp \
            extra/qfxparticles.cpp \
            extra/qmlbehavior.cpp \
-           extra/qbindablemap.cpp \
            extra/qmlfontloader.cpp
 
 HEADERS += \
@@ -15,12 +13,10 @@ HEADERS += \
            extra/qmlnumberformatter.h \
            extra/qmldatetimeformatter.h \
            extra/qfxintegermodel.h \
-           extra/qmlfolderlistmodel.h \
            extra/qfxanimatedimageitem.h \
            extra/qfxanimatedimageitem_p.h \
            extra/qfxparticles.h \
            extra/qmlbehavior.h \
-           extra/qbindablemap.h \
            extra/qmlfontloader.h
 
 contains(QT_CONFIG, xmlpatterns) {
