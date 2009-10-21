@@ -975,10 +975,19 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     return false;
 }
 
+class ExceptionGuard
+{
+public:
+    inline ExceptionGuard(bool *w = 0) : watched(w) { Q_ASSERT(!(*watched)); *watched = true; }
+    inline ~ExceptionGuard() { *watched = false; }
+    inline operator bool() { return *watched; }
+private:
+    bool *watched;
+};
+
 void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
 {
-    Q_ASSERT(!activationRecursionGuard);
-    activationRecursionGuard = true;
+    ExceptionGuard guard(&activationRecursionGuard);
 #ifdef QT3_SUPPORT
     const int actionId = q_func()->findIdForAction(action);
 #endif
@@ -1023,7 +1032,6 @@ void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedSt
 #endif
         }
     }
-    activationRecursionGuard = false;
 }
 
 void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e, bool self)
