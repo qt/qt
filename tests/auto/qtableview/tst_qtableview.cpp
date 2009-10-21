@@ -1195,6 +1195,13 @@ void tst_QTableView::moveCursorStrikesBack_data()
             << 0 << 5 << (IntList() << int(QtTestTableView::MoveNext))
             << 1 << 0;
 
+    QTest::newRow("Last column disabled. Task QTBUG-3878") << -1 << -1
+            << IntList()
+            << (IntList() << 6)
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MovePrevious))
+            << 0 << 5;
+
     QTest::newRow("Span, anchor column hidden") << -1 << 1
             << IntList()
             << IntList()
@@ -1250,6 +1257,24 @@ void tst_QTableView::moveCursorStrikesBack_data()
             << QRect(1, 2, 2, 3)
             << 5 << 2 << (IntList() << int(QtTestTableView::MoveUp) << int(QtTestTableView::MoveUp))
             << 1 << 2;
+
+    IntList fullList;
+    for (int i = 0; i < 7; ++i)
+        fullList << i;
+
+    QTest::newRow("All disabled, wrap forward. Timeout => FAIL") << -1 << -1
+            << fullList
+            << fullList
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MoveNext))
+            << 1 << 0;
+
+    QTest::newRow("All disabled, wrap backwards. Timeout => FAIL") << -1 << -1
+            << fullList
+            << fullList
+            << QRect()
+            << 1 << 0 << (IntList() << int(QtTestTableView::MovePrevious))
+            << 1 << 0;
 }
 
 void tst_QTableView::moveCursorStrikesBack()
@@ -1272,17 +1297,17 @@ void tst_QTableView::moveCursorStrikesBack()
     view.hideRow(hideRow);
     view.hideColumn(hideColumn);
 
-    foreach (int row, disableRows)
-        model.disableRow(row);
-    foreach (int column, disableColumns)
-        model.disableColumn(column);
-
     if (span.height() && span.width())
         view.setSpan(span.top(), span.left(), span.height(), span.width());
     view.show();
 
     QModelIndex index = model.index(startRow, startColumn);
     view.setCurrentIndex(index);
+
+    foreach (int row, disableRows)
+        model.disableRow(row);
+    foreach (int column, disableColumns)
+        model.disableColumn(column);
 
     int newRow = -1;
     int newColumn = -1;

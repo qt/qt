@@ -118,6 +118,23 @@ QGraphicsAnchor::~QGraphicsAnchor()
 }
 
 /*!
+    Sets the size policy of the anchor to \a policy.
+*/
+void QGraphicsAnchor::setSizePolicy(QSizePolicy::Policy policy)
+{
+    Q_D(QGraphicsAnchor);
+    d->setSizePolicy(policy);
+}
+/*!
+    Returns the size policy of the anchor. The default size policy is QSizePolicy::Fixed
+*/
+QSizePolicy::Policy QGraphicsAnchor::sizePolicy() const
+{
+    Q_D(const QGraphicsAnchor);
+    return d->sizePolicy;
+}
+
+/*!
     \property QGraphicsAnchor::spacing
     \brief the space between items in the QGraphicsAnchorLayout.
 
@@ -306,6 +323,13 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
 void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### We don't support negative spacing yet
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[0] = spacing;
     invalidate();
 }
@@ -318,6 +342,13 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### We don't support negative spacing yet
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[1] = spacing;
     invalidate();
 }
@@ -327,11 +358,23 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 
     If an item is anchored with no spacing associated with the anchor, it will use the default
     spacing.
+
+    Currently QGraphicsAnchorLayout does not support negative default spacings.
+
     \sa setHorizontalSpacing(), setVerticalSpacing()
 */
 void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### Currently we do not support negative anchors inside the graph.
+    // To avoid those being created by a negative spacing, we must
+    // make this test.
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[0] = d->spacings[1] = spacing;
     invalidate();
 }

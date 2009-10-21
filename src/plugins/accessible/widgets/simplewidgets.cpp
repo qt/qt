@@ -209,6 +209,62 @@ QAccessible::State QAccessibleButton::state(int child) const
     return state;
 }
 
+int QAccessibleButton::actionCount()
+{
+    return 1;
+}
+
+void QAccessibleButton::doAction(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        button()->click();
+        break;
+    }
+}
+
+QString QAccessibleButton::description(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return QLatin1String("Clicks the button.");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleButton::name(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return QLatin1String("Press");
+    default:
+        return QString();
+    }
+}
+
+QString QAccessibleButton::localizedName(int actionIndex)
+{
+    switch (actionIndex) {
+    case 0:
+        return tr("Press");
+    default:
+        return QString();
+    }
+}
+
+QStringList QAccessibleButton::keyBindings(int actionIndex)
+{
+    switch (actionIndex) {
+#ifdef QT_NO_SHORTCUT
+    case 0:
+        return button()->shortcut().toString();
+#endif
+    default:
+        return QStringList();
+    }
+}
+
 #ifndef QT_NO_TOOLBUTTON
 /*!
   \class QAccessibleToolButton
@@ -755,6 +811,34 @@ void QAccessibleLineEdit::scrollToSubstring(int startIndex, int endIndex)
 }
 
 #endif // QT_NO_LINEEDIT
+
+#ifndef QT_NO_PROGRESSBAR
+QAccessibleProgressBar::QAccessibleProgressBar(QWidget *o)
+    : QAccessibleDisplay(o)
+{
+    Q_ASSERT(progressBar());
+}
+
+QVariant QAccessibleProgressBar::currentValue()
+{
+    return progressBar()->value();
+}
+
+QVariant QAccessibleProgressBar::maximumValue()
+{
+    return progressBar()->maximum();
+}
+
+QVariant QAccessibleProgressBar::minimumValue()
+{
+    return progressBar()->minimum();
+}
+
+QProgressBar *QAccessibleProgressBar::progressBar() const
+{
+    return qobject_cast<QProgressBar *>(object());
+}
+#endif
 
 #endif // QT_NO_ACCESSIBILITY
 

@@ -1144,7 +1144,7 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
 //    QTest::newRow("EColor16MA small trans") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0, 0);
 //    QTest::newRow("EColor16MA big trans") << EColor16MA << largeWidth << largeHeight << QColor(255, 255, 0, 0);
 
-#if !defined(__SERIES60_31__) && !defined(__S60_32__)
+#if !defined(__SERIES60_31__)
     QTest::newRow("EColor16MAP small") << EColor16MAP << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MAP big") << EColor16MAP << largeWidth << largeHeight << QColor(Qt::red);
 #endif

@@ -52,7 +52,7 @@ public:
     QGLCustomShaderStagePrivate() :
         m_manager(0) {}
 
-    QGLEngineShaderManager* m_manager;
+    QPointer<QGLEngineShaderManager> m_manager;
     QByteArray              m_source;
 };
 

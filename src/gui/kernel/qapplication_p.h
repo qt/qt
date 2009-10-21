@@ -503,6 +503,11 @@ public:
     static void setNavigationMode(Qt::NavigationMode mode);
     static TUint resolveS60ScanCode(TInt scanCode, TUint keysym);
     QSet<WId> nativeWindows;
+
+    int symbianProcessWsEvent(const TWsEvent *event);
+    int symbianHandleCommand(int command);
+    int symbianResourceChange(int type);
+
 #endif
 #if defined(Q_WS_WIN) || defined(Q_WS_X11) || defined (Q_WS_QWS)
     void sendSyntheticEnterLeave(QWidget *widget);

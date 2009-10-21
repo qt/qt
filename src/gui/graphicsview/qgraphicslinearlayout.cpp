@@ -272,6 +272,10 @@ void QGraphicsLinearLayout::insertItem(int index, QGraphicsLayoutItem *item)
         qWarning("QGraphicsLinearLayout::insertItem: cannot insert null item");
         return;
     }
+    if (item == this) {
+        qWarning("QGraphicsLinearLayout::insertItem: cannot insert itself");
+        return;
+    }
     d->addChildLayoutItem(item);
 
     Q_ASSERT(item);
