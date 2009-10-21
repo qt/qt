@@ -666,7 +666,7 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
 
     Example (where targetItem is the id of an existing QML item):
     \code
-    newObject = createQmlObject('Rectangle {color: "red"; width: 20; height: 20}',
+    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
         targetItem, "dynamicSnippet1");
     \endcode
 
@@ -696,6 +696,8 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
+    else
+        url = QUrl(QLatin1String("DynamicQML"));
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
     if (url.isEmpty()) {
