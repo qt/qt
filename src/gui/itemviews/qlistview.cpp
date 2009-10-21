@@ -1105,13 +1105,13 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             ++row;
         if (row >= rowCount)
             return QModelIndex();
-        return d->model->index(row, 0, d->root);
+        return d->model->index(row, d->column, d->root);
     }
 
     const QRect initialRect = rectForIndex(current);
     QRect rect = initialRect;
     if (rect.isEmpty()) {
-        return d->model->index(0, 0, d->root);
+        return d->model->index(0, d->column, d->root);
     }
     if (d->gridSize().isValid()) rect.setSize(d->gridSize());
 
@@ -2490,7 +2490,7 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     for (int i = 0; i < indexes.count(); ++i) {
         QModelIndex index = indexes.at(i);
         QRect rect = dd->rectForIndex(index);
-        viewport()->update(mapToViewport(rect));
+        viewport()->update(dd->mapToViewport(rect, false));
         QPoint dest = rect.topLeft() + delta;
         if (qq->isRightToLeft())
             dest.setX(dd->flipX(dest.x()) - rect.width());

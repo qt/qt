@@ -1056,6 +1056,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
     S60->screenDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(mode);
 
+    //NB: RWsSession::GetColorModeList tells you what window modes are supported,
+    //not what bitmap formats.
+    if(QSysInfo::symbianVersion() == QSysInfo::SV_9_2)
+        S60->supportsPremultipliedAlpha = 0;
+    else
+        S60->supportsPremultipliedAlpha = 1;
+
     RProcess me;
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();

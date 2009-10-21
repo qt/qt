@@ -747,9 +747,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     QPixmap result;
 
 //        QS60WindowSurface::unlockBitmapHeap();
-    static const bool canDoEColor16MAP = !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-    static const TDisplayMode displayMode = canDoEColor16MAP ? TDisplayMode(13) : EColor16MA; // 13 = EColor16MAP
-    static const TInt drawParam = canDoEColor16MAP ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
+    static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
+    static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
 
     CFbsBitmap *frame = new (ELeave) CFbsBitmap(); //offscreen
     CleanupStack::PushL(frame);
@@ -776,7 +775,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
                            frameSkinID, centerSkinID,
                            drawParam );
 
-    if (canDoEColor16MAP) {
+    if (S60->supportsPremultipliedAlpha) {
         if (drawn)
             result = fromFbsBitmap(frame, NULL, flags, QImage::Format_ARGB32_Premultiplied);
     } else {
