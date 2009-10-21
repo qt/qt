@@ -154,6 +154,12 @@ Requires: XMLSTREAM
 Name: QXmlStreamWriter
 SeeAlso: ???
 
+Feature: IM
+Description: Inputmethods with QInputContext
+Section: Kernel
+Requires: LIBRARY
+Name: QInputContext
+SeeAlso: ???
 # Data structures
 
 Feature: STL
@@ -346,7 +352,7 @@ SeeAlso: ???
 Feature: COMBOBOX
 Description: Supports comboboxes presenting a list of options to the user.
 Section: Widgets
-Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW
+Requires: LINEEDIT STANDARDITEMMODEL LISTVIEW ICON
 Name: QComboBox
 SeeAlso: ???
 
@@ -374,7 +380,7 @@ SeeAlso: ???
 Feature: TOOLBOX
 Description:  Supports columns of tabbed widget items.
 Section: Widgets
-Requires: ICON TOOLBUTTON SCROLLAREA
+Requires: TOOLBUTTON SCROLLAREA
 Name: QToolBox
 SeeAlso: ???
 
@@ -410,7 +416,7 @@ SeeAlso: ???
 Feature: WORKSPACE
 Description: Supports workspace windows, e.g. used in an MDI application.
 Section: Widgets
-Requires: SCROLLBAR RESIZEHANDLER MENU TOOLBUTTON MAINWINDOW TOOLBAR MENUBAR
+Requires: SCROLLBAR MAINWINDOW MENUBAR
 Name: QWorkSpace
 SeeAlso: ???
 
@@ -544,7 +550,7 @@ SeeAlso: ???
 Feature: WHATSTHIS
 Description: Supports displaying "What's this" help.
 Section: Widgets
-Requires: TOOLBUTTON ACTION
+Requires: TOOLBUTTON 
 Name: QWhatsThis
 SeeAlso: ???
 
@@ -574,7 +580,7 @@ Feature: PRINTPREVIEWWIDGET
 Description: Provides a widget for previewing page layouts for printer output.
 a date.
 Section: Widgets
-Requires: GRAPHICSVIEW PRINTER TOOLBAR MAINWINDOW
+Requires: GRAPHICSVIEW PRINTER MAINWINDOW
 Name: QPrintPreviewWidget
 SeeAlso: ???
 
@@ -591,7 +597,7 @@ SeeAlso: ???
 Feature: COLORDIALOG
 Description: Supports a dialog widget for specifying colors.
 Section: Dialogs
-Requires: LINEEDIT VALIDATOR SPINBOX
+Requires: SPINBOX
 Name: QColorDialog
 SeeAlso: ???
 
@@ -612,14 +618,14 @@ SeeAlso: ???
 Feature: PRINTDIALOG
 Description: Supports a dialog widget for specifying printer configuration.
 Section: Dialogs
-Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TREEVIEW STACKEDWIDGET TABWIDGET
+Requires: PRINTER COMBOBOX BUTTONGROUP SPINBOX TREEVIEW TABWIDGET
 Name: QPrintDialog
 SeeAlso: ???
 
 Feature: PRINTPREVIEWDIALOG
 Description: Provides a dialog for previewing and configuring page layouts for printer output.
 Section: Dialogs
-Requires: PRINTPREVIEWWIDGET PRINTDIALOG MAINWINDOW
+Requires: PRINTPREVIEWWIDGET PRINTDIALOG 
 Name: QPrintPreviewDialog
 SeeAlso: ???
 
@@ -779,7 +785,7 @@ SeeAlso: ???
 Feature: STYLE_WINDOWSVISTA
 Description: Supports a Microsoft WindowsVista-like look and feel.
 Section: Styles
-Requires: STYLE_WINDOWS STYLE_WINDOWSXP
+Requires: STYLE_WINDOWSXP
 Name: QWindowsVistaStyle
 SeeAlso: ???
 
@@ -1021,7 +1027,7 @@ SeeAlso: ???
 Feature: QWS_INPUTMETHODS
 Description: Supports international input methods.
 Section: Internationalization
-Requires:
+Requires: IM
 Name: QWSInputMethod
 SeeAlso: ???
 
@@ -1139,7 +1145,7 @@ SeeAlso: ???
 Feature: UNDOGROUP
 Description:
 Section: Utilities
-Requires: UNDOCOMMAND UNDOSTACK
+Requires: UNDOSTACK
 Name: QUndoGroup
 SeeAlso: ???
 
@@ -1153,7 +1159,7 @@ SeeAlso: ???
 Feature: ACCESSIBILITY
 Description: Provides accessibility support.
 Section: Utilities
-Requires: PROPERTIES ACTION MENU
+Requires: PROPERTIES MENUBAR
 Name: Accessibility
 SeeAlso: ???
 
@@ -1359,7 +1365,7 @@ SeeAlso: ???
 Feature: PHONON_PLATFORMPLUGIN
 Description: Support for platform plugin
 Section: Phonon
-Requires:
+Requires: LIBRARY
 Name: Phonon::PlatformPlugin
 SeeAlso: ???
 
@@ -1424,7 +1430,7 @@ SeeAlso: ???
 Feature: PHONON_VOLUMESLIDER
 Description: Support for the Volume Slider class
 Section: Phonon
-Requires: SLIDER ACTION
+Requires: SLIDER TOOLBUTTON
 Name: Phonon::VolumeSlider
 SeeAlso: ???
 
@@ -1439,5 +1445,12 @@ Feature: PHONON_ABSTRACTMEDIASTREAM
 Description: Support for streaming of raw data (QIODevice...)
 Section: Phonon
 Requires:
+Name: Phonon::AbstractMediaStream
+SeeAlso: ???
+
+Feature: PHONON_SETTINGSGROUP
+Description: Phonon settingsgroup
+Section: Phonon
+Requires: SETTINGS
 Name: Phonon::AbstractMediaStream
 SeeAlso: ???

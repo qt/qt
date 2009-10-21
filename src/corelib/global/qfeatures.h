@@ -148,9 +148,6 @@
 // Phonon::ObjectDescriptionModel
 //#define QT_NO_PHONON_OBJECTDESCRIPTIONMODEL
 
-// Phonon::PlatformPlugin
-//#define QT_NO_PHONON_PLATFORMPLUGIN
-
 // Phonon::VideoWidget
 //#define QT_NO_PHONON_VIDEO
 
@@ -174,9 +171,6 @@
 
 // Decoration
 //#define QT_NO_QWS_DECORATION_DEFAULT
-
-// QWSInputMethod
-//#define QT_NO_QWS_INPUTMETHODS
 
 // Keyboard
 //#define QT_NO_QWS_KEYBOARD
@@ -527,14 +521,19 @@
 #define QT_NO_LIBRARY
 #endif
 
-// Phonon::VolumeSlider
-#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_ACTION))
-#define QT_NO_PHONON_VOLUMESLIDER
+// Phonon::AbstractMediaStream
+#if !defined(QT_NO_PHONON_SETTINGSGROUP) && (defined(QT_NO_SETTINGS))
+#define QT_NO_PHONON_SETTINGSGROUP
 #endif
 
 // QScrollArea
 #if !defined(QT_NO_SCROLLAREA) && (defined(QT_NO_SCROLLBAR))
 #define QT_NO_SCROLLAREA
+#endif
+
+// QWindowsVistaStyle
+#if !defined(QT_NO_STYLE_WINDOWSVISTA) && (defined(QT_NO_STYLE_WINDOWSXP))
+#define QT_NO_STYLE_WINDOWSVISTA
 #endif
 
 // OdfWriter
@@ -552,6 +551,11 @@
 #define QT_NO_TRANSLATION_UTF8
 #endif
 
+// QUndoGroup
+#if !defined(QT_NO_UNDOGROUP) && (defined(QT_NO_UNDOSTACK))
+#define QT_NO_UNDOGROUP
+#endif
+
 // Drag and drop
 #if !defined(QT_NO_DRAGANDDROP) && (defined(QT_NO_QWS_PROPERTIES) || defined(QT_NO_IMAGEFORMAT_XPM))
 #define QT_NO_DRAGANDDROP
@@ -562,9 +566,19 @@
 #define QT_NO_GRAPHICSVIEW
 #endif
 
+// QInputContext
+#if !defined(QT_NO_IM) && (defined(QT_NO_LIBRARY))
+#define QT_NO_IM
+#endif
+
 // QMdiArea
 #if !defined(QT_NO_MDIAREA) && (defined(QT_NO_SCROLLAREA))
 #define QT_NO_MDIAREA
+#endif
+
+// Phonon::PlatformPlugin
+#if !defined(QT_NO_PHONON_PLATFORMPLUGIN) && (defined(QT_NO_LIBRARY))
+#define QT_NO_PHONON_PLATFORMPLUGIN
 #endif
 
 // QPrinter
@@ -602,11 +616,6 @@
 #define QT_NO_STYLE_WINDOWSMOBILE
 #endif
 
-// QWindowsVistaStyle
-#if !defined(QT_NO_STYLE_WINDOWSVISTA) && (defined(QT_NO_STYLE_WINDOWS) || defined(QT_NO_STYLE_WINDOWSXP))
-#define QT_NO_STYLE_WINDOWSVISTA
-#endif
-
 // QtSvg module
 #if !defined(QT_NO_SVG) && (defined(QT_NO_XMLSTREAMREADER) || defined(QT_NO_CSSPARSER))
 #define QT_NO_SVG
@@ -617,19 +626,29 @@
 #define QT_NO_TABBAR
 #endif
 
-// QUndoGroup
-#if !defined(QT_NO_UNDOGROUP) && (defined(QT_NO_UNDOCOMMAND) || defined(QT_NO_UNDOSTACK))
-#define QT_NO_UNDOGROUP
+// QWhatsThis
+#if !defined(QT_NO_WHATSTHIS) && (defined(QT_NO_TOOLBUTTON))
+#define QT_NO_WHATSTHIS
 #endif
 
-// Accessibility
-#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_ACTION) || defined(QT_NO_MENU))
-#define QT_NO_ACCESSIBILITY
+// QColorDialog
+#if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_SPINBOX))
+#define QT_NO_COLORDIALOG
 #endif
 
 // The Model/View Framework
 #if !defined(QT_NO_ITEMVIEWS) && (defined(QT_NO_RUBBERBAND) || defined(QT_NO_SCROLLAREA))
 #define QT_NO_ITEMVIEWS
+#endif
+
+// Phonon::VolumeSlider
+#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_TOOLBUTTON))
+#define QT_NO_PHONON_VOLUMESLIDER
+#endif
+
+// QWSInputMethod
+#if !defined(QT_NO_QWS_INPUTMETHODS) && (defined(QT_NO_IM))
+#define QT_NO_QWS_INPUTMETHODS
 #endif
 
 // Sound Server
@@ -660,11 +679,6 @@
 // QTextEdit
 #if !defined(QT_NO_TEXTEDIT) && (defined(QT_NO_SCROLLAREA) || defined(QT_NO_PROPERTIES))
 #define QT_NO_TEXTEDIT
-#endif
-
-// QWhatsThis
-#if !defined(QT_NO_WHATSTHIS) && (defined(QT_NO_TOOLBUTTON) || defined(QT_NO_ACTION))
-#define QT_NO_WHATSTHIS
 #endif
 
 // QDirModel
@@ -732,11 +746,6 @@
 #define QT_NO_TREEVIEW
 #endif
 
-// QColorDialog
-#if !defined(QT_NO_COLORDIALOG) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_VALIDATOR) || defined(QT_NO_SPINBOX))
-#define QT_NO_COLORDIALOG
-#endif
-
 // QColumnView
 #if !defined(QT_NO_COLUMNVIEW) && (defined(QT_NO_LISTVIEW))
 #define QT_NO_COLUMNVIEW
@@ -772,9 +781,19 @@
 #define QT_NO_TABLEWIDGET
 #endif
 
+// QToolBox
+#if !defined(QT_NO_TOOLBOX) && (defined(QT_NO_TOOLBUTTON) || defined(QT_NO_SCROLLAREA))
+#define QT_NO_TOOLBOX
+#endif
+
 // QTreeWidget
 #if !defined(QT_NO_TREEWIDGET) && (defined(QT_NO_TREEVIEW))
 #define QT_NO_TREEWIDGET
+#endif
+
+// Accessibility
+#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_MENUBAR))
+#define QT_NO_ACCESSIBILITY
 #endif
 
 // Common UNIX Printing System
@@ -785,11 +804,6 @@
 // QToolBar
 #if !defined(QT_NO_TOOLBAR) && (defined(QT_NO_MAINWINDOW))
 #define QT_NO_TOOLBAR
-#endif
-
-// QToolBox
-#if !defined(QT_NO_TOOLBOX) && (defined(QT_NO_ICON) || defined(QT_NO_TOOLBUTTON) || defined(QT_NO_SCROLLAREA))
-#define QT_NO_TOOLBOX
 #endif
 
 // QDockwidget
@@ -808,8 +822,18 @@
 #endif
 
 // QComboBox
-#if !defined(QT_NO_COMBOBOX) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_STANDARDITEMMODEL) || defined(QT_NO_LISTVIEW))
+#if !defined(QT_NO_COMBOBOX) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_STANDARDITEMMODEL) || defined(QT_NO_LISTVIEW) || defined(QT_NO_ICON))
 #define QT_NO_COMBOBOX
+#endif
+
+// QPrintPreviewWidget
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_MAINWINDOW))
+#define QT_NO_PRINTPREVIEWWIDGET
+#endif
+
+// QWorkSpace
+#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
+#define QT_NO_WORKSPACE
 #endif
 
 // QCalendarWidget
@@ -842,18 +866,8 @@
 #define QT_NO_FONTDIALOG
 #endif
 
-// QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_TOOLBAR) || defined(QT_NO_MAINWINDOW))
-#define QT_NO_PRINTPREVIEWWIDGET
-#endif
-
-// QWorkSpace
-#if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_RESIZEHANDLER) || defined(QT_NO_MENU) || defined(QT_NO_TOOLBUTTON) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_TOOLBAR) || defined(QT_NO_MENUBAR))
-#define QT_NO_WORKSPACE
-#endif
-
 // QPrintDialog
-#if !defined(QT_NO_PRINTDIALOG) && (defined(QT_NO_PRINTER) || defined(QT_NO_COMBOBOX) || defined(QT_NO_BUTTONGROUP) || defined(QT_NO_SPINBOX) || defined(QT_NO_TREEVIEW) || defined(QT_NO_STACKEDWIDGET) || defined(QT_NO_TABWIDGET))
+#if !defined(QT_NO_PRINTDIALOG) && (defined(QT_NO_PRINTER) || defined(QT_NO_COMBOBOX) || defined(QT_NO_BUTTONGROUP) || defined(QT_NO_SPINBOX) || defined(QT_NO_TREEVIEW) || defined(QT_NO_TABWIDGET))
 #define QT_NO_PRINTDIALOG
 #endif
 
@@ -863,7 +877,7 @@
 #endif
 
 // QPrintPreviewDialog
-#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG) || defined(QT_NO_MAINWINDOW))
+#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG))
 #define QT_NO_PRINTPREVIEWDIALOG
 #endif
 
