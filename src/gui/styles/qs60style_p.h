@@ -460,6 +460,8 @@ public:
     void handleSkinChange();
 #endif // Q_WS_S60
 
+    static QSize naviPaneSize();
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);

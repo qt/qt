@@ -61,6 +61,7 @@
 #include <AknFontAccess.h>
 #include <AknLayoutFont.h>
 #include <aknutils.h>
+#include <aknnavi.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -104,6 +105,7 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+    static QSize naviPaneSize();
 
 private:
     static QPixmap createSkinnedGraphicsLX(QS60StyleEnums::SkinParts part,
@@ -747,9 +749,8 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
     QPixmap result;
 
 //        QS60WindowSurface::unlockBitmapHeap();
-    static const bool canDoEColor16MAP = !(QSysInfo::s60Version() == QSysInfo::SV_S60_3_1 || QSysInfo::s60Version() == QSysInfo::SV_S60_3_2);
-    static const TDisplayMode displayMode = canDoEColor16MAP ? TDisplayMode(13) : EColor16MA; // 13 = EColor16MAP
-    static const TInt drawParam = canDoEColor16MAP ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
+    static const TDisplayMode displayMode = S60->supportsPremultipliedAlpha ? Q_SYMBIAN_ECOLOR16MAP : EColor16MA;
+    static const TInt drawParam = S60->supportsPremultipliedAlpha ? KAknsDrawParamDefault : KAknsDrawParamNoClearUnderImage|KAknsDrawParamRGBOnly;
 
     CFbsBitmap *frame = new (ELeave) CFbsBitmap(); //offscreen
     CleanupStack::PushL(frame);
@@ -776,7 +777,7 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(QS60StylePrivate::SkinFr
                            frameSkinID, centerSkinID,
                            drawParam );
 
-    if (canDoEColor16MAP) {
+    if (S60->supportsPremultipliedAlpha) {
         if (drawn)
             result = fromFbsBitmap(frame, NULL, flags, QImage::Format_ARGB32_Premultiplied);
     } else {
@@ -1389,6 +1390,24 @@ void QS60StylePrivate::handleSkinChange()
         topLevelWidget->ensurePolished();
     }
 }
+
+QSize QS60StylePrivate::naviPaneSize()
+{
+    return QS60StyleModeSpecifics::naviPaneSize();
+}
+
+QSize QS60StyleModeSpecifics::naviPaneSize()
+{
+    CAknNavigationControlContainer* naviContainer;
+    if (S60->statusPane())
+        naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
+    if (naviContainer)
+        return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    else
+        return QSize(0,0);
+}
+
 #endif // Q_WS_S60
 
 QT_END_NAMESPACE
