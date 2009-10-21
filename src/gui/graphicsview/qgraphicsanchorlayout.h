@@ -65,6 +65,8 @@ class Q_GUI_EXPORT QGraphicsAnchor : public QObject
 public:
     void setSpacing(qreal spacing);
     void unsetSpacing();
+    void setSizePolicy(QSizePolicy::Policy policy);
+    QSizePolicy::Policy sizePolicy() const;
     qreal spacing() const;
     ~QGraphicsAnchor();
 private:

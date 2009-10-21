@@ -435,7 +435,7 @@ void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
     layout->removeAnchor(layout, Qt::AnchorLeft, widget1, Qt::AnchorLeft);
 
     QCOMPARE( layout->count(), 4 );
-    QCOMPARE( (int)widget1->parentLayoutItem(), 0 );
+    QVERIFY( !widget1->parentLayoutItem() );
 
     // test that item is not removed from layout if other anchors remain set
     layout->setAnchor(widget2, Qt::AnchorLeft, widget3, Qt::AnchorRight, 10);
@@ -1711,8 +1711,6 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
-        if (i == 1)
-            QEXPECT_FAIL("Two, mixed", "Works with simplification disabled.", Continue);
         const BasicLayoutTestResult item = result[i];
         QCOMPARE(widgets[item.index]->geometry(), item.rect);
     }

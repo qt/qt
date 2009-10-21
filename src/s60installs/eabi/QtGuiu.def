@@ -11557,33 +11557,32 @@ EXPORTS
 	qt_pixmap_cleanup_hook @ 11556 NONAME DATA 4
 	qt_pixmap_cleanup_hook_64 @ 11557 NONAME DATA 4
 	qt_tab_all_widgets @ 11558 NONAME DATA 1
-	_Z22qt_paint_device_metricPK12QPaintDeviceNS_17PaintDeviceMetricE @ 11559 NONAME
-	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11560 NONAME
-	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11561 NONAME
-	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 11562 NONAME
-	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 11563 NONAME
-	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 11564 NONAME
-	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 11565 NONAME
-	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 11566 NONAME DATA 16
-	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 11567 NONAME
-	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 11568 NONAME
-	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 11569 NONAME
-	_ZN18QGuiPlatformPlugin7paletteEv @ 11570 NONAME
-	_ZN18QGuiPlatformPlugin9styleNameEv @ 11571 NONAME
-	_ZN18QGuiPlatformPluginC1EP7QObject @ 11572 NONAME
-	_ZN18QGuiPlatformPluginC2EP7QObject @ 11573 NONAME
-	_ZN18QGuiPlatformPluginD0Ev @ 11574 NONAME
-	_ZN18QGuiPlatformPluginD1Ev @ 11575 NONAME
-	_ZN18QGuiPlatformPluginD2Ev @ 11576 NONAME
-	_ZN8QGestureC1ER15QGesturePrivateP7QObject @ 11577 NONAME
-	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 11578 NONAME
-	_ZNK11QPixmapData26createCompatiblePixmapDataEv @ 11579 NONAME
-	_ZNK13QGestureEvent7gestureEN2Qt11GestureTypeE @ 11580 NONAME
-	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11581 NONAME
-	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 11582 NONAME
-	_ZTI18QGuiPlatformPlugin @ 11583 NONAME
-	_ZTI27QGuiPlatformPluginInterface @ 11584 NONAME
-	_ZTV18QGuiPlatformPlugin @ 11585 NONAME
-	_ZThn8_N18QGuiPlatformPluginD0Ev @ 11586 NONAME
-	_ZThn8_N18QGuiPlatformPluginD1Ev @ 11587 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 11559 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 11560 NONAME
+	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 11561 NONAME
+	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 11562 NONAME
+	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 11563 NONAME DATA 16
+	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 11564 NONAME
+	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 11565 NONAME
+	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 11566 NONAME
+	_ZN18QGuiPlatformPlugin7paletteEv @ 11567 NONAME
+	_ZN18QGuiPlatformPlugin9styleNameEv @ 11568 NONAME
+	_ZN18QGuiPlatformPluginC1EP7QObject @ 11569 NONAME
+	_ZN18QGuiPlatformPluginC2EP7QObject @ 11570 NONAME
+	_ZN18QGuiPlatformPluginD0Ev @ 11571 NONAME
+	_ZN18QGuiPlatformPluginD1Ev @ 11572 NONAME
+	_ZN18QGuiPlatformPluginD2Ev @ 11573 NONAME
+	_ZN8QGestureC1ER15QGesturePrivateP7QObject @ 11574 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 11575 NONAME
+	_ZNK13QGestureEvent7gestureEN2Qt11GestureTypeE @ 11576 NONAME
+	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 11577 NONAME
+	_ZTI18QGuiPlatformPlugin @ 11578 NONAME
+	_ZTI27QGuiPlatformPluginInterface @ 11579 NONAME
+	_ZTV18QGuiPlatformPlugin @ 11580 NONAME
+	_ZThn8_N18QGuiPlatformPluginD0Ev @ 11581 NONAME
+	_ZThn8_N18QGuiPlatformPluginD1Ev @ 11582 NONAME
+	_Z22qt_paint_device_metricPK12QPaintDeviceNS_17PaintDeviceMetricE @ 11583 NONAME
+	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11584 NONAME
+	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11585 NONAME
+	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11586 NONAME
 

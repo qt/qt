@@ -326,6 +326,10 @@ QPixmap QS60StylePrivate::backgroundTexture()
     return *m_background;
 }
 
+QSize QS60StylePrivate::naviPaneSize()
+{
+    return QSize(0, 0);
+}
 
 bool QS60StylePrivate::isTouchSupported()
 {

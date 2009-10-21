@@ -101,7 +101,7 @@ protected Q_SLOTS:
 private:
     Q_DISABLE_COPY(QS60Style)
     friend class QStyleFactory;
-    friend class QApplication;
+    friend class QApplicationPrivate;
 };
 
 #endif // QT_NO_STYLE_S60

@@ -52,6 +52,8 @@
 
 #include "qaudiodeviceinfo_alsa_p.h"
 
+#include <alsa/version.h>
+
 QT_BEGIN_NAMESPACE
 
 QAudioDeviceInfoInternal::QAudioDeviceInfoInternal(QByteArray dev, QAudio::Mode mode)
@@ -151,8 +153,19 @@ bool QAudioDeviceInfoInternal::open()
     int err = 0;
     QString dev = device;
     if(!dev.contains(QLatin1String("default"))) {
-        int idx = snd_card_get_index(dev.toLocal8Bit().constData());
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+         dev = QString(QLatin1String("default:CARD=%1")).arg(dev);
+#else
+        int idx = 0;
+        char *name;
+
+	while(snd_card_get_name(idx,&name) == 0) {
+            if(dev.contains(QLatin1String(name)))
+                break;
+            idx++;
+	}
         dev = QString(QLatin1String("hw:%1,0")).arg(idx);
+#endif
     }
     if(mode == QAudio::AudioOutput) {
         err=snd_pcm_open( &handle,dev.toLocal8Bit().constData(),SND_PCM_STREAM_PLAYBACK,0);
@@ -184,8 +197,19 @@ bool QAudioDeviceInfoInternal::testSettings(const QAudioFormat& format) const
 
     // open()
     if(!dev.contains(QLatin1String("default"))) {
-        int idx = snd_card_get_index(dev.toLocal8Bit().constData());
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
+         dev = QString(QLatin1String("default:CARD=%1")).arg(dev);
+#else
+        int idx = 0;
+        char *name;
+    
+        while(snd_card_get_name(idx,&name) == 0) {
+            if(dev.contains(QLatin1String(name)))
+                break;
+            idx++;
+        }
         dev = QString(QLatin1String("hw:%1,0")).arg(idx);
+#endif
     }
     if(mode == QAudio::AudioOutput) {
         err=snd_pcm_open( &handle,dev.toLocal8Bit().constData(),SND_PCM_STREAM_PLAYBACK,0);
@@ -362,7 +386,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 {
     QList<QByteArray> devices;
     QByteArray filter;
-
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14)
     // Create a list of all current audio devices that support mode
     void **hints, **n;
     char *name, *descr, *io;
@@ -404,7 +428,17 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
     if(devices.size() > 0) {
         devices.append("default");
     }
+#else
+    int idx = 0;
+    char* name;
 
+    while(snd_card_get_name(idx,&name) == 0) {
+        devices.append(name);
+        idx++;
+    }
+    if (idx > 0)
+        devices.append("default");
+#endif
     return devices;
 }
 

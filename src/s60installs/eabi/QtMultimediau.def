@@ -275,5 +275,6 @@ EXPORTS
 	_ZThn8_N18QAudioEnginePluginD0Ev @ 274 NONAME
 	_ZThn8_N18QAudioEnginePluginD1Ev @ 275 NONAME
 	_Zls6QDebugRK19QVideoSurfaceFormat @ 276 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameRateEf @ 277 NONAME
+	_ZTV28QAudioEngineFactoryInterface @ 277 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameRateEf @ 278 NONAME
 

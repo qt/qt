@@ -305,6 +305,8 @@ bool qt_mac_insideKeyWindow(const QWidget *w)
 {
 #ifdef QT_MAC_USE_COCOA
     return [[reinterpret_cast<NSView *>(w->winId()) window] isKeyWindow];
+#else
+    Q_UNUSED(w);
 #endif
     return false;
 }
@@ -3301,7 +3303,11 @@ void QWidgetPrivate::show_sys()
             [window miniaturize:window];
 #endif
         } else if (!q->testAttribute(Qt::WA_ShowWithoutActivating)) {
+#ifndef QT_MAC_USE_COCOA
             qt_event_request_activate(q);
+#else
+            [qt_mac_window_for(q) makeKeyWindow];
+#endif
         }
     } else if(topData()->embedded || !q->parentWidget() || q->parentWidget()->isVisible()) {
 #ifndef QT_MAC_USE_COCOA
@@ -3404,8 +3410,13 @@ void QWidgetPrivate::hide_sys()
                 }
 #endif
             }
-            if(w && w->isVisible() && !w->isMinimized())
-                qt_event_request_activate(w);
+            if(w && w->isVisible() && !w->isMinimized()) {
+#ifndef QT_MAC_USE_COCOA
+            qt_event_request_activate(w);
+#else
+            [qt_mac_window_for(w) makeKeyWindow];
+#endif
+            }
         }
     } else {
          invalidateBuffer(q->rect());
