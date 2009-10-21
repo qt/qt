@@ -1092,6 +1092,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     err = HAL::Get(HALData::EPen, touch);
     if (err != KErrNone || touchIsUnsupportedOnSystem)
         touch = 0;
+#ifdef __WINS__
+    if(QSysInfo::symbianVersion() <= QSysInfo::SV_9_4) {
+        //for symbian SDK emulator, force values to match typical devices.
+        mouse = 0;
+        touch = touchIsUnsupportedOnSystem ? 0 : 1;
+    }
+#endif
     if (mouse || machineUID == KMachineUidSamsungI8510) {
         S60->hasTouchscreen = false;
         S60->virtualMouseRequired = false;
