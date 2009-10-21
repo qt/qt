@@ -85,6 +85,7 @@ public:
         Type type;
         QString name;
         QVariant value;
+        QString valueTypeName;
         QString binding;
         bool hasNotifySignal;
     };

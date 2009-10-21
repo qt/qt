@@ -10,6 +10,7 @@ QT_BEGIN_NAMESPACE
 class QGroupBox;
 class QTextEdit;
 class QLineEdit;
+class QPushButton;
 
 class ExpressionQueryWidget : public QWidget
 {
@@ -31,6 +32,7 @@ public slots:
 private slots:
     void executeExpression();
     void showResult();
+    void lineEditTextChanged(const QString &s);
 
 private:
     void appendPrompt();
@@ -45,8 +47,10 @@ private:
     QGroupBox *m_groupBox;
     QTextEdit *m_textEdit;
     QLineEdit *m_lineEdit;
+    QPushButton *m_button;
     QString m_prompt;
     QString m_expr;
+    QString m_lastExpr;
 
     QmlDebugObjectReference m_currObject;
     QmlDebugObjectReference m_objectAtLastFocus;

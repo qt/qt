@@ -232,6 +232,7 @@ public:
     int objectDebugId() const;
     QString name() const;
     QVariant value() const;
+    QString valueTypeName() const;
     QString binding() const;
     bool hasNotifySignal() const;
 
@@ -240,6 +241,7 @@ private:
     int m_objectDebugId;
     QString m_name;
     QVariant m_value;
+    QString m_valueTypeName;
     QString m_binding;
     bool m_hasNotifySignal;
 };

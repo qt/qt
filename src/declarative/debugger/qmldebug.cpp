@@ -117,6 +117,7 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         prop.m_name = data.name;
         prop.m_binding = data.binding;
         prop.m_hasNotifySignal = data.hasNotifySignal;
+        prop.m_valueTypeName = data.valueTypeName;
         if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
             prop.m_value = data.value;
         else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
@@ -124,7 +125,6 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
             obj.m_debugId = prop.m_value.toInt();
             prop.m_value = qVariantFromValue(obj);
         }
-
         o.m_properties << prop;
     }
 
@@ -812,13 +812,17 @@ QmlDebugPropertyReference::QmlDebugPropertyReference()
 }
 
 QmlDebugPropertyReference::QmlDebugPropertyReference(const QmlDebugPropertyReference &o)
-: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value), m_binding(o.m_binding), m_hasNotifySignal(o.m_hasNotifySignal)
+: m_objectDebugId(o.m_objectDebugId), m_name(o.m_name), m_value(o.m_value),
+  m_valueTypeName(o.m_valueTypeName), m_binding(o.m_binding),
+  m_hasNotifySignal(o.m_hasNotifySignal)
 {
 }
 
 QmlDebugPropertyReference &QmlDebugPropertyReference::operator=(const QmlDebugPropertyReference &o)
 {
-    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value; m_binding = o.m_binding; m_hasNotifySignal = o.m_hasNotifySignal;
+    m_objectDebugId = o.m_objectDebugId; m_name = o.m_name; m_value = o.m_value;
+    m_valueTypeName = o.m_valueTypeName; m_binding = o.m_binding;
+    m_hasNotifySignal = o.m_hasNotifySignal;
     return *this;
 }
 
@@ -830,6 +834,11 @@ int QmlDebugPropertyReference::objectDebugId() const
 QString QmlDebugPropertyReference::name() const
 {
     return m_name;
+}
+
+QString QmlDebugPropertyReference::valueTypeName() const
+{
+    return m_valueTypeName;
 }
 
 QVariant QmlDebugPropertyReference::value() const

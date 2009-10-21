@@ -80,7 +80,8 @@ QDataStream &operator>>(QDataStream &ds,
 QDataStream &operator<<(QDataStream &ds, 
                         const QmlEngineDebugServer::QmlObjectProperty &data)
 {
-    ds << (int)data.type << data.name << data.value << data.binding << data.hasNotifySignal;
+    ds << (int)data.type << data.name << data.value << data.valueTypeName
+       << data.binding << data.hasNotifySignal;
     return ds;
 }
 
@@ -88,7 +89,8 @@ QDataStream &operator>>(QDataStream &ds,
                         QmlEngineDebugServer::QmlObjectProperty &data)
 {
     int type;
-    ds >> type >> data.name >> data.value >> data.binding >> data.hasNotifySignal;
+    ds >> type >> data.name >> data.value >> data.valueTypeName
+       >> data.binding >> data.hasNotifySignal;
     data.type = (QmlEngineDebugServer::QmlObjectProperty::Type)type;
     return ds;
 }
@@ -101,6 +103,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
     QMetaProperty prop = obj->metaObject()->property(propIdx);
 
     rv.type = QmlObjectProperty::Unknown;
+    rv.valueTypeName = QString::fromUtf8(prop.typeName());
     rv.name = prop.name();
     rv.hasNotifySignal = prop.hasNotifySignal();
     QmlAbstractBinding *binding = QmlMetaProperty(obj, rv.name).binding();
@@ -116,6 +119,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
                QmlMetaType::isQmlList(prop.userType())) {
         rv.type = QmlObjectProperty::List;
     }
+
     return rv;
 }
 
@@ -149,7 +153,7 @@ void QmlEngineDebugServer::buildObjectList(QDataStream &message,
     int ctxtId = QmlDebugService::idForObject(ctxt);
 
     message << ctxtName << ctxtId; 
-    
+
     int count = 0;
 
     for (QSet<QmlContext *>::ConstIterator iter = p->childContexts.begin();
@@ -186,6 +190,12 @@ void QmlEngineDebugServer::buildObjectList(QDataStream &message,
 
 QVariant QmlEngineDebugServer::serializableVariant(const QVariant &value)
 {
+    if (value.type() < QVariant::UserType)
+        return value;
+
+    if (!value.toString().isEmpty())
+        return value.toString();
+
     QVariant v;
     if (value.type() == QVariant::UserType || QmlMetaType::isObject(value.userType())) {
         QObject *o = QmlMetaType::toQObject(value);
@@ -195,18 +205,11 @@ QVariant QmlEngineDebugServer::serializableVariant(const QVariant &value)
                 objectName = QLatin1String("<unnamed>");
             v = QString::fromUtf8(o->metaObject()->className()) +
                 QLatin1String(": ") + objectName;
-        } else {
-            v = QString::fromUtf8(value.typeName());
         }
-        if (v.isNull()) {
-            QString s = value.toString();
-            if (s.isEmpty())
-                s = QLatin1String("<unknown>");
-            v = s;
-        }
-    } else {
-        v = value;
     }
+
+    if (v.isNull())
+        v = QString::fromUtf8(value.typeName());
 
     return v;
 }
