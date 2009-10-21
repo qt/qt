@@ -72,18 +72,21 @@ DeviceManager::DeviceManager(Backend *backend)
         : QObject(backend)
         , m_backend(backend)
 {
+    m_audioSink = qgetenv("PHONON_GST_AUDIOSINK");
+    m_videoSinkWidget = qgetenv("PHONON_GST_VIDEOMODE");
+
+#ifndef QT_NO_SETTINGS
     QSettings settings(QLatin1String("Trolltech"));
     settings.beginGroup(QLatin1String("Qt"));
 
-    m_audioSink = qgetenv("PHONON_GST_AUDIOSINK");
     if (m_audioSink.isEmpty()) {
         m_audioSink = settings.value(QLatin1String("audiosink"), "Auto").toByteArray().toLower();
     }
 
-    m_videoSinkWidget = qgetenv("PHONON_GST_VIDEOMODE");
     if (m_videoSinkWidget.isEmpty()) {
         m_videoSinkWidget = settings.value(QLatin1String("videomode"), "Auto").toByteArray().toLower();
     }
+#endif //QT_NO_SETTINGS
 
     if (m_backend->isValid())
         updateDeviceList();

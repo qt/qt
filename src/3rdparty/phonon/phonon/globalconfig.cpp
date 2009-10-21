@@ -38,7 +38,10 @@ QT_BEGIN_NAMESPACE
 namespace Phonon
 {
 
-GlobalConfig::GlobalConfig() : m_config(QLatin1String("kde.org"), QLatin1String("libphonon"))
+GlobalConfig::GlobalConfig()
+#ifndef QT_NO_SETTINGS
+    : m_config(QLatin1String("kde.org"), QLatin1String("libphonon"))
+#endif //QT_NO_SETTINGS
 {
 }
 
@@ -82,6 +85,7 @@ static void filter(ObjectDescriptionType type, BackendInterface *backendIface, Q
     }
 }
 
+#ifndef QT_NO_PHONON_SETTINGSGROUP
 static QList<int> listSortedByConfig(const QSettingsGroup &backendConfig, Phonon::Category category, QList<int> &defaultList)
 {
     if (defaultList.size() <= 1) {
@@ -126,7 +130,9 @@ static QList<int> listSortedByConfig(const QSettingsGroup &backendConfig, Phonon
 
     return deviceList;
 }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 
+#ifndef QT_NO_PHONON_SETTINGSGROUP
 QList<int> GlobalConfig::audioOutputDeviceListFor(Phonon::Category category, int override) const
 {
     //The devices need to be stored independently for every backend
@@ -172,7 +178,7 @@ QList<int> GlobalConfig::audioOutputDeviceListFor(Phonon::Category category, int
 
     return listSortedByConfig(backendConfig, category, defaultList);
 }
-
+#endif //QT_NO_SETTINGSGROUPS
 int GlobalConfig::audioOutputDeviceFor(Phonon::Category category, int override) const
 {
     QList<int> ret = audioOutputDeviceListFor(category, override);
@@ -184,6 +190,7 @@ int GlobalConfig::audioOutputDeviceFor(Phonon::Category category, int override) 
 #ifndef QT_NO_PHONON_AUDIOCAPTURE
 QList<int> GlobalConfig::audioCaptureDeviceListFor(Phonon::Category category, int override) const
 {
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     //The devices need to be stored independently for every backend
     const QSettingsGroup backendConfig(&m_config, QLatin1String("AudioCaptureDevice")); // + Factory::identifier());
     const QSettingsGroup generalGroup(&m_config, QLatin1String("General"));
@@ -226,6 +233,9 @@ QList<int> GlobalConfig::audioCaptureDeviceListFor(Phonon::Category category, in
     }
 
     return listSortedByConfig(backendConfig, category, defaultList);
+#else //QT_NO_SETTINGSGROUP
+    return QList<int>();
+#endif //QT_NO_SETTINGSGROUP
 }
 
 int GlobalConfig::audioCaptureDeviceFor(Phonon::Category category, int override) const

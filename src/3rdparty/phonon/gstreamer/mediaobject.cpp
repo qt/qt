@@ -226,6 +226,7 @@ void MediaObject::cb_unknown_type (GstElement *decodebin, GstPad *pad, GstCaps *
     QString value = "unknown codec";
 
     // These functions require GStreamer > 0.10.12
+#ifndef QT_NO_LIBRARY
     static Ptr_gst_pb_utils_init p_gst_pb_utils_init = 0;
     static Ptr_gst_pb_utils_get_codec_description p_gst_pb_utils_get_codec_description = 0;
     if (!p_gst_pb_utils_init) {
@@ -239,10 +240,13 @@ void MediaObject::cb_unknown_type (GstElement *decodebin, GstPad *pad, GstCaps *
         codecName = p_gst_pb_utils_get_codec_description (caps);
         value = QString::fromUtf8(codecName);
         g_free (codecName);
-    } else {
+    } else
+#endif //QT_NO_LIBRARY
+    {
         // For GStreamer versions < 0.10.12
         GstStructure *str = gst_caps_get_structure (caps, 0);
         value = QString::fromUtf8(gst_structure_get_name (str));
+
     }
     media->addMissingCodecName(value);
 }

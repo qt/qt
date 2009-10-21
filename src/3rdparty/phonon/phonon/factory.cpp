@@ -111,6 +111,7 @@ void Factory::setBackend(QObject *b)
 
 bool FactoryPrivate::createBackend()
 {
+#ifndef QT_NO_LIBRARY
     Q_ASSERT(m_backendObject == 0);
 #ifndef QT_NO_PHONON_PLATFORMPLUGIN
     PlatformPlugin *f = globalFactory->platformPlugin();
@@ -186,6 +187,11 @@ bool FactoryPrivate::createBackend()
             SLOT(objectDescriptionChanged(ObjectDescriptionType)));
 
     return true;
+#else //QT_NO_LIBRARY
+    pWarning() << Q_FUNC_INFO << "Trying to use Phonon with QT_NO_LIBRARY defined. "
+                                 "That is currently not supported";
+    return false;
+#endif
 }
 
 FactoryPrivate::FactoryPrivate()
