@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-//QBindableMapMetaObject lets us listen for changes coming from QML
+//QmlPropertyMapMetaObject lets us listen for changes coming from QML
 //so we can emit the changed signal.
 class QmlPropertyMapMetaObject : public QmlOpenMetaObject
 {
@@ -87,17 +87,17 @@ void QmlPropertyMapMetaObject::propertyWrite(int index)
 }
 
 /*!
-    \class QBindableMap
-    \brief The QBindableMap class allows you to set key-value pairs that can be used in bindings.
+    \class QmlPropertyMap
+    \brief The QmlPropertyMap class allows you to set key-value pairs that can be used in bindings.
 
-    QBindableMap provides a convenient way to expose domain data to the UI layer.
+    QmlPropertyMap provides a convenient way to expose domain data to the UI layer.
     The following example shows how you might declare data in C++ and then
     access it in QML.
 
     Setup in C++:
     \code
     //create our data
-    QBindableMap ownerData;
+    QmlPropertyMap ownerData;
     ownerData.setValue("name", QVariant(QString("John Smith")));
     ownerData.setValue("phone", QVariant(QString("555-5555")));
 
@@ -190,7 +190,7 @@ QStringList QmlPropertyMap::keys() const
 }
 
 /*!
-    \fn void QBindableMap::changed(const QString &key)
+    \fn void QmlPropertyMap::changed(const QString &key)
     This signal is emitted whenever one of the values in the map is changed. \a key
     is the key corresponding to the value that was changed.
 */

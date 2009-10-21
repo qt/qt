@@ -222,7 +222,7 @@ binding that does not have a NOTIFY signal will cause QML to issue a warning at 
 \section2 Dynamic Structured Data
 
 If an application is too dynamic to structure data as compile-time QObject types, dynamically
-structured data can be constructed at runtime using the QBindableMap class.
+structured data can be constructed at runtime using the QmlPropertyMap class.
 
 \section1 Network Components
 
