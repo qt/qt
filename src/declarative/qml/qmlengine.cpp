@@ -158,7 +158,6 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     scriptEngine.globalObject().setProperty(QLatin1String("createComponent"),
             scriptEngine.newFunction(QmlEnginePrivate::createComponent, 1));
 
-    //scriptEngine.globalObject().setScriptClass(new QmlGlobalScriptClass(&scriptEngine));
     globalClass = new QmlGlobalScriptClass(&scriptEngine);
 }
 
