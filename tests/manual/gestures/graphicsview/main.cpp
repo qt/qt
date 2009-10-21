@@ -126,6 +126,8 @@ public:
         scene = new QGraphicsScene(this);
         scene->setSceneRect(-2000, -2000, 4000, 4000);
         view = new QGraphicsView(scene, 0);
+        view->viewport()->grabGesture(Qt::PanGesture);
+        view->viewport()->grabGesture(ThreeFingerSlideGesture::Type);
         QVBoxLayout *l = new QVBoxLayout(this);
         l->addWidget(view);
     }
