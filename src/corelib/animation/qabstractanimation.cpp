@@ -228,11 +228,7 @@ void QUnifiedTimer::updateAnimationsTime()
 
 void QUnifiedTimer::restartAnimationTimer()
 {
-    if (runningLeafAnimations == 0 && !runningPauseAnimations.isEmpty()) {
-        int closestTimeToFinish = closestPauseAnimationTimeToFinish();
-        animationTimer.start(closestTimeToFinish, this);
-        isPauseTimerActive = true;
-    } else if (!animationTimer.isActive() || isPauseTimerActive) {
+    if (!animationTimer.isActive()) {
         animationTimer.start(timingInterval, this);
         isPauseTimerActive = false;
     }

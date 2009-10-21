@@ -80,7 +80,8 @@ protected:
 private:
     QScriptClass::QueryFlags queryProperty(QmlContext *, QObject *scopeObject, 
                                            const Identifier &,
-                                           QScriptClass::QueryFlags flags);
+                                           QScriptClass::QueryFlags flags,
+                                           bool includeTypes);
 
     QmlEngine *engine;
 
