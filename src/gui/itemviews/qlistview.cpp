@@ -1939,7 +1939,11 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
                                           bool above, bool below, const QRect &area, const QRect &rect) const
 {
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
-        int value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
+        int value;
+        if (scrollValueMap.isEmpty())
+            value = 0;
+        else
+            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
         if (above)
             hint = QListView::PositionAtTop;
         else if (below)
@@ -2000,7 +2004,11 @@ int QListModeViewBase::horizontalScrollToValue(int index, QListView::ScrollHint 
     if (horizontalScrollMode() != QAbstractItemView::ScrollPerItem)
         return QCommonListViewBase::horizontalScrollToValue(index, hint, leftOf, rightOf, area, rect);
 
-    int value = qBound(0, scrollValueMap.at(horizontalScrollBar()->value()), flowPositions.count() - 1);
+    int value;
+    if (scrollValueMap.isEmpty())
+        value = 0;
+    else
+        value = qBound(0, scrollValueMap.at(horizontalScrollBar()->value()), flowPositions.count() - 1);
     if (leftOf)
         hint = QListView::PositionAtTop;
     else if (rightOf)
@@ -2312,7 +2320,7 @@ int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wr
     QVector<int> positions;
     if (wrap)
         positions = segmentPositions;
-    else {
+    else if (!flowPositions.isEmpty()) {
         positions.reserve(scrollValueMap.size());
         foreach (int itemShown, scrollValueMap)
             positions.append(flowPositions.at(itemShown));
