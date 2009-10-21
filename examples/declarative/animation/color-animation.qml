@@ -12,8 +12,8 @@ Item {
                 position: 0.0
                 color: SequentialAnimation {
                     running: true; repeat: true
-                    ColorAnimation { from: "DeepSkyBlue"; to: "#141450"; duration: 5000 }
-                    ColorAnimation { from: "#141450"; to: "DeepSkyBlue"; duration: 5000 }
+                    ColorAnimation { from: "DeepSkyBlue"; to: "#0E1533"; duration: 5000 }
+                    ColorAnimation { from: "#0E1533"; to: "DeepSkyBlue"; duration: 5000 }
                 }
             }
             GradientStop {
@@ -26,7 +26,7 @@ Item {
             }
         }
         Particles {
-            anchors.fill:parent; source: "images/star.png"; angleDeviation: 360; velocity: 0
+            anchors.fill: parent; source: "images/star.png"; angleDeviation: 360; velocity: 0
             velocityDeviation: 0; count: parent.width / 10; fadeInDuration: 2800
             opacity: SequentialAnimation {
                 running: true; repeat: true
@@ -36,8 +36,8 @@ Item {
         }
     }
 
+    // the sun and the moon
     Item {
-        id: space
         width: parent.width; height: 2 * parent.height
         transformOrigin: "Center"
         rotation: SequentialAnimation {
@@ -46,11 +46,11 @@ Item {
         }
         Image {
             source: "images/sun.png"; y: 10; anchors.horizontalCenter: parent.horizontalCenter
-            transformOrigin: "Center"; rotation: -space.rotation
+            transformOrigin: "Center"; rotation: -3 * parent.rotation
         }
         Image {
             source: "images/moon.png"; y: parent.height - 74; anchors.horizontalCenter: parent.horizontalCenter
-            transformOrigin: "Center"; rotation: -space.rotation
+            transformOrigin: "Center"; rotation: -parent.rotation
         }
     }
 
