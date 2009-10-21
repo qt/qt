@@ -64,6 +64,10 @@ extern uint qGlobalPostedEventsCount();
 #  define TIME_KILL_SYNCHRONOUS 0x0100
 #endif
 
+#ifndef QS_RAWINPUT
+#  define QS_RAWINPUT 0x0400
+#endif
+
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
     WM_QT_SENDPOSTEDEVENTS = WM_USER + 1
@@ -481,7 +485,6 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
     } else if (message == WM_QT_SENDPOSTEDEVENTS) {
         int localSerialNumber = d->serialNumber;
 
-        MSG peeked;
         if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
             // delay the next pass of sendPostedEvents() until we get the special
             // WM_TIMER, which allows all pending Windows messages to be processed
