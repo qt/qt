@@ -5,16 +5,16 @@ this pre-release you can make advanced graphical applications and
 utilize TCP/IP connections. More specifically, these modules are now
 available for S60:
 
-QtCore    - http://doc.trolltech.com/4.6/qtcore.html
-QtGui     - http://doc.trolltech.com/4.6/qtgui.html
-QtNetwork - http://doc.trolltech.com/4.6/qtnetwork.html
-QtScript  - http://doc.trolltech.com/4.6/qtscript.html
-QtSql     - http://doc.trolltech.com/4.6/qtsql.html
-QtSvg     - http://doc.trolltech.com/4.6/qtsvg.html
-QtTest    - http://doc.trolltech.com/4.6/qttest.html
-QtWebKit  - http://doc.trolltech.com/4.6/qtwebkit.html
-QtXml     - http://doc.trolltech.com/4.6/qtxml.html
-Phonon    - http://doc.trolltech.com/4.6/phonon-module.html
+QtCore    - http://doc.trolltech.com/4.6-snapshot/qtcore.html
+QtGui     - http://doc.trolltech.com/4.6-snapshot/qtgui.html
+QtNetwork - http://doc.trolltech.com/4.6-snapshot/qtnetwork.html
+QtScript  - http://doc.trolltech.com/4.6-snapshot/qtscript.html
+QtSql     - http://doc.trolltech.com/4.6-snapshot/qtsql.html
+QtSvg     - http://doc.trolltech.com/4.6-snapshot/qtsvg.html
+QtTest    - http://doc.trolltech.com/4.6-snapshot/qttest.html
+QtWebKit  - http://doc.trolltech.com/4.6-snapshot/qtwebkit.html
+QtXml     - http://doc.trolltech.com/4.6-snapshot/qtxml.html
+Phonon    - http://doc.trolltech.com/4.6-snapshot/phonon-module.html
 
 INSTALLING Qt
 
@@ -23,7 +23,7 @@ Follow the instructions in the INSTALL file.
 REFERENCE DOCUMENTATION
 
 The Qt reference documentation is available locally in Qt's doc/html
-directory or at http://doc.trolltech.com/4.6/index.html
+directory or at http://doc.trolltech.com/4.6-snapshot/index.html
 
 SUPPORTED PLATFORMS
 

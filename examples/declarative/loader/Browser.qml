@@ -2,16 +2,56 @@ import Qt 4.6
 
 Rectangle {
     id: root
+    property bool keyPressed: false
+    property var folders: folders1
+    property var view: view1
     width: parent.width
     height: parent.height
-    color: palette.base
+    color: palette.window
     FolderListModel {
-        id: folders
+        id: folders1
         nameFilters: [ "*.qml" ]
-//        folder: "E:"
+        folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
+    }
+    FolderListModel {
+        id: folders2
+        nameFilters: [ "*.qml" ]
+        folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
     }
 
     SystemPalette { id: palette; colorGroup: Qt.Active }
+
+    Script {
+        function down(path) {
+            if (folders == folders1) {
+                view = view2
+                folders = folders2;
+                view1.state = "exitLeft";
+            } else {
+                view = view1
+                folders = folders1;
+                view2.state = "exitLeft";
+            }
+            view.x = root.width;
+            view.state = "current";
+            folders.folder = path;
+        }
+        function up() {
+            var path = folders.parentFolder;
+            if (folders == folders1) {
+                view = view2
+                folders = folders2;
+                view1.state = "exitRight";
+            } else {
+                view = view1
+                folders = folders1;
+                view2.state = "exitRight";
+            }
+            view.x = -root.width;
+            view.state = "current";
+            folders.folder = path;
+        }
+    }
 
     Component {
         id: folderDelegate
@@ -19,13 +59,13 @@ Rectangle {
             id: wrapper
             function launch() {
                 if (folders.isFolder(index)) {
-                    folders.folder = filePath;
+                    down(filePath);
                 } else {
                     qmlLauncher.launch(filePath);
                 }
             }
             width: root.width
-            height: 32
+            height: 48
             color: "transparent"
             Rectangle {
                 id: highlight; visible: false
@@ -36,15 +76,15 @@ Rectangle {
                 }
             }
             Item {
-                width: 32; height: 32
-                Image { source: "images/fileopen.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
+                width: 46; height: 46
+                Image { source: "images/folder.png"; anchors.centerIn: parent; visible: folders.isFolder(index)}
             }
             Text {
                 id: nameText
                 anchors.fill: parent; verticalAlignment: "AlignVCenter"
-                text: fileName; anchors.leftMargin: 32
-                font.pointSize: 10
-                color: palette.windowText
+                text: fileName; anchors.leftMargin: 48
+                font.pixelSize: 32
+                color: wrapper.isCurrentItem ? palette.highlightedText : palette.text
             }
             MouseRegion {
                 id: mouseRegion
@@ -62,52 +102,131 @@ Rectangle {
         }
     }
 
-    Script {
-        function up(path) {
-            var pos = path.toString().lastIndexOf("/");
-            return path.toString().substring(0, pos);
-        }
+    ListView {
+        id: view1
+        anchors.top: titleBar.bottom
+        anchors.bottom: parent.bottom
+        x: 0
+        width: parent.width
+        model: folders1
+        delegate: folderDelegate
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
+        focus: true
+        pressDelay: 100
+        state: "current"
+        states: [
+            State {
+                name: "current"
+                PropertyChanges { target: view1; x: 0 }
+            },
+            State {
+                name: "exitLeft"
+                PropertyChanges { target: view1; x: -root.width }
+            },
+            State {
+                name: "exitRight"
+                PropertyChanges { target: view1; x: root.width }
+            }
+        ]
+        transitions: [
+            Transition {
+                to: "current"
+                SequentialAnimation {
+                    NumberAnimation { properties: "x"; duration: 250 }
+                }
+            },
+            Transition {
+                NumberAnimation { properties: "x"; duration: 250 }
+                NumberAnimation { properties: "x"; duration: 250 }
+            }
+        ]
     }
 
     ListView {
-        id: view
+        id: view2
         anchors.top: titleBar.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
         anchors.bottom: parent.bottom
-        model: folders
+        x: parent.width
+        width: parent.width
+        model: folders2
         delegate: folderDelegate
-        highlight: Rectangle { color: "#FFFBAF" }
-        clip: true
+        highlight: Rectangle { color: palette.highlight; visible: root.keyPressed }
         focus: true
-        Keys.onPressed: {
-            if (event.key == Qt.Key_Return || event.key == Qt.Key_Select) {
-                view.currentItem.launch();
-                event.accepted = true;
+        pressDelay: 100
+        states: [
+            State {
+                name: "current"
+                PropertyChanges { target: view2; x: 0 }
+            },
+            State {
+                name: "exitLeft"
+                PropertyChanges { target: view2; x: -root.width }
+            },
+            State {
+                name: "exitRight"
+                PropertyChanges { target: view2; x: root.width }
             }
-        }
+        ]
+        transitions: [
+            Transition {
+                to: "current"
+                SequentialAnimation {
+                    NumberAnimation { properties: "x"; duration: 250 }
+                }
+            },
+            Transition {
+                NumberAnimation { properties: "x"; duration: 250 }
+            }
+        ]
     }
 
-    Rectangle {
+    Keys.onPressed: {
+        root.keyPressed = true;
+        if (event.key == Qt.Key_Return || event.key == Qt.Key_Select || event.key == Qt.Key_Right) {
+            view.currentItem.launch();
+            event.accepted = true;
+        }
+    }
+    Keys.onLeftPressed: up()
+
+    BorderImage {
+        source: "images/titlebar.sci";
+        width: parent.width;
+        height: 48
+        y: -7
         id: titleBar
-        width: parent.width
-        height: 32
-        color: palette.button; border.color: palette.mid
 
         Rectangle {
             id: upButton
-            width: 30
-            height: titleBar.height
-            border.color: palette.mid; color: "transparent"
-            MouseRegion { anchors.fill: parent; onClicked: folders.folder = up(folders.folder) }
+            width: 40
+            height: titleBar.height - 7
+            color: "transparent"
+
             Image { anchors.centerIn: parent; source: "images/up.png" }
+            MouseRegion { id: upRegion; anchors.fill: parent
+                onClicked: if (folders.parentFolder != "") up()
+            }
+            states: [
+                State {
+                    name: "pressed"
+                    when: upRegion.pressed
+                    PropertyChanges { target: upButton; color: palette.highlightedText }
+                }
+            ]
+        }
+        Rectangle {
+            color: "gray"
+            x: 40
+            width: 1
+            height: 40
         }
 
         Text {
             anchors.left: upButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
-            text: folders.folder; color: palette.buttonText
+            text: folders.folder; color: "white"
             elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
+            font.pixelSize: 32
         }
     }
 }

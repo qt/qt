@@ -69,6 +69,11 @@ void QHttpNetworkConnectionChannel::init()
     socket = new QTcpSocket;
 #endif
 
+    // limit the socket read buffer size. we will read everything into
+    // the QHttpNetworkReply anyway, so let's grow only that and not
+    // here and there.
+    socket->setReadBufferSize(64*1024);
+
     QObject::connect(socket, SIGNAL(bytesWritten(qint64)),
                      this, SLOT(_q_bytesWritten(qint64)),
                      Qt::DirectConnection);
@@ -99,6 +104,9 @@ void QHttpNetworkConnectionChannel::init()
                          Qt::DirectConnection);
         QObject::connect(sslSocket, SIGNAL(sslErrors(const QList<QSslError>&)),
                          this, SLOT(_q_sslErrors(const QList<QSslError>&)),
+                         Qt::DirectConnection);
+        QObject::connect(sslSocket, SIGNAL(encryptedBytesWritten(qint64)),
+                         this, SLOT(_q_encryptedBytesWritten(qint64)),
                          Qt::DirectConnection);
     }
 #endif
@@ -875,6 +883,15 @@ void QHttpNetworkConnectionChannel::_q_sslErrors(const QList<QSslError> &errors)
         return;
     //QNetworkReply::NetworkError errorCode = QNetworkReply::ProtocolFailure;
     emit connection->sslErrors(errors);
+}
+
+void QHttpNetworkConnectionChannel::_q_encryptedBytesWritten(qint64 bytes)
+{
+    Q_UNUSED(bytes);
+    // bytes have been written to the socket. write even more of them :)
+    if (isSocketWriting())
+        sendRequest();
+    // otherwise we do nothing
 }
 #endif
 

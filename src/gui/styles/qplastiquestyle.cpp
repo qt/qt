@@ -3309,7 +3309,7 @@ void QPlastiqueStyle::drawControl(ControlElement element, const QStyleOption *op
 
             // Draw the text centered
             QFont font = painter->font();
-            font.setPointSize(font.pointSize() - 1);
+            font.setPointSize(QFontInfo(font).pointSize() - 1);
             painter->setFont(font);
             painter->setPen(dockWidget->palette.windowText().color());
             painter->drawText(titleRect,

@@ -66,7 +66,6 @@
 #include "util/fragmentprograms_p.h"
 
 #ifdef Q_WS_QWS
-#include "private/qglpaintdevice_qws_p.h"
 #include "private/qglwindowsurface_qws_p.h"
 #include "qwsmanager_qws.h"
 #include "private/qwsmanager_p.h"
@@ -1222,7 +1221,7 @@ inline void QOpenGLPaintEnginePrivate::setGradientOps(const QBrush &brush, const
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_CONICAL;
             else if (current_style == Qt::SolidPattern)
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_SOLID;
-            else if (current_style == Qt::TexturePattern)
+            else if (current_style == Qt::TexturePattern && !brush.texture().isQBitmap())
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_TEXTURE;
             else
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_PATTERN;
@@ -1596,7 +1595,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             qreal   realRadius = g->radius();
             QTransform translate(1, 0, 0, 1, -realFocal.x(), -realFocal.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1609,7 +1609,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realCenter = g->center();
             QTransform translate(1, 0, 0, 1, -realCenter.x(), -realCenter.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1621,8 +1622,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realFinal = g->finalStop();
             QTransform translate(1, 0, 0, 1, -realStart.x(), -realStart.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1633,10 +1634,9 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
 
             linear_data[2] = 1.0f / (l.x() * l.x() + l.y() * l.y());
         } else if (style != Qt::SolidPattern) {
-            QTransform translate(1, 0, 0, 1, brush_origin.x(), brush_origin.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted();
 
             setInvMatrixData(inv_matrix);
         }
@@ -4310,6 +4310,16 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
 void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &offset)
 {
     Q_D(QOpenGLPaintEngine);
+    if (pm.depth() == 1) {
+        QPixmap tpx(pm.size());
+        tpx.fill(Qt::transparent);
+        QPainter p(&tpx);
+        p.setPen(d->cpen);
+        p.drawPixmap(0, 0, pm);
+        p.end();
+        drawTiledPixmap(r, tpx, offset);
+        return;
+    }
 
     QImage scaled;
     const int sz = d->max_texture_size;
@@ -5206,7 +5216,7 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
             device->context()->d_func()->bindTexture(cbrush.textureImage(), GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
         else
-            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, true),
+            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, false),
                                                      GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
 

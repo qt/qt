@@ -1112,6 +1112,10 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                                       "Properties",
                                       "property",
                                       "properties");
+	    FastSection qmlattachedproperties(qmlClassNode,
+                                              "Attached Properties",
+                                              "property",
+                                              "properties");
 	    FastSection qmlsignals(qmlClassNode,
                                 "Signals",
                                 "signal",
@@ -1128,7 +1132,11 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                     NodeList::ConstIterator p = qpgn->childNodes().begin();
                     while (p != qpgn->childNodes().end()) {
                         if ((*p)->type() == Node::QmlProperty) {
-                            insert(qmlproperties,*p,style,Okay);
+                            const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(*p);
+                            if (pn->isAttached())
+                                insert(qmlattachedproperties,*p,style,Okay);
+                            else
+                                insert(qmlproperties,*p,style,Okay);
                         }
                         ++p;
                     }
@@ -1142,17 +1150,23 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                 ++c;
             }
 	    append(sections,qmlproperties);
+	    append(sections,qmlattachedproperties);
 	    append(sections,qmlsignals);
 	    append(sections,qmlmethods);
         }
         else if (style == Detailed) {
             FastSection qmlproperties(qmlClassNode, "Property Documentation");
+	    FastSection qmlattachedproperties(qmlClassNode,"Attached Property Documentation");
             FastSection qmlsignals(qmlClassNode,"Signal Documentation");
             FastSection qmlmethods(qmlClassNode,"Method Documentation");
 	    NodeList::ConstIterator c = qmlClassNode->childNodes().begin();
 	    while (c != qmlClassNode->childNodes().end()) {
                 if ((*c)->subType() == Node::QmlPropertyGroup) {
-		    insert(qmlproperties,*c,style,Okay);
+                    const QmlPropGroupNode* pgn = static_cast<const QmlPropGroupNode*>(*c);
+                    if (pgn->isAttached())
+                        insert(qmlattachedproperties,*c,style,Okay);
+                    else
+                        insert(qmlproperties,*c,style,Okay);
 	        }
                 else if ((*c)->type() == Node::QmlSignal) {
                     insert(qmlsignals,*c,style,Okay);
@@ -1163,6 +1177,7 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
 	        ++c;
 	    }
 	    append(sections,qmlproperties);
+	    append(sections,qmlattachedproperties);
 	    append(sections,qmlsignals);
 	    append(sections,qmlmethods);
         }

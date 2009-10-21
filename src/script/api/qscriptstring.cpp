@@ -150,14 +150,8 @@ bool QScriptString::isValid() const
 bool QScriptString::operator==(const QScriptString &other) const
 {
     Q_D(const QScriptString);
-    if (d == other.d_func())
-        return true;
     if (!d || !other.d_func())
         return d == other.d_func();
-    if (d->engine != other.d_func()->engine)
-        return false;
-    if (!d->engine)
-        return true;
     return d->identifier == other.d_func()->identifier;
 }
 
@@ -193,6 +187,14 @@ QString QScriptString::toString() const
 QScriptString::operator QString() const
 {
     return toString();
+}
+
+uint qHash(const QScriptString &key)
+{
+    QScriptStringPrivate *d = QScriptStringPrivate::get(key);
+    if (!d)
+        return 0;
+    return qHash(d->identifier.ustring().rep());
 }
 
 QT_END_NAMESPACE

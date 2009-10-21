@@ -123,8 +123,7 @@ void QVGPixmapConvolutionFilter::draw
 }
 
 QVGPixmapColorizeFilter::QVGPixmapColorizeFilter()
-    : QPixmapColorizeFilter(),
-      firstTime(true)
+    : QPixmapColorizeFilter()
 {
 }
 
@@ -136,7 +135,7 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 {
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
-        // back to the default convolution filter implementation.
+        // back to the default colorize filter implementation.
         QPixmapColorizeFilter::draw(painter, dest, src, srcRect);
         return;
     }
@@ -154,50 +153,45 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
-    // Recompute the color matrix if the color has changed.
+    // Determine the weights for the matrix from the color and strength.
     QColor c = color();
-    if (c != prevColor || firstTime) {
-        prevColor = c;
+    VGfloat strength = this->strength();
+    VGfloat weights[3];
+    VGfloat invweights[3];
+    VGfloat alpha = c.alphaF();
+    weights[0] = c.redF() * alpha;
+    weights[1] = c.greenF() * alpha;
+    weights[2] = c.blueF() * alpha;
+    invweights[0] = (1.0f - weights[0]) * strength;
+    invweights[1] = (1.0f - weights[1]) * strength;
+    invweights[2] = (1.0f - weights[2]) * strength;
 
-        // Determine the weights for the matrix from the color.
-        VGfloat weights[3];
-        VGfloat invweights[3];
-        VGfloat alpha = c.alphaF();
-        weights[0] = c.redF() * alpha;
-        weights[1] = c.greenF() * alpha;
-        weights[2] = c.blueF() * alpha;
-        invweights[0] = 1.0f - weights[0];
-        invweights[1] = 1.0f - weights[1];
-        invweights[2] = 1.0f - weights[2];
+    // Grayscale weights.
+    static const VGfloat redGray = 11.0f / 32.0f;
+    static const VGfloat greenGray = 16.0f / 32.0f;
+    static const VGfloat blueGray = 1.0f - (redGray + greenGray);
 
-        // Grayscale weights.
-        static const VGfloat redGray = 11.0f / 32.0f;
-        static const VGfloat greenGray = 16.0f / 32.0f;
-        static const VGfloat blueGray = 1.0f - (redGray + greenGray);
-
-        matrix[0][0] = redGray * invweights[0];
-        matrix[0][1] = redGray * invweights[1];
-        matrix[0][2] = redGray * invweights[2];
-        matrix[0][3] = 0.0f;
-        matrix[1][0] = greenGray * invweights[0];
-        matrix[1][1] = greenGray * invweights[1];
-        matrix[1][2] = greenGray * invweights[2];
-        matrix[1][3] = 0.0f;
-        matrix[2][0] = blueGray * invweights[0];
-        matrix[2][1] = blueGray * invweights[1];
-        matrix[2][2] = blueGray * invweights[2];
-        matrix[2][3] = 0.0f;
-        matrix[3][0] = 0.0f;
-        matrix[3][1] = 0.0f;
-        matrix[3][2] = 0.0f;
-        matrix[3][3] = 1.0f;
-        matrix[4][0] = weights[0];
-        matrix[4][1] = weights[1];
-        matrix[4][2] = weights[2];
-        matrix[4][3] = 0.0f;
-    }
-
-    firstTime = false;
+    VGfloat matrix[5][4];
+    matrix[0][0] = redGray * invweights[0] + (1.0f - strength);
+    matrix[0][1] = redGray * invweights[1];
+    matrix[0][2] = redGray * invweights[2];
+    matrix[0][3] = 0.0f;
+    matrix[1][0] = greenGray * invweights[0];
+    matrix[1][1] = greenGray * invweights[1] + (1.0f - strength);
+    matrix[1][2] = greenGray * invweights[2];
+    matrix[1][3] = 0.0f;
+    matrix[2][0] = blueGray * invweights[0];
+    matrix[2][1] = blueGray * invweights[1];
+    matrix[2][2] = blueGray * invweights[2] + (1.0f - strength);
+    matrix[2][3] = 0.0f;
+    matrix[3][0] = 0.0f;
+    matrix[3][1] = 0.0f;
+    matrix[3][2] = 0.0f;
+    matrix[3][3] = 1.0f;
+    matrix[4][0] = weights[0] * strength;
+    matrix[4][1] = weights[1] * strength;
+    matrix[4][2] = weights[2] * strength;
+    matrix[4][3] = 0.0f;
 
     vgColorMatrix(dstImage, srcImage, matrix[0]);
 

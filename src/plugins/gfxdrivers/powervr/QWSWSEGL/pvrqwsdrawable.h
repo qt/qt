@@ -126,6 +126,9 @@ void pvrQwsSetGeometry(PvrQwsDrawable *drawable, const PvrQwsRect *rect);
 /* Get the current geometry for a drawable */
 void pvrQwsGetGeometry(PvrQwsDrawable *drawable, PvrQwsRect *rect);
 
+/* Set the rotation angle in degrees */
+void pvrQwsSetRotation(PvrQwsDrawable *drawable, int angle);
+
 /* Get the line stride for a drawable.  Returns zero if the buffers
    are not allocated or have been invalidated */
 int pvrQwsGetStride(PvrQwsDrawable *drawable);

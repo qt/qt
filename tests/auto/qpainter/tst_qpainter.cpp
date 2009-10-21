@@ -238,6 +238,8 @@ private slots:
 
     void taskQT4444_dontOverflowDashOffset();
 
+    void painterBegin();
+
 private:
     void fillData();
     QColor baseColor( int k, int intensity=255 );
@@ -1554,7 +1556,7 @@ void tst_QPainter::drawClippedEllipse_data()
 void tst_QPainter::drawClippedEllipse()
 {
     QFETCH(QRect, rect);
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     if (sizeof(qreal) != sizeof(double))
         QSKIP("Test only works for qreal==double", SkipAll);
 #endif
@@ -4310,6 +4312,44 @@ void tst_QPainter::taskQT4444_dontOverflowDashOffset()
     p.end();
 
     QVERIFY(true); // Don't crash
+}
+
+void tst_QPainter::painterBegin()
+{
+    QImage nullImage;
+    QImage indexed8Image(16, 16, QImage::Format_Indexed8);
+    QImage rgb32Image(16, 16, QImage::Format_RGB32);
+    QImage argb32Image(16, 16, QImage::Format_ARGB32_Premultiplied);
+
+    QPainter p;
+
+    // Painting on null image should fail.
+    QVERIFY(!p.begin(&nullImage));
+
+    // Check that the painter is not messed up by using it on another image.
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(p.end());
+
+    // If painting on indexed8 image fails, the painter state should still be OK.
+    if (p.begin(&indexed8Image))
+        QVERIFY(p.end());
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(p.end());
+
+    // Try opening a painter on the two different images.
+    QVERIFY(p.begin(&rgb32Image));
+    QVERIFY(!p.begin(&argb32Image));
+    QVERIFY(p.end());
+
+    // Try opening two painters on the same image.
+    QVERIFY(p.begin(&rgb32Image));
+    QPainter q;
+    QVERIFY(!q.begin(&rgb32Image));
+    QVERIFY(!q.end());
+    QVERIFY(p.end());
+
+    // Try ending an inactive painter.
+    QVERIFY(!p.end());
 }
 
 QTEST_MAIN(tst_QPainter)

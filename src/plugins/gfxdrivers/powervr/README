@@ -51,6 +51,11 @@ on the device with:
 
     hellogl_es -qws
 
+The driver also supports screen rotation if Qt is configured with the
+-qt-gfx-transformed option and the QWS_DISPLAY variable is wrapped in a
+"Transformed" declaration:
+
+    Transformed:powervr:mmWidth40:mmHeight54:Rot90:0
 
 Know Issues:
     * A QGLWidget may not have window decorations if it is a top-level window.

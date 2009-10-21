@@ -72,6 +72,8 @@ public:
     QVGPixmapData(PixelType type);
     ~QVGPixmapData();
 
+    QPixmapData *createCompatiblePixmapData() const;
+
     // Is this pixmap valid (i.e. non-zero in size)?
     bool isValid() const;
 

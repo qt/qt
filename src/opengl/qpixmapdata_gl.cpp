@@ -240,6 +240,11 @@ QGLPixmapData::~QGLPixmapData()
     }
 }
 
+QPixmapData *QGLPixmapData::createCompatiblePixmapData() const
+{
+    return new QGLPixmapData(pixelType());
+}
+
 bool QGLPixmapData::isValid() const
 {
     return w > 0 && h > 0;
@@ -318,7 +323,7 @@ void QGLPixmapData::ensureCreated() const
 }
 
 void QGLPixmapData::fromImage(const QImage &image,
-                              Qt::ImageConversionFlags flags)
+                              Qt::ImageConversionFlags /*flags*/)
 {
     if (image.size() == QSize(w, h))
         setSerialNumber(++qt_gl_pixmap_serial);
@@ -420,6 +425,10 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     QImage img;
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
+
+        img.setNumColors(2);
+        img.setColor(0, QColor(Qt::color0).rgba());
+        img.setColor(1, QColor(Qt::color1).rgba());
 
         if (color == Qt::color1)
             img.fill(1);
@@ -559,6 +568,7 @@ QPaintEngine* QGLPixmapData::paintEngine() const
     return m_source.paintEngine();
 }
 
+extern QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format);
 
 // If copyBack is true, bind will copy the contents of the render
 // FBO to the texture (which is not bound to the texture, as it's
@@ -568,17 +578,26 @@ GLuint QGLPixmapData::bind(bool copyBack) const
     if (m_renderFbo && copyBack) {
         copyBackFromRenderFbo(true);
     } else {
-        if (m_hasFillColor) {
-            m_dirty = true;
-            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
-            m_source.fill(PREMUL(m_fillColor.rgba()));
-            m_hasFillColor = false;
-        }
         ensureCreated();
     }
 
     GLuint id = m_texture.id;
     glBindTexture(GL_TEXTURE_2D, id);
+
+    if (m_hasFillColor) {
+        if (!useFramebufferObjects()) {
+            m_source = QImage(w, h, QImage::Format_ARGB32_Premultiplied);
+            m_source.fill(PREMUL(m_fillColor.rgba()));
+        }
+
+        m_hasFillColor = false;
+
+        GLenum format = qt_gl_preferredTextureFormat();
+        QImage tx(w, h, QImage::Format_ARGB32_Premultiplied);
+        tx.fill(qt_gl_convertToGLFormat(m_fillColor.rgba(), format));
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, w, h, format, GL_UNSIGNED_BYTE, tx.bits());
+    }
+
     return id;
 }
 

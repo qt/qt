@@ -104,7 +104,7 @@ bool QmlDebugConnection::isConnected() const
 
 class QmlDebugClientPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QmlDebugClient);
+    Q_DECLARE_PUBLIC(QmlDebugClient)
 public:
     QmlDebugClientPrivate();
 

@@ -15,9 +15,12 @@ wince*: {
 } else:symbian* {
    addFiles.sources = icons
    addFiles.path = .
-   addPlugins.sources = qico.dll
-   addPlugins.path = imageformats
-   DEPLOYMENT += addFiles addPlugins
+   DEPLOYMENT += addFiles
+   qt_not_deployed {
+      addPlugins.sources = qico.dll
+      addPlugins.path = imageformats
+      DEPLOYMENT += addPlugins
+   }
    TARGET.UID3 = 0xE0340004
    DEFINES += SYMBIAN_SRCDIR_UID=$$lower($$replace(TARGET.UID3,"0x",""))
 } else {

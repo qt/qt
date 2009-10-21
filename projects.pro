@@ -8,7 +8,11 @@ TEMPLATE = subdirs
 cross_compile: CONFIG += nostrip
 
 isEmpty(QT_BUILD_PARTS) { #defaults
-   QT_BUILD_PARTS = libs tools examples demos docs translations
+    symbian {
+       QT_BUILD_PARTS = libs tools examples demos
+    } else {
+       QT_BUILD_PARTS = libs tools examples demos docs translations
+    }
 } else { #make sure the order makes sense
    contains(QT_BUILD_PARTS, translations) {
        QT_BUILD_PARTS -= translations
@@ -26,10 +30,6 @@ isEmpty(QT_BUILD_PARTS) { #defaults
        QT_BUILD_PARTS -= qmake
        QT_BUILD_PARTS = qmake $$QT_BUILD_PARTS
    }
-}
-
-symbian {
-   QT_BUILD_PARTS = libs tools examples demos
 }
 
 #process the projects

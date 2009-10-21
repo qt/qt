@@ -110,7 +110,7 @@ void qt_symbian_set_cursor_visible(bool visible) {
     else
         cursorSpriteVisible--;
     Q_ASSERT(cursorSpriteVisible >=0);
-    
+
     if (cursorSpriteVisible && !S60->mouseInteractionEnabled) {
 #ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
         if (S60->brokenPointerCursors)
@@ -119,7 +119,7 @@ void qt_symbian_set_cursor_visible(bool visible) {
 #endif
             S60->wsSession().SetPointerCursorMode(EPointerCursorNormal);
     } else if (!cursorSpriteVisible && S60->mouseInteractionEnabled) {
-#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS        
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
         if (S60->brokenPointerCursors)
             qt_symbian_hide_pointer_sprite();
         else
@@ -188,7 +188,7 @@ Qt::HANDLE QCursor::handle() const
         return reinterpret_cast<Qt::HANDLE> (&(d->pcurs));
 
 #ifdef Q_SYMBIAN_HAS_SYSTEM_CURSORS
-    // don't construct shape cursors, QApplication_s60 will use the system cursor instead 
+    // don't construct shape cursors, QApplication_s60 will use the system cursor instead
     if (!(d->bm))
         return 0;
 #endif
@@ -228,12 +228,12 @@ void QCursorData::loadShapeFromResource(RWsSpriteBase& target, QString resource,
 /*
  * Constructs the native cursor from resources compiled into QtGui
  * This is needed only when the platform doesn't have system cursors.
- * 
+ *
  * System cursors are higher performance, since they are constructed once
  * and shared by all applications by specifying the shape number.
  * Due to symbian platform security considerations, and the fact most
  * existing phones have a broken RWsPointerCursor, system cursors are not
- * being used. 
+ * being used.
  */
 void QCursorData::constructShapeSprite(RWsSpriteBase& target)
 {
@@ -346,7 +346,7 @@ void QCursorData::constructCursorSprite(RWsSpriteBase& target)
             member->iMaskBitmap = pixmap.mask().toSymbianCFbsBitmap();
         }
         else {
-            member->iMaskBitmap = pixmap.createHeuristicMask().toSymbianCFbsBitmap();
+            member->iMaskBitmap = 0; //opaque rectangle cursor (due to EDrawModePEN)
         }
     }
 
@@ -371,11 +371,11 @@ void qt_symbian_show_pointer_sprite()
     } else {
         cursorSprite = QCursor(Qt::ArrowCursor);
     }
-    
+
     cursorSprite.d->scurs = RWsSprite(S60->wsSession());
     QPoint pos = QCursor::pos();
     cursorSprite.d->scurs.Construct(S60->windowGroup(), TPoint(pos.x(), pos.y()), ESpriteNoChildClip | ESpriteNoShadows);
-    
+
     cursorSprite.d->constructCursorSprite(cursorSprite.d->scurs);
     cursorSprite.d->scurs.Activate();
 }
@@ -409,7 +409,7 @@ void qt_symbian_set_pointer_sprite(const QCursor& cursor)
  * RWsPointerCursor, this function is called in response to pointer events
  * and when QCursor::setPos() is called.
  * Performance is worse than a real pointer cursor, due to extra context
- * switches vs. the window server moving the cursor by itself. 
+ * switches vs. the window server moving the cursor by itself.
  */
 void qt_symbian_move_cursor_sprite()
 {
@@ -421,7 +421,7 @@ void qt_symbian_move_cursor_sprite()
 /*
  * Translate from Qt::CursorShape to OS system pointer cursor list index.
  * Currently we control the implementation of the system pointer cursor list,
- * so this function is trivial. That may not always be the case. 
+ * so this function is trivial. That may not always be the case.
  */
 TInt qt_symbian_translate_cursor_shape(Qt::CursorShape shape)
 {
@@ -462,7 +462,7 @@ void qt_symbian_set_cursor(QWidget *w, bool force)
 /*
  * Makes the specified cursor appear above a specific native window group
  * Called from QSymbianControl and QApplication::restoreOverrideCursor
- * 
+ *
  * Window server is needed for this, so there is no equivalent when using
  * the sprite workaround.
  */
@@ -486,7 +486,7 @@ void qt_symbian_setWindowGroupCursor(const QCursor &cursor, RWindowTreeNode &nod
 /*
  * Makes the specified cursor appear above a specific native window
  * Called from QSymbianControl and QApplication::restoreOverrideCursor
- * 
+ *
  * Window server is needed for this, so there is no equivalent when using
  * the sprite workaround.
  */

@@ -61,7 +61,6 @@ SOURCES += qdbusconnection.cpp  \
 	qdbusutil.cpp		\
 	qdbusintrospection.cpp	\
 	qdbusabstractadaptor.cpp \
-	qdbusthread.cpp \
 	qdbusinternalfilters.cpp \
 	qdbusmetaobject.cpp	\
 	qdbusxmlgenerator.cpp	\

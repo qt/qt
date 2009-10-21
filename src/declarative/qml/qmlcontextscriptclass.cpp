@@ -99,10 +99,12 @@ QmlContextScriptClass::queryProperty(Object *object, const Identifier &name,
     if (!bindContext)
         return 0;
 
+    bool includeTypes = true;
     while (bindContext) {
         QScriptClass::QueryFlags rv = 
-            queryProperty(bindContext, scopeObject, name, flags);
+            queryProperty(bindContext, scopeObject, name, flags, includeTypes);
         scopeObject = 0; // Only applies to the first context
+        includeTypes = false; // Only applies to the first context
         if (rv) return rv;
         bindContext = bindContext->parentContext();
     }
@@ -113,7 +115,8 @@ QmlContextScriptClass::queryProperty(Object *object, const Identifier &name,
 QScriptClass::QueryFlags 
 QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObject,
                                      const Identifier &name,
-                                     QScriptClass::QueryFlags flags)
+                                     QScriptClass::QueryFlags flags, 
+                                     bool includeTypes)
 {
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
@@ -124,7 +127,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
         return QScriptClass::HandlesReadAccess;
     }
 
-    if (cp->imports) { 
+    if (includeTypes && cp->imports) { 
         QmlTypeNameCache::Data *data = cp->imports->data(name);
 
         if (data)  {
@@ -144,7 +147,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     if (scopeObject) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(scopeObject, name, flags, 0);
+            ep->objectClass->queryProperty(scopeObject, name, flags, bindContext);
         if (rv) {
             lastScopeObject = scopeObject;
             lastContext = bindContext;
@@ -154,7 +157,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
 
     for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
         QScriptClass::QueryFlags rv = 
-            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, 0);
+            ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext);
 
         if (rv) {
             lastDefaultObject = ii;
@@ -225,9 +228,10 @@ void QmlContextScriptClass::setProperty(Object *object, const Identifier &name,
     QmlContextPrivate *cp = QmlContextPrivate::get(bindContext);
 
     if (lastScopeObject) {
-        ep->objectClass->setProperty(lastScopeObject, name, value);
+        ep->objectClass->setProperty(lastScopeObject, name, value, bindContext);
     } else {
-        ep->objectClass->setProperty(cp->defaultObjects.at(lastDefaultObject), name, value);
+        ep->objectClass->setProperty(cp->defaultObjects.at(lastDefaultObject), name, value,
+                                     bindContext);
     }
 }
 

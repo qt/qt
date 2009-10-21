@@ -44,6 +44,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <ctype.h>
+#include <errno.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -106,11 +107,18 @@ FileWriter::WriteResult FileWriter::writeFile(QString filePath, QByteArray conte
             char answer = 0;
             while (answer != 'y' && answer != 'n' && answer != 'a') {
 #if defined(Q_OS_WIN) && defined(_MSC_VER) && _MSC_VER >= 1400
-                scanf_s("%c", &answer);
+                int result = scanf_s("%c", &answer);
 #else
-                scanf("%c", &answer);
+                int result = scanf("%c", &answer);
 #endif
-                answer = tolower(answer);
+                if (1 == result)
+                    answer = tolower(answer);
+                else if (EOF == result) {
+                    if (EINTR == errno || EILSEQ == errno)
+                        continue;
+
+                    answer = 'n';
+                }
             }
 
             if(answer == 'n')

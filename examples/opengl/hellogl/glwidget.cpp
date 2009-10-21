@@ -150,10 +150,10 @@ void GLWidget::paintGL()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-    glTranslated(0.0, 0.0, -10.0);
-    glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+    glTranslatef(0.0, 0.0, -10.0);
+    glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
+    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
+    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
     logo->draw();
 }
 //! [7]
@@ -166,7 +166,11 @@ void GLWidget::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
+#ifdef QT_OPENGL_ES_1
+    glOrthof(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
+#else
     glOrtho(-0.5, +0.5, -0.5, +0.5, 4.0, 15.0);
+#endif
     glMatrixMode(GL_MODELVIEW);
 }
 //! [8]

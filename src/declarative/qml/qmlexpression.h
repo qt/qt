@@ -76,6 +76,8 @@ public:
     bool trackChange() const;
     void setTrackChange(bool);
 
+    QUrl sourceFile() const;
+    int lineNumber() const;
     void setSourceLocation(const QUrl &fileName, int line);
 
     QObject *scopeObject() const;

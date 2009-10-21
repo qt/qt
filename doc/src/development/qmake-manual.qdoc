@@ -920,7 +920,7 @@
     {deployment guide for Windows}.
 
 
-    \section1 S60
+    \section1 Symbian platform
 
     Features specific to this platform include handling of static data,
     capabilities, stack and heap size, compiler specific options, and unique
@@ -940,7 +940,7 @@
 
     \section2 Stack and heap size
 
-    Symbian uses predefined sizes for stacks and heaps. If an
+    The Symbian platform uses predefined sizes for stacks and heaps. If an
     application exceeds either limit, it may crash or fail to complete its
     task. Crashes that seem to have no reason can often be traced back to
     insufficient stack and/or heap sizes.
@@ -952,7 +952,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 130
 
-    The default values depend on the version of the S60 SDK you're using.
+    The default values depend on the version of the Symbian SDK you're using.
 
     \section2 Compiler specific options
 
@@ -983,8 +983,7 @@
     an official UID, please contact Nokia. Both \c SID and \c VID default to empty values.
 
     For more information about unique identifiers and their meaning for
-    Symbian applications, please refer to the
-    \l{http://www.symbian.com/developer/techlib/v9.2docs/doc_source/ToolsAndUtilities/BuildTools/UsingUids.guide.html}{respective S60 SDK documentation}.
+    Symbian applications, please refer to the Symbian SDK documentation.
 
     \section2 Capabilities
 
@@ -1000,8 +999,7 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 134
 
-    For more information about capabilities, please refer to the
-    \l{http://www.symbian.com/developer/techlib/v9.2docs/doc_source/guide/platsecsdk/index.html}{respective S60 SDK documentation}.
+    For more information about capabilities, please refer to the Symbian SDK documentation.
 */
 
 /*!
@@ -1095,7 +1093,7 @@
     \target BLD_INF_RULES
     \section1 BLD_INF_RULES
     
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
     
     Generic \c bld.inf file content can be specified with \c BLD_INF_RULES variables. 
     The section of \c bld.inf file where each rule goes is appended to 
@@ -1288,7 +1286,7 @@
     The build process for bundles is also influenced by
     the contents of the \l{#QMAKE_BUNDLE_DATA}{QMAKE_BUNDLE_DATA} variable.
 
-    These options only have an effect on Symbian:
+    These options only have an effect on the Symbian platform:
     
     \table 95%
     \header \o Option \o Description
@@ -1345,7 +1343,7 @@
     \target DEPLOYMENT
     \section1 DEPLOYMENT
 
-    \e {This is only used on Windows CE and Symbian.}
+    \e {This is only used on Windows CE and the Symbian platform.}
 
     Specifies which additional files will be deployed. Deployment means the
     transfer of files from the development system to the target device or
@@ -1363,8 +1361,8 @@
 
     The default deployment target path for Windows CE is
     \c{%CSIDL_PROGRAM_FILES%\target}, which usually gets expanded to
-    \c{\Program Files\target}. For Symbian, the default target is the application
-    private directory on the drive it is installed to.
+    \c{\Program Files\target}. For the Symbian platform, the default target
+is the application private directory on the drive it is installed to.
 
     It is also possible to specify multiple \c sources to be deployed on
     target \c paths. In addition, different variables can be used for
@@ -1375,10 +1373,10 @@
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 29
 
     \note In Windows CE all linked Qt libraries will be deployed to the path
-    specified by \c{myFiles.path}. In Symbian all libraries and executables
+    specified by \c{myFiles.path}. On Symbian platform all libraries and executables
     will always be deployed to the \\sys\\bin of the installation drive.
     
-    Since the Symbian build system automatically moves binaries to certain
+    Since the Symbian platform build system automatically moves binaries to certain
     directories under the epoc32 directory, custom plugins, executables or
     dynamically loadable libraries need special handling. When deploying
     extra executables or dynamically loadable libraries, the target path
@@ -1393,13 +1391,13 @@
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 128
 
-    In Symbian, generic PKG file content can also be specified with this
+    On the Symbian platform, generic PKG file content can also be specified with this
     variable. You can use either \c pkg_prerules or \c pkg_postrules to 
     pass raw data to PKG file. The strings in \c pkg_prerules are added before
     package-body and \c pkg_postrules after. The strings defined in 
     \c pkg_postrules or \c pkg_prerules are not parsed by qmake, so they 
     should be in a format understood by Symbian package generation tools. 
-    Please consult Symbian documentation for correct syntax.
+    Please consult the Symbian platform documentation for correct syntax.
     
     For example, to deploy DLL and add a new dependency: 
 
@@ -1424,7 +1422,7 @@
     override languages statement, you must override also package-header
     statement and all other statements which are language specific.
     
-    In Symbian, the \c default_deployment item specifies 
+    On the Symbian platform, the \c default_deployment item specifies 
     default platform dependencies. It can be overwritten if a more 
     restrictive set is needed - e.g. if a specific
     device is required to run the application.
@@ -1436,7 +1434,7 @@
     \target DEPLOYMENT_PLUGIN
     \section1 DEPLOYMENT_PLUGIN
 
-    \e {This is only used on Windows CE and Symbian.}
+    \e {This is only used on Windows CE and the Symbian platform.}
 
     This variable specifies the Qt plugins that will be deployed. All plugins
     available in Qt can be explicitly deployed to the device. See
@@ -1446,9 +1444,9 @@
     If the application depends on plugins, these plugins have to be specified 
     manually.
     
-    \note In Symbian, all plugins supported by this variable will be deployed
-    by default with Qt libraries, so generally using this variable is not 
-    needed.
+    \note On the Symbian platform, all plugins supported by this variable
+will be deployed by default with Qt libraries, so generally using this
+variable is not needed.
 
     For example:
 
@@ -1556,7 +1554,7 @@
     \target ICON
     \section1 ICON
     
-    This variable is used only in MAC and S60 to set the application icon.
+    This variable is used only in MAC and the Symbian platform to set the application icon.
     Please see \l{Setting the Application Icon}{the application icon documentation}
     for more information.
     
@@ -1623,10 +1621,10 @@
 
     This variable contains a list of libraries to be linked into the project.
     You can use the Unix \c -l (library) and -L (library path) flags and qmake
-    will do the correct thing with these libraries on Windows and Symbian
-    (namely this means passing the full path of the library to the linker). The
-    only limitation to this is the library must exist, for qmake to find which
-    directory a \c -l lib lives in.
+    will do the correct thing with these libraries on Windows and the
+    Symbian platform (namely this means passing the full path of the library to
+    the linker). The only limitation to this is the library must exist, for
+    qmake to find which directory a \c -l lib lives in.
 
     For example:
 
@@ -1647,7 +1645,8 @@
     explicitly specify the library to be used by including the \c{.lib}
     file name suffix.
 
-    \bold{Note:} On S60, the build system makes a distinction between shared and
+    \bold{Note:} On the Symbian platform, the build system makes a
+distinction between shared and
     static libraries. In most cases, qmake will figure out which library you
     are refering to, but in some cases you may have to specify it explicitly to
     get the expected behavior. This typically happens if you are building a
@@ -1693,7 +1692,7 @@
     \target MMP_RULES
     \section1 MMP_RULES
     
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
     
     Generic MMP file content can be specified with this variable. 
     
@@ -2013,8 +2012,9 @@
     the \c QMAKE_CXXFLAGS_DEBUG and \c QMAKE_CXXFLAGS_RELEASE variables,
     respectively.
 
-    \bold{Note:} On S60, this variable can be used to pass architecture specific
-    options to each compiler in the Symbian build system. For example:
+    \bold{Note:} On the Symbian platform, this variable can be used to pass
+architecture specific options to each compiler in the Symbian build system.
+For example:
 
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 131
 
@@ -2812,7 +2812,7 @@
     \target RSS_RULES
     \section1 RSS_RULES
     
-    \e {This is only used on Symbian.}    
+    \e {This is only used on the Symbian platform.}    
     
     Generic RSS file content can be specified with this variable. The syntax is 
     similar to \c MMP_RULES and \c BLD_INF_RULES.
@@ -2832,10 +2832,12 @@
     
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 145
     
-    This example will install the application to MyFolder in S60 application
-    shell. In addition it will make the application to be launched in background.
+    This example will install the application to MyFolder in the Symbian
+    platform application shell. In addition it will make the application to
+    be launched in background.
 
-    For detailed list of possible RSS statements, please refer to Symbian OS help.    
+    For detailed list of possible RSS statements, please refer to the
+    Symbian platform help.    
 
     \note You should not use \c RSS_RULES variable to set the following RSS statements:
     
@@ -2848,7 +2850,7 @@
     \target S60_VERSION
     \section1 S60_VERSION
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
     
     Contains the version number of the underlying S60 SDK; e.g. "5.0".
 
@@ -2918,15 +2920,15 @@
     \target TARGET.CAPABILITY
     \section1 TARGET.CAPABILITY
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies which platform capabilities the application should have. For more
-    information, please refer to the S60 SDK documentation.
+    information, please refer to the Symbian SDK documentation.
 
     \target TARGET.EPOCALLOWDLLDATA
     \section1 TARGET.EPOCALLOWDLLDATA
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies whether static data should be allowed in the application. Symbian
     disallows this by default in order to save memory. To use it, set this to 1.
@@ -2934,7 +2936,7 @@
     \target TARGET.EPOCHEAPSIZE
     \section1 TARGET.EPOCHEAPSIZE
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies the minimum and maximum heap size of the application. The program
     will refuse to run if the minimum size is not available when it starts. For
@@ -2945,7 +2947,7 @@
     \target TARGET.EPOCSTACKSIZE
     \section1 TARGET.EPOCSTACKSIZE
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies the maximum stack size of the application. For example:
 
@@ -2954,38 +2956,38 @@
     \target TARGET.SID
     \section1 TARGET.SID
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies which secure identifier to use for the target application or
-    library. For more information, see the S60 SDK documentation.
+    library. For more information, see the Symbian SDK documentation.
 
     \target TARGET.UID2
     \section1 TARGET.UID2
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies which unique identifier 2 to use for the target application or
     library. If this variable is not specified, it defaults to the same value
-    as TARGET.UID3. For more information, see the S60 SDK documentation.
+    as TARGET.UID3. For more information, see the Symbian SDK documentation.
 
     \target TARGET.UID3
     \section1 TARGET.UID3
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies which unique identifier 3 to use for the target application or
     library. If this variable is not specified, a UID3 suitable for development
     and debugging will be generated automatically. However, applications being
     released should always define this variable. For more information, see the
-    S60 SDK documentation.
+    Symbian SDK documentation.
 
     \target TARGET.VID
     \section1 TARGET.VID
 
-    \e {This is only used on Symbian.}
+    \e {This is only used on the Symbian platform.}
 
     Specifies which vendor identifier to use for the target application or
-    library. For more information, see the S60 SDK documentation.
+    library. For more information, see the Symbian SDK documentation.
 
     \section1 TARGET_EXT
 
@@ -3862,9 +3864,10 @@
 		\o Indicates that the output should not be added to the list of objects to be linked in.
 	\endtable
 
-    \note Symbian specific: Generating objects to be linked in is not supported in Symbian, 
-          so either the \c CONFIG option \c no_link or variable \c variable_out
-          should always be defined for extra compilers.
+    \note Symbian platform specific: Generating objects to be linked in is
+    not supported on the Symbian platform, so either the \c CONFIG option
+    \c no_link or variable \c variable_out should always be defined for
+    extra compilers.
     
 */
 

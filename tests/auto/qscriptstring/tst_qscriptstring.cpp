@@ -58,6 +58,7 @@ public:
 
 private slots:
     void test();
+    void hash();
 };
 
 tst_QScriptString::tst_QScriptString()
@@ -136,6 +137,22 @@ void tst_QScriptString::test()
         QVERIFY(!copy1.isValid());
         QVERIFY(!copy2.isValid());
     }
+}
+
+void tst_QScriptString::hash()
+{
+    QScriptEngine engine;
+    QHash<QScriptString, int> stringToInt;
+    QScriptString foo = engine.toStringHandle("foo");
+    QScriptString bar = engine.toStringHandle("bar");
+    QVERIFY(!stringToInt.contains(foo));
+    for (int i = 0; i < 1000000; ++i)
+        stringToInt.insert(foo, 123);
+    QCOMPARE(stringToInt.value(foo), 123);
+    QVERIFY(!stringToInt.contains(bar));
+    stringToInt.insert(bar, 456);
+    QCOMPARE(stringToInt.value(bar), 456);
+    QCOMPARE(stringToInt.value(foo), 123);
 }
 
 QTEST_MAIN(tst_QScriptString)

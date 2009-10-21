@@ -455,6 +455,8 @@ void QSqlDatabasePrivate::disable()
     The database connection is referred to by \a connectionName. The
     newly added database connection is returned.
 
+    If \a type is not available or could not be loaded, isValid() returns false.
+
     If \a connectionName is not specified, the new connection becomes
     the default connection for the application, and subsequent calls
     to database() without the connection name argument will return the

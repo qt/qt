@@ -137,6 +137,7 @@ public:
     friend class QPainter;
     friend class QFontEngineMac;
     friend class QX11PaintEngine;
+    friend Q_GUI_EXPORT int qt_paint_device_metric(const QPaintDevice *device, PaintDeviceMetric metric);
 };
 
 #ifdef QT3_SUPPORT

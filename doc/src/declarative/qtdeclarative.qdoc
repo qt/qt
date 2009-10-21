@@ -74,9 +74,9 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \list
 \o \l {Introduction to the QML language}
 \o \l {Tutorial}{Tutorial: 'Hello World'}
-\o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
-\o \l {advtutorial.html}{Advanced Tutorial: 'Same Game'}
+\o \l {advtutorial.html}{Tutorial: 'Same Game'}
 \o \l {QML Examples and Walkthroughs}
+\o \l {Using QML in C++ Applications} 
 \endlist
 
 \section1 Core QML Features:
@@ -88,7 +88,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {qmlmodels}{Data Models}
 \o \l {anchor-layout}{Anchor-based Layout}
 \o \l {qmlanimation}{Animation}
-\o \l {qmlmodules}{Modules}
+\o \l {qmlmodules.html}{Modules}
 \o \l {qmlfocus}{Keyboard Focus}
 \o \l {Extending types from QML}
 \endlist
@@ -104,4 +104,9 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Extending QML}
 \o \l {qtbinding}{QML/C++ Data Binding}
 \endlist
+
+\section1 Deprecated
+
+\o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
+
 */

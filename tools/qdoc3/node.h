@@ -175,13 +175,11 @@ class Node
 
     virtual QString fileBase() const;
 
-    static QString typeName(int i) { return typeNames[i]; }
-
  protected:
     Node(Type type, InnerNode *parent, const QString& name);
 
  private:
-    static QString typeNames[];
+
 #ifdef Q_WS_WIN
     Type typ;
     Access acc;
@@ -373,15 +371,19 @@ class QmlClassNode : public FakeNode
 class QmlPropGroupNode : public FakeNode
 {
  public:
-    QmlPropGroupNode(QmlClassNode* parent, const QString& name);
+    QmlPropGroupNode(QmlClassNode* parent, 
+                     const QString& name,
+                     bool attached);
     virtual ~QmlPropGroupNode() { }
 
     const QString& element() const { return name(); }
     void setDefault() { isdefault = true; }
     bool isDefault() const { return isdefault; }
+    bool isAttached() const { return att; }
 
  private:
     bool    isdefault;
+    bool    att;
 };
 
 class QmlPropertyNode : public LeafNode
@@ -389,7 +391,8 @@ class QmlPropertyNode : public LeafNode
  public:
     QmlPropertyNode(QmlPropGroupNode* parent, 
                     const QString& name,
-                    const QString& type);
+                    const QString& type,
+                    bool attached);
     virtual ~QmlPropertyNode() { }
 
     void setDataType(const QString& dataType) { dt = dataType; }
@@ -400,6 +403,7 @@ class QmlPropertyNode : public LeafNode
     QString qualifiedDataType() const { return dt; }
     bool isStored() const { return fromTrool(sto,true); }
     bool isDesignable() const { return fromTrool(des,false); }
+    bool isAttached() const { return att; }
 
     const QString& element() const { return parent()->name(); }
 
@@ -412,6 +416,7 @@ class QmlPropertyNode : public LeafNode
     QString dt;
     Trool   sto;
     Trool   des;
+    bool    att;
 };
 
 class QmlSignalNode : public LeafNode
@@ -502,8 +507,10 @@ class Parameter
 {
  public:
     Parameter() {}
-    Parameter(const QString& leftType, const QString& rightType = "",
-	       const QString& name = "", const QString& defaultValue = "");
+    Parameter(const QString& leftType, 
+              const QString& rightType = "",
+              const QString& name = "", 
+              const QString& defaultValue = "");
     Parameter(const Parameter& p);
 
     Parameter& operator=(const Parameter& p);
@@ -515,6 +522,8 @@ class Parameter
     const QString& rightType() const { return rig; }
     const QString& name() const { return nam; }
     const QString& defaultValue() const { return def; }
+
+    QString reconstruct(bool value = false) const;
 
  private:
     QString lef;
@@ -543,6 +552,7 @@ class FunctionNode : public LeafNode
     virtual ~FunctionNode() { }
 
     void setReturnType(const QString& returnType) { rt = returnType; }
+    void setParentPath(const QStringList& parentPath) { pp = parentPath; }
     void setMetaness(Metaness metaness) { met = metaness; }
     void setVirtualness(Virtualness virtualness) { vir = virtualness; }
     void setConst(bool conste) { con = conste; }
@@ -571,6 +581,10 @@ class FunctionNode : public LeafNode
     const FunctionNode *reimplementedFrom() const { return rf; }
     const QList<FunctionNode *> &reimplementedBy() const { return rb; }
     const PropertyNode *associatedProperty() const { return ap; }
+    const QStringList& parentPath() const { return pp; }
+
+    QStringList reconstructParams(bool values = false) const;
+    QString signature(bool values = false) const;
 
  private:
     void setAssociatedProperty(PropertyNode *property);
@@ -578,9 +592,10 @@ class FunctionNode : public LeafNode
     friend class InnerNode;
     friend class PropertyNode;
 
-    QString rt;
+    QString     rt;
+    QStringList pp;
 #ifdef Q_WS_WIN
-    Metaness met;
+    Metaness    met;
     Virtualness vir;
 #else
     Metaness met : 4;

@@ -119,6 +119,28 @@ OSStatus QMacFontPath::closePath(void *data)
 }
 
 
+
+void qmacfontengine_gamma_correct(QImage *image)
+{
+    extern uchar qt_pow_rgb_gamma[256];
+
+    // gamma correct the pixels back to linear color space...
+    int h = image->height();
+    int w = image->width();
+
+    for (int y=0; y<h; ++y) {
+        uint *pixels = (uint *) image->scanLine(y);
+        for (int x=0; x<w; ++x) {
+            uint p = pixels[x];
+            uint r = qt_pow_rgb_gamma[qRed(p)];
+            uint g = qt_pow_rgb_gamma[qGreen(p)];
+            uint b = qt_pow_rgb_gamma[qBlue(p)];
+            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
+        }
+    }
+}
+
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_5
 QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, const ATSFontRef &atsFontRef, const QFontDef &fontDef, bool kerning)
     : QFontEngineMulti(0)
@@ -138,9 +160,10 @@ QCoreTextFontEngineMulti::QCoreTextFontEngineMulti(const ATSFontFamilyRef &, con
 
     QCFString name;
     ATSFontGetName(atsFontRef, kATSOptionFlagsDefault, &name);
-    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pointSize);
-    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pointSize, 0);
-    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pointSize, 0, symbolicTraits, symbolicTraits);
+
+    QCFType<CTFontDescriptorRef> descriptor = CTFontDescriptorCreateWithNameAndSize(name, fontDef.pixelSize);
+    QCFType<CTFontRef> baseFont = CTFontCreateWithFontDescriptor(descriptor, fontDef.pixelSize, 0);
+    ctfont = CTFontCreateCopyWithSymbolicTraits(baseFont, fontDef.pixelSize, 0, symbolicTraits, symbolicTraits);
 
     // CTFontCreateCopyWithSymbolicTraits returns NULL if we ask for a trait that does
     // not exist for the given font. (for example italic)
@@ -533,7 +556,7 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     }
 }
 
-QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
+QImage QCoreTextFontEngine::imageForGlyph(glyph_t glyph, int margin, bool aa)
 {
     const glyph_metrics_t br = boundingBox(glyph);
     QImage im(qRound(br.width)+2, qRound(br.height)+2, QImage::Format_RGB32);
@@ -548,9 +571,10 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
                                              8, im.bytesPerLine(), colorspace,
                                              cgflags);
     CGContextSetFontSize(ctx, fontDef.pixelSize);
-    CGContextSetShouldAntialias(ctx, fontDef.pointSize > qt_antialiasing_threshold
-				&& !(fontDef.styleStrategy & QFont::NoAntialias));
-    CGContextSetShouldSmoothFonts(ctx, false);
+    CGContextSetShouldAntialias(ctx, aa ||
+                                (fontDef.pointSize > qt_antialiasing_threshold
+                                 && !(fontDef.styleStrategy & QFont::NoAntialias)));
+    CGContextSetShouldSmoothFonts(ctx, aa);
     CGAffineTransform oldTextMatrix = CGContextGetTextMatrix(ctx);
     CGAffineTransform cgMatrix = CGAffineTransformMake(1, 0, 0, 1, 0, 0);
 
@@ -585,6 +609,13 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
 
     CGContextRelease(ctx);
 
+    return im;
+}
+
+QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
+{
+    QImage im = imageForGlyph(glyph, 0, false);
+
     QImage indexed(im.width(), im.height(), QImage::Format_Indexed8);
     QVector<QRgb> colors(256);
     for (int i=0; i<256; ++i)
@@ -602,6 +633,16 @@ QImage QCoreTextFontEngine::alphaMapForGlyph(glyph_t glyph)
     }
 
     return indexed;
+}
+
+QImage QCoreTextFontEngine::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTransform &x)
+{
+    if (x.type() >= QTransform::TxScale)
+        return QFontEngine::alphaRGBMapForGlyph(glyph, margin, x);
+
+    QImage im = imageForGlyph(glyph, margin, true);
+    qmacfontengine_gamma_correct(&im);
+    return im;
 }
 
 void QCoreTextFontEngine::recalcAdvances(int numGlyphs, QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
@@ -1504,19 +1545,7 @@ QImage QFontEngineMac::alphaRGBMapForGlyph(glyph_t glyph, int margin, const QTra
         im = im.transformed(t);
     }
 
-    extern uchar qt_pow_rgb_gamma[256];
-
-    // gamma correct the pixels back to linear color space...
-    for (int y=0; y<im.height(); ++y) {
-        uint *pixels = (uint *) im.scanLine(y);
-        for (int x=0; x<im.width(); ++x) {
-            uint p = pixels[x];
-            uint r = qt_pow_rgb_gamma[qRed(p)];
-            uint g = qt_pow_rgb_gamma[qGreen(p)];
-            uint b = qt_pow_rgb_gamma[qBlue(p)];
-            pixels[x] = (r << 16) | (g << 8) | b | 0xff000000;
-        }
-    }
+    qmacfontengine_gamma_correct(&im);
 
     return im;
 }

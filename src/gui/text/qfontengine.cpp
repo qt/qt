@@ -1160,7 +1160,7 @@ Q_GLOBAL_STATIC_WITH_INITIALIZER(QVector<QRgb>, qt_grayPalette, {
     QRgb *it = x->data();
     for (int i = 0; i < x->size(); ++i, ++it)
         *it = 0xff000000 | i | (i<<8) | (i<<16);
-});
+})
 
 const QVector<QRgb> &QFontEngine::grayPalette()
 {

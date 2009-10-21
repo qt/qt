@@ -159,7 +159,11 @@ void tst_QGraphicsTransform::scale()
 // definitions correct for the difference.
 static inline bool fuzzyCompare(qreal p1, qreal p2)
 {
-    return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
+    // increase delta on small machines using float instead of double
+    if (sizeof(qreal) == sizeof(float))
+        return (qAbs(p1 - p2) <= 0.00002f * qMin(qAbs(p1), qAbs(p2)));
+    else
+        return (qAbs(p1 - p2) <= 0.00001f * qMin(qAbs(p1), qAbs(p2)));
 }
 static bool fuzzyCompare(const QTransform& t1, const QTransform& t2)
 {

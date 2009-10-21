@@ -112,7 +112,7 @@ MMF::MediaType MMF::MediaObject::fileMediaType
     MediaType result = MediaTypeUnknown;
 
     if (openRecognizer()) {
-        
+
         const QHBufC fileNameSymbian(QDir::toNativeSeparators(fileName));
 
         m_file.Close();

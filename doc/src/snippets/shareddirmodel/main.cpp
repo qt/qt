@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
     QSplitter *splitter = new QSplitter;
 
 //! [2] //! [3]
-    QDirModel *model = new QDirModel;
+    QFileSystemModel *model = new QFileSystemModel;
+    model->setRootPath(QDir::currentPath());
 //! [0] //! [2] //! [4] //! [5]
     QTreeView *tree = new QTreeView(splitter);
 //! [3] //! [6]
@@ -74,7 +75,7 @@ int main(int argc, char *argv[])
     list->setSelectionModel(selection);
 
 //! [8]
-    splitter->setWindowTitle("Two views onto the same directory model");
+    splitter->setWindowTitle("Two views onto the same file system model");
     splitter->show();
     return app.exec();
 }

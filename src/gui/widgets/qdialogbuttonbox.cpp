@@ -468,18 +468,6 @@ void QDialogButtonBoxPrivate::layoutButtons()
 
     if (center)
         buttonLayout->addStretch();
-
-#ifdef QT_SOFTKEYS_ENABLED
-    QWidget *dialog = 0;
-    QWidget *p = q;
-    while (p && !p->isWindow()) {
-        p = p->parentWidget();
-        if (dialog = qobject_cast<QDialog *>(p))
-            break;
-    }
-    if (dialog)
-        q->setFixedSize(0, 0);
-#endif
 }
 
 QPushButton *QDialogButtonBoxPrivate::createButton(QDialogButtonBox::StandardButton sbutton,
@@ -572,7 +560,7 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     Q_Q(QDialogButtonBox);
     QAction::SoftKeyRole softkeyRole;
 
-    QAction *action = new QAction(button->text(), q);
+    QAction *action = new QAction(button->text(), button);
 
     switch (role) {
     case ApplyRole:
@@ -593,7 +581,6 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     }
     QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     action->setSoftKeyRole(softkeyRole);
-    action->setEnabled(button->isEnabled());
     return action;
 }
 #endif
@@ -1196,10 +1183,12 @@ bool QDialogButtonBox::event(QEvent *event)
         if (!hasDefault && firstAcceptButton)
             firstAcceptButton->setDefault(true);
 #ifdef QT_SOFTKEYS_ENABLED
-        if (dialog)
+        if (dialog) {
+            setFixedSize(0,0);
             dialog->addActions(d->softKeyActions.values());
-        else
+        } else {
             addActions(d->softKeyActions.values());
+        }
 #endif
     }else if (event->type() == QEvent::LanguageChange) {
         d->retranslateStrings();

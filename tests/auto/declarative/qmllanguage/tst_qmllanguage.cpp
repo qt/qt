@@ -126,14 +126,14 @@ void tst_qmllanguage::initTestCase()
     // For utf-8 locale, this will be data/I18nType??????????.qml where ?????????? is 5 8-bit characters, UTF-8 encoded
     QFile in(TEST_FILE(QLatin1String("I18nType30.qml")).toLocalFile());
     QVERIFY(in.open(QIODevice::ReadOnly));
-    QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile());
+    QFile out(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile());
     QVERIFY(out.open(QIODevice::WriteOnly));
     out.write(in.readAll());
 }
 
 void tst_qmllanguage::cleanupTestCase()
 {
-    QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\241\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
+    QVERIFY(QFile::remove(TEST_FILE(QString::fromUtf8("I18nType\303\201\303\242\303\243\303\244\303\245.qml")).toLocalFile()));
 }
 
 void tst_qmllanguage::errors_data()
@@ -711,6 +711,7 @@ void tst_qmllanguage::i18n_data()
     QTest::newRow("i18nDeclaredPropertyUse") << "i18nDeclaredPropertyUse.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 15");
     QTest::newRow("i18nScript") << "i18nScript.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 20");
     QTest::newRow("i18nType") << "i18nType.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 30");
+    QTest::newRow("i18nNameSpace") << "i18nNameSpace.qml" << QString::fromUtf8("Test \303\241\303\242\303\243\303\244\303\245: 40");
 }
 
 void tst_qmllanguage::i18n()

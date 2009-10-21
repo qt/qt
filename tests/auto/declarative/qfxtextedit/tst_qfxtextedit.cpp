@@ -433,10 +433,10 @@ void tst_qfxtextedit::selection()
 
 void tst_qfxtextedit::cursorDelegate()
 {
-    QmlView* view = new QmlView(0);
-    view->show();
-    view->setUrl(QUrl("data/cursorTest.qml"));
+    QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->execute();
+    view->show();
+    view->setFocus();
     QFxTextEdit *textEditObject = view->root()->findChild<QFxTextEdit*>("textEditObject");
     QVERIFY(textEditObject != 0);
     QVERIFY(textEditObject->findChild<QFxItem*>("cursorInstance"));
@@ -467,6 +467,7 @@ void tst_qfxtextedit::navigation()
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
     canvas->show();
+    canvas->setFocus();
 
     QVERIFY(canvas->root() != 0);
 
@@ -474,6 +475,7 @@ void tst_qfxtextedit::navigation()
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
+    QEXPECT_FAIL("", "Depends on QT-2236", Abort);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Right);

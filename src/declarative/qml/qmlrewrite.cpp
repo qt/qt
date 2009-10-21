@@ -71,6 +71,7 @@ QString RewriteBinding::rewrite(QString code, unsigned position,
     TextWriter w;
     _writer = &w;
     _position = position;
+    _inLoop = 0;
 
     accept(node);
 
@@ -111,10 +112,78 @@ bool RewriteBinding::visit(AST::Block *ast)
 
 bool RewriteBinding::visit(AST::ExpressionStatement *ast)
 {
-    unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
-    _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
+    if (! _inLoop) {
+        unsigned startOfExpressionStatement = ast->firstSourceLocation().begin() - _position;
+        _writer->replace(startOfExpressionStatement, 0, QLatin1String("return "));
+    }
 
     return false;
+}
+
+bool RewriteBinding::visit(AST::DoWhileStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::DoWhileStatement *)
+{
+    --_inLoop;
+}
+
+bool RewriteBinding::visit(AST::WhileStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::WhileStatement *)
+{
+    --_inLoop;
+}
+
+bool RewriteBinding::visit(AST::ForStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::ForStatement *)
+{
+    --_inLoop;
+}
+
+bool RewriteBinding::visit(AST::LocalForStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::LocalForStatement *)
+{
+    --_inLoop;
+}
+
+bool RewriteBinding::visit(AST::ForEachStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::ForEachStatement *)
+{
+    --_inLoop;
+}
+
+bool RewriteBinding::visit(AST::LocalForEachStatement *ast)
+{
+    ++_inLoop;
+    return true;
+}
+
+void RewriteBinding::endVisit(AST::LocalForEachStatement *)
+{
+    --_inLoop;
 }
 
 } // namespace QmlRewrite

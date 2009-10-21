@@ -71,6 +71,8 @@ struct Section
         : name(name0), 
           singularMember(singularMember0),
 	  pluralMember(pluralMember0) { }
+    void appendMember(Node* node) { members.append(node); }
+    void appendReimpMember(Node* node) { reimpMembers.append(node); }
 };
 
 struct FastSection

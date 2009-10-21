@@ -213,9 +213,9 @@
 
     The GNOME developer website is at \l{http://developer.gnome.org/}.
     
-    \section1 Setting the Application Icon on S60 platforms
+    \section1 Setting the Application Icon on the Symbian platform
     
-    In order to set the application icon for S60 applications, you need
+    In order to set the application icon for Symbian platform applications, you need
     an SVG-T icon. For information on how to create SVG-T compliant icons,
     please refer to
     \l{http://wiki.forum.nokia.com/index.php/How_to_create_application_icon(SVG)_in_S60_3rd_edition/}

@@ -331,8 +331,22 @@ void QGLFBOGLPaintDevice::setFBO(QGLFramebufferObject* f,
     }
 }
 
+QGLContext *QGLFBOGLPaintDevice::context() const
+{
+    QGLContext *fboContext = const_cast<QGLContext *>(fbo->d_ptr->fbo_guard.context());
+    QGLContext *currentContext = const_cast<QGLContext *>(QGLContext::currentContext());
+
+    if (QGLContextPrivate::contextGroup(fboContext) == QGLContextPrivate::contextGroup(currentContext))
+        return currentContext;
+    else
+        return fboContext;
+}
+
 void QGLFBOGLPaintDevice::ensureActiveTarget()
 {
+    if (QGLContext::currentContext() != context())
+        context()->makeCurrent();
+
     QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
     Q_ASSERT(ctx);
     const GLuint fboId = fbo->d_func()->fbo();
@@ -344,6 +358,9 @@ void QGLFBOGLPaintDevice::ensureActiveTarget()
 
 void QGLFBOGLPaintDevice::beginPaint()
 {
+    if (QGLContext::currentContext() != context())
+        context()->makeCurrent();
+
     // We let QFBO track the previously bound FBO rather than doing it
     // ourselves here. This has the advantage that begin/release & bind/end
     // work as expected.
@@ -451,6 +468,7 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
 
         QT_CHECK_GLERROR();
         valid = checkFramebufferStatus();
+        glBindTexture(target, 0);
 
         color_buffer = 0;
     } else {
@@ -819,7 +837,8 @@ QGLFramebufferObject::~QGLFramebufferObject()
 
     if (isValid() && ctx) {
         QGLShareContextScope scope(ctx);
-        glDeleteTextures(1, &d->texture);
+        if (d->texture)
+            glDeleteTextures(1, &d->texture);
         if (d->color_buffer)
             glDeleteRenderbuffers(1, &d->color_buffer);
         if (d->depth_stencil_buffer)
@@ -988,7 +1007,7 @@ QImage QGLFramebufferObject::toImage() const
     bool wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, format().textureTarget() != GL_RGB, true);
+    QImage image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 
@@ -1187,7 +1206,8 @@ QGLFramebufferObject::Attachment QGLFramebufferObject::attachment() const
 bool QGLFramebufferObject::isBound() const
 {
     Q_D(const QGLFramebufferObject);
-    return QGLContext::currentContext()->d_ptr->current_fbo == d->fbo();
+    const QGLContext *current = QGLContext::currentContext();
+    return current ? current->d_ptr->current_fbo == d->fbo() : false;
 }
 
 /*!

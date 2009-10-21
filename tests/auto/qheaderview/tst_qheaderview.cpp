@@ -1836,7 +1836,7 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
     model.insertRow(1);
     view.showSection(2);
     QCOMPARE(view.sectionSize(0), 100);
-    QCOMPARE(view.sectionSize(1), 30);
+    QCOMPARE(view.sectionSize(1), view.defaultSectionSize());
     QCOMPARE(view.sectionSize(2), 50);
 }
 

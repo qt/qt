@@ -44,36 +44,61 @@
 \title Network Transparency
 
 QML supports network transparency by using URLs (rather than file names) for all
-references from a QML document to other content. Since a \i relative URL is the same
-as a relative file, development of QML on regular file systems remains simple.
+references from a QML document to other content:
 
-\section1 Accessing Network Reesources from QML
+\qml
+Image {
+    source: "http://www.example.com/images/logo.png"
+}
+\endqml
+
+Since a \e relative URL is the same
+as a relative file, development of QML on regular file systems remains simple:
+
+\qml
+Image {
+    source: "images/logo.png"
+}
+\endqml
+
+Network transparency is supported throughout QML, for example:
+
+\list
+\o Scripts - the \c source property of \l Script is a URL
+\o Fonts - the \c source property of FontLoader is a URL
+\o WebViews - the \c url property of WebView (obviously!)
+\endlist
+
+Even QML types themselves can be on the network - if \l qmlviewer is used to load
+\tt http://example.com/mystuff/Hello.qml and that content refers to a type "World", this
+will load from \tt http://example.com/mystuff/World.qml just as it would for a local file.
+Any other resources that \tt Hello.qml referred to, usually by a relative URL, would
+similarly be loaded from the network.
+
+
+\section1 Relative vs. Absolute URLs
 
 Whenever an object has a property of type URL (QUrl), assigning a string to that
 property will actually assign an absolute URL - by resolving the string against
 the URL of the document where the string is used.
 
-For example, consider this content in \c{http://example.com/mystuff/test.qml}:
+For example, consider this content in \tt{http://example.com/mystuff/test.qml}:
 
-\code
+\qml
 Image {
     source: "images/logo.png"
 }
-\endcode
+\endqml
 
-The \l Image source property will be assigned \c{http://example.com/mystuff/images/logo.png},
-but while the QML is being developed, in say \c C:\User\Fred\Documents\MyStuff\test.qml, it will be assigned
-\c C:\User\Fred\Documents\MyStuff\images\logo.png.
+The \l Image source property will be assigned \tt{http://example.com/mystuff/images/logo.png},
+but while the QML is being developed, in say \tt C:\User\Fred\Documents\MyStuff\test.qml, it will be assigned
+\tt C:\User\Fred\Documents\MyStuff\images\logo.png.
 
-Network transparency is supported throughout QML:
+If the string assigned to a URL is already an absolute URL, then "resolving" does
+not change it and the URL is assigned directly.
 
-\list
-\o Types - if the \c test.qml file above used "Hello { }", that would refer to \c http://example.com/mystuff/Hello.qml
-\o Scripts - the \c source property of \l Script is a URL
-\o Images - the \c source property of \l Image and similar types is a URL
-\o Fonts - the \c source property of FontLoader is a URL
-\o WebViews - the \c url property of WebView may be assigned a relative URL string
-\endlist
+
+\section1 Progressive Loading
 
 Because of the declarative nature of QML and the asynchronous nature of network resources,
 objects which reference network resource generally change state as the network resource loads.
@@ -89,25 +114,27 @@ Note that when objects reference local files they immediately have the \c Ready 
 to remain network transparent should not rely on this. Future versions of QML may also use asynchronous local file I/O
 to improve performance.
 
-\section1 Limitations
 
-The \c import statement only works network transparently if it has an "as" clause.
+\section1 Accessing Network Services
 
-\list
-\o \c{import "dir"} only works on local file systems
-\o \c{import libraryUri} only works on local file systems
-\o \c{import "dir" as D} works network transparently
-\o \c{import libraryUrl as U} works network transparently
-\endlist
+QML types such as XmlListModel, and JavaScript classes like XMLHttpRequest are intended
+entirely for accessing network services, which usually respond with references to
+content by URLs that can then be used directly in QML. For example, using these facilities
+to access an on-line photography service would provide the QML application with URLs to
+photographs, which can be directly set on an \l Image \c source property.
+
+See the \tt demos/declarative/flickr for a real demonstration of this.
+
 
 \section1 Configuring the Network Access Manager
 
 All network access from QML is managed by a QNetworkAccessManager set on the QmlEngine which executes the QML.
 By default, this is an unmodified Qt QNetworkAccessManager. You may set a different manager using
 QmlEngine::setNetworkAccessManager() as appropriate for the policies of your application.
-For eample, the \l qmlviewer tool sets a new QNetworkAccessManager which
+For example, the \l qmlviewer tool sets a new QNetworkAccessManager which
 trusts HTTP Expiry headers to avoid network cache checks, allows HTTP Pipelining, adds a persistent HTTP CookieJar,
 a simple disk cache, and supports proxy settings.
+
 
 \section1 QRC Resources
 
@@ -122,5 +149,18 @@ that is compiled into the executable:
 
 The content itself can then use relative URLs, and so be transparently unaware that the content is
 compiled into the executable.
+
+
+\section1 Limitations
+
+The \c import statement only works network transparently if it has an "as" clause.
+
+\list
+\o \c{import "dir"} only works on local file systems
+\o \c{import libraryUri} only works on local file systems
+\o \c{import "dir" as D} works network transparently
+\o \c{import libraryUrl as U} works network transparently
+\endlist
+
 
 */

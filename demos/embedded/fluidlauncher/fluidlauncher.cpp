@@ -265,6 +265,10 @@ void FluidLauncher::demoFinished()
 {
     setCurrentWidget(pictureFlowWidget);
     inputTimer->start();
+
+    // Bring the Fluidlauncher to the foreground to allow selecting another demo
+    raise();
+    activateWindow();
 }
 
 void FluidLauncher::changeEvent(QEvent* event)

@@ -16,9 +16,11 @@ QT += sql
 
 symbian {
     TARGET.EPOCHEAPSIZE="0x100000 0x1000000 // Min 1Mb, max 16Mb"
-    contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
-        sqlite.path = /sys/bin
-        sqlite.sources = sqlite3.dll 
-        DEPLOYMENT += sqlite
+    qt_not_deployed {
+        contains(S60_VERSION, 3.1)|contains(S60_VERSION, 3.2)|contains(S60_VERSION, 5.0) {
+            sqlite.path = /sys/bin
+            sqlite.sources = sqlite3.dll
+            DEPLOYMENT += sqlite
+        }
     }
 }

@@ -668,6 +668,7 @@ void QEventDispatcherSymbian::closingDown()
 bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags flags )
 {
     bool handledAnyEvent = false;
+    bool oldNoSocketEventsValue = m_noSocketEvents;
 
     QT_TRY {
         Q_D(QAbstractEventDispatcher);
@@ -686,7 +687,6 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             block = false;
         }
 
-        bool oldNoSocketEventsValue = m_noSocketEvents;
         if (flags & QEventLoop::ExcludeSocketNotifiers) {
             m_noSocketEvents = true;
         } else {
@@ -749,11 +749,11 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
             block = false;
             if (timeState == TimeStarted && time.elapsed() > 100) {
                 priority = m_processHandle.Priority();
-                m_processHandle.SetPriority(EPriorityLow);
+                m_processHandle.SetPriority(EPriorityBackground);
                 time.start();
                 // Slight chance of race condition in the next lines, but nothing fatal
                 // will happen, just wrong priority.
-                if (m_processHandle.Priority() == EPriorityLow) {
+                if (m_processHandle.Priority() == EPriorityBackground) {
                     m_processHandle.SetPriority(priority);
                 }
             }
@@ -762,13 +762,13 @@ bool QEventDispatcherSymbian::processEvents ( QEventLoop::ProcessEventsFlags fla
         };
 
         emit awake();
-
-        m_noSocketEvents = oldNoSocketEventsValue;
     } QT_CATCH (const std::exception& ex) {
 #ifndef QT_NO_EXCEPTIONS
         CActiveScheduler::Current()->Error(qt_symbian_exception2Error(ex));
 #endif
     }
+
+    m_noSocketEvents = oldNoSocketEventsValue;
 
     return handledAnyEvent;
 }

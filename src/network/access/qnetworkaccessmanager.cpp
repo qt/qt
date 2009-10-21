@@ -95,9 +95,10 @@ static void ensureInitialized()
 /*!
     \class QNetworkAccessManager
     \brief The QNetworkAccessManager class allows the application to
-    post network requests and receive replies
+    send network requests and receive replies
     \since 4.4
 
+    \ingroup network
     \inmodule QtNetwork
     \reentrant
 

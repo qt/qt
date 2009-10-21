@@ -183,6 +183,10 @@ public:
 
     void agentDeleted(QScriptEngineAgent *agent);
 
+    void setCurrentException(QScriptValue exception) { m_currentException = exception; }
+    QScriptValue currentException() const { return m_currentException; }
+    void clearCurrentException() { m_currentException.d_ptr.reset(); }
+
 #ifndef QT_NO_QOBJECT
     JSC::JSValue newQObject(QObject *object,
         QScriptEngine::ValueOwnership ownership = QScriptEngine::QtOwnership,
@@ -263,6 +267,7 @@ public:
     QSet<QString> extensionsBeingImported;
     
     QHash<intptr_t, QScript::UStringSourceProviderWithFeedback*> loadedScripts;
+    QScriptValue m_currentException;
 
 #ifndef QT_NO_QOBJECT
     QHash<QObject*, QScript::QObjectData*> m_qobjectData;
@@ -466,6 +471,22 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
 {
     JSC::ExecState *exec = engine->currentFrame;
     return property(JSC::Identifier(exec, name), resolveMode);
+}
+
+inline void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
+{
+    if (engine)
+        return engine->allocateScriptValuePrivate(size);
+    return qMalloc(size);
+}
+
+inline void QScriptValuePrivate::operator delete(void *ptr)
+{
+    QScriptValuePrivate *d = reinterpret_cast<QScriptValuePrivate*>(ptr);
+    if (d->engine)
+        d->engine->freeScriptValuePrivate(d);
+    else
+        qFree(d);
 }
 
 inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)

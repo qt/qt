@@ -70,8 +70,9 @@ public:
     QmlObjectScriptClass(QmlEngine *);
     ~QmlObjectScriptClass();
 
-    QScriptValue newQObject(QObject *);
+    QScriptValue newQObject(QObject *, int type = QMetaType::QObjectStar);
     QObject *toQObject(const QScriptValue &) const;
+    int objectType(const QScriptValue &) const;
 
     enum QueryMode { IncludeAttachedProperties, SkipAttachedProperties };
 
@@ -79,7 +80,8 @@ public:
                                            QScriptClass::QueryFlags flags, 
                                            QmlContext *evalContext);
     QScriptValue property(QObject *, const Identifier &);
-    void setProperty(QObject *, const Identifier &name, const QScriptValue &);
+    void setProperty(QObject *, const Identifier &name, const QScriptValue &,
+                     QmlContext *evalContext = 0);
 
 protected:
     virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 

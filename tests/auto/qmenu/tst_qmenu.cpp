@@ -675,7 +675,13 @@ void tst_QMenu::activeSubMenuPosition()
 #ifdef Q_OS_WINCE_WM
     QSKIP("Not true for Windows Mobile Soft Keys", SkipSingle);
 #endif
+
+#ifdef Q_OS_SYMBIAN
+    // On Symbian, QS60Style::pixelMetric(QStyle::PM_SubMenuOverlap) is different with other styles.
+    QVERIFY(sub->pos().x() < main->pos().x());
+#else
     QVERIFY(sub->pos().x() > main->pos().x());
+#endif
     QCOMPARE(sub->activeAction(), subAction);
 }
 
@@ -778,6 +784,11 @@ void tst_QMenu::menuSizeHint()
     int maxWidth =0;
     QRect result;
     foreach(QAction *action, menu.actions()) {
+#ifdef QT_SOFTKEYS_ENABLED
+        // Softkey actions are not widgets and have no geometry.
+        if (menu.actionGeometry(action).topLeft() == QPoint(0,0))
+            continue;
+#endif
         maxWidth = qMax(maxWidth, menu.actionGeometry(action).width());
         result |= menu.actionGeometry(action);
         QCOMPARE(result.x(), left + hmargin + panelWidth);
@@ -812,7 +823,13 @@ public:
 
 void tst_QMenu::task258920_mouseBorder()
 {
+#ifdef Q_OS_WINCE_WM
+    QSKIP("Mouse move related signals for Windows Mobile unavailable", SkipAll);
+#endif
     Menu258920 menu;
+    // On Symbian, styleHint(QStyle::SH_Menu_MouseTracking) in QS60Style is false.
+    // For other styles which inherit from QWindowsStyle, the value is true.
+    menu.setMouseTracking(true);
     QAction *action = menu.addAction("test");
 
     menu.popup(QApplication::desktop()->availableGeometry().center());

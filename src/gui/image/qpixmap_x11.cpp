@@ -319,6 +319,11 @@ QX11PixmapData::QX11PixmapData(PixelType type)
 {
 }
 
+QPixmapData *QX11PixmapData::createCompatiblePixmapData() const
+{
+    return new QX11PixmapData(pixelType());
+}
+
 void QX11PixmapData::resize(int width, int height)
 {
     setSerialNumber(++qt_pixmap_serial);
