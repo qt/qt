@@ -90,7 +90,7 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
     QGesture *dummy = recognizer->createGesture(0);
     if (!dummy) {
         qWarning("QGestureManager::registerGestureRecognizer: "
-                 "the recognizer doesn't provide gesture object");
+                 "the recognizer fails to create a gesture object, skipping registration.");
         return Qt::GestureType(0);
     }
     Qt::GestureType type = dummy->gestureType();
