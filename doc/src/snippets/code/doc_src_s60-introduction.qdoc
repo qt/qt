@@ -50,16 +50,16 @@
 
 //! [2]
     qmake
-    make debug-winscw release-armv6
+    make debug-winscw release-armv5
     make sis
 //! [2]
 
 //! [3]
-   make sis QT_SIS_TARGET=debug-armv6
+   make sis QT_SIS_TARGET=debug-armv5
 //! [3]
 
 //! [4]
-   set QT_SIS_TARGET=debug-armv6
+   set QT_SIS_TARGET=debug-armv5
    make sis
 //! [4]
 

@@ -85,10 +85,10 @@ Where parameters are as follows:
      passphrase              = The certificate's private key file's passphrase
 
 Example:
-     createpackage.pl fluidlauncher_template.pkg release-armv6
+     createpackage.pl fluidlauncher_template.pkg release-armv5
      
 Example with certfile:
-     createpackage.pl -c=mycerts.txt fluidlauncher_template.pkg release-armv6
+     createpackage.pl -c=mycerts.txt fluidlauncher_template.pkg release-armv5
      
      Content of 'mycerts.txt' must be something like this:
         # This is comment line, also the empty lines are ignored

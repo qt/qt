@@ -150,8 +150,8 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
     t << "first: default" << endl;
     if (debugPlatforms.contains("winscw"))
         t << "default: debug-winscw";
-    else if (debugPlatforms.contains("armv6"))
-        t << "default: debug-armv6";
+    else if (debugPlatforms.contains("armv5"))
+        t << "default: debug-armv5";
     else if (debugPlatforms.size())
         t << "default: debug-" << debugPlatforms.first();
     else
@@ -182,7 +182,7 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
 
-        // For more specific builds, targets are in this form: build-platform, e.g. release-armv6
+        // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
             t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;

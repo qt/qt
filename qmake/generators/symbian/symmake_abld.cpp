@@ -224,8 +224,8 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
     t << "first: default" << endl;
     if (debugPlatforms.contains("winscw"))
         t << "default: debug-winscw";
-    else if (debugPlatforms.contains("armv6"))
-        t << "default: debug-armv6";
+    else if (debugPlatforms.contains("armv5"))
+        t << "default: debug-armv5";
     else if (debugPlatforms.size())
         t << "default: debug-" << debugPlatforms.first();
     else
@@ -259,7 +259,7 @@ void SymbianAbldMakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, bool
         }
         t << endl;
 
-        // For more specific builds, targets are in this form: build-platform, e.g. release-armv6
+        // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": $(ABLD)" << endl;
             t << "\t$(ABLD)" << testClause << " build " << item << " udeb" << endl;

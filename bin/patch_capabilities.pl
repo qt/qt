@@ -53,7 +53,7 @@ sub Usage() {
     print("capabilities supported by self-signed certificates.\n");
     print("\n *** NOTE: If *_template.pkg file is given, 'target-platform' is REQUIRED. ***\n");
     print("\nUsage: patch_capabilities.pl pkg_filename <target-platform> [capability list]\n");
-    print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv6 \"All -TCB\"\n");
+    print("\nE.g. patch_capabilities.pl myapp_template.pkg release-armv5 \"All -TCB\"\n");
     exit();
 }
 
