@@ -27489,7 +27489,7 @@ static char *utf8ToMbcs(const char *zFilename){
 ** WindowsCE does not have a localtime() function.  So create a
 ** substitute.
 */
-struct tm *__cdecl localtime(const time_t *t)
+static struct tm *__cdecl localtime(const time_t *t)
 {
   static struct tm y;
   FILETIME uTm, lTm;
