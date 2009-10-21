@@ -353,6 +353,10 @@ QString CppCodeMarker::markedUpQmlItem(const Node* node, bool summary)
     QString name = taggedQmlNode(node);
     if (summary) {
 	name = linkTag(node,name);
+    } else if (node->type() == Node::QmlProperty) {
+        const QmlPropertyNode* pn = static_cast<const QmlPropertyNode*>(node);
+        if (pn->isAttached())
+            name.prepend(pn->element() + QLatin1Char('.'));
     }
     name = "<@name>" + name + "</@name>";
     QString synopsis = name;
