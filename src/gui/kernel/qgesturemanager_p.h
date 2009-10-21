@@ -79,6 +79,8 @@ public:
     // declared in qapplication.cpp
     static QGestureManager* instance();
 
+    void cleanupCachedGestures(QObject *target, Qt::GestureType type);
+
 protected:
     void timerEvent(QTimerEvent *event);
     bool filterEventThroughContexts(const QMap<QObject *, Qt::GestureType> &contexts,

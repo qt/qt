@@ -280,6 +280,7 @@ protected:
     }
 };
 
+// TODO rename to sendGestureSequence
 static void sendCustomGesture(CustomEvent *event, QObject *object, QGraphicsScene *scene = 0)
 {
     for (int i = CustomGesture::SerialMaybeThreshold;
@@ -322,6 +323,7 @@ private slots:
     void multipleGesturesInTree();
     void multipleGesturesInComplexTree();
     void testMapToScene();
+    void ungrabGesture();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1179,6 +1181,75 @@ void tst_Gestures::testMapToScene()
     event.setWidget(view.viewport());
 
     QCOMPARE(event.mapToScene(origin + QPoint(100, 200)), view.mapToScene(QPoint(100, 200)));
+}
+
+void tst_Gestures::ungrabGesture() // a method on QWidget
+{
+    class MockGestureWidget : public GestureWidget {
+    public:
+        MockGestureWidget(const char *name = 0, QWidget *parent = 0)
+            : GestureWidget(name, parent) { }
+
+
+        QSet<QGesture*> gestures;
+    protected:
+        bool event(QEvent *event)
+        {
+            if (event->type() == QEvent::Gesture) {
+                QGestureEvent *gestureEvent = static_cast<QGestureEvent*>(event);
+                if (gestureEvent)
+                    foreach (QGesture *g, gestureEvent->allGestures())
+                        gestures.insert(g);
+            }
+            return GestureWidget::event(event);
+        }
+    };
+
+    MockGestureWidget parent("A");
+    MockGestureWidget *a = &parent;
+    MockGestureWidget *b = new MockGestureWidget("B", a);
+
+    a->grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+    b->grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture);
+    b->ignoredGestures << CustomGesture::GestureType;
+
+    CustomEvent event;
+    // sending an event will cause the QGesture objects to be instantiated for the widgets
+    sendCustomGesture(&event, b);
+
+    QCOMPARE(a->gestures.count(), 1);
+    QPointer<QGesture> customGestureA;
+    customGestureA = *(a->gestures.begin());
+    QVERIFY(!customGestureA.isNull());
+    QCOMPARE(customGestureA->gestureType(), CustomGesture::GestureType);
+
+    QCOMPARE(b->gestures.count(), 1);
+    QPointer<QGesture> customGestureB;
+    customGestureB = *(b->gestures.begin());
+    QVERIFY(!customGestureB.isNull());
+    QVERIFY(customGestureA.data() == customGestureB.data());
+    QCOMPARE(customGestureB->gestureType(), CustomGesture::GestureType);
+
+    a->gestures.clear();
+    // sending an event will cause the QGesture objects to be instantiated for the widget
+    sendCustomGesture(&event, a);
+
+    QCOMPARE(a->gestures.count(), 1);
+    customGestureA = *(a->gestures.begin());
+    QVERIFY(!customGestureA.isNull());
+    QCOMPARE(customGestureA->gestureType(), CustomGesture::GestureType);
+    QVERIFY(customGestureA.data() != customGestureB.data());
+
+    a->ungrabGesture(CustomGesture::GestureType);
+    QVERIFY(customGestureA.isNull());
+    QVERIFY(!customGestureB.isNull());
+
+    a->gestures.clear();
+    a->reset();
+    // send again to 'b' and make sure a never gets it.
+    sendCustomGesture(&event, b);
+    QCOMPARE(a->gestureEventsReceived, 0);
+    QCOMPARE(a->gestureOverrideEventsReceived, 0);
 }
 
 QTEST_MAIN(tst_Gestures)

@@ -129,6 +129,21 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
     }
 }
 
+void QGestureManager::cleanupCachedGestures(QObject *target, Qt::GestureType type)
+{
+    QMap<ObjectGesture, QGesture *>::Iterator iter = objectGestures.begin();
+    while (iter != objectGestures.end()) {
+        ObjectGesture objectGesture = iter.key();
+        if (objectGesture.gesture == type && target == objectGesture.object.data()) {
+            delete iter.value();
+            iter = objectGestures.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
+}
+
+// get or create a QGesture object that will represent the state for a given object, used by the recognizer
 QGesture *QGestureManager::getState(QObject *object, Qt::GestureType type)
 {
     // if the widget is being deleted we should be carefull and not to
@@ -332,6 +347,7 @@ void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
     }
 }
 
+// return true if accepted (consumed)
 bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 {
     QSet<Qt::GestureType> types;
