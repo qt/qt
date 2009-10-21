@@ -6,7 +6,6 @@ SOURCES += \
            extra/qfxanimatedimageitem.cpp \
            extra/qfxparticles.cpp \
            extra/qmlbehavior.cpp \
-           extra/qbindablemap.cpp \
            extra/qmlfontloader.cpp
 
 HEADERS += \
@@ -18,7 +17,6 @@ HEADERS += \
            extra/qfxanimatedimageitem_p.h \
            extra/qfxparticles.h \
            extra/qmlbehavior.h \
-           extra/qbindablemap.h \
            extra/qmlfontloader.h
 
 contains(QT_CONFIG, xmlpatterns) {

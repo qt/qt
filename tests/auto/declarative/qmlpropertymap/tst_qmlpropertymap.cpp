@@ -1,16 +1,16 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qbindablemap.h>
+#include <QtDeclarative/qmlpropertymap.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qfxtext.h>
 #include <QSignalSpy>
 
-class tst_QBindableMap : public QObject
+class tst_QmlPropertyMap : public QObject
 {
     Q_OBJECT
 public:
-    tst_QBindableMap() {}
+    tst_QmlPropertyMap() {}
 
 private slots:
     void insert();
@@ -18,9 +18,9 @@ private slots:
     void changed();
 };
 
-void tst_QBindableMap::insert()
+void tst_QmlPropertyMap::insert()
 {
-    QBindableMap map;
+    QmlPropertyMap map;
     map.setValue(QLatin1String("key1"),100);
     map.setValue(QLatin1String("key2"),200);
     QVERIFY(map.keys().count() == 2);
@@ -32,9 +32,9 @@ void tst_QBindableMap::insert()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
-void tst_QBindableMap::clear()
+void tst_QmlPropertyMap::clear()
 {
-    QBindableMap map;
+    QmlPropertyMap map;
     map.setValue(QLatin1String("key1"),100);
     QVERIFY(map.keys().count() == 1);
 
@@ -45,9 +45,9 @@ void tst_QBindableMap::clear()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant());
 }
 
-void tst_QBindableMap::changed()
+void tst_QmlPropertyMap::changed()
 {
-    QBindableMap map;
+    QmlPropertyMap map;
     QSignalSpy spy(&map, SIGNAL(changed(const QString&)));
     map.setValue(QLatin1String("key1"),100);
     map.setValue(QLatin1String("key2"),200);
@@ -72,6 +72,6 @@ void tst_QBindableMap::changed()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
-QTEST_MAIN(tst_QBindableMap)
+QTEST_MAIN(tst_QmlPropertyMap)
 
-#include "tst_qbindablemap.moc"
+#include "tst_qmlpropertymap.moc"
