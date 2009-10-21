@@ -63,13 +63,21 @@ public:
     virtual ~QmlPropertyMap();
 
     QVariant value(const QString &key) const;
-    void setValue(const QString &key, const QVariant &value);
-    void clearValue(const QString &key);
+    void insert(const QString &key, const QVariant &value);
+    void clear(const QString &key);
 
     Q_INVOKABLE QStringList keys() const;
 
+    int count() const;
+    int size() const;
+    bool isEmpty() const;
+    bool contains(const QString &key) const;
+
+    QVariant &operator[](const QString &key);
+    const QVariant operator[](const QString &key) const;
+
 Q_SIGNALS:
-    void changed(const QString &key);
+    void valueChanged(const QString &key);
 
 private:
     Q_DECLARE_PRIVATE(QmlPropertyMap)
