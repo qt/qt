@@ -20,6 +20,18 @@ Rectangle {
                 Text { text: '<b>Name:</b> ' + name }
                 Text { text: '<b>Number:</b> ' + number }
             }
+            // Use the ListView.isCurrentItem attached property to
+            // indent the item if it is the current item.
+            states: [
+                State {
+                    name: "Current"
+                    when: wrapper.ListView.isCurrentItem
+                    PropertyChanges { target: wrapper; x: 10 }
+                }
+            ]
+            transitions: [
+                Transition { NumberAnimation { properties: "x"; duration: 200 } }
+            ]
         }
     }
 //! [0]
