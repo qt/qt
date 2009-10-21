@@ -44,9 +44,15 @@
 \target qtbinding
 \title Using QML in C++ Applications
 
+\tableofcontents
+
 The QML API is split into three main classes - QmlEngine, QmlComponent and QmlContext.  
 QmlEngine provides the environment in which QML is run, QmlComponent encapsulates 
 \l {QML Documents}, and QmlContext allows applications to expose data to QML component instances.
+
+QML also includes a convenience API, QmlView, for applications that simply want to embed QML
+components into a new QGraphicsView.  QmlView covers up many of the details discussed below.  
+While QmlView is mainly intended for rapid prototyping it can have uses in production applications.
 
 \section1 Basic Usage
 
@@ -76,10 +82,147 @@ QML components are instantiated in a QmlContext.  A context allows the applicati
 to the QML component instance.  A single QmlContext can be used to instantiate all the objects
 used by an application, or several QmlContext can be created for more fine grained control over
 the data exposed to each instance.  If a context is not passed to the QmlComponent::create()
-method, the QmlEngine's \l {QmlEngine::rootContext()}{root context} is used.
+method, the QmlEngine's \l {QmlEngine::rootContext()}{root context} is used.  Data exposed through
+the root context is available to all object instances.
 
-To expose data to a QML component instance, applications set \l {QmlContext::setContextProperty()}{context properties} which are then accessible by name from QML  \l {Property Binding}s and 
-\l {ECMAScript Blocks}.
+\section1 Simple Data
+
+To expose data to a QML component instance, applications set \l {QmlContext::setContextProperty()}
+{context properties} which are then accessible by name from QML  \l {Property Binding}s and 
+\l {ECMAScript Blocks}.  The following example shows how to expose a background color to a QML
+file.
+
+\table
+\row
+\o
+\code
+// main.cpp
+QmlContext *windowContext = new QmlContext(engine->rootContext());
+windowContext->setContextProperty("backgroundColor", 
+                                  QColor(Qt::lightsteelblue));
+
+QmlComponent component(&engine, "main.qml");
+QObject *window = component.create(windowContext);
+\endcode
+\o
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    color: backgroundColor
+
+    Text {
+        anchors.centerIn: parent
+        text: "Hello Light Steel Blue World!"
+    }
+}
+\endcode
+\endtable
+
+Context properties work just like normal properties in QML bindings - if the \c backgroundColor
+context property in the previous example was changed to red, the component object instances would
+all be automatically updated.
+
+QmlContexts form a tree - each QmlContext except for the root context has a parent.  Child 
+QmlContexts effectively inherit the context properties present in their parents.  This gives
+applications more freedom in partitioning the data exposed to different QML object instances.  
+If a QmlContext sets a context property that is also set in one of its parents, the new context
+property shadows that in the parent.  In The following example, the \c background context property
+in \c {Context 1} shadows the \c background context property in the root context.
+
+\image qml-context-tree.png
+
+\section2 Structured Data
+
+Context properties can also be used to expose structured and writable data to QML objects.  In 
+addition to all the types already supported by QVariant, QObject derived types can be assigned to
+context properties.  QObject context properties allow the data exposed to be more structured, and
+allow QML to set values.
+
+The following example creates a \c CustomPalette object, and sets it as the \c palette context
+property.
+
+\code
+class CustomPalette : public QObject
+{
+Q_OBJECT
+Q_PROPERTY(QColor background READ background WRITE setBackground NOTIFY backgroundChanged)
+Q_PROPERTY(QColor text READ text WRITE setText NOTIFY text)
+public:
+    CustomPalette() : m_background(Qt::white), m_text(Qt::black) {}
+
+    QColor background() const { return m_background; }
+    void setBackground(const QColor &c) { 
+        if (c != m_background) {
+            m_background = c;
+            emit backgroundChanged();
+        }
+    }
+
+    QColor text() const { return m_text; }
+    void setText(const QColor &c) { 
+        if (c != m_text) {
+            m_text = c;
+            emit textChanged();
+        }
+    }
+private:
+    QColor m_background;
+    QColor m_text;
+};
+
+int main(int argc, char **argv) 
+{
+    // ...
+
+    QmlContext *windowContext = new QmlContext(engine->rootContext());
+    windowContext->setContextProperty("palette", new CustomPalette);
+
+    QmlComponent component(&engine, "main.qml");
+    QObject *window = component.create(windowContext);
+}
+\endcode
+
+The QML that follows references the palette object, and its properties, to set the appropriate
+background and text colors.  When the window is clicked, the palette's text color is changed, and
+the window text will update accordingly.
+
+\code
+// main.qml
+import Qt 4.6
+
+Rectangle {
+    width: 240
+    height: 320
+    color: palette.background
+
+    Text {
+        anchors.centerIn: parent
+        color: palette.text
+        text: "Hello Colorful World!"
+    }
+
+    MouseRegion {
+        anchors.fill: parent
+        onClicked: {
+            palette.text = "blue";
+        }
+    }
+}
+\endcode
+\endtable
+
+To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
+changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal
+that is emitted whenever the property changes value.  Implementers should take care to only emit the
+signal if the value \e changes to prevent loops from occuring.  Accessing a property from a 
+binding that does not have a NOTIFY signal will cause QML to issue a warning at runtime.
+
+\section2 Dynamic Structured Data
+
+If an application is too dynamic to structure data as compile-time QObject types, dynamically
+structured data can be constructed at runtime using the QBindableMap class.
 
 \section1 Network Components
 
@@ -116,94 +259,5 @@ void MyApplication::continueLoading()
     }
 }
 \endcode
-
-\section1 TODO
-\list
-\o QmlEngine and QmlComponent
-\o QmlContext and data
-\o QBindableMap
-\o QAbstractItemModel Data models
-\o QmlView
-\endlist
-
 */
 
-/*
-\section1 Overview
-
-The QML mechanisms of data binding can also be used to bind Qt C++ objects.
-
-The data binding framework is based on Qt's property system (see the Qt documentation for more details on this system). If a binding is meant to be dynamic (where changes in one object are reflected in another object), \c NOTIFY must be specified for the property being tracked. If \c NOTIFY is not specified, any binding to that property will be an 'intialization' binding (the tracking object will be updated only once with the initial value of the tracked object).
-
-Relevant items can also be bound to the contents of a Qt model.
-For example, ListView can make use of data from a QAbstractItemModel-derived model.
-
-\section1 Passing Data Between C++ and QML
-
-Data binding provides one method of data transfer between C++ and QML.
-
-For example, lets say you want to implement a slider in QML that changes the screen brightness of the device it is running on. You would start by declaring a brightness property on your QObject-derived class:
-\code
-class MyScreen : public QObject
-{
-    Q_OBJECT
-public:
-    MyScreen(QObject *parent=0);
-
-    Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged);
-    int brightness() const;
-    void setBrightness(int b);
-    ...
-
-signals:
-    void brightnessChanged();
-
-private:
-    int m_brightness;
-};
-
-int brightness() const
-{
-    return m_brightness;
-}
-
-void setBrightness(int b)
-{
-    if (b != m_brightness) {
-        m_brightness = b;
-        emit brightnessChanged();
-
-        //set device brightness
-        ...
-    }
-}
-\endcode
-
-\note One important thing to keep in mind is that the changed signal should only be emitted when there is a real change ( \c b \c != \c m_brightness ), or you may get an infinite loop.
-
-Next, make an instance of this class visible to the QML bind engine:
-\code
-QmlView *view = new QmlView;
-view->setUrl("MyUI.qml");
-
-MyScreen *screen = new MyScreen;
-QmlContext *ctxt = view->rootContext();
-ctxt->setContextProperty("screen", screen);
-
-view->execute();
-\endcode
-
-\note Bindings must be made after setUrl() but before execute().
-
-Finally, in QML you can make the appropriate bindings, so in \c "MyUI.qml":
-
-\code
-Slider { value: screen.brightness }
-Binding { target: screen; property: "brightness"; value: slider.value }
-\endcode
-
-The \l QBindableMap class provides a convenient way to make data visible to the bind engine.
-
-C++ \l {qmlmodels}{Data Models} may also be provided to QML.
-
-*/
