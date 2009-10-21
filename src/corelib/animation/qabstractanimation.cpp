@@ -228,7 +228,11 @@ void QUnifiedTimer::updateAnimationsTime()
 
 void QUnifiedTimer::restartAnimationTimer()
 {
-    if (!animationTimer.isActive()) {
+    if (runningLeafAnimations == 0 && !runningPauseAnimations.isEmpty()) {
+        int closestTimeToFinish = closestPauseAnimationTimeToFinish();
+        animationTimer.start(closestTimeToFinish, this);
+        isPauseTimerActive = true;
+    } else if (!animationTimer.isActive() || isPauseTimerActive) {
         animationTimer.start(timingInterval, this);
         isPauseTimerActive = false;
     }
@@ -274,10 +278,10 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
 
 void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
 {
-    unregisterRunningAnimation(animation);
-
     if (!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer)
         return;
+
+    unregisterRunningAnimation(animation);
 
     int idx = animations.indexOf(animation);
     if (idx != -1) {
@@ -314,6 +318,7 @@ void QUnifiedTimer::unregisterRunningAnimation(QAbstractAnimation *animation)
         runningPauseAnimations.removeOne(animation);
     else
         runningLeafAnimations--;
+    Q_ASSERT(runningLeafAnimations >= 0);
 }
 
 int QUnifiedTimer::closestPauseAnimationTimeToFinish()
@@ -324,9 +329,9 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->duration() - QAbstractAnimationPrivate::get(animation)->currentTime;
+            timeToFinish = animation->duration() - animation->currentTime();
         else
-            timeToFinish = QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->currentTime();
 
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
@@ -644,13 +649,13 @@ int QAbstractAnimation::currentLoop() const
 */
 int QAbstractAnimation::totalDuration() const
 {
-    Q_D(const QAbstractAnimation);
-    if (d->loopCount < 0)
-        return -1;
     int dura = duration();
-    if (dura == -1)
+    if (dura <= 0)
+        return dura;
+    int loopcount = loopCount();
+    if (loopcount < 0)
         return -1;
-    return dura * d->loopCount;
+    return dura * loopcount;
 }
 
 /*!
@@ -681,7 +686,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
 
     // Calculate new time and loop.
     int dura = duration();
-    int totalDura = (d->loopCount < 0 || dura == -1) ? -1 : dura * d->loopCount;
+    int totalDura = dura <= 0 ? dura : ((d->loopCount < 0) ? -1 : dura * d->loopCount);
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
     d->totalCurrentTime = msecs;
