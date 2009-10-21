@@ -117,7 +117,7 @@ protected:
     QPixmap drawDigits(int n, const QRect &rect) {
 
         int scaleFactor = 2;
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
         if (rect.height() > 240)
             scaleFactor = 1;
 #endif
@@ -192,7 +192,7 @@ protected:
 
     void paintFlip() {
         QPainter p(this);
-#if !defined(Q_OS_SYMBIAN)
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WINCE_WM)
         p.setRenderHint(QPainter::SmoothPixmapTransform, true);
         p.setRenderHint(QPainter::Antialiasing, true);
 #endif
@@ -319,7 +319,7 @@ public:
         connect(slideAction, SIGNAL(triggered()), SLOT(chooseSlide()));
         connect(flipAction, SIGNAL(triggered()), SLOT(chooseFlip()));
         connect(rotateAction, SIGNAL(triggered()), SLOT(chooseRotate()));
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
         menuBar()->addAction(slideAction);
         menuBar()->addAction(flipAction);
         menuBar()->addAction(rotateAction);
@@ -414,7 +414,7 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
 
     DigiFlip time;
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
     time.showMaximized();
 #else
     time.resize(320, 240);
