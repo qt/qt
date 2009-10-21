@@ -49,9 +49,10 @@ static const qreal DefaultSaturation = 1.0;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoWidget::VideoWidget(QWidget* parent)
+MMF::VideoWidget::VideoWidget
+    (AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent)
         :   MediaNode(parent)
-        ,   m_widget(new VideoOutput(parent))
+        ,   m_widget(new VideoOutput(ancestorMoveMonitor, parent))
         ,   m_aspectRatio(DefaultAspectRatio)
         ,   m_brightness(DefaultBrightness)
         ,   m_scaleMode(DefaultScaleMode)

@@ -26,6 +26,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.h    \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \
            $$PHONON_MMF_DIR/abstractplayer.h         \
+           $$PHONON_MMF_DIR/ancestormovemonitor.h    \
            $$PHONON_MMF_DIR/audiooutput.h            \
            $$PHONON_MMF_DIR/audioequalizer.h         \
            $$PHONON_MMF_DIR/audioplayer.h            \
@@ -47,6 +48,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.cpp  \
            $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \
            $$PHONON_MMF_DIR/abstractplayer.cpp       \
+           $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
            $$PHONON_MMF_DIR/audiooutput.cpp          \
            $$PHONON_MMF_DIR/audioequalizer.cpp       \
            $$PHONON_MMF_DIR/audioplayer.cpp          \
