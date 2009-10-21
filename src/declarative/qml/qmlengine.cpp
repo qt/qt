@@ -404,7 +404,12 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
     QmlDeclarativeData *data =
         static_cast<QmlDeclarativeData *>(priv->declarativeData);
 
-    return data?data->context:0;
+    if (!data)
+        return 0;
+    else if (data->outerContext)
+        return data->outerContext;
+    else
+        return data->context;
 }
 
 /*!
@@ -568,6 +573,17 @@ QScriptValue QmlEnginePrivate::qmlScriptObject(QObject* object,
 }
 
 /*!
+    Returns the QmlContext for the executing QScript \a ctxt.
+*/
+QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
+{
+    QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+    Q_ASSERT(scopeNode.isValid());
+    Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == contextClass);
+    return contextClass->contextFromValue(scopeNode);
+}
+
+/*!
     This function is intended for use inside QML only. In C++ just create a
     component object as usual.
 
@@ -629,7 +645,7 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
-    QmlContext* context = activeEnginePriv->currentExpression->context();
+    QmlContext* context = activeEnginePriv->getContext(ctxt);
     if(ctxt->argumentCount() != 1) {
         c = new QmlComponentJS(activeEngine);
     }else{
@@ -682,7 +698,12 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
         url = QUrl(ctxt->argument(2).toString());
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
-    url = qmlCtxt->resolvedUrl(url);
+    if (url.isEmpty()) {
+        url = qmlCtxt->resolvedUrl(QUrl(QLatin1String("<Unknown File>")));
+    } else {
+        url = qmlCtxt->resolvedUrl(url);
+    }
+
     QmlComponent component(activeEngine, qml.toUtf8(), url);
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
@@ -848,11 +869,7 @@ QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *en
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
     if (url.isRelative()) {
-        QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
-        Q_ASSERT(scopeNode.isValid());
-        Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == enginePriv->contextClass);
-
-        QmlContext *context = enginePriv->contextClass->contextFromValue(scopeNode);
+        QmlContext *context = enginePriv->getContext(ctxt);
         if (!context)
             return engine->undefinedValue();
 
