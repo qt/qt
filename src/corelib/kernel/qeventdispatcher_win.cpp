@@ -482,8 +482,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         int localSerialNumber = d->serialNumber;
 
         MSG peeked;
-        if (PeekMessage(&peeked, d->internalHwnd, WM_TIMER, WM_TIMER, PM_NOREMOVE)
-            || PeekMessage(&peeked, NULL, 0, 0, PM_NOREMOVE | PM_QS_INPUT)) {
+        if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
             // delay the next pass of sendPostedEvents() until we get the special
             // WM_TIMER, which allows all pending Windows messages to be processed
             SetTimer(d->internalHwnd, ~0u, 0, 0);
