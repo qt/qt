@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,39 +39,66 @@
 **
 ****************************************************************************/
 
-#ifndef METAMAKEFILE_H
-#define METAMAKEFILE_H
+#ifndef QSYMBIANEVENT_H
+#define QSYMBIANEVENT_H
 
-#include <qlist.h>
-#include <qstring.h>
+#include <QtCore/qglobal.h>
+
+#ifdef Q_OS_SYMBIAN
+
+class TWsEvent;
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QMakeProject;
-class MakefileGenerator;
+QT_MODULE(Gui)
 
-class MetaMakefileGenerator
+class Q_GUI_EXPORT QSymbianEvent
 {
-protected:
-    MetaMakefileGenerator(QMakeProject *p, const QString &n, bool op=true) : project(p), own_project(op), name(n) { }
-    QMakeProject *project;
-    bool own_project;
-    QString name;
-
 public:
+    enum Type {
+        InvalidEvent,
+        WindowServerEvent,
+        CommandEvent,
+        ResourceChangeEvent
+    };
 
-    virtual ~MetaMakefileGenerator();
+    QSymbianEvent(const TWsEvent *windowServerEvent);
+    QSymbianEvent(Type eventType, int value);
+    ~QSymbianEvent();
 
-    static MetaMakefileGenerator *createMetaGenerator(QMakeProject *proj, const QString &name, bool op=true, bool *success = 0);
-    static MakefileGenerator *createMakefileGenerator(QMakeProject *proj, bool noIO = false);
+    Type type() const;
+    bool isValid() const;
 
-    inline QMakeProject *projectFile() const { return project; }
+    const TWsEvent *windowServerEvent() const;
+    int command() const;
+    int resourceChangeType() const;
 
-    virtual bool init() = 0;
-    virtual int type() const { return -1; }
-    virtual bool write(const QString &oldpwd) = 0;
+private:
+    Type m_type;
+    union {
+        const void *m_eventPtr;
+        int m_eventValue;
+
+        qint64 m_reserved;
+    };
 };
+
+inline QSymbianEvent::Type QSymbianEvent::type() const
+{
+    return m_type;
+}
+
+inline bool QSymbianEvent::isValid() const
+{
+    return m_type != InvalidEvent;
+}
 
 QT_END_NAMESPACE
 
-#endif // METAMAKEFILE_H
+QT_END_HEADER
+
+#endif // Q_OS_SYMBIAN
+
+#endif // QSYMBIANEVENT_H

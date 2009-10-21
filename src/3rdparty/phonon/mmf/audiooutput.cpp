@@ -105,8 +105,6 @@ QHash<QByteArray, QVariant> MMF::AudioOutput::audioOutputDescription(int index)
     QHash<QByteArray, QVariant> retval;
 
     if (index == AudioOutputDeviceID) {
-        QHash<QByteArray, QVariant> retval;
-
         retval.insert("name", QCoreApplication::translate("Phonon::MMF", "Audio Output"));
         retval.insert("description", QCoreApplication::translate("Phonon::MMF", "The audio output device"));
         retval.insert("available", true);

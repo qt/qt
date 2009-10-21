@@ -327,7 +327,7 @@
     area}. The \l{Context Window} {context list} is normally shown
     on the left, and the \l{Sources and Forms Window} {source code},
     \l{Strings Window} {string list}, and either the \l{Phrases and 
-    Guesses Window} {prhrases and guesses}, or the \l{Warnings Window} 
+    Guesses Window} {phrases and guesses}, or the \l{Warnings Window}
     {warnings} are shown above and below the \l{The Translation Area}
     {translations area}.
 
@@ -355,7 +355,7 @@
     translation "guesses" have been read from phrase books
     (\menu{Phrases|Open Phrase Book...}).  The current string's
     current translation is also shown here. To select a guess, double
-    click it in the prases and guesses window or use the keyboard
+    click it in the phrases and guesses window or use the keyboard
     shortcut shown to the right of the guess.
 
     \QL can automatically check whether your translation strings pass
@@ -764,7 +764,7 @@
     and \e{N}.
 
     Each Ctrl key accelerator is shown in the \l{Strings Window}
-    {string list} as a separte string, e.g. \key{Ctrl+Enter}. Since
+    {string list} as a separate string, e.g. \key{Ctrl+Enter}. Since
     the string doesn't have a context to give it meaning, e.g. like
     the context of the phrase in which an Alt key accelerator appears,
     the translator must rely on the UI developer to include a
@@ -807,6 +807,337 @@
     replaced by the same text in the translation stringss, regardless
     of where argument \e{i} appears in the argument sequence in the
     source string.
+
+    \section2 Plurals
+
+    The problem of plurals in output is resolved by using an overload of
+    the \c tr() function with the signature
+    \code
+    QString  tr(const char *text, const char *comment, int n);
+    \endcode
+    Using built in comparisons for the value of \c n the tr() function will
+    translate the phrase to the plural form for the target language.
+
+    Different languages have various forms for plurals beyond simply
+    \e singular and \e plural. The rules for determining which form of the
+    plural to use are encoded as conditional tests. Below is a table
+    representing the numbers associated with the forms rather than the
+    conditional tests themselves.
+
+
+
+    \table 90%
+        \header
+            \o Language
+            \o Form 1
+            \o Form 2
+            \o Form 3
+            \o Form 4
+        \row
+            \o Arabic
+            \o 0, 1, 11-102, 111-202...
+            \o 2
+            \o 3-10, 103-110, 203-210...
+            \o
+        \row
+            \o Basque
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Bulgarian
+            \o 1
+            \o 0, 2-100, 101-
+            \o
+            \o 
+        \row
+            \o Catalan
+            \o 1
+            \o 11, 11 000-11 999, 11 000 000-11 999 999...
+            \o 0, 2-10, 12-10 999, 12-10 999 999...
+            \o 
+        \row
+            \o Chinese-CN
+            \o 0-
+            \o
+            \o
+            \o 
+        \row
+            \o Chinese-HK
+            \o 0-
+            \o
+            \o
+            \o 
+        \row
+            \o Chinese-TW
+            \o 0-
+            \o
+            \o
+            \o 
+        \row
+            \o Croation
+            \o 1, 21, 31, 41, 51, 61, 71, 81, 91, 101...
+            \o 2-4, 22-24, 32-34, 42-44...
+            \o 0, 5-20, 25-30, 35-40...
+            \o 
+        \row
+            \o Czech
+            \o 1
+            \o 2-4
+            \o 0, 5-
+            \o 
+        \row
+            \o Danish
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Dutch
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o English
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o English-US
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Estonian
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Finnish
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o French-CA
+            \o 0, 1
+            \o 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o French-FR
+            \o 0, 1
+            \o 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Galician
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o German
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Greek
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Hebrew
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o 
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Hungarian
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Icelandic
+            \o 1, 21, 31, 41, 51....101, 121, 131...
+            \o 0, 2-20, 22-30, 32-40...102-120...
+            \o 
+            \o 
+        \row
+            \o Indonesian
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Italian
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Japanese
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Korean
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Latvian
+            \o 0
+            \o 1, 21, 31, 41, 51, 61, 71, 81, 91, 101, 131, 141...
+            \o 2-20, 22-30, 32-40, 42-50...202-220, 222-230...
+            \o 
+        \row
+            \o Lithuanian
+            \o 1, 21, 31, 41, 51...101, 121, 131...
+            \o 2-9, 22-29, 32-39...102-109, 122-129, 132-139...
+            \o 0, 10-20, 30, 40, 50...110-120, 130, 140...
+            \o 
+        \row
+            \o Malay
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Norwegian
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Persian
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Polish
+            \o 1
+            \o 2-4, 22-24, 32-34...
+            \o 5-21, 25-31, 35-41...
+            \o 
+        \row
+            \o Portugese-BR
+            \o 0, 1
+            \o 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Portugese-PT
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Romanian
+            \o 1
+            \o 0, 2-19, 101-119, 201-219...
+            \o 20-100, 120-200, 220-300...
+            \o 
+        \row
+            \o Russian
+            \o 1, 21, 31, 41, 51, 61, 71, 81, 91, 101...
+            \o 2-4, 22-24, 32-34...
+            \o 0, 5-20, 25-30, 35-40...
+            \o 
+        \row
+            \o Serbian
+            \o 1, 21, 31, 41, 51, 61, 71, 81, 91, 101...
+            \o 2-4, 22-24, 32-34...
+            \o 0, 5-20, 25-30, 35-40...
+            \o 
+        \row
+            \o Slovak
+            \o 1
+            \o 2-4
+            \o 0, 5-20, 25-30, 35-40...
+            \o 
+        \row
+            \o Slovene
+            \o 1, 101, 201, 301...
+            \o 2, 102, 202, 302...
+            \o 3, 4, 103, 104, 203, 204, 303, 304...
+            \o 0, 5-100, 105-200, 205-300...
+        \row
+            \o Spanish-US
+            \o 1
+            \o 0, 2-
+            \o 
+            \o 
+        \row
+            \o Spanish-ES
+            \o 1
+            \o 0, 2-
+            \o 
+            \o 
+        \row
+            \o Swedish
+            \o 1
+            \o 0, 2-100, 101-
+            \o 
+            \o 
+        \row
+            \o Tagalog
+            \o 0, 1
+            \o 2, 3, 5, 7-8, 10-13, 15, 17-18, 20-23...101...1001
+            \o 4, 6, 9, 14, 16, 19, 24, 26, 29...104, 106, 109...
+            \o 
+        \row
+            \o Thai
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Turkish
+            \o 0-
+            \o 
+            \o 
+            \o 
+        \row
+            \o Ukrainian
+            \o 1, 21, 31, 41, 51, 61, 71, 81, 91, 101...
+            \o 2-4, 22-24, 32-34...
+            \o 0, 5-20, 25-30, 35-40...
+            \o 
+        \row
+            \o Urdu
+            \o 1
+            \o 0, 2-100, 101-
+            \o
+            \o 
+        \row
+            \o Vietnamese
+            \o 0-
+            \o 
+            \o 
+            \o 
+    \endtable
+
+    These rules are embedded within the Qt libraries, there is no need for
+    the developer to know them. Merely to use the correct \c tr() call.
+
 
     \section2 Reusing Translations
 

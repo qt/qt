@@ -662,7 +662,7 @@ int pvrQwsAllocBuffers(PvrQwsDrawable *drawable)
                 PVR2DMemFree(pvrQwsDisplay.context, drawable->backBuffers[index]);
         }
     }
-    drawable->stridePixels = (drawable->rect.width + 7) & ~7;
+    drawable->stridePixels = (drawable->rect.width + 31) & ~31;
     drawable->strideBytes =
         drawable->stridePixels *
         pvrQwsDisplay.screens[drawable->screen].bytesPerPixel;

@@ -3664,6 +3664,10 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
 
 void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Qt/CE does not implement mouse tracking at this point", SkipAll);
+#endif
+
     QGraphicsScene scene(-100, -100, 200, 200);
     scene.addRect(QRectF(-50, -50, 100, 100), QPen(Qt::black), QBrush(Qt::blue));
 

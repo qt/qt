@@ -251,10 +251,10 @@ static OPENFILENAME* qt_win_make_OFN(QWidget *parent,
     ofn->nMaxFile = maxLen;
     ofn->lpstrInitialDir = (wchar_t*)tInitDir.utf16();
     ofn->lpstrTitle = (wchar_t*)tTitle.utf16();
-    ofn->Flags = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY | OFN_EXPLORER);
+    ofn->Flags = (OFN_NOCHANGEDIR | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_PATHMUSTEXIST);
     if (mode == QFileDialog::ExistingFile ||
          mode == QFileDialog::ExistingFiles)
-        ofn->Flags |= (OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
+        ofn->Flags |= (OFN_FILEMUSTEXIST);
     if (mode == QFileDialog::ExistingFiles)
         ofn->Flags |= (OFN_ALLOWMULTISELECT);
     if (!(options & QFileDialog::DontConfirmOverwrite))
