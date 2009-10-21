@@ -93,20 +93,15 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Extending types from QML}
 \endlist
 
-\section1 QML Reference:
+\section1 Reference:
 \list
-\o \l {QML Format Reference}
 \o \l {QML Elements}
-\endlist
-
-\section1 C++ Reference:
-\list
 \o \l {Extending QML}
-\o \l {qtbinding}{QML/C++ Data Binding}
 \endlist
 
 \section1 Deprecated
-
+\list
 \o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
+\endlist
 
 */
