@@ -280,7 +280,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             QApplicationPrivate::leaveModal(this);
         else if ((windowType() == Qt::Popup))
             qApp->d_func()->closePopup(this);
-
+#ifndef QT_NO_IM
         if (d->ic) {
             delete d->ic;
             d->ic =0;
@@ -291,6 +291,7 @@ void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
             if (qic)
                 qic->widgetDestroyed(this);
         }
+#endif //QT_NO_IM
 
         if ((windowType() == Qt::Desktop)) {
         } else {

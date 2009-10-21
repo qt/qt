@@ -42,6 +42,7 @@
 #ifndef QDESKTOPICON_P_H
 #define QDESKTOPICON_P_H
 
+#ifndef QT_NO_ICON
 //
 //  W A R N I N G
 //  -------------
@@ -185,3 +186,5 @@ private:
 QT_END_NAMESPACE
 
 #endif // QDESKTOPICON_P_H
+
+#endif //QT_NO_ICON

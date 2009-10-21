@@ -42,7 +42,7 @@
 #include <qscreendriverplugin_qws.h>
 #include <qscreentransformed_qws.h>
 #include <qstringlist.h>
-
+#ifndef QT_NO_LIBRARY
 QT_BEGIN_NAMESPACE
 
 class GfxTransformedDriver : public QScreenDriverPlugin
@@ -81,3 +81,4 @@ Q_EXPORT_STATIC_PLUGIN(GfxTransformedDriver)
 Q_EXPORT_PLUGIN2(qgfxtransformed, GfxTransformedDriver)
 
 QT_END_NAMESPACE
+#endif //QT_NO_LIBRARY

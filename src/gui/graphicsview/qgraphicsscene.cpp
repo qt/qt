@@ -691,6 +691,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
         focusItem = 0;
         sendEvent(lastFocusItem, &event);
 
+#ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
             // Reset any visible preedit text
@@ -706,6 +707,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
                     views.at(i)->inputContext()->reset();
             }
         }
+#endif //QT_NO_IM
     }
 
     if (item) {

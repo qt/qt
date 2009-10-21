@@ -421,6 +421,7 @@ int qt_pd_foreach(int /*status */, char * /*key */, int /*keyLen */,
 
 int qt_retrieveNisPrinters(QList<QPrinterDescription> *printers)
 {
+#ifndef QT_NO_LIBRARY
     typedef int (*WildCast)(int, char *, int, char *, int, char *);
     char printersConfByname[] = "printers.conf.byname";
     char *domain;
@@ -444,6 +445,7 @@ int qt_retrieveNisPrinters(QList<QPrinterDescription> *printers)
         if (!err)
             return Success;
     }
+#endif //QT_NO_LIBRARY
     return Unavail;
 }
 

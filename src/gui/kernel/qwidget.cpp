@@ -3072,6 +3072,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
+#ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
         QInputContext *qic = inputContext();
         if (enable) {
@@ -3081,6 +3082,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
             qic->setFocusWidget(0);
         }
     }
+#endif //QT_NO_IM
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -8950,11 +8952,16 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
     Q_D(const QWidget);
+#ifndef QT_NO_IM
     return d->imHints;
+#else //QT_NO_IM
+    return 0;
+#endif //QT_NO_IM
 }
 
 void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
+#ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
     // Optimisation to update input context only it has already been created.
@@ -8963,6 +8970,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
         if (ic)
             ic->update();
     }
+#endif //QT_NO_IM
 }
 
 
@@ -10294,6 +10302,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {
+#ifndef QT_NO_IM
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
             ic = d->inputContext();
@@ -10306,6 +10315,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createWinId();
         if (ic && isEnabled())
             ic->setFocusWidget(this);
+#endif //QT_NO_IM
         break;
     }
     case Qt::WA_PaintOnScreen:
@@ -10335,6 +10345,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
+#ifndef QT_NO_IM
         QInputContext *ic = d->ic;
         if (!ic && (!on || hasFocus()))
             ic = d->inputContext();
@@ -10346,6 +10357,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic->setFocusWidget(0);
             }
         }
+#endif //QT_NO_IM
         break;
     }
     case Qt::WA_WindowPropagation:

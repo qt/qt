@@ -9670,12 +9670,14 @@ bool QGraphicsTextItem::sceneEvent(QEvent *event)
         // Reset the focus widget's input context, regardless
         // of how this item gained or lost focus.
         if (QWidget *fw = qApp->focusWidget()) {
+#ifndef QT_NO_IM
             if (QInputContext *qic = fw->inputContext()) {
                 if (event->type() == QEvent::FocusIn || event->type() == QEvent::FocusOut)
                     qic->reset();
                 else
                     qic->update();
             }
+#endif //QT_NO_IM
         }
         break;
     default:

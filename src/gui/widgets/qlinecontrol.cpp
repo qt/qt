@@ -447,8 +447,9 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
             cursorPositionChanged = true;
         }
     }
-
+#ifndef QT_NO_IM
     setPreeditArea(m_cursor, event->preeditString());
+#endif //QT_NO_IM
     m_preeditCursor = event->preeditString().length();
     m_hideCursor = false;
     QList<QTextLayout::FormatRange> formats;

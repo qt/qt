@@ -1619,9 +1619,11 @@ void QTextControlPrivate::mouseMoveEvent(Qt::MouseButtons buttons, const QPointF
         if (cursor.position() != oldCursorPos)
             emit q->cursorPositionChanged();
         _q_updateCurrentCharFormatAndSelection();
+#ifndef QT_NO_IM
         if (QInputContext *ic = inputContext()) {
             ic->update();
         }
+#endif //QT_NO_IM
     } else {
         //emit q->visibilityRequest(QRectF(mousePos, QSizeF(1, 1)));
         if (cursor.position() != oldCursorPos)

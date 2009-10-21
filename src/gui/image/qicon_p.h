@@ -60,6 +60,7 @@
 #include <QtGui/qicon.h>
 #include <QtGui/qiconengine.h>
 
+#ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
 
 class QIconPrivate
@@ -134,5 +135,5 @@ private:
 };
 
 QT_END_NAMESPACE
-
+#endif //QT_NO_ICON
 #endif // QICON_P_H

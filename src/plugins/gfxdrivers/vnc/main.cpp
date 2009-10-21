@@ -43,6 +43,7 @@
 #include <qscreenvnc_qws.h>
 #include <qstringlist.h>
 
+#ifndef QT_NO_LIBRARY
 QT_BEGIN_NAMESPACE
 
 class GfxVncDriver : public QScreenDriverPlugin
@@ -81,3 +82,5 @@ Q_EXPORT_STATIC_PLUGIN(GfxVncDriver)
 Q_EXPORT_PLUGIN2(qgfxvnc, GfxVncDriver)
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_LIBRARY
