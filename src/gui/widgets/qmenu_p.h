@@ -197,7 +197,7 @@ public:
     mutable uint ncols : 4; //4 bits is probably plenty
     uint collapsibleSeparators : 1;
 
-    uint activationRecursionGuard : 1;
+    bool activationRecursionGuard;
 
     //selection
     static QPointer<QMenu> mouseDown;
