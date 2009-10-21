@@ -281,7 +281,7 @@ void QmlExpressionPrivate::printException(QScriptEngine *scriptEngine)
     }
 }
 
-QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
+QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUndefined)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
@@ -317,6 +317,9 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
     }
 
     QScriptValue svalue = data->expressionFunction.call();
+
+    if (isUndefined)
+        *isUndefined = svalue.isUndefined();
 
     if (scriptEngine->hasUncaughtException())
        printException(scriptEngine);
@@ -355,7 +358,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope)
     return rv;
 }
 
-QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
+QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
 {
     Q_Q(QmlExpression);
 
@@ -382,7 +385,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
     if (data->sse.isValid()) {
         rv = evalSSE();
     } else {
-        rv = evalQtScript(secondaryScope);
+        rv = evalQtScript(secondaryScope, isUndefined);
     }
 
     ep->currentExpression = lastCurrentExpression;
@@ -406,11 +409,14 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope)
 /*!
     Returns the value of the expression, or an invalid QVariant if the
     expression is invalid or has an error.
+
+    \a isUndefined is set to true if the expression resulted in an
+    undefined value.
 */
-QVariant QmlExpression::value()
+QVariant QmlExpression::value(bool *isUndefined)
 {
     Q_D(QmlExpression);
-    return d->value();
+    return d->value(0, isUndefined);
 }
 
 /*!

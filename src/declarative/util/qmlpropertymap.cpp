@@ -39,44 +39,65 @@
 **
 ****************************************************************************/
 
-#include "qbindablemap.h"
+#include "qmlpropertymap.h"
 #include <qmlopenmetaobject.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
-//QBindableMapMetaObject lets us listen for changes coming from QML
+//QmlPropertyMapMetaObject lets us listen for changes coming from QML
 //so we can emit the changed signal.
-class QBindableMapMetaObject : public QmlOpenMetaObject
+class QmlPropertyMapMetaObject : public QmlOpenMetaObject
 {
 public:
-    QBindableMapMetaObject(QBindableMap *obj) : QmlOpenMetaObject(obj)
-    {
-        map = obj;
-    }
+    QmlPropertyMapMetaObject(QmlPropertyMap *obj, QmlPropertyMapPrivate *objPriv);
 
 protected:
-    virtual void propertyWrite(int index)
-    {
-        map->emitChanged(QString::fromUtf8(name(index)));
-    }
+    virtual void propertyWrite(int index);
 
 private:
-    QBindableMap *map;
+    QmlPropertyMap *map;
+    QmlPropertyMapPrivate *priv;
 };
 
-/*!
-    \class QBindableMap
-    \brief The QBindableMap class allows you to set key-value pairs that can be used in bindings.
+class QmlPropertyMapPrivate : public QObjectPrivate
+{
+    Q_DECLARE_PUBLIC(QmlPropertyMap)
+public:
+    QmlPropertyMapMetaObject *mo;
+    QStringList keys;
+    void emitChanged(const QString &key);
+};
 
-    QBindableMap provides a convenient way to expose domain data to the UI layer.
+void QmlPropertyMapPrivate::emitChanged(const QString &key)
+{
+    Q_Q(QmlPropertyMap);
+    emit q->changed(key);
+}
+
+QmlPropertyMapMetaObject::QmlPropertyMapMetaObject(QmlPropertyMap *obj, QmlPropertyMapPrivate *objPriv) : QmlOpenMetaObject(obj)
+{
+    map = obj;
+    priv = objPriv;
+}
+
+void QmlPropertyMapMetaObject::propertyWrite(int index)
+{
+    priv->emitChanged(QString::fromUtf8(name(index)));
+}
+
+/*!
+    \class QmlPropertyMap
+    \brief The QmlPropertyMap class allows you to set key-value pairs that can be used in bindings.
+
+    QmlPropertyMap provides a convenient way to expose domain data to the UI layer.
     The following example shows how you might declare data in C++ and then
     access it in QML.
 
     Setup in C++:
     \code
     //create our data
-    QBindableMap ownerData;
+    QmlPropertyMap ownerData;
     ownerData.setValue("name", QVariant(QString("John Smith")));
     ownerData.setValue("phone", QVariant(QString("555-5555")));
 
@@ -104,34 +125,31 @@ private:
 // can we provide a way to clear keys?
 // do we want to make any claims regarding key ordering?
 // should we have signals for insertion and and deletion -- becoming more model like
-// should we emit change for our own changes as well?
-// Bug or Feature?: values can be created in QML (owner.somethingElse = "Hello") will create somethingElse property. (need to verify if this is actually the case)
-// Bug or Feature?: all values are read-write (there are no read-only values)
 
 /*!
     Constructs a bindable map with parent object \a parent.
 */
-QBindableMap::QBindableMap(QObject *parent)
-: QObject(parent)
+QmlPropertyMap::QmlPropertyMap(QObject *parent)
+: QObject(*(new QmlPropertyMapPrivate), parent)
 {
-    m_mo = new QBindableMapMetaObject(this);
+    Q_D(QmlPropertyMap);
+    d->mo = new QmlPropertyMapMetaObject(this, d);
 }
 
 /*!
     Destroys the bindable map.
 */
-QBindableMap::~QBindableMap()
+QmlPropertyMap::~QmlPropertyMap()
 {
 }
 
 /*!
     Clears the value (if any) associated with \a key.
 */
-void QBindableMap::clearValue(const QString &key)
+void QmlPropertyMap::clearValue(const QString &key)
 {
-    //m_keys.remove();   //###
-    m_mo->setValue(key.toUtf8(), QVariant());
-    //emit changed(key);
+    Q_D(QmlPropertyMap);
+    d->mo->setValue(key.toUtf8(), QVariant());
 }
 
 /*!
@@ -140,9 +158,10 @@ void QBindableMap::clearValue(const QString &key)
     If no value has been set for this key (or if the value has been cleared),
     an invalid QVariant is returned.
 */
-QVariant QBindableMap::value(const QString &key) const
+QVariant QmlPropertyMap::value(const QString &key) const
 {
-    return m_mo->value(key.toUtf8());
+    Q_D(const QmlPropertyMap);
+    return d->mo->value(key.toUtf8());
 }
 
 /*!
@@ -150,12 +169,12 @@ QVariant QBindableMap::value(const QString &key) const
 
     If the key doesn't exist, it is automatically created.
 */
-void QBindableMap::setValue(const QString &key, QVariant value)
+void QmlPropertyMap::setValue(const QString &key, const QVariant &value)
 {
-    if (!m_keys.contains(key))
-        m_keys.append(key);
-    m_mo->setValue(key.toUtf8(), value);
-    //emit changed(key);
+    Q_D(QmlPropertyMap);
+    if (!d->keys.contains(key))
+        d->keys.append(key);
+    d->mo->setValue(key.toUtf8(), value);
 }
 
 /*!
@@ -164,19 +183,16 @@ void QBindableMap::setValue(const QString &key, QVariant value)
     Keys that have been cleared will still appear in this list, even though their
     associated values are invalid QVariants.
 */
-QStringList QBindableMap::keys() const
+QStringList QmlPropertyMap::keys() const
 {
-    return m_keys;
+    Q_D(const QmlPropertyMap);
+    return d->keys;
 }
 
 /*!
-    \fn void QBindableMap::changed(const QString &key)
+    \fn void QmlPropertyMap::changed(const QString &key)
     This signal is emitted whenever one of the values in the map is changed. \a key
     is the key corresponding to the value that was changed.
-  */
+*/
 
-void QBindableMap::emitChanged(const QString &key)
-{
-    emit changed(key);
-}
 QT_END_NAMESPACE

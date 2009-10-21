@@ -97,6 +97,6 @@ The implicit binding syntax shown previously is easy to use and works perfectly 
 of bindings.  In some advanced cases, it is necessary to create bindings explicitly using the 
 \l Binding element.
 
-One such example is included in the \l {Passing Data Between C++ and QML} documentation.
+XXX - need an example
 */
 
