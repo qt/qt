@@ -104,7 +104,7 @@ private:
         Qt::GestureType gesture;
 
         ObjectGesture(QObject *o, const Qt::GestureType &g) : object(o), gesture(g) { }
-        inline bool operator<(const ObjectGesture& rhs) const
+        inline bool operator<(const ObjectGesture &rhs) const
         {
             if (object.data() < rhs.object.data())
                 return true;
@@ -114,13 +114,18 @@ private:
         }
     };
 
-    QMap<ObjectGesture, QGesture *> objectGestures;
+    // TODO rename all member vars to be m_
+    QMap<ObjectGesture, QGesture *> objectGestures; // TODO rename widgetGestures
     QMap<QGesture *, QGestureRecognizer *> gestureToRecognizer;
     QHash<QGesture *, QObject *> gestureOwners;
 
     QHash<QGesture *, QWidget *> gestureTargets;
 
     int lastCustomGestureId;
+
+    QHash<QGestureRecognizer *, QList<QGesture *> > m_obsoleteGestures;
+    QMap<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
+    void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
     QGesture *getState(QObject *widget, Qt::GestureType gesture);
     void deliverEvents(const QSet<QGesture *> &gestures,

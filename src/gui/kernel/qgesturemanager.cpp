@@ -104,9 +104,29 @@ Qt::GestureType QGestureManager::registerGestureRecognizer(QGestureRecognizer *r
     return type;
 }
 
-void QGestureManager::unregisterGestureRecognizer(Qt::GestureType)
+void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 {
+    QList<QGestureRecognizer *> list = recognizers.values(type);
+    recognizers.remove(type);
+    foreach (QGesture* g, gestureToRecognizer.keys()) {
+        QGestureRecognizer *recognizer = gestureToRecognizer.value(g);
+        if (list.contains(recognizer)) {
+            m_deletedRecognizers.insert(g, recognizer);
+            gestureToRecognizer.remove(g);
+        }
+    }
 
+    foreach (QGestureRecognizer *recognizer, list) {
+        QList<QGesture *> obsoleteGestures;
+        QMap<ObjectGesture, QGesture *>::Iterator iter = objectGestures.begin();
+        while (iter != objectGestures.end()) {
+            ObjectGesture objectGesture = iter.key();
+            if (objectGesture.gesture == type)
+                obsoleteGestures << iter.value();
+            ++iter;
+        }
+        m_obsoleteGestures.insert(recognizer, obsoleteGestures);
+    }
 }
 
 QGesture *QGestureManager::getState(QObject *object, Qt::GestureType type)
@@ -290,12 +310,26 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
     QSet<QGesture *> endedGestures =
             finishedGestures + canceledGestures + undeliveredGestures;
     foreach (QGesture *gesture, endedGestures) {
-        if (QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0)) {
+        if (QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0))
             recognizer->reset(gesture);
-        }
+        else
+            cleanupGesturesForRemovedRecognizer(gesture);
         gestureTargets.remove(gesture);
     }
     return false;
+}
+
+void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
+{
+    QGestureRecognizer *recognizer = m_deletedRecognizers.value(gesture);
+    Q_ASSERT(recognizer);
+    m_deletedRecognizers.remove(gesture);
+    if (m_deletedRecognizers.keys(recognizer).isEmpty()) {
+        // no more active gestures, cleanup!
+        qDeleteAll(m_obsoleteGestures.value(recognizer));
+        m_obsoleteGestures.remove(recognizer);
+        delete recognizer;
+    }
 }
 
 bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
@@ -534,6 +568,8 @@ void QGestureManager::timerEvent(QTimerEvent *event)
             QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0);
             if (recognizer)
                 recognizer->reset(gesture);
+            else
+                cleanupGesturesForRemovedRecognizer(gesture);
         } else {
             ++it;
         }
