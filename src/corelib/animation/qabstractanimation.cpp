@@ -272,7 +272,8 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
         animationsToStart << animation;
-        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        if (!startStopAnimationTimer.isActive())
+            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     }
 }
 
@@ -290,7 +291,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
 
-        if (animations.isEmpty())
+        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
         animationsToStart.removeOne(animation);
