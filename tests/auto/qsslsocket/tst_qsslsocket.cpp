@@ -173,6 +173,7 @@ private slots:
     void disconnectFromHostWhenConnected();
     void resetProxy();
     void readFromClosedSocket();
+    void writeBigChunk();
 
     static void exitLoop()
     {
@@ -1535,6 +1536,50 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->waitForDisconnected();
     QVERIFY(!socket->bytesAvailable());
     QVERIFY(!socket->bytesToWrite());
+}
+
+void tst_QSslSocket::writeBigChunk()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket;
+
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    QByteArray data;
+    data.resize(1024*1024*10); // 10 MB
+    // init with garbage. needed so ssl cannot compress it in an efficient way.
+    for (int i = 0; i < data.size() / sizeof(int); i++) {
+        int r = qrand();
+        data.data()[i*sizeof(int)] = r;
+    }
+
+    QVERIFY(socket->waitForEncrypted(10000));
+    QString errorBefore = socket->errorString();
+
+    int ret = socket->write(data.constData(), data.size());
+    QVERIFY(data.size() == ret);
+
+    // spin the event loop once so QSslSocket::transmit() gets called
+    QCoreApplication::processEvents();
+    QString errorAfter = socket->errorString();
+
+    // no better way to do this right now since the error is the same as the default error.
+    if (socket->errorString().startsWith(QLatin1String("Unable to write data")))
+    {
+        qWarning() << socket->error() << socket->errorString();
+        QFAIL("Error while writing! Check if the OpenSSL BIO size is limited?!");
+    }
+    // also check the error string. If another error (than UnknownError) occured, it should be different than before
+    QVERIFY(errorBefore == errorAfter);
+ 
+    // check that everything has been written to OpenSSL
+    QVERIFY(socket->bytesToWrite() == 0);
+
+    socket->close();
 }
 
 #endif // QT_NO_OPENSSL
