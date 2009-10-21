@@ -109,6 +109,7 @@ private slots:
     void bufferStatus(int percent);
     void openUrl();
     void configureEffect();
+    void hasVideoChanged(bool);
 
 private:
     QIcon playIcon;
