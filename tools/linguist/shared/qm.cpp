@@ -714,7 +714,7 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                 continue;
             }
             if (typ == TranslatorMessage::Unfinished) {
-                if (msg.translation().isEmpty()) {
+                if (!cd.m_idBased && msg.translation().isEmpty()) {
                     ++untranslated;
                     continue;
                 } else {
