@@ -1844,8 +1844,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //todo: update to horizontal table graphic
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
-        } else if (qobject_cast<const QFrame *>(widget)) { 
-            QCommonStyle::drawControl(element, option, painter, widget); 
+        } else if (qobject_cast<const QFrame *>(widget)) {
+            QCommonStyle::drawControl(element, option, painter, widget);
         }
         break;
     case CE_MenuScroller:
@@ -2216,6 +2216,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
             break;
+        case CT_TabBarTab:
+            QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            if (naviPaneSize.height() > sz.height())
+                sz.setHeight(naviPaneSize.height());
+            break;
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
@@ -2425,8 +2431,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_ComboBoxArrow:
                     ret.setRect(
                         ret.x() + ret.width() - buttonMargin - buttonWidth,
-                        ret.y() + buttonMargin, 
-                        buttonWidth, 
+                        ret.y() + buttonMargin,
+                        buttonWidth,
                         height - 2*buttonMargin);
                     break;
                 case SC_ComboBoxEditField: {
