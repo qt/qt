@@ -76,6 +76,7 @@
 #include <QtCore/qdir.h>
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
+#include <QtGui/qsound.h>
 #include <qmlcomponent.h>
 #include "private/qmlcomponentjs_p.h"
 #include "private/qmlmetaproperty_p.h"
@@ -152,6 +153,9 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("lighter"), scriptEngine.newFunction(QmlEnginePrivate::lighter, 1));
     qtObject.setProperty(QLatin1String("darker"), scriptEngine.newFunction(QmlEnginePrivate::darker, 1));
     qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
+
+    //misc methods
+    qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -833,6 +837,34 @@ QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engin
         return engine->nullValue();
     color = color.darker();
     return qScriptValueFromValue(engine, qVariantFromValue(color));
+}
+
+QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
+{
+    if (ctxt->argumentCount() < 1)
+        return engine->undefinedValue();
+
+    QUrl url(ctxt->argument(0).toString());
+
+    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
+    if (url.isRelative()) {
+        QScriptValue scopeNode = QScriptDeclarativeClass::scopeChainValue(ctxt, -3);
+        Q_ASSERT(scopeNode.isValid());
+        Q_ASSERT(QScriptDeclarativeClass::scriptClass(scopeNode) == enginePriv->contextClass);
+
+        QmlContext *context = enginePriv->contextClass->contextFromValue(scopeNode);
+        if (!context)
+            return engine->undefinedValue();
+
+        url = context->resolvedUrl(url);
+    }
+
+    if (url.scheme() == QLatin1String("file")) {
+
+        QSound::play(url.toLocalFile());
+
+    }
+    return engine->undefinedValue();
 }
 
 /*!
