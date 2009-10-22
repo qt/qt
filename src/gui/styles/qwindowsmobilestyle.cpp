@@ -1460,10 +1460,8 @@ void QWindowsMobileStyle::drawPrimitive(PrimitiveElement element, const QStyleOp
         painter->drawLines(a);
         break; }
     case PE_Frame:
-       if (d->doubleControls)
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),2,&option->palette.light());
-        else
-            qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),1,&option->palette.light());
+        qDrawPlainRect(painter, option->rect, option->palette.shadow().color(),
+                       d->doubleControls ? 2 : 1, &option->palette.background());
         break;
     case PE_FrameLineEdit:
     case PE_FrameMenu:
