@@ -87,6 +87,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {Network Transparency}
 \o \l {qmlmodels}{Data Models}
 \o \l {anchor-layout}{Anchor-based Layout}
+\o \l {qmlstates}{States}
 \o \l {qmlanimation}{Animation}
 \o \l {qmlmodules.html}{Modules}
 \o \l {qmlfocus}{Keyboard Focus}

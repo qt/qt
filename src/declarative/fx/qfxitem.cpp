@@ -610,9 +610,9 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     This example forwards key events to two lists:
     \qml
-    ListView { id: List1 ... }
-    ListView { id: List2 ... }
-    Keys.forwardTo: [List1, List2]
+    ListView { id: list1 ... }
+    ListView { id: list2 ... }
+    Keys.forwardTo: [list1, list2]
     focus: true
     \endqml
 */
@@ -875,6 +875,7 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
     This handler is called when the VolumeDown key has been pressed. The \a event
     parameter provides information about the event.
 */
+
 
 class QFxKeysAttachedPrivate : public QObjectPrivate
 {
@@ -1194,19 +1195,13 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 /*!
     \qmlclass Item QFxItem
     \brief The Item is the most basic of all visual items in QML.
- */
 
-/*!
-    \class QFxItem Item
-    \brief The QFxItem class is a generic QmlView item. It is the base class for all other view items.
-
-    \qmltext
-    All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
+    All visual items in Qt Declarative inherit from Item.  Although Item
     has no visual appearance, it defines all the properties that are
-    common across visual items - like the x and y position, and the
-    width and height. \l {Keys}{Key handling} is also provided by Item.
+    common across visual items - such as the x and y position, the
+    width and height, \l {anchor-layout}{anchoring} and key handling.
 
-    QFxItem is also useful for grouping items together.
+    Item is also useful for grouping items together.
 
     \qml
     Item {
@@ -1229,7 +1224,31 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
     }
     \endqml
 
-    \endqmltext
+    \section1 Key Handling
+
+    Key handling is available to all Item-based visual elements via the \l {Keys}{Keys}
+    attached property.  The \e Keys attached property provides basic handlers such
+    as \l {Keys::onPressed(event)}{onPressed} and \l {Keys::onReleased(event)}{onReleased},
+    as well as handlers for specific keys, such as
+    \l {Keys::onCancelPressed(event)}{onCancelPressed}.  The example below
+    assigns \l {qmlfocus}{focus} to the item and handles
+    the Left key via the general \e onPressed handler and the Select key via the
+    onSelectPressed handler:
+
+    \qml
+    Item {
+        focus: true
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Left) {
+                print("move left");
+                event.accepted = true;
+            }
+        }
+        Keys.onSelectPressed: print("Selected");
+    }
+    \endqml
+
+    See the \l {Keys}{Keys} attached property for detailed documentation.
 
     \ingroup group_coreitems
 */

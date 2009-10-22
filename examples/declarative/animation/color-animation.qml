@@ -25,18 +25,9 @@ Item {
                 }
             }
         }
-        Particles {
-            anchors.fill: parent; source: "images/star.png"; angleDeviation: 360; velocity: 0
-            velocityDeviation: 0; count: parent.width / 10; fadeInDuration: 2800
-            opacity: SequentialAnimation {
-                running: true; repeat: true
-                NumberAnimation { from: 0; to: 1; duration: 5000 }
-                NumberAnimation { from: 1; to: 0; duration: 5000 }
-            }
-        }
     }
 
-    // the sun and the moon
+    // the sun, moon, and stars
     Item {
         width: parent.width; height: 2 * parent.height
         transformOrigin: "Center"
@@ -51,6 +42,16 @@ Item {
         Image {
             source: "images/moon.png"; y: parent.height - 74; anchors.horizontalCenter: parent.horizontalCenter
             transformOrigin: "Center"; rotation: -parent.rotation
+        }
+        Particles {
+            x: 0; y: parent.height/2; width: parent.width; height: parent.height/2
+            source: "images/star.png"; angleDeviation: 360; velocity: 0
+            velocityDeviation: 0; count: parent.width / 10; fadeInDuration: 2800
+            opacity: SequentialAnimation {
+                running: true; repeat: true
+                NumberAnimation { from: 0; to: 1; duration: 5000 }
+                NumberAnimation { from: 1; to: 0; duration: 5000 }
+            }
         }
     }
 

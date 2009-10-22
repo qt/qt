@@ -62,14 +62,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SystemPalette,QmlSystemPalette)
 
     Example:
     \qml
-    SystemPalette { id: MyPalette; colorGroup: Qt.Active }
+    SystemPalette { id: myPalette; colorGroup: Qt.Active }
 
     Rectangle {
         width: 640; height: 480
-        color: MyPalette.window
+        color: myPalette.window
         Text {
             anchors.fill: parent
-            text: "Hello!"; color: MyPalette.windowText
+            text: "Hello!"; color: myPalette.windowText
         }
     }
     \endqml

@@ -764,7 +764,7 @@ int QmlDomObject::objectTypeMinorVersion() const
 
     For example, the object id of this object would be "MyText".
     \qml
-Text { id: MyText }
+Text { id: myText }
     \endqml
 */
 QString QmlDomObject::objectId() const
@@ -1599,12 +1599,12 @@ QList<int> QmlDomList:: commaPositions() const
 
     Sub-components are QmlComponents defined within a QML document.  The
     following example shows the definition of a sub-component with the id
-    "ListDelegate".
+    "listDelegate".
 
     \qml
 Item {
     Component {
-        id: ListDelegate
+        id: listDelegate
         Text {
             text: modelData.text
         }
@@ -1653,7 +1653,7 @@ QmlDomComponent &QmlDomComponent::operator=(const QmlDomComponent &other)
     \qml
 Item {
     Component {
-        id: ListDelegate
+        id: listDelegate
         Text {
             text: modelData.text
         }

@@ -179,10 +179,10 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     Rectangle {
         width: 100; height: 100
         x: NumberAnimation {
-            running: MyMouse.pressed
+            running: myMouse.pressed
             from: 0; to: 100
         }
-        MouseRegion { id: MyMouse }
+        MouseRegion { id: myMouse }
     }
     \endcode
 
@@ -191,8 +191,8 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     or not the animation is running.
 
     \code
-    NumberAnimation { id: MyAnimation }
-    Text { text: MyAnimation.running ? "Animation is running" : "Animation is not running" }
+    NumberAnimation { id: myAnimation }
+    Text { text: myAnimation.running ? "Animation is running" : "Animation is not running" }
     \endcode
 
     Animations can also be started and stopped imperatively from JavaScript

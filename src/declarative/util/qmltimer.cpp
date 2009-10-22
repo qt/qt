@@ -75,10 +75,10 @@ public:
     \qml
     Timer {
         interval: 500; running: true; repeat: true
-        onTriggered: Time.text = Date().toString()
+        onTriggered: time.text = Date().toString()
     }
     Text {
-        id: Time
+        id: time
     }
     \endqml
 
