@@ -92,6 +92,7 @@ private:
 //performs an action of type QAbstractAnimationAction
 class QActionAnimation : public QAbstractAnimation
 {
+    Q_OBJECT
 public:
     QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
@@ -126,6 +127,7 @@ private:
 //animates QmlTimeLineValue (assumes start and end values will be reals or compatible)
 class QmlTimeLineValueAnimator : public QVariantAnimation
 {
+    Q_OBJECT
 public:
     QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
     void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)

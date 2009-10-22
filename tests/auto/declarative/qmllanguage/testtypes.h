@@ -10,6 +10,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlparserstatus.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 class MyInterface 
 {
@@ -112,6 +113,21 @@ private:
 };
 QML_DECLARE_TYPE(MyQmlObject);
 
+class MyGroupedObject : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(QmlScriptString script READ script WRITE setScript);
+public:
+    QmlScriptString script() const { return m_script; }
+    void setScript(const QmlScriptString &s) { m_script = s; }
+
+private:
+    QmlScriptString m_script;
+};
+
+QML_DECLARE_TYPE(MyGroupedObject);
+
+
 class MyTypeObject : public QObject
 {
     Q_OBJECT
@@ -141,6 +157,9 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
     Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
     Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
+
+    Q_PROPERTY(QmlScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
+    Q_PROPERTY(MyGroupedObject *grouped READ grouped CONSTANT);
 
 public:
     MyTypeObject()
@@ -334,6 +353,17 @@ public:
         variantPropertyValue = v;
     }
 
+    QmlScriptString scriptPropertyValue;
+    QmlScriptString scriptProperty() const {
+        return scriptPropertyValue;
+    }
+    void setScriptProperty(const QmlScriptString &v) {
+        scriptPropertyValue = v;
+    }
+
+    MyGroupedObject groupedValue;
+    MyGroupedObject *grouped() { return &groupedValue; }
+
     void doAction() { emit action(); }
 signals:
     void action();
@@ -364,6 +394,7 @@ private:
 };
 
 QML_DECLARE_TYPE(MyContainer);
+
 
 class MyPropertyValueSource : public QObject, public QmlPropertyValueSource
 {

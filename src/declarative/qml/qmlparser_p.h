@@ -160,11 +160,13 @@ namespace QmlParser
         void addAttachedProperty(Property *);
         void addGroupedProperty(Property *);
         void addValueTypeProperty(Property *);
+        void addScriptStringProperty(Property *, int = 0);
         QList<Property *> valueProperties;
         QList<Property *> signalProperties;
         QList<Property *> attachedProperties;
         QList<Property *> groupedProperties;
         QList<Property *> valueTypeProperties;
+        QList<QPair<Property *, int> > scriptStringProperties;
 
         // Script blocks that were nested under this object
         QStringList scriptBlocks;

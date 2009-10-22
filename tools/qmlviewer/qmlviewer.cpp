@@ -628,6 +628,11 @@ void QmlViewer::openQml(const QString& fileName)
     QUrl url(fileName);
     QFileInfo fi(fileName);
     if (fi.exists()) {
+        if (fi.suffix().toLower() != QLatin1String("qml")) {
+            qWarning() << "qmlviewer cannot open non-QML file" << fileName;
+            return;
+        }
+
         url = QUrl::fromLocalFile(fi.absoluteFilePath());
         QmlContext *ctxt = canvas->rootContext();
         QDir dir(fi.path()+"/dummydata", "*.qml");
@@ -656,6 +661,9 @@ void QmlViewer::openQml(const QString& fileName)
                 dummyData->setParent(this);
             }
         }
+    } else {
+        qWarning() << "qmlviewer cannot find file:" << fileName;
+        return;
     }
 
     canvas->setUrl(url);

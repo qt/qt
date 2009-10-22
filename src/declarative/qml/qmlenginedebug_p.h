@@ -85,6 +85,7 @@ public:
         Type type;
         QString name;
         QVariant value;
+        QString valueTypeName;
         QString binding;
         bool hasNotifySignal;
     };
@@ -103,6 +104,7 @@ private:
     void buildObjectDump(QDataStream &, QObject *, bool);
     QmlObjectData objectData(QObject *);
     QmlObjectProperty propertyData(QObject *, int);
+    QVariant serializableVariant(const QVariant &value);
 
     static QList<QmlEngine *> m_engines;
     QmlWatcher *m_watch;

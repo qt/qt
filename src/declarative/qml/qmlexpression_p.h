@@ -140,9 +140,9 @@ public:
 
     QmlExpressionData *data;
 
-    QVariant value(QObject *secondaryScope = 0);
+    QVariant value(QObject *secondaryScope = 0, bool *isUndefined = 0);
     QVariant evalSSE();
-    QVariant evalQtScript(QObject *secondaryScope);
+    QVariant evalQtScript(QObject *secondaryScope, bool *isUndefined = 0);
 
     void updateGuards(const QPODVector<QmlEnginePrivate::CapturedProperty> &properties);
     void clearGuards();

@@ -197,6 +197,9 @@ private:
     bool buildListProperty(QmlParser::Property *prop,
                            QmlParser::Object *obj,
                            const BindingContext &ctxt);
+    bool buildScriptStringProperty(QmlParser::Property *prop,
+                                   QmlParser::Object *obj,
+                                   const BindingContext &ctxt);
     bool buildPropertyAssignment(QmlParser::Property *prop,
                                  QmlParser::Object *obj,
                                  const BindingContext &ctxt);

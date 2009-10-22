@@ -376,7 +376,7 @@ class QmlPropGroupNode : public FakeNode
                      bool attached);
     virtual ~QmlPropGroupNode() { }
 
-    const QString& element() const { return name(); }
+    const QString& element() const { return parent()->name(); }
     void setDefault() { isdefault = true; }
     bool isDefault() const { return isdefault; }
     bool isAttached() const { return att; }
@@ -405,7 +405,7 @@ class QmlPropertyNode : public LeafNode
     bool isDesignable() const { return fromTrool(des,false); }
     bool isAttached() const { return att; }
 
-    const QString& element() const { return parent()->name(); }
+    const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
  private:
     enum Trool { Trool_True, Trool_False, Trool_Default };

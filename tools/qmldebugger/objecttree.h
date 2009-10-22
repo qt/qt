@@ -20,19 +20,19 @@ public:
     ObjectTree(QmlEngineDebug *client, QWidget *parent = 0);
 
 signals:
-    void objectSelected(const QmlDebugObjectReference &);
+    void currentObjectChanged(const QmlDebugObjectReference &);
     void expressionWatchRequested(const QmlDebugObjectReference &, const QString &);
 
 public slots:
     void reload(int objectDebugId);
-    void selectObject(int debugId);
+    void setCurrentObject(int debugId);
 
 protected:
     virtual void mousePressEvent(QMouseEvent *);
 
 private slots:
     void objectFetched();
-    void handleItemClicked(QTreeWidgetItem *);
+    void currentItemChanged(QTreeWidgetItem *);
 
 private:
     QTreeWidgetItem *findItemByObjectId(int debugId) const;

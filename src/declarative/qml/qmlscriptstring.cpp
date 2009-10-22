@@ -39,73 +39,116 @@
 **
 ****************************************************************************/
 
-#ifndef QMLEXPRESSION_H
-#define QMLEXPRESSION_H
-
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
-
-QT_BEGIN_HEADER
+#include "qmlscriptstring.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QString;
-class QmlRefCount;
-class QmlEngine;
-class QmlContext;
-class QmlExpressionPrivate;
-class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression : public QObject
+class QmlScriptStringPrivate : public QSharedData
 {
-    Q_OBJECT
 public:
-    QmlExpression();
-    QmlExpression(QmlContext *, const QString &, QObject *);
-    virtual ~QmlExpression();
+    QmlScriptStringPrivate() : context(0), scope(0) {}
 
-    QmlEngine *engine() const;
-    QmlContext *context() const;
-
-    QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    bool isConstant() const;
-
-    bool trackChange() const;
-    void setTrackChange(bool);
-
-    QUrl sourceFile() const;
-    int lineNumber() const;
-    void setSourceLocation(const QUrl &fileName, int line);
-
-    QObject *scopeObject() const;
-
-public Q_SLOTS:
-    QVariant value(bool *isUndefined = 0);
-
-Q_SIGNALS:
-    virtual void valueChanged();
-
-protected:
-    QmlExpression(QmlContext *, const QString &, QObject *, 
-                  QmlExpressionPrivate &dd);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QUrl &,
-                  int, QmlExpressionPrivate &dd);
-
-private Q_SLOTS:
-    void __q_notify();
-
-private:
-    Q_DECLARE_PRIVATE(QmlExpression)
-    friend class QmlDebugger;
-    friend class QmlContext;
+    QmlContext *context;
+    QObject *scope;
+    QString script;
 };
 
+/*!
+\class QmlScriptString
+\brief The QmlScriptString class encapsulates a script and its context.
+
+The QmlScriptString is used by properties that want to accept a script "assignment" from QML.
+
+Normally, the following code would result in a binding being established for the \c script
+property.  If the property had a type of QmlScriptString, the script - \e {print(1921)} - itself
+would be passed to the property and it could choose how to handle it.
+
+\code
+MyType {
+    script: print(1921)
+}
+\endcode
+*/
+
+/*!
+Construct an empty instance.
+*/
+QmlScriptString::QmlScriptString()
+:  d(new QmlScriptStringPrivate)
+{
+}
+
+/*!
+Copy \a other.
+*/
+QmlScriptString::QmlScriptString(const QmlScriptString &other)
+: d(other.d)
+{
+}
+
+/*!
+\internal
+*/
+QmlScriptString::~QmlScriptString()
+{
+}
+
+/*!
+Assign \a other to this.
+*/
+QmlScriptString &QmlScriptString::operator=(const QmlScriptString &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+Return the context for the script.
+*/
+QmlContext *QmlScriptString::context() const
+{
+    return d->context;
+}
+
+/*!
+Sets the \a context for the script.
+*/
+void QmlScriptString::setContext(QmlContext *context)
+{
+    d->context = context;
+}
+
+/*!
+Returns the scope object for the script.
+*/
+QObject *QmlScriptString::scopeObject() const
+{
+    return d->scope;
+}
+
+/*!
+Sets the scope \a object for the script.
+*/
+void QmlScriptString::setScopeObject(QObject *object)
+{
+    d->scope = object;
+}
+
+/*!
+Returns the script text.
+*/
+QString QmlScriptString::script() const
+{
+    return d->script;
+}
+
+/*!
+Sets the \a script text.
+*/
+void QmlScriptString::setScript(const QString &script)
+{
+    d->script = script;
+}
+
 QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLEXPRESSION_H
 

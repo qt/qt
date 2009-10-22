@@ -39,11 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QMLEXPRESSION_H
-#define QMLEXPRESSION_H
+#ifndef QMLSCRIPTSTRING_H
+#define QMLSCRIPTSTRING_H
 
-#include <QtCore/qobject.h>
-#include <QtCore/qvariant.h>
+#include <QtCore/qstring.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -51,61 +52,36 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QString;
-class QmlRefCount;
-class QmlEngine;
+class QObject;
 class QmlContext;
-class QmlExpressionPrivate;
-class QmlBasicScript;
-class Q_DECLARATIVE_EXPORT QmlExpression : public QObject
+class QmlScriptStringPrivate;
+class Q_DECLARATIVE_EXPORT QmlScriptString 
 {
-    Q_OBJECT
 public:
-    QmlExpression();
-    QmlExpression(QmlContext *, const QString &, QObject *);
-    virtual ~QmlExpression();
+    QmlScriptString();
+    QmlScriptString(const QmlScriptString &);
+    ~QmlScriptString();
 
-    QmlEngine *engine() const;
+    QmlScriptString &operator=(const QmlScriptString &);
+
     QmlContext *context() const;
-
-    QString expression() const;
-    void clearExpression();
-    virtual void setExpression(const QString &);
-    bool isConstant() const;
-
-    bool trackChange() const;
-    void setTrackChange(bool);
-
-    QUrl sourceFile() const;
-    int lineNumber() const;
-    void setSourceLocation(const QUrl &fileName, int line);
+    void setContext(QmlContext *);
 
     QObject *scopeObject() const;
+    void setScopeObject(QObject *);
 
-public Q_SLOTS:
-    QVariant value(bool *isUndefined = 0);
-
-Q_SIGNALS:
-    virtual void valueChanged();
-
-protected:
-    QmlExpression(QmlContext *, const QString &, QObject *, 
-                  QmlExpressionPrivate &dd);
-    QmlExpression(QmlContext *, void *, QmlRefCount *rc, QObject *me, const QUrl &,
-                  int, QmlExpressionPrivate &dd);
-
-private Q_SLOTS:
-    void __q_notify();
+    QString script() const;
+    void setScript(const QString &);
 
 private:
-    Q_DECLARE_PRIVATE(QmlExpression)
-    friend class QmlDebugger;
-    friend class QmlContext;
+    QSharedDataPointer<QmlScriptStringPrivate> d;
 };
+
+Q_DECLARE_METATYPE(QmlScriptString);
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLEXPRESSION_H
+#endif // QMLSCRIPTSTRING_H
 

@@ -864,6 +864,52 @@ QFxListView::~QFxListView()
 }
 
 /*!
+    \qmlattachedproperty bool ListView::isCurrentItem
+    This attched property is true if this delegate is the current item; otherwise false.
+
+    It is attached to each instance of the delegate.
+
+    This property may be used to adjust the appearance of the current item, for example:
+
+    \snippet doc/src/snippets/declarative/listview/highlight.qml 0
+*/
+
+/*!
+    \qmlattachedproperty ListView ListView::view
+    This attached property holds the view that manages this delegate instance.
+
+    It is attached to each instance of the delegate.
+*/
+
+/*!
+    \qmlattachedproperty string ListView::prevSection
+    This attached property holds the section of the previous element.
+
+    It is attached to each instance of the delegate.
+
+    The section is evaluated using the \l {ListView::sectionExpression}{sectionExpression} property.
+*/
+
+/*!
+    \qmlattachedproperty string ListView::section
+    This attached property holds the section of this element.
+
+    It is attached to each instance of the delegate.
+
+    The section is evaluated using the \l {ListView::sectionExpression}{sectionExpression} property.
+*/
+
+/*!
+    \qmlattachedproperty bool ListView::delayRemove
+    This attached property holds whether the delegate may be destroyed.
+
+    It is attached to each instance of the delegate.
+
+    It is sometimes necessary to delay the destruction of an item
+    until an animation completes.
+*/
+
+/*!
     \qmlproperty model ListView::model
     This property holds the model providing data for the list.
 

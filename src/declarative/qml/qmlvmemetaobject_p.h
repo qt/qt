@@ -112,6 +112,7 @@ protected:
 private:
     QObject *object;
     QmlRefCount *ref;
+    QGuard<QmlContext> ctxt;
 
     const QmlVMEMetaData *metaData;
     int propOffset;
