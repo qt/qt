@@ -4262,7 +4262,12 @@ QGesture *QGestureEvent::gesture(Qt::GestureType type) const
 */
 QList<QGesture *> QGestureEvent::activeGestures() const
 {
-    return d_func()->gestures;
+    QList<QGesture *> gestures;
+    foreach (QGesture *gesture, d_func()->gestures) {
+        if (gesture->state() != Qt::GestureCanceled)
+            gestures.append(gesture);
+    }
+    return gestures;
 }
 
 /*!
@@ -4270,7 +4275,12 @@ QList<QGesture *> QGestureEvent::activeGestures() const
 */
 QList<QGesture *> QGestureEvent::canceledGestures() const
 {
-    return d_func()->gestures;
+    QList<QGesture *> gestures;
+    foreach (QGesture *gesture, d_func()->gestures) {
+        if (gesture->state() == Qt::GestureCanceled)
+            gestures.append(gesture);
+    }
+    return gestures;
 }
 
 /*!
