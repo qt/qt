@@ -151,22 +151,6 @@ class QGLEngineSelector
 public:
     QGLEngineSelector() : engineType(QPaintEngine::MaxUser)
     {
-#ifdef Q_WS_MAC
-        // The ATI X1600 driver for Mac OS X does not support return
-        // values from functions in GLSL. Since working around this in
-        // the GL2 engine would require a big, ugly rewrite, we're
-        // falling back to the GL 1 engine..
-        QGLWidget *tmp = 0;
-        if (!QGLContext::currentContext()) {
-            tmp = new QGLWidget();
-            tmp->makeCurrent();
-        }
-        if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
-            setPreferredPaintEngine(QPaintEngine::OpenGL);
-        if (tmp)
-            delete tmp;
-#endif
-
     }
 
     void setPreferredPaintEngine(QPaintEngine::Type type) {
@@ -175,6 +159,25 @@ public:
     }
 
     QPaintEngine::Type preferredPaintEngine() {
+#ifdef Q_WS_MAC
+        // The ATI X1600 driver for Mac OS X does not support return
+        // values from functions in GLSL. Since working around this in
+        // the GL2 engine would require a big, ugly rewrite, we're
+        // falling back to the GL 1 engine..
+        static bool mac_x1600_check_done = false;
+        if (!mac_x1600_check_done) {
+            QGLWidget *tmp = 0;
+            if (!QGLContext::currentContext()) {
+                tmp = new QGLWidget();
+                tmp->makeCurrent();
+            }
+            if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
+                engineType = QPaintEngine::OpenGL;
+            if (tmp)
+                delete tmp;
+            mac_x1600_check_done = true;
+        }
+#endif
         if (engineType == QPaintEngine::MaxUser) {
             // No user-set engine - use the defaults
 #if defined(QT_OPENGL_ES_2)
