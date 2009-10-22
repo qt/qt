@@ -104,8 +104,8 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance | JSC::OverridesHasInstance));
     }
 
-    JSC::JSValue data() const;
-    void setData(JSC::JSValue data);
+    inline JSC::JSValue data() const;
+    inline void setData(JSC::JSValue data);
 
     inline QScriptObjectDelegate *delegate() const;
     inline void setDelegate(QScriptObjectDelegate *delegate);
@@ -157,6 +157,20 @@ public:
 private:
     Q_DISABLE_COPY(QScriptObjectDelegate)
 };
+
+inline JSC::JSValue QScriptObject::data() const
+{
+    if (!d)
+        return JSC::JSValue();
+    return d->data;
+}
+
+inline void QScriptObject::setData(JSC::JSValue data)
+{
+    if (!d)
+        d = new Data();
+    d->data = data;
+}
 
 inline QScriptObjectDelegate *QScriptObject::delegate() const
 {

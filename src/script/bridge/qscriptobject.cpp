@@ -70,20 +70,6 @@ QScriptObject::~QScriptObject()
     delete d;
 }
 
-JSC::JSValue QScriptObject::data() const
-{
-    if (!d)
-        return JSC::JSValue();
-    return d->data;
-}
-
-void QScriptObject::setData(JSC::JSValue data)
-{
-    if (!d)
-        d = new Data();
-    d->data = data;
-}
-
 bool QScriptObject::getOwnPropertySlot(JSC::ExecState* exec,
                                        const JSC::Identifier& propertyName,
                                        JSC::PropertySlot& slot)
