@@ -78,8 +78,8 @@
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
 #include <qmlcomponent.h>
-#include "private/qmlcomponentjs_p.h"
-#include "private/qmlmetaproperty_p.h"
+#include <private/qmlcomponentjs_p.h>
+#include <private/qmlmetaproperty_p.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
 #include <private/qmlenginedebug_p.h>
@@ -88,6 +88,7 @@
 #include <private/qmlsqldatabase_p.h>
 #include <private/qmltypenamescriptclass_p.h>
 #include <private/qmllistscriptclass_p.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"
@@ -219,6 +220,9 @@ Q_GLOBAL_STATIC(QmlEngineDebugServer, qmlEngineDebugServer);
 void QmlEnginePrivate::init()
 {
     Q_Q(QmlEngine);
+    qRegisterMetaType<QVariant>("QVariant");
+    qRegisterMetaType<QmlScriptString>("QmlScriptString");
+
     scriptEngine.installTranslatorFunctions();
     contextClass = new QmlContextScriptClass(q);
     objectClass = new QmlObjectScriptClass(q);
@@ -284,8 +288,6 @@ QmlEngine::QmlEngine(QObject *parent)
 {
     Q_D(QmlEngine);
     d->init();
-
-    qRegisterMetaType<QVariant>("QVariant");
 }
 
 /*!
