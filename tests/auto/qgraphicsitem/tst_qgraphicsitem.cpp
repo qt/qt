@@ -372,6 +372,7 @@ private slots:
     void itemUsesExtendedStyleOption();
     void itemSendsGeometryChanges();
     void moveItem();
+    void moveLineItem();
     void sorting_data();
     void sorting();
     void itemHasNoContents();
@@ -7436,6 +7437,39 @@ void tst_QGraphicsItem::moveItem()
     expectedParentRegion += expectedChildRegion.translated(20, 20);
     expectedParentRegion += expectedGrandChildRegion.translated(20, 20);
     COMPARE_REGIONS(view.paintedRegion, expectedParentRegion);
+}
+
+void tst_QGraphicsItem::moveLineItem()
+{
+    QGraphicsScene scene;
+    scene.setSceneRect(0, 0, 200, 200);
+    QGraphicsLineItem *item = new QGraphicsLineItem(0, 0, 100, 0);
+    item->setPos(50, 50);
+    scene.addItem(item);
+
+    MyGraphicsView view(&scene);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(200);
+    view.reset();
+
+    const QRect itemDeviceBoundingRect = item->deviceTransform(view.viewportTransform())
+                                         .mapRect(item->boundingRect()).toRect();
+    QRegion expectedRegion = itemDeviceBoundingRect.adjusted(-2, -2, 2, 2); // antialiasing
+
+    // Make sure the calculated region is correct.
+    item->update();
+    QTest::qWait(10);
+    QCOMPARE(view.paintedRegion, expectedRegion);
+    view.reset();
+
+    // Old position: (50, 50)
+    item->setPos(50, 100);
+    expectedRegion += expectedRegion.translated(0, 50);
+    QTest::qWait(10);
+    QCOMPARE(view.paintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsItem::sorting_data()

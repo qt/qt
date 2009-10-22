@@ -4888,7 +4888,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     continue;
                 }
 
-                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint && !paintedViewBoundingRect.isEmpty()) {
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
                     if (!viewPrivate->updateRect(paintedViewBoundingRect))
                         paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.
