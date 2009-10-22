@@ -84,22 +84,6 @@ void QScriptObject::setData(JSC::JSValue data)
     d->data = data;
 }
 
-QScriptObjectDelegate *QScriptObject::delegate() const
-{
-    if (!d)
-        return 0;
-    return d->delegate;
-}
-
-void QScriptObject::setDelegate(QScriptObjectDelegate *delegate)
-{
-    if (!d)
-        d = new Data();
-    else
-        delete d->delegate;
-    d->delegate = delegate;
-}
-
 bool QScriptObject::getOwnPropertySlot(JSC::ExecState* exec,
                                        const JSC::Identifier& propertyName,
                                        JSC::PropertySlot& slot)
