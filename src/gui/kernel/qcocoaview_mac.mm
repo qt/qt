@@ -504,7 +504,6 @@ extern "C" {
 
 - (void)drawRect:(NSRect)aRect
 {
-    qDebug("drawRect");
     if (QApplicationPrivate::graphicsSystem() != 0) {
         if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
             bs->markDirty(qwidget->rect(), qwidget);
