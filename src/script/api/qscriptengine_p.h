@@ -489,6 +489,28 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
     return property(JSC::Identifier(exec, name), resolveMode);
 }
 
+inline QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+{
+    Q_ASSERT(isObject());
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSObject *object = JSC::asObject(jscValue);
+    JSC::PropertySlot slot(object);
+    if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, id, slot))
+        return engine->scriptValueFromJSCValue(slot.getValue(exec, id));
+    return propertyHelper(id, resolveMode);
+}
+
+inline QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+{
+    Q_ASSERT(isObject());
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSObject *object = JSC::asObject(jscValue);
+    JSC::PropertySlot slot(object);
+    if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, index, slot))
+        return engine->scriptValueFromJSCValue(slot.getValue(exec, index));
+    return propertyHelper(index, resolveMode);
+}
+
 inline void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
 {
     if (engine)

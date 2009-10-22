@@ -276,41 +276,36 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+QScriptValue QScriptValuePrivate::propertyHelper(const JSC::Identifier &id, int resolveMode) const
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
-    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
-    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
-        result = slot.getValue(exec, id);
-    } else {
-        if ((resolveMode & QScriptValue::ResolvePrototype)
-          && const_cast<JSC::JSObject*>(object)->getPropertySlot(exec, id, slot)) {
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::ExecState *exec = engine->currentFrame;
+        JSC::JSObject *object = JSC::asObject(jscValue);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, id, slot))
             result = slot.getValue(exec, id);
-        } else if (resolveMode & QScriptValue::ResolveScope) {
-            // ### check if it's a function object and look in the scope chain
-            QScriptValue scope = property(QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
-            if (scope.isObject())
-                result = engine->scriptValueToJSCValue(QScriptValuePrivate::get(scope)->property(id, resolveMode));
-        }
+    }
+    if (!result && (resolveMode & QScriptValue::ResolveScope)) {
+        // ### check if it's a function object and look in the scope chain
+        QScriptValue scope = property(QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+        if (scope.isObject())
+            result = engine->scriptValueToJSCValue(QScriptValuePrivate::get(scope)->property(id, resolveMode));
     }
     return engine->scriptValueFromJSCValue(result);
 }
 
-QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+QScriptValue QScriptValuePrivate::propertyHelper(quint32 index, int resolveMode) const
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
-    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
-    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, index, slot)) {
-        result = slot.getValue(exec, index);
-    } else if ((resolveMode & QScriptValue::ResolvePrototype)
-          && const_cast<JSC::JSObject*>(object)->getPropertySlot(exec, index, slot)) {
-        result = slot.getValue(exec, index);
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::ExecState *exec = engine->currentFrame;
+        JSC::JSObject *object = JSC::asObject(jscValue);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, index, slot))
+            result = slot.getValue(exec, index);
     }
     return engine->scriptValueFromJSCValue(result);
 }
