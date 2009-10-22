@@ -70,19 +70,30 @@ QImagePixmapCleanupHooks *QImagePixmapCleanupHooks::instance()
     return qt_image_and_pixmap_cleanup_hooks;
 }
 
-void QImagePixmapCleanupHooks::addPixmapHook(_qt_pixmap_cleanup_hook_pm hook)
+void QImagePixmapCleanupHooks::addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm hook)
 {
-    pixmapHooks.append(hook);
+    pixmapModificationHooks.append(hook);
 }
+
+void QImagePixmapCleanupHooks::addPixmapDestructionHook(_qt_pixmap_cleanup_hook_pm hook)
+{
+    pixmapDestructionHooks.append(hook);
+}
+
 
 void QImagePixmapCleanupHooks::addImageHook(_qt_image_cleanup_hook_64 hook)
 {
     imageHooks.append(hook);
 }
 
-void QImagePixmapCleanupHooks::removePixmapHook(_qt_pixmap_cleanup_hook_pm hook)
+void QImagePixmapCleanupHooks::removePixmapModificationHook(_qt_pixmap_cleanup_hook_pm hook)
 {
-    pixmapHooks.removeAll(hook);
+    pixmapModificationHooks.removeAll(hook);
+}
+
+void QImagePixmapCleanupHooks::removePixmapDestructionHook(_qt_pixmap_cleanup_hook_pm hook)
+{
+    pixmapDestructionHooks.removeAll(hook);
 }
 
 void QImagePixmapCleanupHooks::removeImageHook(_qt_image_cleanup_hook_64 hook)
@@ -91,18 +102,29 @@ void QImagePixmapCleanupHooks::removeImageHook(_qt_image_cleanup_hook_64 hook)
 }
 
 
-void QImagePixmapCleanupHooks::executePixmapHooks(QPixmap* pm)
+void QImagePixmapCleanupHooks::executePixmapModificationHooks(QPixmap* pm)
 {
-    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->pixmapHooks.count(); ++i)
-        qt_image_and_pixmap_cleanup_hooks->pixmapHooks[i](pm);
+    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
+    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->pixmapModificationHooks.count(); ++i)
+        qt_image_and_pixmap_cleanup_hooks->pixmapModificationHooks[i](pm);
 
     if (qt_pixmap_cleanup_hook_64)
         qt_pixmap_cleanup_hook_64(pm->cacheKey());
 }
 
+void QImagePixmapCleanupHooks::executePixmapDestructionHooks(QPixmap* pm)
+{
+    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
+    for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->pixmapDestructionHooks.count(); ++i)
+        qt_image_and_pixmap_cleanup_hooks->pixmapDestructionHooks[i](pm);
+
+    if (qt_pixmap_cleanup_hook_64)
+        qt_pixmap_cleanup_hook_64(pm->cacheKey());
+}
 
 void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
 {
+    Q_ASSERT(qt_image_and_pixmap_cleanup_hooks);
     for (int i = 0; i < qt_image_and_pixmap_cleanup_hooks->imageHooks.count(); ++i)
         qt_image_and_pixmap_cleanup_hooks->imageHooks[i](key);
 

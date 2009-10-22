@@ -322,8 +322,9 @@ QPixmap::QPixmap(const char * const xpm[])
 
 QPixmap::~QPixmap()
 {
-    if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+    Q_ASSERT(data->ref >= 1); // Catch if ref-counting changes again
+    if (data->is_cached && data->ref == 1) // ref will be decrememnted after destructor returns
+        QImagePixmapCleanupHooks::executePixmapDestructionHooks(this);
 }
 
 /*!
@@ -959,7 +960,17 @@ void QPixmap::fill(const QColor &color)
         return;
     }
 
-    detach();
+    if (data->ref == 1) {
+        // detach() will also remove this pixmap from caches, so
+        // it has to be called even when ref == 1.
+        detach();
+    } else {
+        // Don't bother to make a copy of the data object, since
+        // it will be filled with new pixel data anyway.
+        QPixmapData *d = data->createCompatiblePixmapData();
+        d->resize(data->width(), data->height());
+        data = d;
+    }
     data->fill(color);
 }
 
@@ -1907,7 +1918,7 @@ void QPixmap::detach()
     }
 
     if (data->is_cached && data->ref == 1)
-        QImagePixmapCleanupHooks::executePixmapHooks(this);
+        QImagePixmapCleanupHooks::executePixmapModificationHooks(this);
 
 #if defined(Q_WS_MAC)
     QMacPixmapData *macData = id == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
