@@ -125,6 +125,7 @@ HDC shared_dc()
 }
 #endif
 
+#ifndef Q_WS_WINCE
 typedef BOOL (WINAPI *PtrGetCharWidthI)(HDC, UINT, UINT, LPWORD, LPINT);
 static PtrGetCharWidthI ptrGetCharWidthI = 0;
 static bool resolvedGetCharWidthI = false;
@@ -136,6 +137,7 @@ static void resolveGetCharWidthI()
     resolvedGetCharWidthI = true;
     ptrGetCharWidthI = (PtrGetCharWidthI)QLibrary::resolve(QLatin1String("gdi32"), "GetCharWidthI");
 }
+#endif // !defined(Q_WS_WINCE)
 
 // defined in qtextengine_win.cpp
 typedef void *SCRIPT_CACHE;
@@ -340,8 +342,10 @@ QFontEngineWin::QFontEngineWin(const QString &name, HFONT _hfont, bool stockFont
     designAdvances = 0;
     designAdvancesSize = 0;
 
+#ifndef Q_WS_WINCE
     if (!resolvedGetCharWidthI)
         resolveGetCharWidthI();
+#endif
 }
 
 QFontEngineWin::~QFontEngineWin()
@@ -381,80 +385,18 @@ bool QFontEngineWin::stringToCMap(const QChar *str, int len, QGlyphLayout *glyph
     if (flags & QTextEngine::GlyphIndicesOnly)
         return true;
 
-#if defined(Q_WS_WINCE)
-    HDC hdc = shared_dc();
-    if (flags & QTextEngine::DesignMetrics) {
-        HGDIOBJ oldFont = 0;
-        int glyph_pos = 0;
-        for(register int i = 0; i < len; i++) {
-            bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
-                              && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-            unsigned int glyph = glyphs->glyphs[glyph_pos];
-            if(int(glyph) >= designAdvancesSize) {
-                int newSize = (glyph + 256) >> 8 << 8;
-                designAdvances = q_check_ptr((QFixed *)realloc(designAdvances, newSize*sizeof(QFixed)));
-                for(int i = designAdvancesSize; i < newSize; ++i)
-                    designAdvances[i] = -1000000;
-                designAdvancesSize = newSize;
-            }
-            if(designAdvances[glyph] < -999999) {
-                if(!oldFont)
-                    oldFont = selectDesignFont();
-                SIZE size = {0, 0};
-                GetTextExtentPoint32(hdc, (wchar_t *)(str+i), surrogate ? 2 : 1, &size);
-                designAdvances[glyph] = QFixed((int)size.cx)/designToDevice;
-            }
-            glyphs->advances_x[glyph_pos] = designAdvances[glyph];
-            glyphs->advances_y[glyph_pos] = 0;
-            if (surrogate)
-                ++i;
-            ++glyph_pos;
-        }
-        if(oldFont)
-            DeleteObject(SelectObject(hdc, oldFont));
-    } else {
-        int glyph_pos = 0;
-        HGDIOBJ oldFont = 0;
-
-        for(register int i = 0; i < len; i++) {
-            bool surrogate = (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00 && i < len-1
-                              && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
-            unsigned int glyph = glyphs->glyphs[glyph_pos];
-
-            glyphs->advances_y[glyph_pos] = 0;
-
-            if (glyph >= widthCacheSize) {
-                int newSize = (glyph + 256) >> 8 << 8;
-                widthCache = q_check_ptr((unsigned char *)realloc(widthCache,
-                            newSize*sizeof(QFixed)));
-                memset(widthCache + widthCacheSize, 0, newSize - widthCacheSize);
-                widthCacheSize = newSize;
-            }
-            glyphs->advances_x[glyph_pos] = widthCache[glyph];
-            // font-width cache failed
-            if (glyphs->advances_x[glyph_pos] == 0) {
-                SIZE size = {0, 0};
-                if (!oldFont)
-                    oldFont = SelectObject(hdc, hfont);
-                GetTextExtentPoint32(hdc, (wchar_t *)str + i, surrogate ? 2 : 1, &size);
-                glyphs->advances_x[glyph_pos] = size.cx;
-                // if glyph's within cache range, store it for later
-                if (size.cx > 0 && size.cx < 0x100)
-                    widthCache[glyph] = size.cx;
-            }
-
-            if (surrogate)
-                ++i;
-            ++glyph_pos;
-        }
-
-        if (oldFont)
-            SelectObject(hdc, oldFont);
-    }
-#else
     recalcAdvances(glyphs, flags);
-#endif
     return true;
+}
+
+inline void calculateTTFGlyphWidth(HDC hdc, UINT glyph, int &width)
+{
+#if defined(Q_WS_WINCE)
+    GetCharWidth32(hdc, glyph, glyph, &width);
+#else
+    if (ptrGetCharWidthI)
+        ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+#endif
 }
 
 void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFlags flags) const
@@ -477,8 +419,7 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
                     oldFont = selectDesignFont();
 
                 int width = 0;
-                if (ptrGetCharWidthI)
-                    ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+                calculateTTFGlyphWidth(hdc, glyph, width);
                 designAdvances[glyph] = QFixed(width) / designToDevice;
             }
             glyphs->advances_x[i] = designAdvances[glyph];
@@ -517,8 +458,8 @@ void QFontEngineWin::recalcAdvances(QGlyphLayout *glyphs, QTextEngine::ShaperFla
                     SIZE size = {0, 0};
                     GetTextExtentPoint32(hdc, (wchar_t *)ch, chrLen, &size);
                     width = size.cx;
-                } else if (ptrGetCharWidthI) {
-                    ptrGetCharWidthI(hdc, glyph, 1, 0, &width);
+                } else {
+                    calculateTTFGlyphWidth(hdc, glyph, width);
                 }
                 glyphs->advances_x[i] = width;
                 // if glyph's within cache range, store it for later
