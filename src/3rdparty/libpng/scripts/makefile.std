@@ -1,7 +1,10 @@
 # makefile for libpng
 # Copyright (C) 2002, 2006 Glenn Randers-Pehrson
 # Copyright (C) 1995 Guy Eric Schalnat, Group 42, Inc.
-# For conditions of distribution and use, see copyright notice in png.h
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 # where make install puts libpng.a and png.h
 prefix=/usr/local
@@ -83,10 +86,10 @@ pngget.o: png.h pngconf.h
 pngread.o: png.h pngconf.h
 pngrtran.o: png.h pngconf.h
 pngrutil.o: png.h pngconf.h
-pngtest.o: png.h pngconf.h
 pngtrans.o: png.h pngconf.h
 pngwrite.o: png.h pngconf.h
 pngwtran.o: png.h pngconf.h
 pngwutil.o: png.h pngconf.h
 pngpread.o: png.h pngconf.h
 
+pngtest.o: png.h pngconf.h

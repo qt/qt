@@ -9,6 +9,7 @@
     </message>
     <message id="untranslated_id">
         <source>This has no translation.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message id="this_another_id">
         <source>Foo bar.</source>
@@ -16,6 +17,12 @@
     </message>
     <message>
         <source>Drop me!</source>
+    </message>
+    <message id="one_id">
+        <source></source>
+    </message>
+    <message id="two_id">
+        <source></source>
     </message>
 </context>
 </TS>

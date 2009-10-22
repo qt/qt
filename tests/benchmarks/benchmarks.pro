@@ -9,8 +9,8 @@ SUBDIRS = containers-associative \
 	qiodevice \
 	qpixmap \
 	blendbench \
-    qstring \
-    qstringlist \
+	qstring \
+    	qstringlist \
         qmatrix4x4 \
         qnetworkreply \
 	qobject \

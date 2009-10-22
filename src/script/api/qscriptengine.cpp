@@ -797,6 +797,10 @@ QScriptEnginePrivate::QScriptEnginePrivate()
       registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
+    qMetaTypeId<QList<int> >();
+#ifndef QT_NO_QOBJECT
+    qMetaTypeId<QObjectList>();
+#endif
 
     JSC::initializeThreading(); // ### hmmm
 

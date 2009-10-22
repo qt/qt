@@ -991,4 +991,5 @@ EXPORTS
 	_ZrsR11QDataStreamR21QNetworkCacheMetaData @ 990 NONAME
 	_ZN15QNetworkRequest20setOriginatingObjectEP7QObject @ 991 NONAME
 	_ZNK15QNetworkRequest17originatingObjectEv @ 992 NONAME
-
+	_ZN10QSslSocket12socketOptionEN15QAbstractSocket12SocketOptionE @ 993 NONAME
+	_ZN10QSslSocket15setSocketOptionEN15QAbstractSocket12SocketOptionERK8QVariant @ 994 NONAME
