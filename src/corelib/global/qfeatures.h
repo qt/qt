@@ -82,9 +82,6 @@
 // QGroupBox
 //#define QT_NO_GROUPBOX
 
-// QIcon
-//#define QT_NO_ICON
-
 // QImageIOPlugin
 //#define QT_NO_IMAGEFORMATPLUGIN
 
@@ -255,6 +252,9 @@
 
 // QSystemSemaphore
 //#define QT_NO_SYSTEMSEMAPHORE
+
+// QSystemTrayIcon
+//#define QT_NO_SYSTEMTRAYICON
 
 // QTabletEvent
 //#define QT_NO_TABLETEVENT
@@ -466,9 +466,9 @@
 #define QT_NO_SXE
 #endif
 
-// QSystemTrayIcon
-#if !defined(QT_NO_SYSTEMTRAYICON) && (defined(QT_NO_ICON))
-#define QT_NO_SYSTEMTRAYICON
+// QToolButton
+#if !defined(QT_NO_TOOLBUTTON) && (defined(QT_NO_ACTION))
+#define QT_NO_TOOLBUTTON
 #endif
 
 // QUndoStack
@@ -536,14 +536,14 @@
 #define QT_NO_STYLE_WINDOWSVISTA
 #endif
 
+// QTabBar
+#if !defined(QT_NO_TABBAR) && (defined(QT_NO_TOOLBUTTON))
+#define QT_NO_TABBAR
+#endif
+
 // OdfWriter
 #if !defined(QT_NO_TEXTODFWRITER) && (defined(QT_NO_XMLSTREAMWRITER))
 #define QT_NO_TEXTODFWRITER
-#endif
-
-// QToolButton
-#if !defined(QT_NO_TOOLBUTTON) && (defined(QT_NO_ICON) || defined(QT_NO_ACTION))
-#define QT_NO_TOOLBUTTON
 #endif
 
 // Translation (UTF-8 representation)
@@ -554,6 +554,11 @@
 // QUndoGroup
 #if !defined(QT_NO_UNDOGROUP) && (defined(QT_NO_UNDOSTACK))
 #define QT_NO_UNDOGROUP
+#endif
+
+// QWhatsThis
+#if !defined(QT_NO_WHATSTHIS) && (defined(QT_NO_TOOLBUTTON))
+#define QT_NO_WHATSTHIS
 #endif
 
 // Drag and drop
@@ -579,6 +584,11 @@
 // Phonon::PlatformPlugin
 #if !defined(QT_NO_PHONON_PLATFORMPLUGIN) && (defined(QT_NO_LIBRARY))
 #define QT_NO_PHONON_PLATFORMPLUGIN
+#endif
+
+// Phonon::VolumeSlider
+#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_TOOLBUTTON))
+#define QT_NO_PHONON_VOLUMESLIDER
 #endif
 
 // QPrinter
@@ -621,14 +631,9 @@
 #define QT_NO_SVG
 #endif
 
-// QTabBar
-#if !defined(QT_NO_TABBAR) && (defined(QT_NO_TOOLBUTTON))
-#define QT_NO_TABBAR
-#endif
-
-// QWhatsThis
-#if !defined(QT_NO_WHATSTHIS) && (defined(QT_NO_TOOLBUTTON))
-#define QT_NO_WHATSTHIS
+// Q3TabDialog
+#if !defined(QT_NO_TABDIALOG) && (defined(QT_NO_TABBAR))
+#define QT_NO_TABDIALOG
 #endif
 
 // QColorDialog
@@ -641,9 +646,9 @@
 #define QT_NO_ITEMVIEWS
 #endif
 
-// Phonon::VolumeSlider
-#if !defined(QT_NO_PHONON_VOLUMESLIDER) && (defined(QT_NO_SLIDER) || defined(QT_NO_TOOLBUTTON))
-#define QT_NO_PHONON_VOLUMESLIDER
+// QMenuBar
+#if !defined(QT_NO_MENUBAR) && (defined(QT_NO_MENU) || defined(QT_NO_TOOLBUTTON))
+#define QT_NO_MENUBAR
 #endif
 
 // QWSInputMethod
@@ -666,9 +671,9 @@
 #define QT_NO_SVGRENDERER
 #endif
 
-// Q3TabDialog
-#if !defined(QT_NO_TABDIALOG) && (defined(QT_NO_TABBAR))
-#define QT_NO_TABDIALOG
+// QTabWidget
+#if !defined(QT_NO_TABWIDGET) && (defined(QT_NO_TABBAR) || defined(QT_NO_STACKEDWIDGET))
+#define QT_NO_TABWIDGET
 #endif
 
 // QTextCodecPlugin
@@ -696,9 +701,9 @@
 #define QT_NO_LISTVIEW
 #endif
 
-// QMenuBar
-#if !defined(QT_NO_MENUBAR) && (defined(QT_NO_MENU) || defined(QT_NO_TOOLBUTTON))
-#define QT_NO_MENUBAR
+// QMainWindow
+#if !defined(QT_NO_MAINWINDOW) && (defined(QT_NO_MENU) || defined(QT_NO_RESIZEHANDLER) || defined(QT_NO_TOOLBUTTON))
+#define QT_NO_MAINWINDOW
 #endif
 
 // QAbstractProxyModel
@@ -731,19 +736,24 @@
 #define QT_NO_TABLEVIEW
 #endif
 
-// QTabWidget
-#if !defined(QT_NO_TABWIDGET) && (defined(QT_NO_TABBAR) || defined(QT_NO_STACKEDWIDGET))
-#define QT_NO_TABWIDGET
-#endif
-
 // QTextBrowser
 #if !defined(QT_NO_TEXTBROWSER) && (defined(QT_NO_TEXTEDIT))
 #define QT_NO_TEXTBROWSER
 #endif
 
+// QToolBox
+#if !defined(QT_NO_TOOLBOX) && (defined(QT_NO_TOOLBUTTON) || defined(QT_NO_SCROLLAREA))
+#define QT_NO_TOOLBOX
+#endif
+
 // QTreeView
 #if !defined(QT_NO_TREEVIEW) && (defined(QT_NO_ITEMVIEWS))
 #define QT_NO_TREEVIEW
+#endif
+
+// Accessibility
+#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_MENUBAR))
+#define QT_NO_ACCESSIBILITY
 #endif
 
 // QColumnView
@@ -766,11 +776,6 @@
 #define QT_NO_LISTWIDGET
 #endif
 
-// QMainWindow
-#if !defined(QT_NO_MAINWINDOW) && (defined(QT_NO_MENU) || defined(QT_NO_RESIZEHANDLER) || defined(QT_NO_TOOLBUTTON))
-#define QT_NO_MAINWINDOW
-#endif
-
 // QSortFilterProxyModel
 #if !defined(QT_NO_SORTFILTERPROXYMODEL) && (defined(QT_NO_PROXYMODEL))
 #define QT_NO_SORTFILTERPROXYMODEL
@@ -781,9 +786,9 @@
 #define QT_NO_TABLEWIDGET
 #endif
 
-// QToolBox
-#if !defined(QT_NO_TOOLBOX) && (defined(QT_NO_TOOLBUTTON) || defined(QT_NO_SCROLLAREA))
-#define QT_NO_TOOLBOX
+// QToolBar
+#if !defined(QT_NO_TOOLBAR) && (defined(QT_NO_MAINWINDOW))
+#define QT_NO_TOOLBAR
 #endif
 
 // QTreeWidget
@@ -791,19 +796,9 @@
 #define QT_NO_TREEWIDGET
 #endif
 
-// Accessibility
-#if !defined(QT_NO_ACCESSIBILITY) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_MENUBAR))
-#define QT_NO_ACCESSIBILITY
-#endif
-
 // Common UNIX Printing System
 #if !defined(QT_NO_CUPS) && (defined(QT_NO_PRINTER) || defined(QT_NO_LIBRARY))
 #define QT_NO_CUPS
-#endif
-
-// QToolBar
-#if !defined(QT_NO_TOOLBAR) && (defined(QT_NO_MAINWINDOW))
-#define QT_NO_TOOLBAR
 #endif
 
 // QDockwidget
@@ -822,18 +817,18 @@
 #endif
 
 // QComboBox
-#if !defined(QT_NO_COMBOBOX) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_STANDARDITEMMODEL) || defined(QT_NO_LISTVIEW) || defined(QT_NO_ICON))
+#if !defined(QT_NO_COMBOBOX) && (defined(QT_NO_LINEEDIT) || defined(QT_NO_STANDARDITEMMODEL) || defined(QT_NO_LISTVIEW))
 #define QT_NO_COMBOBOX
-#endif
-
-// QPrintPreviewWidget
-#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_MAINWINDOW))
-#define QT_NO_PRINTPREVIEWWIDGET
 #endif
 
 // QWorkSpace
 #if !defined(QT_NO_WORKSPACE) && (defined(QT_NO_SCROLLBAR) || defined(QT_NO_MAINWINDOW) || defined(QT_NO_MENUBAR))
 #define QT_NO_WORKSPACE
+#endif
+
+// QPrintPreviewWidget
+#if !defined(QT_NO_PRINTPREVIEWWIDGET) && (defined(QT_NO_GRAPHICSVIEW) || defined(QT_NO_PRINTER) || defined(QT_NO_MAINWINDOW))
+#define QT_NO_PRINTPREVIEWWIDGET
 #endif
 
 // QCalendarWidget
