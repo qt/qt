@@ -319,10 +319,12 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
     QScriptValue svalue = data->expressionFunction.call();
 
     if (isUndefined)
-        *isUndefined = svalue.isUndefined();
+        *isUndefined = svalue.isUndefined() || scriptEngine->hasUncaughtException();
 
-    if (scriptEngine->hasUncaughtException())
+    if (scriptEngine->hasUncaughtException()) {
        printException(scriptEngine);
+       return QVariant();
+    }
 
     if (secondaryScope)
         ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);

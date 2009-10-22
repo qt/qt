@@ -760,12 +760,16 @@ void tst_qmlecmascript::scriptErrors()
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
     QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
+    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
-    QObject *object = component.create();
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, warning4.toLatin1().constData());
+    emit object->basicSignal();
 }
 
 /*

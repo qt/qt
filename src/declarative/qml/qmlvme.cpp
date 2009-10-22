@@ -540,7 +540,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QMetaMethod signal = 
                     target->metaObject()->method(instr.storeSignal.signalIndex);
 
-                (void *)new QmlBoundSignal(ctxt, primitives.at(instr.storeSignal.value), target, signal, target);
+                QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
+                QmlExpression *expr = 
+                    new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
+                expr->setSourceLocation(comp->url, instr.line);
+                bs->setExpression(expr);
             }
             break;
 
