@@ -46,6 +46,7 @@
 #include "private/qwidget_p.h"
 #include "private/qgraphicssystem_p.h"
 #include "private/qapplication_p.h"
+#include "qdesktopwidget.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -315,12 +316,21 @@ void QWidgetPrivate::hide_sys()
 
 void QWidgetPrivate::setMaxWindowState_helper()
 {
-    // XXX
+    setFullScreenSize_helper(); //### decoration size
 }
 
 void QWidgetPrivate::setFullScreenSize_helper()
 {
-    // XXX
+    Q_Q(QWidget);
+
+    const uint old_state = data.in_set_window_state;
+    data.in_set_window_state = 1;
+
+    const QRect screen = qApp->desktop()->screenGeometry(qApp->desktop()->screenNumber(q));
+    q->move(screen.topLeft());
+    q->resize(screen.size());
+
+    data.in_set_window_state = old_state;
 }
 
 static Qt::WindowStates effectiveState(Qt::WindowStates state)
