@@ -2577,7 +2577,7 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
 #endif
             break;
         case QMetaType::Double:
-            result = QScriptValue(*reinterpret_cast<const double*>(ptr));
+            result = QScriptValue(qsreal(*reinterpret_cast<const double*>(ptr)));
             break;
         case QMetaType::QString:
             result = QScriptValue(q_func(), *reinterpret_cast<const QString*>(ptr));
