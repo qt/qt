@@ -378,6 +378,12 @@ void QWindowSurface::setVisible(bool visible)
     Q_UNUSED(visible);
 }
 
+
+WId QWindowSurface::winId() const
+{
+    return WId(0);
+}
+
 #endif
 
 QT_END_NAMESPACE

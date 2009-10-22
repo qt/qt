@@ -58,15 +58,23 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destro
     Q_UNUSED(initializeWindow);
     // XXX
 
-
     Qt::WindowFlags flags = data.window_flags;
 
-#if 1
+    if (!(flags & Qt::Window) || q->windowType() == Qt::Desktop)
+        return; // we only care about real toplevels
+
     QWindowSurface *surface = q->windowSurface();
-    if (surface && (flags & Qt::Window))
-      data.window_flags = surface->setWindowFlags(data.window_flags);
-#endif
-//    qDebug() << "create_sys" << q;
+
+    if (!surface)
+        surface = createDefaultWindowSurface();
+
+    Q_ASSERT(surface);
+
+    data.window_flags = surface->setWindowFlags(data.window_flags);
+
+    setWinId(surface->winId());
+
+    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)

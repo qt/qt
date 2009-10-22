@@ -93,6 +93,7 @@ public:
     virtual void setVisible(bool visible);
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
+    virtual WId winId() const;
 #endif
     bool hasStaticContentsSupport() const;
 

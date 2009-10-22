@@ -568,4 +568,12 @@ void QTestLiteWindowSurface::setVisible(bool visible)
 }
 
 
+WId QTestLiteWindowSurface::winId() const
+{
+    if (xw)
+        return (WId) xw->window;
+    else
+        return WId(0);
+}
+
 QT_END_NAMESPACE
