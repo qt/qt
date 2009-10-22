@@ -995,16 +995,6 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
     info->prototype = prototype;
 }
 
-JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
-{
-    return reinterpret_cast<JSC::ExecState*>(context);
-}
-
-const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
-{
-    return reinterpret_cast<const JSC::ExecState*>(context);
-}
-
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
 {
     return globalData->head;

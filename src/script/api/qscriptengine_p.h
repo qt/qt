@@ -148,8 +148,8 @@ public:
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
 
     static inline QScriptContext *contextForFrame(JSC::ExecState *frame);
-    static JSC::ExecState *frameForContext(QScriptContext *context);
-    static const JSC::ExecState *frameForContext(const QScriptContext *context);
+    static inline JSC::ExecState *frameForContext(QScriptContext *context);
+    static inline const JSC::ExecState *frameForContext(const QScriptContext *context);
 
     JSC::JSGlobalObject *originalGlobalObject() const;
     JSC::JSObject *getOriginalGlobalObjectProxy();
@@ -520,6 +520,16 @@ inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *fra
         frame = frame->callerFrame()->removeHostCallFrameFlag();
     }
     return reinterpret_cast<QScriptContext *>(frame);
+}
+
+inline JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
+{
+    return reinterpret_cast<JSC::ExecState*>(context);
+}
+
+inline const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
+{
+    return reinterpret_cast<const JSC::ExecState*>(context);
 }
 
 inline JSC::ExecState *QScriptEnginePrivate::globalExec() const
