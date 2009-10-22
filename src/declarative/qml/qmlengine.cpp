@@ -747,7 +747,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 
     \code
     transform: Rotation {
-        id: Rotation
+        id: rotation
         origin.x: Container.width / 2;
         axis: vector(0, 1, 1)
     }
@@ -757,7 +757,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 
     \code
     transform: Rotation {
-        id: Rotation
+        id: rotation
         origin.x: Container.width / 2;
         axis.x: 0; axis.y: 1; axis.z: 0
     }

@@ -225,21 +225,21 @@ Rectangle {
         color: "green"
         width: 60; height: 60;
         x: -5; y: -5;
-        x: EaseFollow { source: Rect1.x - 5; velocity: 200 }
-        y: EaseFollow { source: Rect1.y - 5; velocity: 200 }
+        x: EaseFollow { source: rect1.x - 5; velocity: 200 }
+        y: EaseFollow { source: rect1.y - 5; velocity: 200 }
     }
 
     Rectangle {
-        id: Rect1
+        id: rect1
         color: "red"
         width: 50; height: 50;
     }
 
     focus: true
-    Keys.onRightPressed: Rect1.x = Rect1.x + 100
-    Keys.onLeftPressed: Rect1.x = Rect1.x - 100
-    Keys.onUpPressed: Rect1.y = Rect1.y - 100
-    Keys.onDownPressed: Rect1.y = Rect1.y + 100
+    Keys.onRightPressed: rect1.x = rect1.x + 100
+    Keys.onLeftPressed: rect1.x = rect1.x - 100
+    Keys.onUpPressed: rect1.y = rect1.y - 100
+    Keys.onDownPressed: rect1.y = rect1.y + 100
 }
 \endcode
 

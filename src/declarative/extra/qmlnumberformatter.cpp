@@ -72,8 +72,8 @@ public:
 
     In the following example, the text element will display the text "1,234.57".
     \code
-    NumberFormatter { id: Formatter; number: 1234.5678; format: "##,##0.##" }
-    Text { text: Formatter.text }
+    NumberFormatter { id: formatter; number: 1234.5678; format: "##,##0.##" }
+    Text { text: formatter.text }
     \endcode
 
     */

@@ -75,8 +75,8 @@ public:
     \brief The DateTimeFormatter allows you to control the format of a date string.
 
     \code
-    DateTimeFormatter { id: Formatter; date: System.date }
-    Text { text: Formatter.dateText }
+    DateTimeFormatter { id: formatter; date: System.date }
+    Text { text: formatter.dateText }
     \endcode
 
     By default, the text properties (dateText, timeText, and dateTimeText) will return the

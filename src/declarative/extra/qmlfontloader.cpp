@@ -76,11 +76,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FontLoader,QmlFontLoader)
 
     Example:
     \qml
-    FontLoader { id: FixedFont; name: "Courier" }
-    FontLoader { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
+    FontLoader { id: fixedFont; name: "Courier" }
+    FontLoader { id: webFont; source: "http://www.mysite.com/myfont.ttf" }
 
-    Text { text: "Fixed-size font"; font.family: FixedFont.name }
-    Text { text: "Fancy font"; font.family: WebFont.name }
+    Text { text: "Fixed-size font"; font.family: fixedFont.name }
+    Text { text: "Fancy font"; font.family: webFont.name }
     \endqml
 */
 QmlFontLoader::QmlFontLoader(QObject *parent)
@@ -146,8 +146,8 @@ void QmlFontLoader::setSource(const QUrl &url)
 
     Example:
     \qml
-    FontLoader { id: WebFont; source: "http://www.mysite.com/myfont.ttf" }
-    Text { text: "Fancy font"; font.family: WebFont.name }
+    FontLoader { id: webFont; source: "http://www.mysite.com/myfont.ttf" }
+    Text { text: "Fancy font"; font.family: webFont.name }
     \endqml
 */
 QString QmlFontLoader::name() const

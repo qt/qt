@@ -82,7 +82,7 @@ static void dump(ModelNode *node, int ind);
 
     \code
     ListModel {
-        id: FruitModel
+        id: fruitModel
         ListElement {
             name: "Apple"
             cost: 2.45
@@ -104,7 +104,7 @@ static void dump(ModelNode *node, int ind);
     The defined model can be used in views such as ListView:
     \code
     Component {
-        id: FruitDelegate
+        id: fruitDelegate
         Item {
             width: 200; height: 50
             Text { text: name }
@@ -113,8 +113,8 @@ static void dump(ModelNode *node, int ind);
     }
 
     ListView {
-        model: FruitModel
-        delegate: FruitDelegate
+        model: fruitModel
+        delegate: fruitDelegate
         anchors.fill: parent
     }
     \endcode
@@ -123,7 +123,7 @@ static void dump(ModelNode *node, int ind);
 
     \code
     ListModel {
-        id: FruitModel
+        id: fruitModel
         ListElement {
             name: "Apple"
             cost: 2.45
@@ -153,7 +153,7 @@ static void dump(ModelNode *node, int ind);
     The delegate below will list all the fruit attributes:
     \code
     Component {
-        id: FruitDelegate
+        id: fruitDelegate
         Item {
             width: 200; height: 50
             Text { id: Name; text: name }
@@ -176,7 +176,7 @@ static void dump(ModelNode *node, int ind);
 
     \code
     Component {
-        id: FruitDelegate
+        id: fruitDelegate
         Item {
             width: 200; height: 50
             Text { text: name }
@@ -185,7 +185,7 @@ static void dump(ModelNode *node, int ind);
             // Double the price when clicked.
             MouseRegion {
                 anchors.fill: parent
-                onClicked: FruitModel.set(index, "cost", cost*2)
+                onClicked: fruitModel.set(index, "cost", cost*2)
             }
         }
     }

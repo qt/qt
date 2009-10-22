@@ -610,9 +610,9 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     This example forwards key events to two lists:
     \qml
-    ListView { id: List1 ... }
-    ListView { id: List2 ... }
-    Keys.forwardTo: [List1, List2]
+    ListView { id: list1 ... }
+    ListView { id: list2 ... }
+    Keys.forwardTo: [list1, list2]
     focus: true
     \endqml
 */

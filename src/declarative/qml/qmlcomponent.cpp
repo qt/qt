@@ -84,15 +84,15 @@ int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
     \qml
 Item {
     Component {
-        id: RedSquare
+        id: redSquare
         Rectangle {
             color: "red"
             width: 10
             height: 10
         }
     }
-    Loader { sourceComponent: RedSquare }
-    Loader { sourceComponent: RedSquare; x: 20 }
+    Loader { sourceComponent: redSquare }
+    Loader { sourceComponent: redSquare; x: 20 }
 }
     \endqml
 
