@@ -74,7 +74,7 @@ void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destro
 
     setWinId(surface->winId());
 
-    qDebug() << "create_sys" << q << q->internalWinId();
+//    qDebug() << "create_sys" << q << q->internalWinId();
 }
 
 void QWidget::destroy(bool destroyWindow, bool destroySubWindows)
