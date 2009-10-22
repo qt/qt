@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,37 +38,67 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// This file contains benchmarks for QNetworkReply functions.
 
-#include <QDebug>
-#include <qtest.h>
-#include <QtTest/QtTest>
-#include <QtNetwork/qnetworkreply.h>
-#include <QtNetwork/qnetworkrequest.h>
-#include <QtNetwork/qnetworkaccessmanager.h>
-#include "../../auto/network-settings.h"
+#ifndef QSYMBIANEVENT_H
+#define QSYMBIANEVENT_H
 
-class tst_qnetworkreply : public QObject
+#include <QtCore/qglobal.h>
+
+#ifdef Q_OS_SYMBIAN
+
+class TWsEvent;
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Gui)
+
+class Q_GUI_EXPORT QSymbianEvent
 {
-    Q_OBJECT
-private slots:
-    void httpLatency();
+public:
+    enum Type {
+        InvalidEvent,
+        WindowServerEvent,
+        CommandEvent,
+        ResourceChangeEvent
+    };
 
+    QSymbianEvent(const TWsEvent *windowServerEvent);
+    QSymbianEvent(Type eventType, int value);
+    ~QSymbianEvent();
+
+    Type type() const;
+    bool isValid() const;
+
+    const TWsEvent *windowServerEvent() const;
+    int command() const;
+    int resourceChangeType() const;
+
+private:
+    Type m_type;
+    union {
+        const void *m_eventPtr;
+        int m_eventValue;
+
+        qint64 m_reserved;
+    };
 };
 
-void tst_qnetworkreply::httpLatency()
+inline QSymbianEvent::Type QSymbianEvent::type() const
 {
-    QNetworkAccessManager manager;
-    QBENCHMARK{
-        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/"));
-        QNetworkReply* reply = manager.get(request);
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-        QTestEventLoop::instance().enterLoop(5);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        delete reply;
-    }
+    return m_type;
 }
 
-QTEST_MAIN(tst_qnetworkreply)
+inline bool QSymbianEvent::isValid() const
+{
+    return m_type != InvalidEvent;
+}
 
-#include "main.moc"
+QT_END_NAMESPACE
+
+QT_END_HEADER
+
+#endif // Q_OS_SYMBIAN
+
+#endif // QSYMBIANEVENT_H

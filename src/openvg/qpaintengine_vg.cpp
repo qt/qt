@@ -2872,6 +2872,24 @@ void qt_vg_drawVGImage(QPainter *painter, const QPointF& pos, VGImage vgImg)
     drawVGImage(engine->vgPrivate(), pos, vgImg);
 }
 
+// Used by qpixmapfilter_vg.cpp to draw filtered VGImage's as a stencil.
+void qt_vg_drawVGImageStencil
+    (QPainter *painter, const QPointF& pos, VGImage vgImg, const QBrush& brush)
+{
+    QVGPaintEngine *engine =
+        static_cast<QVGPaintEngine *>(painter->paintEngine());
+
+    QVGPaintEnginePrivate *d = engine->vgPrivate();
+
+    QTransform transform(d->imageTransform);
+    transform.translate(pos.x(), pos.y());
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+
+    d->ensureBrush(brush);
+    d->setImageMode(VG_DRAW_IMAGE_STENCIL);
+    vgDrawImage(vgImg);
+}
+
 void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     QPixmapData *pd = pm.pixmapData();

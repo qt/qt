@@ -341,4 +341,5 @@ EXPORTS
 	_ZThn8_N22QScriptExtensionPluginD1Ev @ 340 NONAME
 	_ZlsR11QDataStreamRK18QScriptContextInfo @ 341 NONAME
 	_ZrsR11QDataStreamR18QScriptContextInfo @ 342 NONAME
+	_Z5qHashRK13QScriptString @ 343 NONAME
 

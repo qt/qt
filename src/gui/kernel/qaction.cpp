@@ -276,7 +276,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
     This enum describes how an action should be placed in the softkey bar. Currently this enum only
     has an effect on the Symbian platform.
 
-    \value NoSoftKey This action should be used as a softkey
+    \value NoSoftKey This action should not be used as a softkey
     \value PositiveSoftKey This action is used to describe a softkey with a positive or non-destructive
            role such as Ok, Select, or Options.
     \value NegativeSoftKey This action is used to describe a soft ey with a negative or destructive role

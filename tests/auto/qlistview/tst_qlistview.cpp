@@ -116,6 +116,7 @@ private slots:
     void keyboardSearch();
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
+    void task262152_setModelColumnNavigate();
 };
 
 // Testing get/set functions
@@ -1766,6 +1767,29 @@ void tst_QListView::clickOnViewportClearsSelection()
     QVERIFY(!view.selectionModel()->hasSelection());
 
 }
+
+void tst_QListView::task262152_setModelColumnNavigate()
+{
+    QListView view;
+    QStandardItemModel model(3,2);
+    model.setItem(0,1,new QStandardItem("[0,1]"));
+    model.setItem(1,1,new QStandardItem("[1,1]"));
+    model.setItem(2,1,new QStandardItem("[2,1]"));
+
+    view.setModel(&model);
+    view.setModelColumn(1);
+
+    view.show();
+    QTest::qWait(30);
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(10);
+    QCOMPARE(view.currentIndex(), model.index(2,1));
+
+}
+
 
 
 QTEST_MAIN(tst_QListView)
