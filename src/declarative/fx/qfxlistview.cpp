@@ -907,6 +907,34 @@ QFxListView::~QFxListView()
 
     It is sometimes necessary to delay the destruction of an item
     until an animation completes.
+
+    The example below ensures that the animation completes before
+    the item is removed from the list.
+
+    \code
+    Component {
+        id: myDelegate
+        Item {
+            id: wrapper
+            ListView.onRemove: SequentialAnimation {
+                PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: true }
+                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
+                PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: false }
+            }
+        }
+    }
+    \endcode
+*/
+
+//XXX change to \qmlattachedsignal when it exists.
+/*!
+    \qmlattachedproperty void ListView::onAdd
+    This attached handler is called immediately after an item is added to the view.
+*/
+
+/*!
+    \qmlattachedproperty void ListView::onRemove
+    This attached handler is called immediately before an item is removed from the view.
 */
 
 /*!
