@@ -4391,11 +4391,26 @@ void tst_QWidget::winIdChangeEvent()
 
     {
         // Changing parent of a native widget
+        // Should cause winId of child to change, on all platforms
         QWidget parent1, parent2;
         WinIdChangeWidget child(&parent1);
         const WId winIdBefore = child.winId();
         QCOMPARE(child.m_winIdChangeEventCount, 1);
         child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+    }
+
+    {
+        // Changing grandparent of a native widget
+        // Should cause winId of grandchild to change only on Symbian
+        QWidget grandparent1, grandparent2;
+        QWidget parent(&grandparent1);
+        WinIdChangeWidget child(&parent);
+        const WId winIdBefore = child.winId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        parent.setParent(&grandparent2);
         const WId winIdAfter = child.internalWinId();
 #ifdef Q_OS_SYMBIAN
         QVERIFY(winIdBefore != winIdAfter);

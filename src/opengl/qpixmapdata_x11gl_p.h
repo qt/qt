@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QIMAGEPIXMAP_CLEANUPHOOKS_P_H
-#define QIMAGEPIXMAP_CLEANUPHOOKS_P_H
+#ifndef QPIXMAPDATA_X11GL_P_H
+#define QPIXMAPDATA_X11GL_P_H
 
 //
 //  W A R N I N G
@@ -53,46 +53,34 @@
 // We mean it.
 //
 
-#include <QtGui/qpixmap.h>
+#include <private/qpixmapdata_p.h>
+#include <private/qpixmap_x11_p.h>
+#include <private/qglpaintdevice_p.h>
+
+#include <qgl.h>
 
 QT_BEGIN_NAMESPACE
 
-typedef void (*_qt_image_cleanup_hook_64)(qint64);
-typedef void (*_qt_pixmap_cleanup_hook_pm)(QPixmap*);
-
-class QImagePixmapCleanupHooks;
-extern QImagePixmapCleanupHooks* qt_image_and_pixmap_cleanup_hooks;
-
-class Q_GUI_EXPORT QImagePixmapCleanupHooks
+class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
 {
 public:
-    QImagePixmapCleanupHooks();
+    QX11GLPixmapData();
+    virtual ~QX11GLPixmapData();
 
-    static QImagePixmapCleanupHooks *instance();
+    // Re-implemented from QGLPaintDevice
+    QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
+    void beginPaint();
+    void endPaint();
+    QGLContext* context() const;
+    QSize size() const;
 
-    // Gets called when a pixmap is about to be modified:
-    void addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm);
-
-    // Gets called when a pixmap is about to be destroyed:
-    void addPixmapDestructionHook(_qt_pixmap_cleanup_hook_pm);
-
-    // Gets called when an image is about to be modified or destroyed:
-    void addImageHook(_qt_image_cleanup_hook_64);
-
-    void removePixmapModificationHook(_qt_pixmap_cleanup_hook_pm);
-    void removePixmapDestructionHook(_qt_pixmap_cleanup_hook_pm);
-    void removeImageHook(_qt_image_cleanup_hook_64);
-
-    static void executePixmapModificationHooks(QPixmap*);
-    static void executePixmapDestructionHooks(QPixmap*);
-    static void executeImageHooks(qint64 key);
-
+    static bool hasX11GLPixmaps();
+    static QGLFormat glFormat();
 private:
-    QList<_qt_image_cleanup_hook_64> imageHooks;
-    QList<_qt_pixmap_cleanup_hook_pm> pixmapModificationHooks;
-    QList<_qt_pixmap_cleanup_hook_pm> pixmapDestructionHooks;
+    mutable QGLContext* ctx;
 };
+
 
 QT_END_NAMESPACE
 
-#endif // QIMAGEPIXMAP_CLEANUPHOOKS_P_H
+#endif // QPIXMAPDATA_X11GL_P_H
