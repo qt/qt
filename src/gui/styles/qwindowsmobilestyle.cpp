@@ -3130,34 +3130,11 @@ void QWindowsMobileStyle::polish(QWidget *widget) {
     else
 #endif //QT_NO_TOOLBAR
 
-#ifndef QT_NO_PROPERTIES
-        if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-            QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-            if (!oldFont.isValid()) {
-                QFont f = pushButton->font();
-                widget->setProperty("_q_styleWindowsMobileFont", f);
-                f.setBold(true);
-                int p = f.pointSize();
-                if (p > 2)
-                    f.setPointSize(p-1);
-                pushButton->setFont(f);
-            }
-        }
-#endif
-        QWindowsStyle::polish(widget);
+    QWindowsStyle::polish(widget);
 }
 
 void QWindowsMobileStyle::unpolish(QWidget *widget)
 {
-#ifndef QT_NO_PROPERTIES
-    if (QAbstractButton *pushButton = qobject_cast<QAbstractButton*>(widget)) {
-        QVariant oldFont = widget->property("_q_styleWindowsMobileFont");
-        if (oldFont.isValid()) {
-            widget->setFont(qVariantValue<QFont>(oldFont));
-        widget->setProperty("_q_styleWindowsMobileFont", QVariant());
-        }
-    }
-#endif
     QWindowsStyle::unpolish(widget);
 }
 

@@ -624,6 +624,8 @@ static void qt_set_windows_font_resources()
     if (qt_wince_is_mobile()) {
         smallerFont.setPointSize(systemFont.pointSize()-1);
         QApplication::setFont(smallerFont, "QTabBar");
+        smallerFont.setBold(true);
+        QApplication::setFont(smallerFont, "QAbstractButton");
     }
 #endif// Q_OS_WINCE
 }
