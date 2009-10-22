@@ -518,6 +518,14 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_func()->scene = 0;
 
+    //We need to remove all children first because they might use their parent
+    //attributes (e.g. sceneTransform).
+    if (!item->d_ptr->inDestructor) {
+        // Remove all children recursively
+        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+            q->removeItem(item->d_ptr->children.at(i));
+    }
+
     // Unregister focus proxy.
     item->d_ptr->resetFocusProxy();
 
@@ -562,12 +570,6 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             iterator = sceneEventFilters.erase(iterator);
         else
             ++iterator;
-    }
-
-    if (!item->d_ptr->inDestructor) {
-        // Remove all children recursively
-        for (int i = 0; i < item->d_ptr->children.size(); ++i)
-            q->removeItem(item->d_ptr->children.at(i));
     }
 
     if (item->isPanel() && item->isVisible() && item->panelModality() != QGraphicsItem::NonModal)

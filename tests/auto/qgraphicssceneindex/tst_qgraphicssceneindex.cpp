@@ -66,6 +66,7 @@ private slots:
     void movingItems();
     void connectedToSceneRectChanged();
     void items();
+    void removeItems();
     void clear();
 
 private:
@@ -266,6 +267,63 @@ void tst_QGraphicsSceneIndex::items()
     // Move from unindexed items into untransformable items.
     QTest::qWait(50);
     QCOMPARE(scene.items().size(), 3);
+}
+
+class RectWidget : public QGraphicsWidget
+{
+    Q_OBJECT
+public:
+    RectWidget(QGraphicsItem *parent = 0) : QGraphicsWidget(parent)
+    {
+    }
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+    {
+        painter->setBrush(brush);
+        painter->drawRect(boundingRect());
+    }
+public:
+    QBrush brush;
+};
+
+void tst_QGraphicsSceneIndex::removeItems()
+{
+     QGraphicsScene scene;
+
+    RectWidget *parent = new RectWidget;
+    parent->brush = QBrush(QColor(Qt::magenta));
+    parent->setGeometry(250, 250, 400, 400);
+
+    RectWidget *widget = new RectWidget(parent);
+    widget->brush = QBrush(QColor(Qt::blue));
+    widget->setGeometry(10, 10, 200, 200);
+
+    RectWidget *widgetChild1 = new RectWidget(widget);
+    widgetChild1->brush = QBrush(QColor(Qt::green));
+    widgetChild1->setGeometry(20, 20, 100, 100);
+
+    RectWidget *widgetChild2 = new RectWidget(widgetChild1);
+    widgetChild2->brush = QBrush(QColor(Qt::yellow));
+    widgetChild2->setGeometry(25, 25, 50, 50);
+
+    scene.addItem(parent);
+
+    QGraphicsView view(&scene);
+    view.resize(600, 600);
+    view.show();
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+
+    QApplication::processEvents();
+
+    scene.removeItem(widgetChild1);
+
+    delete widgetChild1;
+
+    //We move the parent
+    scene.items(295, 295, 50, 50);
+
+    //This should not crash
 }
 
 void tst_QGraphicsSceneIndex::clear()
