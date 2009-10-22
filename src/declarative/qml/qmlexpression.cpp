@@ -109,7 +109,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         QmlEngine *engine = ctxt->engine();
         QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
         QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-#ifndef Q_OS_SYMBIAN //XXX Why doesn't this work?
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN32) //XXX Why doesn't this work?
         if (!dd->programs.at(progIdx)) {
             dd->programs[progIdx] =
                 new QScriptProgram(scriptEngine->compile(data->expression, data->fileName, data->line));
@@ -119,7 +119,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
         scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
-#ifndef Q_OS_SYMBIAN
+#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN32)
         data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
 #else
         data->expressionFunction = scriptEngine->evaluate(data->expression);
