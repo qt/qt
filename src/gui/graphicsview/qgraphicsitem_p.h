@@ -539,7 +539,7 @@ struct QGraphicsItemPrivate::TransformData
             QMatrix4x4 m;
             for (int i = 0; i < graphicsTransforms.size(); ++i)
                 graphicsTransforms.at(i)->applyTo(&m);
-            x *= m.toTransform();
+            x *= m.toTransform(0);
         }
         x.translate(xOrigin, yOrigin);
         x.rotate(rotation);
