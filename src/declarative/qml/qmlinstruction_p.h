@@ -119,6 +119,7 @@ public:
 
         StoreSignal,              /* storeSignal */
         StoreScript,              /* storeScript */
+        StoreScriptString,        /* storeScriptString */
 
         //
         // Unresolved single assignment
@@ -244,6 +245,11 @@ public:
             int propertyIndex;
             int value;
         } storeString;
+        struct {
+            int propertyIndex;
+            int value;
+            int scope;
+        } storeScriptString;
         struct {
             int value;
             int fileName;

@@ -40,6 +40,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlpropertycache.cpp \
     qml/qmlintegercache.cpp \
     qml/qmltypenamecache.cpp \
+    qml/qmlscriptstring.cpp \
     qml/qmlobjectscriptclass.cpp \
     qml/qmlcontextscriptclass.cpp \
     qml/qmlglobalscriptclass.cpp \
@@ -102,6 +103,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlpropertycache_p.h \
     qml/qmlintegercache_p.h \
     qml/qmltypenamecache_p.h \
+    qml/qmlscriptstring.h \
     qml/qmlobjectscriptclass_p.h \
     qml/qmlcontextscriptclass_p.h \
     qml/qmlglobalscriptclass_p.h \
