@@ -1775,7 +1775,7 @@ QScriptValue QScriptValue::property(const QScriptString &name,
                                     const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return QScriptValue();
     return d->property(name.d_ptr->identifier, mode);
 }
@@ -1798,7 +1798,7 @@ void QScriptValue::setProperty(const QScriptString &name,
                                const PropertyFlags &flags)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return;
     d->setProperty(name.d_ptr->identifier, value, flags);
 }
@@ -1832,7 +1832,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
                                                         const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return 0;
     return d->propertyFlags(name.d_ptr->identifier, mode);
 }
