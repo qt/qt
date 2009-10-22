@@ -56,15 +56,15 @@ Rectangle {
             height: 42; width: window.width
             Text { text: type; anchors.centerIn: parent; color: "White" }
             Rectangle {
-                id: slot1; color: "#121212"; x: 10; height: 32; width: 32
+                id: slot1; color: "#121212"; x: 30; height: 32; width: 32
                 border.color: "#343434"; border.width: 1; radius: 8; anchors.verticalCenter: parent.verticalCenter
             }
             Rectangle {
-                id: slot2; color: "#121212"; x: window.width - 42; height: 32; width: 32
+                id: slot2; color: "#121212"; x: window.width - 62; height: 32; width: 32
                 border.color: "#343434"; border.width: 1; radius: 8; anchors.verticalCenter: parent.verticalCenter
             }
             Rectangle {
-                id: rect; x: 10; color: "#454545"
+                id: rect; x: 30; color: "#454545"
                 border.color: "White"; border.width: 2
                 height: 32; width: 32; radius: 8; anchors.verticalCenter: parent.verticalCenter
 
@@ -75,7 +75,7 @@ Rectangle {
 
                 states : State {
                     name: "right"
-                    PropertyChanges { target: rect; x: window.width - 42; color: ballColor }
+                    PropertyChanges { target: rect; x: window.width - 62; color: ballColor }
                 }
 
                 transitions: Transition {

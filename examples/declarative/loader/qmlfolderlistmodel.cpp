@@ -39,15 +39,12 @@
 **
 ****************************************************************************/
 
-#include "private/qobject_p.h"
-#include <QDirModel>
-#include <qdebug.h>
 #include "qmlfolderlistmodel.h"
+#include <QDirModel>
+#include <QDebug>
 #include <QtDeclarative/qmlcontext.h>
 
-QT_BEGIN_NAMESPACE
-
-class QmlFolderListModelPrivate : public QObjectPrivate
+class QmlFolderListModelPrivate
 {
 public:
     QmlFolderListModelPrivate()
@@ -113,9 +110,9 @@ public:
 */
 
 QmlFolderListModel::QmlFolderListModel(QObject *parent)
-    : QListModelInterface(*(new QmlFolderListModelPrivate), parent)
+    : QListModelInterface(parent)
 {
-    Q_D(QmlFolderListModel);
+    d = new QmlFolderListModelPrivate;
     d->model.setFilter(QDir::AllDirs | QDir::Files | QDir::Drives | QDir::NoDotAndDotDot);
     connect(&d->model, SIGNAL(rowsInserted(const QModelIndex&,int,int))
             , this, SLOT(inserted(const QModelIndex&,int,int)));
@@ -129,12 +126,12 @@ QmlFolderListModel::QmlFolderListModel(QObject *parent)
 
 QmlFolderListModel::~QmlFolderListModel()
 {
+    delete d;
 }
 
 QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles) const
 {
     Q_UNUSED(roles);
-    Q_D(const QmlFolderListModel);
     QHash<int,QVariant> folderData;
     QModelIndex modelIndex = d->model.index(index, 0, d->folderIndex);
     if (modelIndex.isValid()) {
@@ -147,7 +144,6 @@ QHash<int,QVariant> QmlFolderListModel::data(int index, const QList<int> &roles)
 
 int QmlFolderListModel::count() const
 {
-    Q_D(const QmlFolderListModel);
     return d->count;
 }
 
@@ -180,13 +176,11 @@ QString QmlFolderListModel::toString(int role) const
 */
 QUrl QmlFolderListModel::folder() const
 {
-    Q_D(const QmlFolderListModel);
     return d->folder;
 }
 
 void QmlFolderListModel::setFolder(const QUrl &folder)
 {
-    Q_D(QmlFolderListModel);
     if (folder == d->folder)
         return;
     QModelIndex index = d->model.index(folder.toLocalFile());
@@ -199,7 +193,6 @@ void QmlFolderListModel::setFolder(const QUrl &folder)
 
 QUrl QmlFolderListModel::parentFolder() const
 {
-    Q_D(const QmlFolderListModel);
     int pos = d->folder.path().lastIndexOf(QLatin1Char('/'));
     if (pos == -1)
         return QUrl();
@@ -224,20 +217,17 @@ QUrl QmlFolderListModel::parentFolder() const
 */
 QStringList QmlFolderListModel::nameFilters() const
 {
-    Q_D(const QmlFolderListModel);
     return d->nameFilters;
 }
 
 void QmlFolderListModel::setNameFilters(const QStringList &filters)
 {
-    Q_D(QmlFolderListModel);
     d->nameFilters = filters;
     d->model.setNameFilters(d->nameFilters);
 }
 
 void QmlFolderListModel::componentComplete()
 {
-    Q_D(QmlFolderListModel);
     if (!d->folder.isValid() || !QDir().exists(d->folder.toLocalFile()))
         setFolder(QUrl(QLatin1String("file://")+QDir::currentPath()));
 
@@ -247,13 +237,11 @@ void QmlFolderListModel::componentComplete()
 
 QmlFolderListModel::SortField QmlFolderListModel::sortField() const
 {
-    Q_D(const QmlFolderListModel);
     return d->sortField;
 }
 
 void QmlFolderListModel::setSortField(SortField field)
 {
-    Q_D(QmlFolderListModel);
     if (field != d->sortField) {
         d->sortField = field;
         d->updateSorting();
@@ -262,13 +250,11 @@ void QmlFolderListModel::setSortField(SortField field)
 
 bool QmlFolderListModel::sortReversed() const
 {
-    Q_D(const QmlFolderListModel);
     return d->sortReversed;
 }
 
 void QmlFolderListModel::setSortReversed(bool rev)
 {
-    Q_D(QmlFolderListModel);
     if (rev != d->sortReversed) {
         d->sortReversed = rev;
         d->updateSorting();
@@ -283,7 +269,6 @@ void QmlFolderListModel::setSortReversed(bool rev)
 */
 bool QmlFolderListModel::isFolder(int index) const
 {
-    Q_D(const QmlFolderListModel);
     if (index != -1) {
         QModelIndex idx = d->model.index(index, 0, d->folderIndex);
         if (idx.isValid())
@@ -294,7 +279,6 @@ bool QmlFolderListModel::isFolder(int index) const
 
 void QmlFolderListModel::refresh()
 {
-    Q_D(QmlFolderListModel);
     d->folderIndex = QModelIndex();
     if (d->count) {
         int tmpCount = d->count;
@@ -310,7 +294,6 @@ void QmlFolderListModel::refresh()
 
 void QmlFolderListModel::inserted(const QModelIndex &index, int start, int end)
 {
-    Q_D(QmlFolderListModel);
     if (index == d->folderIndex) {
         d->count = d->model.rowCount(d->folderIndex);
         emit itemsInserted(start, end - start + 1);
@@ -319,7 +302,6 @@ void QmlFolderListModel::inserted(const QModelIndex &index, int start, int end)
 
 void QmlFolderListModel::removed(const QModelIndex &index, int start, int end)
 {
-    Q_D(QmlFolderListModel);
     if (index == d->folderIndex) {
         d->count = d->model.rowCount(d->folderIndex);
         emit itemsRemoved(start, end - start + 1);
@@ -328,7 +310,6 @@ void QmlFolderListModel::removed(const QModelIndex &index, int start, int end)
 
 void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex &end)
 {
-    Q_D(QmlFolderListModel);
     qDebug() << "data changed";
     if (start.parent() == d->folderIndex)
         emit itemsChanged(start.row(), end.row() - start.row() + 1, roles());
@@ -343,13 +324,11 @@ void QmlFolderListModel::dataChanged(const QModelIndex &start, const QModelIndex
 */
 bool QmlFolderListModel::showDirs() const
 {
-    Q_D(const QmlFolderListModel);
     return d->model.filter() & QDir::AllDirs;
 }
 
 void  QmlFolderListModel::setShowDirs(bool on)
 {
-    Q_D(QmlFolderListModel);
     if (!(d->model.filter() & QDir::AllDirs) == !on)
         return;
     if (on)
@@ -367,13 +346,11 @@ void  QmlFolderListModel::setShowDirs(bool on)
 */
 bool QmlFolderListModel::showDotAndDotDot() const
 {
-    Q_D(const QmlFolderListModel);
     return !(d->model.filter() & QDir::NoDotAndDotDot);
 }
 
 void  QmlFolderListModel::setShowDotAndDotDot(bool on)
 {
-    Q_D(QmlFolderListModel);
     if (!(d->model.filter() & QDir::NoDotAndDotDot) == on)
         return;
     if (on)
@@ -391,13 +368,11 @@ void  QmlFolderListModel::setShowDotAndDotDot(bool on)
 */
 bool QmlFolderListModel::showOnlyReadable() const
 {
-    Q_D(const QmlFolderListModel);
     return d->model.filter() & QDir::Readable;
 }
 
 void  QmlFolderListModel::setShowOnlyReadable(bool on)
 {
-    Q_D(QmlFolderListModel);
     if (!(d->model.filter() & QDir::Readable) == !on)
         return;
     if (on)

@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-//QBindableMapMetaObject lets us listen for changes coming from QML
+//QmlPropertyMapMetaObject lets us listen for changes coming from QML
 //so we can emit the changed signal.
 class QmlPropertyMapMetaObject : public QmlOpenMetaObject
 {
@@ -72,7 +72,7 @@ public:
 void QmlPropertyMapPrivate::emitChanged(const QString &key)
 {
     Q_Q(QmlPropertyMap);
-    emit q->changed(key);
+    emit q->valueChanged(key);
 }
 
 QmlPropertyMapMetaObject::QmlPropertyMapMetaObject(QmlPropertyMap *obj, QmlPropertyMapPrivate *objPriv) : QmlOpenMetaObject(obj)
@@ -87,19 +87,19 @@ void QmlPropertyMapMetaObject::propertyWrite(int index)
 }
 
 /*!
-    \class QBindableMap
-    \brief The QBindableMap class allows you to set key-value pairs that can be used in bindings.
+    \class QmlPropertyMap
+    \brief The QmlPropertyMap class allows you to set key-value pairs that can be used in bindings.
 
-    QBindableMap provides a convenient way to expose domain data to the UI layer.
+    QmlPropertyMap provides a convenient way to expose domain data to the UI layer.
     The following example shows how you might declare data in C++ and then
     access it in QML.
 
     Setup in C++:
     \code
     //create our data
-    QBindableMap ownerData;
-    ownerData.setValue("name", QVariant(QString("John Smith")));
-    ownerData.setValue("phone", QVariant(QString("555-5555")));
+    QmlPropertyMap ownerData;
+    ownerData.insert("name", QVariant(QString("John Smith")));
+    ownerData.insert("phone", QVariant(QString("555-5555")));
 
     //expose it to the UI layer
     QmlContext *ctxt = view->bindContext();
@@ -115,16 +115,13 @@ void QmlPropertyMapMetaObject::propertyWrite(int index)
     The binding is dynamic - whenever a key's value is updated, anything bound to that
     key will be updated as well.
 
-    To detect value changes made in the UI layer you can connect to the changed() signal.
-    However, note that changed() is \b NOT emitted when changes are made by calling setValue()
-    or clearValue() - it is only emitted when a value is updated from QML.
-*/
+    To detect value changes made in the UI layer you can connect to the valueChanged() signal.
+    However, note that valueChanged() is \b NOT emitted when changes are made by calling insert()
+    or clear() - it is only emitted when a value is updated from QML.
 
-// is there a more efficient way to store/return keys?
-//        (or should we just provide an iterator or something else instead?)
-// can we provide a way to clear keys?
-// do we want to make any claims regarding key ordering?
-// should we have signals for insertion and and deletion -- becoming more model like
+    \note It is not possible to remove keys from the map; once a key has been added, you can only
+    modify or clear its associated value.
+*/
 
 /*!
     Constructs a bindable map with parent object \a parent.
@@ -146,7 +143,7 @@ QmlPropertyMap::~QmlPropertyMap()
 /*!
     Clears the value (if any) associated with \a key.
 */
-void QmlPropertyMap::clearValue(const QString &key)
+void QmlPropertyMap::clear(const QString &key)
 {
     Q_D(QmlPropertyMap);
     d->mo->setValue(key.toUtf8(), QVariant());
@@ -169,7 +166,7 @@ QVariant QmlPropertyMap::value(const QString &key) const
 
     If the key doesn't exist, it is automatically created.
 */
-void QmlPropertyMap::setValue(const QString &key, const QVariant &value)
+void QmlPropertyMap::insert(const QString &key, const QVariant &value)
 {
     Q_D(QmlPropertyMap);
     if (!d->keys.contains(key))
@@ -190,7 +187,85 @@ QStringList QmlPropertyMap::keys() const
 }
 
 /*!
-    \fn void QBindableMap::changed(const QString &key)
+    \overload
+
+    Same as size().
+*/
+int QmlPropertyMap::count() const
+{
+    Q_D(const QmlPropertyMap);
+    return d->keys.count();
+}
+
+/*!
+    Returns the number of keys in the map.
+
+    \sa isEmpty(), count()
+*/
+int QmlPropertyMap::size() const
+{
+    Q_D(const QmlPropertyMap);
+    return d->keys.size();
+}
+
+/*!
+    Returns true if the map contains no keys; otherwise returns
+    false.
+
+    \sa size()
+*/
+bool QmlPropertyMap::isEmpty() const
+{
+    Q_D(const QmlPropertyMap);
+    return d->keys.isEmpty();
+}
+
+/*!
+    Returns true if the map contains \a key.
+
+    \sa size()
+*/
+bool QmlPropertyMap::contains(const QString &key) const
+{
+    Q_D(const QmlPropertyMap);
+    return d->keys.contains(key);
+}
+
+/*!
+    Returns the value associated with the key \a key as a modifiable
+    reference.
+
+    If the map contains no item with key \a key, the function inserts
+    an invalid QVariant into the map with key \a key, and
+    returns a reference to it.
+
+    \sa insert(), value()
+*/
+QVariant &QmlPropertyMap::operator[](const QString &key)
+{
+    //### optimize
+    Q_D(QmlPropertyMap);
+    QByteArray utf8key = key.toUtf8();
+    if (!d->keys.contains(key)) {
+        d->keys.append(key);
+        d->mo->setValue(utf8key, QVariant());   //force creation -- needed below
+    }
+
+    return (*(d->mo))[utf8key];
+}
+
+/*!
+    \overload
+
+    Same as value().
+*/
+const QVariant QmlPropertyMap::operator[](const QString &key) const
+{
+    return value(key);
+}
+
+/*!
+    \fn void QmlPropertyMap::valueChanged(const QString &key)
     This signal is emitted whenever one of the values in the map is changed. \a key
     is the key corresponding to the value that was changed.
 */

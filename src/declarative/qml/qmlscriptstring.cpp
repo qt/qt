@@ -39,53 +39,116 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYMAP_H
-#define QMLPROPERTYMAP_H
-
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
-
-QT_BEGIN_HEADER
+#include "qmlscriptstring.h"
 
 QT_BEGIN_NAMESPACE
 
-QT_MODULE(Declarative)
-
-class QmlPropertyMapPrivate;
-class Q_DECLARATIVE_EXPORT QmlPropertyMap : public QObject
+class QmlScriptStringPrivate : public QSharedData
 {
-    Q_OBJECT
 public:
-    QmlPropertyMap(QObject *parent = 0);
-    virtual ~QmlPropertyMap();
+    QmlScriptStringPrivate() : context(0), scope(0) {}
 
-    QVariant value(const QString &key) const;
-    void insert(const QString &key, const QVariant &value);
-    void clear(const QString &key);
-
-    Q_INVOKABLE QStringList keys() const;
-
-    int count() const;
-    int size() const;
-    bool isEmpty() const;
-    bool contains(const QString &key) const;
-
-    QVariant &operator[](const QString &key);
-    const QVariant operator[](const QString &key) const;
-
-Q_SIGNALS:
-    void valueChanged(const QString &key);
-
-private:
-    Q_DECLARE_PRIVATE(QmlPropertyMap)
-    Q_DISABLE_COPY(QmlPropertyMap)
+    QmlContext *context;
+    QObject *scope;
+    QString script;
 };
+
+/*!
+\class QmlScriptString
+\brief The QmlScriptString class encapsulates a script and its context.
+
+The QmlScriptString is used by properties that want to accept a script "assignment" from QML.
+
+Normally, the following code would result in a binding being established for the \c script
+property.  If the property had a type of QmlScriptString, the script - \e {print(1921)} - itself
+would be passed to the property and it could choose how to handle it.
+
+\code
+MyType {
+    script: print(1921)
+}
+\endcode
+*/
+
+/*!
+Construct an empty instance.
+*/
+QmlScriptString::QmlScriptString()
+:  d(new QmlScriptStringPrivate)
+{
+}
+
+/*!
+Copy \a other.
+*/
+QmlScriptString::QmlScriptString(const QmlScriptString &other)
+: d(other.d)
+{
+}
+
+/*!
+\internal
+*/
+QmlScriptString::~QmlScriptString()
+{
+}
+
+/*!
+Assign \a other to this.
+*/
+QmlScriptString &QmlScriptString::operator=(const QmlScriptString &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+Return the context for the script.
+*/
+QmlContext *QmlScriptString::context() const
+{
+    return d->context;
+}
+
+/*!
+Sets the \a context for the script.
+*/
+void QmlScriptString::setContext(QmlContext *context)
+{
+    d->context = context;
+}
+
+/*!
+Returns the scope object for the script.
+*/
+QObject *QmlScriptString::scopeObject() const
+{
+    return d->scope;
+}
+
+/*!
+Sets the scope \a object for the script.
+*/
+void QmlScriptString::setScopeObject(QObject *object)
+{
+    d->scope = object;
+}
+
+/*!
+Returns the script text.
+*/
+QString QmlScriptString::script() const
+{
+    return d->script;
+}
+
+/*!
+Sets the \a script text.
+*/
+void QmlScriptString::setScript(const QString &script)
+{
+    d->script = script;
+}
 
 QT_END_NAMESPACE
 
-QT_END_HEADER
-
-#endif

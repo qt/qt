@@ -39,14 +39,12 @@
 **
 ****************************************************************************/
 
-#ifndef QMLPROPERTYMAP_H
-#define QMLPROPERTYMAP_H
+#ifndef QMLSCRIPTSTRING_H
+#define QMLSCRIPTSTRING_H
 
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/QObject>
-#include <QtCore/QHash>
-#include <QtCore/QStringList>
-#include <QtCore/QVariant>
+#include <QtCore/qstring.h>
+#include <QtCore/qshareddata.h>
+#include <QtCore/qmetatype.h>
 
 QT_BEGIN_HEADER
 
@@ -54,38 +52,36 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QmlPropertyMapPrivate;
-class Q_DECLARATIVE_EXPORT QmlPropertyMap : public QObject
+class QObject;
+class QmlContext;
+class QmlScriptStringPrivate;
+class Q_DECLARATIVE_EXPORT QmlScriptString 
 {
-    Q_OBJECT
 public:
-    QmlPropertyMap(QObject *parent = 0);
-    virtual ~QmlPropertyMap();
+    QmlScriptString();
+    QmlScriptString(const QmlScriptString &);
+    ~QmlScriptString();
 
-    QVariant value(const QString &key) const;
-    void insert(const QString &key, const QVariant &value);
-    void clear(const QString &key);
+    QmlScriptString &operator=(const QmlScriptString &);
 
-    Q_INVOKABLE QStringList keys() const;
+    QmlContext *context() const;
+    void setContext(QmlContext *);
 
-    int count() const;
-    int size() const;
-    bool isEmpty() const;
-    bool contains(const QString &key) const;
+    QObject *scopeObject() const;
+    void setScopeObject(QObject *);
 
-    QVariant &operator[](const QString &key);
-    const QVariant operator[](const QString &key) const;
-
-Q_SIGNALS:
-    void valueChanged(const QString &key);
+    QString script() const;
+    void setScript(const QString &);
 
 private:
-    Q_DECLARE_PRIVATE(QmlPropertyMap)
-    Q_DISABLE_COPY(QmlPropertyMap)
+    QSharedDataPointer<QmlScriptStringPrivate> d;
 };
+
+Q_DECLARE_METATYPE(QmlScriptString);
 
 QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif
+#endif // QMLSCRIPTSTRING_H
+

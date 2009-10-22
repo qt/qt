@@ -55,7 +55,7 @@ QmlVMEMetaObject::QmlVMEMetaObject(QObject *obj,
                                    const QMetaObject *other, 
                                    const QmlVMEMetaData *meta,
                                    QmlRefCount *rc)
-: object(obj), ref(rc), metaData(meta), parent(0)
+: object(obj), ref(rc), ctxt(qmlContext(obj)), metaData(meta), parent(0)
 {
     if (ref)
         ref->addref();
@@ -251,7 +251,6 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     (const QChar *)(((const char*)metaData) + data->bodyOffset);
 
                 QString code = QString::fromRawData(body, data->bodyLength);
-                QmlContext *ctxt = qmlContext(object);
 
                 if (0 == (metaData->methodData() + id)->parameterCount) {
                     QmlExpression expr(ctxt, code, object);

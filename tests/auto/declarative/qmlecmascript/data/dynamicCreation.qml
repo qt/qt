@@ -13,4 +13,9 @@ MyQmlObject{
         var component = createComponent('dynamicCreation.helper.qml');
         obj.objectProperty = component.createObject();
     }
+
+    function createThree()
+    {
+        obj.objectProperty = createQmlObject('TypeForDynamicCreation{}', obj);
+    }
 }
