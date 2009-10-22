@@ -352,8 +352,10 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
         for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
              e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
             if (it.value() == Qt::ItemWithChildrenGesture) {
-                if (!types.contains(it.key()))
+                if (!types.contains(it.key())) {
+                    types.insert(it.key());
                     contexts.insertMulti(item, it.key());
+                }
             }
         }
         item = item->parentObject();
