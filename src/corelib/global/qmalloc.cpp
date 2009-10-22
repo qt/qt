@@ -42,6 +42,7 @@
 #include "qplatformdefs.h"
 
 #include <stdlib.h>
+#include <malloc.h>
 
 /*
     Define the container allocation functions in a separate file, so that our
@@ -63,6 +64,105 @@ void qFree(void *ptr)
 void *qRealloc(void *ptr, size_t size)
 {
     return ::realloc(ptr, size);
+}
+
+#if ((defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L) || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 600))
+# define HAVE_POSIX_MEMALIGN
+#endif
+
+void *qMallocAligned(size_t size, size_t alignment)
+{
+#if defined(Q_OS_WIN)
+    return _aligned_malloc(size, alignment);
+#elif defined(HAVE_POSIX_MEMALIGN)
+    if (alignment <= sizeof(void*))
+        return qMalloc(size);
+
+    // we have posix_memalign
+    void *ptr = 0;
+    if (posix_memalign(&ptr, alignment, size) == 0)
+        return ptr;
+    return 0;
+#else
+    return qReallocAligned(0, size, 0, alignment);
+#endif
+}
+
+void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t alignment)
+{
+#if defined(Q_OS_WIN)
+    Q_UNUSED(oldsize);
+    return _aligned_realloc(oldptr, newsize, alignment);
+#elif defined(HAVE_POSIX_MEMALIGN)
+    if (alignment <= sizeof(void*))
+        return qRealloc(oldptr, newsize);
+
+    void *newptr = qMallocAligned(newsize, alignment);
+    if (!newptr)
+        return 0;
+    qMemCopy(newptr, oldptr, qMin(oldsize, newsize));
+    qFree(oldptr);
+    return newptr;
+#else
+    // fake an aligned allocation
+    Q_UNUSED(oldsize);
+
+    void *actualptr = oldptr ? static_cast<void **>(oldptr)[-1] : 0;
+    if (alignment <= sizeof(void*)) {
+        // special, fast case
+        void **newptr = static_cast<void **>(qRealloc(actualptr, newsize + sizeof(void*)));
+        if (!newptr)
+            return 0;
+        if (newptr == actualptr) {
+            // realloc succeeded without reallocating
+            return oldptr;
+        }
+
+        *newptr = newptr;
+        return newptr + 1;
+    }
+
+    union { void *ptr; void **pptr; quintptr n; } real, faked;
+
+    // qMalloc returns pointers aligned at least at sizeof(size_t) boundaries
+    // but usually more (8- or 16-byte boundaries).
+    // So we overallocate by alignment-sizeof(size_t) bytes, so we're guaranteed to find a
+    // somewhere within the first alignment-sizeof(size_t) that is properly aligned.
+
+    // However, we need to store the actual pointer, so we need to allocate actually size +
+    // alignment anyway.
+
+    real.ptr = qRealloc(actualptr, newsize + alignment);
+    if (!real.ptr)
+        return 0;
+
+    faked.n = real.n + alignment;
+    faked.n &= ~(alignment - 1);
+
+    // now save the value of the real pointer at faked-sizeof(void*)
+    // by construction, alignment > sizeof(void*) and is a power of 2, so
+    // faked-sizeof(void*) is properly aligned for a pointer
+    faked.pptr[-1] = real.ptr;
+
+    // and save the actual size just before the pointer
+    //reinterpret_cast<size_t *>(faked.pptr - 1)[-1] = size;
+
+    return faked.ptr;
+#endif
+}
+
+void qFreeAligned(void *ptr)
+{
+#if defined(Q_OS_WIN)
+    _aligned_free(ptr);
+#elif defined(HAVE_POSIX_MEMALIGN)
+    ::free(ptr);
+#else
+    if (!ptr)
+        return;
+    void **ptr2 = static_cast<void **>(ptr);
+    free(ptr2[-1]);
+#endif
 }
 
 QT_END_NAMESPACE
