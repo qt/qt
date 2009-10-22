@@ -64,7 +64,9 @@
 #        endif /* XP_MAC */
 #    endif /* macintosh */
 #    ifdef __INTEL__
-#        undef NULL
+#       ifndef __SYMBIAN32__
+#           undef NULL
+#       endif
 #        ifndef XP_WIN
 #            define XP_WIN 1
 #        endif /* __INTEL__ */
