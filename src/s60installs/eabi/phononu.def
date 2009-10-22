@@ -534,4 +534,14 @@ EXPORTS
 	_ZThn8_N6Phonon19AbstractAudioOutputD1Ev @ 533 NONAME
 	_ZThn8_N6Phonon6EffectD0Ev @ 534 NONAME
 	_ZThn8_N6Phonon6EffectD1Ev @ 535 NONAME
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 536 NONAME
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 537 NONAME
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 538 NONAME
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 539 NONAME
+	_ZTIN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 540 NONAME
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE0EEE @ 541 NONAME
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE1EEE @ 542 NONAME
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE2EEE @ 543 NONAME
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE3EEE @ 544 NONAME
+	_ZTVN6Phonon22ObjectDescriptionModelILNS_21ObjectDescriptionTypeE4EEE @ 545 NONAME
 

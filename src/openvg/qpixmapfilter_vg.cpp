@@ -58,6 +58,8 @@ QVGPixmapConvolutionFilter::~QVGPixmapConvolutionFilter()
 
 extern void qt_vg_drawVGImage
     (QPainter *painter, const QPointF& pos, VGImage vgImg);
+extern void qt_vg_drawVGImageStencil
+    (QPainter *painter, const QPointF& pos, VGImage vgImg, const QBrush& brush);
 
 void QVGPixmapConvolutionFilter::draw
         (QPainter *painter, const QPointF &dest,
@@ -213,8 +215,7 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 }
 
 QVGPixmapDropShadowFilter::QVGPixmapDropShadowFilter()
-    : QPixmapDropShadowFilter(),
-      firstTime(true)
+    : QPixmapDropShadowFilter()
 {
 }
 
@@ -238,49 +239,11 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         return;
 
     QSize size = pd->size();
-    VGImage tmpImage = vgCreateImage
-        (VG_sARGB_8888_PRE, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
-    if (tmpImage == VG_INVALID_HANDLE)
-        return;
-
     VGImage dstImage = vgCreateImage
-        (VG_sARGB_8888_PRE, size.width(), size.height(),
+        (VG_A_8, size.width(), size.height(),
          VG_IMAGE_QUALITY_FASTER);
-    if (dstImage == VG_INVALID_HANDLE) {
-        vgDestroyImage(tmpImage);
+    if (dstImage == VG_INVALID_HANDLE)
         return;
-    }
-
-    // Recompute the color matrix if the color has changed.
-    QColor c = color();
-    if (c != prevColor || firstTime) {
-        prevColor = c;
-
-        matrix[0][0] = 0.0f;
-        matrix[0][1] = 0.0f;
-        matrix[0][2] = 0.0f;
-        matrix[0][3] = 0.0f;
-        matrix[1][0] = 0.0f;
-        matrix[1][1] = 0.0f;
-        matrix[1][2] = 0.0f;
-        matrix[1][3] = 0.0f;
-        matrix[2][0] = 0.0f;
-        matrix[2][1] = 0.0f;
-        matrix[2][2] = 0.0f;
-        matrix[2][3] = 0.0f;
-        matrix[3][0] = c.redF();
-        matrix[3][1] = c.greenF();
-        matrix[3][2] = c.blueF();
-        matrix[3][3] = c.alphaF();
-        matrix[4][0] = 0.0f;
-        matrix[4][1] = 0.0f;
-        matrix[4][2] = 0.0f;
-        matrix[4][3] = 0.0f;
-    }
-
-    // Blacken the source image.
-    vgColorMatrix(tmpImage, srcImage, matrix[0]);
 
     // Clamp the radius range.  We divide by 2 because the OpenVG blur
     // is "too blurry" compared to the default raster implementation.
@@ -292,9 +255,7 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         radiusF = maxRadius;
 
     // Blur the blackened source image.
-    vgGaussianBlur(dstImage, tmpImage, radiusF, radiusF, VG_TILE_PAD);
-
-    firstTime = false;
+    vgGaussianBlur(dstImage, srcImage, radiusF, radiusF, VG_TILE_PAD);
 
     VGImage child = VG_INVALID_HANDLE;
 
@@ -308,11 +269,10 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         child = vgChildImage(dstImage, srect.x(), srect.y(), srect.width(), srect.height());
     }
 
-    qt_vg_drawVGImage(painter, dest + offset(), child);
+    qt_vg_drawVGImageStencil(painter, dest + offset(), child, color());
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(tmpImage);
     vgDestroyImage(dstImage);
 
     // Now draw the actual pixmap over the top.

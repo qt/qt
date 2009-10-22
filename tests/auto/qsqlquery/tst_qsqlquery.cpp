@@ -194,7 +194,6 @@ private slots:
     void sqlServerReturn0_data() { generic_data(); }
     void sqlServerReturn0();
 
-
 private:
     // returns all database connections
     void generic_data(const QString &engine=QString());
@@ -510,9 +509,7 @@ void tst_QSqlQuery::mysqlOutValues()
     QVERIFY_SQL( q, exec( "create procedure " + qTableName( "qtestproc" ) + " () "
                             "BEGIN select * from " + qTableName( "qtest" ) + " order by id; END" ) );
     QVERIFY_SQL( q, exec( "call " + qTableName( "qtestproc" ) + "()" ) );
-    QEXPECT_FAIL("", "There's a mysql bug that means only selects think they return data when running in prepared mode", Continue);
     QVERIFY_SQL( q, next() );
-    QEXPECT_FAIL("", "There's a mysql bug that means only selects think they return data when running in prepared mode", Continue);
     QCOMPARE( q.value( 1 ).toString(), QString( "VarChar1" ) );
 
     QVERIFY_SQL( q, exec( "drop procedure " + qTableName( "qtestproc" ) ) );

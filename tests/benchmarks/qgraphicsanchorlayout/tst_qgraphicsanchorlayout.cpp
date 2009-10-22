@@ -41,6 +41,7 @@
 
 #include <QtTest/QtTest>
 #include <QtGui/qgraphicsanchorlayout.h>
+#include <QtGui/qgraphicslinearlayout.h>
 #include <QtGui/qgraphicswidget.h>
 #include <QtGui/qgraphicsview.h>
 
@@ -54,6 +55,12 @@ public:
 private slots:
     void s60_hard_complex_data();
     void s60_hard_complex();
+    void linearVsAnchorSizeHints_data();
+    void linearVsAnchorSizeHints();
+    void linearVsAnchorSetGeometry_data();
+    void linearVsAnchorSetGeometry();
+    void linearVsAnchorNested_data();
+    void linearVsAnchorNested();
 };
 
 
@@ -189,6 +196,235 @@ void tst_QGraphicsAnchorLayout::s60_hard_complex()
     QBENCHMARK {
         l->invalidate();
         sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    }
+}
+
+static QGraphicsLayout* createLayouts(int whichLayout)
+{
+    QSizeF min(0, 10);
+    QSizeF pref(50, 10);
+    QSizeF max(100, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *d = createItem(min, pref, max, "d");
+
+    QGraphicsLayout *l;
+    if (whichLayout == 0) {
+        l = new QGraphicsLinearLayout;
+        QGraphicsLinearLayout *linear = static_cast<QGraphicsLinearLayout *>(l);
+        linear->setContentsMargins(0, 0, 0, 0);
+
+        linear->addItem(a);
+        linear->addItem(b);
+        linear->addItem(c);
+        linear->addItem(d);
+    } else {
+        l = new QGraphicsAnchorLayout;
+        QGraphicsAnchorLayout *anchor = static_cast<QGraphicsAnchorLayout *>(l);
+        anchor->setContentsMargins(0, 0, 0, 0);
+
+        // Horizontal
+        setAnchor(anchor, anchor, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
+        setAnchor(anchor, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
+        setAnchor(anchor, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
+        setAnchor(anchor, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
+        setAnchor(anchor, d, Qt::AnchorRight, anchor, Qt::AnchorRight, 0);
+
+        // Vertical
+        anchor->addAnchors(anchor, a, Qt::Vertical);
+        anchor->addAnchors(anchor, b, Qt::Vertical);
+        anchor->addAnchors(anchor, c, Qt::Vertical);
+        anchor->addAnchors(anchor, d, Qt::Vertical);
+    }
+
+    return l;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSizeHints_data()
+{
+    QTest::addColumn<int>("whichLayout");
+    QTest::addColumn<int>("whichSizeHint");
+
+    QTest::newRow("QGraphicsLinearLayout::minimum")
+        << 0 << int(Qt::MinimumSize);
+    QTest::newRow("QGraphicsLinearLayout::preferred")
+        << 0 << int(Qt::PreferredSize);
+    QTest::newRow("QGraphicsLinearLayout::maximum")
+        << 0 << int(Qt::MaximumSize);
+    QTest::newRow("QGraphicsLinearLayout::noSizeHint")
+        << 0 << -1;
+
+    QTest::newRow("QGraphicsAnchorLayout::minimum")
+        << 1 << int(Qt::MinimumSize);
+    QTest::newRow("QGraphicsAnchorLayout::preferred")
+        << 1 << int(Qt::PreferredSize);
+    QTest::newRow("QGraphicsAnchorLayout::maximum")
+        << 1 << int(Qt::MaximumSize);
+    QTest::newRow("QGraphicsAnchorLayout::noSizeHint")
+        << 1 << -1;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSizeHints()
+{
+    QFETCH(int, whichSizeHint);
+    QFETCH(int, whichLayout);
+
+    QGraphicsLayout *l = createLayouts(whichLayout);
+
+    QSizeF sizeHint;
+    // warm up instruction cache
+    l->invalidate();
+    sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    // ...then measure...
+
+    QBENCHMARK {
+        l->invalidate();
+        sizeHint = l->effectiveSizeHint((Qt::SizeHint)whichSizeHint);
+    }
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSetGeometry_data()
+{
+    QTest::addColumn<int>("whichLayout");
+
+    QTest::newRow("QGraphicsLinearLayout")
+        << 0;
+    QTest::newRow("QGraphicsAnchorLayout")
+        << 1;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorSetGeometry()
+{
+    QFETCH(int, whichLayout);
+
+    QGraphicsLayout *l = createLayouts(whichLayout);
+
+    QRectF sizeHint;
+    qreal maxWidth;
+    qreal increment;
+    // warm up instruction cache
+    l->invalidate();
+    sizeHint.setSize(l->effectiveSizeHint(Qt::MinimumSize));
+    maxWidth = l->effectiveSizeHint(Qt::MaximumSize).width();
+    increment = (maxWidth - sizeHint.width()) / 100;
+    l->setGeometry(sizeHint);
+    // ...then measure...
+
+    QBENCHMARK {
+        l->invalidate();
+        for (qreal width = sizeHint.width(); width <= maxWidth; width += increment) {
+            sizeHint.setWidth(width);
+            l->setGeometry(sizeHint);
+        }
+    }
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorNested_data()
+{
+    QTest::addColumn<int>("whichLayout");
+    QTest::newRow("LinearLayout")
+        << 0;
+    QTest::newRow("AnchorLayout setup with null-anchors knot")
+        << 1;
+    QTest::newRow("AnchorLayout setup easy to simplificate")
+        << 2;
+}
+
+void tst_QGraphicsAnchorLayout::linearVsAnchorNested()
+{
+    QFETCH(int, whichLayout);
+
+    QSizeF min(10, 10);
+    QSizeF pref(80, 80);
+    QSizeF max(150, 150);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "a");
+    QGraphicsWidget *b = createItem(min, pref, max, "b");
+    QGraphicsWidget *c = createItem(min, pref, max, "c");
+    QGraphicsWidget *d = createItem(min, pref, max, "d");
+
+    QGraphicsLayout *layout;
+
+    if (whichLayout == 0) {
+        QGraphicsLinearLayout *linear1 = new QGraphicsLinearLayout;
+        QGraphicsLinearLayout *linear2 = new QGraphicsLinearLayout(Qt::Vertical);
+        QGraphicsLinearLayout *linear3 = new QGraphicsLinearLayout;
+
+        linear1->addItem(a);
+        linear1->addItem(linear2);
+        linear2->addItem(b);
+        linear2->addItem(linear3);
+        linear3->addItem(c);
+        linear3->addItem(d);
+
+        layout = linear1;
+    } else if (whichLayout == 1) {
+        QGraphicsAnchorLayout *anchor = new QGraphicsAnchorLayout;
+
+        // A
+        anchor->addCornerAnchors(a, Qt::TopLeftCorner, anchor, Qt::TopLeftCorner);
+        anchor->addCornerAnchors(a, Qt::TopRightCorner, b, Qt::TopLeftCorner);
+        anchor->addCornerAnchors(a, Qt::BottomLeftCorner, anchor, Qt::BottomLeftCorner);
+        anchor->addCornerAnchors(a, Qt::BottomRightCorner, c, Qt::BottomLeftCorner);
+
+        // B
+        anchor->addCornerAnchors(b, Qt::TopRightCorner, anchor, Qt::TopRightCorner);
+        anchor->addCornerAnchors(b, Qt::BottomLeftCorner, c, Qt::TopLeftCorner);
+        anchor->addCornerAnchors(b, Qt::BottomRightCorner, d, Qt::TopRightCorner);
+
+        // C
+        anchor->addCornerAnchors(c, Qt::TopRightCorner, d, Qt::TopLeftCorner);
+        anchor->addCornerAnchors(c, Qt::BottomRightCorner, d, Qt::BottomLeftCorner);
+
+        // D
+        anchor->addCornerAnchors(d, Qt::BottomRightCorner, anchor, Qt::BottomRightCorner);
+
+        layout = anchor;
+    } else {
+        QGraphicsAnchorLayout *anchor = new QGraphicsAnchorLayout;
+
+        // A
+        anchor->addAnchor(a, Qt::AnchorLeft, anchor, Qt::AnchorLeft);
+        anchor->addAnchors(a, anchor, Qt::Vertical);
+        anchor->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+        anchor->addAnchor(a, Qt::AnchorRight, c, Qt::AnchorLeft);
+
+        // B
+        anchor->addAnchor(b, Qt::AnchorTop, anchor, Qt::AnchorTop);
+        anchor->addAnchor(b, Qt::AnchorRight, anchor, Qt::AnchorRight);
+        anchor->addAnchor(b, Qt::AnchorBottom, c, Qt::AnchorTop);
+        anchor->addAnchor(b, Qt::AnchorBottom, d, Qt::AnchorTop);
+
+        // C
+        anchor->addAnchor(c, Qt::AnchorRight, d, Qt::AnchorLeft);
+        anchor->addAnchor(c, Qt::AnchorBottom, anchor, Qt::AnchorBottom);
+
+        // D
+        anchor->addAnchor(d, Qt::AnchorRight, anchor, Qt::AnchorRight);
+        anchor->addAnchor(d, Qt::AnchorBottom, anchor, Qt::AnchorBottom);
+
+        layout = anchor;
+    }
+
+    QSizeF sizeHint;
+    // warm up instruction cache
+    layout->invalidate();
+    sizeHint = layout->effectiveSizeHint(Qt::PreferredSize);
+
+    // ...then measure...
+    QBENCHMARK {
+        // To ensure that all sizeHints caches are invalidated in
+        // the LinearLayout setup, we must call updateGeometry on the
+        // children. If we didn't, only the top level layout would be
+        // re-calculated.
+        static_cast<QGraphicsLayoutItem *>(a)->updateGeometry();
+        static_cast<QGraphicsLayoutItem *>(b)->updateGeometry();
+        static_cast<QGraphicsLayoutItem *>(c)->updateGeometry();
+        static_cast<QGraphicsLayoutItem *>(d)->updateGeometry();
+        layout->invalidate();
+        sizeHint = layout->effectiveSizeHint(Qt::PreferredSize);
     }
 }
 

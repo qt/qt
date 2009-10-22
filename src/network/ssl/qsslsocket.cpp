@@ -467,6 +467,22 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
     return retVal;
 }
 
+void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
+{
+    Q_D(QSslSocket);
+    if (d->plainSocket)
+        d->plainSocket->setSocketOption(option, value);
+}
+
+QVariant QSslSocket::socketOption(QAbstractSocket::SocketOption option)
+{
+    Q_D(QSslSocket);
+    if (d->plainSocket)
+        return d->plainSocket->socketOption(option);
+    else
+        return QVariant();
+}
+
 /*!
     Returns the current mode for the socket; either UnencryptedMode, where
     QSslSocket behaves identially to QTcpSocket, or one of SslClientMode or

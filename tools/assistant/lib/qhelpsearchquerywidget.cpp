@@ -289,7 +289,7 @@ private slots:
     {
         QList<QHelpSearchQuery> queryList;
 #if !defined(QT_CLUCENE_SUPPORT)
-        queryList.append(QHelSearchQuery(QHelpSearchQuery::DEFAULT,
+        queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
                                           QStringList(defaultQuery->text())));
 
 #else

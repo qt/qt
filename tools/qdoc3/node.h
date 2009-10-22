@@ -369,15 +369,19 @@ class QmlClassNode : public FakeNode
 class QmlPropGroupNode : public FakeNode
 {
  public:
-    QmlPropGroupNode(QmlClassNode* parent, const QString& name);
+    QmlPropGroupNode(QmlClassNode* parent, 
+                     const QString& name,
+                     bool attached);
     virtual ~QmlPropGroupNode() { }
 
     const QString& element() const { return name(); }
     void setDefault() { isdefault = true; }
     bool isDefault() const { return isdefault; }
+    bool isAttached() const { return att; }
 
  private:
     bool    isdefault;
+    bool    att;
 };
 
 class QmlPropertyNode : public LeafNode
@@ -385,7 +389,8 @@ class QmlPropertyNode : public LeafNode
  public:
     QmlPropertyNode(QmlPropGroupNode* parent, 
                     const QString& name,
-                    const QString& type);
+                    const QString& type,
+                    bool attached);
     virtual ~QmlPropertyNode() { }
 
     void setDataType(const QString& dataType) { dt = dataType; }
@@ -396,6 +401,7 @@ class QmlPropertyNode : public LeafNode
     QString qualifiedDataType() const { return dt; }
     bool isStored() const { return fromTrool(sto,true); }
     bool isDesignable() const { return fromTrool(des,false); }
+    bool isAttached() const { return att; }
 
     const QString& element() const { return parent()->name(); }
 
@@ -408,6 +414,7 @@ class QmlPropertyNode : public LeafNode
     QString dt;
     Trool   sto;
     Trool   des;
+    bool    att;
 };
 
 class QmlSignalNode : public LeafNode

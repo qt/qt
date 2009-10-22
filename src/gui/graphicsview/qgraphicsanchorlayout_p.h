@@ -169,16 +169,9 @@ struct AnchorData : public QSimplexVariable {
     QString name;
 #endif
 
-    inline void setFixedSize(qreal size)
+    inline void setPreferredSize(qreal size)
     {
-        minSize = size;
         prefSize = size;
-        expSize = size;
-        maxSize = size;
-        sizeAtMinimum = size;
-        sizeAtPreferred = size;
-        sizeAtExpanding = size;
-        sizeAtMaximum = size;
         hasSize = true;
     }
 
@@ -316,8 +309,11 @@ public:
     void unsetSpacing();
     qreal spacing() const;
 
+    void setSizePolicy(QSizePolicy::Policy policy);
+
     QGraphicsAnchorLayoutPrivate *layoutPrivate;
     AnchorData *data;
+    QSizePolicy::Policy sizePolicy;
 };
 
 
@@ -438,9 +434,17 @@ public:
 
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
+
+    bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
+                        const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
+    bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
+                           const QList<AnchorData *> &variables);
+
     void setAnchorSizeHintsFromItems(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
+    void updateAnchorSizes(Orientation orientation);
     QList<QSimplexConstraint *> constraintsFromSizeHints(const QList<AnchorData *> &anchors);
     QList<QList<QSimplexConstraint *> > getGraphParts(Orientation orientation);
     void identifyFloatItems(const QSet<AnchorData *> &visited, Orientation orientation);
@@ -471,14 +475,16 @@ public:
                                   Orientation orientation);
 
     // Linear Programming solver methods
-    bool solveMinMax(QList<QSimplexConstraint *> constraints,
+    bool solveMinMax(const QList<QSimplexConstraint *> &constraints,
                      GraphPath path, qreal *min, qreal *max);
-    bool solvePreferred(QList<QSimplexConstraint *> constraints);
-    void solveExpanding(QList<QSimplexConstraint *> constraints);
+    bool solvePreferred(const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
+    void solveExpanding(const QList<QSimplexConstraint *> &constraints,
+                        const QList<AnchorData *> &variables);
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG
-    void dumpGraph();
+    void dumpGraph(const QString &name = QString());
 #endif
 
 
@@ -513,7 +519,13 @@ public:
     bool graphHasConflicts[2];
     QSet<QGraphicsLayoutItem *> m_floatItems[2];
 
+#if defined(QT_DEBUG) || defined(Q_AUTOTEST_EXPORT)
+    bool lastCalculationUsedSimplex[2];
+#endif
+
     uint calculateGraphCacheDirty : 1;
+
+    friend class QGraphicsAnchorPrivate;
 };
 
 QT_END_NAMESPACE
