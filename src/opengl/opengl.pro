@@ -83,11 +83,12 @@ x11 {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
                     qgl_egl.cpp \
-                    qpixmapdata_x11gl_egl.cpp
+                    qpixmapdata_x11gl_egl.cpp \
+                    qwindowsurface_x11gl.cpp
 
         HEADERS +=  qgl_egl_p.h \
-                    qpixmapdata_x11gl_p.h
-
+                    qpixmapdata_x11gl_p.h \
+                    qwindowsurface_x11gl_p.h
 
     } else {
         SOURCES +=  qgl_x11.cpp \

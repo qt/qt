@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QPIXMAPDATA_X11GL_P_H
-#define QPIXMAPDATA_X11GL_P_H
+#ifndef QWINDOWSURFACE_X11GL_P_H
+#define QWINDOWSURFACE_X11GL_P_H
 
 //
 //  W A R N I N G
@@ -53,34 +53,29 @@
 // We mean it.
 //
 
-#include <private/qpixmapdata_p.h>
-#include <private/qpixmap_x11_p.h>
-#include <private/qglpaintdevice_p.h>
-
-#include <qgl.h>
+#include <private/qwindowsurface_p.h>
 
 QT_BEGIN_NAMESPACE
 
-class QX11GLPixmapData : public QX11PixmapData, public QGLPaintDevice
+class QX11GLWindowSurface : public QWindowSurface
 {
 public:
-    QX11GLPixmapData();
-    virtual ~QX11GLPixmapData();
+    QX11GLWindowSurface(QWidget* window);
+    virtual ~QX11GLWindowSurface();
 
-    // Re-implemented from QGLPaintDevice
-    QPaintEngine* paintEngine() const; // Also re-implements QX11PixmapData::paintEngine
-    void beginPaint();
-    void endPaint();
-    QGLContext* context() const;
-    QSize size() const;
+    // Inherreted from QWindowSurface
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void setGeometry(const QRect &rect);
+    bool scroll(const QRegion &area, int dx, int dy);
 
-    static bool hasX11GLPixmaps();
-    static QGLFormat glFormat();
 private:
-    mutable QGLContext* ctx;
+    GC      m_GC;
+    QPixmap m_backBuffer;
+    QWidget *m_window;
 };
 
 
 QT_END_NAMESPACE
 
-#endif // QPIXMAPDATA_X11GL_P_H
+#endif // QWINDOWSURFACE_X11GL_P_H

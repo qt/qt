@@ -496,7 +496,7 @@ qint64 QAudioOutputPrivate::clock() const
     if (deviceState == QAudio::StopState)
         return 0;
 
-    return timeStampOpened.elapsed();
+    return timeStampOpened.elapsed()*1000;
 }
 
 QAudio::Error QAudioOutputPrivate::error() const
