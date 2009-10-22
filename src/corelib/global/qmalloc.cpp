@@ -144,9 +144,6 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     // faked-sizeof(void*) is properly aligned for a pointer
     faked.pptr[-1] = real.ptr;
 
-    // and save the actual size just before the pointer
-    //reinterpret_cast<size_t *>(faked.pptr - 1)[-1] = size;
-
     return faked.ptr;
 #endif
 }

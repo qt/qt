@@ -69,6 +69,9 @@ struct Q_CORE_EXPORT QContiguousCacheData
     // there will be an 8 byte gap here if T requires 16-byte alignment
     //  (such as long double on 64-bit platforms, __int128, __float128)
 
+    static QContiguousCacheData *allocate(int size, int alignment);
+    static void free(QContiguousCacheData *data);
+
 #ifdef QT_QCONTIGUOUSCACHE_DEBUG
     void dump() const;
 #endif
@@ -160,6 +163,14 @@ private:
         // this is more or less the same as sizeof(Data), except that it doesn't
         // count the padding at the end
         return reinterpret_cast<const char *>(&(reinterpret_cast<const Data *>(this))->array[1]) - reinterpret_cast<const char *>(this);
+    }
+    int alignOfTypedData() const
+    {
+#ifdef Q_ALIGNOF
+        return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
+#else
+        return 0;
+#endif
     }
 };
 
@@ -262,7 +273,7 @@ void QContiguousCache<T>::clear()
 template <typename T>
 inline QContiguousCacheData *QContiguousCache<T>::malloc(int aalloc)
 {
-    return static_cast<QContiguousCacheData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    return QContiguousCacheData::allocate(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
 }
 
 template <typename T>
@@ -317,7 +328,7 @@ void QContiguousCache<T>::free(Data *x)
                 i = p->array;
         }
     }
-    qFree(x);
+    x->free(x);
 }
 template <typename T>
 void QContiguousCache<T>::append(const T &value)
