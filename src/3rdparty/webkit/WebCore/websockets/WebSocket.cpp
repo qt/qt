@@ -86,6 +86,22 @@ static bool isValidProtocolString(const WebCore::String& protocol)
     return true;
 }
 
+#if USE(V8)
+
+static bool webSocketsAvailable = false;
+
+void WebSocket::setIsAvailable(bool available)
+{
+    webSocketsAvailable = available;
+}
+
+bool WebSocket::isAvailable()
+{
+    return webSocketsAvailable;
+}
+
+#endif
+
 WebSocket::WebSocket(ScriptExecutionContext* context)
     : ActiveDOMObject(context, this)
     , m_state(CONNECTING)
@@ -189,7 +205,7 @@ void WebSocket::didReceiveMessage(const String& msg)
         return;
     RefPtr<MessageEvent> evt = MessageEvent::create();
     // FIXME: origin, lastEventId, source, messagePort.
-    evt->initMessageEvent(eventNames().messageEvent, false, false, msg, "", "", 0, 0);
+    evt->initMessageEvent(eventNames().messageEvent, false, false, SerializedScriptValue::create(msg), "", "", 0, 0);
     scriptExecutionContext()->postTask(ProcessWebSocketEventTask::create(this, evt));
 }
 

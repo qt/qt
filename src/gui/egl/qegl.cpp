@@ -61,6 +61,7 @@ QEglContext::QEglContext()
     , cfg(0)
     , currentSurface(EGL_NO_SURFACE)
     , current(false)
+    , ownsContext(true)
 {
 }
 
@@ -206,7 +207,7 @@ void QEglContext::destroySurface(EGLSurface surface)
 // Destroy the context.  Note: this does not destroy the surface.
 void QEglContext::destroy()
 {
-    if (ctx != EGL_NO_CONTEXT)
+    if (ctx != EGL_NO_CONTEXT && ownsContext)
         eglDestroyContext(dpy, ctx);
     dpy = EGL_NO_DISPLAY;
     ctx = EGL_NO_CONTEXT;

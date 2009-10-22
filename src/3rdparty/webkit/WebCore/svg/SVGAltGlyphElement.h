@@ -47,8 +47,9 @@ namespace WebCore {
     
         SVGGlyphElement* glyphElement() const;
 
-    protected:
-        virtual const SVGElement* contextElement() const { return this; }
+    private:    
+        // SVGURIReference
+        ANIMATED_PROPERTY_DECLARATIONS(SVGAltGlyphElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
     };
 
 } // namespace WebCore

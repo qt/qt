@@ -207,6 +207,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_readyReadSlot())
     Q_PRIVATE_SLOT(d_func(), void _q_bytesWrittenSlot(qint64))
     Q_PRIVATE_SLOT(d_func(), void _q_flushWriteBuffer())
+    Q_PRIVATE_SLOT(d_func(), void _q_flushReadBuffer())
     friend class QSslSocketBackendPrivate;
 };
 

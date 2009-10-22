@@ -81,7 +81,7 @@ public:
     inline ~QScriptValuePrivate();
 
     inline void initFrom(JSC::JSValue value);
-    inline void initFrom(double value);
+    inline void initFrom(qsreal value);
     inline void initFrom(const QString &value);
 
     inline bool isJSC() const;
@@ -124,7 +124,7 @@ public:
     QScriptEnginePrivate *engine;
     Type type;
     JSC::JSValue jscValue;
-    double numberValue;
+    qsreal numberValue;
     QString stringValue;
 
     // linked list of engine's script values

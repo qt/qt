@@ -88,7 +88,7 @@ static QTransform transform2D(const QGraphicsTransform& t)
 {
     QMatrix4x4 m;
     t.applyTo(&m);
-    return m.toTransform();
+    return m.toTransform(0);
 }
 
 void tst_QGraphicsTransform::scale()

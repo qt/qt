@@ -149,24 +149,6 @@ static inline bool hasBackingStoreSupport()
 #endif
 }
 
-/*!
-    \internal
-
-    Returns true if \a p or any of its parents enable the
-    Qt::BypassGraphicsProxyWidget window flag. Used in QWidget::show() and
-    QWidget::setParent() to determine whether it's necessary to embed the
-    widget into a QGraphicsProxyWidget or not.
-*/
-static inline bool bypassGraphicsProxyWidget(QWidget *p)
-{
-    while (p) {
-        if (p->windowFlags() & Qt::BypassGraphicsProxyWidget)
-            return true;
-        p = p->parentWidget();
-    }
-    return false;
-}
-
 #ifdef Q_WS_MAC
 #  define QT_NO_PAINT_DEBUG
 #endif
@@ -5487,6 +5469,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     return pixmap;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 /*!
     \internal
 
@@ -5495,7 +5478,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     If successful, the function returns the proxy that embeds the widget, or 0 if no embedded
     widget was found.
 */
-QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origin)
+QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
 {
     if (origin) {
         QWExtra *extra = origin->d_func()->extra;
@@ -5505,6 +5488,7 @@ QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origi
     }
     return 0;
 }
+#endif
 
 /*!
     \property QWidget::locale
@@ -7739,6 +7723,10 @@ void QWidget::adjustSize()
     Q_D(QWidget);
     ensurePolished();
     QSize s = d->adjustedSize();
+
+    if (d->layout)
+        d->layout->activate();
+
     if (s.isValid())
         resize(s);
 }

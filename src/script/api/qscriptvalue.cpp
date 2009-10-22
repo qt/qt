@@ -213,7 +213,7 @@ qint32 ToInt32(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D32);
@@ -233,7 +233,7 @@ quint32 ToUint32(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D32);
@@ -251,7 +251,7 @@ quint16 ToUint16(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D16);

@@ -170,6 +170,7 @@ private slots:
     void setEmptyKey();
     void spontaneousWrite();
     void setReadBufferSize();
+    void setReadBufferSize_task_250027();
     void waitForMinusOne();
     void verifyMode();
     void verifyDepth();
@@ -1239,6 +1240,66 @@ void tst_QSslSocket::setReadBufferSize()
     QVERIFY(!timeout());
 
     QVERIFY(receiver->bytesAvailable() > oldBytesAvailable);
+}
+
+class SetReadBufferSize_task_250027_handler : public QObject {
+    Q_OBJECT
+public slots:
+    void readyReadSlot() {
+        QTestEventLoop::instance().exitLoop();
+    }
+    void waitSomeMore(QSslSocket *socket) {
+        QTime t;
+        t.start();
+        while (!socket->encryptedBytesAvailable()) {
+            QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents, 250);
+            if (t.elapsed() > 1000 || socket->state() != QAbstractSocket::ConnectedState)
+                return;
+        }
+    }
+};
+
+void tst_QSslSocket::setReadBufferSize_task_250027()
+{
+    // do not execute this when a proxy is set.
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    socket->setReadBufferSize(1000); // limit to 1 kb/sec
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    QVERIFY(socket->waitForConnected(10*1000));
+    QVERIFY(socket->waitForEncrypted(10*1000));
+
+    // exit the event loop as soon as we receive a readyRead()
+    SetReadBufferSize_task_250027_handler setReadBufferSize_task_250027_handler;
+    connect(socket, SIGNAL(readyRead()), &setReadBufferSize_task_250027_handler, SLOT(readyReadSlot()));
+
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.0\n"); // this file is 27 KB
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("Connection: close\n");
+    socket->write("\n");
+    socket->flush();
+
+    QTestEventLoop::instance().enterLoop(10);
+    setReadBufferSize_task_250027_handler.waitSomeMore(socket);
+    QByteArray firstRead = socket->readAll();
+    // First read should be some data, but not the whole file
+    QVERIFY(firstRead.size() > 0 && firstRead.size() < 20*1024);
+
+    QTestEventLoop::instance().enterLoop(10);
+    setReadBufferSize_task_250027_handler.waitSomeMore(socket);
+    QByteArray secondRead = socket->readAll();
+    // second read should be some more data
+    QVERIFY(secondRead.size() > 0);
+
+    socket->close();
 }
 
 class SslServer3 : public QTcpServer

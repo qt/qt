@@ -30,12 +30,14 @@
 #include "SecurityOrigin.h"
 
 #include "CString.h"
-#include "FrameLoader.h"
+#include "Document.h"
 #include "KURL.h"
 #include "OriginAccessEntry.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {
+
+static SecurityOrigin::LocalLoadPolicy localLoadPolicy = SecurityOrigin::AllowLocalLoadsForLocalOnly;
 
 typedef Vector<OriginAccessEntry> OriginAccessWhiteList;
 typedef HashMap<String, OriginAccessWhiteList*> OriginAccessMap;
@@ -116,9 +118,9 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
 }
 
 SecurityOrigin::SecurityOrigin(const SecurityOrigin* other)
-    : m_protocol(other->m_protocol.copy())
-    , m_host(other->m_host.copy())
-    , m_domain(other->m_domain.copy())
+    : m_protocol(other->m_protocol.threadsafeCopy())
+    , m_host(other->m_host.threadsafeCopy())
+    , m_domain(other->m_domain.threadsafeCopy())
     , m_port(other->m_port)
     , m_noAccess(other->m_noAccess)
     , m_universalAccess(other->m_universalAccess)
@@ -144,7 +146,7 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::createEmpty()
     return create(KURL());
 }
 
-PassRefPtr<SecurityOrigin> SecurityOrigin::copy()
+PassRefPtr<SecurityOrigin> SecurityOrigin::threadsafeCopy()
 {
     return adoptRef(new SecurityOrigin(this));
 }
@@ -237,6 +239,20 @@ bool SecurityOrigin::taintsCanvas(const KURL& url) const
     return true;
 }
 
+bool SecurityOrigin::canLoad(const KURL& url, const String& referrer, Document* document)
+{
+    if (!shouldTreatURLAsLocal(url.string()))
+        return true;
+
+    // If we were provided a document, we let its local file policy dictate the result,
+    // otherwise we allow local loads only if the supplied referrer is also local.
+    if (document)
+        return document->securityOrigin()->canLoadLocalResources();
+    if (!referrer.isEmpty())
+        return shouldTreatURLAsLocal(referrer);
+    return false;
+}
+
 void SecurityOrigin::grantLoadLocalResources()
 {
     // This method exists only to support backwards compatibility with older
@@ -244,7 +260,7 @@ void SecurityOrigin::grantLoadLocalResources()
     // in a SecurityOrigin is a security hazard because the documents without
     // the privilege can obtain the privilege by injecting script into the
     // documents that have been granted the privilege.
-    ASSERT(FrameLoader::allowSubstituteDataAccessToLocal());
+    ASSERT(allowSubstituteDataAccessToLocal());
     m_canLoadLocalResources = true;
 }
 
@@ -370,13 +386,11 @@ bool SecurityOrigin::isSameSchemeHostPort(const SecurityOrigin* other) const
     return true;
 }
 
-// static
 void SecurityOrigin::registerURLSchemeAsLocal(const String& scheme)
 {
     localSchemes().add(scheme);
 }
 
-// static
 void SecurityOrigin::removeURLSchemeRegisteredAsLocal(const String& scheme)
 {
     if (scheme == "file")
@@ -392,13 +406,11 @@ void SecurityOrigin::removeURLSchemeRegisteredAsLocal(const String& scheme)
     localSchemes().remove(scheme);
 }
 
-// static
 const URLSchemesMap&  SecurityOrigin::localURLSchemes()
 {
     return localSchemes();
 }
 
-// static
 bool SecurityOrigin::shouldTreatURLAsLocal(const String& url)
 {
     // This avoids an allocation of another String and the HashSet contains()
@@ -419,7 +431,6 @@ bool SecurityOrigin::shouldTreatURLAsLocal(const String& url)
     return localSchemes().contains(scheme);
 }
 
-// static
 bool SecurityOrigin::shouldTreatURLSchemeAsLocal(const String& scheme)
 {
     // This avoids an allocation of another String and the HashSet contains()
@@ -438,16 +449,45 @@ bool SecurityOrigin::shouldTreatURLSchemeAsLocal(const String& scheme)
     return localSchemes().contains(scheme);
 }
 
-// static
 void SecurityOrigin::registerURLSchemeAsNoAccess(const String& scheme)
 {
     noAccessSchemes().add(scheme);
 }
 
-// static
 bool SecurityOrigin::shouldTreatURLSchemeAsNoAccess(const String& scheme)
 {
     return noAccessSchemes().contains(scheme);
+}
+
+bool SecurityOrigin::shouldHideReferrer(const KURL& url, const String& referrer)
+{
+    bool referrerIsSecureURL = protocolIs(referrer, "https");
+    bool referrerIsWebURL = referrerIsSecureURL || protocolIs(referrer, "http");
+
+    if (!referrerIsWebURL)
+        return true;
+
+    if (!referrerIsSecureURL)
+        return false;
+
+    bool URLIsSecureURL = url.protocolIs("https");
+
+    return !URLIsSecureURL;
+}
+
+void SecurityOrigin::setLocalLoadPolicy(LocalLoadPolicy policy)
+{
+    localLoadPolicy = policy;
+}
+
+bool SecurityOrigin::restrictAccessToLocal()
+{
+    return localLoadPolicy != SecurityOrigin::AllowLocalLoadsForAll;
+}
+
+bool SecurityOrigin::allowSubstituteDataAccessToLocal()
+{
+    return localLoadPolicy != SecurityOrigin::AllowLocalLoadsForLocalOnly;
 }
 
 void SecurityOrigin::whiteListAccessFromOrigin(const SecurityOrigin& sourceOrigin, const String& destinationProtocol, const String& destinationDomains, bool allowDestinationSubdomains)

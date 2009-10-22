@@ -242,7 +242,6 @@
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qtooltip.h>
 #include <QtGui/qtransform.h>
-#include <QtGui/qgesture.h>
 #include <QtGui/qinputcontext.h>
 #include <QtGui/qgraphicseffect.h>
 #include <private/qapplication_p.h>
@@ -251,6 +250,14 @@
 #include <private/qt_x11_p.h>
 #endif
 #include <private/qgraphicseffect_p.h>
+#include <private/qgesturemanager_p.h>
+
+// #define GESTURE_DEBUG
+#ifndef GESTURE_DEBUG
+# define DEBUG if (0) qDebug
+#else
+# define DEBUG qDebug
+#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -1052,6 +1059,14 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 */
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
+    if (QGraphicsObject *object = item->toGraphicsObject()) {
+        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+        if (qAppPriv->gestureManager) {
+            if (qAppPriv->gestureManager->filterEvent(object, event))
+                return true;
+        }
+    }
+
     if (filterEvent(item, event))
         return false;
     if (filterDescendantEvent(item, event))
@@ -3364,6 +3379,10 @@ bool QGraphicsScene::event(QEvent *event)
     case QEvent::TouchUpdate:
     case QEvent::TouchEnd:
         d->touchEventHandler(static_cast<QTouchEvent *>(event));
+        break;
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+        d->gestureEventHandler(static_cast<QGestureEvent *>(event));
         break;
     default:
         return QObject::event(event);
@@ -5697,6 +5716,238 @@ void QGraphicsScenePrivate::leaveModal(QGraphicsItem *panel)
     QGraphicsSceneHoverEvent hoverEvent;
     hoverEvent.setScenePos(lastSceneMousePos);
     dispatchHoverEvent(&hoverEvent);
+}
+
+void QGraphicsScenePrivate::getGestureTargets(const QSet<QGesture *> &gestures,
+                                              QWidget *viewport,
+                                              QMap<Qt::GestureType, QGesture *> *conflictedGestures,
+                                              QList<QList<QGraphicsObject *> > *conflictedItems,
+                                              QHash<QGesture *, QGraphicsObject *> *normalGestures)
+{
+    foreach (QGesture *gesture, gestures) {
+        Qt::GestureType gestureType = gesture->gestureType();
+        if (gesture->hasHotSpot()) {
+            QPoint screenPos = gesture->hotSpot().toPoint();
+            QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
+            QList<QGraphicsObject *> result;
+            for (int j = 0; j < items.size(); ++j) {
+                QGraphicsObject *item = items.at(j)->toGraphicsObject();
+                if (!item)
+                    continue;
+                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
+                if (d->gestureContext.contains(gestureType)) {
+                    result.append(item);
+                }
+            }
+            DEBUG() << "QGraphicsScenePrivate::getGestureTargets:"
+                    << gesture << result;
+            if (result.size() == 1) {
+                normalGestures->insert(gesture, result.first());
+            } else if (!result.isEmpty()) {
+                conflictedGestures->insert(gestureType, gesture);
+                conflictedItems->append(result);
+            }
+        }
+    }
+}
+
+void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
+{
+    QWidget *viewport = event->widget();
+    if (!viewport)
+        return;
+    QList<QGesture *> allGestures = event->allGestures();
+    DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+            << "Delivering gestures:" <<  allGestures;
+
+    typedef QHash<QGraphicsObject *, QList<QGesture *> > GesturesPerItem;
+    GesturesPerItem gesturesPerItem;
+
+    QSet<QGesture *> startedGestures;
+    foreach (QGesture *gesture, allGestures) {
+        QGraphicsObject *target = gestureTargets.value(gesture, 0);
+        if (!target) {
+            // when we are not in started mode but don't have a target
+            // then the only one interested in gesture is the view/scene
+            if (gesture->state() == Qt::GestureStarted)
+                startedGestures.insert(gesture);
+        } else {
+            gesturesPerItem[target].append(gesture);
+        }
+    }
+
+    QMap<Qt::GestureType, QGesture *> conflictedGestures;
+    QList<QList<QGraphicsObject *> > conflictedItems;
+    QHash<QGesture *, QGraphicsObject *> normalGestures;
+    getGestureTargets(startedGestures, viewport, &conflictedGestures, &conflictedItems,
+                      &normalGestures);
+    DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+            << "Conflicting gestures:" <<  conflictedGestures.values() << conflictedItems;
+    Q_ASSERT((conflictedGestures.isEmpty() && conflictedItems.isEmpty()) ||
+              (!conflictedGestures.isEmpty() && !conflictedItems.isEmpty()));
+
+    // gestures that were sent as override events, but no one accepted them
+    QHash<QGesture *, QGraphicsObject *> ignoredConflictedGestures;
+
+    // deliver conflicted gestures as override events first
+    while (!conflictedGestures.isEmpty() && !conflictedItems.isEmpty()) {
+        // get the topmost item to deliver the override event
+        Q_ASSERT(!conflictedItems.isEmpty());
+        Q_ASSERT(!conflictedItems.first().isEmpty());
+        QGraphicsObject *topmost = conflictedItems.first().first();
+        for (int i = 1; i < conflictedItems.size(); ++i) {
+            QGraphicsObject *item = conflictedItems.at(i).first();
+            if (qt_closestItemFirst(item, topmost)) {
+                topmost = item;
+            }
+        }
+        // get a list of gestures to send to the item
+        QList<Qt::GestureType> grabbedGestures =
+                topmost->QGraphicsItem::d_func()->gestureContext.keys();
+        QList<QGesture *> gestures;
+        for (int i = 0; i < grabbedGestures.size(); ++i) {
+            if (QGesture *g = conflictedGestures.value(grabbedGestures.at(i), 0)) {
+                gestures.append(g);
+                if (!ignoredConflictedGestures.contains(g))
+                    ignoredConflictedGestures.insert(g, topmost);
+            }
+        }
+
+        // send gesture override to the topmost item
+        QGestureEvent ev(gestures);
+        ev.t = QEvent::GestureOverride;
+        ev.setWidget(event->widget());
+        // mark event and individual gestures as ignored
+        ev.ignore();
+        foreach(QGesture *g, gestures)
+            ev.setAccepted(g, false);
+        DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                << "delivering override to"
+                << topmost << gestures;
+        sendEvent(topmost, &ev);
+        // mark all accepted gestures to deliver them as normal gesture events
+        foreach (QGesture *g, gestures) {
+            if (ev.isAccepted() || ev.isAccepted(g)) {
+                conflictedGestures.remove(g->gestureType());
+                gestureTargets.remove(g);
+                // add the gesture to the list of normal delivered gestures
+                normalGestures.insert(g, topmost);
+                DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                        << "override was accepted:"
+                        << g << topmost;
+                ignoredConflictedGestures.remove(g);
+            }
+        }
+        // remove the item that we've already delivered from the list
+        for (int i = 0; i < conflictedItems.size(); ) {
+            QList<QGraphicsObject *> &items = conflictedItems[i];
+            if (items.first() == topmost) {
+                items.removeFirst();
+                if (items.isEmpty()) {
+                    conflictedItems.removeAt(i);
+                    continue;
+                }
+            }
+            ++i;
+        }
+    }
+
+    // put back those started gestures that are not in the conflicted state
+    // and remember their targets
+    QHash<QGesture *, QGraphicsObject *>::const_iterator it = normalGestures.begin(),
+                                                          e = normalGestures.end();
+    for (; it != e; ++it) {
+        QGesture *g = it.key();
+        QGraphicsObject *receiver = it.value();
+        Q_ASSERT(!gestureTargets.contains(g));
+        gestureTargets.insert(g, receiver);
+        gesturesPerItem[receiver].append(g);
+    }
+    it = ignoredConflictedGestures.begin();
+    e = ignoredConflictedGestures.end();
+    for (; it != e; ++it) {
+        QGesture *g = it.key();
+        QGraphicsObject *receiver = it.value();
+        Q_ASSERT(!gestureTargets.contains(g));
+        gestureTargets.insert(g, receiver);
+        gesturesPerItem[receiver].append(g);
+    }
+
+    DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+            << "Started gestures:" << normalGestures.keys()
+            << "All gestures:" << gesturesPerItem.values();
+
+    // deliver all events
+    QList<QGesture *> alreadyIgnoredGestures;
+    QHash<QGraphicsObject *, QSet<QGesture *> > itemIgnoredGestures;
+    QList<QGraphicsObject *> targetItems = gesturesPerItem.keys();
+    qSort(targetItems.begin(), targetItems.end(), qt_closestItemFirst);
+    for (int i = 0; i < targetItems.size(); ++i) {
+        QGraphicsObject *item = targetItems.at(i);
+        QList<QGesture *> gestures = gesturesPerItem.value(item);
+        // remove gestures that were already delivered once and were ignored
+        DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                << "already ignored gestures for item"
+                << item << ":" << itemIgnoredGestures.value(item);
+
+        if (itemIgnoredGestures.contains(item)) // don't deliver twice to the same item
+            continue;
+
+        QGraphicsItemPrivate *gid = item->QGraphicsItem::d_func();
+        foreach(QGesture *g, alreadyIgnoredGestures) {
+            if (gid->gestureContext.contains(g->gestureType()))
+                gestures += g;
+        }
+        if (gestures.isEmpty())
+            continue;
+        DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                << "delivering to"
+                << item << gestures;
+        QGestureEvent ev(gestures);
+        ev.setWidget(event->widget());
+        sendEvent(item, &ev);
+        QSet<QGesture *> ignoredGestures;
+        foreach (QGesture *g, gestures) {
+            if (!ev.isAccepted() && !ev.isAccepted(g))
+                ignoredGestures.insert(g);
+        }
+        if (!ignoredGestures.isEmpty()) {
+            // get a list of items under the (current) hotspot of each ignored
+            // gesture and start delivery again from the beginning
+            DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                    << "item has ignored the event, will propagate."
+                    << item << ignoredGestures;
+            itemIgnoredGestures[item] += ignoredGestures;
+            QMap<Qt::GestureType, QGesture *> conflictedGestures;
+            QList<QList<QGraphicsObject *> > itemsForConflictedGestures;
+            QHash<QGesture *, QGraphicsObject *> normalGestures;
+            getGestureTargets(ignoredGestures, viewport,
+                              &conflictedGestures, &itemsForConflictedGestures,
+                              &normalGestures);
+            QSet<QGraphicsObject *> itemsSet = targetItems.toSet();
+            for (int k = 0; k < itemsForConflictedGestures.size(); ++k)
+                itemsSet += itemsForConflictedGestures.at(k).toSet();
+            targetItems = itemsSet.toList();
+            qSort(targetItems.begin(), targetItems.end(), qt_closestItemFirst);
+            alreadyIgnoredGestures = conflictedGestures.values();
+            DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
+                    << "new targets:" << targetItems;
+            i = -1; // start delivery again
+            continue;
+        }
+    }
+
+    // forget about targets for gestures that have ended
+    foreach (QGesture *g, allGestures) {
+        switch (g->state()) {
+        case Qt::GestureFinished:
+        case Qt::GestureCanceled:
+            gestureTargets.remove(g);
+            break;
+        default:
+            break;
+        }
+    }
 }
 
 QT_END_NAMESPACE
