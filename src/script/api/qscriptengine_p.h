@@ -101,11 +101,22 @@ namespace QScript
     class TimeoutCheckerProxy;
 
     //some conversion helper functions
-    QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
+    inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
 
     class UStringSourceProviderWithFeedback;
-}
+
+struct GlobalClientData : public JSC::JSGlobalData::ClientData
+{
+    GlobalClientData(QScriptEnginePrivate *e)
+        : engine(e) {}
+    virtual ~GlobalClientData() {}
+    virtual void mark(JSC::MarkStack& markStack);
+
+    QScriptEnginePrivate *engine;
+};
+
+} // namespace QScript
 
 class QScriptEnginePrivate
 #ifndef QT_NO_QOBJECT
@@ -366,6 +377,11 @@ private:
     QScriptEnginePrivate *engine;
     JSC::ExecState *oldFrame;
 };
+
+inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
+{
+    return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
+}
 
 } // namespace QScript
 

@@ -343,15 +343,10 @@ public:
 namespace QScript
 {
 
-struct GlobalClientData : public JSC::JSGlobalData::ClientData
+void GlobalClientData::mark(JSC::MarkStack& markStack)
 {
-    GlobalClientData(QScriptEnginePrivate *e)
-        : engine(e) {}
-    virtual ~GlobalClientData() {}
-    virtual void mark(JSC::MarkStack& markStack) { engine->mark(markStack); }
-
-    QScriptEnginePrivate *engine;
-};
+    engine->mark(markStack);
+}
 
 class TimeoutCheckerProxy : public JSC::TimeoutChecker
 {
@@ -450,11 +445,6 @@ qsreal integerFromString(const QString &str, int radix)
 {
     QByteArray ba = str.trimmed().toUtf8();
     return integerFromString(ba.constData(), ba.size(), radix);
-}
-
-QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
-{
-    return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
 bool isFunction(JSC::JSValue value)
