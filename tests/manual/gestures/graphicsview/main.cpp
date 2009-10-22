@@ -66,11 +66,11 @@ protected:
                 default: qDebug("view: Pan: <unknown state>"); break;
                 }
 
-                const QSizeF offset = pan->offset();
+                const QPointF offset = pan->offset();
                 QScrollBar *vbar = verticalScrollBar();
                 QScrollBar *hbar = horizontalScrollBar();
-                vbar->setValue(vbar->value() - offset.height());
-                hbar->setValue(hbar->value() - offset.width());
+                vbar->setValue(vbar->value() - offset.y());
+                hbar->setValue(hbar->value() - offset.x());
                 ge->accept(pan);
                 return true;
             }
