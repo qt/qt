@@ -45,17 +45,11 @@
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/QListModelInterface>
 
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
 class QmlContext;
 class QModelIndex;
 
 class QmlFolderListModelPrivate;
-class Q_DECLARATIVE_EXPORT QmlFolderListModel : public QListModelInterface, public QmlParserStatus
+class QmlFolderListModel : public QListModelInterface, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
@@ -115,14 +109,10 @@ private Q_SLOTS:
     void dataChanged(const QModelIndex &start, const QModelIndex &end);
 
 private:
-    Q_DECLARE_PRIVATE(QmlFolderListModel)
     Q_DISABLE_COPY(QmlFolderListModel)
+    QmlFolderListModelPrivate *d;
 };
 
-QT_END_NAMESPACE
-
 QML_DECLARE_TYPE(QmlFolderListModel)
-
-QT_END_HEADER
 
 #endif // QMLFOLDERLISTMODEL_H
