@@ -21,7 +21,7 @@ Item { id:block
             }
         }
         opacity: 0
-        opacity: Behavior { NumberAnimation { properties:"opacity"; duration: 200 } }
+        opacity: Behavior { NumberAnimation { duration: 200 } }
         anchors.fill: parent
     }
 

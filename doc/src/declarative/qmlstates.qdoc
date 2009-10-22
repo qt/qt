@@ -1,0 +1,59 @@
+/*!
+\page qmlstates.html
+\target qmlstates
+\title QML States
+
+QML states describe user interface configurations, including:
+\list
+\o What UI elements are present
+\o The properties of those elements (including how they behave)
+\o What actions are available
+\endlist
+
+A state can also be thought of as a set of batched changes from a default configuration.
+
+Examples of states in modern UI:
+\list
+\o A Contacts application has a 'View Contact' state and an 'Edit Contact' State. In the first state the information presented is static (using labels), and in the second it is editable (using editors).
+\o A button has a pressed and unpressed state. When pressed the text moves down and to the right, and the button has a slightly darker appearance.
+\endlist
+
+In QML:
+\list
+\o Any object can use states.
+\o There is a default state. The default state can be explicitly set.
+\o A state can affect the properties of other objects, not just the object owning the state (and not just that object's children).
+\endlist
+
+The following example shows a simple use of states. In the default state \c myrect is positioned at 0,0. In the 'moved' state it is positioned at 50,50.
+
+\code
+Item {
+    Rectangle {
+        id: myrect
+        width: 100
+        height: 100
+    }
+    states: [
+        State {
+            name: "moved"
+            PropertyChanges {
+                target: myrect
+                x: 50
+                y: 50
+            }
+        }
+    ]
+}
+\endcode
+
+To animate state changes, you can use \l{state-transitions}{transitions}.
+
+Other things you can do in a state change:
+\list
+\o override signal handlers
+\o change an item's parent
+\o change an item's anchors
+\o run some script
+
+*/

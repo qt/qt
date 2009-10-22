@@ -7,7 +7,7 @@ Rectangle {
     id: page
     MouseRegion {
         anchors.fill: parent
-        onClicked: { bluerect.parent = page; bluerect.x = mouseX; }
+        onClicked: { bluerect.parent = page; print(mouseX); bluerect.x = mouseX; }
     }
     MyRect {
         color: "green"
@@ -57,25 +57,27 @@ Rectangle {
         height: 100
         id: bluerect
         x: Behavior {
-            SequentialAnimation {
-                NumberAnimation {
-                    target: bluerect
-                    properties: "y"
-                    from: 0
-                    to: 10
-                    easing: "easeOutBounce(amplitude:30)"
-                    duration: 250
+            ParallelAnimation {
+                SequentialAnimation {
+                    NumberAnimation {
+                        target: bluerect
+                        properties: "y"
+                        from: 0
+                        to: 10
+                        easing: "easeOutBounce(amplitude:30)"
+                        duration: 250
+                    }
+                    NumberAnimation {
+                        target: bluerect
+                        properties: "y"
+                        from: 10
+                        to: 0
+                        easing: "easeOutBounce(amplitude:30)"
+                        duration: 250
+                    }
                 }
-                NumberAnimation {
-                    target: bluerect
-                    properties: "y"
-                    from: 10
-                    to: 0
-                    easing: "easeOutBounce(amplitude:30)"
-                    duration: 250
-                }
+                NumberAnimation { duration: 500 }
             }
-            NumberAnimation { duration: 500 }
         }
         parent: Behavior {
             SequentialAnimation {
