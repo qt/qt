@@ -18,5 +18,11 @@
     <message>
         <source>Drop me!</source>
     </message>
+    <message id="one_id">
+        <source></source>
+    </message>
+    <message id="two_id">
+        <source></source>
+    </message>
 </context>
 </TS>
