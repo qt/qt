@@ -680,6 +680,16 @@ void tst_qmllanguage::aliasProperties()
 
         delete object;
     }
+
+    // Nested aliases - this used to cause a crash
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.6.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->property("a").toInt(), 1923);
+    }
 }
 
 // Test that the root element in a composite type can be a Component

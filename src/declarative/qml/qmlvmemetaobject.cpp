@@ -191,8 +191,6 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
             if (id < metaData->aliasCount) {
 
-                QmlContext *ctxt = qmlContext(object);
-
                 if (!ctxt) return -1;
                 QmlVMEMetaData::AliasData *d = metaData->aliasData() + id;
                 QmlContextPrivate *ctxtPriv = 
