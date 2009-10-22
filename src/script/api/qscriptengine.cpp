@@ -1141,6 +1141,8 @@ void QScriptEnginePrivate::setContextFlags(JSC::ExecState *exec, uint flags)
 
 void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
 {
+    Q_Q(QScriptEngine);
+
     markStack.append(originalGlobalObject());
     markStack.append(globalObject());
     if (originalGlobalObjectProxy)
@@ -1176,6 +1178,22 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
         for (it = m_typeInfos.constBegin(); it != m_typeInfos.constEnd(); ++it) {
             if ((*it)->prototype)
                 markStack.append((*it)->prototype);
+        }
+    }
+
+    {
+        QScriptContext *context = q->currentContext();
+
+        while (context) {
+            JSC::ScopeChainNode *node = ((JSC::ExecState *)context)->scopeChain();
+            JSC::ScopeChainIterator it(node);
+            for (it = node->begin(); it != node->end(); ++it) {
+                JSC::JSObject *object = *it;
+                if (object)
+                    markStack.append(object);
+            }
+
+            context = context->parentContext();
         }
     }
 }
