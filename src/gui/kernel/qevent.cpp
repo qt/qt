@@ -4298,9 +4298,8 @@ QList<QGesture *> QGestureEvent::canceledGestures() const
 */
 void QGestureEvent::setAccepted(QGesture *gesture, bool value)
 {
-    setAccepted(false);
     if (gesture)
-        d_func()->accepted[gesture->gestureType()] = value;
+        setAccepted(gesture->gestureType(), value);
 }
 
 /*!
@@ -4314,7 +4313,8 @@ void QGestureEvent::setAccepted(QGesture *gesture, bool value)
 */
 void QGestureEvent::accept(QGesture *gesture)
 {
-    setAccepted(gesture, true);
+    if (gesture)
+        setAccepted(gesture->gestureType(), true);
 }
 
 /*!
@@ -4328,7 +4328,8 @@ void QGestureEvent::accept(QGesture *gesture)
 */
 void QGestureEvent::ignore(QGesture *gesture)
 {
-    setAccepted(gesture, false);
+    if (gesture)
+        setAccepted(gesture->gestureType(), false);
 }
 
 /*!
@@ -4336,7 +4337,64 @@ void QGestureEvent::ignore(QGesture *gesture)
 */
 bool QGestureEvent::isAccepted(QGesture *gesture) const
 {
-    return gesture ? d_func()->accepted.value(gesture->gestureType(), true) : false;
+    return gesture ? isAccepted(gesture->gestureType()) : false;
+}
+
+/*!
+    Sets the accept flag of the given \a gestureType object to the specified
+    \a value.
+
+    Setting the accept flag indicates that the event receiver wants the \a gesture.
+    Unwanted gestures may be propagated to the parent widget.
+
+    By default, gestures in events of type QEvent::Gesture are accepted, and
+    gestures in QEvent::GestureOverride events are ignored.
+
+    For convenience, the accept flag can also be set with
+    \l{QGestureEvent::accept()}{accept(gestureType)}, and cleared with
+    \l{QGestureEvent::ignore()}{ignore(gestureType)}.
+*/
+void QGestureEvent::setAccepted(Qt::GestureType gestureType, bool value)
+{
+    setAccepted(false);
+    d_func()->accepted[gestureType] = value;
+}
+
+/*!
+    Sets the accept flag of the given \a gestureType, the equivalent of calling
+    \l{QGestureEvent::setAccepted()}{setAccepted(gestureType, true)}.
+
+    Setting the accept flag indicates that the event receiver wants the
+    gesture. Unwanted gestures may be propagated to the parent widget.
+
+    \sa QGestureEvent::ignore()
+*/
+void QGestureEvent::accept(Qt::GestureType gestureType)
+{
+    setAccepted(gestureType, true);
+}
+
+/*!
+    Clears the accept flag parameter of the given \a gestureType, the equivalent
+    of calling \l{QGestureEvent::setAccepted()}{setAccepted(gesture, false)}.
+
+    Clearing the accept flag indicates that the event receiver does not
+    want the gesture. Unwanted gestures may be propgated to the parent widget.
+
+    \sa QGestureEvent::accept()
+*/
+void QGestureEvent::ignore(Qt::GestureType gestureType)
+{
+    setAccepted(gestureType, false);
+}
+
+/*!
+    Returns true if the gesture of type \a gestureType is accepted; otherwise
+    returns false.
+*/
+bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
+{
+    return d_func()->accepted.value(gestureType, true);
 }
 
 /*!
