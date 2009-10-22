@@ -123,7 +123,7 @@
 
 */
 #include "qgraphicsanchorlayout_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 QGraphicsAnchor::QGraphicsAnchor(QGraphicsAnchorLayout *parentLayout)
@@ -535,3 +535,4 @@ QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

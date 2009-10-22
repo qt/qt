@@ -48,7 +48,7 @@
 #endif
 
 #include "qgraphicsanchorlayout_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 
@@ -2635,3 +2635,4 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 #endif
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW
