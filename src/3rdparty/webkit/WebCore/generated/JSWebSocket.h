@@ -46,7 +46,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -54,10 +54,14 @@ public:
 
     // Custom functions
     JSC::JSValue send(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue addEventListener(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue removeEventListener(JSC::ExecState*, const JSC::ArgList&);
     WebSocket* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<WebSocket> m_impl;
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, WebSocket*);
@@ -73,15 +77,20 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSWebSocketPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
 
 JSC::JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionSend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionClose(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionAddEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionRemoveEventListener(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionDispatchEvent(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
 JSC::JSValue jsWebSocketURL(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

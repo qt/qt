@@ -22,6 +22,8 @@
 #include "config.h"
 #include "DateInstance.h"
 
+#include "JSGlobalObject.h"
+
 #include <math.h>
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
@@ -43,6 +45,13 @@ DateInstance::DateInstance(NonNullPassRefPtr<Structure> structure)
     : JSWrapperObject(structure)
     , m_cache(0)
 {
+}
+
+DateInstance::DateInstance(ExecState* exec, double time)
+    : JSWrapperObject(exec->lexicalGlobalObject()->dateStructure())
+    , m_cache(0)
+{
+    setInternalValue(jsNumber(exec, timeClip(time)));
 }
 
 DateInstance::~DateInstance()

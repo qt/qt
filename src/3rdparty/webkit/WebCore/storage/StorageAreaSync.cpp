@@ -57,6 +57,7 @@ StorageAreaSync::StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManag
     , m_syncScheduled(false)
     , m_importComplete(false)
 {
+    ASSERT(isMainThread());
     ASSERT(m_storageArea);
     ASSERT(m_syncManager);
 
@@ -68,6 +69,7 @@ StorageAreaSync::StorageAreaSync(PassRefPtr<StorageSyncManager> storageSyncManag
 
 StorageAreaSync::~StorageAreaSync()
 {
+    ASSERT(isMainThread());
     ASSERT(!m_syncTimer.isActive());
 }
 
@@ -138,7 +140,7 @@ void StorageAreaSync::syncTimerFired(Timer<StorageAreaSync>*)
         }
 
         for (; it != end; ++it)
-            m_itemsPendingSync.set(it->first.copy(), it->second.copy());
+            m_itemsPendingSync.set(it->first.crossThreadString(), it->second.crossThreadString());
 
         if (!m_syncScheduled) {
             m_syncScheduled = true;

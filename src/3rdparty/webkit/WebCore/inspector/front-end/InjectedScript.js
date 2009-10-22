@@ -41,9 +41,12 @@ InjectedScript.reset = function()
 
 InjectedScript.reset();
 
-InjectedScript.dispatch = function(methodName, args)
+InjectedScript.dispatch = function(methodName, args, callId)
 {
-    var result = InjectedScript[methodName].apply(InjectedScript, JSON.parse(args));
+    var argsArray = JSON.parse(args);
+    if (callId)
+        argsArray.splice(0, 0, callId);  // Methods that run asynchronously have a call back id parameter.
+    var result = InjectedScript[methodName].apply(InjectedScript, argsArray);
     if (typeof result === "undefined") {
         InjectedScript._window().console.error("Web Inspector error: InjectedScript.%s returns undefined", methodName);
         result = null;
@@ -514,12 +517,28 @@ InjectedScript.getCompletions = function(expression, includeInspectorCommandLine
             var callFrame = InjectedScript._callFrameForId(callFrameId);
             if (!callFrame)
                 return props;
-            expressionResult = InjectedScript._evaluateOn(callFrame.evaluate, callFrame, expression);
+            if (expression)
+                expressionResult = InjectedScript._evaluateOn(callFrame.evaluate, callFrame, expression);
+            else {
+                // Evaluate into properties in scope of the selected call frame.
+                var scopeChain = callFrame.scopeChain;
+                for (var i = 0; i < scopeChain.length; ++i) {
+                    var scopeObject = scopeChain[i];
+                    try {
+                        for (var propertyName in scopeObject)
+                            props[propertyName] = true;
+                    } catch (e) {
+                    }
+                }
+            }
         } else {
+            if (!expression)
+                expression = "this";
             expressionResult = InjectedScript._evaluateOn(InjectedScript._window().eval, InjectedScript._window(), expression);
         }
-        for (var prop in expressionResult)
-            props[prop] = true;
+        if (expressionResult)
+            for (var prop in expressionResult)
+                props[prop] = true;
         if (includeInspectorCommandLineAPI)
             for (var prop in InjectedScript._window()._inspectorCommandLineAPI)
                 if (prop.charAt(0) !== '_')
@@ -529,16 +548,16 @@ InjectedScript.getCompletions = function(expression, includeInspectorCommandLine
     return props;
 }
 
-InjectedScript.evaluate = function(expression)
+InjectedScript.evaluate = function(expression, objectGroup)
 {
-    return InjectedScript._evaluateAndWrap(InjectedScript._window().eval, InjectedScript._window(), expression);
+    return InjectedScript._evaluateAndWrap(InjectedScript._window().eval, InjectedScript._window(), expression, objectGroup);
 }
 
-InjectedScript._evaluateAndWrap = function(evalFunction, object, expression)
+InjectedScript._evaluateAndWrap = function(evalFunction, object, expression, objectGroup)
 {
     var result = {};
     try {
-        result.value = InspectorController.wrapObject(InjectedScript._evaluateOn(evalFunction, object, expression));
+        result.value = InspectorController.wrapObject(InjectedScript._evaluateOn(evalFunction, object, expression), objectGroup);
         // Handle error that might have happened while describing result.
         if (result.value.errorText) {
             result.value = result.value.errorText;
@@ -553,7 +572,7 @@ InjectedScript._evaluateAndWrap = function(evalFunction, object, expression)
 
 InjectedScript._evaluateOn = function(evalFunction, object, expression)
 {
-    InjectedScript._ensureCommandLineAPIInstalled();
+    InjectedScript._ensureCommandLineAPIInstalled(evalFunction, object);
     // Surround the expression in with statements to inject our command line API so that
     // the window object properties still take more precedent than our API functions.
     expression = "with (window._inspectorCommandLineAPI) { with (window) { " + expression + " } }";
@@ -572,7 +591,7 @@ InjectedScript.addInspectedNode = function(nodeId)
     if (!node)
         return false;
 
-    InjectedScript._ensureCommandLineAPIInstalled();
+    InjectedScript._ensureCommandLineAPIInstalled(InjectedScript._window().eval, InjectedScript._window());
     var inspectedNodes = InjectedScript._window()._inspectorCommandLineAPI._inspectedNodes;
     inspectedNodes.unshift(node);
     if (inspectedNodes.length >= 5)
@@ -838,12 +857,12 @@ InjectedScript.getCallFrames = function()
     return result;
 }
 
-InjectedScript.evaluateInCallFrame = function(callFrameId, code)
+InjectedScript.evaluateInCallFrame = function(callFrameId, code, objectGroup)
 {
     var callFrame = InjectedScript._callFrameForId(callFrameId);
     if (!callFrame)
         return false;
-    return InjectedScript._evaluateAndWrap(callFrame.evaluate, callFrame, code);
+    return InjectedScript._evaluateAndWrap(callFrame.evaluate, callFrame, code, objectGroup);
 }
 
 InjectedScript._callFrameForId = function(id)
@@ -880,13 +899,11 @@ InjectedScript._inspectObject = function(o)
     }
 }
 
-InjectedScript._ensureCommandLineAPIInstalled = function(inspectedWindow)
+InjectedScript._ensureCommandLineAPIInstalled = function(evalFunction, evalObject)
 {
-    var inspectedWindow = InjectedScript._window();
-    if (inspectedWindow._inspectorCommandLineAPI)
+    if (evalFunction.call(evalObject, "window._inspectorCommandLineAPI"))
         return;
-    
-    inspectedWindow.eval("window._inspectorCommandLineAPI = { \
+    var inspectorCommandLineAPI = evalFunction.call(evalObject, "window._inspectorCommandLineAPI = { \
         $: function() { return document.getElementById.apply(document, arguments) }, \
         $$: function() { return document.querySelectorAll.apply(document, arguments) }, \
         $x: function(xpath, context) { \
@@ -913,8 +930,8 @@ InjectedScript._ensureCommandLineAPIInstalled = function(inspectedWindow)
         get $4() { return _inspectorCommandLineAPI._inspectedNodes[4] } \
     };");
 
-    inspectedWindow._inspectorCommandLineAPI.clear = InspectorController.wrapCallback(InjectedScript._clearConsoleMessages);
-    inspectedWindow._inspectorCommandLineAPI.inspect = InspectorController.wrapCallback(InjectedScript._inspectObject);
+    inspectorCommandLineAPI.clear = InspectorController.wrapCallback(InjectedScript._clearConsoleMessages);
+    inspectorCommandLineAPI.inspect = InspectorController.wrapCallback(InjectedScript._inspectObject);
 }
 
 InjectedScript._resolveObject = function(objectProxy)
@@ -1031,16 +1048,49 @@ InjectedScript.CallFrameProxy.prototype = {
                 scopeObjectProxy.isDocument = true;
             else if (!foundLocalScope)
                 scopeObjectProxy.isWithBlock = true;
-            scopeObjectProxy.properties = [];
-            try {
-                for (var propertyName in scopeObject)
-                    scopeObjectProxy.properties.push(propertyName);
-            } catch (e) {
-            }
             scopeChainProxy.push(scopeObjectProxy);
         }
         return scopeChainProxy;
     }
+}
+
+InjectedScript.executeSql = function(callId, databaseId, query)
+{
+    function successCallback(tx, result)
+    {
+        var rows = result.rows;
+        var result = [];
+        var length = rows.length;
+        for (var i = 0; i < length; ++i) {
+            var data = {};
+            result.push(data);
+            var row = rows.item(i);
+            for (var columnIdentifier in row) {
+                // FIXME: (Bug 19439) We should specially format SQL NULL here
+                // (which is represented by JavaScript null here, and turned
+                // into the string "null" by the String() function).
+                var text = row[columnIdentifier];
+                data[columnIdentifier] = String(text);
+            }
+        }
+        InspectorController.reportDidDispatchOnInjectedScript(callId, JSON.stringify(result), false);
+    }
+
+    function errorCallback(tx, error)
+    {
+        InspectorController.reportDidDispatchOnInjectedScript(callId, JSON.stringify(error), false);
+    }
+
+    function queryTransaction(tx)
+    {
+        tx.executeSql(query, null, InspectorController.wrapCallback(successCallback), InspectorController.wrapCallback(errorCallback));
+    }
+
+    var database = InspectorController.databaseForId(databaseId);
+    if (!database)
+        errorCallback(null, { code : 2 });  // Return as unexpected version.
+    database.transaction(InspectorController.wrapCallback(queryTransaction), InspectorController.wrapCallback(errorCallback));
+    return true;
 }
 
 Object.type = function(obj)
@@ -1068,6 +1118,8 @@ Object.type = function(obj)
         return "date";
     if (obj instanceof win.RegExp)
         return "regexp";
+    if (obj instanceof win.NodeList)
+        return "array";
     if (obj instanceof win.Error)
         return "error";
     return type;
@@ -1090,9 +1142,8 @@ Object.describe = function(obj, abbreviated)
     switch (type1) {
     case "object":
     case "node":
-        return type2;
     case "array":
-        return "[" + obj.toString() + "]";
+        return type2;
     case "string":
         if (!abbreviated)
             return obj;
