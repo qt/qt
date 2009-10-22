@@ -995,16 +995,6 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
     info->prototype = prototype;
 }
 
-QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
-{
-    if (frame && frame->callerFrame()->hasHostCallFrameFlag() && !frame->callee()
-        && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
-        //skip the "fake" context created in Interpreter::execute.
-        frame = frame->callerFrame()->removeHostCallFrameFlag();
-    }
-    return reinterpret_cast<QScriptContext *>(frame);
-}
-
 JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
 {
     return reinterpret_cast<JSC::ExecState*>(context);
@@ -1054,11 +1044,6 @@ void QScriptEnginePrivate::setGlobalObject(JSC::JSObject *object)
         Q_ASSERT(object != originalGlobalObject());
         glob->customGlobalObject = object;
     }
-}
-
-JSC::ExecState *QScriptEnginePrivate::globalExec() const
-{
-    return originalGlobalObject()->globalExec();
 }
 
 /*!
