@@ -11613,4 +11613,6 @@ EXPORTS
 	_Zls6QDebug6QFlagsIN6QStyle9StateFlagEE @ 11612 NONAME
 	_Zls6QDebugRK12QStyleOption @ 11613 NONAME
 	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11614 NONAME
+	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
+	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
 
