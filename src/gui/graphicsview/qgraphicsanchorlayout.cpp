@@ -118,16 +118,26 @@ QGraphicsAnchor::~QGraphicsAnchor()
 }
 
 /*!
-    Sets the size policy of the anchor to \a policy.
+    \property QGraphicsAnchor::sizePolicy
+    \brief the size policy for the QGraphicsAnchor.
+
+    By setting the size policy on an anchor you can configure how the item can resize itself
+    from its preferred spacing. For instance, if the anchor has the size policy
+    QSizePolicy::Minimum, the spacing is the minimum size of the anchor. However, its size
+    can grow up to the anchors maximum size. If the default size policy is QSizePolicy::Fixed,
+    the anchor can neither grow or shrink, which means that the only size the anchor can have
+    is the spacing. QSizePolicy::Fixed is the default size policy.
+    QGraphicsAnchor always has a minimum spacing of 0 and a very large maximum spacing.
+
+    \sa QGraphicsAnchor::spacing
 */
+
 void QGraphicsAnchor::setSizePolicy(QSizePolicy::Policy policy)
 {
     Q_D(QGraphicsAnchor);
     d->setSizePolicy(policy);
 }
-/*!
-    Returns the size policy of the anchor. The default size policy is QSizePolicy::Fixed
-*/
+
 QSizePolicy::Policy QGraphicsAnchor::sizePolicy() const
 {
     Q_D(const QGraphicsAnchor);
@@ -136,12 +146,12 @@ QSizePolicy::Policy QGraphicsAnchor::sizePolicy() const
 
 /*!
     \property QGraphicsAnchor::spacing
-    \brief the space between items in the QGraphicsAnchorLayout.
+    \brief the preferred space between items in the QGraphicsAnchorLayout.
 
     Depending on the anchor type, the default spacing is either
     0 or a value returned from the style.
 
-    \sa QGraphicsAnchorLayout::anchor()
+    \sa QGraphicsAnchorLayout::addAnchor()
 */
 void QGraphicsAnchor::setSpacing(qreal spacing)
 {
@@ -214,6 +224,9 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
     All anchoring functions will follow this rule.
 
     The spacing can also be set manually by using QGraphicsAnchor::setSpacing() method.
+
+    Calling this function where \a firstItem or \a secondItem are ancestors of the layout have
+    undefined behaviour.
 
     \sa addCornerAnchors(), addAnchors()
  */

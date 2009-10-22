@@ -172,6 +172,7 @@ private slots:
     void expandAndCollapse_data();
     void expandAndCollapse();
     void expandAndCollapseAll();
+    void expandWithNoChildren();
     void keyboardNavigation();
     void headerSections();
     void moveCursor_data();
@@ -1547,6 +1548,19 @@ void tst_QTreeView::expandAndCollapseAll()
 // ### why is collapsed() signal not emitted?
 //    QCOMPARE(collapsedSpy.count(), count);
 }
+
+void tst_QTreeView::expandWithNoChildren()
+{
+    QTreeView tree;
+    QStandardItemModel model(1,1);
+    tree.setModel(&model);
+    tree.setAnimated(true);
+    tree.doItemsLayout();
+    //this test should not output warnings
+    tree.expand(model.index(0,0));
+}
+
+
 
 void tst_QTreeView::keyboardNavigation()
 {

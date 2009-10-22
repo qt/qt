@@ -1511,6 +1511,8 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
 
+    Calling this function on an item that is an ancestor of \a parent have undefined behaviour.
+
     \sa parentItem(), childItems()
 */
 void QGraphicsItem::setParentItem(QGraphicsItem *parent)
@@ -4735,7 +4737,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
+    return qt_closestItemFirst(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 
