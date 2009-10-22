@@ -56,6 +56,7 @@ private slots:
     void signalParameterTypes();
     void objectsCompareAsEqual();
     void scriptAccess();
+    void dynamicCreation_data();
     void dynamicCreation();
     void dynamicDestruction();
     void objectToString();
@@ -639,27 +640,33 @@ void tst_qmlecmascript::scriptAccess()
     QCOMPARE(object->property("test3").toInt(), 0);
 }
 
+void tst_qmlecmascript::dynamicCreation_data()
+{
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<QString>("createdName");
+
+    QTest::newRow("One") << "createOne" << "objectOne";
+    QTest::newRow("Two") << "createTwo" << "objectTwo";
+    QTest::newRow("Three") << "createThree" << "objectThree";
+}
+
 /*
 Test using createQmlObject to dynamically generate an item
 Also using createComponent is tested.
 */
 void tst_qmlecmascript::dynamicCreation()
 {
+    QFETCH(QString, method);
+    QFETCH(QString, createdName);
+
     QmlComponent component(&engine, TEST_FILE("dynamicCreation.qml"));
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
-    QObject *createdQmlObject = 0;
-    QObject *createdComponent = 0;
 
-    QMetaObject::invokeMethod(object, "createOne");
-    createdQmlObject = object->objectProperty();
-    QVERIFY(createdQmlObject);
-    QCOMPARE(createdQmlObject->objectName(), QString("objectOne"));
-
-    QMetaObject::invokeMethod(object, "createTwo");
-    createdComponent = object->objectProperty();
-    QVERIFY(createdComponent);
-    QCOMPARE(createdComponent->objectName(), QString("objectTwo"));
+    QMetaObject::invokeMethod(object, method.toUtf8());
+    QObject *created = object->objectProperty();
+    QVERIFY(created);
+    QCOMPARE(created->objectName(), createdName);
 }
 
 /*
