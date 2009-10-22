@@ -126,6 +126,7 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
         logMessage("createObject() : AudioDataOutput not implemented");
         break;
 
+#ifndef QT_NO_PHONON_VIDEO
     case VideoDataOutputClass:
         logMessage("createObject() : VideoDataOutput not implemented");
         break;
@@ -134,12 +135,10 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             QWidget *widget =  qobject_cast<QWidget*>(parent);
             return new VideoWidget(this, widget);
         }
-
-    case VolumeFaderEffectClass:
+#endif //QT_NO_PHONON_VIDEO
 #ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
+    case VolumeFaderEffectClass:
         return new VolumeFaderEffect(this, parent);
-#else
-        return 0;
 #endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 
     case VisualizationClass:  //Fall through

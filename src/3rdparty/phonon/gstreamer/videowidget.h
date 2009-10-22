@@ -28,6 +28,7 @@
 
 #include <gst/gst.h>
 
+#ifndef QT_NO_PHONON_VIDEO
 QT_BEGIN_NAMESPACE
 
 class QString;
@@ -102,5 +103,5 @@ private:
 } //namespace Phonon::Gstreamer
 
 QT_END_NAMESPACE
-
+#endif //QT_NO_PHONON_VIDEO
 #endif // Phonon_GSTREAMER_VIDEOWIDGET_H

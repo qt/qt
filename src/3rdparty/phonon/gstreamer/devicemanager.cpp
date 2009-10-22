@@ -246,6 +246,7 @@ GstElement *DeviceManager::createAudioSink(Category category)
     return sink;
 }
 
+#ifndef QT_NO_PHONON_VIDEO
 AbstractRenderer *DeviceManager::createVideoRenderer(VideoWidget *parent)
 {
 #if !defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES)
@@ -268,6 +269,7 @@ AbstractRenderer *DeviceManager::createVideoRenderer(VideoWidget *parent)
 #endif
     return new WidgetRenderer(parent);
 }
+#endif //QT_NO_PHONON_VIDEO
 
 /*
  * Returns a positive device id or -1 if device
