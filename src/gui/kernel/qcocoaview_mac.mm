@@ -51,6 +51,7 @@
 #include <private/qmacinputcontext_p.h>
 #include <private/qmultitouch_mac_p.h>
 #include <private/qevent_p.h>
+#include <private/qbackingstore_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -503,6 +504,13 @@ extern "C" {
 
 - (void)drawRect:(NSRect)aRect
 {
+    qDebug("drawRect");
+    if (QApplicationPrivate::graphicsSystem() != 0) {
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
+            bs->markDirty(qwidget->rect(), qwidget);
+        qwidgetprivate->syncBackingStore(qwidget->rect());
+        return;
+    }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
     CGContextSaveGState(cg);
