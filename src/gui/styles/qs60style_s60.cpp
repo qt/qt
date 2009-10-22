@@ -61,6 +61,7 @@
 #include <AknFontAccess.h>
 #include <AknLayoutFont.h>
 #include <aknutils.h>
+#include <aknnavi.h>
 
 #if !defined(QT_NO_STYLE_S60) || defined(QT_PLUGIN)
 
@@ -104,6 +105,7 @@ public:
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
     static bool disabledFrameGraphic(QS60StylePrivate::SkinFrameElements &frame);
     static QPixmap generateMissingThemeGraphic(QS60StyleEnums::SkinParts &part, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+    static QSize naviPaneSize();
 
 private:
     static QPixmap createSkinnedGraphicsLX(QS60StyleEnums::SkinParts part,
@@ -1388,6 +1390,24 @@ void QS60StylePrivate::handleSkinChange()
         topLevelWidget->ensurePolished();
     }
 }
+
+QSize QS60StylePrivate::naviPaneSize()
+{
+    return QS60StyleModeSpecifics::naviPaneSize();
+}
+
+QSize QS60StyleModeSpecifics::naviPaneSize()
+{
+    CAknNavigationControlContainer* naviContainer;
+    if (S60->statusPane())
+        naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
+    if (naviContainer)
+        return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    else
+        return QSize(0,0);
+}
+
 #endif // Q_WS_S60
 
 QT_END_NAMESPACE
