@@ -71,7 +71,7 @@ EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
     WatchTableHeaderView *header = new WatchTableHeaderView(m_watchTableModel);
     m_watchTableView->setHorizontalHeader(header);
 
-    connect(m_objTree, SIGNAL(objectSelected(QmlDebugObjectReference)),
+    connect(m_objTree, SIGNAL(currentObjectChanged(QmlDebugObjectReference)),
             m_propertiesView, SLOT(reload(QmlDebugObjectReference)));
     connect(m_objTree, SIGNAL(expressionWatchRequested(QmlDebugObjectReference,QString)),
             m_watchTableModel, SLOT(expressionWatchRequested(QmlDebugObjectReference,QString)));
@@ -83,7 +83,7 @@ EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
             m_propertiesView, SLOT(watchCreated(QmlDebugWatch*)));
 
     connect(m_watchTableView, SIGNAL(objectActivated(int)),
-            m_objTree, SLOT(selectObject(int)));
+            m_objTree, SLOT(setCurrentObject(int)));
 
     m_tabs = new QTabWidget(this);
     m_tabs->addTab(m_propertiesView, tr("Properties"));

@@ -18,6 +18,7 @@ ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
       m_query(0)
 {
     setHeaderHidden(true);
+    setMinimumWidth(250);
 
     connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
             this, SLOT(currentItemChanged(QTreeWidgetItem *)));
