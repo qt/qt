@@ -216,9 +216,6 @@ void QFxAnchorsPrivate::clearItem(QFxItem *item)
         baseline.item = 0;
         usedAnchors &= ~QFxAnchors::HasBaselineAnchor;
     }
-    QFxItemPrivate *p =
-        static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->dependantAnchors.removeAll(q);
 }
 
 void QFxAnchorsPrivate::addDepend(QFxItem *item)
