@@ -438,22 +438,6 @@ void QScriptValuePrivate::setVariantValue(const QVariant &value)
     static_cast<QScript::QVariantDelegate*>(delegate)->setValue(value);
 }
 
-void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
-{
-    if (exec) {
-        *val = exec->exception();
-        exec->clearException();
-    } else {
-        *val = JSC::JSValue();
-    }
-}
-
-void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
-{
-    if (exec && val)
-        exec->setException(val);
-}
-
 void QScriptValuePrivate::detachFromEngine()
 {
     if (isJSC())

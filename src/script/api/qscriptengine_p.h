@@ -527,6 +527,22 @@ inline void QScriptValuePrivate::operator delete(void *ptr)
         qFree(d);
 }
 
+inline void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
+{
+    if (exec) {
+        *val = exec->exception();
+        exec->clearException();
+    } else {
+        *val = JSC::JSValue();
+    }
+}
+
+inline void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
+{
+    if (exec && val)
+        exec->setException(val);
+}
+
 inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)
 {
     Q_ASSERT(value->type == QScriptStringPrivate::HeapAllocated);
