@@ -136,6 +136,7 @@ public:
     static QmlMetaProperty createProperty(QObject *, const QString &);
 
     int coreIndex() const;
+    int valueTypeCoreIndex() const;
 private:
     friend class QmlEnginePrivate;
     QmlMetaPropertyPrivate *d;
