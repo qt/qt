@@ -62,11 +62,11 @@ class Q_DECLARATIVE_EXPORT QmlEaseFollow : public QObject,
     Q_INTERFACES(QmlPropertyValueSource)
     Q_ENUMS(ReversingMode)
 
-    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue)
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
-    Q_PROPERTY(qreal duration READ duration WRITE setDuration)
-    Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode)
-    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
+    Q_PROPERTY(qreal source READ sourceValue WRITE setSourceValue NOTIFY sourceChanged)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity NOTIFY velocityChanged)
+    Q_PROPERTY(qreal duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode NOTIFY reversingModeChanged)
+    Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
 
 public:
     enum ReversingMode { Eased, Immediate, Sync };
@@ -90,6 +90,13 @@ public:
     void setEnabled(bool enabled);
 
     virtual void setTarget(const QmlMetaProperty &);
+
+signals:
+    void sourceChanged();
+    void velocityChanged();
+    void durationChanged();
+    void reversingModeChanged();
+    void enabledChanged();
 };
 
 QT_END_NAMESPACE

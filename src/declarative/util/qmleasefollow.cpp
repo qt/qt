@@ -287,13 +287,19 @@ QmlEaseFollow::ReversingMode QmlEaseFollow::reversingMode() const
 void QmlEaseFollow::setReversingMode(ReversingMode m)
 {
     Q_D(QmlEaseFollow);
+    if (d->reversingMode == m)
+        return;
+
     d->reversingMode = m;
+    emit reversingModeChanged();
 }
 
 void QmlEaseFollowPrivate::restart()
 {
-    if (!enabled)
+    if (!enabled || velocity == 0) {
+        clockStop();
         return;
+    }
 
     initialValue = target.read().toReal();
 
@@ -337,9 +343,14 @@ void QmlEaseFollow::setSourceValue(qreal s)
 {
     Q_D(QmlEaseFollow);
 
+    if (d->source == s)
+        return;
+
     d->source = s;
     d->initialVelocity = d->trackVelocity;
     d->restart();
+
+    emit sourceChanged();
 }
 
 /*!
@@ -358,11 +369,16 @@ qreal QmlEaseFollow::duration() const
 void QmlEaseFollow::setDuration(qreal v)
 {
     Q_D(QmlEaseFollow);
+    if (d->duration == v)
+        return;
+
     d->duration = v;
     d->trackVelocity = 0;
 
     if (d->clock.state() == QAbstractAnimation::Running) 
         d->restart();
+
+    emit durationChanged();
 }
 
 qreal QmlEaseFollow::velocity() const
@@ -381,11 +397,16 @@ qreal QmlEaseFollow::velocity() const
 void QmlEaseFollow::setVelocity(qreal v)
 {
     Q_D(QmlEaseFollow);
+    if (d->velocity == v)
+        return;
+
     d->velocity = v;
     d->trackVelocity = 0;
 
     if (d->clock.state() == QAbstractAnimation::Running) 
         d->restart();
+
+    emit velocityChanged();
 }
 
 /*!
@@ -401,11 +422,16 @@ bool QmlEaseFollow::enabled() const
 void QmlEaseFollow::setEnabled(bool enabled)
 {
     Q_D(QmlEaseFollow);
+    if (d->enabled == enabled)
+        return;
+
     d->enabled = enabled;
     if (enabled)
         d->restart();
     else
         d->clockStop();
+
+    emit enabledChanged();
 }
 
 void QmlEaseFollow::setTarget(const QmlMetaProperty &t)
