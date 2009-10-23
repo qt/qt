@@ -265,9 +265,66 @@ because \c changes is the default property of the \c State type.
 
 \section2 Dot Properties
 
+
+
 \section2 Attached Properties
 \target attached-properties
 
+Some objects attach properties to another object.  Attached Properties
+are of the form \e {Type.property} where \e Type is the type of the
+element that attaches \e property.
+
+For example:
+\code
+Component {
+    id: myDelegate
+    Text {
+        text: "Hello"
+        color: ListView.isCurrentItem ? "red" : "blue"
+    }
+}
+ListView {
+    delegate: myDelegate
+}
+\endcode
+
+The \l ListView element attaches the \e ListView.isCurrentItem property
+to each delegate it creates.
+
+Another example of attached properties is the \l Keys element which
+attaches properties for handling key presses to
+any visual Item, for example:
+
+\code
+Item {
+    focus: true
+    Keys.onSelectPressed: print("Selected")
+}
+\endcode
+
 \section2 Signal Handlers
+
+Signal handlers allow actions to be taken in reponse to an event.  For instance,
+the \l MouseRegion element has signal handlers to handle mouse press, release
+and click:
+
+\code
+MouseRegion {
+    onPressed: print("mouse button pressed")
+}
+\endcode
+
+All signal handlers begin with \e "on".
+
+Some signal handlers include an optional parameter, for example
+the MouseRegion onPressed signal handler has a \e mouse parameter:
+
+\code
+MouseRegion {
+    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    onPressed: if (mouse.button == Qt.RightButton) print("Right mouse button pressed")
+}
+\endcode
+
 
 */
