@@ -51,9 +51,9 @@ To animate state changes, you can use \l{state-transitions}{transitions}.
 
 Other things you can do in a state change:
 \list
-\o override signal handlers
-\o change an item's parent
-\o change an item's anchors
-\o run some script
+\o override signal handlers with PropertyChanges
+\o change an item's parent with ParentChange
+\o change an item's anchors with AnchorChanges
+\o run some script with StateChangeScript
 
 */

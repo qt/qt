@@ -30,13 +30,13 @@ Item {
                 focus: true
             }
             StateChangeScript {
-                script:"editor.selectAll()"
+                script:editor.selectAll()
             }
         },
         State {
             // When returning to default state, typed text is propagated
             StateChangeScript {
-                script: "container.text = editor.text"
+                script: container.text = editor.text
             }
         }
     ]
