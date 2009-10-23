@@ -141,31 +141,6 @@ private:
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags)
 
-class QGraphicsGrayscaleEffectPrivate;
-class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
-public:
-    QGraphicsGrayscaleEffect(QObject *parent = 0);
-    ~QGraphicsGrayscaleEffect();
-
-    qreal strength() const;
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-public Q_SLOTS:
-    void setStrength(qreal strength);
-
-Q_SIGNALS:
-    void strengthChanged(qreal strength);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
-    Q_DISABLE_COPY(QGraphicsGrayscaleEffect)
-};
-
 class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
 {
@@ -193,31 +168,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
     Q_DISABLE_COPY(QGraphicsColorizeEffect)
-};
-
-class QGraphicsPixelizeEffectPrivate;
-class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize NOTIFY pixelSizeChanged)
-public:
-    QGraphicsPixelizeEffect(QObject *parent = 0);
-    ~QGraphicsPixelizeEffect();
-
-    int pixelSize() const;
-
-public Q_SLOTS:
-    void setPixelSize(int pixelSize);
-
-Q_SIGNALS:
-    void pixelSizeChanged(int pixelSize);
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsPixelizeEffect)
-    Q_DISABLE_COPY(QGraphicsPixelizeEffect)
 };
 
 class QGraphicsBlurEffectPrivate;
@@ -333,44 +283,6 @@ protected:
 private:
     Q_DECLARE_PRIVATE(QGraphicsOpacityEffect)
     Q_DISABLE_COPY(QGraphicsOpacityEffect)
-};
-
-class QGraphicsBloomEffectPrivate;
-class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
-    Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
-    Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged)
-    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
-public:
-    QGraphicsBloomEffect(QObject *parent = 0);
-    ~QGraphicsBloomEffect();
-
-    QRectF boundingRectFor(const QRectF &rect) const;
-    int blurRadius() const;
-    Qt::RenderHint blurHint() const;
-    int brightness() const;
-    qreal strength() const;
-
-public Q_SLOTS:
-    void setBlurRadius(int blurRadius);
-    void setBlurHint(Qt::RenderHint hint);
-    void setBrightness(int brightness);
-    void setStrength(qreal strength);
-
-Q_SIGNALS:
-    void blurRadiusChanged(int blurRadius);
-    void blurHintChanged(Qt::RenderHint hint);
-    void brightnessChanged(int brightness);
-    void strengthChanged(qreal strength);
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
-    Q_DISABLE_COPY(QGraphicsBloomEffect)
 };
 
 QT_END_NAMESPACE

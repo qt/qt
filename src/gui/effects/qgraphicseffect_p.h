@@ -118,22 +118,6 @@ public:
     quint32 padding : 31; // feel free to use
 };
 
-class QGraphicsGrayscaleEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsGrayscaleEffect)
-public:
-    QGraphicsGrayscaleEffectPrivate()
-        : opaque(true)
-    {
-        filter = new QPixmapColorizeFilter;
-        filter->setColor(Qt::black);
-    }
-    ~QGraphicsGrayscaleEffectPrivate() { delete filter; }
-
-    QPixmapColorizeFilter *filter;
-    quint32 opaque : 1;
-    quint32 padding : 31;
-};
 
 class QGraphicsColorizeEffectPrivate : public QGraphicsEffectPrivate
 {
@@ -149,15 +133,6 @@ public:
     QPixmapColorizeFilter *filter;
     quint32 opaque : 1;
     quint32 padding : 31;
-};
-
-class QGraphicsPixelizeEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsPixelizeEffect)
-public:
-    QGraphicsPixelizeEffectPrivate() : pixelSize(3) {}
-
-    int pixelSize;
 };
 
 class QGraphicsBlurEffectPrivate : public QGraphicsEffectPrivate
@@ -193,18 +168,6 @@ public:
     uint isFullyTransparent : 1;
     uint isFullyOpaque : 1;
     uint hasOpacityMask : 1;
-};
-
-class QGraphicsBloomEffectPrivate : public QGraphicsEffectPrivate
-{
-    Q_DECLARE_PUBLIC(QGraphicsBlurEffect)
-public:
-    QGraphicsBloomEffectPrivate() : brightness(70), strength(qreal(0.7)) {}
-
-    QPixmapBlurFilter blurFilter;
-    int colorTable[256];
-    int brightness;
-    qreal strength;
 };
 
 QT_END_NAMESPACE
