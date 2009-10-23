@@ -499,11 +499,8 @@ qint64 QFSFileEnginePrivate::nativeSize() const
 
     // Buffered stdlib mode.
     if (fh) {
-        QT_OFF_T oldPos = QT_FTELL(fh);
-        QT_FSEEK(fh, 0, SEEK_END);
-        QT_OFF_T fileSize = QT_FTELL(fh);
-        QT_FSEEK(fh, oldPos, SEEK_SET);
-        return qint64(fileSize);
+        qint64 fileSize = _filelengthi64(QT_FILENO(fh));
+        return (fileSize == -1) ? 0 : fileSize;
     }
 
     // Not-open mode, where the file name is known: We'll check the
