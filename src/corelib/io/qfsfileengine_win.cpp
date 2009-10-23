@@ -789,27 +789,18 @@ int QFSFileEnginePrivate::nativeHandle() const
 bool QFSFileEnginePrivate::nativeIsSequential() const
 {
 #if !defined(Q_OS_WINCE)
-    // stdlib / Windows native mode.
-    if (fh || fileHandle != INVALID_HANDLE_VALUE) {
-        if (fh == stdin || fh == stdout || fh == stderr)
-            return true;
+    HANDLE handle = fileHandle;
+    if (fh || fd != -1)
+        handle = (HANDLE)_get_osfhandle(fh ? QT_FILENO(fh) : fd);
+    if (handle == INVALID_HANDLE_VALUE)
+        return false;
 
-        HANDLE handle = fileHandle;
-        if (fileHandle == INVALID_HANDLE_VALUE) {
-            // Rare case: using QFile::open(FILE*) to open a pipe.
-            handle = (HANDLE)_get_osfhandle(QT_FILENO(fh));
-            return false;
-        }
-
-        DWORD fileType = GetFileType(handle);
-        return fileType == FILE_TYPE_PIPE;
-    }
-
-    // stdio mode.
-    if (fd != -1)
-        return isSequentialFdFh();
-#endif
+    DWORD fileType = GetFileType(handle);
+    return (fileType == FILE_TYPE_CHAR)
+            || (fileType == FILE_TYPE_PIPE);
+#else
     return false;
+#endif
 }
 
 bool QFSFileEngine::remove()
