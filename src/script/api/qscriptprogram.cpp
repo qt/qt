@@ -44,13 +44,15 @@
 #include "qscriptengine.h"
 #include "qscriptengine_p.h"
 
+#include "Executable.h"
+
 QT_BEGIN_NAMESPACE
 
 /*!
+  \internal
+
   \since 4.6
   \class QScriptProgram
-
-  \brief The QScriptProgram class ...
 
   \ingroup script
 
@@ -66,6 +68,7 @@ QScriptProgramPrivate::QScriptProgramPrivate(QScriptEnginePrivate *e,
 
 QScriptProgramPrivate::~QScriptProgramPrivate()
 {
+    delete executable;
 }
 
 QScriptProgramPrivate *QScriptProgramPrivate::get(const QScriptProgram &q)
