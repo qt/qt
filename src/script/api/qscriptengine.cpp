@@ -2518,54 +2518,40 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
         // check if it's one of the types we know
         switch (QMetaType::Type(type)) {
         case QMetaType::Void:
-            result = QScriptValue(q, QScriptValue::UndefinedValue);
-            break;
+            return QScriptValue(q, QScriptValue::UndefinedValue);
         case QMetaType::Bool:
-            result = QScriptValue(q, *reinterpret_cast<const bool*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const bool*>(ptr));
         case QMetaType::Int:
-            result = QScriptValue(q, *reinterpret_cast<const int*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const int*>(ptr));
         case QMetaType::UInt:
-            result = QScriptValue(q, *reinterpret_cast<const uint*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const uint*>(ptr));
         case QMetaType::LongLong:
-            result = QScriptValue(q, qsreal(*reinterpret_cast<const qlonglong*>(ptr)));
-            break;
+            return QScriptValue(q, qsreal(*reinterpret_cast<const qlonglong*>(ptr)));
         case QMetaType::ULongLong:
 #if defined(Q_OS_WIN) && defined(_MSC_FULL_VER) && _MSC_FULL_VER <= 12008804
 #pragma message("** NOTE: You need the Visual Studio Processor Pack to compile support for 64bit unsigned integers.")
-            result = QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
 #elif defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            result = QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
 #else
-            result = QScriptValue(q, qsreal(*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal(*reinterpret_cast<const qulonglong*>(ptr)));
 #endif
-            break;
         case QMetaType::Double:
-            result = QScriptValue(q, qsreal(*reinterpret_cast<const double*>(ptr)));
-            break;
+            return QScriptValue(q, qsreal(*reinterpret_cast<const double*>(ptr)));
         case QMetaType::QString:
-            result = QScriptValue(q, *reinterpret_cast<const QString*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const QString*>(ptr));
         case QMetaType::Float:
-            result = QScriptValue(q, *reinterpret_cast<const float*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const float*>(ptr));
         case QMetaType::Short:
-            result = QScriptValue(q, *reinterpret_cast<const short*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const short*>(ptr));
         case QMetaType::UShort:
-            result = QScriptValue(q, *reinterpret_cast<const unsigned short*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const unsigned short*>(ptr));
         case QMetaType::Char:
-            result = QScriptValue(q, *reinterpret_cast<const char*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const char*>(ptr));
         case QMetaType::UChar:
-            result = QScriptValue(q, *reinterpret_cast<const unsigned char*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const unsigned char*>(ptr));
         case QMetaType::QChar:
-            result = QScriptValue(q, (*reinterpret_cast<const QChar*>(ptr)).unicode());
-            break;
+            return QScriptValue(q, (*reinterpret_cast<const QChar*>(ptr)).unicode());
         case QMetaType::QStringList:
             result = arrayFromStringList(*reinterpret_cast<const QStringList *>(ptr));
             break;
@@ -2596,7 +2582,7 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
             if (type == qMetaTypeId<QScriptValue>()) {
                 result = *reinterpret_cast<const QScriptValue*>(ptr);
                 if (!result.isValid())
-                    result = QScriptValue(q, QScriptValue::UndefinedValue);
+                    return QScriptValue(q, QScriptValue::UndefinedValue);
             }
 
 #ifndef QT_NO_QOBJECT
@@ -2616,7 +2602,7 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
                 if (typeName == "QVariant")
                     result = scriptValueFromVariant(*reinterpret_cast<const QVariant*>(ptr));
                 if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(ptr))
-                    result = QScriptValue(q, QScriptValue::NullValue);
+                    return QScriptValue(q, QScriptValue::NullValue);
                 else
                     result = q->newVariant(QVariant(type, ptr));
             }
