@@ -72,7 +72,6 @@ public:
     tst_LargeFile()
         : blockSize(1 << 12)
         , maxSizeBits()
-        , largeFile("qt_largefile.tmp")
         , fd_(-1)
         , stream_(0)
     {
@@ -231,7 +230,7 @@ QByteArray const &tst_LargeFile::getDataBlock(int index, qint64 position)
                 .arg(blockSize)
                 .arg(index)
                 .arg(position)
-                .arg(largeFile.fileName());
+                .arg("qt_largefile.tmp");
 
         generatedBlocks[index] = generateDataBlock(blockSize, text, (qint64)1 << index);
     }
@@ -241,13 +240,17 @@ QByteArray const &tst_LargeFile::getDataBlock(int index, qint64 position)
 
 void tst_LargeFile::initTestCase()
 {
-    QVERIFY( !largeFile.exists() || largeFile.remove() );
+    QFile file("qt_largefile.tmp");
+    QVERIFY( !file.exists() || file.remove() );
 }
 
 void tst_LargeFile::cleanupTestCase()
 {
-    largeFile.close();
-    QVERIFY( !largeFile.exists() || largeFile.remove() );
+    if (largeFile.isOpen())
+        largeFile.close();
+
+    QFile file("qt_largefile.tmp");
+    QVERIFY( !file.exists() || file.remove() );
 }
 
 void tst_LargeFile::init()
@@ -295,7 +298,7 @@ void tst_LargeFile::createSparseFile()
 #if defined(Q_OS_WIN)
     // On Windows platforms, we must explicitly set the file to be sparse,
     // so disk space is not allocated for the full file when writing to it.
-    HANDLE handle = ::CreateFileA(largeFile.fileName().toLocal8Bit().constData(),
+    HANDLE handle = ::CreateFileA("qt_largefile.tmp",
         GENERIC_WRITE, 0, 0, CREATE_ALWAYS, 0, 0);
     QVERIFY( INVALID_HANDLE_VALUE != handle );
 
@@ -311,6 +314,7 @@ void tst_LargeFile::createSparseFile()
     QVERIFY( -1 != fd );
     QVERIFY( largeFile.open(fd, QIODevice::WriteOnly) );
 #else // !Q_OS_WIN
+    largeFile.setFileName("qt_largefile.tmp");
     QVERIFY( largeFile.open(QIODevice::WriteOnly) );
 #endif
 }
@@ -345,7 +349,7 @@ void tst_LargeFile::fillFileSparsely()
 
 void tst_LargeFile::fileCreated()
 {
-    QFileInfo info(largeFile);
+    QFileInfo info("qt_largefile.tmp");
 
     QVERIFY( info.exists() );
     QVERIFY( info.isFile() );
@@ -356,7 +360,7 @@ void tst_LargeFile::filePositioning()
 {
     QFETCH( qint64, position );
 
-    QFile file(largeFile.fileName());
+    QFile file("qt_largefile.tmp");
     QVERIFY( file.open(QIODevice::ReadOnly) );
 
     QVERIFY( file.seek(position) );
@@ -367,7 +371,7 @@ void tst_LargeFile::fdPositioning()
 {
     QFETCH( qint64, position );
 
-    fd_ = QT_OPEN(largeFile.fileName().toLocal8Bit().constData(),
+    fd_ = QT_OPEN("qt_largefile.tmp",
             QT_OPEN_RDONLY | QT_OPEN_LARGEFILE);
     QVERIFY( -1 != fd_ );
 
@@ -398,7 +402,7 @@ void tst_LargeFile::streamPositioning()
 {
     QFETCH( qint64, position );
 
-    stream_ = QT_FOPEN(largeFile.fileName().toLocal8Bit().constData(), "rb");
+    stream_ = QT_FOPEN("qt_largefile.tmp", "rb");
     QVERIFY( 0 != stream_ );
 
     QFile file;
@@ -428,6 +432,7 @@ void tst_LargeFile::streamPositioning()
 
 void tst_LargeFile::openFileForReading()
 {
+    largeFile.setFileName("qt_largefile.tmp");
     QVERIFY( largeFile.open(QIODevice::ReadOnly) );
 }
 
