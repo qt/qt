@@ -67,6 +67,7 @@ class QDateTime;
 class QScriptClass;
 class QScriptEngineAgent;
 class QScriptEnginePrivate;
+class QScriptProgram;
 
 #ifndef QT_NO_QOBJECT
 
@@ -165,6 +166,9 @@ public:
     static QScriptSyntaxCheckResult checkSyntax(const QString &program);
 
     QScriptValue evaluate(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
+
+    QScriptProgram compile(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
+    QScriptValue evaluate(const QScriptProgram &program);
 
     bool isEvaluating() const;
     void abortEvaluation(const QScriptValue &result = QScriptValue());
