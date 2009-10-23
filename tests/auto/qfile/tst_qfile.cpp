@@ -117,6 +117,7 @@ private slots:
     void openUnbuffered();
     void size_data();
     void size();
+    void sizeNoExist();
     void seek();
     void setSize();
     void setSizeSeek();
@@ -452,23 +453,57 @@ void tst_QFile::openUnbuffered()
 void tst_QFile::size_data()
 {
     QTest::addColumn<QString>("filename");
-    QTest::addColumn<int>("size");
+    QTest::addColumn<qint64>("size");
 
-    QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << 245;
-    QTest::newRow( "nonexist01" ) << QString("foo.txt") << 0;
+    QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
-    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << 34;
+    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << (qint64)34;
 #endif
 }
 
 void tst_QFile::size()
 {
     QFETCH( QString, filename );
-    QFile f( filename );
-    QTEST( (int)f.size(), "size" );
-    if (f.open(QFile::ReadOnly))
-        QTEST( (int)f.size(), "size" );
+    QFETCH( qint64, size );
+
+    {
+        QFile f( filename );
+        QCOMPARE( f.size(), size );
+
+        QVERIFY( f.open(QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+    }
+
+    {
+        QFile f;
+        int fd = QT_OPEN(filename.toLocal8Bit().constData(), QT_OPEN_RDONLY);
+        QVERIFY( fd != -1 );
+        QVERIFY( f.open(fd, QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+
+        f.close();
+        QT_CLOSE(fd);
+    }
+
+    {
+        QFile f;
+        FILE* stream = QT_FOPEN(filename.toLocal8Bit().constData(), "rb");
+        QVERIFY( stream );
+        QVERIFY( f.open(stream, QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+
+        f.close();
+        fclose(stream);
+    }
+}
+
+void tst_QFile::sizeNoExist()
+{
+    QFile file("nonexist01");
+    QVERIFY( !file.exists() );
+    QCOMPARE( file.size(), (qint64)0 );
+    QVERIFY( !file.open(QIODevice::ReadOnly) );
 }
 
 void tst_QFile::seek()
