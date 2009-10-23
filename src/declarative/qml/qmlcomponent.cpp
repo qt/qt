@@ -385,6 +385,21 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
 }
 
 /*!
+Returns the QmlContext the component was created in.  This is only
+valid for components created directly from QML.
+*/
+QmlContext *QmlComponent::creationContext() const
+{
+    Q_D(const QmlComponent);
+
+    QmlDeclarativeData *ddata = QmlDeclarativeData::get(this);
+    if (ddata)
+        return ddata->context;
+    else
+        return 0;
+}
+
+/*!
     Load the QmlComponent from the provided \a url.
 */
 void QmlComponent::loadUrl(const QUrl &url)

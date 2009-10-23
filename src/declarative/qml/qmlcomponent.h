@@ -96,6 +96,8 @@ public:
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
 
+    QmlContext *creationContext() const;
+
     static QmlComponentAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
