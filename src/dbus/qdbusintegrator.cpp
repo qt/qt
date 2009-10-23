@@ -1942,6 +1942,42 @@ int QDBusConnectionPrivate::sendWithReplyAsync(const QDBusMessage &message, QObj
     return 1;
 }
 
+bool QDBusConnectionPrivate::connectSignal(const QString &service, const QString &owner,
+                                           const QString &path, const QString &interface, const QString &name,
+                                           const QStringList &argumentMatch, const QString &signature,
+                                           QObject *receiver, const char *slot)
+{
+    // check the slot
+    QDBusConnectionPrivate::SignalHook hook;
+    QString key;
+    QString name2 = name;
+    if (name2.isNull())
+        name2.detach();
+
+    hook.signature = signature;
+    if (!prepareHook(hook, key, service, owner, path, interface, name, argumentMatch, receiver, slot, 0, false))
+        return false;           // don't connect
+
+    // avoid duplicating:
+    QDBusConnectionPrivate::SignalHookHash::ConstIterator it = signalHooks.find(key);
+    QDBusConnectionPrivate::SignalHookHash::ConstIterator end = signalHooks.constEnd();
+    for ( ; it != end && it.key() == key; ++it) {
+        const QDBusConnectionPrivate::SignalHook &entry = it.value();
+        if (entry.service == hook.service &&
+            entry.owner == hook.owner &&
+            entry.path == hook.path &&
+            entry.signature == hook.signature &&
+            entry.obj == hook.obj &&
+            entry.midx == hook.midx) {
+            // no need to compare the parameters if it's the same slot
+            return true;        // already there
+        }
+    }
+
+    connectSignal(key, hook);
+    return true;
+}
+
 void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook &hook)
 {
     signalHooks.insertMulti(key, hook);
@@ -1971,6 +2007,43 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
             Q_ASSERT(false);
         }
     }
+}
+
+bool QDBusConnectionPrivate::disconnectSignal(const QString &service,
+                                              const QString &path, const QString &interface, const QString &name,
+                                              const QStringList &argumentMatch, const QString &signature,
+                                              QObject *receiver, const char *slot)
+{
+    // check the slot
+    QDBusConnectionPrivate::SignalHook hook;
+    QString key;
+    QString name2 = name;
+    if (name2.isNull())
+        name2.detach();
+
+    hook.signature = signature;
+    if (!prepareHook(hook, key, service, QString(), path, interface, name, argumentMatch, receiver, slot, 0, false))
+        return false;           // don't disconnect
+
+    // avoid duplicating:
+    QDBusConnectionPrivate::SignalHookHash::Iterator it = signalHooks.find(key);
+    QDBusConnectionPrivate::SignalHookHash::Iterator end = signalHooks.end();
+    for ( ; it != end && it.key() == key; ++it) {
+        const QDBusConnectionPrivate::SignalHook &entry = it.value();
+        if (entry.service == hook.service &&
+            //entry.owner == hook.owner &&
+            entry.path == hook.path &&
+            entry.signature == hook.signature &&
+            entry.obj == hook.obj &&
+            entry.midx == hook.midx) {
+            // no need to compare the parameters if it's the same slot
+            disconnectSignal(it);
+            return true;        // it was there
+        }
+    }
+
+    // the slot was not found
+    return false;
 }
 
 QDBusConnectionPrivate::SignalHookHash::Iterator

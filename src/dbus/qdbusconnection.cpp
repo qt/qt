@@ -619,37 +619,10 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
     if (interface.isEmpty() && name.isEmpty())
         return false;
 
-    // check the slot
-    QDBusConnectionPrivate::SignalHook hook;
-    QString key;
-    QString name2 = name;
-    if (name2.isNull())
-        name2.detach();
-
     QString owner = d->getNameOwner(service); // we don't care if the owner is empty
-    hook.signature = signature;               // it might get started later
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, argumentMatch, receiver, slot, 0, false))
-        return false;           // don't connect
-
-    // avoid duplicating:
+                                              // it might get started later
     QDBusWriteLocker locker(ConnectAction, d);
-    QDBusConnectionPrivate::SignalHookHash::ConstIterator it = d->signalHooks.find(key);
-    QDBusConnectionPrivate::SignalHookHash::ConstIterator end = d->signalHooks.constEnd();
-    for ( ; it != end && it.key() == key; ++it) {
-        const QDBusConnectionPrivate::SignalHook &entry = it.value();
-        if (entry.service == hook.service &&
-            entry.owner == hook.owner &&
-            entry.path == hook.path &&
-            entry.signature == hook.signature &&
-            entry.obj == hook.obj &&
-            entry.midx == hook.midx) {
-            // no need to compare the parameters if it's the same slot
-            return true;        // already there
-        }
-    }
-
-    d->connectSignal(key, hook);
-    return true;
+    return d->connectSignal(service, owner, path, interface, name, argumentMatch, signature, receiver, slot);
 }
 
 /*!
@@ -704,38 +677,8 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
     if (interface.isEmpty() && name.isEmpty())
         return false;
 
-    // check the slot
-    QDBusConnectionPrivate::SignalHook hook;
-    QString key;
-    QString name2 = name;
-    if (name2.isNull())
-        name2.detach();
-
-    QString owner = d->getNameOwner(service); // we don't care of owner is empty
-    hook.signature = signature;
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, argumentMatch, receiver, slot, 0, false))
-        return false;           // don't disconnect
-
-    // avoid duplicating:
     QDBusWriteLocker locker(DisconnectAction, d);
-    QDBusConnectionPrivate::SignalHookHash::Iterator it = d->signalHooks.find(key);
-    QDBusConnectionPrivate::SignalHookHash::Iterator end = d->signalHooks.end();
-    for ( ; it != end && it.key() == key; ++it) {
-        const QDBusConnectionPrivate::SignalHook &entry = it.value();
-        if (entry.service == hook.service &&
-            entry.owner == hook.owner &&
-            entry.path == hook.path &&
-            entry.signature == hook.signature &&
-            entry.obj == hook.obj &&
-            entry.midx == hook.midx) {
-            // no need to compare the parameters if it's the same slot
-            d->disconnectSignal(it);
-            return true;        // it was there
-        }
-    }
-
-    // the slot was not found
-    return false;
+    return d->disconnectSignal(service, path, interface, name, argumentMatch, signature, receiver, slot);
 }
 
 /*!
