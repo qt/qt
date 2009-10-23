@@ -120,7 +120,7 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+516"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+524"/>
         <source>The specified namespace does not exist!</source>
         <translation>Указанное пространство имён не существует!</translation>
     </message>
@@ -128,7 +128,7 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-394"/>
+        <location line="-402"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>Не удалось открыть файл документации %1: %2!</translation>
     </message>
@@ -233,25 +233,35 @@
     <message>
         <location line="+80"/>
         <source>Insert contents...</source>
-        <translation>Добавление содержания...</translation>
+        <translation>Добавление оглавления...</translation>
     </message>
     <message>
         <location line="+8"/>
         <source>Cannot insert contents!</source>
-        <translation>Не удалось добавить содержание!</translation>
+        <translation>Не удалось добавить оглавление!</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Cannot register contents!</source>
-        <translation>Не удалось зарегистрировать содержание!</translation>
+        <translation>Не удалось зарегистрировать оглавление!</translation>
     </message>
 </context>
 <context>
     <name>QHelpSearchQueryWidget</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+200"/>
+        <location filename="../tools/assistant/lib/qhelpsearchquerywidget.cpp" line="+411"/>
         <source>Search for:</source>
         <translation>Искать:</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Previous search</source>
+        <translation>Предыдущий запрос</translation>
+    </message>
+    <message>
+        <location line="+4"/>
+        <source>Next search</source>
+        <translation>Следующий запрос</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -259,7 +269,7 @@
         <translation>Поиск</translation>
     </message>
     <message>
-        <location line="+16"/>
+        <location line="+20"/>
         <source>Advanced search</source>
         <translation>Расширенный поиск</translation>
     </message>
@@ -269,22 +279,22 @@
         <translation>&lt;B&gt;похожие&lt;/B&gt; слова:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>&lt;B&gt;without&lt;/B&gt; the words:</source>
         <translation>&lt;B&gt;не содержит&lt;/B&gt; слов:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;exact phrase&lt;/B&gt;:</source>
         <translation>содержит &lt;B&gt;точную фразу&lt;/B&gt;:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;all&lt;/B&gt; of the words:</source>
         <translation>содержит &lt;B&gt;все&lt;/B&gt; слова:</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+6"/>
         <source>with &lt;B&gt;at least one&lt;/B&gt; of the words:</source>
         <translation>содержит &lt;B&gt;хотя бы одно&lt;/B&gt; из слов:</translation>
     </message>
@@ -313,7 +323,7 @@
         <translation>Безымянный</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+80"/>
+        <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
         <source>Unknown token.</source>
         <translation>Неизвестный идентификатор.</translation>
     </message>
@@ -353,7 +363,7 @@
         <translation>Отсутствует атрибут у ключевого слова в строке %1.</translation>
     </message>
     <message>
-        <location line="+83"/>
+        <location line="+123"/>
         <source>The input file %1 could not be opened!</source>
         <translation>Невозможно открыть исходный файл %1!</translation>
     </message>

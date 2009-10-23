@@ -108,7 +108,7 @@ public:
     QPainterPath selectionArea;
     int selectionChanging;
     QSet<QGraphicsItem *> selectedItems;
-    QList<QGraphicsItem *> unpolishedItems;
+    QSet<QGraphicsItem *> unpolishedItems;
     QList<QGraphicsItem *> topLevelItems;
     bool needSortTopLevelItems;
     bool holesInTopLevelSiblingIndex;
@@ -281,6 +281,13 @@ public:
     bool sendTouchBeginEvent(QGraphicsItem *item, QTouchEvent *touchEvent);
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
+
+    QHash<QGesture *, QGraphicsObject *> gestureTargets;
+    void gestureEventHandler(QGestureEvent *event);
+    void getGestureTargets(const QSet<QGesture *> &gestures, QWidget *viewport,
+                           QMap<Qt::GestureType, QGesture *> *conflictedGestures,
+                           QList<QList<QGraphicsObject *> > *conflictedItems,
+                           QHash<QGesture *, QGraphicsObject *> *normalGestures);
 
     void updateInputMethodSensitivityInViews();
 

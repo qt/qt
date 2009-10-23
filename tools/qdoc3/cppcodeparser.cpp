@@ -88,9 +88,12 @@ QT_BEGIN_NAMESPACE
 #ifdef QDOC_QML
 #define COMMAND_QMLCLASS                Doc::alias("qmlclass")
 #define COMMAND_QMLPROPERTY             Doc::alias("qmlproperty")
+#define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
+#define COMMAND_QMLATTACHEDSIGNAL       Doc::alias("qmlattachedsignal")
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLATTACHEDMETHOD       Doc::alias("qmlattachedmethod")
 #define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
@@ -482,8 +485,11 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_VARIABLE
                            << COMMAND_QMLCLASS
                            << COMMAND_QMLPROPERTY
+                           << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLMETHOD;
+                           << COMMAND_QMLATTACHEDSIGNAL
+                           << COMMAND_QMLMETHOD
+                           << COMMAND_QMLATTACHEDMETHOD;
 #else
                            << COMMAND_VARIABLE;
 #endif
@@ -676,7 +682,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
-             (command == COMMAND_QMLMETHOD)) {
+             (command == COMMAND_QMLMETHOD) ||
+             (command == COMMAND_QMLATTACHEDSIGNAL) ||
+             (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
         QString name;
         QmlClassNode* qmlClass = 0;
@@ -685,9 +693,15 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
-                    return new QmlSignalNode(qmlClass,name);
+                    return new QmlSignalNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDSIGNAL)
+                    return new QmlSignalNode(qmlClass,name,true);
+                else if (command == COMMAND_QMLMETHOD)
+                    return new QmlMethodNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDMETHOD)
+                    return new QmlMethodNode(qmlClass,name,true);
                 else
-                    return new QmlMethodNode(qmlClass,name);
+                    return 0; // never get here.
             }
         }
     }
@@ -759,32 +773,40 @@ bool CppCodeParser::splitQmlArg(const Doc& doc,
 /*!
   Process the topic \a command group with arguments \a args.
 
-  Currently, this function is called only for \e{qmlproperty}.
+  Currently, this function is called only for \e{qmlproperty}
+  and \e{qmlattachedproperty}.
  */
 Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
                                               const QString& command,
                                               const QStringList& args)
 {
     QmlPropGroupNode* qmlPropGroup = 0;
-    if (command == COMMAND_QMLPROPERTY) {
+    if ((command == COMMAND_QMLPROPERTY) ||
+        (command == COMMAND_QMLATTACHEDPROPERTY)) {
         QString type;
         QString element;
         QString property;
+        bool attached = (command == COMMAND_QMLATTACHEDPROPERTY);
         QStringList::ConstIterator arg = args.begin();
         if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 QmlClassNode* qmlClass = static_cast<QmlClassNode*>(n);
                 if (qmlClass)
-                    qmlPropGroup = new QmlPropGroupNode(qmlClass,property);
+                    qmlPropGroup = new QmlPropGroupNode(qmlClass,
+                                                        property,
+                                                        attached);
             }
         }
         if (qmlPropGroup) {
-            new QmlPropertyNode(qmlPropGroup,property,type);
+            new QmlPropertyNode(qmlPropGroup,property,type,attached);
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    new QmlPropertyNode(qmlPropGroup,property,type);
+                    new QmlPropertyNode(qmlPropGroup,
+                                        property,
+                                        type,
+                                        attached);
                 }
                 ++arg;
             }
@@ -1969,7 +1991,8 @@ bool CppCodeParser::matchDocsAndStuff()
                   There is a topic command. Process it.
                  */
 #ifdef QDOC_QML
-                if (topic == COMMAND_QMLPROPERTY) {
+                if ((topic == COMMAND_QMLPROPERTY) ||
+                    (topic == COMMAND_QMLATTACHEDPROPERTY)) {
                     Doc nodeDoc = doc;
                     Node *node = processTopicCommandGroup(nodeDoc,topic,args);
                     if (node != 0) {

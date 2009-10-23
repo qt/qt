@@ -127,6 +127,7 @@ SUBDIRS += \
            qexplicitlyshareddatapointer \
            qfile \
            qfiledialog \
+           qfiledialog2 \
            qfileinfo \
            qfilesystemwatcher \
            qfilesystemmodel \
@@ -234,6 +235,7 @@ SUBDIRS += \
            qpainterpath \
            qpalette \
            qparallelanimationgroup \
+           qpauseanimation \
            qpathclipper \
            qpen \
            qpicture \
@@ -398,7 +400,8 @@ SUBDIRS += \
            selftests \
            symbols \
            qrand \
-           utf8
+           utf8 \
+           gestures
            
 !wince*:SUBDIRS += $$Q3SUBDIRS
 

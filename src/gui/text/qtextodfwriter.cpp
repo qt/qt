@@ -550,9 +550,9 @@ void QTextOdfWriter::writeCharacterFormat(QXmlStreamWriter &writer, QTextCharFor
         }
     }
     if (format.hasProperty(QTextFormat::FontLetterSpacing))
-        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(format.fontLetterSpacing()) );
+        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(format.fontLetterSpacing()));
     if (format.hasProperty(QTextFormat::FontWordSpacing))
-        writer.writeAttribute(foNS, QString::fromLatin1("letter-spacing"), pixelToPoint(format.fontWordSpacing()) );
+        writer.writeAttribute(foNS, QString::fromLatin1("word-spacing"), pixelToPoint(format.fontWordSpacing()));
     if (format.hasProperty(QTextFormat::FontUnderline))
         writer.writeAttribute(styleNS, QString::fromLatin1("text-underline-type"),
                 format.fontUnderline() ? QString::fromLatin1("single") : QString::fromLatin1("none"));

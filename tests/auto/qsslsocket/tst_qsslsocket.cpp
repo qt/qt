@@ -170,6 +170,7 @@ private slots:
     void setEmptyKey();
     void spontaneousWrite();
     void setReadBufferSize();
+    void setReadBufferSize_task_250027();
     void waitForMinusOne();
     void verifyMode();
     void verifyDepth();
@@ -182,6 +183,7 @@ private slots:
     void ignoreSslErrorsListWithSlot_data();
     void ignoreSslErrorsListWithSlot();
     void readFromClosedSocket();
+    void writeBigChunk();
 
     static void exitLoop()
     {
@@ -1240,6 +1242,66 @@ void tst_QSslSocket::setReadBufferSize()
     QVERIFY(receiver->bytesAvailable() > oldBytesAvailable);
 }
 
+class SetReadBufferSize_task_250027_handler : public QObject {
+    Q_OBJECT
+public slots:
+    void readyReadSlot() {
+        QTestEventLoop::instance().exitLoop();
+    }
+    void waitSomeMore(QSslSocket *socket) {
+        QTime t;
+        t.start();
+        while (!socket->encryptedBytesAvailable()) {
+            QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents, 250);
+            if (t.elapsed() > 1000 || socket->state() != QAbstractSocket::ConnectedState)
+                return;
+        }
+    }
+};
+
+void tst_QSslSocket::setReadBufferSize_task_250027()
+{
+    // do not execute this when a proxy is set.
+    QFETCH_GLOBAL(bool, setProxy);
+    if (setProxy)
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    socket->setReadBufferSize(1000); // limit to 1 kb/sec
+    socket->ignoreSslErrors();
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+    socket->ignoreSslErrors();
+    QVERIFY(socket->waitForConnected(10*1000));
+    QVERIFY(socket->waitForEncrypted(10*1000));
+
+    // exit the event loop as soon as we receive a readyRead()
+    SetReadBufferSize_task_250027_handler setReadBufferSize_task_250027_handler;
+    connect(socket, SIGNAL(readyRead()), &setReadBufferSize_task_250027_handler, SLOT(readyReadSlot()));
+
+    // provoke a response by sending a request
+    socket->write("GET /gif/fluke.gif HTTP/1.0\n"); // this file is 27 KB
+    socket->write("Host: ");
+    socket->write(QtNetworkSettings::serverName().toLocal8Bit().constData());
+    socket->write("\n");
+    socket->write("Connection: close\n");
+    socket->write("\n");
+    socket->flush();
+
+    QTestEventLoop::instance().enterLoop(10);
+    setReadBufferSize_task_250027_handler.waitSomeMore(socket);
+    QByteArray firstRead = socket->readAll();
+    // First read should be some data, but not the whole file
+    QVERIFY(firstRead.size() > 0 && firstRead.size() < 20*1024);
+
+    QTestEventLoop::instance().enterLoop(10);
+    setReadBufferSize_task_250027_handler.waitSomeMore(socket);
+    QByteArray secondRead = socket->readAll();
+    // second read should be some more data
+    QVERIFY(secondRead.size() > 0);
+
+    socket->close();
+}
+
 class SslServer3 : public QTcpServer
 {
     Q_OBJECT
@@ -1377,6 +1439,7 @@ void tst_QSslSocket::waitForMinusOne()
 
     // connect to the server
     QSslSocket socket;
+    QTest::qSleep(100);
     socket.connectToHost("127.0.0.1", server.serverPort);
     QVERIFY(socket.waitForConnected(-1));
     socket.ignoreSslErrors();
@@ -1695,6 +1758,50 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->waitForDisconnected();
     QVERIFY(!socket->bytesAvailable());
     QVERIFY(!socket->bytesToWrite());
+}
+
+void tst_QSslSocket::writeBigChunk()
+{
+    if (!QSslSocket::supportsSsl())
+        return;
+
+    QSslSocketPtr socket = newSocket();
+    this->socket = socket;
+
+    connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)), this, SLOT(ignoreErrorSlot()));
+    socket->connectToHostEncrypted(QtNetworkSettings::serverName(), 443);
+
+    QByteArray data;
+    data.resize(1024*1024*10); // 10 MB
+    // init with garbage. needed so ssl cannot compress it in an efficient way.
+    for (int i = 0; i < data.size() / sizeof(int); i++) {
+        int r = qrand();
+        data.data()[i*sizeof(int)] = r;
+    }
+
+    QVERIFY(socket->waitForEncrypted(10000));
+    QString errorBefore = socket->errorString();
+
+    int ret = socket->write(data.constData(), data.size());
+    QVERIFY(data.size() == ret);
+
+    // spin the event loop once so QSslSocket::transmit() gets called
+    QCoreApplication::processEvents();
+    QString errorAfter = socket->errorString();
+
+    // no better way to do this right now since the error is the same as the default error.
+    if (socket->errorString().startsWith(QLatin1String("Unable to write data")))
+    {
+        qWarning() << socket->error() << socket->errorString();
+        QFAIL("Error while writing! Check if the OpenSSL BIO size is limited?!");
+    }
+    // also check the error string. If another error (than UnknownError) occured, it should be different than before
+    QVERIFY(errorBefore == errorAfter);
+ 
+    // check that everything has been written to OpenSSL
+    QVERIFY(socket->bytesToWrite() == 0);
+
+    socket->close();
 }
 
 #endif // QT_NO_OPENSSL

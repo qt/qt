@@ -1,5 +1,6 @@
 /*
     Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies)
+    Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -44,12 +45,21 @@ public:
 
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
+    virtual void setInputMethodEnabled(bool enable);
+#if QT_VERSION >= 0x040600
+    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
+#endif
 
+#ifndef QT_NO_CURSOR
     virtual QCursor cursor() const;
     virtual void updateCursor(const QCursor& cursor);
+#endif
 
+    virtual QPalette palette() const;
     virtual int screenNumber() const;
-    virtual WId winId() const;
+    virtual QWidget* ownerWidget() const;
+
+    virtual QObject* pluginParent() const;
 
     void _q_doLoadProgress(int progress);
     void _q_doLoadFinished(bool success);
@@ -79,10 +89,7 @@ void QGraphicsWebViewPrivate::_q_doLoadFinished(bool success)
     if (q->title().isEmpty())
         emit q->urlChanged(q->url());
 
-    if (success)
-        emit q->loadFinished();
-    else
-        emit q->loadFailed();
+    emit q->loadFinished(success);
 }
 
 void QGraphicsWebViewPrivate::scroll(int dx, int dy, const QRect& rectToScroll)
@@ -95,6 +102,21 @@ void QGraphicsWebViewPrivate::update(const QRect & dirtyRect)
     q->update(QRectF(dirtyRect));
 }
 
+
+void QGraphicsWebViewPrivate::setInputMethodEnabled(bool enable)
+{
+    q->setAttribute(Qt::WA_InputMethodEnabled, enable);
+}
+#if QT_VERSION >= 0x040600
+void QGraphicsWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
+{
+    if (enable)
+        q->setInputMethodHints(q->inputMethodHints() | hint);
+    else
+        q->setInputMethodHints(q->inputMethodHints() & ~hint);
+}
+#endif
+#ifndef QT_NO_CURSOR
 QCursor QGraphicsWebViewPrivate::cursor() const
 {
     return q->cursor();
@@ -103,6 +125,12 @@ QCursor QGraphicsWebViewPrivate::cursor() const
 void QGraphicsWebViewPrivate::updateCursor(const QCursor& cursor)
 {
     q->setCursor(cursor);
+}
+#endif
+
+QPalette QGraphicsWebViewPrivate::palette() const
+{
+    return q->palette();
 }
 
 int QGraphicsWebViewPrivate::screenNumber() const
@@ -117,14 +145,15 @@ int QGraphicsWebViewPrivate::screenNumber() const
     return 0;
 }
 
-WId QGraphicsWebViewPrivate::winId() const
+QWidget* QGraphicsWebViewPrivate::ownerWidget() const
 {
     const QList<QGraphicsView*> views = q->scene()->views();
+    return views.value(0);
+}
 
-    if (!views.isEmpty())
-        return views.at(0)->winId();
-
-    return 0;
+QObject* QGraphicsWebViewPrivate::pluginParent() const
+{
+    return q;
 }
 
 void QGraphicsWebViewPrivate::_q_setStatusBarMessage(const QString& s)
@@ -166,8 +195,10 @@ QGraphicsWebView::QGraphicsWebView(QGraphicsItem* parent)
 */
 QGraphicsWebView::~QGraphicsWebView()
 {
-    if (d->page)
+    if (d->page) {
         d->page->d->view = 0;
+        d->page->d->client = 0; // unset the page client
+    }
 
     if (d->page && d->page->parent() == this)
         delete d->page;
@@ -220,21 +251,38 @@ bool QGraphicsWebView::event(QEvent* event)
     // Re-implemented in order to allows fixing event-related bugs in patch releases.
 
     if (d->page) {
+#ifndef QT_NO_CONTEXTMENU
+        if (event->type() == QEvent::GraphicsSceneContextMenu) {
+            if (!isEnabled())
+                return false;
+
+            QGraphicsSceneContextMenuEvent* ev = static_cast<QGraphicsSceneContextMenuEvent*>(event);
+            QContextMenuEvent fakeEvent(QContextMenuEvent::Reason(ev->reason()), ev->pos().toPoint());
+            if (d->page->swallowContextMenuEvent(&fakeEvent)) {
+                event->accept();
+                return true;
+            }
+            d->page->updatePositionDependentActions(fakeEvent.pos());
+        } else
+#endif // QT_NO_CONTEXTMENU
+        {
 #ifndef QT_NO_CURSOR
 #if QT_VERSION >= 0x040400
-        } else if (event->type() == QEvent::CursorChange) {
-            // An unsetCursor will set the cursor to Qt::ArrowCursor.
-            // Thus this cursor change might be a QWidget::unsetCursor()
-            // If this is not the case and it came from WebCore, the
-            // QWebPageClient already has set its cursor internally
-            // to Qt::ArrowCursor, so updating the cursor is always
-            // right, as it falls back to the last cursor set by
-            // WebCore.
-            // FIXME: Add a QEvent::CursorUnset or similar to Qt.
-            if (cursor().shape() == Qt::ArrowCursor)
-                d->resetCursor();
+            if (event->type() == QEvent::CursorChange) {
+                // An unsetCursor will set the cursor to Qt::ArrowCursor.
+                // Thus this cursor change might be a QWidget::unsetCursor()
+                // If this is not the case and it came from WebCore, the
+                // QWebPageClient already has set its cursor internally
+                // to Qt::ArrowCursor, so updating the cursor is always
+                // right, as it falls back to the last cursor set by
+                // WebCore.
+                // FIXME: Add a QEvent::CursorUnset or similar to Qt.
+                if (cursor().shape() == Qt::ArrowCursor)
+                    d->resetCursor();
+            }
 #endif
 #endif
+        }
     }
     return QGraphicsWidget::event(event);
 }
@@ -589,7 +637,6 @@ void QGraphicsWebView::hoverMoveEvent(QGraphicsSceneHoverEvent* ev)
         QMouseEvent me = QMouseEvent(QEvent::MouseMove,
                 ev->pos().toPoint(), Qt::NoButton,
                 Qt::NoButton, Qt::NoModifier);
-        d->page->setView(ev->widget());
         d->page->event(&me);
         ev->setAccepted(accepted);
     }

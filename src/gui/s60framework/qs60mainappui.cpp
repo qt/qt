@@ -50,6 +50,7 @@
 
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
+#include <QtGui/qsymbianevent.h>
 #include <QtGui/qmenu.h>
 #include <private/qmenu_p.h>
 #include <private/qt_s60_p.h>
@@ -58,25 +59,31 @@
 QT_BEGIN_NAMESPACE
 
 /*!
- * \class QS60MainAppUi
- * \obsolete
- * \since 4.6
- * \brief Helper class for S60 migration
- *
- * The QS60MainAppUi provides a helper class for use in migrating from existing S60 based
- * applications to Qt based applications. It is used in the exact same way as the
- * \c CAknAppUi class from Symbian, but internally provides extensions used by Qt.
- *
- * When modifying old S60 applications that rely on implementing functions in \c CAknAppUi,
- * the class should be modified to inherit from this class instead of \c CAknAppUi. Then the
- * application can choose to override only certain functions.
- *
- * For more information on \c CAknAppUi, please see the S60 documentation.
- *
- * Unlike other Qt classes, QS60MainAppUi behaves like an S60 class, and can throw Symbian
- * leaves.
- *
- * \sa QS60MainDocument, QS60MainApplication
+  \class QS60MainAppUi
+  \since 4.6
+  \brief The QS60MainAppUi class is a helper class for S60 migration.
+
+  \warning This class is provided only to get access to S60 specific
+  functionality in the application framework classes. It is not
+  portable. We strongly recommend against using it in new applications.
+
+  The QS60MainAppUi provides a helper class for use in migrating from
+  existing S60 based applications to Qt based applications. It is used
+  in the exact same way as the \c CAknAppUi class from Symbian, but
+  internally provides extensions used by Qt.
+
+  When modifying old S60 applications that rely on implementing
+  functions in \c CAknAppUi, the class should be modified to inherit
+  from this class instead of \c CAknAppUi. Then the application can
+  choose to override only certain functions.
+
+  For more information on \c CAknAppUi, please see the S60
+  documentation.
+
+  Unlike other Qt classes, QS60MainAppUi behaves like an S60 class,
+  and can throw Symbian leaves.
+
+  \sa QS60MainDocument, QS60MainApplication
  */
 
 /*!
@@ -128,8 +135,10 @@ QS60MainAppUi::~QS60MainAppUi()
  */
 void QS60MainAppUi::HandleCommandL(TInt command)
 {
-    if (qApp)
-        QT_TRYCATCH_LEAVING(qApp->symbianHandleCommand(command));
+    if (qApp) {
+        QSymbianEvent event(QSymbianEvent::CommandEvent, command);
+        QT_TRYCATCH_LEAVING(qApp->symbianProcessEvent(&event));
+    }
 }
 
 /*!
@@ -145,8 +154,10 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
 {
     CAknAppUi::HandleResourceChangeL(type);
 
-    if (qApp)
-        QT_TRYCATCH_LEAVING(qApp->symbianResourceChange(type));
+    if (qApp) {
+        QSymbianEvent event(QSymbianEvent::ResourceChangeEvent, type);
+        QT_TRYCATCH_LEAVING(qApp->symbianProcessEvent(&event));
+    }
 }
 
 /*!
@@ -158,16 +169,18 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
  * If you override this function, you should call the base class implementation if you do not
  * handle the event.
  */
-void QS60MainAppUi::HandleWsEventL(const TWsEvent& event, CCoeControl *destination)
+void QS60MainAppUi::HandleWsEventL(const TWsEvent& wsEvent, CCoeControl *destination)
 {
     int result = 0;
-    if (qApp)
+    if (qApp) {
+        QSymbianEvent event(&wsEvent);
         QT_TRYCATCH_LEAVING(
-            result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&event))
+            result = qApp->symbianProcessEvent(&event)
         );
+    }
 
     if (result <= 0)
-        CAknAppUi::HandleWsEventL(event, destination);
+        CAknAppUi::HandleWsEventL(wsEvent, destination);
 }
 
 

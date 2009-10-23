@@ -1425,7 +1425,7 @@ QMenuPrivate::QMacMenuPrivate::syncAction(QMacMenuAction *action)
         SetMenuItemProperty(data.submenuHandle, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
         NSMenu *subMenu  = static_cast<NSMenu *>(action->action->menu()->macMenu());
-        if ([subMenu supermenu] != nil) {
+        if ([subMenu supermenu] && [subMenu supermenu] != [item menu]) {
             // The menu is already a sub-menu of another one. Cocoa will throw an exception,
             // in such cases. For the time being, a new QMenu with same set of actions is the
             // only workaround.
@@ -1718,7 +1718,7 @@ QMenuBarPrivate::QMacMenuBarPrivate::syncAction(QMacMenuAction *action)
             GetMenuItemProperty(action->menu, 0, kMenuCreatorQt, kMenuPropertyQWidget, sizeof(caused), 0, &caused);
             SetMenuItemProperty(submenu, 0, kMenuCreatorQt, kMenuPropertyCausedQWidget, sizeof(caused), &caused);
 #else
-            if ([submenu supermenu] != nil)
+            if ([submenu supermenu] && [submenu supermenu] != [item menu])
                 return;
             else
                 [item setSubmenu:submenu];
@@ -1771,6 +1771,16 @@ QMenuBarPrivate::QMacMenuBarPrivate::removeAction(QMacMenuAction *action)
     actionItems.removeAll(action);
 }
 
+bool QMenuBarPrivate::macWidgetHasNativeMenubar(QWidget *widget)
+{
+    // This function is different from q->isNativeMenuBar(), as
+    // it returns true only if a native menu bar is actually
+    // _created_.
+    if (!widget)
+        return false;
+    return menubars()->contains(widget->window());
+}
+
 void
 QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
 {
@@ -1778,16 +1788,22 @@ QMenuBarPrivate::macCreateMenuBar(QWidget *parent)
     static int dontUseNativeMenuBar = -1;
     // We call the isNativeMenuBar function here
     // because that will make sure that local overrides
-    // are dealt with correctly.
+    // are dealt with correctly. q->isNativeMenuBar() will, if not
+    // overridden, depend on the attribute Qt::AA_DontUseNativeMenuBar:
     bool qt_mac_no_native_menubar = !q->isNativeMenuBar();
     if (qt_mac_no_native_menubar == false && dontUseNativeMenuBar < 0) {
+        // The menubar is set to be native. Let's check (one time only
+        // for all menubars) if this is OK with the rest of the environment.
+        // As a result, Qt::AA_DontUseNativeMenuBar is set. NB: the application
+        // might still choose to not respect, or change, this flag.
         bool isPlugin = QApplication::testAttribute(Qt::AA_MacPluginApplication);
         bool environmentSaysNo = !qgetenv("QT_MAC_NO_NATIVE_MENUBAR").isEmpty();
         dontUseNativeMenuBar = isPlugin || environmentSaysNo;
         QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar, dontUseNativeMenuBar);
         qt_mac_no_native_menubar = !q->isNativeMenuBar();
     }
-    if (!qt_mac_no_native_menubar) {
+    if (qt_mac_no_native_menubar == false) {
+        // INVARIANT: Use native menubar.
         extern void qt_event_request_menubarupdate(); //qapplication_mac.cpp
         qt_event_request_menubarupdate();
         if (!parent && !fallback) {

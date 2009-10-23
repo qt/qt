@@ -168,6 +168,16 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     if (result != DFB_OK)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
 
+    if (window()) {
+        DFBWindowID winid;
+        result = dfbWindow->GetID(dfbWindow, &winid);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBWindowSurface::createWindow. Can't get ID", result);
+        } else {
+            window()->setProperty("_q_DirectFBWindowID", winid);
+        }
+    }
+
     Q_ASSERT(!dfbSurface);
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
     updateFormat();
@@ -220,6 +230,9 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (rect.isNull()) {
 #ifndef QT_NO_DIRECTFB_WM
         if (dfbWindow) {
+            if (window())
+                window()->setProperty("_q_DirectFBWindowID", QVariant());
+
             dfbWindow->Release(dfbWindow);
             dfbWindow = 0;
         }
@@ -262,7 +275,11 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (oldSurface != dfbSurface)
         updateFormat();
 
-    QWSWindowSurface::setGeometry(rect);
+    if (oldRect.size() != rect.size()) {
+        QWSWindowSurface::setGeometry(rect);
+    } else {
+        QWindowSurface::setGeometry(rect);
+    }
 }
 
 QByteArray QDirectFBWindowSurface::permanentState() const
@@ -276,6 +293,8 @@ void QDirectFBWindowSurface::setPermanentState(const QByteArray &state)
 {
     if (state.size() == sizeof(this)) {
         sibling = *reinterpret_cast<QDirectFBWindowSurface *const*>(state.constData());
+        Q_ASSERT(sibling);
+        sibling->setSurfaceFlags(surfaceFlags());
     }
 }
 

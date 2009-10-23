@@ -682,8 +682,11 @@ void tst_QHeaderView::visualIndexAt()
 
 void tst_QHeaderView::length()
 {
-#ifdef Q_OS_WINCE
+#if defined(Q_OS_WINCE)
     QFont font(QLatin1String("Tahoma"), 7);
+    view->setFont(font);
+#elif defined(Q_OS_SYMBIAN)
+    QFont font(QLatin1String("Series 60 Sans"), 6);
     view->setFont(font);
 #endif
     view->setStretchLastSection(true);
@@ -1836,7 +1839,7 @@ void tst_QHeaderView::preserveHiddenSectionWidth()
     model.insertRow(1);
     view.showSection(2);
     QCOMPARE(view.sectionSize(0), 100);
-    QCOMPARE(view.sectionSize(1), 30);
+    QCOMPARE(view.sectionSize(1), view.defaultSectionSize());
     QCOMPARE(view.sectionSize(2), 50);
 }
 

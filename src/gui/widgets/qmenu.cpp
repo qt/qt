@@ -180,6 +180,21 @@ int QMenuPrivate::scrollerHeight() const
 }
 
 //Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
+QRect QMenuPrivate::popupGeometry(const QWidget *widget) const
+{
+#ifdef Q_WS_WIN
+    return QApplication::desktop()->screenGeometry(widget);
+#elif defined Q_WS_X11
+    if (X11->desktopEnvironment == DE_KDE)
+        return QApplication::desktop()->screenGeometry(widget);
+    else
+        return QApplication::desktop()->availableGeometry(widget);
+#else
+        return QApplication::desktop()->availableGeometry(widget);
+#endif
+}
+
+//Windows and KDE allows menus to cover the taskbar, while GNOME and Mac don't
 QRect QMenuPrivate::popupGeometry(int screen) const
 {
 #ifdef Q_WS_WIN
@@ -234,7 +249,7 @@ void QMenuPrivate::updateActionRects() const
     }
 
     int max_column_width = 0,
-        dh = popupGeometry(QApplication::desktop()->screenNumber(q)).height(),
+        dh = popupGeometry(q).height(),
         y = 0;
     QStyle *style = q->style();
     QStyleOption opt;
@@ -744,7 +759,7 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
     if (newScrollFlags & QMenuScroller::ScrollUp)
         newOffset -= vmargin;
 
-    QRect screen = popupGeometry(QApplication::desktop()->screenNumber(q));
+    QRect screen = popupGeometry(q);
     const int desktopFrame = q->style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, q);
     if (q->height() < screen.height()-(desktopFrame*2)-1) {
         QRect geom = q->geometry();
@@ -960,10 +975,19 @@ bool QMenuPrivate::mouseEventTaken(QMouseEvent *e)
     return false;
 }
 
+class ExceptionGuard
+{
+public:
+    inline ExceptionGuard(bool *w = 0) : watched(w) { Q_ASSERT(!(*watched)); *watched = true; }
+    inline ~ExceptionGuard() { *watched = false; }
+    inline operator bool() { return *watched; }
+private:
+    bool *watched;
+};
+
 void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedStack, QAction *action, QAction::ActionEvent action_e, bool self)
 {
-    Q_ASSERT(!activationRecursionGuard);
-    activationRecursionGuard = true;
+    ExceptionGuard guard(&activationRecursionGuard);
 #ifdef QT3_SUPPORT
     const int actionId = q_func()->findIdForAction(action);
 #endif
@@ -1008,7 +1032,6 @@ void QMenuPrivate::activateCausedStack(const QList<QPointer<QWidget> > &causedSt
 #endif
         }
     }
-    activationRecursionGuard = false;
 }
 
 void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e, bool self)
@@ -1789,7 +1812,15 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
     d->updateActionRects();
     QPoint pos = p;
     QSize size = sizeHint();
-    QRect screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
+    QRect screen;
+#ifndef QT_NO_GRAPHICSVIEW
+    bool isEmbedded = d->nearestGraphicsProxyWidget(this);
+    if (isEmbedded)
+        screen = d->popupGeometry(this);
+    else
+#endif
+    screen = d->popupGeometry(QApplication::desktop()->screenNumber(p));
+
     const int desktopFrame = style()->pixelMetric(QStyle::PM_MenuDesktopFrameWidth, 0, this);
     bool adjustToDesktop = !window()->testAttribute(Qt::WA_DontShowOnScreen);
 #ifdef QT_KEYPAD_NAVIGATION
@@ -2927,7 +2958,7 @@ void QMenu::internalDelayedPopup()
     QPoint pos(rightPos);
     QMenu *caused = qobject_cast<QMenu*>(d->activeMenu->d_func()->causedPopup.widget);
 
-    const QRect availGeometry(d->popupGeometry(QApplication::desktop()->screenNumber(caused)));
+    const QRect availGeometry(d->popupGeometry(caused));
     if (isRightToLeft()) {
         pos = leftPos;
         if ((caused && caused->x() < x()) || pos.x() < availGeometry.left()) {

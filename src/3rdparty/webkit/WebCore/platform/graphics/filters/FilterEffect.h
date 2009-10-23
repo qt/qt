@@ -38,18 +38,6 @@ namespace WebCore {
     public:
         virtual ~FilterEffect();
 
-        bool xBoundingBoxMode() const { return m_xBBoxMode; }
-        void setXBoundingBoxMode(bool bboxMode) { m_xBBoxMode = bboxMode; }
-
-        bool yBoundingBoxMode() const { return m_yBBoxMode; }
-        void setYBoundingBoxMode(bool bboxMode) { m_yBBoxMode = bboxMode; }
-
-        bool widthBoundingBoxMode() const { return m_widthBBoxMode; }
-        void setWidthBoundingBoxMode(bool bboxMode) { m_widthBBoxMode = bboxMode; }
-
-        bool heightBoundingBoxMode() const { return m_heightBBoxMode; }
-        void setHeightBoundingBoxMode(bool bboxMode) { m_heightBBoxMode = bboxMode; }
-
         void setUnionOfChildEffectSubregions(const FloatRect& uniteRect) { m_unionOfChildEffectSubregions = uniteRect; }
         FloatRect unionOfChildEffectSubregions() const { return m_unionOfChildEffectSubregions; }
 
@@ -79,6 +67,10 @@ namespace WebCore {
         FloatRect calculateDrawingRect(const FloatRect&);
         IntRect calculateDrawingIntRect(const FloatRect&);
 
+        // black image with different alpha values
+        bool isAlphaImage() { return m_alphaImage; }
+        void setIsAlphaImage(bool alphaImage) { m_alphaImage = alphaImage; }
+
         virtual FloatRect uniteChildEffectSubregions(Filter* filter) { return filter->filterRegion(); }
         virtual FloatRect calculateEffectRect(Filter*);
         virtual void apply(Filter*) = 0;
@@ -101,6 +93,8 @@ namespace WebCore {
         bool m_hasY : 1;
         bool m_hasWidth : 1;
         bool m_hasHeight : 1;
+
+        bool m_alphaImage;
 
         FloatRect m_subRegion;
         FloatRect m_unionOfChildEffectSubregions;

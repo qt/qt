@@ -304,10 +304,11 @@ void tst_QSqlDatabase::createTestTables(QSqlDatabase db)
         // ### stupid workaround until we find a way to hardcode this
         // in the MySQL server startup script
         q.exec("set table_type=innodb");
-    if (tst_Databases::isSqlServer(db)) {
+    else if (tst_Databases::isSqlServer(db)) {
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
         QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
-    }
+    } else if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     // please never ever change this table; otherwise fix all tests ;)
     if (tst_Databases::isMSAccess(db)) {
@@ -334,6 +335,12 @@ void tst_QSqlDatabase::dropTestTables(QSqlDatabase db)
 {
     if (!db.isValid())
         return;
+
+    if(tst_Databases::isPostgreSQL(db)) {
+        QSqlQuery q(db);
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+    }
+
     // drop the view first, otherwise we'll get dependency problems
     tst_Databases::safeDropViews(db, QStringList() << qTableName("qtest_view") << qTableName("qtest_view2"));
 
@@ -792,8 +799,8 @@ void tst_QSqlDatabase::checkValues(const FieldDef fieldDefs[], QSqlDatabase db)
             if (val1.type() == QVariant::DateTime || val1.type() == QVariant::Time)
                qDebug("Received Time: " + val1.toTime().toString("hh:mm:ss.zzz"));
             QFAIL(QString(" Expected: '%1' Received: '%2' for field %3 (etype %4 rtype %5) in checkValues").arg(
-            val2.toString()).arg(
-            val1.toString()).arg(
+            val2.type() == QVariant::ByteArray ? val2.toByteArray().toHex() : val2.toString()).arg(
+            val1.type() == QVariant::ByteArray ? val1.toByteArray().toHex() : val1.toString()).arg(
             fieldDefs[ i ].fieldName()).arg(
             val2.typeName()).arg(
             val1.typeName())
@@ -1019,6 +1026,10 @@ void tst_QSqlDatabase::recordPSQL()
     };
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+
     q.exec("drop sequence " + qTableName("qtestfields") + "_t_bigserial_seq");
     q.exec("drop sequence " + qTableName("qtestfields") + "_t_serial_seq");
     // older psql cut off the table name
@@ -1061,17 +1072,20 @@ void tst_QSqlDatabase::recordMySQL()
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
     int vernum = (major << 16) + (minor << 8) + revision;
 
-#ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
         see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
         with space on insert, and trailing spaces are removed on select.
     */
     if( vernum >= ((5 << 16) + 15) ) {
+#ifdef QT3_SUPPORT
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
-    }
+#else
+        bin10 = FieldDef("binary(10)", QVariant::ByteArray, QString("123abc    "));
+        varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QString("123abcv   "));
 #endif
+    }
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
@@ -1292,9 +1306,9 @@ void tst_QSqlDatabase::recordAccess()
     FieldDef("varchar(20)", QVariant::String, QString("Blah1")),
     FieldDef("single", QVariant::Double, 1.12345),
     FieldDef("double", QVariant::Double, 1.123456),
-        FieldDef("byte", QVariant::Int, 255),
+    FieldDef("byte", QVariant::UInt, 255),
 #ifdef QT3_SUPPORT
-    FieldDef("binary", QVariant::ByteArray, Q3CString("Blah2")),
+    FieldDef("binary(5)", QVariant::ByteArray, Q3CString("Blah2")),
 #endif
     FieldDef("long", QVariant::Int, 2147483647),
         FieldDef("memo", QVariant::String, memo),
@@ -1494,6 +1508,11 @@ void tst_QSqlDatabase::psql_schemas()
         QSKIP("server does not support schemas", SkipSingle);
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db)) {
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
+    }
+
     QVERIFY_SQL(q, exec("CREATE SCHEMA " + qTableName("qtestschema")));
 
     QString table = qTableName("qtestschema") + '.' + qTableName("qtesttable");
@@ -1528,6 +1547,9 @@ void tst_QSqlDatabase::psql_escapedIdentifiers()
         QSKIP("server does not support schemas", SkipSingle);
 
     QSqlQuery q(db);
+
+    if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     QString schemaName = qTableName("qtestScHeMa");
     QString tableName = qTableName("qtest");
@@ -1643,7 +1665,10 @@ void tst_QSqlDatabase::precisionPolicy()
         QSKIP("Driver or database doesn't support setting precision policy", SkipSingle);
 
     // Create a test table with some data
-    QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
+    if(tst_Databases::isMSAccess(db))
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num number)").arg(tableName)));
+    else
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1 (id smallint, num numeric(18,5))").arg(tableName)));
     QVERIFY_SQL(q, prepare(QString("INSERT INTO %1 VALUES (?, ?)").arg(tableName)));
     q.bindValue(0, 1);
     q.bindValue(1, 123);
@@ -2007,6 +2032,7 @@ void tst_QSqlDatabase::odbc_bindBoolean()
         QSKIP("MySql has inconsistent behaviour of bit field type across versions.", SkipSingle);
         return;
     }
+
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("qtestBindBool") + "(id int, boolvalue bit)"));
 
@@ -2038,6 +2064,8 @@ void tst_QSqlDatabase::odbc_testqGetString()
     QSqlQuery q(db);
     if (tst_Databases::isSqlServer(db))
         QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(MAX))"));
+    else if(tst_Databases::isMSAccess(db))
+        QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue memo)"));
     else
         QVERIFY_SQL(q, exec("CREATE TABLE " + qTableName("testqGetString") + "(id int, vcvalue varchar(65538))"));
 
@@ -2264,7 +2292,10 @@ void tst_QSqlDatabase::odbc_uintfield()
     unsigned int val = 4294967295U;
 
     QSqlQuery q(db);
-    q.exec(QString("CREATE TABLE %1(num numeric(10))").arg(tableName));
+    if ( tst_Databases::isMSAccess( db ) )
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(num number)").arg(tableName)));
+    else
+        QVERIFY_SQL(q, exec(QString("CREATE TABLE %1(num numeric(10))").arg(tableName)));
     q.prepare(QString("INSERT INTO %1 VALUES(?)").arg(tableName));
     q.addBindValue(val);
     QVERIFY_SQL(q, exec());
@@ -2440,8 +2471,8 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
-        QSKIP( "Test requires MySQL >= 5.0", SkipSingle );
+    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toDouble()<4.1 )
+        QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
 
     QSqlQuery q(db);
     QVERIFY_SQL(q, exec("begin"));

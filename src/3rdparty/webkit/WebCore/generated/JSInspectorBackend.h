@@ -43,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -51,23 +51,24 @@ public:
     // Custom functions
     JSC::JSValue highlightDOMNode(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue search(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValue databaseTableNames(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue setting(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue setSetting(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue inspectedWindow(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue wrapCallback(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue currentCallFrame(JSC::ExecState*, const JSC::ArgList&);
-    JSC::JSValue profiles(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue nodeForId(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue wrapObject(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue unwrapObject(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue pushNodePathToFrontend(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue selectDatabase(JSC::ExecState*, const JSC::ArgList&);
+    JSC::JSValue databaseForId(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue selectDOMStorage(JSC::ExecState*, const JSC::ArgList&);
     InspectorBackend* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<InspectorBackend> m_impl;
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, InspectorBackend*);
@@ -83,9 +84,11 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSInspectorBackendPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
@@ -104,16 +107,16 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSearchingForNode(J
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddResourceSourceToFrame(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddSourceToFrame(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSearch(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDatabaseTableNames(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDatabaseTableNames(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetting(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetSetting(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionInspectedWindow(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionLocalizedStringsURL(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionHiddenPanels(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPlatform(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableTimeline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableTimeline(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStartTimelineProfiler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStopTimelineProfiler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineProfilerEnabled(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionMoveByUnrestricted(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttachedWindowHeight(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapCallback(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -140,7 +143,8 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableProfiler(JSC
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableProfiler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStartProfiling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStopProfiling(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionProfiles(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetProfileHeaders(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetProfile(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDispatchOnInjectedScript(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetChildNodes(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetAttribute(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -148,18 +152,23 @@ JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveAttribute(JS
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetTextNodeValue(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetEventListenersForNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveNode(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionNodeForId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionWrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUnwrapObject(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionReleaseWrapperObjectGroup(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPushNodePathToFrontend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionAddNodesToSearchResult(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDatabase(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDatabaseForId(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDOMStorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDOMStorageEntries(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionReportDidDispatchOnInjectedScript(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDidEvaluateForTestInFrontend(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
 JSC::JSValue jsInspectorBackendConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

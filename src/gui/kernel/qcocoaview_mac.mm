@@ -51,6 +51,7 @@
 #include <private/qmacinputcontext_p.h>
 #include <private/qmultitouch_mac_p.h>
 #include <private/qevent_p.h>
+#include <private/qbackingstore_p.h>
 
 #include <qscrollarea.h>
 #include <qhash.h>
@@ -503,6 +504,12 @@ extern "C" {
 
 - (void)drawRect:(NSRect)aRect
 {
+    if (QApplicationPrivate::graphicsSystem() != 0) {
+        if (QWidgetBackingStore *bs = qwidgetprivate->maybeBackingStore())
+            bs->markDirty(qwidget->rect(), qwidget);
+        qwidgetprivate->syncBackingStore(qwidget->rect());
+        return;
+    }
     CGContextRef cg = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
     qwidgetprivate->hd = cg;
     CGContextSaveGState(cg);
@@ -1066,7 +1073,10 @@ extern "C" {
         sendToPopup = true;
     }
 
-    if (widgetToGetKey->testAttribute(Qt::WA_InputMethodEnabled)) {
+    if (widgetToGetKey->testAttribute(Qt::WA_InputMethodEnabled)
+            && !(widgetToGetKey->inputMethodHints() & Qt::ImhDigitsOnly
+                 || widgetToGetKey->inputMethodHints() & Qt::ImhFormattedNumbersOnly
+                 || widgetToGetKey->inputMethodHints() & Qt::ImhHiddenText)) {
         [qt_mac_nativeview_for(widgetToGetKey) interpretKeyEvents:[NSArray arrayWithObject: theEvent]];
     }
     if (sendKeyEvents && !composing) {
@@ -1420,29 +1430,29 @@ Qt::DropAction QDragManager::drag(QDrag *o)
     // convert the image to NSImage.
     NSImage *image = (NSImage *)qt_mac_create_nsimage(pix);
     [image retain];
-    DnDParams *dndParams = [QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
+    DnDParams dndParams = *[QT_MANGLE_NAMESPACE(QCocoaView) currentMouseEvent];
     // save supported actions
-    [dndParams->view setSupportedActions: qt_mac_mapDropActions(dragPrivate()->possible_actions)];
-    NSPoint imageLoc = {dndParams->localPoint.x - hotspot.x(),
-                        dndParams->localPoint.y + pix.height() - hotspot.y()};
+    [dndParams.view setSupportedActions: qt_mac_mapDropActions(dragPrivate()->possible_actions)];
+    NSPoint imageLoc = {dndParams.localPoint.x - hotspot.x(),
+                        dndParams.localPoint.y + pix.height() - hotspot.y()};
     NSSize mouseOffset = {0.0, 0.0};
     NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-    NSPoint windowPoint = [dndParams->theEvent locationInWindow];
+    NSPoint windowPoint = [dndParams.theEvent locationInWindow];
     dragPrivate()->executed_action = Qt::ActionMask;
     // do the drag
-    [dndParams->view retain];
-    [dndParams->view dragImage:image
+    [dndParams.view retain];
+    [dndParams.view dragImage:image
                             at:imageLoc
                         offset:mouseOffset
-                         event:dndParams->theEvent
+                         event:dndParams.theEvent
                     pasteboard:pboard
-                        source:dndParams->view
+                        source:dndParams.view
                      slideBack:YES];
-    [dndParams->view release];
+    [dndParams.view release];
     [image release];
     dragPrivate()->executed_action = Qt::IgnoreAction;
     object = 0;
-    Qt::DropAction performedAction(qt_mac_mapNSDragOperation(dndParams->performedAction));
+    Qt::DropAction performedAction(qt_mac_mapNSDragOperation(dndParams.performedAction));
     // do post drag processing, if required.
     if(performedAction != Qt::IgnoreAction) {
         // check if the receiver points us to a file location.

@@ -58,6 +58,8 @@ QVGPixmapConvolutionFilter::~QVGPixmapConvolutionFilter()
 
 extern void qt_vg_drawVGImage
     (QPainter *painter, const QPointF& pos, VGImage vgImg);
+extern void qt_vg_drawVGImageStencil
+    (QPainter *painter, const QPointF& pos, VGImage vgImg, const QBrush& brush);
 
 void QVGPixmapConvolutionFilter::draw
         (QPainter *painter, const QPointF &dest,
@@ -123,8 +125,7 @@ void QVGPixmapConvolutionFilter::draw
 }
 
 QVGPixmapColorizeFilter::QVGPixmapColorizeFilter()
-    : QPixmapColorizeFilter(),
-      firstTime(true)
+    : QPixmapColorizeFilter()
 {
 }
 
@@ -136,7 +137,7 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 {
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
-        // back to the default convolution filter implementation.
+        // back to the default colorize filter implementation.
         QPixmapColorizeFilter::draw(painter, dest, src, srcRect);
         return;
     }
@@ -154,50 +155,45 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
     if (dstImage == VG_INVALID_HANDLE)
         return;
 
-    // Recompute the color matrix if the color has changed.
+    // Determine the weights for the matrix from the color and strength.
     QColor c = color();
-    if (c != prevColor || firstTime) {
-        prevColor = c;
+    VGfloat strength = this->strength();
+    VGfloat weights[3];
+    VGfloat invweights[3];
+    VGfloat alpha = c.alphaF();
+    weights[0] = c.redF() * alpha;
+    weights[1] = c.greenF() * alpha;
+    weights[2] = c.blueF() * alpha;
+    invweights[0] = (1.0f - weights[0]) * strength;
+    invweights[1] = (1.0f - weights[1]) * strength;
+    invweights[2] = (1.0f - weights[2]) * strength;
 
-        // Determine the weights for the matrix from the color.
-        VGfloat weights[3];
-        VGfloat invweights[3];
-        VGfloat alpha = c.alphaF();
-        weights[0] = c.redF() * alpha;
-        weights[1] = c.greenF() * alpha;
-        weights[2] = c.blueF() * alpha;
-        invweights[0] = 1.0f - weights[0];
-        invweights[1] = 1.0f - weights[1];
-        invweights[2] = 1.0f - weights[2];
+    // Grayscale weights.
+    static const VGfloat redGray = 11.0f / 32.0f;
+    static const VGfloat greenGray = 16.0f / 32.0f;
+    static const VGfloat blueGray = 1.0f - (redGray + greenGray);
 
-        // Grayscale weights.
-        static const VGfloat redGray = 11.0f / 32.0f;
-        static const VGfloat greenGray = 16.0f / 32.0f;
-        static const VGfloat blueGray = 1.0f - (redGray + greenGray);
-
-        matrix[0][0] = redGray * invweights[0];
-        matrix[0][1] = redGray * invweights[1];
-        matrix[0][2] = redGray * invweights[2];
-        matrix[0][3] = 0.0f;
-        matrix[1][0] = greenGray * invweights[0];
-        matrix[1][1] = greenGray * invweights[1];
-        matrix[1][2] = greenGray * invweights[2];
-        matrix[1][3] = 0.0f;
-        matrix[2][0] = blueGray * invweights[0];
-        matrix[2][1] = blueGray * invweights[1];
-        matrix[2][2] = blueGray * invweights[2];
-        matrix[2][3] = 0.0f;
-        matrix[3][0] = 0.0f;
-        matrix[3][1] = 0.0f;
-        matrix[3][2] = 0.0f;
-        matrix[3][3] = 1.0f;
-        matrix[4][0] = weights[0];
-        matrix[4][1] = weights[1];
-        matrix[4][2] = weights[2];
-        matrix[4][3] = 0.0f;
-    }
-
-    firstTime = false;
+    VGfloat matrix[5][4];
+    matrix[0][0] = redGray * invweights[0] + (1.0f - strength);
+    matrix[0][1] = redGray * invweights[1];
+    matrix[0][2] = redGray * invweights[2];
+    matrix[0][3] = 0.0f;
+    matrix[1][0] = greenGray * invweights[0];
+    matrix[1][1] = greenGray * invweights[1] + (1.0f - strength);
+    matrix[1][2] = greenGray * invweights[2];
+    matrix[1][3] = 0.0f;
+    matrix[2][0] = blueGray * invweights[0];
+    matrix[2][1] = blueGray * invweights[1];
+    matrix[2][2] = blueGray * invweights[2] + (1.0f - strength);
+    matrix[2][3] = 0.0f;
+    matrix[3][0] = 0.0f;
+    matrix[3][1] = 0.0f;
+    matrix[3][2] = 0.0f;
+    matrix[3][3] = 1.0f;
+    matrix[4][0] = weights[0] * strength;
+    matrix[4][1] = weights[1] * strength;
+    matrix[4][2] = weights[2] * strength;
+    matrix[4][3] = 0.0f;
 
     vgColorMatrix(dstImage, srcImage, matrix[0]);
 
@@ -219,8 +215,7 @@ void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const
 }
 
 QVGPixmapDropShadowFilter::QVGPixmapDropShadowFilter()
-    : QPixmapDropShadowFilter(),
-      firstTime(true)
+    : QPixmapDropShadowFilter()
 {
 }
 
@@ -244,49 +239,11 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         return;
 
     QSize size = pd->size();
-    VGImage tmpImage = vgCreateImage
-        (VG_sARGB_8888_PRE, size.width(), size.height(),
-         VG_IMAGE_QUALITY_FASTER);
-    if (tmpImage == VG_INVALID_HANDLE)
-        return;
-
     VGImage dstImage = vgCreateImage
-        (VG_sARGB_8888_PRE, size.width(), size.height(),
+        (VG_A_8, size.width(), size.height(),
          VG_IMAGE_QUALITY_FASTER);
-    if (dstImage == VG_INVALID_HANDLE) {
-        vgDestroyImage(tmpImage);
+    if (dstImage == VG_INVALID_HANDLE)
         return;
-    }
-
-    // Recompute the color matrix if the color has changed.
-    QColor c = color();
-    if (c != prevColor || firstTime) {
-        prevColor = c;
-
-        matrix[0][0] = 0.0f;
-        matrix[0][1] = 0.0f;
-        matrix[0][2] = 0.0f;
-        matrix[0][3] = 0.0f;
-        matrix[1][0] = 0.0f;
-        matrix[1][1] = 0.0f;
-        matrix[1][2] = 0.0f;
-        matrix[1][3] = 0.0f;
-        matrix[2][0] = 0.0f;
-        matrix[2][1] = 0.0f;
-        matrix[2][2] = 0.0f;
-        matrix[2][3] = 0.0f;
-        matrix[3][0] = c.redF();
-        matrix[3][1] = c.greenF();
-        matrix[3][2] = c.blueF();
-        matrix[3][3] = c.alphaF();
-        matrix[4][0] = 0.0f;
-        matrix[4][1] = 0.0f;
-        matrix[4][2] = 0.0f;
-        matrix[4][3] = 0.0f;
-    }
-
-    // Blacken the source image.
-    vgColorMatrix(tmpImage, srcImage, matrix[0]);
 
     // Clamp the radius range.  We divide by 2 because the OpenVG blur
     // is "too blurry" compared to the default raster implementation.
@@ -298,9 +255,7 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         radiusF = maxRadius;
 
     // Blur the blackened source image.
-    vgGaussianBlur(dstImage, tmpImage, radiusF, radiusF, VG_TILE_PAD);
-
-    firstTime = false;
+    vgGaussianBlur(dstImage, srcImage, radiusF, radiusF, VG_TILE_PAD);
 
     VGImage child = VG_INVALID_HANDLE;
 
@@ -314,11 +269,10 @@ void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, con
         child = vgChildImage(dstImage, srect.x(), srect.y(), srect.width(), srect.height());
     }
 
-    qt_vg_drawVGImage(painter, dest + offset(), child);
+    qt_vg_drawVGImageStencil(painter, dest + offset(), child, color());
 
     if(child != dstImage)
         vgDestroyImage(child);
-    vgDestroyImage(tmpImage);
     vgDestroyImage(dstImage);
 
     // Now draw the actual pixmap over the top.

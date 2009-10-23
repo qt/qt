@@ -84,6 +84,12 @@ Q_DECLARE_METATYPE(QPolygonF)
 Q_DECLARE_METATYPE(QRectF)
 Q_DECLARE_METATYPE(Qt::ScrollBarPolicy)
 
+#ifdef Q_WS_MAC
+//On mac we get full update. So check that the expected region is contained inside the actual
+#define COMPARE_REGIONS(ACTUAL, EXPECTED) QVERIFY((EXPECTED).subtracted(ACTUAL).isEmpty())
+#else
+#define COMPARE_REGIONS QCOMPARE
+#endif
 
 static void sendMousePress(QWidget *widget, const QPoint &point, Qt::MouseButton button = Qt::LeftButton)
 {
@@ -115,6 +121,7 @@ public:
     }
 
     int count() const { return _count; }
+    void reset() { _count = 0; }
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event)
@@ -2203,9 +2210,11 @@ void tst_QGraphicsView::viewportUpdateMode()
 
     // The view gets two updates for the update scene updates.
     QTRY_VERIFY(!view.lastUpdateRegions.isEmpty());
+#ifndef QT_MAC_USE_COCOA //cocoa doesn't support drawing regions
     QCOMPARE(view.lastUpdateRegions.last().rects().size(), 2);
     QCOMPARE(view.lastUpdateRegions.last().rects().at(0).size(), QSize(15, 15));
     QCOMPARE(view.lastUpdateRegions.last().rects().at(1).size(), QSize(15, 15));
+#endif
 
     // Set full update mode.
     view.setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
@@ -2938,10 +2947,11 @@ void tst_QGraphicsView::task239729_noViewUpdate()
     view->show();
     QTest::qWaitForWindowShown(view);
 
-    QTRY_COMPARE(spy.count(), 1);
+    QTRY_VERIFY(spy.count() >= 1);
+    spy.reset();
     scene.update();
     QApplication::processEvents();
-    QTRY_COMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 1);
 
     delete view;
 }
@@ -3177,7 +3187,7 @@ void tst_QGraphicsView::moveItemWhileScrolling()
     int a = adjustForAntialiasing ? 2 : 1;
     expectedRegion += QRect(40, 50, 10, 10).adjusted(-a, -a, a, a);
     expectedRegion += QRect(40, 60, 10, 10).adjusted(-a, -a, a, a);
-    QCOMPARE(view.lastPaintedRegion, expectedRegion);
+    COMPARE_REGIONS(view.lastPaintedRegion, expectedRegion);
 }
 
 void tst_QGraphicsView::centerOnDirtyItem()
@@ -3423,10 +3433,12 @@ void tst_QGraphicsView::exposeRegion()
 
     // Make sure it triggers correct repaint on the view.
     QTRY_COMPARE(view.lastUpdateRegions.size(), 1);
-    QTRY_COMPARE(view.lastUpdateRegions.at(0), expectedExposeRegion);
+    COMPARE_REGIONS(view.lastUpdateRegions.at(0), expectedExposeRegion);
 
     // Make sure the item didn't get any repaints.
+#ifndef QT_MAC_USE_COCOA
     QCOMPARE(item->paints, 0);
+#endif
 }
 
 void tst_QGraphicsView::update_data()
@@ -3652,6 +3664,10 @@ void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()
 
 void tst_QGraphicsView::task255529_transformationAnchorMouseAndViewportMargins()
 {
+#if defined(Q_OS_WINCE)
+    QSKIP("Qt/CE does not implement mouse tracking at this point", SkipAll);
+#endif
+
     QGraphicsScene scene(-100, -100, 200, 200);
     scene.addRect(QRectF(-50, -50, 100, 100), QPen(Qt::black), QBrush(Qt::blue));
 

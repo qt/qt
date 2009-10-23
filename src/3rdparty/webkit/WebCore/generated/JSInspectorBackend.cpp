@@ -78,8 +78,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSInspectorBackendConstructor::s_info = { "InspectorBackendConstructor", 0, &JSInspectorBackendConstructorTable, 0 };
@@ -96,7 +99,7 @@ bool JSInspectorBackendConstructor::getOwnPropertyDescriptor(ExecState* exec, co
 
 /* Hash table for prototype */
 
-static const HashTableValue JSInspectorBackendPrototypeTableValues[71] =
+static const HashTableValue JSInspectorBackendPrototypeTableValues[77] =
 {
     { "hideDOMNodeHighlight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHideDOMNodeHighlight, (intptr_t)0 },
     { "highlightDOMNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHighlightDOMNode, (intptr_t)1 },
@@ -112,16 +115,16 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[71] =
     { "addResourceSourceToFrame", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionAddResourceSourceToFrame, (intptr_t)2 },
     { "addSourceToFrame", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionAddSourceToFrame, (intptr_t)3 },
     { "search", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSearch, (intptr_t)2 },
-    { "databaseTableNames", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDatabaseTableNames, (intptr_t)1 },
+    { "getDatabaseTableNames", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetDatabaseTableNames, (intptr_t)2 },
     { "setting", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetting, (intptr_t)1 },
     { "setSetting", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetSetting, (intptr_t)2 },
     { "inspectedWindow", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionInspectedWindow, (intptr_t)0 },
     { "localizedStringsURL", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionLocalizedStringsURL, (intptr_t)0 },
     { "hiddenPanels", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionHiddenPanels, (intptr_t)0 },
     { "platform", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionPlatform, (intptr_t)0 },
-    { "enableTimeline", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionEnableTimeline, (intptr_t)1 },
-    { "disableTimeline", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDisableTimeline, (intptr_t)1 },
-    { "timelineEnabled", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionTimelineEnabled, (intptr_t)0 },
+    { "startTimelineProfiler", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStartTimelineProfiler, (intptr_t)0 },
+    { "stopTimelineProfiler", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStopTimelineProfiler, (intptr_t)0 },
+    { "timelineProfilerEnabled", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionTimelineProfilerEnabled, (intptr_t)0 },
     { "moveByUnrestricted", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionMoveByUnrestricted, (intptr_t)2 },
     { "setAttachedWindowHeight", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetAttachedWindowHeight, (intptr_t)1 },
     { "wrapCallback", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapCallback, (intptr_t)1 },
@@ -148,26 +151,32 @@ static const HashTableValue JSInspectorBackendPrototypeTableValues[71] =
     { "disableProfiler", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDisableProfiler, (intptr_t)1 },
     { "startProfiling", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStartProfiling, (intptr_t)0 },
     { "stopProfiling", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionStopProfiling, (intptr_t)0 },
-    { "profiles", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionProfiles, (intptr_t)0 },
-    { "dispatchOnInjectedScript", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDispatchOnInjectedScript, (intptr_t)3 },
+    { "getProfileHeaders", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetProfileHeaders, (intptr_t)1 },
+    { "getProfile", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetProfile, (intptr_t)2 },
+    { "dispatchOnInjectedScript", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDispatchOnInjectedScript, (intptr_t)4 },
     { "getChildNodes", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetChildNodes, (intptr_t)2 },
     { "setAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetAttribute, (intptr_t)4 },
     { "removeAttribute", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveAttribute, (intptr_t)3 },
     { "setTextNodeValue", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetTextNodeValue, (intptr_t)3 },
     { "getEventListenersForNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetEventListenersForNode, (intptr_t)2 },
     { "copyNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionCopyNode, (intptr_t)1 },
-    { "getCookies", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetCookies, (intptr_t)1 },
-    { "deleteCookie", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDeleteCookie, (intptr_t)1 },
+    { "removeNode", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveNode, (intptr_t)2 },
+    { "getCookies", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetCookies, (intptr_t)2 },
+    { "deleteCookie", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDeleteCookie, (intptr_t)2 },
     { "nodeForId", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionNodeForId, (intptr_t)1 },
-    { "wrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapObject, (intptr_t)1 },
+    { "wrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionWrapObject, (intptr_t)2 },
     { "unwrapObject", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionUnwrapObject, (intptr_t)1 },
+    { "releaseWrapperObjectGroup", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionReleaseWrapperObjectGroup, (intptr_t)1 },
     { "pushNodePathToFrontend", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionPushNodePathToFrontend, (intptr_t)2 },
     { "addNodesToSearchResult", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionAddNodesToSearchResult, (intptr_t)1 },
     { "selectDatabase", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSelectDatabase, (intptr_t)1 },
+    { "databaseForId", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDatabaseForId, (intptr_t)1 },
     { "selectDOMStorage", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSelectDOMStorage, (intptr_t)1 },
     { "getDOMStorageEntries", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionGetDOMStorageEntries, (intptr_t)2 },
     { "setDOMStorageItem", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionSetDOMStorageItem, (intptr_t)4 },
     { "removeDOMStorageItem", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem, (intptr_t)3 },
+    { "reportDidDispatchOnInjectedScript", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionReportDidDispatchOnInjectedScript, (intptr_t)3 },
+    { "didEvaluateForTestInFrontend", DontDelete|Function, (intptr_t)jsInspectorBackendPrototypeFunctionDidEvaluateForTestInFrontend, (intptr_t)2 },
     { 0, 0, 0, 0 }
 };
 
@@ -175,7 +184,7 @@ static JSC_CONST_HASHTABLE HashTable JSInspectorBackendPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 4095, JSInspectorBackendPrototypeTableValues, 0 };
 #else
-    { 262, 255, JSInspectorBackendPrototypeTableValues, 0 };
+    { 267, 255, JSInspectorBackendPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSInspectorBackendPrototype::s_info = { "InspectorBackendPrototype", 0, &JSInspectorBackendPrototypeTable, 0 };
@@ -404,13 +413,18 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSearch(ExecState* exec,
     return castedThisObj->search(exec, args);
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDatabaseTableNames(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetDatabaseTableNames(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
     if (!thisValue.inherits(&JSInspectorBackend::s_info))
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
-    return castedThisObj->databaseTableNames(exec, args);
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int databaseId = args.at(1).toInt32(exec);
+
+    imp->getDatabaseTableNames(callId, databaseId);
+    return jsUndefined();
 }
 
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSetting(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -479,33 +493,31 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPlatform(ExecState* exe
     return result;
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionEnableTimeline(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStartTimelineProfiler(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
     if (!thisValue.inherits(&JSInspectorBackend::s_info))
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
-    bool always = args.at(0).toBoolean(exec);
 
-    imp->enableTimeline(always);
+    imp->startTimelineProfiler();
     return jsUndefined();
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDisableTimeline(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStopTimelineProfiler(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
     if (!thisValue.inherits(&JSInspectorBackend::s_info))
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
-    bool always = args.at(0).toBoolean(exec);
 
-    imp->disableTimeline(always);
+    imp->stopTimelineProfiler();
     return jsUndefined();
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineProfilerEnabled(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
     if (!thisValue.inherits(&JSInspectorBackend::s_info))
@@ -514,7 +526,7 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionTimelineEnabled(ExecSta
     InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
 
 
-    JSC::JSValue result = jsBoolean(imp->timelineEnabled());
+    JSC::JSValue result = jsBoolean(imp->timelineProfilerEnabled());
     return result;
 }
 
@@ -847,13 +859,31 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionStopProfiling(ExecState
     return jsUndefined();
 }
 
-JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionProfiles(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetProfileHeaders(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
     if (!thisValue.inherits(&JSInspectorBackend::s_info))
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
-    return castedThisObj->profiles(exec, args);
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+
+    imp->getProfileHeaders(callId);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetProfile(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    unsigned uid = args.at(1).toInt32(exec);
+
+    imp->getProfile(callId, uid);
+    return jsUndefined();
 }
 
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDispatchOnInjectedScript(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -866,8 +896,9 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDispatchOnInjectedScrip
     int callId = args.at(0).toInt32(exec);
     const UString& methodName = args.at(1).toString(exec);
     const UString& arguments = args.at(2).toString(exec);
+    bool async = args.at(3).toBoolean(exec);
 
-    imp->dispatchOnInjectedScript(callId, methodName, arguments);
+    imp->dispatchOnInjectedScript(callId, methodName, arguments, async);
     return jsUndefined();
 }
 
@@ -958,6 +989,20 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionCopyNode(ExecState* exe
     return jsUndefined();
 }
 
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveNode(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    int nodeId = args.at(1).toInt32(exec);
+
+    imp->removeNode(callId, nodeId);
+    return jsUndefined();
+}
+
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
@@ -966,8 +1011,9 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionGetCookies(ExecState* e
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
     int callId = args.at(0).toInt32(exec);
+    const UString& domain = args.at(1).toString(exec);
 
-    imp->getCookies(callId);
+    imp->getCookies(callId, domain);
     return jsUndefined();
 }
 
@@ -979,8 +1025,9 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDeleteCookie(ExecState*
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
     const UString& cookieName = args.at(0).toString(exec);
+    const UString& domain = args.at(1).toString(exec);
 
-    imp->deleteCookie(cookieName);
+    imp->deleteCookie(cookieName, domain);
     return jsUndefined();
 }
 
@@ -1009,6 +1056,19 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionUnwrapObject(ExecState*
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     return castedThisObj->unwrapObject(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionReleaseWrapperObjectGroup(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    const UString& objectGroup = args.at(0).toString(exec);
+
+    imp->releaseWrapperObjectGroup(objectGroup);
+    return jsUndefined();
 }
 
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionPushNodePathToFrontend(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -1040,6 +1100,15 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDatabase(ExecStat
         return throwError(exec, TypeError);
     JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
     return castedThisObj->selectDatabase(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDatabaseForId(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    return castedThisObj->databaseForId(exec, args);
 }
 
 JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionSelectDOMStorage(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
@@ -1093,6 +1162,35 @@ JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionRemoveDOMStorageItem(Ex
     const UString& key = args.at(2).toString(exec);
 
     imp->removeDOMStorageItem(callId, storageId, key);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionReportDidDispatchOnInjectedScript(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    const UString& result = args.at(1).toString(exec);
+    bool isException = args.at(2).toBoolean(exec);
+
+    imp->reportDidDispatchOnInjectedScript(callId, result, isException);
+    return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsInspectorBackendPrototypeFunctionDidEvaluateForTestInFrontend(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSInspectorBackend::s_info))
+        return throwError(exec, TypeError);
+    JSInspectorBackend* castedThisObj = static_cast<JSInspectorBackend*>(asObject(thisValue));
+    InspectorBackend* imp = static_cast<InspectorBackend*>(castedThisObj->impl());
+    int callId = args.at(0).toInt32(exec);
+    const UString& jsonResult = args.at(1).toString(exec);
+
+    imp->didEvaluateForTestInFrontend(callId, jsonResult);
     return jsUndefined();
 }
 

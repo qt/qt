@@ -55,6 +55,8 @@
 
 #include "qgraphicseffect.h"
 
+#include <QPixmapCache>
+
 #include <private/qobject_p.h>
 #include <private/qpixmapfilter_p.h>
 
@@ -65,7 +67,7 @@ class QGraphicsEffectSourcePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QGraphicsEffectSource)
 public:
     QGraphicsEffectSourcePrivate() : QObjectPrivate() {}
-    virtual ~QGraphicsEffectSourcePrivate() {}
+    virtual ~QGraphicsEffectSourcePrivate() { invalidateCache(); }
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
     virtual QRect deviceRect() const = 0;
@@ -77,9 +79,16 @@ public:
     virtual bool isPixmap() const = 0;
     virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0) const = 0;
     virtual void effectBoundingRectChanged() = 0;
+    void invalidateCache() const { QPixmapCache::remove(m_cacheKey); }
+
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
     friend class QGraphicsItemPrivate;
+
+private:
+    mutable Qt::CoordinateSystem m_cachedSystem;
+    mutable QPoint m_cachedOffset;
+    mutable QPixmapCache::Key m_cacheKey;
 };
 
 class Q_GUI_EXPORT QGraphicsEffectPrivate : public QObjectPrivate
@@ -94,6 +103,7 @@ public:
         if (source) {
             flags |= QGraphicsEffect::SourceDetached;
             source->d_func()->detach();
+            source->d_func()->invalidateCache();
             delete source;
         }
         source = newSource;

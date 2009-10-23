@@ -496,11 +496,12 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
         mode = EColor16MU;
         break;
     case QImage::Format_ARGB32_Premultiplied:
-#if !defined(__SERIES60_31__) && !defined(__S60_32__)
-        mode = EColor16MAP;
-        break;
-#endif
-        destFormat = QImage::Format_ARGB32;
+        if (S60->supportsPremultipliedAlpha) {
+            mode = Q_SYMBIAN_ECOLOR16MAP;
+            break;
+        } else {
+            destFormat = QImage::Format_ARGB32;
+        }
         // Fall through intended
     case QImage::Format_ARGB32:
         mode = EColor16MA;
@@ -690,6 +691,10 @@ void QS60PixmapData::beginDataAccess()
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
     QImage::Format format = qt_TDisplayMode2Format(mode);
+    //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
+    if (format == QImage::Format_ARGB32)
+        format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
+
     TSize size = cfbsBitmap->SizeInPixels();
 
     QVector<QRgb> savedColorTable;
@@ -716,6 +721,8 @@ void QS60PixmapData::beginDataAccess()
 
 void QS60PixmapData::endDataAccess(bool readOnly) const
 {
+    Q_UNUSED(readOnly);
+
     if(!cfbsBitmap)
         return;
 
@@ -792,8 +799,8 @@ void* QS60PixmapData::toNativeType(NativeType type)
         bool needsCopy = false;
 
         QSysInfo::SymbianVersion symbianVersion = QSysInfo::symbianVersion();
-        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3) {
-            // Convert argb32_premultiplied to argb32 since Symbian 9.2 and Symbian 9.3 do
+        if (!(S60->supportsPremultipliedAlpha)) {
+            // Convert argb32_premultiplied to argb32 since Symbian 9.2 does
             // not support premultipied format.
 
             if (image.format() == QImage::Format_ARGB32_Premultiplied) {

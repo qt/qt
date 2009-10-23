@@ -34,24 +34,24 @@ namespace ObjectTree
  */
 class OBJECTDUMP_EXPORT DepthFirstConstIterator
 {
-public:   
+public:
     DepthFirstConstIterator();
     DepthFirstConstIterator(const QObject& root);
-    
+
     DepthFirstConstIterator& operator++();
-        
+
     inline bool operator==(const DepthFirstConstIterator& other) const
     { return other.m_pointee == m_pointee; }
-    
+
     inline bool operator!=(const DepthFirstConstIterator& other) const
     { return other.m_pointee != m_pointee; }
-    
+
     inline const QObject* operator->() const { return m_pointee; }
     inline const QObject& operator*() const { return *m_pointee; }
-    
+
 private:
     void backtrack();
-    
+
 private:
     const QObject* m_pointee;
     QStack<int> m_history;
@@ -62,40 +62,40 @@ private:
  */
 class OBJECTDUMP_EXPORT AncestorConstIterator
 {
-public:   
+public:
     AncestorConstIterator();
     AncestorConstIterator(const QObject& root);
-    
+
     inline AncestorConstIterator& operator++()
     { m_ancestors.pop(); return *this; }
-        
+
     inline bool operator==(const AncestorConstIterator& other) const
     { return other.m_ancestors == m_ancestors; }
-    
+
     inline bool operator!=(const AncestorConstIterator& other) const
     { return other.m_ancestors != m_ancestors; }
-    
+
     inline const QObject* operator->() const { return m_ancestors.top(); }
     inline const QObject& operator*() const { return *m_ancestors.top(); }
-    
+
 private:
     QStack<const QObject*> m_ancestors;
-    
+
 };
 
 /**
  * Generic algorithm for visiting nodes in an object tree.  Nodes in the
  * tree are visited in a const context, therefore they are not modified
  * by this algorithm.
- * 
+ *
  * Visitor must provide functions with the following signatures:
- * 
+ *
  *      Called before visit begins
  *          void visitPrepare()
- *      
+ *
  *      Called on each node visited
  *          void visitNode(const QObject& object)
- *      
+ *
  *      Called when visit is complete
  *          void visitComplete()
  */
@@ -103,8 +103,8 @@ template <class Iterator, class Visitor>
 void visit(Iterator begin, Iterator end, Visitor& visitor)
 {
     visitor.visitPrepare();
-    
-    for( ; begin != end; ++begin)
+
+    for ( ; begin != end; ++begin)
         visitor.visitNode(*begin);
 
     visitor.visitComplete();

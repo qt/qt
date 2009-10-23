@@ -42,6 +42,7 @@
 #include "qapplication_p.h"
 #include "qsessionmanager.h"
 #include "qevent.h"
+#include "qsymbianevent.h"
 #include "qeventdispatcher_s60_p.h"
 #include "qwidget.h"
 #include "qdesktopwidget.h"
@@ -352,7 +353,8 @@ QSymbianControl::~QSymbianControl()
 {
     if (S60->curWin == this)
         S60->curWin = 0;
-    setFocusSafely(false);
+    if (!QApplicationPrivate::is_app_closing)
+        setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
 }
@@ -463,12 +465,47 @@ void QSymbianControl::HandlePointerEventL(const TPointerEvent& pEvent)
     QT_TRYCATCH_LEAVING(HandlePointerEvent(pEvent));
 }
 
+typedef QPair<QWidget*,QMouseEvent> Event;
+
+/*
+ * Helper function called by HandlePointerEvent - separated to keep that function readable
+ */
+static void generateEnterLeaveEvents(QList<Event> &events, QWidget *widgetUnderPointer,
+    QPoint globalPos, Qt::MouseButton button, Qt::KeyboardModifiers modifiers)
+{
+    //moved to another widget, create enter and leave events
+    if (S60->lastPointerEventTarget) {
+        QMouseEvent mEventLeave(QEvent::Leave, S60->lastPointerEventTarget->mapFromGlobal(
+            S60->lastCursorPos), S60->lastCursorPos, button, QApplicationPrivate::mouse_buttons,
+            modifiers);
+        events.append(Event(S60->lastPointerEventTarget, mEventLeave));
+    }
+    if (widgetUnderPointer) {
+        QMouseEvent mEventEnter(QEvent::Enter, widgetUnderPointer->mapFromGlobal(globalPos),
+            globalPos, button, QApplicationPrivate::mouse_buttons, modifiers);
+
+        events.append(Event(widgetUnderPointer, mEventEnter));
+#ifndef QT_NO_CURSOR
+        S60->curWin = widgetUnderPointer->effectiveWinId();
+        if (!QApplication::overrideCursor()) {
+#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
+            if (S60->brokenPointerCursors)
+                qt_symbian_set_pointer_sprite(widgetUnderPointer->cursor());
+            else
+#endif
+                qt_symbian_setWindowCursor(widgetUnderPointer->cursor(), S60->curWin);
+        }
+#endif
+    }
+}
+
+
 void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
 {
-    //### refactor me, getting too complex
     QMouseEvent::Type type;
     Qt::MouseButton button;
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
+    Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
 
     if (m_previousEventLongTap)
         if (type == QEvent::MouseButtonRelease){
@@ -480,79 +517,76 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
         return;
 
     // store events for later sending/saving
-    QWidget *alienWidget;
-    typedef QPair<QWidget*,QMouseEvent> Event;
     QList<Event > events;
 
     QPoint widgetPos = QPoint(pEvent.iPosition.iX, pEvent.iPosition.iY);
     TPoint controlScreenPos = PositionRelativeToScreen();
     QPoint globalPos = QPoint(controlScreenPos.iX, controlScreenPos.iY) + widgetPos;
 
-    if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
-    {
-        // get the widget where the event happened
-        alienWidget = qwidget->childAt(widgetPos);
-        if (!alienWidget)
-            alienWidget = qwidget;
-        S60->mousePressTarget = alienWidget;
+    // widgets interested in the event
+    QWidget *widgetUnderPointer = qwidget->childAt(widgetPos);
+    if (!widgetUnderPointer)
+        widgetUnderPointer = qwidget; //i.e. this container widget
+
+    QWidget *widgetWithMouseGrab = QWidget::mouseGrabber();
+
+    // handle auto grab of pointer when pressing / releasing
+    if (!widgetWithMouseGrab && type == QEvent::MouseButtonPress) {
+        //if previously auto-grabbed, generate a fake mouse release (platform bug: mouse release event was lost)
+        if (S60->mousePressTarget) {
+            QMouseEvent mEvent(QEvent::MouseButtonRelease, S60->mousePressTarget->mapFromGlobal(globalPos), globalPos,
+                button, QApplicationPrivate::mouse_buttons, modifiers);
+            events.append(Event(S60->mousePressTarget,mEvent));
+        }
+        //auto grab the mouse
+        widgetWithMouseGrab = S60->mousePressTarget = widgetUnderPointer;
+        widgetWithMouseGrab->grabMouse();
+    }
+    if (widgetWithMouseGrab && widgetWithMouseGrab == S60->mousePressTarget && type == QEvent::MouseButtonRelease) {
+        //release the auto grab - note this release event still goes to the autograb widget
+        S60->mousePressTarget = 0;
+        widgetWithMouseGrab->releaseMouse();
     }
 
-    alienWidget = S60->mousePressTarget;
+    QWidget *widgetToReceiveMouseEvent;
+    if (widgetWithMouseGrab)
+        widgetToReceiveMouseEvent = widgetWithMouseGrab;
+    else
+        widgetToReceiveMouseEvent = widgetUnderPointer;
 
-    if (alienWidget != S60->lastPointerEventTarget)
-        if (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove)
-        {
-            //moved to another widget, create enter and leave events
-            if (S60->lastPointerEventTarget)
-            {
-                QMouseEvent mEventLeave(QEvent::Leave, S60->lastPointerEventTarget->mapFromGlobal(S60->lastCursorPos), S60->lastCursorPos,
-                    button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
-                events.append(Event(S60->lastPointerEventTarget,mEventLeave));
-            }
-            if (alienWidget) {
-                QMouseEvent mEventEnter(QEvent::Enter, alienWidget->mapFromGlobal(globalPos),
-                    globalPos, button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(
-                        pEvent.iModifiers));
+    //queue QEvent::Enter and QEvent::Leave, if the pointer has moved
+    if (widgetUnderPointer != S60->lastPointerEventTarget && (type == QEvent::MouseButtonPress || type == QEvent::MouseButtonDblClick || type == QEvent::MouseMove))
+        generateEnterLeaveEvents(events, widgetUnderPointer, globalPos, button, modifiers);
 
-                events.append(Event(alienWidget, mEventEnter));
-#ifndef QT_NO_CURSOR
-                S60->curWin = alienWidget->effectiveWinId();
-                if (!QApplication::overrideCursor()) {
-#ifndef Q_SYMBIAN_FIXED_POINTER_CURSORS
-                    if (S60->brokenPointerCursors)
-                        qt_symbian_set_pointer_sprite(alienWidget->cursor());
-                    else
-#endif
-                        qt_symbian_setWindowCursor(alienWidget->cursor(), S60->curWin);
-                }
-#endif
-            }
-        }
+    //save global state
     S60->lastCursorPos = globalPos;
+    S60->lastPointerEventPos = widgetPos;
+    S60->lastPointerEventTarget = widgetUnderPointer;
+
 #if !defined(QT_NO_CURSOR) && !defined(Q_SYMBIAN_FIXED_POINTER_CURSORS)
     if (S60->brokenPointerCursors)
         qt_symbian_move_cursor_sprite();
 #endif
-    S60->lastPointerEventPos = widgetPos;
-    S60->lastPointerEventTarget = alienWidget;
-    if (alienWidget)
-    {
-        QMouseEvent mEvent(type, alienWidget->mapFromGlobal(globalPos), globalPos,
-            button, QApplicationPrivate::mouse_buttons, mapToQtModifiers(pEvent.iModifiers));
-        events.append(Event(alienWidget,mEvent));
-        QEventDispatcherS60 *dispatcher;
-        // It is theoretically possible for someone to install a different event dispatcher.
-        if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(alienWidget->d_func()->threadData->eventDispatcher)) != 0) {
-            if (dispatcher->excludeUserInputEvents()) {
-                for (int i=0;i < events.count();++i)
-                {
-                    Event next = events[i];
-                    dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
-                }
-                return;
+
+    //queue this event.
+    Q_ASSERT(widgetToReceiveMouseEvent);
+    QMouseEvent mEvent(type, widgetToReceiveMouseEvent->mapFromGlobal(globalPos), globalPos,
+        button, QApplicationPrivate::mouse_buttons, modifiers);
+    events.append(Event(widgetToReceiveMouseEvent,mEvent));
+    QEventDispatcherS60 *dispatcher;
+    // It is theoretically possible for someone to install a different event dispatcher.
+    if ((dispatcher = qobject_cast<QEventDispatcherS60 *>(widgetToReceiveMouseEvent->d_func()->threadData->eventDispatcher)) != 0) {
+        if (dispatcher->excludeUserInputEvents()) {
+            for (int i=0;i < events.count();++i)
+            {
+                Event next = events[i];
+                dispatcher->saveInputEvent(this, next.first, new QMouseEvent(next.second));
             }
+            return;
         }
     }
+
+    //send events in the queue
     for (int i=0;i < events.count();++i)
     {
         Event next = events[i];
@@ -688,7 +722,7 @@ TKeyResponse QSymbianControl::OfferKeyEvent(const TKeyEvent& keyEvent, TEventCod
         Qt::KeyboardModifiers mods = mapToQtModifiers(keyEvent.iModifiers);
         QKeyEventEx qKeyEvent(type == EEventKeyUp ? QEvent::KeyRelease : QEvent::KeyPress, keyCode,
                 mods, qt_keymapper_private()->translateKeyEvent(keyCode, mods),
-                false, 1, keyEvent.iScanCode, s60Keysym, mods);
+                false, 1, keyEvent.iScanCode, s60Keysym, keyEvent.iModifiers);
 //        WId wid = reinterpret_cast<RWindowGroup *>(keyEvent.Handle())->Child();
 //        if (!wid)
 //             Could happen if window isn't shown yet.
@@ -948,7 +982,8 @@ void QSymbianControl::setFocusSafely(bool focus)
         S60->appUi()->RemoveFromStack(this);
         QT_TRAP_THROWING(S60->appUi()->AddToStackL(this,
                 ECoeStackPriorityDefault, ECoeStackFlagStandard));
-        lastFocusedControl = 0;
+        if(this == lastFocusedControl)
+            lastFocusedControl = 0;
         this->SetFocus(false);
     }
 }
@@ -1022,6 +1057,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     TDisplayMode mode = S60->screenDevice()->DisplayMode();
     S60->screenDepth = TDisplayModeUtils::NumDisplayModeBitsPerPixel(mode);
 
+    //NB: RWsSession::GetColorModeList tells you what window modes are supported,
+    //not what bitmap formats.
+    if(QSysInfo::symbianVersion() == QSysInfo::SV_9_2)
+        S60->supportsPremultipliedAlpha = 0;
+    else
+        S60->supportsPremultipliedAlpha = 1;
+
     RProcess me;
     TSecureId securId = me.SecureId();
     S60->uid = securId.operator TUid();
@@ -1050,6 +1092,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     err = HAL::Get(HALData::EPen, touch);
     if (err != KErrNone || touchIsUnsupportedOnSystem)
         touch = 0;
+#ifdef __WINS__
+    if(QSysInfo::symbianVersion() <= QSysInfo::SV_9_4) {
+        //for symbian SDK emulator, force values to match typical devices.
+        mouse = 0;
+        touch = touchIsUnsupportedOnSystem ? 0 : 1;
+    }
+#endif
     if (mouse || machineUID == KMachineUidSamsungI8510) {
         S60->hasTouchscreen = false;
         S60->virtualMouseRequired = false;
@@ -1121,6 +1170,11 @@ void qt_init(QApplicationPrivate * /* priv */, int)
             ;
     }
 */
+
+    // Register WId with the metatype system.  This is to enable
+    // QWidgetPrivate::create_sys to used delayed slot invokation in order
+    // to destroy WId objects during reparenting.
+    qRegisterMetaType<WId>("WId");
 }
 
 /*****************************************************************************
@@ -1380,43 +1434,47 @@ void QApplication::beep()
     \warning This function is only available on Symbian.
     \since 4.6
 
-    This function processes an individual Symbian window server
+    This function processes an individual Symbian event
     \a event. It returns 1 if the event was handled, 0 if
     the \a event was not handled, and -1 if the event was
-    not handled because the event handle (\c{TWsEvent::Handle()})
-    is not known to Qt.
+    not handled because the event is not known to Qt.
  */
-int QApplication::s60ProcessEvent(TWsEvent *event)
+
+int QApplication::symbianProcessEvent(const QSymbianEvent *event)
 {
-    bool handled = s60EventFilter(event);
-    if (handled)
+    Q_D(QApplication);
+
+    QScopedLoopLevelCounter counter(d->threadData);
+
+    QWidget *w = qApp ? qApp->focusWidget() : 0;
+    if (w) {
+        QInputContext *ic = w->inputContext();
+        if (ic && ic->symbianFilterEvent(w, event))
+            return 1;
+    }
+
+    if (symbianEventFilter(event))
         return 1;
 
+    switch (event->type()) {
+    case QSymbianEvent::WindowServerEvent:
+        return d->symbianProcessWsEvent(event->windowServerEvent());
+    case QSymbianEvent::CommandEvent:
+        return d->symbianHandleCommand(event->command());
+    case QSymbianEvent::ResourceChangeEvent:
+        return d->symbianResourceChange(event->resourceChangeType());
+    default:
+        return -1;
+    }
+}
+
+int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
+{
     // Qt event handling. Handle some events regardless of if the handle is in our
     // widget map or not.
     CCoeControl* control = reinterpret_cast<CCoeControl*>(event->Handle());
     const bool controlInMap = QWidgetPrivate::mapper && QWidgetPrivate::mapper->contains(control);
     switch (event->Type()) {
-#if !defined(QT_NO_IM) && defined(Q_WS_S60)
-    case EEventKey:
-    case EEventKeyUp:
-    case EEventKeyDown:
-    {
-        // The control doesn't seem to be any of our widgets, so rely on the focused
-        // widget instead. If the user needs the control, it can be found inside the
-        // event structure.
-        QWidget *w = qApp ? qApp->focusWidget() : 0;
-        if (w) {
-            QInputContext *ic = w->inputContext();
-            if (ic && ic->s60FilterEvent(w, event)) {
-                return 1;
-            } else {
-                return 0;
-            }
-        }
-        break;
-    }
-#endif
     case EEventPointerEnter:
         if (controlInMap)
             return 1; // Qt::Enter will be generated in HandlePointerL
@@ -1505,15 +1563,15 @@ int QApplication::s60ProcessEvent(TWsEvent *event)
 
   If you create an application that inherits QApplication and reimplement
   this function, you get direct access to events that the are received
-  from the Symbian window server. The events are passed in the TWsEvent
-  \a aEvent parameter.
+  from Symbian. The events are passed in the \a event parameter.
 
   Return true if you want to stop the event from being processed. Return
-  false for normal event dispatching. The default implementation
-  false, and does nothing with \a aEvent.
+  false for normal event dispatching. The default implementation returns
+  false, and does nothing with \a event.
  */
-bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
+bool QApplication::symbianEventFilter(const QSymbianEvent *event)
 {
+    Q_UNUSED(event);
     return false;
 }
 
@@ -1528,32 +1586,39 @@ bool QApplication::s60EventFilter(TWsEvent * /* aEvent */)
 
   \sa s60EventFilter(), s60ProcessEvent()
 */
-void QApplication::symbianHandleCommand(int command)
+int QApplicationPrivate::symbianHandleCommand(int command)
 {
-    QScopedLoopLevelCounter counter(d_func()->threadData);
+    Q_Q(QApplication);
+    int ret = 0;
+
     switch (command) {
 #ifdef Q_WS_S60
     case EAknSoftkeyExit: {
         QCloseEvent ev;
-        QApplication::sendSpontaneousEvent(this, &ev);
-        if (ev.isAccepted())
-            quit();
+        QApplication::sendSpontaneousEvent(q, &ev);
+        if (ev.isAccepted()) {
+            q->quit();
+            ret = 1;
+        }
         break;
     }
 #endif
     case EEikCmdExit:
-        quit();
+        q->quit();
+        ret = 1;
         break;
     default:
         bool handled = QSoftKeyManager::handleCommand(command);
+        if (handled)
+            ret = 1;
 #ifdef Q_WS_S60
-        if (!handled)
-            QMenuBarPrivate::symbianCommands(command);
-#else
-        Q_UNUSED(handled);
+        else
+            ret = QMenuBarPrivate::symbianCommands(command);
 #endif
         break;
     }
+
+    return ret;
 }
 
 /*!
@@ -1565,8 +1630,10 @@ void QApplication::symbianHandleCommand(int command)
   Currently, KEikDynamicLayoutVariantSwitch and
   KAknsMessageSkinChange are handled.
  */
-void QApplication::symbianResourceChange(int type)
+int QApplicationPrivate::symbianResourceChange(int type)
 {
+    int ret = 0;
+
     switch (type) {
 #ifdef Q_WS_S60
     case KEikDynamicLayoutVariantSwitch:
@@ -1585,22 +1652,28 @@ void QApplication::symbianResourceChange(int type)
 #endif
             s60Style = qobject_cast<QS60Style*>(QApplication::style());
 
-        if (s60Style)
+        if (s60Style) {
             s60Style->d_func()->handleDynamicLayoutVariantSwitch();
+            ret = 1;
+        }
 #endif
         }
         break;
 
 #ifndef QT_NO_STYLE_S60
     case KAknsMessageSkinChange:
-        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style()))
+        if (QS60Style *s60Style = qobject_cast<QS60Style*>(QApplication::style())) {
             s60Style->d_func()->handleSkinChange();
+            ret = 1;
+        }
         break;
 #endif
 #endif // Q_WS_S60
     default:
         break;
     }
+
+    return ret;
 }
 
 #ifndef QT_NO_WHEELEVENT

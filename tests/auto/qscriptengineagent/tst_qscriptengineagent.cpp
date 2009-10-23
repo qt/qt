@@ -113,6 +113,7 @@ private slots:
     void evaluateProgram();
     void evaluateProgram_SyntaxError();
     void evaluateNullProgram();
+    void hasUncaughtException();
 
 private:
     double m_testProperty;
@@ -2267,6 +2268,42 @@ void tst_QScriptEngineAgent::evaluateNullProgram()
     ScriptEngineSpy *spy = new ScriptEngineSpy(&eng);
     (void)eng.evaluate(QScriptProgram());
     QCOMPARE(spy->count(), 0);
+}
+
+class NewSpy :public QScriptEngineAgent
+{
+    bool m_result;
+public:
+  NewSpy(QScriptEngine* eng) : QScriptEngineAgent(eng), m_result(false) {}
+  void functionExit (qint64, const QScriptValue &scriptValue)
+  {
+      if (engine()->hasUncaughtException()) m_result = true;
+  }
+
+  bool isPass() { return m_result; }
+  void reset() { m_result =  false; }
+};
+
+void tst_QScriptEngineAgent::hasUncaughtException()
+{
+  QScriptEngine eng;
+  NewSpy* spy = new NewSpy(&eng);
+  eng.setAgent(spy);
+  QScriptValue scriptValue;
+
+  // Check unhandled exception.
+  eng.evaluate("function init () {Unknown.doSth ();}");
+  scriptValue = QScriptValue(eng.globalObject().property("init")).call();
+  QVERIFY(eng.hasUncaughtException());
+  QVERIFY2(spy->isPass(), "At least one of a functionExit event should set hasUncaughtException flag.");
+  spy->reset();
+
+  // Check catched exception.
+  eng.evaluate("function innerFoo() { throw new Error('ciao') }");
+  eng.evaluate("function foo() {try { innerFoo() } catch (e) {} }");
+  scriptValue = QScriptValue(eng.globalObject().property("foo")).call();
+  QVERIFY(!eng.hasUncaughtException());
+  QVERIFY2(spy->isPass(), "At least one of a functionExit event should set hasUncaughtException flag.");
 }
 
 QTEST_MAIN(tst_QScriptEngineAgent)

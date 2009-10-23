@@ -438,10 +438,10 @@ static const Qt::KeyboardModifiers ModsTbl[] = {
 */
 inline int winceKeyBend(int keyCode)
 {
-#ifdef Q_OS_WINCE_WM
+#if defined(Q_OS_WINCE_WM) && defined(QT_KEYPAD_NAVIGATION)
     // remap return or action key to select key for windows mobile.
     // will be changed to a table remapping function in the next version (4.6/7).
-    if (keyCode == 13)
+    if (keyCode == VK_RETURN && QApplication::keypadNavigationEnabled())
         return Qt::Key_Select;
     else
         return KeyTbl[keyCode];

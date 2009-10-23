@@ -560,7 +560,7 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     Q_Q(QDialogButtonBox);
     QAction::SoftKeyRole softkeyRole;
 
-    QAction *action = new QAction(button->text(), q);
+    QAction *action = new QAction(button->text(), button);
 
     switch (role) {
     case ApplyRole:
@@ -581,7 +581,6 @@ QAction* QDialogButtonBoxPrivate::createSoftKey(QAbstractButton *button, QDialog
     }
     QObject::connect(action, SIGNAL(triggered()), button, SIGNAL(clicked()));
     action->setSoftKeyRole(softkeyRole);
-    action->setEnabled(button->isEnabled());
     return action;
 }
 #endif
@@ -874,6 +873,11 @@ void QDialogButtonBox::setOrientation(Qt::Orientation orientation)
 void QDialogButtonBox::clear()
 {
     Q_D(QDialogButtonBox);
+#ifdef QT_SOFTKEYS_ENABLED
+    // Delete softkey actions as they have the buttons as parents
+    qDeleteAll(d->softKeyActions.values());
+    d->softKeyActions.clear();
+#endif
     // Remove the created standard buttons, they should be in the other lists, which will
     // do the deletion
     d->standardButtonHash.clear();
@@ -1026,6 +1030,11 @@ QPushButton *QDialogButtonBox::addButton(StandardButton button)
 void QDialogButtonBox::setStandardButtons(StandardButtons buttons)
 {
     Q_D(QDialogButtonBox);
+#ifdef QT_SOFTKEYS_ENABLED
+    // Delete softkey actions since they have the buttons as parents
+    qDeleteAll(d->softKeyActions.values());
+    d->softKeyActions.clear();
+#endif
     // Clear out all the old standard buttons, then recreate them.
     qDeleteAll(d->standardButtonHash.keys());
     d->standardButtonHash.clear();

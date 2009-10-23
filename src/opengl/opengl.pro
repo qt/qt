@@ -60,7 +60,8 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qgl2pexvertexarray_p.h \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
                 gl2paintengineex/qglengineshadersource_p.h \
-                gl2paintengineex/qglcustomshaderstage_p.h
+                gl2paintengineex/qglcustomshaderstage_p.h \
+                gl2paintengineex/qtriangulatingstroker_p.h 
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
@@ -72,7 +73,8 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qglengineshadermanager.cpp \
                 gl2paintengineex/qgl2pexvertexarray.cpp \
                 gl2paintengineex/qpaintengineex_opengl2.cpp \
-                gl2paintengineex/qglcustomshaderstage.cpp
+                gl2paintengineex/qglcustomshaderstage.cpp \
+                gl2paintengineex/qtriangulatingstroker.cpp
 
 }
 
@@ -80,9 +82,13 @@ x11 {
     contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles1cl)|contains(QT_CONFIG, opengles2) {
         SOURCES +=  qgl_x11egl.cpp \
                     qglpixelbuffer_egl.cpp \
-                    qgl_egl.cpp
+                    qgl_egl.cpp \
+                    qpixmapdata_x11gl_egl.cpp \
+                    qwindowsurface_x11gl.cpp
 
-        HEADERS +=  qgl_egl_p.h
+        HEADERS +=  qgl_egl_p.h \
+                    qpixmapdata_x11gl_p.h \
+                    qwindowsurface_x11gl_p.h
 
     } else {
         SOURCES +=  qgl_x11.cpp \
@@ -126,14 +132,12 @@ wince*: {
 
 embedded {
     SOURCES += qgl_qws.cpp \
-               qglpaintdevice_qws.cpp \
                qglpixelbuffer_egl.cpp \
                qglscreen_qws.cpp \
                qglwindowsurface_qws.cpp \
                qgl_egl.cpp
 
-    HEADERS += qglpaintdevice_qws_p.h \
-               qglscreen_qws.h \
+    HEADERS += qglscreen_qws.h \
                qglwindowsurface_qws_p.h \
                qgl_egl_p.h
 

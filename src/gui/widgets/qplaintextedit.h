@@ -270,10 +270,6 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_verticalScrollbarActionTriggered(int))
     Q_PRIVATE_SLOT(d_func(), void _q_cursorPositionChanged())
 
-#ifdef Q_WS_WIN
-    Q_PRIVATE_SLOT(d_func(), void _q_gestureTriggered())
-#endif
-
     friend class QPlainTextEditControl;
 };
 

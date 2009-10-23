@@ -819,6 +819,51 @@ protected:
     friend class QApplicationPrivate;
 };
 
+class QGesture;
+class QGestureEventPrivate;
+class Q_GUI_EXPORT QGestureEvent : public QEvent
+{
+public:
+    QGestureEvent(const QList<QGesture *> &gestures);
+    ~QGestureEvent();
+
+    QList<QGesture *> allGestures() const;
+    QGesture *gesture(Qt::GestureType type) const;
+
+    QList<QGesture *> activeGestures() const;
+    QList<QGesture *> canceledGestures() const;
+
+#ifdef Q_NO_USING_KEYWORD
+    inline void setAccepted(bool accepted) { QEvent::setAccepted(accepted); }
+    inline bool isAccepted() const { return QEvent::isAccepted(); }
+
+    inline void accept() { QEvent::accept(); }
+    inline void ignore() { QEvent::ignore(); }
+#else
+    using QEvent::setAccepted;
+    using QEvent::isAccepted;
+    using QEvent::accept;
+    using QEvent::ignore;
+#endif
+
+    void setAccepted(QGesture *, bool);
+    void accept(QGesture *);
+    void ignore(QGesture *);
+    bool isAccepted(QGesture *) const;
+
+    void setWidget(QWidget *widget);
+    QWidget *widget() const;
+
+    QPointF mapToScene(const QPointF &gesturePoint) const;
+
+private:
+    QGestureEventPrivate *d_func();
+    const QGestureEventPrivate *d_func() const;
+
+    friend class QApplication;
+    friend class QGestureManager;
+};
+
 QT_END_NAMESPACE
 
 QT_END_HEADER

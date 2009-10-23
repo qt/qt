@@ -56,6 +56,7 @@
 #include <private/qwindowsurface_raster_p.h>
 #include <private/qapplication_p.h>
 #include <private/qpaintengine_raster_p.h>
+#include <private/qgraphicseffect_p.h>
 
 #include "qgraphicssystem_p.h"
 
@@ -540,6 +541,8 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rgn.isEmpty());
 
+    widget->d_func()->invalidateGraphicsEffectsRecursively();
+
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
             widget->d_func()->dirty = rgn;
@@ -614,6 +617,8 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget, bool upd
     Q_ASSERT(widget->isVisible() && widget->updatesEnabled());
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rect.isEmpty());
+
+    widget->d_func()->invalidateGraphicsEffectsRecursively();
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {

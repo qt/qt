@@ -4,7 +4,7 @@
 <context>
     <name>AnimationSaveWidget</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="+850"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="+865"/>
         <location line="+204"/>
         <source>Record</source>
         <translation>Nagraj</translation>
@@ -128,42 +128,42 @@
     <message>
         <location/>
         <source>1 bit monochrome</source>
-        <translation>1 bit czarno-biały</translation>
+        <translation>1 bitowa monochromatyczna</translation>
     </message>
     <message>
         <location/>
         <source>4 bit grayscale</source>
-        <translation>4 bit poziom szarości</translation>
+        <translation>4 bitowa skala szarości</translation>
     </message>
     <message>
         <location/>
         <source>8 bit</source>
-        <translation>8 bit</translation>
+        <translation>8 bitowa</translation>
     </message>
     <message>
         <location/>
         <source>12 (16) bit</source>
-        <translation>12 (16) bit</translation>
+        <translation>12 (16) bitowa</translation>
     </message>
     <message>
         <location/>
         <source>16 bit</source>
-        <translation>16 bit</translation>
+        <translation>16 bitowa</translation>
     </message>
     <message>
         <location/>
         <source>18 bit</source>
-        <translation>18 bit</translation>
+        <translation>18 bitowa</translation>
     </message>
     <message>
         <location/>
         <source>24 bit</source>
-        <translation>24 bit</translation>
+        <translation>24 bitowa</translation>
     </message>
     <message>
         <location/>
         <source>32 bit</source>
-        <translation>32 bit</translation>
+        <translation>32 bitowa</translation>
     </message>
     <message>
         <location/>
@@ -238,12 +238,27 @@
     <message>
         <location/>
         <source>15 bit</source>
-        <translation>15 bit</translation>
+        <translation>15 bitowa</translation>
     </message>
     <message>
         <location/>
         <source>32 bit ARGB</source>
-        <translation>32 bit ARGB</translation>
+        <translation>32 bitowa ARGB</translation>
+    </message>
+    <message>
+        <location/>
+        <source>2 bit grayscale</source>
+        <translation>2 bitowa skala szarości</translation>
+    </message>
+    <message>
+        <location/>
+        <source>Swap red and blue channels</source>
+        <translation>Zamień kanał czerwony z niebieskim</translation>
+    </message>
+    <message>
+        <location/>
+        <source>BGR format</source>
+        <translation>format BGR</translation>
     </message>
 </context>
 <context>
@@ -307,12 +322,12 @@
 <context>
     <name>QVFb</name>
     <message>
-        <location filename="../tools/qvfb/qvfb.cpp" line="-487"/>
+        <location filename="../tools/qvfb/qvfb.cpp" line="-501"/>
         <source>Browse...</source>
         <translation>Przeglądaj...</translation>
     </message>
     <message>
-        <location line="+126"/>
+        <location line="+140"/>
         <source>Load Custom Skin...</source>
         <translation>Załaduj skórki użytkownika...</translation>
     </message>

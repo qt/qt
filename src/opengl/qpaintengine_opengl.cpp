@@ -66,7 +66,6 @@
 #include "util/fragmentprograms_p.h"
 
 #ifdef Q_WS_QWS
-#include "private/qglpaintdevice_qws_p.h"
 #include "private/qglwindowsurface_qws_p.h"
 #include "qwsmanager_qws.h"
 #include "private/qwsmanager_p.h"
@@ -747,7 +746,6 @@ public:
     uint has_brush : 1;
     uint has_fast_pen : 1;
     uint use_stencil_method : 1;
-    uint dirty_stencil : 1;
     uint dirty_drawable_texture : 1;
     uint has_stencil_face_ext : 1;
     uint use_fragment_programs : 1;
@@ -757,6 +755,8 @@ public:
     uint use_smooth_pixmap_transform : 1;
     uint use_system_clip : 1;
     uint use_emulation : 1;
+
+    QRegion dirty_stencil;
 
     void updateUseEmulation();
 
@@ -1222,7 +1222,7 @@ inline void QOpenGLPaintEnginePrivate::setGradientOps(const QBrush &brush, const
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_CONICAL;
             else if (current_style == Qt::SolidPattern)
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_SOLID;
-            else if (current_style == Qt::TexturePattern)
+            else if (current_style == Qt::TexturePattern && !brush.texture().isQBitmap())
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_TEXTURE;
             else
                 fragment_brush = FRAGMENT_PROGRAM_BRUSH_PATTERN;
@@ -1260,7 +1260,9 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
     d->matrix = QTransform();
     d->has_antialiasing = false;
     d->high_quality_antialiasing = false;
-    d->dirty_stencil = true;
+
+    QSize sz(d->device->size());
+    d->dirty_stencil = QRect(0, 0, sz.width(), sz.height());
 
     d->use_emulation = false;
 
@@ -1348,7 +1350,6 @@ bool QOpenGLPaintEngine::begin(QPaintDevice *pdev)
 
     d->offscreen.begin();
 
-    QSize sz(d->device->size());
     glViewport(0, 0, sz.width(), sz.height()); // XXX (Embedded): We need a solution for GLWidgets that draw in a part or a bigger surface...
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -1596,7 +1597,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             qreal   realRadius = g->radius();
             QTransform translate(1, 0, 0, 1, -realFocal.x(), -realFocal.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1609,7 +1611,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realCenter = g->center();
             QTransform translate(1, 0, 0, 1, -realCenter.x(), -realCenter.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1621,8 +1624,8 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
             QPointF realFinal = g->finalStop();
             QTransform translate(1, 0, 0, 1, -realStart.x(), -realStart.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted() * translate;
 
             setInvMatrixData(inv_matrix);
 
@@ -1633,10 +1636,9 @@ void QOpenGLPaintEnginePrivate::updateGradient(const QBrush &brush, const QRectF
 
             linear_data[2] = 1.0f / (l.x() * l.x() + l.y() * l.y());
         } else if (style != Qt::SolidPattern) {
-            QTransform translate(1, 0, 0, 1, brush_origin.x(), brush_origin.y());
             QTransform gl_to_qt(1, 0, 0, -1, 0, pdev->height());
-
-            QTransform inv_matrix = gl_to_qt * matrix.inverted() * brush.transform().inverted() * translate;
+            QTransform m = QTransform(matrix).translate(brush_origin.x(), brush_origin.y());
+            QTransform inv_matrix = gl_to_qt * (brush.transform() * m).inverted();
 
             setInvMatrixData(inv_matrix);
         }
@@ -1949,33 +1951,33 @@ void QOpenGLPaintEnginePrivate::fillVertexArray(Qt::FillRule fillRule)
 {
     Q_Q(QOpenGLPaintEngine);
 
-    if (dirty_stencil) {
+    QRect rect = dirty_stencil.boundingRect();
+
+    if (use_system_clip)
+        rect = q->systemClip().intersected(dirty_stencil).boundingRect();
+
+    glStencilMask(~0);
+
+    if (!rect.isEmpty()) {
         disableClipping();
 
-        if (use_system_clip) {
-            glEnable(GL_SCISSOR_TEST);
+        glEnable(GL_SCISSOR_TEST);
 
-            QRect rect = q->systemClip().boundingRect();
+        const int left = rect.left();
+        const int width = rect.width();
+        const int bottom = device->size().height() - (rect.bottom() + 1);
+        const int height = rect.height();
 
-            const int left = rect.left();
-            const int width = rect.width();
-            const int bottom = device->size().height() - (rect.bottom() + 1);
-            const int height = rect.height();
-
-            glScissor(left, bottom, width, height);
-        }
+        glScissor(left, bottom, width, height);
 
         glClearStencil(0);
         glClear(GL_STENCIL_BUFFER_BIT);
-        dirty_stencil = false;
+        dirty_stencil -= rect;
 
-        if (use_system_clip)
-            glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_SCISSOR_TEST);
 
         enableClipping();
     }
-
-    glStencilMask(~0);
 
     // Enable stencil.
     glEnable(GL_STENCIL_TEST);
@@ -4310,6 +4312,16 @@ void QOpenGLPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QR
 void QOpenGLPaintEngine::drawTiledPixmap(const QRectF &r, const QPixmap &pm, const QPointF &offset)
 {
     Q_D(QOpenGLPaintEngine);
+    if (pm.depth() == 1) {
+        QPixmap tpx(pm.size());
+        tpx.fill(Qt::transparent);
+        QPainter p(&tpx);
+        p.setPen(d->cpen);
+        p.drawPixmap(0, 0, pm);
+        p.end();
+        drawTiledPixmap(r, tpx, offset);
+        return;
+    }
 
     QImage scaled;
     const int sz = d->max_texture_size;
@@ -5206,7 +5218,7 @@ void QOpenGLPaintEnginePrivate::composite(GLuint primitive, const q_vertexType *
             device->context()->d_func()->bindTexture(cbrush.textureImage(), GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
         else
-            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, true),
+            device->context()->d_func()->bindTexture(qt_imageForBrush(current_style, false),
                                                      GL_TEXTURE_2D, GL_RGBA,
                                                      QGLContext::InternalBindOption);
 

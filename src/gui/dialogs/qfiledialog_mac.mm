@@ -62,6 +62,7 @@
 #include <qvarlengtharray.h>
 #include <qdesktopwidget.h>
 #include <stdlib.h>
+#include <qabstracteventdispatcher.h>
 #include "ui_qfiledialog.h"
 
 QT_BEGIN_NAMESPACE
@@ -245,6 +246,8 @@ QT_USE_NAMESPACE
     mReturnCode = [mSavePanel 
         runModalForDirectory:mCurrentDir
         file:selectable ? filename : @"untitled"];
+
+    QAbstractEventDispatcher::instance()->interrupt();
     return (mReturnCode == NSOKButton);
 }
 
@@ -277,6 +280,10 @@ QT_USE_NAMESPACE
 - (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename
 {
     Q_UNUSED(sender);
+
+    if ([filename length] == 0)
+        return NO;
+
     QString qtFileName = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString)(filename);
     QFileInfo info(qtFileName.normalized(QT_PREPEND_NAMESPACE(QString::NormalizationForm_C)));
     QString path = info.absolutePath();

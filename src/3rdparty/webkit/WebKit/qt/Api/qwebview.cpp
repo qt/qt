@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
     Copyright (C) 2008 Holger Hans Peter Freyther
+    Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -47,12 +48,21 @@ public:
 
     virtual void scroll(int dx, int dy, const QRect&);
     virtual void update(const QRect& dirtyRect);
+    virtual void setInputMethodEnabled(bool enable);
+#if QT_VERSION >= 0x040600
+    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
+#endif
 
+#ifndef QT_NO_CURSOR
     virtual QCursor cursor() const;
     virtual void updateCursor(const QCursor& cursor);
+#endif
 
+    virtual QPalette palette() const;
     virtual int screenNumber() const;
-    virtual WId winId() const;
+    virtual QWidget* ownerWidget() const;
+
+    virtual QObject* pluginParent() const;
 
     void _q_pageDestroyed();
 
@@ -72,6 +82,20 @@ void QWebViewPrivate::update(const QRect & dirtyRect)
     view->update(dirtyRect);
 }
 
+void QWebViewPrivate::setInputMethodEnabled(bool enable)
+{
+    view->setAttribute(Qt::WA_InputMethodEnabled, enable);
+}
+#if QT_VERSION >= 0x040600
+void QWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
+{
+    if (enable)
+        view->setInputMethodHints(view->inputMethodHints() | hint);
+    else
+        view->setInputMethodHints(view->inputMethodHints() & ~hint);
+}
+#endif
+#ifndef QT_NO_CURSOR
 QCursor QWebViewPrivate::cursor() const
 {
     return view->cursor();
@@ -80,6 +104,12 @@ QCursor QWebViewPrivate::cursor() const
 void QWebViewPrivate::updateCursor(const QCursor& cursor)
 {
     view->setCursor(cursor);
+}
+#endif
+
+QPalette QWebViewPrivate::palette() const
+{
+    return view->palette();
 }
 
 int QWebViewPrivate::screenNumber() const
@@ -92,12 +122,14 @@ int QWebViewPrivate::screenNumber() const
     return 0;
 }
 
-WId QWebViewPrivate::winId() const
+QWidget* QWebViewPrivate::ownerWidget() const
 {
-    if (view)
-        return view->winId();
+    return view;
+}
 
-    return 0;
+QObject* QWebViewPrivate::pluginParent() const
+{
+    return view;
 }
 
 void QWebViewPrivate::_q_pageDestroyed()
@@ -119,7 +151,7 @@ void QWebViewPrivate::_q_pageDestroyed()
     It can be used in various applications to display web content live from the
     Internet.
 
-    The image below shows QWebView previewed in \QD with the Trolltech website.
+    The image below shows QWebView previewed in \QD with a Nokia website.
 
     \image qwebview-url.png
 
@@ -213,8 +245,10 @@ QWebView::QWebView(QWidget *parent)
 */
 QWebView::~QWebView()
 {
-    if (d->page)
+    if (d->page) {
         d->page->d->view = 0;
+        d->page->d->client = 0;
+    }
 
     if (d->page && d->page->parent() == this)
         delete d->page;

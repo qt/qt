@@ -93,6 +93,15 @@ public:
 
     virtual bool valueMissing() const;
     virtual bool patternMismatch() const;
+    virtual bool tooLong() const;
+    // For ValidityState
+    bool rangeUnderflow() const;
+    bool rangeOverflow() const;
+    // Returns the minimum value for type=range.  Don't call this for other types.
+    double rangeMinimum() const;
+    // Returns the maximum value for type=range.  Don't call this for other types.
+    // This always returns a value which is <= rangeMinimum().
+    double rangeMaximum() const;
 
     bool isTextButton() const { return m_type == SUBMIT || m_type == RESET || m_type == BUTTON; }
     virtual bool isRadioButton() const { return m_type == RADIO; }
@@ -128,12 +137,7 @@ public:
     virtual bool canStartSelection() const;
     
     bool canHaveSelection() const;
-    int selectionStart() const;
-    int selectionEnd() const;
-    void setSelectionStart(int);
-    void setSelectionEnd(int);
-    virtual void select();
-    void setSelectionRange(int start, int end);
+    virtual void select() { HTMLTextFormControlElement::select(); }
 
     virtual void accessKeyAction(bool sendToAnyElement);
 
@@ -218,8 +222,6 @@ public:
     void addSearchResult();
     void onSearch();
 
-    VisibleSelection selection() const;
-
     virtual String sanitizeValue(const String&) const;
 
     virtual void documentDidBecomeActive();
@@ -248,6 +250,8 @@ private:
     virtual bool isEmptyValue() const { return value().isEmpty(); }
     virtual void handleFocusEvent();
     virtual void handleBlurEvent();
+    virtual int cachedSelectionStart() const { return m_data.cachedSelectionStart(); }
+    virtual int cachedSelectionEnd() const { return m_data.cachedSelectionEnd(); }
 
     virtual bool isOptionalFormControl() const { return !isRequiredFormControl(); }
     virtual bool isRequiredFormControl() const;

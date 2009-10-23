@@ -498,16 +498,18 @@ public:
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
     static void imageCleanupHook(qint64 cacheKey);
-    static void pixmapCleanupHook(QPixmap* pixmap);
+    static void cleanupTextures(QPixmap* pixmap);
+#ifdef Q_WS_X11
+    // X11 needs to catch pixmap data destruction to delete EGL/GLX pixmap surfaces
+    static void cleanupPixmapSurfaces(QPixmap* pixmap);
+#endif
 
 private:
     QCache<qint64, QGLTexture> m_cache;
 };
 
 
-#ifdef Q_WS_QWS
-extern QPaintEngine* qt_qgl_paint_engine();
-#endif
+extern Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine();
 
 bool qt_gl_preferGL2Engine();
 

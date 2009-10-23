@@ -131,7 +131,6 @@ static const char* const qglslPositionWithPatternBrushVertexShader = "\
             gl_Position.xy = gl_Position.xy * invertedHTexCoordsZ; \
             gl_Position.w = invertedHTexCoordsZ; \
             patternTexCoords.xy = (hTexCoords.xy * 0.125) * invertedHTexCoordsZ; \
-            patternTexCoords.y = -patternTexCoords.y; \
     }";
 
 static const char* const qglslAffinePositionWithPatternBrushVertexShader

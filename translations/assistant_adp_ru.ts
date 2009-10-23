@@ -19,12 +19,12 @@
     <message>
         <location filename="../tools/shared/fontpanel/fontpanel.cpp" line="+77"/>
         <source>&amp;Family</source>
-        <translation>Се&amp;мейство</translation>
+        <translation>&amp;Шрифт</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>&amp;Style</source>
-        <translation>&amp;Стиль</translation>
+        <translation>&amp;Начертание</translation>
     </message>
     <message>
         <location line="-18"/>
@@ -39,7 +39,7 @@
     <message>
         <location line="+11"/>
         <source>&amp;Point size</source>
-        <translation>&amp;Размер в пикселях</translation>
+        <translation>&amp;Размер</translation>
     </message>
 </context>
 <context>
@@ -116,7 +116,7 @@
     <message>
         <location line="-31"/>
         <source>&lt;b&gt;Help&lt;/b&gt;&lt;p&gt;Choose the topic you want help on from the contents list, or search the index for keywords.&lt;/p&gt;</source>
-        <translation type="unfinished">&lt;b&gt;Справка&lt;/b&gt;&lt;p&gt;Выберите раздел справки из содержания или воспользуйтесь поиском по предметному указателю.&lt;/p&gt;</translation>
+        <translation type="unfinished">&lt;b&gt;Справка&lt;/b&gt;&lt;p&gt;Выберите раздел справки из оглавления или воспользуйтесь поиском по предметному указателю.&lt;/p&gt;</translation>
     </message>
     <message>
         <location line="+85"/>
@@ -141,7 +141,7 @@
     <message>
         <location filename="../tools/assistant/compat/helpdialog.ui" line="-134"/>
         <source>Con&amp;tents</source>
-        <translation>Содер&amp;жание</translation>
+        <translation>&amp;Оглавление</translation>
     </message>
     <message>
         <location line="+144"/>
@@ -154,17 +154,27 @@
         <translation>Удалить выбранную закладку.</translation>
     </message>
     <message>
-        <location line="+92"/>
+        <location line="+51"/>
+        <source>Enter searchword(s)</source>
+        <translation>Введите одно или несколько слов для поиска</translation>
+    </message>
+    <message>
+        <location line="+38"/>
+        <source>Display the help page</source>
+        <translation>Показать страницу справки</translation>
+    </message>
+    <message>
+        <location line="+3"/>
         <source>Display the help page for the full text search.</source>
         <translation>Показать справку по полнотекстовому поиску.</translation>
     </message>
     <message>
-        <location line="-3"/>
-        <source>Display the help page.</source>
-        <translation>Показать страницу справки.</translation>
+        <location line="+26"/>
+        <source>Start searching</source>
+        <translation>Начать поиск</translation>
     </message>
     <message>
-        <location line="-240"/>
+        <location line="-269"/>
         <source>Displays help topics organized by category, index or bookmarks. Another tab inherits the full text search.</source>
         <translation>Отображает список разделов, распредёленных по категориям, указатель или закладки. Последняя вкладка содержит панель полнотекстового поиска.</translation>
     </message>
@@ -200,11 +210,6 @@ Skipping file.</source>
         <translation>Введите ключевое слово</translation>
     </message>
     <message>
-        <location line="+142"/>
-        <source>Enter searchword(s).</source>
-        <translation>Введите одно или несколько слов для поиска.</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/helpdialog.cpp" line="-725"/>
         <source>Failed to load keyword index file
 Assistant will not work!</source>
@@ -219,7 +224,7 @@ Assistant will not work!</source>
 Qt Assistant не будет работать!</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.ui" line="+20"/>
+        <location filename="../tools/assistant/compat/helpdialog.ui" line="+162"/>
         <source>Found &amp;Documents:</source>
         <translation>Найденные &amp;документы:</translation>
     </message>
@@ -294,11 +299,6 @@ Qt Assistant не будет работать!</translation>
         <translation>&amp;Искать:</translation>
     </message>
     <message>
-        <location line="+77"/>
-        <source>Start searching.</source>
-        <translation>Начать поиск.</translation>
-    </message>
-    <message>
         <location filename="../tools/assistant/compat/helpdialog.cpp" line="+56"/>
         <source>The closing quotation mark is missing.</source>
         <translation>Пропущена закрывающая кавычка.</translation>
@@ -316,7 +316,7 @@ Qt Assistant не будет работать!</translation>
         <translation>Предупреждение</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/helpdialog.ui" line="-240"/>
+        <location filename="../tools/assistant/compat/helpdialog.ui" line="-163"/>
         <location line="+74"/>
         <source>column 1</source>
         <translation>столбец 1</translation>
@@ -407,7 +407,7 @@ Qt Assistant не будет работать!</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.ui" line="+375"/>
+        <location filename="../tools/assistant/compat/mainwindow.ui" line="+373"/>
         <location line="+3"/>
         <source>&quot;What&apos;s This?&quot; context sensitive help.</source>
         <translation>Контекстная справка &quot;Что это?&quot;.</translation>
@@ -483,7 +483,7 @@ Qt Assistant не будет работать!</translation>
         <translation>&amp;Окно</translation>
     </message>
     <message>
-        <location line="+429"/>
+        <location line="+431"/>
         <source>...</source>
         <translation>...</translation>
     </message>
@@ -533,9 +533,9 @@ Qt Assistant не будет работать!</translation>
         <translation>Показать дополнительную информацию о Qt Assistant.</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-514"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-506"/>
         <source>Displays the main page of a specific documentation set.</source>
-        <translation type="unfinished">Открывает стартовую страницу выбранного набора документации.</translation>
+        <translation>Открывает стартовую страницу выбранного набора документации.</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui" line="-103"/>
@@ -543,7 +543,7 @@ Qt Assistant не будет работать!</translation>
         <translation>В&amp;ыход</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+69"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+59"/>
         <source>Failed to open about application contents in file: &apos;%1&apos;</source>
         <translation>Не удалось получить информацию о приложении из файла: &apos;%1&apos;</translation>
     </message>
@@ -578,12 +578,12 @@ Qt Assistant не будет работать!</translation>
         <translation>Переход на следующую страницу.</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-191"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-181"/>
         <source>Initializing Qt Assistant...</source>
         <translation>Инициализация Qt Assistant...</translation>
     </message>
     <message>
-        <location line="-35"/>
+        <location line="-45"/>
         <source>Minimize</source>
         <translation>Свернуть</translation>
     </message>
@@ -639,7 +639,7 @@ Qt Assistant не будет работать!</translation>
         <translation>Выйти из Qt Assistant.</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+458"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+460"/>
         <location line="+6"/>
         <source>Save Page</source>
         <translation>Сохранить страницу</translation>
@@ -652,17 +652,17 @@ Qt Assistant не будет работать!</translation>
     <message>
         <location line="+14"/>
         <source>Select the page in contents tab.</source>
-        <translation>Выбрать страницу во вкладке содержания.</translation>
+        <translation>Выбрать страницу во вкладке оглавления.</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-691"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-693"/>
         <source>Sidebar</source>
         <translation>Боковая панель</translation>
     </message>
     <message>
         <location filename="../tools/assistant/compat/mainwindow.ui" line="-3"/>
         <source>Sync with Table of Contents</source>
-        <translation>Синхронизировать с содержанием</translation>
+        <translation>Синхронизировать с оглавлением</translation>
     </message>
     <message>
         <location line="-380"/>
@@ -670,7 +670,7 @@ Qt Assistant не будет работать!</translation>
         <translation>Панель инструментов</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+97"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="+107"/>
         <source>Views</source>
         <translation>Виды</translation>
     </message>
@@ -700,12 +700,12 @@ Qt Assistant не будет работать!</translation>
         <translation>Уменьшить размер шрифта.</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-76"/>
+        <location filename="../tools/assistant/compat/mainwindow.cpp" line="-86"/>
         <source>Ctrl+M</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+60"/>
+        <location line="+70"/>
         <source>SHIFT+CTRL+=</source>
         <translation type="unfinished"></translation>
     </message>

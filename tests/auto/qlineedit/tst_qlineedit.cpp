@@ -3304,41 +3304,45 @@ void tst_QLineEdit::task174640_editingFinished()
     layout->addWidget(le2);
 
     mw.show();
-    QTest::qWait(200);
+    QApplication::setActiveWindow(&mw);
     mw.activateWindow();
+    QTest::qWaitForWindowShown(&mw);
 
     QSignalSpy editingFinishedSpy(le1, SIGNAL(editingFinished()));
 
     le1->setFocus();
-    QTest::qWait(200);
-    QVERIFY(le1->hasFocus());
+    QTest::qWait(20);
+    QTRY_VERIFY(le1->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 0);
 
     le2->setFocus();
-    QTest::qWait(200);
-    QVERIFY(le2->hasFocus());
+    QTest::qWait(20);
+    QTRY_VERIFY(le2->hasFocus());
     QCOMPARE(editingFinishedSpy.count(), 1);
     editingFinishedSpy.clear();
 
     le1->setFocus();
-    QTest::qWait(200);
-    QVERIFY(le1->hasFocus());
+    QTest::qWait(20);
+    QTRY_VERIFY(le1->hasFocus());
 
     QMenu *testMenu1 = new QMenu(le1);
     testMenu1->addAction("foo");
     testMenu1->addAction("bar");
     testMenu1->show();
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(testMenu1);
+    QTest::qWait(20);
     mw.activateWindow();
+
     delete testMenu1;
     QCOMPARE(editingFinishedSpy.count(), 0);
-    QVERIFY(le1->hasFocus());
+    QTRY_VERIFY(le1->hasFocus());
 
     QMenu *testMenu2 = new QMenu(le2);
     testMenu2->addAction("foo2");
     testMenu2->addAction("bar2");
     testMenu2->show();
-    QTest::qWait(200);
+    QTest::qWaitForWindowShown(testMenu2);
+    QTest::qWait(20);
     mw.activateWindow();
     delete testMenu2;
     QCOMPARE(editingFinishedSpy.count(), 1);

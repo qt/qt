@@ -149,6 +149,13 @@
     This product includes software developed by the OpenSSL Project
     for use in the OpenSSL Toolkit (\l{http://www.openssl.org/}).
 
+    \note Be aware of the difference between the bytesWritten() signal and
+    the encryptedBytesWritten() signal. For a QTcpSocket, bytesWritten()
+    will get emitted as soon as data has been written to the TCP socket.
+    For a QSslSocket, bytesWritten() will get emitted when the data
+    is being encrypted and encryptedBytesWritten()
+    will get emitted as soon as data has been written to the TCP socket.
+
     \sa QSslCertificate, QSslCipher, QSslError
 */
 
@@ -458,6 +465,22 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
     setPeerAddress(d->plainSocket->peerAddress());
     setPeerName(d->plainSocket->peerName());
     return retVal;
+}
+
+void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
+{
+    Q_D(QSslSocket);
+    if (d->plainSocket)
+        d->plainSocket->setSocketOption(option, value);
+}
+
+QVariant QSslSocket::socketOption(QAbstractSocket::SocketOption option)
+{
+    Q_D(QSslSocket);
+    if (d->plainSocket)
+        return d->plainSocket->socketOption(option);
+    else
+        return QVariant();
 }
 
 /*!
@@ -1717,6 +1740,11 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") ==" << readBytes;
 #endif
+
+    // possibly trigger another transmit() to decrypt more data from the socket
+    if (d->readBuffer.isEmpty() && d->plainSocket->bytesAvailable())
+        QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
+
     return readBytes;
 }
 
@@ -2109,6 +2137,16 @@ void QSslSocketPrivate::_q_flushWriteBuffer()
     Q_Q(QSslSocket);
     if (!writeBuffer.isEmpty())
         q->flush();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_flushReadBuffer()
+{
+    // trigger a read from the plainSocket into SSL
+    if (mode != QSslSocket::UnencryptedMode)
+        transmit();
 }
 
 QT_END_NAMESPACE

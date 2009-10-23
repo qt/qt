@@ -672,18 +672,18 @@ int HtmlGenerator::generateAtom(const Atom *atom,
         break;
     case Atom::SinceList:
         {
-            NodeMultiMapMap::const_iterator v;
-            v = nodeMultiMapMap.find(atom->string());
-            NodeMapMap::const_iterator nc;
-            nc = nodeMapMap.find(atom->string());
-            if ((v != nodeMultiMapMap.constEnd()) && !v.value().isEmpty()) {
+            NewSinceMaps::const_iterator nsmap;
+            nsmap = newSinceMaps.find(atom->string());
+            NewClassMaps::const_iterator ncmap;
+            ncmap = newClassMaps.find(atom->string());
+            if ((nsmap != newSinceMaps.constEnd()) && !nsmap.value().isEmpty()) {
                 QList<Section> sections;
                 QList<Section>::ConstIterator s;
                 for (int i=0; i<LastSinceType; ++i)
                     sections.append(Section(sinceTitle(i),QString(),QString()));
 
-                NodeMultiMap::const_iterator n = v.value().constBegin();
-                while (n != v.value().constEnd()) {
+                NodeMultiMap::const_iterator n = nsmap.value().constBegin();
+                while (n != nsmap.value().constEnd()) {
                     const Node* node = n.value();
                     switch (node->type()) {
                       case Node::Namespace:
@@ -741,35 +741,63 @@ int HtmlGenerator::generateAtom(const Atom *atom,
                     }
                     ++n;
                 }
+
+                /*
+                  First generate the table of contents.
+                 */
+                out() << "<ul>\n";
+                s = sections.constBegin();
+                while (s != sections.constEnd()) {
+                    if (!(*s).members.isEmpty()) {
+
+                        out() << "<li>"
+                              << "<a href=\"#"
+                              << Doc::canonicalTitle((*s).name)
+                              << "\">"
+                              << (*s).name
+                              << "</a></li>\n";
+                    }
+                    ++s;
+                }
+                out() << "</ul>\n";
+
                 int idx = 0;
                 s = sections.constBegin();
                 while (s != sections.constEnd()) {
                     if (!(*s).members.isEmpty()) {
                         out() << "<a name=\""
-                              << registerRef((*s).name.toLower())
+                              << Doc::canonicalTitle((*s).name)
                               << "\"></a>\n";
                         out() << "<h3>" << protect((*s).name) << "</h3>\n";
                         if (idx == Class)
-                            generateCompactList(0, marker, nc.value(), QString("Q"));
+                            generateCompactList(0, marker, ncmap.value(), QString("Q"));
                         else if (idx == MemberFunction) {
-                            NodeMultiMapMap nodemultimapmap;
-                            NodeMultiMapMap::iterator nmmap;
+                            ParentMaps parentmaps;
+                            ParentMaps::iterator pmap;
                             NodeList::const_iterator i = s->members.constBegin();
                             while (i != s->members.constEnd()) {
                                 Node* p = (*i)->parent();
-                                nmmap = nodemultimapmap.find(p->name());
-                                if (nmmap == nodemultimapmap.end())
-                                    nmmap = nodemultimapmap.insert(p->name(),NodeMultiMap());
-                                nmmap->insert((*i)->name(),(*i));
+                                pmap = parentmaps.find(p);
+                                if (pmap == parentmaps.end())
+                                    pmap = parentmaps.insert(p,NodeMultiMap());
+                                pmap->insert((*i)->name(),(*i));
                                 ++i;
                             }
-                            nmmap = nodemultimapmap.begin();
-                            while (nmmap != nodemultimapmap.end()) {
-                                NodeList nlist = nmmap->values();
-                                out() << "<p>New functions in " << protect(nmmap.key()) << ":</p>\n";
+                            pmap = parentmaps.begin();
+                            while (pmap != parentmaps.end()) {
+                                NodeList nlist = pmap->values();
+                                out() << "<p>Class ";
+
+                                out() << "<a href=\""
+                                      << linkForNode(pmap.key(), 0)
+                                      << "\">";
+                                QStringList pieces = fullName(pmap.key(), 0, marker).split("::");
+                                out() << protect(pieces.last());
+                                out() << "</a>"  << ":</p>\n";
+
                                 generateSection(nlist, 0, marker, CodeMarker::Summary);
                                 out() << "<br />";
-                                ++nmmap;
+                                ++pmap;
                             }
                         }
                         else
@@ -1124,7 +1152,10 @@ int HtmlGenerator::generateAtom(const Atom *atom,
             }
 
             if (node)
-                generateTableOfContents(node, marker, sectioningUnit, numColumns,
+                generateTableOfContents(node,
+                                        marker,
+                                        sectioningUnit,
+                                        numColumns,
                                         relative);
         }
         break;
@@ -1209,7 +1240,7 @@ void HtmlGenerator::generateClassLikeNode(const InnerNode *inner,
     generateHeader(title, inner, marker, true);
     generateTitle(title, subtitleText, SmallSubTitle, inner, marker);
 
-#ifdef QDOC_QML    
+#ifdef QDOC_QML
     if (classe && !classe->qmlElement().isEmpty()) {
         generateInstantiatedBy(classe,marker);
     }
@@ -2112,7 +2143,8 @@ void HtmlGenerator::generateCompactList(const Node *relative,
 
     /*
       If commonPrefix is not empty, then the caller knows what
-      the common prefix is, so just use that.
+      the common prefix is and has passed it in, so just use that
+      one.
      */
     int commonPrefixLen = commonPrefix.length();
     if (commonPrefixLen == 0) {
@@ -2120,10 +2152,15 @@ void HtmlGenerator::generateCompactList(const Node *relative,
         QString last;
         
         /*
-          First, find out the common prefix of all non-namespaced
-          classes.  For Qt, the prefix is Q. It can easily be derived
-          from the first and last classes in alphabetical order
-          (QAccel and QXtWidget in Qt 2.1).
+          The caller didn't pass in a common prefix, so get the common
+          prefix by looking at the class names of the first and last
+          classes in the class map. Discard any namespace names and
+          just use the bare class names. For Qt, the prefix is "Q".
+
+          Note that the algorithm used here to derive the common prefix
+          from the first and last classes in alphabetical order (QAccel
+          and QXtWidget in Qt 2.1), fails if either class name does not
+          begin with Q.
         */
 
         NodeMap::const_iterator iter = classMap.begin();
@@ -2164,8 +2201,7 @@ void HtmlGenerator::generateCompactList(const Node *relative,
       Divide the data into 37 paragraphs: 0, ..., 9, A, ..., Z,
       underscore (_). QAccel will fall in paragraph 10 (A) and
       QXtWidget in paragraph 33 (X). This is the only place where we
-      assume that NumParagraphs is 37. Each paragraph is a
-      NodeMap.
+      assume that NumParagraphs is 37. Each paragraph is a NodeMap.
     */
     NodeMap paragraph[NumParagraphs+1];
     QString paragraphName[NumParagraphs+1];
@@ -3432,12 +3468,12 @@ QString HtmlGenerator::refForNode(const Node *node)
         }
         break;
     case Node::Property:
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
     case Node::QmlProperty:
 #endif        
         ref = node->name() + "-prop";
         break;
-#ifdef QDOC_QML        
+#ifdef QDOC_QML
     case Node::QmlSignal:
         ref = node->name() + "-signal";
         break;
@@ -3644,53 +3680,54 @@ void HtmlGenerator::findAllClasses(const InnerNode *node)
 }
 
 /*!
-  For generating the "Since x.y" page.
+  For generating the "New Classes... in 4.6" section on the
+  What's New in 4.6" page.
  */
 void HtmlGenerator::findAllSince(const InnerNode *node)
 {
-    NodeList::const_iterator c = node->childNodes().constBegin();
-    while (c != node->childNodes().constEnd()) {
-        QString sinceVersion = (*c)->since();
-        if (((*c)->access() != Node::Private) && !sinceVersion.isEmpty()) {
-            NodeMultiMapMap::iterator vmap = nodeMultiMapMap.find(sinceVersion);
-            if (vmap == nodeMultiMapMap.end())
-                vmap = nodeMultiMapMap.insert(sinceVersion,NodeMultiMap());
-            NodeMapMap::iterator ncmap = nodeMapMap.find(sinceVersion);
-            if (ncmap == nodeMapMap.end())
-                ncmap = nodeMapMap.insert(sinceVersion,NodeMap());
+    NodeList::const_iterator child = node->childNodes().constBegin();
+    while (child != node->childNodes().constEnd()) {
+        QString sinceVersion = (*child)->since();
+        if (((*child)->access() != Node::Private) && !sinceVersion.isEmpty()) {
+            NewSinceMaps::iterator nsmap = newSinceMaps.find(sinceVersion);
+            if (nsmap == newSinceMaps.end())
+                nsmap = newSinceMaps.insert(sinceVersion,NodeMultiMap());
+            NewClassMaps::iterator ncmap = newClassMaps.find(sinceVersion);
+            if (ncmap == newClassMaps.end())
+                ncmap = newClassMaps.insert(sinceVersion,NodeMap());
  
-            if ((*c)->type() == Node::Function) {
-                FunctionNode *func = static_cast<FunctionNode *>(*c);
+            if ((*child)->type() == Node::Function) {
+                FunctionNode *func = static_cast<FunctionNode *>(*child);
                 if ((func->status() > Node::Obsolete) &&
                     (func->metaness() != FunctionNode::Ctor) &&
                     (func->metaness() != FunctionNode::Dtor)) {
-                    vmap.value().insert(func->name(),(*c));
+                    nsmap.value().insert(func->name(),(*child));
                 }
             }
-            else if ((*c)->url().isEmpty()) {
-                if ((*c)->type() == Node::Class && !(*c)->doc().isEmpty()) {
-                    QString className = (*c)->name();
-                    if ((*c)->parent() &&
-                        (*c)->parent()->type() == Node::Namespace &&
-                        !(*c)->parent()->name().isEmpty())
-                        className = (*c)->parent()->name()+"::"+className;
-                    vmap.value().insert(className,(*c));
-                    ncmap.value().insert(className,(*c));
+            else if ((*child)->url().isEmpty()) {
+                if ((*child)->type() == Node::Class && !(*child)->doc().isEmpty()) {
+                    QString className = (*child)->name();
+                    if ((*child)->parent() &&
+                        (*child)->parent()->type() == Node::Namespace &&
+                        !(*child)->parent()->name().isEmpty())
+                        className = (*child)->parent()->name()+"::"+className;
+                    nsmap.value().insert(className,(*child));
+                    ncmap.value().insert(className,(*child));
                 }
             }
             else {
-                QString name = (*c)->name();
-                if ((*c)->parent() &&
-                    (*c)->parent()->type() == Node::Namespace &&
-                    !(*c)->parent()->name().isEmpty())
-                    name = (*c)->parent()->name()+"::"+name;
-                vmap.value().insert(name,(*c));
+                QString name = (*child)->name();
+                if ((*child)->parent() &&
+                    (*child)->parent()->type() == Node::Namespace &&
+                    !(*child)->parent()->name().isEmpty())
+                    name = (*child)->parent()->name()+"::"+name;
+                nsmap.value().insert(name,(*child));
             }
-            if ((*c)->isInnerNode()) {
-                findAllSince(static_cast<InnerNode *>(*c));
+            if ((*child)->isInnerNode()) {
+                findAllSince(static_cast<InnerNode *>(*child));
             }
         }
-        ++c;
+        ++child;
     }
 }
 

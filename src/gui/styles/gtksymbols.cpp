@@ -984,15 +984,18 @@ QIcon QGtk::getFilesystemIcon(const QFileInfo &info)
     if (QGtk::gnome_vfs_init && QGtk::gnome_icon_lookup_sync) {
         QGtk::gnome_vfs_init();
         GtkIconTheme *theme = QGtk::gtk_icon_theme_get_default();
-        QString fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toEncoded();
+        QByteArray fileurl = QUrl::fromLocalFile(info.absoluteFilePath()).toEncoded();
         char * icon_name = QGtk::gnome_icon_lookup_sync(theme,
                                                         NULL,
-                                                        qPrintable(fileurl),
+                                                        fileurl.data(),
                                                         NULL,
                                                         GNOME_ICON_LOOKUP_FLAGS_NONE,
                                                         NULL);
-        return QIcon::fromTheme(icon_name);
+        QString iconName = QString::fromUtf8(icon_name);
         g_free(icon_name);
+        if (iconName.startsWith(QLatin1Char('/')))
+            return QIcon(iconName);
+        return QIcon::fromTheme(iconName);
     }
     return icon;
 }

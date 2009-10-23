@@ -591,7 +591,7 @@ QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
 // Blur the image according to the blur radius
 // Based on exponential blur algorithm by Jani Huhtanen
 // (maximum radius is set to 16)
-static QImage blurred(const QImage& image, const QRect& rect, int radius)
+static QImage blurred(const QImage& image, const QRect& rect, int radius, bool alphaOnly = false)
 {
     int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
     int alpha = (radius < 1)  ? 16 : (radius > 17) ? 1 : tab[radius-1];
@@ -606,47 +606,53 @@ static QImage blurred(const QImage& image, const QRect& rect, int radius)
     int rgba[4];
     unsigned char* p;
 
+    int i1 = 0;
+    int i2 = 3;
+
+    if (alphaOnly)
+        i1 = i2 = (QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 3);
+
     for (int col = c1; col <= c2; col++) {
         p = result.scanLine(r1) + col * 4;
-        for (int i = 0; i < 4; i++)
+        for (int i = i1; i <= i2; i++)
             rgba[i] = p[i] << 4;
 
         p += bpl;
         for (int j = r1; j < r2; j++, p += bpl)
-            for (int i = 0; i < 4; i++)
+            for (int i = i1; i <= i2; i++)
                 p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
     }
 
     for (int row = r1; row <= r2; row++) {
         p = result.scanLine(row) + c1 * 4;
-        for (int i = 0; i < 4; i++)
+        for (int i = i1; i <= i2; i++)
             rgba[i] = p[i] << 4;
 
         p += 4;
         for (int j = c1; j < c2; j++, p += 4)
-            for (int i = 0; i < 4; i++)
+            for (int i = i1; i <= i2; i++)
                 p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
     }
 
     for (int col = c1; col <= c2; col++) {
         p = result.scanLine(r2) + col * 4;
-        for (int i = 0; i < 4; i++)
+        for (int i = i1; i <= i2; i++)
             rgba[i] = p[i] << 4;
 
         p -= bpl;
         for (int j = r1; j < r2; j++, p -= bpl)
-            for (int i = 0; i < 4; i++)
+            for (int i = i1; i <= i2; i++)
                 p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
     }
 
     for (int row = r1; row <= r2; row++) {
         p = result.scanLine(row) + c2 * 4;
-        for (int i = 0; i < 4; i++)
+        for (int i = i1; i <= i2; i++)
             rgba[i] = p[i] << 4;
 
         p -= 4;
         for (int j = c1; j < c2; j++, p -= 4)
-            for (int i = 0; i < 4; i++)
+            for (int i = i1; i <= i2; i++)
                 p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
     }
 
@@ -892,11 +898,11 @@ class QPixmapDropShadowFilterPrivate : public QPixmapFilterPrivate
 {
 public:
     QPixmapDropShadowFilterPrivate()
-        : offset(8, 8), color(63, 63, 63, 180), blurFilter(new QPixmapBlurFilter) {}
+        : offset(8, 8), color(63, 63, 63, 180), radius(1) {}
 
     QPointF offset;
     QColor color;
-    QPixmapBlurFilter *blurFilter;
+    int radius;
 };
 
 /*!
@@ -940,8 +946,6 @@ public:
 QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
     : QPixmapFilter(*new QPixmapDropShadowFilterPrivate, DropShadowFilter, parent)
 {
-    Q_D(QPixmapDropShadowFilter);
-    d->blurFilter->setRadius(1);
 }
 
 /*!
@@ -951,8 +955,6 @@ QPixmapDropShadowFilter::QPixmapDropShadowFilter(QObject *parent)
 */
 QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 {
-    Q_D(QPixmapDropShadowFilter);
-    delete d->blurFilter;
 }
 
 /*!
@@ -967,7 +969,7 @@ QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 int QPixmapDropShadowFilter::blurRadius() const
 {
     Q_D(const QPixmapDropShadowFilter);
-    return d->blurFilter->radius();
+    return d->radius;
 }
 
 /*!
@@ -982,7 +984,7 @@ int QPixmapDropShadowFilter::blurRadius() const
 void QPixmapDropShadowFilter::setBlurRadius(int radius)
 {
     Q_D(QPixmapDropShadowFilter);
-    d->blurFilter->setRadius(radius);
+    d->radius = radius;
 }
 
 /*!
@@ -1056,7 +1058,7 @@ QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
 
-    const qreal delta = qreal(d->blurFilter->radius() * 2);
+    const qreal delta = qreal(d->radius * 2);
     qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - delta);
     qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - delta);
     qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + delta);
@@ -1079,24 +1081,25 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     QPixmapDropShadowFilter *dropShadowFilter = static_cast<QPixmapDropShadowFilter*>(filter);
     if (dropShadowFilter) {
         dropShadowFilter->setColor(d->color);
-        dropShadowFilter->setBlurRadius(d->blurFilter->radius());
+        dropShadowFilter->setBlurRadius(d->radius);
         dropShadowFilter->setOffset(d->offset);
         dropShadowFilter->draw(p, pos, px, src);
         return;
     }
 
-    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toRect()).toImage();
-    QPainter tmpPainter(&tmp);
+    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toAlignedRect()).toImage();
+
+    // blur the alpha channel
+    tmp = blurred(tmp, tmp.rect(), d->radius, true);
 
     // blacken the image...
+    QPainter tmpPainter(&tmp);
     tmpPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
     tmpPainter.fillRect(0, 0, tmp.width(), tmp.height(), d->color);
     tmpPainter.end();
 
-    const QPixmap pixTmp = QPixmap::fromImage(tmp);
-
     // draw the blurred drop shadow...
-    d->blurFilter->draw(p, pos + d->offset, pixTmp);
+    p->drawImage(pos + d->offset, tmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);

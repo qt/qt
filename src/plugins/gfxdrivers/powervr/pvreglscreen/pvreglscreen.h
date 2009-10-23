@@ -46,35 +46,19 @@
 #include <QGLScreen>
 #include "pvrqwsdrawable.h"
 
+class PvrEglScreen;
+
 class PvrEglScreenSurfaceFunctions : public QGLScreenSurfaceFunctions
 {
 public:
-    PvrEglScreenSurfaceFunctions(QScreen *s, int screenNum)
+    PvrEglScreenSurfaceFunctions(PvrEglScreen *s, int screenNum)
         : screen(s), displayId(screenNum) {}
 
     bool createNativeWindow(QWidget *widget, EGLNativeWindowType *native);
 
 private:
-    QScreen *screen;
+    PvrEglScreen *screen;
     int displayId;
-};
-
-class PvrEglSurfaceHolder : public QObject
-{
-    Q_OBJECT
-public:
-    PvrEglSurfaceHolder(QObject *parent=0);
-    ~PvrEglSurfaceHolder();
-
-    void addSurface();
-    void removeSurface();
-
-private:
-    int numRealSurfaces;
-    PvrQwsDrawable *tempSurface;
-    EGLDisplay dpy;
-    EGLConfig config;
-    EGLSurface surface;
 };
 
 class PvrEglScreen : public QGLScreen
@@ -98,6 +82,8 @@ public:
     QWSWindowSurface* createSurface(QWidget *widget) const;
     QWSWindowSurface* createSurface(const QString &key) const;
 
+    int transformation() const;
+
 private:
     void sync();
     void openTty();
@@ -105,9 +91,9 @@ private:
 
     int fd;
     int ttyfd, oldKdMode;
-    PvrEglSurfaceHolder *holder;
     QString ttyDevice;
     bool doGraphicsMode;
+    mutable const QScreen *parent;
 };
 
 #endif

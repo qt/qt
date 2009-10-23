@@ -569,7 +569,8 @@ QString QSqlRelationalTableModel::selectStatement() const
                 QString displayColumn = relation.displayColumn();
                 if (d->db.driver()->isIdentifierEscaped(displayColumn, QSqlDriver::FieldName))
                     displayColumn = d->db.driver()->stripDelimiters(displayColumn, QSqlDriver::FieldName);
-                fList.append(QString::fromLatin1(" AS %1_%2").arg(relTableName).arg(displayColumn));
+                fList.append(QString::fromLatin1(" AS %1_%2_%3").arg(relTableName).arg(displayColumn).arg(fieldNames.value(fieldList[i])));
+                fieldNames.insert(fieldList[i], fieldNames.value(fieldList[i])-1);
             }
 
             // this needs fixing!! the below if is borken.

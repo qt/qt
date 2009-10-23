@@ -45,9 +45,15 @@ defineTest(qtAddLibrary) {
            }
        }
     }
-    symbian*:isEqual(LIB_NAME, QtGui) {
-        # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
-        INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
+    symbian {
+        isEqual(LIB_NAME, QtGui) {
+            # Needed for #include <QtGui> because qs60mainapplication.h includes aknapp.h
+            INCLUDEPATH *= $$MW_LAYER_SYSTEMINCLUDE
+        }
+        isEqual(LIB_NAME, QtWebKit) {
+            # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
+            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtXmlPatterns
+        }
     }
     isEmpty(LINKAGE) {
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {

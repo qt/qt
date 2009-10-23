@@ -134,6 +134,7 @@ private:
     QByteArray m_device;
     int bytesAvailable;
     QTime timeStamp;
+    QTime clockStamp;
     qint64 elapsedTimeOffset;
     char* audioBuffer;
     snd_pcm_t* handle;

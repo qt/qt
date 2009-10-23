@@ -377,6 +377,9 @@ bool QImageData::checkForAlphaPixels() const
     \note If you would like to load QImage objects in a static build of Qt,
     refer to the \l{How To Create Qt Plugins#Static Plugins}{Plugin HowTo}.
 
+    \warning Painting on a QImage with the format
+    QImage::Format_Indexed8 is not supported.
+
     \tableofcontents
 
     \section1 Reading and Writing Image Files
@@ -543,11 +546,7 @@ bool QImageData::checkForAlphaPixels() const
     Each pixel stored in a QImage is represented by an integer. The
     size of the integer varies depending on the format. QImage
     supports several image formats described by the \l Format
-    enum. The monochrome (1-bit), 8-bit and 32-bit images are
-    available in all versions of Qt. In addition Qt for Embedded Linux
-    also supports 2-bit, 4-bit, and 16-bit images. For more information
-    about the Qt Extended specific formats, see the documentation of the \l
-    Format enum.
+    enum.
 
     Monochrome images are stored using 1-bit indexes into a color table
     with at most two colors. There are two different types of
@@ -704,9 +703,20 @@ bool QImageData::checkForAlphaPixels() const
                             packed with the most significant bit (MSB) first.
     \value Format_MonoLSB   The image is stored using 1-bit per pixel. Bytes are
                             packed with the less significant bit (LSB) first.
-    \value Format_Indexed8  The image is stored using 8-bit indexes into a colormap.
+
+    \value Format_Indexed8  The image is stored using 8-bit indexes
+                            into a colormap. \warning Drawing into a
+                            QImage with Indexed8 format is not
+                            supported.
+
     \value Format_RGB32     The image is stored using a 32-bit RGB format (0xffRRGGBB).
-    \value Format_ARGB32    The image is stored using a 32-bit ARGB format (0xAARRGGBB).
+
+    \value Format_ARGB32    The image is stored using a 32-bit ARGB
+                            format (0xAARRGGBB). \warning Do not
+                            render into ARGB32 images using
+                            QPainter. Format_ARGB32_Premultiplied is
+                            significantly faster.
+
     \value Format_ARGB32_Premultiplied  The image is stored using a premultiplied 32-bit
                             ARGB format (0xAARRGGBB), i.e. the red,
                             green, and blue channels are multiplied
@@ -715,7 +725,9 @@ bool QImageData::checkForAlphaPixels() const
                             undefined.) Certain operations (such as image composition
                             using alpha blending) are faster using premultiplied ARGB32
                             than with plain ARGB32.
+
     \value Format_RGB16     The image is stored using a 16-bit RGB format (5-6-5).
+
     \value Format_ARGB8565_Premultiplied  The image is stored using a
                             premultiplied 24-bit ARGB format (8-5-6-5).
     \value Format_RGB666    The image is stored using a 24-bit RGB format (6-6-6).

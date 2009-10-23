@@ -27,6 +27,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+const ExpressionStopCharacters = " =:[({;,!+-*/&|^<>";
+
 WebInspector.ConsoleView = function(drawer)
 {
     WebInspector.View.call(this, document.getElementById("console-view"));
@@ -44,7 +46,7 @@ WebInspector.ConsoleView = function(drawer)
 
     this.promptElement = document.getElementById("console-prompt");
     this.promptElement.handleKeyEvent = this._promptKeyDown.bind(this);
-    this.prompt = new WebInspector.TextPrompt(this.promptElement, this.completions.bind(this), " .=:[({;");
+    this.prompt = new WebInspector.TextPrompt(this.promptElement, this.completions.bind(this), ExpressionStopCharacters + ".");
 
     this.topGroup = new WebInspector.ConsoleGroup(null, 0);
     this.messagesElement.insertBefore(this.topGroup.element, this.promptElement);
@@ -274,8 +276,7 @@ WebInspector.ConsoleView.prototype = {
     completions: function(wordRange, bestMatchOnly, completionsReadyCallback)
     {
         // Pass less stop characters to rangeOfWord so the range will be a more complete expression.
-        const expressionStopCharacters = " =:{;";
-        var expressionRange = wordRange.startContainer.rangeOfWord(wordRange.startOffset, expressionStopCharacters, this.promptElement, "backward");
+        var expressionRange = wordRange.startContainer.rangeOfWord(wordRange.startOffset, ExpressionStopCharacters, this.promptElement, "backward");
         var expressionString = expressionRange.toString();
         var lastIndex = expressionString.length - 1;
 
@@ -291,16 +292,6 @@ WebInspector.ConsoleView.prototype = {
 
         var reportCompletions = this._reportCompletions.bind(this, bestMatchOnly, completionsReadyCallback, dotNotation, bracketNotation, prefix);
         // Collect comma separated object properties for the completion.
-
-        if (!expressionString) {
-            if (WebInspector.panels.scripts && WebInspector.panels.scripts.paused) {
-                // Evaluate into properties in scope of the selected call frame.
-                reportCompletions(WebInspector.panels.scripts.variablesInSelectedCallFrame());
-                return;
-            } else {
-                expressionString = "this";
-            }
-        }
 
         var includeInspectorCommandLineAPI = (!dotNotation && !bracketNotation);
         if (WebInspector.panels.scripts && WebInspector.panels.scripts.paused)
@@ -343,7 +334,7 @@ WebInspector.ConsoleView.prototype = {
             if (bestMatchOnly)
                 break;
         }
-        setTimeout(completionsReadyCallback, 0, results);
+        completionsReadyCallback(results);
     },
 
     _clearButtonClicked: function()
@@ -391,16 +382,16 @@ WebInspector.ConsoleView.prototype = {
         this.prompt.handleKeyEvent(event);
     },
 
-    evalInInspectedWindow: function(expression, callback)
+    evalInInspectedWindow: function(expression, objectGroup, callback)
     {
         if (WebInspector.panels.scripts && WebInspector.panels.scripts.paused) {
-            WebInspector.panels.scripts.evaluateInSelectedCallFrame(expression, false, callback);
+            WebInspector.panels.scripts.evaluateInSelectedCallFrame(expression, false, objectGroup, callback);
             return;
         }
-        this.doEvalInWindow(expression, callback);
+        this.doEvalInWindow(expression, objectGroup, callback);
     },
 
-    doEvalInWindow: function(expression, callback)
+    doEvalInWindow: function(expression, objectGroup, callback)
     {
         if (!expression) {
             // There is no expression, so the completion should happen against global properties.
@@ -411,7 +402,7 @@ WebInspector.ConsoleView.prototype = {
         {
             callback(result.value, result.isException);
         };
-        InjectedScriptAccess.evaluate(expression, evalCallback);
+        InjectedScriptAccess.evaluate(expression, objectGroup, evalCallback);
     },
 
     _enterKeyPressed: function(event)
@@ -439,7 +430,7 @@ WebInspector.ConsoleView.prototype = {
             self.prompt.text = "";
             self.addMessage(new WebInspector.ConsoleCommandResult(result, exception, commandMessage));
         }
-        this.evalInInspectedWindow(str, printResult);
+        this.evalInInspectedWindow(str, "console", printResult);
     },
 
     _format: function(output, forceObjectFormat)
@@ -514,21 +505,31 @@ WebInspector.ConsoleView.prototype = {
 
     _formatarray: function(arr, elem)
     {
-        var self = this;
-        function printResult(properties)
-        {
-            if (!properties)
-                return;
-            elem.appendChild(document.createTextNode("["));
-            for (var i = 0; i < properties.length; ++i) {
-                var property = properties[i].value;
-                elem.appendChild(self._format(property));
-                if (i < properties.length - 1)
-                    elem.appendChild(document.createTextNode(", "));
-            }
-            elem.appendChild(document.createTextNode("]"));
+        InjectedScriptAccess.getProperties(arr, false, this._printArray.bind(this, elem));
+    },
+
+    _printArray: function(elem, properties)
+    {
+        if (!properties)
+            return;
+        var elements = [];
+        for (var i = 0; i < properties.length; ++i) {
+            var name = properties[i].name;
+            if (name == parseInt(name))
+                elements[name] = this._format(properties[i].value);
         }
-        InjectedScriptAccess.getProperties(arr, false, printResult);
+
+        elem.appendChild(document.createTextNode("["));
+        for (var i = 0; i < elements.length; ++i) {
+            var element = elements[i];
+            if (element)
+                elem.appendChild(element);
+            else
+                elem.appendChild(document.createTextNode("undefined"))
+            if (i < elements.length - 1)
+                elem.appendChild(document.createTextNode(", "));
+        }
+        elem.appendChild(document.createTextNode("]"));
     },
 
     _formatnode: function(object, elem)

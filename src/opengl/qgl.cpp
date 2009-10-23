@@ -76,7 +76,6 @@
 #endif
 
 #ifdef Q_WS_QWS
-#include <private/qglpaintdevice_qws_p.h>
 #include <private/qglwindowsurface_qws_p.h>
 #endif
 
@@ -150,7 +149,9 @@ QGLSignalProxy *QGLSignalProxy::instance()
 class QGLEngineSelector
 {
 public:
-    QGLEngineSelector() : engineType(QPaintEngine::MaxUser) { }
+    QGLEngineSelector() : engineType(QPaintEngine::MaxUser)
+    {
+    }
 
     void setPreferredPaintEngine(QPaintEngine::Type type) {
         if (type == QPaintEngine::OpenGL || type == QPaintEngine::OpenGL2)
@@ -158,6 +159,25 @@ public:
     }
 
     QPaintEngine::Type preferredPaintEngine() {
+#ifdef Q_WS_MAC
+        // The ATI X1600 driver for Mac OS X does not support return
+        // values from functions in GLSL. Since working around this in
+        // the GL2 engine would require a big, ugly rewrite, we're
+        // falling back to the GL 1 engine..
+        static bool mac_x1600_check_done = false;
+        if (!mac_x1600_check_done) {
+            QGLWidget *tmp = 0;
+            if (!QGLContext::currentContext()) {
+                tmp = new QGLWidget();
+                tmp->makeCurrent();
+            }
+            if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
+                engineType = QPaintEngine::OpenGL;
+            if (tmp)
+                delete tmp;
+            mac_x1600_check_done = true;
+        }
+#endif
         if (engineType == QPaintEngine::MaxUser) {
             // No user-set engine - use the defaults
 #if defined(QT_OPENGL_ES_2)
@@ -1567,7 +1587,10 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addPixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
@@ -1575,7 +1598,10 @@ QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removePixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->removePixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
@@ -1643,7 +1669,7 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 }
 
 
-void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
+void QGLTextureCache::cleanupTextures(QPixmap* pixmap)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() == QThread::currentThread()) {
@@ -1652,14 +1678,21 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
         if (texture && texture->options & QGLContext::MemoryManagedBindOption)
             instance()->remove(cacheKey);
     }
+}
+
 #if defined(Q_WS_X11)
+void QGLTextureCache::cleanupPixmapSurfaces(QPixmap* pixmap)
+{
+    // Remove any bound textures first:
+    cleanupTextures(pixmap);
+
     QPixmapData *pd = pixmap->data_ptr().data();
     if (pd->classId() == QPixmapData::X11Class) {
         Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
         QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
     }
-#endif
 }
+#endif
 
 void QGLTextureCache::deleteIfEmpty()
 {
@@ -1960,6 +1993,32 @@ GLuint QGLContext::bindTexture(const QString &fileName)
     return tx_id;
 }
 
+static inline QRgb qt_gl_convertToGLFormatHelper(QRgb src_pixel, GLenum texture_format)
+{
+    if (texture_format == GL_BGRA) {
+        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+            return ((src_pixel << 24) & 0xff000000)
+                   | ((src_pixel >> 24) & 0x000000ff)
+                   | ((src_pixel << 8) & 0x00ff0000)
+                   | ((src_pixel >> 8) & 0x0000ff00);
+        } else {
+            return src_pixel;
+        }
+    } else {  // GL_RGBA
+        if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
+            return (src_pixel << 8) | ((src_pixel >> 24) & 0xff);
+        } else {
+            return ((src_pixel << 16) & 0xff0000)
+                   | ((src_pixel >> 16) & 0xff)
+                   | (src_pixel & 0xff00ff00);
+        }
+    }
+}
+
+QRgb qt_gl_convertToGLFormat(QRgb src_pixel, GLenum texture_format)
+{
+    return qt_gl_convertToGLFormatHelper(src_pixel, texture_format);
+}
 
 static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum texture_format)
 {
@@ -1988,25 +2047,7 @@ static void convertToGLFormatHelper(QImage &dst, const QImage &img, GLenum textu
             const uint *src = (const quint32 *) (srcPixels - (srcy >> 16) * sbpl);
             int srcx = basex;
             for (int x=0; x<target_width; ++x) {
-                uint src_pixel = src[srcx >> 16];
-                if (texture_format == GL_BGRA) {
-                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-                        dest[x] = ((src_pixel << 24) & 0xff000000)
-                                  | ((src_pixel >> 24) & 0x000000ff)
-                                  | ((src_pixel << 8) & 0x00ff0000)
-                                  | ((src_pixel >> 8) & 0x0000ff00);
-                    } else {
-                        dest[x] = src_pixel;
-                    }
-                } else {  // GL_RGBA
-                    if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-                        dest[x] = (src_pixel << 8) | ((src_pixel >> 24) & 0xff);
-                    } else {
-                        dest[x] = ((src_pixel << 16) & 0xff0000)
-                                  | ((src_pixel >> 16) & 0xff)
-                                  | (src_pixel & 0xff00ff00);
-                    }
-                }
+                dest[x] = qt_gl_convertToGLFormatHelper(src[srcx >> 16], texture_format);
                 srcx += ix;
             }
             dest = (quint32 *)(((uchar *) dest) + dbpl);
@@ -2334,7 +2375,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
 
 #if defined(Q_WS_X11)
     // Try to use texture_from_pixmap
-    if (pd->classId() == QPixmapData::X11Class) {
+    if (pd->classId() == QPixmapData::X11Class && pd->pixelType() == QPixmapData::PixmapType) {
         texture = bindTextureFromNativePixmap(pd, key, options);
         if (texture) {
             texture->options |= QGLContext::MemoryManagedBindOption;
@@ -4717,24 +4758,7 @@ Q_GLOBAL_STATIC(QGL2PaintEngineEx, qt_gl_2_engine)
 Q_GLOBAL_STATIC(QOpenGLPaintEngine, qt_gl_engine)
 #endif
 
-#ifdef Q_WS_QWS
 Q_OPENGL_EXPORT QPaintEngine* qt_qgl_paint_engine()
-{
-#if !defined(QT_OPENGL_ES_2)
-    return qt_gl_engine();
-#else
-    return 0; // XXX
-#endif
-}
-#endif
-
-/*!
-    \internal
-
-    Returns the GL widget's paint engine. This is normally a
-    QOpenGLPaintEngine.
-*/
-QPaintEngine *QGLWidget::paintEngine() const
 {
 #if defined(QT_OPENGL_ES_1) || defined(QT_OPENGL_ES_1_CL)
     return qt_gl_engine();
@@ -4746,6 +4770,17 @@ QPaintEngine *QGLWidget::paintEngine() const
     else
         return qt_gl_engine();
 #endif
+}
+
+/*!
+    \internal
+
+    Returns the GL widget's paint engine. This is normally a
+    QOpenGLPaintEngine.
+*/
+QPaintEngine *QGLWidget::paintEngine() const
+{
+    return qt_qgl_paint_engine();
 }
 
 #ifdef QT3_SUPPORT

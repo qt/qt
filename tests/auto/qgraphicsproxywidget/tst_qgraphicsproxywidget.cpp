@@ -170,6 +170,7 @@ private slots:
     void dontCrashWhenDie();
     void createProxyForChildWidget();
     void actionsContextMenu();
+    void actionsContextMenu_data();
     void deleteProxyForChildWidget();
     void bypassGraphicsProxyWidget_data();
     void bypassGraphicsProxyWidget();
@@ -1286,6 +1287,7 @@ void tst_QGraphicsProxyWidget::paintEvent()
     QGraphicsView view(&scene);
     view.show();
     QTest::qWaitForWindowShown(&view);
+    QTest::qWait(70);
 
     SubQGraphicsProxyWidget proxy;
 
@@ -1296,14 +1298,14 @@ void tst_QGraphicsProxyWidget::paintEvent()
     w->show();
     QTest::qWaitForWindowShown(w);
     QApplication::processEvents();
-    QTest::qWait(50);
+    QTest::qWait(100);
     proxy.setWidget(w);
     scene.addItem(&proxy);
 
     //make sure we flush all the paint events
     QTest::qWait(70);
     QTRY_VERIFY(proxy.paintCount > 1);
-    QTest::qWait(70);
+    QTest::qWait(110);
     proxy.paintCount = 0;
 
     w->update();
@@ -1531,7 +1533,7 @@ void tst_QGraphicsProxyWidget::setWidget_simple()
 
     // Properties
     // QCOMPARE(proxy.focusPolicy(), lineEdit->focusPolicy());
-    QCOMPARE(proxy.palette(), lineEdit->palette());
+    // QCOMPARE(proxy.palette(), lineEdit->palette());
 #ifndef QT_NO_CURSOR
     QCOMPARE(proxy.cursor().shape(), lineEdit->cursor().shape());
 #endif
@@ -1756,6 +1758,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleWidget()
     QTRY_VERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
@@ -1878,6 +1882,8 @@ void tst_QGraphicsProxyWidget::tabFocus_simpleTwoWidgets()
     QVERIFY(leftDial->hasFocus());
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 2);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 2);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
@@ -1988,6 +1994,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexWidget()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
@@ -1999,8 +2007,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit1->setText("QLineEdit 1");
     QLineEdit *edit2 = new QLineEdit;
     edit2->setText("QLineEdit 2");
+    QFontComboBox *fontComboBox = new QFontComboBox;
     QVBoxLayout *vlayout = new QVBoxLayout;
     vlayout->addWidget(edit1);
+    vlayout->addWidget(fontComboBox);
     vlayout->addWidget(edit2);
 
     QGroupBox *box = new QGroupBox("QGroupBox");
@@ -2012,8 +2022,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit1_2->setText("QLineEdit 1_2");
     QLineEdit *edit2_2 = new QLineEdit;
     edit2_2->setText("QLineEdit 2_2");
+    QFontComboBox *fontComboBox2 = new QFontComboBox;
     vlayout = new QVBoxLayout;
     vlayout->addWidget(edit1_2);
+    vlayout->addWidget(fontComboBox2);
     vlayout->addWidget(edit2_2);
 
     QGroupBox *box_2 = new QGroupBox("QGroupBox 2");
@@ -2054,8 +2066,10 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
 
     EventSpy eventSpy(edit1);
     EventSpy eventSpy2(edit2);
+    EventSpy eventSpy3(fontComboBox);
     EventSpy eventSpy1_2(edit1_2);
     EventSpy eventSpy2_2(edit2_2);
+    EventSpy eventSpy2_3(fontComboBox2);
     EventSpy eventSpyBox(box);
 
     // Tab into group box
@@ -2076,11 +2090,24 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 0);
 
+    // Tab to the font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
+    QApplication::processEvents();
+    fontComboBox->hasFocus();
+    QVERIFY(!edit2->hasFocus());
+    QCOMPARE(eventSpy3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy3.counts[QEvent::FocusOut], 0);
+    QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy.counts[QEvent::FocusOut], 1);
+
     // Tab into line edit 2
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QApplication::processEvents();
     edit2->hasFocus();
     QVERIFY(!edit1->hasFocus());
+    QCOMPARE(eventSpy2.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2.counts[QEvent::FocusOut], 0);
+    QCOMPARE(eventSpy3.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy.counts[QEvent::FocusOut], 1);
 
@@ -2098,6 +2125,16 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 0);
 
+    // Tab into right font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
+    QApplication::processEvents();
+    QVERIFY(!edit1_2->hasFocus());
+    fontComboBox2->hasFocus();
+    QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusOut], 0);
+
     // Tab into right bottom line edit
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Tab);
     QApplication::processEvents();
@@ -2105,6 +2142,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     edit2_2->hasFocus();
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy1_2.counts[QEvent::FocusOut], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusIn], 1);
+    QCOMPARE(eventSpy2_3.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpy2_2.counts[QEvent::FocusIn], 1);
     QCOMPARE(eventSpy2_2.counts[QEvent::FocusOut], 0);
 
@@ -2120,6 +2159,12 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::processEvents();
     QVERIFY(!rightDial->hasFocus());
     edit2_2->hasFocus();
+
+    // Backtab into the right font combobox
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
+    QApplication::processEvents();
+    QVERIFY(!edit2_2->hasFocus());
+    fontComboBox2->hasFocus();
 
     // Backtab into line edit 1
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
@@ -2139,10 +2184,16 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QVERIFY(!rightDial->hasFocus());
     edit2->hasFocus();
 
-    // Backtab into line edit 1
+    // Backtab into the font combobox
     QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
     QApplication::processEvents();
     QVERIFY(!edit2->hasFocus());
+    fontComboBox->hasFocus();
+
+    // Backtab into line edit 1
+    QTest::keyPress(QApplication::focusWidget(), Qt::Key_Backtab);
+    QApplication::processEvents();
+    QVERIFY(!fontComboBox->hasFocus());
     edit1->hasFocus();
 
     // Backtab into line box
@@ -2156,6 +2207,8 @@ void tst_QGraphicsProxyWidget::tabFocus_complexTwoWidgets()
     QApplication::processEvents();
     QVERIFY(!box->hasFocus());
     leftDial->hasFocus();
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
@@ -2222,6 +2275,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleWidget()
     // Symmetry
     editProxy->clearFocus();
     QVERIFY(!edit->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
@@ -2272,6 +2327,8 @@ void tst_QGraphicsProxyWidget::setFocus_simpleTwoWidgets()
     QVERIFY(!editProxy->hasFocus());
     QVERIFY(edit2->hasFocus());
     QVERIFY(edit2Proxy->hasFocus());
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
@@ -2391,6 +2448,8 @@ void tst_QGraphicsProxyWidget::setFocus_complexTwoWidgets()
     QCOMPARE(eventSpyBox.counts[QEvent::FocusOut], 1);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusIn], 0);
     QCOMPARE(eventSpyBox_2.counts[QEvent::FocusOut], 0);
+
+    delete view;
 }
 
 void tst_QGraphicsProxyWidget::popup_basic()
@@ -2690,7 +2749,7 @@ void tst_QGraphicsProxyWidget::windowOpacity()
     view.show();
     QTest::qWaitForWindowShown(&view);
     QApplication::sendPostedEvents();
-    QTest::qWait(50);
+    QTest::qWait(150);
 
     qRegisterMetaType<QList<QRectF> >("QList<QRectF>");
     QSignalSpy signalSpy(&scene, SIGNAL(changed(const QList<QRectF> &)));
@@ -2780,13 +2839,13 @@ void tst_QGraphicsProxyWidget::palettePropagation()
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
     edit->setPalette(QPalette());
     QCOMPARE(editSpy.counts[QEvent::PaletteChange], 2);
     QCOMPARE(proxySpy.counts[QEvent::PaletteChange], 0);
     QVERIFY(!edit->testAttribute(Qt::WA_SetPalette));
     QVERIFY(!proxy.testAttribute(Qt::WA_SetPalette));
-    QCOMPARE(proxy.palette(), lineEditPalette);
+    QCOMPARE(proxy.palette(), QPalette());
 
     // Proxy to widget
     proxy.setPalette(palette);
@@ -2896,6 +2955,9 @@ void tst_QGraphicsProxyWidget::dontCrashWhenDie()
     QTest::qWait(100);
     QTest::mouseMove(w->view->viewport(), w->view->mapFromScene(w->widget->mapToScene(w->widget->boundingRect().center())));
     delete w->item;
+
+    QApplication::processEvents();
+    delete w;
 }
 
 void tst_QGraphicsProxyWidget::createProxyForChildWidget()
@@ -3014,30 +3076,67 @@ private slots:
     }
 };
 
+void tst_QGraphicsProxyWidget::actionsContextMenu_data()
+{
+    QTest::addColumn<bool>("actionsContextMenu");
+    QTest::addColumn<bool>("hasFocus");
+
+    QTest::newRow("without actionsContextMenu and with focus") << false << true;
+    QTest::newRow("without actionsContextMenu and without focus") << false << false;
+    QTest::newRow("with actionsContextMenu and focus") << true << true;
+    QTest::newRow("with actionsContextMenu without focus") << true << false;
+}
+
 void tst_QGraphicsProxyWidget::actionsContextMenu()
 {
-    ContextMenuWidget *widget = new ContextMenuWidget;
-    widget->addAction(new QAction("item 1", widget));
-    widget->addAction(new QAction("item 2", widget));
-    widget->addAction(new QAction("item 3", widget));
-    widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    QFETCH(bool, hasFocus);
+    QFETCH(bool, actionsContextMenu);
 
+    ContextMenuWidget *widget = new ContextMenuWidget;
+    if (actionsContextMenu) {
+        widget->addAction(new QAction("item 1", widget));
+        widget->addAction(new QAction("item 2", widget));
+        widget->addAction(new QAction("item 3", widget));
+        widget->setContextMenuPolicy(Qt::ActionsContextMenu);
+    }
     QGraphicsScene scene;
-    scene.addWidget(widget);
 
     QGraphicsView view(&scene);
     view.show();
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&view);
-#endif
+    QApplication::setActiveWindow(&view);
+    QTest::qWaitForWindowShown(&view);
+    view.setFocus();
+    QTRY_VERIFY(view.hasFocus());
+
+    if (hasFocus)
+        scene.addWidget(widget)->setFocus();
+    else
+        scene.addWidget(widget)->clearFocus();
+
+    QApplication::processEvents();
+
     QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse,
                                        view.viewport()->rect().center(),
                                        view.viewport()->mapToGlobal(view.viewport()->rect().center()));
     contextMenuEvent.accept();
     qApp->sendEvent(view.viewport(), &contextMenuEvent);
 
-    QVERIFY(widget->embeddedPopup);
-    QVERIFY(!widget->gotContextMenuEvent);
+    if (hasFocus) {
+        if (actionsContextMenu) {
+            //actionsContextMenu embedded popup but no contextMenuEvent (widget has focus)
+            QVERIFY(widget->embeddedPopup);
+            QVERIFY(!widget->gotContextMenuEvent);
+        } else {
+            //no embedded popup but contextMenuEvent (widget has focus)
+            QVERIFY(!widget->embeddedPopup);
+            QVERIFY(widget->gotContextMenuEvent);
+        }
+    } else {
+        //qgraphicsproxywidget doesn't have the focus, the widget must not receive any contextMenuEvent and must not create any QMenu
+        QVERIFY(!widget->embeddedPopup);
+        QVERIFY(!widget->gotContextMenuEvent);
+    }
+
 }
 
 

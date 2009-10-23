@@ -47,12 +47,22 @@
 #include "private/qgl_p.h"
 #include <private/qwindowsurface_raster_p.h>
 
+#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+#include "private/qpixmapdata_x11gl_p.h"
+#include "private/qwindowsurface_x11gl_p.h"
+#endif
+
 QT_BEGIN_NAMESPACE
 
 extern QGLWidget *qt_gl_getShareWidget();
 
 QPixmapData *QGLGraphicsSystem::createPixmapData(QPixmapData::PixelType type) const
 {
+#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+    if (type == QPixmapData::PixmapType && QX11GLPixmapData::hasX11GLPixmaps())
+        return new QX11GLPixmapData();
+#endif
+
     return new QGLPixmapData(type);
 }
 
@@ -64,6 +74,11 @@ QWindowSurface *QGLGraphicsSystem::createWindowSurface(QWidget *widget) const
     // top level window opacity.
     if (widget->windowType() == Qt::Popup)
         return new QRasterWindowSurface(widget);
+#endif
+
+#if defined(Q_WS_X11) && defined(QT_OPENGL_ES)
+    if (QX11GLPixmapData::hasX11GLPixmaps())
+        return new QX11GLWindowSurface(widget);
 #endif
 
     return new QGLWindowSurface(widget);

@@ -464,6 +464,7 @@ private:
     friend class QGraphicsSceneBspTree;
     friend class QGraphicsView;
     friend class QGraphicsViewPrivate;
+    friend class QGraphicsObject;
     friend class QGraphicsWidget;
     friend class QGraphicsWidgetPrivate;
     friend class QGraphicsProxyWidgetPrivate;
@@ -473,6 +474,7 @@ private:
     friend class QGraphicsSceneBspTreeIndexPrivate;
     friend class QGraphicsItemEffectSourcePrivate;
     friend class QGraphicsTransformPrivate;
+    friend class QGestureManager;
     friend class ::tst_QGraphicsItem;
     friend bool qt_closestLeaf(const QGraphicsItem *, const QGraphicsItem *);
     friend bool qt_closestItemFirst(const QGraphicsItem *, const QGraphicsItem *);
@@ -552,6 +554,8 @@ public:
 #else
     using QObject::children;
 #endif
+
+    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::ItemWithChildrenGesture);
 
 Q_SIGNALS:
     void parentChanged();
@@ -1116,6 +1120,7 @@ template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem *item);
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsObject *item);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags);

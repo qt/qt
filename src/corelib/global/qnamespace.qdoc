@@ -1225,8 +1225,6 @@
     \value WA_TouchPadAcceptSingleTouchEvents Allows touchpad single
     touch events to be sent to the widget.
 
-    \value WA_DontUseStandardGestures Disables standard gestures on Qt widgets.
-
     \omitvalue WA_SetLayoutDirection
     \omitvalue WA_InputMethodTransparent
     \omitvalue WA_WState_CompressKeys
@@ -1829,7 +1827,9 @@
     \value TabFocus  the widget accepts focus by tabbing.
     \value ClickFocus  the widget accepts focus by clicking.
     \value StrongFocus  the widget accepts focus by both tabbing
-                    and clicking.
+                    and clicking. On Mac OS X this will also
+                    be indicate that the widget accepts tab focus
+                    when in 'Text/List focus mode'.
     \value WheelFocus  like Qt::StrongFocus plus the widget accepts
                     focus by using the mouse wheel.
     \value NoFocus  the widget does not accept focus.
@@ -2798,12 +2798,51 @@
 
     This enum type describes the state of a gesture.
 
-    \value NoGesture        Initial state
     \value GestureStarted   A continuous gesture has started.
     \value GestureUpdated   A gesture continues.
     \value GestureFinished  A gesture has finished.
+    \value GestureCanceled  A gesture was canceled.
+    \omitvalue NoGesture
 
     \sa QGesture
+*/
+
+/*!
+    \enum Qt::GestureType
+    \since 4.6
+
+    This enum type describes the standard gestures.
+
+    \value TapGesture        A Tap gesture.
+    \value TapAndHoldGesture A Tap-And-Hold (Long-Tap) gesture.
+    \value PanGesture        A Pan gesture.
+    \value PinchGesture      A Pinch gesture.
+    \value SwipeGesture      A Swipe gesture.
+    \value CustomGesture     User-defined gesture ID.
+    \value LastGestureType   Last user gesture ID.
+
+    User-defined gestures are registered with the
+    QApplication::registerGestureRecognizer() function which generates a custom gesture ID
+    in the range of values from CustomGesture to LastGestureType.
+
+    \sa QGesture, QWidget::grabGesture()
+*/
+
+/*!
+    \enum Qt::GestureContext
+    \since 4.6
+
+    This enum type describes the context of a gesture.
+
+    For a QGesture to trigger, the gesture recognizer should filter events for
+    a widget tree. This enum describes for which widget the gesture recognizer
+    should filter events:
+
+    \value WidgetGesture Gestures can only start over the widget itself.
+    \value WidgetWithChildrenGesture Gestures can start on the widget or over
+    any of its children.
+
+    \sa QWidget::grabGesture()
 */
 
 /*!

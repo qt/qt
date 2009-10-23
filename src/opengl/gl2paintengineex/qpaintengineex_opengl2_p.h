@@ -62,6 +62,7 @@
 #include <private/qglpixmapfilter_p.h>
 #include <private/qfontengine_p.h>
 #include <private/qdatabuffer_p.h>
+#include <private/qtriangulatingstroker_p.h>
 
 enum EngineMode {
     ImageDrawingMode,
@@ -82,6 +83,7 @@ public:
     QOpenGL2PaintEngineState();
     ~QOpenGL2PaintEngineState();
 
+    uint isNew : 1;
     uint needsClipBufferClear : 1;
     uint clipTestEnabled : 1;
     uint canRestoreClip : 1;
@@ -159,6 +161,12 @@ class QGL2PaintEngineExPrivate : public QPaintEngineExPrivate
 {
     Q_DECLARE_PUBLIC(QGL2PaintEngineEx)
 public:
+    enum StencilFillMode {
+        OddEvenFillMode,
+        WindingFillMode,
+        TriStripStrokeFillMode
+    };
+
     QGL2PaintEngineExPrivate(QGL2PaintEngineEx *q_ptr) :
             q(q_ptr),
             width(0), height(0),
@@ -184,15 +192,24 @@ public:
 
     // fill, drawOutline, drawTexture & drawCachedGlyphs are the rendering entry points:
     void fill(const QVectorPath &path);
-    void drawOutline(const QVectorPath& path);
     void drawTexture(const QGLRect& dest, const QGLRect& src, const QSize &textureSize, bool opaque, bool pattern = false);
     void drawCachedGlyphs(const QPointF &p, QFontEngineGlyphCache::Type glyphType, const QTextItemInt &ti);
 
-    void drawVertexArrays(QGL2PEXVertexArray& vertexArray, GLenum primitive);
+    void drawVertexArrays(const float *data, const QVector<int> *stops, GLenum primitive);
+    void drawVertexArrays(QGL2PEXVertexArray &vertexArray, GLenum primitive) {
+        drawVertexArrays((const float *) vertexArray.data(), &vertexArray.stops(), primitive);
+    }
+
         // ^ draws whatever is in the vertex array
     void composite(const QGLRect& boundingRect);
         // ^ Composites the bounding rect onto dest buffer
-    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill);
+
+    void fillStencilWithVertexArray(const float *data, int count, const QVector<int> *stops, const QGLRect &bounds, StencilFillMode mode);
+    void fillStencilWithVertexArray(QGL2PEXVertexArray& vertexArray, bool useWindingFill) {
+        fillStencilWithVertexArray((const float *) vertexArray.data(), 0, &vertexArray.stops(),
+                                   vertexArray.boundingRect(),
+                                   useWindingFill ? WindingFillMode : OddEvenFillMode);
+    }
         // ^ Calls drawVertexArrays to render into stencil buffer
 
     bool prepareForDraw(bool srcPixelsAreOpaque);
@@ -211,8 +228,6 @@ public:
     QGLContext *ctx;
     EngineMode mode;
     QFontEngineGlyphCache::Type glyphCacheType;
-
-    mutable QOpenGL2PaintEngineState *last_created_state;
 
     // Dirty flags
     bool matrixDirty; // Implies matrix uniforms are also dirty
@@ -266,6 +281,10 @@ public:
     GLfloat depthRange[2];
 
     float textureInvertedY;
+
+    QTriangulatingStroker stroker;
+    QDashedStrokeProcessor dasher;
+    QTransform temporaryTransform;
 
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;

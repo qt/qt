@@ -65,11 +65,6 @@
 #include <limits.h>
 #include <qtexttable.h>
 #include <qvariant.h>
-
-#ifdef Q_WS_WIN
-#include <qstandardgestures.h>
-#endif
-
 #include <qinputcontext.h>
 
 #ifndef QT_NO_TEXTEDIT
@@ -2937,33 +2932,29 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     (\a available is true) or unavailable (\a available is false).
 */
 
-#ifdef Q_WS_WIN
-
-void QPlainTextEditPrivate::_q_gestureTriggered()
-{
-    Q_Q(QPlainTextEdit);
-    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-    if (!g)
-        return;
-    QScrollBar *hBar = q->horizontalScrollBar();
-    QScrollBar *vBar = q->verticalScrollBar();
-    if (g->state() == Qt::GestureStarted)
-        originalOffsetY = vBar->value();
-    QSizeF totalOffset = g->totalOffset();
-    if (!totalOffset.isNull()) {
-        if (QApplication::isRightToLeft())
-            totalOffset.rwidth() *= -1;
-        // QPlainTextEdit scrolls by lines only in vertical direction
-        QFontMetrics fm(q->document()->defaultFont());
-        int lineHeight = fm.height();
-        int newX = hBar->value() - g->lastOffset().width();
-        int newY = originalOffsetY - totalOffset.height()/lineHeight;
-        hbar->setValue(newX);
-        vbar->setValue(newY);
-    }
-}
-
-#endif
+//void QPlainTextEditPrivate::_q_gestureTriggered()
+//{
+//    Q_Q(QPlainTextEdit);
+//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
+//    if (!g)
+//        return;
+//    QScrollBar *hBar = q->horizontalScrollBar();
+//    QScrollBar *vBar = q->verticalScrollBar();
+//    if (g->state() == Qt::GestureStarted)
+//        originalOffsetY = vBar->value();
+//    QSizeF totalOffset = g->totalOffset();
+//    if (!totalOffset.isNull()) {
+//        if (QApplication::isRightToLeft())
+//            totalOffset.rwidth() *= -1;
+//        // QPlainTextEdit scrolls by lines only in vertical direction
+//        QFontMetrics fm(q->document()->defaultFont());
+//        int lineHeight = fm.height();
+//        int newX = hBar->value() - g->lastOffset().width();
+//        int newY = originalOffsetY - totalOffset.height()/lineHeight;
+//        hbar->setValue(newX);
+//        vbar->setValue(newY);
+//    }
+//}
 
 QT_END_NAMESPACE
 

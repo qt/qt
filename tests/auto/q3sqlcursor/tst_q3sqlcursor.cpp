@@ -137,6 +137,8 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
         QVERIFY_SQL(q, exec("SET ANSI_DEFAULTS ON"));
         QVERIFY_SQL(q, exec("SET IMPLICIT_TRANSACTIONS OFF"));
     }
+    else if(tst_Databases::isPostgreSQL(db))
+        QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
     // please never ever change this table; otherwise fix all tests ;)
     if ( tst_Databases::isMSAccess( db ) ) {
@@ -150,10 +152,10 @@ void tst_Q3SqlCursor::createTestTables( QSqlDatabase db )
     if ( tst_Databases::isSqlServer( db ) ) {
 	//workaround for SQL SERVER since he can store unicode only in nvarchar fields
 	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode") + " (id int not null, "
-		       "t_varchar nvarchar(40) not null, t_char nchar(40) )" ));
+		       "t_varchar nvarchar(80) not null, t_char nchar(80) )" ));
     } else {
 	QVERIFY_SQL(q, exec("create table " + qTableName("qtest_unicode") + " (id int not null, "
-		       "t_varchar varchar(40) not null," "t_char char(40))" ));
+		       "t_varchar varchar(100) not null," "t_char char(100))" ));
     }
 
     if (tst_Databases::isMSAccess(db)) {
@@ -519,8 +521,7 @@ void tst_Q3SqlCursor::unicode()
     QSqlDatabase db = QSqlDatabase::database( dbName );
     CHECK_DATABASE( db );
 
-    static const unsigned short utf8arr[] = { 0xd792,0xd79c,0xd792,0xd79c,0xd799,0x20,0xd7a9,0xd799,0x00 };
-    static const QString utf8str = QString::fromUcs2( utf8arr );
+    static const QString utf8str = QString::fromUtf8( "ὕαλον ϕαγεῖν δύναμαι· τοῦτο οὔ με βλάπτει." );
     if ( !db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
 	 QSKIP( "DBMS not Unicode capable", SkipSingle );
     }

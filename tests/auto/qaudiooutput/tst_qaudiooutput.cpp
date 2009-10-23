@@ -150,15 +150,20 @@ void tst_QAudioOutput::pullFile()
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
         QVERIFY(audio->periodSize() > 0);
-        QVERIFY(audio->clock() > 0);
+        QVERIFY(audio->clock() > 10000 && audio->clock() < 800000);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
         // Wait until finished...
         QTestEventLoop::instance().enterLoop(1);
         QCOMPARE(audio->totalTime(), qint64(692250));
+
+#ifdef Q_OS_WINCE
+        // 4.wav is a little less than 700ms, so notify should fire 4 times on Wince!
+        QVERIFY(readSignal.count() >= 4);
+#else
         // 4.wav is a little less than 700ms, so notify should fire 6 times!
         QVERIFY(readSignal.count() >= 6);
-
+#endif
         audio->stop();
         QTest::qWait(20); // wait 20ms
         QVERIFY(audio->state() == QAudio::StopState);

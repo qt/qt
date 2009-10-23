@@ -71,6 +71,8 @@ public:
 //                    Qt::ImageConversionFlags flags);
     ~QX11PixmapData();
 
+    QPixmapData *createCompatiblePixmapData() const;
+
     void resize(int width, int height);
     void fromImage(const QImage &image, Qt::ImageConversionFlags flags);
     void copy(const QPixmapData *data, const QRect &rect);
@@ -101,6 +103,7 @@ private:
     friend class QRasterWindowSurface;
     friend class QGLContextPrivate; // Needs to access xinfo, gl_surface & flags
     friend class QEglContext; // Needs gl_surface
+    friend class QX11GLPixmapData; // Needs gl_surface
     friend bool  qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs gl_surface
 
     void release();

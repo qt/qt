@@ -322,6 +322,7 @@ void tst_QDom::toString_01_data()
 */
 void tst_QDom::toString_01()
 {
+    QFAIL("make test fail instead of timing out, will be fixed later (QT-2357)");
     QFETCH(QString, fileName);
 
     QFile f(fileName);
