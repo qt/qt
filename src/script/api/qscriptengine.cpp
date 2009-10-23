@@ -2619,8 +2619,8 @@ bool QScriptEnginePrivate::convert(const QScriptValue &value,
                                    int type, void *ptr,
                                    QScriptEnginePrivate *eng)
 {
-    if (!eng && value.engine())
-        eng = QScriptEnginePrivate::get(value.engine());
+    if (!eng)
+        eng = QScriptValuePrivate::getEngine(value);
     if (eng) {
         QScriptTypeInfo *info = eng->m_typeInfos.value(type);
         if (info && info->demarshal) {

@@ -100,6 +100,13 @@ public:
         return QScriptValue(d);
     }
 
+    static inline QScriptEnginePrivate *getEngine(const QScriptValue &q)
+    {
+        if (!q.d_ptr)
+            return 0;
+        return q.d_ptr->engine;
+    }
+
     inline QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
     QScriptValue propertyHelper(const JSC::Identifier &id, int resolveMode) const;
     inline QScriptValue property(quint32 index, int resolveMode) const;
