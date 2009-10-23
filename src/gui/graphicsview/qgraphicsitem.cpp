@@ -1228,7 +1228,7 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem with the given \a parent.
+    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor. It does not modify \fn QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
     QGraphicsScene::addItem(). The item will then become a top-level item.
@@ -7318,7 +7318,7 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
 
 /*!
   \property QGraphicsObject::parent
-  \brief the parent of the item
+  \brief the parent of the item. It is independent from \fn QObject::parent.
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
