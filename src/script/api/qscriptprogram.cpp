@@ -134,4 +134,57 @@ bool QScriptProgram::isValid() const
     return (d && d->engine);
 }
 
+/*!
+  Returns the source code of this program.
+*/
+QString QScriptProgram::sourceCode() const
+{
+    Q_D(const QScriptProgram);
+    if (!d)
+        return QString();
+    return d->executable->source().toString();
+}
+
+/*!
+  Returns the filename associated with this program.
+*/
+QString QScriptProgram::fileName() const
+{
+    Q_D(const QScriptProgram);
+    if (!d)
+        return QString();
+    return d->executable->sourceURL();
+}
+
+/*!
+  Returns the line number associated with this program.
+*/
+int QScriptProgram::lineNumber() const
+{
+    Q_D(const QScriptProgram);
+    if (!d)
+        return -1;
+    return d->executable->lineNo();
+}
+
+/*!
+  Returns true if this QScriptProgram is equal to \a other;
+  otherwise returns false.
+*/
+bool QScriptProgram::operator==(const QScriptProgram &other) const
+{
+    return (sourceCode() == other.sourceCode())
+        && (fileName() == other.fileName())
+        && (lineNumber() == other.lineNumber());
+}
+
+/*!
+  Returns true if this QScriptProgram is not equal to \a other;
+  otherwise returns false.
+*/
+bool QScriptProgram::operator!=(const QScriptProgram &other) const
+{
+    return !operator==(other);
+}
+
 QT_END_NAMESPACE

@@ -62,6 +62,13 @@ public:
 
     bool isValid() const;
 
+    QString sourceCode() const;
+    QString fileName() const;
+    int lineNumber() const;
+
+    bool operator==(const QScriptProgram &other) const;
+    bool operator!=(const QScriptProgram &other) const;
+
 private:
     QExplicitlySharedDataPointer<QScriptProgramPrivate> d_ptr;
     Q_DECLARE_PRIVATE(QScriptProgram)
