@@ -58,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \ingroup group_coreitems
 
     This is a convenience class for implementing items that paint their contents
-    using a QPainter.  The contents of the item are are cached behind the scenes.
+    using a QPainter.  The contents of the item are cached behind the scenes.
     The dirtyCache() function should be called if the contents change to
     ensure the cache is refreshed the next time painting occurs.
 
