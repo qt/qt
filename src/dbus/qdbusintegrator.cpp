@@ -501,6 +501,11 @@ static QObject *findChildObject(const QDBusConnectionPrivate::ObjectTreeNode *ro
     return 0;
 }
 
+static bool shouldWatchService(const QString &service)
+{
+    return !service.isEmpty() && !service.startsWith(QLatin1Char(':'));
+}
+
 extern QDBUS_EXPORT void qDBusAddSpyHook(QDBusSpyHook);
 void qDBusAddSpyHook(QDBusSpyHook hook)
 {
@@ -941,6 +946,7 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
     QDBusMetaTypeId::init();
 
     rootNode.flags = 0;
+    watchedServiceNames[QLatin1String(DBUS_SERVICE_DBUS)] = 1;
 
     connect(this, SIGNAL(serviceOwnerChanged(QString,QString,QString)),
             this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
@@ -2005,6 +2011,22 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
                      hook.obj->metaObject()->method(hook.midx).signature(),
                      qPrintable(qerror.name()), qPrintable(qerror.message()));
             Q_ASSERT(false);
+        } else {
+            // Successfully connected the signal
+            // Do we need to watch for this name?
+            if (shouldWatchService(hook.service)) {
+                WatchedServicesHash::Iterator it = watchedServiceNames.find(hook.service);
+                if (it != watchedServiceNames.end()) {
+                    // already watching
+                    ++it.value();
+                } else {
+                    // we need to watch for this service changing
+                    QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
+                    connectSignal(dbusServerService, dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
+                                  QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                                  this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+                }
+            }
         }
     }
 }
@@ -2050,6 +2072,19 @@ QDBusConnectionPrivate::SignalHookHash::Iterator
 QDBusConnectionPrivate::disconnectSignal(SignalHookHash::Iterator &it)
 {
     const SignalHook &hook = it.value();
+
+    WatchedServicesHash::Iterator sit = watchedServiceNames.find(hook.service);
+    if (sit != watchedServiceNames.end()) {
+        if (sit.value() == 1) {
+            watchedServiceNames.erase(sit);
+            QString dbusServerService = QLatin1String(DBUS_SERVICE_DBUS);
+            disconnectSignal(dbusServerService, QString(), QLatin1String(DBUS_INTERFACE_DBUS),
+                          QLatin1String("NameOwnerChanged"), QStringList() << hook.service, QString(),
+                          this, SLOT(_q_serviceOwnerChanged(QString,QString,QString)));
+        } else {
+            --sit.value();
+        }
+    }
 
     bool erase = false;
     MatchRefCountHash::iterator i = matchRefCounts.find(hook.matchRule);

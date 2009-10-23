@@ -154,6 +154,7 @@ public:
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
     typedef QHash<QByteArray, int> MatchRefCountHash;
+    typedef QHash<QString, int> WatchedServicesHash;
 
 public:
     // public methods are entry points from other objects
@@ -270,6 +271,7 @@ public:
     QDBusError lastError;
 
     QStringList serviceNames;
+    WatchedServicesHash watchedServiceNames;
     SignalHookHash signalHooks;
     MatchRefCountHash matchRefCounts;
     ObjectTreeNode rootNode;
