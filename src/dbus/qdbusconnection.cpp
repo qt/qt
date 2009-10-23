@@ -557,32 +557,20 @@ QDBusPendingCall QDBusConnection::asyncCall(const QDBusMessage &message, int tim
 bool QDBusConnection::connect(const QString &service, const QString &path, const QString& interface,
                               const QString &name, QObject *receiver, const char *slot)
 {
-    return connect(service, path, interface, name, QString(), receiver, slot);
-}
-
-/*!
-    Disconnects the signal specified by the \a service, \a path, \a interface and \a name parameters from
-    the slot \a slot in object \a receiver. The arguments \a service and \a path can be empty,
-    denoting a disconnection from all signals of the (\a interface, \a name) pair, from all remote
-    applications.
-
-    Returns true if the disconnection was successful.
-*/
-bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString &interface,
-                                 const QString &name, QObject *receiver, const char *slot)
-{
-    return disconnect(service, path, interface, name, QString(), receiver, slot);
+    return connect(service, path, interface, name, QStringList(), QString(), receiver, slot);
 }
 
 /*!
     \overload
 
     Connects the signal to the slot \a slot in object \a
-    receiver. Unlike the other connect() overload, this function
+    receiver. Unlike the previous connect() overload, this function
     allows one to specify the parameter signature to be connected
     using the \a signature variable. The function will then verify
     that this signature can be delivered to the slot specified by \a
     slot and return false otherwise.
+
+    Returns true if the connection was successful.
 
     \note This function verifies that the signal signature matches the
           slot's parameters, but it does not verify that the actual
@@ -593,6 +581,37 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
                               const QString &name, const QString &signature,
                               QObject *receiver, const char *slot)
 {
+    return connect(service, path, interface, name, QStringList(), signature, receiver, slot);
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Connects the signal to the slot \a slot in object \a
+    receiver. Unlike the previous connect() overload, this function
+    allows one to specify the parameter signature to be connected
+    using the \a signature variable. The function will then verify
+    that this signature can be delivered to the slot specified by \a
+    slot and return false otherwise.
+
+    The \a argumentMatch parameter lists the string parameters to be matched,
+    in sequential order. Note that, to match an empty string, you need to
+    pass a QString that is empty but not null (i.e., QString("")). A null
+    QString skips matching at that position.
+
+    Returns true if the connection was successful.
+
+    \note This function verifies that the signal signature matches the
+          slot's parameters, but it does not verify that the actual
+          signal exists with the given signature in the remote
+          service.
+*/
+bool QDBusConnection::connect(const QString &service, const QString &path, const QString& interface,
+                              const QString &name, const QStringList &argumentMatch, const QString &signature,
+                              QObject *receiver, const char *slot)
+{
+
     if (!receiver || !slot || !d || !d->connection)
         return false;
     if (!interface.isEmpty() && !QDBusUtil::isValidInterfaceName(interface))
@@ -609,7 +628,7 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
 
     QString owner = d->getNameOwner(service); // we don't care if the owner is empty
     hook.signature = signature;               // it might get started later
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, QStringList(), receiver, slot, 0, false))
+    if (!d->prepareHook(hook, key, service, owner, path, interface, name, argumentMatch, receiver, slot, 0, false))
         return false;           // don't connect
 
     // avoid duplicating:
@@ -634,17 +653,48 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
 }
 
 /*!
+    Disconnects the signal specified by the \a service, \a path, \a interface
+    and \a name parameters from the slot \a slot in object \a receiver. The
+    arguments must be the same as passed to the connect() function.
+
+    Returns true if the disconnection was successful.
+*/
+bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString &interface,
+                                 const QString &name, QObject *receiver, const char *slot)
+{
+    return disconnect(service, path, interface, name, QStringList(), QString(), receiver, slot);
+}
+
+/*!
     \overload
 
-    Disconnects the signal from the slot \a slot in object \a
-    receiver. Unlike the other disconnect() overload, this function
-    allows one to specify the parameter signature to be disconnected
-    using the \a signature variable. The function will then verify
-    that this signature is connected to the slot specified by \a slot
-    and return false otherwise.
+    Disconnects the signal specified by the \a service, \a path, \a
+    interface, \a name, and \a signature parameters from the slot \a slot in
+    object \a receiver. The arguments must be the same as passed to the
+    connect() function.
+
+    Returns true if the disconnection was successful.
 */
 bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString& interface,
                                  const QString &name, const QString &signature,
+                                 QObject *receiver, const char *slot)
+{
+    return disconnect(service, path, interface, name, QStringList(), signature, receiver, slot);
+}
+
+/*!
+    \overload
+    \since 4.6
+
+    Disconnects the signal specified by the \a service, \a path, \a
+    interface, \a name, \a argumentMatch, and \a signature parameters from
+    the slot \a slot in object \a receiver. The arguments must be the same as
+    passed to the connect() function.
+
+    Returns true if the disconnection was successful.
+*/
+bool QDBusConnection::disconnect(const QString &service, const QString &path, const QString& interface,
+                                 const QString &name, const QStringList &argumentMatch, const QString &signature,
                                  QObject *receiver, const char *slot)
 {
     if (!receiver || !slot || !d || !d->connection)
@@ -663,7 +713,7 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
 
     QString owner = d->getNameOwner(service); // we don't care of owner is empty
     hook.signature = signature;
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, QStringList(), receiver, slot, 0, false))
+    if (!d->prepareHook(hook, key, service, owner, path, interface, name, argumentMatch, receiver, slot, 0, false))
         return false;           // don't disconnect
 
     // avoid duplicating:
