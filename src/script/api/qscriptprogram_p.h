@@ -58,6 +58,7 @@
 namespace JSC
 {
     class EvalExecutable;
+    class ExecState;
 }
 
 QT_BEGIN_NAMESPACE
@@ -67,20 +68,26 @@ class QScriptEnginePrivate;
 class QScriptProgramPrivate
 {
 public:
-    QScriptProgramPrivate(QScriptEnginePrivate*,
-                          JSC::EvalExecutable*,
-                          intptr_t);
+    QScriptProgramPrivate(const QString &sourceCode,
+                          const QString &fileName,
+                          int lineNumber);
     ~QScriptProgramPrivate();
 
     static QScriptProgramPrivate *get(const QScriptProgram &q);
-    static QScriptProgram create(QScriptEnginePrivate*,
-                                 JSC::EvalExecutable*,
-                                 intptr_t);
+
+    JSC::EvalExecutable *executable(JSC::ExecState *exec,
+                                    QScriptEnginePrivate *engine);
 
     QBasicAtomicInt ref;
+
+    QString sourceCode;
+    QString fileName;
+    int lineNumber;
+
     QScriptEnginePrivate *engine;
-    JSC::EvalExecutable *executable;
+    JSC::EvalExecutable *_executable;
     intptr_t sourceId;
+    bool isCompiled;
 };
 
 QT_END_NAMESPACE

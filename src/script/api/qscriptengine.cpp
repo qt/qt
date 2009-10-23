@@ -1188,9 +1188,36 @@ void QScriptEnginePrivate::agentDeleted(QScriptEngineAgent *agent)
     }
 }
 
-QScriptValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, JSC::Debugger* debugger,
-                                                  intptr_t sourceId, JSC::EvalExecutable *executable)
+JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t sourceId,
+                                                  JSC::EvalExecutable *executable,
+                                                  bool &compile)
 {
+    JSC::JSLock lock(false); // ### hmmm
+    QBoolBlocker inEvalBlocker(inEval, true);
+    q_func()->currentContext()->activationObject(); //force the creation of a context for native function;
+
+    JSC::Debugger* debugger = originalGlobalObject()->debugger();
+    if (debugger)
+        debugger->evaluateStart(sourceId);
+
+    exec->clearException();
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
+
+    if (compile) {
+        JSC::JSObject* error = executable->compile(exec, exec->scopeChain());
+        if (error) {
+            compile = false;
+            exec->setException(error);
+
+            if (debugger) {
+                debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, error), sourceId, false);
+                debugger->evaluateStop(error, sourceId);
+            }
+
+            return error;
+        }
+    }
+
     JSC::JSValue thisValue = thisForContext(exec);
     JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull())
                                 ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
@@ -1208,7 +1235,7 @@ QScriptValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, JSC::Deb
         if (debugger)
             debugger->evaluateStop(scriptValueToJSCValue(abortResult), sourceId);
 
-        return abortResult;
+        return scriptValueToJSCValue(abortResult);
     }
 
     if (exceptionValue) {
@@ -1217,14 +1244,14 @@ QScriptValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, JSC::Deb
         if (debugger)
             debugger->evaluateStop(exceptionValue, sourceId);
 
-        return scriptValueFromJSCValue(exceptionValue);
+        return exceptionValue;
     }
 
     if (debugger)
         debugger->evaluateStop(result, sourceId);
 
     Q_ASSERT(!exec->hadException());
-    return scriptValueFromJSCValue(result);
+    return result;
 }
 
 #ifndef QT_NO_QOBJECT
@@ -2187,66 +2214,15 @@ QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &progra
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
-
-    JSC::JSLock lock(false); // ### hmmm
-    QBoolBlocker inEval(d->inEval, true);
-    currentContext()->activationObject(); //force the creation of a context for native function;
-
-    JSC::UString jscProgram = program;
-    JSC::UString jscFileName = fileName;
-    JSC::ExecState* exec = d->currentFrame;
     WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
-            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
+            = QScript::UStringSourceProviderWithFeedback::create(program, fileName, lineNumber, d);
     intptr_t sourceId = provider->asID();
     JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
 
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
-    if (debugger)
-        debugger->evaluateStart(sourceId);
-
-    exec->clearException();
-    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
-
-    JSC::EvalExecutable executable(exec, source);
-    JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
-    if (error) {
-        exec->setException(error);
-
-        if (debugger) {
-            debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, error), sourceId, false);
-            debugger->evaluateStop(error, sourceId);
-        }
-
-        return d->scriptValueFromJSCValue(error);
-    }
-
-    return d->evaluateHelper(exec, debugger, sourceId, &executable);
-}
-
-/*!
-  \internal
-  \since 4.6
-*/
-QScriptProgram QScriptEngine::compile(const QString &program, const QString &fileName, int lineNumber)
-{
-    Q_D(QScriptEngine);
-    JSC::UString jscProgram = program;
-    JSC::UString jscFileName = fileName;
-    WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
-            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
-    JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
-
     JSC::ExecState* exec = d->currentFrame;
-    exec->clearException();
-    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
-
-    JSC::EvalExecutable *executable = new JSC::EvalExecutable(exec, source);
-    JSC::JSObject* error = executable->compile(exec, exec->scopeChain());
-    if (error != 0) {
-        delete executable;
-        return QScriptProgram();
-    }
-    return QScriptProgramPrivate::create(d, executable, provider->asID());
+    JSC::EvalExecutable executable(exec, source);
+    bool compile = true;
+    return d->scriptValueFromJSCValue(d->evaluateHelper(exec, sourceId, &executable, compile));
 }
 
 /*!
@@ -2257,23 +2233,17 @@ QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
 {
     Q_D(QScriptEngine);
     QScriptProgramPrivate *program_d = QScriptProgramPrivate::get(program);
-    if (!program_d || !program_d->engine || !program_d->executable)
+    if (!program_d)
         return QScriptValue();
 
-    JSC::JSLock lock(false);
-    QBoolBlocker inEval(d->inEval, true);
-    currentContext()->activationObject(); //force the creation of a context for native function;
-
-    intptr_t sourceId = program_d->sourceId;
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
-    if (debugger)
-        debugger->evaluateStart(sourceId);
-
     JSC::ExecState* exec = d->currentFrame;
-    exec->clearException();
-    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
-
-    return d->evaluateHelper(exec, debugger, sourceId, program_d->executable);
+    JSC::EvalExecutable *executable = program_d->executable(exec, d);
+    bool compile = !program_d->isCompiled;
+    JSC::JSValue result = d->evaluateHelper(exec, program_d->sourceId,
+                                            executable, compile);
+    if (compile)
+        program_d->isCompiled = true;
+    return d->scriptValueFromJSCValue(result);
 }
 
 /*!

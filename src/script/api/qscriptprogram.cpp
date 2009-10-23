@@ -58,17 +58,18 @@ QT_BEGIN_NAMESPACE
 
 */
 
-QScriptProgramPrivate::QScriptProgramPrivate(QScriptEnginePrivate *e,
-                                             JSC::EvalExecutable *x,
-                                             intptr_t id)
-    : engine(e), executable(x), sourceId(id)
+QScriptProgramPrivate::QScriptProgramPrivate(const QString &src,
+                                             const QString &fn,
+                                             int ln)
+    : sourceCode(src), fileName(fn), lineNumber(ln),
+      engine(0), _executable(0), sourceId(-1), isCompiled(false)
 {
     ref = 0;
 }
 
 QScriptProgramPrivate::~QScriptProgramPrivate()
 {
-    delete executable;
+    delete _executable;
 }
 
 QScriptProgramPrivate *QScriptProgramPrivate::get(const QScriptProgram &q)
@@ -76,21 +77,40 @@ QScriptProgramPrivate *QScriptProgramPrivate::get(const QScriptProgram &q)
     return const_cast<QScriptProgramPrivate*>(q.d_func());
 }
 
-QScriptProgram QScriptProgramPrivate::create(QScriptEnginePrivate *engine,
-                                             JSC::EvalExecutable *executable,
-                                             intptr_t sourceId)
+JSC::EvalExecutable *QScriptProgramPrivate::executable(JSC::ExecState *exec,
+                                                       QScriptEnginePrivate *eng)
 {
-    QScriptProgramPrivate *d = new QScriptProgramPrivate(engine, executable, sourceId);
-    QScriptProgram result;
-    result.d_ptr = d;
-    return result;
+    if (_executable) {
+        if (eng == engine)
+            return _executable;
+        delete _executable;
+    }
+    WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
+        = QScript::UStringSourceProviderWithFeedback::create(sourceCode, fileName, lineNumber, eng);
+    sourceId = provider->asID();
+    JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
+    _executable = new JSC::EvalExecutable(exec, source);
+    engine = eng;
+    isCompiled = false;
+    return _executable;
 }
 
 /*!
-  Constructs an invalid QScriptProgram.
+  Constructs a null QScriptProgram.
 */
 QScriptProgram::QScriptProgram()
     : d_ptr(0)
+{
+}
+
+/*!
+  Constructs a new QScriptProgram with the given \a sourceCode, \a
+  fileName and \a lineNumber.
+*/
+QScriptProgram::QScriptProgram(const QString &sourceCode,
+                               const QString fileName,
+                               int lineNumber)
+    : d_ptr(new QScriptProgramPrivate(sourceCode, fileName, lineNumber))
 {
 }
 
@@ -125,13 +145,13 @@ QScriptProgram &QScriptProgram::operator=(const QScriptProgram &other)
 }
 
 /*!
-  Returns true if this QScriptProgram is valid; otherwise
+  Returns true if this QScriptProgram is null; otherwise
   returns false.
 */
-bool QScriptProgram::isValid() const
+bool QScriptProgram::isNull() const
 {
     Q_D(const QScriptProgram);
-    return (d && d->engine);
+    return (d == 0);
 }
 
 /*!
@@ -142,7 +162,7 @@ QString QScriptProgram::sourceCode() const
     Q_D(const QScriptProgram);
     if (!d)
         return QString();
-    return d->executable->source().toString();
+    return d->sourceCode;
 }
 
 /*!
@@ -153,7 +173,7 @@ QString QScriptProgram::fileName() const
     Q_D(const QScriptProgram);
     if (!d)
         return QString();
-    return d->executable->sourceURL();
+    return d->fileName;
 }
 
 /*!
@@ -164,7 +184,7 @@ int QScriptProgram::lineNumber() const
     Q_D(const QScriptProgram);
     if (!d)
         return -1;
-    return d->executable->lineNo();
+    return d->lineNumber;
 }
 
 /*!
@@ -173,6 +193,9 @@ int QScriptProgram::lineNumber() const
 */
 bool QScriptProgram::operator==(const QScriptProgram &other) const
 {
+    Q_D(const QScriptProgram);
+    if (d == other.d_func())
+        return true;
     return (sourceCode() == other.sourceCode())
         && (fileName() == other.fileName())
         && (lineNumber() == other.lineNumber());

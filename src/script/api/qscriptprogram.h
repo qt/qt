@@ -44,6 +44,8 @@
 
 #include <QtCore/qsharedpointer.h>
 
+#include <QtCore/qstring.h>
+
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -55,12 +57,15 @@ class Q_SCRIPT_EXPORT QScriptProgram
 {
 public:
     QScriptProgram();
+    QScriptProgram(const QString &sourceCode,
+                   const QString fileName = QString(),
+                   int lineNumber = 1);
     QScriptProgram(const QScriptProgram &other);
     ~QScriptProgram();
 
     QScriptProgram &operator=(const QScriptProgram &other);
 
-    bool isValid() const;
+    bool isNull() const;
 
     QString sourceCode() const;
     QString fileName() const;

@@ -197,8 +197,9 @@ public:
                                        const QByteArray &targetType,
                                        void **result);
 
-    QScriptValue evaluateHelper(JSC::ExecState *exec, JSC::Debugger* debugger,
-                                intptr_t sourceId, JSC::EvalExecutable *executable);
+    JSC::JSValue evaluateHelper(JSC::ExecState *exec, intptr_t sourceId,
+                                JSC::EvalExecutable *executable,
+                                bool &compile);
 
     QScript::QObjectData *qobjectData(QObject *object);
     void disposeQObject(QObject *object);

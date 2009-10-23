@@ -152,7 +152,7 @@ private slots:
     void installTranslatorFunctions();
     void functionScopes();
     void nativeFunctionScopes();
-    void compileAndEvaluate();
+    void evaluateProgram();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -4291,7 +4291,7 @@ void tst_QScriptEngine::nativeFunctionScopes()
     }
 }
 
-void tst_QScriptEngine::compileAndEvaluate()
+void tst_QScriptEngine::evaluateProgram()
 {
     QScriptEngine eng;
 
@@ -4299,21 +4299,23 @@ void tst_QScriptEngine::compileAndEvaluate()
         QString code("1 + 2");
         QString fileName("hello.js");
         int lineNumber(123);
-        QScriptProgram program = eng.compile(code, fileName, lineNumber);
-        QVERIFY(program.isValid());
+        QScriptProgram program(code, fileName, lineNumber);
+        QVERIFY(!program.isNull());
         QCOMPARE(program.sourceCode(), code);
         QCOMPARE(program.fileName(), fileName);
         QCOMPARE(program.lineNumber(), lineNumber);
 
         QScriptValue expected = eng.evaluate(code);
-        QScriptValue ret = eng.evaluate(program);
-        QVERIFY(ret.equals(expected));
+        for (int x = 0; x < 10; ++x) {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.equals(expected));
+        }
     }
 
     // Program that accesses variable in the scope
     {
-        QScriptProgram program = eng.compile("a");
-        QVERIFY(program.isValid());
+        QScriptProgram program("a");
+        QVERIFY(!program.isNull());
         {
             QScriptValue ret = eng.evaluate(program);
             QVERIFY(ret.isError());
@@ -4350,8 +4352,8 @@ void tst_QScriptEngine::compileAndEvaluate()
 
     // Program that creates closure
     {
-        QScriptProgram program = eng.compile("(function() { var count = 0; return function() { return count++; }; })");
-        QVERIFY(program.isValid());
+        QScriptProgram program("(function() { var count = 0; return function() { return count++; }; })");
+        QVERIFY(!program.isNull());
         QScriptValue createCounter = eng.evaluate(program);
         QVERIFY(createCounter.isFunction());
         QScriptValue counter = createCounter.call();
@@ -4367,6 +4369,29 @@ void tst_QScriptEngine::compileAndEvaluate()
             QScriptValue ret = counter2.call();
             QVERIFY(ret.isNumber());
         }
+    }
+
+    // Same program run in different engines
+    {
+        QString code("1 + 2");
+        QScriptProgram program(code);
+        QVERIFY(!program.isNull());
+        double expected = eng.evaluate(program).toNumber();
+        for (int x = 0; x < 2; ++x) {
+            QScriptEngine eng2;
+            for (int y = 0; y < 2; ++y) {
+                double ret = eng2.evaluate(program).toNumber();
+                QCOMPARE(ret, expected);
+            }
+        }
+    }
+
+    // No program
+    {
+        QScriptProgram program;
+        QVERIFY(program.isNull());
+        QScriptValue ret = eng.evaluate(program);
+        QVERIFY(!ret.isValid());
     }
 }
 

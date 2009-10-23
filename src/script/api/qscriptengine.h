@@ -167,7 +167,6 @@ public:
 
     QScriptValue evaluate(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
 
-    QScriptProgram compile(const QString &program, const QString &fileName = QString(), int lineNumber = 1);
     QScriptValue evaluate(const QScriptProgram &program);
 
     bool isEvaluating() const;
