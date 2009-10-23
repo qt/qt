@@ -56,6 +56,7 @@ namespace WebCore {
     class InspectorClientQt;
     class ResourceHandle;
     class HitTestResult;
+    class QNetworkReplyHandler;
 
     struct FrameLoadRequest;
 }
@@ -66,7 +67,7 @@ class QWEBKIT_EXPORT QWebPage : public QObject {
     Q_PROPERTY(bool modified READ isModified)
     Q_PROPERTY(QString selectedText READ selectedText)
     Q_PROPERTY(QSize viewportSize READ viewportSize WRITE setViewportSize)
-    Q_PROPERTY(QSize fixedContentsSize READ fixedContentsSize WRITE setFixedContentsSize)
+    Q_PROPERTY(QSize preferredContentsSize READ preferredContentsSize WRITE setPreferredContentsSize)
     Q_PROPERTY(bool forwardUnsupportedContent READ forwardUnsupportedContent WRITE setForwardUnsupportedContent)
     Q_PROPERTY(LinkDelegationPolicy linkDelegationPolicy READ linkDelegationPolicy WRITE setLinkDelegationPolicy)
     Q_PROPERTY(QPalette palette READ palette WRITE setPalette)
@@ -236,8 +237,8 @@ public:
     QSize viewportSize() const;
     void setViewportSize(const QSize &size) const;
 
-    QSize fixedContentsSize() const;
-    void setFixedContentsSize(const QSize &size) const;
+    QSize preferredContentsSize() const;
+    void setPreferredContentsSize(const QSize &size) const;
 
     virtual bool event(QEvent*);
     bool focusNextPrevChild(bool next);
@@ -288,6 +289,8 @@ public:
     enum ErrorDomain { QtNetwork, Http, WebKit };
     class ErrorPageExtensionOption : public ExtensionOption {
     public:
+        QUrl url;
+        QWebFrame* frame;
         ErrorDomain domain;
         int error;
         QString errorString;
@@ -344,6 +347,8 @@ Q_SIGNALS:
     void saveFrameStateRequested(QWebFrame* frame, QWebHistoryItem* item);
     void restoreFrameStateRequested(QWebFrame* frame);
 
+    void networkRequestStarted(QWebFrame* frame, QNetworkRequest* request);
+
 protected:
     virtual QWebPage *createWindow(WebWindowType type);
     virtual QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
@@ -378,6 +383,7 @@ private:
     friend class WebCore::FrameLoaderClientQt;
     friend class WebCore::InspectorClientQt;
     friend class WebCore::ResourceHandle;
+    friend class WebCore::QNetworkReplyHandler;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QWebPage::FindFlags)

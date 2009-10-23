@@ -396,7 +396,7 @@ void tst_QSqlQuery::char1SelectUnicode()
         QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
 
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
-        QString uniStr( QChar( 0xfb50 ) );
+        QString uniStr( QChar( 'का' ) );
         QSqlQuery q( db );
 
         if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
@@ -1630,8 +1630,7 @@ void tst_QSqlQuery::prepare_bind_exec()
 
     {
         // new scope for SQLITE
-        static const unsigned short utf8arr[] = { 0xfb50,0xfb60,0xfb70,0xfb80,0xfbe0,0xfbf0,0x00 };
-        static const QString utf8str = QString::fromUtf16( utf8arr );
+        static const QString utf8str = QString::fromUtf8( "काचं शक्नोम्यत्तुम् । नोपहिनस्ति माम् ॥" );
 
         static const QString values[6] = { "Harry", "Trond", "Mark", "Ma?rk", "?", ":id" };
 
@@ -1648,11 +1647,11 @@ void tst_QSqlQuery::prepare_bind_exec()
             QVERIFY_SQL( q, exec("set client_min_messages='warning'"));
 
         if ( tst_Databases::isSqlServer( db ) || db.driverName().startsWith( "QTDS" ) )
-            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int primary key, name nvarchar(20) null)";
-        else if ( db.driverName().startsWith( "QMYSQL" ) && useUnicode )
-            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int not null primary key, name varchar(20) character set utf8)";
+            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int primary key, name nvarchar(200) null)";
+        else if ( tst_Databases::isMySQL(db) && useUnicode )
+            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int not null primary key, name varchar(200) character set utf8)";
         else
-            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int not null primary key, name varchar(20))";
+            createQuery = "create table " + qTableName( "qtest_prepare" ) + " (id int not null primary key, name varchar(200))";
 
         QVERIFY_SQL( q, exec( createQuery ) );
 

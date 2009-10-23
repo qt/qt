@@ -71,6 +71,8 @@ void HTMLScriptElement::parseMappedAttribute(MappedAttribute* attr)
         handleSourceAttribute(m_data, attr->value());
     else if (attrName == onloadAttr)
         setAttributeEventListener(eventNames().loadEvent, createAttributeEventListener(this, attr));
+    else if (attrName == onbeforeloadAttr)
+        setAttributeEventListener(eventNames().beforeloadEvent, createAttributeEventListener(this, attr));
     else
         HTMLElement::parseMappedAttribute(attr);
 }
@@ -217,7 +219,7 @@ String HTMLScriptElement::forAttributeValue() const
 {
     return getAttribute(forAttr).string();
 }
- 
+
 void HTMLScriptElement::dispatchLoadEvent()
 {
     ASSERT(!m_data.haveFiredLoadEvent());

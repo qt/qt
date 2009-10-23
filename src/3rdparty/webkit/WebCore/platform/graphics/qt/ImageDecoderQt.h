@@ -28,10 +28,11 @@
 #define ImageDecoderQt_h
 
 #include "ImageDecoder.h"
-#include <QtGui/QImage>
+#include <QtGui/QImageReader>
 #include <QtGui/QPixmap>
 #include <QtCore/QList>
 #include <QtCore/QHash>
+#include <QtCore/QBuffer>
 
 namespace WebCore {
 
@@ -39,51 +40,35 @@ namespace WebCore {
 class ImageDecoderQt : public ImageDecoder
 {
 public:
-    ImageDecoderQt(const QString& imageFormat);
+    ImageDecoderQt();
     ~ImageDecoderQt();
 
     virtual void setData(SharedBuffer* data, bool allDataReceived);
     virtual bool isSizeAvailable();
-    virtual size_t frameCount() const;
+    virtual size_t frameCount();
     virtual int repetitionCount() const;
     virtual RGBA32Buffer* frameBufferAtIndex(size_t index);
 
-    QPixmap* imageAtIndex(size_t index) const;
-    virtual bool supportsAlpha() const;
-    int duration(size_t index) const;
     virtual String filenameExtension() const;
 
-    void clearFrame(size_t index);
+    virtual void clearFrameBufferCache(size_t clearBeforeFrame);
 
 private:
     ImageDecoderQt(const ImageDecoderQt&);
     ImageDecoderQt &operator=(const ImageDecoderQt&);
 
-    class ReadContext;
-    void reset();
-    bool hasFirstImageHeader() const;
+private:
+    void internalDecodeSize();
+    void internalReadImage(size_t);
+    void internalHandleCurrentImage(size_t);
+    void forceLoadEverything();
+    void failRead();
 
-    enum ImageState {
-        // Started image reading
-        ImagePartial,
-            // Header (size / alpha) are known
-            ImageHeaderValid,
-            // Image is complete
-            ImageComplete };
-
-    struct ImageData {
-        ImageData(const QImage& image, ImageState imageState = ImagePartial, int duration=0);
-        QImage m_image;
-        ImageState m_imageState;
-        int m_duration;
-    };
-
-    bool m_hasAlphaChannel;
-    typedef QList<ImageData> ImageList;
-    mutable ImageList m_imageList;
-    mutable QHash<int, QPixmap> m_pixmapCache;
-    int m_loopCount;
-    QString m_imageFormat;
+private:
+    QByteArray m_format;
+    QBuffer* m_buffer;
+    QImageReader* m_reader;
+    mutable int m_repetitionCount;
 };
 
 

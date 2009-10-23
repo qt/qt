@@ -145,10 +145,6 @@ JSValue JSC_HOST_CALL jsCanvasArrayPrototypeFunctionAlignedSizeInBytes(ExecState
     return result;
 }
 
-JSC::JSValue toJS(JSC::ExecState* exec, JSDOMGlobalObject* globalObject, CanvasArray* object)
-{
-    return getDOMObjectWrapper<JSCanvasArray>(exec, globalObject, object);
-}
 CanvasArray* toCanvasArray(JSC::JSValue value)
 {
     return value.inherits(&JSCanvasArray::s_info) ? static_cast<JSCanvasArray*>(asObject(value))->impl() : 0;

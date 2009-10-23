@@ -384,6 +384,7 @@ public:
     void setOpaque(bool opaque);
     void updateIsTranslucent();
     bool paintOnScreen() const;
+    void invalidateGraphicsEffectsRecursively();
 
     QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
@@ -778,7 +779,7 @@ class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
     QWidgetEffectSourcePrivate(QWidget *widget)
-        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0)
+        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0), updateDueToGraphicsEffect(false)
     {}
 
     inline void detach()
@@ -791,7 +792,11 @@ public:
     { return m_widget; }
 
     inline void update()
-    { m_widget->update(); }
+    {
+        updateDueToGraphicsEffect = true;
+        m_widget->update();
+        updateDueToGraphicsEffect = false;
+    }
 
     inline bool isPixmap() const
     { return false; }
@@ -803,7 +808,7 @@ public:
         if (QWidget *parent = m_widget->parentWidget())
             parent->update();
         else
-            m_widget->update();
+            update();
     }
 
     inline const QStyleOption *styleOption() const
@@ -818,6 +823,8 @@ public:
 
     QWidget *m_widget;
     QWidgetPaintContext *context;
+    QTransform lastEffectTransform;
+    bool updateDueToGraphicsEffect;
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

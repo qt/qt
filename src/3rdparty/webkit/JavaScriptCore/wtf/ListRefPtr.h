@@ -44,6 +44,9 @@ namespace WTF {
         template <typename U> ListRefPtr& operator=(const PassRefPtr<U>& o) { RefPtr<T>::operator=(o); return *this; }
     };
 
+    // Remove inline for winscw compiler to prevent the compiler agressively resolving
+    // T::ref() in RefPtr<T>'s copy constructor.  The bug is reported at:
+    // https://xdabug001.ext.nokia.com/bugzilla/show_bug.cgi?id=9812.
     template <typename T> 
 #if !COMPILER(WINSCW)
     inline

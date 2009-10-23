@@ -311,12 +311,19 @@ void RenderLayer::updateLayerPositions(UpdateLayerPositionsFlags flags)
     if (m_reflection)
         m_reflection->layout();
 
+#if USE(ACCELERATED_COMPOSITING)
+    // Clear the IsCompositingUpdateRoot flag once we've found the first compositing layer in this update.
+    bool isUpdateRoot = (flags & IsCompositingUpdateRoot);
+    if (isComposited())
+        flags &= ~IsCompositingUpdateRoot;
+#endif
+
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositions(flags);
 
 #if USE(ACCELERATED_COMPOSITING)
     if ((flags & UpdateCompositingLayers) && isComposited())
-        backing()->updateAfterLayout(RenderLayerBacking::CompositingChildren);
+        backing()->updateAfterLayout(RenderLayerBacking::CompositingChildren, isUpdateRoot);
 #endif
         
     // With all our children positioned, now update our marquee if we need to.
@@ -662,21 +669,20 @@ RenderLayer* RenderLayer::enclosingTransformedAncestor() const
     return curr;
 }
 
+static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
+{
+    return layer->isNormalFlowOnly() ? layer->parent() : layer->stackingContext();
+}
+
 #if USE(ACCELERATED_COMPOSITING)
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 {
     if (includeSelf && isComposited())
         return const_cast<RenderLayer*>(this);
 
-    // Compositing layers are parented according to stacking order and overflow list,
-    // so we have to check whether the parent is a stacking context, or whether 
-    // the child is overflow-only.
-    bool inNormalFlowList = isNormalFlowOnly();
-    for (RenderLayer* curr = parent(); curr; curr = curr->parent()) {
-        if (curr->isComposited() && (inNormalFlowList || curr->isStackingContext()))
-            return curr;
-        
-        inNormalFlowList = curr->isNormalFlowOnly();
+    for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
+        if (curr->isComposited())
+            return const_cast<RenderLayer*>(curr);
     }
          
     return 0;
@@ -1140,8 +1146,10 @@ void RenderLayer::scrollToOffset(int x, int y, bool updateScrollbars, bool repai
 
 #if USE(ACCELERATED_COMPOSITING)
     if (compositor()->inCompositingMode()) {
-        if (RenderLayer* compositingAncestor = ancestorCompositingLayer())
-            compositingAncestor->backing()->updateAfterLayout(RenderLayerBacking::AllDescendants);
+        if (RenderLayer* compositingAncestor = ancestorCompositingLayer()) {
+            bool isUpdateRoot = true;
+            compositingAncestor->backing()->updateAfterLayout(RenderLayerBacking::AllDescendants, isUpdateRoot);
+        }
     }
 #endif
     

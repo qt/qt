@@ -91,7 +91,7 @@ Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, di
             if (startNode)
                 break;
 
-            node = node.traversePreviousNode(false, stayWithinNode);
+            node = node.traversePreviousNode(stayWithinNode);
         }
 
         if (!startNode) {
@@ -126,7 +126,7 @@ Node.prototype.rangeOfWord = function(offset, stopCharacters, stayWithinNode, di
             if (endNode)
                 break;
 
-            node = node.traverseNextNode(false, stayWithinNode);
+            node = node.traverseNextNode(stayWithinNode);
         }
 
         if (!endNode) {
@@ -269,9 +269,6 @@ Element.prototype.offsetRelativeToWindow = function(targetWindow)
     return elementOffset;
 }
 
-Element.prototype.firstChildSkippingWhitespace = firstChildSkippingWhitespace;
-Element.prototype.lastChildSkippingWhitespace = lastChildSkippingWhitespace;
-
 Node.prototype.isWhitespace = isNodeWhitespace;
 Node.prototype.displayName = nodeDisplayName;
 Node.prototype.isAncestor = function(node)
@@ -279,8 +276,6 @@ Node.prototype.isAncestor = function(node)
     return isAncestorNode(this, node);
 };
 Node.prototype.isDescendant = isDescendantNode;
-Node.prototype.nextSiblingSkippingWhitespace = nextSiblingSkippingWhitespace;
-Node.prototype.previousSiblingSkippingWhitespace = previousSiblingSkippingWhitespace;
 Node.prototype.traverseNextNode = traverseNextNode;
 Node.prototype.traversePreviousNode = traversePreviousNode;
 Node.prototype.onlyTextChild = onlyTextChild;
@@ -455,170 +450,56 @@ function isDescendantNode(descendant)
     return isAncestorNode(descendant, this);
 }
 
-function nextSiblingSkippingWhitespace()
+function traverseNextNode(stayWithin)
 {
     if (!this)
         return;
-    var node = this.nextSibling;
-    while (node && node.nodeType === Node.TEXT_NODE && isNodeWhitespace.call(node))
-        node = node.nextSibling;
-    return node;
-}
 
-function previousSiblingSkippingWhitespace()
-{
-    if (!this)
-        return;
-    var node = this.previousSibling;
-    while (node && node.nodeType === Node.TEXT_NODE && isNodeWhitespace.call(node))
-        node = node.previousSibling;
-    return node;
-}
-
-function firstChildSkippingWhitespace()
-{
-    if (!this)
-        return;
     var node = this.firstChild;
-    while (node && node.nodeType === Node.TEXT_NODE && isNodeWhitespace.call(node))
-        node = nextSiblingSkippingWhitespace.call(node);
-    return node;
-}
-
-function lastChildSkippingWhitespace()
-{
-    if (!this)
-        return;
-    var node = this.lastChild;
-    while (node && node.nodeType === Node.TEXT_NODE && isNodeWhitespace.call(node))
-        node = previousSiblingSkippingWhitespace.call(node);
-    return node;
-}
-
-function traverseNextNode(skipWhitespace, stayWithin)
-{
-    if (!this)
-        return;
-
-    var node = skipWhitespace ? firstChildSkippingWhitespace.call(this) : this.firstChild;
     if (node)
         return node;
 
     if (stayWithin && this === stayWithin)
         return null;
 
-    node = skipWhitespace ? nextSiblingSkippingWhitespace.call(this) : this.nextSibling;
+    node = this.nextSibling;
     if (node)
         return node;
 
     node = this;
-    while (node && !(skipWhitespace ? nextSiblingSkippingWhitespace.call(node) : node.nextSibling) && (!stayWithin || !node.parentNode || node.parentNode !== stayWithin))
+    while (node && !node.nextSibling && (!stayWithin || !node.parentNode || node.parentNode !== stayWithin))
         node = node.parentNode;
     if (!node)
         return null;
 
-    return skipWhitespace ? nextSiblingSkippingWhitespace.call(node) : node.nextSibling;
+    return node.nextSibling;
 }
 
-function traversePreviousNode(skipWhitespace, stayWithin)
+function traversePreviousNode(stayWithin)
 {
     if (!this)
         return;
     if (stayWithin && this === stayWithin)
         return null;
-    var node = skipWhitespace ? previousSiblingSkippingWhitespace.call(this) : this.previousSibling;
-    while (node && (skipWhitespace ? lastChildSkippingWhitespace.call(node) : node.lastChild) )
-        node = skipWhitespace ? lastChildSkippingWhitespace.call(node) : node.lastChild;
+    var node = this.previousSibling;
+    while (node && node.lastChild)
+        node = node.lastChild;
     if (node)
         return node;
     return this.parentNode;
 }
 
-function onlyTextChild(ignoreWhitespace)
+function onlyTextChild()
 {
     if (!this)
         return null;
 
-    var firstChild = ignoreWhitespace ? firstChildSkippingWhitespace.call(this) : this.firstChild;
+    var firstChild = this.firstChild;
     if (!firstChild || firstChild.nodeType !== Node.TEXT_NODE)
         return null;
 
-    var sibling = ignoreWhitespace ? nextSiblingSkippingWhitespace.call(firstChild) : firstChild.nextSibling;
+    var sibling = firstChild.nextSibling;
     return sibling ? null : firstChild;
-}
-
-function nodeTitleInfo(hasChildren, linkify)
-{
-    var info = {title: "", hasChildren: hasChildren};
-
-    switch (this.nodeType) {
-        case Node.DOCUMENT_NODE:
-            info.title = "Document";
-            break;
-
-        case Node.ELEMENT_NODE:
-            info.title = "<span class=\"webkit-html-tag\">&lt;" + this.nodeName.toLowerCase().escapeHTML();
-
-            if (this.hasAttributes()) {
-                for (var i = 0; i < this.attributes.length; ++i) {
-                    var attr = this.attributes[i];
-                    info.title += " <span class=\"webkit-html-attribute\"><span class=\"webkit-html-attribute-name\">" + attr.name.escapeHTML() + "</span>=&#8203;\"";
-
-                    var value = attr.value;
-                    if (linkify && (attr.name === "src" || attr.name === "href")) {
-                        var value = value.replace(/([\/;:\)\]\}])/g, "$1\u200B");
-                        info.title += linkify(attr.value, value, "webkit-html-attribute-value", this.nodeName.toLowerCase() == "a");
-                    } else {
-                        var value = value.escapeHTML();
-                        value = value.replace(/([\/;:\)\]\}])/g, "$1&#8203;");
-                        info.title += "<span class=\"webkit-html-attribute-value\">" + value + "</span>";
-                    }
-                    info.title += "\"</span>";
-                }
-            }
-            info.title += "&gt;</span>&#8203;";
-
-            // If this element only has a single child that is a text node,
-            // just show that text and the closing tag inline rather than
-            // create a subtree for them
-
-            var textChild = onlyTextChild.call(this, Preferences.ignoreWhitespace);
-            var showInlineText = textChild && textChild.textContent.length < Preferences.maxInlineTextChildLength;
-
-            if (showInlineText) {
-                info.title += "<span class=\"webkit-html-text-node\">" + textChild.nodeValue.escapeHTML() + "</span>&#8203;<span class=\"webkit-html-tag\">&lt;/" + this.nodeName.toLowerCase().escapeHTML() + "&gt;</span>";
-                info.hasChildren = false;
-            }
-            break;
-
-        case Node.TEXT_NODE:
-            if (isNodeWhitespace.call(this))
-                info.title = "(whitespace)";
-            else
-                info.title = "\"<span class=\"webkit-html-text-node\">" + this.nodeValue.escapeHTML() + "</span>\"";
-            break
-
-        case Node.COMMENT_NODE:
-            info.title = "<span class=\"webkit-html-comment\">&lt;!--" + this.nodeValue.escapeHTML() + "--&gt;</span>";
-            break;
-
-        case Node.DOCUMENT_TYPE_NODE:
-            info.title = "<span class=\"webkit-html-doctype\">&lt;!DOCTYPE " + this.nodeName;
-            if (this.publicId) {
-                info.title += " PUBLIC \"" + this.publicId + "\"";
-                if (this.systemId)
-                    info.title += " \"" + this.systemId + "\"";
-            } else if (this.systemId)
-                info.title += " SYSTEM \"" + this.systemId + "\"";
-            if (this.internalSubset)
-                info.title += " [" + this.internalSubset + "]";
-            info.title += "&gt;</span>";
-            break;
-        default:
-            info.title = this.nodeName.toLowerCase().collapseWhitespace().escapeHTML();
-    }
-
-    return info;
 }
 
 function appropriateSelectorForNode(node, justSelector)

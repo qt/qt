@@ -359,7 +359,7 @@ WebInspector.ScriptsPanel.prototype = {
         return selectedCallFrame.id;
     },
 
-    evaluateInSelectedCallFrame: function(code, updateInterface, callback)
+    evaluateInSelectedCallFrame: function(code, updateInterface, objectGroup, callback)
     {
         var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
         if (!this._paused || !selectedCallFrame)
@@ -375,33 +375,17 @@ WebInspector.ScriptsPanel.prototype = {
             if (updateInterface)
                 self.sidebarPanes.scopechain.update(selectedCallFrame);
         }
-        this.doEvalInCallFrame(selectedCallFrame, code, updatingCallbackWrapper);
+        this.doEvalInCallFrame(selectedCallFrame, code, objectGroup, updatingCallbackWrapper);
     },
 
-    doEvalInCallFrame: function(callFrame, code, callback)
+    doEvalInCallFrame: function(callFrame, code, objectGroup, callback)
     {
         function evalCallback(result)
         {
             if (result)
                 callback(result.value, result.isException);
         }
-        InjectedScriptAccess.evaluateInCallFrame(callFrame.id, code, evalCallback);
-    },
-
-    variablesInSelectedCallFrame: function()
-    {
-        var selectedCallFrame = this.sidebarPanes.callstack.selectedCallFrame;
-        if (!this._paused || !selectedCallFrame)
-            return {};
-
-        var result = {};
-        var scopeChain = selectedCallFrame.scopeChain;
-        for (var i = 0; i < scopeChain.length; ++i) {
-            var scopeObjectProperties = scopeChain[i].properties;
-            for (var j = 0; j < scopeObjectProperties.length; ++j)
-                result[scopeObjectProperties[j]] = true;
-        }
-        return result;
+        InjectedScriptAccess.evaluateInCallFrame(callFrame.id, code, objectGroup, evalCallback);
     },
 
     debuggerPaused: function(callFrames)

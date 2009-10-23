@@ -60,7 +60,7 @@ WebInspector.ElementsPanel = function()
 
         if (InspectorController.searchingForNode()) {
             InspectorController.toggleNodeSearch();
-            this.panel.nodeSearchButton.removeStyleClass("toggled-on");
+            this.panel.nodeSearchButton.toggled = false;
         }
         if (this._focusedDOMNode)
             InjectedScriptAccess.addInspectedNode(this._focusedDOMNode.id, function() {});
@@ -479,7 +479,7 @@ WebInspector.ElementsPanel.prototype = {
                 updatedParentTreeElements.push(parentNodeItem);
             }
 
-            if (!updateBreadcrumbs && (this.focusedDOMNode === parent || isAncestor(this.focusedDOMNode, parent)))
+            if (!updateBreadcrumbs && (this.focusedDOMNode === parent || isAncestorNode(this.focusedDOMNode, parent)))
                 updateBreadcrumbs = true;
         }
 

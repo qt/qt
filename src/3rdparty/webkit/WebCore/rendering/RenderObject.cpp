@@ -1568,7 +1568,7 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             // For changes in float styles, we need to conceivably remove ourselves
             // from the floating objects list.
             toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
-        else if (isPositioned() && (newStyle->position() != AbsolutePosition && newStyle->position() != FixedPosition))
+        else if (isPositioned() && (m_style->position() != newStyle->position()))
             // For changes in positioning styles, we need to conceivably remove ourselves
             // from the positioned objects list.
             toRenderBox(this)->removeFloatingOrPositionedChildFromBlockLists();
@@ -1751,6 +1751,23 @@ IntSize RenderObject::offsetFromContainer(RenderObject* o) const
     IntSize offset;
     if (o->hasOverflowClip())
         offset -= toRenderBox(o)->layer()->scrolledContentOffset();
+
+    return offset;
+}
+
+IntSize RenderObject::offsetFromAncestorContainer(RenderObject* container) const
+{
+    IntSize offset;
+    const RenderObject* currContainer = this;
+    do {
+        RenderObject* nextContainer = currContainer->container();
+        ASSERT(nextContainer);  // This means we reached the top without finding container.
+        if (!nextContainer)
+            break;
+        ASSERT(!currContainer->hasTransform());
+        offset += currContainer->offsetFromContainer(nextContainer);
+        currContainer = nextContainer;
+    } while (currContainer != container);
 
     return offset;
 }
