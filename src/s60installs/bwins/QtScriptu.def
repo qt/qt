@@ -99,7 +99,7 @@ EXPORTS
 	?id@QScriptClassPropertyIterator@@UBEIXZ @ 98 NONAME ; unsigned int QScriptClassPropertyIterator::id(void) const
 	??_EQScriptEngine@@UAE@I@Z @ 99 NONAME ; QScriptEngine::~QScriptEngine(unsigned int)
 	?newQObject@QScriptEngine@@QAE?AVQScriptValue@@ABV2@PAVQObject@@W4ValueOwnership@1@ABV?$QFlags@W4QObjectWrapOption@QScriptEngine@@@@@Z @ 100 NONAME ; class QScriptValue QScriptEngine::newQObject(class QScriptValue const &, class QObject *, enum QScriptEngine::ValueOwnership, class QFlags<enum QScriptEngine::QObjectWrapOption> const &)
-	??0QScriptExtensionInterface@@QAE@XZ @ 101 NONAME ; QScriptExtensionInterface::QScriptExtensionInterface(void)
+	??0QScriptExtensionInterface@@QAE@XZ @ 101 NONAME ABSENT ; QScriptExtensionInterface::QScriptExtensionInterface(void)
 	?metaObject@QScriptExtensionPlugin@@UBEPBUQMetaObject@@XZ @ 102 NONAME ; struct QMetaObject const * QScriptExtensionPlugin::metaObject(void) const
 	?setReturnValue@QScriptContext@@QAEXABVQScriptValue@@@Z @ 103 NONAME ; void QScriptContext::setReturnValue(class QScriptValue const &)
 	?isBoolean@QScriptValue@@QBE_NXZ @ 104 NONAME ; bool QScriptValue::isBoolean(void) const
@@ -245,7 +245,7 @@ EXPORTS
 	?canEvaluate@QScriptEngine@@QBE_NABVQString@@@Z @ 244 NONAME ; bool QScriptEngine::canEvaluate(class QString const &) const
 	?tr@QScriptExtensionPlugin@@SA?AVQString@@PBD0@Z @ 245 NONAME ; class QString QScriptExtensionPlugin::tr(char const *, char const *)
 	?call@QScriptValue@@QAE?AV1@ABV1@ABV?$QList@VQScriptValue@@@@@Z @ 246 NONAME ; class QScriptValue QScriptValue::call(class QScriptValue const &, class QList<class QScriptValue> const &)
-	??_EQScriptValue@@QAE@I@Z @ 247 NONAME ; QScriptValue::~QScriptValue(unsigned int)
+	??_EQScriptValue@@QAE@I@Z @ 247 NONAME ABSENT ; QScriptValue::~QScriptValue(unsigned int)
 	??0QScriptEngine@@IAE@AAVQScriptEnginePrivate@@PAVQObject@@@Z @ 248 NONAME ; QScriptEngine::QScriptEngine(class QScriptEnginePrivate &, class QObject *)
 	??0QScriptClass@@QAE@PAVQScriptEngine@@@Z @ 249 NONAME ; QScriptClass::QScriptClass(class QScriptEngine *)
 	??4QScriptString@@QAEAAV0@ABV0@@Z @ 250 NONAME ; class QScriptString & QScriptString::operator=(class QScriptString const &)

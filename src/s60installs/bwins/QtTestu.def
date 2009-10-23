@@ -57,7 +57,7 @@ EXPORTS
 	?metaObject@QTestEventLoop@@UBEPBUQMetaObject@@XZ @ 56 NONAME ; struct QMetaObject const * QTestEventLoop::metaObject(void) const
 	?instance@QTestEventLoop@@SAAAV1@XZ @ 57 NONAME ; class QTestEventLoop & QTestEventLoop::instance(void)
 	?toString@?$@_K@QTest@@YAPADAB_K@Z @ 58 NONAME ; char * QTest::toString<unsigned long long>(unsigned long long const &)
-	??_EQTestData@@QAE@I@Z @ 59 NONAME ; QTestData::~QTestData(unsigned int)
+	??_EQTestData@@QAE@I@Z @ 59 NONAME ABSENT ; QTestData::~QTestData(unsigned int)
 	?qCompare@?$@M@QTest@@YA_NABM0PBD11H@Z @ 60 NONAME ; bool QTest::qCompare<float>(float const &, float const &, char const *, char const *, char const *, int)
 	?toHexRepresentation@QTest@@YAPADPBDH@Z @ 61 NONAME ; char * QTest::toHexRepresentation(char const *, int)
 	?qt_snprintf@QTest@@YAHPADHPBDZZ @ 62 NONAME ; int QTest::qt_snprintf(char *, int, char const *, ...)

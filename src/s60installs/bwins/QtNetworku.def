@@ -62,7 +62,7 @@ EXPORTS
 	??1QNetworkReply@@UAE@XZ @ 61 NONAME ; QNetworkReply::~QNetworkReply(void)
 	?trUtf8@QHttp@@SA?AVQString@@PBD0H@Z @ 62 NONAME ; class QString QHttp::trUtf8(char const *, char const *, int)
 	?tr@QTcpSocket@@SA?AVQString@@PBD0H@Z @ 63 NONAME ; class QString QTcpSocket::tr(char const *, char const *, int)
-	??_EQSslError@@QAE@I@Z @ 64 NONAME ; QSslError::~QSslError(unsigned int)
+	??_EQSslError@@QAE@I@Z @ 64 NONAME ABSENT ; QSslError::~QSslError(unsigned int)
 	?header@QNetworkReply@@QBE?AVQVariant@@W4KnownHeaders@QNetworkRequest@@@Z @ 65 NONAME ; class QVariant QNetworkReply::header(enum QNetworkRequest::KnownHeaders) const
 	??1QHostInfo@@QAE@XZ @ 66 NONAME ; QHostInfo::~QHostInfo(void)
 	?tr@QLocalSocket@@SA?AVQString@@PBD0H@Z @ 67 NONAME ; class QString QLocalSocket::tr(char const *, char const *, int)
@@ -259,10 +259,10 @@ EXPORTS
 	??1QTcpSocket@@UAE@XZ @ 258 NONAME ; QTcpSocket::~QTcpSocket(void)
 	?abort@QHttp@@QAEXXZ @ 259 NONAME ; void QHttp::abort(void)
 	?setUrl@QNetworkProxyQuery@@QAEXABVQUrl@@@Z @ 260 NONAME ; void QNetworkProxyQuery::setUrl(class QUrl const &)
-	??_EQSslCipher@@QAE@I@Z @ 261 NONAME ; QSslCipher::~QSslCipher(unsigned int)
+	??_EQSslCipher@@QAE@I@Z @ 261 NONAME ABSENT ; QSslCipher::~QSslCipher(unsigned int)
 	?d_func@QAbstractNetworkCache@@ABEPBVQAbstractNetworkCachePrivate@@XZ @ 262 NONAME ; class QAbstractNetworkCachePrivate const * QAbstractNetworkCache::d_func(void) const
 	??9QSslKey@@QBE_NABV0@@Z @ 263 NONAME ; bool QSslKey::operator!=(class QSslKey const &) const
-	??_EQSslConfiguration@@QAE@I@Z @ 264 NONAME ; QSslConfiguration::~QSslConfiguration(unsigned int)
+	??_EQSslConfiguration@@QAE@I@Z @ 264 NONAME ABSENT ; QSslConfiguration::~QSslConfiguration(unsigned int)
 	?waitForDisconnected@QAbstractSocket@@QAE_NH@Z @ 265 NONAME ; bool QAbstractSocket::waitForDisconnected(int)
 	??9QUrlInfo@@QBE_NABV0@@Z @ 266 NONAME ; bool QUrlInfo::operator!=(class QUrlInfo const &) const
 	?readyRead@QFtp@@IAEXXZ @ 267 NONAME ; void QFtp::readyRead(void)
@@ -325,7 +325,7 @@ EXPORTS
 	?setHostName@QHostInfo@@QAEXABVQString@@@Z @ 324 NONAME ; void QHostInfo::setHostName(class QString const &)
 	??5@YAAAVQDataStream@@AAV0@AAVQNetworkCacheMetaData@@@Z @ 325 NONAME ; class QDataStream & operator>>(class QDataStream &, class QNetworkCacheMetaData &)
 	?subjectInfo@QSslCertificate@@QBE?AVQString@@W4SubjectInfo@1@@Z @ 326 NONAME ; class QString QSslCertificate::subjectInfo(enum QSslCertificate::SubjectInfo) const
-	??_EQNetworkAddressEntry@@QAE@I@Z @ 327 NONAME ; QNetworkAddressEntry::~QNetworkAddressEntry(unsigned int)
+	??_EQNetworkAddressEntry@@QAE@I@Z @ 327 NONAME ABSENT ; QNetworkAddressEntry::~QNetworkAddressEntry(unsigned int)
 	?setCiphers@QSslSocket@@QAEXABV?$QList@VQSslCipher@@@@@Z @ 328 NONAME ; void QSslSocket::setCiphers(class QList<class QSslCipher> const &)
 	?bytesToWrite@QLocalSocket@@UBE_JXZ @ 329 NONAME ; long long QLocalSocket::bytesToWrite(void) const
 	?setSize@QUrlInfo@@UAEX_J@Z @ 330 NONAME ; void QUrlInfo::setSize(long long)
@@ -446,7 +446,7 @@ EXPORTS
 	?originatingObject@QNetworkRequest@@QBEPAVQObject@@XZ @ 445 NONAME ; class QObject * QNetworkRequest::originatingObject(void) const
 	?errorString@QTcpServer@@QBE?AVQString@@XZ @ 446 NONAME ; class QString QTcpServer::errorString(void) const
 	?setHostName@QNetworkProxy@@QAEXABVQString@@@Z @ 447 NONAME ; void QNetworkProxy::setHostName(class QString const &)
-	??_EQNetworkCookie@@QAE@I@Z @ 448 NONAME ; QNetworkCookie::~QNetworkCookie(unsigned int)
+	??_EQNetworkCookie@@QAE@I@Z @ 448 NONAME ABSENT ; QNetworkCookie::~QNetworkCookie(unsigned int)
 	?tr@QSslSocket@@SA?AVQString@@PBD0@Z @ 449 NONAME ; class QString QSslSocket::tr(char const *, char const *)
 	?proxy@QTcpServer@@QBE?AVQNetworkProxy@@XZ @ 450 NONAME ; class QNetworkProxy QTcpServer::proxy(void) const
 	?issuerInfo@QSslCertificate@@QBE?AVQString@@W4SubjectInfo@1@@Z @ 451 NONAME ; class QString QSslCertificate::issuerInfo(enum QSslCertificate::SubjectInfo) const
@@ -475,7 +475,7 @@ EXPORTS
 	?setProxy@QNetworkAccessManager@@QAEXABVQNetworkProxy@@@Z @ 474 NONAME ; void QNetworkAccessManager::setProxy(class QNetworkProxy const &)
 	?metaObject@QNetworkDiskCache@@UBEPBUQMetaObject@@XZ @ 475 NONAME ; struct QMetaObject const * QNetworkDiskCache::metaObject(void) const
 	?handle@QSslKey@@QBEKXZ @ 476 NONAME ; unsigned long QSslKey::handle(void) const
-	??_EQSslCertificate@@QAE@I@Z @ 477 NONAME ; QSslCertificate::~QSslCertificate(unsigned int)
+	??_EQSslCertificate@@QAE@I@Z @ 477 NONAME ABSENT ; QSslCertificate::~QSslCertificate(unsigned int)
 	?setDomain@QNetworkCookie@@QAEXABVQString@@@Z @ 478 NONAME ; void QNetworkCookie::setDomain(class QString const &)
 	?incomingConnection@QLocalServer@@MAEXI@Z @ 479 NONAME ; void QLocalServer::incomingConnection(unsigned int)
 	?state@QAbstractSocket@@QBE?AW4SocketState@1@XZ @ 480 NONAME ; enum QAbstractSocket::SocketState QAbstractSocket::state(void) const
@@ -634,7 +634,7 @@ EXPORTS
 	?trUtf8@QLocalServer@@SA?AVQString@@PBD0H@Z @ 633 NONAME ; class QString QLocalServer::trUtf8(char const *, char const *, int)
 	?setReadBufferSize@QSslSocket@@QAEX_J@Z @ 634 NONAME ; void QSslSocket::setReadBufferSize(long long)
 	?trUtf8@QNetworkDiskCache@@SA?AVQString@@PBD0@Z @ 635 NONAME ; class QString QNetworkDiskCache::trUtf8(char const *, char const *)
-	??_EQNetworkInterface@@QAE@I@Z @ 636 NONAME ; QNetworkInterface::~QNetworkInterface(unsigned int)
+	??_EQNetworkInterface@@QAE@I@Z @ 636 NONAME ABSENT ; QNetworkInterface::~QNetworkInterface(unsigned int)
 	?setAttributes@QNetworkCacheMetaData@@QAEXABV?$QHash@W4Attribute@QNetworkRequest@@VQVariant@@@@@Z @ 637 NONAME ; void QNetworkCacheMetaData::setAttributes(class QHash<enum QNetworkRequest::Attribute, class QVariant> const &)
 	?canReadLine@QLocalSocket@@UBE_NXZ @ 638 NONAME ; bool QLocalSocket::canReadLine(void) const
 	??0QLocalServer@@QAE@PAVQObject@@@Z @ 639 NONAME ; QLocalServer::QLocalServer(class QObject *)
@@ -662,7 +662,7 @@ EXPORTS
 	?sslConfiguration@QNetworkReply@@QBE?AVQSslConfiguration@@XZ @ 661 NONAME ; class QSslConfiguration QNetworkReply::sslConfiguration(void) const
 	??AQIPv6Address@@QAEAAEH@Z @ 662 NONAME ; unsigned char & QIPv6Address::operator[](int)
 	?setSocketDescriptor@QLocalSocket@@QAE_NIW4LocalSocketState@1@V?$QFlags@W4OpenModeFlag@QIODevice@@@@@Z @ 663 NONAME ; bool QLocalSocket::setSocketDescriptor(unsigned int, enum QLocalSocket::LocalSocketState, class QFlags<enum QIODevice::OpenModeFlag>)
-	??_EQNetworkProxy@@QAE@I@Z @ 664 NONAME ; QNetworkProxy::~QNetworkProxy(unsigned int)
+	??_EQNetworkProxy@@QAE@I@Z @ 664 NONAME ABSENT ; QNetworkProxy::~QNetworkProxy(unsigned int)
 	?setPeerName@QAbstractSocket@@IAEXABVQString@@@Z @ 665 NONAME ; void QAbstractSocket::setPeerName(class QString const &)
 	?getStaticMetaObject@QHttp@@SAABUQMetaObject@@XZ @ 666 NONAME ; struct QMetaObject const & QHttp::getStaticMetaObject(void)
 	??0QNetworkProxyFactory@@QAE@XZ @ 667 NONAME ; QNetworkProxyFactory::QNetworkProxyFactory(void)
@@ -713,7 +713,7 @@ EXPORTS
 	?name@QSslCipher@@QBE?AVQString@@XZ @ 712 NONAME ; class QString QSslCipher::name(void) const
 	?mode@QSslSocket@@QBE?AW4SslMode@1@XZ @ 713 NONAME ; enum QSslSocket::SslMode QSslSocket::mode(void) const
 	?metaData@QNetworkDiskCache@@UAE?AVQNetworkCacheMetaData@@ABVQUrl@@@Z @ 714 NONAME ; class QNetworkCacheMetaData QNetworkDiskCache::metaData(class QUrl const &)
-	??_EQHostAddress@@QAE@I@Z @ 715 NONAME ; QHostAddress::~QHostAddress(unsigned int)
+	??_EQHostAddress@@QAE@I@Z @ 715 NONAME ABSENT ; QHostAddress::~QHostAddress(unsigned int)
 	?abort@QLocalSocket@@QAEXXZ @ 716 NONAME ; void QLocalSocket::abort(void)
 	?setDir@QUrlInfo@@UAEX_N@Z @ 717 NONAME ; void QUrlInfo::setDir(bool)
 	?systemCaCertificates@QSslSocket@@SA?AV?$QList@VQSslCertificate@@@@XZ @ 718 NONAME ; class QList<class QSslCertificate> QSslSocket::systemCaCertificates(void)
@@ -860,7 +860,7 @@ EXPORTS
 	??0QHttpResponseHeader@@QAE@ABV0@@Z @ 859 NONAME ; QHttpResponseHeader::QHttpResponseHeader(class QHttpResponseHeader const &)
 	?currentSourceDevice@QHttp@@QBEPAVQIODevice@@XZ @ 860 NONAME ; class QIODevice * QHttp::currentSourceDevice(void) const
 	?peerCertificateChain@QSslConfiguration@@QBE?AV?$QList@VQSslCertificate@@@@XZ @ 861 NONAME ; class QList<class QSslCertificate> QSslConfiguration::peerCertificateChain(void) const
-	??_EQHostInfo@@QAE@I@Z @ 862 NONAME ; QHostInfo::~QHostInfo(unsigned int)
+	??_EQHostInfo@@QAE@I@Z @ 862 NONAME ABSENT ; QHostInfo::~QHostInfo(unsigned int)
 	?errorString@QHttp@@QBE?AVQString@@XZ @ 863 NONAME ; class QString QHttp::errorString(void) const
 	?proxyAuthenticationRequired@QAbstractSocket@@IAEXABVQNetworkProxy@@PAVQAuthenticator@@@Z @ 864 NONAME ; void QAbstractSocket::proxyAuthenticationRequired(class QNetworkProxy const &, class QAuthenticator *)
 	?isSequential@QNetworkReply@@UBE_NXZ @ 865 NONAME ; bool QNetworkReply::isSequential(void) const
@@ -941,7 +941,7 @@ EXPORTS
 	??1QAbstractNetworkCache@@UAE@XZ @ 940 NONAME ; QAbstractNetworkCache::~QAbstractNetworkCache(void)
 	?url@QNetworkProxyQuery@@QBE?AVQUrl@@XZ @ 941 NONAME ; class QUrl QNetworkProxyQuery::url(void) const
 	?tr@QNetworkCookieJar@@SA?AVQString@@PBD0H@Z @ 942 NONAME ; class QString QNetworkCookieJar::tr(char const *, char const *, int)
-	??_EQNetworkRequest@@QAE@I@Z @ 943 NONAME ; QNetworkRequest::~QNetworkRequest(unsigned int)
+	??_EQNetworkRequest@@QAE@I@Z @ 943 NONAME ABSENT ; QNetworkRequest::~QNetworkRequest(unsigned int)
 	??0QNetworkAddressEntry@@QAE@XZ @ 944 NONAME ; QNetworkAddressEntry::QNetworkAddressEntry(void)
 	?error@QAbstractSocket@@IAEXW4SocketError@1@@Z @ 945 NONAME ; void QAbstractSocket::error(enum QAbstractSocket::SocketError)
 	?post@QHttp@@QAEHABVQString@@PAVQIODevice@@1@Z @ 946 NONAME ; int QHttp::post(class QString const &, class QIODevice *, class QIODevice *)
@@ -964,7 +964,7 @@ EXPORTS
 	?sessionCipher@QSslConfiguration@@QBE?AVQSslCipher@@XZ @ 963 NONAME ; class QSslCipher QSslConfiguration::sessionCipher(void) const
 	?name@QNetworkCookie@@QBE?AVQByteArray@@XZ @ 964 NONAME ; class QByteArray QNetworkCookie::name(void) const
 	??4QSslConfiguration@@QAEAAV0@ABV0@@Z @ 965 NONAME ; class QSslConfiguration & QSslConfiguration::operator=(class QSslConfiguration const &)
-	??4QIPv6Address@@QAEAAV0@ABV0@@Z @ 966 NONAME ; class QIPv6Address & QIPv6Address::operator=(class QIPv6Address const &)
+	??4QIPv6Address@@QAEAAV0@ABV0@@Z @ 966 NONAME ABSENT ; class QIPv6Address & QIPv6Address::operator=(class QIPv6Address const &)
 	?setCookieJar@QNetworkAccessManager@@QAEXPAVQNetworkCookieJar@@@Z @ 967 NONAME ; void QNetworkAccessManager::setCookieJar(class QNetworkCookieJar *)
 	??_EQSslSocket@@UAE@I@Z @ 968 NONAME ; QSslSocket::~QSslSocket(unsigned int)
 	?qt_metacall@QNetworkReply@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 969 NONAME ; int QNetworkReply::qt_metacall(enum QMetaObject::Call, int, void * *)

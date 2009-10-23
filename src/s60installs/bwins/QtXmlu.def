@@ -13,7 +13,7 @@ EXPORTS
 	??1QXmlParseException@@QAE@XZ @ 12 NONAME ; QXmlParseException::~QXmlParseException(void)
 	?pushContext@QXmlNamespaceSupport@@QAEXXZ @ 13 NONAME ; void QXmlNamespaceSupport::pushContext(void)
 	??4QDomProcessingInstruction@@QAEAAV0@ABV0@@Z @ 14 NONAME ; class QDomProcessingInstruction & QDomProcessingInstruction::operator=(class QDomProcessingInstruction const &)
-	??0QXmlContentHandler@@QAE@XZ @ 15 NONAME ; QXmlContentHandler::QXmlContentHandler(void)
+	??0QXmlContentHandler@@QAE@XZ @ 15 NONAME ABSENT ; QXmlContentHandler::QXmlContentHandler(void)
 	?d_func@QXmlSimpleReader@@ABEPBVQXmlSimpleReaderPrivate@@XZ @ 16 NONAME ; class QXmlSimpleReaderPrivate const * QXmlSimpleReader::d_func(void) const
 	?setContent@QDomDocument@@QAE_NABVQString@@_NPAV2@PAH3@Z @ 17 NONAME ; bool QDomDocument::setContent(class QString const &, bool, class QString *, int *, int *)
 	?setAttributeNS@QDomElement@@QAEXVQString@@ABV2@H@Z @ 18 NONAME ; void QDomElement::setAttributeNS(class QString, class QString const &, int)
@@ -27,7 +27,7 @@ EXPORTS
 	??0QDomElement@@QAE@XZ @ 26 NONAME ; QDomElement::QDomElement(void)
 	?substringData@QDomCharacterData@@QAE?AVQString@@KK@Z @ 27 NONAME ; class QString QDomCharacterData::substringData(unsigned long, unsigned long)
 	??_EQXmlLocator@@UAE@I@Z @ 28 NONAME ; QXmlLocator::~QXmlLocator(unsigned int)
-	??0QXmlDTDHandler@@QAE@XZ @ 29 NONAME ; QXmlDTDHandler::QXmlDTDHandler(void)
+	??0QXmlDTDHandler@@QAE@XZ @ 29 NONAME ABSENT ; QXmlDTDHandler::QXmlDTDHandler(void)
 	?reset@QXmlNamespaceSupport@@QAEXXZ @ 30 NONAME ; void QXmlNamespaceSupport::reset(void)
 	?nodeValue@QDomNode@@QBE?AVQString@@XZ @ 31 NONAME ; class QString QDomNode::nodeValue(void) const
 	?hasFeature@QDomImplementation@@QBE_NABVQString@@0@Z @ 32 NONAME ; bool QDomImplementation::hasFeature(class QString const &, class QString const &) const
@@ -120,7 +120,7 @@ EXPORTS
 	?entities@QDomDocumentType@@QBE?AVQDomNamedNodeMap@@XZ @ 119 NONAME ; class QDomNamedNodeMap QDomDocumentType::entities(void) const
 	??4QDomCDATASection@@QAEAAV0@ABV0@@Z @ 120 NONAME ; class QDomCDATASection & QDomCDATASection::operator=(class QDomCDATASection const &)
 	?save@QDomNode@@QBEXAAVQTextStream@@H@Z @ 121 NONAME ; void QDomNode::save(class QTextStream &, int) const
-	??0QXmlReader@@QAE@XZ @ 122 NONAME ; QXmlReader::QXmlReader(void)
+	??0QXmlReader@@QAE@XZ @ 122 NONAME ABSENT ; QXmlReader::QXmlReader(void)
 	??4QDomDocument@@QAEAAV0@ABV0@@Z @ 123 NONAME ; class QDomDocument & QDomDocument::operator=(class QDomDocument const &)
 	?createTextNode@QDomDocument@@QAE?AVQDomText@@ABVQString@@@Z @ 124 NONAME ; class QDomText QDomDocument::createTextNode(class QString const &)
 	?message@QXmlParseException@@QBE?AVQString@@XZ @ 125 NONAME ; class QString QXmlParseException::message(void) const
@@ -194,7 +194,7 @@ EXPORTS
 	??0QDomNode@@QAE@ABV0@@Z @ 193 NONAME ; QDomNode::QDomNode(class QDomNode const &)
 	?setContent@QDomDocument@@QAE_NABVQByteArray@@_NPAVQString@@PAH3@Z @ 194 NONAME ; bool QDomDocument::setContent(class QByteArray const &, bool, class QString *, int *, int *)
 	??0QDomElement@@QAE@ABV0@@Z @ 195 NONAME ; QDomElement::QDomElement(class QDomElement const &)
-	??0QXmlLexicalHandler@@QAE@XZ @ 196 NONAME ; QXmlLexicalHandler::QXmlLexicalHandler(void)
+	??0QXmlLexicalHandler@@QAE@XZ @ 196 NONAME ABSENT ; QXmlLexicalHandler::QXmlLexicalHandler(void)
 	??_EQXmlLexicalHandler@@UAE@I@Z @ 197 NONAME ; QXmlLexicalHandler::~QXmlLexicalHandler(unsigned int)
 	??0QDomDocumentType@@QAE@XZ @ 198 NONAME ; QDomDocumentType::QDomDocumentType(void)
 	?columnNumber@QXmlParseException@@QBEHXZ @ 199 NONAME ; int QXmlParseException::columnNumber(void) const
@@ -301,7 +301,7 @@ EXPORTS
 	?setInvalidDataPolicy@QDomImplementation@@SAXW4InvalidDataPolicy@1@@Z @ 300 NONAME ; void QDomImplementation::setInvalidDataPolicy(enum QDomImplementation::InvalidDataPolicy)
 	??1QXmlDTDHandler@@UAE@XZ @ 301 NONAME ; QXmlDTDHandler::~QXmlDTDHandler(void)
 	?nodeType@QDomElement@@QBE?AW4NodeType@QDomNode@@XZ @ 302 NONAME ; enum QDomNode::NodeType QDomElement::nodeType(void) const
-	??0QXmlDeclHandler@@QAE@XZ @ 303 NONAME ; QXmlDeclHandler::QXmlDeclHandler(void)
+	??0QXmlDeclHandler@@QAE@XZ @ 303 NONAME ABSENT ; QXmlDeclHandler::QXmlDeclHandler(void)
 	?attributeNode@QDomElement@@QAE?AVQDomAttr@@ABVQString@@@Z @ 304 NONAME ; class QDomAttr QDomElement::attributeNode(class QString const &)
 	??0QDomNodeList@@QAE@XZ @ 305 NONAME ; QDomNodeList::QDomNodeList(void)
 	??1QXmlAttributes@@UAE@XZ @ 306 NONAME ; QXmlAttributes::~QXmlAttributes(void)
@@ -340,7 +340,7 @@ EXPORTS
 	??0QXmlParseException@@QAE@ABV0@@Z @ 339 NONAME ; QXmlParseException::QXmlParseException(class QXmlParseException const &)
 	?nextSiblingElement@QDomNode@@QBE?AVQDomElement@@ABVQString@@@Z @ 340 NONAME ; class QDomElement QDomNode::nextSiblingElement(class QString const &) const
 	??1QXmlContentHandler@@UAE@XZ @ 341 NONAME ; QXmlContentHandler::~QXmlContentHandler(void)
-	??0QXmlEntityResolver@@QAE@XZ @ 342 NONAME ; QXmlEntityResolver::QXmlEntityResolver(void)
+	??0QXmlEntityResolver@@QAE@XZ @ 342 NONAME ABSENT ; QXmlEntityResolver::QXmlEntityResolver(void)
 	?contentHandler@QXmlSimpleReader@@UBEPAVQXmlContentHandler@@XZ @ 343 NONAME ; class QXmlContentHandler * QXmlSimpleReader::contentHandler(void) const
 	?localName@QDomNode@@QBE?AVQString@@XZ @ 344 NONAME ; class QString QDomNode::localName(void) const
 	??1QXmlDeclHandler@@UAE@XZ @ 345 NONAME ; QXmlDeclHandler::~QXmlDeclHandler(void)
@@ -373,7 +373,7 @@ EXPORTS
 	??0QDomDocument@@QAE@ABV0@@Z @ 372 NONAME ; QDomDocument::QDomDocument(class QDomDocument const &)
 	??1QDomNodeList@@QAE@XZ @ 373 NONAME ; QDomNodeList::~QDomNodeList(void)
 	??4QDomEntity@@QAEAAV0@ABV0@@Z @ 374 NONAME ; class QDomEntity & QDomEntity::operator=(class QDomEntity const &)
-	??0QXmlErrorHandler@@QAE@XZ @ 375 NONAME ; QXmlErrorHandler::QXmlErrorHandler(void)
+	??0QXmlErrorHandler@@QAE@XZ @ 375 NONAME ABSENT ; QXmlErrorHandler::QXmlErrorHandler(void)
 	??0QDomNamedNodeMap@@AAE@PAVQDomNamedNodeMapPrivate@@@Z @ 376 NONAME ; QDomNamedNodeMap::QDomNamedNodeMap(class QDomNamedNodeMapPrivate *)
 	?parentNode@QDomNode@@QBE?AV1@XZ @ 377 NONAME ; class QDomNode QDomNode::parentNode(void) const
 	??_EQXmlSimpleReader@@UAE@I@Z @ 378 NONAME ; QXmlSimpleReader::~QXmlSimpleReader(unsigned int)
