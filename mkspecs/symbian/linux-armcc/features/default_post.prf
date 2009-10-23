@@ -26,29 +26,22 @@ contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     ordinalmap.commands = makeordinalmap $$OBJECTS_DIR ${QMAKE_FILE_NAME} $${TARGET}.dll $$DESTDIR/$${TARGET}.lib
     ordinalmap.variable_out = PRE_TARGETDEPS
 
-    elftran.target = $${DESTDIR}/lib$${TARGET}.tran
-    elftran.commands = winewrapper elftran.exe  -version 4.1536 -sid 0xe001b2dc  -allow -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x10000079 -uid2 0x1000008d -uid3 0xe001b2dc         -fpu softvfp -capability All-Tcb $${DESTDIR}/lib$${TARGET}.dll $${DESTDIR}/lib$${TARGET}.tran
-    elftran.depends = $${DESTDIR}/lib$${TARGET}.dll
-    QMAKE_POST_LINK += winewrapper elftran.exe  -version 4.1536 -sid 0xe001b2dc  -allow -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x10000079 -uid2 0x1000008d -uid3 0xe001b2dc         -fpu softvfp -capability All-Tcb $${DESTDIR}/lib$${TARGET}.dll $${DESTDIR}/lib$${TARGET}.tran
-    QMAKE_CLEAN += $${DESTDIR}/lib$${TARGET}.tran
+    !isEmpty($$QMAKE_POST_LINK):QMAKE_POST_LINK += &&
+    QMAKE_POST_LINK += $$QMAKE_MOVE $$DESTDIR/$${TARGET}.dll $$DESTDIR/$${TARGET}.sym
+    QMAKE_POST_LINK += && winewrapper elftran.exe  -version 4.1536 -sid 0xe001b2dc  -allow -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x10000079 -uid2 0x1000008d -uid3 0xe001b2dc         -fpu softvfp -capability None $${DESTDIR}/$${TARGET}.sym $${DESTDIR}/$${TARGET}.dll
+    QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.sym
 
     QMAKE_EXTRA_COMPILERS += exports
     QMAKE_EXTRA_COMPILERS += deffile
     QMAKE_EXTRA_COMPILERS += expfile
     QMAKE_EXTRA_COMPILERS += ordinalmap
-    QMAKE_EXTRA_TARGETS += elftran
 
     QMAKE_LIBS += -ledllstub -ledll.lib\\(uc_dll_.o\\)
 }
 
 contains(TEMPLATE, app) {
-    elftran.target = $${DESTDIR}/$${TARGET}.tran
-    elftran.commands = winewrapper elftran.exe  -version 10.0 -sid 0xe4d10fc9  -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x1000007a -uid2 0x1000008d -uid3 0xe4d10fc9         -fpu softvfp -capability None $${DESTDIR}/$${TARGET} $${DESTDIR}/$${TARGET}.tran
-    elftran.depends = $${DESTDIR}/$${TARGET}
     QMAKE_POST_LINK += winewrapper elftran.exe  -version 10.0 -sid 0xe4d10fc9  -nocall -heap 0x00020000 0x00800000 -stack 0x00014000 -unpaged         -uid1 0x1000007a -uid2 0x1000008d -uid3 0xe4d10fc9         -fpu softvfp -capability None $${DESTDIR}/$${TARGET} $${DESTDIR}/$${TARGET}.tran
-    QMAKE_CLEAN += $${DESTDIR}/$${TARGET}.tran
-
-    QMAKE_EXTRA_TARGETS += elftran
+    QMAKE_DISTCLEAN += $${DESTDIR}/$${TARGET}.tran
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
 }
