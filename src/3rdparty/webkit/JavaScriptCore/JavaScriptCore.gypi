@@ -1,7 +1,6 @@
 {
     'variables': {
         'javascriptcore_files': [
-            'AllInOneFile.cpp',
             'API/APICast.h',
             'API/JavaScript.h',
             'API/JavaScriptCore.h',
@@ -19,6 +18,7 @@
             'API/JSClassRef.h',
             'API/JSContextRef.cpp',
             'API/JSContextRef.h',
+            'API/JSContextRefPrivate.h',
             'API/JSObjectRef.cpp',
             'API/JSObjectRef.h',
             'API/JSProfilerPrivate.cpp',

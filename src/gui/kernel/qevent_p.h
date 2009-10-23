@@ -150,6 +150,20 @@ public:
 #endif
 };
 
+class QGestureEventPrivate
+{
+public:
+    inline QGestureEventPrivate(const QList<QGesture *> &list)
+        : gestures(list), widget(0)
+    {
+    }
+
+    QList<QGesture *> gestures;
+    QWidget *widget;
+    QMap<Qt::GestureType, bool> accepted;
+    QMap<Qt::GestureType, QWidget *> targetWidgets;
+};
+
 QT_END_NAMESPACE
 
 #endif // QEVENT_P_H

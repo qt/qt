@@ -137,7 +137,8 @@ SOURCES += \
     interpreter/RegisterFile.cpp
 
 symbian {
-    SOURCES += runtime/MarkStackSymbian.cpp
+    SOURCES += jit/ExecutableAllocatorSymbian.cpp \
+              runtime/MarkStackSymbian.cpp
 } else {
     win32-*|wince* {
         SOURCES += jit/ExecutableAllocatorWin.cpp \
@@ -146,6 +147,10 @@ symbian {
         SOURCES += jit/ExecutableAllocatorPosix.cpp \
                   runtime/MarkStackPosix.cpp
     }
+}
+
+!contains(DEFINES, USE_SYSTEM_MALLOC) {
+    SOURCES += wtf/TCSystemAlloc.cpp
 }
 
 # AllInOneFile.cpp helps gcc analize and optimize code

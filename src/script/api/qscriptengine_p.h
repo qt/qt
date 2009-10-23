@@ -451,7 +451,7 @@ inline void QScriptValuePrivate::initFrom(JSC::JSValue value)
         engine->registerScriptValue(this);
 }
 
-inline void QScriptValuePrivate::initFrom(double value)
+inline void QScriptValuePrivate::initFrom(qsreal value)
 {
     type = Number;
     numberValue = value;

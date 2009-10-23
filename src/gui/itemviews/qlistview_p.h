@@ -205,6 +205,7 @@ public:
     QVector<int> segmentPositions;
     QVector<int> segmentStartRows;
     QVector<int> segmentExtents;
+    QVector<int> scrollValueMap;
 
     // used when laying out in batches
     int batchSavedPosition;

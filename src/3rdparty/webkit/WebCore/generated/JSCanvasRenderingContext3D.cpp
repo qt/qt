@@ -24,6 +24,8 @@
 
 #include "JSCanvasRenderingContext3D.h"
 
+#include "CanvasActiveInfo.h"
+#include "CanvasArray.h"
 #include "CanvasBuffer.h"
 #include "CanvasFloatArray.h"
 #include "CanvasFramebuffer.h"
@@ -34,6 +36,8 @@
 #include "CanvasShader.h"
 #include "CanvasTexture.h"
 #include "CanvasUnsignedByteArray.h"
+#include "JSCanvasActiveInfo.h"
+#include "JSCanvasArray.h"
 #include "JSCanvasBuffer.h"
 #include "JSCanvasFloatArray.h"
 #include "JSCanvasFramebuffer.h"
@@ -400,8 +404,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCanvasRenderingContext3DConstructor::s_info = { "CanvasRenderingContext3DConstructor", 0, &JSCanvasRenderingContext3DConstructorTable, 0 };
@@ -418,7 +425,7 @@ bool JSCanvasRenderingContext3DConstructor::getOwnPropertyDescriptor(ExecState* 
 
 /* Hash table for prototype */
 
-static const HashTableValue JSCanvasRenderingContext3DPrototypeTableValues[450] =
+static const HashTableValue JSCanvasRenderingContext3DPrototypeTableValues[453] =
 {
     { "DEPTH_BUFFER_BIT", DontDelete|ReadOnly, (intptr_t)jsCanvasRenderingContext3DDEPTH_BUFFER_BIT, (intptr_t)0 },
     { "STENCIL_BUFFER_BIT", DontDelete|ReadOnly, (intptr_t)jsCanvasRenderingContext3DSTENCIL_BUFFER_BIT, (intptr_t)0 },
@@ -775,6 +782,8 @@ static const HashTableValue JSCanvasRenderingContext3DPrototypeTableValues[450] 
     { "framebufferTexture2D", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionFramebufferTexture2D, (intptr_t)5 },
     { "frontFace", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionFrontFace, (intptr_t)1 },
     { "generateMipmap", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGenerateMipmap, (intptr_t)1 },
+    { "getActiveAttrib", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGetActiveAttrib, (intptr_t)2 },
+    { "getActiveUniform", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGetActiveUniform, (intptr_t)2 },
     { "getAttribLocation", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGetAttribLocation, (intptr_t)2 },
     { "getBoolean", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGetBoolean, (intptr_t)1 },
     { "getBooleanv", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionGetBooleanv, (intptr_t)1 },
@@ -823,6 +832,7 @@ static const HashTableValue JSCanvasRenderingContext3DPrototypeTableValues[450] 
     { "linkProgram", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionLinkProgram, (intptr_t)1 },
     { "pixelStorei", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionPixelStorei, (intptr_t)2 },
     { "polygonOffset", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionPolygonOffset, (intptr_t)2 },
+    { "readPixels", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionReadPixels, (intptr_t)6 },
     { "releaseShaderCompiler", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionReleaseShaderCompiler, (intptr_t)0 },
     { "renderbufferStorage", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionRenderbufferStorage, (intptr_t)4 },
     { "sampleCoverage", DontDelete|Function, (intptr_t)jsCanvasRenderingContext3DPrototypeFunctionSampleCoverage, (intptr_t)2 },
@@ -876,7 +886,7 @@ static JSC_CONST_HASHTABLE HashTable JSCanvasRenderingContext3DPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 65535, JSCanvasRenderingContext3DPrototypeTableValues, 0 };
 #else
-    { 1103, 1023, JSCanvasRenderingContext3DPrototypeTableValues, 0 };
+    { 1104, 1023, JSCanvasRenderingContext3DPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSCanvasRenderingContext3DPrototype::s_info = { "CanvasRenderingContext3DPrototype", 0, &JSCanvasRenderingContext3DPrototypeTable, 0 };
@@ -1661,6 +1671,40 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGenerateMipmap(
     return jsUndefined();
 }
 
+JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetActiveAttrib(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSCanvasRenderingContext3D::s_info))
+        return throwError(exec, TypeError);
+    JSCanvasRenderingContext3D* castedThisObj = static_cast<JSCanvasRenderingContext3D*>(asObject(thisValue));
+    CanvasRenderingContext3D* imp = static_cast<CanvasRenderingContext3D*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    CanvasProgram* program = toCanvasProgram(args.at(0));
+    unsigned index = args.at(1).toInt32(exec);
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getActiveAttrib(program, index, ec)));
+    setDOMException(exec, ec);
+    return result;
+}
+
+JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetActiveUniform(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSCanvasRenderingContext3D::s_info))
+        return throwError(exec, TypeError);
+    JSCanvasRenderingContext3D* castedThisObj = static_cast<JSCanvasRenderingContext3D*>(asObject(thisValue));
+    CanvasRenderingContext3D* imp = static_cast<CanvasRenderingContext3D*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    CanvasProgram* program = toCanvasProgram(args.at(0));
+    unsigned index = args.at(1).toInt32(exec);
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->getActiveUniform(program, index, ec)));
+    setDOMException(exec, ec);
+    return result;
+}
+
 JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetAttribLocation(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
 {
     UNUSED_PARAM(args);
@@ -2355,6 +2399,25 @@ JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionPolygonOffset(E
 
     imp->polygonOffset(factor, units);
     return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionReadPixels(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSCanvasRenderingContext3D::s_info))
+        return throwError(exec, TypeError);
+    JSCanvasRenderingContext3D* castedThisObj = static_cast<JSCanvasRenderingContext3D*>(asObject(thisValue));
+    CanvasRenderingContext3D* imp = static_cast<CanvasRenderingContext3D*>(castedThisObj->impl());
+    int x = args.at(0).toInt32(exec);
+    int y = args.at(1).toInt32(exec);
+    unsigned width = args.at(2).toInt32(exec);
+    unsigned height = args.at(3).toInt32(exec);
+    unsigned format = args.at(4).toInt32(exec);
+    unsigned type = args.at(5).toInt32(exec);
+
+
+    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->readPixels(x, y, width, height, format, type)));
+    return result;
 }
 
 JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionReleaseShaderCompiler(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)

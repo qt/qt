@@ -1631,7 +1631,10 @@ public:
     enum GestureContext
     {
         WidgetGesture             = 0,
-        WidgetWithChildrenGesture = 3
+        WidgetWithChildrenGesture = 3,
+
+        ItemGesture                  = WidgetGesture,
+        ItemWithChildrenGesture      = WidgetWithChildrenGesture
     };
 
     enum NavigationMode

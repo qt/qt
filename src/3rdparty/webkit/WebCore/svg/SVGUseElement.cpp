@@ -65,6 +65,8 @@ SVGUseElement::SVGUseElement(const QualifiedName& tagName, Document* doc)
     , m_y(this, SVGNames::yAttr, LengthModeHeight)
     , m_width(this, SVGNames::widthAttr, LengthModeWidth)
     , m_height(this, SVGNames::heightAttr, LengthModeHeight)
+    , m_href(this, XLinkNames::hrefAttr)
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
 }
 
@@ -482,13 +484,7 @@ void SVGUseElement::buildInstanceTree(SVGElement* target, SVGElementInstance* ta
         targetInstance->appendChild(instancePtr.get());
 
         // Enter recursion, appending new instance tree nodes to the "instance" object.
-        if (element->hasChildNodes())
-            buildInstanceTree(element, instancePtr.get(), foundProblem);
-
-        // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
-        // object, the instance tree will contain recursive expansion of the indirect references to form a complete tree.
-        if (element->hasTagName(SVGNames::useTag))
-            handleDeepUseReferencing(static_cast<SVGUseElement*>(element), instancePtr.get(), foundProblem);
+        buildInstanceTree(element, instancePtr.get(), foundProblem);
     }
 
     // Spec: If the referenced object is itself a 'use', or if there are 'use' subelements within the referenced
