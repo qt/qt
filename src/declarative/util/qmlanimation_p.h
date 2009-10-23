@@ -170,6 +170,7 @@ private:
 template<class T, void (T::*method)(int)>
 class QTickAnimationProxy : public QAbstractAnimation
 {
+    //Q_OBJECT //doesn't work with templating
 public:
     QTickAnimationProxy(T *p, QObject *parent = 0) : QAbstractAnimation(parent), m_p(p) {}
     virtual int duration() const { return -1; }
@@ -227,13 +228,14 @@ class QmlScriptActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlScriptAction)
 public:
     QmlScriptActionPrivate()
-        : QmlAbstractAnimationPrivate(), proxy(this), rsa(0) {}
+        : QmlAbstractAnimationPrivate(), hasRunScriptScript(false), proxy(this), rsa(0) {}
 
     void init();
 
-    QString script;
+    QmlScriptString script;
     QString name;
-    QString runScriptScript;
+    QmlScriptString runScriptScript;
+    bool hasRunScriptScript;
 
     void execute();
 

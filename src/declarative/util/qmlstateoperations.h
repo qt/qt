@@ -45,6 +45,7 @@
 #include <QtDeclarative/qmlstate.h>
 #include <QtDeclarative/qfxitem.h>
 #include <QtDeclarative/qfxanchors.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 QT_BEGIN_HEADER
 
@@ -86,7 +87,7 @@ class Q_DECLARATIVE_EXPORT QmlStateChangeScript : public QmlStateOperation, publ
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlStateChangeScript)
 
-    Q_PROPERTY(QString script READ script WRITE setScript)
+    Q_PROPERTY(QmlScriptString script READ script WRITE setScript)
     Q_PROPERTY(QString name READ name WRITE setName)
 
 public:
@@ -95,8 +96,8 @@ public:
 
     virtual ActionList actions();
 
-    QString script() const;
-    void setScript(const QString &);
+    QmlScriptString script() const;
+    void setScript(const QmlScriptString &);
     
     QString name() const;
     void setName(const QString &);
