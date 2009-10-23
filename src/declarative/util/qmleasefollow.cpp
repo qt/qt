@@ -54,7 +54,7 @@ class QmlEaseFollowPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlEaseFollow)
 public:
     QmlEaseFollowPrivate()
-        : source(0), velocity(200), duration(-1), 
+        : source(0), velocity(200), duration(-1), maximumEasingTime(-1),
           reversingMode(QmlEaseFollow::Eased), initialVelocity(0), 
           initialValue(0), invert(false), enabled(true), trackVelocity(0), clockOffset(0),
           lastTick(0), clock(this)
@@ -63,6 +63,7 @@ public:
     qreal source;
     qreal velocity;
     qreal duration;
+    qreal maximumEasingTime;
     QmlEaseFollow::ReversingMode reversingMode;
 
     qreal initialVelocity;
@@ -85,10 +86,13 @@ public:
 
     // Parameters for use in tick()
     qreal a;  // Acceleration
+    qreal d;  // Deceleration
     qreal tf; // Total time
     qreal tp; // Time at which peak velocity occurs
+    qreal td; // Time at which decelleration begins
     qreal vp; // Velocity at tp
     qreal sp; // Displacement at tp
+    qreal sd; // Displacement at td
     qreal vi; // "Normalized" initialvelocity
     bool recalc();
 };
@@ -112,26 +116,62 @@ bool QmlEaseFollowPrivate::recalc()
         return false;
     }
 
-    qreal c1 = 0.25 * tf * tf;
-    qreal c2 = 0.5 * vi * tf - s;
-    qreal c3 = -0.25 * vi * vi;
+    if (maximumEasingTime == 0) {
+        a = 0;
+        d = 0;
+        tp = 0;
+        td = tf;
+        vp = velocity;
+        sp = 0;
+        sd = s;
+    } else if (tf > (maximumEasingTime / 1000.)) {
 
-    qreal a1 = (-c2 + sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
-    // qreal a2 = (-c2 - sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+        qreal met = maximumEasingTime / 1000.;
+        td = tf - met;
 
-    qreal tp1 = 0.5 * tf - 0.5 * vi / a1;
-    // qreal tp2 = 0.5 * tf - 0.5 * vi / a2;
-    qreal vp1 = a1 * tp1 + vi;
-    // qreal vp2 = a2 * tp2 + vi;
+        qreal c1 = td;
+        qreal c2 = (tf - td) * vi - tf * velocity;
+        qreal c3 = -0.5 * (tf - td) * vi * vi;
 
-    qreal sp1 = 0.5 * a1 * tp1 * tp1 + vi * tp1;
-    // qreal sp2 = 0.5 * a2 * tp2 * tp2 + vi * tp2;
+        qreal vp1 = (-c2 + sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+        // qreal vp2 = (-c2 - sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
 
-    a = a1;
-    tp = tp1;
-    vp = vp1;
-    sp = sp1;
+        vp = vp1;
+        a = vp / met;
+        d = a;
+        tp = (vp - vi) / a;
+        sp = vi * tp + 0.5 * a * tp * tp;
+        sd = sp + (td - tp) * vp;
+    } else {
 
+        qreal c1 = 0.25 * tf * tf;
+        qreal c2 = 0.5 * vi * tf - s;
+        qreal c3 = -0.25 * vi * vi;
+
+        qreal a1 = (-c2 + sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+        //qreal a2 = (-c2 - sqrt(c2 * c2 - 4 * c1 * c3)) / (2. * c1);
+
+        qreal tp1 = 0.5 * tf - 0.5 * vi / a1;
+        //qreal tp2 = 0.5 * tf - 0.5 * vi / a2;
+        qreal vp1 = a1 * tp1 + vi;
+        //qreal vp2 = a2 * tp2 + vi;
+
+        qreal sp1 = 0.5 * a1 * tp1 * tp1 + vi * tp1;
+        //qreal sp2 = 0.5 * a2 * tp2 * tp2 + vi * tp2;
+
+        a = a1;
+        d = a1;
+        tp = tp1;
+        td = tp1;
+        vp = vp1;
+        sp = sp1;
+        sd = sp1;
+    }
+
+    /*
+    qWarning() << "a:" << a << "tf:" << tf << "tp:" << tp << "vp:" 
+               << vp << "sp:" << sp << "vi:" << vi << "invert:" << invert;
+    */
     return true;
 }
 
@@ -161,6 +201,7 @@ void QmlEaseFollowPrivate::tick(int t)
 
     qreal time_seconds = qreal(t) / 1000.;
 
+    qreal out = 0;
     if (time_seconds < tp) {
 
         trackVelocity = vi + time_seconds * a;
@@ -170,19 +211,30 @@ void QmlEaseFollowPrivate::tick(int t)
         value = (invert?-1.0:1.0) * value;
         target.write(initialValue + value);
 
-    } else if (time_seconds < tf) {
+        out = initialValue + value;
+    } else if (time_seconds < td) {
 
         time_seconds -= tp;
-
-        trackVelocity = vp - time_seconds * a;
-        trackVelocity = (invert?-1.0:1.0) * trackVelocity;
-
-        qreal value = 0.5 * a * tp * tp + vi * tp 
-                    - 0.5 * a * time_seconds * time_seconds + vp * time_seconds;
+        trackVelocity = (invert?-1.0:1.0) * vp;
+        qreal value = sp + time_seconds * vp;
         value = (invert?-1.0:1.0) * value;
 
         target.write(initialValue + value);
 
+        out = initialValue + value;
+    } else if (time_seconds < tf) {
+
+        time_seconds -= td;
+
+        trackVelocity = vp - time_seconds * a;
+        trackVelocity = (invert?-1.0:1.0) * trackVelocity;
+
+        qreal value = sd - 0.5 * d * time_seconds * time_seconds + vp * time_seconds;
+        value = (invert?-1.0:1.0) * value;
+
+        target.write(initialValue + value);
+
+        out = initialValue + value;
     } else {
 
         clock.stop();
@@ -190,6 +242,8 @@ void QmlEaseFollowPrivate::tick(int t)
         trackVelocity = 0;
         target.write(source);
     }
+
+    //qWarning() << out << trackVelocity << t << a;
 }
 
 /*!
@@ -438,6 +492,33 @@ void QmlEaseFollow::setTarget(const QmlMetaProperty &t)
 {
     Q_D(QmlEaseFollow);
     d->target = t;
+}
+
+/*!
+\qmlproperty qreal EaseFollow::maximumEasingTime
+
+This property specifies the maximum time an "eases" during the follow should take.
+Setting this property causes the velocity to "level out" after at a time.  Setting 
+a negative value reverts to the normal mode of easing over the entire animation 
+duration.
+
+The default value is -1.
+*/
+qreal QmlEaseFollow::maximumEasingTime() const
+{
+    Q_D(const QmlEaseFollow);
+    return d->maximumEasingTime;
+}
+
+void QmlEaseFollow::setMaximumEasingTime(qreal v)
+{
+    Q_D(QmlEaseFollow);
+    d->maximumEasingTime = v;
+
+    if (d->clock.state() == QAbstractAnimation::Running) 
+        d->restart();
+
+    emit maximumEasingTimeChanged();
 }
 
 QT_END_NAMESPACE
