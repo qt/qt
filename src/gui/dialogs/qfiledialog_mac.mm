@@ -281,7 +281,6 @@ QT_USE_NAMESPACE
 {
     Q_UNUSED(sender);
 
-    // Don't bother with empty file names.
     if ([filename length] == 0)
         return NO;
 
