@@ -3048,6 +3048,7 @@ void QWidget::grabMouse()
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &)
 {
     if(isVisible() && !qt_nograb()) {
@@ -3056,6 +3057,7 @@ void QWidget::grabMouse(const QCursor &)
         mac_mouse_grabber=this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {
