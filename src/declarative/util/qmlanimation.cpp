@@ -826,7 +826,7 @@ void QmlScriptAction::setStateChangeScriptName(const QString &name)
 
 void QmlScriptActionPrivate::execute()
 {
-    QmlScriptString scriptStr = hasRunScriptScript ? script : runScriptScript;
+    QmlScriptString scriptStr = hasRunScriptScript ? runScriptScript : script;
 
     const QString &str = scriptStr.script();
     if (!str.isEmpty()) {

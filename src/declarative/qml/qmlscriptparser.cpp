@@ -365,46 +365,7 @@ Object *ProcessAST::defineObjectBinding(AST::UiQualifiedId *qualifiedId,
     const QString objectType = asString(objectTypeName);
     const AST::SourceLocation typeLocation = objectTypeName->identifierToken;
 
-    if (objectType == QLatin1String("Connection")) {
-
-        Object *obj = defineObjectBinding_helper(/*propertyName = */0, objectType, typeLocation, location);
-
-        _stateStack.pushObject(obj);
-
-        AST::UiObjectMemberList *it = initializer->members;
-        for (; it; it = it->next) {
-            AST::UiScriptBinding *scriptBinding = AST::cast<AST::UiScriptBinding *>(it->member);
-            if (! scriptBinding)
-                continue;
-
-            QString propertyName = asString(scriptBinding->qualifiedId);
-            if (propertyName == QLatin1String("script")) {
-                QString script;
-
-                if (AST::ExpressionStatement *stmt = AST::cast<AST::ExpressionStatement *>(scriptBinding->statement)) {
-                    script = getVariant(stmt->expression).asScript();
-                } else {
-                    script = asString(scriptBinding->statement);
-                }
-
-                LocationSpan l = this->location(scriptBinding->statement->firstSourceLocation(),
-                                                scriptBinding->statement->lastSourceLocation());
-
-                _stateStack.pushProperty(QLatin1String("script"), l);
-                Value *value = new Value;
-                value->value = QmlParser::Variant(script);
-                value->location = l;
-                currentProperty()->addValue(value);
-                _stateStack.pop();
-            } else {
-                accept(it->member);
-            }
-        }
-
-        _stateStack.pop(); // object
-
-        return obj;
-    } else if (objectType == QLatin1String("Script")) {
+    if (objectType == QLatin1String("Script")) {
 
         AST::UiObjectMemberList *it = initializer->members;
         for (; it; it = it->next) {
