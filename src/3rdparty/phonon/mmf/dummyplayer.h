@@ -54,7 +54,6 @@ public:
     virtual bool isSeekable() const;
     virtual qint64 currentTime() const;
     virtual Phonon::State state() const;
-    virtual QString errorString() const;
     virtual Phonon::ErrorType errorType() const;
     virtual qint64 totalTime() const;
     virtual MediaSource source() const;
@@ -64,9 +63,6 @@ public:
 
     // AbstractPlayer
     virtual void doSetTickInterval(qint32 interval);
-
-protected:
-    virtual void changeState(PrivateState newState);
 };
 }
 }

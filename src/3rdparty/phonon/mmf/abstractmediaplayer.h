@@ -71,10 +71,6 @@ protected:
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(RFile& file) = 0;
     virtual void close() = 0;
-
-    /**
-     * Changes state and emits stateChanged()
-     */
     virtual void changeState(PrivateState newState);
 
 protected:

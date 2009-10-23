@@ -359,26 +359,27 @@ qint64 MMF::AbstractMediaPlayer::toMilliSeconds(const TTimeIntervalMicroSeconds 
     return in.Int64() / 1000;
 }
 
+//-----------------------------------------------------------------------------
+// Slots
+//-----------------------------------------------------------------------------
+
+void MMF::AbstractMediaPlayer::tick()
+{
+    // For the MWC compiler, we need to qualify the base class.
+    emit MMF::AbstractPlayer::tick(currentTime());
+}
+
 void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 {
-    TRACE_CONTEXT(AbstractPlayer::changeState, EAudioInternal);
-    TRACE_ENTRY("state %d newState %d", privateState(), newState);
+    TRACE_CONTEXT(AbstractMediaPlayer::changeState, EAudioInternal);
 
     // TODO: add some invariants to check that the transition is valid
+    AbstractPlayer::changeState(newState);
 
     const Phonon::State oldPhononState = phononState(privateState());
     const Phonon::State newPhononState = phononState(newState);
-    if (oldPhononState != newPhononState) {
-        TRACE("emit stateChanged(%d, %d)", newPhononState, oldPhononState);
-        emit stateChanged(newPhononState, oldPhononState);
-    }
 
-    setState(newState);
-
-    if (
-        LoadingState == oldPhononState
-        and StoppedState == newPhononState
-    ) {
+    if (LoadingState == oldPhononState && StoppedState == newPhononState) {
         // Ensure initial volume is set on MMF API before starting playback
         doVolumeChanged();
 
@@ -391,17 +392,6 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
         }
     }
 
-    TRACE_EXIT_0();
-}
-
-//-----------------------------------------------------------------------------
-// Slots
-//-----------------------------------------------------------------------------
-
-void MMF::AbstractMediaPlayer::tick()
-{
-    // For the MWC compiler, we need to qualify the base class.
-    emit MMF::AbstractPlayer::tick(currentTime());
 }
 
 QT_END_NAMESPACE

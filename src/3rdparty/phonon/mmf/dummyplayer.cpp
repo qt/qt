@@ -87,11 +87,6 @@ qint64 MMF::DummyPlayer::currentTime() const
     return 0;
 }
 
-QString MMF::DummyPlayer::errorString() const
-{
-    return QString();
-}
-
 Phonon::ErrorType MMF::DummyPlayer::errorType() const
 {
     return Phonon::NoError;
@@ -125,10 +120,6 @@ void MMF::DummyPlayer::setNextSource(const MediaSource &)
 void MMF::DummyPlayer::doSetTickInterval(qint32)
 {
 
-}
-
-void MMF::DummyPlayer::changeState(PrivateState)
-{
 }
 
 QT_END_NAMESPACE
