@@ -341,6 +341,7 @@ void tst_Gestures::initTestCase()
 
 void tst_Gestures::cleanupTestCase()
 {
+    qApp->unregisterGestureRecognizer(CustomGesture::GestureType);
 }
 
 void tst_Gestures::init()
@@ -547,6 +548,8 @@ void tst_Gestures::conflictingGestures()
     QCOMPARE(child->events.all.count(), TotalGestureEventsCount + ContinuousGestureEventsCount);
     QCOMPARE(parent.gestureOverrideEventsReceived, 0);
     QCOMPARE(parent.gestureEventsReceived, 0);
+
+    qApp->unregisterGestureRecognizer(ContinuousGesture);
 }
 
 void tst_Gestures::finishedWithoutStarted()
@@ -978,6 +981,8 @@ void tst_Gestures::twoGesturesOnDifferentLevel()
     QCOMPARE(parent.events.all.size(), TotalGestureEventsCount);
     for(int i = 0; i < child->events.all.size(); ++i)
         QCOMPARE(parent.events.all.at(i), CustomGesture::GestureType);
+
+    qApp->unregisterGestureRecognizer(SecondGesture);
 }
 
 void tst_Gestures::multipleGesturesInTree()
@@ -1046,6 +1051,9 @@ void tst_Gestures::multipleGesturesInTree()
     QCOMPARE(A->events.all.count(FirstGesture), TotalGestureEventsCount);
     QCOMPARE(A->events.all.count(SecondGesture), 0);
     QCOMPARE(A->events.all.count(ThirdGesture), TotalGestureEventsCount);
+
+    qApp->unregisterGestureRecognizer(SecondGesture);
+    qApp->unregisterGestureRecognizer(ThirdGesture);
 }
 
 void tst_Gestures::multipleGesturesInComplexTree()
@@ -1139,6 +1147,13 @@ void tst_Gestures::multipleGesturesInComplexTree()
     QCOMPARE(A->events.all.count(FifthGesture), 0);
     QCOMPARE(A->events.all.count(SixthGesture), 0);
     QCOMPARE(A->events.all.count(SeventhGesture), 0);
+
+    qApp->unregisterGestureRecognizer(SecondGesture);
+    qApp->unregisterGestureRecognizer(ThirdGesture);
+    qApp->unregisterGestureRecognizer(FourthGesture);
+    qApp->unregisterGestureRecognizer(FifthGesture);
+    qApp->unregisterGestureRecognizer(SixthGesture);
+    qApp->unregisterGestureRecognizer(SeventhGesture);
 }
 
 void tst_Gestures::testMapToScene()
