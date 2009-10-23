@@ -934,8 +934,8 @@ void QApplicationPrivate::initialize()
     qInitDrawhelperAsm();
 
 #ifdef QT_MAC_USE_COCOA
-    // Use the rater graphics system by default on Cocoa, override with
-    // -graphicssystem raster
+    // Use the raster graphics system by default on Cocoa, override with
+    // -graphicssystem native
     if (graphics_system_name.isEmpty()) {
         graphics_system_name = QLatin1String("raster");
     }
