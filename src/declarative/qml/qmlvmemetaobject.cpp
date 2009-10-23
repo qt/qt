@@ -105,16 +105,35 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
         if (!(flags & QmlMetaProperty::BypassInterceptor)
             && !aInterceptors.isEmpty()
             && aInterceptors.testBit(id)) {
-            QmlPropertyValueInterceptor *vi = interceptors.value(id);
+            QPair<int, QmlPropertyValueInterceptor*> pair = interceptors.value(id);
+            int valueIndex = pair.first;
+            QmlPropertyValueInterceptor *vi = pair.second;
+            QVariant::Type type = QVariant::Invalid;
             if (id >= propOffset) {
                 id -= propOffset;
                 if (id < metaData->propertyCount) {
-                    vi->write(QVariant(data[id].type(), a[0]));
-                    return -1;
+                    type = data[id].type();
                 }
             } else {
-                vi->write(QVariant(property(id).type(), a[0]));
-                return -1;
+                type = property(id).type();
+            }
+
+            if (type != QVariant::Invalid) {
+                if (valueIndex != -1) {
+                    QmlEnginePrivate *ep = ctxt?QmlEnginePrivate::get(ctxt->engine()):0;
+                    QmlValueType *valueType = 0;
+                    if (ep) valueType = ep->valueTypes[type];
+                    else valueType = QmlValueTypeFactory::valueType(type);
+                    Q_ASSERT(valueType);
+
+                    valueType->setValue(QVariant(type, a[0]));
+                    QMetaProperty valueProp = valueType->metaObject()->property(valueIndex);
+                    vi->write(valueProp.read(valueType));
+                    return -1;
+                } else {
+                    vi->write(QVariant(type, a[0]));
+                    return -1;
+                }
             }
         }
     }
@@ -280,12 +299,12 @@ void QmlVMEMetaObject::listChanged(int id)
     activate(object, methodOffset + id, 0);
 }
 
-void QmlVMEMetaObject::registerInterceptor(int index, QmlPropertyValueInterceptor *interceptor)
+void QmlVMEMetaObject::registerInterceptor(int index, int valueIndex, QmlPropertyValueInterceptor *interceptor)
 {
     if (aInterceptors.isEmpty())
         aInterceptors.resize(propertyCount() + metaData->propertyCount);
     aInterceptors.setBit(index);
-    interceptors.insert(index, interceptor);
+    interceptors.insert(index, qMakePair(valueIndex, interceptor));
 }
 
 

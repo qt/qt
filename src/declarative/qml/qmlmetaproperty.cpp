@@ -1067,6 +1067,12 @@ int QmlMetaProperty::coreIndex() const
     return d->core.coreIndex;
 }
 
+/*! \internal */
+int QmlMetaProperty::valueTypeCoreIndex() const
+{
+    return d->valueTypeCoreIdx;
+}
+
 Q_GLOBAL_STATIC(QmlValueTypeFactory, qmlValueTypes);
 
 /*!

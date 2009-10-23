@@ -56,6 +56,7 @@
 #include <QtDeclarative/qml.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QBitArray>
+#include <QtCore/QPair>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -104,7 +105,7 @@ public:
                      QmlRefCount * = 0);
     ~QmlVMEMetaObject();
 
-    void registerInterceptor(int index, QmlPropertyValueInterceptor *interceptor);
+    void registerInterceptor(int index, int valueIndex, QmlPropertyValueInterceptor *interceptor);
 
 protected:
     virtual int metaCall(QMetaObject::Call _c, int _id, void **_a);
@@ -121,7 +122,7 @@ private:
     QVariant *data;
     QBitArray aConnected;
     QBitArray aInterceptors;
-    QHash<int, QmlPropertyValueInterceptor*> interceptors;
+    QHash<int, QPair<int, QmlPropertyValueInterceptor*> > interceptors;
 
     QAbstractDynamicMetaObject *parent;
 
