@@ -212,21 +212,21 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
             QGestureRecognizer::Result result = recognizer->filterEvent(state, target, event);
             QGestureRecognizer::Result type = result & QGestureRecognizer::ResultState_Mask;
             if (type == QGestureRecognizer::GestureTriggered) {
-                DEBUG() << "QGestureManager: gesture triggered: " << state;
+                DEBUG() << "QGestureManager:Recognizer: gesture triggered: " << state;
                 triggeredGestures << state;
             } else if (type == QGestureRecognizer::GestureFinished) {
-                DEBUG() << "QGestureManager: gesture finished: " << state;
+                DEBUG() << "QGestureManager:Recognizer: gesture finished: " << state;
                 finishedGestures << state;
             } else if (type == QGestureRecognizer::MaybeGesture) {
-                DEBUG() << "QGestureManager: maybe gesture: " << state;
+                DEBUG() << "QGestureManager:Recognizer: maybe gesture: " << state;
                 newMaybeGestures << state;
             } else if (type == QGestureRecognizer::NotGesture) {
-                DEBUG() << "QGestureManager: not gesture: " << state;
+                DEBUG() << "QGestureManager:Recognizer: not gesture: " << state;
                 notGestures << state;
             } else if (type == QGestureRecognizer::Ignore) {
-                DEBUG() << "QGestureManager: gesture ignored the event: " << state;
+                DEBUG() << "QGestureManager:Recognizer: ignored the event: " << state;
             } else {
-                DEBUG() << "QGestureManager: hm, lets assume the recognizer"
+                DEBUG() << "QGestureManager:Recognizer: hm, lets assume the recognizer"
                         << "ignored the event: " << state;
             }
             if (result & QGestureRecognizer::ConsumeEventHint) {
@@ -307,7 +307,7 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
     if (!activeGestures.isEmpty() || !maybeGestures.isEmpty() ||
         !startedGestures.isEmpty() || !triggeredGestures.isEmpty() ||
         !finishedGestures.isEmpty() || !canceledGestures.isEmpty()) {
-        DEBUG() << "QGestureManager::filterEvent:"
+        DEBUG() << "QGestureManager::filterEventThroughContexts:"
                 << "\n\tactiveGestures:" << activeGestures
                 << "\n\tmaybeGestures:" << maybeGestures.keys()
                 << "\n\tstarted:" << startedGestures
