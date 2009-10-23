@@ -1487,7 +1487,7 @@ void QDBusConnectionPrivate::handleSignal(const QString &key, const QDBusMessage
     //qDBusDebug() << signalHooks.keys();
     for ( ; it != end && it.key() == key; ++it) {
         const SignalHook &hook = it.value();
-        if (!hook.owner.isEmpty() && hook.owner != msg.service())
+        if (!hook.owner.isNull() && hook.owner != msg.service())
             continue;
         if (!hook.path.isEmpty() && hook.path != msg.path())
             continue;
