@@ -317,9 +317,9 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
         int ret;
         do {
             ret = QT_FSEEK(fh, 0, SEEK_END);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
                         qt_error_string(int(errno)));
 
@@ -572,9 +572,9 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
         int ret;
         do {
             ret = QT_FSEEK(fh, QT_OFF_T(pos), SEEK_SET);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(QFile::ReadError, qt_error_string(int(errno)));
             return false;
         }
