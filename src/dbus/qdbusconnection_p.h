@@ -278,6 +278,7 @@ public:
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                             const QString &service, const QString &owner,
                             const QString &path, const QString &interface, const QString &name,
+                            const QStringList &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);

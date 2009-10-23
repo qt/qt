@@ -392,7 +392,7 @@ static void qDBusNewConnection(DBusServer *server, DBusConnection *connection, v
 
 static QByteArray buildMatchRule(const QString &service, const QString & /*owner*/,
                                  const QString &objectPath, const QString &interface,
-                                 const QString &member, const QString & /*signature*/)
+                                 const QString &member, const QStringList &argMatch, const QString & /*signature*/)
 {
     QString result = QLatin1String("type='signal',");
     QString keyValue = QLatin1String("%1='%2',");
@@ -405,6 +405,14 @@ static QByteArray buildMatchRule(const QString &service, const QString & /*owner
         result += keyValue.arg(QLatin1String("interface"), interface);
     if (!member.isEmpty())
         result += keyValue.arg(QLatin1String("member"), member);
+
+    // add the argument string-matching now
+    if (!argMatch.isEmpty()) {
+        keyValue = QLatin1String("arg%1='%2',");
+        for (int i = 0; i < argMatch.count(); ++i)
+            if (!argMatch.at(i).isNull())
+                result += keyValue.arg(i).arg(argMatch.at(i));
+    }
 
     result.chop(1);             // remove ending comma
     return result.toLatin1();
@@ -1195,6 +1203,7 @@ int QDBusConnectionPrivate::findSlot(QObject* obj, const QByteArray &normalizedN
 bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                                          const QString &service, const QString &owner,
                                          const QString &path, const QString &interface, const QString &name,
+                                         const QStringList &argMatch,
                                          QObject *receiver, const char *signal, int minMIdx,
                                          bool buildSignature)
 {
@@ -1235,7 +1244,7 @@ bool QDBusConnectionPrivate::prepareHook(QDBusConnectionPrivate::SignalHook &hoo
                 hook.signature += QLatin1String( QDBusMetaType::typeToSignature( hook.params.at(i) ) );
     }
 
-    hook.matchRule = buildMatchRule(service, owner, path, interface, mname, hook.signature);
+    hook.matchRule = buildMatchRule(service, owner, path, interface, mname, argMatch, hook.signature);
     return true;                // connect to this signal
 }
 
@@ -2027,7 +2036,7 @@ void QDBusConnectionPrivate::connectRelay(const QString &service, const QString 
     SignalHook hook;
     QString key;
 
-    if (!prepareHook(hook, key, service, owner, path, interface, QString(), receiver, signal,
+    if (!prepareHook(hook, key, service, owner, path, interface, QString(), QStringList(), receiver, signal,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 
@@ -2059,7 +2068,7 @@ void QDBusConnectionPrivate::disconnectRelay(const QString &service, const QStri
     SignalHook hook;
     QString key;
 
-    if (!prepareHook(hook, key, service, owner, path, interface, QString(), receiver, signal,
+    if (!prepareHook(hook, key, service, owner, path, interface, QString(), QStringList(), receiver, signal,
                      QDBusAbstractInterface::staticMetaObject.methodCount(), true))
         return;                 // don't connect
 

@@ -609,7 +609,7 @@ bool QDBusConnection::connect(const QString &service, const QString &path, const
 
     QString owner = d->getNameOwner(service); // we don't care if the owner is empty
     hook.signature = signature;               // it might get started later
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, receiver, slot, 0, false))
+    if (!d->prepareHook(hook, key, service, owner, path, interface, name, QStringList(), receiver, slot, 0, false))
         return false;           // don't connect
 
     // avoid duplicating:
@@ -663,7 +663,7 @@ bool QDBusConnection::disconnect(const QString &service, const QString &path, co
 
     QString owner = d->getNameOwner(service); // we don't care of owner is empty
     hook.signature = signature;
-    if (!d->prepareHook(hook, key, service, owner, path, interface, name, receiver, slot, 0, false))
+    if (!d->prepareHook(hook, key, service, owner, path, interface, name, QStringList(), receiver, slot, 0, false))
         return false;           // don't disconnect
 
     // avoid duplicating:
