@@ -65,6 +65,7 @@ private slots:
     void scriptErrors();
     void signalTriggeredBindings();
     void listProperties();
+    void exceptionClearsOnReeval();
 
 private:
     QmlEngine engine;
@@ -816,6 +817,27 @@ void tst_qmlecmascript::listProperties()
     QCOMPARE(object->property("test6").toBool(), true);
     QCOMPARE(object->property("test7").toBool(), true);
     QCOMPARE(object->property("test8").toBool(), true);
+}
+
+void tst_qmlecmascript::exceptionClearsOnReeval()
+{
+    QmlComponent component(&engine, TEST_FILE("exceptionClearsOnReeval.qml"));
+    QString url = component.url().toString();
+
+    QString warning = url + ":4: TypeError: Result of expression 'objectProperty.objectProperty' [undefined] is not an object.";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), false);
+
+    MyQmlObject object2;
+    MyQmlObject object3;
+    object2.setObjectProperty(&object3);
+    object->setObjectProperty(&object2);
+
+    QCOMPARE(object->property("test").toBool(), true);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

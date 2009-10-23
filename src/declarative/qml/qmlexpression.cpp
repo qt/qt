@@ -323,6 +323,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
 
     if (scriptEngine->hasUncaughtException()) {
        printException(scriptEngine);
+       scriptEngine->clearExceptions();
        return QVariant();
     }
 
