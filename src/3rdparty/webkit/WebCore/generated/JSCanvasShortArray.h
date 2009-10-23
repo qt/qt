@@ -45,7 +45,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     virtual void getOwnPropertyNames(JSC::ExecState*, JSC::PropertyNameArray&);
@@ -53,6 +53,8 @@ public:
     {
         return static_cast<CanvasShortArray*>(Base::impl());
     }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetPropertyNames | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
     JSC::JSValue getByIndex(JSC::ExecState*, unsigned index);
     void indexSetter(JSC::ExecState*, unsigned index, JSC::JSValue);
 };
@@ -66,7 +68,13 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+    }
     JSCanvasShortArrayPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 

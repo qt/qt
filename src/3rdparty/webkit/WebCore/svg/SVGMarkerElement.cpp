@@ -50,6 +50,9 @@ SVGMarkerElement::SVGMarkerElement(const QualifiedName& tagName, Document* doc)
     , m_markerUnits(this, SVGNames::markerUnitsAttr, SVG_MARKERUNITS_STROKEWIDTH)
     , m_orientType(this, SVGNames::orientAttr, SVG_MARKER_ORIENT_ANGLE)
     , m_orientAngle(this, SVGNames::orientAttr, SVGAngle::create())
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
+    , m_viewBox(this, SVGNames::viewBoxAttr)
+    , m_preserveAspectRatio(this, SVGNames::preserveAspectRatioAttr, SVGPreserveAspectRatio::create())
 {
     // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
 }
@@ -61,6 +64,11 @@ SVGMarkerElement::~SVGMarkerElement()
     // is still fully constructed. See <https://bugs.webkit.org/show_bug.cgi?id=21293>.
     if (renderer())
         detach();
+}
+
+TransformationMatrix SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
+{
+    return SVGFitToViewBox::viewBoxToViewTransform(viewBox(), preserveAspectRatio(), viewWidth, viewHeight);
 }
 
 void SVGMarkerElement::parseMappedAttribute(MappedAttribute* attr)
@@ -94,7 +102,7 @@ void SVGMarkerElement::parseMappedAttribute(MappedAttribute* attr)
             return;
         if (SVGExternalResourcesRequired::parseMappedAttribute(attr))
             return;
-        if (SVGFitToViewBox::parseMappedAttribute(attr))
+        if (SVGFitToViewBox::parseMappedAttribute(document(), attr))
             return;
 
         SVGStyledElement::parseMappedAttribute(attr);

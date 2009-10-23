@@ -146,7 +146,7 @@ void tst_QAudioInput::pullFile()
         // Check state and periodSize() are valid non-zero values.
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->clock() > 0);
+        QVERIFY(audio->clock() > 10000 && audio->clock() < 800000);
         QVERIFY(audio->periodSize() > 0);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 

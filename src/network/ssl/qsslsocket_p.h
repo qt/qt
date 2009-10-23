@@ -120,6 +120,7 @@ public:
     void _q_readyReadSlot();
     void _q_bytesWrittenSlot(qint64);
     void _q_flushWriteBuffer();
+    void _q_flushReadBuffer();
 
     // Platform specific functions
     virtual void startClientEncryption() = 0;

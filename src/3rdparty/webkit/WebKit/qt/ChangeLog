@@ -1,3 +1,334 @@
+2009-10-19  Nate Chapin  <japhet@chromium.org>
+
+        Unreviewed, build fix.
+
+        Update call to FrameLoader::loadFrameRequest().
+
+        * Api/qwebpage.cpp:
+        (QWebPage::triggerAction):
+
+2009-10-19  Viatcheslav Ostapenko  <ostapenko.viatcheslav@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        Add QWebElement::render API which allows rendering of single
+        element.
+
+        * Api/qwebelement.cpp:
+        (QWebElement::render):
+        * Api/qwebelement.h:
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::render):
+        * tests/qwebelement/qwebelement.qrc:
+        * tests/qwebelement/image.png: Added.
+
+2009-10-19  Markus Goetz <Markus.Goetz@nokia.com>
+
+        Reviewed by Ariya Hidayat.
+
+        QWebPage: Doc: setNetworkAccessManager should only be called once.
+
+        * Api/qwebpage.cpp:
+
+2009-10-19  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Tor Arne.
+
+        Wrong ifdef combination in QGraphicsWebView's event method.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::event):
+
+2009-10-19  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Windowed Plugins: Don't crash when client is 0.
+        
+        Client is 0 when we use QWebPage without a QWebView or QGraphicsWebView.
+        In addition, setFrameRect()/updatePluginWidget() is called even if the
+        plugin was not succesfully loaded. updatePluginWidget() updates the
+        window rect which is, in theory, useful to draw something that indicates
+        that we didn't load successfully.
+        
+        So, a status check is added to setNPWindowIfNeeded.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30380
+
+        * tests/qwebpage/qwebpage.pro:
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (takeScreenshot):
+        (tst_QWebPage::screenshot_data):
+        (tst_QWebPage::screenshot):
+        * tests/resources/test.swf: Copied from LayoutTests/fast/replaced/resources/test.swf.
+
+2009-10-19  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] Windowed Plugins: Fix crash when QWebPage is deleted after QWebView.
+        
+        Fixes various sources of crashes:
+        1. The PluginContainer is a child of QWebView. When the view gets deleted,
+        the PluginView is not notified about the deletion of PluginContainer.
+        2. QWebView destructor does not set client to 0.
+        3. Sometimes pending paint events are sent after the plugin has died, so add
+        a check in PluginView::setNPWindowIfNeeded.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30354
+
+        * Api/qwebview.cpp:
+        (QWebView::~QWebView):
+        * tests/qwebview/qwebview.pro:
+        * tests/qwebview/tst_qwebview.cpp:
+        (tst_QWebView::reusePage_data):
+        (tst_QWebView::reusePage):
+
+2009-10-19  Jakob Truelsen  <antialize@gmail.com>
+
+        Reviewed by Adam Barth.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29042
+
+        Allow one to costumize the minimal and maximal shrink factors,
+        Added methods setPrintingMinimumShrinkFactor, printingMinimumShrinkFactor,
+        setPrintingMaximumShrinkFactor, printingMaximumShrinkFactor to QWebSettings.
+
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        (QWebSettings::setPrintingMinimumShrinkFactor):
+        (QWebSettings::printingMinimumShrinkFactor):
+        (QWebSettings::setPrintingMaximumShrinkFactor):
+        (QWebSettings::printingMaximumShrinkFactor):
+        * Api/qwebsettings.h:
+
+2009-10-18  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Rename fixedContentsSize property to preferredContentsSize as
+        agreed upon with Simon Hausmann and Matthias Ettrich.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::preferredContentsSize):
+        (QWebPage::setPreferredContentsSize):
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::transitionToCommittedForNewPage):
+
+2009-10-16  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] QGLauncher leaks WebPage object
+        https://bugs.webkit.org/show_bug.cgi?id=30465
+
+        Make 'SharedScene' to own 'WebPage' reference and delete it at its destructor.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::view):
+        * Api/qwebpage_p.h:
+        * QGVLauncher/main.cpp:
+        (SharedScene::SharedScene):
+        (SharedScene::~SharedScene):
+
+2009-10-16  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] "dangling" pointer to qwebpage's view object can leads QGLauncher to crash
+        https://bugs.webkit.org/show_bug.cgi?id=30459
+
+        Remove all setView(ev->widget()) calls in QWebPage and QGWV event handling methods,
+        since QWebPageClient would do the trick.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::hoverMoveEvent):
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::mouseMoveEvent):
+        (QWebPagePrivate::mousePressEvent):
+        (QWebPagePrivate::mouseDoubleClickEvent):
+        (QWebPagePrivate::mouseReleaseEvent):
+        (QWebPagePrivate::wheelEvent):
+        (QWebPagePrivate::dragEnterEvent):
+        (QWebPagePrivate::dragLeaveEvent):
+        (QWebPagePrivate::dragMoveEvent):
+
+2009-10-16  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
+
+        Pull out r49676 as it caused build breakges on Symbian
+
+        * Api/qwebpage.cpp:
+
+2009-10-16  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Need a way to inform the application when a Netscape plugin is created or deleted
+        https://bugs.webkit.org/show_bug.cgi?id=30179
+
+        Added "c" style static methods for the application to hook up for
+        receiving notifications when a plugin is created or destroyed.
+
+        * Api/qwebpage.cpp:
+
+2009-10-15  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Rubberstamped by Tor Arne.
+
+        Make QGLauncher's WebPage class constructor to get a QObject* as parent (not QWidget*).
+
+        * QGVLauncher/main.cpp:
+        (WebPage::WebPage):
+
+2009-10-15  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Tor Arne.
+
+        [Qt] QGLauncher crashes while closing a window
+        https://bugs.webkit.org/show_bug.cgi?id=30385
+
+        Set page's pageClient reference to '0' at QGWV deletion.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::~QGraphicsWebView):
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (WebPage::WebPage):
+        (WebPage::aborting):
+        (tst_QGraphicsWebView::crashOnViewlessWebPages):
+
+2009-10-13  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Make context menu to work in QGraphicsWebView
+        https://bugs.webkit.org/show_bug.cgi?id=30336
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::event):
+
+2009-10-13  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Plugins : Remove all traces of winId. Use ownerWidget() instead.
+        
+        This is a bug for two reasons:
+        1. Everytime we use winId(), we end up creating a native widget. This causes an
+        unnecessary copy of contents from the backing store to the native widget.
+        2. Neither windowed nor windowless plugins require the winId of the QWebView or
+        QGraphicsView.
+        
+        Introduce ownerWidget() which returns a QWidget * without creating a native widget
+        (as opposed to QWidget::find(winId)).
+
+        https://bugs.webkit.org/show_bug.cgi?id=30170
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::ownerWidget):
+        * Api/qwebview.cpp:
+        (QWebViewPrivate::ownerWidget):
+
+2009-10-13  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Add some initial autotests for QWebPage's ErrorPageExtention
+        https://bugs.webkit.org/show_bug.cgi?id=30296
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (ErrorPage::ErrorPage):
+        (ErrorPage::supportsExtension):
+        (ErrorPage::extension):
+        (tst_QWebPage::errorPageExtension):
+
+2009-10-13  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] better handle possible edge cases on qwebframe::requestedUrl use
+        https://bugs.webkit.org/show_bug.cgi?id=30216
+
+        QWebFrame::requestedUrl can be called at any time during the load
+        process, including:
+
+        * An error handling (whereas an alternate error page for unsuccessful
+          load is being set);
+        * A ssl error exception call;
+        * During navigation notifications/callbacks (titleChanged, urlChanged,
+          progresses, addHistoryEntry, etc);
+        * Among others.
+
+        This patch makes requestedUrl calls to fallback to FrameLoaderClient
+        m_loadError's failingURL when an error has occurred, unless it is
+        null/empty.
+
+        Also, m_loadError is now being reset at each the main frame starts a
+        load, in order to avoid previous load errors footprints.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::requestedUrl):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::postProgressStartedNotification):
+
+2009-10-12  Jakub Wieczorek  <faw217@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Missing default value for the default text encoding.
+        https://bugs.webkit.org/show_bug.cgi?id=30311
+
+        QtWebKit has provided a default, hardcoded value for default charset but since
+        the addition of the defaultTextEncoding setting in QWebSettings, that hardcoded
+        value has had no effect.
+
+        Added a regression test and unskipped fast/dom/Document/document-charset.html,
+        which is passing now.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        * Api/qwebsettings.cpp:
+        (QWebSettings::QWebSettings):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::defaultTextEncoding):
+
+2009-10-12  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Implement the new palette() methods on the page clients
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::palette):
+        * Api/qwebview.cpp:
+        (QWebViewPrivate::palette):
+
+2009-10-12  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        QWebPage's createViewlessPlugin autotest crash fix.
+        
+        It is possible that plugins that are QWidgets or QGraphicsWidgets
+        are created before a view has been assigned to a QWebPage. The
+        plug-ins won't be fully functional, as by design, they should
+        visualise something, but they won't crash and will stay in memory.
+
+        An autotest that covers this use-case, is included.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30118
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::createPlugin):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (PluginTrackedPageWidget::PluginTrackedPageWidget):
+        (PluginTrackedPageGraphicsWidget::PluginTrackedPageGraphicsWidget):
+        (PluginTrackedPageGraphicsWidget::createPlugin):
+        (tst_QWebPage::destroyPlugin):
+        (tst_QWebPage::createViewlessPlugin):
+
 2009-10-09  Joe Ligman  <joseph.ligman@nokia.com>
 
         Reviewed by Simon Hausmann.
@@ -24,6 +355,130 @@
         * tests/qwebpage/tst_qwebpage.cpp:
         (tst_QWebPage::inputMethods):
 
+2009-10-08  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Move executeScript from FrameLoader to ScriptController
+        https://bugs.webkit.org/show_bug.cgi?id=30200
+
+        Update API call.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::evaluateJavaScript):
+
+2009-10-08  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Part of testOptionalJSObjects autotest was marked as "expect to fail".
+
+        Two places in tst_QWebPage::testOptionalJSObjects were marked as
+        expected to fail. The problem concern checking if a feature is enabled
+        or disabled. According to discussion on webkit dev mailing list
+        a disabled feature should be invisible from java script level, but
+        there are exceptions from the rule. So we decided to disable the test
+        for now.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29867
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::testOptionalJSObjects):
+
+2009-10-07  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Darin Adler.
+
+        Factor PolicyChecker out of FrameLoader
+        https://bugs.webkit.org/show_bug.cgi?id=30155
+
+        Move the policy callback to the policy object.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::callPolicyFunction):
+
+2009-10-07  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Get rid of useless loadFailed signal in QGraphicsWebView
+        https://bugs.webkit.org/show_bug.cgi?id=30166
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::_q_doLoadFinished):
+        * Api/qgraphicswebview.h:
+        * QGVLauncher/main.cpp:
+        (MainWindow::init):
+        (MainWindow::loadFinished):
+
+2009-10-07  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Simon Hausmann.
+
+        Add a simple rotation effect to QGVLauncher
+
+        https://bugs.webkit.org/show_bug.cgi?id=30162
+
+        * QGVLauncher/main.cpp:
+        (MainView::animatedFlip):
+        (MainWindow::animatedFlip):
+        (MainWindow::buildUI):
+
+2009-10-07  Volker Hilsheimer  <volker.hilsheimer@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Doc: Document HTML and status as properties.
+
+        * Api/qgraphicswebview.cpp:
+
+2009-10-07  Martin Smith  <msmith@trolltech.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix qdoc warning about disabled renderHints property
+        on Symbian.
+
+        * Api/qwebview.cpp:
+        * Api/qwebview.h:
+
+2009-10-06  Adam Barth  <abarth@webkit.org>
+
+        Reviewed by Eric Seidel.
+
+        Move setLocalLoadPolicy and friends to SecurityOrigin
+        https://bugs.webkit.org/show_bug.cgi?id=30110
+
+        Call the new API.
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+
+2009-10-06  Benjamin C Meyer  <bmeyer@rim.com>
+
+        Reviewed by Ariya Hidayat.
+        
+        When the drag data contains an image set it on the QDrag so it will be visible to the user.
+        
+        * WebCoreSupport/DragClientQt.cpp:
+        (WebCore::DragClientQt::startDrag):
+
+2009-10-06  Pavel Feldman  <pfeldman@chromium.org>
+
+        Reviewed by Timothy Hatcher.
+
+        Web Inspector: close inspector client view on
+        InspectorController::close API call.
+
+        In order to run batch web inspector layout tests (and not affect
+        subsequent tests) we should close inspector client's view upon
+        InspectorController::close API call.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30009
+
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::createPage):
+
 2009-10-06  Janne Koskinen  <janne.p.koskinen@digia.com>
 
         Reviewed by Simon Hausmann.
@@ -37,6 +492,159 @@
         * Api/qwebview.cpp:
         (QWebView::QWebView):
 
+2009-10-05  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Hausmann.
+
+        QtLauncher: print the number of loaded urls
+        
+        When using the -r mode print the number of URLs loaded so far. This
+        is extremly useful when opening the same URL over and over again and
+        one wants to see the progress.
+
+        * QtLauncher/main.cpp:
+        (URLLoader::URLLoader):
+        (URLLoader::loadNext):
+
+2009-10-05  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Simon Hausmann.
+
+        Add screenshot option to menubar
+
+        https://bugs.webkit.org/show_bug.cgi?id=30067
+
+        * QtLauncher/main.cpp:
+        (MainWindow::screenshot):
+        (MainWindow::setupUI):
+
+2009-10-05  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Simon Hausmann.
+
+        Setting the env QTLAUNCHER_USE_ARGB_VISUALS makes Qt use WA_TranslucentWindow.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30068
+
+        * QtLauncher/main.cpp:
+        (MainWindow::MainWindow):
+
+2009-10-05  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Rubberstamped by Simon Hausmann.
+
+        Add documentation to the ErrorPageExtension.
+
+        * Api/qwebpage.cpp:
+
+2009-10-02  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Inform the application when a new request is created
+        https://bugs.webkit.org/show_bug.cgi?id=29975
+
+        Add a signal to QWebPage, to inform the application when a request is created.
+
+        * Api/qwebpage.cpp:
+        * Api/qwebpage.h:
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::loadFinished):
+
+2009-10-05  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        ErrorPageExtension: Add a pointer to the QWebFrame that had
+        an error.
+
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
+
+2009-10-05  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Do not empty the offline web appcache when clearing
+        memory caches. That one is not in memory, but stored
+        in sqlite.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettings::clearMemoryCaches):
+
+2009-10-05  J-P Nurmi  <jpnurmi@gmail.com>
+
+        Reviewed by Simon Hausmann.
+
+        Added QGraphicsWidget-plugins support to FrameLoaderClientQt.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29710
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::pluginParent):
+        * Api/qwebview.cpp:
+        (QWebViewPrivate::pluginParent):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::):
+        (WebCore::FrameLoaderClientQt::createPlugin):
+
+2009-10-03  Adam Barth  <abarth@webkit.org>
+
+        Unreview build fix.  I wish I had a try server...
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::updateAction):
+
+2009-10-02  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Conditionally guard cursor code (cursor and updateCursor functions) with !QT_NO_CURSOR.
+        Otherwise, it is inconsistent with class declaration of QCursor.
+
+        * Api/qgraphicswebview.cpp:
+        * Api/qwebview.cpp:
+
+2009-10-02  Prasanth Ullattil  <prasanth.ullattil@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        Fix compiler warnings about unused function arguments.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::scrollBarMinimum):
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::focusInEvent):
+        (QWebPagePrivate::focusOutEvent):
+        (QWebPagePrivate::leaveEvent):
+        (QWebPage::javaScriptAlert):
+        (QWebPage::javaScriptConfirm):
+        (QWebPage::javaScriptPrompt):
+        (QWebPage::triggerAction):
+        (QWebPage::acceptNavigationRequest):
+        (QWebPage::chooseFile):
+        * WebCoreSupport/ChromeClientQt.cpp:
+        (WebCore::ChromeClientQt::repaint):
+        (WebCore::ChromeClientQt::mouseDidMoveOverElement):
+        (WebCore::ChromeClientQt::reachedMaxAppCacheSize):
+        * WebCoreSupport/ContextMenuClientQt.cpp:
+        (WebCore::ContextMenuClientQt::downloadURL):
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::dispatchWillPerformClientRedirect):
+        (WebCore::FrameLoaderClientQt::setMainFrameDocumentReady):
+        (WebCore::FrameLoaderClientQt::representationExistsForURLScheme):
+        (WebCore::FrameLoaderClientQt::generatedMIMETypeForURLScheme):
+        (WebCore::FrameLoaderClientQt::shouldGoToHistoryItem):
+        (WebCore::FrameLoaderClientQt::pluginWillHandleLoadError):
+        (WebCore::FrameLoaderClientQt::assignIdentifierToInitialRequest):
+        (WebCore::FrameLoaderClientQt::dispatchDidFinishLoading):
+        (WebCore::FrameLoaderClientQt::createJavaAppletWidget):
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::setAttachedWindowHeight):
+        (WebCore::InspectorClientQt::highlight):
+        (WebCore::InspectorClientQt::removeSetting):
+
 2009-10-01  Simon Hausmann  <simon.hausmann@nokia.com>
 
         Reviewed by Tor Arne Vestbø.
@@ -48,6 +656,37 @@
         (QWebPagePrivate::mouseReleaseEvent):
         (QWebPagePrivate::handleSoftwareInputPanel):
         * Api/qwebpage_p.h:
+
+2009-10-01  Alexis Menard  <alexis.menard@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Rename QWebGraphicsItem to QGraphicsWebView
+
+        * Api/headers.pri:
+        * Api/qwebpage.h:
+        * Api/qwebgraphicsitem.cpp: Renamed.
+        * Api/qwebgraphicsitem.h: Renamed.
+        * WebKit/qt/QGVLauncher/main.cpp:
+        * tests/tests.pro:
+        * tests/qwebgraphicsitem/qwebgraphicsitem.pro: Renamed.
+        * tests/qwebgraphicsitem/tst_qwebgraphicsitem.cpp: Renamed.
+
+2009-10-01  Antonio Gomes   <tonikitoo@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29248
+        [Qt] [API] Make it possible to have 'invisible' loads
+
+        Make QWebFrame's setHtml and setContent methods to not change
+        session and global history at all.
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::setHtml):
+        (QWebFrame::setContent):
+        * tests/qwebframe/qwebframe.pro:
+        * tests/qwebframe/tst_qwebframe.cpp:
 
 2009-10-01  Kristian Amlie  <kristian.amlie@nokia.com>
 
@@ -84,6 +723,17 @@
         (WebCore::EditorClientQt::respondToChangedSelection):
         * tests/qwebpage/tst_qwebpage.cpp:
         (tst_QWebPage::inputMethods):
+
+2009-09-30  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by David Hyatt.
+
+        Add the failed URL to the ErrorPageExtension, as it is quite
+        useful for creating error pages.
+
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::callErrorPageExtension):
 
 2009-09-29  Andras Becsi  <becsi.andras@stud.u-szeged.hu>
 

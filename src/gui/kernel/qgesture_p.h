@@ -68,7 +68,7 @@ class QGesturePrivate : public QObjectPrivate
 public:
     QGesturePrivate()
         : gestureType(Qt::CustomGesture), state(Qt::NoGesture), isHotSpotSet(false),
-          targetObject(0), accept(true)
+          targetObject(0)
     {
     }
 
@@ -77,7 +77,6 @@ public:
     QPointF hotSpot;
     bool isHotSpotSet;
     QObject *targetObject;
-    bool accept;
 };
 
 class QPanGesturePrivate : public QGesturePrivate
@@ -90,9 +89,9 @@ public:
     {
     }
 
-    QSizeF totalOffset;
-    QSizeF lastOffset;
-    QSizeF offset;
+    QPointF totalOffset;
+    QPointF lastOffset;
+    QPointF offset;
     QPoint lastPosition;
     qreal acceleration;
 };

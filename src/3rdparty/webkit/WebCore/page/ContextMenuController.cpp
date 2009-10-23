@@ -166,10 +166,12 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         frame->editor()->copy();
         break;
     case ContextMenuItemTagGoBack:
-        frame->loader()->goBackOrForward(-1);
+        if (Page* page = frame->page())
+            page->goBackOrForward(-1);
         break;
     case ContextMenuItemTagGoForward:
-        frame->loader()->goBackOrForward(1);
+        if (Page* page = frame->page())
+            page->goBackOrForward(1);
         break;
     case ContextMenuItemTagStop:
         frame->loader()->stop();
@@ -215,7 +217,7 @@ void ContextMenuController::contextMenuItemSelected(ContextMenuItem* item)
         break;
     case ContextMenuItemTagOpenLink:
         if (Frame* targetFrame = result.targetFrame())
-            targetFrame->loader()->loadFrameRequest(FrameLoadRequest(ResourceRequest(result.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, false, 0, 0);
+            targetFrame->loader()->loadFrameRequest(FrameLoadRequest(ResourceRequest(result.absoluteLinkURL(), frame->loader()->outgoingReferrer())), false, false, 0, 0, SendReferrer);
         else
             openNewWindow(result.absoluteLinkURL(), frame);
         break;

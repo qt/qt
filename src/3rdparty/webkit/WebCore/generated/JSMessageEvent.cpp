@@ -25,6 +25,7 @@
 #include "JSDOMWindow.h"
 #include "KURL.h"
 #include "MessageEvent.h"
+#include "SerializedScriptValue.h"
 #include <runtime/Error.h>
 #include <runtime/JSString.h>
 #include <wtf/GetPtr.h>
@@ -83,8 +84,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSMessageEventConstructor::s_info = { "MessageEventConstructor", 0, &JSMessageEventConstructorTable, 0 };
@@ -166,7 +170,7 @@ JSValue jsMessageEventData(ExecState* exec, const Identifier&, const PropertySlo
     JSMessageEvent* castedThis = static_cast<JSMessageEvent*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);
     MessageEvent* imp = static_cast<MessageEvent*>(castedThis->impl());
-    return jsString(exec, imp->data());
+    return imp->data()->deserialize(exec);
 }
 
 JSValue jsMessageEventOrigin(ExecState* exec, const Identifier&, const PropertySlot& slot)

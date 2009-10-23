@@ -39,6 +39,7 @@
 #include "Frame.h"
 #include "HTMLCollection.h"
 #include "HTMLElement.h"
+#include "HTMLHeadElement.h"
 #include "JSAttr.h"
 #include "JSCDATASection.h"
 #include "JSCSSStyleDeclaration.h"
@@ -57,6 +58,7 @@
 #include "JSEventListener.h"
 #include "JSHTMLCollection.h"
 #include "JSHTMLElement.h"
+#include "JSHTMLHeadElement.h"
 #include "JSNode.h"
 #include "JSNodeFilter.h"
 #include "JSNodeIterator.h"
@@ -96,7 +98,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDocument);
 
 /* Hash table */
 
-static const HashTableValue JSDocumentTableValues[70] =
+static const HashTableValue JSDocumentTableValues[71] =
 {
     { "doctype", DontDelete|ReadOnly, (intptr_t)jsDocumentDoctype, (intptr_t)0 },
     { "implementation", DontDelete|ReadOnly, (intptr_t)jsDocumentImplementation, (intptr_t)0 },
@@ -114,6 +116,7 @@ static const HashTableValue JSDocumentTableValues[70] =
     { "URL", DontDelete|ReadOnly, (intptr_t)jsDocumentURL, (intptr_t)0 },
     { "cookie", DontDelete, (intptr_t)jsDocumentCookie, (intptr_t)setJSDocumentCookie },
     { "body", DontDelete, (intptr_t)jsDocumentBody, (intptr_t)setJSDocumentBody },
+    { "head", DontDelete|ReadOnly, (intptr_t)jsDocumentHead, (intptr_t)0 },
     { "images", DontDelete|ReadOnly, (intptr_t)jsDocumentImages, (intptr_t)0 },
     { "applets", DontDelete|ReadOnly, (intptr_t)jsDocumentApplets, (intptr_t)0 },
     { "links", DontDelete|ReadOnly, (intptr_t)jsDocumentLinks, (intptr_t)0 },
@@ -205,8 +208,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSDocumentConstructor::s_info = { "DocumentConstructor", 0, &JSDocumentConstructorTable, 0 };
@@ -432,6 +438,14 @@ JSValue jsDocumentBody(ExecState* exec, const Identifier&, const PropertySlot& s
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(castedThis->impl());
     return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->body()));
+}
+
+JSValue jsDocumentHead(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->head()));
 }
 
 JSValue jsDocumentImages(ExecState* exec, const Identifier&, const PropertySlot& slot)

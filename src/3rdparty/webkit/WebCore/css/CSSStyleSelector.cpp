@@ -2494,6 +2494,11 @@ bool CSSStyleSelector::SelectorChecker::checkOneSelector(CSSSelector* sel, Eleme
             case CSSSelector::PseudoFileUploadButton:
                 dynamicPseudo = FILE_UPLOAD_BUTTON;
                 return true;
+#if ENABLE(DATALIST)
+            case CSSSelector::PseudoInputListButton:
+                dynamicPseudo = INPUT_LIST_BUTTON;
+                return true;
+#endif
             case CSSSelector::PseudoInputPlaceholder:
                 dynamicPseudo = INPUT_PLACEHOLDER;
                 return true;
@@ -4634,9 +4639,23 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         HANDLE_INHERIT_AND_INITIAL(outlineOffset, OutlineOffset)
         m_style->setOutlineOffset(primitiveValue->computeLengthInt(style(), m_rootElementStyle, zoomFactor));
         return;
-
+    case CSSPropertyTextRendering: {
+        FontDescription fontDescription = m_style->fontDescription();
+        if (isInherit) 
+            fontDescription.setTextRenderingMode(m_parentStyle->fontDescription().textRenderingMode());
+        else if (isInitial)
+            fontDescription.setTextRenderingMode(AutoTextRendering);
+        else {
+            if (!primitiveValue)
+                return;
+            fontDescription.setTextRenderingMode(*primitiveValue);
+        }
+        if (m_style->setFontDescription(fontDescription))
+            m_fontDirty = true;
+        return;
+    }
     case CSSPropertyTextShadow:
-    case CSSPropertyBoxShadow: {
+    case CSSPropertyWebkitBoxShadow: {
         if (isInherit) {
             if (id == CSSPropertyTextShadow)
                 return m_style->setTextShadow(m_parentStyle->textShadow() ? new ShadowData(*m_parentStyle->textShadow()) : 0);
