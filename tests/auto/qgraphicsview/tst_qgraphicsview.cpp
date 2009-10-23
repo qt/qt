@@ -194,6 +194,8 @@ private slots:
     void acceptDrops();
     void optimizationFlags();
     void optimizationFlags_dontSavePainterState();
+    void optimizationFlags_dontSavePainterState2_data();
+    void optimizationFlags_dontSavePainterState2();
     void levelOfDetail_data();
     void levelOfDetail();
     void scrollBarRanges_data();
@@ -2453,6 +2455,53 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState()
     painter2.setOptimizationFlag(QGraphicsView::DontSavePainterState,true);
     painter2.show();
     QTest::qWaitForWindowShown(&painter2);
+}
+
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2_data()
+{
+    QTest::addColumn<bool>("savePainter");
+    QTest::newRow("With painter state protection") << true;
+    QTest::newRow("Without painter state protection") << false;
+}
+
+void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
+{
+    QFETCH(bool, savePainter);
+
+    class MyScene : public QGraphicsScene
+    {
+    public:
+        void drawBackground(QPainter *p, const QRectF &)
+        { transformInDrawBackground = p->worldTransform(); }
+
+        void drawForeground(QPainter *p, const QRectF &)
+        { transformInDrawForeground = p->worldTransform(); }
+
+        QTransform transformInDrawBackground;
+        QTransform transformInDrawForeground;
+    };
+
+    MyScene scene;
+    // Add transformed dummy items to make sure the painter's worldTransform() is changed in drawItems.
+    scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
+    scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
+
+    QGraphicsView view(&scene);
+    if (!savePainter)
+        view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
+    view.rotate(45);
+    view.scale(1.5, 1.5);
+    view.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&view);
+#endif
+    QTest::qWait(150);
+
+    // Make sure the painter's world transform is preserved after drawItems.
+    const QTransform expectedTransform = view.viewportTransform();
+    QVERIFY(!expectedTransform.isIdentity());
+    QCOMPARE(scene.transformInDrawForeground, expectedTransform);
+    QCOMPARE(scene.transformInDrawBackground, expectedTransform);
 }
 
 class LodItem : public QGraphicsRectItem
