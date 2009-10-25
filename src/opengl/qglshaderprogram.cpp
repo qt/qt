@@ -1265,7 +1265,12 @@ GLuint QGLShaderProgram::programId() const
 */
 void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name);
+    if (!d->linked) {
+        glBindAttribLocation(d->programGuard.id(), location, name);
+    } else {
+        qWarning() << "QGLShaderProgram::bindAttributeLocation(" << name
+                   << "): cannot bind after shader program is linked";
+    }
 }
 
 /*!
@@ -1280,7 +1285,7 @@ void QGLShaderProgram::bindAttributeLocation(const char *name, int location)
 */
 void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name.constData());
+    bindAttributeLocation(name.constData(), location);
 }
 
 /*!
@@ -1295,7 +1300,7 @@ void QGLShaderProgram::bindAttributeLocation(const QByteArray& name, int locatio
 */
 void QGLShaderProgram::bindAttributeLocation(const QString& name, int location)
 {
-    glBindAttribLocation(d->programGuard.id(), location, name.toLatin1().constData());
+    bindAttributeLocation(name.toLatin1().constData(), location);
 }
 
 /*!
