@@ -159,7 +159,8 @@ public:
     void toValueArray(qreal *values) const;
 
     QMatrix toAffine() const;
-    QTransform toTransform(qreal distanceToPlane = 1024.0f) const;
+    QTransform toTransform() const;
+    QTransform toTransform(qreal distanceToPlane) const;
 
     QPoint map(const QPoint& point) const;
     QPointF map(const QPointF& point) const;

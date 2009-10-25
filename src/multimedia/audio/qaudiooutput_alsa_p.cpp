@@ -282,7 +282,19 @@ bool QAudioOutputPrivate::open()
 
     QString dev = QLatin1String(m_device.constData());
     if(!dev.contains(QLatin1String("default"))) {
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14) 
         dev = QString(QLatin1String("default:CARD=%1")).arg(QLatin1String(m_device.constData()));
+#else
+        int idx = 0;
+        char *name;
+
+	while(snd_card_get_name(idx,&name) == 0) {
+            if(m_device.contains(name))
+                break;
+            idx++;
+	}
+        dev = QString(QLatin1String("hw:%1,0")).arg(idx);
+#endif
     }
     // Step 1: try and open the device
     while((count < 5) && (err < 0)) {
@@ -407,6 +419,7 @@ bool QAudioOutputPrivate::open()
     // Step 6: Start audio processing
     timer->start(period_time/1000);
 
+    clockStamp.restart();
     timeStamp.restart();
     elapsedTimeOffset = 0;
     errorState  = QAudio::NoError;
@@ -653,6 +666,7 @@ qint64 QAudioOutputPrivate::clock() const
     if (deviceState == QAudio::StopState)
         return 0;
 
+#if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14) 
     snd_pcm_status_t* status;
     snd_pcm_status_alloca(&status);
 
@@ -668,9 +682,12 @@ qint64 QAudioOutputPrivate::clock() const
             l = -l;
             l %= 1000000;
         }
-        return ((t1.tv_sec * 1000)+l/1000);
+        return ((t1.tv_sec * 1000000)+l);
     } else
         return 0;
+#else
+    return clockStamp.elapsed()*1000;
+#endif
     return 0;
 }
 

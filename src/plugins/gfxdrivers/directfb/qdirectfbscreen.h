@@ -154,7 +154,6 @@ public:
     void shutdownDevice();
 
     void exposeRegion(QRegion r, int changing);
-    void scroll(const QRegion &region, const QPoint &offset);
     void solidFill(const QColor &color, const QRegion &region);
 
     void setMode(int width, int height, int depth);

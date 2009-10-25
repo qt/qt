@@ -93,6 +93,7 @@ public slots:
     void playPause();
     void scaleChanged(QAction *);
     void aspectChanged(QAction *);
+    void hasVideoChanged(bool);
 
 private slots:
     void setAspect(int);

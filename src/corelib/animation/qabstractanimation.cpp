@@ -272,7 +272,8 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
         animationsToStart << animation;
-        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        if (!startStopAnimationTimer.isActive())
+            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     }
 }
 
@@ -290,7 +291,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
 
-        if (animations.isEmpty())
+        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
         animationsToStart.removeOne(animation);
@@ -383,25 +384,20 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
             QUnifiedTimer::instance()->ensureTimerUpdate(q);
         if (!guard)
             return;
+        //here we're sure that we were in running state before and that the
+        //animation is currently registered
         QUnifiedTimer::instance()->unregisterAnimation(q);
         break;
     case QAbstractAnimation::Running:
         {
             bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
+            QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
 
             // this ensures that the value is updated now that the animation is running
             if (oldState == QAbstractAnimation::Stopped) {
                 if (isTopLevel)
                     // currentTime needs to be updated if pauseTimer is active
                     QUnifiedTimer::instance()->ensureTimerUpdate(q);
-                if (!guard)
-                    return;
-            }
-
-            // test needed in case we stop in the setCurrentTime inside ensureTimerUpdate (zero duration)
-            if (state == QAbstractAnimation::Running) {
-                // register timer if our parent is not running
-                QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
             }
         }
         break;
@@ -414,7 +410,8 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         if (deleteWhenStopped)
             q->deleteLater();
 
-        QUnifiedTimer::instance()->unregisterAnimation(q);
+        if (oldState == QAbstractAnimation::Running)
+            QUnifiedTimer::instance()->unregisterAnimation(q);
 
         if (dura == -1 || loopCount < 0
             || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
@@ -461,7 +458,8 @@ QAbstractAnimation::~QAbstractAnimation()
         QAbstractAnimation::State oldState = d->state;
         d->state = Stopped;
         emit stateChanged(oldState, d->state);
-        QUnifiedTimer::instance()->unregisterAnimation(this);
+        if (oldState == QAbstractAnimation::Running)
+            QUnifiedTimer::instance()->unregisterAnimation(this);
     }
 }
 

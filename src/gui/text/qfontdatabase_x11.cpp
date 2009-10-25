@@ -51,6 +51,7 @@
 #include <qfile.h>
 #include <qtemporaryfile.h>
 #include <qabstractfileengine.h>
+#include <qmath.h>
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -752,12 +753,12 @@ QFontDef qt_FcPatternToQFontDef(FcPattern *pattern, const QFontDef &request)
         if (X11->display)
             dpi = QX11Info::appDpiY();
         else
-            dpi = 96; // ####
+            dpi = qt_defaultDpiY();
     }
 
     double size;
     if (FcPatternGetDouble(pattern, FC_PIXEL_SIZE, 0, &size) == FcResultMatch)
-        fontDef.pixelSize = qRound(size);
+        fontDef.pixelSize = size;
     else
         fontDef.pixelSize = 12;
 
@@ -1455,7 +1456,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_OBLIQUE;
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
-    double size_value = qMax(1, request.pixelSize);
+    double size_value = qMax(1., request.pixelSize);
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;
@@ -1893,8 +1894,9 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // normalize the request to get better caching
     QFontDef req = d->request;
     if (req.pixelSize <= 0)
-        req.pixelSize = qRound(qt_pixelSize(req.pointSize, d->dpi));
-    req.pointSize = 0;
+        req.pixelSize = floor(qt_pixelSize(req.pointSize, d->dpi) * 100 + 0.5) / 100;
+    if (req.pixelSize < 1)
+        req.pixelSize = 1;
     if (req.weight == 0)
         req.weight = QFont::Normal;
     if (req.stretch == 0)
@@ -1909,7 +1911,9 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
         return;
 
     // set it to the actual pointsize, so QFontInfo will do the right thing
-    req.pointSize = qt_pointSize(req.pixelSize, d->dpi);
+    if (req.pointSize < 0)
+        req.pointSize = qt_pointSize(req.pixelSize, d->dpi);
+
 
     QFontEngine *fe = QFontCache::instance()->findEngine(key);
 

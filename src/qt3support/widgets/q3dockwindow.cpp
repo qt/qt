@@ -409,7 +409,7 @@ Q3DockWindowHandle::Q3DockWindowHandle(Q3DockWindow *dw)
     ctrlDown = false;
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(minimize()));
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) && !defined(QT_NO_CURSOR)
     setCursor(Qt::SizeAllCursor);
 #endif
 }

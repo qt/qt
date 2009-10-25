@@ -590,9 +590,11 @@ void tst_QTabWidget::paintEventCount()
 
     QTest::qWait(1000);
 
-    // Mac and Windows get multiple repaints on the first show, so use those as a starting point.
+    // Mac, Windows and Windows CE get multiple repaints on the first show, so use those as a starting point.
     static const int MaxInitialPaintCount =
-#if defined(Q_WS_WIN)
+#if defined(Q_OS_WINCE)
+        4;
+#elif defined(Q_WS_WIN)
         2;
 #elif defined(Q_WS_MAC)
         5;

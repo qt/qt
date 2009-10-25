@@ -1430,6 +1430,24 @@ QMatrix QMatrix4x4::toAffine() const
                    m[3][0], m[3][1]);
 }
 
+/*!
+    Returns the conventional Qt 2D transformation matrix that
+    corresponds to this matrix.
+
+    The returned QTransform is formed by simply dropping the
+    third row and third column of the QMatrix4x4.  This is suitable
+    for implementing orthographic projections where the z co-ordinate
+    should be dropped rather than projected.
+
+    \sa toAffine()
+*/
+QTransform QMatrix4x4::toTransform() const
+{
+    return QTransform(m[0][0], m[0][1], m[0][3],
+                      m[1][0], m[1][1], m[1][3],
+                      m[3][0], m[3][1], m[3][3]);
+}
+
 static const qreal inv_dist_to_plane = 1. / 1024.;
 
 /*!
@@ -1437,8 +1455,8 @@ static const qreal inv_dist_to_plane = 1. / 1024.;
     corresponds to this matrix.
 
     If \a distanceToPlane is non-zero, it indicates a projection
-    factor to use to adjust for the z co-ordinate.  The default
-    value of 1024 corresponds to the projection factor used
+    factor to use to adjust for the z co-ordinate.  The value of
+    1024 corresponds to the projection factor used
     by QTransform::rotate() for the x and y axes.
 
     If \a distanceToPlane is zero, then the returned QTransform

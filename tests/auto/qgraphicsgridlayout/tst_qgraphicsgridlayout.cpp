@@ -104,6 +104,7 @@ private slots:
     void defaultStretchFactors();
     void geometries_data();
     void geometries();
+    void avoidRecursionInInsertItem();
     void task236367_maxSizeHint();
 };
 
@@ -2079,6 +2080,16 @@ void tst_QGraphicsGridLayout::geometries()
     }
 
     delete widget;
+}
+
+void tst_QGraphicsGridLayout::avoidRecursionInInsertItem()
+{
+    QGraphicsWidget window(0, Qt::Window);
+	QGraphicsGridLayout *layout = new QGraphicsGridLayout(&window);
+    QCOMPARE(layout->count(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsGridLayout::addItem: cannot insert itself");
+    layout->addItem(layout, 0, 0);
+    QCOMPARE(layout->count(), 0);
 }
 
 void tst_QGraphicsGridLayout::task236367_maxSizeHint()

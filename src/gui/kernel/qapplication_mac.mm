@@ -203,6 +203,8 @@ static EventHandlerRef tablet_proximity_handler = 0;
 static EventHandlerUPP tablet_proximity_UPP = 0;
 bool QApplicationPrivate::native_modal_dialog_active;
 
+Q_GUI_EXPORT bool qt_applefontsmoothing_enabled;
+
 /*****************************************************************************
   External functions
  *****************************************************************************/
@@ -221,6 +223,12 @@ extern bool qt_sendSpontaneousEvent(QObject *obj, QEvent *event); // qapplicatio
 // Forward Decls
 void onApplicationWindowChangedActivation( QWidget*widget, bool activated );
 void onApplicationChangedActivation( bool activated );
+
+static void qt_mac_read_fontsmoothing_settings()
+{
+    NSInteger appleFontSmoothing = [[NSUserDefaults standardUserDefaults] integerForKey:@"AppleFontSmoothing"];
+    qt_applefontsmoothing_enabled = (appleFontSmoothing > 0);
+}
 
 Q_GUI_EXPORT bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
     OSStatus err;
@@ -1203,6 +1211,9 @@ void qt_init(QApplicationPrivate *priv, int)
     }
     if (QApplication::desktopSettingsAware())
         QApplicationPrivate::qt_mac_apply_settings();
+
+    qt_mac_read_fontsmoothing_settings();
+
     // Cocoa application delegate
 #ifdef QT_MAC_USE_COCOA
     NSApplication *cocoaApp = [NSApplication sharedApplication];

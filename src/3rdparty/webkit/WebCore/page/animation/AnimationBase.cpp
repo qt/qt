@@ -361,6 +361,10 @@ public:
     {
         Color fromColor = (a->*m_getter)();
         Color toColor = (b->*m_getter)();
+
+        if (!fromColor.isValid() && !toColor.isValid())
+            return true;
+
         if (!fromColor.isValid())
             fromColor = a->color();
         if (!toColor.isValid())
@@ -373,6 +377,10 @@ public:
     {
         Color fromColor = (a->*m_getter)();
         Color toColor = (b->*m_getter)();
+
+        if (!fromColor.isValid() && !toColor.isValid())
+            return;
+
         if (!fromColor.isValid())
             fromColor = a->color();
         if (!toColor.isValid())
@@ -635,7 +643,7 @@ static void ensurePropertyMap()
         gPropertyWrappers->append(new PropertyWrapperMaybeInvalidColor(CSSPropertyOutlineColor, &RenderStyle::outlineColor, &RenderStyle::setOutlineColor));
 
         // These are for shadows
-        gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
+        gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyWebkitBoxShadow, &RenderStyle::boxShadow, &RenderStyle::setBoxShadow));
         gPropertyWrappers->append(new PropertyWrapperShadow(CSSPropertyTextShadow, &RenderStyle::textShadow, &RenderStyle::setTextShadow));
 
 #if ENABLE(SVG)

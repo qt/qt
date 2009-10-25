@@ -830,7 +830,6 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
             surrogates += (str[i].unicode() >= 0xd800 && str[i].unicode() < 0xdc00
                            && str[i+1].unicode() >= 0xdc00 && str[i+1].unicode() < 0xe000);
         }
-        Q_ASSERT(*nfo->numGlyphs == item->length - surrogates);
 #endif
         for (nextCharStop = item->from; nextCharStop < item->from + item->length; ++nextCharStop)
             if (item->charAttributes[nextCharStop].charStop)
@@ -856,10 +855,13 @@ static OSStatus atsuPostLayoutCallback(ATSULayoutOperationSelector selector, ATS
         QFixed xAdvance = FixedToQFixed(layoutData[glyphIdx + 1].realPos - layoutData[glyphIdx].realPos);
 
         if (glyphId != 0xffff || i == 0) {
-            nfo->glyphs->glyphs[i] = (glyphId & 0x00ffffff) | (fontIdx << 24);
+            if (i < nfo->glyphs->numGlyphs)
+            {
+                nfo->glyphs->glyphs[i] = (glyphId & 0x00ffffff) | (fontIdx << 24);
 
-            nfo->glyphs->advances_y[i] = yAdvance;
-            nfo->glyphs->advances_x[i] = xAdvance;
+                nfo->glyphs->advances_y[i] = yAdvance;
+                nfo->glyphs->advances_x[i] = xAdvance;
+            }
         } else {
             // ATSUI gives us 0xffff as glyph id at the index in the glyph array for
             // a character position that maps to a ligtature. Such a glyph id does not
@@ -1029,6 +1031,8 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
     nfo.flags = flags;
     nfo.shaperItem = shaperItem;
 
+    int prevNumGlyphs = *nglyphs;
+
     QVarLengthArray<int> mappedFonts(len);
     for (int i = 0; i < len; ++i)
         mappedFonts[i] = 0;
@@ -1140,6 +1144,8 @@ bool QFontEngineMacMulti::stringToCMapInternal(const QChar *str, int len, QGlyph
     }
 
     ATSUClearLayoutCache(textLayout, kATSUFromTextBeginning);
+    if (prevNumGlyphs < *nfo.numGlyphs)
+        return false;
     return true;
 }
 

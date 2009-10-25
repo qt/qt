@@ -87,6 +87,7 @@ private:
     friend class QGraphicsEffectPrivate;
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
     friend class QWidget;
     friend class QWidgetPrivate;
 };

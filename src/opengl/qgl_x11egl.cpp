@@ -513,9 +513,20 @@ bool Q_OPENGL_EXPORT qt_createEGLSurfaceForPixmap(QPixmapData* pmd, bool readOnl
                                            pixmapConfig,
                                            (EGLNativePixmapType) pixmapData->handle(),
                                            pixmapAttribs.properties());
+//    qDebug("qt_createEGLSurfaceForPixmap() created surface 0x%x for pixmap 0x%x",
+//           pixmapSurface, pixmapData->handle());
     if (pixmapSurface == EGL_NO_SURFACE) {
-        qWarning("Failed to create a pixmap surface using config %d", (int)pixmapConfig);
+        qWarning() << "Failed to create a pixmap surface using config" << (int)pixmapConfig
+                   << ":" << QEglContext::errorString(eglGetError());
         return false;
+    }
+
+    static bool doneOnce = false;
+    if (!doneOnce) {
+        // Make sure QGLTextureCache is instanciated so it can install cleanup hooks
+        // which cleanup the EGL surface.
+        QGLTextureCache::instance();
+        doneOnce = true;
     }
 
     Q_ASSERT(sizeof(Qt::HANDLE) >= sizeof(EGLSurface)); // Just to make totally sure!

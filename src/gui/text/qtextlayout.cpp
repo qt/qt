@@ -860,7 +860,7 @@ QRectF QTextLayout::boundingRect() const
         ymin = qMin(ymin, si.y);
         xmax = qMax(xmax, si.x+qMax(si.width, si.textWidth));
         // ### shouldn't the ascent be used in ymin???
-        ymax = qMax(ymax, si.y+si.ascent+si.descent+1);
+        ymax = qMax(ymax, si.y+si.height());
     }
     return QRectF(xmin.toReal(), ymin.toReal(), (xmax-xmin).toReal(), (ymax-ymin).toReal());
 }
@@ -1071,10 +1071,10 @@ static void addSelectedRegionsToPath(QTextEngine *eng, int lineNumber, const QPo
 
     QTextLineItemIterator iterator(eng, lineNumber, pos, selection);
 
-    const QFixed y = QFixed::fromReal(pos.y()) + line.y + line.ascent;
 
+
+    const qreal selectionY = pos.y() + line.y.toReal();
     const qreal lineHeight = line.height().toReal();
-    const qreal selectionY = (y - line.ascent).toReal();
 
     QFixed lastSelectionX = iterator.x;
     QFixed lastSelectionWidth;
@@ -1334,23 +1334,23 @@ void QTextLayout::drawCursor(QPainter *p, const QPointF &pos, int cursorPosition
     const qreal x = position.x() + l.cursorToX(cursorPosition);
 
     int itm = d->findItem(cursorPosition - 1);
-    QFixed ascent = sl.ascent;
+    QFixed base = sl.base();
     QFixed descent = sl.descent;
     bool rightToLeft = (d->option.textDirection() == Qt::RightToLeft);
     if (itm >= 0) {
         const QScriptItem &si = d->layoutData->items.at(itm);
         if (si.ascent > 0)
-            ascent = si.ascent;
+            base = si.ascent;
         if (si.descent > 0)
             descent = si.descent;
         rightToLeft = si.analysis.bidiLevel % 2;
     }
-    qreal y = position.y() + (sl.y + sl.ascent - ascent).toReal();
+    qreal y = position.y() + (sl.y + sl.base() - base).toReal();
     bool toggleAntialiasing = !(p->renderHints() & QPainter::Antialiasing)
                               && (p->transform().type() > QTransform::TxTranslate);
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing);
-    p->fillRect(QRectF(x, y, qreal(width), (ascent + descent).toReal()), p->pen().brush());
+    p->fillRect(QRectF(x, y, qreal(width), (base + descent + 1).toReal()), p->pen().brush());
     if (toggleAntialiasing)
         p->setRenderHint(QPainter::Antialiasing, false);
     if (d->layoutData->hasBidi) {
@@ -1500,14 +1500,61 @@ qreal QTextLine::descent() const
 }
 
 /*!
-    Returns the line's height. This is equal to ascent() + descent() + 1.
+    Returns the line's height. This is equal to ascent() + descent() + 1
+    if leading is not included. If leading is included, this equals to
+    ascent() + descent() + leading() + 1.
 
-    \sa ascent() descent()
+    \sa ascent() descent() leading() setLeadingIncluded()
 */
 qreal QTextLine::height() const
 {
     return eng->lines[i].height().toReal();
 }
+
+/*!
+    \since 4.6
+
+    Returns the line's leading.
+
+    \sa ascent() descent() height()
+*/
+qreal QTextLine::leading() const
+{
+    return eng->lines[i].leading.toReal();
+}
+
+/*! \since 4.6
+
+  Includes positive leading into the line's height if \a included is true;
+  otherwise does not include leading.
+
+  By default, leading is not included.
+
+  Note that negative leading is ignored, it must be handled
+  in the code using the text lines by letting the lines overlap.
+
+  \sa leadingIncluded()
+
+*/
+void QTextLine::setLeadingIncluded(bool included)
+{
+    eng->lines[i].leadingIncluded= included;
+
+}
+
+/*! \since 4.6
+
+  Returns true if positive leading is included into the line's height; otherwise returns false.
+
+  By default, leading is not included.
+
+  \sa setLeadingIncluded()
+*/
+bool QTextLine::leadingIncluded() const
+{
+    return eng->lines[i].leadingIncluded;
+}
+
 
 /*!
     Returns the width of the line that is occupied by text. This is
@@ -1712,6 +1759,9 @@ void QTextLine::layout_helper(int maxGlyphs)
         }
         const QScriptItem &current = eng->layoutData->items[item];
 
+        lbh.tmpData.leading = qMax(lbh.tmpData.leading + lbh.tmpData.ascent,
+                                   current.leading + current.ascent) - qMax(lbh.tmpData.ascent,
+                                                                            current.ascent);
         lbh.tmpData.ascent = qMax(lbh.tmpData.ascent, current.ascent);
         lbh.tmpData.descent = qMax(lbh.tmpData.descent, current.descent);
 
@@ -2042,7 +2092,9 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
 
 
     QTextLineItemIterator iterator(eng, i, pos, selection);
-    const QFixed y = QFixed::fromReal(pos.y()) + line.y + line.ascent;
+    QFixed lineBase = line.base();
+
+    const QFixed y = QFixed::fromReal(pos.y()) + line.y + lineBase;
 
     bool suppressColors = (eng->option.flags() & QTextOption::SuppressColors);
     while (!iterator.atEnd()) {
@@ -2065,7 +2117,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
             if (selection)
                 format.merge(selection->format);
 
-            setPenAndDrawBackground(p, pen, format, QRectF(iterator.x.toReal(), (y - line.ascent).toReal(),
+            setPenAndDrawBackground(p, pen, format, QRectF(iterator.x.toReal(), (y - lineBase).toReal(),
                                                            iterator.itemWidth.toReal(), line.height().toReal()));
 
             QTextCharFormat::VerticalAlignment valign = format.verticalAlignment();
@@ -2086,7 +2138,7 @@ void QTextLine::draw(QPainter *p, const QPointF &pos, const QTextLayout::FormatR
                 if (si.analysis.flags == QScriptAnalysis::Object && eng->block.docHandle()) {
                     QFixed itemY = y - si.ascent;
                     if (format.verticalAlignment() == QTextCharFormat::AlignTop) {
-                        itemY = y - line.ascent;
+                        itemY = y - lineBase;
                     }
 
                     QRectF itemRect(iterator.x.toReal(), itemY.toReal(), iterator.itemWidth.toReal(), si.height().toReal());
