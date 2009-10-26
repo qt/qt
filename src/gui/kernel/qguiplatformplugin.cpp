@@ -288,6 +288,8 @@ int QGuiPlatformPlugin::platformHint(PlatformHint hint)
 #endif
             //by default keep ret = 0 so QCommonStyle will use the style default
             break;
+        default:
+            break;
     }
     return ret;
 }
