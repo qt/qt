@@ -24,8 +24,16 @@ ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
             this, SLOT(currentItemChanged(QTreeWidgetItem *)));
 }
 
+void ObjectTree::setEngineDebug(QmlEngineDebug *client)
+{
+    m_client = client;
+}
+
 void ObjectTree::reload(int objectDebugId)
 {
+    if (!m_client)
+        return;
+        
     if (m_query) {
         delete m_query;
         m_query = 0;

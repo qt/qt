@@ -12,6 +12,7 @@
 
 #include "engine.h"
 #include "objectpropertiesview.h"
+#include "expressionquerywidget.h"
 #include "objecttree.h"
 #include "watchtable.h"
 
@@ -37,7 +38,7 @@ private:
 };
 
 EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
-: QWidget(parent), m_client(new QmlEngineDebug(conn, this)), m_engines(0), m_context(0), m_watchTableModel(0)
+: QWidget(parent), m_client(new QmlEngineDebug(conn, this)), m_engines(0), m_context(0), m_watchTableModel(0), m_exprQueryWidget(0)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -84,9 +85,19 @@ EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
 
     connect(m_watchTableView, SIGNAL(objectActivated(int)),
             m_objTree, SLOT(setCurrentObject(int)));
-
+    
+    m_exprQueryWidget = new ExpressionQueryWidget(m_client);
+    connect(m_objTree, SIGNAL(currentObjectChanged(QmlDebugObjectReference)),
+            m_exprQueryWidget, SLOT(setCurrentObject(QmlDebugObjectReference)));
+    
+    QSplitter *propertiesTab = new QSplitter(Qt::Vertical);
+    propertiesTab->addWidget(m_propertiesView);
+    propertiesTab->addWidget(m_exprQueryWidget);
+    propertiesTab->setStretchFactor(0, 2);
+    propertiesTab->setStretchFactor(1, 1);
+    
     m_tabs = new QTabWidget(this);
-    m_tabs->addTab(m_propertiesView, tr("Properties"));
+    m_tabs->addTab(propertiesTab, tr("Properties"));
     m_tabs->addTab(m_watchTableView, tr("Watched"));
 
     splitter->addWidget(m_objTree);
