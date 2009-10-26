@@ -46,6 +46,7 @@
 #include "qmlrewrite_p.h"
 #include "QtCore/qdebug.h"
 #include "qmlcompiler_p.h"
+#include <QtScript/qscriptprogram.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -112,7 +113,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 #if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN32) //XXX Why doesn't this work?
         if (!dd->programs.at(progIdx)) {
             dd->programs[progIdx] =
-                new QScriptProgram(scriptEngine->compile(data->expression, data->fileName, data->line));
+                new QScriptProgram(data->expression, data->fileName, data->line);
         }
 #endif
 
