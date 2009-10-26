@@ -43,6 +43,7 @@
 #include "qfxrect_p.h"
 
 #include <QPainter>
+#include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pen,QFxPen)
@@ -338,7 +339,8 @@ void QFxRect::generateRoundedRect()
     Q_D(QFxRect);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(d->radius*2 + 3 + pw*2, d->radius*2 + 3 + pw*2);
+        const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
+        d->rectImage = QPixmap(radius*2 + 3 + pw*2, radius*2 + 3 + pw*2);
         d->rectImage.fill(Qt::transparent);
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
@@ -361,7 +363,7 @@ void QFxRect::generateBorderedRect()
     Q_D(QFxRect);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
-        d->rectImage = QPixmap(d->getPen()->width()*2 + 3 + pw*2, d->getPen()->width()*2 + 3 + pw*2);
+        d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
         d->rectImage.fill(Qt::transparent);
         QPainter p(&(d->rectImage));
         p.setRenderHint(QPainter::Antialiasing);
@@ -439,6 +441,7 @@ void QFxRect::drawRect(QPainter &p)
 
         QMargins margins(xOffset, yOffset, xOffset, yOffset);
         QTileRules rules(Qt::StretchTile, Qt::StretchTile);
+        //NOTE: even though our item may have qreal-based width and height, qDrawBorderPixmap only supports QRects
         qDrawBorderPixmap(&p, QRect(-pw/2, -pw/2, width()+pw, height()+pw), margins, d->rectImage, d->rectImage.rect(), margins, rules);
 
         if (d->smooth) {

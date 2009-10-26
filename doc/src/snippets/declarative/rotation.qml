@@ -4,25 +4,29 @@ Rectangle {
     width: 360; height: 80
     color: "white"
 //! [0]
-    HorizontalLayout {
-        margin: 10
+    Row {
+        x: 10; y: 10
         spacing: 10
         Image { source: "pics/qt.png" }
         Image {
             source: "pics/qt.png"
-            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0 angle: 18 }
+            transform: Rotation { origin.x: 30; origin.y: 30; axis { x: 0; y: 1; z: 0 } angle: 18 }
+            smooth: true
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0 angle: 36 }
+            transform: Rotation { origin.x: 30; origin.y: 30; axis { x: 0; y: 1; z: 0 } angle: 36 }
+            smooth: true
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0; angle: 54 }
+            transform: Rotation { origin.x: 30; origin.y: 30; axis { x: 0; y: 1; z: 0 } angle: 54 }
+            smooth: true
         }
         Image {
             source: "pics/qt.png"
-            transform: Rotation { origin.x: 30; axis.y: 60; axis.z: 0; angle: 72 }
+            transform: Rotation { origin.x: 30; origin.y: 30; axis { x: 0; y: 1; z: 0 } angle: 72 }
+            smooth: true
         }
     }
 //! [0]
