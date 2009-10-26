@@ -1343,6 +1343,7 @@ QFxItem::~QFxItem()
             if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
                 anchor->d_func()->updateOnComplete();
         }
+    d->dependantAnchors.clear();
     delete d->_anchorLines; d->_anchorLines = 0;
     delete d->_anchors; d->_anchors = 0;
 }
