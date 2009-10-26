@@ -139,11 +139,11 @@ QBitField QBitField::united(const QBitField &o)
         rv.data = rv.ownData + 1;
         if (bits > o.bits) {
             ::memcpy((quint32 *)rv.data, data, length * sizeof(quint32));
-            for (quint32 ii = 0; ii < (o.bits + 31) / 32; ++ii) 
+            for (quint32 ii = 0; ii < quint32(o.bits + 31) / 32; ++ii) 
                 ((quint32 *)rv.data)[ii] |= o.data[ii];
         } else {
             ::memcpy((quint32 *)rv.data, o.data, length * sizeof(quint32));
-            for (quint32 ii = 0; ii < (bits + 31) / 32; ++ii) 
+            for (quint32 ii = 0; ii < quint32(bits + 31) / 32; ++ii) 
                 ((quint32 *)rv.data)[ii] |= data[ii];
         }
         return rv;
