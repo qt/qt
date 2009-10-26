@@ -390,8 +390,6 @@ valid for components created directly from QML.
 */
 QmlContext *QmlComponent::creationContext() const
 {
-    Q_D(const QmlComponent);
-
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(this);
     if (ddata)
         return ddata->context;

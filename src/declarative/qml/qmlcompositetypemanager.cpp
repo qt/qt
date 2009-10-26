@@ -434,7 +434,7 @@ void QmlCompositeTypeManager::checkComplete(QmlCompositeTypeData *unit)
             unit->errors << error;
             doComplete(unit);
             return;
-        } else if (r->status == QmlCompositeTypeData::Waiting) {
+        } else if (r->status == QmlCompositeTypeResource::Waiting) {
             waiting++;
         }
     }

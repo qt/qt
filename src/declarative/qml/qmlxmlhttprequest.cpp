@@ -1102,6 +1102,7 @@ void QmlXMLHttpRequest::abort()
 
 void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
 {
+    Q_UNUSED(bytes)
     m_status = 
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     m_statusText =
@@ -1124,6 +1125,7 @@ void QmlXMLHttpRequest::downloadProgress(qint64 bytes)
 
 void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
 {
+    Q_UNUSED(error)
     m_status =
         m_network->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     m_statusText =
@@ -1315,6 +1317,7 @@ static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngi
 
 static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1333,6 +1336,7 @@ static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context,
 
 static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1350,6 +1354,7 @@ static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *cont
 // XMLHttpRequest properties
 static QScriptValue qmlxmlhttprequest_readyState(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1358,6 +1363,7 @@ static QScriptValue qmlxmlhttprequest_readyState(QScriptContext *context, QScrip
 
 static QScriptValue qmlxmlhttprequest_status(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1373,6 +1379,7 @@ static QScriptValue qmlxmlhttprequest_status(QScriptContext *context, QScriptEng
 
 static QScriptValue qmlxmlhttprequest_statusText(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1388,6 +1395,7 @@ static QScriptValue qmlxmlhttprequest_statusText(QScriptContext *context, QScrip
 
 static QScriptValue qmlxmlhttprequest_responseText(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
@@ -1412,6 +1420,7 @@ static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScri
 
 static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context, QScriptEngine *engine)
 {
+    Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
     if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
 
