@@ -575,6 +575,17 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
     int waiting = 0;
 
     QList<QUrl> resourceList = unit->data.referencedResources();
+
+    foreach (QmlScriptParser::Import imp, unit->data.imports()) {
+        if (imp.type == QmlScriptParser::Import::File) {
+            QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
+            if (toLocalFileOrQrc(importUrl).isEmpty()) {
+                // Import requires remote qmldir
+                resourceList.prepend(importUrl);
+            }
+        }
+    }
+
     for (int ii = 0; ii < resourceList.count(); ++ii) {
         QUrl url = unit->imports.baseUrl().resolved(resourceList.at(ii));
 
@@ -588,9 +599,6 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
 
             loadResource(resource);
         }
-
-        if (!url.toLocalFile().isEmpty() && url.path().endsWith("/qmldir") && resource->status==QmlCompositeTypeResource::Error)
-            continue; // ignore - can use filesystem dir instead
 
         switch(resource->status) {
         case QmlCompositeTypeResource::Invalid:
