@@ -396,7 +396,7 @@ void tst_QSqlQuery::char1SelectUnicode()
         QSKIP("Needs someone with more Unicode knowledge than I have to fix", SkipSingle);
 
     if ( db.driver()->hasFeature( QSqlDriver::Unicode ) ) {
-        QString uniStr( QChar( 'का' ) );
+        QString uniStr( QChar(0x0915) ); // DEVANAGARI LETTER KA
         QSqlQuery q( db );
 
         if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 0 ).toInt()<5 )
