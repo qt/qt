@@ -1036,6 +1036,7 @@ struct QmlEnginePrivate::ImportedNamespace {
     QList<int> minversions;
     QList<bool> isLibrary;
     QList<bool> isBuiltin;
+    QList<QString> qmlDirContent;
 
     bool find(const QByteArray& type, int *vmajor, int *vminor, QmlType** type_return, QUrl* url_return) const
     {
@@ -1057,36 +1058,39 @@ struct QmlEnginePrivate::ImportedNamespace {
                 }
             } else {
                 QUrl url = QUrl(urls.at(i) + QLatin1String("/") + QString::fromUtf8(type) + QLatin1String(".qml"));
-                if (vmaj || vmin) {
+                QString qmldircontent = qmlDirContent.at(i);
+                if (vmaj || vmin || !qmldircontent.isEmpty()) {
                     // Check version file - XXX cache these in QmlEngine!
-                    QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
-                    if (qmldir.open(QIODevice::ReadOnly)) {
-                        do {
-                            QByteArray lineba = qmldir.readLine();
-                            if (lineba.at(0) == '#')
-                                continue;
-                            int space1 = lineba.indexOf(' ');
-                            if (qstrncmp(lineba,type,space1)==0) {
-                                // eg. 1.2-5
-                                QString line = QString::fromUtf8(lineba);
-                                space1 = line.indexOf(QLatin1Char(' ')); // refind in Unicode
-                                int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
-                                QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-2:space2-space1-1);
-                                int dot = mapversions.indexOf(QLatin1Char('.'));
-                                int dash = mapversions.indexOf(QLatin1Char('-'));
-                                int mapvmaj = mapversions.left(dot).toInt();
-                                if (mapvmaj==vmaj) {
-                                    int mapvmin_from = (dash <= 0 ? mapversions.mid(dot+1) : mapversions.mid(dot+1,dash-dot-1)).toInt();
-                                    int mapvmin_to = dash <= 0 ? mapvmin_from : mapversions.mid(dash+1).toInt();
-                                    if (vmin >= mapvmin_from && vmin <= mapvmin_to) {
-                                        QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-2);
-                                        if (url_return)
-                                            *url_return = url.resolved(mapfile.toString());
-                                        return true;
-                                    }
+                    if (qmldircontent.isEmpty()) {
+                        QFile qmldir(toLocalFileOrQrc(QUrl(urls.at(i)+QLatin1String("/qmldir"))));
+                        if (qmldir.open(QIODevice::ReadOnly)) {
+                            qmldircontent = QString::fromUtf8(qmldir.readAll());
+                        }
+                    }
+                    QString typespace = QString::fromUtf8(type)+QLatin1Char(' ');
+                    QStringList lines = qmldircontent.split(QLatin1Char('\n'));
+                    foreach (QString line, lines) {
+                        if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
+                            continue;
+                        if (line.startsWith(typespace)) {
+                            // eg. 1.2-5
+                            int space1 = line.indexOf(QLatin1Char(' '));
+                            int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
+                            QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
+                            int dot = mapversions.indexOf(QLatin1Char('.'));
+                            int dash = mapversions.indexOf(QLatin1Char('-'));
+                            int mapvmaj = mapversions.left(dot).toInt();
+                            if (mapvmaj==vmaj) {
+                                int mapvmin_from = (dash <= 0 ? mapversions.mid(dot+1) : mapversions.mid(dot+1,dash-dot-1)).toInt();
+                                int mapvmin_to = dash <= 0 ? mapvmin_from : mapversions.mid(dash+1).toInt();
+                                if (vmin >= mapvmin_from && vmin <= mapvmin_to) {
+                                    QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
+                                    if (url_return)
+                                        *url_return = url.resolved(mapfile.toString());
+                                    return true;
                                 }
                             }
-                        } while (!qmldir.atEnd());
+                        }
                     }
                 } else {
                     // XXX search non-files too! (eg. zip files, see QT-524)
@@ -1115,7 +1119,7 @@ public:
             delete s;
     }
 
-    bool add(const QUrl& base, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
+    bool add(const QUrl& base, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType, const QStringList& importPath)
     {
         QmlEnginePrivate::ImportedNamespace *s;
         if (prefix.isEmpty()) {
@@ -1151,6 +1155,7 @@ public:
         s->minversions.prepend(vmin);
         s->isLibrary.prepend(importType == QmlScriptParser::Import::Library);
         s->isBuiltin.prepend(isbuiltin);
+        s->qmlDirContent.prepend(qmldircontent);
         return true;
     }
 
@@ -1375,9 +1380,9 @@ QString QmlEngine::offlineStoragePath() const
 
   The base URL must already have been set with Import::setBaseUrl().
 */
-bool QmlEnginePrivate::addToImport(Imports* imports, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
+bool QmlEnginePrivate::addToImport(Imports* imports, const QString& qmldircontent, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const
 {
-    bool ok = imports->d->add(imports->d->base,uri,prefix,vmaj,vmin,importType,fileImportPath);
+    bool ok = imports->d->add(imports->d->base,qmldircontent,uri,prefix,vmaj,vmin,importType,fileImportPath);
     if (qmlImportTrace())
         qDebug() << "QmlEngine::addToImport(" << imports << uri << prefix << vmaj << "." << vmin << (importType==QmlScriptParser::Import::Library? "Library" : "File") << ": " << ok;
     return ok;

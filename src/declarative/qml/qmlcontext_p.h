@@ -129,7 +129,7 @@ public:
     };
     ContextGuard *idValues;
     int idValueCount;
-    void setIdProperty(const QString &, int, QObject *);
+    void setIdProperty(int, QObject *);
     void setIdPropertyData(QmlIntegerCache *);
     void destroyed(ContextGuard *);
 

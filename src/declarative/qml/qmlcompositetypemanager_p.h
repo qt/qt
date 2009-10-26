@@ -101,6 +101,7 @@ private:
     void doComplete(QmlCompositeTypeData *);
     void doComplete(QmlCompositeTypeResource *);
     void checkComplete(QmlCompositeTypeData *);
+    int resolveTypes(QmlCompositeTypeData *);
 
     QmlEngine *engine;
     typedef QHash<QString, QmlCompositeTypeData *> Components;
