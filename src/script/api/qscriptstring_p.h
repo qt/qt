@@ -77,6 +77,8 @@ public:
 
     inline void detachFromEngine();
 
+    static inline bool isValid(const QScriptString &q);
+
     QBasicAtomicInt ref;
     QScriptEnginePrivate *engine;
     JSC::Identifier identifier;
@@ -112,6 +114,11 @@ inline void QScriptStringPrivate::detachFromEngine()
 {
     engine = 0;
     identifier = JSC::Identifier();
+}
+
+inline bool QScriptStringPrivate::isValid(const QScriptString &q)
+{
+    return (q.d_ptr && q.d_ptr->engine);
 }
 
 QT_END_NAMESPACE

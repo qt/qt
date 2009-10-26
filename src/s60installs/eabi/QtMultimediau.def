@@ -115,8 +115,8 @@ EXPORTS
 	_ZN19QAbstractAudioInput6notifyEv @ 114 NONAME
 	_ZN19QVideoSurfaceFormat11setPropertyEPKcRK8QVariant @ 115 NONAME
 	_ZN19QVideoSurfaceFormat11setViewportERK5QRect @ 116 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 117 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 118 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 117 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 118 NONAME ABSENT
 	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 119 NONAME
 	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 120 NONAME
 	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 121 NONAME
@@ -275,4 +275,6 @@ EXPORTS
 	_ZThn8_N18QAudioEnginePluginD0Ev @ 274 NONAME
 	_ZThn8_N18QAudioEnginePluginD1Ev @ 275 NONAME
 	_Zls6QDebugRK19QVideoSurfaceFormat @ 276 NONAME
+	_ZTV28QAudioEngineFactoryInterface @ 277 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameRateEf @ 278 NONAME
 

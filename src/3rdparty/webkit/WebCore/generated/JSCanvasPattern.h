@@ -39,10 +39,17 @@ public:
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
 
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+    }
+
     CanvasPattern* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<CanvasPattern> m_impl;
+protected:
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, CanvasPattern*);
@@ -54,7 +61,13 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+    }
     JSCanvasPatternPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 

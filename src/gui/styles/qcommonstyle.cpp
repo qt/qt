@@ -4396,13 +4396,13 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_TitleBarHeight: {
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool) {
-                ret = qMax(widget ? widget->fontMetrics().lineSpacing() : opt->fontMetrics.lineSpacing(), 16);
+                ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 16);
 #ifndef QT_NO_DOCKWIDGET
             } else if (qobject_cast<const QDockWidget*>(widget)) {
-                ret = qMax(widget->fontMetrics().lineSpacing(), int(QStyleHelper::dpiScaled(13)));
+                ret = qMax(widget->fontMetrics().height(), int(QStyleHelper::dpiScaled(13)));
 #endif
             } else {
-                ret = qMax(widget ? widget->fontMetrics().lineSpacing() : opt->fontMetrics.lineSpacing(), 18);
+                ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 18);
             }
         } else {
             ret = int(QStyleHelper::dpiScaled(18.));

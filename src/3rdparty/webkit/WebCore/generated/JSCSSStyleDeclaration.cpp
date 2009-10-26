@@ -86,8 +86,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCSSStyleDeclarationConstructor::s_info = { "CSSStyleDeclarationConstructor", 0, &JSCSSStyleDeclarationConstructorTable, 0 };

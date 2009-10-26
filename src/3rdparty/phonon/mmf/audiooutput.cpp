@@ -102,15 +102,15 @@ bool MMF::AudioOutput::activateOnMediaObject(MediaObject *mo)
 
 QHash<QByteArray, QVariant> MMF::AudioOutput::audioOutputDescription(int index)
 {
-    if (index == AudioOutputDeviceID) {
-        QHash<QByteArray, QVariant> retval;
+    QHash<QByteArray, QVariant> retval;
 
+    if (index == AudioOutputDeviceID) {
         retval.insert("name", QCoreApplication::translate("Phonon::MMF", "Audio Output"));
         retval.insert("description", QCoreApplication::translate("Phonon::MMF", "The audio output device"));
         retval.insert("available", true);
-
-        return retval;
     }
+
+    return retval;
 }
 
 QT_END_NAMESPACE

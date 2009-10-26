@@ -405,70 +405,6 @@ QList<QGraphicsItem *> QGraphicsSceneBspTreeIndexPrivate::estimateItems(const QR
 }
 
 /*!
-    Returns true if \a item1 is on top of \a item2.
-
-    \internal
-*/
-bool QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    // Siblings? Just check their z-values.
-    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
-    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
-    if (d1->parent == d2->parent)
-        return qt_closestLeaf(item1, item2);
-
-    // Find common ancestor, and each item's ancestor closest to the common
-    // ancestor.
-    int item1Depth = d1->depth();
-    int item2Depth = d2->depth();
-    const QGraphicsItem *p = item1;
-    const QGraphicsItem *t1 = item1;
-    while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {
-        if (p == item2) {
-            // item2 is one of item1's ancestors; item1 is on top
-            return !(t1->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
-        }
-        t1 = p;
-        --item1Depth;
-    }
-    p = item2;
-    const QGraphicsItem *t2 = item2;
-    while (item2Depth > item1Depth && (p = p->d_ptr->parent)) {
-        if (p == item1) {
-            // item1 is one of item2's ancestors; item1 is not on top
-            return (t2->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
-        }
-        t2 = p;
-        --item2Depth;
-    }
-
-    // item1Ancestor is now at the same level as item2Ancestor, but not the same.
-    const QGraphicsItem *a1 = t1;
-    const QGraphicsItem *a2 = t2;
-    while (a1) {
-        const QGraphicsItem *p1 = a1;
-        const QGraphicsItem *p2 = a2;
-        a1 = a1->parentItem();
-        a2 = a2->parentItem();
-        if (a1 && a1 == a2)
-            return qt_closestLeaf(p1, p2);
-    }
-
-    // No common ancestor? Then just compare the items' toplevels directly.
-    return qt_closestLeaf(t1->topLevelItem(), t2->topLevelItem());
-}
-
-/*!
-    Returns true if \a item2 is on top of \a item1.
-
-    \internal
-*/
-bool QGraphicsSceneBspTreeIndexPrivate::closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
-{
-    return closestItemFirst_withoutCache(item2, item1);
-}
-
-/*!
     Sort a list of \a itemList in a specific \a order and use the cache if requested.
 
     \internal
@@ -495,9 +431,9 @@ void QGraphicsSceneBspTreeIndexPrivate::sortItems(QList<QGraphicsItem *> *itemLi
         }
     } else {
         if (order == Qt::DescendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemFirst_withoutCache);
+            qSort(itemList->begin(), itemList->end(), qt_closestItemFirst);
         } else if (order == Qt::AscendingOrder) {
-            qSort(itemList->begin(), itemList->end(), closestItemLast_withoutCache);
+            qSort(itemList->begin(), itemList->end(), qt_closestItemLast);
         }
     }
 }

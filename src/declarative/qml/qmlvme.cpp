@@ -664,7 +664,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QmlVMEMetaObject *mo = static_cast<QmlVMEMetaObject *>((QMetaObject*)target->metaObject());
-                mo->registerInterceptor(prop.coreIndex(), vi);
+                mo->registerInterceptor(prop.coreIndex(), prop.valueTypeCoreIndex(), vi);
             }
             break;
 

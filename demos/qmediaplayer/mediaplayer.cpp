@@ -321,6 +321,7 @@ MediaPlayer::MediaPlayer(const QString &filePath,
     connect(&m_MediaObject, SIGNAL(finished()), this, SLOT(finished()));
     connect(&m_MediaObject, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(stateChanged(Phonon::State, Phonon::State)));
     connect(&m_MediaObject, SIGNAL(bufferStatus(int)), this, SLOT(bufferStatus(int)));
+    connect(&m_MediaObject, SIGNAL(hasVideoChanged(bool)), this, SLOT(hasVideoChanged(bool)));
 
     rewindButton->setEnabled(false);
     playButton->setEnabled(false);
@@ -339,8 +340,6 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
     Q_UNUSED(oldstate);
 
     if (oldstate == Phonon::LoadingState) {
-        m_videoWindow.setVisible(m_MediaObject.hasVideo());
-        info->setVisible(!m_MediaObject.hasVideo());        
         QRect videoHintRect = QRect(QPoint(0, 0), m_videoWindow.sizeHint());
         QRect newVideoRect = QApplication::desktop()->screenGeometry().intersected(videoHintRect);
         if (!m_hasSmallScreen) {
@@ -367,6 +366,9 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
         case Phonon::PausedState:
         case Phonon::StoppedState:
             playButton->setIcon(playIcon);
+
+            m_videoWidget->setFullScreen(false);
+
             if (m_MediaObject.currentSource().type() != Phonon::MediaSource::Invalid){
                 playButton->setEnabled(true);
                 rewindButton->setEnabled(true);
@@ -843,3 +845,8 @@ void MediaPlayer::aspectChanged(QAction *act)
         m_videoWidget->setAspectRatio(Phonon::VideoWidget::AspectRatioAuto);    
 }
 
+void MediaPlayer::hasVideoChanged(bool bHasVideo)
+{
+    info->setVisible(!bHasVideo);
+    m_videoWindow.setVisible(bHasVideo);
+}

@@ -253,7 +253,24 @@ bool QGraphicsEffectSource::isPixmap() const
 */
 QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
 {
-    return d_func()->pixmap(system, offset);
+    Q_D(const QGraphicsEffectSource);
+
+    QPixmap pm;
+    if (d->m_cachedSystem == system)
+        QPixmapCache::find(d->m_cacheKey, &pm);
+
+    if (pm.isNull()) {
+        pm = d->pixmap(system, &d->m_cachedOffset);
+        d->m_cachedSystem = system;
+
+        d->invalidateCache();
+        d->m_cacheKey = QPixmapCache::insert(pm);
+    }
+
+    if (offset)
+        *offset = d->m_cachedOffset;
+
+    return pm;
 }
 
 /*!

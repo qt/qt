@@ -9,6 +9,14 @@
 
 include $(FLMHOME)/metaflm.mk
 
+SINGLETON:=$(call sanitise,TSTORE_SINGLETON_$(EXTENSION_ROOT))
+
+ifeq ($($(SINGLETON)),)
+# Prevent duplicate targets from being created, as that can lead to build breaks
+# in multiprocessor systems if two or more targets try to write to .make.cache at
+# the same time.
+$(SINGLETON):=1
+
 STORE_BUILD_TARGET:=$(call sanitise,TSTORE_BUILD_$(PLATFORM_PATH)_$(CFG_PATH)_$(EXTENSION_ROOT))
 CACHE_FILENAME:=$(EXTENSION_ROOT)/.make.cache
 
@@ -37,4 +45,5 @@ endef
 
 $(eval $(qmake_store_build))
 $(eval $(call GenerateStandardCleanTarget,$(CACHE_FILENAME),''))
+endif
 

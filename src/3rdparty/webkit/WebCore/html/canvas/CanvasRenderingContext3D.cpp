@@ -28,6 +28,8 @@
 #if ENABLE(3D_CANVAS)
 
 #include "CanvasRenderingContext3D.h"
+
+#include "CanvasActiveInfo.h"
 #include "CanvasBuffer.h"
 #include "CanvasFramebuffer.h"
 #include "CanvasProgram.h"
@@ -477,6 +479,26 @@ void CanvasRenderingContext3D::generateMipmap(unsigned long target)
     cleanupAfterGraphicsCall(false);
 }
 
+PassRefPtr<CanvasActiveInfo> CanvasRenderingContext3D::getActiveAttrib(CanvasProgram* program, unsigned long index, ExceptionCode& ec)
+{
+    ActiveInfo info;
+    if (!program || program->context() != this || !m_context.getActiveAttrib(program, index, info)) {
+        ec = INDEX_SIZE_ERR;
+        return 0;
+    }
+    return CanvasActiveInfo::create(info.name, info.type, info.size);
+}
+
+PassRefPtr<CanvasActiveInfo> CanvasRenderingContext3D::getActiveUniform(CanvasProgram* program, unsigned long index, ExceptionCode& ec)
+{
+    ActiveInfo info;
+    if (!program || program->context() != this || !m_context.getActiveUniform(program, index, info)) {
+        ec = INDEX_SIZE_ERR;
+        return 0;
+    }
+    return CanvasActiveInfo::create(info.name, info.type, info.size);
+}
+
 int CanvasRenderingContext3D::getAttribLocation(CanvasProgram* program, const String& name)
 {
     return m_context.getAttribLocation(program, name);
@@ -790,6 +812,13 @@ void CanvasRenderingContext3D::polygonOffset(double factor, double units)
 {
     m_context.polygonOffset((float) factor, (float) units);
     cleanupAfterGraphicsCall(false);
+}
+
+PassRefPtr<CanvasArray> CanvasRenderingContext3D::readPixels(long x, long y, unsigned long width, unsigned long height, unsigned long format, unsigned long type)
+{
+    RefPtr<CanvasArray> array = m_context.readPixels(x, y, width, height, format, type);
+    cleanupAfterGraphicsCall(false);
+    return array;
 }
 
 void CanvasRenderingContext3D::releaseShaderCompiler()

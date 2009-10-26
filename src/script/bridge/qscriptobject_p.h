@@ -104,11 +104,11 @@ public:
         return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance | JSC::OverridesHasInstance));
     }
 
-    JSC::JSValue data() const;
-    void setData(JSC::JSValue data);
+    inline JSC::JSValue data() const;
+    inline void setData(JSC::JSValue data);
 
-    QScriptObjectDelegate *delegate() const;
-    void setDelegate(QScriptObjectDelegate *delegate);
+    inline QScriptObjectDelegate *delegate() const;
+    inline void setDelegate(QScriptObjectDelegate *delegate);
 
 protected:
     Data *d;
@@ -158,6 +158,36 @@ public:
 private:
     Q_DISABLE_COPY(QScriptObjectDelegate)
 };
+
+inline JSC::JSValue QScriptObject::data() const
+{
+    if (!d)
+        return JSC::JSValue();
+    return d->data;
+}
+
+inline void QScriptObject::setData(JSC::JSValue data)
+{
+    if (!d)
+        d = new Data();
+    d->data = data;
+}
+
+inline QScriptObjectDelegate *QScriptObject::delegate() const
+{
+    if (!d)
+        return 0;
+    return d->delegate;
+}
+
+inline void QScriptObject::setDelegate(QScriptObjectDelegate *delegate)
+{
+    if (!d)
+        d = new Data();
+    else
+        delete d->delegate;
+    d->delegate = delegate;
+}
 
 QT_END_NAMESPACE
 

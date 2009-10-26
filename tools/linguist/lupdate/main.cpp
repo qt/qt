@@ -160,6 +160,8 @@ static void updateTsFiles(const Translator &fetchedTor, const QStringList &tsFil
                 tor.setCodecName(codecForTr);
             if (!targetLanguage.isEmpty())
                 tor.setLanguageCode(targetLanguage);
+            else
+                tor.setLanguageCode(Translator::guessLanguageCodeFromFileName(fileName));
             if (!sourceLanguage.isEmpty())
                 tor.setSourceLanguageCode(sourceLanguage);
         }

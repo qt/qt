@@ -48,36 +48,60 @@
     \ingroup geomanagement
     \ingroup graphicsview-api
 
-    The anchor layout is a layout where one can specify how widgets should be placed relative to
-    each other. The specification is called an anchor, and it is set up by calling anchor().
+    The anchor layout allows developers to specify how widgets should be placed relative to
+    each other, and to the layout itself. The specification is made by adding anchors to the
+    layout by calling addAnchor(), addAnchors() or addCornerAnchors().
+
+    Existing anchors in the layout can be accessed with the anchor() function.
+    Items that are anchored are automatically added to the layout, and if items
+    are removed, all their anchors will be automatically removed.
+
+    \beginfloatleft
+    \inlineimage simpleanchorlayout-example.png Using an anchor layout to align simple colored widgets.
+    \endfloat
+
     Anchors are always set up between edges of an item, where the "center" is also considered to
-    be an edge. Considering this example:
-    \code
-        QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-        QGraphicsWidget *a = new QGraphicsWidget;
-        QGraphicsWidget *b = new QGraphicsWidget;
-        l->anchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
-    \endcode
+    be an edge. Consider the following example:
 
-    Here is the right edge of item A anchored to the left edge of item B, with the result that
-    item B will be placed to the right of item A, with a spacing between A and B. If the
-    spacing is negative, the items will overlap to some extent. Items that are anchored are
-    automatically added to the layout, and if items are removed, all their anchors will be
-    automatically removed
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors
 
-    \section1 Size Hints and Size Policies in QGraphicsAnchorLayout
+    Here, the right edge of item \c a is anchored to the left edge of item \c b and the bottom
+    edge of item \c a is anchored to the top edge of item \c b, with the result that
+    item \c b will be placed diagonally to the right and below item \c b.
+
+    The addCornerAnchors() function provides a simpler way of anchoring the corners
+    of two widgets than the two individual calls to addAnchor() shown in the code
+    above. Here, we see how a widget can be anchored to the top-left corner of the enclosing
+    layout:
+
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
+
+    In cases where anchors are used to match the widths or heights of widgets, it is
+    convenient to use the addAnchors() function. As with the other functions for specifying
+    anchors, it can also be used to anchor a widget to a layout.
+
+    \clearfloat
+    \section1 Size Hints and Size Policies in an Anchor Layout
 
     QGraphicsAnchorLayout respects each item's size hints and size policies. However it does
-    not respect stretch factors currently. This might change in the future, so please refrain
-    from using stretch factors in anchor layout to avoid any future regressions.
+    not currently respect their stretch factors. This might change in the future, so avoid
+    using stretch factors in anchor layouts if you want to avoid any future regressions in
+    behavior.
 
-    \section1 Spacing within QGraphicsAnchorLayout
+    \section1 Spacing within an Anchor Layout
 
-    Between the items, the layout can distribute some space. If the spacing has not been
-    explicitly specified, the actual amount of space will usually be 0, but if the first edge
-    is the "opposite" of the second edge (i.e. Right is anchored to Left or vice-versa), the
-    size of the anchor will be queried from the style through the pixelMetric
-    PM_LayoutHorizontalSpacing (or PM_LayoutVerticalSpacing for vertical anchors).
+    The layout may distribute some space between the items. If the spacing has not been
+    explicitly specified, the actual amount of space will usually be 0.
+
+    However, if the first edge is the \e opposite of the second edge (e.g., the right edge
+    of the first widget is anchored to the left edge of the second widget), the size of the
+    anchor will be queried from the style through a pixel metric:
+    \l{QStyle::}{PM_LayoutHorizontalSpacing} for horizontal anchors and
+    \l{QStyle::}{PM_LayoutVerticalSpacing} for vertical anchors.
+
+    If the spacing is negative, the items will overlap to some extent.
+
+    \sa QGraphicsLinearLayout, QGraphicsGridLayout, QGraphicsLayout
 */
 
 /*!
@@ -118,13 +142,40 @@ QGraphicsAnchor::~QGraphicsAnchor()
 }
 
 /*!
+    \property QGraphicsAnchor::sizePolicy
+    \brief the size policy for the QGraphicsAnchor.
+
+    By setting the size policy on an anchor you can configure how the item can resize itself
+    from its preferred spacing. For instance, if the anchor has the size policy
+    QSizePolicy::Minimum, the spacing is the minimum size of the anchor. However, its size
+    can grow up to the anchors maximum size. If the default size policy is QSizePolicy::Fixed,
+    the anchor can neither grow or shrink, which means that the only size the anchor can have
+    is the spacing. QSizePolicy::Fixed is the default size policy.
+    QGraphicsAnchor always has a minimum spacing of 0 and a very large maximum spacing.
+
+    \sa QGraphicsAnchor::spacing
+*/
+
+void QGraphicsAnchor::setSizePolicy(QSizePolicy::Policy policy)
+{
+    Q_D(QGraphicsAnchor);
+    d->setSizePolicy(policy);
+}
+
+QSizePolicy::Policy QGraphicsAnchor::sizePolicy() const
+{
+    Q_D(const QGraphicsAnchor);
+    return d->sizePolicy;
+}
+
+/*!
     \property QGraphicsAnchor::spacing
-    \brief the space between items in the QGraphicsAnchorLayout.
+    \brief the preferred space between items in the QGraphicsAnchorLayout.
 
     Depending on the anchor type, the default spacing is either
     0 or a value returned from the style.
 
-    \sa QGraphicsAnchorLayout::anchor()
+    \sa QGraphicsAnchorLayout::addAnchor()
 */
 void QGraphicsAnchor::setSpacing(qreal spacing)
 {
@@ -188,7 +239,7 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
     If there is already an anchor between the edges, the the new anchor will replace the old one.
 
     \a firstItem and \a secondItem are automatically added to the layout if they are not part
-    of the layout. This means that count() can increase with up to 2.
+    of the layout. This means that count() can increase by up to 2.
 
     The spacing an anchor will get depends on the type of anchor. For instance, anchors from the
     Right edge of one item to the Left edge of another (or vice versa) will use the default
@@ -198,7 +249,10 @@ QGraphicsAnchorLayout::~QGraphicsAnchorLayout()
 
     The spacing can also be set manually by using QGraphicsAnchor::setSpacing() method.
 
-    \sa addCornerAnchors(), addAnchors()
+    Calling this function where \a firstItem or \a secondItem are ancestors of the layout have
+    undefined behaviour.
+
+    \sa addAnchors(), addCornerAnchors()
  */
 QGraphicsAnchor *
 QGraphicsAnchorLayout::addAnchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint firstEdge,
@@ -223,29 +277,26 @@ QGraphicsAnchorLayout::anchor(QGraphicsLayoutItem *firstItem, Qt::AnchorPoint fi
 }
 
 /*!
-    Creates two anchors between \a firstItem and \a secondItem, where one is for the horizontal
-    edge and another one for the vertical edge that the corners \a firstCorner and \a
-    secondCorner specifies.
-    The magnitude of the anchors is picked up from the style.
+    Creates two anchors between \a firstItem and \a secondItem specified by the corners,
+    \a firstCorner and \a secondCorner, where one is for the horizontal edge and another
+    one for the vertical edge.
 
-    This is a convenience function, since anchoring corners can be expressed as anchoring two edges.
-    For instance,
-    \code
-      layout->addAnchor(layout, Qt::AnchorTop, b, Qt::AnchorTop);
-      layout->addAnchor(layout, Qt::AnchorLeft, b, Qt::AnchorLeft);
-    \endcode
+    This is a convenience function, since anchoring corners can be expressed as anchoring
+    two edges. For instance:
 
-    has the same effect as
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor in two steps
 
-    \code
-      layout->addCornerAnchors(layout, Qt::TopLeft, b, Qt::TopLeft);
-    \endcode
+    This can also be achieved with the following line of code:
+
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding a corner anchor
 
     If there is already an anchor between the edge pairs, it will be replaced by the anchors that
     this function specifies.
 
     \a firstItem and \a secondItem are automatically added to the layout if they are not part of the
-    layout. This means that count() can increase with up to 2.
+    layout. This means that count() can increase by up to 2.
+
+    \sa addAnchor(), addAnchors()
 */
 void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
                                              Qt::Corner firstCorner,
@@ -272,17 +323,16 @@ void QGraphicsAnchorLayout::addCornerAnchors(QGraphicsLayoutItem *firstItem,
     edges of \a secondItem, so that \a firstItem has the same size as
     \a secondItem in the dimensions specified by \a orientations.
 
-    Calling this convenience function with the following arguments
-    \code
-    l->addAnchors(firstItem, secondItem, Qt::Horizontal)
-    \endcode
+    For example, the following example anchors the left and right edges of two items
+    to match their widths:
 
-    is the same as
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes in two steps
 
-    \code
-    l->addAnchor(firstItem, Qt::AnchorLeft, secondItem, Qt::AnchorLeft);
-    l->addAnchor(firstItem, Qt::AnchorRight, secondItem, Qt::AnchorRight);
-    \endcode
+    This can also be achieved using the following line of code:
+
+    \snippet examples/graphicsview/simpleanchorlayout/main.cpp adding anchors to match sizes
+
+    \sa addAnchor(), addCornerAnchors()
 */
 void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
                                        QGraphicsLayoutItem *secondItem,
@@ -306,6 +356,13 @@ void QGraphicsAnchorLayout::addAnchors(QGraphicsLayoutItem *firstItem,
 void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### We don't support negative spacing yet
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[0] = spacing;
     invalidate();
 }
@@ -318,6 +375,13 @@ void QGraphicsAnchorLayout::setHorizontalSpacing(qreal spacing)
 void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### We don't support negative spacing yet
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[1] = spacing;
     invalidate();
 }
@@ -327,11 +391,23 @@ void QGraphicsAnchorLayout::setVerticalSpacing(qreal spacing)
 
     If an item is anchored with no spacing associated with the anchor, it will use the default
     spacing.
+
+    Currently QGraphicsAnchorLayout does not support negative default spacings.
+
     \sa setHorizontalSpacing(), setVerticalSpacing()
 */
 void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 {
     Q_D(QGraphicsAnchorLayout);
+
+    // ### Currently we do not support negative anchors inside the graph.
+    // To avoid those being created by a negative spacing, we must
+    // make this test.
+    if (spacing < 0) {
+        spacing = 0;
+        qWarning() << "QGraphicsAnchorLayout does not support negative spacing.";
+    }
+
     d->spacings[0] = d->spacings[1] = spacing;
     invalidate();
 }

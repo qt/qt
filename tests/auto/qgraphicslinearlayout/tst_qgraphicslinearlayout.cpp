@@ -101,6 +101,7 @@ private slots:
     void updateGeometry();
     void layoutDirection();
     void removeLayout();
+    void avoidRecursionInInsertItem();
 
     // Task specific tests
     void task218400_insertStretchCrash();
@@ -146,7 +147,7 @@ void tst_QGraphicsLinearLayout::initTestCase()
     // since the style will influence the results, we have to ensure
     // that the tests are run using the same style on all platforms
 #ifdef Q_WS_S60
-    QApplication::setStyle(new QWindowsStyle);    
+    QApplication::setStyle(new QWindowsStyle);
 #else
     QApplication::setStyle(new QPlastiqueStyle);
 #endif
@@ -332,6 +333,7 @@ void tst_QGraphicsLinearLayout::alignment()
         widget->resize(newSize);
     view.show();
     widget->show();
+    QTest::qWaitForWindowShown(&view);
     QApplication::processEvents();
 
     int x = 0;
@@ -1429,6 +1431,16 @@ void tst_QGraphicsLinearLayout::removeLayout()
     //If layout is 0, the widget is left without a layout. Existing subwidgets' geometries will remain unaffected.
     QCOMPARE(textEdit->geometry(), r1);
     QCOMPARE(pushButton->geometry(), r2);
+}
+
+void tst_QGraphicsLinearLayout::avoidRecursionInInsertItem()
+{
+    QGraphicsWidget window(0, Qt::Window);
+	QGraphicsLinearLayout *layout = new QGraphicsLinearLayout(&window);
+    QCOMPARE(layout->count(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QGraphicsLinearLayout::insertItem: cannot insert itself");
+    layout->insertItem(0, layout);
+    QCOMPARE(layout->count(), 0);
 }
 
 void tst_QGraphicsLinearLayout::task218400_insertStretchCrash()

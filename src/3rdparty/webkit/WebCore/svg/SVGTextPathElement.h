@@ -1,8 +1,6 @@
 /*
     Copyright (C) 2007 Nikolas Zimmermann <zimmermann@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -64,13 +62,13 @@ namespace WebCore {
 
         bool childShouldCreateRenderer(Node*) const;
 
-    protected:
-        virtual const SVGElement* contextElement() const { return this; }
-
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGTextPathElement, SVGNames::textPathTagString, SVGNames::startOffsetAttrString, SVGLength, StartOffset, startOffset)
         ANIMATED_PROPERTY_DECLARATIONS(SVGTextPathElement, SVGNames::textPathTagString, SVGNames::methodAttrString, int, Method, method)
         ANIMATED_PROPERTY_DECLARATIONS(SVGTextPathElement, SVGNames::textPathTagString, SVGNames::spacingAttrString, int, Spacing, spacing)
+    
+        // SVGURIReference
+        ANIMATED_PROPERTY_DECLARATIONS(SVGTextPathElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
     };
 
 } // namespace WebCore

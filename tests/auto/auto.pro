@@ -127,6 +127,7 @@ SUBDIRS += \
            qexplicitlyshareddatapointer \
            qfile \
            qfiledialog \
+           qfiledialog2 \
            qfileinfo \
            qfilesystemwatcher \
            qfilesystemmodel \

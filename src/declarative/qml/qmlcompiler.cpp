@@ -1740,7 +1740,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
             } else {
                 COMPILE_CHECK(buildObject(value->object, ctxt));
 
-                if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                if (isPropertyInterceptor && baseObj->synthdata.isEmpty())
                     buildDynamicMeta(baseObj, ForceCreation);
                 value->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
             }

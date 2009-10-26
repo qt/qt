@@ -48,12 +48,12 @@ namespace WebCore {
             deleteObject();
             m_context = 0;
         }
-        
+
+        CanvasRenderingContext3D* context() const { return m_context; }
+
     protected:
         CanvasObject(CanvasRenderingContext3D*);
         virtual void _deleteObject(Platform3DObject) = 0;
-        
-        CanvasRenderingContext3D* context() const { return m_context; }
     
     private:
         Platform3DObject m_object;

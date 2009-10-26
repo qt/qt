@@ -57,6 +57,9 @@
 #include <QtGui/qpainter.h>
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qgraphicsview.h>
+#include <QtGui/qlistview.h>
+#include <QtGui/qlineedit.h>
+#include <QtGui/qtextedit.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -86,7 +89,9 @@ QT_BEGIN_NAMESPACE
     of embedded widgets through creating a child proxy for each popup. This
     means that when an embedded QComboBox shows its popup list, a new
     QGraphicsProxyWidget is created automatically, embedding the popup, and
-    positioning it correctly.
+    positioning it correctly. This only works if the popup is child of the
+    embedded widget (for example QToolButton::setMenu() requires the QMenu instance
+    to be child of the QToolButton).
 
     \section1 Embedding a Widget with QGraphicsProxyWidget
 
@@ -184,6 +189,7 @@ QT_BEGIN_NAMESPACE
 */
 
 extern bool qt_sendSpontaneousEvent(QObject *, QEvent *);
+extern bool qt_tab_all_widgets;
 
 /*!
     \internal
@@ -369,6 +375,7 @@ QVariant QGraphicsProxyWidgetPrivate::inputMethodQueryHelper(Qt::InputMethodQuer
 
 /*!
     \internal
+    Some of the logic is shared with QApplicationPrivate::focusNextPrevChild_helper
 */
 QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) const
 {
@@ -382,14 +389,16 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
         child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;
         if ((next && child == widget) || (!next && child == widget->d_func()->focus_prev)) {
              return 0;
-	}
+        }
     }
 
     QWidget *oldChild = child;
+    uint focus_flag = qt_tab_all_widgets ? Qt::TabFocus : Qt::StrongFocus;
     do {
         if (child->isEnabled()
 	    && child->isVisibleTo(widget)
-            && (child->focusPolicy() & Qt::TabFocus)) {
+            && (child->focusPolicy() & focus_flag == focus_flag)
+            && !(child->d_func()->extra && child->d_func()->extra->focus_proxy)) {
             return child;
         }
         child = next ? child->d_func()->focus_next : child->d_func()->focus_prev;

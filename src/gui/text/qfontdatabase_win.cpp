@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include "qt_windows.h"
+#include <qmath.h>
 #include <private/qapplication_p.h>
 #include "qfont_p.h"
 #include "qfontengine_p.h"
@@ -670,7 +671,7 @@ QFontEngine *loadEngine(int script, const QFontPrivate *fp, const QFontDef &requ
                 break;
         }
 
-        lf.lfHeight = -request.pixelSize;
+        lf.lfHeight = -qRound(request.pixelSize);
         lf.lfWidth                = 0;
         lf.lfEscapement        = 0;
         lf.lfOrientation        = 0;
@@ -899,7 +900,6 @@ static QFontEngine *loadWin(const QFontPrivate *d, int script, const QFontDef &r
     return fe;
 }
 
-
 void QFontDatabase::load(const QFontPrivate *d, int script)
 {
     // sanity checks
@@ -910,8 +910,9 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     // normalize the request to get better caching
     QFontDef req = d->request;
     if (req.pixelSize <= 0)
-        req.pixelSize = qMax(1, qRound(req.pointSize * d->dpi / 72.));
-    req.pointSize = 0;
+        req.pixelSize = qreal((req.pointSize * d->dpi) / 72.);
+    if (req.pixelSize < 1)
+        req.pixelSize = 1;
     if (req.weight == 0)
         req.weight = QFont::Normal;
     if (req.stretch == 0)
@@ -928,7 +929,8 @@ void QFontDatabase::load(const QFontPrivate *d, int script)
     QFontEngine *fe = QFontCache::instance()->findEngine(key);
 
     // set it to the actual pointsize, so QFontInfo will do the right thing
-    req.pointSize = req.pixelSize*72./d->dpi;
+    if (req.pointSize < 0)
+        req.pointSize = req.pixelSize*72./d->dpi;
 
     if (!fe) {
         if (qt_enable_test_font && req.family == QLatin1String("__Qt__Box__Engine__")) {

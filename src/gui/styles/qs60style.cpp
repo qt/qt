@@ -1313,7 +1313,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->save();
 
             painter->setClipRect(voptAdj.rect);
-            const bool isSelected = (voptAdj.state & QStyle::State_HasFocus);
+            const bool isSelected = (vopt->state & QStyle::State_Selected);
 
             bool isVisible = false;
             int scrollBarWidth = 0;
@@ -1358,7 +1358,27 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             // draw the focus rect
             if (isSelected) {
-                const QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
+                QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
+                const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
+                if (view && view->selectionBehavior() != QAbstractItemView::SelectItems) {
+                    // set highlight rect so that it is continuous from cell to cell, yet sligthly
+                    // smaller than cell rect
+                    int xBeginning = 0, yBeginning = 0, xEnd = 0, yEnd = 0;
+                    if (view->selectionBehavior() == QAbstractItemView::SelectRows) {
+                        yBeginning = 1; yEnd = -1;
+                        if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
+                            xBeginning = 1;
+                        else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
+                            xEnd = -1;
+                    } else if (view->selectionBehavior() == QAbstractItemView::SelectColumns) {
+                        xBeginning = 1; xEnd = -1;
+                        if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
+                            yBeginning = 1;
+                        else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
+                            yEnd = -1;
+                    }
+                    highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, xBeginning);
+                }
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
             }
 
@@ -1824,8 +1844,8 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 //todo: update to horizontal table graphic
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
             }
-        } else if (qobject_cast<const QFrame *>(widget)) { 
-            QCommonStyle::drawControl(element, option, painter, widget); 
+        } else if (qobject_cast<const QFrame *>(widget)) {
+            QCommonStyle::drawControl(element, option, painter, widget);
         }
         break;
     case CE_MenuScroller:
@@ -2196,6 +2216,12 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             if (const QStyleOptionFrame *f = qstyleoption_cast<const QStyleOptionFrame *>(opt))
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
             break;
+        case CT_TabBarTab:
+            QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            if (naviPaneSize.height() > sz.height())
+                sz.setHeight(naviPaneSize.height());
+            break;
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             break;
@@ -2405,8 +2431,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 case SC_ComboBoxArrow:
                     ret.setRect(
                         ret.x() + ret.width() - buttonMargin - buttonWidth,
-                        ret.y() + buttonMargin, 
-                        buttonWidth, 
+                        ret.y() + buttonMargin,
+                        buttonWidth,
                         height - 2*buttonMargin);
                     break;
                 case SC_ComboBoxEditField: {

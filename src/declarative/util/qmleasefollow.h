@@ -67,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QmlEaseFollow : public QObject,
     Q_PROPERTY(qreal duration READ duration WRITE setDuration NOTIFY durationChanged)
     Q_PROPERTY(ReversingMode reversingMode READ reversingMode WRITE setReversingMode NOTIFY reversingModeChanged)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(qreal maximumEasingTime READ maximumEasingTime WRITE setMaximumEasingTime NOTIFY maximumEasingTimeChanged)
 
 public:
     enum ReversingMode { Eased, Immediate, Sync };
@@ -89,6 +90,9 @@ public:
     bool enabled() const;
     void setEnabled(bool enabled);
 
+    qreal maximumEasingTime() const;
+    void setMaximumEasingTime(qreal);
+
     virtual void setTarget(const QmlMetaProperty &);
 
 signals:
@@ -97,6 +101,7 @@ signals:
     void durationChanged();
     void reversingModeChanged();
     void enabledChanged();
+    void maximumEasingTimeChanged();
 };
 
 QT_END_NAMESPACE

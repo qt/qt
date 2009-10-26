@@ -411,6 +411,7 @@ private:
     friend class QGLFramebufferObjectPrivate;
     friend class QGLFBOGLPaintDevice;
     friend class QGLPaintDevice;
+    friend class QX11GLPixmapData;
 private:
     Q_DISABLE_COPY(QGLContext)
 };

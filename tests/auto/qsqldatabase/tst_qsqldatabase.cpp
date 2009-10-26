@@ -1072,17 +1072,20 @@ void tst_QSqlDatabase::recordMySQL()
     int revision = tst_Databases::getMySqlVersion( db ).section( QChar('.'), 2, 2 ).toInt();
     int vernum = (major << 16) + (minor << 8) + revision;
 
-#ifdef QT3_SUPPORT
     /* The below is broken in mysql below 5.0.15
         see http://dev.mysql.com/doc/refman/5.0/en/binary-varbinary.html
         specifically: Before MySQL 5.0.15, the pad value is space. Values are right-padded
         with space on insert, and trailing spaces are removed on select.
     */
     if( vernum >= ((5 << 16) + 15) ) {
+#ifdef QT3_SUPPORT
         bin10 = FieldDef("binary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abc    ")));
         varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QByteArray(Q3CString("123abcv   ")));
-    }
+#else
+        bin10 = FieldDef("binary(10)", QVariant::ByteArray, QString("123abc    "));
+        varbin10 = FieldDef("varbinary(10)", QVariant::ByteArray, QString("123abcv   "));
 #endif
+    }
 
     static QDateTime dt(QDate::currentDate(), QTime(1, 2, 3, 0));
     static const FieldDef fieldDefs[] = {
@@ -2468,7 +2471,7 @@ void tst_QSqlDatabase::mysql_savepointtest()
     QFETCH(QString, dbName);
     QSqlDatabase db = QSqlDatabase::database(dbName);
     CHECK_DATABASE(db);
-    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toInt()<4.1 )
+    if ( db.driverName().startsWith( "QMYSQL" ) && tst_Databases::getMySqlVersion( db ).section( QChar('.'), 0, 1 ).toDouble()<4.1 )
         QSKIP( "Test requires MySQL >= 4.1", SkipSingle );
 
     QSqlQuery q(db);

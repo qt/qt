@@ -108,6 +108,18 @@ QT_BEGIN_NAMESPACE
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
 
+/*!
+    \class QAccessibleActionInterface
+    \ingroup accessibility
+    \internal
+    \preliminary
+
+    \brief The QAccessibleActionInterface class implements support for
+    the IAccessibleAction interface.
+
+    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
 QAccessibleSimpleEditableTextInterface::QAccessibleSimpleEditableTextInterface(
                 QAccessibleInterface *accessibleInterface)
     : iface(accessibleInterface)

@@ -31,6 +31,6 @@
 #define WebKitVersion_h
 
 #define WEBKIT_MAJOR_VERSION 532
-#define WEBKIT_MINOR_VERSION 1
+#define WEBKIT_MINOR_VERSION 3
 
 #endif //WebKitVersion_h
