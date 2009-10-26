@@ -369,7 +369,7 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     QMenu *recordMenu = flatmenu ? flatmenu : menu->addMenu(tr("&Recording"));
 
-    QAction *snapshotAction = new QAction(tr("&Take Snapsot\tF3"), parent);
+    QAction *snapshotAction = new QAction(tr("&Take Snapshot\tF3"), parent);
     connect(snapshotAction, SIGNAL(triggered()), this, SLOT(takeSnapShot()));
     recordMenu->addAction(snapshotAction);
 
