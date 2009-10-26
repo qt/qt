@@ -88,6 +88,7 @@ private slots:
     void chooseRecordingOptions();
     void pickRecordingFile();
     void setScaleSkin();
+    void adjustSizeSlot();
 
 private:
     void setupProxy();

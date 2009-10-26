@@ -310,6 +310,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
+    QObject::connect(canvas, SIGNAL(initialSize(QSize)), this, SLOT(adjustSizeSlot()));
     QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
 
     if (!(flags & Qt::FramelessWindowHint))
@@ -333,6 +334,11 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
     recordTimer.setRepeating(true);
+}
+
+void QmlViewer::adjustSizeSlot()
+{
+    adjustSize();
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -680,7 +686,7 @@ void QmlViewer::openQml(const QUrl& url)
         canvas->updateGeometry();
         if (mb)
             mb->updateGeometry();
-        resize(sizeHint());
+        adjustSize();
     } else {
         if (scaleSkin)
             canvas->resize(canvas->sizeHint());
