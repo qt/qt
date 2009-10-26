@@ -97,6 +97,7 @@
 */
 
 #include "qgraphicseffect_p.h"
+#include <QtGui/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
@@ -248,16 +249,22 @@ bool QGraphicsEffectSource::isPixmap() const
 
     \sa QGraphicsEffect::draw(), boundingRect(), deviceRect()
 */
-QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset, PixmapPadMode mode) const
 {
     Q_D(const QGraphicsEffectSource);
+
+    // Shortcut, no cache for childless pixmap items...
+    const QGraphicsItem *item = graphicsItem();
+    if (system == Qt::LogicalCoordinates && mode == NoExpandPadMode && item && isPixmap()) {
+        return ((QGraphicsPixmapItem *) item)->pixmap();
+    }
 
     QPixmap pm;
     if (d->m_cachedSystem == system)
         QPixmapCache::find(d->m_cacheKey, &pm);
 
     if (pm.isNull()) {
-        pm = d->pixmap(system, &d->m_cachedOffset);
+        pm = d->pixmap(system, &d->m_cachedOffset, mode);
         d->m_cachedSystem = system;
 
         d->invalidateCache();
@@ -565,7 +572,8 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
+                                              QGraphicsEffectSource::NoExpandPadMode);
         d->filter->draw(painter, offset, pixmap);
         return;
     }
@@ -775,6 +783,8 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
     \brief the horizontal shadow offset in pixels.
 
     By default, the horizontal shadow offset is 8 pixels.
+
+
 
     \sa yOffset(), offset()
 */
@@ -1029,7 +1039,8 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
+                                                  QGraphicsEffectSource::NoExpandPadMode);
             painter->drawPixmap(offset, pixmap);
         } else {
             QRect srcBrect = source->boundingRect().toAlignedRect();
@@ -1050,7 +1061,8 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;
         if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset,
+                                                  QGraphicsEffectSource::NoExpandPadMode);
             painter->setWorldTransform(QTransform());
             painter->drawPixmap(offset, pixmap);
         } else {

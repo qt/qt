@@ -77,7 +77,8 @@ public:
     virtual void draw(QPainter *p) = 0;
     virtual void update() = 0;
     virtual bool isPixmap() const = 0;
-    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0) const = 0;
+    virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
+                           QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode) const = 0;
     virtual void effectBoundingRectChanged() = 0;
     void invalidateCache() const { QPixmapCache::remove(m_cacheKey); }
 

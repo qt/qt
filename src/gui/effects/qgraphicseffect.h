@@ -64,6 +64,12 @@ class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
 {
     Q_OBJECT
 public:
+    enum PixmapPadMode {
+        NoExpandPadMode,
+        ExpandToTransparentBorderPadMode,
+        ExpandToEffectRectPadMode
+    };
+
     ~QGraphicsEffectSource();
     const QGraphicsItem *graphicsItem() const;
     const QWidget *widget() const;
@@ -75,7 +81,9 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
     QRect deviceRect() const;
-    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
+    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
+                   QPoint *offset = 0,
+                   PixmapPadMode mode = ExpandToEffectRectPadMode) const;
 
 protected:
     QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
