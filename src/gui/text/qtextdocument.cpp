@@ -956,6 +956,8 @@ QString QTextDocument::defaultStyleSheet() const
 
 /*!
     Returns true if undo is available; otherwise returns false.
+
+    \sa isRedoAvailable(), availableUndoSteps()
 */
 bool QTextDocument::isUndoAvailable() const
 {
@@ -965,6 +967,8 @@ bool QTextDocument::isUndoAvailable() const
 
 /*!
     Returns true if redo is available; otherwise returns false.
+
+    \sa isUndoAvailable(), availableRedoSteps()
 */
 bool QTextDocument::isRedoAvailable() const
 {
@@ -972,6 +976,29 @@ bool QTextDocument::isRedoAvailable() const
     return d->isRedoAvailable();
 }
 
+/*! \since 4.6
+
+    Returns the number of available undo steps.
+
+    \sa isUndoAvailable()
+*/
+int QTextDocument::availableUndoSteps() const
+{
+    Q_D(const QTextDocument);
+    return d->availableUndoSteps();
+}
+
+/*! \since 4.6
+
+    Returns the number of available redo steps.
+
+    \sa isRedoAvailable()
+*/
+int QTextDocument::availableRedoSteps() const
+{
+    Q_D(const QTextDocument);
+    return d->availableRedoSteps();
+}
 
 /*! \since 4.4
 

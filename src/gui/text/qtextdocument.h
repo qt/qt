@@ -142,6 +142,9 @@ public:
     bool isUndoAvailable() const;
     bool isRedoAvailable() const;
 
+    int availableUndoSteps() const;
+    int availableRedoSteps() const;
+
     int revision() const;
 
     void setDocumentLayout(QAbstractTextDocumentLayout *layout);
