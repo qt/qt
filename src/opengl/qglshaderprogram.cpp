@@ -1138,7 +1138,7 @@ bool QGLShaderProgram::setProgramBinary(int format, const QByteArray& binary)
 {
 #if defined(QT_OPENGL_ES_2)
     // Load the binary and check that it was linked correctly.
-    Q_D(const QGLShaderProgram);
+    Q_D(QGLShaderProgram);
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
