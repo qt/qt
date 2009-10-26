@@ -75,7 +75,7 @@ namespace JSC {
 #define THUMB_FUNC_PARAM(name)
 #endif
 
-#if PLATFORM(LINUX) && PLATFORM(X86_64)
+#if PLATFORM(LINUX) && (PLATFORM(X86_64) || PLATFORM(X86))
 #define SYMBOL_STRING_RELOCATION(name) #name "@plt"
 #else
 #define SYMBOL_STRING_RELOCATION(name) SYMBOL_STRING(name)
@@ -93,6 +93,7 @@ COMPILE_ASSERT(offsetof(struct JITStackFrame, callFrame) == 0x58, JITStackFrame_
 COMPILE_ASSERT(offsetof(struct JITStackFrame, code) == 0x50, JITStackFrame_code_offset_matches_ctiTrampoline);
 
 asm volatile (
+".text\n"
 ".globl " SYMBOL_STRING(ctiTrampoline) "\n"
 SYMBOL_STRING(ctiTrampoline) ":" "\n"
     "pushl %ebp" "\n"
