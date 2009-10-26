@@ -398,6 +398,7 @@ private slots:
     void modality_mouseGrabber();
     void modality_clickFocus();
     void modality_keyEvents();
+    void itemIsInFront();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -9539,6 +9540,48 @@ void tst_QGraphicsItem::modality_keyEvents()
     QCOMPARE(rect1childSpy.counts[QEvent::KeyRelease], 0);
     QCOMPARE(rect1Spy.counts[QEvent::KeyPress], 0);
     QCOMPARE(rect1Spy.counts[QEvent::KeyRelease], 0);
+}
+
+void tst_QGraphicsItem::itemIsInFront()
+{
+    QGraphicsScene scene;
+    QGraphicsRectItem *rect1 = new QGraphicsRectItem;
+    rect1->setData(0, "rect1");
+    scene.addItem(rect1);
+
+    QGraphicsRectItem *rect1child1 = new QGraphicsRectItem(rect1);
+    rect1child1->setZValue(1);
+    rect1child1->setData(0, "rect1child1");
+
+    QGraphicsRectItem *rect1child2 = new QGraphicsRectItem(rect1);
+    rect1child2->setParentItem(rect1);
+    rect1child2->setData(0, "rect1child2");
+
+    QGraphicsRectItem *rect1child1_1 = new QGraphicsRectItem(rect1child1);
+    rect1child1_1->setData(0, "rect1child1_1");
+
+    QGraphicsRectItem *rect1child1_2 = new QGraphicsRectItem(rect1child1);
+    rect1child1_2->setFlag(QGraphicsItem::ItemStacksBehindParent);
+    rect1child1_2->setData(0, "rect1child1_2");
+
+    QGraphicsRectItem *rect2 = new QGraphicsRectItem;
+    rect2->setData(0, "rect2");
+    scene.addItem(rect2);
+
+    QGraphicsRectItem *rect2child1 = new QGraphicsRectItem(rect2);
+    rect2child1->setData(0, "rect2child1");
+
+    QCOMPARE(qt_closestItemFirst(rect1, rect1), false);
+    QCOMPARE(qt_closestItemFirst(rect1, rect2), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1, rect2child1), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_1, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_1, rect1child1), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1child2), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1child1), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1), true);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2), false);
+    QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2child1), false);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

@@ -1105,13 +1105,13 @@ QModelIndex QListView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
             ++row;
         if (row >= rowCount)
             return QModelIndex();
-        return d->model->index(row, 0, d->root);
+        return d->model->index(row, d->column, d->root);
     }
 
     const QRect initialRect = rectForIndex(current);
     QRect rect = initialRect;
     if (rect.isEmpty()) {
-        return d->model->index(0, 0, d->root);
+        return d->model->index(0, d->column, d->root);
     }
     if (d->gridSize().isValid()) rect.setSize(d->gridSize());
 
@@ -1900,7 +1900,7 @@ void QListModeViewBase::updateVerticalScrollBar(const QSize &step)
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && !isWrapping())
         || (flow() == QListView::LeftToRight && isWrapping()))) {
-            const int steps = (flow() == QListView::TopToBottom ? flowPositions : segmentPositions).count() - 1;
+            const int steps = (flow() == QListView::TopToBottom ? scrollValueMap : segmentPositions).count() - 1;
             if (steps > 0) {
                 const int pageSteps = perItemScrollingPageSteps(viewport()->height(), contentsSize.height(), isWrapping());
                 verticalScrollBar()->setSingleStep(1);
@@ -1921,7 +1921,7 @@ void QListModeViewBase::updateHorizontalScrollBar(const QSize &step)
     if (horizontalScrollMode() == QAbstractItemView::ScrollPerItem
         && ((flow() == QListView::TopToBottom && isWrapping())
         || (flow() == QListView::LeftToRight && !isWrapping()))) {
-            int steps = (flow() == QListView::TopToBottom ? segmentPositions : flowPositions).count() - 1;
+            int steps = (flow() == QListView::TopToBottom ? segmentPositions : scrollValueMap).count() - 1;
             if (steps > 0) {
                 const int pageSteps = perItemScrollingPageSteps(viewport()->width(), contentsSize.width(), isWrapping());
                 horizontalScrollBar()->setSingleStep(1);
@@ -1939,7 +1939,11 @@ int QListModeViewBase::verticalScrollToValue(int index, QListView::ScrollHint hi
                                           bool above, bool below, const QRect &area, const QRect &rect) const
 {
     if (verticalScrollMode() == QAbstractItemView::ScrollPerItem) {
-        int value = qBound(0, verticalScrollBar()->value(), flowPositions.count() - 1);
+        int value;
+        if (scrollValueMap.isEmpty())
+            value = 0;
+        else
+            value = qBound(0, scrollValueMap.at(verticalScrollBar()->value()), flowPositions.count() - 1);
         if (above)
             hint = QListView::PositionAtTop;
         else if (below)
@@ -1966,8 +1970,8 @@ int QListModeViewBase::horizontalOffset() const
                 return (isRightToLeft() ? maximum - position : position);
             }
         } else if (flow() == QListView::LeftToRight && !flowPositions.isEmpty()) {
-            int position = flowPositions.at(horizontalScrollBar()->value());
-            int maximum = flowPositions.at(horizontalScrollBar()->maximum());
+            int position = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->value()));
+            int maximum = flowPositions.at(scrollValueMap.at(horizontalScrollBar()->maximum()));
             return (isRightToLeft() ? maximum - position : position);
         }
     }
@@ -1986,9 +1990,9 @@ int QListModeViewBase::verticalOffset() const
             }
         } else if (flow() == QListView::TopToBottom && !flowPositions.isEmpty()) {
             int value = verticalScrollBar()->value();
-            if (value > flowPositions.count())
+            if (value > scrollValueMap.count())
                 return 0;
-            return flowPositions.at(value) - spacing();
+            return flowPositions.at(scrollValueMap.at(value)) - spacing();
         }
     }
     return QCommonListViewBase::verticalOffset();
@@ -2000,7 +2004,11 @@ int QListModeViewBase::horizontalScrollToValue(int index, QListView::ScrollHint 
     if (horizontalScrollMode() != QAbstractItemView::ScrollPerItem)
         return QCommonListViewBase::horizontalScrollToValue(index, hint, leftOf, rightOf, area, rect);
 
-    int value = qBound(0, horizontalScrollBar()->value(), flowPositions.count() - 1);
+    int value;
+    if (scrollValueMap.isEmpty())
+        value = 0;
+    else
+        value = qBound(0, scrollValueMap.at(horizontalScrollBar()->value()), flowPositions.count() - 1);
     if (leftOf)
         hint = QListView::PositionAtTop;
     else if (rightOf)
@@ -2043,14 +2051,14 @@ void QListModeViewBase::scrollContentsBy(int dx, int dy, bool scrollElasticBand)
         if (vertical && flow() == QListView::TopToBottom && dy != 0) {
             int currentValue = qBound(0, verticalValue, max);
             int previousValue = qBound(0, currentValue + dy, max);
-            int currentCoordinate = flowPositions.at(currentValue);
-            int previousCoordinate = flowPositions.at(previousValue);
+            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dy = previousCoordinate - currentCoordinate;
         } else if (horizontal && flow() == QListView::LeftToRight && dx != 0) {
             int currentValue = qBound(0, horizontalValue, max);
             int previousValue = qBound(0, currentValue + dx, max);
-            int currentCoordinate = flowPositions.at(currentValue);
-            int previousCoordinate = flowPositions.at(previousValue);
+            int currentCoordinate = flowPositions.at(scrollValueMap.at(currentValue));
+            int previousCoordinate = flowPositions.at(scrollValueMap.at(previousValue));
             dx = previousCoordinate - currentCoordinate;
         }
     }
@@ -2113,6 +2121,7 @@ QPoint QListModeViewBase::initStaticLayout(const QListViewLayoutInfo &info)
         segmentPositions.clear();
         segmentStartRows.clear();
         segmentExtents.clear();
+        scrollValueMap.clear();
         x = info.bounds.left() + info.spacing;
         y = info.bounds.top() + info.spacing;
         segmentPositions.append(info.flow == QListView::LeftToRight ? y : x);
@@ -2204,6 +2213,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
                 deltaSegPosition = 0;
             }
             // save the flow position of this item
+            scrollValueMap.append(flowPositions.count());
             flowPositions.append(flowPosition);
             // prepare for the next item
             deltaSegPosition = qMax(deltaSegHint, deltaSegPosition);
@@ -2229,6 +2239,7 @@ void QListModeViewBase::doStaticLayout(const QListViewLayoutInfo &info)
     // if it is the last batch, save the end of the segments
     if (info.last == info.max) {
         segmentExtents.append(flowPosition);
+        scrollValueMap.append(flowPositions.count());
         flowPositions.append(flowPosition);
         segmentPositions.append(info.wrap ? segPosition + deltaSegPosition : INT_MAX);
     }
@@ -2306,7 +2317,14 @@ QRect QListModeViewBase::mapToViewport(const QRect &rect) const
 
 int QListModeViewBase::perItemScrollingPageSteps(int length, int bounds, bool wrap) const
 {
-    const QVector<int> positions = (wrap ? segmentPositions : flowPositions);
+    QVector<int> positions;
+    if (wrap)
+        positions = segmentPositions;
+    else if (!flowPositions.isEmpty()) {
+        positions.reserve(scrollValueMap.size());
+        foreach (int itemShown, scrollValueMap)
+            positions.append(flowPositions.at(itemShown));
+    }
     if (positions.isEmpty() || bounds <= length)
         return positions.count();
     if (uniformItemSizes()) {
@@ -2490,7 +2508,7 @@ bool QIconModeViewBase::filterDropEvent(QDropEvent *e)
     for (int i = 0; i < indexes.count(); ++i) {
         QModelIndex index = indexes.at(i);
         QRect rect = dd->rectForIndex(index);
-        viewport()->update(mapToViewport(rect));
+        viewport()->update(dd->mapToViewport(rect, false));
         QPoint dest = rect.topLeft() + delta;
         if (qq->isRightToLeft())
             dest.setX(dd->flipX(dest.x()) - rect.width());

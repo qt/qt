@@ -70,18 +70,27 @@ public:
 
     static QImagePixmapCleanupHooks *instance();
 
-    void addPixmapHook(_qt_pixmap_cleanup_hook_pm);
+    // Gets called when a pixmap is about to be modified:
+    void addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm);
+
+    // Gets called when a pixmap is about to be destroyed:
+    void addPixmapDestructionHook(_qt_pixmap_cleanup_hook_pm);
+
+    // Gets called when an image is about to be modified or destroyed:
     void addImageHook(_qt_image_cleanup_hook_64);
 
-    void removePixmapHook(_qt_pixmap_cleanup_hook_pm);
+    void removePixmapModificationHook(_qt_pixmap_cleanup_hook_pm);
+    void removePixmapDestructionHook(_qt_pixmap_cleanup_hook_pm);
     void removeImageHook(_qt_image_cleanup_hook_64);
 
-    static void executePixmapHooks(QPixmap*);
+    static void executePixmapModificationHooks(QPixmap*);
+    static void executePixmapDestructionHooks(QPixmap*);
     static void executeImageHooks(qint64 key);
 
 private:
     QList<_qt_image_cleanup_hook_64> imageHooks;
-    QList<_qt_pixmap_cleanup_hook_pm> pixmapHooks;
+    QList<_qt_pixmap_cleanup_hook_pm> pixmapModificationHooks;
+    QList<_qt_pixmap_cleanup_hook_pm> pixmapDestructionHooks;
 };
 
 QT_END_NAMESPACE

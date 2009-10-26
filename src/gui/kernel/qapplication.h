@@ -61,9 +61,6 @@
 
 QT_BEGIN_HEADER
 
-#if defined(Q_OS_SYMBIAN)
-class TWsEvent;
-#endif
 #if defined(Q_WS_S60)
 class CApaApplication;
 #endif
@@ -82,6 +79,9 @@ template <typename T> class QList;
 class QLocale;
 #if defined(Q_WS_QWS)
 class QDecoration;
+#endif
+#if defined(Q_OS_SYMBIAN)
+class QSymbianEvent;
 #endif
 
 class QApplication;
@@ -241,10 +241,8 @@ public:
     int x11ProcessEvent(XEvent*);
 #endif
 #if defined(Q_OS_SYMBIAN)
-    int s60ProcessEvent(TWsEvent *event);
-    virtual bool s60EventFilter(TWsEvent *aEvent);
-    void symbianHandleCommand(int command);
-    void symbianResourceChange(int type);
+    int symbianProcessEvent(const QSymbianEvent *event);
+    virtual bool symbianEventFilter(const QSymbianEvent *event);
 #endif
 #if defined(Q_WS_QWS)
     virtual bool qwsEventFilter(QWSEvent *);

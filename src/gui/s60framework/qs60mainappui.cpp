@@ -50,6 +50,7 @@
 
 #include "qs60mainappui.h"
 #include <QtGui/qapplication.h>
+#include <QtGui/qsymbianevent.h>
 #include <QtGui/qmenu.h>
 #include <private/qmenu_p.h>
 #include <private/qt_s60_p.h>
@@ -134,8 +135,10 @@ QS60MainAppUi::~QS60MainAppUi()
  */
 void QS60MainAppUi::HandleCommandL(TInt command)
 {
-    if (qApp)
-        QT_TRYCATCH_LEAVING(qApp->symbianHandleCommand(command));
+    if (qApp) {
+        QSymbianEvent event(QSymbianEvent::CommandEvent, command);
+        QT_TRYCATCH_LEAVING(qApp->symbianProcessEvent(&event));
+    }
 }
 
 /*!
@@ -151,8 +154,10 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
 {
     CAknAppUi::HandleResourceChangeL(type);
 
-    if (qApp)
-        QT_TRYCATCH_LEAVING(qApp->symbianResourceChange(type));
+    if (qApp) {
+        QSymbianEvent event(QSymbianEvent::ResourceChangeEvent, type);
+        QT_TRYCATCH_LEAVING(qApp->symbianProcessEvent(&event));
+    }
 }
 
 /*!
@@ -164,16 +169,18 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
  * If you override this function, you should call the base class implementation if you do not
  * handle the event.
  */
-void QS60MainAppUi::HandleWsEventL(const TWsEvent& event, CCoeControl *destination)
+void QS60MainAppUi::HandleWsEventL(const TWsEvent& wsEvent, CCoeControl *destination)
 {
     int result = 0;
-    if (qApp)
+    if (qApp) {
+        QSymbianEvent event(&wsEvent);
         QT_TRYCATCH_LEAVING(
-            result = qApp->s60ProcessEvent(const_cast<TWsEvent*>(&event))
+            result = qApp->symbianProcessEvent(&event)
         );
+    }
 
     if (result <= 0)
-        CAknAppUi::HandleWsEventL(event, destination);
+        CAknAppUi::HandleWsEventL(wsEvent, destination);
 }
 
 

@@ -116,6 +116,9 @@ private slots:
     void keyboardSearch();
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
+    void task262152_setModelColumnNavigate();
+    void taskQTBUG_2233_scrollHiddenItems_data();
+    void taskQTBUG_2233_scrollHiddenItems();
 };
 
 // Testing get/set functions
@@ -1767,6 +1770,64 @@ void tst_QListView::clickOnViewportClearsSelection()
 
 }
 
+void tst_QListView::task262152_setModelColumnNavigate()
+{
+    QListView view;
+    QStandardItemModel model(3,2);
+    model.setItem(0,1,new QStandardItem("[0,1]"));
+    model.setItem(1,1,new QStandardItem("[1,1]"));
+    model.setItem(2,1,new QStandardItem("[2,1]"));
+
+    view.setModel(&model);
+    view.setModelColumn(1);
+
+    view.show();
+    QTest::qWait(100);
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(100);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::keyClick(&view, Qt::Key_Down);
+    QTest::qWait(100);
+    QCOMPARE(view.currentIndex(), model.index(2,1));
+
+}
+
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems_data()
+{
+    QTest::addColumn<int>("flow");
+
+    QTest::newRow("TopToBottom") << static_cast<int>(QListView::TopToBottom);
+    QTest::newRow("LeftToRight") << static_cast<int>(QListView::LeftToRight);
+}
+
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
+{
+    QFETCH(int, flow);
+    const int rowCount = 200;
+
+    QListView view;
+    QStringListModel model(&view);
+    QStringList list;
+    for (int i = 0; i < rowCount; ++i)
+        list << QString::fromAscii("Item %1").arg(i);
+
+    model.setStringList(list);
+    view.setModel(&model);
+    view.setViewMode(QListView::ListMode);
+    for (int i = 0; i < rowCount / 2; ++i)
+        view.setRowHidden(2 * i, true);
+    view.setFlow(static_cast<QListView::Flow>(flow));
+    view.resize(130, 130);
+
+    for (int i = 0; i < 10; ++i) {
+        (view.flow() == QListView::TopToBottom
+            ? view.verticalScrollBar()
+            : view.horizontalScrollBar())->setValue(i);
+        QModelIndex index = view.indexAt(QPoint(0,0));
+        QVERIFY(index.isValid());
+        QCOMPARE(index.row(), 2 * i + 1);
+    }
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

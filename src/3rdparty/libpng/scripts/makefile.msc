@@ -1,6 +1,11 @@
 # makefile for libpng
 # Copyright (C) 1995 Guy Eric Schalnat, Group 42, Inc.
-# For conditions of distribution and use, see copyright notice in png.h
+# Copyright (C) 2006, 2009 Glenn Randers-Pehrson
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
+
 # Assumes that zlib.lib, zconf.h, and zlib.h have been copied to ..\zlib
 
 # -------- Microsoft C 5.1 and later, does not use assembler code --------
@@ -55,9 +60,6 @@ pngrio$(O): png.h pngconf.h
 pngwio$(O): png.h pngconf.h
 	$(CC) -c $(CFLAGS) $*.c $(ERRFILE)
 
-pngtest$(O): png.h pngconf.h
-	$(CC) -c $(CFLAGS) $*.c $(ERRFILE)
-
 pngtrans$(O): png.h pngconf.h
 	$(CC) -c $(CFLAGS) $*.c $(ERRFILE)
 
@@ -75,6 +77,9 @@ libpng.lib: $(OBJS1) $(OBJS2) $(OBJS3)
 	lib libpng $(OBJS1);
 	lib libpng $(OBJS2);
 	lib libpng $(OBJS3);
+
+pngtest$(O): png.h pngconf.h
+	$(CC) -c $(CFLAGS) $*.c $(ERRFILE)
 
 pngtest.exe: pngtest.obj libpng.lib
 	$(LD) $(LDFLAGS) pngtest.obj,,,libpng.lib ..\zlib\zlib.lib ;

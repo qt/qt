@@ -139,8 +139,7 @@ QScriptString &QScriptString::operator=(const QScriptString &other)
 */
 bool QScriptString::isValid() const
 {
-    Q_D(const QScriptString);
-    return (d && d->engine);
+    return QScriptStringPrivate::isValid(*this);
 }
 
 /*!

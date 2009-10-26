@@ -84,6 +84,7 @@ SOURCES += \
 	kernel/qgesturerecognizer.cpp \
 	kernel/qgesturemanager.cpp \
 	kernel/qsoftkeymanager.cpp \
+        kernel/qdesktopwidget.cpp \
 	kernel/qguiplatformplugin.cpp
 
 win32 {

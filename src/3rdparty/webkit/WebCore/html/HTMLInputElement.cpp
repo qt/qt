@@ -196,6 +196,98 @@ bool HTMLInputElement::patternMismatch() const
     return false;
 }
 
+bool HTMLInputElement::tooLong() const
+{
+    switch (inputType()) {
+    case EMAIL:
+    case PASSWORD:
+    case SEARCH:
+    case TELEPHONE:
+    case TEXT:
+    case URL: {
+        int max = maxLength();
+        if (max < 0)
+            return false;
+        // Return false for the default value even if it is longer than maxLength.
+        bool userEdited = !m_data.value().isNull();
+        if (!userEdited)
+            return false;
+        return value().length() > static_cast<unsigned>(max);
+    }
+    case BUTTON:
+    case CHECKBOX:
+    case COLOR:
+    case FILE:
+    case HIDDEN:
+    case IMAGE:
+    case ISINDEX:
+    case NUMBER:
+    case RADIO:
+    case RANGE:
+    case RESET:
+    case SUBMIT:
+        return false;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
+}
+
+bool HTMLInputElement::rangeUnderflow() const
+{
+    if (inputType() == NUMBER) {
+        double min = 0.0;
+        double doubleValue = 0.0;
+        if (formStringToDouble(getAttribute(minAttr), &min) && formStringToDouble(value(), &doubleValue))
+            return doubleValue < min;
+    } else if (inputType() == RANGE) {
+        double doubleValue;
+        if (formStringToDouble(value(), &doubleValue))
+            return doubleValue < rangeMinimum();
+    }
+    return false;
+}
+
+bool HTMLInputElement::rangeOverflow() const
+{
+    if (inputType() == NUMBER) {
+        double max = 0.0;
+        double doubleValue = 0.0;
+        if (formStringToDouble(getAttribute(maxAttr), &max) && formStringToDouble(value(), &doubleValue))
+            return doubleValue > max;
+    } else if (inputType() == RANGE) {
+        double doubleValue;
+        if (formStringToDouble(value(), &doubleValue))
+            return doubleValue > rangeMaximum();
+    }
+    return false;
+}
+
+double HTMLInputElement::rangeMinimum() const
+{
+    ASSERT(inputType() == RANGE);
+    // The range type's "default minimum" is 0.
+    double min = 0.0;
+    formStringToDouble(getAttribute(minAttr), &min);
+    return min;
+}
+
+double HTMLInputElement::rangeMaximum() const
+{
+    ASSERT(inputType() == RANGE);
+    // The range type's "default maximum" is 100.
+    static const double defaultMaximum = 100.0;
+    double max = defaultMaximum;
+    formStringToDouble(getAttribute(maxAttr), &max);
+    const double min = rangeMinimum();
+
+    if (max < min) {
+        // A remedy for the inconsistent min/max values.
+        // Sets the maxmimum to the default (100.0) or the minimum value.
+        max = min < defaultMaximum ? defaultMaximum : min;
+    }
+    return max;
+}
+
 static inline CheckedRadioButtons& checkedRadioButtons(const HTMLInputElement *element)
 {
     if (HTMLFormElement* form = element->form())
@@ -382,6 +474,7 @@ void HTMLInputElement::setInputType(const String& t)
         }
 
         InputElement::notifyFormStateChanged(this);
+        updateValidity();
     }
     m_haveType = true;
 
@@ -543,63 +636,6 @@ bool HTMLInputElement::canHaveSelection() const
     return isTextField();
 }
 
-int HTMLInputElement::selectionStart() const
-{
-    if (!isTextField())
-        return 0;
-    if (document()->focusedNode() != this && m_data.cachedSelectionStart() != -1)
-        return m_data.cachedSelectionStart();
-    if (!renderer())
-        return 0;
-    return toRenderTextControl(renderer())->selectionStart();
-}
-
-int HTMLInputElement::selectionEnd() const
-{
-    if (!isTextField())
-        return 0;
-    if (document()->focusedNode() != this && m_data.cachedSelectionEnd() != -1)
-        return m_data.cachedSelectionEnd();
-    if (!renderer())
-        return 0;
-    return toRenderTextControl(renderer())->selectionEnd();
-}
-
-static bool isTextFieldWithRenderer(HTMLInputElement* element)
-{
-    if (!element->isTextField())
-        return false;
-
-    element->document()->updateLayoutIgnorePendingStylesheets();
-    if (!element->renderer())
-        return false;
-
-    return true;
-}
-
-void HTMLInputElement::setSelectionStart(int start)
-{
-    if (isTextFieldWithRenderer(this))
-        toRenderTextControl(renderer())->setSelectionStart(start);
-}
-
-void HTMLInputElement::setSelectionEnd(int end)
-{
-    if (isTextFieldWithRenderer(this))
-        toRenderTextControl(renderer())->setSelectionEnd(end);
-}
-
-void HTMLInputElement::select()
-{
-    if (isTextFieldWithRenderer(this))
-        toRenderTextControl(renderer())->select();
-}
-
-void HTMLInputElement::setSelectionRange(int start, int end)
-{
-    InputElement::updateSelectionRange(this, this, start, end);
-}
-
 void HTMLInputElement::accessKeyAction(bool sendToAnyElement)
 {
     switch (inputType()) {
@@ -659,6 +695,7 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
         checkedRadioButtons(this).removeButton(this);
         m_data.setName(attr->value());
         checkedRadioButtons(this).addButton(this);
+        HTMLFormControlElementWithState::parseMappedAttribute(attr);
     } else if (attr->name() == autocompleteAttr) {
         if (equalIgnoringCase(attr->value(), "off")) {
             m_autocomplete = Off;
@@ -678,12 +715,14 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
         if (m_data.value().isNull())
             setNeedsStyleRecalc();
         setFormControlValueMatchesRenderer(false);
+        updateValidity();
     } else if (attr->name() == checkedAttr) {
         m_defaultChecked = !attr->isNull();
         if (m_useDefaultChecked) {
             setChecked(m_defaultChecked);
             m_useDefaultChecked = true;
         }
+        updateValidity();
     } else if (attr->name() == maxlengthAttr)
         InputElement::parseMaxLengthAttribute(m_data, this, this, attr);
     else if (attr->name() == sizeAttr)
@@ -715,14 +754,6 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
     } else if (attr->name() == heightAttr) {
         if (respectHeightAndWidthAttrs())
             addCSSLength(attr, CSSPropertyHeight, attr->value());
-    } else if (attr->name() == onfocusAttr) {
-        setAttributeEventListener(eventNames().focusEvent, createAttributeEventListener(this, attr));
-    } else if (attr->name() == onblurAttr) {
-        setAttributeEventListener(eventNames().blurEvent, createAttributeEventListener(this, attr));
-    } else if (attr->name() == onselectAttr) {
-        setAttributeEventListener(eventNames().selectEvent, createAttributeEventListener(this, attr));
-    } else if (attr->name() == onchangeAttr) {
-        setAttributeEventListener(eventNames().changeEvent, createAttributeEventListener(this, attr));
     }
     // Search field and slider attributes all just cause updateFromElement to be called through style
     // recalcing.
@@ -730,7 +761,7 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
         setAttributeEventListener(eventNames().searchEvent, createAttributeEventListener(this, attr));
     } else if (attr->name() == resultsAttr) {
         int oldResults = m_maxResults;
-        m_maxResults = !attr->isNull() ? min(attr->value().toInt(), maxSavedResults) : -1;
+        m_maxResults = !attr->isNull() ? std::min(attr->value().toInt(), maxSavedResults) : -1;
         // FIXME: Detaching just for maxResults change is not ideal.  We should figure out the right
         // time to relayout for this change.
         if (m_maxResults != oldResults && (m_maxResults <= 0 || oldResults <= 0) && attached()) {
@@ -738,8 +769,6 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
             attach();
         }
         setNeedsStyleRecalc();
-    } else if (attr->name() == placeholderAttr) {
-        updatePlaceholderVisibility(true);
     } else if (attr->name() == autosaveAttr ||
              attr->name() == incrementalAttr ||
              attr->name() == minAttr ||
@@ -747,13 +776,15 @@ void HTMLInputElement::parseMappedAttribute(MappedAttribute *attr)
              attr->name() == multipleAttr ||
              attr->name() == precisionAttr)
         setNeedsStyleRecalc();
+    else if (attr->name() == patternAttr)
+        updateValidity();
 #if ENABLE(DATALIST)
     else if (attr->name() == listAttr)
         m_hasNonEmptyList = !attr->isEmpty();
         // FIXME: we need to tell this change to a renderer if the attribute affects the appearance.
 #endif
     else
-        HTMLFormControlElementWithState::parseMappedAttribute(attr);
+        HTMLTextFormControlElement::parseMappedAttribute(attr);
 }
 
 bool HTMLInputElement::rendererIsNeeded(RenderStyle *style)
@@ -831,7 +862,7 @@ void HTMLInputElement::attach()
         if (!m_imageLoader)
             m_imageLoader.set(new HTMLImageLoader(this));
         m_imageLoader->updateFromElement();
-        if (renderer()) {
+        if (renderer() && m_imageLoader->haveFiredBeforeLoadEvent()) {
             RenderImage* imageObj = toRenderImage(renderer());
             imageObj->setCachedImage(m_imageLoader->image()); 
             
@@ -1127,6 +1158,7 @@ void HTMLInputElement::setValue(const String& value)
             cacheSelection(max, max);
     }
     InputElement::notifyFormStateChanged(this);
+    updateValidity();
 }
 
 String HTMLInputElement::placeholder() const
@@ -1150,6 +1182,7 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     ASSERT(inputType() != FILE);
     updatePlaceholderVisibility(false);
     InputElement::setValueFromRenderer(m_data, this, this, value);
+    updateValidity();
 }
 
 void HTMLInputElement::setFileListFromRenderer(const Vector<String>& paths)
@@ -1161,6 +1194,7 @@ void HTMLInputElement::setFileListFromRenderer(const Vector<String>& paths)
 
     setFormControlValueMatchesRenderer(true);
     InputElement::notifyFormStateChanged(this);
+    updateValidity();
 }
 
 bool HTMLInputElement::storesValueSeparateFromAttribute() const
@@ -1610,12 +1644,12 @@ int HTMLInputElement::maxLength() const
     return m_data.maxLength();
 }
 
-void HTMLInputElement::setMaxLength(int _maxLength, ExceptionCode& exceptionCode)
+void HTMLInputElement::setMaxLength(int maxLength, ExceptionCode& ec)
 {
-    if (_maxLength < 0)
-        exceptionCode = INDEX_SIZE_ERR;
+    if (maxLength < 0)
+        ec = INDEX_SIZE_ERR;
     else
-        setAttribute(maxlengthAttr, String::number(_maxLength));
+        setAttribute(maxlengthAttr, String::number(maxLength));
 }
 
 bool HTMLInputElement::multiple() const
@@ -1744,13 +1778,6 @@ void HTMLInputElement::onSearch()
     if (renderer())
         toRenderTextControlSingleLine(renderer())->stopSearchEventTimer();
     dispatchEvent(Event::create(eventNames().searchEvent, true, false));
-}
-
-VisibleSelection HTMLInputElement::selection() const
-{
-    if (!renderer() || !isTextField() || m_data.cachedSelectionStart() == -1 || m_data.cachedSelectionEnd() == -1)
-        return VisibleSelection();
-    return toRenderTextControl(renderer())->selection(m_data.cachedSelectionStart(), m_data.cachedSelectionEnd());
 }
 
 void HTMLInputElement::documentDidBecomeActive()

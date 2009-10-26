@@ -162,21 +162,6 @@ int pvrQwsSwapBuffers(PvrQwsDrawable *drawable, int repaintOnly);
 void pvrQwsSetSwapFunction
     (PvrQwsDrawable *drawable, PvrQwsSwapFunction func, void *userData);
 
-/* Get a memory identifier for the indicated drawable's buffer.
-   The identifier can be passed to another process and then
-   passed to pvrQwsMapMemory() to map the drawable's buffer into
-   the other process's address space.  Returns zero if the
-   memory identifier could not be determined.  This should only
-   be used for pixmap drawables */
-unsigned long pvrQwsGetMemoryId(PvrQwsDrawable *drawable);
-
-/* Map the memory buffer of a foreign application's drawable, as
-   indicated by "id" and "size".  Returns null if the map failed */
-void *pvrQwsMapMemory(unsigned long id, int size);
-
-/* Unmap the memory obtained from pvrQwsMapMemory() */
-void pvrQwsUnmapMemory(void *addr, int size);
-
 #ifdef __cplusplus
 };
 #endif

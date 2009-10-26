@@ -73,6 +73,10 @@
 #include <private/qcore_mac_p.h>
 #endif
 
+#if defined(Q_OS_SYMBIAN)
+#include <e32std.h>
+#endif
+
 QT_BEGIN_NAMESPACE
 
 enum {
@@ -1128,6 +1132,12 @@ QDate QDate::currentDate()
     memset(&st, 0, sizeof(SYSTEMTIME));
     GetLocalTime(&st);
     d.jd = julianDayFromDate(st.wYear, st.wMonth, st.wDay);
+#elif defined(Q_OS_SYMBIAN)
+    TTime localTime;
+    localTime.HomeTime();
+    TDateTime localDateTime = localTime.DateTime();
+    // months and days are zero indexed
+    d.jd = julianDayFromDate(localDateTime.Year(), localDateTime.Month() + 1, localDateTime.Day() + 1 );
 #else
     // posix compliant system
     time_t ltime;
@@ -1823,6 +1833,12 @@ QTime QTime::currentTime()
 #if defined(Q_OS_WINCE)
     ct.startTick = GetTickCount() % MSECS_PER_DAY;
 #endif
+#elif defined(Q_OS_SYMBIAN)
+    TTime localTime;
+    localTime.HomeTime();
+    TDateTime localDateTime = localTime.DateTime();
+    ct.mds = MSECS_PER_HOUR * localDateTime.Hour() + MSECS_PER_MIN * localDateTime.Minute()
+                 + 1000 * localDateTime.Second() + (localDateTime.MicroSecond() / 1000);
 #elif defined(Q_OS_UNIX)
     // posix compliant system
     struct timeval tv;
@@ -2874,6 +2890,8 @@ QDateTime QDateTime::currentDateTime()
     t.mds = MSECS_PER_HOUR * st.wHour + MSECS_PER_MIN * st.wMinute + 1000 * st.wSecond
             + st.wMilliseconds;
     return QDateTime(d, t);
+#elif defined(Q_OS_SYMBIAN)
+    return QDateTime(QDate::currentDate(), QTime::currentTime());
 #else
 #if defined(Q_OS_UNIX)
     // posix compliant system
@@ -3700,6 +3718,27 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     res.tm_mon = sysTime.wMonth - 1;
     res.tm_year = sysTime.wYear - 1900;
     brokenDown = &res;
+#elif defined(Q_OS_SYMBIAN)
+    // months and days are zero index based
+    _LIT(KUnixEpoch, "19700000:000000.000000");
+    TTimeIntervalSeconds utcOffset = User::UTCOffset();
+    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
+    TTime epochTTime;
+    TInt err = epochTTime.Set(KUnixEpoch);
+    if(err == KErrNone) {
+        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
+        utcTTime = utcTTime + utcOffset;
+        TDateTime utcDateTime = utcTTime.DateTime();
+        tm res;
+        res.tm_sec = utcDateTime.Second();
+        res.tm_min = utcDateTime.Minute();
+        res.tm_hour = utcDateTime.Hour();
+        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
+        res.tm_mon = utcDateTime.Month();
+        res.tm_year = utcDateTime.Year() - 1900;
+        res.tm_isdst = 0;
+        brokenDown = &res;
+    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of localtime() where available
     tzset();
@@ -3745,7 +3784,7 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     localTM.tm_mon = fakeDate.month() - 1;
     localTM.tm_year = fakeDate.year() - 1900;
     localTM.tm_isdst = (int)isdst;
-#if defined(Q_OS_WINCE)
+#if defined(Q_OS_WINCE) || defined(Q_OS_SYMBIAN)
     time_t secsSince1Jan1970UTC = toTime_tHelper(fakeDate, time);
 #else
 #if defined(Q_OS_WIN)
@@ -3770,6 +3809,27 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     res.tm_year = sysTime.wYear - 1900;
     res.tm_isdst = (int)isdst;
     brokenDown = &res;
+#elif defined(Q_OS_SYMBIAN)
+    // months and days are zero index based
+    _LIT(KUnixEpoch, "19700000:000000.000000");
+    TTimeIntervalSeconds utcOffset = TTimeIntervalSeconds(0 - User::UTCOffset().Int());
+    TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
+    TTime epochTTime;
+    TInt err = epochTTime.Set(KUnixEpoch);
+    if(err == KErrNone) {
+        TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
+        utcTTime = utcTTime + utcOffset;
+        TDateTime utcDateTime = utcTTime.DateTime();
+        tm res;
+        res.tm_sec = utcDateTime.Second();
+        res.tm_min = utcDateTime.Minute();
+        res.tm_hour = utcDateTime.Hour();
+        res.tm_mday = utcDateTime.Day() + 1; // non-zero based index for tm struct
+        res.tm_mon = utcDateTime.Month();
+        res.tm_year = utcDateTime.Year() - 1900;
+        res.tm_isdst = (int)isdst;
+        brokenDown = &res;
+    }
 #elif !defined(QT_NO_THREAD) && defined(_POSIX_THREAD_SAFE_FUNCTIONS)
     // use the reentrant version of gmtime() where available
     tm res;

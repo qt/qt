@@ -290,6 +290,9 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_slotError(QAbstractSocket::SocketError))
     Q_PRIVATE_SLOT(d_func(), void _q_slotClosed())
     Q_PRIVATE_SLOT(d_func(), void _q_slotBytesWritten(qint64 numBytes))
+#ifndef QT_NO_OPENSSL
+    Q_PRIVATE_SLOT(d_func(), void _q_slotEncryptedBytesWritten(qint64 numBytes))
+#endif
     Q_PRIVATE_SLOT(d_func(), void _q_slotDoFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_slotSendRequest())
     Q_PRIVATE_SLOT(d_func(), void _q_continuePost())

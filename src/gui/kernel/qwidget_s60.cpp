@@ -550,8 +550,13 @@ void QWidgetPrivate::raise_sys()
     Q_Q(QWidget);
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    if (q->internalWinId())
+    if (q->internalWinId()) {
         q->internalWinId()->DrawableWindow()->SetOrdinalPosition(0);
+
+        // If toplevel widget, raise app to foreground
+        if (q->isWindow())
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), 0);
+    }
 }
 
 void QWidgetPrivate::lower_sys()

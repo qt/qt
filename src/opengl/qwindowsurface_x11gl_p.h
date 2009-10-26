@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtOpenGL module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,37 +38,44 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-// This file contains benchmarks for QNetworkReply functions.
 
-#include <QDebug>
-#include <qtest.h>
-#include <QtTest/QtTest>
-#include <QtNetwork/qnetworkreply.h>
-#include <QtNetwork/qnetworkrequest.h>
-#include <QtNetwork/qnetworkaccessmanager.h>
-#include "../../auto/network-settings.h"
+#ifndef QWINDOWSURFACE_X11GL_P_H
+#define QWINDOWSURFACE_X11GL_P_H
 
-class tst_qnetworkreply : public QObject
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
+
+#include <private/qwindowsurface_p.h>
+
+QT_BEGIN_NAMESPACE
+
+class QX11GLWindowSurface : public QWindowSurface
 {
-    Q_OBJECT
-private slots:
-    void httpLatency();
+public:
+    QX11GLWindowSurface(QWidget* window);
+    virtual ~QX11GLWindowSurface();
 
+    // Inherreted from QWindowSurface
+    QPaintDevice *paintDevice();
+    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
+    void setGeometry(const QRect &rect);
+    bool scroll(const QRegion &area, int dx, int dy);
+
+private:
+    GC      m_GC;
+    QPixmap m_backBuffer;
+    QWidget *m_window;
 };
 
-void tst_qnetworkreply::httpLatency()
-{
-    QNetworkAccessManager manager;
-    QBENCHMARK{
-        QNetworkRequest request(QUrl("http://" + QtNetworkSettings::serverName() + "/qtest/"));
-        QNetworkReply* reply = manager.get(request);
-        connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()), Qt::QueuedConnection);
-        QTestEventLoop::instance().enterLoop(5);
-        QVERIFY(!QTestEventLoop::instance().timeout());
-        delete reply;
-    }
-}
 
-QTEST_MAIN(tst_qnetworkreply)
+QT_END_NAMESPACE
 
-#include "main.moc"
+#endif // QWINDOWSURFACE_X11GL_P_H

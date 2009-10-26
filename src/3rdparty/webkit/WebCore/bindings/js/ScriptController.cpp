@@ -48,6 +48,7 @@ ScriptController::ScriptController(Frame* frame)
     : m_frame(frame)
     , m_handlerLineNumber(0)
     , m_sourceURL(0)
+    , m_inExecuteScript(false)
     , m_processingTimerCallback(false)
     , m_paused(false)
     , m_allowPopupsFromPlugin(false)
@@ -84,7 +85,7 @@ ScriptValue ScriptController::evaluate(const ScriptSourceCode& sourceCode)
 {
     const SourceCode& jsSourceCode = sourceCode.jsSourceCode();
     String sourceURL = jsSourceCode.provider()->url();
-    
+
     if (!m_XSSAuditor->canEvaluate(sourceCode.source())) {
         // This script is not safe to be evaluated.
         return JSValue();
@@ -185,6 +186,9 @@ bool ScriptController::processingUserGestureEvent() const
         return false;
 
     if (Event* event = m_windowShell->window()->currentEvent()) {
+        if (event->createdByDOM())
+            return false;
+
         const AtomicString& type = event->type();
         if ( // mouse events
             type == eventNames().clickEvent || type == eventNames().mousedownEvent ||
