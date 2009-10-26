@@ -207,6 +207,10 @@ private:
     QMatrix4x4(int) { flagBits = General; }
 
     QMatrix4x4 orthonormalInverse() const;
+
+    QMatrix4x4& projectedRotate(qreal angle, qreal x, qreal y, qreal z);
+
+    friend class QGraphicsRotation;
 };
 
 inline QMatrix4x4::QMatrix4x4
