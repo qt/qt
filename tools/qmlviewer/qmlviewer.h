@@ -63,7 +63,7 @@ public:
 
 public slots:
     void sceneResized(QSize size);
-    void openQml(const QString& fileName);
+    void openQml(const QUrl&);
     void open();
     void reload();
     void takeSnapShot();
@@ -93,7 +93,6 @@ private:
     void setupProxy();
     QString getVideoFileName();
 
-    QString currentFileName;
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QmlView *canvas;
