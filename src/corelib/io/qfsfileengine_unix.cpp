@@ -1264,7 +1264,7 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
 
     size_t realSize = (size_t)size + extra;
     QT_OFF_T realOffset = QT_OFF_T(offset);
-    realOffset &= ~(QT_OFF_T(pageSize));
+    realOffset &= ~(QT_OFF_T(pageSize - 1));
 
 #ifdef Q_OS_SYMBIAN
     void *mapAddress;
