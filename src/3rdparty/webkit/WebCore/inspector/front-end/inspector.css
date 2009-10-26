@@ -211,7 +211,7 @@ body.attached #search-results-matches {
     background-image: url(Images/profilesIcon.png);
 }
 
-#close-button {
+#close-button-left, #close-button-right {
     width: 14px;
     height: 14px;
     background-image: url(Images/closeButtons.png);
@@ -221,19 +221,27 @@ body.attached #search-results-matches {
     margin: 5px 0;
 }
 
-#close-button:hover {
+#close-button-left:hover, #close-button-right:hover {
     background-position: 14px 0;
 }
 
-#close-button:active {
+#close-button-left:active, #close-button-right:active {
     background-position: 28px 0;
 }
 
-body.detached .toolbar-item.close {
+body.detached .toolbar-item.close-left, body.detached .toolbar-item.close-right {
     display: none;
 }
 
-body.attached.platform-qt .toolbar-item.close {
+body.attached.platform-qt .toolbar-item.close-left, body.attached.platform-qt .toolbar-item.close-right {
+    display: none;
+}
+
+body.platform-mac-tiger .toolbar-item.close-right, body.platform-mac-leopard .toolbar-item.close-right { 
+    display: none;
+}
+
+body:not(.platform-mac-tiger):not(.platform-mac-leopard) .toolbar-item.close-left { 
     display: none;
 }
 
@@ -816,11 +824,6 @@ body.drawer-visible #drawer {
 .resource-view.headers-visible .source-view-frame {
     height: auto;
     vertical-align: top;
-}
-
-.invisible {
-    color: inherit;
-    text-decoration: none;
 }
 
 .webkit-line-gutter-backdrop {
@@ -1635,6 +1638,10 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 
 .pane > .title > select:active {
     background-position: -46px 0px;
+}
+
+.pane > .title > select > option, .pane > .title > select > hr {
+    color: black;
 }
 
 .pane > .body {
@@ -2512,6 +2519,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     -webkit-background-size: 1px 6px;
     -webkit-background-origin: padding;
     -webkit-background-clip: padding;
+    z-index: 400;
 }
 
 .summary-graph-legend {
@@ -2558,6 +2566,16 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     z-index: -100;
 }
 
+#resources-event-dividers {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 100%;
+    top: 0;
+    z-index: 300;
+    pointer-events: none;
+}
+
 #resources-dividers-label-bar {
     position: absolute;
     top: 93px;
@@ -2576,6 +2594,32 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     top: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.1);
+}
+
+.resources-event-divider-padding {
+    position: absolute;
+    width: 8px;
+    top: 0;
+    bottom: 0;
+    pointer-events: auto;
+}
+
+.resources-onload-divider {
+    position: absolute;
+    width: 2px;
+    top: 0;
+    bottom: 0;
+    z-index: 300;
+    background-color: rgba(255, 0, 0, 0.5);
+}
+
+.resources-ondomcontent-divider {
+    position: absolute;
+    width: 2px;
+    top: 0;
+    bottom: 0;
+    z-index: 300;
+    background-color: rgba(0, 0, 255, 0.5);
 }
 
 .resources-divider.last {
@@ -3403,4 +3447,8 @@ ol.breakpoint-list {
 
 .breakpoint-list a:hover {
     color: rgb(15%, 15%, 15%);
+}
+
+.webkit-html-js-node, .webkit-html-css-node {
+    white-space: pre;
 }

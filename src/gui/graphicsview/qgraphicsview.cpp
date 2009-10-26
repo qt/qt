@@ -2701,6 +2701,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
         return true;
     }
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+    {
+        if (!isEnabled())
+            return false;
+
+        if (d->scene && d->sceneInteractionAllowed) {
+            QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(event);
+            gestureEvent->setWidget(viewport());
+            (void) QApplication::sendEvent(d->scene, gestureEvent);
+        }
+        return true;
+    }
     default:
         break;
     }

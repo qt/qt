@@ -29,7 +29,6 @@
  */
 
 var Preferences = {
-    ignoreWhitespace: true,
     showUserAgentStyles: true,
     maxInlineTextChildLength: 80,
     minConsoleHeight: 75,
@@ -43,7 +42,8 @@ var Preferences = {
     samplingCPUProfiler: false,
     showColorNicknames: true,
     colorFormat: "hex",
-    eventListenersFilter: "all"
+    eventListenersFilter: "all",
+    resourcesLargeRows: true
 }
 
 var WebInspector = {
@@ -139,10 +139,27 @@ var WebInspector = {
             this.panels.resources = new WebInspector.ResourcesPanel();
         if (hiddenPanels.indexOf("scripts") === -1)
             this.panels.scripts = new WebInspector.ScriptsPanel();
-        if (hiddenPanels.indexOf("profiles") === -1)
+        if (hiddenPanels.indexOf("profiles") === -1) {
             this.panels.profiles = new WebInspector.ProfilesPanel();
+            this.panels.profiles.registerProfileType(new WebInspector.CPUProfileType());
+        }
         if (hiddenPanels.indexOf("storage") === -1 && hiddenPanels.indexOf("databases") === -1)
             this.panels.storage = new WebInspector.StoragePanel();      
+    },
+
+    _loadPreferences: function()
+    {
+        var colorFormat = InspectorController.setting("color-format");
+        if (colorFormat)
+            Preferences.colorFormat = colorFormat;
+
+        var eventListenersFilter = InspectorController.setting("event-listeners-filter");
+        if (eventListenersFilter)
+            Preferences.eventListenersFilter = eventListenersFilter;
+
+        var resourcesLargeRows = InspectorController.setting("resources-large-rows");
+        if (typeof resourcesLargeRows !== "undefined")
+            Preferences.resourcesLargeRows = resourcesLargeRows;
     },
 
     get attached()
@@ -351,13 +368,7 @@ WebInspector.loaded = function()
     var platform = InspectorController.platform();
     document.body.addStyleClass("platform-" + platform);
 
-    var colorFormat = InspectorController.setting("color-format");
-    if (colorFormat)
-        Preferences.colorFormat = colorFormat;
-
-    var eventListenersFilter = InspectorController.setting("event-listeners-filter");
-    if (eventListenersFilter)
-        Preferences.eventListenersFilter = eventListenersFilter;
+    this._loadPreferences();
 
     this.drawer = new WebInspector.Drawer();
     this.console = new WebInspector.ConsoleView(this.drawer);
@@ -449,8 +460,9 @@ WebInspector.loaded = function()
     searchField.addEventListener("keyup", this.searchKeyUp.bind(this), false);
     searchField.addEventListener("search", this.performSearch.bind(this), false); // when the search is emptied
 
-    document.getElementById("toolbar").addEventListener("mousedown", this.toolbarDragStart, true);
-    document.getElementById("close-button").addEventListener("click", this.close, true);
+    toolbarElement.addEventListener("mousedown", this.toolbarDragStart, true);
+    document.getElementById("close-button-left").addEventListener("click", this.close, true);
+    document.getElementById("close-button-right").addEventListener("click", this.close, true);
 
     InspectorController.loaded();
 }
@@ -476,7 +488,14 @@ window.addEventListener("load", windowLoaded, false);
 WebInspector.dispatch = function() {
     var methodName = arguments[0];
     var parameters = Array.prototype.slice.call(arguments, 1);
-    WebInspector[methodName].apply(this, parameters);
+
+    // We'd like to enforce asynchronous interaction between the inspector controller and the frontend.
+    // This is important to LayoutTests.
+    function delayDispatch()
+    {
+        WebInspector[methodName].apply(WebInspector, parameters);
+    }
+    setTimeout(delayDispatch, 0);
 }
 
 WebInspector.windowUnload = function(event)
@@ -537,10 +556,9 @@ WebInspector.documentClick = function(event)
 
             WebInspector.showResourceForURL(anchor.href, anchor.lineNumber, anchor.preferredPanel);
         } else {
-            var profileStringRegEx = new RegExp("webkit-profile://.+/([0-9]+)");
-            var profileString = profileStringRegEx.exec(anchor.href);
+            var profileString = WebInspector.ProfileType.URLRegExp.exec(anchor.href);
             if (profileString)
-                WebInspector.showProfileById(profileString[1])
+                WebInspector.showProfileForURL(anchor.href);
         }
     }
 
@@ -989,6 +1007,21 @@ WebInspector.updateResource = function(identifier, payload)
             resource.responseReceivedTime = payload.responseReceivedTime;
         if (payload.endTime)
             resource.endTime = payload.endTime;
+        
+        if (payload.loadEventTime) {
+            // This loadEventTime is for the main resource, and we want to show it
+            // for all resources on this page. This means we want to set it as a member
+            // of the resources panel instead of the individual resource.
+            if (this.panels.resources)
+                this.panels.resources.mainResourceLoadTime = payload.loadEventTime;
+        }
+        
+        if (payload.domContentEventTime) {
+            // This domContentEventTime is for the main resource, so it should go in
+            // the resources panel for the same reasons as above.
+            if (this.panels.resources)
+                this.panels.resources.mainResourceDOMContentTime = payload.domContentEventTime;
+        }
     }
 }
 
@@ -1009,11 +1042,17 @@ WebInspector.removeResource = function(identifier)
 WebInspector.addDatabase = function(payload)
 {
     var database = new WebInspector.Database(
-        payload.database,
+        payload.id,
         payload.domain,
         payload.name,
         payload.version);
     this.panels.storage.addDatabase(database);
+}
+
+WebInspector.addCookieDomain = function(domain)
+{
+    if (this.panels.storage)
+        this.panels.storage.addCookieDomain(domain);
 }
 
 WebInspector.addDOMStorage = function(payload)
@@ -1224,14 +1263,15 @@ WebInspector.log = function(message)
     logMessage(message);
 }
 
-WebInspector.addProfile = function(profile)
+WebInspector.addProfileHeader = function(profile)
 {
-    this.panels.profiles.addProfile(profile);
+    this.panels.profiles.addProfileHeader(WebInspector.CPUProfileType.TypeId, new WebInspector.CPUProfile(profile));
 }
 
 WebInspector.setRecordingProfile = function(isProfiling)
 {
-    this.panels.profiles.setRecordingProfile(isProfiling);
+    this.panels.profiles.getProfileType(WebInspector.CPUProfileType.TypeId).setRecordingProfile(isProfiling);
+    this.panels.profiles.updateProfileTypeButtons();
 }
 
 WebInspector.drawLoadingPieChart = function(canvas, percent) {
@@ -1337,13 +1377,9 @@ WebInspector.linkifyStringAsFragment = function(string)
         var nonLink = string.substring(0, linkIndex);
         container.appendChild(document.createTextNode(nonLink));
 
-        var profileStringRegEx = new RegExp("webkit-profile://(.+)/[0-9]+");
-        var profileStringMatches = profileStringRegEx.exec(title);
-        var profileTitle;
+        var profileStringMatches = WebInspector.ProfileType.URLRegExp.exec(title);
         if (profileStringMatches)
-            profileTitle = profileStringMatches[1];
-        if (profileTitle)
-            title = WebInspector.panels.profiles.displayTitleForProfileLink(profileTitle);
+            title = WebInspector.panels.profiles.displayTitleForProfileLink(profileStringMatches[2], profileStringMatches[1]);
 
         var realURL = (linkString.indexOf("www.") === 0 ? "http://" + linkString : linkString);
         container.appendChild(WebInspector.linkifyURLAsNode(realURL, title, null, (realURL in WebInspector.resourceURLMap)));
@@ -1356,9 +1392,9 @@ WebInspector.linkifyStringAsFragment = function(string)
     return container;
 }
 
-WebInspector.showProfileById = function(uid) {
+WebInspector.showProfileForURL = function(url) {
     WebInspector.showProfilesPanel();
-    WebInspector.panels.profiles.showProfileById(uid);
+    WebInspector.panels.profiles.showProfileForURL(url);
 }
 
 WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal)

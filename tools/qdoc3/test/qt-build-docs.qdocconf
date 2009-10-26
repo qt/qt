@@ -8,7 +8,7 @@ project                 = Qt
 description             = Qt Reference Documentation
 url                     = http://qt.nokia.com/doc/4.7
 
-edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtSql \
+edition.Desktop.modules = QtCore QtDBus QtGui QtNetwork QtOpenGL QtScript QtScriptTools QtSql \
                           QtSvg QtWebKit QtXml QtXmlPatterns Qt3Support QtHelp \
                           QtDesigner QAxContainer Phonon QAxServer QtUiTools \
                           QtTest QtDBus

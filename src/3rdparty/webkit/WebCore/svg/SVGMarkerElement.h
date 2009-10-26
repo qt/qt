@@ -58,6 +58,8 @@ namespace WebCore {
         SVGMarkerElement(const QualifiedName&, Document*);
         virtual ~SVGMarkerElement();
 
+        TransformationMatrix viewBoxToViewTransform(float viewWidth, float viewHeight) const;
+
         void setOrientToAuto();
         void setOrientToAngle(PassRefPtr<SVGAngle>);
 
@@ -68,9 +70,6 @@ namespace WebCore {
         virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
         virtual SVGResource* canvasResource();
 
-    protected:
-        virtual const SVGElement* contextElement() const { return this; }
-
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGNames::markerTagString, SVGNames::refXAttrString, SVGLength, RefX, refX)
         ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGNames::markerTagString, SVGNames::refYAttrString, SVGLength, RefY, refY)
@@ -80,6 +79,15 @@ namespace WebCore {
         ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGNames::markerTagString, SVGOrientTypeAttrIdentifier, int, OrientType, orientType)
         ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGNames::markerTagString, SVGOrientAngleAttrIdentifier, SVGAngle, OrientAngle, orientAngle)
 
+        // SVGExternalResourcesRequired
+        ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
+
+        // SVGFitToViewBox
+        ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGFitToViewBoxIdentifier, SVGNames::viewBoxAttrString, FloatRect, ViewBox, viewBox)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGMarkerElement, SVGFitToViewBoxIdentifier, SVGNames::preserveAspectRatioAttrString, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
+ 
         RefPtr<SVGResourceMarker> m_marker;
     };
 

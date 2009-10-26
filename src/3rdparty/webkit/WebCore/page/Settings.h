@@ -128,6 +128,9 @@ namespace WebCore {
         void setSessionStorageEnabled(bool);
         bool sessionStorageEnabled() const { return m_sessionStorageEnabled; }
 
+        void setLocalStorageQuota(unsigned);
+        unsigned localStorageQuota() const { return m_localStorageQuota; }
+
         void setPrivateBrowsingEnabled(bool);
         bool privateBrowsingEnabled() const { return m_privateBrowsingEnabled; }
 
@@ -261,21 +264,17 @@ namespace WebCore {
         static bool shouldUseHighResolutionTimers() { return gShouldUseHighResolutionTimers; }
 #endif
 
-        void setPluginHalterEnabled(bool);
-        bool pluginHalterEnabled() const { return m_pluginHalterEnabled; }
-
         void setPluginAllowedRunTime(unsigned);
         unsigned pluginAllowedRunTime() const { return m_pluginAllowedRunTime; }
 
-        // This run-time flag is only temporary while the WebGL
-        // specification is being developed.
-        void setExperimentalWebGLEnabled(bool);
-        bool experimentalWebGLEnabled() const { return m_experimentalWebGLEnabled; }
+        void setWebGLEnabled(bool);
+        bool webGLEnabled() const { return m_webGLEnabled; }
 
-#if ENABLE(WEB_SOCKETS)
-        void setExperimentalWebSocketsEnabled(bool);
-        bool experimentalWebSocketsEnabled() const { return m_experimentalWebSocketsEnabled; }
-#endif
+        void setPrintingMinimumShrinkFactor(float);
+        float printingMinimumShrinkFactor() const { return m_printingMinimumShrinkFactor; }
+
+        void setPrintingMaximumShrinkFactor(float);
+        float printingMaximumShrinkFactor() const { return m_printingMaximumShrinkFactor; }
 
     private:
         Page* m_page;
@@ -297,7 +296,10 @@ namespace WebCore {
         int m_defaultFontSize;
         int m_defaultFixedFontSize;
         size_t m_maximumDecodedImageSize;
+        unsigned m_localStorageQuota;
         unsigned m_pluginAllowedRunTime;
+        float m_printingMinimumShrinkFactor;
+        float m_printingMaximumShrinkFactor;
         bool m_isJavaEnabled : 1;
         bool m_loadsImagesAutomatically : 1;
         bool m_privateBrowsingEnabled : 1;
@@ -343,12 +345,7 @@ namespace WebCore {
         bool m_xssAuditorEnabled : 1;
         bool m_acceleratedCompositingEnabled : 1;
         bool m_experimentalNotificationsEnabled : 1;
-        bool m_pluginHalterEnabled : 1;
-        bool m_experimentalWebGLEnabled : 1;
-
-#if ENABLE(WEB_SOCKETS)
-        bool m_experimentalWebSocketsEnabled : 1;
-#endif
+        bool m_webGLEnabled : 1;
 
 #if USE(SAFARI_THEME)
         static bool gShouldPaintNativeControls;

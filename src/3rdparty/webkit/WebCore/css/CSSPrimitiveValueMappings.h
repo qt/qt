@@ -36,6 +36,7 @@
 #include "RenderStyleConstants.h"
 #include "SVGRenderStyleDefs.h"
 #include "TextDirection.h"
+#include "TextRenderingMode.h"
 #include "ThemeTypes.h"
 
 namespace WebCore {
@@ -199,6 +200,11 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case ListboxPart:
             m_value.ident = CSSValueListbox;
             break;
+#if ENABLE(DATALIST)
+        case ListButtonPart:
+            m_value.ident = CSSValueListButton;
+            break;
+#endif
         case ListItemPart:
             m_value.ident = CSSValueListitem;
             break;
@@ -1838,6 +1844,42 @@ template<> inline CSSPrimitiveValue::operator FontSmoothingMode() const
     return AutoSmoothing;
 }
 
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(TextRenderingMode e)
+    : m_type(CSS_IDENT)
+{
+    switch (e) {
+        case AutoTextRendering:
+            m_value.ident = CSSValueAuto;
+            break;
+        case OptimizeSpeed:
+            m_value.ident = CSSValueOptimizespeed;
+            break;
+        case OptimizeLegibility:
+            m_value.ident = CSSValueOptimizelegibility;
+            break;
+        case GeometricPrecision:
+            m_value.ident = CSSValueGeometricprecision;
+            break;
+    }
+}
+
+template<> inline CSSPrimitiveValue::operator TextRenderingMode() const
+{
+    switch (m_value.ident) {
+        case CSSValueAuto:
+            return AutoTextRendering;
+        case CSSValueOptimizespeed:
+            return OptimizeSpeed;
+        case CSSValueOptimizelegibility:
+            return OptimizeLegibility;
+        case CSSValueGeometricprecision:
+            return GeometricPrecision;
+        default:
+            ASSERT_NOT_REACHED();
+            return AutoTextRendering;
+    }
+}
+
 #if ENABLE(SVG)
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineCap e)
@@ -2238,42 +2280,6 @@ template<> inline CSSPrimitiveValue::operator ETextAnchor() const
         default:
             ASSERT_NOT_REACHED();
             return TA_START;
-    }
-}
-
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ETextRendering e)
-    : m_type(CSS_IDENT)
-{
-    switch (e) {
-        case TR_AUTO:
-            m_value.ident = CSSValueAuto;
-            break;
-        case TR_OPTIMIZESPEED:
-            m_value.ident = CSSValueOptimizespeed;
-            break;
-        case TR_OPTIMIZELEGIBILITY:
-            m_value.ident = CSSValueOptimizelegibility;
-            break;
-        case TR_GEOMETRICPRECISION:
-            m_value.ident = CSSValueGeometricprecision;
-            break;
-    }
-}
-
-template<> inline CSSPrimitiveValue::operator ETextRendering() const
-{
-    switch (m_value.ident) {
-        case CSSValueAuto:
-            return TR_AUTO;
-        case CSSValueOptimizespeed:
-            return TR_OPTIMIZESPEED;
-        case CSSValueOptimizelegibility:
-            return TR_OPTIMIZELEGIBILITY;
-        case CSSValueGeometricprecision:
-            return TR_GEOMETRICPRECISION;
-        default:
-            ASSERT_NOT_REACHED();
-            return TR_AUTO;
     }
 }
 

@@ -44,12 +44,14 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     virtual JSC::CallType getCallData(JSC::CallData&);
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 private:
     static bool canGetItemsForName(JSC::ExecState*, HTMLAppletElement*, const JSC::Identifier&);
     static JSC::JSValue nameGetter(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -62,7 +64,13 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+    }
     JSHTMLAppletElementPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 // Attributes

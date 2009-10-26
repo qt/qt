@@ -547,7 +547,7 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
         return;
 
     matrix->translate(d->origin);
-    matrix->rotate(d->angle, d->axis.x(), d->axis.y(), d->axis.z());
+    matrix->projectedRotate(d->angle, d->axis.x(), d->axis.y(), d->axis.z());
     matrix->translate(-d->origin);
 }
 

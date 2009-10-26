@@ -27,6 +27,7 @@
 #define CanvasUnsignedByteArray_h
 
 #include "CanvasArray.h"
+#include <limits>
 #include <wtf/MathExtras.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
@@ -35,6 +36,8 @@ namespace WebCore {
     
     class CanvasUnsignedByteArray : public CanvasArray {
     public:
+        virtual bool isUnsignedByteArray() const { return true; }
+
         static PassRefPtr<CanvasUnsignedByteArray> create(unsigned length);
         static PassRefPtr<CanvasUnsignedByteArray> create(unsigned char* array, unsigned length);
         static PassRefPtr<CanvasUnsignedByteArray> create(PassRefPtr<CanvasArrayBuffer> buffer, int offset, unsigned length);

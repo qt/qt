@@ -320,7 +320,7 @@ void PluginDatabase::clear()
     m_preferredPlugins.clear();
 }
 
-#if !PLATFORM(WIN_OS) || PLATFORM(WX)
+#if (!PLATFORM(SYMBIAN)) && (!PLATFORM(WIN_OS) || PLATFORM(WX))
 // For Safari/Win the following three methods are implemented
 // in PluginDatabaseWin.cpp, but if we can use WebCore constructs
 // for the logic we should perhaps move it here under XP_WIN?
@@ -355,6 +355,8 @@ Vector<String> PluginDatabase::defaultPluginDirectories()
     paths.append("/usr/lib/netscape/plugins-libc6");
     paths.append("/usr/lib64/netscape/plugins");
     paths.append("/usr/lib64/mozilla/plugins");
+    paths.append("/usr/lib/nsbrowser/plugins");
+    paths.append("/usr/lib64/nsbrowser/plugins");
 
     String mozHome(getenv("MOZILLA_HOME"));
     mozHome.append("/plugins");
@@ -426,6 +428,6 @@ void PluginDatabase::getPluginPathsInDirectories(HashSet<String>& paths) const
     }
 }
 
-#endif // !PLATFORM(WIN_OS)
+#endif // !PLATFORM(SYMBIAN) && !PLATFORM(WIN_OS)
 
 }

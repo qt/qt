@@ -112,14 +112,6 @@ namespace JSC {
         Structure* m_structure;
     };
 
-    // FIXME: We should deprecate this and just use JSValue::asCell() instead.
-    JSCell* asCell(JSValue);
-
-    inline JSCell* asCell(JSValue value)
-    {
-        return value.asCell();
-    }
-
     inline JSCell::JSCell(Structure* structure)
         : m_structure(structure)
     {
@@ -162,11 +154,7 @@ namespace JSC {
 
     inline void* JSCell::operator new(size_t size, JSGlobalData* globalData)
     {
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-        return globalData->heap.inlineAllocate(size);
-#else
         return globalData->heap.allocate(size);
-#endif
     }
 
     // --- JSValue inlines ----------------------------
@@ -340,11 +328,6 @@ namespace JSC {
         ASSERT(value);
         if (value.isCell())
             append(value.asCell());
-    }
-
-    inline void Structure::markAggregate(MarkStack& markStack)
-    {
-        markStack.append(m_prototype);
     }
 
     inline Heap* Heap::heap(JSValue v)

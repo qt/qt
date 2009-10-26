@@ -2632,7 +2632,7 @@ QFontCache::~QFontCache()
     while (it != end) {
         if (--it.value().data->cache_count == 0) {
             if (it.value().data->ref == 0) {
-                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %d %d %d %d)",
+                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %g %d %d %d)",
                          it.value().data, it.key().script, it.key().def.pointSize,
                          it.key().def.pixelSize, it.key().def.weight, it.key().def.style,
                          it.key().def.fixedPitch);
