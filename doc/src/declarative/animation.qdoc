@@ -41,7 +41,6 @@
 
 /*!
 \page qmlanimation.html
-\target qmlanimation
 \title QML Animation
 
 Animation in QML is done by animating properties of objects. Properties of type

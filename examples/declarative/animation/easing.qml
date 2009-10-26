@@ -92,7 +92,7 @@ Rectangle {
         anchors.fill: parent; viewportHeight: layout.height
         Column {
             id: layout
-            anchors.left: window.left; anchors.right: window.right
+            anchors.left: parent.left; anchors.right: parent.right
             Repeater { model: easingTypes; delegate: delegate }
         }
     }

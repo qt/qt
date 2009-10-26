@@ -45,13 +45,21 @@
 QT_BEGIN_NAMESPACE
 
 QmlTypeNameCache::QmlTypeNameCache(QmlEngine *e)
-: engine(e)
+: QmlCleanup(e), engine(e)
 {
 }
 
 QmlTypeNameCache::~QmlTypeNameCache()
 {
+    clear();
+}
+
+void QmlTypeNameCache::clear()
+{
     qDeleteAll(stringCache);
+    stringCache.clear();
+    identifierCache.clear();
+    engine = 0;
 }
 
 void QmlTypeNameCache::add(const QString &name, QmlType *type)

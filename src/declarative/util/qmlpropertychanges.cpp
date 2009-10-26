@@ -93,7 +93,7 @@ public:
     QmlMetaProperty property;
     QmlExpression *expression;
     QmlExpression *reverseExpression;
-    QmlExpression *ownedExpression;
+    QGuard<QmlExpression> ownedExpression;
 
     virtual void execute() {
         ownedExpression = property.setSignalExpression(expression);
@@ -272,7 +272,6 @@ QmlPropertyChanges::~QmlPropertyChanges()
         delete d->expressions.at(ii).second;
     for(int ii = 0; ii < d->signalReplacements.count(); ++ii)
         delete d->signalReplacements.at(ii);
-
 }
 
 QObject *QmlPropertyChanges::object() const

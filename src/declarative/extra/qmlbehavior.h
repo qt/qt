@@ -60,6 +60,7 @@ class Q_DECLARATIVE_EXPORT QmlBehavior : public QObject, public QmlPropertyValue
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlBehavior)
 
+    Q_INTERFACES(QmlPropertyValueInterceptor)
     Q_CLASSINFO("DefaultProperty", "animation")
     Q_PROPERTY(QmlAbstractAnimation *animation READ animation WRITE setAnimation)
 

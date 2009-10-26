@@ -79,15 +79,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 #include "qfxeffects.cpp"
 
 /*!
-    \qmlclass Transform
-    \brief A transformation.
-*/
-
-/*!
     \qmlclass Scale
-    \brief A Scale object provides a way to scale an Item.
+    \brief The Scale object provides a way to scale an Item.
 
-    The scale object gives more control over scaling than using Item's scale property. Specifically,
+    The Scale object gives more control over scaling than using Item's scale property. Specifically,
     it allows a different scale for the x and y axes, and allows the scale to be relative to an
     arbitrary point.
 
@@ -105,13 +100,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Scale::origin.x
     \qmlproperty real Scale::origin.y
 
-    The origin point for the scale. The scale will be relative to this point.
+    The point that the item is scaled from (i.e., the point that stays fixed relative to the parent as
+    the rest of the item grows). By default the origin is 0, 0.
 */
 
 /*!
     \qmlproperty real Scale::xScale
 
-    The scaling factor for the X axis.
+    The scaling factor for the X axis.    
 */
 
 /*!
@@ -122,7 +118,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
 /*!
     \qmlclass Rotation
-    \brief A Rotation object provides a way to rotate an Item around a point using an axis in 3D space.
+    \brief The Rotation object provides a way to rotate an Item.
+
+    The Rotation object gives more control over rotation than using Item's rotation property.
+    Specifically, it allows (z axis) rotation to be relative to an arbitrary point.
 
     The following example rotates a Rectangle around its interior point 25, 25:
     \qml
@@ -133,7 +132,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     }
     \endqml
 
-    Here is an example of various rotations applied to an \l Image.
+    Rotation also provides a way to specify 3D-like rotations for Items. For these types of
+    rotations you must specify the axis to rotate around in addition to the origin point.
+
+    The following example shows various 3D-like rotations applied to an \l Image.
     \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
@@ -143,7 +145,8 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Rotation::origin.x
     \qmlproperty real Rotation::origin.y
 
-    The point to rotate around.
+    The origin point of the rotation (i.e., the point that stays fixed relative to the parent as
+    the rest of the item rotates). By default the origin is 0, 0.
 */
 
 /*!
@@ -151,16 +154,18 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Rotation::axis.y
     \qmlproperty real Rotation::axis.z
 
-    A rotation axis is specified by a vector in 3D space By default the vector defines a rotation around the z-Axis.
+    The axis to rotate around. For simple (2D) rotation around a point, you do not need to specify an axis,
+    as the default axis is the z axis (\c{ axis { x: 0; y: 0; z: 0 } }).
+
+    For a typical 3D-like rotation you will usually specify both the origin and the axis.
 
     \image 3d-rotation-axis.png
-
 */
 
 /*!
     \qmlproperty real Rotation::angle
 
-    The angle, in degrees, to rotate.
+    The angle to rotate, in degrees clockwise.
 */
 
 
@@ -1193,6 +1198,19 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 }
 
 /*!
+    \class QFxItem
+    \brief QFxItem is the most basic of all visual items in QML.
+
+    All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
+    has no visual appearance, it defines all the properties that are
+    common across visual items - such as the x and y position, the
+    width and height, \l {anchor-layout}{anchoring} and key handling.
+
+    You can subclass QFxItem to provide your own custom visual item that inherits
+    these features.
+*/
+
+/*!
     \qmlclass Item QFxItem
     \brief The Item is the most basic of all visual items in QML.
 
@@ -1360,7 +1378,7 @@ QFxItem::~QFxItem()
     \qml
     Image {
         source: "myimage.png"
-        transformOrigin: "Center"
+        transformOrigin: Item.Center
         scale: 4
     }
     \endqml
@@ -2114,7 +2132,7 @@ void QFxItem::setBaselineOffset(qreal offset)
 
 /*!
   \qmlproperty real Item::rotation
-  This property holds the rotation of the item in degrees.
+  This property holds the rotation of the item in degrees clockwise.
 
   This specifies how many degrees to rotate the item around its transformOrigin.
   The default rotation is 0 degrees (i.e. not rotated at all).

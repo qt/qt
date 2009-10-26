@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 void QmlPropertyCache::Data::load(const QMetaProperty &p)
 {
     propType = p.userType();
-    if (propType == QVariant::LastType)
+    if (QVariant::Type(propType) == QVariant::LastType)
         propType = qMetaTypeId<QVariant>();
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
@@ -86,11 +86,17 @@ void QmlPropertyCache::Data::load(const QMetaMethod &m)
 }
 
 
-QmlPropertyCache::QmlPropertyCache()
+QmlPropertyCache::QmlPropertyCache(QmlEngine *engine)
+: QmlCleanup(engine)
 {
 }
 
 QmlPropertyCache::~QmlPropertyCache()
+{
+    clear();
+}
+
+void QmlPropertyCache::clear()
 {
     for (int ii = 0; ii < indexCache.count(); ++ii) 
         indexCache.at(ii)->release();
@@ -102,6 +108,10 @@ QmlPropertyCache::~QmlPropertyCache()
     for (IdentifierCache::ConstIterator iter = identifierCache.begin(); 
             iter != identifierCache.end(); ++iter)
         (*iter)->release();
+
+    indexCache.clear();
+    stringCache.clear();
+    identifierCache.clear();
 }
 
 QmlPropertyCache::Data QmlPropertyCache::create(const QMetaObject *metaObject, 
@@ -141,7 +151,7 @@ QmlPropertyCache *QmlPropertyCache::create(QmlEngine *engine, const QMetaObject 
     Q_ASSERT(engine);
     Q_ASSERT(metaObject);
 
-    QmlPropertyCache *cache = new QmlPropertyCache;
+    QmlPropertyCache *cache = new QmlPropertyCache(engine);
 
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
 

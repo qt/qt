@@ -37,6 +37,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmetaobjectbuilder.cpp \
     qml/qmlwatcher.cpp \
     qml/qmlscript.cpp \
+    qml/qmlcleanup.cpp \
     qml/qmlpropertycache.cpp \
     qml/qmlintegercache.cpp \
     qml/qmltypenamecache.cpp \
@@ -100,6 +101,7 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlsqldatabase_p.h \
     qml/qmetaobjectbuilder_p.h \
     qml/qmlwatcher_p.h \
+    qml/qmlcleanup_p.h \
     qml/qmlpropertycache_p.h \
     qml/qmlintegercache_p.h \
     qml/qmltypenamecache_p.h \

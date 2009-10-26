@@ -11,7 +11,7 @@ Rectangle {
         text: "Hello world!"
         font.pointSize: 24; font.bold: true
         y: 30; anchors.horizontalCenter: page.horizontalCenter
-        transformOrigin: "Center"
+        transformOrigin: Item.Center
 
 //![1]
         MouseRegion { id: mouseRegion; anchors.fill: parent }

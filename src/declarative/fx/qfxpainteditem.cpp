@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QFxPaintedItem
     \brief The QFxPaintedItem class is an abstract base class for QmlView items that want cached painting.
-    \ingroup group_coreitems
+    \internal
 
     This is a convenience class for implementing items that paint their contents
     using a QPainter.  The contents of the item are cached behind the scenes.

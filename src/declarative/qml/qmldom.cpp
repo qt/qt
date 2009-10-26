@@ -1181,6 +1181,75 @@ QmlDomObject QmlDomValueValueSource::object() const
     return rv;
 }
 
+/*!
+    \class QmlDomValueValueInterceptor
+    \internal
+    \brief The QmlDomValueValueInterceptor class represents a value interceptor assignment value.
+
+    In QML, value interceptor are special write-intercepting types that may be
+    assigned to properties.  Value interceptor inherit the QmlPropertyValueInterceptor
+    class.  In the example below, the "x" property is being assigned the
+    Behavior value interceptor.
+
+    \qml
+Rectangle {
+    x: Behavior { NumberAnimation { duration: 500 } }
+}
+    \endqml
+*/
+
+/*!
+    Construct an empty QmlDomValueValueInterceptor.
+*/
+QmlDomValueValueInterceptor::QmlDomValueValueInterceptor():
+        d(new QmlDomBasicValuePrivate)
+{
+}
+
+/*!
+    Create a copy of \a other QmlDomValueValueInterceptor.
+*/
+QmlDomValueValueInterceptor::QmlDomValueValueInterceptor(const QmlDomValueValueInterceptor &other)
+: d(other.d)
+{
+}
+
+/*!
+    Destroy the QmlDomValueValueInterceptor.
+*/
+QmlDomValueValueInterceptor::~QmlDomValueValueInterceptor()
+{
+}
+
+/*!
+    Assign \a other to this QmlDomValueValueInterceptor.
+*/
+QmlDomValueValueInterceptor &QmlDomValueValueInterceptor::operator=(const QmlDomValueValueInterceptor &other)
+{
+    d = other.d;
+    return *this;
+}
+
+/*!
+    Return the value interceptor object.
+
+    In the example below, an object representing the Behavior will be
+    returned.
+    \qml
+Rectangle {
+    x: Behavior { NumberAnimation { duration: 500 } }
+}
+    \endqml
+*/
+QmlDomObject QmlDomValueValueInterceptor::object() const
+{
+    QmlDomObject rv;
+    if (d->value) {
+        rv.d->object = d->value->object;
+        rv.d->object->addref();
+    }
+    return rv;
+}
 
 QmlDomValuePrivate::QmlDomValuePrivate()
 : property(0), value(0)
@@ -1286,6 +1355,7 @@ QmlDomValue &QmlDomValue::operator=(const QmlDomValue &other)
     \value Literal The QmlDomValue is a literal value assignment.  Use QmlDomValue::toLiteral() to access the type instance.
     \value PropertyBinding The QmlDomValue is a property binding.  Use QmlDomValue::toBinding() to access the type instance.
     \value ValueSource The QmlDomValue is a property value source.  Use QmlDomValue::toValueSource() to access the type instance.
+    \value ValueInterceptor The QmlDomValue is a property value interceptor.  Use QmlDomValue::toValueInterceptor() to access the type instance.
     \value Object The QmlDomValue is an object assignment.  Use QmlDomValue::toObject() to access the type instnace.
     \value List The QmlDomValue is a list of other values.  Use QmlDomValue::toList() to access the type instance.
 */
@@ -1314,6 +1384,8 @@ QmlDomValue::Type QmlDomValue::type() const
         return PropertyBinding;
     case QmlParser::Value::ValueSource:
         return ValueSource;
+    case QmlParser::Value::ValueInterceptor:
+        return ValueInterceptor;
     case QmlParser::Value::CreatedObject:
         return Object;
     case QmlParser::Value::SignalObject:
@@ -1356,6 +1428,14 @@ bool QmlDomValue::isBinding() const
 bool QmlDomValue::isValueSource() const
 {
     return type() == ValueSource;
+}
+
+/*!
+    Returns true if this is a value interceptor value, otherwise false.
+*/
+bool QmlDomValue::isValueInterceptor() const
+{
+    return type() == ValueInterceptor;
 }
 
 /*!
@@ -1416,6 +1496,22 @@ QmlDomValueValueSource QmlDomValue::toValueSource() const
 {
     QmlDomValueValueSource rv;
     if (type() == ValueSource) {
+        rv.d->value = d->value;
+        rv.d->value->addref();
+    }
+    return rv;
+}
+
+/*!
+    Returns a QmlDomValueValueInterceptor if this value is a property value interceptor
+    type, otherwise returns an invalid QmlDomValueValueInterceptor.
+
+    \sa QmlDomValue::type()
+*/
+QmlDomValueValueInterceptor QmlDomValue::toValueInterceptor() const
+{
+    QmlDomValueValueInterceptor rv;
+    if (type() == ValueInterceptor) {
         rv.d->value = d->value;
         rv.d->value->addref();
     }

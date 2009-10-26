@@ -55,16 +55,17 @@
 
 #include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlcleanup_p.h>
 #include <QtCore/qvector.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QMetaProperty;
-class QmlPropertyCache : public QmlRefCount
+class QmlPropertyCache : public QmlRefCount, public QmlCleanup
 {
 public:
-    QmlPropertyCache();
+    QmlPropertyCache(QmlEngine *);
     virtual ~QmlPropertyCache();
 
     struct Data {
@@ -111,6 +112,9 @@ public:
     inline Data *property(const QScriptDeclarativeClass::Identifier &id) const;
     Data *property(const QString &) const;
     Data *property(int) const;
+
+protected:
+    virtual void clear();
 
 private:
     struct RData : public Data, public QmlRefCount { 

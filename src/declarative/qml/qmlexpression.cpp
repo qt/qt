@@ -46,6 +46,7 @@
 #include "qmlrewrite_p.h"
 #include "QtCore/qdebug.h"
 #include "qmlcompiler_p.h"
+#include <QtScript/qscriptprogram.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -109,17 +110,17 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         QmlEngine *engine = ctxt->engine();
         QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
         QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN32) //XXX Why doesn't this work?
+#if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
         if (!dd->programs.at(progIdx)) {
             dd->programs[progIdx] =
-                new QScriptProgram(scriptEngine->compile(data->expression, data->fileName, data->line));
+                new QScriptProgram(data->expression, data->fileName, data->line);
         }
 #endif
 
         QScriptContext *scriptContext = scriptEngine->pushCleanContext();
         scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
-#if !defined(Q_OS_SYMBIAN) && !defined(Q_OS_WIN32)
+#if !defined(Q_OS_SYMBIAN) 
         data->expressionFunction = scriptEngine->evaluate(*dd->programs[progIdx]);
 #else
         data->expressionFunction = scriptEngine->evaluate(data->expression);

@@ -69,7 +69,8 @@ public:
         Invalid,
         Complete,
         Error,
-        Waiting
+        Waiting,
+        WaitingResources
     };
     Status status;
     enum ErrorType {

@@ -104,7 +104,7 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 
     rv.type = QmlObjectProperty::Unknown;
     rv.valueTypeName = QString::fromUtf8(prop.typeName());
-    rv.name = prop.name();
+    rv.name = QString::fromUtf8(prop.name());
     rv.hasNotifySignal = prop.hasNotifySignal();
     QmlAbstractBinding *binding = QmlMetaProperty(obj, rv.name).binding();
     if (binding)
@@ -229,7 +229,7 @@ QmlEngineDebugServer::objectData(QObject *object)
     }
 
     rv.objectName = object->objectName();
-    rv.objectType = object->metaObject()->className();
+    rv.objectType = QString::fromUtf8(object->metaObject()->className());
     rv.objectId = QmlDebugService::idForObject(object);
     rv.contextId = QmlDebugService::idForObject(qmlContext(object));
 

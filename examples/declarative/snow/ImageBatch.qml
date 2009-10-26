@@ -38,7 +38,7 @@ GridView {
     delegate: Item {
         id: root
         property bool isSelected: GridView.isCurrentItem && grid.isSelected
-        transformOrigin: "Center"
+        transformOrigin: Item.Center
         width: grid.imageWidth; height: grid.imageHeight;
 
         Image { id: flickrImage; source: url; fillMode: "PreserveAspectFit"; smooth: true; anchors.fill: parent;

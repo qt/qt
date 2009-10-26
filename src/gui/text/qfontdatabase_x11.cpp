@@ -1456,7 +1456,7 @@ void qt_addPatternProps(FcPattern *pattern, int screen, int script, const QFontD
         slant_value = FC_SLANT_OBLIQUE;
     FcPatternAddInteger(pattern, FC_SLANT, slant_value);
 
-    double size_value = qMax(1., request.pixelSize);
+    double size_value = qMax(qreal(1.), request.pixelSize);
     FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size_value);
 
     int stretch = request.stretch;

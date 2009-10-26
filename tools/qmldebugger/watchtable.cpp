@@ -23,6 +23,11 @@ WatchTableModel::~WatchTableModel()
         delete m_columns[i].watch;
 }
 
+void WatchTableModel::setEngineDebug(QmlEngineDebug *client)
+{
+    m_client = client;
+}
+
 void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
 {
     QString property;
@@ -193,7 +198,7 @@ void WatchTableModel::addValue(int column, const QVariant &value)
 
 void WatchTableModel::togglePropertyWatch(const QmlDebugObjectReference &object, const QmlDebugPropertyReference &property)
 {
-    if (!property.hasNotifySignal())
+    if (!m_client || !property.hasNotifySignal())
         return;
 
     QmlDebugWatch *watch = findWatch(object.debugId(), property.name());
@@ -228,6 +233,9 @@ void WatchTableModel::watchedValueChanged(const QByteArray &propertyName, const 
 
 void WatchTableModel::expressionWatchRequested(const QmlDebugObjectReference &obj, const QString &expr)
 {
+    if (!m_client)
+        return;
+        
     QmlDebugWatch *watch = m_client->addWatch(obj, expr, this);
 
     if (watch->state() == QmlDebugWatch::Dead) {
@@ -241,6 +249,9 @@ void WatchTableModel::expressionWatchRequested(const QmlDebugObjectReference &ob
 
 void WatchTableModel::stopWatching(int column)
 {
+    if (!m_client)
+        return;
+        
     QmlDebugWatch *watch = findWatch(column);
     if (watch) {
         m_client->removeWatch(watch);

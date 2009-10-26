@@ -175,6 +175,7 @@ private:
     friend class QmlDomComponent;
     friend class QmlDomValue;
     friend class QmlDomValueValueSource;
+    friend class QmlDomValueValueInterceptor;
     QSharedDataPointer<QmlDomObjectPrivate> d;
 };
 
@@ -225,6 +226,22 @@ private:
     QSharedDataPointer<QmlDomBasicValuePrivate> d;
 };
 
+class Q_DECLARATIVE_EXPORT QmlDomValueValueInterceptor
+{
+public:
+    QmlDomValueValueInterceptor();
+    QmlDomValueValueInterceptor(const QmlDomValueValueInterceptor &);
+    ~QmlDomValueValueInterceptor();
+    QmlDomValueValueInterceptor &operator=(const QmlDomValueValueInterceptor &);
+
+    QmlDomObject object() const;
+
+private:
+    friend class QmlDomValue;
+    QSharedDataPointer<QmlDomBasicValuePrivate> d;
+};
+
+
 class Q_DECLARATIVE_EXPORT QmlDomComponent : public QmlDomObject
 {
 public:
@@ -244,6 +261,7 @@ public:
         Literal, 
         PropertyBinding, 
         ValueSource,
+        ValueInterceptor,
         Object,
         List 
     };
@@ -259,12 +277,14 @@ public:
     bool isLiteral() const;
     bool isBinding() const;
     bool isValueSource() const;
+    bool isValueInterceptor() const;
     bool isObject() const;
     bool isList() const;
 
     QmlDomValueLiteral toLiteral() const;
     QmlDomValueBinding toBinding() const;
     QmlDomValueValueSource toValueSource() const;
+    QmlDomValueValueInterceptor toValueInterceptor() const;
     QmlDomObject toObject() const;
     QmlDomList toList() const;
 
