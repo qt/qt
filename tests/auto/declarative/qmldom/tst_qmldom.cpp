@@ -20,6 +20,7 @@ private slots:
     void loadImports();
 
     void testValueSource();
+    void testValueInterceptor();
 
 private:
     QmlEngine engine;
@@ -30,7 +31,6 @@ void tst_qmldom::loadSimple()
 {
     QByteArray qml = "import Qt 4.6\n"
                       "Item {}";
-    //QByteArray qml = "<Item/>";
 
     QmlDomDocument document;
     QVERIFY(document.load(&engine, qml));
@@ -49,7 +49,6 @@ void tst_qmldom::loadProperties()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item { id : item; x : 300; visible : true }";
-    //QByteArray qml = "<Item id='item' x='300' visible='true'/>";
 
     QmlDomDocument document;
     QVERIFY(document.load(&engine, qml));
@@ -74,7 +73,6 @@ void tst_qmldom::loadChildObject()
 {
     QByteArray qml = "import Qt 4.6\n"
                      "Item { Item {} }";
-    //QByteArray qml = "<Item> <Item/> </Item>";
 
     QmlDomDocument document;
     QVERIFY(document.load(&engine, qml));
@@ -146,6 +144,32 @@ void tst_qmldom::testValueSource()
     QVERIFY(!sourceValue.isInvalid());
     QVERIFY(sourceValue.isBinding());
     QVERIFY(sourceValue.toBinding().binding() == "Math.min(Math.max(-130, value*2.2 - 130), 133)");
+}
+
+void tst_qmldom::testValueInterceptor()
+{
+    QByteArray qml = "import Qt 4.6\n"
+                     "Rectangle { height: Behavior { NumberAnimation { duration: 100 } } }";
+
+    QmlEngine freshEngine;
+    QmlDomDocument document;
+    QVERIFY(document.load(&freshEngine, qml));
+
+    QmlDomObject rootItem = document.rootObject();
+    QVERIFY(rootItem.isValid());
+    QmlDomProperty heightProperty = rootItem.properties().at(0);
+    QVERIFY(heightProperty.propertyName() == "height");
+    QVERIFY(heightProperty.value().isValueInterceptor());
+
+    const QmlDomValueValueInterceptor valueInterceptor = heightProperty.value().toValueInterceptor();
+    QmlDomObject valueInterceptorObject = valueInterceptor.object();
+    QVERIFY(valueInterceptorObject.isValid());
+
+    QVERIFY(valueInterceptorObject.objectType() == "Qt/Behavior");
+
+    const QmlDomValue animationValue = valueInterceptorObject.property("animation").value();
+    QVERIFY(!animationValue.isInvalid());
+    QVERIFY(animationValue.isObject());
 }
 
 void tst_qmldom::loadImports()
