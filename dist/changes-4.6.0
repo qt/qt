@@ -58,6 +58,9 @@ information about a particular change.
  - The reading code of QLocalSocket on Windows has been rewritten to improve
    reading performance.
 
+ - On Windows CE the link time code geration has been disabled by default to
+   be consistent with win32-msvc200x.
+
 ****************************************************************************
 * Important Behavior Changes *
 ****************************************************************************
