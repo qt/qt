@@ -456,7 +456,7 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
         int dot = imp.version.indexOf(QLatin1Char('.'));
         if (dot < 0) dot = imp.version.length();
         QString qmldir;
-        if (imp.type == QmlScriptParser::Import::File) {
+        if (imp.type == QmlScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
             for (int ii = 0; ii < unit->resources.count(); ++ii) {
                 if (unit->resources.at(ii)->url == importUrl) {
@@ -577,7 +577,7 @@ void QmlCompositeTypeManager::compile(QmlCompositeTypeData *unit)
     QList<QUrl> resourceList = unit->data.referencedResources();
 
     foreach (QmlScriptParser::Import imp, unit->data.imports()) {
-        if (imp.type == QmlScriptParser::Import::File) {
+        if (imp.type == QmlScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
             if (toLocalFileOrQrc(importUrl).isEmpty()) {
                 // Import requires remote qmldir
