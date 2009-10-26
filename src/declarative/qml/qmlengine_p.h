@@ -97,6 +97,7 @@ class QmlTypeNameScriptClass;
 class QmlTypeNameCache;
 class QmlComponentAttached;
 class QmlListScriptClass;
+class QmlCleanup;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -138,6 +139,9 @@ public:
     QScriptClass *namedNodeMapClass;
     // Used by SQL database API
     QScriptClass *sqlQueryClass;
+
+    // Registered cleanup handlers
+    QmlCleanup *cleanup;
 
     struct QmlScriptEngine : public QScriptEngine
     {
@@ -259,10 +263,13 @@ public:
     static QScriptValue darker(QScriptContext*, QScriptEngine*);
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
+    static QScriptValue playSound(QScriptContext*, QScriptEngine*);
+
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }
     static QmlEnginePrivate *get(QmlEngine *e) { return e->d_func(); }
     static QmlEnginePrivate *get(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p; }
+    QmlContext *getContext(QScriptContext *);
 };
 
 

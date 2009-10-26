@@ -92,6 +92,7 @@ private:
 //performs an action of type QAbstractAnimationAction
 class QActionAnimation : public QAbstractAnimation
 {
+    Q_OBJECT
 public:
     QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
     QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
@@ -126,6 +127,7 @@ private:
 //animates QmlTimeLineValue (assumes start and end values will be reals or compatible)
 class QmlTimeLineValueAnimator : public QVariantAnimation
 {
+    Q_OBJECT
 public:
     QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
     void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)
@@ -168,6 +170,7 @@ private:
 template<class T, void (T::*method)(int)>
 class QTickAnimationProxy : public QAbstractAnimation
 {
+    //Q_OBJECT //doesn't work with templating
 public:
     QTickAnimationProxy(T *p, QObject *parent = 0) : QAbstractAnimation(parent), m_p(p) {}
     virtual int duration() const { return -1; }
@@ -225,13 +228,14 @@ class QmlScriptActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlScriptAction)
 public:
     QmlScriptActionPrivate()
-        : QmlAbstractAnimationPrivate(), proxy(this), rsa(0) {}
+        : QmlAbstractAnimationPrivate(), hasRunScriptScript(false), proxy(this), rsa(0) {}
 
     void init();
 
-    QString script;
+    QmlScriptString script;
     QString name;
-    QString runScriptScript;
+    QmlScriptString runScriptScript;
+    bool hasRunScriptScript;
 
     void execute();
 

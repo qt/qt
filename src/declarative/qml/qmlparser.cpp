@@ -80,6 +80,9 @@ QmlParser::Object::~Object()
         prop->release();
     foreach(Property *prop, valueTypeProperties)
         prop->release();
+    typedef QPair<Property *, int> PropPair;
+    foreach(const PropPair &prop, scriptStringProperties)
+        prop.first->release();
     foreach(const DynamicProperty &prop, dynamicProperties)
         if (prop.defaultValue) prop.defaultValue->release();
     foreach(Object *obj, scriptBlockObjects)
@@ -141,6 +144,13 @@ void QmlParser::Object::addValueTypeProperty(Property *p)
     p->addref();
     valueTypeProperties << p;
 }
+
+void QmlParser::Object::addScriptStringProperty(Property *p, int stack)
+{
+    p->addref();
+    scriptStringProperties << qMakePair(p, stack);
+}
+
 
 Property *QmlParser::Object::getProperty(const QByteArray &name, bool create)
 {

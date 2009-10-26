@@ -49,6 +49,12 @@ information about a particular change.
    QRegion. The native handle is for reading out only. Any GDI calls
    made on the HRGN handle will not affect the QRegion.
 
+ - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
+   thanks to Konstantin Ritt (merge request 1217).
+
+ - The reading code of QLocalSocket on Windows has been rewritten to improve
+   reading performance.
+
 ****************************************************************************
 * Important Behavior Changes *
 ****************************************************************************

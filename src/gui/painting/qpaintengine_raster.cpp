@@ -132,6 +132,10 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 extern bool qt_cleartype_enabled;
 #endif
 
+#ifdef Q_WS_MAC
+extern bool qt_applefontsmoothing_enabled;
+#endif
+
 
 /********************************************************************************
  * Span functions
@@ -508,7 +512,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 #if defined(Q_WS_WIN)
     else if (qt_cleartype_enabled)
 #elif defined (Q_WS_MAC)
-    else if (true)
+    else if (qt_applefontsmoothing_enabled)
 #else
     else if (false)
 #endif

@@ -46,6 +46,7 @@
 #include "InspectorFrontend.h"
 #include "InspectorResource.h"
 #include "Pasteboard.h"
+#include "ScriptArray.h"
 #include "ScriptFunctionCall.h"
 
 #if ENABLE(DOM_STORAGE)
@@ -257,33 +258,26 @@ const String& InspectorBackend::platform() const
     return platform;
 }
 
-void InspectorBackend::enableTimeline(bool always)
+void InspectorBackend::startTimelineProfiler()
 {
     if (m_inspectorController)
-        m_inspectorController->enableTimeline(always);
+        m_inspectorController->startTimelineProfiler();
 }
 
-void InspectorBackend::disableTimeline(bool always)
+void InspectorBackend::stopTimelineProfiler()
 {
     if (m_inspectorController)
-        m_inspectorController->disableTimeline(always);
+        m_inspectorController->stopTimelineProfiler();
 }
 
-bool InspectorBackend::timelineEnabled() const
+bool InspectorBackend::timelineProfilerEnabled() const
 {
     if (m_inspectorController)
-        return m_inspectorController->timelineEnabled();
+        return m_inspectorController->timelineProfilerEnabled();
     return false;
 }
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
-const ProfilesArray& InspectorBackend::profiles() const
-{
-    if (m_inspectorController)
-        return m_inspectorController->profiles();
-    return m_emptyProfiles;
-}
-
 void InspectorBackend::startProfiling()
 {
     if (m_inspectorController)
@@ -313,6 +307,18 @@ bool InspectorBackend::profilerEnabled()
     if (m_inspectorController)
         return m_inspectorController->profilerEnabled();
     return false;
+}
+
+void InspectorBackend::getProfileHeaders(long callId)
+{
+    if (m_inspectorController)
+        m_inspectorController->getProfileHeaders(callId);
+}
+
+void InspectorBackend::getProfile(long callId, unsigned uid)
+{
+    if (m_inspectorController)
+        m_inspectorController->getProfile(callId, uid);
 }
 
 void InspectorBackend::enableDebugger(bool always)
@@ -395,7 +401,7 @@ void InspectorBackend::stepOutOfFunctionInDebugger()
 
 #endif
 
-void InspectorBackend::dispatchOnInjectedScript(long callId, const String& methodName, const String& arguments)
+void InspectorBackend::dispatchOnInjectedScript(long callId, const String& methodName, const String& arguments, bool async)
 {
     InspectorFrontend* frontend = inspectorFrontend();
     if (!frontend)
@@ -404,8 +410,12 @@ void InspectorBackend::dispatchOnInjectedScript(long callId, const String& metho
     ScriptFunctionCall function(m_inspectorController->m_scriptState, m_inspectorController->m_injectedScriptObj, "dispatch");
     function.appendArgument(methodName);
     function.appendArgument(arguments);
+    if (async)
+        function.appendArgument(static_cast<int>(callId));
     bool hadException = false;
     ScriptValue result = function.call(hadException);
+    if (async)
+        return;  // InjectedScript will return result asynchronously by means of ::reportDidDispatchOnInjectedScript.
     if (hadException)
         frontend->didDispatchOnInjectedScript(callId, "", true);
     else
@@ -450,18 +460,48 @@ void InspectorBackend::copyNode(long nodeId)
     String markup = createMarkup(node);
     Pasteboard::generalPasteboard()->writePlainText(markup);
 }
-
-void InspectorBackend::getCookies(long callId)
+    
+void InspectorBackend::removeNode(long callId, long nodeId)
 {
-    if (InspectorDOMAgent* domAgent = inspectorDOMAgent())
-        domAgent->getCookies(callId);
+    InspectorFrontend* frontend = inspectorFrontend();
+    if (!frontend)
+        return;
+
+    Node* node = nodeForId(nodeId);
+    if (!node) {
+        // Use -1 to denote an error condition.
+        frontend->didRemoveNode(callId, -1);
+        return;
+    }
+
+    Node* parentNode = node->parentNode();
+    if (!parentNode) {
+        frontend->didRemoveNode(callId, -1);
+        return;
+    }
+
+    ExceptionCode code;
+    parentNode->removeChild(node, code);
+    if (code) {
+        frontend->didRemoveNode(callId, -1);
+        return;
+    }
+
+    frontend->didRemoveNode(callId, nodeId);
 }
 
-void InspectorBackend::deleteCookie(const String& cookieName)
+void InspectorBackend::getCookies(long callId, const String& domain)
 {
     if (!m_inspectorController)
         return;
-    m_inspectorController->deleteCookie(cookieName);
+    m_inspectorController->getCookies(callId, domain);
+}
+
+void InspectorBackend::deleteCookie(const String& cookieName, const String& domain)
+{
+    if (!m_inspectorController)
+        return;
+    m_inspectorController->deleteCookie(cookieName, domain);
 }
 
 void InspectorBackend::highlight(long nodeId)
@@ -477,10 +517,10 @@ Node* InspectorBackend::nodeForId(long nodeId)
     return 0;
 }
 
-ScriptValue InspectorBackend::wrapObject(const ScriptValue& object)
+ScriptValue InspectorBackend::wrapObject(const ScriptValue& object, const String& objectGroup)
 {
     if (m_inspectorController)
-        return m_inspectorController->wrapObject(object);
+        return m_inspectorController->wrapObject(object, objectGroup);
     return ScriptValue();
 }
 
@@ -489,6 +529,12 @@ ScriptValue InspectorBackend::unwrapObject(const String& objectId)
     if (m_inspectorController)
         return m_inspectorController->unwrapObject(objectId);
     return ScriptValue();
+}
+
+void InspectorBackend::releaseWrapperObjectGroup(const String& objectGroup)
+{
+    if (m_inspectorController)
+        m_inspectorController->releaseWrapperObjectGroup(objectGroup);
 }
 
 long InspectorBackend::pushNodePathToFrontend(Node* node, bool selectInUI)
@@ -510,10 +556,32 @@ void InspectorBackend::addNodesToSearchResult(const String& nodeIds)
 }
 
 #if ENABLE(DATABASE)
+Database* InspectorBackend::databaseForId(long databaseId)
+{
+    if (m_inspectorController)
+        return m_inspectorController->databaseForId(databaseId);
+    return 0;
+}
+
 void InspectorBackend::selectDatabase(Database* database)
 {
-    if (InspectorFrontend* frontend = inspectorFrontend())
-        frontend->selectDatabase(database);
+    if (m_inspectorController)
+        m_inspectorController->selectDatabase(database);
+}
+
+void InspectorBackend::getDatabaseTableNames(long callId, long databaseId)
+{
+    if (InspectorFrontend* frontend = inspectorFrontend()) {
+        ScriptArray result = frontend->newScriptArray();
+        Database* database = m_inspectorController->databaseForId(databaseId);
+        if (database) {
+            Vector<String> tableNames = database->tableNames();
+            unsigned length = tableNames.size();
+            for (unsigned i = 0; i < length; ++i)
+                result.set(i, tableNames[i]);
+        }
+        frontend->didGetDatabaseTableNames(callId, result);
+    }
 }
 #endif
 
@@ -542,6 +610,18 @@ void InspectorBackend::removeDOMStorageItem(long callId, long storageId, const S
         m_inspectorController->removeDOMStorageItem(callId, storageId, key);
 }
 #endif
+
+void InspectorBackend::didEvaluateForTestInFrontend(long callId, const String& jsonResult)
+{
+    if (m_inspectorController)
+        m_inspectorController->didEvaluateForTestInFrontend(callId, jsonResult);
+}
+
+void InspectorBackend::reportDidDispatchOnInjectedScript(long callId, const String& result, bool isException)
+{
+    if (InspectorFrontend* frontend = inspectorFrontend())
+        frontend->didDispatchOnInjectedScript(callId, result, isException);
+}
 
 InspectorDOMAgent* InspectorBackend::inspectorDOMAgent()
 {

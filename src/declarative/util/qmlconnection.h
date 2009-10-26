@@ -45,6 +45,7 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 QT_BEGIN_HEADER
 
@@ -62,7 +63,7 @@ class Q_DECLARATIVE_EXPORT QmlConnection : public QObject, public QmlParserStatu
 
     Q_INTERFACES(QmlParserStatus)
     Q_PROPERTY(QObject *sender READ signalSender WRITE setSignalSender)
-    Q_PROPERTY(QString script READ script WRITE setScript)
+    Q_PROPERTY(QmlScriptString script READ script WRITE setScript)
     Q_PROPERTY(QString signal READ signal WRITE setSignal)
 
 public:
@@ -71,8 +72,8 @@ public:
 
     QObject *signalSender() const;
     void setSignalSender(QObject *);
-    QString script() const;
-    void setScript(const QString&);
+    QmlScriptString script() const;
+    void setScript(const QmlScriptString&);
     QString signal() const;
     void setSignal(const QString&);
 

@@ -46,13 +46,21 @@
 QT_BEGIN_NAMESPACE
 
 QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
-: engine(e)
+: QmlCleanup(e), engine(e)
 {
 }
 
 QmlIntegerCache::~QmlIntegerCache()
 {
+    clear();
+}
+
+void QmlIntegerCache::clear()
+{
     qDeleteAll(stringCache);
+    stringCache.clear();
+    identifierCache.clear();
+    engine = 0;
 }
 
 void QmlIntegerCache::add(const QString &id, int value)

@@ -136,7 +136,7 @@ QVariant QmlListAccessor::at(int idx) const
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             void *ptr[1];
             li->at(idx, ptr);
-            return QmlMetaType::fromObject((QObject*)ptr[0], li->type()); //XXX only handles QObject-derived types
+            return QVariant::fromValue((QObject*)ptr[0]);
         }
     case QList:
         return QmlMetaType::listAt(d, idx);

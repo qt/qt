@@ -31,8 +31,10 @@
 #endif
 #include <runtime/Protect.h>
 
+#include <wtf/Forward.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
 namespace JSC {

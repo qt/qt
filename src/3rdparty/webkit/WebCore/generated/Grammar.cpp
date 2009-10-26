@@ -236,6 +236,7 @@
 
 #include "JSObject.h"
 #include "JSString.h"
+#include "Lexer.h"
 #include "NodeConstructors.h"
 #include "NodeInfo.h"
 #include <stdlib.h>
@@ -257,7 +258,6 @@
 #define YYERROR_VERBOSE
 #endif
 
-int jscyylex(void* lvalp, void* llocp, void* globalPtr);
 int jscyyerror(const char*);
 
 static inline bool allowAutomaticSemicolon(JSC::Lexer&, int);

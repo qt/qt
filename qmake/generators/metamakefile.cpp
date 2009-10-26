@@ -291,6 +291,7 @@ SubdirsMetaMakefileGenerator::init()
     if(init_flag)
         return false;
     init_flag = true;
+    bool hasError = false;
 
     if(Option::recursive) {
         QString old_output_dir = Option::output_dir;
@@ -336,14 +337,18 @@ SubdirsMetaMakefileGenerator::init()
             }
             qmake_setpwd(sub->input_dir);
             Option::output_dir = sub->output_dir;
-            sub_proj->read(subdir.fileName());
+            bool tmpError = !sub_proj->read(subdir.fileName());
             if(!sub_proj->variables()["QMAKE_FAILED_REQUIREMENTS"].isEmpty()) {
                 fprintf(stderr, "Project file(%s) not recursed because all requirements not met:\n\t%s\n",
                         subdir.fileName().toLatin1().constData(),
                         sub_proj->values("QMAKE_FAILED_REQUIREMENTS").join(" ").toLatin1().constData());
                 delete sub;
                 delete sub_proj;
+                Option::output_dir = old_output_dir;
+                qmake_setpwd(oldpwd);
                 continue;
+            } else {
+                hasError |= tmpError;
             }
             sub->makefile = MetaMakefileGenerator::createMetaGenerator(sub_proj, sub_name);
             if(0 && sub->makefile->type() == SUBDIRSMETATYPE) {
@@ -351,7 +356,7 @@ SubdirsMetaMakefileGenerator::init()
             } else {
                 const QString output_name = Option::output.fileName();
                 Option::output.setFileName(sub->output_file);
-                sub->makefile->write(sub->output_dir);
+                hasError |= !sub->makefile->write(sub->output_dir);
                 delete sub;
                 qmakeClearCaches();
                 sub = 0;
@@ -376,7 +381,7 @@ SubdirsMetaMakefileGenerator::init()
     self->makefile->init();
     subs.append(self);
 
-    return true;
+    return !hasError;
 }
 
 bool
@@ -482,7 +487,7 @@ MetaMakefileGenerator::createMakefileGenerator(QMakeProject *proj, bool noIO)
 }
 
 MetaMakefileGenerator *
-MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op)
+MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &name, bool op, bool *success)
 {
     MetaMakefileGenerator *ret = 0;
     if ((Option::qmake_mode == Option::QMAKE_GENERATE_MAKEFILE ||
@@ -492,7 +497,9 @@ MetaMakefileGenerator::createMetaGenerator(QMakeProject *proj, const QString &na
     }
     if (!ret)
         ret = new BuildsMetaMakefileGenerator(proj, name, op);
-    ret->init();
+    bool res = ret->init();
+    if (success)
+        *success = res;
     return ret;
 }
 

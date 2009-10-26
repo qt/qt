@@ -67,6 +67,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlbindingoptimizations_p.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -539,7 +540,11 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 QMetaMethod signal = 
                     target->metaObject()->method(instr.storeSignal.signalIndex);
 
-                (void *)new QmlBoundSignal(ctxt, primitives.at(instr.storeSignal.value), target, signal, target);
+                QmlBoundSignal *bs = new QmlBoundSignal(target, signal, target);
+                QmlExpression *expr = 
+                    new QmlExpression(ctxt, primitives.at(instr.storeSignal.value), target);
+                expr->setSourceLocation(comp->url, instr.line);
+                bs->setExpression(expr);
             }
             break;
 
@@ -549,6 +554,21 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 cp->addScript(primitives.at(instr.storeScript.value), target, 
                               primitives.at(instr.storeScript.fileName), 
                               instr.storeScript.lineNumber);
+            }
+            break;
+
+        case QmlInstruction::StoreScriptString:
+            {
+                QObject *target = stack.top();
+                QObject *scope = stack.at(stack.count() - 1 - instr.storeScriptString.scope);
+                QmlScriptString ss;
+                ss.setContext(ctxt);
+                ss.setScopeObject(scope);
+                ss.setScript(primitives.at(instr.storeScriptString.value));
+
+                void *a[] = { &ss, 0, &status, &flags };
+                QMetaObject::metacall(target, QMetaObject::WriteProperty, 
+                                      instr.storeScriptString.propertyIndex, a);
             }
             break;
 
@@ -644,7 +664,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
                 obj->setParent(target);
                 vi->setTarget(prop);
                 QmlVMEMetaObject *mo = static_cast<QmlVMEMetaObject *>((QMetaObject*)target->metaObject());
-                mo->registerInterceptor(prop.coreIndex(), vi);
+                mo->registerInterceptor(prop.coreIndex(), prop.valueTypeCoreIndex(), vi);
             }
             break;
 

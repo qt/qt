@@ -179,10 +179,10 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     Rectangle {
         width: 100; height: 100
         x: NumberAnimation {
-            running: MyMouse.pressed
+            running: myMouse.pressed
             from: 0; to: 100
         }
-        MouseRegion { id: MyMouse }
+        MouseRegion { id: myMouse }
     }
     \endcode
 
@@ -191,8 +191,8 @@ QmlAbstractAnimation::QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObj
     or not the animation is running.
 
     \code
-    NumberAnimation { id: MyAnimation }
-    Text { text: MyAnimation.running ? "Animation is running" : "Animation is not running" }
+    NumberAnimation { id: myAnimation }
+    Text { text: myAnimation.running ? "Animation is running" : "Animation is not running" }
     \endcode
 
     Animations can also be started and stopped imperatively from JavaScript
@@ -790,22 +790,19 @@ void QmlScriptActionPrivate::init()
 }
 
 /*!
-    \qmlproperty QString ScriptAction::script
+    \qmlproperty script ScriptAction::script
     This property holds the script to run.
 */
-QString QmlScriptAction::script() const
+QmlScriptString QmlScriptAction::script() const
 {
     Q_D(const QmlScriptAction);
     return d->script;
 }
 
-void QmlScriptAction::setScript(const QString &script)
+void QmlScriptAction::setScript(const QmlScriptString &script)
 {
     Q_D(QmlScriptAction);
-    if (script == d->script)
-        return;
     d->script = script;
-    emit scriptChanged(script);
 }
 
 /*!
@@ -818,7 +815,7 @@ void QmlScriptAction::setScript(const QString &script)
 QString QmlScriptAction::stateChangeScriptName() const
 {
     Q_D(const QmlScriptAction);
-    return d->script;
+    return d->name;
 }
 
 void QmlScriptAction::setStateChangeScriptName(const QString &name)
@@ -829,11 +826,11 @@ void QmlScriptAction::setStateChangeScriptName(const QString &name)
 
 void QmlScriptActionPrivate::execute()
 {
-    Q_Q(QmlScriptAction);
-    QString scriptStr = runScriptScript.isEmpty() ? script : runScriptScript;
+    QmlScriptString scriptStr = hasRunScriptScript ? runScriptScript : script;
 
-    if (!scriptStr.isEmpty()) {
-        QmlExpression expr(qmlContext(q), scriptStr, q);
+    const QString &str = scriptStr.script();
+    if (!str.isEmpty()) {
+        QmlExpression expr(scriptStr.context(), str, scriptStr.scopeObject());
         expr.setTrackChange(false);
         expr.value();
     }
@@ -847,7 +844,7 @@ void QmlScriptAction::transition(QmlStateActions &actions,
     Q_UNUSED(modified);
     Q_UNUSED(direction);
 
-    d->runScriptScript.clear();
+    d->hasRunScriptScript = false;
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
@@ -855,6 +852,7 @@ void QmlScriptAction::transition(QmlStateActions &actions,
             && static_cast<QmlStateChangeScript*>(action.event)->name() == d->name) {
             //### how should we handle reverse direction?
             d->runScriptScript = static_cast<QmlStateChangeScript*>(action.event)->script();
+            d->hasRunScriptScript = true;
             action.actionDone = true;
             break;  //assumes names are unique
         }

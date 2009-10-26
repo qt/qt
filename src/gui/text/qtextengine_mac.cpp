@@ -50,7 +50,6 @@ static void heuristicSetGlyphAttributes(const QChar *uc, int length, QGlyphLayou
 {
     // ### zeroWidth and justification are missing here!!!!!
 
-    Q_ASSERT(num_glyphs <= length);
     Q_UNUSED(num_glyphs);
 
 //     qDebug("QScriptEngine::heuristicSetGlyphAttributes, num_glyphs=%d", item->num_glyphs);
@@ -558,7 +557,7 @@ void QTextEngine::shapeTextMac(int item) const
 
     si.glyph_data_offset = layoutData->used;
 
-    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent);
+    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
     if (font->type() != QFontEngine::Multi) {
         shapeTextWithHarfbuzz(item);
         return;
@@ -596,7 +595,7 @@ void QTextEngine::shapeTextMac(int item) const
     }
 
     while (true) {
-	ensureSpace(num_glyphs);
+        ensureSpace(num_glyphs);
         num_glyphs = layoutData->glyphLayout.numGlyphs - layoutData->used;
 
         QGlyphLayout g = availableGlyphs(&si);
@@ -611,9 +610,9 @@ void QTextEngine::shapeTextMac(int item) const
                              log_clusters,
                              attributes())) {
 
-		heuristicSetGlyphAttributes(str, len, &g, log_clusters, num_glyphs);
-		break;
-	}
+            heuristicSetGlyphAttributes(str, len, &g, log_clusters, num_glyphs);
+            break;
+        }
     }
 
     si.num_glyphs = num_glyphs;

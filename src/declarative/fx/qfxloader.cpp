@@ -69,9 +69,9 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QFxLoader)
     It is also an effective means of delaying the creation of a component
     until it is required:
     \code
-    Loader { id: PageLoader }
+    Loader { id: pageLoader }
     Rectangle {
-        MouseRegion { anchors.fill: parent; onClicked: PageLoader.source = "Page1.qml" }
+        MouseRegion { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
     }
     \endcode
 */
@@ -155,12 +155,12 @@ void QFxLoader::setSource(const QUrl &url)
     \qml
     Item {
         Component {
-            id: RedSquare
+            id: redSquare
             Rectangle { color: "red"; width: 10; height: 10 }
         }
 
-        Loader { sourceComponent: RedSquare }
-        Loader { sourceComponent: RedSquare; x: 10 }
+        Loader { sourceComponent: redSquare }
+        Loader { sourceComponent: redSquare; x: 10 }
     }
     \endqml
 

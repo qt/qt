@@ -168,7 +168,11 @@ int runQMake(int argc, char **argv)
                 continue;
         }
 
-        MetaMakefileGenerator *mkfile = MetaMakefileGenerator::createMetaGenerator(&project, QString(), false);
+        bool success = true;
+        MetaMakefileGenerator *mkfile = MetaMakefileGenerator::createMetaGenerator(&project, QString(), false, &success);
+        if (!success)
+            exit_val = 3;
+
         if(mkfile && !mkfile->write(oldpwd)) {
             if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)
                 fprintf(stderr, "Unable to generate project file.\n");

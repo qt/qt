@@ -55,13 +55,14 @@
 
 #include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlcleanup_p.h>
 #include <QtCore/qhash.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlType;
 class QmlEngine;
-class QmlIntegerCache : public QmlRefCount
+class QmlIntegerCache : public QmlRefCount, public QmlCleanup
 {
 public:
     QmlIntegerCache(QmlEngine *);
@@ -73,6 +74,10 @@ public:
     inline int value(const QScriptDeclarativeClass::Identifier &id) const;
 
     static QmlIntegerCache *createForEnums(QmlType *, QmlEngine *);
+
+protected:
+    virtual void clear();
+
 private:
     struct Data : public QScriptDeclarativeClass::PersistentIdentifier {
         Data(const QScriptDeclarativeClass::PersistentIdentifier &i, int v) 

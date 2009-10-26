@@ -606,10 +606,8 @@ void QmlViewer::reload()
 void QmlViewer::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), currentFileName, tr("QML Files (*.qml)"));
-    if (!fileName.isEmpty()) {
+    if (!fileName.isEmpty())
         openQml(fileName);
-        QTimer::singleShot(0, this, SLOT(reload()));
-    }
 }
 
 void QmlViewer::executeErrors()

@@ -136,6 +136,14 @@ QVariant QmlOpenMetaObject::value(const QByteArray &name) const
     return d->data.at(*iter);
 }
 
+QVariant &QmlOpenMetaObject::operator[](const QByteArray &name)
+{
+    QHash<QByteArray, int>::ConstIterator iter = d->names.find(name);
+    Q_ASSERT(iter != d->names.end());
+
+    return d->data[*iter];
+}
+
 void QmlOpenMetaObject::setValue(const QByteArray &name, const QVariant &val)
 {
     QHash<QByteArray, int>::ConstIterator iter = d->names.find(name);

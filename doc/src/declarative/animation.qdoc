@@ -44,35 +44,26 @@
 \target qmlanimation
 \title QML Animation
 
+Animation in QML is done by animating properties of objects. Properties of type
+real, int, color, rect, point, and size can all be animated.
+
 QML supports three different forms of animation - basic property animation,
-states and transitions and property behaviors.
+transitions, and property behaviors.
 
-\section1 Property Animation
+\section1 Basic Property Animation
 
-Animation in QML is done by animating properties of objects.
+The simplest form of animation is directly using \l PropertyAnimation, which can animate all of the property
+types listed above. If the property you are animating is a number or color, you can alternatively use
+NumberAnimation or ColorAnimation. These elements don't add any additional functionality,
+but will help enforce type correctness and are slightly more efficient.
 
-Any property of a recognizable type can be animated. Currently those types include:
-\list
-\o qreal
-\o int
-\o Most of QVariant's built-in types
-\endlist
-
-Animations can also involve numerous properties on numerous objects.
-
-Other Features:
-\list
-\o Support for a large set of parameterized easing curves. (based on the Penner easing equations)
-\o Animation synchronization
-\endlist
-
-The simplest form of animation is using \l NumberAnimation
+A property animation can be specified as a value source. This is especially useful for repeating animations.
 
 The following example creates a bouncing effect:
-\code
+\qml
 Rectangle {
     id: rect
-    width: 120; height: 200; color: "white"
+    width: 120; height: 200;
     Image {
         id: img
         source: "qt-logo.png"
@@ -87,64 +78,37 @@ Rectangle {
         }
     }
 }
-\endcode
+\endqml
 
 \image propanim.gif
 
-\target states-transitions
-\section1 States and Transitions
+A property animation can also be specified as a resource that is manipulated from script.
 
-\section2 States
-
-QML states describe user interface configurations, including:
-\list
-\o What UI elements are present
-\o The properties of those elements (including how they behave)
-\o What actions are available
-\endlist
-
-A state can also be thought of as a set of batched changes from a default configuration.
-
-Examples of states in modern UI:
-\list
-\o A Contacts application has a 'View Contact' state and an 'Edit Contact' State. In the first state the information presented is static (using labels), and in the second it is editable (using editors).
-\o A button has a pressed and unpressed state. When pressed the text moves down and to the right, and the button has a slightly darker appearance.
-\endlist
-
-In QML:
-\list
-\o Any object can use states.
-\o There is a default state. The default state can be explicitly set.
-\o A state can affect other the properties of other objects, not just the object owning the state (and not just that object's children).
-\endlist
-
-The following example shows a simple use of states. In the default state \c myrect is positioned at 0,0. In the 'moved' state it is positioned at 50,50.
-
-\code
-Item {
-    Rectangle {
-        id: myrect
-        width: 100
-        height: 100
-    }
-    states: [
-        State {
-            name: "moved"
-            PropertyChanges {
-                target: myrect
-                x: 50
-                y: 50
-            }
-        }
-    ]
+\qml
+PropertyAnimation {
+    id: animation
+    target: image
+    property: "scale"
+    from: 1; to: .5
 }
-\endcode
+Image {
+    id: image
+    source: "image.png"
+    MouseRegion {
+        anchors.fill: parent
+        onPressed: animation.start()
+    }
+}
+\endqml
 
-\section2 Transitions
+Animations can be joined into a group using SequentialAnimation and ParallelAnimation.
 
-QML transitions describe animations to perform when state changes occur.
+\target state-transitions
+\section1 Transitions
 
-For the previous example, a transition could describe how \c myrect moved from its initial position to its new position:
+QML transitions describe animations to perform when \l{qmlstates}{state} changes occur.
+
+For example, a transition could describe how an item moves from its initial position to its new position:
 
 \code
 transitions: [
@@ -158,7 +122,13 @@ transitions: [
 ]
 \endcode
 
-QML transitions can use selectors to determine which state changes a transition should apply to:
+As you can see from the above example, transitions make use of the same basic animation classes introduced
+above. However, you generally use a different set of properties when working with transitions. In the example,
+no target or property has been specified. Instead, we have specified properties, which acts as a selector to
+determine which property changes to animate; in this case, we will animate any x,y properties that have
+changed on any objects.
+
+QML transitions also selectors to determine which state changes a transition should apply to:
 
 \code
 Transition {
@@ -202,5 +172,48 @@ Transition {
 
 \section1 Property Behaviors
 
-\note Property behaviors are currently experimental.
+A property behavior specifies a default animation to run whenever the property's value changes.
+
+In the following snippet, we specify that we want the x position of redRect to be animated
+whenever it changes. The animation will last 300 milliseconds and use an InOutQuad easing curve.
+
+\qml
+Rectangle {
+    id: redRect
+    color: "red"
+    width: 100; height: 100
+    x: Behavior { NumberAnimation { duration: 300; easing: "InOutQuad" } }
+}
+\endqml
+
+To trigger this behavior, we could:
+\list
+\o Enter a state that changes x
+
+\qml
+State {
+    name: "myState"
+    PropertyChanges {
+        target: redRect
+        x: 200
+        ...
+    }
+}
+\endqml
+
+\o Update x from a script
+
+\qml
+MouseRegion {
+    ....
+    onClicked: redRect.x = 24;
+}
+\endqml
+\endlist
+
+If x were bound to another property, triggering the binding would also trigger the behavior.
+
+If a state change has a transition animation matching a property with a Behavior, the transition animation
+will override the Behavior for that state change.
+
 */

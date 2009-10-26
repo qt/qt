@@ -679,8 +679,6 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
 
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
-
-
 */
 QFxGridView::QFxGridView(QFxItem *parent)
     : QFxFlickable(*(new QFxGridViewPrivate), parent)
@@ -696,6 +694,58 @@ QFxGridView::~QFxGridView()
     if (d->ownModel)
         delete d->model;
 }
+
+/*!
+    \qmlattachedproperty bool GridView::isCurrentItem
+    This attched property is true if this delegate is the current item; otherwise false.
+
+    It is attached to each instance of the delegate.
+*/
+
+/*!
+    \qmlattachedproperty GridView GridView::view
+    This attached property holds the view that manages this delegate instance.
+
+    It is attached to each instance of the delegate.
+*/
+
+/*!
+    \qmlattachedproperty bool GridView::delayRemove
+    This attached property holds whether the delegate may be destroyed.
+
+    It is attached to each instance of the delegate.
+
+    It is sometimes necessary to delay the destruction of an item
+    until an animation completes.
+
+    The example below ensures that the animation completes before
+    the item is removed from the grid.
+
+    \code
+    Component {
+        id: myDelegate
+        Item {
+            id: wrapper
+            GridView.onRemove: SequentialAnimation {
+                PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: true }
+                NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
+                PropertyAction { target: wrapper.GridView; property: "delayRemove"; value: false }
+            }
+        }
+    }
+    \endcode
+*/
+
+/*!
+    \qmlattachedsignal GridView::onAdd()
+    This attached handler is called immediately after an item is added to the view.
+*/
+
+/*!
+    \qmlattachedsignal GridView::onRemove()
+    This attached handler is called immediately before an item is removed from the view.
+*/
+
 
 /*!
   \qmlproperty model GridView::model
@@ -871,9 +921,9 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
 
   \code
   Component {
-      id: Highlight
+      id: myHighlight
       Rectangle {
-          id: Wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
+          id: wrapper; color: "lightsteelblue"; radius: 4; width: 320; height: 60 >
           y: SpringFollow { source: Wrapper.GridView.view.currentItem.y; spring: 3; damping: 0.2 }
           x: SpringFollow { source: Wrapper.GridView.view.currentItem.x; spring: 3; damping: 0.2 }
       }

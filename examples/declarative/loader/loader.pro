@@ -1,4 +1,5 @@
-SOURCES = main.cpp
+SOURCES = main.cpp qmlfolderlistmodel.cpp
+HEADERS = qmlfolderlistmodel.h
 RESOURCES = loader.qrc
 
 QT += script declarative network
@@ -12,7 +13,7 @@ symbian {
 #    TARGET.UID3 =
     include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
     TARGET.EPOCHEAPSIZE = 100000 20000000
-    HEADERS += $$QT_SOURCE_TREE/examples/network/ftp/sym_iap_util.h
+    HEADERS += $$QT_SOURCE_TREE/examples/network/qftp/sym_iap_util.h
     LIBS += -lesock  -lconnmon -linsock
     TARGET.CAPABILITY = NetworkServices
 }

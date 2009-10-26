@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QmlMetaProperty
     \brief The QmlMetaProperty class abstracts accessing QML properties.
+    \internal
  */
 
 /*!
@@ -1065,6 +1066,12 @@ bool QmlMetaProperty::connectNotifier(QObject *dest, const char *slot) const
 int QmlMetaProperty::coreIndex() const
 {
     return d->core.coreIndex;
+}
+
+/*! \internal */
+int QmlMetaProperty::valueTypeCoreIndex() const
+{
+    return d->valueTypeCoreIdx;
 }
 
 Q_GLOBAL_STATIC(QmlValueTypeFactory, qmlValueTypes);

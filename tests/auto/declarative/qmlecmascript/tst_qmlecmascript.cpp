@@ -56,6 +56,7 @@ private slots:
     void signalParameterTypes();
     void objectsCompareAsEqual();
     void scriptAccess();
+    void dynamicCreation_data();
     void dynamicCreation();
     void dynamicDestruction();
     void objectToString();
@@ -64,6 +65,7 @@ private slots:
     void scriptErrors();
     void signalTriggeredBindings();
     void listProperties();
+    void exceptionClearsOnReeval();
 
 private:
     QmlEngine engine;
@@ -639,27 +641,33 @@ void tst_qmlecmascript::scriptAccess()
     QCOMPARE(object->property("test3").toInt(), 0);
 }
 
+void tst_qmlecmascript::dynamicCreation_data()
+{
+    QTest::addColumn<QString>("method");
+    QTest::addColumn<QString>("createdName");
+
+    QTest::newRow("One") << "createOne" << "objectOne";
+    QTest::newRow("Two") << "createTwo" << "objectTwo";
+    QTest::newRow("Three") << "createThree" << "objectThree";
+}
+
 /*
 Test using createQmlObject to dynamically generate an item
 Also using createComponent is tested.
 */
 void tst_qmlecmascript::dynamicCreation()
 {
+    QFETCH(QString, method);
+    QFETCH(QString, createdName);
+
     QmlComponent component(&engine, TEST_FILE("dynamicCreation.qml"));
     MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
     QVERIFY(object != 0);
-    QObject *createdQmlObject = 0;
-    QObject *createdComponent = 0;
 
-    QMetaObject::invokeMethod(object, "createOne");
-    createdQmlObject = object->objectProperty();
-    QVERIFY(createdQmlObject);
-    QCOMPARE(createdQmlObject->objectName(), QString("objectOne"));
-
-    QMetaObject::invokeMethod(object, "createTwo");
-    createdComponent = object->objectProperty();
-    QVERIFY(createdComponent);
-    QCOMPARE(createdComponent->objectName(), QString("objectTwo"));
+    QMetaObject::invokeMethod(object, method.toUtf8());
+    QObject *created = object->objectProperty();
+    QVERIFY(created);
+    QCOMPARE(created->objectName(), createdName);
 }
 
 /*
@@ -753,12 +761,16 @@ void tst_qmlecmascript::scriptErrors()
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
     QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
+    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
-    QObject *object = component.create();
+    MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
+
+    QTest::ignoreMessage(QtWarningMsg, warning4.toLatin1().constData());
+    emit object->basicSignal();
 }
 
 /*
@@ -805,6 +817,27 @@ void tst_qmlecmascript::listProperties()
     QCOMPARE(object->property("test6").toBool(), true);
     QCOMPARE(object->property("test7").toBool(), true);
     QCOMPARE(object->property("test8").toBool(), true);
+}
+
+void tst_qmlecmascript::exceptionClearsOnReeval()
+{
+    QmlComponent component(&engine, TEST_FILE("exceptionClearsOnReeval.qml"));
+    QString url = component.url().toString();
+
+    QString warning = url + ":4: TypeError: Result of expression 'objectProperty.objectProperty' [undefined] is not an object.";
+
+    QTest::ignoreMessage(QtWarningMsg, warning.toLatin1().constData());
+    MyQmlObject *object = qobject_cast<MyQmlObject*>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), false);
+
+    MyQmlObject object2;
+    MyQmlObject object3;
+    object2.setObjectProperty(&object3);
+    object->setObjectProperty(&object2);
+
+    QCOMPARE(object->property("test").toBool(), true);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

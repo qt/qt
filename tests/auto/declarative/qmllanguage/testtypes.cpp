@@ -7,4 +7,4 @@ QML_DEFINE_TYPE(Test,1,0,0,MyContainer,MyContainer);
 QML_DEFINE_TYPE(Test,1,0,0,MyPropertyValueSource,MyPropertyValueSource);
 QML_DEFINE_TYPE(Test,1,0,0,MyDotPropertyObject,MyDotPropertyObject);
 QML_DEFINE_TYPE(Test,1,0,0,MyNamespacedType,MyNamespace::MyNamespacedType);
-
+QML_DEFINE_NOCREATE_TYPE(MyGroupedObject);

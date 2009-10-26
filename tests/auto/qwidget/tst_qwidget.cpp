@@ -69,6 +69,9 @@
 #include <QtGui/qpaintengine.h>
 #include <private/qbackingstore_p.h>
 
+#include <QtGui/QGraphicsView>
+#include <QtGui/QGraphicsProxyWidget>
+
 #include "../../shared/util.h"
 
 
@@ -290,6 +293,7 @@ private slots:
 #ifdef Q_WS_X11
     void minAndMaxSizeWithX11BypassWindowManagerHint();
     void showHideShow();
+    void clean_qt_x11_enforce_cursor();
 #endif
 
     void compatibilityChildInsertedEvents();
@@ -4387,11 +4391,26 @@ void tst_QWidget::winIdChangeEvent()
 
     {
         // Changing parent of a native widget
+        // Should cause winId of child to change, on all platforms
         QWidget parent1, parent2;
         WinIdChangeWidget child(&parent1);
         const WId winIdBefore = child.winId();
         QCOMPARE(child.m_winIdChangeEventCount, 1);
         child.setParent(&parent2);
+        const WId winIdAfter = child.internalWinId();
+        QVERIFY(winIdBefore != winIdAfter);
+        QCOMPARE(child.m_winIdChangeEventCount, 2);
+    }
+
+    {
+        // Changing grandparent of a native widget
+        // Should cause winId of grandchild to change only on Symbian
+        QWidget grandparent1, grandparent2;
+        QWidget parent(&grandparent1);
+        WinIdChangeWidget child(&parent);
+        const WId winIdBefore = child.winId();
+        QCOMPARE(child.m_winIdChangeEventCount, 1);
+        parent.setParent(&grandparent2);
         const WId winIdAfter = child.internalWinId();
 #ifdef Q_OS_SYMBIAN
         QVERIFY(winIdBefore != winIdAfter);
@@ -6194,6 +6213,35 @@ void tst_QWidget::showHideShow()
 
     QVERIFY(w.gotExpectedMapNotify);
 }
+
+void tst_QWidget::clean_qt_x11_enforce_cursor()
+{
+    {
+        QWidget window;
+        QWidget *w = new QWidget(&window);
+        QWidget *child = new QWidget(w);
+        child->setAttribute(Qt::WA_SetCursor, true);
+
+        window.show();
+        QApplication::setActiveWindow(&window);
+        QTest::qWaitForWindowShown(&window);
+        QTest::qWait(100);
+        QCursor::setPos(window.geometry().center());
+        QTest::qWait(100);
+
+        child->setFocus();
+        QApplication::processEvents();
+        QTest::qWait(100);
+
+        delete w;
+    }
+
+    QGraphicsScene scene;
+    QLineEdit *edit = new QLineEdit;
+    scene.addWidget(edit);
+
+    // If the test didn't crash, then it passed.
+}
 #endif
 
 class EventRecorder : public QObject
@@ -7605,11 +7653,11 @@ void tst_QWidget::updateWhileMinimized()
     QTest::qWaitForWindowShown(&widget);
     QApplication::processEvents();
     QTRY_VERIFY(widget.numPaintEvents > 0);
-    QTest::qWait(50);
+    QTest::qWait(150);
 
     // Minimize window.
     widget.showMinimized();
-    QTest::qWait(70);
+    QTest::qWait(110);
 
     widget.reset();
 
@@ -8310,7 +8358,7 @@ public:
 
         static bool firstTime = true;
         if (firstTime)
-            QTimer::singleShot(150, this, SLOT(resizeMe()));
+            QTimer::singleShot(250, this, SLOT(resizeMe()));
 
         firstTime = false;
     }
@@ -8327,7 +8375,7 @@ void tst_QWidget::moveInResizeEvent()
     testWidget.setGeometry(50, 50, 200, 200);
     testWidget.show();
     QTest::qWaitForWindowShown(&testWidget);
-    QTest::qWait(160);
+    QTest::qWait(300);
 
     QRect expectedGeometry(100,100, 100, 100);
     QTRY_COMPARE(testWidget.geometry(), expectedGeometry);

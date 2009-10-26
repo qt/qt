@@ -1098,7 +1098,7 @@ void QFxParticles::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget 
 
 void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    if (d->image.isNull())
+    if (d->image.isNull() || d->particles.isEmpty())
         return;
 
     const int myX = x() + parentItem()->x();

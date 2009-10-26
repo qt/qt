@@ -49,6 +49,7 @@
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlstate.h>
 #include <QtDeclarative/qml.h>
+#include <QtDeclarative/qmlscriptstring.h>
 
 QT_BEGIN_HEADER
 
@@ -161,21 +162,18 @@ class QmlScriptAction : public QmlAbstractAnimation
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlScriptAction)
 
-    Q_PROPERTY(QString script READ script WRITE setScript NOTIFY scriptChanged)
+    Q_PROPERTY(QmlScriptString script READ script WRITE setScript)
     Q_PROPERTY(QString stateChangeScriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
 
 public:
     QmlScriptAction(QObject *parent=0);
     virtual ~QmlScriptAction();
 
-    QString script() const;
-    void setScript(const QString &);
+    QmlScriptString script() const;
+    void setScript(const QmlScriptString &);
 
     QString stateChangeScriptName() const;
     void setStateChangeScriptName(const QString &);
-
-Q_SIGNALS:
-    void scriptChanged(const QString &);
 
 protected:
     virtual void transition(QmlStateActions &actions,

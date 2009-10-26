@@ -79,15 +79,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 #include "qfxeffects.cpp"
 
 /*!
-    \qmlclass Transform
-    \brief A transformation.
-*/
-
-/*!
     \qmlclass Scale
-    \brief A Scale object provides a way to scale an Item.
+    \brief The Scale object provides a way to scale an Item.
 
-    The scale object gives more control over scaling than using Item's scale property. Specifically,
+    The Scale object gives more control over scaling than using Item's scale property. Specifically,
     it allows a different scale for the x and y axes, and allows the scale to be relative to an
     arbitrary point.
 
@@ -105,13 +100,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Scale::origin.x
     \qmlproperty real Scale::origin.y
 
-    The origin point for the scale. The scale will be relative to this point.
+    The point that the item is scaled from (i.e., the point that stays fixed relative to the parent as
+    the rest of the item grows). By default the origin is 0, 0.
 */
 
 /*!
     \qmlproperty real Scale::xScale
 
-    The scaling factor for the X axis.
+    The scaling factor for the X axis.    
 */
 
 /*!
@@ -122,7 +118,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
 /*!
     \qmlclass Rotation
-    \brief A Rotation object provides a way to rotate an Item around a point using an axis in 3D space.
+    \brief The Rotation object provides a way to rotate an Item.
+
+    The Rotation object gives more control over rotation than using Item's rotation property.
+    Specifically, it allows (z axis) rotation to be relative to an arbitrary point.
 
     The following example rotates a Rectangle around its interior point 25, 25:
     \qml
@@ -133,7 +132,10 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     }
     \endqml
 
-    Here is an example of various rotations applied to an \l Image.
+    Rotation also provides a way to specify 3D-like rotations for Items. For these types of
+    rotations you must specify the axis to rotate around in addition to the origin point.
+
+    The following example shows various 3D-like rotations applied to an \l Image.
     \snippet doc/src/snippets/declarative/rotation.qml 0
 
     \image axisrotation.png
@@ -143,7 +145,8 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Rotation::origin.x
     \qmlproperty real Rotation::origin.y
 
-    The point to rotate around.
+    The origin point of the rotation (i.e., the point that stays fixed relative to the parent as
+    the rest of the item rotates). By default the origin is 0, 0.
 */
 
 /*!
@@ -151,16 +154,18 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
     \qmlproperty real Rotation::axis.y
     \qmlproperty real Rotation::axis.z
 
-    A rotation axis is specified by a vector in 3D space By default the vector defines a rotation around the z-Axis.
+    The axis to rotate around. For simple (2D) rotation around a point, you do not need to specify an axis,
+    as the default axis is the z axis (\c{ axis { x: 0; y: 0; z: 0 } }).
+
+    For a typical 3D-like rotation you will usually specify both the origin and the axis.
 
     \image 3d-rotation-axis.png
-
 */
 
 /*!
     \qmlproperty real Rotation::angle
 
-    The angle, in degrees, to rotate.
+    The angle to rotate, in degrees clockwise.
 */
 
 
@@ -610,9 +615,9 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     This example forwards key events to two lists:
     \qml
-    ListView { id: List1 ... }
-    ListView { id: List2 ... }
-    Keys.forwardTo: [List1, List2]
+    ListView { id: list1 ... }
+    ListView { id: list2 ... }
+    Keys.forwardTo: [list1, list2]
     focus: true
     \endqml
 */
@@ -875,6 +880,7 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
     This handler is called when the VolumeDown key has been pressed. The \a event
     parameter provides information about the event.
 */
+
 
 class QFxKeysAttachedPrivate : public QObjectPrivate
 {
@@ -1192,21 +1198,28 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 }
 
 /*!
-    \qmlclass Item QFxItem
-    \brief The Item is the most basic of all visual items in QML.
- */
+    \class QFxItem
+    \brief QFxItem is the most basic of all visual items in QML.
 
-/*!
-    \class QFxItem Item
-    \brief The QFxItem class is a generic QmlView item. It is the base class for all other view items.
-
-    \qmltext
     All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
     has no visual appearance, it defines all the properties that are
-    common across visual items - like the x and y position, and the
-    width and height. \l {Keys}{Key handling} is also provided by Item.
+    common across visual items - such as the x and y position, the
+    width and height, \l {anchor-layout}{anchoring} and key handling.
 
-    QFxItem is also useful for grouping items together.
+    You can subclass QFxItem to provide your own custom visual item that inherits
+    these features.
+*/
+
+/*!
+    \qmlclass Item QFxItem
+    \brief The Item is the most basic of all visual items in QML.
+
+    All visual items in Qt Declarative inherit from Item.  Although Item
+    has no visual appearance, it defines all the properties that are
+    common across visual items - such as the x and y position, the
+    width and height, \l {anchor-layout}{anchoring} and key handling.
+
+    Item is also useful for grouping items together.
 
     \qml
     Item {
@@ -1229,7 +1242,31 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
     }
     \endqml
 
-    \endqmltext
+    \section1 Key Handling
+
+    Key handling is available to all Item-based visual elements via the \l {Keys}{Keys}
+    attached property.  The \e Keys attached property provides basic handlers such
+    as \l {Keys::onPressed(event)}{onPressed} and \l {Keys::onReleased(event)}{onReleased},
+    as well as handlers for specific keys, such as
+    \l {Keys::onCancelPressed(event)}{onCancelPressed}.  The example below
+    assigns \l {qmlfocus}{focus} to the item and handles
+    the Left key via the general \e onPressed handler and the Select key via the
+    onSelectPressed handler:
+
+    \qml
+    Item {
+        focus: true
+        Keys.onPressed: {
+            if (event.key == Qt.Key_Left) {
+                print("move left");
+                event.accepted = true;
+            }
+        }
+        Keys.onSelectPressed: print("Selected");
+    }
+    \endqml
+
+    See the \l {Keys}{Keys} attached property for detailed documentation.
 
     \ingroup group_coreitems
 */
@@ -2094,7 +2131,7 @@ void QFxItem::setBaselineOffset(qreal offset)
 
 /*!
   \qmlproperty real Item::rotation
-  This property holds the rotation of the item in degrees.
+  This property holds the rotation of the item in degrees clockwise.
 
   This specifies how many degrees to rotate the item around its transformOrigin.
   The default rotation is 0 degrees (i.e. not rotated at all).

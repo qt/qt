@@ -181,6 +181,9 @@ void QFxAnchorsPrivate::centerInChanged()
 
 void QFxAnchorsPrivate::clearItem(QFxItem *item)
 {
+    Q_Q(QFxAnchors);
+    if (!item)
+        return;
     if (fill == item)
         fill = 0;
     if (centerIn == item)
@@ -232,7 +235,7 @@ void QFxAnchorsPrivate::remDepend(QFxItem *item)
         return;
     QFxItemPrivate *p =
         static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
-    p->dependantAnchors.removeAll(q);
+    p->dependantAnchors.removeOne(q);
 }
 
 bool QFxAnchorsPrivate::isItemComplete() const

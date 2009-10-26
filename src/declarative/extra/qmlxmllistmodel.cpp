@@ -76,7 +76,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlListModel,QmlXmlListModel)
     ...
 
     Component {
-        id: Delegate
+        id: myDelegate
         Text { text: title }
     }
     \endqml
@@ -416,7 +416,7 @@ void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
     The following is an example of a model containing news from a Yahoo RSS feed:
     \qml
     XmlListModel {
-        id: FeedModel
+        id: feedModel
         source: "http://rss.news.yahoo.com/rss/oceania"
         query: "/rss/channel/item"
         XmlRole { name: "title"; query: "title/string()" }

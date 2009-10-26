@@ -105,3 +105,4 @@ Script: now an intrinsic type in the language
  - bad:  Item { resources: Script { ... } }
 Script: delay-loaded of the QML file until their source has been loaded (this only effects QML files loaded across the network.)
 Scope: declared properties shadow a property of the same name (was previously the reverse)
+ScriptAction and StateChangeScript: the script property now takes script rather than a string containing script (script: doSomething() rather than script: "doSomething()")

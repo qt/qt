@@ -91,7 +91,9 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
+#define COMMAND_QMLATTACHEDSIGNAL       Doc::alias("qmlattachedsignal")
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLATTACHEDMETHOD       Doc::alias("qmlattachedmethod")
 #define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
@@ -485,7 +487,9 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_QMLPROPERTY
                            << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLMETHOD;
+                           << COMMAND_QMLATTACHEDSIGNAL
+                           << COMMAND_QMLMETHOD
+                           << COMMAND_QMLATTACHEDMETHOD;
 #else
                            << COMMAND_VARIABLE;
 #endif
@@ -678,7 +682,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
-             (command == COMMAND_QMLMETHOD)) {
+             (command == COMMAND_QMLMETHOD) ||
+             (command == COMMAND_QMLATTACHEDSIGNAL) ||
+             (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
         QString name;
         QmlClassNode* qmlClass = 0;
@@ -687,9 +693,15 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
-                    return new QmlSignalNode(qmlClass,name);
+                    return new QmlSignalNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDSIGNAL)
+                    return new QmlSignalNode(qmlClass,name,true);
+                else if (command == COMMAND_QMLMETHOD)
+                    return new QmlMethodNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDMETHOD)
+                    return new QmlMethodNode(qmlClass,name,true);
                 else
-                    return new QmlMethodNode(qmlClass,name);
+                    return 0; // never get here.
             }
         }
     }

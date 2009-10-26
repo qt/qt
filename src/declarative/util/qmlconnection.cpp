@@ -51,11 +51,12 @@ QT_BEGIN_NAMESPACE
 class QmlConnectionPrivate : public QObjectPrivate
 {
 public:
-    QmlConnectionPrivate() : boundsignal(0), signalSender(0), componentcomplete(false) {}
+    QmlConnectionPrivate() : boundsignal(0), signalSender(0), scriptset(false), componentcomplete(false) {}
 
     QmlBoundSignal *boundsignal;
     QObject *signalSender;
-    QString script;
+    QmlScriptString script;
+    bool scriptset;
     QString signal;
     bool componentcomplete;
 };
@@ -154,7 +155,7 @@ void QmlConnection::connectIfValid()
     if (!d->componentcomplete)
         return;
     // boundsignal must not exist
-    if ((d->signalSender || parent()) && !d->signal.isEmpty() && !d->script.isEmpty()) {
+    if ((d->signalSender || parent()) && !d->signal.isEmpty() && d->scriptset) {
         // create
         // XXX scope?
         int sigIdx = -1;
@@ -187,7 +188,7 @@ void QmlConnection::connectIfValid()
             return;
         }
 
-        d->boundsignal = new QmlBoundSignal(qmlContext(this), d->script, sender, mo->method(sigIdx), this);
+        d->boundsignal = new QmlBoundSignal(qmlContext(this), d->script.script(), sender, mo->method(sigIdx), this);
     }
 }
 
@@ -196,7 +197,7 @@ void QmlConnection::disconnectIfValid()
     Q_D(QmlConnection);
     if (!d->componentcomplete)
         return;
-    if ((d->signalSender || parent()) && !d->signal.isEmpty() && !d->script.isEmpty()) {
+    if ((d->signalSender || parent()) && !d->signal.isEmpty() && d->scriptset) {
         // boundsignal must exist
         // destroy
         delete d->boundsignal;
@@ -213,31 +214,33 @@ void QmlConnection::componentComplete()
 
 
 /*!
-    \qmlproperty string Connection::script
+    \qmlproperty script Connection::script
     This property holds the JavaScript executed whenever the signal is sent.
 
     This is the default attribute of Connection.
 */
-QString QmlConnection::script() const
+QmlScriptString QmlConnection::script() const
 {
     Q_D(const QmlConnection);
     return d->script;
 }
 
-void QmlConnection::setScript(const QString& script)
+void QmlConnection::setScript(const QmlScriptString& script)
 {
     Q_D(QmlConnection);
     if ((d->signalSender || parent()) && !d->signal.isEmpty()) {
-        if (d->script.isEmpty()) {
+        if (!d->scriptset) {
             // mustn't exist - create
+            d->scriptset = true;
             d->script = script;
             connectIfValid();
         } else {
             // must exist - update
             d->script = script;
-            d->boundsignal->expression()->setExpression(script);
+            d->boundsignal->expression()->setExpression(script.script());
         }
     } else {
+        d->scriptset = true;
         d->script = script;
     }
 }

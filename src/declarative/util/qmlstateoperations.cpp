@@ -285,7 +285,7 @@ class QmlStateChangeScriptPrivate : public QObjectPrivate
 public:
     QmlStateChangeScriptPrivate() {}
 
-    QString script;
+    QmlScriptString script;
     QString name;
 };
 
@@ -304,16 +304,16 @@ QmlStateChangeScript::~QmlStateChangeScript()
 }
 
 /*!
-    \qmlproperty string StateChangeScript::script
+    \qmlproperty script StateChangeScript::script
     This property holds the script to run when the state is current.
 */
-QString QmlStateChangeScript::script() const
+QmlScriptString QmlStateChangeScript::script() const
 {
     Q_D(const QmlStateChangeScript);
     return d->script;
 }
 
-void QmlStateChangeScript::setScript(const QString &s)
+void QmlStateChangeScript::setScript(const QmlScriptString &s)
 {
     Q_D(QmlStateChangeScript);
     d->script = s;
@@ -334,8 +334,9 @@ void QmlStateChangeScript::setName(const QString &n)
 void QmlStateChangeScript::execute()
 {
     Q_D(QmlStateChangeScript);
-    if (!d->script.isEmpty()) {
-        QmlExpression expr(qmlContext(this), d->script, this);
+    const QString &script = d->script.script();
+    if (!script.isEmpty()) {
+        QmlExpression expr(d->script.context(), script, d->script.scopeObject());
         expr.setTrackChange(false);
         expr.value();
     }

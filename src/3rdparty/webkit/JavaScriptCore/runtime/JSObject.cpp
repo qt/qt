@@ -42,6 +42,25 @@ namespace JSC {
 
 ASSERT_CLASS_FITS_IN_CELL(JSObject);
 
+static inline void getEnumerablePropertyNames(ExecState* exec, const ClassInfo* classInfo, PropertyNameArray& propertyNames)
+{
+    // Add properties from the static hashtables of properties
+    for (; classInfo; classInfo = classInfo->parentClass) {
+        const HashTable* table = classInfo->propHashTable(exec);
+        if (!table)
+            continue;
+        table->initializeIfNeeded(exec);
+        ASSERT(table->table);
+
+        int hashSizeMask = table->compactSize - 1;
+        const HashEntry* entry = table->table;
+        for (int i = 0; i <= hashSizeMask; ++i, ++entry) {
+            if (entry->key() && !(entry->attributes() & DontEnum))
+                propertyNames.add(entry->key());
+        }
+    }
+}
+
 void JSObject::markChildren(MarkStack& markStack)
 {
 #ifndef NDEBUG
@@ -424,12 +443,29 @@ bool JSObject::getPropertySpecificValue(ExecState*, const Identifier& propertyNa
 
 void JSObject::getPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    m_structure->getEnumerablePropertyNames(exec, propertyNames, this);
+    getOwnPropertyNames(exec, propertyNames);
+
+    if (prototype().isNull())
+        return;
+
+    JSObject* prototype = asObject(this->prototype());
+    while(1) {
+        if (prototype->structure()->typeInfo().overridesGetPropertyNames()) {
+            prototype->getPropertyNames(exec, propertyNames);
+            break;
+        }
+        prototype->getOwnPropertyNames(exec, propertyNames);
+        JSValue nextProto = prototype->prototype();
+        if (nextProto.isNull())
+            break;
+        prototype = asObject(nextProto);
+    }
 }
 
 void JSObject::getOwnPropertyNames(ExecState* exec, PropertyNameArray& propertyNames)
 {
-    m_structure->getOwnEnumerablePropertyNames(exec, propertyNames, this);
+    m_structure->getEnumerablePropertyNames(propertyNames);
+    getEnumerablePropertyNames(exec, classInfo(), propertyNames);
 }
 
 bool JSObject::toBoolean(ExecState*) const

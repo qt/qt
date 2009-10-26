@@ -69,6 +69,7 @@
 #include <private/qmlexpression_p.h>
 #include "qmlmetaproperty_p.h"
 #include "qmlrewrite_p.h"
+#include <QtDeclarative/qmlscriptstring.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -860,6 +861,17 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
 
 void QmlCompiler::genObjectBody(QmlParser::Object *obj)
 {
+    typedef QPair<Property *, int> PropPair;
+    foreach(const PropPair &prop, obj->scriptStringProperties) {
+        QmlInstruction ss;
+        ss.type = QmlInstruction::StoreScriptString;
+        ss.storeScriptString.propertyIndex = prop.first->index;
+        ss.storeScriptString.value = 
+            output->indexForString(prop.first->values.at(0)->value.asScript());
+        ss.storeScriptString.scope = prop.second;
+        output->bytecode << ss;
+    }
+
     bool seenDefer = false;
     foreach(Property *prop, obj->valueProperties) {
         if (prop->isDeferred) {
@@ -1371,6 +1383,10 @@ bool QmlCompiler::buildProperty(QmlParser::Property *prop,
 
         COMPILE_CHECK(buildListProperty(prop, obj, ctxt));
 
+    } else if (prop->type == qMetaTypeId<QmlScriptString>()) {
+
+        COMPILE_CHECK(buildScriptStringProperty(prop, obj, ctxt));
+
     } else {
 
         COMPILE_CHECK(buildPropertyAssignment(prop, obj, ctxt));
@@ -1724,7 +1740,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
             } else {
                 COMPILE_CHECK(buildObject(value->object, ctxt));
 
-                if (isPropertyInterceptor && prop->parent->synthdata.isEmpty())
+                if (isPropertyInterceptor && baseObj->synthdata.isEmpty())
                     buildDynamicMeta(baseObj, ForceCreation);
                 value->type = isPropertyValue ? Value::ValueSource : Value::ValueInterceptor;
             }
@@ -1819,6 +1835,22 @@ bool QmlCompiler::buildListProperty(QmlParser::Property *prop,
         }
 
     }
+
+    return true;
+}
+
+// Compiles an assignment to a QmlScriptString property
+bool QmlCompiler::buildScriptStringProperty(QmlParser::Property *prop,
+                                            QmlParser::Object *obj,
+                                            const BindingContext &ctxt)
+{
+    if (prop->values.count() > 1) 
+        COMPILE_EXCEPTION(prop->values.at(1), qApp->translate("QmlCompiler", "Cannot assign multiple values to a script property"));
+
+    if (prop->values.at(0)->object || !prop->values.at(0)->value.isScript())
+        COMPILE_EXCEPTION(prop->values.at(0), qApp->translate("QmlCompiler", "Invalid property assignment: script expected"));
+
+    obj->addScriptStringProperty(prop, ctxt.stack);
 
     return true;
 }

@@ -139,6 +139,8 @@ void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyl
             markContainingBlocksForLayout();
             if (style()->position() == StaticPosition)
                 repaint();
+            else if (newStyle->position() == AbsolutePosition || newStyle->position() == FixedPosition)
+                parent()->setChildNeedsLayout(true);
             if (isFloating() && !isPositioned() && (newStyle->position() == AbsolutePosition || newStyle->position() == FixedPosition))
                 removeFloatingOrPositionedChildFromBlockLists();
         }
@@ -961,10 +963,10 @@ void RenderBox::mapLocalToContainer(RenderBoxModelObject* repaintContainer, bool
         transformState.move(containerOffset.width(), containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
 
     if (containerSkipped) {
-        // There can't be a transfrom between repaintContainer and o, because transforms create containers, so it should be safe
+        // There can't be a transform between repaintContainer and o, because transforms create containers, so it should be safe
         // to just subtract the delta between the repaintContainer and o.
-        IntSize repaintContainerOffset = repaintContainer->offsetFromContainer(o);
-        transformState.move(-repaintContainerOffset.width(), -repaintContainerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
+        IntSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
+        transformState.move(-containerOffset.width(), -containerOffset.height(), preserve3D ? TransformState::AccumulateTransform : TransformState::FlattenTransform);
         return;
     }
     
@@ -1201,7 +1203,7 @@ void RenderBox::computeRectForRepaint(RenderBoxModelObject* repaintContainer, In
 
     if (containerSkipped) {
         // If the repaintContainer is below o, then we need to map the rect into repaintContainer's coordinates.
-        IntSize containerOffset = repaintContainer->offsetFromContainer(o);
+        IntSize containerOffset = repaintContainer->offsetFromAncestorContainer(o);
         rect.move(-containerOffset);
         return;
     }
