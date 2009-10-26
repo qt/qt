@@ -278,7 +278,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     QMetaMethod m = method(_id);
                     QList<QByteArray> names = m.parameterNames(); 
                     for (int ii = 0; ii < names.count(); ++ii) 
-                        newCtxt.setContextProperty(names.at(ii), *(QVariant *)a[ii + 1]);
+                        newCtxt.setContextProperty(QString::fromLatin1(names.at(ii)), *(QVariant *)a[ii + 1]);
                     QmlExpression expr(&newCtxt, code, object);
                     expr.setTrackChange(false);
                     expr.value();

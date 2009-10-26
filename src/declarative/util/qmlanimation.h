@@ -65,6 +65,7 @@ class Q_AUTOTEST_EXPORT QmlAbstractAnimation : public QObject, public QmlPropert
     Q_DECLARE_PRIVATE(QmlAbstractAnimation)
 
     Q_INTERFACES(QmlParserStatus)
+    Q_INTERFACES(QmlPropertyValueSource)
     Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
     Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
     Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())

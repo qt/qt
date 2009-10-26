@@ -396,8 +396,7 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
     }
 }
 
-void QmlContextPrivate::setIdProperty(const QString &name, int idx, 
-                                      QObject *obj)
+void QmlContextPrivate::setIdProperty(int idx, QObject *obj)
 {
     if (notifyIndex == -1) {
         Q_Q(QmlContext);
@@ -487,7 +486,6 @@ void QmlContext::setBaseUrl(const QUrl &baseUrl)
 */
 QUrl QmlContext::baseUrl() const
 {
-    Q_D(const QmlContext);
     const QmlContext* p = this;
     while (p && p->d_func()->url.isEmpty()) {
         p = p->parentContext();
