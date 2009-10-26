@@ -130,8 +130,8 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
     if (m_roundness > 24)
         m_roundness = 24;
 
-    m_sin_theta = qSin(Q_PI / m_roundness); // ### Use qFastSin
-    m_cos_theta = qCos(Q_PI / m_roundness);
+    m_sin_theta = qFastSin(Q_PI / m_roundness);
+    m_cos_theta = qFastCos(Q_PI / m_roundness);
 
     const qreal *endPts = pts + (count<<1);
     const qreal *startPts;
