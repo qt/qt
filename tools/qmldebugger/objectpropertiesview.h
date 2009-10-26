@@ -9,13 +9,16 @@ QT_BEGIN_NAMESPACE
 
 class QTreeWidget;
 class QTreeWidgetItem;
+class QmlDebugConnection;
 
 class ObjectPropertiesView : public QWidget
 {
     Q_OBJECT
 public:
-    ObjectPropertiesView(QmlEngineDebug *client, QWidget *parent = 0);
+    ObjectPropertiesView(QmlEngineDebug *client = 0, QWidget *parent = 0);
 
+    void setEngineDebug(QmlEngineDebug *client);
+    
 signals:
     void activated(const QmlDebugObjectReference &, const QmlDebugPropertyReference &);
 

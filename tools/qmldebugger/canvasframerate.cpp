@@ -32,7 +32,6 @@ public slots:
 
 protected:
     virtual void paintEvent(QPaintEvent *);
-    virtual QSize sizeHint() const;
 
 private slots:
     void scrollbarChanged(int);
@@ -57,6 +56,8 @@ private:
 QLineGraph::QLineGraph(QWidget *parent)
 : QWidget(parent), sb(Qt::Horizontal, this), position(-1), samplesPerWidth(99), resolutionForHeight(50), ignoreScroll(false)
 {
+    setMinimumHeight(180);
+
     sb.setMaximum(0);
     sb.setMinimum(0);
     sb.setSingleStep(1);
@@ -66,11 +67,6 @@ QLineGraph::QLineGraph(QWidget *parent)
     layout->addStretch(2);
     layout->addWidget(&sb);
     QObject::connect(&sb, SIGNAL(valueChanged(int)), this, SLOT(scrollbarChanged(int)));
-}
-
-QSize QLineGraph::sizeHint() const
-{
-    return QSize(800, 600);
 }
 
 void QLineGraph::scrollbarChanged(int v)
@@ -289,6 +285,16 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
     bottom->addWidget(pb);
 
     newTab();
+}
+
+void CanvasFrameRate::setSizeHint(const QSize &size)
+{
+    m_sizeHint = size;
+}
+
+QSize CanvasFrameRate::sizeHint() const
+{
+    return m_sizeHint;
 }
 
 void CanvasFrameRate::newTab()

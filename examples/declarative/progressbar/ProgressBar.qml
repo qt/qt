@@ -21,7 +21,7 @@ Item {
         id: highlight; radius: 2
         anchors.left: parent.left; anchors.top: parent.top; anchors.bottom: parent.bottom
         anchors.leftMargin: 3; anchors.topMargin: 3; anchors.bottomMargin: 3
-        width: EaseFollow { source: highlight.widthDest; duration: 100 }
+        width: EaseFollow { source: highlight.widthDest; duration: 1000 }
         gradient: Gradient {
             GradientStop { id: g1; position: 0.0 }
             GradientStop { id: g2; position: 1.0 }

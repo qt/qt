@@ -73,7 +73,7 @@ void QmlListAccessor::setList(const QVariant &v, QmlEngine *engine)
         m_type = Invalid;
     } else if (d.type() == QVariant::StringList) {
         m_type = StringList;
-    } else if (d.type() == QMetaType::QVariantList) {
+    } else if (d.type() == (QVariant::Type)QMetaType::QVariantList) {
         m_type = VariantList;
     } else if (d.canConvert(QVariant::Int)) {
         m_type = Integer;
@@ -136,7 +136,7 @@ QVariant QmlListAccessor::at(int idx) const
             QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
             void *ptr[1];
             li->at(idx, ptr);
-            return QmlMetaType::fromObject((QObject*)ptr[0], li->type()); //XXX only handles QObject-derived types
+            return QVariant::fromValue((QObject*)ptr[0]);
         }
     case QList:
         return QmlMetaType::listAt(d, idx);

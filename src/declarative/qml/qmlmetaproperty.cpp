@@ -61,6 +61,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QmlMetaProperty
     \brief The QmlMetaProperty class abstracts accessing QML properties.
+    \internal
  */
 
 /*!

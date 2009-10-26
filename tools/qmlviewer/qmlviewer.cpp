@@ -310,6 +310,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));
+    QObject::connect(canvas, SIGNAL(initialSize(QSize)), this, SLOT(adjustSizeSlot()));
     QObject::connect(canvas, SIGNAL(errors(QList<QmlError>)), this, SLOT(executeErrors()));
 
     if (!(flags & Qt::FramelessWindowHint))
@@ -333,6 +334,11 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     autoStopTimer.setRunning(false);
     recordTimer.setRunning(false);
     recordTimer.setRepeating(true);
+}
+
+void QmlViewer::adjustSizeSlot()
+{
+    adjustSize();
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -600,14 +606,17 @@ void QmlViewer::addLibraryPath(const QString& lib)
 
 void QmlViewer::reload()
 {
-    openQml(currentFileName);
+    openQml(canvas->url());
 }
 
 void QmlViewer::open()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), currentFileName, tr("QML Files (*.qml)"));
-    if (!fileName.isEmpty())
-        openQml(fileName);
+    QString cur = canvas->url().toLocalFile();
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
+    if (!fileName.isEmpty()) {
+        QFileInfo fi(fileName);
+        openQml(QUrl::fromLocalFile(fi.absoluteFilePath()));
+    }
 }
 
 void QmlViewer::executeErrors()
@@ -615,55 +624,55 @@ void QmlViewer::executeErrors()
     if (tester) tester->executefailure();
 }
 
-void QmlViewer::openQml(const QString& fileName)
+void QmlViewer::openQml(const QUrl& url)
 {
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(fileName));
+    QString fileName = url.toLocalFile();
+    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(fileName.isEmpty() ? url.toString() : fileName));
 
     if (!m_script.isEmpty()) 
         tester = new QFxTester(m_script, m_scriptOptions, canvas);
 
     canvas->reset();
 
-    currentFileName = fileName;
-    QUrl url(fileName);
-    QFileInfo fi(fileName);
-    if (fi.exists()) {
-        if (fi.suffix().toLower() != QLatin1String("qml")) {
-            qWarning() << "qmlviewer cannot open non-QML file" << fileName;
+    if (!fileName.isEmpty()) {
+        QFileInfo fi(fileName);
+        if (fi.exists()) {
+            if (fi.suffix().toLower() != QLatin1String("qml")) {
+                qWarning() << "qmlviewer cannot open non-QML file" << fileName;
+                return;
+            }
+
+            QmlContext *ctxt = canvas->rootContext();
+            QDir dir(fi.path()+"/dummydata", "*.qml");
+            QStringList list = dir.entryList();
+            for (int i = 0; i < list.size(); ++i) {
+                QString qml = list.at(i);
+                QFile f(dir.filePath(qml));
+                f.open(QIODevice::ReadOnly);
+                QByteArray data = f.readAll();
+                QmlComponent comp(canvas->engine());
+                comp.setData(data, QUrl());
+                QObject *dummyData = comp.create();
+
+                if(comp.isError()) {
+                    QList<QmlError> errors = comp.errors();
+                    foreach (const QmlError &error, errors) {
+                        qWarning() << error;
+                    }
+                    if (tester) tester->executefailure();
+                }
+
+                if (dummyData) {
+                    qWarning() << "Loaded dummy data:" << dir.filePath(qml);
+                    qml.truncate(qml.length()-4);
+                    ctxt->setContextProperty(qml, dummyData);
+                    dummyData->setParent(this);
+                }
+            }
+        } else {
+            qWarning() << "qmlviewer cannot find file:" << fileName;
             return;
         }
-
-        url = QUrl::fromLocalFile(fi.absoluteFilePath());
-        QmlContext *ctxt = canvas->rootContext();
-        QDir dir(fi.path()+"/dummydata", "*.qml");
-        QStringList list = dir.entryList();
-        for (int i = 0; i < list.size(); ++i) {
-            QString qml = list.at(i);
-            QFile f(dir.filePath(qml));
-            f.open(QIODevice::ReadOnly);
-            QByteArray data = f.readAll();
-            QmlComponent comp(canvas->engine());
-            comp.setData(data, QUrl());
-            QObject *dummyData = comp.create();
-
-            if(comp.isError()) {
-                QList<QmlError> errors = comp.errors();
-                foreach (const QmlError &error, errors) {
-                    qWarning() << error;
-                }
-                if (tester) tester->executefailure();
-            }
-
-            if (dummyData) {
-                qWarning() << "Loaded dummy data:" << dir.filePath(qml);
-                qml.truncate(qml.length()-4);
-                ctxt->setContextProperty(qml, dummyData);
-                dummyData->setParent(this);
-            }
-        }
-    } else {
-        qWarning() << "qmlviewer cannot find file:" << fileName;
-        return;
     }
 
     canvas->setUrl(url);
@@ -677,7 +686,7 @@ void QmlViewer::openQml(const QString& fileName)
         canvas->updateGeometry();
         if (mb)
             mb->updateGeometry();
-        resize(sizeHint());
+        adjustSize();
     } else {
         if (scaleSkin)
             canvas->resize(canvas->sizeHint());

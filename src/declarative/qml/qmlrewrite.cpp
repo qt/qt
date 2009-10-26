@@ -120,7 +120,7 @@ bool RewriteBinding::visit(AST::ExpressionStatement *ast)
     return false;
 }
 
-bool RewriteBinding::visit(AST::DoWhileStatement *ast)
+bool RewriteBinding::visit(AST::DoWhileStatement *)
 {
     ++_inLoop;
     return true;
@@ -131,7 +131,7 @@ void RewriteBinding::endVisit(AST::DoWhileStatement *)
     --_inLoop;
 }
 
-bool RewriteBinding::visit(AST::WhileStatement *ast)
+bool RewriteBinding::visit(AST::WhileStatement *)
 {
     ++_inLoop;
     return true;
@@ -142,7 +142,7 @@ void RewriteBinding::endVisit(AST::WhileStatement *)
     --_inLoop;
 }
 
-bool RewriteBinding::visit(AST::ForStatement *ast)
+bool RewriteBinding::visit(AST::ForStatement *)
 {
     ++_inLoop;
     return true;
@@ -153,7 +153,7 @@ void RewriteBinding::endVisit(AST::ForStatement *)
     --_inLoop;
 }
 
-bool RewriteBinding::visit(AST::LocalForStatement *ast)
+bool RewriteBinding::visit(AST::LocalForStatement *)
 {
     ++_inLoop;
     return true;
@@ -164,7 +164,7 @@ void RewriteBinding::endVisit(AST::LocalForStatement *)
     --_inLoop;
 }
 
-bool RewriteBinding::visit(AST::ForEachStatement *ast)
+bool RewriteBinding::visit(AST::ForEachStatement *)
 {
     ++_inLoop;
     return true;
@@ -175,7 +175,7 @@ void RewriteBinding::endVisit(AST::ForEachStatement *)
     --_inLoop;
 }
 
-bool RewriteBinding::visit(AST::LocalForEachStatement *ast)
+bool RewriteBinding::visit(AST::LocalForEachStatement *)
 {
     ++_inLoop;
     return true;

@@ -1198,6 +1198,19 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 }
 
 /*!
+    \class QFxItem
+    \brief QFxItem is the most basic of all visual items in QML.
+
+    All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
+    has no visual appearance, it defines all the properties that are
+    common across visual items - such as the x and y position, the
+    width and height, \l {anchor-layout}{anchoring} and key handling.
+
+    You can subclass QFxItem to provide your own custom visual item that inherits
+    these features.
+*/
+
+/*!
     \qmlclass Item QFxItem
     \brief The Item is the most basic of all visual items in QML.
 
@@ -1364,7 +1377,7 @@ QFxItem::~QFxItem()
     \qml
     Image {
         source: "myimage.png"
-        transformOrigin: "Center"
+        transformOrigin: Item.Center
         scale: 4
     }
     \endqml

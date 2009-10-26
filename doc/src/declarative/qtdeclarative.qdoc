@@ -84,6 +84,7 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {QML Documents}
 \o \l {Property Binding}
 \o \l {ECMAScript Blocks}
+\o \l {QML Scope}
 \o \l {Network Transparency}
 \o \l {qmlmodels}{Data Models}
 \o \l {anchor-layout}{Anchor-based Layout}

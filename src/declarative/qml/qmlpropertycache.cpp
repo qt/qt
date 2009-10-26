@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 void QmlPropertyCache::Data::load(const QMetaProperty &p)
 {
     propType = p.userType();
-    if (propType == QVariant::LastType)
+    if (QVariant::Type(propType) == QVariant::LastType)
         propType = qMetaTypeId<QVariant>();
     coreIndex = p.propertyIndex();
     notifyIndex = p.notifySignalIndex();
