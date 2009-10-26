@@ -83,6 +83,7 @@ private slots:
     void layoutItemRect();
     void warnIfWrongParent();
     void controlTypes();
+    void adjustSizeShouldMakeSureLayoutIsActivated();
 };
 
 tst_QLayout::tst_QLayout()
@@ -110,8 +111,8 @@ void tst_QLayout::getSetCheck()
 class SizeHinterFrame : public QFrame
 {
 public:
-    SizeHinterFrame(const QSize &s) 
-    : QFrame(0), sh(s) {
+    SizeHinterFrame(const QSize &sh, const QSize &msh = QSize())
+    : QFrame(0), sh(sh), msh(msh) {
         setFrameStyle(QFrame::Box | QFrame::Plain);
     }
 
@@ -119,9 +120,11 @@ public:
 
     void setSizeHint(const QSize &s) { sh = s; }
     QSize sizeHint() const { return sh; }
+    QSize minimumSizeHint() const { return msh; }
 
 private:
     QSize sh;
+    QSize msh;
 };
 
 
@@ -331,6 +334,27 @@ void tst_QLayout::controlTypes()
     QSizePolicy p;
     QCOMPARE(p.controlType(),QSizePolicy::DefaultType);
 
+}
+
+void tst_QLayout::adjustSizeShouldMakeSureLayoutIsActivated()
+{
+    QWidget main;
+
+    QVBoxLayout *const layout = new QVBoxLayout(&main);
+    layout->setMargin(0);
+    SizeHinterFrame *frame = new SizeHinterFrame(QSize(200, 10), QSize(200, 8));
+    frame->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    layout->addWidget(frame);
+
+    SizeHinterFrame *frame2 = new SizeHinterFrame(QSize(200, 10), QSize(200, 8));
+    frame2->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    layout->addWidget(frame2);
+
+    main.show();
+
+    frame2->hide();
+    main.adjustSize();
+    QCOMPARE(main.size(), QSize(200, 10));
 }
 
 QTEST_MAIN(tst_QLayout)

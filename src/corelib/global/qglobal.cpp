@@ -2479,7 +2479,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2535,20 +2535,35 @@ void qsrand(uint seed)
 */
 void qsrand()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
     SeedStorageType *pseed = randTLS()->localData();
     if (pseed) {
         // already seeded
         return;
     }
     randTLS()->setLocalData(pseed = new SeedStorageType);
-    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
+    // start beyond 1 to avoid the sequence reset
+    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
     *pseed = QDateTime::currentDateTime().toTime_t()
              + quintptr(&pseed)
              + serial.fetchAndAddRelaxed(1);
-#else
-    // On Windows, we assume that rand() already does the right thing
+#if defined(Q_OS_WIN)
+    // for Windows the srand function must still be called.
+    srand(*pseed);
 #endif
+
+#elif defined(Q_OS_WIN)
+    static unsigned int seed = 0;
+
+    if (seed)
+        return;
+
+    seed = GetTickCount();
+    srand(seed);
+#else 
+    // Symbian?
+
+#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 }
 
 /*!

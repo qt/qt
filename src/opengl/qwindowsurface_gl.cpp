@@ -367,7 +367,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
         qWarning() << "hijackWindow() could not create EGL surface";
     }
-    qDebug("QGLWindowSurface - using EGLConfig %d", ctxpriv->eglContext->config());
+    qDebug("QGLWindowSurface - using EGLConfig %d", reinterpret_cast<int>(ctxpriv->eglContext->config()));
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;

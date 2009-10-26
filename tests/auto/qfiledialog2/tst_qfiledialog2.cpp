@@ -136,7 +136,10 @@ private:
 };
 
 tst_QFiledialog::tst_QFiledialog()
-{
+{   
+#if defined(Q_OS_WINCE)
+    qApp->setAutoMaximizeThreshold(-1);
+#endif
 }
 
 tst_QFiledialog::~tst_QFiledialog()
@@ -168,13 +171,21 @@ void tst_QFiledialog::cleanup()
 void tst_QFiledialog::listRoot()
 {
 #if defined QT_BUILD_INTERNAL
+    QFileInfoGatherer fileInfoGatherer;
+    fileInfoGatherer.start();
+    QTest::qWait(1500);
+
     QFileInfoGatherer::fetchedRoot = false;
     QString dir(QDir::currentPath());
     QNonNativeFileDialog fd(0, QString(), dir);
     fd.show();
     QCOMPARE(QFileInfoGatherer::fetchedRoot,false);
     fd.setDirectory("");
+#ifdef Q_OS_WINCE
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
+#endif
     QCOMPARE(QFileInfoGatherer::fetchedRoot,true);
 #endif
 }
@@ -297,6 +308,7 @@ void tst_QFiledialog::emptyUncPath()
 void tst_QFiledialog::task178897_minimumSize()
 {
     QNonNativeFileDialog fd;
+    QSize oldMs = fd.layout()->minimumSize();
     QStringList history = fd.history();
     history << QDir::toNativeSeparators("/verylongdirectory/"
             "aaaaaaaaaabbbbbbbbcccccccccccddddddddddddddeeeeeeeeeeeeffffffffffgggtggggggggghhhhhhhhiiiiiijjjk");
@@ -304,7 +316,7 @@ void tst_QFiledialog::task178897_minimumSize()
     fd.show();
 
     QSize ms = fd.layout()->minimumSize();
-    QVERIFY(ms.width() < 400);
+    QVERIFY(ms.width() <= oldMs.width());
 }
 
 void tst_QFiledialog::task180459_lastDirectory_data()
@@ -653,22 +665,33 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     fd.setDirectory(current.absolutePath());
     fd.setViewMode(QFileDialog::Detail);
     fd.show();
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
+#endif
     QTreeView *tree = qFindChild<QTreeView*>(&fd, "treeView");
     tree->header()->setSortIndicator(3,Qt::DescendingOrder);
     QTest::qWait(200);
     QDialogButtonBox *buttonBox = qFindChild<QDialogButtonBox*>(&fd, "buttonBox");
     QPushButton *button = buttonBox->button(QDialogButtonBox::Open);
     QTest::mouseClick(button, Qt::LeftButton);
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
-
+#endif
     QNonNativeFileDialog fd2;
     fd2.setFileMode(QFileDialog::Directory);
     fd2.restoreState(fd.saveState());
     current.cd("aaaaaaaaaaaaaaaaaa");
     fd2.setDirectory(current.absolutePath());
     fd2.show();
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
+#endif
     QTreeView *tree2 = qFindChild<QTreeView*>(&fd2, "treeView");
     tree2->setFocus();
 
@@ -678,15 +701,22 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     QPushButton *button2 = buttonBox2->button(QDialogButtonBox::Open);
     fd2.selectFile("g");
     QTest::mouseClick(button2, Qt::LeftButton);
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
-
+#endif
     QCOMPARE(fd2.selectedFiles().first(), current.absolutePath() + QChar('/') + QLatin1String("g"));
 
     QNonNativeFileDialog fd3(0, "This is a third file dialog", tempFile->fileName());
     fd3.restoreState(fd.saveState());
     fd3.setFileMode(QFileDialog::Directory);
     fd3.show();
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
+#endif
     QTreeView *tree3 = qFindChild<QTreeView*>(&fd3, "treeView");
     tree3->setFocus();
 
@@ -695,8 +725,11 @@ void tst_QFiledialog::task228844_ensurePreviousSorting()
     QDialogButtonBox *buttonBox3 = qFindChild<QDialogButtonBox*>(&fd3, "buttonBox");
     QPushButton *button3 = buttonBox3->button(QDialogButtonBox::Open);
     QTest::mouseClick(button3, Qt::LeftButton);
+#if defined(Q_OS_WINCE)
+    QTest::qWait(1500);
+#else
     QTest::qWait(500);
-
+#endif
     QCOMPARE(fd3.selectedFiles().first(), tempFile->fileName());
 
     current.cd("aaaaaaaaaaaaaaaaaa");
@@ -777,7 +810,12 @@ void tst_QFiledialog::task251321_sideBarHiddenEntries()
     sidebar->setFocus();
     sidebar->selectUrl(QUrl::fromLocalFile(hiddenSubDir.absolutePath()));
     QTest::mouseClick(sidebar->viewport(), Qt::LeftButton, 0, sidebar->visualRect(sidebar->model()->index(0, 0)).center());
+    // give the background processes more time on windows mobile
+#ifdef Q_OS_WINCE
+    QTest::qWait(1000);
+#else
     QTest::qWait(250);
+#endif
 
     QFileSystemModel *model = qFindChild<QFileSystemModel*>(&fd, "qt_filesystem_model");
     QCOMPARE(model->rowCount(model->index(hiddenSubDir.absolutePath())), 2);

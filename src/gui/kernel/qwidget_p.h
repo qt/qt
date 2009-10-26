@@ -63,7 +63,9 @@
 #include "QtGui/qstyle.h"
 #include "QtGui/qapplication.h"
 #include <private/qgraphicseffect_p.h>
-
+#include "QtGui/qgraphicsproxywidget.h"
+#include "QtGui/qgraphicsscene.h"
+#include "QtGui/qgraphicsview.h"
 #include <private/qgesture_p.h>
 
 #ifdef Q_WS_WIN
@@ -180,7 +182,9 @@ struct QWExtra {
     // Regular pointers (keep them together to avoid gaps on 64 bits architectures).
     void *glContext; // if the widget is hijacked by QGLWindowSurface
     QTLWExtra *topextra; // only useful for TLWs
+#ifndef QT_NO_GRAPHICSVIEW
     QGraphicsProxyWidget *proxyWidget; // if the widget is embedded
+#endif
 #ifndef QT_NO_CURSOR
     QCursor *curs;
 #endif
@@ -234,6 +238,24 @@ struct QWExtra {
     uint disableBlit : 1;
 #endif
 };
+
+/*!
+    \internal
+
+    Returns true if \a p or any of its parents enable the
+    Qt::BypassGraphicsProxyWidget window flag. Used in QWidget::show() and
+    QWidget::setParent() to determine whether it's necessary to embed the
+    widget into a QGraphicsProxyWidget or not.
+*/
+static inline bool bypassGraphicsProxyWidget(const QWidget *p)
+{
+    while (p) {
+        if (p->windowFlags() & Qt::BypassGraphicsProxyWidget)
+            return true;
+        p = p->parentWidget();
+    }
+    return false;
+}
 
 class Q_GUI_EXPORT QWidgetPrivate : public QObjectPrivate
 {
@@ -345,7 +367,9 @@ public:
 
     QPainter *beginSharedPainter();
     bool endSharedPainter();
-    static QGraphicsProxyWidget * nearestGraphicsProxyWidget(QWidget *origin);
+#ifndef QT_NO_GRAPHICSVIEW
+    static QGraphicsProxyWidget * nearestGraphicsProxyWidget(const QWidget *origin);
+#endif
     QWindowSurface *createDefaultWindowSurface();
     QWindowSurface *createDefaultWindowSurface_sys();
     void repaint_sys(const QRegion &rgn);
@@ -360,6 +384,7 @@ public:
     void setOpaque(bool opaque);
     void updateIsTranslucent();
     bool paintOnScreen() const;
+    void invalidateGraphicsEffectsRecursively();
 
     QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
@@ -441,6 +466,31 @@ public:
     QInputContext *inputContext() const;
 
     void setModal_sys();
+
+    // This is an helper function that return the available geometry for
+    // a widget and takes care is this one is in QGraphicsView.
+    // If the widget is not embed in a scene then the geometry available is
+    // null, we let QDesktopWidget decide for us.
+    static QRect screenGeometry(const QWidget *widget)
+    {
+        QRect screen;
+#ifndef QT_NO_GRAPHICSVIEW
+        QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
+        //It's embedded if it has an ancestor
+        if (ancestorProxy) {
+            if (!bypassGraphicsProxyWidget(widget)) {
+                // One view, let be smart and return the viewport rect then the popup is aligned
+                if (ancestorProxy->scene()->views().size() == 1) {
+                    QGraphicsView *view = ancestorProxy->scene()->views().at(0);
+                    screen = view->mapToScene(view->viewport()->rect()).boundingRect().toRect();
+                } else {
+                    screen = ancestorProxy->scene()->sceneRect().toRect();
+                }
+            }
+        }
+#endif
+        return screen;
+    }
 
     inline void setRedirected(QPaintDevice *replacement, const QPoint &offset)
     {
@@ -729,7 +779,7 @@ class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
     QWidgetEffectSourcePrivate(QWidget *widget)
-        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0)
+        : QGraphicsEffectSourcePrivate(), m_widget(widget), context(0), updateDueToGraphicsEffect(false)
     {}
 
     inline void detach()
@@ -742,7 +792,11 @@ public:
     { return m_widget; }
 
     inline void update()
-    { m_widget->update(); }
+    {
+        updateDueToGraphicsEffect = true;
+        m_widget->update();
+        updateDueToGraphicsEffect = false;
+    }
 
     inline bool isPixmap() const
     { return false; }
@@ -754,7 +808,7 @@ public:
         if (QWidget *parent = m_widget->parentWidget())
             parent->update();
         else
-            m_widget->update();
+            update();
     }
 
     inline const QStyleOption *styleOption() const
@@ -769,6 +823,8 @@ public:
 
     QWidget *m_widget;
     QWidgetPaintContext *context;
+    QTransform lastEffectTransform;
+    bool updateDueToGraphicsEffect;
 };
 
 inline QWExtra *QWidgetPrivate::extraData() const

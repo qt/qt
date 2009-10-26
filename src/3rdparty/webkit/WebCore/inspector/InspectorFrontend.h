@@ -70,6 +70,8 @@ namespace WebCore {
         bool updateResource(long long identifier, const ScriptObject& resourceObj);
         void removeResource(long long identifier);
 
+        void addCookieDomain(String);
+
         void updateFocusedNode(long long nodeId);
         void setAttachedWindow(bool attached);
         void showPanel(int panel);
@@ -87,15 +89,18 @@ namespace WebCore {
         void profilerWasDisabled();
         void parsedScriptSource(const JSC::SourceCode&);
         void failedToParseScriptSource(const JSC::SourceCode&, int errorLine, const JSC::UString& errorMessage);
-        void addProfile(const JSC::JSValue& profile);
+        void addProfileHeader(const ScriptValue& profile);
         void setRecordingProfile(bool isProfiling);
+        void didGetProfileHeaders(int callId, const ScriptArray& headers);
+        void didGetProfile(int callId, const ScriptValue& profile);
         void pausedScript(const ScriptValue& callFrames);
         void resumedScript();
 #endif
 
 #if ENABLE(DATABASE)
         bool addDatabase(const ScriptObject& dbObj);
-        void selectDatabase(Database* database);
+        void selectDatabase(int databaseId);
+        void didGetDatabaseTableNames(int callId, const ScriptArray& tableNames);
 #endif
         
 #if ENABLE(DOM_STORAGE)
@@ -117,9 +122,10 @@ namespace WebCore {
         void didGetChildNodes(int callId);
         void didApplyDomChange(int callId, bool success);
         void didGetEventListenersForNode(int callId, int nodeId, ScriptArray& listenersArray);
+        void didRemoveNode(int callId, int nodeId);
 
-        void timelineWasEnabled();
-        void timelineWasDisabled();
+        void timelineProfilerWasStarted();
+        void timelineProfilerWasStopped();
         void addItemToTimeline(const ScriptObject& itemObj);
 
         void didGetCookies(int callId, const ScriptArray& cookies, const String& cookiesString);
@@ -129,6 +135,7 @@ namespace WebCore {
 
         ScriptState* scriptState() const { return m_scriptState; }
 
+        void evaluateForTestInFrontend(int callId, const String& script);
     private:
         PassOwnPtr<ScriptFunctionCall> newFunctionCall(const String& functionName);
         void callSimpleFunction(const String& functionName);

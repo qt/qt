@@ -36,6 +36,7 @@
 #include "CachedResource.h"
 #include "Console.h"
 #include "ConsoleMessage.h"
+#include "Cookie.h"
 #include "CookieJar.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -76,6 +77,7 @@
 #include "TextEncoding.h"
 #include "TextIterator.h"
 #include <wtf/CurrentTime.h>
+#include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>
 #include <wtf/StdLibExtras.h>
 
@@ -105,12 +107,12 @@ using namespace std;
 namespace WebCore {
 
 static const char* const UserInitiatedProfileName = "org.webkit.profiles.user-initiated";
+static const char* const CPUProfileType = "CPU";
 static const char* const resourceTrackingEnabledSettingName = "resourceTrackingEnabled";
 static const char* const debuggerEnabledSettingName = "debuggerEnabled";
 static const char* const profilerEnabledSettingName = "profilerEnabled";
 static const char* const inspectorAttachedHeightName = "inspectorAttachedHeight";
 static const char* const lastActivePanelSettingName = "lastActivePanel";
-static const char* const timelineEnabledSettingName = "timelineEnabled";
 
 static const unsigned defaultAttachedHeight = 300;
 static const float minimumAttachedHeight = 250.0f;
@@ -178,11 +180,6 @@ void InspectorController::inspectedPageDestroyed()
 
     if (m_scriptState)
         ScriptGlobalObject::remove(m_scriptState, "InspectorController");
-
-    if (m_page) {
-        m_page->setParentInspectorController(0);
-        m_page = 0;
-    }
 
     ASSERT(m_inspectedPage);
     m_inspectedPage = 0;
@@ -380,7 +377,7 @@ void InspectorController::addConsoleMessage(ScriptState* scriptState, ConsoleMes
         m_consoleMessages.append(consoleMessage);
     }
 
-    if (m_frontend)
+    if (windowVisible())
         m_previousMessage->addToConsole(m_frontend.get());
 }
 
@@ -390,7 +387,7 @@ void InspectorController::clearConsoleMessages(bool clearUI)
     m_consoleMessages.clear();
     m_previousMessage = 0;
     m_groupLevel = 0;
-    m_idToConsoleObject.clear();
+    releaseWrapperObjectGroup("console");
     if (m_domAgent)
         m_domAgent->releaseDanglingNodes();
     if (clearUI && m_frontend)
@@ -556,10 +553,7 @@ void InspectorController::setFrontendProxyObject(ScriptState* scriptState, Scrip
     m_injectedScriptObj = injectedScriptObj;
     m_frontend.set(new InspectorFrontend(this, scriptState, webInspectorObj));
     m_domAgent = new InspectorDOMAgent(m_frontend.get());
-
-    Setting timelineEnabled = setting(timelineEnabledSettingName);
-    if (timelineEnabled.type() == Setting::BooleanType && timelineEnabled.booleanValue())
-        m_timelineAgent = new InspectorTimelineAgent(m_frontend.get());
+    m_timelineAgent = 0;
 }
 
 void InspectorController::show()
@@ -621,6 +615,9 @@ void InspectorController::close()
     m_domAgent = 0;
     m_timelineAgent = 0;
     m_scriptState = 0;
+    if (m_page)
+        m_page->setParentInspectorController(0);
+    m_page = 0;
 }
 
 void InspectorController::showWindow()
@@ -654,25 +651,32 @@ void InspectorController::populateScriptObjects()
     m_domAgent->setDocument(m_inspectedPage->mainFrame()->document());
 
     ResourcesMap::iterator resourcesEnd = m_resources.end();
-    for (ResourcesMap::iterator it = m_resources.begin(); it != resourcesEnd; ++it)
+    for (ResourcesMap::iterator it = m_resources.begin(); it != resourcesEnd; ++it) {
         it->second->createScriptObject(m_frontend.get());
+        m_frontend->addCookieDomain(it->second->frame()->document()->url().host());
+    }
 
     unsigned messageCount = m_consoleMessages.size();
     for (unsigned i = 0; i < messageCount; ++i)
         m_consoleMessages[i]->addToConsole(m_frontend.get());
 
 #if ENABLE(DATABASE)
-    DatabaseResourcesSet::iterator databasesEnd = m_databaseResources.end();
-    for (DatabaseResourcesSet::iterator it = m_databaseResources.begin(); it != databasesEnd; ++it)
-        (*it)->bind(m_frontend.get());
+    DatabaseResourcesMap::iterator databasesEnd = m_databaseResources.end();
+    for (DatabaseResourcesMap::iterator it = m_databaseResources.begin(); it != databasesEnd; ++it)
+        it->second->bind(m_frontend.get());
 #endif
 #if ENABLE(DOM_STORAGE)
-    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
-    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
-        (*it)->bind(m_frontend.get());
+    DOMStorageResourcesMap::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesMap::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
+        it->second->bind(m_frontend.get());
 #endif
 
     m_frontend->populateInterface();
+
+    // Dispatch pending frontend commands
+    for (Vector<pair<long, String> >::iterator it = m_pendingEvaluateTestCommands.begin(); it != m_pendingEvaluateTestCommands.end(); ++it)
+        m_frontend->evaluateForTestInFrontend((*it).first, (*it).second);
+    m_pendingEvaluateTestCommands.clear();
 }
 
 void InspectorController::resetScriptObjects()
@@ -685,14 +689,14 @@ void InspectorController::resetScriptObjects()
         it->second->releaseScriptObject(m_frontend.get(), false);
 
 #if ENABLE(DATABASE)
-    DatabaseResourcesSet::iterator databasesEnd = m_databaseResources.end();
-    for (DatabaseResourcesSet::iterator it = m_databaseResources.begin(); it != databasesEnd; ++it)
-        (*it)->unbind();
+    DatabaseResourcesMap::iterator databasesEnd = m_databaseResources.end();
+    for (DatabaseResourcesMap::iterator it = m_databaseResources.begin(); it != databasesEnd; ++it)
+        it->second->unbind();
 #endif
 #if ENABLE(DOM_STORAGE)
-    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
-    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
-        (*it)->unbind();
+    DOMStorageResourcesMap::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesMap::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
+        it->second->unbind();
 #endif
 
     if (m_timelineAgent)
@@ -700,6 +704,8 @@ void InspectorController::resetScriptObjects()
 
     m_frontend->reset();
     m_domAgent->setDocument(0);
+    m_objectGroups.clear();
+    m_idToWrappedObject.clear();
 }
 
 void InspectorController::pruneResources(ResourcesMap* resourceMap, DocumentLoader* loaderToKeep)
@@ -715,7 +721,7 @@ void InspectorController::pruneResources(ResourcesMap* resourceMap, DocumentLoad
 
         if (!loaderToKeep || !resource->isSameLoader(loaderToKeep)) {
             removeResource(resource);
-            if (m_frontend)
+            if (windowVisible())
                 resource->releaseScriptObject(m_frontend.get(), true);
         }
     }
@@ -756,7 +762,8 @@ void InspectorController::didCommitLoad(DocumentLoader* loader)
                 // We don't add the main resource until its load is committed. This is
                 // needed to keep the load for a user-entered URL from showing up in the
                 // list of resources for the page they are navigating away from.
-                m_mainResource->createScriptObject(m_frontend.get());
+                if (windowVisible())
+                    m_mainResource->createScriptObject(m_frontend.get());
             } else {
                 // Pages loaded from the page cache are committed before
                 // m_mainResource is the right resource for this load, so we
@@ -850,7 +857,7 @@ void InspectorController::didLoadResourceFromMemoryCache(DocumentLoader* loader,
     ensureResourceTrackingSettingsLoaded();
     if (!isMainResource && !m_resourceTrackingEnabled)
         return;
-    
+
     RefPtr<InspectorResource> resource = InspectorResource::createCached(m_nextIdentifier--, loader, cachedResource);
 
     if (isMainResource) {
@@ -860,7 +867,7 @@ void InspectorController::didLoadResourceFromMemoryCache(DocumentLoader* loader,
 
     addResource(resource.get());
 
-    if (m_frontend)
+    if (windowVisible())
         resource->createScriptObject(m_frontend.get());
 }
 
@@ -886,8 +893,32 @@ void InspectorController::identifierForInitialRequest(unsigned long identifier, 
 
     addResource(resource.get());
 
-    if (m_frontend && loader->frameLoader()->isLoadingFromCachedPage() && resource == m_mainResource)
+    if (windowVisible() && loader->frameLoader()->isLoadingFromCachedPage() && resource == m_mainResource)
         resource->createScriptObject(m_frontend.get());
+}
+
+void InspectorController::mainResourceFiredDOMContentEvent(DocumentLoader* loader, const KURL& url)
+{
+    if (!enabled() || !isMainResourceLoader(loader, url))
+        return;
+
+    if (m_mainResource) {
+        m_mainResource->markDOMContentEventTime();
+        if (windowVisible())
+            m_mainResource->updateScriptObject(m_frontend.get());
+    }
+}
+
+void InspectorController::mainResourceFiredLoadEvent(DocumentLoader* loader, const KURL& url)
+{
+    if (!enabled() || !isMainResourceLoader(loader, url))
+        return;
+
+    if (m_mainResource) {
+        m_mainResource->markLoadEventTime();
+        if (windowVisible())
+            m_mainResource->updateScriptObject(m_frontend.get());
+    }
 }
 
 bool InspectorController::isMainResourceLoader(DocumentLoader* loader, const KURL& requestUrl)
@@ -908,7 +939,7 @@ void InspectorController::willSendRequest(DocumentLoader*, unsigned long identif
         resource->updateResponse(redirectResponse);
     }
 
-    if (resource != m_mainResource && m_frontend)
+    if (resource != m_mainResource && windowVisible())
         resource->createScriptObject(m_frontend.get());
 }
 
@@ -921,7 +952,7 @@ void InspectorController::didReceiveResponse(DocumentLoader*, unsigned long iden
     resource->updateResponse(response);
     resource->markResponseReceivedTime();
 
-    if (m_frontend)
+    if (windowVisible())
         resource->updateScriptObject(m_frontend.get());
 }
 
@@ -933,7 +964,7 @@ void InspectorController::didReceiveContentLength(DocumentLoader*, unsigned long
 
     resource->addLength(lengthReceived);
 
-    if (m_frontend)
+    if (windowVisible())
         resource->updateScriptObject(m_frontend.get());
 }
 
@@ -949,8 +980,10 @@ void InspectorController::didFinishLoading(DocumentLoader*, unsigned long identi
 
     addResource(resource.get());
 
-    if (m_frontend)
+    if (windowVisible()) {
         resource->updateScriptObject(m_frontend.get());
+        m_frontend->addCookieDomain(resource->frame()->document()->url().host());
+    }
 }
 
 void InspectorController::didFailLoading(DocumentLoader*, unsigned long identifier, const ResourceError& /*error*/)
@@ -966,7 +999,7 @@ void InspectorController::didFailLoading(DocumentLoader*, unsigned long identifi
 
     addResource(resource.get());
 
-    if (m_frontend)
+    if (windowVisible())
         resource->updateScriptObject(m_frontend.get());
 }
 
@@ -981,7 +1014,7 @@ void InspectorController::resourceRetrievedByXMLHttpRequest(unsigned long identi
 
     resource->setXMLHttpResponseText(sourceString);
 
-    if (m_frontend)
+    if (windowVisible())
         resource->updateScriptObject(m_frontend.get());
 }
 
@@ -998,7 +1031,7 @@ void InspectorController::scriptImported(unsigned long identifier, const String&
     // thing by the Inspector. They should be made into distinct types.
     resource->setXMLHttpResponseText(ScriptString(sourceString));
     
-    if (m_frontend)
+    if (windowVisible())
         resource->updateScriptObject(m_frontend.get());
 }
 
@@ -1046,47 +1079,62 @@ void InspectorController::ensureResourceTrackingSettingsLoaded()
         m_resourceTrackingEnabled = true;
 }
 
-void InspectorController::enableTimeline(bool always)
+void InspectorController::startTimelineProfiler()
 {
     if (!enabled())
         return;
 
-    if (always)
-        setSetting(timelineEnabledSettingName, Setting(true));
-
-    if (m_timelineAgent.get())
+    if (m_timelineAgent)
         return;
 
     m_timelineAgent = new InspectorTimelineAgent(m_frontend.get());
     if (m_frontend)
-        m_frontend->timelineWasEnabled();
+        m_frontend->timelineProfilerWasStarted();
 }
 
-void InspectorController::disableTimeline(bool always)
+void InspectorController::stopTimelineProfiler()
 {
     if (!enabled())
         return;
 
-    if (always)
-        setSetting(timelineEnabledSettingName, Setting(false));
-
-    if (!m_timelineAgent.get())
+    if (!m_timelineAgent)
         return;
 
-    m_timelineAgent.set(0);
+    m_timelineAgent = 0;
     if (m_frontend)
-        m_frontend->timelineWasDisabled();
+        m_frontend->timelineProfilerWasStopped();
 }
 
-bool InspectorController::timelineEnabled() const
+bool InspectorController::timelineProfilerEnabled() const
 {
     if (!enabled())
         return false;
 
-    return m_timelineAgent.get();
+    return m_timelineAgent;
 }
 
 #if ENABLE(DATABASE)
+void InspectorController::selectDatabase(Database* database)
+{
+    if (!m_frontend)
+        return;
+
+    for (DatabaseResourcesMap::iterator it = m_databaseResources.begin(); it != m_databaseResources.end(); ++it) {
+        if (it->second->database() == database) {
+            m_frontend->selectDatabase(it->first);
+            break;
+        }
+    }
+}
+
+Database* InspectorController::databaseForId(int databaseId)
+{
+    DatabaseResourcesMap::iterator it = m_databaseResources.find(databaseId);
+    if (it == m_databaseResources.end())
+        return 0;
+    return it->second->database();
+}
+
 void InspectorController::didOpenDatabase(Database* database, const String& domain, const String& name, const String& version)
 {
     if (!enabled())
@@ -1094,32 +1142,101 @@ void InspectorController::didOpenDatabase(Database* database, const String& doma
 
     RefPtr<InspectorDatabaseResource> resource = InspectorDatabaseResource::create(database, domain, name, version);
 
-    m_databaseResources.add(resource);
+    m_databaseResources.set(resource->id(), resource);
 
     // Resources are only bound while visible.
-    if (m_frontend && windowVisible())
+    if (windowVisible())
         resource->bind(m_frontend.get());
 }
 #endif
 
+void InspectorController::getCookies(long callId, const String& host)
+{
+    if (!m_frontend)
+        return;
+    
+    // If we can get raw cookies.
+    ListHashSet<Cookie> rawCookiesList;
+    
+    // If we can't get raw cookies - fall back to String representation
+    String stringCookiesList;
+    
+    // Return value to getRawCookies should be the same for every call because
+    // the return value is platform/network backend specific, and the call will
+    // always return the same true/false value.
+    bool rawCookiesImplemented = false;
+    
+    ResourcesMap::iterator resourcesEnd = m_resources.end();
+    for (ResourcesMap::iterator it = m_resources.begin(); it != resourcesEnd; ++it) {
+        Document* document = it->second->frame()->document();
+        if (document->url().host() == host) {
+            Vector<Cookie> docCookiesList;
+            rawCookiesImplemented = getRawCookies(document, document->cookieURL(), docCookiesList);
+            
+            if (!rawCookiesImplemented)
+                // FIXME: We need duplication checking for the String representation of cookies.
+                stringCookiesList += document->cookie();
+            else {
+                int cookiesSize = docCookiesList.size();
+                for (int i = 0; i < cookiesSize; i++) {
+                    if (!rawCookiesList.contains(docCookiesList[i]))
+                        rawCookiesList.add(docCookiesList[i]);
+                }
+            }
+        }
+    }
+    
+    if (!rawCookiesImplemented)
+        m_frontend->didGetCookies(callId, m_frontend->newScriptArray(), stringCookiesList);
+    else
+        m_frontend->didGetCookies(callId, buildArrayForCookies(rawCookiesList), String());
+}
+    
+ScriptArray InspectorController::buildArrayForCookies(ListHashSet<Cookie>& cookiesList)
+{
+    ScriptArray cookies = m_frontend->newScriptArray();
+
+    ListHashSet<Cookie>::iterator end = cookiesList.end();
+    ListHashSet<Cookie>::iterator it = cookiesList.begin();
+    for (int i = 0; it != end; ++it, i++)
+        cookies.set(i, buildObjectForCookie(*it));
+
+    return cookies;
+}
+
+ScriptObject InspectorController::buildObjectForCookie(const Cookie& cookie)
+{
+    ScriptObject value = m_frontend->newScriptObject();
+    value.set("name", cookie.name);
+    value.set("value", cookie.value);
+    value.set("domain", cookie.domain);
+    value.set("path", cookie.path);
+    value.set("expires", cookie.expires);
+    value.set("size", (cookie.name.length() + cookie.value.length()));
+    value.set("httpOnly", cookie.httpOnly);
+    value.set("secure", cookie.secure);
+    value.set("session", cookie.session);
+    return value;
+}
+    
 #if ENABLE(DOM_STORAGE)
 void InspectorController::didUseDOMStorage(StorageArea* storageArea, bool isLocalStorage, Frame* frame)
 {
     if (!enabled())
         return;
 
-    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
-    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
-        if ((*it)->isSameHostAndType(frame, isLocalStorage))
+    DOMStorageResourcesMap::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesMap::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
+        if (it->second->isSameHostAndType(frame, isLocalStorage))
             return;
 
     RefPtr<Storage> domStorage = Storage::create(frame, storageArea);
     RefPtr<InspectorDOMStorageResource> resource = InspectorDOMStorageResource::create(domStorage.get(), isLocalStorage, frame);
 
-    m_domStorageResources.add(resource);
+    m_domStorageResources.set(resource->id(), resource);
 
     // Resources are only bound while visible.
-    if (m_frontend && windowVisible())
+    if (windowVisible())
         resource->bind(m_frontend.get());
 }
 
@@ -1132,10 +1249,10 @@ void InspectorController::selectDOMStorage(Storage* storage)
     Frame* frame = storage->frame();
     bool isLocalStorage = (frame->domWindow()->localStorage() == storage);
     int storageResourceId = 0;
-    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
-    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it) {
-        if ((*it)->isSameHostAndType(frame, isLocalStorage)) {
-            storageResourceId = (*it)->id();
+    DOMStorageResourcesMap::iterator domStorageEnd = m_domStorageResources.end();
+    for (DOMStorageResourcesMap::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it) {
+        if (it->second->isSameHostAndType(frame, isLocalStorage)) {
+            storageResourceId = it->first;
             break;
         }
     }
@@ -1196,11 +1313,10 @@ void InspectorController::removeDOMStorageItem(long callId, long storageId, cons
 
 InspectorDOMStorageResource* InspectorController::getDOMStorageResourceForId(int storageId)
 {
-    DOMStorageResourcesSet::iterator domStorageEnd = m_domStorageResources.end();
-    for (DOMStorageResourcesSet::iterator it = m_domStorageResources.begin(); it != domStorageEnd; ++it)
-        if ((*it)->id() == storageId)
-            return it->get();
-    return 0;
+    DOMStorageResourcesMap::iterator it = m_domStorageResources.find(storageId);
+    if (it == m_domStorageResources.end())
+        return 0;
+    return it->second.get();
 }
 #endif
 
@@ -1221,11 +1337,11 @@ void InspectorController::addProfile(PassRefPtr<Profile> prpProfile, unsigned li
         return;
 
     RefPtr<Profile> profile = prpProfile;
-    m_profiles.append(profile);
+    m_profiles.add(profile->uid(), profile);
 
     if (m_frontend) {
         JSLock lock(SilenceAssertionsOnly);
-        m_frontend->addProfile(toJS(m_scriptState, profile.get()));
+        m_frontend->addProfileHeader(createProfileHeader(*profile));
     }
 
     addProfileFinishedMessageToConsole(profile, lineNumber, sourceURL);
@@ -1236,8 +1352,10 @@ void InspectorController::addProfileFinishedMessageToConsole(PassRefPtr<Profile>
     RefPtr<Profile> profile = prpProfile;
 
     UString message = "Profile \"webkit-profile://";
-    message += encodeWithURLEscapeSequences(profile->title());
+    message += encodeWithURLEscapeSequences(CPUProfileType);
     message += "/";
+    message += encodeWithURLEscapeSequences(profile->title());
+    message += "#";
     message += UString::from(profile->uid());
     message += "\" finished.";
     addMessageToConsole(JSMessageSource, LogMessageType, LogMessageLevel, message, lineNumber, sourceURL);
@@ -1246,9 +1364,40 @@ void InspectorController::addProfileFinishedMessageToConsole(PassRefPtr<Profile>
 void InspectorController::addStartProfilingMessageToConsole(const UString& title, unsigned lineNumber, const UString& sourceURL)
 {
     UString message = "Profile \"webkit-profile://";
+    message += encodeWithURLEscapeSequences(CPUProfileType);
+    message += "/";
     message += encodeWithURLEscapeSequences(title);
-    message += "/0\" started.";
+    message += "#0\" started.";
     addMessageToConsole(JSMessageSource, LogMessageType, LogMessageLevel, message, lineNumber, sourceURL);
+}
+
+void InspectorController::getProfileHeaders(long callId)
+{
+    if (!m_frontend)
+        return;
+    ScriptArray result = m_frontend->newScriptArray();
+    ProfilesMap::iterator profilesEnd = m_profiles.end();
+    int i = 0;
+    for (ProfilesMap::iterator it = m_profiles.begin(); it != profilesEnd; ++it)
+        result.set(i++, createProfileHeader(*it->second));
+    m_frontend->didGetProfileHeaders(callId, result);
+}
+
+void InspectorController::getProfile(long callId, unsigned uid)
+{
+    if (!m_frontend)
+        return;
+    ProfilesMap::iterator it = m_profiles.find(uid);
+    if (it != m_profiles.end())
+        m_frontend->didGetProfile(callId, toJS(m_scriptState, it->second.get()));
+}
+
+ScriptObject InspectorController::createProfileHeader(const JSC::Profile& profile)
+{
+    ScriptObject header = m_frontend->newScriptObject();
+    header.set("title", profile.title());
+    header.set("uid", profile.uid());
+    return header;
 }
 
 UString InspectorController::getCurrentUserInitiatedProfileName(bool incrementProfileNumber = false)
@@ -1428,6 +1577,25 @@ void InspectorController::didContinue()
 }
 
 #endif
+
+void InspectorController::evaluateForTestInFrontend(long callId, const String& script)
+{
+    if (m_frontend)
+        m_frontend->evaluateForTestInFrontend(callId, script);
+    else
+        m_pendingEvaluateTestCommands.append(pair<long, String>(callId, script));
+}
+
+void InspectorController::didEvaluateForTestInFrontend(long callId, const String& jsonResult)
+{
+    ScriptState* scriptState = scriptStateFromPage(m_inspectedPage);
+    ScriptObject window;
+    ScriptGlobalObject::get(scriptState, "window", window);
+    ScriptFunctionCall function(scriptState, window, "didEvaluateForTestInFrontend");
+    function.appendArgument(static_cast<int>(callId));
+    function.appendArgument(jsonResult);
+    function.call();
+}
 
 static Path quadToPath(const FloatQuad& quad)
 {
@@ -1623,15 +1791,18 @@ InspectorController::SpecialPanels InspectorController::specialPanelForJSName(co
         return ElementsPanel;
 }
 
-ScriptValue InspectorController::wrapObject(const ScriptValue& quarantinedObject)
+ScriptValue InspectorController::wrapObject(const ScriptValue& quarantinedObject, const String& objectGroup)
 {
     ScriptFunctionCall function(m_scriptState, m_injectedScriptObj, "createProxyObject");
     function.appendArgument(quarantinedObject);
     if (quarantinedObject.isObject()) {
         long id = m_lastBoundObjectId++;
         String objectId = String::format("object#%ld", id);
-        m_idToConsoleObject.set(objectId, quarantinedObject);
-
+        m_idToWrappedObject.set(objectId, quarantinedObject);
+        ObjectGroupsMap::iterator it = m_objectGroups.find(objectGroup);
+        if (it == m_objectGroups.end())
+            it = m_objectGroups.set(objectGroup, Vector<String>()).first;
+        it->second.append(objectId);
         function.appendArgument(objectId);
     }
     ScriptValue wrapper = function.call();
@@ -1640,10 +1811,22 @@ ScriptValue InspectorController::wrapObject(const ScriptValue& quarantinedObject
 
 ScriptValue InspectorController::unwrapObject(const String& objectId)
 {
-    HashMap<String, ScriptValue>::iterator it = m_idToConsoleObject.find(objectId);
-    if (it != m_idToConsoleObject.end())
+    HashMap<String, ScriptValue>::iterator it = m_idToWrappedObject.find(objectId);
+    if (it != m_idToWrappedObject.end())
         return it->second;
     return ScriptValue();
+}
+
+void InspectorController::releaseWrapperObjectGroup(const String& objectGroup)
+{
+    ObjectGroupsMap::iterator groupIt = m_objectGroups.find(objectGroup);
+    if (groupIt == m_objectGroups.end())
+        return;
+
+    Vector<String>& groupIds = groupIt->second;
+    for (Vector<String>::iterator it = groupIds.begin(); it != groupIds.end(); ++it)
+        m_idToWrappedObject.remove(*it);
+    m_objectGroups.remove(groupIt);
 }
 
 void InspectorController::resetInjectedScript()
@@ -1652,10 +1835,14 @@ void InspectorController::resetInjectedScript()
     function.call();
 }
 
-void InspectorController::deleteCookie(const String& cookieName)
+void InspectorController::deleteCookie(const String& cookieName, const String& domain)
 {
-    Document* document = m_inspectedPage->mainFrame()->document();
-    WebCore::deleteCookie(document, document->cookieURL(), cookieName);
+    ResourcesMap::iterator resourcesEnd = m_resources.end();
+    for (ResourcesMap::iterator it = m_resources.begin(); it != resourcesEnd; ++it) {
+        Document* document = it->second->frame()->document();
+        if (document->url().host() == domain)
+            WebCore::deleteCookie(document, document->cookieURL(), cookieName);
+    }
 }
 
 } // namespace WebCore

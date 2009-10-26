@@ -43,9 +43,8 @@ ASSERT_CLASS_FITS_IN_CELL(JSSVGFEFloodElement);
 
 /* Hash table */
 
-static const HashTableValue JSSVGFEFloodElementTableValues[10] =
+static const HashTableValue JSSVGFEFloodElementTableValues[9] =
 {
-    { "in1", DontDelete|ReadOnly, (intptr_t)jsSVGFEFloodElementIn1, (intptr_t)0 },
     { "x", DontDelete|ReadOnly, (intptr_t)jsSVGFEFloodElementX, (intptr_t)0 },
     { "y", DontDelete|ReadOnly, (intptr_t)jsSVGFEFloodElementY, (intptr_t)0 },
     { "width", DontDelete|ReadOnly, (intptr_t)jsSVGFEFloodElementWidth, (intptr_t)0 },
@@ -61,7 +60,7 @@ static JSC_CONST_HASHTABLE HashTable JSSVGFEFloodElementTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 255, JSSVGFEFloodElementTableValues, 0 };
 #else
-    { 34, 31, JSSVGFEFloodElementTableValues, 0 };
+    { 18, 15, JSSVGFEFloodElementTableValues, 0 };
 #endif
 
 /* Hash table for constructor */
@@ -92,8 +91,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSSVGFEFloodElementConstructor::s_info = { "SVGFEFloodElementConstructor", 0, &JSSVGFEFloodElementConstructorTable, 0 };
@@ -160,15 +162,6 @@ bool JSSVGFEFloodElement::getOwnPropertySlot(ExecState* exec, const Identifier& 
 bool JSSVGFEFloodElement::getOwnPropertyDescriptor(ExecState* exec, const Identifier& propertyName, PropertyDescriptor& descriptor)
 {
     return getStaticValueDescriptor<JSSVGFEFloodElement, Base>(exec, &JSSVGFEFloodElementTable, this, propertyName, descriptor);
-}
-
-JSValue jsSVGFEFloodElementIn1(ExecState* exec, const Identifier&, const PropertySlot& slot)
-{
-    JSSVGFEFloodElement* castedThis = static_cast<JSSVGFEFloodElement*>(asObject(slot.slotBase()));
-    UNUSED_PARAM(exec);
-    SVGFEFloodElement* imp = static_cast<SVGFEFloodElement*>(castedThis->impl());
-    RefPtr<SVGAnimatedString> obj = imp->in1Animated();
-    return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
 JSValue jsSVGFEFloodElementX(ExecState* exec, const Identifier&, const PropertySlot& slot)

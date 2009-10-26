@@ -41,7 +41,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);
@@ -66,6 +66,8 @@ public:
     JSC::JSValue vertexAttrib2fv(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue vertexAttrib3fv(JSC::ExecState*, const JSC::ArgList&);
     JSC::JSValue vertexAttrib4fv(JSC::ExecState*, const JSC::ArgList&);
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 
@@ -79,9 +81,11 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::HasDefaultMark));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSCanvasRenderingContext3DPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
@@ -139,6 +143,8 @@ JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionFramebuffe
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionFramebufferTexture2D(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionFrontFace(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGenerateMipmap(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetActiveAttrib(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetActiveUniform(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetAttribLocation(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetBoolean(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionGetBooleanv(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
@@ -187,6 +193,7 @@ JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionLineWidth(
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionLinkProgram(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionPixelStorei(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionPolygonOffset(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
+JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionReadPixels(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionReleaseShaderCompiler(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionRenderbufferStorage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsCanvasRenderingContext3DPrototypeFunctionSampleCoverage(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
