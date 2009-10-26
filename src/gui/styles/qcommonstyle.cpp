@@ -4661,7 +4661,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_ToolBarIconSize:
         ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolBarIconSize);
         if (!ret)
-            ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+            ret = int(QStyleHelper::dpiScaled(24.));
         break;
 
     case PM_TabBarIconSize:
