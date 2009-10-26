@@ -102,7 +102,7 @@ QHash<QObject*, QFxVisualItemModelAttached*> QFxVisualItemModelAttached::attache
 
 class QFxVisualItemModelPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QFxVisualItemModel);
+    Q_DECLARE_PUBLIC(QFxVisualItemModel)
 public:
     QFxVisualItemModelPrivate() : QObjectPrivate(), children(this) {}
 
@@ -143,7 +143,7 @@ public:
     \code
     Item {
         VisualItemModel {
-            id: ItemModel
+            id: itemModel
             Rectangle { height: 30; width: 80; color: "red" }
             Rectangle { height: 30; width: 80; color: "green" }
             Rectangle { height: 30; width: 80; color: "blue" }
@@ -151,7 +151,7 @@ public:
 
         ListView {
             anchors.fill: parent
-            model: ItemModel
+            model: itemModel
         }
     }
     \endcode
@@ -416,8 +416,13 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         model->ensureRoles();
-        if (model->m_roleNames.contains(QString::fromUtf8(name)))
+        if (model->m_roleNames.contains(QString::fromUtf8(name))) {
             return QmlOpenMetaObject::createProperty(name, type);
+        } else if (model->m_listAccessor->type() == QmlListAccessor::QmlList) {
+            QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
+            if (object && object->property(name).isValid())
+                return QmlOpenMetaObject::createProperty(name, type);
+        }
     } else {
         model->ensureRoles();
         QString sname = QString::fromUtf8(name);
@@ -448,7 +453,7 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
             return model->m_listAccessor->at(data->m_index);
         } else {
             // return any property of a single object instance.
-            QObject *object = model->m_listAccessor->at(0).value<QObject*>();
+            QObject *object = model->m_listAccessor->at(data->m_index).value<QObject*>();
             return object->property(prop.name());
         }
     } else if (model->m_listModelInterface) {

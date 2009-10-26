@@ -926,14 +926,13 @@ QFxListView::~QFxListView()
     \endcode
 */
 
-//XXX change to \qmlattachedsignal when it exists.
 /*!
-    \qmlattachedproperty void ListView::onAdd
+    \qmlattachedsignal ListView::onAdd()
     This attached handler is called immediately after an item is added to the view.
 */
 
 /*!
-    \qmlattachedproperty void ListView::onRemove
+    \qmlattachedsignal ListView::onRemove()
     This attached handler is called immediately before an item is removed from the view.
 */
 

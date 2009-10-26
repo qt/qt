@@ -11,14 +11,17 @@ class QmlEngineDebug;
 class QmlDebugObjectReference;
 class QmlDebugObjectQuery;
 class QmlDebugContextReference;
+class QmlDebugConnection;
 
 
 class ObjectTree : public QTreeWidget
 {
     Q_OBJECT
 public:
-    ObjectTree(QmlEngineDebug *client, QWidget *parent = 0);
+    ObjectTree(QmlEngineDebug *client = 0, QWidget *parent = 0);
 
+    void setEngineDebug(QmlEngineDebug *client);
+    
 signals:
     void currentObjectChanged(const QmlDebugObjectReference &);
     void expressionWatchRequested(const QmlDebugObjectReference &, const QString &);
