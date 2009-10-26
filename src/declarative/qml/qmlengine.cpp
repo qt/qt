@@ -39,8 +39,6 @@
 **
 ****************************************************************************/
 
-#undef QT3_SUPPORT // don't want it here - it just causes bugs (which is why we removed it)
-
 #include <QtCore/qmetaobject.h>
 #include <private/qmlengine_p.h>
 #include <private/qmlcontext_p.h>

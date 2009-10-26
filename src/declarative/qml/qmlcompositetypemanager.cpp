@@ -459,7 +459,7 @@ int QmlCompositeTypeManager::resolveTypes(QmlCompositeTypeData *unit)
         if (imp.type == QmlScriptParser::Import::File && imp.qualifier.isEmpty()) {
             QUrl importUrl = unit->imports.baseUrl().resolved(QUrl(imp.uri + QLatin1String("/qmldir")));
             for (int ii = 0; ii < unit->resources.count(); ++ii) {
-                if (unit->resources.at(ii)->url == importUrl) {
+                if (unit->resources.at(ii)->url == importUrl.toString()) {
                     qmldir = QString::fromUtf8(unit->resources.at(ii)->data);
                     break;
                 }
