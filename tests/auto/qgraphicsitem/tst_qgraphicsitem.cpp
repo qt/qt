@@ -8569,24 +8569,24 @@ void tst_QGraphicsItem::stackBefore()
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
 
     // Move child2 before child1
-    child2->stackBefore(child1);
+    child2->stackBefore(child1); // 2134
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child2->stackBefore(child2);
+    child2->stackBefore(child2); // 2134
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child1->setZValue(1);
+    child1->setZValue(1); // 2341
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->stackBefore(child2); // no effect
+    child1->stackBefore(child2); // 2341
     QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->setZValue(0);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child4->stackBefore(child1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
-    child4->setZValue(1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child3->stackBefore(child1);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
-    child4->setZValue(0);
-    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+    child1->setZValue(0); // 1234
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child4->stackBefore(child1); // 4123
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child4 << child1 << child2 << child3));
+    child4->setZValue(1); // 1234 (4123)
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child3->stackBefore(child1); // 3124 (4312)
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child3 << child1 << child2 << child4));
+    child4->setZValue(0); // 4312
+    QCOMPARE(parent.childItems(), (QList<QGraphicsItem *>() << child4 << child3 << child1 << child2));
 
     // Make them all toplevels
     child1->setParentItem(0);
@@ -8608,24 +8608,24 @@ void tst_QGraphicsItem::stackBefore()
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child3 << child4 << child2));
 
     // Move child2 before child1
-    child2->stackBefore(child1);
+    child2->stackBefore(child1); // 2134
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child2->stackBefore(child2);
+    child2->stackBefore(child2); // 2134
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child1->setZValue(1);
+    child1->setZValue(1); // 2341
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->stackBefore(child2); // no effect
+    child1->stackBefore(child2); // 2341
     QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child4 << child1));
-    child1->setZValue(0);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child4->stackBefore(child1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child1 << child3));
-    child4->setZValue(1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child1 << child3 << child4));
-    child3->stackBefore(child1);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child3 << child1 << child4));
-    child4->setZValue(0);
-    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child2 << child4 << child3 << child1));
+    child1->setZValue(0); // 1234
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child4->stackBefore(child1); // 4123
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child4 << child1 << child2 << child3));
+    child4->setZValue(1); // 1234 (4123)
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child1 << child2 << child3 << child4));
+    child3->stackBefore(child1); // 3124 (4312)
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child3 << child1 << child2 << child4));
+    child4->setZValue(0); // 4312
+    QCOMPARE(scene.items(QPointF(2, 2), Qt::IntersectsItemBoundingRect, Qt::AscendingOrder), (QList<QGraphicsItem *>() << child4 << child3 << child1 << child2));
 }
 
 void tst_QGraphicsItem::QTBUG_4233_updateCachedWithSceneRect()
