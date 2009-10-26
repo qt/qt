@@ -330,6 +330,7 @@ private slots:
     void testMapToScene();
     void ungrabGesture();
     void consumeEventHint();
+    void unregisterRecognizer();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1274,6 +1275,21 @@ void tst_Gestures::ungrabGesture() // a method on QWidget
     sendCustomGesture(&event, b);
     QCOMPARE(a->gestureEventsReceived, 0);
     QCOMPARE(a->gestureOverrideEventsReceived, 0);
+}
+
+void tst_Gestures::unregisterRecognizer() // a method on QApplication
+{
+    /*
+     The hardest usecase to get right is when we remove a recognizer while several
+     of the gestures it created are in active state and we immediately add a new recognizer
+     for the same type (thus replacing the old one).
+     The expected result is that all old gestures continue till they are finished/cancelled
+     and the new recognizer starts creating gestures immediately at registration.
+
+     This implies that deleting of the recognizer happens only when there are no more gestures
+     that it created. (since gestures might have a pointer to the recognizer)
+     */
+
 }
 
 QTEST_MAIN(tst_Gestures)
