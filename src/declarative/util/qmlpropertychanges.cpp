@@ -85,7 +85,8 @@ class QmlReplaceSignalHandler : public ActionEvent
 public:
     QmlReplaceSignalHandler() : expression(0), reverseExpression(0), ownedExpression(0) {}
     ~QmlReplaceSignalHandler() {
-        delete ownedExpression;
+        if (ownedExpression)
+            delete ownedExpression;
     }
 
     virtual QString typeName() const { return QLatin1String("ReplaceSignalHandler"); }
@@ -93,7 +94,7 @@ public:
     QmlMetaProperty property;
     QmlExpression *expression;
     QmlExpression *reverseExpression;
-    QmlExpression *ownedExpression;
+    QGuard<QmlExpression> ownedExpression;
 
     virtual void execute() {
         ownedExpression = property.setSignalExpression(expression);
@@ -272,7 +273,6 @@ QmlPropertyChanges::~QmlPropertyChanges()
         delete d->expressions.at(ii).second;
     for(int ii = 0; ii < d->signalReplacements.count(); ++ii)
         delete d->signalReplacements.at(ii);
-
 }
 
 QObject *QmlPropertyChanges::object() const

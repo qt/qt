@@ -47,6 +47,7 @@ QT_BEGIN_NAMESPACE
 /*!
     \class QmlPropertyValueInterceptor
     \brief The QmlPropertyValueInterceptor class is inherited by property interceptors such as Behavior.
+    \internal
 
     This class intercepts property writes, allowing for custom handling. For example, Behavior uses this
     interception to provide a default animation for all changes to a property's value.

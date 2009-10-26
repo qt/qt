@@ -39,76 +39,41 @@
 **
 ****************************************************************************/
 
-#include "qmlintegercache_p.h"
-#include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
+#ifndef QMLCLEANUP_P_H
+#define QMLCLEANUP_P_H
+
+#include <QtCore/qglobal.h>
+
+// 
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
 QT_BEGIN_NAMESPACE
 
-QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
-: QmlCleanup(e), engine(e)
+class QmlEngine;
+class QmlCleanup
 {
-}
+public:
+    QmlCleanup(QmlEngine *);
+    virtual ~QmlCleanup();
 
-QmlIntegerCache::~QmlIntegerCache()
-{
-    clear();
-}
+protected:
+    virtual void clear() = 0;
 
-void QmlIntegerCache::clear()
-{
-    qDeleteAll(stringCache);
-    stringCache.clear();
-    identifierCache.clear();
-    engine = 0;
-}
-
-void QmlIntegerCache::add(const QString &id, int value)
-{
-    Q_ASSERT(!stringCache.contains(id));
-
-    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
-
-    // ### use contextClass
-    Data *d = new Data(enginePriv->objectClass->createPersistentIdentifier(id), value);
-
-    stringCache.insert(id, d);
-    identifierCache.insert(d->identifier, d);
-}
-
-int QmlIntegerCache::value(const QString &id)
-{
-    Data *d = stringCache.value(id);
-    return d?d->value:-1;
-}
-
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
-{
-    Q_ASSERT(type);
-    Q_ASSERT(engine);
-
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QString::fromUtf8(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
-}
+private:
+    friend class QmlEnginePrivate;
+    QmlCleanup **prev;
+    QmlCleanup  *next;
+};
 
 QT_END_NAMESPACE
+
+#endif // QMLCLEANUP_P_H
+

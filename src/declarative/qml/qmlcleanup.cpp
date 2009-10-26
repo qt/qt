@@ -39,76 +39,44 @@
 **
 ****************************************************************************/
 
-#include "qmlintegercache_p.h"
+#include "qmlcleanup_p.h"
 #include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
 
-QT_BEGIN_NAMESPACE
+/*!
+\internal
+\class QmlCleanup
+\brief The QmlCleanup provides a callback when a QmlEngine is deleted. 
 
-QmlIntegerCache::QmlIntegerCache(QmlEngine *e)
-: QmlCleanup(e), engine(e)
+Any object that needs cleanup to occur before the QmlEngine's QScriptEngine is
+destroyed should inherit from QmlCleanup.  The clear() virtual method will be
+called by QmlEngine just before it deletes the QScriptEngine.
+*/
+
+/*!
+\internal
+
+Create a QmlCleanup for \a engine
+*/
+QmlCleanup::QmlCleanup(QmlEngine *engine)
+: prev(0), next(0)
 {
-}
-
-QmlIntegerCache::~QmlIntegerCache()
-{
-    clear();
-}
-
-void QmlIntegerCache::clear()
-{
-    qDeleteAll(stringCache);
-    stringCache.clear();
-    identifierCache.clear();
-    engine = 0;
-}
-
-void QmlIntegerCache::add(const QString &id, int value)
-{
-    Q_ASSERT(!stringCache.contains(id));
-
-    QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
-
-    // ### use contextClass
-    Data *d = new Data(enginePriv->objectClass->createPersistentIdentifier(id), value);
-
-    stringCache.insert(id, d);
-    identifierCache.insert(d->identifier, d);
-}
-
-int QmlIntegerCache::value(const QString &id)
-{
-    Data *d = stringCache.value(id);
-    return d?d->value:-1;
-}
-
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
-{
-    Q_ASSERT(type);
     Q_ASSERT(engine);
+    QmlEnginePrivate *p = QmlEnginePrivate::get(engine);
 
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QString::fromUtf8(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
+    if (p->cleanup) next = p->cleanup;
+    p->cleanup = this;
+    prev = &p->cleanup;
+    if (next) next->prev = &next;
 }
 
-QT_END_NAMESPACE
+/*!
+\internal
+*/
+QmlCleanup::~QmlCleanup()
+{
+    if (prev) *prev = next;
+    if (next) next->prev = prev;
+    prev = 0; 
+    next = 0;
+}
+

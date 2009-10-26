@@ -128,7 +128,7 @@ static QString userLocalDataPath(const QString& app)
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
-  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), scriptEngine(this), 
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), cleanup(0), scriptEngine(this), 
   componentAttacheds(0), rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     QScriptValue qtObject =
@@ -168,6 +168,15 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 
 QmlEnginePrivate::~QmlEnginePrivate()
 {
+    while (cleanup) {
+        QmlCleanup *c = cleanup;
+        cleanup = c->next;
+        if (cleanup) cleanup->prev = &cleanup;
+        c->next = 0;
+        c->prev = 0;
+        c->clear();
+    }
+
     delete rootContext;
     rootContext = 0;
     delete contextClass;

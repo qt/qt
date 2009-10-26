@@ -20,6 +20,7 @@ Flipable {
 
     transform: Rotation {
         id: detailsRotation
+        origin.y: container.height / 2;
         origin.x: container.width / 2;
         axis.y: 1; axis.z: 0
     }
