@@ -55,12 +55,13 @@
 
 #include <private/qmlrefcount_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
+#include <private/qmlcleanup_p.h>
 
 QT_BEGIN_NAMESPACE
 
 class QmlType;
 class QmlEngine;
-class QmlTypeNameCache : public QmlRefCount
+class QmlTypeNameCache : public QmlRefCount, public QmlCleanup
 {
 public:
     QmlTypeNameCache(QmlEngine *);
@@ -78,6 +79,9 @@ public:
 
     Data *data(const QString &) const;
     inline Data *data(const QScriptDeclarativeClass::Identifier &id) const;
+
+protected:
+    virtual void clear();
 
 private:
     struct RData : public Data { 

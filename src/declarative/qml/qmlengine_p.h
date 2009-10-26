@@ -97,6 +97,7 @@ class QmlTypeNameScriptClass;
 class QmlTypeNameCache;
 class QmlComponentAttached;
 class QmlListScriptClass;
+class QmlCleanup;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -138,6 +139,9 @@ public:
     QScriptClass *namedNodeMapClass;
     // Used by SQL database API
     QScriptClass *sqlQueryClass;
+
+    // Registered cleanup handlers
+    QmlCleanup *cleanup;
 
     struct QmlScriptEngine : public QScriptEngine
     {
