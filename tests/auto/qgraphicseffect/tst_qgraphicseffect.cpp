@@ -379,7 +379,8 @@ void tst_QGraphicsEffect::grayscale()
     item->setPen(Qt::NoPen);
     item->setBrush(QColor(122, 193, 66)); // Qt light green
 
-    QGraphicsGrayscaleEffect *effect = new QGraphicsGrayscaleEffect;
+    QGraphicsColorizeEffect *effect = new QGraphicsColorizeEffect;
+    effect->setColor(Qt::black);
     item->setGraphicsEffect(effect);
 
     QPainter painter;
