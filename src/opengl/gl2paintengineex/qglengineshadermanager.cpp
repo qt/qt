@@ -66,7 +66,7 @@ QGLEngineSharedShaders *QGLEngineSharedShaders::shadersForContext(const QGLConte
     return p;
 }
 
-const char* QGLEngineSharedShaders::qglEngineShaderSourceCode[] = {
+const char* QGLEngineSharedShaders::qShaderSnippets[] = {
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,0,0,
@@ -85,10 +85,10 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     around without having to change the order of the glsl strings. It is hoped this will
     make future hard-to-find runtime bugs more obvious and generally give more solid code.
 */
-    static bool qglEngineShaderSourceCodePopulated = false;
-    if (!qglEngineShaderSourceCodePopulated) {
+    static bool snippetsPopulated = false;
+    if (!snippetsPopulated) {
 
-        const char** code = qglEngineShaderSourceCode; // shortcut
+        const char** code = qShaderSnippets; // shortcut
 
         code[MainVertexShader] = qglslMainVertexShader;
         code[MainWithTexCoordsVertexShader] = qglslMainWithTexCoordsVertexShader;
@@ -130,11 +130,13 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
         code[ConicalGradientBrushSrcFragmentShader] = qglslConicalGradientBrushSrcFragmentShader;
         code[ShockingPinkSrcFragmentShader] = qglslShockingPinkSrcFragmentShader;
 
+        code[NoMaskFragmentShader] = "";
         code[MaskFragmentShader] = qglslMaskFragmentShader;
         code[RgbMaskFragmentShaderPass1] = qglslRgbMaskFragmentShaderPass1;
         code[RgbMaskFragmentShaderPass2] = qglslRgbMaskFragmentShaderPass2;
         code[RgbMaskWithGammaFragmentShader] = ""; //###
 
+        code[NoCompositionModeFragmentShader] = "";
         code[MultiplyCompositionModeFragmentShader] = ""; //###
         code[ScreenCompositionModeFragmentShader] = ""; //###
         code[OverlayCompositionModeFragmentShader] = ""; //###
@@ -149,17 +151,19 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
 #if defined(QT_DEBUG)
         // Check that all the elements have been filled:
-        for (int i = 0; i < TotalShaderCount; ++i) {
-            if (qglEngineShaderSourceCode[i] == 0) {
-                int enumIndex = staticMetaObject.indexOfEnumerator("ShaderName");
-                QMetaEnum m = staticMetaObject.enumerator(enumIndex);
-
-                qCritical() << "qglEngineShaderSourceCode: Source for" << m.valueToKey(i)
-                            << "(shader" << i << ") missing!";
+        for (int i = 0; i < TotalSnippetCount; ++i) {
+            if (qShaderSnippets[i] == 0) {
+                QByteArray msg;
+                msg.append("Fatal: Shader Snippet for ");
+                msg.append(snippetNameStr(SnippetName(i)));
+                msg.append(" (");
+                msg.append(QByteArray::number(i));
+                msg.append(") is missing!");
+                qFatal(msg.constData());
             }
         }
 #endif
-        qglEngineShaderSourceCodePopulated = true;
+        snippetsPopulated = true;
     }
 
     QGLShader* fragShader;
@@ -168,14 +172,14 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
     // Compile up the simple shader:
     source.clear();
-    source.append(qglEngineShaderSourceCode[MainVertexShader]);
-    source.append(qglEngineShaderSourceCode[PositionOnlyVertexShader]);
+    source.append(qShaderSnippets[MainVertexShader]);
+    source.append(qShaderSnippets[PositionOnlyVertexShader]);
     vertexShader = new QGLShader(QGLShader::VertexShader, context, this);
     vertexShader->compile(source);
 
     source.clear();
-    source.append(qglEngineShaderSourceCode[MainFragmentShader]);
-    source.append(qglEngineShaderSourceCode[ShockingPinkSrcFragmentShader]);
+    source.append(qShaderSnippets[MainFragmentShader]);
+    source.append(qShaderSnippets[ShockingPinkSrcFragmentShader]);
     fragShader = new QGLShader(QGLShader::FragmentShader, context, this);
     fragShader->compile(source);
 
@@ -191,14 +195,14 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
     // Compile the blit shader:
     source.clear();
-    source.append(qglEngineShaderSourceCode[MainWithTexCoordsVertexShader]);
-    source.append(qglEngineShaderSourceCode[UntransformedPositionVertexShader]);
+    source.append(qShaderSnippets[MainWithTexCoordsVertexShader]);
+    source.append(qShaderSnippets[UntransformedPositionVertexShader]);
     vertexShader = new QGLShader(QGLShader::VertexShader, context, this);
     vertexShader->compile(source);
 
     source.clear();
-    source.append(qglEngineShaderSourceCode[MainFragmentShader]);
-    source.append(qglEngineShaderSourceCode[ImageSrcFragmentShader]);
+    source.append(qShaderSnippets[MainFragmentShader]);
+    source.append(qShaderSnippets[ImageSrcFragmentShader]);
     fragShader = new QGLShader(QGLShader::FragmentShader, context, this);
     fragShader->compile(source);
 
@@ -215,6 +219,14 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
 
 }
 
+#if defined (QT_DEBUG)
+QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
+{
+    QMetaEnum m = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("SnippetName"));
+    return QByteArray(m.valueToKey(name));
+}
+#endif
+
 // The address returned here will only be valid until next time this function is called.
 QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineShaderProg &prog)
 {
@@ -225,48 +237,46 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
 
     cachedPrograms.append(prog);
     QGLEngineShaderProg &cached = cachedPrograms.last();
-
     QByteArray source;
-    source.append(qglEngineShaderSourceCode[prog.mainFragShader]);
-    source.append(qglEngineShaderSourceCode[prog.srcPixelFragShader]);
+    source.append(qShaderSnippets[prog.mainFragShader]);
+    source.append(qShaderSnippets[prog.srcPixelFragShader]);
     if (prog.srcPixelFragShader == CustomImageSrcFragmentShader)
         source.append(prog.customStageSource);
     if (prog.compositionFragShader)
-        source.append(qglEngineShaderSourceCode[prog.compositionFragShader]);
+        source.append(qShaderSnippets[prog.compositionFragShader]);
     if (prog.maskFragShader)
-        source.append(qglEngineShaderSourceCode[prog.maskFragShader]);
+        source.append(qShaderSnippets[prog.maskFragShader]);
     QGLShader* fragShader = new QGLShader(QGLShader::FragmentShader, ctxGuard.context(), this);
     fragShader->compile(source);
 
     source.clear();
-    source.append(qglEngineShaderSourceCode[prog.mainVertexShader]);
-    source.append(qglEngineShaderSourceCode[prog.positionVertexShader]);
+    source.append(qShaderSnippets[prog.mainVertexShader]);
+    source.append(qShaderSnippets[prog.positionVertexShader]);
     QGLShader* vertexShader = new QGLShader(QGLShader::VertexShader, ctxGuard.context(), this);
     vertexShader->compile(source);
 
 #if defined(QT_DEBUG)
     // Name the shaders for easier debugging
-    QMetaEnum m = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("ShaderName"));
     QByteArray description;
     description.append("Fragment shader: main=");
-    description.append(m.valueToKey(prog.mainFragShader));
+    description.append(snippetNameStr(prog.mainFragShader));
     description.append(", srcPixel=");
-    description.append(m.valueToKey(prog.srcPixelFragShader));
+    description.append(snippetNameStr(prog.srcPixelFragShader));
     if (prog.compositionFragShader) {
         description.append(", composition=");
-        description.append(m.valueToKey(prog.compositionFragShader));
+        description.append(snippetNameStr(prog.compositionFragShader));
     }
     if (prog.maskFragShader) {
         description.append(", mask=");
-        description.append(m.valueToKey(prog.maskFragShader));
+        description.append(snippetNameStr(prog.maskFragShader));
     }
     fragShader->setObjectName(QString::fromLatin1(description));
 
     description.clear();
     description.append("Vertex shader: main=");
-    description.append(m.valueToKey(prog.mainVertexShader));
+    description.append(snippetNameStr(prog.mainVertexShader));
     description.append(", position=");
-    description.append(m.valueToKey(prog.positionVertexShader));
+    description.append(snippetNameStr(prog.positionVertexShader));
     vertexShader->setObjectName(QString::fromLatin1(description));
 #endif
 
@@ -483,8 +493,8 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
 
     // Choose vertex shader shader position function (which typically also sets
     // varyings) and the source pixel (srcPixel) fragment shader function:
-    requiredProgram.positionVertexShader = QGLEngineSharedShaders::InvalidShaderName;
-    requiredProgram.srcPixelFragShader = QGLEngineSharedShaders::InvalidShaderName;
+    requiredProgram.positionVertexShader = QGLEngineSharedShaders::InvalidSnippetName;
+    requiredProgram.srcPixelFragShader = QGLEngineSharedShaders::InvalidSnippetName;
     bool isAffine = brushTransform.isAffine();
     if ( (srcPixelType >= Qt::Dense1Pattern) && (srcPixelType <= Qt::DiagCrossPattern) ) {
         if (isAffine)
@@ -594,7 +604,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
             qCritical("QGLEngineShaderManager::useCorrectShaderProg() - Unknown mask type");
         }
     } else {
-        requiredProgram.maskFragShader = 0;
+        requiredProgram.maskFragShader = QGLEngineSharedShaders::NoMaskFragmentShader;
     }
 
     if (hasCompose) {
@@ -636,7 +646,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
                 qWarning("QGLEngineShaderManager::useCorrectShaderProg() - Unsupported composition mode");
         }
     } else {
-        requiredProgram.compositionFragShader = 0;
+        requiredProgram.compositionFragShader = QGLEngineSharedShaders::NoCompositionModeFragmentShader;
     }
 
     // Choose vertex shader main function
