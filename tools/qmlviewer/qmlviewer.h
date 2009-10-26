@@ -63,7 +63,7 @@ public:
 
 public slots:
     void sceneResized(QSize size);
-    void openQml(const QUrl&);
+    void openQml(const QString&);
     void open();
     void reload();
     void takeSnapShot();
@@ -97,6 +97,7 @@ private:
     PreviewDeviceSkin *skin;
     QSize skinscreensize;
     QmlView *canvas;
+    QString currentFileOrUrl;
     QmlTimer recordTimer;
     QString frame_fmt;
     QImage frame;

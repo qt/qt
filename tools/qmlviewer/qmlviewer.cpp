@@ -606,7 +606,7 @@ void QmlViewer::addLibraryPath(const QString& lib)
 
 void QmlViewer::reload()
 {
-    openQml(canvas->url());
+    openQml(currentFileOrUrl);
 }
 
 void QmlViewer::open()
@@ -615,7 +615,7 @@ void QmlViewer::open()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open QML file"), cur, tr("QML Files (*.qml)"));
     if (!fileName.isEmpty()) {
         QFileInfo fi(fileName);
-        openQml(QUrl::fromLocalFile(fi.absoluteFilePath()));
+        openQml(fi.absoluteFilePath());
     }
 }
 
@@ -624,16 +624,24 @@ void QmlViewer::executeErrors()
     if (tester) tester->executefailure();
 }
 
-void QmlViewer::openQml(const QUrl& url)
+void QmlViewer::openQml(const QString& file_or_url)
 {
-    QString fileName = url.toLocalFile();
-    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(fileName.isEmpty() ? url.toString() : fileName));
+    currentFileOrUrl = file_or_url;
+
+    QUrl url;
+    QFileInfo fi(file_or_url);
+    if (fi.exists())
+        url = QUrl::fromLocalFile(fi.absoluteFilePath());
+    else
+        url = QUrl(file_or_url);
+    setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
 
     if (!m_script.isEmpty()) 
         tester = new QFxTester(m_script, m_scriptOptions, canvas);
 
     canvas->reset();
 
+    QString fileName = url.toLocalFile();
     if (!fileName.isEmpty()) {
         QFileInfo fi(fileName);
         if (fi.exists()) {
