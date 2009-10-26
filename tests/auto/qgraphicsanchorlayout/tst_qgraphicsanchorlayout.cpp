@@ -83,6 +83,7 @@ private slots:
     void floatConflict();
     void infiniteMaxSizes();
     void simplifiableUnfeasible();
+    void simplificationVsOrder();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1804,6 +1805,51 @@ void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
     QVERIFY(layoutHasConflict(l));
     if (hasSimplification)
         QVERIFY(!usedSimplex(l, Qt::Horizontal));
+}
+
+/*
+  Test whether the anchor direction can prevent it from
+  being simplificated
+*/
+void tst_QGraphicsAnchorLayout::simplificationVsOrder()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 10);
+    QSizeF max(50, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max);
+    QGraphicsWidget *b = createItem(min, pref, max);
+    QGraphicsWidget *c = createItem(min, pref, max);
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+
+    // Bulk anchors
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorLeft, c, Qt::AnchorLeft);
+    l->addAnchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
+
+    // Problematic anchor, direction b->c
+    QGraphicsAnchor *anchor = l->addAnchor(b, Qt::AnchorRight, c, Qt::AnchorRight);
+    anchor->setSpacing(5);
+
+    l->effectiveSizeHint(Qt::MinimumSize);
+    if (hasSimplification) {
+        QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
+        QCOMPARE(usedSimplex(l, Qt::Vertical), false);
+    }
+
+    // Problematic anchor, direction c->b
+    delete anchor;
+    anchor = l->addAnchor(c, Qt::AnchorRight, b, Qt::AnchorRight);
+    anchor->setSpacing(5);
+
+    l->effectiveSizeHint(Qt::MinimumSize);
+    if (hasSimplification) {
+        QEXPECT_FAIL("", "Sequential anchors cannot handle children of opposite directions", Continue);
+        QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
+        QCOMPARE(usedSimplex(l, Qt::Vertical), false);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
