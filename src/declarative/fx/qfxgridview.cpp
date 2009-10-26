@@ -736,14 +736,13 @@ QFxGridView::~QFxGridView()
     \endcode
 */
 
-//XXX change to \qmlattachedsignal when it exists.
 /*!
-    \qmlattachedproperty void GridView::onAdd
+    \qmlattachedsignal GridView::onAdd()
     This attached handler is called immediately after an item is added to the view.
 */
 
 /*!
-    \qmlattachedproperty void GridView::onRemove
+    \qmlattachedsignal GridView::onRemove()
     This attached handler is called immediately before an item is removed from the view.
 */
 
