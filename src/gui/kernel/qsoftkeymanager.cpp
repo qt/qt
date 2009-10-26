@@ -189,7 +189,8 @@ bool QSoftKeyManager::event(QEvent *e)
         } while (source);
 
         QSoftKeyManagerPrivate::softKeySource = source;
-        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
+        if (source)
+            QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
         return true;
     }
     return false;
