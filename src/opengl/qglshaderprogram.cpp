@@ -444,7 +444,8 @@ bool QGLShader::compile(const char *source)
         d->hasPartialSource = true;
         return d->compile(this);
     } else if (d->shaderGuard.id()) {
-        QVarLengthArray<const char *> src;
+        QVarLengthArray<const char *, 4> src;
+        QVarLengthArray<GLint, 4> srclen;
         int headerLen = 0;
         while (source && source[headerLen] == '#') {
             // Skip #version and #extension directives at the start of
@@ -459,25 +460,82 @@ bool QGLShader::compile(const char *source)
             if (source[headerLen] == '\n')
                 ++headerLen;
         }
-        QByteArray header;
         if (headerLen > 0) {
-            header = QByteArray(source, headerLen);
-            src.append(header.constData());
+            src.append(source);
+            srclen.append(GLint(headerLen));
         }
 #ifdef QGL_DEFINE_QUALIFIERS
         src.append(qualifierDefines);
+        srclen.append(GLint(sizeof(qualifierDefines) - 1));
 #endif
 #ifdef QGL_REDEFINE_HIGHP
         if (d->shaderType == FragmentShader ||
-                d->shaderType == PartialFragmentShader)
+                d->shaderType == PartialFragmentShader) {
             src.append(redefineHighp);
+            srclen.append(GLint(sizeof(redefineHighp) - 1));
+        }
 #endif
         src.append(source + headerLen);
-        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), 0);
+        srclen.append(GLint(qstrlen(source + headerLen)));
+        glShaderSource(d->shaderGuard.id(), src.size(), src.data(), srclen.data());
         return d->compile(this);
     } else {
         return false;
     }
+}
+
+/*!
+    \internal
+*/
+bool QGLShader::compile
+    (const QList<QGLShader *>& shaders, QGLShader::ShaderType type)
+{
+    QVarLengthArray<const char *, 16> src;
+    QVarLengthArray<GLint, 16> srclen;
+    if (!d->shaderGuard.id())
+        return false;
+    foreach (QGLShader *shader, shaders) {
+        if (shader->shaderType() != type)
+            continue;
+        const char *source = shader->d->partialSource.constData();
+        int headerLen = 0;
+        if (src.isEmpty()) {
+            // First shader: handle the #version and #extension tags
+            // plus the precision qualifiers.
+            while (source && source[headerLen] == '#') {
+                // Skip #version and #extension directives at the start of
+                // the shader code.  We need to insert the qualifierDefines
+                // and redefineHighp just after them.
+                if (qstrncmp(source + headerLen, "#version", 8) != 0 &&
+                        qstrncmp(source + headerLen, "#extension", 10) != 0) {
+                    break;
+                }
+                while (source[headerLen] != '\0' && source[headerLen] != '\n')
+                    ++headerLen;
+                if (source[headerLen] == '\n')
+                    ++headerLen;
+            }
+            if (headerLen > 0) {
+                src.append(source);
+                srclen.append(GLint(headerLen));
+            }
+#ifdef QGL_DEFINE_QUALIFIERS
+            src.append(qualifierDefines);
+            srclen.append(GLint(sizeof(qualifierDefines) - 1));
+#endif
+#ifdef QGL_REDEFINE_HIGHP
+            if (d->shaderType == FragmentShader ||
+                    d->shaderType == PartialFragmentShader) {
+                src.append(redefineHighp);
+                srclen.append(GLint(sizeof(redefineHighp) - 1));
+            }
+#endif
+        }
+        src.append(source + headerLen);
+        srclen.append(GLint(qstrlen(source + headerLen)));
+    }
+    glShaderSource(d->shaderGuard.id(), src.size(), src.data(), srclen.data());
+    return d->compile(this);
 }
 
 /*!
@@ -713,6 +771,8 @@ public:
     QList<QGLShader *> anonShaders;
     QGLShader *vertexShader;
     QGLShader *fragmentShader;
+
+    bool hasShader(QGLShader::ShaderType type) const;
 };
 
 QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
@@ -721,6 +781,15 @@ QGLShaderProgramPrivate::~QGLShaderProgramPrivate()
         QGLShareContextScope scope(programGuard.context());
         glDeleteProgram(programGuard.id());
     }
+}
+
+bool QGLShaderProgramPrivate::hasShader(QGLShader::ShaderType type) const
+{
+    foreach (QGLShader *shader, shaders) {
+        if (shader->shaderType() == type)
+            return true;
+    }
+    return false;
 }
 
 #undef ctx
@@ -1118,47 +1187,41 @@ bool QGLShaderProgram::link()
         return false;
     if (d->hasPartialShaders) {
         // Compile the partial vertex and fragment shaders.
-        QByteArray vertexSource;
-        QByteArray fragmentSource;
-        foreach (QGLShader *shader, d->shaders) {
-            if (shader->shaderType() == QGLShader::PartialVertexShader)
-                vertexSource += shader->sourceCode();
-            else if (shader->shaderType() == QGLShader::PartialFragmentShader)
-                fragmentSource += shader->sourceCode();
-        }
-        if (vertexSource.isEmpty()) {
+        if (d->hasShader(QGLShader::PartialVertexShader)) {
+            if (!d->vertexShader) {
+                d->vertexShader =
+                    new QGLShader(QGLShader::VertexShader, this);
+            }
+            if (!d->vertexShader->compile
+                    (d->shaders, QGLShader::PartialVertexShader)) {
+                d->log = d->vertexShader->log();
+                return false;
+            }
+            glAttachShader(program, d->vertexShader->d->shaderGuard.id());
+        } else {
             if (d->vertexShader) {
                 glDetachShader(program, d->vertexShader->d->shaderGuard.id());
                 delete d->vertexShader;
                 d->vertexShader = 0;
             }
-        } else {
-            if (!d->vertexShader) {
-                d->vertexShader =
-                    new QGLShader(QGLShader::VertexShader, this);
+        }
+        if (d->hasShader(QGLShader::PartialFragmentShader)) {
+            if (!d->fragmentShader) {
+                d->fragmentShader =
+                    new QGLShader(QGLShader::FragmentShader, this);
             }
-            if (!d->vertexShader->compile(vertexSource)) {
-                d->log = d->vertexShader->log();
+            if (!d->fragmentShader->compile
+                    (d->shaders, QGLShader::PartialFragmentShader)) {
+                d->log = d->fragmentShader->log();
                 return false;
             }
-            glAttachShader(program, d->vertexShader->d->shaderGuard.id());
-        }
-        if (fragmentSource.isEmpty()) {
+            glAttachShader(program, d->fragmentShader->d->shaderGuard.id());
+        } else {
             if (d->fragmentShader) {
                 glDetachShader(program, d->fragmentShader->d->shaderGuard.id());
                 delete d->fragmentShader;
                 d->fragmentShader = 0;
             }
-        } else {
-            if (!d->fragmentShader) {
-                d->fragmentShader =
-                    new QGLShader(QGLShader::FragmentShader, this);
-            }
-            if (!d->fragmentShader->compile(fragmentSource)) {
-                d->log = d->fragmentShader->log();
-                return false;
-            }
-            glAttachShader(program, d->fragmentShader->d->shaderGuard.id());
         }
     }
     glLinkProgram(program);

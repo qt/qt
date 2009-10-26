@@ -106,6 +106,8 @@ private:
     friend class QGLShaderProgram;
 
     Q_DISABLE_COPY(QGLShader)
+
+    bool compile(const QList<QGLShader *>& shaders, QGLShader::ShaderType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
