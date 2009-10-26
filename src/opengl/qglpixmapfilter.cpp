@@ -341,7 +341,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 {
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
 
-    int radius = this->radius();
+    int radius = qRound(this->radius());
     if (!m_haveCached || (m_hint == Qt::QualityHint && radius != m_cachedRadius)) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
@@ -530,7 +530,7 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
 {
     QGLPixmapDropShadowFilter *filter = const_cast<QGLPixmapDropShadowFilter *>(this);
 
-    int radius = this->blurRadius();
+    int radius = qRound(this->blurRadius());
     if (!m_haveCached || (m_hint == Qt::QualityHint && radius != m_cachedRadius)) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;

@@ -182,22 +182,22 @@ class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
 {
     Q_OBJECT
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
 public:
     QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
-    int blurRadius() const;
+    qreal blurRadius() const;
     Qt::RenderHint blurHint() const;
 
 public Q_SLOTS:
-    void setBlurRadius(int blurRadius);
+    void setBlurRadius(qreal blurRadius);
     void setBlurHint(Qt::RenderHint hint);
 
 Q_SIGNALS:
-    void blurRadiusChanged(int blurRadius);
+    void blurRadiusChanged(qreal blurRadius);
     void blurHintChanged(Qt::RenderHint hint);
 
 protected:
@@ -215,7 +215,7 @@ class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
     QGraphicsDropShadowEffect(QObject *parent = 0);
@@ -230,7 +230,7 @@ public:
     inline qreal yOffset() const
     { return offset().y(); }
 
-    int blurRadius() const;
+    qreal blurRadius() const;
     QColor color() const;
 
 public Q_SLOTS:
@@ -248,12 +248,12 @@ public Q_SLOTS:
     inline void setYOffset(qreal dy)
     { setOffset(QPointF(xOffset(), dy)); }
 
-    void setBlurRadius(int blurRadius);
+    void setBlurRadius(qreal blurRadius);
     void setColor(const QColor &color);
 
 Q_SIGNALS:
     void offsetChanged(const QPointF &offset);
-    void blurRadiusChanged(int blurRadius);
+    void blurRadiusChanged(qreal blurRadius);
     void colorChanged(const QColor &color);
 
 protected:

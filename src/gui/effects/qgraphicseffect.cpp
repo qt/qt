@@ -630,16 +630,16 @@ QGraphicsBlurEffect::~QGraphicsBlurEffect()
 
     By default, the blur radius is 5 pixels.
 */
-int QGraphicsBlurEffect::blurRadius() const
+qreal QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
     return d->filter->radius();
 }
 
-void QGraphicsBlurEffect::setBlurRadius(int radius)
+void QGraphicsBlurEffect::setBlurRadius(qreal radius)
 {
     Q_D(QGraphicsBlurEffect);
-    if (d->filter->radius() == radius)
+    if (qFuzzyCompare(d->filter->radius(), radius))
         return;
 
     d->filter->setRadius(radius);
@@ -648,7 +648,7 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurRadiusChanged(int radius)
+    \fn void QGraphicsBlurEffect::blurRadiusChanged(qreal radius)
 
     This signal is emitted whenever the effect's blur radius changes.
     The \a radius parameter holds the effect's new blur radius.
@@ -816,16 +816,16 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
 
     \sa color(), offset().
 */
-int QGraphicsDropShadowEffect::blurRadius() const
+qreal QGraphicsDropShadowEffect::blurRadius() const
 {
     Q_D(const QGraphicsDropShadowEffect);
     return d->filter->blurRadius();
 }
 
-void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
+void QGraphicsDropShadowEffect::setBlurRadius(qreal blurRadius)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (d->filter->blurRadius() == blurRadius)
+    if (qFuzzyCompare(d->filter->blurRadius(), blurRadius))
         return;
 
     d->filter->setBlurRadius(blurRadius);
@@ -834,7 +834,7 @@ void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
 }
 
 /*!
-    \fn void QGraphicsDropShadowEffect::blurRadiusChanged(int blurRadius)
+    \fn void QGraphicsDropShadowEffect::blurRadiusChanged(qreal blurRadius)
 
     This signal is emitted whenever the effect's blur radius changes.
     The \a blurRadius parameter holds the effect's new blur radius.
