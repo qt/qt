@@ -1042,7 +1042,7 @@ void QTextEngine::shapeTextWithCE(int item) const
     QScriptItem &si = layoutData->items[item];
     si.glyph_data_offset = layoutData->used;
 
-    QFontEngine *fe = fontEngine(si, &si.ascent, &si.descent);
+    QFontEngine *fe = fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
     QTextEngine::ShaperFlags flags;
     if (si.analysis.bidiLevel % 2)
@@ -1119,7 +1119,7 @@ void QTextEngine::shapeTextWithHarfbuzz(int item) const
 
     si.glyph_data_offset = layoutData->used;
 
-    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent);
+    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
 
     bool kerningEnabled = this->font(si).d->kerning;
 
@@ -1350,8 +1350,11 @@ void QTextEngine::shape(int item) const
                                             layoutData->items[item].position + block.position(), format);
         }
     } else if (layoutData->items[item].analysis.flags == QScriptAnalysis::Tab) {
-        // set up at least the ascent/descent of the script item for the tab
-        fontEngine(layoutData->items[item], &layoutData->items[item].ascent, &layoutData->items[item].descent);
+        // set up at least the ascent/descent/leading of the script item for the tab
+        fontEngine(layoutData->items[item],
+                   &layoutData->items[item].ascent,
+                   &layoutData->items[item].descent,
+                   &layoutData->items[item].leading);
     } else {
         shapeText(item);
     }
@@ -1737,7 +1740,7 @@ QFont QTextEngine::font(const QScriptItem &si) const
     return font;
 }
 
-QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFixed *descent) const
+QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFixed *descent, QFixed *leading) const
 {
     QFontEngine *engine = 0;
     QFontEngine *scaledEngine = 0;
@@ -1777,6 +1780,7 @@ QFontEngine *QTextEngine::fontEngine(const QScriptItem &si, QFixed *ascent, QFix
     if (ascent) {
         *ascent = engine->ascent();
         *descent = engine->descent();
+        *leading = engine->leading();
     }
 
     if (scaledEngine)
@@ -2009,8 +2013,12 @@ void QScriptLine::setDefaultHeight(QTextEngine *eng)
         e = eng->fnt.d->engineForScript(QUnicodeTables::Common);
     }
 
-    ascent = qMax(ascent, e->ascent());
-    descent = qMax(descent, e->descent());
+    QFixed other_ascent = e->ascent();
+    QFixed other_descent = e->descent();
+    QFixed other_leading = e->leading();
+    leading = qMax(leading + ascent, other_leading + other_ascent) - qMax(ascent, other_ascent);
+    ascent = qMax(ascent, other_ascent);
+    descent = qMax(descent, other_descent);
 }
 
 QTextEngine::LayoutData::LayoutData()

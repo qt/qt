@@ -101,11 +101,12 @@ public:
     GLuint shaderId() const;
 
 private:
-    QGLShaderPrivate *d;
-
     friend class QGLShaderProgram;
 
     Q_DISABLE_COPY(QGLShader)
+    Q_DECLARE_PRIVATE(QGLShader)
+
+    bool compile(const QList<QGLShader *>& shaders, QGLShader::ShaderType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
@@ -286,9 +287,8 @@ private Q_SLOTS:
     void shaderDestroyed();
 
 private:
-    QGLShaderProgramPrivate *d;
-
     Q_DISABLE_COPY(QGLShaderProgram)
+    Q_DECLARE_PRIVATE(QGLShaderProgram)
 
     bool init();
 };

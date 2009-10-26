@@ -169,7 +169,7 @@ void tst_QPauseAnimation::noTimerUpdates()
     animation.start();
     QTest::qWait(animation.totalDuration() + 100);
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
-    QCOMPARE(animation.m_updateCurrentTimeCount, 2);
+    QCOMPARE(animation.m_updateCurrentTimeCount, 1 + loopCount);
 
     timer->setConsistentTiming(false);
 }
@@ -399,6 +399,7 @@ void tst_QPauseAnimation::multipleSequentialGroups()
 void tst_QPauseAnimation::zeroDuration()
 {
     TestablePauseAnimation animation;
+    animation.setDuration(0);
     animation.start();
     QTest::qWait(animation.totalDuration() + 100);
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);

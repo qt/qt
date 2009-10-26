@@ -97,11 +97,11 @@ QGestureRecognizer::Result QWinNativePanGestureRecognizer::filterEvent(QGesture 
             return QGestureRecognizer::Ignore;
         }
         if (q->state() == Qt::NoGesture) {
-            d->lastOffset = d->totalOffset = d->offset = QSize();
+            d->lastOffset = d->totalOffset = d->offset = QPointF();
         } else {
             d->lastOffset = d->offset;
-            d->offset = QSize(ev->position.x() - d->lastPosition.x(),
-                              ev->position.y() - d->lastPosition.y());
+            d->offset = QPointF(ev->position.x() - d->lastPosition.x(),
+                                ev->position.y() - d->lastPosition.y());
             d->totalOffset += d->offset;
         }
         d->lastPosition = ev->position;
@@ -114,7 +114,7 @@ void QWinNativePanGestureRecognizer::reset(QGesture *state)
     QPanGesture *pan = static_cast<QPanGesture*>(state);
     QPanGesturePrivate *d = pan->d_func();
 
-    d->totalOffset = d->lastOffset = d->offset = QSizeF();
+    d->totalOffset = d->lastOffset = d->offset = QPointF();
     d->lastPosition = QPoint();
     d->acceleration = 0;
 

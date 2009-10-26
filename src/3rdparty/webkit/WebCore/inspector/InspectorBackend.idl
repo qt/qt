@@ -52,17 +52,18 @@ module core {
         boolean addSourceToFrame(in DOMString mimeType, in DOMString sourceValue, in Node frame);
         [Custom] void search(in Node node, in DOMString query);
 #if defined(ENABLE_DATABASE) && ENABLE_DATABASE
-        [Custom] DOMObject databaseTableNames(in Database database);
+        void getDatabaseTableNames(in long callId, in long databaseId);
 #endif
+
         [Custom] DOMObject setting(in DOMString key);
         [Custom] void setSetting(in DOMString key, in DOMObject  value);
         [Custom] DOMWindow inspectedWindow();
         DOMString localizedStringsURL();
         DOMString hiddenPanels();
         DOMString platform();
-        void enableTimeline(in boolean always);
-        void disableTimeline(in boolean always);
-        boolean timelineEnabled();
+        void startTimelineProfiler();
+        void stopTimelineProfiler();
+        boolean timelineProfilerEnabled();
         [ImplementationFunction=moveWindowBy] void moveByUnrestricted(in float x, in float y);
         void setAttachedWindowHeight(in unsigned long height);
         [Custom] DOMObject wrapCallback(in DOMObject callback);
@@ -99,27 +100,32 @@ module core {
         void startProfiling();
         void stopProfiling();
 
-        [Custom] Array profiles();
+        void getProfileHeaders(in long callId);
+        void getProfile(in long callId, in unsigned long uid);
 #endif
-        void dispatchOnInjectedScript(in long callId, in DOMString methodName, in DOMString arguments);
+        void dispatchOnInjectedScript(in long callId, in DOMString methodName, in DOMString arguments, in boolean async);
         void getChildNodes(in long callId, in long nodeId);
         void setAttribute(in long callId, in long elementId, in DOMString name, in DOMString value);
         void removeAttribute(in long callId, in long elementId, in DOMString name);
         void setTextNodeValue(in long callId, in long nodeId, in DOMString value);
         void getEventListenersForNode(in long callId, in long nodeId);
         void copyNode(in long nodeId);
+        void removeNode(in long callId, in long nodeId);
 
-        void getCookies(in long callId);
-        void deleteCookie(in DOMString cookieName);
+        void getCookies(in long callId, in DOMString domain);
+        void deleteCookie(in DOMString cookieName, in DOMString domain);
 
         // Called from InjectedScript.
+        // TODO: extract into a separate IDL.
         [Custom] DOMObject nodeForId(in long nodeId);
-        [Custom] long wrapObject(in DOMObject object);
+        [Custom] long wrapObject(in DOMObject object, in DOMString objectGroup);
         [Custom] DOMObject unwrapObject(in long objectId);
+        void releaseWrapperObjectGroup(in DOMString objectGroup);
         [Custom] int pushNodePathToFrontend(in DOMObject node, in boolean selectInUI);
         void addNodesToSearchResult(in DOMString nodeIds);
 #if defined(ENABLE_DATABASE) && ENABLE_DATABASE
         [Custom] void selectDatabase(in DOMObject database);
+        [Custom] DOMObject databaseForId(in long databaseId);
 #endif
 #if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
         [Custom] void selectDOMStorage(in DOMObject storage);
@@ -127,5 +133,7 @@ module core {
         void setDOMStorageItem(in long callId, in long storageId, in DOMString key, in DOMString value);
         void removeDOMStorageItem(in long callId, in long storageId, in DOMString key);
 #endif
+        void reportDidDispatchOnInjectedScript(in long callId, in DOMString result, in boolean isException);
+        void didEvaluateForTestInFrontend(in long callId, in DOMString jsonResult);
     };
 }

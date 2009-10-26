@@ -150,7 +150,7 @@ void tst_QAudioOutput::pullFile()
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
         QVERIFY(audio->periodSize() > 0);
-        QVERIFY(audio->clock() > 0);
+        QVERIFY(audio->clock() > 10000 && audio->clock() < 800000);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
         // Wait until finished...

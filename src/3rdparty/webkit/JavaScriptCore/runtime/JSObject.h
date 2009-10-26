@@ -207,10 +207,12 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, HasStandardGetOwnPropertySlot | HasDefaultMark | HasDefaultGetPropertyNames));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
 
     protected:
+        static const unsigned StructureFlags = 0;
+
         void addAnonymousSlots(unsigned count);
         void putAnonymousValue(unsigned index, JSValue value)
         {
@@ -368,7 +370,7 @@ ALWAYS_INLINE bool JSObject::getOwnPropertySlot(ExecState* exec, const Identifie
 
 ALWAYS_INLINE bool JSCell::fastGetOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
-    if (structure()->typeInfo().hasStandardGetOwnPropertySlot())
+    if (!structure()->typeInfo().overridesGetOwnPropertySlot())
         return asObject(this)->inlineGetOwnPropertySlot(exec, propertyName, slot);
     return getOwnPropertySlot(exec, propertyName, slot);
 }
@@ -682,7 +684,7 @@ ALWAYS_INLINE void JSObject::markChildrenDirect(MarkStack& markStack)
 {
     JSCell::markChildren(markStack);
 
-    m_structure->markAggregate(markStack);
+    markStack.append(prototype());
     
     PropertyStorage storage = propertyStorage();
     size_t storageSize = m_structure->propertyStorageSize();

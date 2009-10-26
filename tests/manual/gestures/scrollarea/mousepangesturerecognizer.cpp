@@ -69,8 +69,8 @@ QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *stat
             QPoint lastPos = g->property("lastPos").toPoint();
             g->setLastOffset(g->offset());
             lastPos = pos - lastPos;
-            g->setOffset(QSizeF(lastPos.x(), lastPos.y()));
-            g->setTotalOffset(g->totalOffset() + QSizeF(lastPos.x(), lastPos.y()));
+            g->setOffset(QPointF(lastPos.x(), lastPos.y()));
+            g->setTotalOffset(g->totalOffset() + QPointF(lastPos.x(), lastPos.y()));
             g->setProperty("lastPos", pos);
             return QGestureRecognizer::GestureTriggered | QGestureRecognizer::ConsumeEventHint;
         }
@@ -84,9 +84,9 @@ QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *stat
 void MousePanGestureRecognizer::reset(QGesture *state)
 {
     QPanGesture *g = static_cast<QPanGesture *>(state);
-    g->setTotalOffset(QSizeF());
-    g->setLastOffset(QSizeF());
-    g->setOffset(QSizeF());
+    g->setTotalOffset(QPointF());
+    g->setLastOffset(QPointF());
+    g->setOffset(QPointF());
     g->setAcceleration(0);
     g->setProperty("lastPos", QVariant());
     g->setProperty("pressed", QVariant::fromValue<bool>(false));

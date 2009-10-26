@@ -44,13 +44,15 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     SVGAnimatedLength* impl() const { return m_impl.get(); }
 
 private:
     RefPtr<SVGAnimatedLength> m_impl;
+protected:
+    static const unsigned StructureFlags = JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 JSC::JSValue toJS(JSC::ExecState*, JSDOMGlobalObject*, SVGAnimatedLength*, SVGElement* context);
@@ -62,7 +64,13 @@ public:
     static JSC::JSObject* self(JSC::ExecState*, JSC::JSGlobalObject*);
     virtual const JSC::ClassInfo* classInfo() const { return &s_info; }
     static const JSC::ClassInfo s_info;
+    static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
+    {
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
+    }
     JSSVGAnimatedLengthPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = Base::StructureFlags;
 };
 
 // Attributes
