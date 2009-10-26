@@ -7,7 +7,7 @@ var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
 var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
 var timer;
-var component;
+var component = createComponent(tileSrc);
 
 //Index function used instead of a 2D array
 function index(xIdx,yIdx) {
@@ -179,9 +179,6 @@ function floodMoveCheck(xIdx, yIdx, type)
 }
 
 function createBlock(xIdx,yIdx){
-    if(component==null) 
-        component = createComponent(tileSrc);
-
     // Note that we don't wait for the component to become ready. This will
     // only work if the block QML is a local file. Otherwise the component will
     // not be ready immediately. There is a statusChanged signal on the
