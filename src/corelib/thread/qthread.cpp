@@ -727,6 +727,16 @@ QThread *QThread::currentThread()
     return QThreadData::current()->thread;
 }
 
+/*! \internal
+ */
+QThread::QThread(QThreadPrivate &dd, QObject *parent)
+    : QObject(dd, parent)
+{
+    Q_D(QThread);
+    // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
+    d->data->thread = this;
+}
+
 QThreadData* QThreadData::current()
 {
     static QThreadData *data = 0; // reinterpret_cast<QThreadData *>(pthread_getspecific(current_thread_data_key));
@@ -738,17 +748,13 @@ QThreadData* QThreadData::current()
     }
     return data;
 }
-
-/*! \internal
- */
-QThread::QThread(QThreadPrivate &dd, QObject *parent)
-    : QObject(dd, parent)
+#endif // QT_NO_THREAD
+QThreadData* QThreadData::get2(QThread *thread)
 {
-    Q_D(QThread);
-    // fprintf(stderr, "QThreadData %p taken from private data for thread %p\n", d->data, this);
-    d->data->thread = this;
+    Q_ASSERT_X(thread != 0, "QThread", "internal error");
+    return thread->d_func()->data;
 }
 
-#endif // QT_NO_THREAD
+
 
 QT_END_NAMESPACE

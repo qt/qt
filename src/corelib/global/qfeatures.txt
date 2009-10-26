@@ -604,7 +604,7 @@ SeeAlso: ???
 Feature: FILEDIALOG
 Description: Supports a dialog widget for selecting files or directories.
 Section: Dialogs
-Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET FILESYSTEMMODEL
+Requires: DIRMODEL TREEVIEW COMBOBOX TOOLBUTTON BUTTONGROUP TOOLTIP SPLITTER STACKEDWIDGET
 Name: QFileDialog
 SeeAlso: ???
 
@@ -625,7 +625,7 @@ SeeAlso: ???
 Feature: PRINTPREVIEWDIALOG
 Description: Provides a dialog for previewing and configuring page layouts for printer output.
 Section: Dialogs
-Requires: PRINTPREVIEWWIDGET PRINTDIALOG 
+Requires: PRINTPREVIEWWIDGET PRINTDIALOG TOOLBAR
 Name: QPrintPreviewDialog
 SeeAlso: ???
 
@@ -677,7 +677,7 @@ SeeAlso: ???
 Feature: DIRMODEL
 Description: Supports a data model for the local filesystem.
 Section: ItemViews
-Requires: ITEMVIEWS
+Requires: ITEMVIEWS FILESYSTEMMODEL 
 Name: QDirModel
 SeeAlso: ???
 
@@ -1107,6 +1107,13 @@ Requires: PROXYMODEL
 Name: QCompleter
 SeeAlso: ???
 
+Feature: FSCOMPLETER
+Description: Provides completions based on an item model.
+Section: Utilities
+Requires: FILESYSTEMMODEL COMPLETER
+Name: QCompleter
+SeeAlso: ???
+
 Feature: DESKTOPSERVICES
 Description: Provides methods for accessing common desktop services.
 Section: Utilities
@@ -1159,7 +1166,7 @@ SeeAlso: ???
 Feature: ANIMATION
 Description: Provides a framework for animations.
 Section: Utilities
-Requires: PROPERTIES
+Requires: PROPERTIES THREAD
 Name: Animation
 SeeAlso: ???
 

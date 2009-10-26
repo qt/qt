@@ -42,7 +42,6 @@
 #include "qatomic.h"
 #include "qmutexpool_p.h"
 
-#ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
 
@@ -50,6 +49,7 @@ QT_BEGIN_NAMESPACE
 // use QMutexpool::instance() in new clode.
 Q_CORE_EXPORT QMutexPool *qt_global_mutexpool = 0;
 Q_GLOBAL_STATIC_WITH_ARGS(QMutexPool, globalMutexPool, (QMutex::Recursive))
+#ifndef QT_NO_THREAD
 
 /*!
     \class QMutexPool
@@ -114,15 +114,6 @@ QMutexPool::~QMutexPool()
         mutexes[index] = 0;
     }
 }
-
-/*!
-    Returns the global QMutexPool instance.
-*/
-QMutexPool *QMutexPool::instance()
-{
-    return globalMutexPool();
-}
-
 /*!
     Returns a QMutex from the pool. QMutexPool uses the value \a address
     to determine which mutex is returned from the pool.
@@ -152,7 +143,14 @@ QMutex *QMutexPool::globalInstanceGet(const void *address)
         return 0;
     return globalInstance->get(address);
 }
+#endif // QT_NO_THREAD
+/*!
+    Returns the global QMutexPool instance.
+*/
+QMutexPool *QMutexPool::instance()
+{
+    return globalMutexPool();
+}
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_THREAD

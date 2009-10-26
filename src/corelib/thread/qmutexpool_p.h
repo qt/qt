@@ -57,9 +57,9 @@
 #include "QtCore/qmutex.h"
 #include "QtCore/qvarlengtharray.h"
 
-#ifndef QT_NO_THREAD
 
 QT_BEGIN_NAMESPACE
+#ifndef QT_NO_THREAD
 
 class Q_CORE_EXPORT QMutexPool
 {
@@ -75,11 +75,24 @@ private:
     QVarLengthArray<QAtomicPointer<QMutex>, 131> mutexes;
     QMutex::RecursionMode recursionMode;
 };
+#else //QT_NO_THREAD
+Q_GLOBAL_STATIC(QMutex, globalMutex)
+class Q_CORE_EXPORT QMutexPool
+{
+public:
+    explicit QMutexPool(QMutex::RecursionMode recursionMode = QMutex::NonRecursive, int size = 131){}
+    ~QMutexPool(){}
+
+    QMutex *get(const void *address){return globalMutex();}
+    static QMutexPool *instance();
+    static QMutex *globalInstanceGet(const void *address){return globalMutex();}
+};
+
+#endif // QT_NO_THREAD
 
 extern Q_CORE_EXPORT QMutexPool *qt_global_mutexpool;
 
 QT_END_NAMESPACE
 
-#endif // QT_NO_THREAD
 
 #endif // QMUTEXPOOL_P_H

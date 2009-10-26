@@ -301,11 +301,6 @@
 // 
 //#define QT_NO_XMLSTREAM
 
-// Animation
-#if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES))
-#define QT_NO_ANIMATION
-#endif
-
 // QButtonGroup
 #if !defined(QT_NO_BUTTONGROUP) && (defined(QT_NO_GROUPBOX))
 #define QT_NO_BUTTONGROUP
@@ -494,6 +489,11 @@
 // QXmlStreamWriter
 #if !defined(QT_NO_XMLSTREAMWRITER) && (defined(QT_NO_XMLSTREAM))
 #define QT_NO_XMLSTREAMWRITER
+#endif
+
+// Animation
+#if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_THREAD))
+#define QT_NO_ANIMATION
 #endif
 
 // Context menu
@@ -686,11 +686,6 @@
 #define QT_NO_TEXTEDIT
 #endif
 
-// QDirModel
-#if !defined(QT_NO_DIRMODEL) && (defined(QT_NO_ITEMVIEWS))
-#define QT_NO_DIRMODEL
-#endif
-
 // QErrorMessage
 #if !defined(QT_NO_ERRORMESSAGE) && (defined(QT_NO_TEXTEDIT))
 #define QT_NO_ERRORMESSAGE
@@ -806,6 +801,11 @@
 #define QT_NO_DOCKWIDGET
 #endif
 
+// QDirModel
+#if !defined(QT_NO_DIRMODEL) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_FILESYSTEMMODEL))
+#define QT_NO_DIRMODEL
+#endif
+
 // QUndoView
 #if !defined(QT_NO_UNDOVIEW) && (defined(QT_NO_UNDOSTACK) || defined(QT_NO_LISTVIEW))
 #define QT_NO_UNDOVIEW
@@ -814,6 +814,11 @@
 // QGraphicsSvgItem
 #if !defined(QT_NO_GRAPHICSSVGITEM) && (defined(QT_NO_SVGRENDERER) || defined(QT_NO_GRAPHICSVIEW))
 #define QT_NO_GRAPHICSSVGITEM
+#endif
+
+// QCompleter
+#if !defined(QT_NO_FSCOMPLETER) && (defined(QT_NO_FILESYSTEMMODEL) || defined(QT_NO_COMPLETER))
+#define QT_NO_FSCOMPLETER
 #endif
 
 // QComboBox
@@ -867,12 +872,12 @@
 #endif
 
 // QFileDialog
-#if !defined(QT_NO_FILEDIALOG) && (defined(QT_NO_DIRMODEL) || defined(QT_NO_TREEVIEW) || defined(QT_NO_COMBOBOX) || defined(QT_NO_TOOLBUTTON) || defined(QT_NO_BUTTONGROUP) || defined(QT_NO_TOOLTIP) || defined(QT_NO_SPLITTER) || defined(QT_NO_STACKEDWIDGET) || defined(QT_NO_FILESYSTEMMODEL))
+#if !defined(QT_NO_FILEDIALOG) && (defined(QT_NO_DIRMODEL) || defined(QT_NO_TREEVIEW) || defined(QT_NO_COMBOBOX) || defined(QT_NO_TOOLBUTTON) || defined(QT_NO_BUTTONGROUP) || defined(QT_NO_TOOLTIP) || defined(QT_NO_SPLITTER) || defined(QT_NO_STACKEDWIDGET))
 #define QT_NO_FILEDIALOG
 #endif
 
 // QPrintPreviewDialog
-#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG))
+#if !defined(QT_NO_PRINTPREVIEWDIALOG) && (defined(QT_NO_PRINTPREVIEWWIDGET) || defined(QT_NO_PRINTDIALOG) || defined(QT_NO_TOOLBAR))
 #define QT_NO_PRINTPREVIEWDIALOG
 #endif
 

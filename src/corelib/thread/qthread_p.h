@@ -111,6 +111,36 @@ public:
     { }
 };
 
+class QThreadData
+{
+    QAtomicInt _ref;
+
+public:
+    QThreadData(int initialRefCount = 1);
+    ~QThreadData();
+
+    static QThreadData *current();
+    static QThreadData *get2(QThread *thread);
+
+    void ref();
+    void deref();
+
+    QThread *thread;
+    bool quitNow;
+    int loopLevel;
+    QAbstractEventDispatcher *eventDispatcher;
+    QStack<QEventLoop *> eventLoops;
+    QPostEventList postEventList;
+    bool canWait;
+    QMap<int, void *> tls;
+
+    QMutex mutex;
+
+# ifdef Q_OS_SYMBIAN
+    RThread symbian_thread_handle;
+# endif
+};
+
 #ifndef QT_NO_THREAD
 class QThreadPrivate : public QObjectPrivate
 {
@@ -178,38 +208,6 @@ public:
 };
 
 #endif // QT_NO_THREAD
-
-class QThreadData
-{
-    QAtomicInt _ref;
-
-public:
-    QThreadData(int initialRefCount = 1);
-    ~QThreadData();
-
-    static QThreadData *current();
-    static QThreadData *get2(QThread *thread)
-    { Q_ASSERT_X(thread != 0, "QThread", "internal error"); return thread->d_func()->data; }
-
-
-    void ref();
-    void deref();
-
-    QThread *thread;
-    bool quitNow;
-    int loopLevel;
-    QAbstractEventDispatcher *eventDispatcher;
-    QStack<QEventLoop *> eventLoops;
-    QPostEventList postEventList;
-    bool canWait;
-    QMap<int, void *> tls;
-
-    QMutex mutex;
-
-# ifdef Q_OS_SYMBIAN
-    RThread symbian_thread_handle;
-# endif
-};
 
 // thread wrapper for the main() thread
 class QAdoptedThread : public QThread
