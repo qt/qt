@@ -39,6 +39,12 @@
 **
 ****************************************************************************/
 
+#include <QtCore/qglobal.h>
+#ifdef Q_WS_WIN
+#define max max
+#define min min
+#endif
+
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
 #include "qscriptengine.h"
