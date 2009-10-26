@@ -1,3 +1,5 @@
+#include <QtCore/qdebug.h>
+
 #include <QtGui/qlabel.h>
 #include <QtGui/qtextedit.h>
 #include <QtGui/qlineedit.h>
@@ -14,25 +16,21 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
       m_style(Compact),
       m_client(client),
       m_query(0),
-      m_groupBox(0),
       m_textEdit(new QTextEdit),
       m_lineEdit(0),
       m_button(0)
 {
     m_prompt = QLatin1String(">> ");
 
-    m_groupBox = new QGroupBox;
-    QVBoxLayout *vbox = new QVBoxLayout(m_groupBox);
-    vbox->addWidget(m_textEdit);
-
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(m_groupBox);
+    layout->setMargin(0);
+    layout->addWidget(m_textEdit);
 
     updateTitle();
 
     if (m_style == Compact) {
         QHBoxLayout *hbox = new QHBoxLayout;
-        m_button = new QPushButton(tr("Execute"));
+        m_button = new QPushButton(tr("Query"));
         m_button->setEnabled(false);
         connect(m_button, SIGNAL(clicked()), SLOT(executeExpression()));
         m_lineEdit = new QLineEdit;
@@ -41,7 +39,7 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
         hbox->addWidget(new QLabel(tr("Expression:")));
         hbox->addWidget(m_lineEdit);
         hbox->addWidget(m_button);
-        vbox->addLayout(hbox);
+        layout->addLayout(hbox);
 
         m_textEdit->setReadOnly(true);
         m_lineEdit->installEventFilter(this);
@@ -50,17 +48,21 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
     }
 }
 
+void ExpressionQueryWidget::setEngineDebug(QmlEngineDebug *client)
+{
+    m_client = client;
+}
+
 void ExpressionQueryWidget::updateTitle()
 {
     if (m_currObject.debugId() < 0) {
-        m_groupBox->setTitle(tr("Expression queries"));
+        m_title = tr("Expression queries");
     } else {
         QString desc = QLatin1String("<")
             + m_currObject.className() + QLatin1String(": ")
             + (m_currObject.name().isEmpty() ? QLatin1String("<unnamed>") : m_currObject.name())
             + QLatin1String(">");
-        m_groupBox->setTitle(tr("Expression queries (using context for %1)"
-                , "Selected object").arg(desc));
+        m_title = tr("Expression queries (using context for %1)" , "Selected object").arg(desc);
     }
 }
 
@@ -103,6 +105,9 @@ void ExpressionQueryWidget::showCurrentContext()
 
 void ExpressionQueryWidget::executeExpression()
 {
+    if (!m_client)
+        return;
+        
     if (m_style == Compact)
         m_expr = m_lineEdit->text().trimmed();
     else

@@ -53,8 +53,15 @@ ObjectPropertiesView::ObjectPropertiesView(QmlEngineDebug *client, QWidget *pare
     layout->addWidget(m_tree);
 }
 
+void ObjectPropertiesView::setEngineDebug(QmlEngineDebug *client)
+{
+    m_client = client;
+}
+
 void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
 {
+    if (!m_client)
+        return;
     if (m_query)
         delete m_query;
 
@@ -68,7 +75,7 @@ void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
 
 void ObjectPropertiesView::queryFinished()
 {
-    if (!m_query)
+    if (!m_client || !m_query)
         return;
 
     QmlDebugObjectReference obj = m_query->object();

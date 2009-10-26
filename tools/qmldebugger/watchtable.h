@@ -13,6 +13,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlDebugWatch;
 class QmlEngineDebug;
+class QmlDebugConnection;
 class QmlDebugPropertyReference;
 class QmlDebugObjectReference;
 
@@ -20,9 +21,11 @@ class WatchTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    WatchTableModel(QmlEngineDebug *client, QObject *parent = 0);
+    WatchTableModel(QmlEngineDebug *client = 0, QObject *parent = 0);
     ~WatchTableModel();
 
+    void setEngineDebug(QmlEngineDebug *client);
+    
     QmlDebugWatch *findWatch(int column) const;
     int columnForWatch(QmlDebugWatch *watch) const;
 
