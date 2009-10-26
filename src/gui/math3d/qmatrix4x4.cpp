@@ -1209,7 +1209,7 @@ QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
     return *this;
 }
 
-#ifndef QT_NO_VECTOR4D
+#ifndef QT_NO_QUATERNION
 
 /*!
     Multiples this matrix by another that rotates coordinates according
