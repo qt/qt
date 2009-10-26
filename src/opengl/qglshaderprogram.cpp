@@ -1453,6 +1453,7 @@ int QGLShaderProgram::attributeLocation(const QString& name) const
 void QGLShaderProgram::setAttributeValue(int location, GLfloat value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib1fv(location, &value);
 }
@@ -1478,6 +1479,7 @@ void QGLShaderProgram::setAttributeValue(const char *name, GLfloat value)
 void QGLShaderProgram::setAttributeValue(int location, GLfloat x, GLfloat y)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[2] = {x, y};
         glVertexAttrib2fv(location, values);
@@ -1507,6 +1509,7 @@ void QGLShaderProgram::setAttributeValue
         (int location, GLfloat x, GLfloat y, GLfloat z)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[3] = {x, y, z};
         glVertexAttrib3fv(location, values);
@@ -1537,6 +1540,7 @@ void QGLShaderProgram::setAttributeValue
         (int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {x, y, z, w};
         glVertexAttrib4fv(location, values);
@@ -1565,6 +1569,7 @@ void QGLShaderProgram::setAttributeValue
 void QGLShaderProgram::setAttributeValue(int location, const QVector2D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib2fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1589,6 +1594,7 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector2D& valu
 void QGLShaderProgram::setAttributeValue(int location, const QVector3D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib3fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1613,6 +1619,7 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector3D& valu
 void QGLShaderProgram::setAttributeValue(int location, const QVector4D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glVertexAttrib4fv(location, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -1637,6 +1644,7 @@ void QGLShaderProgram::setAttributeValue(const char *name, const QVector4D& valu
 void QGLShaderProgram::setAttributeValue(int location, const QColor& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {value.redF(), value.greenF(), value.blueF(), value.alphaF()};
         glVertexAttrib4fv(location, values);
@@ -1668,6 +1676,7 @@ void QGLShaderProgram::setAttributeValue
     (int location, const GLfloat *values, int columns, int rows)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (rows < 1 || rows > 4) {
         qWarning() << "QGLShaderProgram::setAttributeValue: rows" << rows << "not supported";
         return;
@@ -1718,6 +1727,7 @@ void QGLShaderProgram::setAttributeArray
     (int location, const GLfloat *values, int size, int stride)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, size, GL_FLOAT, GL_FALSE,
                               stride, values);
@@ -1737,6 +1747,7 @@ void QGLShaderProgram::setAttributeArray
         (int location, const QVector2D *values, int stride)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 2, GL_FLOAT, GL_FALSE,
                               stride, values);
@@ -1756,6 +1767,7 @@ void QGLShaderProgram::setAttributeArray
         (int location, const QVector3D *values, int stride)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 3, GL_FLOAT, GL_FALSE,
                               stride, values);
@@ -1775,6 +1787,7 @@ void QGLShaderProgram::setAttributeArray
         (int location, const QVector4D *values, int stride)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         glVertexAttribPointer(location, 4, GL_FLOAT, GL_FALSE,
                               stride, values);
@@ -1856,6 +1869,7 @@ void QGLShaderProgram::setAttributeArray
 void QGLShaderProgram::disableAttributeArray(int location)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glDisableVertexAttribArray(location);
 }
@@ -1883,6 +1897,7 @@ void QGLShaderProgram::disableAttributeArray(const char *name)
 int QGLShaderProgram::uniformLocation(const char *name) const
 {
     Q_D(const QGLShaderProgram);
+    Q_UNUSED(d);
     if (d->linked) {
         return glGetUniformLocation(d->programGuard.id(), name);
     } else {
@@ -1928,6 +1943,7 @@ int QGLShaderProgram::uniformLocation(const QString& name) const
 void QGLShaderProgram::setUniformValue(int location, GLfloat value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1fv(location, 1, &value);
 }
@@ -1953,6 +1969,7 @@ void QGLShaderProgram::setUniformValue(const char *name, GLfloat value)
 void QGLShaderProgram::setUniformValue(int location, GLint value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1i(location, value);
 }
@@ -1979,6 +1996,7 @@ void QGLShaderProgram::setUniformValue(const char *name, GLint value)
 void QGLShaderProgram::setUniformValue(int location, GLuint value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1i(location, value);
 }
@@ -2005,6 +2023,7 @@ void QGLShaderProgram::setUniformValue(const char *name, GLuint value)
 void QGLShaderProgram::setUniformValue(int location, GLfloat x, GLfloat y)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[2] = {x, y};
         glUniform2fv(location, 1, values);
@@ -2034,6 +2053,7 @@ void QGLShaderProgram::setUniformValue
         (int location, GLfloat x, GLfloat y, GLfloat z)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[3] = {x, y, z};
         glUniform3fv(location, 1, values);
@@ -2064,6 +2084,7 @@ void QGLShaderProgram::setUniformValue
         (int location, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {x, y, z, w};
         glUniform4fv(location, 1, values);
@@ -2092,6 +2113,7 @@ void QGLShaderProgram::setUniformValue
 void QGLShaderProgram::setUniformValue(int location, const QVector2D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform2fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -2117,6 +2139,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector2D& value)
 void QGLShaderProgram::setUniformValue(int location, const QVector3D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform3fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -2142,6 +2165,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector3D& value)
 void QGLShaderProgram::setUniformValue(int location, const QVector4D& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform4fv(location, 1, reinterpret_cast<const GLfloat *>(&value));
 }
@@ -2168,6 +2192,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QVector4D& value)
 void QGLShaderProgram::setUniformValue(int location, const QColor& color)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {color.redF(), color.greenF(), color.blueF(), color.alphaF()};
         glUniform4fv(location, 1, values);
@@ -2196,6 +2221,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QColor& color)
 void QGLShaderProgram::setUniformValue(int location, const QPoint& point)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {point.x(), point.y()};
         glUniform2fv(location, 1, values);
@@ -2224,6 +2250,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPoint& point)
 void QGLShaderProgram::setUniformValue(int location, const QPointF& point)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {point.x(), point.y()};
         glUniform2fv(location, 1, values);
@@ -2252,6 +2279,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QPointF& point)
 void QGLShaderProgram::setUniformValue(int location, const QSize& size)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {size.width(), size.width()};
         glUniform2fv(location, 1, values);
@@ -2280,6 +2308,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSize& size)
 void QGLShaderProgram::setUniformValue(int location, const QSizeF& size)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat values[4] = {size.width(), size.height()};
         glUniform2fv(location, 1, values);
@@ -2360,6 +2389,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QSizeF& size)
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x2& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix2fv, location, value, 2, 2);
 }
 
@@ -2385,6 +2415,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x2& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x3& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix2x3fv, glUniform3fv, location, value, 2, 3);
 }
@@ -2411,6 +2442,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x3& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix2x4& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix2x4fv, glUniform4fv, location, value, 2, 4);
 }
@@ -2437,6 +2469,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix2x4& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x2& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix3x2fv, glUniform2fv, location, value, 3, 2);
 }
@@ -2463,6 +2496,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x2& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x3& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix3fv, location, value, 3, 3);
 }
 
@@ -2488,6 +2522,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x3& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix3x4& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix3x4fv, glUniform4fv, location, value, 3, 4);
 }
@@ -2514,6 +2549,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix3x4& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x2& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix4x2fv, glUniform2fv, location, value, 4, 2);
 }
@@ -2540,6 +2576,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x2& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x3& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrix
         (glUniformMatrix4x3fv, glUniform3fv, location, value, 4, 3);
 }
@@ -2566,6 +2603,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x3& value
 void QGLShaderProgram::setUniformValue(int location, const QMatrix4x4& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrix(glUniformMatrix4fv, location, value, 4, 4);
 }
 
@@ -2594,6 +2632,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const QMatrix4x4& value
 void QGLShaderProgram::setUniformValue(int location, const GLfloat value[4][4])
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniformMatrix4fv(location, 1, GL_FALSE, value[0]);
 }
@@ -2622,6 +2661,7 @@ void QGLShaderProgram::setUniformValue(const char *name, const GLfloat value[4][
 void QGLShaderProgram::setUniformValue(int location, const QTransform& value)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         GLfloat mat[3][3] = {
             {value.m11(), value.m12(), value.m13()},
@@ -2656,6 +2696,7 @@ void QGLShaderProgram::setUniformValue
 void QGLShaderProgram::setUniformValueArray(int location, const GLint *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1iv(location, count, values);
 }
@@ -2684,6 +2725,7 @@ void QGLShaderProgram::setUniformValueArray
 void QGLShaderProgram::setUniformValueArray(int location, const GLuint *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform1iv(location, count, reinterpret_cast<const GLint *>(values));
 }
@@ -2713,6 +2755,7 @@ void QGLShaderProgram::setUniformValueArray
 void QGLShaderProgram::setUniformValueArray(int location, const GLfloat *values, int count, int size)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1) {
         if (size == 1)
             glUniform1fv(location, count, values);
@@ -2751,6 +2794,7 @@ void QGLShaderProgram::setUniformValueArray
 void QGLShaderProgram::setUniformValueArray(int location, const QVector2D *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform2fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2777,6 +2821,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector2D *v
 void QGLShaderProgram::setUniformValueArray(int location, const QVector3D *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform3fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2803,6 +2848,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector3D *v
 void QGLShaderProgram::setUniformValueArray(int location, const QVector4D *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     if (location != -1)
         glUniform4fv(location, count, reinterpret_cast<const GLfloat *>(values));
 }
@@ -2890,6 +2936,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QVector4D *v
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x2 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix2fv, location, values, count, QMatrix2x2, 2, 2);
 }
@@ -2916,6 +2963,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x2 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x3 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix2x3fv, glUniform3fv, location, values, count,
          QMatrix2x3, 2, 3);
@@ -2943,6 +2991,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x3 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix2x4 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix2x4fv, glUniform4fv, location, values, count,
          QMatrix2x4, 2, 4);
@@ -2970,6 +3019,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix2x4 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x2 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix3x2fv, glUniform2fv, location, values, count,
          QMatrix3x2, 3, 2);
@@ -2997,6 +3047,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x2 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x3 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix3fv, location, values, count, QMatrix3x3, 3, 3);
 }
@@ -3023,6 +3074,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x3 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix3x4 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix3x4fv, glUniform4fv, location, values, count,
          QMatrix3x4, 3, 4);
@@ -3050,6 +3102,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix3x4 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x2 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix4x2fv, glUniform2fv, location, values, count,
          QMatrix4x2, 4, 2);
@@ -3077,6 +3130,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x2 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x3 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformGenericMatrixArray
         (glUniformMatrix4x3fv, glUniform3fv, location, values, count,
          QMatrix4x3, 4, 3);
@@ -3104,6 +3158,7 @@ void QGLShaderProgram::setUniformValueArray(const char *name, const QMatrix4x3 *
 void QGLShaderProgram::setUniformValueArray(int location, const QMatrix4x4 *values, int count)
 {
     Q_D(QGLShaderProgram);
+    Q_UNUSED(d);
     setUniformMatrixArray
         (glUniformMatrix4fv, location, values, count, QMatrix4x4, 4, 4);
 }
