@@ -424,6 +424,9 @@ bool ProcessAST::visit(AST::UiImport *node)
     if (node->fileName) {
         import.type = QmlScriptParser::Import::File;
         uri = node->fileName->asString();
+        QUrl ref(uri);
+        ref.setPath(ref.path()+QLatin1String("/qmldir"));
+        _parser->_refUrls << ref;
     } else {
         import.type = QmlScriptParser::Import::Library;
         uri = asString(node->importUri);

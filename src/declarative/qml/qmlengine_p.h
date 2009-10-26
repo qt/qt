@@ -223,7 +223,7 @@ public:
         QmlImportsPrivate *d;
     };
 
-    bool addToImport(Imports*, const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const;
+    bool addToImport(Imports*, const QString& qmlDirContent,const QString& uri, const QString& prefix, int vmaj, int vmin, QmlScriptParser::Import::Type importType) const;
     bool resolveType(const Imports&, const QByteArray& type,
                      QmlType** type_return, QUrl* url_return,
                      int *version_major, int *version_minor,
