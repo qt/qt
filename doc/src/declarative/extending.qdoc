@@ -300,11 +300,22 @@ attachment object are those that become available for use as the attached
 property block.
 
 Any QML type can become an attaching type by declaring the
-\c qmlAttachedProperties() public function:
+\c qmlAttachedProperties() public function and declaring that the class has
+QML_HAS_ATTACHED_PROPERTIES:
 
 \quotation
 \code
-static AttachedPropertiesType *qmlAttachedProperties(QObject *object)
+class MyType : public QObject {
+    Q_OBJECT
+public:
+
+    ...
+
+    static AttachedPropertiesType *qmlAttachedProperties(QObject *object);
+};
+
+QML_DECLARE_TYPEINFO(MyType, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(MyType)
 \endcode
 Return an attachment object, of type \a AttachedPropertiesType, for the
 attachee \a object instance.  It is customary, though not strictly required, for

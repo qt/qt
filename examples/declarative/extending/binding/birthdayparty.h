@@ -10,7 +10,7 @@
 class BirthdayPartyAttached : public QObject
 {
 Q_OBJECT
-Q_PROPERTY(QDate rsvp READ rsvp WRITE setRsvp NOTIFY rsvpChanged);
+Q_PROPERTY(QDate rsvp READ rsvp WRITE setRsvp NOTIFY rsvpChanged)
 public:
     BirthdayPartyAttached(QObject *object);
 
@@ -23,7 +23,7 @@ signals:
 private:
     QDate m_rsvp;
 };
-QML_DECLARE_TYPE(BirthdayPartyAttached);
+QML_DECLARE_TYPE(BirthdayPartyAttached)
 
 class BirthdayParty : public QObject
 {
@@ -56,6 +56,8 @@ private:
     Person *m_celebrant;
     QmlConcreteList<Person *> m_guests;
 };
-QML_DECLARE_TYPE(BirthdayParty);
+
+QML_DECLARE_TYPEINFO(BirthdayParty, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(BirthdayParty)
 
 #endif // BIRTHDAYPARTY_H

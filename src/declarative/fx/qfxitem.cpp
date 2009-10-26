@@ -1377,7 +1377,7 @@ QFxItem::~QFxItem()
     \qml
     Image {
         source: "myimage.png"
-        transformOrigin: "Center"
+        transformOrigin: Item.Center
         scale: 4
     }
     \endqml

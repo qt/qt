@@ -18,13 +18,22 @@ ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
       m_query(0)
 {
     setHeaderHidden(true);
+    setMinimumWidth(250);
 
     connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
             this, SLOT(currentItemChanged(QTreeWidgetItem *)));
 }
 
+void ObjectTree::setEngineDebug(QmlEngineDebug *client)
+{
+    m_client = client;
+}
+
 void ObjectTree::reload(int objectDebugId)
 {
+    if (!m_client)
+        return;
+        
     if (m_query) {
         delete m_query;
         m_query = 0;

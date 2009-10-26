@@ -21,7 +21,9 @@ public:
         Shell
     };
 
-    ExpressionQueryWidget(QmlEngineDebug *client, QWidget *parent = 0);
+    ExpressionQueryWidget(QmlEngineDebug *client = 0, QWidget *parent = 0);
+    
+    void setEngineDebug(QmlEngineDebug *client);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -44,13 +46,14 @@ private:
 
     QmlEngineDebug *m_client;
     QmlDebugExpressionQuery *m_query;
-    QGroupBox *m_groupBox;
     QTextEdit *m_textEdit;
     QLineEdit *m_lineEdit;
     QPushButton *m_button;
     QString m_prompt;
     QString m_expr;
     QString m_lastExpr;
+
+    QString m_title;
 
     QmlDebugObjectReference m_currObject;
     QmlDebugObjectReference m_objectAtLastFocus;

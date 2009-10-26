@@ -17,6 +17,7 @@ class QmlDebugWatch;
 class ObjectTree;
 class WatchTableModel;
 class WatchTableView;
+class ExpressionQueryWidget;
 
 class QTabWidget;
 
@@ -45,11 +46,11 @@ private:
     ObjectTree *m_objTree;
     QTabWidget *m_tabs;
     WatchTableView *m_watchTableView;
+    WatchTableModel *m_watchTableModel;
+    ExpressionQueryWidget *m_exprQueryWidget;
 
     QmlView *m_engineView;
     QList<QObject *> m_engineItems;
-
-    WatchTableModel *m_watchTableModel;
 
     ObjectPropertiesView *m_propertiesView;
 };
