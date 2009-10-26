@@ -64,6 +64,7 @@
 #include "PlatformString.h"
 #include "Screen.h"
 #include "SecurityOrigin.h"
+#include "SerializedScriptValue.h"
 #include "Settings.h"
 #include "Storage.h"
 #include "StorageArea.h"
@@ -80,7 +81,7 @@ namespace WebCore {
 
 class PostMessageTimer : public TimerBase {
 public:
-    PostMessageTimer(DOMWindow* window, const String& message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin)
+    PostMessageTimer(DOMWindow* window, PassRefPtr<SerializedScriptValue> message, const String& sourceOrigin, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortChannelArray> channels, SecurityOrigin* targetOrigin)
         : m_window(window)
         , m_message(message)
         , m_origin(sourceOrigin)
@@ -104,7 +105,7 @@ private:
     }
 
     RefPtr<DOMWindow> m_window;
-    String m_message;
+    RefPtr<SerializedScriptValue> m_message;
     String m_origin;
     RefPtr<DOMWindow> m_source;
     OwnPtr<MessagePortChannelArray> m_channels;
@@ -635,7 +636,7 @@ NotificationCenter* DOMWindow::webkitNotifications() const
 }
 #endif
 
-void DOMWindow::postMessage(const String& message, MessagePort* port, const String& targetOrigin, DOMWindow* source, ExceptionCode& ec)
+void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, MessagePort* port, const String& targetOrigin, DOMWindow* source, ExceptionCode& ec)
 {
     MessagePortArray ports;
     if (port)
@@ -643,7 +644,7 @@ void DOMWindow::postMessage(const String& message, MessagePort* port, const Stri
     postMessage(message, &ports, targetOrigin, source, ec);
 }
 
-void DOMWindow::postMessage(const String& message, const MessagePortArray* ports, const String& targetOrigin, DOMWindow* source, ExceptionCode& ec)
+void DOMWindow::postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray* ports, const String& targetOrigin, DOMWindow* source, ExceptionCode& ec)
 {
     if (!m_frame)
         return;
@@ -739,12 +740,9 @@ void DOMWindow::close()
         return;
 
     Settings* settings = m_frame->settings();
-    bool allowScriptsToCloseWindows =
-        settings && settings->allowScriptsToCloseWindows();
+    bool allowScriptsToCloseWindows = settings && settings->allowScriptsToCloseWindows();
 
-    if (m_frame->loader()->openedByDOM()
-        || m_frame->loader()->getHistoryLength() <= 1
-        || allowScriptsToCloseWindows)
+    if (page->openedByDOM() || page->getHistoryLength() <= 1 || allowScriptsToCloseWindows)
         m_frame->scheduleClose();
 }
 
@@ -1296,6 +1294,14 @@ void DOMWindow::dispatchLoadEvent()
         ownerEvent->setTarget(ownerElement);
         ownerElement->dispatchGenericEvent(ownerEvent.release());
     }
+
+#if ENABLE(INSPECTOR)
+    if (!frame() || !frame()->page())
+        return;
+
+    if (InspectorController* controller = frame()->page()->inspectorController())
+        controller->mainResourceFiredLoadEvent(frame()->loader()->documentLoader(), url());
+#endif
 }
 
 bool DOMWindow::dispatchEvent(PassRefPtr<Event> prpEvent, PassRefPtr<EventTarget> prpTarget)

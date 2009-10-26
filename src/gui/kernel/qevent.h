@@ -820,10 +820,12 @@ protected:
 };
 
 class QGesture;
+class QGestureEventPrivate;
 class Q_GUI_EXPORT QGestureEvent : public QEvent
 {
 public:
     QGestureEvent(const QList<QGesture *> &gestures);
+    ~QGestureEvent();
 
     QList<QGesture *> allGestures() const;
     QGesture *gesture(Qt::GestureType type) const;
@@ -849,8 +851,17 @@ public:
     void ignore(QGesture *);
     bool isAccepted(QGesture *) const;
 
+    void setWidget(QWidget *widget);
+    QWidget *widget() const;
+
+    QPointF mapToScene(const QPointF &gesturePoint) const;
+
 private:
-    QList<QGesture *> gestures_;
+    QGestureEventPrivate *d_func();
+    const QGestureEventPrivate *d_func() const;
+
+    friend class QApplication;
+    friend class QGestureManager;
 };
 
 QT_END_NAMESPACE

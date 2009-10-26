@@ -557,7 +557,7 @@ void QTextEngine::shapeTextMac(int item) const
 
     si.glyph_data_offset = layoutData->used;
 
-    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent);
+    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
     if (font->type() != QFontEngine::Multi) {
         shapeTextWithHarfbuzz(item);
         return;

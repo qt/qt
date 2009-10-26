@@ -611,7 +611,8 @@ void XMLTokenizer::parseEndElement()
         if (!scriptHref.isEmpty()) {
             // we have a src attribute 
             String scriptCharset = scriptElement->scriptCharset();
-            if ((m_pendingScript = m_doc->docLoader()->requestScript(scriptHref, scriptCharset))) {
+            if (element->dispatchBeforeLoadEvent(scriptHref) &&
+                (m_pendingScript = m_doc->docLoader()->requestScript(scriptHref, scriptCharset))) {
                 m_scriptElement = element;
                 m_pendingScript->addClient(this);
 
@@ -621,7 +622,7 @@ void XMLTokenizer::parseEndElement()
             } else 
                 m_scriptElement = 0;
         } else
-            m_view->frame()->loader()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
+            m_view->frame()->script()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
     }
     m_requestingScript = false;
     setCurrentNode(parent.get());

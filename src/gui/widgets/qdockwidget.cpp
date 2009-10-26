@@ -456,7 +456,7 @@ int QDockWidgetLayout::titleHeight() const
 
     int mw = q->style()->pixelMetric(QStyle::PM_DockWidgetTitleMargin, 0, q);
 
-    return qMax(buttonHeight + 2, titleFontMetrics.lineSpacing() + 2*mw);
+    return qMax(buttonHeight + 2, titleFontMetrics.height() + 2*mw);
 }
 
 void QDockWidgetLayout::setGeometry(const QRect &geometry)

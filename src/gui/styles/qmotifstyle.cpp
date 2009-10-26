@@ -1154,7 +1154,7 @@ void QMotifStyle::drawControl(ControlElement element, const QStyleOption *opt, Q
                                  menuitem->palette, menuitem->state & State_Enabled, menuitem->text,
                                  QPalette::Text);
                     textWidth = menuitem->fontMetrics.width(menuitem->text) + 10;
-                    y += menuitem->fontMetrics.lineSpacing() / 2;
+                    y += menuitem->fontMetrics.height() / 2;
                     p->setFont(oldFont);
                 }
                 p->setPen(opt->palette.dark().color());
@@ -2056,7 +2056,7 @@ QMotifStyle::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 
             if (mi->menuItemType == QStyleOptionMenuItem::Separator) {
                 w = 10;
-                h = (mi->text.isEmpty()) ? motifSepHeight : mi->fontMetrics.lineSpacing();
+                h = (mi->text.isEmpty()) ? motifSepHeight : mi->fontMetrics.height();
             }
 
             // a little bit of border can never harm

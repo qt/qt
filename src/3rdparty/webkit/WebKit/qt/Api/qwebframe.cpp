@@ -540,15 +540,26 @@ QUrl QWebFrame::url() const
 */
 QUrl QWebFrame::requestedUrl() const
 {
-    // In the following edge cases (where the failing document
-    // loader does not get commited by the frame loader) it is
-    // safer to rely on outgoingReferrer than originalRequest.
-    if (!d->frame->loader()->activeDocumentLoader()
-        || (!d->frameLoaderClient->m_loadError.isNull()
-        &&  !d->frame->loader()->outgoingReferrer().isEmpty()))
-        return QUrl(d->frame->loader()->outgoingReferrer());
+    // There are some possible edge cases to be handled here,
+    // apart from checking if activeDocumentLoader is valid:
+    //
+    // * Method can be called while processing an unsucessful load.
+    //   In this case, frameLoaderClient will hold the current error
+    //   (m_loadError), and we will make use of it to recover the 'failingURL'.
+    // * If the 'failingURL' holds a null'ed string though, we fallback
+    //   to 'outgoingReferrer' (it yet is safer than originalRequest).
+    FrameLoader* loader = d->frame->loader();
+    FrameLoaderClientQt* loaderClient = d->frameLoaderClient;
 
-    return d->frame->loader()->originalRequest().url();
+    if (!loader->activeDocumentLoader()
+        || !loaderClient->m_loadError.isNull()) {
+        if (!loaderClient->m_loadError.failingURL().isNull())
+            return QUrl(loaderClient->m_loadError.failingURL());
+        else if (!loader->outgoingReferrer().isEmpty())
+            return QUrl(loader->outgoingReferrer());
+    }
+
+    return loader->originalRequest().url();
 }
 /*!
     \since 4.6
@@ -710,7 +721,9 @@ void QWebFrame::load(const QNetworkRequest &req,
   script can be specified through the charset attribute of the HTML script tag. It is also possible
   for the encoding to be specified by web server.
 
-  \sa toHtml()
+  \note This method will not affect session or global history for the frame.
+
+  \sa toHtml(), setContent()
 */
 void QWebFrame::setHtml(const QString &html, const QUrl &baseUrl)
 {
@@ -718,7 +731,7 @@ void QWebFrame::setHtml(const QString &html, const QUrl &baseUrl)
     WebCore::ResourceRequest request(kurl);
     const QByteArray utf8 = html.toUtf8();
     WTF::RefPtr<WebCore::SharedBuffer> data = WebCore::SharedBuffer::create(utf8.constData(), utf8.length());
-    WebCore::SubstituteData substituteData(data, WebCore::String("text/html"), WebCore::String("utf-8"), kurl);
+    WebCore::SubstituteData substituteData(data, WebCore::String("text/html"), WebCore::String("utf-8"), KURL());
     d->frame->loader()->load(request, substituteData, false);
 }
 
@@ -731,7 +744,9 @@ void QWebFrame::setHtml(const QString &html, const QUrl &baseUrl)
 
   The \a data is loaded immediately; external objects are loaded asynchronously.
 
-  \sa toHtml()
+  \note This method will not affect session or global history for the frame.
+
+  \sa toHtml(), setHtml()
 */
 void QWebFrame::setContent(const QByteArray &data, const QString &mimeType, const QUrl &baseUrl)
 {
@@ -741,10 +756,9 @@ void QWebFrame::setContent(const QByteArray &data, const QString &mimeType, cons
     QString actualMimeType = mimeType;
     if (actualMimeType.isEmpty())
         actualMimeType = QLatin1String("text/html");
-    WebCore::SubstituteData substituteData(buffer, WebCore::String(actualMimeType), WebCore::String(), kurl);
+    WebCore::SubstituteData substituteData(buffer, WebCore::String(actualMimeType), WebCore::String(), KURL());
     d->frame->loader()->load(request, substituteData, false);
 }
-
 
 /*!
   Returns the parent frame of this frame, or 0 if the frame is the web pages
@@ -1248,7 +1262,7 @@ QVariant QWebFrame::evaluateJavaScript(const QString& scriptSource)
     ScriptController *proxy = d->frame->script();
     QVariant rc;
     if (proxy) {
-        JSC::JSValue v = d->frame->loader()->executeScript(ScriptSourceCode(scriptSource)).jsValue();
+        JSC::JSValue v = d->frame->script()->executeScript(ScriptSourceCode(scriptSource)).jsValue();
         int distance = 0;
         rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject()->globalExec(), v, QMetaType::Void, &distance);
     }

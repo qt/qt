@@ -75,6 +75,12 @@ namespace JSC {
 #define THUMB_FUNC_PARAM(name)
 #endif
 
+#if PLATFORM(LINUX) && PLATFORM(X86_64)
+#define SYMBOL_STRING_RELOCATION(name) #name "@plt"
+#else
+#define SYMBOL_STRING_RELOCATION(name) SYMBOL_STRING(name)
+#endif
+
 #if USE(JSVALUE32_64)
 
 #if COMPILER(GCC) && PLATFORM(X86)
@@ -112,7 +118,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 #if !USE(JIT_STUB_ARGUMENT_VA_LIST)
     "movl %esp, %ecx" "\n"
 #endif
-    "call " SYMBOL_STRING(cti_vm_throw) "\n"
+    "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "addl $0x3c, %esp" "\n"
     "popl %ebx" "\n"
     "popl %edi" "\n"
@@ -175,7 +181,7 @@ asm volatile (
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "movq %rsp, %rdi" "\n"
-    "call " SYMBOL_STRING(cti_vm_throw) "\n"
+    "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "addq $0x48, %rsp" "\n"
     "popq %rbx" "\n"
     "popq %r15" "\n"
@@ -239,7 +245,7 @@ asm volatile (
 ".thumb_func " THUMB_FUNC_PARAM(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "cpy r0, sp" "\n"
-    "bl " SYMBOL_STRING(cti_vm_throw) "\n"
+    "bl " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "ldr r6, [sp, #0x2c]" "\n"
     "ldr r5, [sp, #0x28]" "\n"
     "ldr r4, [sp, #0x24]" "\n"
@@ -365,7 +371,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
 #if !USE(JIT_STUB_ARGUMENT_VA_LIST)
     "movl %esp, %ecx" "\n"
 #endif
-    "call " SYMBOL_STRING(cti_vm_throw) "\n"
+    "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "addl $0x1c, %esp" "\n"
     "popl %ebx" "\n"
     "popl %edi" "\n"
@@ -434,7 +440,7 @@ asm volatile (
 ".globl " SYMBOL_STRING(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "movq %rsp, %rdi" "\n"
-    "call " SYMBOL_STRING(cti_vm_throw) "\n"
+    "call " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "addq $0x78, %rsp" "\n"
     "popq %rbx" "\n"
     "popq %r15" "\n"
@@ -498,7 +504,7 @@ asm volatile (
 ".thumb_func " THUMB_FUNC_PARAM(ctiVMThrowTrampoline) "\n"
 SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "cpy r0, sp" "\n"
-    "bl " SYMBOL_STRING(cti_vm_throw) "\n"
+    "bl " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
     "ldr r6, [sp, #0x2c]" "\n"
     "ldr r5, [sp, #0x28]" "\n"
     "ldr r4, [sp, #0x24]" "\n"
@@ -554,7 +560,7 @@ SYMBOL_STRING(ctiVMThrowTrampoline) ":" "\n"
     "mov lr, r6" "\n"
     "add r8, pc, #4" "\n"
     "str r8, [sp, #-4]!" "\n"
-    "b " SYMBOL_STRING(cti_vm_throw) "\n"
+    "b " SYMBOL_STRING_RELOCATION(cti_vm_throw) "\n"
 
 // Both has the same return sequence
 ".globl " SYMBOL_STRING(ctiOpThrowNotCaught) "\n"
@@ -694,11 +700,15 @@ NEVER_INLINE void JITThunks::tryCachePutByID(CallFrame* callFrame, CodeBlock* co
 
     // Structure transition, cache transition info
     if (slot.type() == PutPropertySlot::NewProperty) {
-        StructureChain* prototypeChain = structure->prototypeChain(callFrame);
-        if (!prototypeChain->isCacheable() || structure->isDictionary()) {
+        if (structure->isDictionary()) {
             ctiPatchCallByReturnAddress(codeBlock, returnAddress, FunctionPtr(cti_op_put_by_id_generic));
             return;
         }
+
+        // put_by_id_transition checks the prototype chain for setters.
+        normalizePrototypeChain(callFrame, baseCell);
+
+        StructureChain* prototypeChain = structure->prototypeChain(callFrame);
         stubInfo->initPutByIdTransition(structure->previousID(), structure, prototypeChain);
         JIT::compilePutByIdTransition(callFrame->scopeChain()->globalData, codeBlock, stubInfo, structure->previousID(), structure, slot.cachedOffset(), prototypeChain, returnAddress);
         return;
@@ -774,17 +784,13 @@ NEVER_INLINE void JITThunks::tryCacheGetByID(CallFrame* callFrame, CodeBlock* co
         return;
     }
 
-    size_t count = countPrototypeChainEntriesAndCheckForProxies(callFrame, baseValue, slot);
+    size_t count = normalizePrototypeChain(callFrame, baseValue, slot.slotBase());
     if (!count) {
         stubInfo->accessType = access_get_by_id_generic;
         return;
     }
 
     StructureChain* prototypeChain = structure->prototypeChain(callFrame);
-    if (!prototypeChain->isCacheable()) {
-        ctiPatchCallByReturnAddress(codeBlock, returnAddress, FunctionPtr(cti_op_get_by_id_generic));
-        return;
-    }
     stubInfo->initGetByIdChain(structure, prototypeChain);
     JIT::compileGetByIdChain(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, structure, prototypeChain, count, slot.cachedOffset(), returnAddress);
 }
@@ -1326,15 +1332,11 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_get_by_id_proto_list)
 
         if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
             ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_list_full));
-    } else if (size_t count = countPrototypeChainEntriesAndCheckForProxies(callFrame, baseValue, slot)) {
-        StructureChain* protoChain = structure->prototypeChain(callFrame);
-        if (!protoChain->isCacheable()) {
-            ctiPatchCallByReturnAddress(codeBlock, STUB_RETURN_ADDRESS, FunctionPtr(cti_op_get_by_id_proto_fail));
-            return JSValue::encode(result);
-        }
-        
+    } else if (size_t count = normalizePrototypeChain(callFrame, baseValue, slot.slotBase())) {
         int listIndex;
         PolymorphicAccessStructureList* prototypeStructureList = getPolymorphicAccessStructureListSlot(stubInfo, listIndex);
+
+        StructureChain* protoChain = structure->prototypeChain(callFrame);
         JIT::compileGetByIdChainList(callFrame->scopeChain()->globalData, callFrame, codeBlock, stubInfo, prototypeStructureList, listIndex, structure, protoChain, count, slot.cachedOffset());
 
         if (listIndex == (POLYMORPHIC_LIST_CACHE_SIZE - 1))
@@ -1412,7 +1414,7 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_instanceof)
 
     // ECMA-262 15.3.5.3:
     // Throw an exception either if baseVal is not an object, or if it does not implement 'HasInstance' (i.e. is a function).
-    TypeInfo typeInfo(UnspecifiedType, 0);
+    TypeInfo typeInfo(UnspecifiedType);
     if (!baseVal.isObject() || !(typeInfo = asObject(baseVal)->structure()->typeInfo()).implementsHasInstance()) {
         CallFrame* callFrame = stackFrame.callFrame;
         CodeBlock* codeBlock = callFrame->codeBlock();
@@ -1937,28 +1939,6 @@ DEFINE_STUB_FUNCTION(void, op_put_by_val)
             PutPropertySlot slot;
             baseValue.put(callFrame, property, value, slot);
         }
-    }
-
-    CHECK_FOR_EXCEPTION_AT_END();
-}
-
-DEFINE_STUB_FUNCTION(void, op_put_by_val_array)
-{
-    STUB_INIT_STACK_FRAME(stackFrame);
-
-    CallFrame* callFrame = stackFrame.callFrame;
-    JSValue baseValue = stackFrame.args[0].jsValue();
-    int i = stackFrame.args[1].int32();
-    JSValue value = stackFrame.args[2].jsValue();
-
-    ASSERT(isJSArray(stackFrame.globalData, baseValue));
-
-    if (LIKELY(i >= 0))
-        asArray(baseValue)->JSArray::put(callFrame, i, value);
-    else {
-        Identifier property(callFrame, UString::from(i));
-        PutPropertySlot slot;
-        baseValue.put(callFrame, property, value, slot);
     }
 
     CHECK_FOR_EXCEPTION_AT_END();
@@ -2672,7 +2652,7 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, op_throw)
 
     if (!handler) {
         *stackFrame.exception = exceptionValue;
-        STUB_SET_RETURN_ADDRESS(reinterpret_cast<void*>(ctiOpThrowNotCaught));
+        STUB_SET_RETURN_ADDRESS(FunctionPtr(ctiOpThrowNotCaught).value());
         return JSValue::encode(jsNull());
     }
 
@@ -2687,18 +2667,22 @@ DEFINE_STUB_FUNCTION(JSPropertyNameIterator*, op_get_pnames)
 {
     STUB_INIT_STACK_FRAME(stackFrame);
 
-    return JSPropertyNameIterator::create(stackFrame.callFrame, stackFrame.args[0].jsValue());
+    CallFrame* callFrame = stackFrame.callFrame;
+    JSObject* o = stackFrame.args[0].jsObject();
+    Structure* structure = o->structure();
+    JSPropertyNameIterator* jsPropertyNameIterator = structure->enumerationCache();
+    if (!jsPropertyNameIterator || jsPropertyNameIterator->cachedPrototypeChain() != structure->prototypeChain(callFrame))
+        jsPropertyNameIterator = JSPropertyNameIterator::create(callFrame, o);
+    return jsPropertyNameIterator;
 }
 
-DEFINE_STUB_FUNCTION(EncodedJSValue, op_next_pname)
+DEFINE_STUB_FUNCTION(int, has_property)
 {
     STUB_INIT_STACK_FRAME(stackFrame);
 
-    JSPropertyNameIterator* it = stackFrame.args[0].propertyNameIterator();
-    JSValue temp = it->next(stackFrame.callFrame);
-    if (!temp)
-        it->invalidate();
-    return JSValue::encode(temp);
+    JSObject* base = stackFrame.args[0].jsObject();
+    JSString* property = stackFrame.args[1].jsString();
+    return base->hasProperty(stackFrame.callFrame, Identifier(stackFrame.callFrame, property->value()));
 }
 
 DEFINE_STUB_FUNCTION(JSObject*, op_push_scope)
@@ -3037,6 +3021,14 @@ DEFINE_STUB_FUNCTION(EncodedJSValue, vm_throw)
     ASSERT(catchRoutine);
     STUB_SET_RETURN_ADDRESS(catchRoutine);
     return JSValue::encode(exceptionValue);
+}
+
+DEFINE_STUB_FUNCTION(EncodedJSValue, to_object)
+{
+    STUB_INIT_STACK_FRAME(stackFrame);
+
+    CallFrame* callFrame = stackFrame.callFrame;
+    return JSValue::encode(stackFrame.args[0].jsValue().toObject(callFrame));
 }
 
 } // namespace JSC

@@ -70,8 +70,8 @@ public:
     ClassObjectDelegate(QScriptClass *scriptClass);
     ~ClassObjectDelegate();
 
-    QScriptClass *scriptClass() const;
-    void setScriptClass(QScriptClass *scriptClass);
+    inline QScriptClass *scriptClass() const;
+    inline void setScriptClass(QScriptClass *scriptClass);
 
     virtual Type type() const;
 
@@ -104,6 +104,17 @@ public:
 private:
     QScriptClass *m_scriptClass;
 };
+
+inline QScriptClass *ClassObjectDelegate::scriptClass() const
+{
+    return m_scriptClass;
+}
+
+inline void ClassObjectDelegate::setScriptClass(QScriptClass *scriptClass)
+{
+    Q_ASSERT(scriptClass != 0);
+    m_scriptClass = scriptClass;
+}
 
 } // namespace QScript
 

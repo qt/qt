@@ -24,9 +24,11 @@
 
 #include "JSWebSocket.h"
 
+#include "Event.h"
 #include "EventListener.h"
 #include "Frame.h"
 #include "JSDOMGlobalObject.h"
+#include "JSEvent.h"
 #include "JSEventListener.h"
 #include "KURL.h"
 #include "RegisteredEventListener.h"
@@ -64,13 +66,16 @@ static JSC_CONST_HASHTABLE HashTable JSWebSocketTable =
 
 /* Hash table for prototype */
 
-static const HashTableValue JSWebSocketPrototypeTableValues[6] =
+static const HashTableValue JSWebSocketPrototypeTableValues[9] =
 {
     { "CONNECTING", DontDelete|ReadOnly, (intptr_t)jsWebSocketCONNECTING, (intptr_t)0 },
     { "OPEN", DontDelete|ReadOnly, (intptr_t)jsWebSocketOPEN, (intptr_t)0 },
     { "CLOSED", DontDelete|ReadOnly, (intptr_t)jsWebSocketCLOSED, (intptr_t)0 },
     { "send", DontDelete|Function, (intptr_t)jsWebSocketPrototypeFunctionSend, (intptr_t)1 },
     { "close", DontDelete|Function, (intptr_t)jsWebSocketPrototypeFunctionClose, (intptr_t)0 },
+    { "addEventListener", DontDelete|Function, (intptr_t)jsWebSocketPrototypeFunctionAddEventListener, (intptr_t)3 },
+    { "removeEventListener", DontDelete|Function, (intptr_t)jsWebSocketPrototypeFunctionRemoveEventListener, (intptr_t)3 },
+    { "dispatchEvent", DontDelete|Function, (intptr_t)jsWebSocketPrototypeFunctionDispatchEvent, (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -255,6 +260,40 @@ JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionClose(ExecState* exec, JSObjec
 
     imp->close();
     return jsUndefined();
+}
+
+JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionAddEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSWebSocket::s_info))
+        return throwError(exec, TypeError);
+    JSWebSocket* castedThisObj = static_cast<JSWebSocket*>(asObject(thisValue));
+    return castedThisObj->addEventListener(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionRemoveEventListener(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSWebSocket::s_info))
+        return throwError(exec, TypeError);
+    JSWebSocket* castedThisObj = static_cast<JSWebSocket*>(asObject(thisValue));
+    return castedThisObj->removeEventListener(exec, args);
+}
+
+JSValue JSC_HOST_CALL jsWebSocketPrototypeFunctionDispatchEvent(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
+{
+    UNUSED_PARAM(args);
+    if (!thisValue.inherits(&JSWebSocket::s_info))
+        return throwError(exec, TypeError);
+    JSWebSocket* castedThisObj = static_cast<JSWebSocket*>(asObject(thisValue));
+    WebSocket* imp = static_cast<WebSocket*>(castedThisObj->impl());
+    ExceptionCode ec = 0;
+    Event* evt = toEvent(args.at(0));
+
+
+    JSC::JSValue result = jsBoolean(imp->dispatchEvent(evt, ec));
+    setDOMException(exec, ec);
+    return result;
 }
 
 // Constant getters

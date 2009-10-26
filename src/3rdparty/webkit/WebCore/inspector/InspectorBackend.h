@@ -95,19 +95,20 @@ public:
 
     const String& platform() const;
 
-    void enableTimeline(bool always);
-    void disableTimeline(bool always);
-    bool timelineEnabled() const;
+    void startTimelineProfiler();
+    void stopTimelineProfiler();
+    bool timelineProfilerEnabled() const;
 
 #if ENABLE(JAVASCRIPT_DEBUGGER)
-    const ProfilesArray& profiles() const;
-
     void startProfiling();
     void stopProfiling();
 
     void enableProfiler(bool always);
     void disableProfiler(bool always);
     bool profilerEnabled();
+
+    void getProfileHeaders(long callId);
+    void getProfile(long callId, unsigned uid);
 
     void enableDebugger(bool always);
     void disableDebugger(bool always);
@@ -130,26 +131,30 @@ public:
     void stepOutOfFunctionInDebugger();
 #endif
 
-    void dispatchOnInjectedScript(long callId, const String& methodName, const String& arguments);
+    void dispatchOnInjectedScript(long callId, const String& methodName, const String& arguments, bool async);
     void getChildNodes(long callId, long nodeId);
     void setAttribute(long callId, long elementId, const String& name, const String& value);
     void removeAttribute(long callId, long elementId, const String& name);
     void setTextNodeValue(long callId, long nodeId, const String& value);
     void getEventListenersForNode(long callId, long nodeId);
     void copyNode(long nodeId);
+    void removeNode(long callId, long nodeId);
 
-    void getCookies(long callId);
-    void deleteCookie(const String& cookieName);
+    void getCookies(long callId, const String& domain);
+    void deleteCookie(const String& cookieName, const String& domain);
 
     // Generic code called from custom implementations.
     void highlight(long nodeId);
     Node* nodeForId(long nodeId);
-    ScriptValue wrapObject(const ScriptValue& object);
+    ScriptValue wrapObject(const ScriptValue& object, const String& objectGroup);
     ScriptValue unwrapObject(const String& objectId);
+    void releaseWrapperObjectGroup(const String& objectGroup);
     long pushNodePathToFrontend(Node* node, bool selectInUI);
     void addNodesToSearchResult(const String& nodeIds);
 #if ENABLE(DATABASE)
+    Database* databaseForId(long databaseId);
     void selectDatabase(Database* database);
+    void getDatabaseTableNames(long callId, long databaseId);
 #endif
 #if ENABLE(DOM_STORAGE)
     void selectDOMStorage(Storage* storage);
@@ -157,6 +162,8 @@ public:
     void setDOMStorageItem(long callId, long storageId, const String& key, const String& value);
     void removeDOMStorageItem(long callId, long storageId, const String& key);
 #endif
+    void reportDidDispatchOnInjectedScript(long callId, const String& result, bool isException);
+    void didEvaluateForTestInFrontend(long callId, const String& jsonResult);
 
 private:
     InspectorBackend(InspectorController* inspectorController, InspectorClient* client);
@@ -165,9 +172,6 @@ private:
 
     InspectorController* m_inspectorController;
     InspectorClient* m_client;
-#if ENABLE(JAVASCRIPT_DEBUGGER)
-    ProfilesArray m_emptyProfiles;
-#endif
 };
 
 } // namespace WebCore
