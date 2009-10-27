@@ -66,7 +66,8 @@ struct QTreeViewItem
     QModelIndex index; // we remove items whenever the indexes are invalidated
     uint expanded : 1;
     uint spanning : 1;
-    uint total : 30; // total number of children visible
+    uint hasChildren : 1; // if the item has visible children (even if collapsed)
+    uint total : 29; // total number of children visible
     uint level : 16; // indentation
     int height : 16; // row height
 };

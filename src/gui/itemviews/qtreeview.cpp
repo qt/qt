@@ -1422,8 +1422,8 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
         for (; i < viewItems.count() && y <= area.bottom(); ++i) {
             const int itemHeight = d->itemHeight(i);
             option.rect.setRect(0, y, viewportWidth, itemHeight);
-            option.state = state | (viewItems.at(i).expanded
-                                    ? QStyle::State_Open : QStyle::State_None);
+            option.state = state | (viewItems.at(i).expanded ? QStyle::State_Open : QStyle::State_None)
+                                 | (viewItems.at(i).hasChildren ? QStyle::State_Children : QStyle::State_None );
             d->current = i;
             d->spanning = viewItems.at(i).spanning;
             if (!multipleRects || !drawn.contains(i)) {
@@ -1748,8 +1748,7 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
         opt.rect = primitive;
 
         const bool expanded = viewItem.expanded;
-        const bool children = (((expanded && viewItem.total > 0)) // already laid out and has children
-                                || d->hasVisibleChildren(index)); // not laid out yet, so we don't know
+        const bool children = viewItem.hasChildren;
         bool moreSiblings = false;
         if (d->hiddenIndexes.isEmpty())
             moreSiblings = (d->model->rowCount(parent) - 1 > index.row());
@@ -3135,17 +3134,22 @@ void QTreeViewPrivate::layout(int i)
             last = j - hidden + children;
         } else {
             last = j - hidden + children;
-            viewItems[last].index = current;
-            viewItems[last].level = level;
-            viewItems[last].height = 0;
-            viewItems[last].spanning = q->isFirstColumnSpanned(current.row(), parent);
-            viewItems[last].expanded = false;
-            viewItems[last].total = 0;
+            QTreeViewItem *item = &viewItems[last];
+            item->index = current;
+            item->level = level;
+            item->height = 0;
+            item->spanning = q->isFirstColumnSpanned(current.row(), parent);
+            item->expanded = false;
+            item->total = 0;
             if (isIndexExpanded(current)) {
-                viewItems[last].expanded = true;
+                item->expanded = true;
                 layout(last);
-                children += viewItems[last].total;
+                item = &viewItems[last];
+                children += item->total;
+                item->hasChildren = item->total > 0;
                 last = j - hidden + children;
+            } else {
+                item->hasChildren = hasVisibleChildren(current);
             }
         }
     }

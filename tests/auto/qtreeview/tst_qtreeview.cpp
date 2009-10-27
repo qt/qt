@@ -2891,7 +2891,8 @@ void tst_QTreeView::styleOptionViewItem()
 
                 QVERIFY(!opt.text.isEmpty());
                 QCOMPARE(opt.index, index);
-                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
+                if (allCollapsed)
+                    QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
                 QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
 
                 if (opt.text.contains("Beginning"))
@@ -2911,12 +2912,15 @@ void tst_QTreeView::styleOptionViewItem()
                 else
                     QCOMPARE(opt.checkState, Qt::Unchecked);
 
+                QCOMPARE(!(opt.state & QStyle::State_Children) , !opt.text.contains("HasChildren"));
+
                 QVERIFY(!opt.text.contains("Assert"));
 
                 QStyledItemDelegate::paint(painter, option, index);
                 count++;
             }
             mutable int count;
+            bool allCollapsed;
     };
 
     QTreeView view;
@@ -2926,8 +2930,9 @@ void tst_QTreeView::styleOptionViewItem()
     view.setItemDelegate(&delegate);
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    QStandardItem *par1 = new QStandardItem("Beginning HasChildren");
     model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+        << par1 <<  new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("OnlyOne") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Assert") );
     QStandardItem *checkable = new QStandardItem("Checkable");
@@ -2938,12 +2943,37 @@ void tst_QTreeView::styleOptionViewItem()
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  checkable << checked << new QStandardItem("End") );
 
+    par1->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    QStandardItem *par2 = new QStandardItem("Beginning HasChildren");
+    par1->appendRow(QList<QStandardItem*>()
+        << par2 <<  new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
+    par2->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+
+    QStandardItem *par3 = new QStandardItem("Beginning");
+    par1->appendRow(QList<QStandardItem*>()
+        << par3 <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    par3->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    view.setRowHidden(0, par3->index(), true);
+
     view.setFirstColumnSpanned(2, QModelIndex(), true);
     view.setAlternatingRowColors(true);
 
     delegate.count = 0;
+    delegate.allCollapsed = true;
     view.showMaximized();
+    QApplication::processEvents();
     QTRY_VERIFY(delegate.count >= 13);
+    delegate.count = 0;
+    delegate.allCollapsed = false;
+    view.expandAll();
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.count >= 13);
+    view.collapse(par2->index());
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.count >= 4);
 }
 
 class task174627_TreeView : public QTreeView
@@ -3506,7 +3536,6 @@ void tst_QTreeView::task245654_changeModelAndExpandAll()
     QVERIFY(view.isExpanded(top->index()));
 
 }
-
 
 
 QTEST_MAIN(tst_QTreeView)
