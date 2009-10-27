@@ -1423,7 +1423,8 @@ void QTreeView::drawTree(QPainter *painter, const QRegion &region) const
             const int itemHeight = d->itemHeight(i);
             option.rect.setRect(0, y, viewportWidth, itemHeight);
             option.state = state | (viewItems.at(i).expanded ? QStyle::State_Open : QStyle::State_None)
-                                 | (viewItems.at(i).hasChildren ? QStyle::State_Children : QStyle::State_None );
+                                 | (viewItems.at(i).hasChildren ? QStyle::State_Children : QStyle::State_None)
+                                 | (viewItems.at(i).hasMoreSiblings ? QStyle::State_Sibling : QStyle::State_None);
             d->current = i;
             d->spanning = viewItems.at(i).spanning;
             if (!multipleRects || !drawn.contains(i)) {
@@ -1749,12 +1750,7 @@ void QTreeView::drawBranches(QPainter *painter, const QRect &rect,
 
         const bool expanded = viewItem.expanded;
         const bool children = viewItem.hasChildren;
-        bool moreSiblings = false;
-        if (d->hiddenIndexes.isEmpty())
-            moreSiblings = (d->model->rowCount(parent) - 1 > index.row());
-        else
-            moreSiblings = ((d->viewItems.size() > item +1)
-                            && (d->viewItems.at(item + 1).index.parent() == parent));
+        bool moreSiblings = viewItem.hasMoreSiblings;
 
         opt.state = QStyle::State_Item | extraFlags
                     | (moreSiblings ? QStyle::State_Sibling : QStyle::State_None)
@@ -3126,7 +3122,7 @@ void QTreeViewPrivate::layout(int i)
     int hidden = 0;
     int last = 0;
     int children = 0;
-
+    QTreeViewItem *item = 0;
     for (int j = first; j < first + count; ++j) {
         current = model->index(j - first, 0, parent);
         if (isRowHidden(current)) {
@@ -3134,13 +3130,16 @@ void QTreeViewPrivate::layout(int i)
             last = j - hidden + children;
         } else {
             last = j - hidden + children;
-            QTreeViewItem *item = &viewItems[last];
+            if (item)
+                item->hasMoreSiblings = true;
+            item = &viewItems[last];
             item->index = current;
             item->level = level;
             item->height = 0;
             item->spanning = q->isFirstColumnSpanned(current.row(), parent);
             item->expanded = false;
             item->total = 0;
+            item->hasMoreSiblings = false;
             if (isIndexExpanded(current)) {
                 item->expanded = true;
                 layout(last);

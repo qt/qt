@@ -2913,6 +2913,7 @@ void tst_QTreeView::styleOptionViewItem()
                     QCOMPARE(opt.checkState, Qt::Unchecked);
 
                 QCOMPARE(!(opt.state & QStyle::State_Children) , !opt.text.contains("HasChildren"));
+                QCOMPARE(!!(opt.state & QStyle::State_Sibling) , !opt.text.contains("Last"));
 
                 QVERIFY(!opt.text.contains("Assert"));
 
@@ -2942,6 +2943,8 @@ void tst_QTreeView::styleOptionViewItem()
     checked->setCheckState(Qt::Checked);
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  checkable << checked << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning Last") <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
 
     par1->appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
@@ -2949,14 +2952,18 @@ void tst_QTreeView::styleOptionViewItem()
     par1->appendRow(QList<QStandardItem*>()
         << par2 <<  new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
     par2->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+        << new QStandardItem("Beginning Last") <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
 
-    QStandardItem *par3 = new QStandardItem("Beginning");
+    QStandardItem *par3 = new QStandardItem("Beginning Last");
     par1->appendRow(QList<QStandardItem*>()
-        << par3 <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+        << par3 <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
     par3->appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+        << new QStandardItem("Assert") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
     view.setRowHidden(0, par3->index(), true);
+    par1->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Assert") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
+    view.setRowHidden(3, par1->index(), true);
+
 
     view.setFirstColumnSpanned(2, QModelIndex(), true);
     view.setAlternatingRowColors(true);

@@ -67,7 +67,8 @@ struct QTreeViewItem
     uint expanded : 1;
     uint spanning : 1;
     uint hasChildren : 1; // if the item has visible children (even if collapsed)
-    uint total : 29; // total number of children visible
+    uint hasMoreSiblings : 1;
+    uint total : 28; // total number of children visible
     uint level : 16; // indentation
     int height : 16; // row height
 };
