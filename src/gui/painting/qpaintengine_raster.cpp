@@ -1686,7 +1686,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+    if (s->flags.fast_pen && !path.isCurved()
         && s->lastPen.brush().isOpaque()) {
         int count = path.elementCount();
         QPointF *points = (QPointF *) path.points();
@@ -1739,8 +1739,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            if (path.shape() == QVectorPath::LinesHint)
-                dashOffset = s->lastPen.dashOffset();
+            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
