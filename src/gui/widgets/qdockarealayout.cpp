@@ -1556,9 +1556,10 @@ void QDockAreaLayoutInfo::apply(bool animate)
             }
         }
     }
-
+#ifndef QT_NO_TABBAR
     if (sep == 1)
         updateSeparatorWidgets();
+#endif //QT_NO_TABBAR
 }
 
 static void paintSep(QPainter *p, QWidget *w, const QRect &r, Qt::Orientation o, bool mouse_over)
@@ -2008,13 +2009,14 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
         updateTabBar();
         setCurrentTabId(tabId(item_list.at(index)));
     }
-#endif
     if (!testing && sep == 1)
         updateSeparatorWidgets();
+#endif
 
     return true;
 }
 
+#ifndef QT_NO_TABBAR
 void QDockAreaLayoutInfo::updateSeparatorWidgets() const
 {
     if (tabbed) {
@@ -2065,6 +2067,7 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
     separatorWidgets.resize(j);
     Q_ASSERT(separatorWidgets.size() == j);
 }
+#endif //QT_NO_TABBAR
 
 #ifndef QT_NO_TABBAR
 void QDockAreaLayoutInfo::updateTabBar() const
@@ -3073,9 +3076,10 @@ void QDockAreaLayout::apply(bool animate)
         widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
                                 animate);
     }
-
+#ifndef QT_NO_TABBAR
     if (sep == 1)
         updateSeparatorWidgets();
+#endif //QT_NO_TABBAR
 }
 
 void QDockAreaLayout::paintSeparators(QPainter *p, QWidget *widget,
@@ -3153,6 +3157,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
     return delta;
 }
 
+#ifndef QT_NO_TABBAR
 // Sets the correct positions for the seperator widgets
 // Allocates new sepearator widgets with getSeparatorWidget
 void QDockAreaLayout::updateSeparatorWidgets() const
@@ -3186,6 +3191,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
 
     separatorWidgets.resize(j);
 }
+#endif //QT_NO_TABBAR
 
 QLayoutItem *QDockAreaLayout::itemAt(int *x, int index) const
 {
@@ -3238,7 +3244,6 @@ QSet<QTabBar*> QDockAreaLayout::usedTabBars() const
     }
     return result;
 }
-#endif
 
 // Returns the set of all used separator widgets
 QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
@@ -3253,6 +3258,7 @@ QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
     }
     return result;
 }
+#endif
 
 QRect QDockAreaLayout::gapRect(const QList<int> &path) const
 {
