@@ -1890,6 +1890,17 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->restore();
         }
         break;
+    case CE_Splitter:
+        if (option->state & State_Sunken && option->state & State_Enabled) {
+            painter->save();
+            painter->setOpacity(0.5);
+            painter->setBrush(d->themePalette()->light());
+            painter->setRenderHint(QPainter::Antialiasing);
+            const qreal roundRectRadius = 4 * goldenRatio;
+            painter->drawRoundedRect(option->rect, roundRectRadius, roundRectRadius);            
+            painter->restore();
+        }
+        break;
     default:
         QCommonStyle::drawControl(element, option, painter, widget);
     }
