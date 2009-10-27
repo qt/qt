@@ -10,7 +10,6 @@ Item {
         width: Math.max(list.viewportWidth, parent.width)
     }
 
-    /*
     default property alias content: visualModel.children
     ListView {
         id: list
@@ -21,21 +20,7 @@ Item {
 
         highlight: Item { height: 1; width: 1}
         preferredHighlightBegin: 0
-        preferredHighlightEnd: 1
-        strictlyEnforceHighlightRange: true
-    }
-    */
-
-    default property alias content: flickArea.data
-    Flickable {
-        id: list
-        anchors.fill: parent
-        overShoot: false
-        viewportWidth: flickArea.width
-
-        Item {
-            id: flickArea
-            width: childrenRect.width
-        }
+        preferredHighlightEnd: 0
+        highlightRangeMode: "StrictlyEnforceRange"
     }
 }

@@ -1687,7 +1687,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
     if (prop->type < (int)QVariant::UserType) {
         QmlEnginePrivate *ep =
             static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
-        if (ep->valueTypes[prop->type]) {
+        if (prop->type >= 0 /* QVariant == -1 */ && ep->valueTypes[prop->type]) {
             COMPILE_CHECK(buildValueTypeProperty(ep->valueTypes[prop->type],
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
