@@ -76,7 +76,7 @@ class QmlComponentPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlComponent)
         
 public:
-    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), completePending(false), componentAttacheds(0), engine(0) {}
+    QmlComponentPrivate() : typeData(0), progress(0.), start(-1), count(-1), cc(0), componentAttacheds(0), completePending(false), engine(0) {}
 
 
     QObject *create(QmlContext *context, const QBitField &);

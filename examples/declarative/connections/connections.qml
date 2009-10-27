@@ -1,32 +1,30 @@
 import Qt 4.6
 
 Rectangle {
-    id: rect
-    color: "blue"
-    width: 40
-    height: 30
+    id: window; color: "#343434"
+    width: 640; height: 480
 
-    Rectangle {
-        id: dot
-        color: "red"
-        width: 3
-        height: 3
-        x: rect.width/2
-        y: rect.height/2
+    function turnLeft() {
+        image.rotation -= 90
+    }
+    function turnRight() {
+        image.rotation += 90
     }
 
-    MouseRegion {
-        id: mr
-        anchors.fill: rect
+    Image {
+        id: image; source: "bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
+        rotation: Behavior { NumberAnimation { easing: "easeOutCubic"; duration: 300 } }
     }
 
-    Connection {
-        sender: mr
-        signal: "clicked(mouse)"
-        script: { 
-            color = "green";
-            dot.x = mouse.x-1;
-            dot.y = mouse.y-1;
-        }
+    Button {
+        id: leftButton; image: "rotate-left.png"
+        anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 10 }
     }
+    Button {
+        id: rightButton; image: "rotate-right.png"
+        anchors { right: parent.right; bottom: parent.bottom; rightMargin: 10; bottomMargin: 10 }
+    }
+
+    Connection { sender: leftButton; signal: "clicked()"; script: window.turnLeft() }
+    Connection { sender: rightButton; signal: "clicked()"; script: window.turnRight() }
 }

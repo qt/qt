@@ -360,6 +360,8 @@ void QmlView::continueExecute()
                 emit sceneResized(sz);
                 resize(sz);
             }
+            updateGeometry();
+            emit initialSize(d->initialSize);
         } else if (QWidget *wid = qobject_cast<QWidget *>(obj)) {
             window()->setAttribute(Qt::WA_OpaquePaintEvent, false);
             window()->setAttribute(Qt::WA_NoSystemBackground, false);
@@ -374,12 +376,17 @@ void QmlView::continueExecute()
             }
             layout()->addWidget(wid);
             emit sceneResized(wid->size());
+            emit initialSize(wid->size());
         }
     }
 }
 
 /*! \fn void QmlView::sceneResized(QSize size)
   This signal is emitted when the view is resized to \a size.
+ */
+
+/*! \fn void QmlView::initialSize(QSize size)
+  This signal is emitted when the initial size of the root item is known.
  */
 
 /*! \fn void QmlView::errors(const QList<QmlError> &errors)
@@ -425,7 +432,10 @@ void QmlView::timerEvent(QTimerEvent* e)
     automatically resize the root item.
 
     Regardless of this property, the sizeHint of the view
-    is the initial size of the root item.
+    is the initial size of the root item. Note though that
+    since QML may load dynamically, that size may change.
+
+    \sa initialSize()
 */
 
 void QmlView::setContentResizable(bool on)

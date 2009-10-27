@@ -69,7 +69,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
-    Q_PROPERTY(bool strictlyEnforceHighlightRange READ strictlyEnforceHighlightRange WRITE setStrictlyEnforceHighlightRange)
+    Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode)
 
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
     Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
@@ -80,6 +80,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
 
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
+    Q_ENUMS(HighlightRangeMode)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -104,8 +105,9 @@ public:
     bool highlightFollowsCurrentItem() const;
     void setHighlightFollowsCurrentItem(bool);
 
-    bool strictlyEnforceHighlightRange() const;
-    void setStrictlyEnforceHighlightRange(bool strict);
+    enum HighlightRangeMode { NoHighlightRange, ApplyRange, StrictlyEnforceRange };
+    HighlightRangeMode highlightRangeMode() const;
+    void setHighlightRangeMode(HighlightRangeMode mode);
 
     qreal preferredHighlightBegin() const;
     void setPreferredHighlightBegin(qreal);

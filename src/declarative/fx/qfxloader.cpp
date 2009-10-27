@@ -351,6 +351,8 @@ void QFxLoader::setResizeMode(ResizeMode mode)
             connect(resizeItem, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
             connect(resizeItem, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
         }
+
+        d->_q_updateSize();
     }
 }
 

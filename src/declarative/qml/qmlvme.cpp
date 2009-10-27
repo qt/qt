@@ -225,7 +225,7 @@ QObject *QmlVME::run(QStack<QObject *> &stack, QmlContext *ctxt,
             {
                 QObject *target = stack.top();
 //                ctxt->setContextProperty(primitives.at(instr.setId.value), target);
-                cp->setIdProperty(primitives.at(instr.setId.value), instr.setId.index, target);
+                cp->setIdProperty(instr.setId.index, target);
             }
             break;
 

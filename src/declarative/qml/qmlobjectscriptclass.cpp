@@ -134,7 +134,6 @@ QmlObjectScriptClass::queryProperty(QObject *obj, const Identifier &name,
         return 0;
 
     QmlEnginePrivate *enginePrivate = QmlEnginePrivate::get(engine);
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
     QmlPropertyCache *cache = 0;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(obj);

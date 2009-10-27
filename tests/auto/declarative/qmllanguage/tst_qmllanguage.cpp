@@ -74,6 +74,8 @@ private slots:
     void importsOrder_data();
     void importsOrder();
 
+    void qmlAttachedPropertiesObjectMethod();
+
     // regression tests for crashes
     void crash1();
 
@@ -180,7 +182,6 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("invalidID.5") << "invalidID.5.qml" << "invalidID.5.errors.txt" << false;
     QTest::newRow("invalidID.6") << "invalidID.6.qml" << "invalidID.6.errors.txt" << false;
 
-
     QTest::newRow("unsupportedProperty") << "unsupportedProperty.qml" << "unsupportedProperty.errors.txt" << false;
     QTest::newRow("nullDotProperty") << "nullDotProperty.qml" << "nullDotProperty.errors.txt" << true;
     QTest::newRow("fakeDotProperty") << "fakeDotProperty.qml" << "fakeDotProperty.errors.txt" << false;
@@ -191,12 +192,16 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("failingComponent") << "failingComponentTest.qml" << "failingComponent.errors.txt" << false;
     QTest::newRow("missingSignal") << "missingSignal.qml" << "missingSignal.errors.txt" << false;
     QTest::newRow("finalOverride") << "finalOverride.qml" << "finalOverride.errors.txt" << false;
+    QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.1") << "invalidGroupedProperty.1.qml" << "invalidGroupedProperty.1.errors.txt" << false;
+    QTest::newRow("invalidGroupedProperty.2") << "invalidGroupedProperty.2.qml" << "invalidGroupedProperty.2.errors.txt" << false;
 
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
     QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
 
-    QTest::newRow("customParserIdNotAllowed") << "customParserIdNotAllowed.qml" << "customParserIdNotAllowed.errors.txt" << false;
+
+
 }
 
 void tst_qmllanguage::errors()
@@ -690,6 +695,33 @@ void tst_qmllanguage::aliasProperties()
 
         QCOMPARE(object->property("a").toInt(), 1923);
     }
+
+    // Ptr Alias Cleanup - check that aliases to ptr types return 0 
+    // if the object aliased to is removed
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.7.qml"));
+        VERIFY_ERRORS(0);
+
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QObject *object1 = qvariant_cast<QObject *>(object->property("object"));
+        QVERIFY(object1 != 0);
+        QObject *object2 = qvariant_cast<QObject *>(object1->property("object"));
+        QVERIFY(object2 != 0);
+
+        QObject *alias = qvariant_cast<QObject *>(object->property("aliasedObject"));
+        QVERIFY(alias == object2);
+
+        delete object1;
+
+        QObject *alias2 = object; // "Random" start value
+        int status = -1;
+        void *a[] = { &alias2, 0, &status };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty,
+                              object->metaObject()->indexOfProperty("aliasedObject"), a);
+        QVERIFY(alias2 == 0);
+    }
 }
 
 // Test that the root element in a composite type can be a Component
@@ -1007,6 +1039,34 @@ void tst_qmllanguage::importsOrder()
     QFETCH(QString, qml);
     QFETCH(QString, type);
     testType(qml,type);
+}
+
+void tst_qmllanguage::qmlAttachedPropertiesObjectMethod()
+{
+    QObject object;
+
+    QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(&object, false), (QObject *)0);
+    QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(&object, true), (QObject *)0);
+
+    {
+        QmlComponent component(&engine, TEST_FILE("qmlAttachedPropertiesObjectMethod.1.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(object, false), (QObject *)0);
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, true) != 0);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("qmlAttachedPropertiesObjectMethod.2.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, false) != 0);
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, true) != 0);
+    }
 }
 
 void tst_qmllanguage::crash1()

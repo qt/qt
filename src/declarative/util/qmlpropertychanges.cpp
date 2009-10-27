@@ -85,8 +85,7 @@ class QmlReplaceSignalHandler : public ActionEvent
 public:
     QmlReplaceSignalHandler() : expression(0), reverseExpression(0), ownedExpression(0) {}
     ~QmlReplaceSignalHandler() {
-        if (ownedExpression)
-            delete ownedExpression;
+        delete ownedExpression;
     }
 
     virtual QString typeName() const { return QLatin1String("ReplaceSignalHandler"); }

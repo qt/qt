@@ -50,9 +50,6 @@
 #include <private/qmlbindingoptimizations_p.h>
 #include <QtDeclarative/qmlinfo.h>
 
-// 6-bits
-#define MAXIMUM_DEFAULT_OBJECTS 63
-
 QT_BEGIN_NAMESPACE
 
 QmlContextPrivate::QmlContextPrivate()
@@ -129,22 +126,6 @@ void QmlContextPrivate::init()
     if (parent) 
         parent->d_func()->childContexts.insert(q);
 }
-
-void QmlContextPrivate::addDefaultObject(QObject *object, Priority priority)
-{
-    if (defaultObjects.count() >= (MAXIMUM_DEFAULT_OBJECTS - 1)) {
-        qWarning("QmlContext: Cannot have more than %d default objects on "
-                 "one bind context.", MAXIMUM_DEFAULT_OBJECTS - 1);
-        return;
-    }
-
-    if (priority == HighPriority) {
-        defaultObjects.insert(highPriorityCount++, object);
-    } else {
-        defaultObjects.append(object);
-    }
-}
-
 
 /*!
     \class QmlContext
@@ -366,7 +347,7 @@ QmlContext *QmlContext::parentContext() const
 void QmlContext::addDefaultObject(QObject *defaultObject)
 {
     Q_D(QmlContext);
-    d->addDefaultObject(defaultObject, QmlContextPrivate::NormalPriority);
+    d->defaultObjects.prepend(defaultObject);
 }
 
 /*!
@@ -396,8 +377,7 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
     }
 }
 
-void QmlContextPrivate::setIdProperty(const QString &name, int idx, 
-                                      QObject *obj)
+void QmlContextPrivate::setIdProperty(int idx, QObject *obj)
 {
     if (notifyIndex == -1) {
         Q_Q(QmlContext);
@@ -487,7 +467,6 @@ void QmlContext::setBaseUrl(const QUrl &baseUrl)
 */
 QUrl QmlContext::baseUrl() const
 {
-    Q_D(const QmlContext);
     const QmlContext* p = this;
     while (p && p->d_func()->url.isEmpty()) {
         p = p->parentContext();

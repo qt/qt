@@ -104,12 +104,6 @@ public:
     void dump();
     void dump(int depth);
 
-    enum Priority {
-        HighPriority,
-        NormalPriority
-    };
-    void addDefaultObject(QObject *, Priority);
-
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
 
@@ -129,7 +123,7 @@ public:
     };
     ContextGuard *idValues;
     int idValueCount;
-    void setIdProperty(const QString &, int, QObject *);
+    void setIdProperty(int, QObject *);
     void setIdPropertyData(QmlIntegerCache *);
     void destroyed(ContextGuard *);
 

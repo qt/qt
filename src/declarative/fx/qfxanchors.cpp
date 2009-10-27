@@ -181,7 +181,6 @@ void QFxAnchorsPrivate::centerInChanged()
 
 void QFxAnchorsPrivate::clearItem(QFxItem *item)
 {
-    Q_Q(QFxAnchors);
     if (!item)
         return;
     if (fill == item)

@@ -40,8 +40,8 @@ Rectangle {
         model: model
         delegate: verticalDelegate
         preferredHighlightBegin: 100
-        preferredHighlightEnd: 101
-        strictlyEnforceHighlightRange: true
+        preferredHighlightEnd: 100
+        highlightRangeMode: "StrictlyEnforceRange"
     }
 
 
