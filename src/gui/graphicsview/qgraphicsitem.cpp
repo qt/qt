@@ -1228,7 +1228,7 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor.
+    Constructs a QGraphicsItem with the given \a parent item.
     It does not modify the parent object returned by QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
