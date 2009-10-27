@@ -3223,7 +3223,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
-        [-no-make <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
+        [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]

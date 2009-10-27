@@ -1263,6 +1263,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
 
     QGLContext *ctx = d->ctx;
+    Q_UNUSED(ctx);
 
     if (opaque) {
         d->prepareForDraw(opaque);
