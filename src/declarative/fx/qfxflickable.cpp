@@ -157,7 +157,7 @@ QFxFlickablePrivate::QFxFlickablePrivate()
   : viewport(new QFxItem), _moveX(viewport, &QFxItem::setX), _moveY(viewport, &QFxItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
-    , interactive(true), maxVelocity(5000), reportedVelocitySmoothing(100)
+    , interactive(true), deceleration(500), maxVelocity(5000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
 {
@@ -202,7 +202,7 @@ void QFxFlickablePrivate::flickX(qreal velocity)
                 v = maxVelocity;
         }
         timeline.reset(_moveX);
-        timeline.accel(_moveX, v, 500, maxDistance);
+        timeline.accel(_moveX, v, deceleration, maxDistance);
         timeline.execute(fixupXEvent);
         if (!flicked) {
             flicked = true;
@@ -238,7 +238,7 @@ void QFxFlickablePrivate::flickY(qreal velocity)
                 v = maxVelocity;
         }
         timeline.reset(_moveY);
-        timeline.accel(_moveY, v, 500, maxDistance);
+        timeline.accel(_moveY, v, deceleration, maxDistance);
         timeline.execute(fixupYEvent);
         if (!flicked) {
             flicked = true;
@@ -1131,7 +1131,7 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 }
 
 /*!
-    \qmlproperty int Flickable::maximumFlickVelocity
+    \qmlproperty real Flickable::maximumFlickVelocity
     This property holds the maximum velocity that the user can flick the view in pixels/second.
 
     The default is 5000 pixels/s
@@ -1148,6 +1148,24 @@ void QFxFlickable::setMaximumFlickVelocity(qreal v)
     if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
+}
+
+/*!
+    \qmlproperty real Flickable::maximumFlickVelocity
+    This property holds the rate at which a flick will decelerate.
+
+    The default is 500.
+*/
+qreal QFxFlickable::flickDeceleration() const
+{
+    Q_D(const QFxFlickable);
+    return d->deceleration;
+}
+
+void QFxFlickable::setFlickDeceleration(qreal deceleration)
+{
+    Q_D(QFxFlickable);
+    d->deceleration = deceleration;
 }
 
 bool QFxFlickable::isFlicking() const

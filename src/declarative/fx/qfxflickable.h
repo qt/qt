@@ -67,6 +67,7 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
 
     Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
     Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity)
+    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration)
     Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
     Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
 
@@ -117,6 +118,9 @@ public:
 
     qreal maximumFlickVelocity() const;
     void setMaximumFlickVelocity(qreal);
+
+    qreal flickDeceleration() const;
+    void setFlickDeceleration(qreal);
 
     bool isInteractive() const;
     void setInteractive(bool);
