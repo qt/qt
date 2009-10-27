@@ -40,6 +40,7 @@
 ****************************************************************************/
 
 #include <QtGui/qwidget.h>
+#include <QtGui/qapplication.h>
 #include <QtCore/qlinkedlist.h>
 #include <QtCore/qstack.h>
 
