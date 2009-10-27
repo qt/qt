@@ -564,8 +564,13 @@ void QWidgetPrivate::lower_sys()
     Q_Q(QWidget);
 
     Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-    if (q->internalWinId())
-        q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
+    if (q->internalWinId()) {
+        // If toplevel widget, lower app to background
+        if (q->isWindow())
+            S60->wsSession().SetWindowGroupOrdinalPosition(S60->windowGroup().Identifier(), -1);
+        else
+            q->internalWinId()->DrawableWindow()->SetOrdinalPosition(-1);
+    }
 
     if (!q->isWindow())
         invalidateBuffer(q->rect());
