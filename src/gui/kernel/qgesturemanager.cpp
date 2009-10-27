@@ -196,6 +196,8 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
     // TODO: sort contexts by the gesture type and check if one of the contexts
     //       is already active.
 
+    bool ret = false;
+
     // filter the event through recognizers
     typedef QMap<QObject *, Qt::GestureType>::const_iterator ContextIterator;
     for (ContextIterator cit = contexts.begin(), ce = contexts.end(); cit != ce; ++cit) {
@@ -232,7 +234,7 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
             if (result & QGestureRecognizer::ConsumeEventHint) {
                 DEBUG() << "QGestureManager: we were asked to consume the event: "
                         << state;
-                //TODO: consume events if asked
+                ret = true;
             }
         }
     }
@@ -332,7 +334,7 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
             cleanupGesturesForRemovedRecognizer(gesture);
         gestureTargets.remove(gesture);
     }
-    return false;
+    return ret;
 }
 
 void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)

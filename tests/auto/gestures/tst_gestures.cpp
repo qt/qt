@@ -103,6 +103,8 @@ int CustomEvent::EventType = 0;
 class CustomGestureRecognizer : public QGestureRecognizer
 {
 public:
+    static bool ConsumeEvents;
+
     CustomGestureRecognizer()
     {
         if (!CustomEvent::EventType)
@@ -117,7 +119,9 @@ public:
     QGestureRecognizer::Result filterEvent(QGesture *state, QObject*, QEvent *event)
     {
         if (event->type() == CustomEvent::EventType) {
-            QGestureRecognizer::Result result = QGestureRecognizer::ConsumeEventHint;
+            QGestureRecognizer::Result result = 0;
+            if (CustomGestureRecognizer::ConsumeEvents)
+                result |= QGestureRecognizer::ConsumeEventHint;
             CustomGesture *g = static_cast<CustomGesture*>(state);
             CustomEvent *e = static_cast<CustomEvent*>(event);
             g->serial = e->serial;
@@ -143,6 +147,7 @@ public:
         QGestureRecognizer::reset(state);
     }
 };
+bool CustomGestureRecognizer::ConsumeEvents = false;
 
 // same as CustomGestureRecognizer but triggers early without the maybe state
 class CustomContinuousGestureRecognizer : public QGestureRecognizer
@@ -324,6 +329,7 @@ private slots:
     void multipleGesturesInComplexTree();
     void testMapToScene();
     void ungrabGesture();
+    void consumeEventHint();
 };
 
 tst_Gestures::tst_Gestures()
@@ -373,6 +379,19 @@ void tst_Gestures::customGesture()
     QCOMPARE(widget.events.updated.size(), TotalGestureEventsCount - 2);
     QCOMPARE(widget.events.finished.size(), 1);
     QCOMPARE(widget.events.canceled.size(), 0);
+}
+
+void tst_Gestures::consumeEventHint()
+{
+    GestureWidget widget;
+    widget.grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+
+    CustomGestureRecognizer::ConsumeEvents = true;
+    CustomEvent event;
+    sendCustomGesture(&event, &widget);
+    CustomGestureRecognizer::ConsumeEvents = false;
+
+    QCOMPARE(widget.customEventsReceived, 0);
 }
 
 void tst_Gestures::autoCancelingGestures()
