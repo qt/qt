@@ -658,7 +658,7 @@ QVariant QmlBasicScript::run(QmlContext *context, QObject *me)
 
             case ScriptInstruction::FetchRootConstant:
             {
-                QObject *obj = contextPrivate->defaultObjects.last();
+                QObject *obj = contextPrivate->defaultObjects.at(0);
 
                 stack.push(fetch_value(obj, instr.constant.idx, instr.constant.type));
                 if (obj && instr.constant.notify != 0)

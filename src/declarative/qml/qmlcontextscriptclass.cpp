@@ -155,7 +155,7 @@ QmlContextScriptClass::queryProperty(QmlContext *bindContext, QObject *scopeObje
         }
     }
 
-    for (int ii = 0; ii < cp->defaultObjects.count(); ++ii) {
+    for (int ii = cp->defaultObjects.count() - 1; ii >= 0; --ii) {
         QScriptClass::QueryFlags rv = 
             ep->objectClass->queryProperty(cp->defaultObjects.at(ii), name, flags, bindContext);
 
