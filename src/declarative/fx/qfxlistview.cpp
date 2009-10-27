@@ -885,8 +885,7 @@ void QFxListViewPrivate::flickX(qreal velocity)
 
 void QFxListViewPrivate::flickY(qreal velocity)
 {
-    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange)
-        QFxFlickablePrivate::flickY(velocity);
+    QFxFlickablePrivate::flickY(velocity);
 }
 
 //----------------------------------------------------------------------------
