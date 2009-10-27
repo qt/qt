@@ -55,18 +55,15 @@ bool QmlInspectorPlugin::initialize(const QStringList &arguments, QString *error
     Core::ICore *core = Core::ICore::instance();
     Core::UniqueIDManager *uidm = core->uniqueIDManager();
 
-    QList<int> modeContext;
-    modeContext.append(uidm->uniqueIdentifier(QmlInspector::Constants::C_INSPECTOR));
-
-    QList<int> inspectorContext;
-    inspectorContext.append(uidm->uniqueIdentifier(Core::Constants::C_EDITORMANAGER));
-    inspectorContext.append(uidm->uniqueIdentifier(QmlInspector::Constants::C_INSPECTOR));
-    inspectorContext.append(uidm->uniqueIdentifier(Core::Constants::C_NAVIGATION_PANE));
+    QList<int> context;
+    context.append(uidm->uniqueIdentifier(QmlInspector::Constants::C_INSPECTOR));
+    context.append(uidm->uniqueIdentifier(Core::Constants::C_EDITORMANAGER));
+    context.append(uidm->uniqueIdentifier(Core::Constants::C_NAVIGATION_PANE));
 
     m_inspectMode = new QmlInspectorMode(this);
     connect(m_inspectMode, SIGNAL(startViewer()), SLOT(startViewer()));
     connect(m_inspectMode, SIGNAL(stopViewer()), SLOT(stopViewer()));
-    m_inspectMode->setContext(modeContext);
+    m_inspectMode->setContext(context);
     addObject(m_inspectMode);
 
     m_outputPane = new InspectorOutputPane;
