@@ -1352,6 +1352,8 @@ void QGraphicsWidget::changeEvent(QEvent *event)
     case QEvent::StyleChange:
         // ### Don't unset if the margins are explicitly set.
         unsetWindowFrameMargins();
+        if (d->layout)
+            d->layout->invalidate();
     case QEvent::FontChange:
         update();
         updateGeometry();
