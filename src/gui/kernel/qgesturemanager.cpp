@@ -322,19 +322,94 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
     deliverEvents(startedGestures+triggeredGestures+finishedGestures+canceledGestures,
                   &undeliveredGestures);
 
+    foreach (QGesture *g, startedGestures) {
+        if (undeliveredGestures.contains(g))
+            continue;
+        if (g->gestureCancelPolicy() == QGesture::CancelAllInContext) {
+            DEBUG() << "lets try to cancel some";
+            // find gestures in context in Qt::GestureStarted or Qt::GestureUpdated state and cancel them
+            cancelGesturesForChildren(g);
+        }
+    }
+
     activeGestures -= undeliveredGestures;
 
     // reset gestures that ended
     QSet<QGesture *> endedGestures =
             finishedGestures + canceledGestures + undeliveredGestures;
     foreach (QGesture *gesture, endedGestures) {
-        if (QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0))
+        if (QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0)) {
+            gesture->setGestureCancelPolicy(QGesture::CancelNone);
             recognizer->reset(gesture);
-        else
+        } else {
             cleanupGesturesForRemovedRecognizer(gesture);
+        }
         gestureTargets.remove(gesture);
     }
     return ret;
+}
+
+// Cancel all gestures of children of the widget that original is associated with
+void QGestureManager::cancelGesturesForChildren(QGesture *original)
+{
+    Q_ASSERT(original);
+    QWidget *originatingWidget = gestureTargets.value(original);
+    Q_ASSERT(originatingWidget);
+
+    // iterate over all active gestures and all maybe gestures
+    // for each find the owner
+    // if the owner is part of our sub-hierarchy, cancel it.
+
+    QSet<QGesture*> cancelledGestures;
+    QSet<QGesture*>::Iterator iter = activeGestures.begin();
+    while (iter != activeGestures.end()) {
+        QWidget *widget = gestureTargets.value(*iter);
+        // note that we don't touch the gestures for our originatingWidget
+        if (widget != originatingWidget && originatingWidget->isAncestorOf(widget)) {
+            DEBUG() << "  found a gesture to cancel" << (*iter);
+            (*iter)->d_func()->state = Qt::GestureCanceled;
+            cancelledGestures << *iter;
+            iter = activeGestures.erase(iter);
+        } else {
+            ++iter;
+        }
+    }
+
+    // TODO handle 'maybe' gestures too
+
+    // sort them per target widget by cherry picking from almostCanceledGestures and delivering
+    QSet<QGesture *> almostCanceledGestures = cancelledGestures;
+    while (!almostCanceledGestures.isEmpty()) {
+        QWidget *target = 0;
+        QSet<QGesture*> gestures;
+        iter = almostCanceledGestures.begin();
+        // sort per target widget
+        while (iter != almostCanceledGestures.end()) {
+            QWidget *widget = gestureTargets.value(*iter);
+            if (target == 0)
+                target = widget;
+            if (target == widget) {
+                gestures << *iter;
+                iter = almostCanceledGestures.erase(iter);
+            } else {
+                ++iter;
+            }
+        }
+        Q_ASSERT(target);
+
+        QSet<QGesture*> undeliveredGestures;
+        deliverEvents(gestures, &undeliveredGestures);
+    }
+
+    for (iter = cancelledGestures.begin(); iter != cancelledGestures.end(); ++iter) {
+        QGestureRecognizer *recognizer = gestureToRecognizer.value(*iter, 0);
+        if (recognizer) {
+            (*iter)->setGestureCancelPolicy(QGesture::CancelNone);
+            recognizer->reset(*iter);
+        } else {
+            cleanupGesturesForRemovedRecognizer(*iter);
+        }
+    }
 }
 
 void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
@@ -585,10 +660,12 @@ void QGestureManager::timerEvent(QTimerEvent *event)
             DEBUG() << "QGestureManager::timerEvent: gesture stopped due to timeout:"
                     << gesture;
             QGestureRecognizer *recognizer = gestureToRecognizer.value(gesture, 0);
-            if (recognizer)
+            if (recognizer) {
+                gesture->setGestureCancelPolicy(QGesture::CancelNone);
                 recognizer->reset(gesture);
-            else
+            } else {
                 cleanupGesturesForRemovedRecognizer(gesture);
+            }
         } else {
             ++it;
         }

@@ -135,6 +135,8 @@ private:
     void getGestureTargets(const QSet<QGesture*> &gestures,
                            QMap<QWidget *, QList<QGesture *> > *conflicts,
                            QMap<QWidget *, QList<QGesture *> > *normal);
+
+    void cancelGesturesForChildren(QGesture *originatingGesture);
 };
 
 QT_END_NAMESPACE

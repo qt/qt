@@ -331,6 +331,7 @@ private slots:
     void ungrabGesture();
     void consumeEventHint();
     void unregisterRecognizer();
+    void autoCancelGestures();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1290,6 +1291,67 @@ void tst_Gestures::unregisterRecognizer() // a method on QApplication
      that it created. (since gestures might have a pointer to the recognizer)
      */
 
+}
+
+void tst_Gestures::autoCancelGestures()
+{
+    class MockRecognizer : public QGestureRecognizer {
+      public:
+        QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event)
+        {
+            Q_UNUSED(gesture);
+            Q_UNUSED(watched);
+            if (event->type() == QEvent::MouseButtonPress)
+                return QGestureRecognizer::GestureTriggered;
+            if (event->type() == QEvent::MouseButtonRelease)
+                return QGestureRecognizer::GestureFinished;
+            return QGestureRecognizer::Ignore;
+        }
+    };
+
+    class MockWidget : public GestureWidget {
+      public:
+        MockWidget(const char *name) : GestureWidget(name) { }
+
+        bool event(QEvent *event)
+        {
+            if (event->type() == QEvent::Gesture) {
+                QGestureEvent *ge = static_cast<QGestureEvent*>(event);
+                Q_ASSERT(ge->allGestures().count() == 1); // can't use QCOMPARE here...
+                ge->allGestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
+            }
+            return GestureWidget::event(event);
+        }
+    };
+
+    MockWidget parent("parent"); // this one sets the cancel policy to CancelAllInContext
+    parent.resize(300, 100);
+    GestureWidget *child = new GestureWidget("child", &parent);
+    child->setGeometry(10, 10, 100, 80);
+
+    Qt::GestureType type = qApp->registerGestureRecognizer(new MockRecognizer());
+    parent.grabGesture(type, Qt::WidgetWithChildrenGesture);
+    child->grabGesture(type, Qt::WidgetWithChildrenGesture);
+
+    /*
+      An event is send to both the child and the parent, when the child gets it a gesture is triggered
+      and send to the child.
+      When the parent gets the event a new gesture is triggered and delivered to the parent. When the
+      parent gets it he accepts it and that causes the cancel policy to activate.
+      The cause of that is the gesture for the child is cancelled and send to the child as such.
+    */
+    QMouseEvent event(QEvent::MouseButtonPress, QPoint(20,20), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    QApplication::sendEvent(child, &event);
+    QCOMPARE(child->events.started.count(), 1);
+    QCOMPARE(child->events.all.count(), 1);
+    QCOMPARE(parent.events.all.count(), 0);
+    child->reset();
+    QApplication::sendEvent(&parent, &event);
+    QCOMPARE(parent.events.all.count(), 1);
+    QCOMPARE(parent.events.started.count(), 1);
+    QCOMPARE(child->events.started.count(), 0);
+    QCOMPARE(child->events.all.count(), 1);
+    QCOMPARE(child->events.canceled.count(), 1);
 }
 
 QTEST_MAIN(tst_Gestures)
