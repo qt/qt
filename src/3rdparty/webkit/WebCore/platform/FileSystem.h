@@ -98,6 +98,17 @@ struct PlatformModuleVersion {
     {
     }
 
+    bool operator != (const PlatformModuleVersion& rhs) const
+    {
+        return mostSig != rhs.mostSig && leastSig != rhs.leastSig;
+    }
+
+
+    bool operator > (const PlatformModuleVersion& rhs) const
+    {
+        return mostSig > rhs.mostSig && leastSig > rhs.leastSig;
+    }
+
 };
 #else
 typedef unsigned PlatformModuleVersion;
