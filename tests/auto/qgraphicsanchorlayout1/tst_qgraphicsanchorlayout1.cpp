@@ -1668,6 +1668,18 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
+static QRectF truncate(QRectF original)
+{
+    QRectF result;
+
+    result.setX(qRound(original.x() * 1000000) / 1000000.0);
+    result.setY(qRound(original.y() * 1000000) / 1000000.0);
+    result.setWidth(qRound(original.width() * 1000000) / 1000000.0);
+    result.setHeight(qRound(original.height() * 1000000) / 1000000.0);
+
+    return result;
+}
+
 void tst_QGraphicsAnchorLayout1::testBasicLayout()
 {
     QFETCH(QSizeF, size);
@@ -1716,7 +1728,10 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];
-        QCOMPARE(widgets[item.index]->geometry(), item.rect);
+        QRectF expected = truncate(item.rect);
+        QRectF actual = truncate(widgets[item.index]->geometry());
+
+        QCOMPARE(expected, actual);
     }
 
     // ###: not supported yet
