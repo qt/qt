@@ -342,8 +342,10 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
 
     QCOMPARE(checkReverseDirection(p), true);
 
-    QVERIFY(usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     delete p;
     delete view;
