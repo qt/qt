@@ -108,7 +108,7 @@ class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QFxVisualModel
     Q_OBJECT
     Q_DECLARE_PRIVATE(QFxVisualItemModel)
 
-    Q_PROPERTY(QmlList<QFxItem *>* children READ children DESIGNABLE false)
+    Q_PROPERTY(QmlList<QFxItem *>* children READ children NOTIFY childrenChanged DESIGNABLE false)
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
@@ -127,6 +127,9 @@ public:
     QmlList<QFxItem *> *children();
 
     static QFxVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
+
+signals:
+    void childrenChanged();
 
 private:
     Q_DISABLE_COPY(QFxVisualItemModel)
