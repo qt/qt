@@ -287,6 +287,11 @@ public:
         return index;
     }
 
+    //XXX Rough.  Only works for fixed size items.
+    qreal snapPosAt(qreal pos) {
+        return qRound((pos - startPosition()) / averageSize) * averageSize + startPosition();
+    }
+
     int lastVisibleIndex() const {
         int lastIndex = -1;
         for (int i = visibleItems.count()-1; i >= 0; --i) {
@@ -365,6 +370,8 @@ public:
     void fixupPosition();
     virtual void fixupY();
     virtual void fixupX();
+    virtual void flickX(qreal velocity);
+    virtual void flickY(qreal velocity);
 
     QFxVisualModel *model;
     QVariant modelVariant;
@@ -750,7 +757,6 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
         updateHighlight();
         return;
     }
-
     FxListItem *oldCurrentItem = currentItem;
     currentIndex = modelIndex;
     currentItem = createItem(modelIndex);
@@ -820,6 +826,66 @@ void QFxListViewPrivate::fixupX()
             timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
         }
     }
+}
+
+void QFxListViewPrivate::flickX(qreal velocity)
+{
+    Q_Q(QFxListView);
+
+    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange)
+        QFxFlickablePrivate::flickX(velocity);
+
+    qreal maxDistance = -1;
+    // -ve velocity means list is moving up
+    if (velocity > 0) {
+        if (_moveX.value() < q->minXExtent())
+            maxDistance = qAbs(q->minXExtent() -_moveX.value() + (overShoot?30:0));
+        flickTargetX = q->minXExtent();
+    } else {
+        if (_moveX.value() > q->maxXExtent())
+            maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
+        flickTargetX = q->maxXExtent();
+    }
+    if (maxDistance > 0) {
+        qreal v = velocity;
+        if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+            if (v < 0)
+                v = -maxVelocity;
+            else
+                v = maxVelocity;
+        }
+        qreal accel = deceleration;
+        qreal maxAccel = (v * v) / (2.0f * maxDistance);
+        if (maxAccel < accel) {
+            // If we are not flicking to the end then attempt to stop exactly on an item boundary
+            qreal dist = (v * v) / accel / 2.0;
+            if (v > 0)
+                dist = -dist;
+            dist = -_moveX.value() - snapPosAt(-_moveX.value() + dist + highlightRangeStart);
+            if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
+                timeline.reset(_moveX);
+                fixupX();
+                return;
+            }
+            accel = (v * v) / (2.0f * qAbs(dist));
+        }
+        timeline.reset(_moveX);
+        timeline.accel(_moveX, v, accel, maxDistance);
+        timeline.execute(fixupXEvent);
+        if (!flicked) {
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+        }
+    } else {
+        timeline.reset(_moveX);
+        fixupX();
+    }
+}
+
+void QFxListViewPrivate::flickY(qreal velocity)
+{
+    QFxFlickablePrivate::flickY(velocity);
 }
 
 //----------------------------------------------------------------------------

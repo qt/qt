@@ -29,6 +29,8 @@ Item {
         preferredHighlightBegin: 0
         preferredHighlightEnd: 0
         highlightRangeMode: "StrictlyEnforceRange"
+
+        flickDeceleration: 1000
     }
 
     ListView {
