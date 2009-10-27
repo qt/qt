@@ -123,6 +123,10 @@ public:
         emit q->countChanged();
     }
 
+    void emitChildrenChanged() {
+        Q_Q(QFxVisualItemModel);
+        emit q->childrenChanged();
+    }
     ItemList children;
 };
 
@@ -224,6 +228,8 @@ void QFxVisualItemModelPrivate::ItemList::append(QFxItem *item)
     QmlConcreteList<QFxItem*>::append(item);
     item->QObject::setParent(model->q_ptr);
     model->itemAppended();
+
+    model->emitChildrenChanged();
 }
 
 QFxVisualItemModelAttached *QFxVisualItemModel::qmlAttachedProperties(QObject *obj)

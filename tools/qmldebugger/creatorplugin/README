@@ -1,0 +1,5 @@
+To enable this project, qmldebugger.pro requires that these two environment
+variables be defined:
+
+CREATOR_SRC_DIR -> source directory for Qt Creator
+CREATOR_BUILD_DIR -> build directory for Qt Creator

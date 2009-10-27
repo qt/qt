@@ -293,8 +293,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
 
     if (secondaryScope)
-       ctxtPriv->defaultObjects.insert(ctxtPriv->highPriorityCount, 
-                                       secondaryScope);
+       ctxtPriv->defaultObjects.append(secondaryScope);
 
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
@@ -328,8 +327,11 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
        return QVariant();
     }
 
-    if (secondaryScope)
-        ctxtPriv->defaultObjects.removeAt(ctxtPriv->highPriorityCount);
+    if (secondaryScope) {
+        QObject *last = ctxtPriv->defaultObjects.takeLast();
+        Q_ASSERT(last == secondaryScope);
+        Q_UNUSED(last);
+    }
 
     QVariant rv;
 

@@ -104,12 +104,6 @@ public:
     void dump();
     void dump(int depth);
 
-    enum Priority {
-        HighPriority,
-        NormalPriority
-    };
-    void addDefaultObject(QObject *, Priority);
-
     void invalidateEngines();
     QSet<QmlContext *> childContexts;
 

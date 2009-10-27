@@ -30,8 +30,8 @@ Rectangle {
         anchors.bottomMargin: 30
         model: itemModel
         preferredHighlightBegin: 0
-        preferredHighlightEnd: 1
-        strictlyEnforceHighlightRange: true
+        preferredHighlightEnd: 0
+        highlightRangeMode: "StrictlyEnforceRange"
         orientation: "Horizontal"
     }
 

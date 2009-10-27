@@ -24,6 +24,7 @@ public:
     ExpressionQueryWidget(QmlEngineDebug *client = 0, QWidget *parent = 0);
     
     void setEngineDebug(QmlEngineDebug *client);
+    void clear();
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -34,7 +35,6 @@ public slots:
 private slots:
     void executeExpression();
     void showResult();
-    void lineEditTextChanged(const QString &s);
 
 private:
     void appendPrompt();

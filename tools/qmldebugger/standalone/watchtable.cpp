@@ -18,7 +18,7 @@ WatchTableModel::WatchTableModel(QmlEngineDebug *client, QObject *parent)
 }
 
 WatchTableModel::~WatchTableModel()
-{
+{    
     for (int i=0; i<m_columns.count(); i++)
         delete m_columns[i].watch;
 }
@@ -247,7 +247,7 @@ void WatchTableModel::expressionWatchRequested(const QmlDebugObjectReference &ob
     }
 }
 
-void WatchTableModel::stopWatching(int column)
+void WatchTableModel::removeWatchAt(int column)
 {
     if (!m_client)
         return;
@@ -260,6 +260,17 @@ void WatchTableModel::stopWatching(int column)
     }
 }
 
+void WatchTableModel::removeAllWatches()
+{
+    for (int i=0; i<m_columns.count(); i++) {
+        if (m_client)
+            m_client->removeWatch(m_columns[i].watch);
+        delete m_columns[i].watch;
+    }
+    m_columns.clear();
+    m_values.clear();
+    reset();
+}
 
 //----------------------------------------------
 
@@ -281,7 +292,7 @@ void WatchTableHeaderView::mousePressEvent(QMouseEvent *me)
             QList<QAction *> actions;
             actions << &action;
             if (QMenu::exec(actions, me->globalPos()))
-                m_model->stopWatching(col);
+                m_model->removeWatchAt(col);
         }
     } 
 }
@@ -293,6 +304,7 @@ WatchTableView::WatchTableView(WatchTableModel *model, QWidget *parent)
     : QTableView(parent),
       m_model(model)
 {
+    setAlternatingRowColors(true);
     connect(model, SIGNAL(watchCreated(QmlDebugWatch*)), SLOT(watchCreated(QmlDebugWatch*)));
     connect(this, SIGNAL(activated(QModelIndex)), SLOT(indexActivated(QModelIndex)));
 }

@@ -43,6 +43,7 @@ ObjectPropertiesView::ObjectPropertiesView(QmlEngineDebug *client, QWidget *pare
     setLayout(layout);
 
     m_tree = new QTreeWidget(this);
+    m_tree->setAlternatingRowColors(true);
     m_tree->setExpandsOnDoubleClick(false);
     m_tree->setHeaderLabels(QStringList() << tr("Property") << tr("Value"));
     QObject::connect(m_tree, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
@@ -56,6 +57,11 @@ ObjectPropertiesView::ObjectPropertiesView(QmlEngineDebug *client, QWidget *pare
 void ObjectPropertiesView::setEngineDebug(QmlEngineDebug *client)
 {
     m_client = client;
+}
+
+void ObjectPropertiesView::clear()
+{
+    setObject(QmlDebugObjectReference());
 }
 
 void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
@@ -104,7 +110,6 @@ void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
 {
     m_object = object;
     m_tree->clear();
-
 
     QList<QmlDebugPropertyReference> properties = object.properties();
     for (int i=0; i<properties.count(); i++) {
