@@ -115,8 +115,8 @@
 
 #define QT_FOPEN                ::fopen
 #ifdef QT_LARGEFILE_SUPPORT
-#define QT_FSEEK                ::fseek
-#define QT_FTELL                ::ftell
+#define QT_FSEEK                ::_fseeki64
+#define QT_FTELL                ::_ftelli64
 #else
 #define QT_FSEEK                ::fseek
 #define QT_FTELL                ::ftell
