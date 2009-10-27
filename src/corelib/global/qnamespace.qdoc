@@ -2509,7 +2509,7 @@
 
     \value DisplayRole    The key data to be rendered in the form of text. (QString)
     \value DecorationRole The data to be rendered as a decoration in the form
-                          of an icon. (QColor)
+                          of an icon. (QColor, QIcon or QPixmap)
     \value EditRole       The data in a form suitable for editing in an
                           editor. (QString)
     \value ToolTipRole    The data displayed in the item's tooltip. (QString)
