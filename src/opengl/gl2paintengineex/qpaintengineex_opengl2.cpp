@@ -858,9 +858,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         QGLRect rect(points[0].x(), points[0].y(), points[2].x(), points[2].y());
         prepareForDraw(currentBrush->isOpaque());
         composite(rect);
-    } else if (path.shape() == QVectorPath::EllipseHint
-             || path.shape() == QVectorPath::ConvexPolygonHint)
-    {
+    } else if (path.isConvex()) {
         vertexCoordinateArray.clear();
         vertexCoordinateArray.addPath(path, inverseScale, false);
         prepareForDraw(currentBrush->isOpaque());
