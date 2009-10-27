@@ -140,7 +140,7 @@ bool Qt::mightBeRichText(const QString& text)
 
 /*!
     Converts the plain text string \a plain to a HTML string with
-    HTML metacharacters \c{<}, \c{>}, and \c{&} replaced by HTML
+    HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
     entities.
 
     Example:
@@ -152,23 +152,6 @@ bool Qt::mightBeRichText(const QString& text)
     \sa convertFromPlainText(), mightBeRichText()
 */
 QString Qt::escape(const QString& plain)
-{
-    QString rich;
-    rich.reserve(int(plain.length() * 1.1));
-    for (int i = 0; i < plain.length(); ++i) {
-        if (plain.at(i) == QLatin1Char('<'))
-            rich += QLatin1String("&lt;");
-        else if (plain.at(i) == QLatin1Char('>'))
-            rich += QLatin1String("&gt;");
-        else if (plain.at(i) == QLatin1Char('&'))
-            rich += QLatin1String("&amp;");
-        else
-            rich += plain.at(i);
-    }
-    return rich;
-}
-
-static QString escapeXml(const QString &plain)
 {
     QString rich;
     rich.reserve(int(plain.length() * 1.1));
@@ -2057,7 +2040,7 @@ void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &valu
     html += QLatin1Char(' ');
     html += QLatin1String(attribute);
     html += QLatin1String("=\"");
-    html += escapeXml(value);
+    html += Qt::escape(value);
     html += QLatin1Char('"');
 }
 
@@ -2326,7 +2309,7 @@ void QTextHtmlExporter::emitFontFamily(const QString &family)
         quote = QLatin1String("&quot;");
 
     html += quote;
-    html += escapeXml(family);
+    html += Qt::escape(family);
     html += quote;
     html += QLatin1Char(';');
 }
@@ -2360,13 +2343,13 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         const QString name = format.anchorName();
         if (!name.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += escapeXml(name);
+            html += Qt::escape(name);
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();
         if (!href.isEmpty()) {
             html += QLatin1String("<a href=\"");
-            html += escapeXml(href);
+            html += Qt::escape(href);
             html += QLatin1String("\">");
             closeAnchor = true;
         }
