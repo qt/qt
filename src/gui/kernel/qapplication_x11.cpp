@@ -3750,6 +3750,12 @@ int QApplication::x11ProcessEvent(XEvent* event)
                 qt_get_net_virtual_roots();
             } else if (event->xproperty.atom == ATOM(_NET_WORKAREA)) {
                 qt_desktopwidget_update_workarea();
+
+                // emit the workAreaResized() signal
+                QDesktopWidget *desktop = QApplication::desktop();
+                int numScreens = desktop->numScreens();
+                for (int i = 0; i < numScreens; ++i)
+                    emit desktop->workAreaResized(i);
             }
         } else if (widget) {
             widget->translatePropertyEvent(event);
