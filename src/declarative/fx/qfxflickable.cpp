@@ -618,11 +618,18 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 newY = minY + (newY - minY) / 2;
             if (newY < maxY && maxY - minY < 0)
                 newY = maxY + (newY - maxY) / 2;
-            if (q->overShoot() || (newY <= minY && newY >= maxY)) {
+            if (!q->overShoot() && (newY > minY || newY < maxY)) {
+                if (newY > minY)
+                    newY = minY;
+                else if (newY < maxY)
+                    newY = maxY;
+                else
+                    rejectY = true;
+            }
+            if (!rejectY) {
                 _moveY.setValue(newY);
                 moved = true;
-            } else if (!q->overShoot())
-                rejectY = true;
+            }
             if (qAbs(dy) > DragThreshold)
                 stealMouse = true;
         }
@@ -638,11 +645,19 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 newX = minX + (newX - minX) / 2;
             if (newX < maxX && maxX - minX < 0)
                 newX = maxX + (newX - maxX) / 2;
-            if (q->overShoot() || (newX <= minX && newX >= maxX)) {
+            if (!q->overShoot() && (newX > minX || newX < maxX)) {
+                if (newX > minX)
+                    newX = minX;
+                else if (newX < maxX)
+                    newX = maxX;
+                else
+                    rejectX = true;
+            }
+            if (!rejectX) {
                 _moveX.setValue(newX);
                 moved = true;
-            } else if (!q->overShoot())
-                rejectX = true;
+            }
+
             if (qAbs(dx) > DragThreshold)
                 stealMouse = true;
         }
