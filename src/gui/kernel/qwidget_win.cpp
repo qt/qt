@@ -851,10 +851,13 @@ void QWidget::grabMouse()
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrb = this;
+#ifndef QT_NO_CURSOR
         mouseGrbCur = new QCursor(mouseGrb->cursor());
+#endif
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
     if (!qt_nograb()) {
@@ -868,6 +871,7 @@ void QWidget::grabMouse(const QCursor &cursor)
         mouseGrb = this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {

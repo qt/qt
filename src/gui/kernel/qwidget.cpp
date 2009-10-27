@@ -7320,7 +7320,7 @@ void QWidget::setVisible(bool visible)
                     break;
                 parent = parent->parentWidget();
             }
-            if (parent && !d->getOpaqueRegion().isEmpty())
+            if (parent)
                 parent->d_func()->setDirtyOpaqueRegion();
         }
 

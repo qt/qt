@@ -577,7 +577,9 @@ QFixed QFontEngineWin::ascent() const
 
 QFixed QFontEngineWin::descent() const
 {
-    return tm.tmDescent;
+    // ### we substract 1 to even out the historical +1 in QFontMetrics's
+    // ### height=asc+desc+1 equation. Fix in Qt5.
+    return tm.tmDescent - 1;
 }
 
 QFixed QFontEngineWin::leading() const
