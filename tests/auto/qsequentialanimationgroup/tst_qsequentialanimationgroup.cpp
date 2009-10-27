@@ -929,16 +929,13 @@ void tst_QSequentialAnimationGroup::startDelay()
     group.addPause(125);
     QCOMPARE(group.totalDuration(), 375);
 
-    QEventLoop loop;
-    QObject::connect(&group, SIGNAL(finished()), &loop, SLOT(quit()));
-
-    QTime time;
-    time.start();
     group.start();
-    loop.exec();
+    QCOMPARE(group.state(), QAnimationGroup::Running);
 
-    QVERIFY(time.elapsed() >= 375);
-    QVERIFY(time.elapsed() < 1000);
+    QTest::qWait(500);
+
+    QVERIFY(group.currentTime() == 375);
+    QCOMPARE(group.state(), QAnimationGroup::Stopped);
 }
 
 void tst_QSequentialAnimationGroup::clearGroup()
