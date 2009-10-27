@@ -2841,6 +2841,9 @@
     \value WidgetGesture Gestures can only start over the widget itself.
     \value WidgetWithChildrenGesture Gestures can start on the widget or over
     any of its children.
+    \value ItemGesture Gestures can only start over the item itself.
+    \value ItemWithChildrenGesture Gestures can start on the item or over
+    any of its children.
 
     \sa QWidget::grabGesture()
 */

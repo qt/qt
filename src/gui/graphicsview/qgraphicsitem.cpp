@@ -1228,7 +1228,8 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor. It does not modify \fn QObject::parent().
+    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor.
+    It does not modify the parent object returned by QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
     QGraphicsScene::addItem(). The item will then become a top-level item.
@@ -7283,6 +7284,21 @@ static void qt_graphicsItem_highlightSelected(
     The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
     It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
     signals for many of them.
+
+    \section1 Parents and Children
+
+    Each graphics object can be constructed with a parent item. This ensures that the
+    item will be destroyed when its parent item is destroyed. Although QGraphicsObject
+    inherits from both QObject and QGraphicsItem, you should use the functions provided
+    by QGraphicsItem, \e not QObject, to manage the relationships between parent and
+    child items.
+
+    The relationships between items can be explored using the parentItem() and childItems()
+    functions. In the hierarchy of items in a scene, the parentObject() and parentWidget()
+    functions are the equivalent of the QWidget::parent() and QWidget::parentWidget()
+    functions for QWidget subclasses.
+
+    \sa QGraphicsWidget
 */
 
 /*!
@@ -7318,7 +7334,10 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
 
 /*!
   \property QGraphicsObject::parent
-  \brief the parent of the item. It is independent from \fn QObject::parent.
+  \brief the parent of the item
+
+  \note The item's parent is set independently of the parent object returned
+  by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
