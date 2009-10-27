@@ -139,9 +139,16 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
     QScopedPointer<QAction> action(createAction(standardKey, actionWidget));
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
-
+    connect(action.data(), SIGNAL(destroyed(QObject*)), QSoftKeyManager::instance(), SLOT(cleanupHash(QObject*)));
     QSoftKeyManager::instance()->d_func()->keyedActions.insert(action.data(), key);
     return action.take();
+}
+
+void QSoftKeyManager::cleanupHash(QObject* obj)
+{
+    Q_D(QSoftKeyManager);
+    QAction *action = qobject_cast<QAction*>(obj);
+    d->keyedActions.remove(action);
 }
 
 void QSoftKeyManager::sendKeyEvent()
