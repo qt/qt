@@ -368,8 +368,9 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
     QmlCompositeTypeData *typeData = 
         QmlEnginePrivate::get(d->engine)->typeManager.getImmediate(data, url);
     
-    if (typeData->status == QmlCompositeTypeData::Waiting) {
-
+    if (typeData->status == QmlCompositeTypeData::Waiting
+     || typeData->status == QmlCompositeTypeData::WaitingResources)
+    {
         d->typeData = typeData;
         d->typeData->addWaiter(d);
 
@@ -414,7 +415,9 @@ void QmlComponent::loadUrl(const QUrl &url)
     QmlCompositeTypeData *data = 
         QmlEnginePrivate::get(d->engine)->typeManager.get(d->url);
 
-    if (data->status == QmlCompositeTypeData::Waiting) {
+    if (data->status == QmlCompositeTypeData::Waiting
+     || data->status == QmlCompositeTypeData::WaitingResources)
+    {
         d->typeData = data;
         d->typeData->addWaiter(d);
         d->progress = data->progress;
