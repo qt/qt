@@ -3455,28 +3455,24 @@ void QVGCompositionHelper::blitWindow
         // Set the image transform.
         QTransform transform;
         int y = screenSize.height() - (rect.bottom() + 1);
-        transform.translate(rect.x() + 0.5f, y + 0.5f);
+        transform.translate(rect.x() - 0.5f, y - 0.5f);
         d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
         // Enable opacity for image drawing if necessary.
-        if (opacity < 255) {
-            if (opacity != d->paintOpacity) {
-                VGfloat values[4];
-                values[0] = 1.0f;
-                values[1] = 1.0f;
-                values[2] = 1.0f;
-                values[3] = ((VGfloat)opacity) / 255.0f;
-                vgSetParameterfv(d->opacityPaint, VG_PAINT_COLOR, 4, values);
-                d->paintOpacity = values[3];
-            }
-            if (d->fillPaint != d->opacityPaint) {
-                vgSetPaint(d->opacityPaint, VG_FILL_PATH);
-                d->fillPaint = d->opacityPaint;
-            }
-            d->setImageMode(VG_DRAW_IMAGE_MULTIPLY);
-        } else {
-            d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+        if (opacity != d->paintOpacity) {
+            VGfloat values[4];
+            values[0] = 1.0f;
+            values[1] = 1.0f;
+            values[2] = 1.0f;
+            values[3] = ((VGfloat)opacity) / 255.0f;
+            vgSetParameterfv(d->opacityPaint, VG_PAINT_COLOR, 4, values);
+            d->paintOpacity = values[3];
         }
+        if (d->fillPaint != d->opacityPaint) {
+            vgSetPaint(d->opacityPaint, VG_FILL_PATH);
+            d->fillPaint = d->opacityPaint;
+        }
+        d->setImageMode(VG_DRAW_IMAGE_MULTIPLY);
 
         // Draw the child image.
         vgDrawImage(child);
@@ -3558,7 +3554,7 @@ void QVGCompositionHelper::fillBackground
         VGfloat devh = screenSize.height() - 1;
         QTransform viewport(1.0f, 0.0f, 0.0f,
                             0.0f, -1.0f, 0.0f,
-                            0.5f, devh + 0.5f, 1.0f);
+                            -0.5f, devh + 0.5f, 1.0f);
         d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
 
         // Set the brush to use to fill the background.
@@ -3612,7 +3608,7 @@ void QVGCompositionHelper::drawCursorPixmap
             VGfloat devh = screenSize.height() - 1;
             QTransform transform(1.0f, 0.0f, 0.0f,
                                  0.0f, -1.0f, 0.0f,
-                                 0.5f, devh + 0.5f, 1.0f);
+                                 -0.5f, devh + 0.5f, 1.0f);
             transform.translate(offset.x(), offset.y());
             d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
 
