@@ -68,6 +68,9 @@ void ObjectTree::objectFetched()
 
 void ObjectTree::currentItemChanged(QTreeWidgetItem *item)
 {
+    if (!item)
+        return;
+
     QmlDebugObjectReference obj = item->data(0, Qt::UserRole).value<QmlDebugObjectReference>();
     if (obj.debugId() < 0) {
         qWarning("QML Object Tree: bad object id");

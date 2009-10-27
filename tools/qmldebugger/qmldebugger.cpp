@@ -45,7 +45,8 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     m_tabs = new QTabWidget(this);
     layout->addWidget(m_tabs);
 
-    CanvasFrameRate *cfr = new CanvasFrameRate(&client, this);
+    CanvasFrameRate *cfr = new CanvasFrameRate(this);
+    cfr->reset(&client);
     cfr->setSizeHint(QSize(800, 600));
     m_tabs->addTab(cfr, tr("Frame Rate"));
 

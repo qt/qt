@@ -29,7 +29,8 @@ public:
     QmlDebugWatch *findWatch(int column) const;
     int columnForWatch(QmlDebugWatch *watch) const;
 
-    void stopWatching(int column);
+    void removeWatchAt(int column);
+    void removeAllWatches();
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
     int columnCount(const QModelIndex &parent = QModelIndex()) const;

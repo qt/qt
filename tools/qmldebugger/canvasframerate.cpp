@@ -178,7 +178,6 @@ void QLineGraph::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-
     QRect r(50, 10, width() - 60, height() - 60);
     p.setBrush(QColor("lightsteelblue"));
     drawSample(&p, 0, r);
@@ -247,11 +246,10 @@ void CanvasFrameRatePlugin::messageReceived(const QByteArray &data)
     ld = d;
 }
 
-CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
-: QWidget(parent)
+CanvasFrameRate::CanvasFrameRate(QWidget *parent)
+: QWidget(parent),
+  m_plugin(0)
 {
-    m_plugin = new CanvasFrameRatePlugin(client);
-
     QVBoxLayout *layout = new QVBoxLayout;
     layout->setContentsMargins(0,0,0,0);
     layout->setSpacing(0);
@@ -261,7 +259,8 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
     layout->addWidget(m_tabs);
 
     QHBoxLayout *bottom = new QHBoxLayout;
-    bottom->setSpacing(5);
+    bottom->setContentsMargins(5, 0, 5, 0);
+    bottom->setSpacing(10);
     layout->addLayout(bottom);
 
     QLabel *label = new QLabel("Resolution", this);
@@ -275,15 +274,51 @@ CanvasFrameRate::CanvasFrameRate(QmlDebugConnection *client, QWidget *parent)
 
     bottom->addStretch(2);
 
-    QCheckBox *check = new QCheckBox("Enable", this);
-    bottom->addWidget(check);
-    QObject::connect(check, SIGNAL(stateChanged(int)), 
-                     this, SLOT(stateChanged(int)));
+    m_enabledCheckBox = new QCheckBox("Enable", this);
+    bottom->addWidget(m_enabledCheckBox);
+    QObject::connect(m_enabledCheckBox, SIGNAL(stateChanged(int)), 
+                     this, SLOT(enabledStateChanged(int)));
 
     QPushButton *pb = new QPushButton(tr("New Tab"), this);
     QObject::connect(pb, SIGNAL(clicked()), this, SLOT(newTab()));
     bottom->addWidget(pb);
+}
 
+void CanvasFrameRate::reset(QmlDebugConnection *conn)
+{
+    delete m_plugin;
+    m_plugin = 0;
+
+    QWidget *w;
+    for (int i=0; i<m_tabs->count(); i++) {
+        w = m_tabs->widget(i);
+        m_tabs->removeTab(i);
+        delete w;
+    }
+
+    if (conn) {
+        connect(conn, SIGNAL(stateChanged(QAbstractSocket::SocketState)),
+                SLOT(connectionStateChanged(QAbstractSocket::SocketState)));
+        if (conn->state() == QAbstractSocket::ConnectedState)
+            handleConnected(conn);
+    }
+}
+
+void CanvasFrameRate::connectionStateChanged(QAbstractSocket::SocketState state)
+{
+    if (state == QAbstractSocket::UnconnectedState) {
+        delete m_plugin;
+        m_plugin = 0;
+    } else if (state == QAbstractSocket::ConnectedState) {
+        handleConnected(qobject_cast<QmlDebugConnection*>(sender()));
+    }        
+}
+
+void CanvasFrameRate::handleConnected(QmlDebugConnection *conn)
+{
+    delete m_plugin;
+    m_plugin = new CanvasFrameRatePlugin(conn);
+    enabledStateChanged(m_enabledCheckBox->checkState());
     newTab();
 }
 
@@ -299,6 +334,9 @@ QSize CanvasFrameRate::sizeHint() const
 
 void CanvasFrameRate::newTab()
 {
+    if (!m_plugin)
+        return;
+
     if (m_tabs->count()) {
         QWidget *w = m_tabs->widget(m_tabs->count() - 1);
         QObject::disconnect(m_plugin, SIGNAL(sample(int,int,int,bool)),
@@ -317,11 +355,12 @@ void CanvasFrameRate::newTab()
     m_tabs->setCurrentIndex(id);
 }
 
-void CanvasFrameRate::stateChanged(int s)
+void CanvasFrameRate::enabledStateChanged(int s)
 {
     bool checked = s != 0;
 
-    static_cast<QmlDebugClient *>(m_plugin)->setEnabled(checked);
+    if (m_plugin)
+        static_cast<QmlDebugClient *>(m_plugin)->setEnabled(checked);
 }
 
 QT_END_NAMESPACE

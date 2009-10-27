@@ -17,28 +17,25 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
       m_client(client),
       m_query(0),
       m_textEdit(new QTextEdit),
-      m_lineEdit(0),
-      m_button(0)
+      m_lineEdit(0)
 {
     m_prompt = QLatin1String(">> ");
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(0);
+    layout->setSpacing(0);
     layout->addWidget(m_textEdit);
 
     updateTitle();
 
     if (m_style == Compact) {
-        QHBoxLayout *hbox = new QHBoxLayout;
-        m_button = new QPushButton(tr("Query"));
-        m_button->setEnabled(false);
-        connect(m_button, SIGNAL(clicked()), SLOT(executeExpression()));
         m_lineEdit = new QLineEdit;
         connect(m_lineEdit, SIGNAL(returnPressed()), SLOT(executeExpression()));
-        connect(m_lineEdit, SIGNAL(textChanged(QString)), SLOT(lineEditTextChanged(QString)));
+        QHBoxLayout *hbox = new QHBoxLayout;
+        hbox->setMargin(5);
+        hbox->setSpacing(5);
         hbox->addWidget(new QLabel(tr("Expression:")));
         hbox->addWidget(m_lineEdit);
-        hbox->addWidget(m_button);
         layout->addLayout(hbox);
 
         m_textEdit->setReadOnly(true);
@@ -51,6 +48,12 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
 void ExpressionQueryWidget::setEngineDebug(QmlEngineDebug *client)
 {
     m_client = client;
+}
+
+void ExpressionQueryWidget::clear()
+{
+    m_textEdit->clear();
+    m_lineEdit->clear();
 }
 
 void ExpressionQueryWidget::updateTitle()
@@ -151,12 +154,6 @@ void ExpressionQueryWidget::showResult()
         appendPrompt();
         m_expr.clear();
     }
-}
-
-void ExpressionQueryWidget::lineEditTextChanged(const QString &s)
-{
-    if (m_button)
-        m_button->setEnabled(!s.isEmpty());
 }
 
 bool ExpressionQueryWidget::eventFilter(QObject *obj, QEvent *event)
