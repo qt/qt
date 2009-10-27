@@ -234,9 +234,9 @@ public:
     QStringList watching;
     QFileSystemModel *model;
 
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     QFSCompleter *completer;
-#endif //QT_NO_COMPLETER
+#endif //QT_NO_FSCOMPLETER
 
     QFileDialog::FileMode fileMode;
     QFileDialog::AcceptMode acceptMode;
