@@ -45,6 +45,7 @@
 #include <QtGui/qgraphicswidget.h>
 #include <QtGui/qgraphicsproxywidget.h>
 #include <QtGui/qgraphicsview.h>
+#include <QtGui/qwindowsstyle.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT;
@@ -72,6 +73,7 @@ private slots:
     void proportionalPreferred();
     void example();
     void setSpacing();
+    void styleDefaults();
     void hardComplexS60();
     void stability();
     void delete_anchor();
@@ -1101,6 +1103,166 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     delete p;
     delete view;
 }
+
+class CustomLayoutStyle : public QWindowsStyle
+{
+    Q_OBJECT
+public:
+    CustomLayoutStyle() : QWindowsStyle()
+    {
+        hspacing = 5;
+        vspacing = 10;
+    }
+
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
+                            const QWidget * widget = 0 ) const;
+
+    int hspacing;
+    int vspacing;
+
+protected slots:
+    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
+                                    QSizePolicy::ControlType control2,
+                                    Qt::Orientation orientation,
+                                    const QStyleOption *option = 0,
+                                    const QWidget *widget = 0) const;
+
+};
+
+#define CT1(c) CT2(c, c)
+#define CT2(c1, c2) ((uint)c1 << 16) | (uint)c2
+
+int CustomLayoutStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
+                                QSizePolicy::ControlType control2,
+                                Qt::Orientation orientation,
+                                const QStyleOption * /*option = 0*/,
+                                const QWidget * /*widget = 0*/) const
+{
+    if (orientation == Qt::Horizontal) {
+        switch (CT2(control1, control2)) {
+            case CT1(QSizePolicy::PushButton):
+                return 2;
+                break;
+        }
+        return 5;
+    } else {
+        switch (CT2(control1, control2)) {
+            case CT1(QSizePolicy::RadioButton):
+                return 2;
+                break;
+
+        }
+        return 10;
+    }
+}
+
+int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
+                                   const QWidget * widget /*= 0*/ ) const
+{
+    switch (metric) {
+        case PM_LayoutLeftMargin:
+            return 0;
+        break;
+        case PM_LayoutTopMargin:
+            return 3;
+        break;
+        case PM_LayoutRightMargin:
+            return 6;
+        break;
+        case PM_LayoutBottomMargin:
+            return 9;
+        break;
+        case PM_LayoutHorizontalSpacing:
+            return hspacing;
+        case PM_LayoutVerticalSpacing:
+            return vspacing;
+        break;
+        default:
+            break;
+    }
+    return QWindowsStyle::pixelMetric(metric, option, widget);
+}
+
+void tst_QGraphicsAnchorLayout::styleDefaults()
+{
+    QSizeF min (10, 10);
+    QSizeF pref(20, 20);
+    QSizeF max (50, 50);
+
+    /* 
+    create this layout, where a,b have controlType QSizePolicy::RadioButton
+    c,d have controlType QSizePolicy::PushButton:
+    +-------+
+    |a      |
+    |  b    |
+    |    c  |
+    |      d|
+    +-------+
+    */
+    QGraphicsScene scene;
+    QGraphicsWidget *a = createItem(min, pref, max);
+    QSizePolicy spRadioButton = a->sizePolicy();
+    spRadioButton.setControlType(QSizePolicy::RadioButton);
+    a->setSizePolicy(spRadioButton);
+
+    QGraphicsWidget *b = createItem(min, pref, max);
+    b->setSizePolicy(spRadioButton);
+
+    QGraphicsWidget *c = createItem(min, pref, max);
+    QSizePolicy spPushButton = c->sizePolicy();
+    spPushButton.setControlType(QSizePolicy::PushButton);
+    c->setSizePolicy(spPushButton);
+
+    QGraphicsWidget *d = createItem(min, pref, max);
+    d->setSizePolicy(spPushButton);
+
+    QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
+
+    // Test layoutSpacingImplementation
+    CustomLayoutStyle *style = new CustomLayoutStyle;
+    style->hspacing = -1;
+    style->vspacing = -1;
+    window->setStyle(style);
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+
+    l->addCornerAnchors(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
+    l->addCornerAnchors(a, Qt::BottomRightCorner, b, Qt::TopLeftCorner);
+    l->addCornerAnchors(b, Qt::BottomRightCorner, c, Qt::TopLeftCorner);
+    l->addCornerAnchors(c, Qt::BottomRightCorner, d, Qt::TopLeftCorner);
+    l->addCornerAnchors(d, Qt::BottomRightCorner, l, Qt::BottomRightCorner);
+
+    window->setLayout(l);
+
+    scene.addItem(window);
+
+    window->show();
+    QGraphicsView *view = new QGraphicsView(&scene);
+    view->resize(200, 200);
+    view->show();
+
+    window->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));    //radio
+    QCOMPARE(b->geometry(), QRectF(25, 25, 20, 20));    //radio
+    QCOMPARE(c->geometry(), QRectF(50, 55, 20, 20));    //push
+    QCOMPARE(d->geometry(), QRectF(72, 85, 20, 20));    //push
+    QCOMPARE(l->geometry(), QRectF(0,   0, 98, 114));
+
+
+    // Test pixelMetric(PM_Layout{Horizontal|Vertical}Spacing
+    window->setStyle(0);
+
+    style->hspacing = 1;
+    style->vspacing = 2;
+
+    window->setStyle(style);
+    window->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));
+    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));     
+    QCOMPARE(c->geometry(), QRectF(42, 47, 20, 20));
+    QCOMPARE(d->geometry(), QRectF(63, 69, 20, 20));
+    QCOMPARE(l->geometry(), QRectF(0,   0, 89, 98));
+}
+
 
 /*!
     Taken from "hard" complex case, found at

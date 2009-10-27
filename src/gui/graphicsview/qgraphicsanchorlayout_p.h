@@ -159,7 +159,7 @@ struct AnchorData : public QSimplexVariable {
           type(Normal), hasSize(true), isLayoutAnchor(false) {}
 
     virtual void updateChildrenSizes() {}
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
     virtual ~AnchorData() {}
 
@@ -226,9 +226,9 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+    void refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -261,9 +261,9 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+    void refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -423,9 +423,8 @@ public:
                               Qt::AnchorPoint &firstEdge,
                               QGraphicsLayoutItem *&secondItem,
                               Qt::AnchorPoint &secondEdge);
-    // for getting the actual spacing (will query the style if the
-    // spacing is not explicitly set).
-    qreal effectiveSpacing(Orientation orientation) const;
+
+    QLayoutStyleInfo &styleInfo() const;
 
     // Activation methods
     void simplifyGraph(Orientation orientation);
@@ -524,6 +523,8 @@ public:
 #endif
 
     uint calculateGraphCacheDirty : 1;
+    mutable uint styleInfoDirty : 1;
+    mutable QLayoutStyleInfo cachedStyleInfo;
 
     friend class QGraphicsAnchorPrivate;
 };

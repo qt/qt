@@ -400,7 +400,7 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 qreal QGraphicsAnchorLayout::horizontalSpacing() const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Horizontal);
+    return d->styleInfo().defaultSpacing(Qt::Horizontal);
 }
 
 /*!
@@ -411,7 +411,7 @@ qreal QGraphicsAnchorLayout::horizontalSpacing() const
 qreal QGraphicsAnchorLayout::verticalSpacing() const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Vertical);
+    return d->styleInfo().defaultSpacing(Qt::Vertical);
 }
 
 /*!
@@ -481,7 +481,8 @@ void QGraphicsAnchorLayout::invalidate()
 {
     Q_D(QGraphicsAnchorLayout);
     QGraphicsLayout::invalidate();
-    d->calculateGraphCacheDirty = 1;
+    d->calculateGraphCacheDirty = true;
+    d->styleInfoDirty = true;
 }
 
 /*!

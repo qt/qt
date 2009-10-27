@@ -141,7 +141,7 @@ static void internalSizeHints(QSizePolicy::Policy policy,
         *expSize = *prefSize;
 }
 
-void AnchorData::refreshSizeHints(qreal effectiveSpacing)
+void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 {
     const bool isInternalAnchor = from->m_item == to->m_item;
 
@@ -196,7 +196,20 @@ void AnchorData::refreshSizeHints(qreal effectiveSpacing)
             // their effective size hints might be narrowed down due to their size policies.
             prefSizeHint = prefSize;
         } else {
-            prefSizeHint = effectiveSpacing;
+            const Qt::Orientation orient = Qt::Orientation(QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge) + 1);
+            qreal s = styleInfo->defaultSpacing(orient);
+            if (s < 0) {
+                QSizePolicy::ControlType controlTypeFrom = from->m_item->sizePolicy().controlType();
+                QSizePolicy::ControlType controlTypeTo = to->m_item->sizePolicy().controlType();
+                s = styleInfo->perItemSpacing(controlTypeFrom, controlTypeTo, orient);
+
+                // ### Currently we do not support negative anchors inside the graph.
+                // To avoid those being created by a negative style spacing, we must
+                // make this test.
+                if (s < 0)
+                    s = 0;
+            }
+            prefSizeHint = s;
         }
         maxSizeHint = QWIDGETSIZE_MAX;
     }
@@ -227,17 +240,17 @@ void ParallelAnchorData::updateChildrenSizes()
     secondEdge->updateChildrenSizes();
 }
 
-void ParallelAnchorData::refreshSizeHints(qreal effectiveSpacing)
+void ParallelAnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 {
-    refreshSizeHints_helper(effectiveSpacing);
+    refreshSizeHints_helper(styleInfo);
 }
 
-void ParallelAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+void ParallelAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo,
                                                  bool refreshChildren)
 {
     if (refreshChildren) {
-        firstEdge->refreshSizeHints(effectiveSpacing);
-        secondEdge->refreshSizeHints(effectiveSpacing);
+        firstEdge->refreshSizeHints(styleInfo);
+        secondEdge->refreshSizeHints(styleInfo);
     }
 
     // ### should we warn if the parallel connection is invalid?
@@ -362,12 +375,12 @@ void SequentialAnchorData::updateChildrenSizes()
     }
 }
 
-void SequentialAnchorData::refreshSizeHints(qreal effectiveSpacing)
+void SequentialAnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 {
-    refreshSizeHints_helper(effectiveSpacing);
+    refreshSizeHints_helper(styleInfo);
 }
 
-void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
+void SequentialAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo,
                                                    bool refreshChildren)
 {
     minSize = 0;
@@ -380,7 +393,7 @@ void SequentialAnchorData::refreshSizeHints_helper(qreal effectiveSpacing,
 
         // If it's the case refresh children information first
         if (refreshChildren)
-            edge->refreshSizeHints(effectiveSpacing);
+            edge->refreshSizeHints(styleInfo);
 
         minSize += edge->minSize;
         prefSize += edge->prefSize;
@@ -458,7 +471,7 @@ QString GraphPath::toString() const
 #endif
 
 QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
-    : calculateGraphCacheDirty(1)
+    : calculateGraphCacheDirty(true), styleInfoDirty(true)
 {
     for (int i = 0; i < NOrientations; ++i) {
         for (int j = 0; j < 3; ++j) {
@@ -1565,34 +1578,32 @@ void QGraphicsAnchorLayoutPrivate::correctEdgeDirection(QGraphicsLayoutItem *&fi
     }
 }
 
-qreal QGraphicsAnchorLayoutPrivate::effectiveSpacing(Orientation orientation) const
+QLayoutStyleInfo &QGraphicsAnchorLayoutPrivate::styleInfo() const
 {
-    Q_Q(const QGraphicsAnchorLayout);
-    qreal s = spacings[orientation];
-    if (s < 0) {
-        // ### make sure behaviour is the same as in QGraphicsGridLayout
+    if (styleInfoDirty) {
+        Q_Q(const QGraphicsAnchorLayout);
+        //### Fix this if QGV ever gets support for Metal style or different Aqua sizes.
+        QWidget *wid = 0;
+
         QGraphicsLayoutItem *parent = q->parentLayoutItem();
         while (parent && parent->isLayout()) {
             parent = parent->parentLayoutItem();
         }
+        QGraphicsWidget *w = 0;
         if (parent) {
             QGraphicsItem *parentItem = parent->graphicsItem();
-            if (parentItem && parentItem->isWidget()) {
-                QGraphicsWidget *w = static_cast<QGraphicsWidget*>(parentItem);
-                s = w->style()->pixelMetric(orientation == Horizontal
-                                            ? QStyle::PM_LayoutHorizontalSpacing
-                                            : QStyle::PM_LayoutVerticalSpacing);
-            }
+            if (parentItem && parentItem->isWidget())
+                w = static_cast<QGraphicsWidget*>(parentItem);
         }
+
+        QStyle *style = w ? w->style() : QApplication::style();
+        cachedStyleInfo = QLayoutStyleInfo(style, wid);
+        cachedStyleInfo.setDefaultSpacing(Qt::Horizontal, spacings[0]);
+        cachedStyleInfo.setDefaultSpacing(Qt::Vertical, spacings[1]);
+
+        styleInfoDirty = false;
     }
-
-    // ### Currently we do not support negative anchors inside the graph.
-    // To avoid those being created by a negative style spacing, we must
-    // make this test.
-    if (s < 0)
-        s = 0;
-
-    return s;
+    return cachedStyleInfo;
 }
 
 /*!
@@ -1620,7 +1631,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
     dumpGraph(QString::fromAscii("%1-after").arg(count));
 #endif
 
-    calculateGraphCacheDirty = 0;
+    calculateGraphCacheDirty = false;
 }
 
 // ### Maybe getGraphParts could return the variables when traversing, at least
@@ -1847,12 +1858,11 @@ void QGraphicsAnchorLayoutPrivate::setAnchorSizeHintsFromItems(Orientation orien
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     QList<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
 
-    qreal spacing = effectiveSpacing(orientation);
-
+    QLayoutStyleInfo styleInf = styleInfo();
     for (int i = 0; i < vertices.count(); ++i) {
         AnchorData *data = g.edgeData(vertices.at(i).first, vertices.at(i).second);;
         Q_ASSERT(data->from && data->to);
-        data->refreshSizeHints(spacing);
+        data->refreshSizeHints(&styleInf);
     }
 }
 
