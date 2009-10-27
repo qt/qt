@@ -332,7 +332,7 @@ public:
         return src.adjusted(-10, -10, 10, 10);
     }
 
-    void draw(QPainter *p, QGraphicsEffectSource *source) {
+    void draw(QPainter *, QGraphicsEffectSource *source) {
         pix = source->pixmap(coordinateMode, &offset, padMode);
     }
 
@@ -351,7 +351,7 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
     QTest::addColumn<uint>("ulPixel");
 
     QTest::newRow("log,nopad") << int(Qt::LogicalCoordinates)
-                               << int(QGraphicsEffectSource::NoPadMode)
+                               << int(QGraphicsEffectSource::NoExpandPadMode)
                                << QSize(10, 10) << QPoint(0, 0)
                                << 0xffff0000u;
 
@@ -366,7 +366,7 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
                                     << 0x00000000u;
 
     QTest::newRow("dev,nopad") << int(Qt::DeviceCoordinates)
-                               << int(QGraphicsEffectSource::NoPadMode)
+                               << int(QGraphicsEffectSource::NoExpandPadMode)
                                << QSize(20, 20) << QPoint(40, 40)
                                << 0xffff0000u;
 
