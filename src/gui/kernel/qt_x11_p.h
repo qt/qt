@@ -428,6 +428,7 @@ struct QX11Data
 
     // true if Qt is compiled w/ MIT-SHM support and MIT-SHM is supported on the connected Display
     bool use_mitshm;
+    bool use_mitshm_pixmaps;
     int mitshm_major;
 
     // true if Qt is compiled w/ Tablet support and we have a tablet.
