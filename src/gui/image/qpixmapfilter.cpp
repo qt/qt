@@ -506,7 +506,7 @@ class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
 public:
     QPixmapBlurFilterPrivate() : radius(5), hint(Qt::PerformanceHint) {}
 
-    int radius;
+    qreal radius;
     Qt::RenderHint hint;
 };
 
@@ -535,7 +535,7 @@ QPixmapBlurFilter::~QPixmapBlurFilter()
 
     \internal
 */
-void QPixmapBlurFilter::setRadius(int radius)
+void QPixmapBlurFilter::setRadius(qreal radius)
 {
     Q_D(QPixmapBlurFilter);
     d->radius = radius;
@@ -546,7 +546,7 @@ void QPixmapBlurFilter::setRadius(int radius)
 
     \internal
 */
-int QPixmapBlurFilter::radius() const
+qreal QPixmapBlurFilter::radius() const
 {
     Q_D(const QPixmapBlurFilter);
     return d->radius;
@@ -668,7 +668,7 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     if (!painter->isActive())
         return;
 
-    if (d->radius == 0) {
+    if (d->radius <= 0) {
         painter->drawPixmap(srcRect.translated(p), src, srcRect);
         return;
     }
@@ -688,12 +688,12 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
 
     if (srcRect.isNull()) {
         srcImage = src.toImage();
-        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+        destImage = blurred(srcImage, srcImage.rect(), qRound(d->radius));
     } else {
         QRect rect = srcRect.toAlignedRect().intersected(src.rect());
 
         srcImage = src.copy(rect).toImage();
-        destImage = blurred(srcImage, srcImage.rect(), d->radius);
+        destImage = blurred(srcImage, srcImage.rect(), qRound(d->radius));
     }
 
     painter->drawImage(p, destImage);
@@ -902,7 +902,7 @@ public:
 
     QPointF offset;
     QColor color;
-    int radius;
+    qreal radius;
 };
 
 /*!
@@ -966,7 +966,7 @@ QPixmapDropShadowFilter::~QPixmapDropShadowFilter()
 
     \internal
 */
-int QPixmapDropShadowFilter::blurRadius() const
+qreal QPixmapDropShadowFilter::blurRadius() const
 {
     Q_D(const QPixmapDropShadowFilter);
     return d->radius;
@@ -981,7 +981,7 @@ int QPixmapDropShadowFilter::blurRadius() const
 
     \internal
 */
-void QPixmapDropShadowFilter::setBlurRadius(int radius)
+void QPixmapDropShadowFilter::setBlurRadius(qreal radius)
 {
     Q_D(QPixmapDropShadowFilter);
     d->radius = radius;
@@ -1090,7 +1090,7 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
     QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toAlignedRect()).toImage();
 
     // blur the alpha channel
-    tmp = blurred(tmp, tmp.rect(), d->radius, true);
+    tmp = blurred(tmp, tmp.rect(), qRound(d->radius), true);
 
     // blacken the image...
     QPainter tmpPainter(&tmp);
