@@ -3527,27 +3527,55 @@ static void fillBackgroundRect(const QRect& rect, QVGPaintEnginePrivate *d)
 void QVGCompositionHelper::fillBackground
     (const QRegion& region, const QBrush& brush)
 {
-    // Set the path transform to the default viewport transformation.
-    VGfloat devh = screenSize.height() - 1;
-    QTransform viewport(1.0f, 0.0f, 0.0f,
-                        0.0f, -1.0f, 0.0f,
-                        0.5f, devh + 0.5f, 1.0f);
-    d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
+    if (brush.style() == Qt::SolidPattern) {
+        // Use vgClear() to quickly fill the background.
+        QColor color = brush.color();
+        if (d->clearColor != color || d->clearOpacity != 1.0f) {
+            VGfloat values[4];
+            values[0] = color.redF();
+            values[1] = color.greenF();
+            values[2] = color.blueF();
+            values[3] = color.alphaF();
+            vgSetfv(VG_CLEAR_COLOR, 4, values);
+            d->clearColor = color;
+            d->clearOpacity = 1.0f;
+        }
+        if (region.numRects() == 1) {
+            QRect r = region.boundingRect();
+            vgClear(r.x(), screenSize.height() - r.y() - r.height(),
+                    r.width(), r.height());
+        } else {
+            const QVector<QRect> rects = region.rects();
+            for (int i = 0; i < rects.size(); ++i) {
+                QRect r = rects.at(i);
+                vgClear(r.x(), screenSize.height() - r.y() - r.height(),
+                        r.width(), r.height());
+            }
+        }
 
-    // Set the brush to use to fill the background.
-    d->ensureBrush(brush);
-    d->setFillRule(VG_EVEN_ODD);
-
-    if (region.numRects() == 1) {
-        fillBackgroundRect(region.boundingRect(), d);
     } else {
-        const QVector<QRect> rects = region.rects();
-        for (int i = 0; i < rects.size(); ++i)
-            fillBackgroundRect(rects.at(i), d);
-    }
+        // Set the path transform to the default viewport transformation.
+        VGfloat devh = screenSize.height() - 1;
+        QTransform viewport(1.0f, 0.0f, 0.0f,
+                            0.0f, -1.0f, 0.0f,
+                            0.5f, devh + 0.5f, 1.0f);
+        d->setTransform(VG_MATRIX_PATH_USER_TO_SURFACE, viewport);
 
-    // We will need to reset the path transform during the next paint.
-    d->pathTransformSet = false;
+        // Set the brush to use to fill the background.
+        d->ensureBrush(brush);
+        d->setFillRule(VG_EVEN_ODD);
+
+        if (region.numRects() == 1) {
+            fillBackgroundRect(region.boundingRect(), d);
+        } else {
+            const QVector<QRect> rects = region.rects();
+            for (int i = 0; i < rects.size(); ++i)
+                fillBackgroundRect(rects.at(i), d);
+        }
+
+        // We will need to reset the path transform during the next paint.
+        d->pathTransformSet = false;
+    }
 }
 
 void QVGCompositionHelper::drawCursorImage
