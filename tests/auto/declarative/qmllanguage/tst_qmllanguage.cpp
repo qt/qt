@@ -7,6 +7,9 @@
 #include <QtCore/qdir.h>
 #include "testtypes.h"
 
+#include "../../../shared/util.h"
+#include "../../network-settings.h"
+
 /*
 This test case covers QML language issues.  This covers everything that does 
 involve evaluating ECMAScript expressions and bindings.
@@ -69,6 +72,8 @@ private slots:
     void importsBuiltin();
     void importsLocal_data();
     void importsLocal();
+    void importsRemote_data();
+    void importsRemote();
     void importsInstalled_data();
     void importsInstalled();
     void importsOrder_data();
@@ -773,6 +778,8 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 {
     QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
 
+    QTRY_VERIFY(!component.isLoading());
+
     if (type.isEmpty()) {
         QVERIFY(component.isError());
     } else {
@@ -921,6 +928,27 @@ void tst_qmllanguage::importsLocal_data()
 }
 
 void tst_qmllanguage::importsLocal()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
+}
+
+void tst_qmllanguage::importsRemote_data()
+{
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
+
+    QString serverdir = "http://"
+            + QtNetworkSettings::serverName()
+            + "/qtest/declarative/qmllanguage";
+
+    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QFxRect";
+    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QFxText";
+    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QFxImage";
+}
+
+void tst_qmllanguage::importsRemote()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
