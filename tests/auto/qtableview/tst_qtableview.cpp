@@ -2017,8 +2017,9 @@ void tst_QTableView::resizeRowsToContents()
     view.resizeRowsToContents();
 
     QCOMPARE(resizedSpy.count(), model.rowCount());
-    for (int r = 0; r < model.rowCount(); ++r)
+    for (int r = 0; r < model.rowCount(); ++r) {
         QCOMPARE(view.rowHeight(r), rowHeight);
+    }
 }
 
 void tst_QTableView::resizeColumnsToContents_data()
@@ -3267,12 +3268,12 @@ void tst_QTableView::resizeToContents()
 
     //now let's check the row/col sizes
     for(int i = 0;i<table.columnCount();i++) {
-        QVERIFY( table.columnWidth(i) == table2.columnWidth(i));
-        QVERIFY( table2.columnWidth(i) == table3.columnWidth(i));
+        QCOMPARE( table.columnWidth(i), table2.columnWidth(i));
+        QCOMPARE( table2.columnWidth(i), table3.columnWidth(i));
     }
     for(int i = 0;i<table.rowCount();i++) {
-        QVERIFY( table.rowHeight(i) == table2.rowHeight(i));
-        QVERIFY( table2.rowHeight(i) == table3.rowHeight(i));
+        QCOMPARE( table.rowHeight(i), table2.rowHeight(i));
+        QCOMPARE( table2.rowHeight(i), table3.rowHeight(i));
     }
 
 }
