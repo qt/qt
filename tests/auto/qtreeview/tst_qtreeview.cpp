@@ -235,6 +235,7 @@ private slots:
     void task254234_proxySort();
     void task248022_changeSelection();
     void task245654_changeModelAndExpandAll();
+    void doubleClickedWithSpans();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -3544,6 +3545,34 @@ void tst_QTreeView::task245654_changeModelAndExpandAll()
 
 }
 
+void tst_QTreeView::doubleClickedWithSpans()
+{
+    QTreeView view;
+    QStandardItemModel model(1, 2);
+    view.setModel(&model);
+    view.setFirstColumnSpanned(0, QModelIndex(), true);
+    view.show();
+
+    QPoint p(10, 10);
+    QCOMPARE(view.indexAt(p), model.index(0, 0));
+    QSignalSpy spy(&view, SIGNAL(doubleClicked(QModelIndex)));
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(spy.count(), 1);
+
+    //let's click on the 2nd column
+    p.setX(p.x() + view.header()->sectionSize(0));
+    QCOMPARE(view.indexAt(p), model.index(0, 0));
+
+    //end the previous edition
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::qWait(100);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(spy.count(), 2);
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

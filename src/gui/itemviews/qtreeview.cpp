@@ -1840,9 +1840,7 @@ void QTreeView::mouseDoubleClickEvent(QMouseEvent *event)
             return; // user clicked outside the items
 
         const QPersistentModelIndex firstColumnIndex = d->viewItems.at(i).index;
-
-        int column = d->header->logicalIndexAt(event->x());
-        QPersistentModelIndex persistent = firstColumnIndex.sibling(firstColumnIndex.row(), column);
+        const QPersistentModelIndex persistent = indexAt(event->pos());
 
         if (d->pressedIndex != persistent) {
             mousePressEvent(event);
