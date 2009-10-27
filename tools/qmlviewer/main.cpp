@@ -28,6 +28,7 @@ void usage()
     qWarning("  -frameless ............................... run with no window frame");
     qWarning("  -maximized................................ run maximized");
     qWarning("  -fullscreen............................... run fullscreen");
+    qWarning("  -stayontop................................ keep viewer window on top");
     qWarning("  -skin <qvfbskindir> ...................... run with a skin window frame");
     qWarning("                                             \"list\" for a list of built-ins");
     qWarning("  -resizeview .............................. resize the view, not the skin");
@@ -105,6 +106,7 @@ int main(int argc, char ** argv)
     QString translationFile;
     bool useGL = false;
     bool fullScreen = false;
+    bool stayOnTop = false;
     bool maximized = false;
 
     for (int i = 1; i < argc; ++i) {
@@ -116,6 +118,8 @@ int main(int argc, char ** argv)
             maximized = true;
         } else if (arg == "-fullscreen") {
             fullScreen = true;
+        } else if (arg == "-stayontop") {
+            stayOnTop = true;
         } else if (arg == "-skin") {
             if (lastArg) usage();
             skin = QString(argv[++i]);
@@ -183,9 +187,12 @@ int main(int argc, char ** argv)
         app.installTranslator(&qmlTranslator);
     }
 
-    QmlViewer viewer(0, frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    Qt::WFlags wflags = (frameless ? Qt::FramelessWindowHint : Qt::Widget);
+    if (stayOnTop)
+        wflags |= Qt::WindowStaysOnTopHint;
+        
+    QmlViewer viewer(0, wflags);
     if (!scriptopts.isEmpty()) {
-
         QStringList options = 
             scriptopts.split(QLatin1Char(','), QString::SkipEmptyParts);
 

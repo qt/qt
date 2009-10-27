@@ -1,8 +1,10 @@
-DESTDIR = ../../bin
+TEMPLATE = subdirs
+CONFIG += ordered
 
-include(qmldebugger.pri)
+SUBDIRS = standalone
 
-target.path=$$[QT_INSTALL_BINS]
-INSTALLS += target
-
-CONFIG += console
+CREATOR_SRC = $$(CREATOR_SRC_DIR)
+CREATOR_BUILD = $$(CREATOR_BUILD_DIR)
+!isEmpty(CREATOR_SRC):!isEmpty(CREATOR_BUILD) {
+    SUBDIRS += creatorplugin
+}

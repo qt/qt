@@ -18,6 +18,7 @@ public:
     ObjectPropertiesView(QmlEngineDebug *client = 0, QWidget *parent = 0);
 
     void setEngineDebug(QmlEngineDebug *client);
+    void clear();
     
 signals:
     void activated(const QmlDebugObjectReference &, const QmlDebugPropertyReference &);
