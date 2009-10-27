@@ -715,6 +715,7 @@ void tst_Gestures::graphicsItemGesture()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
     GestureItem *item = new GestureItem("item");
     scene.addItem(item);
@@ -777,6 +778,7 @@ void tst_Gestures::graphicsItemTreeGesture()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
     GestureItem *item1 = new GestureItem("item1");
     item1->setPos(100, 100);
@@ -834,6 +836,7 @@ void tst_Gestures::explicitGraphicsObjectTarget()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
     GestureItem *item1 = new GestureItem("item1");
     scene.addItem(item1);
@@ -887,6 +890,7 @@ void tst_Gestures::gestureOverChildGraphicsItem()
 {
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
     GestureItem *item0 = new GestureItem("item0");
     scene.addItem(item0);
@@ -1168,6 +1172,7 @@ void tst_Gestures::testMapToScene()
 
     QGraphicsScene scene;
     QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
 
     GestureItem *item0 = new GestureItem;
     scene.addItem(item0);
