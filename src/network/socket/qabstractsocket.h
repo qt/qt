@@ -216,6 +216,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_startConnecting(const QHostInfo &))
     Q_PRIVATE_SLOT(d_func(), void _q_abortConnectionAttempt())
     Q_PRIVATE_SLOT(d_func(), void _q_testConnection())
+    Q_PRIVATE_SLOT(d_func(), void _q_forceDisconnect())
 
 #ifdef QT3_SUPPORT
 public:
