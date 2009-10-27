@@ -41,7 +41,7 @@ Rectangle {
     // current item within the the bounds of the range, however
     // items will not scroll beyond the beginning or end of the view,
     // forcing the highlight to move outside the range at the ends.
-    // The third list sets strictlyEnforceHighlightRange to true
+    // The third list sets the highlightRangeMode to StrictlyEnforceRange
     // and sets a range smaller than the height of an item.  This
     // forces the current item to change when the view is flicked,
     // since the highlight is unable to move.
@@ -61,6 +61,7 @@ Rectangle {
         model: MyPetsModel; delegate: petDelegate; highlight: petHighlight
         preferredHighlightBegin: 80
         preferredHighlightEnd: 220
+        highlightRangeMode: "ApplyRange"
         currentIndex: list1.currentIndex
     }
     ListView {
@@ -69,7 +70,7 @@ Rectangle {
         model: MyPetsModel; delegate: petDelegate; highlight: petHighlight
         currentIndex: list1.currentIndex
         preferredHighlightBegin: 125
-        preferredHighlightEnd: 126
-        strictlyEnforceHighlightRange: true
+        preferredHighlightEnd: 125
+        highlightRangeMode: "StrictlyEnforceRange"
     }
 }

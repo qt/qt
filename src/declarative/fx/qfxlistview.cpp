@@ -176,9 +176,9 @@ public:
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
-        , highlightMoveSpeed(400), highlightResizeSpeed(400)
+        , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QFxListView::NoHighlightRange)
         , ownModel(false), wrap(false), autoHighlight(true)
-        , haveHighlightRange(false), strictHighlightRange(false)
+        , haveHighlightRange(false)
     {}
 
     void init();
@@ -392,12 +392,12 @@ public:
     qreal spacing;
     qreal highlightMoveSpeed;
     qreal highlightResizeSpeed;
+    QFxListView::HighlightRangeMode highlightRange;
 
     bool ownModel : 1;
     bool wrap : 1;
     bool autoHighlight : 1;
     bool haveHighlightRange : 1;
-    bool strictHighlightRange : 1;
 };
 
 void QFxListViewPrivate::init()
@@ -798,7 +798,7 @@ void QFxListViewPrivate::fixupY()
     if (orient == Qt::Horizontal)
         return;
 
-    if (haveHighlightRange && strictHighlightRange) {
+    if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
@@ -813,7 +813,7 @@ void QFxListViewPrivate::fixupX()
     if (orient == Qt::Vertical)
         return;
 
-    if (haveHighlightRange && strictHighlightRange) {
+    if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
@@ -1141,19 +1141,25 @@ void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 /*!
     \qmlproperty real ListView::preferredHighlightBegin
     \qmlproperty real ListView::preferredHighlightEnd
-    \qmlproperty bool ListView::strictlyEnforceHighlightRange
+    \qmlproperty bool ListView::highlightRangeMode
 
     These properties set the preferred range of the highlight (current item)
     within the view.
 
-    If the strictlyEnforceHighlightRange property is false (default)
+    If highlightRangeMode is set to \e ApplyRange the view will
+    attempt to maintain the highlight within the range, however
     the highlight can move outside of the range at the ends of the list
     or due to a mouse interaction.
 
-    If strictlyEnforceHighlightRange is true then the highlight will never
-    move outside the range.  This means that the current item will change
+    If highlightRangeMode is set to \e StrictlyEnforceRange the highlight will never
+    move outside of the range.  This means that the current item will change
     if a keyboard or mouse action would cause the highlight to move
     outside of the range.
+
+    The default value is \e NoHighlightRange.
+
+    Note that a valid range requires preferredHighlightEnd to be greater
+    than or equal to preferredHighlightBegin.
 */
 qreal QFxListView::preferredHighlightBegin() const
 {
@@ -1165,7 +1171,7 @@ void QFxListView::setPreferredHighlightBegin(qreal start)
 {
     Q_D(QFxListView);
     d->highlightRangeStart = start;
-    d->haveHighlightRange = d->highlightRangeStart < d->highlightRangeEnd;
+    d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
 
 qreal QFxListView::preferredHighlightEnd() const
@@ -1178,19 +1184,20 @@ void QFxListView::setPreferredHighlightEnd(qreal end)
 {
     Q_D(QFxListView);
     d->highlightRangeEnd = end;
-    d->haveHighlightRange = d->highlightRangeStart < d->highlightRangeEnd;
+    d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
 
-bool QFxListView::strictlyEnforceHighlightRange() const
+QFxListView::HighlightRangeMode QFxListView::highlightRangeMode() const
 {
     Q_D(const QFxListView);
-    return d->strictHighlightRange;
+    return d->highlightRange;
 }
 
-void QFxListView::setStrictlyEnforceHighlightRange(bool strict)
+void QFxListView::setHighlightRangeMode(HighlightRangeMode mode)
 {
     Q_D(QFxListView);
-    d->strictHighlightRange = strict;
+    d->highlightRange = mode;
+    d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
 
 /*!
@@ -1375,14 +1382,14 @@ void QFxListView::viewportMoved()
     if (isFlicking() || d->pressed)
         d->moveReason = QFxListViewPrivate::Mouse;
     if (d->moveReason == QFxListViewPrivate::Mouse) {
-        if (d->haveHighlightRange && d->strictHighlightRange && d->highlight) {
+        if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
             int idx = d->snapIndex();
             if (idx >= 0 && idx != d->currentIndex)
                 d->updateCurrent(idx);
 
             qreal pos = d->currentItem->position();
-            if (pos > d->position() + d->highlightRangeEnd - d->highlight->size())
-                pos = d->position() + d->highlightRangeEnd - d->highlight->size();
+            if (pos > d->position() + d->highlightRangeEnd - 1 - d->highlight->size())
+                pos = d->position() + d->highlightRangeEnd - 1 - d->highlight->size();
             if (pos < d->position() + d->highlightRangeStart)
                 pos = d->position() + d->highlightRangeStart;
             d->highlight->setPosition(pos);
@@ -1396,7 +1403,7 @@ qreal QFxListView::minYExtent() const
     if (d->orient == Qt::Horizontal)
         return QFxFlickable::minYExtent();
     qreal extent = -d->startPosition();
-    if (d->haveHighlightRange && d->strictHighlightRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
 
     return extent;
@@ -1408,8 +1415,8 @@ qreal QFxListView::maxYExtent() const
     if (d->orient == Qt::Horizontal)
         return QFxFlickable::maxYExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->strictHighlightRange)
-        extent = -(d->endPosition() - d->highlightRangeEnd);
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+        extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - height());
     qreal minY = minYExtent();
@@ -1424,7 +1431,7 @@ qreal QFxListView::minXExtent() const
     if (d->orient == Qt::Vertical)
         return QFxFlickable::minXExtent();
     qreal extent = -d->startPosition();
-    if (d->haveHighlightRange && d->strictHighlightRange)
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
 
     return extent;
@@ -1436,8 +1443,8 @@ qreal QFxListView::maxXExtent() const
     if (d->orient == Qt::Vertical)
         return QFxFlickable::maxXExtent();
     qreal extent;
-    if (d->haveHighlightRange && d->strictHighlightRange)
-        extent = -(d->endPosition() - d->highlightRangeEnd);
+    if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
+        extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
     else
         extent = -(d->endPosition() - width());
     qreal minX = minXExtent();
@@ -1536,7 +1543,7 @@ void QFxListView::trackedPositionChanged()
     if (!isFlicking() && !d->pressed && d->moveReason != QFxListViewPrivate::Mouse) {
         const qreal trackedPos = d->trackedItem->position();
         if (d->haveHighlightRange) {
-            if (d->strictHighlightRange) {
+            if (d->highlightRange == StrictlyEnforceRange) {
                 qreal pos = d->position();
                 if (trackedPos > pos + d->highlightRangeEnd - d->trackedItem->size())
                     pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
