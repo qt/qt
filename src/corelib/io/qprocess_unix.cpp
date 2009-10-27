@@ -108,6 +108,10 @@ QT_END_NAMESPACE
 
 QT_BEGIN_NAMESPACE
 
+// POSIX requires PIPE_BUF to be 512 or larger
+// so we will use 512
+static const int errorBufferMax = 512;
+
 #ifdef Q_OS_INTEGRITY
 static inline char *strdup(const char *data)
 {
@@ -752,18 +756,19 @@ void QProcessPrivate::execChild(const char *workingDir, char **path, char **argv
     }
 
     // notify failure
+    QString error = qt_error_string(errno);
 #if defined (QPROCESS_DEBUG)
-    fprintf(stderr, "QProcessPrivate::execChild() failed, notifying parent process\n");
+    fprintf(stderr, "QProcessPrivate::execChild() failed (%s), notifying parent process\n", qPrintable(error));
 #endif
-    qt_safe_write(childStartedPipe[1], "", 1);
+    qt_safe_write(childStartedPipe[1], error.data(), error.length() * sizeof(QChar));
     qt_safe_close(childStartedPipe[1]);
     childStartedPipe[1] = -1;
 }
 
 bool QProcessPrivate::processStarted()
 {
-    char c;
-    int i = qt_safe_read(childStartedPipe[0], &c, 1);
+    ushort buf[errorBufferMax];
+    int i = qt_safe_read(childStartedPipe[0], &buf, sizeof buf);
     if (startupSocketNotifier) {
         startupSocketNotifier->setEnabled(false);
         startupSocketNotifier->deleteLater();
@@ -775,6 +780,11 @@ bool QProcessPrivate::processStarted()
 #if defined (QPROCESS_DEBUG)
     qDebug("QProcessPrivate::processStarted() == %s", i <= 0 ? "true" : "false");
 #endif
+
+    // did we read an error message?
+    if (i > 0)
+        q_func()->setErrorString(QString::fromUtf16(buf, i / sizeof(QChar)));
+
     return i <= 0;
 }
 
