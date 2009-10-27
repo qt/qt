@@ -476,6 +476,8 @@ QmlEngine *qmlEngine(const QObject *obj)
 QObject *qmlAttachedPropertiesObjectById(int id, const QObject *object, bool create)
 {
     QmlDeclarativeData *data = QmlDeclarativeData::get(object);
+    if (!data)
+        return 0; // Attached properties are only on objects created by QML
 
     QObject *rv = data->attachedProperties?data->attachedProperties->value(id):0;
     if (rv || !create)

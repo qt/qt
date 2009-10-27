@@ -74,6 +74,8 @@ private slots:
     void importsOrder_data();
     void importsOrder();
 
+    void qmlAttachedPropertiesObjectMethod();
+
     // regression tests for crashes
     void crash1();
 
@@ -1010,6 +1012,34 @@ void tst_qmllanguage::importsOrder()
     QFETCH(QString, qml);
     QFETCH(QString, type);
     testType(qml,type);
+}
+
+void tst_qmllanguage::qmlAttachedPropertiesObjectMethod()
+{
+    QObject object;
+
+    QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(&object, false), (QObject *)0);
+    QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(&object, true), (QObject *)0);
+
+    {
+        QmlComponent component(&engine, TEST_FILE("qmlAttachedPropertiesObjectMethod.1.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QCOMPARE(qmlAttachedPropertiesObject<MyQmlObject>(object, false), (QObject *)0);
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, true) != 0);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("qmlAttachedPropertiesObjectMethod.2.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, false) != 0);
+        QVERIFY(qmlAttachedPropertiesObject<MyQmlObject>(object, true) != 0);
+    }
 }
 
 void tst_qmllanguage::crash1()
