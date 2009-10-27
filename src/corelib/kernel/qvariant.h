@@ -460,6 +460,7 @@ inline void qVariantSetValue(QVariant &v, const T &t)
     QVariant::Private &d = v.data_ptr();
     if (v.isDetached() && (type <= int(QVariant::Char) || type == d.type)) {
         d.type = type;
+        d.is_null = false;
         T *old = reinterpret_cast<T*>(d.is_shared ? d.data.shared->ptr : &d.data.ptr);
         if (QTypeInfo<T>::isComplex)
             old->~T();

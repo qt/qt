@@ -318,6 +318,14 @@ void tst_QVariant::constructor()
     QVariant var6(qlonglong(0));
     QCOMPARE(var6.type(), QVariant::LongLong);
     QCOMPARE(var6.typeName(), "qlonglong");
+
+    QVariant var7 = 5;
+    QVERIFY(var7.isValid());
+    QVERIFY(!var7.isNull());
+    QVariant var8;
+    var8.setValue<int>(5);
+    QVERIFY(var8.isValid());
+    QVERIFY(!var8.isNull());
 }
 
 void tst_QVariant::copy_constructor()
