@@ -484,6 +484,10 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
         spacings[i] = -1;
         graphSimplified[i] = false;
         graphHasConflicts[i] = false;
+
+        layoutFirstVertex[i] = 0;
+        layoutCentralVertex[i] = 0;
+        layoutLastVertex[i] = 0;
     }
 }
 
@@ -663,7 +667,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
            orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
-    if (!graph[orientation].rootVertex())
+    if (!layoutFirstVertex[orientation])
         return true;
 
     bool dirty;
@@ -700,7 +704,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
 
     QSet<AnchorVertex *> visited;
     QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
-    stack.push(qMakePair(static_cast<AnchorVertex *>(0), g.rootVertex()));
+    stack.push(qMakePair(static_cast<AnchorVertex *>(0), layoutFirstVertex[orientation]));
     QVector<AnchorVertex*> candidates;
     bool candidatesForward;
 
@@ -959,9 +963,10 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     data->maxSize = QWIDGETSIZE_MAX;
     data->skipInPreferred = 1;
 
-    // Set the Layout Left edge as the root of the horizontal graph.
-    AnchorVertex *v = internalVertex(layout, Qt::AnchorLeft);
-    graph[Horizontal].setRootVertex(v);
+    // Save a reference to layout vertices
+    layoutFirstVertex[Horizontal] = internalVertex(layout, Qt::AnchorLeft);
+    layoutCentralVertex[Horizontal] = 0;
+    layoutLastVertex[Horizontal] = internalVertex(layout, Qt::AnchorRight);
 
     // Vertical
     data = new AnchorData;
@@ -970,9 +975,10 @@ void QGraphicsAnchorLayoutPrivate::createLayoutEdges()
     data->maxSize = QWIDGETSIZE_MAX;
     data->skipInPreferred = 1;
 
-    // Set the Layout Top edge as the root of the vertical graph.
-    v = internalVertex(layout, Qt::AnchorTop);
-    graph[Vertical].setRootVertex(v);
+    // Save a reference to layout vertices
+    layoutFirstVertex[Vertical] = internalVertex(layout, Qt::AnchorTop);
+    layoutCentralVertex[Vertical] = 0;
+    layoutLastVertex[Vertical] = internalVertex(layout, Qt::AnchorBottom);
 }
 
 void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
@@ -1019,6 +1025,8 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge)
 {
+    Q_Q(QGraphicsAnchorLayout);
+
     Orientation orientation;
     switch (centerEdge) {
     case Qt::AnchorHorizontalCenter:
@@ -1073,12 +1081,19 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
 
     // Remove old one
     removeAnchor_helper(first, last);
+
+    if (item == q) {
+        layoutCentralVertex[orientation] = internalVertex(q, centerEdge);
+    }
+
 }
 
 void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
     QGraphicsLayoutItem *item, Qt::AnchorPoint centerEdge,
     bool substitute)
 {
+    Q_Q(QGraphicsAnchorLayout);
+
     Orientation orientation;
     switch (centerEdge) {
     case Qt::AnchorHorizontalCenter:
@@ -1150,6 +1165,10 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         // center anchor into a left-right (or top-bottom) anchor. We must also delete that.
         // by this time, the center vertex is deleted and merged into a non-centered internal anchor
         removeAnchor_helper(first, internalVertex(item, lastEdge));
+    }
+
+    if (item == q) {
+        layoutCentralVertex[orientation] = 0;
     }
 }
 
@@ -1773,7 +1792,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
     // For minimum and maximum, use the path between the two layout sides as the
     // objective function.
-    AnchorVertex *v = internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
+    AnchorVertex *v = layoutLastVertex[orientation];
     GraphPath trunkPath = graphPaths[orientation].value(v);
 
     bool feasible = calculateTrunk(orientation, trunkPath, trunkConstraints, trunkVariables);
@@ -1955,7 +1974,7 @@ void QGraphicsAnchorLayoutPrivate::findPaths(Orientation orientation)
 
     QSet<AnchorData *> visited;
 
-    AnchorVertex *root = graph[orientation].rootVertex();
+    AnchorVertex *root = layoutFirstVertex[orientation];
 
     graphPaths[orientation].insert(root, GraphPath());
 
@@ -2077,28 +2096,18 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    // Find layout vertices and edges for the current orientation.
-    AnchorVertex *layoutFirstVertex = \
-        internalVertex(q, pickEdge(Qt::AnchorLeft, orientation));
-
-    AnchorVertex *layoutCentralVertex = \
-        internalVertex(q, pickEdge(Qt::AnchorHorizontalCenter, orientation));
-
-    AnchorVertex *layoutLastVertex = \
-        internalVertex(q, pickEdge(Qt::AnchorRight, orientation));
-
-    Q_ASSERT(layoutFirstVertex && layoutLastVertex);
+    Q_ASSERT(layoutFirstVertex[orientation] && layoutLastVertex[orientation]);
 
     AnchorData *edgeL1 = NULL;
     AnchorData *edgeL2 = NULL;
 
     // The layout may have a single anchor between Left and Right or two half anchors
     // passing through the center
-    if (layoutCentralVertex) {
-        edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutCentralVertex);
-        edgeL2 = graph[orientation].edgeData(layoutCentralVertex, layoutLastVertex);
+    if (layoutCentralVertex[orientation]) {
+        edgeL1 = graph[orientation].edgeData(layoutFirstVertex[orientation], layoutCentralVertex[orientation]);
+        edgeL2 = graph[orientation].edgeData(layoutCentralVertex[orientation], layoutLastVertex[orientation]);
     } else {
-        edgeL1 = graph[orientation].edgeData(layoutFirstVertex, layoutLastVertex);
+        edgeL1 = graph[orientation].edgeData(layoutFirstVertex[orientation], layoutLastVertex[orientation]);
     }
 
     QLinkedList<QSimplexConstraint *> remainingConstraints;
@@ -2288,7 +2297,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     QSet<AnchorVertex *> visited;
 
     // Get root vertex
-    AnchorVertex *root = graph[orientation].rootVertex();
+    AnchorVertex *root = layoutFirstVertex[orientation];
 
     root->distance = 0;
     visited.insert(root);

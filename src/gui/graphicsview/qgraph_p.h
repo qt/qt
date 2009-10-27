@@ -201,11 +201,6 @@ public:
         return l;
     }
 
-    void setRootVertex(Vertex *vertex)
-    {
-        userVertex = vertex;
-    }
-
     QSet<Vertex*> vertices() const {
         QSet<Vertex *> setOfVertices;
         for (const_iterator it = constBegin(); it != constEnd(); ++it) {
@@ -256,11 +251,6 @@ public:
     }
 #endif
 
-    Vertex *rootVertex() const
-    {
-        return userVertex;
-    }
-
 protected:
     void createDirectedEdge(Vertex *from, Vertex *to, EdgeData *data)
     {
@@ -286,8 +276,6 @@ protected:
     }
 
 private:
-    Vertex *userVertex;
-
     QHash<Vertex *, QHash<Vertex *, EdgeData *> *> m_graph;
 };
 

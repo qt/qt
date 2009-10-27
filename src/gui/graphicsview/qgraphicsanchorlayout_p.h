@@ -504,6 +504,10 @@ public:
     // Internal graph of anchorage points and anchors, for both orientations
     Graph<AnchorVertex, AnchorData> graph[2];
 
+    AnchorVertex *layoutFirstVertex[2];
+    AnchorVertex *layoutCentralVertex[2];
+    AnchorVertex *layoutLastVertex[2];
+
     // Graph paths and constraints, for both orientations
     QMultiHash<AnchorVertex *, GraphPath> graphPaths[2];
     QList<QSimplexConstraint *> constraints[2];
