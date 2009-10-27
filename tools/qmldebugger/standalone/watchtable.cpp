@@ -216,7 +216,7 @@ void WatchTableModel::togglePropertyWatch(const QmlDebugObjectReference &object,
         QString desc = property.name()
                 + QLatin1String(" on\n")
                 + object.className()
-                + QLatin1String(": ")
+                + QLatin1String(":\n")
                 + (object.name().isEmpty() ? QLatin1String("<unnamed>") : object.name());
         addWatch(watch, desc);
         emit watchCreated(watch);
