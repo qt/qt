@@ -1448,10 +1448,10 @@ void Configure::applySpecSpecifics()
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "no";
         dictionary[ "DIRECT3D" ]            = "no";
-        dictionary[ "WEBKIT" ]              = "no";
+        dictionary[ "WEBKIT" ]              = "yes";
         dictionary[ "ASSISTANT_WEBKIT" ]    = "no";
         dictionary[ "PHONON" ]              = "yes";
-        dictionary[ "XMLPATTERNS" ]         = "no";
+        dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
