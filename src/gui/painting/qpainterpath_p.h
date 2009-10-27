@@ -81,8 +81,8 @@ class QVectorPathConverter;
 class QVectorPathConverter
 {
 public:
-    QVectorPathConverter(const QVector<QPainterPath::Element> &path, uint fillRule)
-        : pathData(path, fillRule),
+    QVectorPathConverter(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
+        : pathData(path, fillRule, convex),
           path(pathData.points.data(), path.size(),
                pathData.elements.data(), pathData.flags) {}
 
@@ -91,7 +91,7 @@ public:
     }
 
     struct QVectorPathData {
-        QVectorPathData(const QVector<QPainterPath::Element> &path, uint fillRule)
+        QVectorPathData(const QVector<QPainterPath::Element> &path, uint fillRule, bool convex)
             : elements(path.size()),
               points(path.size() * 2),
               flags(0)
@@ -111,6 +111,8 @@ public:
             else
                 flags |= QVectorPath::OddEvenFill;
 
+            if (!convex)
+                flags |= QVectorPath::NonConvexShapeMask;
         }
         QVarLengthArray<QPainterPath::ElementType> elements;
         QVarLengthArray<qreal> points;
@@ -128,20 +130,26 @@ class QPainterPathData : public QPainterPathPrivate
 {
 public:
     QPainterPathData() :
-        cStart(0), fillRule(Qt::OddEvenFill),
-        dirtyBounds(false), dirtyControlBounds(false),
-        pathConverter(0)
+        cStart(0),
+        fillRule(Qt::OddEvenFill),
+        pathConverter(0),
+        dirtyBounds(false),
+        dirtyControlBounds(false)
+
     {
         ref = 1;
         require_moveTo = false;
+        convex = false;
     }
 
     QPainterPathData(const QPainterPathData &other) :
         QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
-        dirtyBounds(other.dirtyBounds), bounds(other.bounds),
-        dirtyControlBounds(other.dirtyControlBounds),
+        bounds(other.bounds),
         controlBounds(other.controlBounds),
-        pathConverter(0)
+        pathConverter(0),
+        dirtyBounds(other.dirtyBounds),
+        dirtyControlBounds(other.dirtyControlBounds),
+        convex(other.convex)
     {
         ref = 1;
         require_moveTo = false;
@@ -158,19 +166,20 @@ public:
 
     const QVectorPath &vectorPath() {
         if (!pathConverter)
-            pathConverter = new QVectorPathConverter(elements, fillRule);
+            pathConverter = new QVectorPathConverter(elements, fillRule, convex);
         return pathConverter->path;
     }
 
     int cStart;
     Qt::FillRule fillRule;
 
-    bool require_moveTo;
-
-    bool   dirtyBounds;
     QRectF bounds;
-    bool   dirtyControlBounds;
     QRectF controlBounds;
+
+    uint require_moveTo : 1;
+    uint dirtyBounds : 1;
+    uint dirtyControlBounds : 1;
+    uint convex : 1;
 
     QVectorPathConverter *pathConverter;
 };
