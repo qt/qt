@@ -56,7 +56,7 @@ private:
 QLineGraph::QLineGraph(QWidget *parent)
 : QWidget(parent), sb(Qt::Horizontal, this), position(-1), samplesPerWidth(99), resolutionForHeight(50), ignoreScroll(false)
 {
-    setMinimumHeight(180);
+    setMinimumHeight(200);
 
     sb.setMaximum(0);
     sb.setMinimum(0);
