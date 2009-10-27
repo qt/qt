@@ -695,6 +695,33 @@ void tst_qmllanguage::aliasProperties()
 
         QCOMPARE(object->property("a").toInt(), 1923);
     }
+
+    // Ptr Alias Cleanup - check that aliases to ptr types return 0 
+    // if the object aliased to is removed
+    {
+        QmlComponent component(&engine, TEST_FILE("alias.7.qml"));
+        VERIFY_ERRORS(0);
+
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+
+        QObject *object1 = qvariant_cast<QObject *>(object->property("object"));
+        QVERIFY(object1 != 0);
+        QObject *object2 = qvariant_cast<QObject *>(object1->property("object"));
+        QVERIFY(object2 != 0);
+
+        QObject *alias = qvariant_cast<QObject *>(object->property("aliasedObject"));
+        QVERIFY(alias == object2);
+
+        delete object1;
+
+        QObject *alias2 = object; // "Random" start value
+        int status = -1;
+        void *a[] = { &alias2, 0, &status };
+        QMetaObject::metacall(object, QMetaObject::ReadProperty,
+                              object->metaObject()->indexOfProperty("aliasedObject"), a);
+        QVERIFY(alias2 == 0);
+    }
 }
 
 // Test that the root element in a composite type can be a Component
