@@ -103,7 +103,7 @@ public:
                 points[ptsPos++] = e.x;
                 points[ptsPos++] = e.y;
                 if (e.type == QPainterPath::CurveToElement)
-                    flags |= QVectorPath::CurvedShapeHint;
+                    flags |= QVectorPath::CurvedShapeMask;
             }
 
             if (fillRule == Qt::WindingFill)
