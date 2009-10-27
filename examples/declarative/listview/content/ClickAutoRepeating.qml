@@ -4,25 +4,27 @@ Item {
     id: page
     property int repeatdelay: 300
     property int repeatperiod: 75
-    property bool pressed: false
+    property bool isPressed: false
+
     signal pressed
     signal released
     signal clicked
-    pressed: SequentialAnimation {
+
+    isPressed: SequentialAnimation {
         id: autoRepeat
-        PropertyAction { target: page; property: "pressed"; value: true }
-        ScriptAction { script: page.onPressed }
-        ScriptAction { script: page.onClicked }
+        PropertyAction { target: page; property: "isPressed"; value: true }
+        ScriptAction { script: page.pressed() }
+        ScriptAction { script: page.clicked() }
         PauseAnimation { duration: repeatdelay }
         SequentialAnimation {
             repeat: true
-            ScriptAction { script: page.onClicked }
+            ScriptAction { script: page.clicked() }
             PauseAnimation { duration: repeatperiod }
         }
     }
     MouseRegion {
         anchors.fill: parent
         onPressed: autoRepeat.start()
-        onReleased: { autoRepeat.stop(); parent.pressed = false; page.released }
+        onReleased: { autoRepeat.stop(); parent.isPressed = false; page.released() }
     }
 }

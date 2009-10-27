@@ -59,8 +59,8 @@ Item {
         id: fruitDelegate
         Item {
             width: parent.width; height: 55
-            Text { id: label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: cost.left; anchors.left:parent.left }
-            Text { id: cost; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: itemButtons.left }
+            Text { id: label; font.pixelSize: 24; text: name; elide: "ElideRight"; anchors.right: costText.left; anchors.left:parent.left }
+            Text { id: costText; font.pixelSize: 24; text: '$'+Number(cost).toFixed(2); anchors.right: itemButtons.left }
             Row {
                 anchors.top: label.bottom
                 spacing: 5
@@ -77,11 +77,11 @@ Item {
                 width: childrenRect.width
                 Image { source: "content/pics/add.png"
                     ClickAutoRepeating { id: clickUp; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Number(cost)+0.25) }
-                    scale: clickUp.pressed ? 0.9 : 1
+                    scale: clickUp.isPressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/del.png"
                     ClickAutoRepeating { id: clickDown; anchors.fill: parent; onClicked: fruitModel.set(index,"cost",Math.max(0,Number(cost)-0.25)) }
-                    scale: clickDown.pressed ? 0.9 : 1
+                    scale: clickDown.isPressed ? 0.9 : 1
                 }
                 Image { source: "content/pics/trash.png"
                     MouseRegion { anchors.fill: parent; onClicked: fruitModel.remove(index) }
