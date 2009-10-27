@@ -707,6 +707,8 @@ void QSslSocket::close()
     qDebug() << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+    if (d->plainSocket)
+        d->plainSocket->close();
     QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:

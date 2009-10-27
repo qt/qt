@@ -126,6 +126,8 @@ public:
     virtual qint64 pendingDatagramSize() const = 0;
 #endif
 
+    virtual qint64 bytesToWrite() const = 0;
+
     virtual int option(SocketOption option) const = 0;
     virtual bool setOption(SocketOption option, int value) = 0;
 

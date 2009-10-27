@@ -669,11 +669,11 @@ bool QAbstractSocketPrivate::canWriteNotification()
 
     if (socketEngine) {
 #if defined (Q_OS_WIN)
-	if (!writeBuffer.isEmpty())
-	    socketEngine->setWriteNotificationEnabled(true);
+        if (!writeBuffer.isEmpty())
+            socketEngine->setWriteNotificationEnabled(true);
 #else
-	if (writeBuffer.isEmpty())
-	    socketEngine->setWriteNotificationEnabled(false);
+        if (writeBuffer.isEmpty() && socketEngine->bytesToWrite() == 0)
+            socketEngine->setWriteNotificationEnabled(false);
 #endif
     }
 
@@ -710,11 +710,17 @@ void QAbstractSocketPrivate::connectionNotification()
 bool QAbstractSocketPrivate::flush()
 {
     Q_Q(QAbstractSocket);
-    if (!socketEngine || !socketEngine->isValid() || writeBuffer.isEmpty()) {
+    if (!socketEngine || !socketEngine->isValid() || (writeBuffer.isEmpty()
+        && socketEngine->bytesToWrite() == 0)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::flush() nothing to do: valid ? %s, writeBuffer.isEmpty() ? %s",
            socketEngine->isValid() ? "yes" : "no", writeBuffer.isEmpty() ? "yes" : "no");
 #endif
+
+        // this covers the case when the buffer was empty, but we had to wait for the socket engine to finish
+        if (state == QAbstractSocket::ClosingState)
+            q->disconnectFromHost();
+
         return false;
     }
 
@@ -751,7 +757,8 @@ bool QAbstractSocketPrivate::flush()
         }
     }
 
-    if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled())
+    if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled()
+        && !socketEngine->bytesToWrite())
         socketEngine->setWriteNotificationEnabled(false);
     if (state == QAbstractSocket::ClosingState)
         q->disconnectFromHost();
@@ -2347,7 +2354,8 @@ void QAbstractSocket::disconnectFromHostImplementation()
         }
 
         // Wait for pending data to be written.
-        if (d->socketEngine && d->socketEngine->isValid() && d->writeBuffer.size() > 0) {
+        if (d->socketEngine && d->socketEngine->isValid() && (d->writeBuffer.size() > 0
+            || d->socketEngine->bytesToWrite() > 0)) {
             d->socketEngine->setWriteNotificationEnabled(true);
 
 #if defined(QABSTRACTSOCKET_DEBUG)
