@@ -543,9 +543,46 @@ void tst_Gestures::conflictingGestures()
     parent.reset();
     child->reset();
 
-    // nobody accepts the override, we will send normal events to the closest context (to the child)
+    // nobody accepts the override, we will send normal events to the closest
+    // context (i.e. to the child widget) and it will be propagated and
+    // accepted by the parent widget
     parent.acceptGestureOverride = false;
     child->acceptGestureOverride = false;
+    child->ignoredGestures << CustomGesture::GestureType;
+
+    // sending events to the child and making sure there is no conflict
+    sendCustomGesture(&event, child);
+
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
+    QCOMPARE(child->gestureEventsReceived, 1);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 1);
+    QCOMPARE(parent.gestureEventsReceived, TotalGestureEventsCount);
+
+    parent.reset();
+    child->reset();
+
+    // nobody accepts the override, and nobody accepts the gesture event
+    parent.acceptGestureOverride = false;
+    child->acceptGestureOverride = false;
+    parent.ignoredGestures << CustomGesture::GestureType;
+    child->ignoredGestures << CustomGesture::GestureType;
+
+    // sending events to the child and making sure there is no conflict
+    sendCustomGesture(&event, child);
+
+    QCOMPARE(child->gestureOverrideEventsReceived, 1);
+    QCOMPARE(child->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(parent.gestureOverrideEventsReceived, 1);
+    QCOMPARE(parent.gestureEventsReceived, 1);
+
+    parent.reset();
+    child->reset();
+
+    // we set an attribute to make sure all gesture events are propagated
+    parent.grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture | Qt::AcceptPartialGesturesHint);
+    parent.acceptGestureOverride = false;
+    child->acceptGestureOverride = false;
+    parent.ignoredGestures << CustomGesture::GestureType;
     child->ignoredGestures << CustomGesture::GestureType;
 
     // sending events to the child and making sure there is no conflict
@@ -851,7 +888,7 @@ void tst_Gestures::graphicsItemTreeGesture()
     QCOMPARE(item1_child2->gestureEventsReceived, 0);
     QCOMPARE(item1_child2->gestureOverrideEventsReceived, 0);
     QCOMPARE(item1->gestureOverrideEventsReceived, 1);
-    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureEventsReceived, 1);
 }
 
 void tst_Gestures::explicitGraphicsObjectTarget()
@@ -966,7 +1003,39 @@ void tst_Gestures::gestureOverChildGraphicsItem()
     event.hasHotSpot = true;
     sendCustomGesture(&event, item0, &scene);
 
-    QCOMPARE(item0->customEventsReceived, TotalCustomEventsCount);
+    QCOMPARE(item2_child1->gestureEventsReceived, 0);
+    QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item2->gestureEventsReceived, 1);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+
+    item0->reset(); item1->reset(); item2->reset(); item2_child1->reset();
+    item2->grabGesture(CustomGesture::GestureType);
+    item2->ignoredGestures << CustomGesture::GestureType;
+    item1->ignoredGestures << CustomGesture::GestureType;
+
+    event.hotSpot = mapToGlobal(QPointF(10, 10), item2_child1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
+    QCOMPARE(item2_child1->gestureEventsReceived, 0);
+    QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
+    QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount);
+    QCOMPARE(item2->gestureOverrideEventsReceived, 1);
+    QCOMPARE(item1->gestureEventsReceived, 1);
+    QCOMPARE(item1->gestureOverrideEventsReceived, 1);
+
+    item0->reset(); item1->reset(); item2->reset(); item2_child1->reset();
+    item2->grabGesture(CustomGesture::GestureType);
+    item2->ignoredGestures << CustomGesture::GestureType;
+    item1->ignoredGestures << CustomGesture::GestureType;
+    item1->grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture | Qt::AcceptPartialGesturesHint);
+
+    event.hotSpot = mapToGlobal(QPointF(10, 10), item2_child1, &view);
+    event.hasHotSpot = true;
+    sendCustomGesture(&event, item0, &scene);
+
     QCOMPARE(item2_child1->gestureEventsReceived, 0);
     QCOMPARE(item2_child1->gestureOverrideEventsReceived, 0);
     QCOMPARE(item2->gestureEventsReceived, TotalGestureEventsCount);
@@ -1025,15 +1094,16 @@ void tst_Gestures::multipleGesturesInTree()
     Qt::GestureType SecondGesture = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
     Qt::GestureType ThirdGesture  = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
 
-    A->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // A [1   3]
-    A->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
-    B->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // B [  2 3]
-    B->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
-    C->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // C [1 2 3]
-    C->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // |
-    C->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // D [1   3]
-    D->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);
-    D->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
+    Qt::GestureContext context = Qt::WidgetWithChildrenGesture | Qt::AcceptPartialGesturesHint;
+    A->grabGesture(FirstGesture,  context);   // A [1   3]
+    A->grabGesture(ThirdGesture,  context);   // |
+    B->grabGesture(SecondGesture, context);   // B [  2 3]
+    B->grabGesture(ThirdGesture,  context);   // |
+    C->grabGesture(FirstGesture,  context);   // C [1 2 3]
+    C->grabGesture(SecondGesture, context);   // |
+    C->grabGesture(ThirdGesture,  context);   // D [1   3]
+    D->grabGesture(FirstGesture,  context);
+    D->grabGesture(ThirdGesture,  context);
 
     // make sure all widgets ignore events, so they get propagated.
     A->ignoredGestures << FirstGesture << ThirdGesture;
@@ -1100,19 +1170,20 @@ void tst_Gestures::multipleGesturesInComplexTree()
     Qt::GestureType SixthGesture   = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
     Qt::GestureType SeventhGesture = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
 
-    A->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // A [1,3,4]
-    A->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // |
-    A->grabGesture(FourthGesture, Qt::WidgetWithChildrenGesture);  // B [2,3,5]
-    B->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);  // |
-    B->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);   // C [1,2,3,6]
-    B->grabGesture(FifthGesture, Qt::WidgetWithChildrenGesture);   // |
-    C->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);   // D [1,3,7]
-    C->grabGesture(SecondGesture, Qt::WidgetWithChildrenGesture);
-    C->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
-    C->grabGesture(SixthGesture, Qt::WidgetWithChildrenGesture);
-    D->grabGesture(FirstGesture, Qt::WidgetWithChildrenGesture);
-    D->grabGesture(ThirdGesture, Qt::WidgetWithChildrenGesture);
-    D->grabGesture(SeventhGesture, Qt::WidgetWithChildrenGesture);
+    Qt::GestureContext context = Qt::WidgetWithChildrenGesture | Qt::AcceptPartialGesturesHint;
+    A->grabGesture(FirstGesture,   context); // A [1,3,4]
+    A->grabGesture(ThirdGesture,   context); // |
+    A->grabGesture(FourthGesture,  context); // B [2,3,5]
+    B->grabGesture(SecondGesture,  context); // |
+    B->grabGesture(ThirdGesture,   context); // C [1,2,3,6]
+    B->grabGesture(FifthGesture,   context); // |
+    C->grabGesture(FirstGesture,   context); // D [1,3,7]
+    C->grabGesture(SecondGesture,  context);
+    C->grabGesture(ThirdGesture,   context);
+    C->grabGesture(SixthGesture,   context);
+    D->grabGesture(FirstGesture,   context);
+    D->grabGesture(ThirdGesture,   context);
+    D->grabGesture(SeventhGesture, context);
 
     // make sure all widgets ignore events, so they get propagated.
     QSet<Qt::GestureType> allGestureTypes;

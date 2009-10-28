@@ -448,7 +448,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
     {
         for (ContextIterator it = w->d_func()->gestureContext.begin(),
              e = w->d_func()->gestureContext.end(); it != e; ++it) {
-            if (it.value() == Qt::WidgetWithChildrenGesture) {
+            if ((it.value() & Qt::GestureContext_Mask) == Qt::WidgetWithChildrenGesture) {
                 if (!types.contains(it.key())) {
                     types.insert(it.key());
                     contexts.insertMulti(w, it.key());
@@ -482,7 +482,7 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
         typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
         for (ContextIterator it = item->QGraphicsItem::d_func()->gestureContext.begin(),
              e = item->QGraphicsItem::d_func()->gestureContext.end(); it != e; ++it) {
-            if (it.value() == Qt::ItemWithChildrenGesture) {
+            if ((it.value() & Qt::GestureContext_Mask) == Qt::ItemWithChildrenGesture) {
                 if (!types.contains(it.key())) {
                     types.insert(it.key());
                     contexts.insertMulti(item, it.key());
@@ -525,7 +525,7 @@ void QGestureManager::getGestureTargets(const QSet<QGesture*> &gestures,
                         = w->d_func()->gestureContext.find(type);
                 if (it != w->d_func()->gestureContext.end()) {
                     // i.e. 'w' listens to gesture 'type'
-                    Qt::GestureContext context = it.value();
+                    Qt::GestureContext context = it.value() & Qt::GestureContext_Mask;
                     if (context == Qt::WidgetWithChildrenGesture && w != widget) {
                         // conflicting gesture!
                         (*conflicts)[widget].append(gestures[widget]);
@@ -645,6 +645,16 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
                     << "gestures:" << it.value();
             QGestureEvent event(it.value());
             QApplication::sendEvent(it.key(), &event);
+            bool eventAccepted = event.isAccepted();
+            foreach (QGesture *gesture, event.allGestures()) {
+                if (gesture->state() == Qt::GestureStarted &&
+                    (eventAccepted || event.isAccepted(gesture))) {
+                    QWidget *w = event.d_func()->targetWidgets.value(gesture->gestureType(), 0);
+                    Q_ASSERT(w);
+                    DEBUG() << "started gesture was delivered and accepted by" << w;
+                    m_gestureTargets[gesture] = w;
+                }
+            }
         }
     }
 }

@@ -5900,7 +5900,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
         QGraphicsItemPrivate *gid = item->QGraphicsItem::d_func();
         foreach(QGesture *g, alreadyIgnoredGestures) {
-            if (gid->gestureContext.contains(g->gestureType()))
+            QMap<Qt::GestureType, Qt::GestureContext>::iterator contextit =
+                    gid->gestureContext.find(g->gestureType());
+            bool deliver = contextit != gid->gestureContext.end() &&
+                (g->state() == Qt::GestureStarted ||
+                 (contextit.value() & Qt::GestureContextHint_Mask) & Qt::AcceptPartialGesturesHint);
+            if (deliver)
                 gestures += g;
         }
         if (gestures.isEmpty())
@@ -5913,8 +5918,12 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         sendEvent(item, &ev);
         QSet<QGesture *> ignoredGestures;
         foreach (QGesture *g, gestures) {
-            if (!ev.isAccepted() && !ev.isAccepted(g))
+            if (!ev.isAccepted() && !ev.isAccepted(g)) {
                 ignoredGestures.insert(g);
+            } else {
+                if (g->state() == Qt::GestureStarted)
+                    gestureTargets[g] = item;
+            }
         }
         if (!ignoredGestures.isEmpty()) {
             // get a list of items under the (current) hotspot of each ignored

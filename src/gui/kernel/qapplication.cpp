@@ -4161,7 +4161,12 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                 for (int i = 0; i < allGestures.size();) {
                     QGesture *g = allGestures.at(i);
                     Qt::GestureType type = g->gestureType();
-                    if (wd->gestureContext.contains(type)) {
+                    QMap<Qt::GestureType, Qt::GestureContext>::iterator contextit =
+                            wd->gestureContext.find(type);
+                    bool deliver = contextit != wd->gestureContext.end() &&
+                        (g->state() == Qt::GestureStarted || w == receiver ||
+                         (contextit.value() & Qt::GestureContextHint_Mask) & Qt::AcceptPartialGesturesHint);
+                    if (deliver) {
                         allGestures.removeAt(i);
                         gestures.append(g);
                     } else {

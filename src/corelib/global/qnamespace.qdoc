@@ -2917,11 +2917,11 @@
     QApplication::registerGestureRecognizer() function which generates a custom gesture ID
     in the range of values from CustomGesture to LastGestureType.
 
-    \sa QGesture, QWidget::grabGesture()
+    \sa QGesture, QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 
 /*!
-    \enum Qt::GestureContext
+    \enum Qt::GestureContextFlag
     \since 4.6
 
     This enum type describes the context of a gesture.
@@ -2937,7 +2937,19 @@
     \value ItemWithChildrenGesture Gestures can start on the item or over
     any of its children.
 
-    \sa QWidget::grabGesture()
+    \value AcceptPartialGesturesHint Allows any ignored gesture events to be
+    propagated to parent widgets which have specified this hint. By default
+    only gestures that are in the Qt::GestureStarted state are propagated and
+    the widget only gets the full gesture sequence starting with a gesture in
+    the Qt::GestureStarted state and ending with a gesture in the
+    Qt::GestureFinished or Qt::GestureCanceled states.
+
+    \value GestureContext_Mask A mask for extracting the context type of the
+    context flags.
+    \value GestureContextHint_Mask A mask for extracting additional hints for
+    the context.
+
+    \sa QWidget::grabGesture(), QGraphicsObject::grabGesture()
 */
 
 /*!
