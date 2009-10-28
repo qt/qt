@@ -589,7 +589,6 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData* pd, cons
 
     GLuint textureId;
     glGenTextures(1, &textureId);
-    glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     // bind the egl pixmap surface to a texture
