@@ -420,28 +420,28 @@ void QFxText::setTextFormat(TextFormat format)
 }
 
 /*!
-    \qmlproperty Qt::TextElideMode Text::elide
+    \qmlproperty enumeration Text::elide
 
     Set this property to elide parts of the text fit to the Text item's width.
     The text will only elide if an explicit width has been set.
 
     This property cannot be used with wrap enabled or with rich text.
 
-    Eliding can be ElideNone (the default), ElideLeft, ElideMiddle, or ElideRight.
+    Eliding can be \c ElideNone (the default), \c ElideLeft, \c ElideMiddle, or \c ElideRight.
 
-    If the text is a multi-length string, and the mode is not ElideNone,
+    If the text is a multi-length string, and the mode is not \c ElideNone,
     the first string that fits will be used, otherwise the last will be elided.
 
     Multi-length strings are ordered from longest to shortest, separated by the
-    Unicode "String Terminator" character U009C (write this in QML with "\\x9C").
+    Unicode "String Terminator" character \c U009C (write this in QML with \c{"\\x9C"}).
 */
-Qt::TextElideMode QFxText::elideMode() const
+QFxText::TextElideMode QFxText::elideMode() const
 {
     Q_D(const QFxText);
     return d->elideMode;
 }
 
-void QFxText::setElideMode(Qt::TextElideMode mode)
+void QFxText::setElideMode(QFxText::TextElideMode mode)
 {
     Q_D(QFxText);
     if (mode == d->elideMode)
@@ -458,7 +458,7 @@ void QFxText::geometryChanged(const QRectF &newGeometry,
 {
     Q_D(QFxText);
     if (newGeometry.width() != oldGeometry.width()) {
-        if (d->wrap || d->elideMode != Qt::ElideNone) {
+        if (d->wrap || d->elideMode != QFxText::ElideNone) {
             d->imgDirty = true;
             d->updateSize();
         }
@@ -486,8 +486,8 @@ void QFxTextPrivate::updateSize()
                 tmp = text;
                 tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
                 singleline = !tmp.contains(QChar::LineSeparator);
-                if (singleline && elideMode != Qt::ElideNone && q->widthValid())
-                    tmp = fm.elidedText(tmp,elideMode,q->width()); // XXX still worth layout...?
+                if (singleline && elideMode != QFxText::ElideNone && q->widthValid())
+                    tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
                 layout.clearLayout();
                 layout.setFont(font);
                 layout.setText(tmp);
@@ -586,7 +586,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     qreal lineWidth = 0;
 
     //set manual width
-    if ((wrap || elideMode != Qt::ElideNone) && q->widthValid())
+    if ((wrap || elideMode != QFxText::ElideNone) && q->widthValid())
         lineWidth = q->width();
 
     layout->beginLayout();
@@ -596,7 +596,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
         if (!line.isValid())
             break;
 
-        if ((wrap || elideMode != Qt::ElideNone) && q->widthValid())
+        if ((wrap || elideMode != QFxText::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
     layout->endLayout();
