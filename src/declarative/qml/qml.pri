@@ -116,6 +116,8 @@ HEADERS += qml/qmlparser_p.h \
 # for qtscript debugger
 contains(QT_CONFIG, scripttools):QT += scripttools
 
+QT += sql
+
 include(parser/parser.pri)
 include(rewriter/rewriter.pri)
 
