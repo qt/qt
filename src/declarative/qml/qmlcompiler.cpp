@@ -150,6 +150,8 @@ bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
 }
 
 /*!
+    \macro COMPILE_EXCEPTION
+    \internal
     Inserts an error into the QmlCompiler error list, and returns false
     (failure).
 
@@ -175,6 +177,8 @@ bool QmlCompiler::isSignalPropertyName(const QByteArray &name)
     }
 
 /*!
+    \macro COMPILE_CHECK
+    \internal
     Returns false if \a is false, otherwise does nothing.
 */
 #define COMPILE_CHECK(a) \

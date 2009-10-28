@@ -98,6 +98,7 @@ class QmlTypeNameCache;
 class QmlComponentAttached;
 class QmlListScriptClass;
 class QmlCleanup;
+class QmlBindingData;
 
 class QmlEnginePrivate : public QObjectPrivate
 {
@@ -142,6 +143,10 @@ public:
 
     // Registered cleanup handlers
     QmlCleanup *cleanup;
+
+    // Bindings that have had errors during startup
+    QmlBindingData *erroredBindings;
+    int inProgressCreations;
 
     struct QmlScriptEngine : public QScriptEngine
     {

@@ -118,8 +118,9 @@ static QString userLocalDataPath(const QString& app)
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
-  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), cleanup(0), scriptEngine(this), 
-  componentAttacheds(0), rootComponent(0), networkAccessManager(0), typeManager(e), uniqueId(1)
+  nodeListClass(0), namedNodeMapClass(0), sqlQueryClass(0), cleanup(0), erroredBindings(0), 
+  inProgressCreations(0), scriptEngine(this), componentAttacheds(0), rootComponent(0), 
+  networkAccessManager(0), typeManager(e), uniqueId(1)
 {
     // Note that all documentation for stuff put on the global object goes in
     // doc/src/declarative/globalobject.qdoc

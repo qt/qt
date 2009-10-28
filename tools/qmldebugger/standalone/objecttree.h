@@ -27,8 +27,8 @@ signals:
     void expressionWatchRequested(const QmlDebugObjectReference &, const QString &);
 
 public slots:
-    void reload(int objectDebugId);
-    void setCurrentObject(int debugId);
+    void reload(int objectDebugId);     // set the root object
+    void setCurrentObject(int debugId); // select an object in the tree
 
 protected:
     virtual void mousePressEvent(QMouseEvent *);

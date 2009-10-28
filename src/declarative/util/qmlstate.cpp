@@ -134,7 +134,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
     inadvisible. Not only would this have the same effect as going directly to the second state
     it may cause the program to crash.
 
-    \sa {states-transitions}{States and Transitions}
+    \sa {qmlstates}{States}, {state-transitions}{Transitions}
 */
 
 /*!

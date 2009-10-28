@@ -10,7 +10,7 @@ Item {
         id: background
         anchors.fill: parent; color: "#343434";
 
-        Image { source: "mobile/images/stripes.png"; fillMode: "Tile"; anchors.fill: parent; opacity: 0.3 }
+        Image { source: "mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Common.RssModel { id: rssModel }
         Common.Loading { anchors.centerIn: parent; visible: rssModel.status == 2 }

@@ -68,30 +68,28 @@ Item {
             Text{ text: "Drag an item into the scene." }
             Row{ id: toolRow
                 spacing: 8; 
-                height: childrenRect.height//TODO: Put bug in JIRA when it comes back up
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
                     file: "Sun.qml";
                     image: "images/sun.png"
                 }
                 PaletteItem{ 
-                    anchors.verticalCenter: parent.verticalCenter
                     file: "GenericItem.qml"
                     image: "images/moon.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/tree_s.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/rabbit_brown.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/rabbit_bw.png"
                 }
             }

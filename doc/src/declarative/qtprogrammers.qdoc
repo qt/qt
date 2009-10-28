@@ -109,7 +109,7 @@ just as QTextEdit, QWebView, and QListView are built upon
 those same UI-agnostic components.
 
 The encapsulation of the look and feel that QWidgets gives is important, and for this
-the QML concept of \l components serves the same purpose. If you are building a complete
+the QML concept of \l {qmldocuments.html}{components} serves the same purpose. If you are building a complete
 suite of applications which should have a consistent look and feel, you should build
 a set of reusable components with the look and feel you desire.
 
