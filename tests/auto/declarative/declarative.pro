@@ -1,7 +1,10 @@
 TEMPLATE = subdirs
 SUBDIRS += anchors \
+           animatedimage \
            animations \
+           behaviors \
            datetimeformatter \
+           examples \
            layouts \
            listview \
            numberformatter \
