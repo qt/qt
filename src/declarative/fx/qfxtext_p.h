@@ -70,7 +70,7 @@ class QFxTextPrivate : public QFxItemPrivate
 public:
     QFxTextPrivate()
       : color((QRgb)0), style(QFxText::Normal), imgDirty(true),
-        hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(Qt::ElideNone),
+        hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(QFxText::ElideNone),
         dirty(true), wrap(false), richText(false), singleline(false), control(0), doc(0),
         format(QFxText::AutoText)
     {
@@ -97,7 +97,7 @@ public:
     QPixmap imgStyleCache;
     QFxText::HAlignment hAlign;
     QFxText::VAlignment vAlign;
-    Qt::TextElideMode elideMode;
+    QFxText::TextElideMode elideMode;
     bool dirty;
     bool wrap;
     bool richText;

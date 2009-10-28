@@ -11,9 +11,9 @@
 
 #include "expressionquerywidget.h"
 
-ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *parent)
+ExpressionQueryWidget::ExpressionQueryWidget(Mode mode, QmlEngineDebug *client, QWidget *parent)
     : QWidget(parent),
-      m_style(Compact),
+      m_mode(mode),
       m_client(client),
       m_query(0),
       m_textEdit(new QTextEdit),
@@ -28,7 +28,7 @@ ExpressionQueryWidget::ExpressionQueryWidget(QmlEngineDebug *client, QWidget *pa
 
     updateTitle();
 
-    if (m_style == Compact) {
+    if (m_mode == SeparateEntryMode) {
         m_lineEdit = new QLineEdit;
         connect(m_lineEdit, SIGNAL(returnPressed()), SLOT(executeExpression()));
         QHBoxLayout *hbox = new QHBoxLayout;
@@ -53,7 +53,8 @@ void ExpressionQueryWidget::setEngineDebug(QmlEngineDebug *client)
 void ExpressionQueryWidget::clear()
 {
     m_textEdit->clear();
-    m_lineEdit->clear();
+    if (m_lineEdit)
+        m_lineEdit->clear();
 }
 
 void ExpressionQueryWidget::updateTitle()
@@ -73,7 +74,7 @@ void ExpressionQueryWidget::appendPrompt()
 {
     m_textEdit->moveCursor(QTextCursor::End);
 
-    if (m_style == Compact) {
+    if (m_mode == SeparateEntryMode) {
         m_textEdit->insertPlainText("\n");
     } else {
         m_textEdit->setTextColor(Qt::gray);
@@ -111,7 +112,7 @@ void ExpressionQueryWidget::executeExpression()
     if (!m_client)
         return;
         
-    if (m_style == Compact)
+    if (m_mode == SeparateEntryMode)
         m_expr = m_lineEdit->text().trimmed();
     else
         m_expr = m_expr.trimmed();
@@ -136,20 +137,31 @@ void ExpressionQueryWidget::showResult()
 {
     if (m_query) {
         m_textEdit->moveCursor(QTextCursor::End);
+        QVariant value = m_query->result();
         QString result;
-        if (m_query->result().isNull())
+        
+        if (value.isNull()) {
             result = QLatin1String("<no value>");
-        else
-            result = m_query->result().toString();
+        } else {
+            if (value.canConvert(QVariant::String)) {
+                result = value.toString();
+            } else {
+                QDebug debug(&result);
+                debug << value;
+            }
+        }
 
-        if (m_style == Compact) {
+        if (m_mode == SeparateEntryMode) {
             m_textEdit->setTextColor(Qt::black);
             m_textEdit->setFontWeight(QFont::Bold);
             m_textEdit->insertPlainText(m_expr + " : ");
             m_textEdit->setFontWeight(QFont::Normal);
             m_textEdit->insertPlainText(result);
         } else {
-            m_textEdit->append(result);
+            m_textEdit->setTextColor(Qt::darkGreen);
+            m_textEdit->insertPlainText(" => ");
+            m_textEdit->setTextColor(Qt::black);
+            m_textEdit->insertPlainText(result);
         }
         appendPrompt();
         m_expr.clear();

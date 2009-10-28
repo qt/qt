@@ -55,6 +55,7 @@
 #include "qmlbinding.h"
 #include <QtCore/qdebug.h>
 #include <QApplication>
+#include <private/qmlbinding_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -197,6 +198,12 @@ QmlComponent::QmlComponent(QObject *parent)
 QmlComponent::~QmlComponent()
 {
     Q_D(QmlComponent);
+
+    if (d->completePending) {
+        qWarning("QmlComponent: Component destroyed while completion pending");
+        d->completeCreate();
+    }
+
     if (d->typeData) {
         d->typeData->remWaiter(d);
         d->typeData->release();
@@ -585,7 +592,9 @@ QmlComponentPrivate::beginCreate(QmlContext *context, const QBitField &bindings)
         ep->bindValues.clear();
         ep->parserStatus.clear();
         completePending = true;
+        QmlEnginePrivate::get(engine)->inProgressCreations++;
     }
+
 
     if (rv) {
         QFx_setParent_noEvent(ctxt, rv);
@@ -654,6 +663,14 @@ void QmlComponentPrivate::completeCreate()
         bindValues.clear();
         parserStatus.clear();
         completePending = false;
+        QmlEnginePrivate *p = QmlEnginePrivate::get(engine);
+        p->inProgressCreations--;
+        if (0 == p->inProgressCreations) {
+            while (p->erroredBindings) {
+                qWarning().nospace() << qPrintable(p->erroredBindings->error.toString());
+                p->erroredBindings->removeError();
+            }
+        }
     }
 }
 

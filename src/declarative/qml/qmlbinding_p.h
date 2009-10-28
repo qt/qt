@@ -63,11 +63,17 @@ class QmlBindingData : public QmlExpressionData
 {
 public:
     QmlBindingData();
+    virtual ~QmlBindingData();
 
     bool updating:1;
     bool enabled:1;
 
     QmlMetaProperty property;
+
+    void removeError();
+    bool addError();
+    QmlBindingData  *nextError;
+    QmlBindingData **prevError;
 };
 
 class QmlBindingPrivate : public QmlExpressionPrivate

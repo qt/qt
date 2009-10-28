@@ -57,6 +57,7 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_ENUMS(VAlignment)
     Q_ENUMS(TextStyle)
     Q_ENUMS(TextFormat)
+    Q_ENUMS(TextElideMode)
 
     Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
     Q_PROPERTY(QFont font READ font WRITE setFont)
@@ -67,7 +68,7 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
     Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### there are several wrap modes in Qt
     Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
-    Q_PROPERTY(Qt::TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
+    Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
 
 public:
     QFxText(QFxItem *parent=0);
@@ -84,8 +85,12 @@ public:
                       Raised,
                       Sunken };
     enum TextFormat { PlainText = Qt::PlainText,
-                      RichText = Qt::RichText,
-                      AutoText = Qt::AutoText };
+                       RichText = Qt::RichText,
+                       AutoText = Qt::AutoText };
+    enum TextElideMode { ElideLeft = Qt::ElideLeft,
+                          ElideRight = Qt::ElideRight,
+                          ElideMiddle = Qt::ElideMiddle,
+                          ElideNone = Qt::ElideNone };
 
     QString text() const;
     void setText(const QString &);
@@ -114,8 +119,8 @@ public:
     TextFormat textFormat() const;
     void setTextFormat(TextFormat format);
 
-    Qt::TextElideMode elideMode() const;
-    void setElideMode(Qt::TextElideMode);
+    TextElideMode elideMode() const;
+    void setElideMode(TextElideMode);
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 

@@ -1,12 +1,14 @@
 TEMPLATE = subdirs
 SUBDIRS += anchors \
+           animatedimage \
            animations \
+           behaviors \
            datetimeformatter \
+           examples \
            layouts \
            listview \
            numberformatter \
            pathview \
-           qbindablemap \
            qfxloader \
            qfxpixmapcache \
            qfxtext \
@@ -19,6 +21,7 @@ SUBDIRS += anchors \
            qmllist \
            qmllistaccessor \
            qmlmetaproperty \
+           qmlpropertymap \
            qmltimer \
            repeater \
            sql \

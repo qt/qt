@@ -96,7 +96,7 @@ Item {
                                 properties: "angle"
                             }
                             ScriptAction{
-                                script: "if(modelData.hasMine && modelData.flipped){expl.explode = true;}"
+                                script: if(modelData.hasMine && modelData.flipped){expl.explode = true;}
                             }
                         }
                     }
@@ -121,7 +121,7 @@ Item {
     ]
     Image {
         source: "pics/No-Ones-Laughing-3.jpg"
-        fillMode: "Tile"
+        fillMode: Image.Tile
     }
     Description {
         text: "Use the 'minehunt' executable to run this demo!"

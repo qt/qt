@@ -82,7 +82,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \o fillMode: Tile
     \qml
     Image {
-        fillMode: "Tile"
+        fillMode: Image.Tile
         width: 160; height: 160
         source: "pics/qtlogo.png"
     }
@@ -92,7 +92,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \o fillMode: TileVertically
     \qml
     Image {
-        fillMode: "TileVertically"
+        fillMode: Image.TileVertically
         width: 160; height: 160
         source: "pics/qtlogo.png"
     }
@@ -102,7 +102,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     \o fillMode: TileHorizontally
     \qml
     Image {
-        fillMode: "TileHorizontally"
+        fillMode: Image.TileHorizontally
         width: 160; height: 160
         source: "pics/qtlogo.png"
     }
@@ -161,7 +161,7 @@ void QFxImage::setPixmap(const QPixmap &pix)
 }
 
 /*!
-    \qmlproperty FillMode Image::fillMode
+    \qmlproperty enumeration Image::fillMode
 
     Set this property to define what happens when the image set for the item is smaller
     than the size of the item.
