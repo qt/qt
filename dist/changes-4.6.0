@@ -35,6 +35,9 @@ information about a particular change.
     * Added QVariant::toFloat() and QVariant::toReal()
     * Added QVariant(float) constructor
 
+ - Qt::escape
+    * now escape the double quote (&quot;)
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
