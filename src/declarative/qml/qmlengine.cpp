@@ -110,14 +110,6 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
-QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
-{
-    if(!ctxt->argumentCount())
-        return e->newVariant(QVariant(false));
-    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
-    return e->newVariant(QVariant(ret));
-}
-
 static QString userLocalDataPath(const QString& app)
 {
     return QDesktopServices::storageLocation(QDesktopServices::DataLocation) + QLatin1String("/") + app;
@@ -131,9 +123,6 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 {
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
-    QScriptValue desktopObject = scriptEngine.newObject();
-    desktopObject.setProperty(QLatin1String("openUrl"),scriptEngine.newFunction(desktopOpenUrl, 1));
-    qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     offlineStoragePath = userLocalDataPath(QLatin1String("QML/OfflineStorage"));
@@ -155,6 +144,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 
     //misc methods
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
+    qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -897,6 +887,13 @@ QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *en
     return engine->undefinedValue();
 }
 
+QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() < 1)
+        return e->newVariant(QVariant(false));
+    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    return e->newVariant(QVariant(ret));
+}
 /*!
     This function allows tinting one color with another.
 
