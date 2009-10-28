@@ -69,10 +69,9 @@ QT_BEGIN_NAMESPACE
 
     \section1 Lifecycle of a Gesture Object
 
-    A QGesture instance is created when the application calls QWidget::grabGesture()
-    or QGraphicsObject::grabGesture() to configure a widget or graphics object (the
-    target object) for gesture input. One gesture object is created for each target
-    object.
+    A QGesture instance is implicitely created when needed and is owned by Qt,
+    so application developer should never destroy them or store a pointer to a
+    QGesture object.
 
     The registered gesture recognizer monitors the input events for the target
     object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
@@ -133,8 +132,8 @@ QGesture::~QGesture()
     QWidget::mapFromGlobal() or QGestureEvent::mapToScene() to get a
     local hot-spot.
 
-    If the hot-spot is not set, the targetObject is used as the receiver of the
-    gesture event.
+    The hot-spot should be set by the gesture recognizer to allow gesture event
+    delivery to a QGraphicsObject.
 */
 
 /*!

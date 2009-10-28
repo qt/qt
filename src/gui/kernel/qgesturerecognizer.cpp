@@ -178,7 +178,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
         QGesturePrivate *d = gesture->d_func();
         d->state = Qt::NoGesture;
         d->hotSpot = QPointF();
-        d->targetObject = 0;
+        d->isHotSpotSet = false;
     }
 }
 
