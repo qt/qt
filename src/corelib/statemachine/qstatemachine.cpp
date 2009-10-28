@@ -1974,7 +1974,7 @@ bool QStateMachine::event(QEvent *e)
             return true;
         }
     }
-    return QObject::event(e);
+    return QState::event(e);
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER
