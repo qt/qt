@@ -965,6 +965,9 @@ Qt::HANDLE QPixmap::macQDAlphaHandle() const
 
 Qt::HANDLE QPixmap::macCGHandle() const
 {
+    if (isNull())
+        return 0;
+
     if (data->classId() == QPixmapData::MacClass) {
         QMacPixmapData *d = static_cast<QMacPixmapData *>(data.data());
         if (!d->cg_data)

@@ -1976,6 +1976,9 @@ void QPixmap::x11SetScreen(int screen)
         return;
     }
 
+    if (isNull())
+        return;
+
     if (data->classId() != QPixmapData::X11Class)
         return;
 
@@ -2078,7 +2081,7 @@ bool QX11PixmapData::hasAlphaChannel() const
 
 const QX11Info &QPixmap::x11Info() const
 {
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<QX11PixmapData*>(data.data())->xinfo;
     else {
         static QX11Info nullX11Info;
@@ -2135,7 +2138,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
 Qt::HANDLE QPixmap::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<const QX11PixmapData*>(data.data())->picture;
     else
         return 0;

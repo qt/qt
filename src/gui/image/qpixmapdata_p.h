@@ -122,6 +122,8 @@ public:
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif
 
+    static QPixmapData *create(int w, int h, PixelType type);
+
 protected:
     void setSerialNumber(int serNo);
     int w;
