@@ -73,7 +73,7 @@ Rectangle {
         anchors.rightMargin: 4
         font.bold: true
         color: "white"
-        horizontalAlignment: "AlignHCenter"
+        horizontalAlignment: Text.AlignHCenter
         text: "Remove"
         opacity: 0
     }

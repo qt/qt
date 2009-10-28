@@ -44,7 +44,7 @@ Flipable {
             onClicked: { container.state='Back' }
         }
 
-        Text { id: titleText; style: "Raised"; styleColor: "black"; color: "white"; elide: "ElideRight"
+        Text { id: titleText; style: Text.Raised; styleColor: "black"; color: "white"; elide: Text.ElideRight
                x: 220; y: 30; width: parent.width - 240; text: container.photoTitle; font.pointSize: 22 }
 
         LikeOMeter { x: 40; y: 250; rating: container.rating }
@@ -69,7 +69,7 @@ Flipable {
                text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
         Text { id: tags; color: "white"; width: parent.width-x-20;
                 anchors.left: tagsLabel.right; anchors.top: date.bottom;
-                elide: "ElideRight"; text: container.photoTags }
+                elide: Text.ElideRight; text: container.photoTags }
 
         ScrollBar { id: scrollBar; x: 720; y: flickable.y; width: 7; height: flickable.height; opacity: 0;
                     flickableArea: flickable; clip: true }
