@@ -1377,7 +1377,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                         else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
                             yEnd = -1;
                     }
-                    highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, xBeginning);
+                    highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, yEnd);
                 }
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
             }

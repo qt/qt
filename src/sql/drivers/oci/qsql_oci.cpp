@@ -1257,7 +1257,11 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
             case QVariant::String: {
                 col.bindAs = SQLT_STR;
                 for (uint j = 0; j < col.recordCount; ++j) {
-                    uint len = boundValues.at(i).toList().at(j).toString().length() + 1;
+                    uint len;
+                    if(d->isOutValue(i))
+                        len = boundValues.at(i).toList().at(j).toString().capacity() + 1;
+                    else
+                        len = boundValues.at(i).toList().at(j).toString().length() + 1;
                     if (len > col.maxLen)
                         col.maxLen = len;
                 }
@@ -1268,7 +1272,10 @@ bool QOCICols::execBatch(QOCIResultPrivate *d, QVector<QVariant> &boundValues, b
             default: {
                 col.bindAs = SQLT_LBI;
                 for (uint j = 0; j < col.recordCount; ++j) {
-                    col.lengths[j] = boundValues.at(i).toList().at(j).toByteArray().size();
+                    if(d->isOutValue(i))
+                        col.lengths[j] = boundValues.at(i).toList().at(j).toByteArray().capacity();
+                    else
+                        col.lengths[j] = boundValues.at(i).toList().at(j).toByteArray().size();
                     if (col.lengths[j] > col.maxLen)
                         col.maxLen = col.lengths[j];
                 }

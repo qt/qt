@@ -501,10 +501,14 @@ static void qt_SetDefaultIapL()
 
 static int qt_SetDefaultIap()
 {
+#ifndef __WINS__
     TRAPD(err1, qt_SetDefaultIapL());
 //    TRAPD(err2, qt_InterfaceInfoL());
 //    TRAPD(err3, qt_RouteInfoL());
     return err1;
+#else
+    return 0; // IAP dialog not required for emulator
+#endif
 }
 
 #endif // QSYM_IAP_UTIL_H
