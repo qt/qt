@@ -22,21 +22,21 @@ Rectangle {
         Text {
             text: myText
             color: palette.windowText
-            width: parent.width; elide: "ElideRight"
+            width: parent.width; elide: Text.ElideRight
             font.family: "Times"
             font.pointSize: 32
         }
         Text {
             text: myText
             color: palette.windowText
-            width: parent.width; elide: "ElideRight"
+            width: parent.width; elide: Text.ElideRight
             font.family: fixedFont.name
             font.pointSize: 32
         }
         Text {
             text: myText
             color: palette.windowText
-            width: parent.width; elide: "ElideRight"
+            width: parent.width; elide: Text.ElideRight
             font.family: localFont.name
             font.pointSize: 32
         }
@@ -47,7 +47,7 @@ Rectangle {
                 else if (webFont.status == 3) "Error loading font"
             }
             color: palette.windowText
-            width: parent.width; elide: "ElideRight"
+            width: parent.width; elide: Text.ElideRight
             font.family: webFont.name
             font.pointSize: 32
         }
@@ -58,7 +58,7 @@ Rectangle {
                 else if (webFont2.status == 3) "Error loading font"
             }
             color: palette.windowText
-            width: parent.width; elide: "ElideRight"
+            width: parent.width; elide: Text.ElideRight
             font.family: webFont2.name
             font.pointSize: 32
         }

@@ -1199,7 +1199,7 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 
 /*!
     \class QFxItem
-    \brief QFxItem is the most basic of all visual items in QML.
+    \brief The QFxItem class provides the most basic of all visual items in QML.
 
     All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
     has no visual appearance, it defines all the properties that are

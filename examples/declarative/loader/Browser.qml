@@ -81,7 +81,7 @@ Rectangle {
             }
             Text {
                 id: nameText
-                anchors.fill: parent; verticalAlignment: "AlignVCenter"
+                anchors.fill: parent; verticalAlignment: Text.AlignVCenter
                 text: fileName; anchors.leftMargin: 48
                 font.pixelSize: 32
                 color: wrapper.isCurrentItem ? palette.highlightedText : palette.text
@@ -225,7 +225,7 @@ Rectangle {
             anchors.left: upButton.right; anchors.right: parent.right; height: parent.height
             anchors.leftMargin: 4; anchors.rightMargin: 4
             text: folders.folder; color: "white"
-            elide: "ElideLeft"; horizontalAlignment: "AlignRight"; verticalAlignment: "AlignVCenter"
+            elide: Text.ElideLeft; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignVCenter
             font.pixelSize: 32
         }
     }

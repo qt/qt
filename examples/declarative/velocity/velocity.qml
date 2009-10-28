@@ -2,8 +2,8 @@ import Qt 4.6
 
 Rectangle {
     color: "lightSteelBlue"
-    width: 800
-    height: 600
+    width: 800; height: 600
+
     ListModel {
         id: list
         ListElement {
@@ -12,10 +12,10 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Lunch"
-                },
-                ListElement {
-                    noteText: "Party"
-                }
+                    },
+                    ListElement {
+                        noteText: "Party"
+                    }
             ]
         }
         ListElement {
@@ -24,13 +24,13 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Pickup kids"
-                },
-                ListElement {
-                    noteText: "Checkout kinetic"
-                },
-                ListElement {
-                    noteText: "Read email"
-                }
+                    },
+                    ListElement {
+                        noteText: "Checkout kinetic"
+                        },
+                        ListElement {
+                            noteText: "Read email"
+                        }
             ]
         }
         ListElement {
@@ -39,10 +39,10 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Walk dog"
-                },
-                ListElement {
-                    noteText: "Buy newspaper"
-                }
+                    },
+                    ListElement {
+                        noteText: "Buy newspaper"
+                    }
             ]
         }
         ListElement {
@@ -51,10 +51,10 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Cook dinner"
-                },
-                ListElement {
-                    noteText: "Eat dinner"
-                }
+                    },
+                    ListElement {
+                        noteText: "Eat dinner"
+                    }
             ]
         }
         ListElement {
@@ -63,10 +63,10 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "5:30pm Meeting"
-                },
-                ListElement {
-                    noteText: "Weed garden"
-                }
+                    },
+                    ListElement {
+                        noteText: "Weed garden"
+                    }
             ]
         }
         ListElement {
@@ -75,10 +75,10 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Still work"
-                },
-                ListElement {
-                    noteText: "Drink"
-                }
+                    },
+                    ListElement {
+                        noteText: "Drink"
+                    }
             ]
         }
         ListElement {
@@ -87,28 +87,21 @@ Rectangle {
             notes: [
                 ListElement {
                     noteText: "Drink"
-                },
-                ListElement {
-                    noteText: "Drink"
-                }
+                    },
+                    ListElement {
+                        noteText: "Drink"
+                    }
             ]
         }
     }
     Flickable {
         id: flickable
-        anchors.fill: parent
-        viewportWidth: lay.width
+        anchors.fill: parent; viewportWidth: lay.width
         Row {
             id: lay
             Repeater {
                 model: list
-                Component {
-                    Day {
-                        day: name
-                        color: dayColor
-                        stickies: notes
-                    }
-                }
+                Component { Day { day: name; color: dayColor; stickies: notes } }
             }
         }
     }
