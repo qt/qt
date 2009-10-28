@@ -1226,8 +1226,12 @@ bool QTreeView::viewportEvent(QEvent *event)
             if (oldIndex != newIndex) {
                 QRect oldRect = visualRect(oldIndex);
                 QRect newRect = visualRect(newIndex);
-                viewport()->update(oldRect.left() - d->indent, oldRect.top(), d->indent, oldRect.height());
-                viewport()->update(newRect.left() - d->indent, newRect.top(), d->indent, newRect.height());
+                oldRect.rLeft() -= d->indent;
+                newRect.rLeft() -= d->indent;
+                //we need to paint the whole items (including the decoration) so that when the user
+                //moves the mouse over those elements they are updated
+                viewport()->update(oldRect);
+                viewport()->update(newRect);
             }
         }
         if (selectionBehavior() == QAbstractItemView::SelectRows) {
