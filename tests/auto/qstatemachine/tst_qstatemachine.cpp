@@ -124,6 +124,7 @@ private slots:
     void postEvent();
     void cancelDelayedEvent();
     void postDelayedEventAndStop();
+    void stopAndPostEvent();
     void stateFinished();
     void parallelStates();
     void parallelRootState();
@@ -1679,6 +1680,22 @@ void tst_QStateMachine::postDelayedEventAndStop()
     QTestEventLoop::instance().enterLoop(2);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+void tst_QStateMachine::stopAndPostEvent()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    machine.stop();
+    QCOMPARE(stoppedSpy.count(), 0);
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCoreApplication::processEvents();
 }
 
 void tst_QStateMachine::stateFinished()
