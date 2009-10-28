@@ -69,9 +69,9 @@ QT_BEGIN_NAMESPACE
 
     \section1 Lifecycle of a Gesture Object
 
-    A QGesture instance is implicitely created when needed and is owned by Qt,
-    so application developer should never destroy them or store a pointer to a
-    QGesture object.
+    A QGesture instance is implicitly created when needed and is owned by Qt.
+    Developers should never destroy them or store them for later use as Qt may
+    destroy particular instances of them and create new ones to replace them.
 
     The registered gesture recognizer monitors the input events for the target
     object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
