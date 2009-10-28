@@ -170,7 +170,7 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
 void qt_syncCocoaTitleBarButtons(OSWindowRef window, QWidget *widgetForWindow);
 
 CGFloat qt_mac_get_scalefactor();
-QString qt_mac_get_pasteboardString();
+QString qt_mac_get_pasteboardString(OSPasteboardRef paste);
 
 #ifdef __OBJC__
 inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)
