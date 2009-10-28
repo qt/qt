@@ -659,8 +659,10 @@ void QFxRow::doPositioning()
             child->setX(hoffset);
             setMovingItem(0);
         }
-        hoffset += child->width();
-        hoffset += spacing();
+        if(!child->width() || !child->height()){//don't advance for invisible children
+            hoffset += child->width();
+            hoffset += spacing();
+        }
     }
 }
 
