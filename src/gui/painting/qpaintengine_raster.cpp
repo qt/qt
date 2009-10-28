@@ -5119,6 +5119,9 @@ void QSpanData::adjustSpanMethods()
 #else
         unclipped_blend = qBlendTexture;
 #endif
+        if (!texture.imageData)
+            unclipped_blend = 0;
+
         break;
     }
     // setup clipping
