@@ -166,7 +166,7 @@ static int countBits(int hint)
 const int MinNumBits = 4;
 
 QHashData QHashData::shared_null = {
-    0, 0, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true, false
+    0, 0, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true, false, 0
 };
 
 void *QHashData::allocateNode()
@@ -214,6 +214,7 @@ QHashData *QHashData::detach_helper2(void (*node_duplicate)(Node *, void *),
     d->numBuckets = numBuckets;
     d->sharable = true;
     d->strictAlignment = nodeAlign > 8;
+    d->reserved = 0;
 
     if (numBuckets) {
         QT_TRY {

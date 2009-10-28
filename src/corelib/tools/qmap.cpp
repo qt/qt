@@ -53,7 +53,7 @@ QT_BEGIN_NAMESPACE
 QMapData QMapData::shared_null = {
     &shared_null,
     { &shared_null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
-    Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, 0, false, true, false
+    Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, 0, false, true, false, 0
 };
 
 QMapData *QMapData::createData()
@@ -75,6 +75,7 @@ QMapData *QMapData::createData(int alignment)
     d->insertInOrder = false;
     d->sharable = true;
     d->strictAlignment = alignment > 8;
+    d->reserved = 0;
     return d;
 }
 

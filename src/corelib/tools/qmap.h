@@ -75,6 +75,7 @@ struct Q_CORE_EXPORT QMapData
     uint insertInOrder : 1;
     uint sharable : 1;
     uint strictAlignment : 1;
+    uint reserved : 29;
 
     static QMapData *createData(); // ### Qt5 remove me
     static QMapData *createData(int alignment);

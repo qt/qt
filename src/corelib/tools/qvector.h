@@ -72,6 +72,7 @@ struct Q_CORE_EXPORT QVectorData
 #else
     uint sharable : 1;
     uint capacity : 1;
+    uint reserved : 30;
 #endif
 
     static QVectorData shared_null;
@@ -486,6 +487,7 @@ void QVector<T>::realloc(int asize, int aalloc)
         x.d->alloc = aalloc;
         x.d->sharable = true;
         x.d->capacity = d->capacity;
+        x.d->reserved = 0;
     }
 
     if (QTypeInfo<T>::isComplex) {
