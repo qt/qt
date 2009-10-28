@@ -97,6 +97,10 @@ symbian: {
         qtlibraries.sources += QtScript.dll
     }
 
+    contains(QT_CONFIG, xmlpatterns): {
+       qtlibraries.sources += QtXmlPatterns.dll
+    }
+
     contains(QT_CONFIG, webkit): {
         qtlibraries.sources += QtWebKit.dll
     }
