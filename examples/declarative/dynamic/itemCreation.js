@@ -20,7 +20,7 @@ function setSceneOffset()
 function startDrag(mouse)
 {
     setSceneOffset();
-    startingMouse = mouse;
+    startingMouse = { x: mouse.x, y: mouse.y }
     loadComponent();
 }
 
@@ -44,8 +44,8 @@ function createItem() {
         draggedItem = itemComponent.createObject();
         draggedItem.parent = window;
         draggedItem.image = itemButton.image;
-        draggedItem.x = startingMouse.x + xOffset;
-        draggedItem.y = startingMouse.y + yOffset;
+        draggedItem.x = xOffset;
+        draggedItem.y = yOffset;
         startingZ = draggedItem.z;
         draggedItem.z = 4;//On top
     } else if (itemComponent.isError) {
@@ -60,8 +60,8 @@ function moveDrag(mouse)
     if(draggedItem == null)
         return;
 
-    draggedItem.x = mouse.x + xOffset;
-    draggedItem.y = mouse.y + yOffset;
+    draggedItem.x = mouse.x + xOffset - startingMouse.x;
+    draggedItem.y = mouse.y + yOffset - startingMouse.y;
 }
 
 function endDrag(mouse)
