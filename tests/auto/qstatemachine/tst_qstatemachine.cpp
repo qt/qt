@@ -206,6 +206,7 @@ private slots:
     void goToState();
 
     void task260403_clonedSignals();
+    void postEventFromOtherThread();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -4203,6 +4204,53 @@ void tst_QStateMachine::task260403_clonedSignals()
     emitter.emitSignalWithDefaultArg();
     QTest::qWait(1);
     QCOMPARE(t1->eventSignalIndex, emitter.metaObject()->indexOfSignal("signalWithDefaultArg()"));
+}
+
+class EventPosterThread : public QThread
+{
+    Q_OBJECT
+public:
+    EventPosterThread(QStateMachine *machine, QObject *parent = 0)
+        : QThread(parent), m_machine(machine), m_count(0)
+    {
+        moveToThread(this);
+        QObject::connect(m_machine, SIGNAL(started()),
+                         this, SLOT(postEvent()));
+    }
+protected:
+    virtual void run()
+    {
+        exec();
+    }
+private Q_SLOTS:
+    void postEvent()
+    {
+        m_machine->postEvent(new QEvent(QEvent::User));
+        if (++m_count < 10000)
+            QTimer::singleShot(0, this, SLOT(postEvent()));
+        else
+            quit();
+    }
+private:
+    QStateMachine *m_machine;
+    int m_count;
+};
+
+void tst_QStateMachine::postEventFromOtherThread()
+{
+    QStateMachine machine;
+    EventPosterThread poster(&machine);
+    StringEventPoster *s1 = new StringEventPoster("foo", &machine);
+    s1->addTransition(new EventTransition(QEvent::User, s1));
+    QFinalState *f = new QFinalState(&machine);
+    s1->addTransition(&poster, SIGNAL(finished()), f);
+    machine.setInitialState(s1);
+
+    poster.start();
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QStateMachine)
