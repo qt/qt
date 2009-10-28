@@ -79,6 +79,19 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 #include "qfxeffects.cpp"
 
 /*!
+    \qmlclass Transform
+    \brief The Transform elements provide a way of building advanced transformations on Items.
+
+    The Transform elements let you create and control advanced transformations that can be configured
+    independently using specialized properties.
+
+    You can assign any number of Transform elements to an Item. Each Transform is applied in order,
+    one at a time, to the Item it's assigned to.
+
+    \sa Rotation, Scale
+*/
+
+/*!
     \qmlclass Scale
     \brief The Scale object provides a way to scale an Item.
 
@@ -1295,7 +1308,7 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 
     This signal is emitted when the \a state of the item changes.
 
-    \sa states-transitions
+      \sa {qmlstates}{States}
 */
 
 /*!
@@ -2315,14 +2328,14 @@ QmlList<QObject *> *QFxItem::resources()
   }
   \endqml
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstate}{States}
 */
 
 /*!
   \property QFxItem::states
   This property holds a list of states defined by the item.
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstate}{States}
 */
 QmlList<QmlState *>* QFxItem::states()
 {
@@ -2344,14 +2357,14 @@ QmlList<QmlState *>* QFxItem::states()
   }
   \endqml
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {state-transitions}{Transitions}
 */
 
 /*!
   \property QFxItem::transitions
   This property holds a list of transitions defined by the item.
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {state-transitions}{Transitions}
 */
 QmlList<QmlTransition *>* QFxItem::transitions()
 {
@@ -2423,7 +2436,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   set), \c state will be a blank string. Likewise, you can return an
   item to its base state by setting its current state to \c ''.
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstates}{States}
 */
 
 /*!
@@ -2449,7 +2462,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   set), \c state will be a blank string. Likewise, you can return an
   item to its base state by setting its current state to \c ''.
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstates}{States}
 */
 QString QFxItem::state() const
 {

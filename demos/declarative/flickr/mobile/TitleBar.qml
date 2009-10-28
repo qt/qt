@@ -25,9 +25,9 @@ Item {
                 left: parent.left; right: tagButton.left; leftMargin: 10; rightMargin: 10
                 verticalCenter: parent.verticalCenter
             }
-            elide: "ElideLeft"
+            elide: Text.ElideLeft
             text: (rssModel.tags=="" ? untaggedString : taggedString + rssModel.tags)
-            font.bold: true; color: "White"; style: "Raised"; styleColor: "Black"
+            font.bold: true; color: "White"; style: Text.Raised; styleColor: "Black"
         }
 
         Button {

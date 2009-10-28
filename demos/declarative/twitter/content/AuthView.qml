@@ -12,7 +12,7 @@ Item {
             Text {
                 width: 100
                 text: "Screen name:"
-                font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+                font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Qt.AlignRight
             }
@@ -42,7 +42,7 @@ Item {
             Text {
                 width: 100
                 text: "Password:"
-                font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+                font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Qt.AlignRight
             }

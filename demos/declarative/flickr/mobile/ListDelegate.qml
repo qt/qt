@@ -14,9 +14,9 @@ Component {
             }
             Column {
                 x: 92; width: wrapper.ListView.view.width - 95; y: 15; spacing: 2
-                Text { text: title; color: "white"; width: parent.width; font.bold: true; elide: "ElideRight"; style: "Raised"; styleColor: "black" }
-                Text { text: photoAuthor; color: "white"; width: parent.width; elide: "ElideLeft"; color: "#cccccc"; style: "Raised"; styleColor: "black" }
-                Text { text: photoDate; color: "white"; width: parent.width; elide: "ElideRight"; color: "#cccccc"; style: "Raised"; styleColor: "black" }
+                Text { text: title; color: "white"; width: parent.width; font.bold: true; elide: Text.ElideRight; style: Text.Raised; styleColor: "black" }
+                Text { text: photoAuthor; color: "white"; width: parent.width; elide: Text.ElideLeft; color: "#cccccc"; style: Text.Raised; styleColor: "black" }
+                Text { text: photoDate; color: "white"; width: parent.width; elide: Text.ElideRight; color: "#cccccc"; style: Text.Raised; styleColor: "black" }
             }
         }
     }

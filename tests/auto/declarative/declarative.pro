@@ -21,6 +21,7 @@ SUBDIRS += anchors \
            qmllist \
            qmllistaccessor \
            qmlmetaproperty \
+           qmlpropertymap \
            qmltimer \
            repeater \
            sql \

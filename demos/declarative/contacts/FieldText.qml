@@ -69,7 +69,7 @@ Rectangle {
         x: 5
         width: parent.width-10
         anchors.verticalCenter: parent.verticalCenter
-        horizontalAlignment: "AlignHCenter"
+        horizontalAlignment: Text.AlignHCenter
         color: contactDetails.state == "editing" ? "#505050" : "#AAAAAA"
         font.italic: true
         font.bold: true

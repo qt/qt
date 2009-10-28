@@ -187,6 +187,6 @@ Item {
         id: categoryText;  anchors.horizontalCenter: parent.horizontalCenter; y: 15;
         text: "Flickr - " +
             (rssModel.tags=="" ? "Uploads from everyone" : "Recent Uploads tagged " + rssModel.tags)
-        font.pointSize: 20; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+        font.pointSize: 20; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
     }
 }
