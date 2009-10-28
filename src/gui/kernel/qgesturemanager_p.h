@@ -83,14 +83,14 @@ public:
 
 protected:
     void timerEvent(QTimerEvent *event);
-    bool filterEventThroughContexts(const QMap<QObject *, Qt::GestureType> &contexts,
+    bool filterEventThroughContexts(const QMultiHash<QObject *, Qt::GestureType> &contexts,
                                     QEvent *event);
 
 private:
     QMultiMap<Qt::GestureType, QGestureRecognizer *> m_recognizers;
 
     QSet<QGesture *> m_activeGestures;
-    QMap<QGesture *, QBasicTimer> m_maybeGestures;
+    QHash<QGesture *, QBasicTimer> m_maybeGestures;
 
     enum State {
         Gesture,
@@ -117,7 +117,7 @@ private:
     };
 
     QMap<ObjectGesture, QList<QGesture *> > m_objectGestures;
-    QMap<QGesture *, QGestureRecognizer *> m_gestureToRecognizer;
+    QHash<QGesture *, QGestureRecognizer *> m_gestureToRecognizer;
     QHash<QGesture *, QObject *> m_gestureOwners;
 
     QHash<QGesture *, QWidget *> m_gestureTargets;
@@ -125,7 +125,7 @@ private:
     int m_lastCustomGestureId;
 
     QHash<QGestureRecognizer *, QList<QGesture *> > m_obsoleteGestures;
-    QMap<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
+    QHash<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
     QGesture *getState(QObject *widget, QGestureRecognizer *recognizer,

@@ -113,7 +113,7 @@ void QGestureManager::unregisterGestureRecognizer(Qt::GestureType type)
 {
     QList<QGestureRecognizer *> list = m_recognizers.values(type);
     m_recognizers.remove(type);
-    foreach (QGesture* g, m_gestureToRecognizer.keys()) {
+    foreach (QGesture *g, m_gestureToRecognizer.keys()) {
         QGestureRecognizer *recognizer = m_gestureToRecognizer.value(g);
         if (list.contains(recognizer)) {
             m_deletedRecognizers.insert(g, recognizer);
@@ -191,7 +191,7 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
     return state;
 }
 
-bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
+bool QGestureManager::filterEventThroughContexts(const QMultiHash<QObject *,
                                                  Qt::GestureType> &contexts,
                                                  QEvent *event)
 {
@@ -207,7 +207,7 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
     bool ret = false;
 
     // filter the event through recognizers
-    typedef QMap<QObject *, Qt::GestureType>::const_iterator ContextIterator;
+    typedef QHash<QObject *, Qt::GestureType>::const_iterator ContextIterator;
     for (ContextIterator cit = contexts.begin(), ce = contexts.end(); cit != ce; ++cit) {
         Qt::GestureType gestureType = cit.value();
         QMap<Qt::GestureType, QGestureRecognizer *>::const_iterator
@@ -269,7 +269,7 @@ bool QGestureManager::filterEventThroughContexts(const QMap<QObject *,
                                          | finishedGestures | canceledGestures
                                          | notGestures);
     foreach(QGesture *gesture, notMaybeGestures) {
-        QMap<QGesture *, QBasicTimer>::iterator it =
+        QHash<QGesture *, QBasicTimer>::iterator it =
                 m_maybeGestures.find(gesture);
         if (it != m_maybeGestures.end()) {
             it.value().stop();
@@ -437,7 +437,7 @@ void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
 bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 {
     QSet<Qt::GestureType> types;
-    QMap<QObject *, Qt::GestureType> contexts;
+    QMultiHash<QObject *, Qt::GestureType> contexts;
     QWidget *w = receiver;
     typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
     if (!w->d_func()->gestureContext.isEmpty()) {
@@ -470,7 +470,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
 bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 {
     QSet<Qt::GestureType> types;
-    QMap<QObject *, Qt::GestureType> contexts;
+    QMultiHash<QObject *, Qt::GestureType> contexts;
     QGraphicsObject *item = receiver;
     if (!item->QGraphicsItem::d_func()->gestureContext.isEmpty()) {
         typedef QMap<Qt::GestureType, Qt::GestureContext>::const_iterator ContextIterator;
@@ -501,7 +501,7 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 
 bool QGestureManager::filterEvent(QGesture *state, QEvent *event)
 {
-    QMap<QObject *, Qt::GestureType> contexts;
+    QMultiHash<QObject *, Qt::GestureType> contexts;
     contexts.insert(state, state->gestureType());
     return filterEventThroughContexts(contexts, event);
 }
@@ -656,8 +656,8 @@ void QGestureManager::deliverEvents(const QSet<QGesture *> &gestures,
 
 void QGestureManager::timerEvent(QTimerEvent *event)
 {
-    QMap<QGesture*, QBasicTimer>::iterator it = m_maybeGestures.begin(),
-                                            e = m_maybeGestures.end();
+    QHash<QGesture *, QBasicTimer>::iterator it = m_maybeGestures.begin(),
+                                             e = m_maybeGestures.end();
     for (; it != e; ) {
         QBasicTimer &timer = it.value();
         Q_ASSERT(timer.isActive());
