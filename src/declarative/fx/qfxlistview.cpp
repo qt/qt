@@ -1628,6 +1628,7 @@ void QFxListView::incrementCurrentIndex()
     Q_D(QFxListView);
     if (currentIndex() < d->model->count() - 1 || d->wrap) {
         int index = currentIndex()+1;
+        cancelFlick();
         d->updateCurrent(index < d->model->count() ? index : 0);
     }
 }
@@ -1643,6 +1644,7 @@ void QFxListView::decrementCurrentIndex()
     Q_D(QFxListView);
     if (currentIndex() > 0 || d->wrap) {
         int index = currentIndex()-1;
+        cancelFlick();
         d->updateCurrent(index >= 0 ? index : d->model->count()-1);
     }
 }
