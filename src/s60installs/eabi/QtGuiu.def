@@ -1511,13 +1511,13 @@ EXPORTS
 	_ZN12QApplication13startDragTimeEv @ 1510 NONAME
 	_ZN12QApplication14navigationModeEv @ 1511 NONAME
 	_ZN12QApplication14overrideCursorEv @ 1512 NONAME
-	_ZN12QApplication14s60EventFilterEP8TWsEvent @ 1513 NONAME
+	_ZN12QApplication14s60EventFilterEP8TWsEvent @ 1513 NONAME ABSENT
 	_ZN12QApplication14setGlobalStrutERK5QSize @ 1514 NONAME
 	_ZN12QApplication15closeAllWindowsEv @ 1515 NONAME
 	_ZN12QApplication15cursorFlashTimeEv @ 1516 NONAME
 	_ZN12QApplication15isEffectEnabledEN2Qt8UIEffectE @ 1517 NONAME
 	_ZN12QApplication15layoutDirectionEv @ 1518 NONAME
-	_ZN12QApplication15s60ProcessEventEP8TWsEvent @ 1519 NONAME
+	_ZN12QApplication15s60ProcessEventEP8TWsEvent @ 1519 NONAME ABSENT
 	_ZN12QApplication15setActiveWindowEP7QWidget @ 1520 NONAME
 	_ZN12QApplication15setInputContextEP13QInputContext @ 1521 NONAME
 	_ZN12QApplication15topLevelWidgetsEv @ 1522 NONAME
@@ -1546,10 +1546,10 @@ EXPORTS
 	_ZN12QApplication20changeOverrideCursorERK7QCursor @ 1545 NONAME
 	_ZN12QApplication20desktopSettingsAwareEv @ 1546 NONAME
 	_ZN12QApplication20setStartDragDistanceEi @ 1547 NONAME
-	_ZN12QApplication20symbianHandleCommandEi @ 1548 NONAME
+	_ZN12QApplication20symbianHandleCommandEi @ 1548 NONAME ABSENT
 	_ZN12QApplication21keyboardInputIntervalEv @ 1549 NONAME
 	_ZN12QApplication21restoreOverrideCursorEv @ 1550 NONAME
-	_ZN12QApplication21symbianResourceChangeEi @ 1551 NONAME
+	_ZN12QApplication21symbianResourceChangeEi @ 1551 NONAME ABSENT
 	_ZN12QApplication22keyboardInputDirectionEv @ 1552 NONAME
 	_ZN12QApplication22quitOnLastWindowClosedEv @ 1553 NONAME
 	_ZN12QApplication22setDoubleClickIntervalEi @ 1554 NONAME
@@ -2458,7 +2458,7 @@ EXPORTS
 	_ZN13QInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 2457 NONAME
 	_ZN13QInputContext11qt_metacastEPKc @ 2458 NONAME
 	_ZN13QInputContext12mouseHandlerEiP11QMouseEvent @ 2459 NONAME
-	_ZN13QInputContext14s60FilterEventEP7QWidgetP8TWsEvent @ 2460 NONAME
+	_ZN13QInputContext14s60FilterEventEP7QWidgetP8TWsEvent @ 2460 NONAME ABSENT
 	_ZN13QInputContext14setFocusWidgetEP7QWidget @ 2461 NONAME
 	_ZN13QInputContext15widgetDestroyedEP7QWidget @ 2462 NONAME
 	_ZN13QInputContext16staticMetaObjectE @ 2463 NONAME DATA 16
@@ -3141,7 +3141,7 @@ EXPORTS
 	_ZN14QWidgetPrivate25setLayoutDirection_helperEN2Qt15LayoutDirectionE @ 3140 NONAME
 	_ZN14QWidgetPrivate26adjustQuitOnCloseAttributeEv @ 3141 NONAME
 	_ZN14QWidgetPrivate26createDefaultWindowSurfaceEv @ 3142 NONAME
-	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEP7QWidget @ 3143 NONAME
+	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEPK7QWidget @ 3143 NONAME
 	_ZN14QWidgetPrivate27widgetInNavigationDirectionENS_9DirectionE @ 3144 NONAME
 	_ZN14QWidgetPrivate29invalidateBuffer_resizeHelperERK6QPointRK5QSize @ 3145 NONAME
 	_ZN14QWidgetPrivate30createDefaultWindowSurface_sysEv @ 3146 NONAME
@@ -5215,11 +5215,11 @@ EXPORTS
 	_ZN24QGraphicsSceneWheelEventD1Ev @ 5214 NONAME
 	_ZN24QGraphicsSceneWheelEventD2Ev @ 5215 NONAME
 	_ZN24QImagePixmapCleanupHooks12addImageHookEPFvxE @ 5216 NONAME
-	_ZN24QImagePixmapCleanupHooks13addPixmapHookEPFvP7QPixmapE @ 5217 NONAME
+	_ZN24QImagePixmapCleanupHooks13addPixmapHookEPFvP7QPixmapE @ 5217 NONAME ABSENT
 	_ZN24QImagePixmapCleanupHooks15removeImageHookEPFvxE @ 5218 NONAME
-	_ZN24QImagePixmapCleanupHooks16removePixmapHookEPFvP7QPixmapE @ 5219 NONAME
+	_ZN24QImagePixmapCleanupHooks16removePixmapHookEPFvP7QPixmapE @ 5219 NONAME ABSENT
 	_ZN24QImagePixmapCleanupHooks17executeImageHooksEx @ 5220 NONAME
-	_ZN24QImagePixmapCleanupHooks18executePixmapHooksEP7QPixmap @ 5221 NONAME
+	_ZN24QImagePixmapCleanupHooks18executePixmapHooksEP7QPixmap @ 5221 NONAME ABSENT
 	_ZN24QImagePixmapCleanupHooks8instanceEv @ 5222 NONAME
 	_ZN24QImagePixmapCleanupHooksC1Ev @ 5223 NONAME
 	_ZN24QImagePixmapCleanupHooksC2Ev @ 5224 NONAME
@@ -11585,4 +11585,34 @@ EXPORTS
 	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11584 NONAME
 	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11585 NONAME
 	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11586 NONAME
+	_ZN12QApplication18symbianEventFilterEPK13QSymbianEvent @ 11587 NONAME
+	_ZN12QApplication19symbianProcessEventEPK13QSymbianEvent @ 11588 NONAME
+	_ZN13QInputContext18symbianFilterEventEP7QWidgetPK13QSymbianEvent @ 11589 NONAME
+	_ZN13QSymbianEventC1ENS_4TypeEi @ 11590 NONAME
+	_ZN13QSymbianEventC1EPK8TWsEvent @ 11591 NONAME
+	_ZN13QSymbianEventC2ENS_4TypeEi @ 11592 NONAME
+	_ZN13QSymbianEventC2EPK8TWsEvent @ 11593 NONAME
+	_ZN13QSymbianEventD1Ev @ 11594 NONAME
+	_ZN13QSymbianEventD2Ev @ 11595 NONAME
+	_ZN15QGraphicsAnchor13setSizePolicyEN11QSizePolicy6PolicyE @ 11596 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11597 NONAME
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11598 NONAME
+	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11599 NONAME
+	_ZN24QImagePixmapCleanupHooks24addPixmapDestructionHookEPFvP7QPixmapE @ 11600 NONAME
+	_ZN24QImagePixmapCleanupHooks25addPixmapModificationHookEPFvP7QPixmapE @ 11601 NONAME
+	_ZN24QImagePixmapCleanupHooks27removePixmapDestructionHookEPFvP7QPixmapE @ 11602 NONAME
+	_ZN24QImagePixmapCleanupHooks28removePixmapModificationHookEPFvP7QPixmapE @ 11603 NONAME
+	_ZN24QImagePixmapCleanupHooks29executePixmapDestructionHooksEP7QPixmap @ 11604 NONAME
+	_ZN24QImagePixmapCleanupHooks30executePixmapModificationHooksEP7QPixmap @ 11605 NONAME
+	_ZNK11QPixmapData26createCompatiblePixmapDataEv @ 11606 NONAME
+	_ZNK13QSymbianEvent17windowServerEventEv @ 11607 NONAME
+	_ZNK13QSymbianEvent18resourceChangeTypeEv @ 11608 NONAME
+	_ZNK13QSymbianEvent7commandEv @ 11609 NONAME
+	_ZNK15QGraphicsAnchor10sizePolicyEv @ 11610 NONAME
+	_ZNK21QGraphicsLinearLayout4dumpEi @ 11611 NONAME
+	_Zls6QDebug6QFlagsIN6QStyle9StateFlagEE @ 11612 NONAME
+	_Zls6QDebugRK12QStyleOption @ 11613 NONAME
+	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11614 NONAME
+	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
+	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
 

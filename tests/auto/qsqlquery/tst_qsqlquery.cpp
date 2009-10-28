@@ -193,6 +193,8 @@ private slots:
 
     void sqlServerReturn0_data() { generic_data(); }
     void sqlServerReturn0();
+    void QTBUG_551_data() { generic_data("QOCI"); }
+    void QTBUG_551();
 
 private:
     // returns all database connections
@@ -322,6 +324,11 @@ void tst_QSqlQuery::dropTestTables( QSqlDatabase db )
     tablenames << qTableName("test141895");
 
     tst_Databases::safeDropTables( db, tablenames );
+
+    if ( db.driverName().startsWith( "QOCI" ) ) {
+        QSqlQuery q( db );
+        q.exec( "DROP PACKAGE " + qTableName("pkg") );
+    }
 }
 
 void tst_QSqlQuery::createTestTables( QSqlDatabase db )
@@ -2845,6 +2852,53 @@ void tst_QSqlQuery::sqlServerReturn0()
     QVERIFY_SQL(q, exec("{CALL "+procName+"}"));
 
     QVERIFY_SQL(q, next());
+}
+
+void tst_QSqlQuery::QTBUG_551()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+    QSqlQuery q(db);
+    QString pkgname=qTableName("pkg");
+    QVERIFY_SQL(q, exec("CREATE OR REPLACE PACKAGE "+pkgname+" IS \n\
+            \n\
+            TYPE IntType IS TABLE OF INTEGER      INDEX BY BINARY_INTEGER;\n\
+            TYPE VCType  IS TABLE OF VARCHAR2(60) INDEX BY BINARY_INTEGER;\n\
+            PROCEDURE P (Inp IN IntType,  Outp OUT VCType);\n\
+            END "+pkgname+";"));
+
+     QVERIFY_SQL(q, exec("CREATE OR REPLACE PACKAGE BODY "+pkgname+" IS\n\
+            PROCEDURE P (Inp IN IntType,  Outp OUT VCType)\n\
+            IS\n\
+            BEGIN\n\
+             Outp(1) := '1. Value is ' ||TO_CHAR(Inp(1));\n\
+             Outp(2) := '2. Value is ' ||TO_CHAR(Inp(2));\n\
+             Outp(3) := '3. Value is ' ||TO_CHAR(Inp(3));\n\
+            END p;\n\
+            END "+pkgname+";"));
+
+    QVariantList inLst, outLst, res_outLst;
+
+    q.prepare("begin "+pkgname+".p(:inp, :outp); end;");
+
+    QString StVal;
+    StVal.reserve(60);
+
+    // loading arrays
+    for (int Cnt=0; Cnt < 3; Cnt++) {
+        inLst << Cnt;
+        outLst << StVal;
+    }
+
+    q.bindValue(":inp", inLst);
+    q.bindValue(":outp", outLst, QSql::Out);
+
+    QVERIFY_SQL(q, execBatch(QSqlQuery::ValuesAsColumns) );
+    res_outLst = qVariantValue<QVariantList>(q.boundValues()[":outp"]);
+    QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
+    QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
+    QCOMPARE(res_outLst[2].toString(), QLatin1String("3. Value is 2"));
 }
 
 QTEST_MAIN( tst_QSqlQuery )
