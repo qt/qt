@@ -663,11 +663,12 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
 
     bool canWait;
     bool retVal = false;
+    bool seenWM_QT_SENDPOSTEDEVENTS = false;
+    bool needWM_QT_SENDPOSTEDEVENTS = false;
     do {
         DWORD waitRet = 0;
         HANDLE pHandles[MAXIMUM_WAIT_OBJECTS - 1];
         QVarLengthArray<MSG> processedTimers;
-        bool seenWM_QT_SENDPOSTEDEVENTS = false;
         while (!d->interrupt) {
             DWORD nCount = d->winEventNotifierList.count();
             Q_ASSERT(nCount < MAXIMUM_WAIT_OBJECTS - 1);
@@ -717,8 +718,8 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             if (haveMessage) {
                 if (msg.message == WM_QT_SENDPOSTEDEVENTS && !(flags & QEventLoop::EventLoopExec)) {
                     if (seenWM_QT_SENDPOSTEDEVENTS) {
-                        PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
-                        break;
+                        needWM_QT_SENDPOSTEDEVENTS = true;
+                        continue;
                     }
                     seenWM_QT_SENDPOSTEDEVENTS = true;
                 } else if (msg.message == WM_TIMER) {
@@ -769,6 +770,9 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
             }
         }
     } while (canWait);
+
+    if (needWM_QT_SENDPOSTEDEVENTS)
+        PostMessage(d->internalHwnd, WM_QT_SENDPOSTEDEVENTS, 0, 0);
 
     return retVal;
 }
