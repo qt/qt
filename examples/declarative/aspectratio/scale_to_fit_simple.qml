@@ -12,6 +12,7 @@ Rectangle {
 
     Image {
         id: face
+        smooth: true
         source: "pics/face.png"
         fillMode: Image.PreserveAspectFit
         anchors.fill: parent
