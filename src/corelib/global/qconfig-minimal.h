@@ -123,9 +123,6 @@
 #endif
 
 /* Images */
-#ifndef QT_NO_ICON
-#  define QT_NO_ICON
-#endif
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 #  define QT_NO_IMAGEFORMATPLUGIN
 #endif
