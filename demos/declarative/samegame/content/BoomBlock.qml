@@ -49,6 +49,7 @@ Item { id:block
             PropertyChanges { target: particles; opacity: 1 }
             PropertyChanges { target: particles; emitting: false } // i.e. emit only once
             PropertyChanges { target: img; opacity: 0 }
+            StateChangeScript { script: block.destroy(1000); }
         }
     ]
 }

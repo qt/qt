@@ -168,7 +168,7 @@ void QmlInspectorMode::connectionStateChanged()
     switch (m_conn->state()) {
         default:
         case QAbstractSocket::UnconnectedState:
-            emit statusMessage(tr("[Inspector] disconnected\n\n"));
+            emit statusMessage(tr("[Inspector] disconnected.\n\n"));
             m_addressEdit->setEnabled(true);
             m_portSpinBox->setEnabled(true);
             break;
@@ -180,7 +180,7 @@ void QmlInspectorMode::connectionStateChanged()
             break;
         case QAbstractSocket::ConnectedState:
         {
-            emit statusMessage(tr("[Inspector] connected\n"));
+            emit statusMessage(tr("[Inspector] connected.\n"));
             m_addressEdit->setEnabled(false);
             m_portSpinBox->setEnabled(false);
 

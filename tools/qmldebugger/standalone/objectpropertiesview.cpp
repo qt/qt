@@ -2,6 +2,7 @@
 
 #include <QtGui/qtreewidget.h>
 #include <QtGui/qlayout.h>
+#include <QtGui/qheaderview.h>
 
 #include <QtDeclarative/qmldebugservice.h>
 #include <QtDeclarative/qmldebug.h>
@@ -45,11 +46,13 @@ ObjectPropertiesView::ObjectPropertiesView(QmlEngineDebug *client, QWidget *pare
     m_tree = new QTreeWidget(this);
     m_tree->setAlternatingRowColors(true);
     m_tree->setExpandsOnDoubleClick(false);
-    m_tree->setHeaderLabels(QStringList() << tr("Property") << tr("Value"));
+    m_tree->setHeaderLabels(QStringList()
+            << tr("Name") << tr("Value") << tr("Type"));
     QObject::connect(m_tree, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
                      this, SLOT(itemActivated(QTreeWidgetItem *)));
 
-    m_tree->setColumnCount(2);
+    m_tree->setColumnCount(3);
+    m_tree->header()->setDefaultSectionSize(150);
 
     layout->addWidget(m_tree);
 }
@@ -130,11 +133,11 @@ void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
             binding->setText(1, p.binding());
             binding->setForeground(1, Qt::darkGreen);
         }
+        
+        item->setText(2, p.valueTypeName());
 
         item->setExpanded(true);
     }
-
-    m_tree->resizeColumnToContents(0);
 }
 
 void ObjectPropertiesView::watchCreated(QmlDebugWatch *watch)
@@ -175,9 +178,7 @@ void ObjectPropertiesView::valueChanged(const QByteArray &name, const QVariant &
         PropertiesViewItem *item = static_cast<PropertiesViewItem *>(m_tree->topLevelItem(i));
         if (item->property.name() == name) {
             if (value.isNull()) {
-                item->setText(1, QLatin1String("<null>")
-                        + QLatin1String(" : ")
-                        + item->property.valueTypeName());
+                item->setText(1, QLatin1String("<null>"));
             } else {
                 item->setText(1, value.toString());
             }

@@ -72,10 +72,18 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
 
     The model may be either an object list, a string list, a number or a Qt model.
     In each case, the data element and the index is exposed to each instantiated
-    component.  The index is always exposed as an accessible \c index property.
+    component.  
+    
+    The index is always exposed as an accessible \c index property.
     In the case of an object or string list, the data element (of type string
     or object) is available as the \c modelData property.  In the case of a Qt model,
-    all roles are available as named properties just like in the view classes.
+    all roles are available as named properties just like in the view classes. The
+    following example shows how to use the index property inside the instantiated
+    items.
+
+    \snippet doc/src/snippets/declarative/repeater-index.qml 0
+
+    \image repeater-index.png
 
     Items instantiated by the Repeater are inserted, in order, as
     children of the Repeater's parent.  The insertion starts immediately after

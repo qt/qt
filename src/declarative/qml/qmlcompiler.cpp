@@ -2234,6 +2234,7 @@ bool QmlCompiler::buildDynamicMeta(QmlParser::Object *obj, DynamicMetaMode mode)
         }
         sig.append(")");
         QMetaMethodBuilder b = builder.addSlot(sig);
+        b.setReturnType("QVariant");
         b.setParameterNames(s.parameterNames);
 
         ((QmlVMEMetaData *)dynamicData.data())->methodCount++;

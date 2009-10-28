@@ -1,4 +1,5 @@
-DESTDIR = ../../bin
+DESTDIR = ../../../bin
+TARGET = qmldebugger
 
 include(qmldebugger.pri)
 

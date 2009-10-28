@@ -102,7 +102,9 @@ void InspectorOutputPane::addErrorOutput(RunControl *, const QString &text)
 
 void InspectorOutputPane::addInspectorStatus(const QString &text)
 {
+    m_textEdit->setTextColor(Qt::darkGreen);
     m_textEdit->append(text);
     m_textEdit->moveCursor(QTextCursor::End);
+    m_textEdit->setTextColor(Qt::black);
 }
 

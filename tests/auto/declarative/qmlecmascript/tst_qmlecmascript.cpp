@@ -152,6 +152,13 @@ void tst_qmlecmascript::methods()
         QCOMPARE(object->methodCalled(), false);
         QCOMPARE(object->methodIntCalled(), true);
     }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("methods.3.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("test").toInt(), 19);
+    }
 }
 
 void tst_qmlecmascript::bindingLoop()
