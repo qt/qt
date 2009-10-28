@@ -684,9 +684,10 @@ void QS60PixmapData::beginDataAccess()
 
     uchar* newBytes = (uchar*)cfbsBitmap->DataAddress();
 
-    if (newBytes == bytes)
-        return;
+    TSize size = cfbsBitmap->SizeInPixels();
 
+    if (newBytes == bytes && image.width() == size.iWidth && image.height() == size.iHeight)
+        return;
 
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
@@ -694,8 +695,6 @@ void QS60PixmapData::beginDataAccess()
     //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
     if (format == QImage::Format_ARGB32)
         format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
-
-    TSize size = cfbsBitmap->SizeInPixels();
 
     QVector<QRgb> savedColorTable;
     if (!image.isNull())
