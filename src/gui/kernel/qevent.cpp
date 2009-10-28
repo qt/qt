@@ -4345,6 +4345,7 @@ QWidget *QGestureEvent::widget() const
     return d_func()->widget;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 /*!
     Returns the scene-local coordinates if the \a gesturePoint is inside a graphics view.
 
@@ -4361,6 +4362,7 @@ QPointF QGestureEvent::mapToScene(const QPointF &gesturePoint) const
     }
     return QPointF();
 }
+#endif //QT_NO_GRAPHICSVIEW
 
 /*!
     \internal

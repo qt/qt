@@ -668,9 +668,11 @@ void QWSWindowSurface::flush(QWidget *widget, const QRegion &region,
     if (!win)
         return;
 
+#ifndef QT_NO_GRAPHICSVIEW
     QWExtra *extra = win->d_func()->extra;
     if (extra && extra->proxyWidget)
         return;
+#endif //QT_NO_GRAPHICSVIEW
 
     Q_UNUSED(offset);
 

@@ -1549,7 +1549,9 @@ void QWidgetPrivate::createExtra()
         extra = new QWExtra;
         extra->glContext = 0;
         extra->topextra = 0;
+#ifndef QT_NO_GRAPHICSVIEW
         extra->proxyWidget = 0;
+#endif
 #ifndef QT_NO_CURSOR
         extra->curs = 0;
 #endif
@@ -1699,12 +1701,13 @@ void QWidgetPrivate::propagatePaletteChange()
 {
     Q_Q(QWidget);
     // Propagate a new inherited mask to all children.
-    if (!q->parentWidget() && extra && extra->proxyWidget) {
 #ifndef QT_NO_GRAPHICSVIEW
+    if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedPaletteResolveMask = p->d_func()->inheritedPaletteResolveMask | p->palette().resolve();
+    } else
 #endif //QT_NO_GRAPHICSVIEW
-    } else if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
+        if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
     int mask = data.pal.resolve() | inheritedPaletteResolveMask;
@@ -4381,7 +4384,11 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
     Q_Q(const QWidget);
     QPalette naturalPalette = QApplication::palette(q);
     if (!q->testAttribute(Qt::WA_StyleSheet)
-        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation) || (extra && extra->proxyWidget))) {
+        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
+#ifndef QT_NO_GRAPHICSVIEW
+            || (extra && extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet)) {
                 if (!naturalPalette.isCopyOf(QApplication::palette())) {
@@ -4392,13 +4399,14 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
                     naturalPalette = p->palette();
                 }
             }
-        } else if (extra && extra->proxyWidget) {
+        }
 #ifndef QT_NO_GRAPHICSVIEW
+        else if (extra && extra->proxyWidget) {
             QPalette inheritedPalette = extra->proxyWidget->palette();
             inheritedPalette.resolve(inheritedMask);
             naturalPalette = inheritedPalette.resolve(naturalPalette);
-#endif //QT_NO_GRAPHICSVIEW
         }
+#endif //QT_NO_GRAPHICSVIEW
     }
     naturalPalette.resolve(0);
     return naturalPalette;
@@ -4516,7 +4524,11 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
     Q_Q(const QWidget);
     QFont naturalFont = QApplication::font(q);
     if (!q->testAttribute(Qt::WA_StyleSheet)
-        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation) || (extra && extra->proxyWidget))) {
+        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
+#ifndef QT_NO_GRAPHICSVIEW
+            || (extra && extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet)) {
                 if (!naturalFont.isCopyOf(QApplication::font())) {
@@ -4527,13 +4539,14 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
                     naturalFont = p->font();
                 }
             }
-        } else if (extra && extra->proxyWidget) {
+        }
 #ifndef QT_NO_GRAPHICSVIEW
+        else if (extra && extra->proxyWidget) {
             QFont inheritedFont = extra->proxyWidget->font();
             inheritedFont.resolve(inheritedMask);
             naturalFont = inheritedFont.resolve(naturalFont);
-#endif //QT_NO_GRAPHICSVIEW
         }
+#endif //QT_NO_GRAPHICSVIEW
     }
     naturalFont.resolve(0);
     return naturalFont;
@@ -4580,12 +4593,13 @@ void QWidgetPrivate::updateFont(const QFont &font)
     data.fnt.x11SetScreen(xinfo.screen());
 #endif
     // Combine new mask with natural mask and propagate to children.
-    if (!q->parentWidget() && extra && extra->proxyWidget) {
 #ifndef QT_NO_GRAPHICSVIEW
+    if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
+    } else 
 #endif //QT_NO_GRAPHICSVIEW
-    } else if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
+    if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
     }
     uint newMask = data.fnt.resolve() | inheritedFontResolveMask;
@@ -5396,7 +5410,11 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
                                , sharedPainter, backingStore);
     }
 
-    if (w->updatesEnabled() && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)) {
+    if (w->updatesEnabled()
+#ifndef QT_NO_GRAPHICSVIEW
+            && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+       ) {
         QRegion wRegion(rgn);
         wRegion &= wd->effectiveRectFor(w->data->crect);
         wRegion.translate(-widgetPos);
