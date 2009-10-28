@@ -7,22 +7,22 @@ Image {
     fillMode: SequentialAnimation {
         running: true
         repeat: true
-        PropertyAction { value: "Stretch" }
+        PropertyAction { value: Image.Stretch }
         PropertyAction { target: label; property: "text"; value: "Stretch" }
         PauseAnimation { duration: 1000 }
-        PropertyAction { value: "PreserveAspectFit" }
+        PropertyAction { value: Image.PreserveAspectFit }
         PropertyAction { target: label; property: "text"; value: "PreserveAspectFit" }
         PauseAnimation { duration: 1000 }
-        PropertyAction { value: "PreserveAspectCrop" }
+        PropertyAction { value: Image.PreserveAspectCrop }
         PropertyAction { target: label; property: "text"; value: "PreserveAspectCrop" }
         PauseAnimation { duration: 1000 }
-        PropertyAction { value: "Tile" }
+        PropertyAction { value: Image.Tile }
         PropertyAction { target: label; property: "text"; value: "Tile" }
         PauseAnimation { duration: 1000 }
-        PropertyAction { value: "TileHorizontally" }
+        PropertyAction { value: Image.TileHorizontally }
         PropertyAction { target: label; property: "text"; value: "TileHorizontally" }
         PauseAnimation { duration: 1000 }
-        PropertyAction { value: "TileVertically" }
+        PropertyAction { value: Image.TileVertically }
         PropertyAction { target: label; property: "text"; value: "TileVertically" }
         PauseAnimation { duration: 1000 }
     }
@@ -30,7 +30,7 @@ Image {
         id: label
         font.pointSize: 24
         color: "blue"
-        style: "Outline"
+        style: Text.Outline
         styleColor: "white"
         anchors { centerIn: parent }
     }

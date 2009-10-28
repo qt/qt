@@ -66,6 +66,7 @@ private slots:
     void signalTriggeredBindings();
     void listProperties();
     void exceptionClearsOnReeval();
+    void transientErrors();
 
 private:
     QmlEngine engine;
@@ -151,6 +152,13 @@ void tst_qmlecmascript::methods()
         emit object->basicSignal();
         QCOMPARE(object->methodCalled(), false);
         QCOMPARE(object->methodIntCalled(), true);
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("methods.3.qml"));
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        QCOMPARE(object->property("test").toInt(), 19);
     }
 }
 
@@ -838,6 +846,28 @@ void tst_qmlecmascript::exceptionClearsOnReeval()
     object->setObjectProperty(&object2);
 
     QCOMPARE(object->property("test").toBool(), true);
+}
+
+static int transientErrorsMsgCount = 0;
+static void transientErrorsMsgHandler(QtMsgType, const char *)
+{
+    ++transientErrorsMsgCount;
+}
+
+// Check that transient binding errors are not displayed
+void tst_qmlecmascript::transientErrors()
+{
+    QmlComponent component(&engine, TEST_FILE("transientErrors.qml"));
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    qInstallMsgHandler(old);
+
+    QCOMPARE(transientErrorsMsgCount, 0);
 }
 
 QTEST_MAIN(tst_qmlecmascript)

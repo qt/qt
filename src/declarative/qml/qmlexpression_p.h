@@ -83,7 +83,7 @@ class QmlExpressionData : public QmlAbstractExpression, public QmlRefCount
 {
 public:
     QmlExpressionData();
-    ~QmlExpressionData();
+    virtual ~QmlExpressionData();
 
     QmlExpressionPrivate *q;
 
@@ -91,6 +91,8 @@ public:
     bool expressionFunctionValid:1;
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
+
+    QmlError error;
 
     QmlBasicScript sse;
     QObject *me;
@@ -151,7 +153,7 @@ public:
         return static_cast<QmlExpressionPrivate *>(QObjectPrivate::get(expr));
     }
 
-    static void printException(QScriptEngine *);
+    static void exceptionToError(QScriptEngine *, QmlError &);
 };
 
 QT_END_NAMESPACE

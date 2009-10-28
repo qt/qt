@@ -72,5 +72,6 @@ Rectangle {
         preferredHighlightBegin: 125
         preferredHighlightEnd: 125
         highlightRangeMode: "StrictlyEnforceRange"
+        flickDeceleration: 1000
     }
 }

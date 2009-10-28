@@ -96,7 +96,7 @@ Item {
                                 properties: "angle"
                             }
                             ScriptAction{
-                                script: "if(modelData.hasMine && modelData.flipped){expl.explode = true;}"
+                                script: if(modelData.hasMine && modelData.flipped){expl.explode = true;}
                             }
                         }
                     }

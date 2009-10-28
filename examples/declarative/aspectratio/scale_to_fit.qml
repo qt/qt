@@ -12,6 +12,7 @@ Rectangle {
 
     Image {
         id: face
+        smooth: true
         source: "pics/face.png"
         x: (parent.width-width*scale)/2
         y: (parent.height-height*scale)/2

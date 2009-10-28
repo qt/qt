@@ -269,10 +269,11 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
                 QString code = QString::fromRawData(body, data->bodyLength);
 
+                QVariant rv;
                 if (0 == (metaData->methodData() + id)->parameterCount) {
                     QmlExpression expr(ctxt, code, object);
                     expr.setTrackChange(false);
-                    expr.value();
+                    rv = expr.value();
                 } else {
                     QmlContext newCtxt(ctxt);
                     QMetaMethod m = method(_id);
@@ -281,8 +282,9 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                         newCtxt.setContextProperty(QString::fromLatin1(names.at(ii)), *(QVariant *)a[ii + 1]);
                     QmlExpression expr(&newCtxt, code, object);
                     expr.setTrackChange(false);
-                    expr.value();
+                    rv = expr.value();
                 }
+                if (a[0]) *reinterpret_cast<QVariant *>(a[0]) = rv;
             }
             return -1;
         }

@@ -72,7 +72,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(HighlightRangeMode highlightRangeMode READ highlightRangeMode WRITE setHighlightRangeMode)
 
     Q_PROPERTY(qreal spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
-    Q_PROPERTY(Qt::Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(Orientation orientation READ orientation WRITE setOrientation NOTIFY orientationChanged)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
@@ -81,6 +81,7 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
     Q_ENUMS(HighlightRangeMode)
+    Q_ENUMS(Orientation)
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
@@ -118,8 +119,9 @@ public:
     qreal spacing() const;
     void setSpacing(qreal spacing);
 
-    Qt::Orientation orientation() const;
-    void setOrientation(Qt::Orientation);
+    enum Orientation { Horizontal = Qt::Horizontal, Vertical = Qt::Vertical };
+    Orientation orientation() const;
+    void setOrientation(Orientation);
 
     bool isWrapEnabled() const;
     void setWrapEnabled(bool);

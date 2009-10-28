@@ -57,6 +57,8 @@ QT_BEGIN_NAMESPACE
 static const int DragThreshold = 8;
 static const int FlickThreshold = 20;
 
+// Really slow flicks can be annoying.
+static const int minimumFlickVelocity = 200;
 
 class QFxFlickableVisibleArea : public QObject
 {
@@ -183,6 +185,8 @@ void QFxFlickablePrivate::flickX(qreal velocity)
 {
     Q_Q(QFxFlickable);
     qreal maxDistance = -1;
+    if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
+        velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
     // -ve velocity means list is moving up
     if (velocity > 0) {
         if (_moveX.value() < q->minXExtent())
@@ -686,8 +690,8 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     if (rejectX) velocityX = 0;
 
     if (moved) {
-        q->viewportMoved();
         q->movementStarting();
+        q->viewportMoved();
     }
 
     lastPos = event->pos();
@@ -707,15 +711,23 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *even
     }
 
     vTime = timeline.time();
-    if (qAbs(velocityY) > 10 && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold)
-        flickY(velocityY);
-    else
+    if (qAbs(velocityY) > 10 && qAbs(event->pos().y() - pressPos.y()) > FlickThreshold) {
+        qreal velocity = velocityY;
+        if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
+            velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
+        flickY(velocity);
+    } else {
         fixupY();
+    }
 
-    if (qAbs(velocityX) > 10 && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold)
-        flickX(velocityX);
-    else
+    if (qAbs(velocityX) > 10 && qAbs(event->pos().x() - pressPos.x()) > FlickThreshold) {
+        qreal velocity = velocityX;
+        if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
+            velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
+        flickX(velocity);
+    } else {
         fixupX();
+    }
 
     stealMouse = false;
     lastPosTime = QTime();

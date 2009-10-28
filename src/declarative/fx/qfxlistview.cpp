@@ -141,15 +141,15 @@ public:
     }
     ~FxListItem() {}
 
-    qreal position() const { return (view->orientation() == Qt::Vertical ? item->y() : item->x()); }
-    int size() const { return (view->orientation() == Qt::Vertical ? item->height() : item->width()); }
+    qreal position() const { return (view->orientation() == QFxListView::Vertical ? item->y() : item->x()); }
+    int size() const { return (view->orientation() == QFxListView::Vertical ? item->height() : item->width()); }
     qreal endPosition() const {
-        return (view->orientation() == Qt::Vertical
+        return (view->orientation() == QFxListView::Vertical
                                         ? item->y() + (item->height() > 0 ? item->height() : 1)
                                         : item->x() + (item->width() > 0 ? item->width() : 1)) - 1;
     }
     void setPosition(qreal pos) {
-        if (view->orientation() == Qt::Vertical) {
+        if (view->orientation() == QFxListView::Vertical) {
             item->setY(pos);
         } else {
             item->setX(pos);
@@ -170,7 +170,7 @@ class QFxListViewPrivate : public QFxFlickablePrivate
 
 public:
     QFxListViewPrivate()
-        : model(0), currentItem(0), orient(Qt::Vertical)
+        : model(0), currentItem(0), orient(QFxListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
@@ -199,18 +199,18 @@ public:
 
     qreal position() const {
         Q_Q(const QFxListView);
-        return orient == Qt::Vertical ? q->viewportY() : q->viewportX();
+        return orient == QFxListView::Vertical ? q->viewportY() : q->viewportX();
     }
     void setPosition(qreal pos) {
         Q_Q(QFxListView);
-        if (orient == Qt::Vertical)
+        if (orient == QFxListView::Vertical)
             q->setViewportY(pos);
         else
             q->setViewportX(pos);
     }
     qreal size() const {
         Q_Q(const QFxListView);
-        return orient == Qt::Vertical ? q->height() : q->width();
+        return orient == QFxListView::Vertical ? q->height() : q->width();
     }
 
     qreal startPosition() const {
@@ -378,7 +378,7 @@ public:
     QList<FxListItem*> visibleItems;
     QHash<QFxItem*,int> unrequestedItems;
     FxListItem *currentItem;
-    Qt::Orientation orient;
+    QFxListView::Orientation orient;
     int visiblePos;
     int visibleIndex;
     qreal averageSize;
@@ -454,7 +454,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         model->completeItem();
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
-        if (orient == Qt::Vertical)
+        if (orient == QFxListView::Vertical)
             QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
         else
             QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
@@ -470,8 +470,8 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     if (!item)
         return;
     if (trackedItem == item) {
-        const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-        const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+        const char *notifier1 = orient == QFxListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
+        const char *notifier2 = orient == QFxListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
@@ -479,7 +479,7 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
-        if (orient == Qt::Vertical)
+        if (orient == QFxListView::Vertical)
             QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
         else
             QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
@@ -553,7 +553,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
         updateAverage();
         if (!sectionExpression.isEmpty())
             updateCurrentSection();
-        if (orient == Qt::Vertical)
+        if (orient == QFxListView::Vertical)
             q->setViewportHeight(endPosition() - startPosition());
         else
             q->setViewportWidth(endPosition() - startPosition());
@@ -597,7 +597,7 @@ void QFxListViewPrivate::updateUnrequestedPositions()
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
         if (visibleItem(*it))
             continue;
-        if (orient == Qt::Vertical)
+        if (orient == QFxListView::Vertical)
             it.key()->setY(positionAt(*it));
         else
             it.key()->setX(positionAt(*it));
@@ -613,8 +613,8 @@ void QFxListViewPrivate::updateTrackedItem()
 
     FxListItem *oldTracked = trackedItem;
 
-    const char *notifier1 = orient == Qt::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-    const char *notifier2 = orient == Qt::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+    const char *notifier1 = orient == QFxListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
+    const char *notifier2 = orient == QFxListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
@@ -669,16 +669,16 @@ void QFxListViewPrivate::createHighlight()
         if (item) {
             item->setZValue(0);
             highlight = new FxListItem(item, q);
-            if (orient == Qt::Vertical)
+            if (orient == QFxListView::Vertical)
                 highlight->item->setHeight(currentItem->item->height());
             else
                 highlight->item->setWidth(currentItem->item->width());
-            const QLatin1String posProp(orient == Qt::Vertical ? "y" : "x");
+            const QLatin1String posProp(orient == QFxListView::Vertical ? "y" : "x");
             highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
             highlightPosAnimator->setVelocity(highlightMoveSpeed);
             highlightPosAnimator->setEnabled(autoHighlight);
-            const QLatin1String sizeProp(orient == Qt::Vertical ? "height" : "width");
+            const QLatin1String sizeProp(orient == QFxListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QmlEaseFollow(q);
             highlightSizeAnimator->setVelocity(highlightResizeSpeed);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
@@ -691,12 +691,11 @@ void QFxListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    updateTrackedItem();
-    if (currentItem && autoHighlight && highlight && !pressed && moveReason != QFxListViewPrivate::Mouse) {
+    if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
         highlightPosAnimator->setSourceValue(currentItem->position());
         highlightSizeAnimator->setSourceValue(currentItem->size());
-        if (orient == Qt::Vertical) {
+        if (orient == QFxListView::Vertical) {
             if (highlight->item->width() == 0)
                 highlight->item->setWidth(currentItem->item->width());
         } else {
@@ -704,6 +703,7 @@ void QFxListViewPrivate::updateHighlight()
                 highlight->item->setHeight(currentItem->item->height());
         }
     }
+    updateTrackedItem();
 }
 
 void QFxListViewPrivate::updateSections()
@@ -792,7 +792,7 @@ void QFxListViewPrivate::updateAverage()
 
 void QFxListViewPrivate::fixupPosition()
 {
-    if (orient == Qt::Vertical)
+    if (orient == QFxListView::Vertical)
         fixupY();
     else
         fixupX();
@@ -801,7 +801,7 @@ void QFxListViewPrivate::fixupPosition()
 void QFxListViewPrivate::fixupY()
 {
     QFxFlickablePrivate::fixupY();
-    if (orient == Qt::Horizontal)
+    if (orient == QFxListView::Horizontal)
         return;
 
     if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
@@ -816,7 +816,7 @@ void QFxListViewPrivate::fixupY()
 void QFxListViewPrivate::fixupX()
 {
     QFxFlickablePrivate::fixupX();
-    if (orient == Qt::Vertical)
+    if (orient == QFxListView::Vertical)
         return;
 
     if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
@@ -832,8 +832,10 @@ void QFxListViewPrivate::flickX(qreal velocity)
 {
     Q_Q(QFxListView);
 
-    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange)
+    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
         QFxFlickablePrivate::flickX(velocity);
+        return;
+    }
 
     qreal maxDistance = -1;
     // -ve velocity means list is moving up
@@ -855,19 +857,20 @@ void QFxListViewPrivate::flickX(qreal velocity)
                 v = maxVelocity;
         }
         qreal accel = deceleration;
-        qreal maxAccel = (v * v) / (2.0f * maxDistance);
+        qreal v2 = v * v;
+        qreal maxAccel = v2 / (2.0f * maxDistance);
         if (maxAccel < accel) {
             // If we are not flicking to the end then attempt to stop exactly on an item boundary
-            qreal dist = (v * v) / accel / 2.0;
+            qreal dist = v2 / accel / 2.0;
             if (v > 0)
                 dist = -dist;
-            dist = -_moveX.value() - snapPosAt(-_moveX.value() + dist + highlightRangeStart);
+            dist = -_moveX.value() - snapPosAt(-(_moveX.value() - highlightRangeStart) + dist) + highlightRangeStart;
             if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
                 timeline.reset(_moveX);
                 fixupX();
                 return;
             }
-            accel = (v * v) / (2.0f * qAbs(dist));
+            accel = v2 / (2.0f * qAbs(dist));
         }
         timeline.reset(_moveX);
         timeline.accel(_moveX, v, accel, maxDistance);
@@ -885,7 +888,60 @@ void QFxListViewPrivate::flickX(qreal velocity)
 
 void QFxListViewPrivate::flickY(qreal velocity)
 {
-    QFxFlickablePrivate::flickY(velocity);
+    Q_Q(QFxListView);
+
+    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
+        QFxFlickablePrivate::flickY(velocity);
+        return;
+    }
+
+    qreal maxDistance = -1;
+    // -ve velocity means list is moving up
+    if (velocity > 0) {
+        if (_moveY.value() < q->minYExtent())
+            maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
+        flickTargetY = q->minYExtent();
+    } else {
+        if (_moveY.value() > q->maxYExtent())
+            maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
+        flickTargetY = q->maxYExtent();
+    }
+    if (maxDistance > 0) {
+        qreal v = velocity;
+        if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+            if (v < 0)
+                v = -maxVelocity;
+            else
+                v = maxVelocity;
+        }
+        qreal accel = deceleration;
+        qreal v2 = v * v;
+        qreal maxAccel = v2 / (2.0f * maxDistance);
+        if (maxAccel < accel) {
+            // If we are not flicking to the end then attempt to stop exactly on an item boundary
+            qreal dist = v2 / accel / 2.0;
+            if (v > 0)
+                dist = -dist;
+            dist = -_moveY.value() - snapPosAt(-(_moveY.value() - highlightRangeStart) + dist) + highlightRangeStart;
+            if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
+                timeline.reset(_moveY);
+                fixupY();
+                return;
+            }
+            accel = v2 / (2.0f * qAbs(dist));
+        }
+        timeline.reset(_moveY);
+        timeline.accel(_moveY, v, accel, maxDistance);
+        timeline.execute(fixupYEvent);
+        if (!flicked) {
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+        }
+    } else {
+        timeline.reset(_moveY);
+        fixupY();
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -1185,6 +1241,10 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 
     \snippet doc/src/snippets/declarative/listview/highlight.qml 1
 
+    Note that the highlight animation also affects the way that the view
+    is scrolled.  This is because the view moves to maintain the
+    highlight within the preferred highlight range (or visible viewport).
+
     \sa highlight
 */
 bool QFxListView::highlightFollowsCurrentItem() const
@@ -1298,18 +1358,18 @@ void QFxListView::setSpacing(qreal spacing)
     Horizontal Example:
     \image ListViewHorizontal.png
 */
-Qt::Orientation QFxListView::orientation() const
+QFxListView::Orientation QFxListView::orientation() const
 {
     Q_D(const QFxListView);
     return d->orient;
 }
 
-void QFxListView::setOrientation(Qt::Orientation orientation)
+void QFxListView::setOrientation(QFxListView::Orientation orientation)
 {
     Q_D(QFxListView);
     if (d->orient != orientation) {
         d->orient = orientation;
-        if (d->orient == Qt::Vertical)
+        if (d->orient == QFxListView::Vertical)
             setViewportWidth(-1);
         else
             setViewportHeight(-1);
@@ -1445,7 +1505,7 @@ void QFxListView::viewportMoved()
     Q_D(QFxListView);
     QFxFlickable::viewportMoved();
     refill();
-    if (isFlicking() || d->pressed)
+    if (isFlicking() || d->moving)
         d->moveReason = QFxListViewPrivate::Mouse;
     if (d->moveReason == QFxListViewPrivate::Mouse) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -1466,7 +1526,7 @@ void QFxListView::viewportMoved()
 qreal QFxListView::minYExtent() const
 {
     Q_D(const QFxListView);
-    if (d->orient == Qt::Horizontal)
+    if (d->orient == QFxListView::Horizontal)
         return QFxFlickable::minYExtent();
     qreal extent = -d->startPosition();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
@@ -1478,7 +1538,7 @@ qreal QFxListView::minYExtent() const
 qreal QFxListView::maxYExtent() const
 {
     Q_D(const QFxListView);
-    if (d->orient == Qt::Horizontal)
+    if (d->orient == QFxListView::Horizontal)
         return QFxFlickable::maxYExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
@@ -1494,7 +1554,7 @@ qreal QFxListView::maxYExtent() const
 qreal QFxListView::minXExtent() const
 {
     Q_D(const QFxListView);
-    if (d->orient == Qt::Vertical)
+    if (d->orient == QFxListView::Vertical)
         return QFxFlickable::minXExtent();
     qreal extent = -d->startPosition();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
@@ -1506,7 +1566,7 @@ qreal QFxListView::minXExtent() const
 qreal QFxListView::maxXExtent() const
 {
     Q_D(const QFxListView);
-    if (d->orient == Qt::Vertical)
+    if (d->orient == QFxListView::Vertical)
         return QFxFlickable::maxXExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
@@ -1527,8 +1587,8 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Left)
-                    || (d->orient == Qt::Vertical && event->key() == Qt::Key_Up)) {
+        if ((d->orient == QFxListView::Horizontal && event->key() == Qt::Key_Left)
+                    || (d->orient == QFxListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
                 decrementCurrentIndex();
@@ -1538,8 +1598,8 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((d->orient == Qt::Horizontal && event->key() == Qt::Key_Right)
-                    || (d->orient == Qt::Vertical && event->key() == Qt::Key_Down)) {
+        } else if ((d->orient == QFxListView::Horizontal && event->key() == Qt::Key_Right)
+                    || (d->orient == QFxListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
                 d->moveReason = QFxListViewPrivate::Key;
                 incrementCurrentIndex();
@@ -1606,7 +1666,7 @@ void QFxListView::trackedPositionChanged()
     Q_D(QFxListView);
     if (!d->trackedItem)
         return;
-    if (!isFlicking() && !d->pressed && d->moveReason != QFxListViewPrivate::Mouse) {
+    if (!isFlicking() && !d->moving && d->moveReason != QFxListViewPrivate::Mouse) {
         const qreal trackedPos = d->trackedItem->position();
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
@@ -1930,7 +1990,7 @@ void QFxListView::createdItem(int index, QFxItem *item)
     if (d->requestedIndex != index) {
         item->setParentItem(viewport());
         d->unrequestedItems.insert(item, index);
-        if (d->orient == Qt::Vertical)
+        if (d->orient == QFxListView::Vertical)
             item->setY(d->positionAt(index));
         else
             item->setX(d->positionAt(index));
