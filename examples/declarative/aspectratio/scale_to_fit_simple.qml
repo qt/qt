@@ -13,7 +13,7 @@ Rectangle {
     Image {
         id: face
         source: "pics/face.png"
-        fillMode: "PreserveAspectFit"
+        fillMode: Image.PreserveAspectFit
         anchors.fill: parent
     }
 }
