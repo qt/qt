@@ -386,7 +386,7 @@ void QmlView::continueExecute()
  */
 
 /*! \fn void QmlView::initialSize(QSize size)
-  This signal is emitted when the initial size of the root item is known.
+  This signal is emitted when the initial \a size of the root item is known.
  */
 
 /*! \fn void QmlView::errors(const QList<QmlError> &errors)

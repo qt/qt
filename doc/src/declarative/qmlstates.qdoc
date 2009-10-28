@@ -55,5 +55,6 @@ Other things you can do in a state change:
 \o change an item's parent with ParentChange
 \o change an item's anchors with AnchorChanges
 \o run some script with StateChangeScript
+\endlist
 
 */

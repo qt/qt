@@ -51,7 +51,7 @@ have items modified, inserted, removed or moved dynamically.
 
 Data is provided to the delegate via named data roles which the
 delegate may bind to.  The roles are exposed as properties of the
-\model property, though this property is set as a default property
+\e model property, though this property is set as a default property
 of the delegate so, unless there is a naming clash with a
 property in the delegate, the roles are usually accessed unqualified.
 

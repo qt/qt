@@ -65,11 +65,11 @@ Item {
                     id: headerText
 
                     text: webView.title!='' || webView.progress == 1.0 ? webView.title : 'Loading...'
-                    elide: "ElideRight"
+                    elide: Text.ElideRight
 
                     color: "white"
                     styleColor: "black"
-                    style: "Raised"
+                    style: Text.Raised
 
                     font.family: "Helvetica"
                     font.pointSize: 10
@@ -81,7 +81,7 @@ Item {
                     anchors.rightMargin: 4
                     anchors.top: header.top
                     anchors.topMargin: 4
-                    horizontalAlignment: "AlignHCenter"
+                    horizontalAlignment: Text.AlignHCenter
                 }
                 Item {
                     width: parent.width
