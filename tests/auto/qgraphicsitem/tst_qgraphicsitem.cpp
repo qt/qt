@@ -391,6 +391,7 @@ private slots:
     void moveWhileDeleting();
     void ensureDirtySceneTransform();
     void focusScope();
+    void focusScope2();
     void stackBefore();
     void sceneModality();
     void panelModality();
@@ -8465,7 +8466,7 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope2->focusScopeItem());
     scope3->setParentItem(scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope2);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
 
     QGraphicsRectItem *scope1 = new QGraphicsRectItem;
     scope1->setData(0, "scope1");
@@ -8474,9 +8475,9 @@ void tst_QGraphicsItem::focusScope()
     QVERIFY(!scope1->focusScopeItem());
     scope2->setParentItem(scope1);
 
-    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope1);
-    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)0);
-    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
+    QCOMPARE(scope1->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope2->focusItem(), (QGraphicsItem *)scope3);
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)scope3);
     QCOMPARE(scope1->focusScopeItem(), (QGraphicsItem *)scope2);
     QCOMPARE(scope2->focusScopeItem(), (QGraphicsItem *)scope3);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
@@ -8527,11 +8528,13 @@ void tst_QGraphicsItem::focusScope()
     rect5->setFocus();
     rect5->setParentItem(rect4);
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)rect5);
-    QVERIFY(!rect5->hasFocus());
+    QVERIFY(rect5->hasFocus());
 
     rect4->setParentItem(0);
+    QVERIFY(rect5->hasFocus());
     QCOMPARE(scope3->focusScopeItem(), (QGraphicsItem *)0);
-    QVERIFY(scope3->hasFocus());
+    QCOMPARE(scope3->focusItem(), (QGraphicsItem *)0);
+    QVERIFY(!scope3->hasFocus());
 
     QGraphicsRectItem *rectA = new QGraphicsRectItem;
     QGraphicsRectItem *scopeA = new QGraphicsRectItem(rectA);
@@ -8542,12 +8545,82 @@ void tst_QGraphicsItem::focusScope()
     scopeB->setFocus();
 
     scene.addItem(rectA);
-    QVERIFY(!rect5->hasFocus());
+    QVERIFY(rect5->hasFocus());
     QVERIFY(!scopeB->hasFocus());
 
     scopeA->setFocus();
     QVERIFY(scopeB->hasFocus());
     QCOMPARE(scopeB->focusItem(), (QGraphicsItem *)scopeB);
+}
+
+void tst_QGraphicsItem::focusScope2()
+{
+    QGraphicsRectItem *child1 = new QGraphicsRectItem;
+    child1->setFlags(QGraphicsItem::ItemIsFocusable);
+    child1->setFocus();
+    QCOMPARE(child1->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsRectItem *child2 = new QGraphicsRectItem;
+    child2->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsRectItem *rootFocusScope = new QGraphicsRectItem;
+    rootFocusScope->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+    rootFocusScope->setFocus();
+    QCOMPARE(rootFocusScope->focusItem(), (QGraphicsItem *)rootFocusScope);
+
+    child1->setParentItem(rootFocusScope);
+    child2->setParentItem(rootFocusScope);
+
+    QCOMPARE(rootFocusScope->focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(rootFocusScope->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsRectItem *siblingChild1 = new QGraphicsRectItem;
+    siblingChild1->setFlags(QGraphicsItem::ItemIsFocusable);
+    siblingChild1->setFocus();
+
+    QGraphicsRectItem *siblingChild2 = new QGraphicsRectItem;
+    siblingChild2->setFlags(QGraphicsItem::ItemIsFocusable);
+
+    QGraphicsRectItem *siblingFocusScope = new QGraphicsRectItem;
+    siblingFocusScope->setFlags(QGraphicsItem::ItemIsFocusable | QGraphicsItem::ItemIsFocusScope);
+
+    siblingChild1->setParentItem(siblingFocusScope);
+    siblingChild2->setParentItem(siblingFocusScope);
+
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild1);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)0);
+
+    QGraphicsItem *root = new QGraphicsRectItem;
+    rootFocusScope->setParentItem(root);
+    siblingFocusScope->setParentItem(root);
+
+    QCOMPARE(root->focusItem(), (QGraphicsItem *)child1);
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    QEvent activate(QEvent::WindowActivate);
+    qApp->sendEvent(&scene, &activate);
+    scene.setFocus();
+
+    QCOMPARE(scene.focusItem(), (QGraphicsItem *)child1);
+
+    // You cannot set focus on a descendant of a focus scope directly;
+    // this will only change the scope's focus scope item pointer. If
+    // you want to give true input focus, you must set it directly on
+    // the scope itself
+    siblingChild2->setFocus();
+    QVERIFY(!siblingChild2->hasFocus());
+    QVERIFY(!siblingChild2->focusItem());
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)0);
+
+    // Set focus on the scope; focus is forwarded to the focus scope item.
+    siblingFocusScope->setFocus();
+    QVERIFY(siblingChild2->hasFocus());
+    QVERIFY(siblingChild2->focusItem());
+    QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
+    QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)siblingChild2);
 }
 
 void tst_QGraphicsItem::stackBefore()
