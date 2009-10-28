@@ -87,10 +87,10 @@ protected:
                                     QEvent *event);
 
 private:
-    QMultiMap<Qt::GestureType, QGestureRecognizer *> recognizers;
+    QMultiMap<Qt::GestureType, QGestureRecognizer *> m_recognizers;
 
-    QSet<QGesture *> activeGestures;
-    QMap<QGesture *, QBasicTimer> maybeGestures;
+    QSet<QGesture *> m_activeGestures;
+    QMap<QGesture *, QBasicTimer> m_maybeGestures;
 
     enum State {
         Gesture,
@@ -116,14 +116,13 @@ private:
         }
     };
 
-    // TODO rename all member vars to be m_
-    QMap<ObjectGesture, QGesture *> objectGestures; // TODO rename widgetGestures
-    QMap<QGesture *, QGestureRecognizer *> gestureToRecognizer;
-    QHash<QGesture *, QObject *> gestureOwners;
+    QMap<ObjectGesture, QGesture *> m_objectGestures;
+    QMap<QGesture *, QGestureRecognizer *> m_gestureToRecognizer;
+    QHash<QGesture *, QObject *> m_gestureOwners;
 
-    QHash<QGesture *, QWidget *> gestureTargets;
+    QHash<QGesture *, QWidget *> m_gestureTargets;
 
-    int lastCustomGestureId;
+    int m_lastCustomGestureId;
 
     QHash<QGestureRecognizer *, QList<QGesture *> > m_obsoleteGestures;
     QMap<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
