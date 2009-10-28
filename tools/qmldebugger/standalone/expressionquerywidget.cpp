@@ -42,6 +42,7 @@ ExpressionQueryWidget::ExpressionQueryWidget(Mode mode, QmlEngineDebug *client, 
         m_lineEdit->installEventFilter(this);
     } else {
         m_textEdit->installEventFilter(this);
+        appendPrompt();
     }
 }
 
@@ -55,6 +56,8 @@ void ExpressionQueryWidget::clear()
     m_textEdit->clear();
     if (m_lineEdit)
         m_lineEdit->clear();
+    if (m_mode == ShellMode)
+        appendPrompt();
 }
 
 void ExpressionQueryWidget::updateTitle()
@@ -99,6 +102,12 @@ void ExpressionQueryWidget::checkCurrentContext()
 
 void ExpressionQueryWidget::showCurrentContext()
 {
+    if (m_mode == ShellMode) {
+        // clear the initial prompt
+        if (m_textEdit->document()->lineCount() == 1)
+            m_textEdit->clear();
+    }
+
     m_textEdit->moveCursor(QTextCursor::End);
     m_textEdit->setTextColor(Qt::darkGreen);
     m_textEdit->append(m_currObject.className()

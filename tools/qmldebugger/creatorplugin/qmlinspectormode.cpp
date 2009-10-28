@@ -385,7 +385,7 @@ void QmlInspectorMode::initWidgets()
     m_propertiesWidget = new ObjectPropertiesView;
     m_watchTableView = new WatchTableView(m_watchTableModel);
     m_frameRateWidget = new CanvasFrameRate;
-    m_expressionWidget = new ExpressionQueryWidget(ExpressionQueryWidget::SeparateEntryMode);
+    m_expressionWidget = new ExpressionQueryWidget(ExpressionQueryWidget::ShellMode);
 
     // FancyMainWindow uses widgets' window titles for tab labels
     m_objectTreeWidget->setWindowTitle(tr("Object Tree"));
