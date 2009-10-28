@@ -116,7 +116,7 @@ private:
         }
     };
 
-    QMap<ObjectGesture, QGesture *> m_objectGestures;
+    QMap<ObjectGesture, QList<QGesture *> > m_objectGestures;
     QMap<QGesture *, QGestureRecognizer *> m_gestureToRecognizer;
     QHash<QGesture *, QObject *> m_gestureOwners;
 
@@ -128,7 +128,8 @@ private:
     QMap<QGesture *, QGestureRecognizer *> m_deletedRecognizers;
     void cleanupGesturesForRemovedRecognizer(QGesture *gesture);
 
-    QGesture *getState(QObject *widget, Qt::GestureType gesture);
+    QGesture *getState(QObject *widget, QGestureRecognizer *recognizer,
+                       Qt::GestureType gesture);
     void deliverEvents(const QSet<QGesture *> &gestures,
                        QSet<QGesture *> *undeliveredGestures);
     void getGestureTargets(const QSet<QGesture*> &gestures,
