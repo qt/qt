@@ -7,6 +7,9 @@
 #include <QtCore/qdir.h>
 #include "testtypes.h"
 
+#include "../../../shared/util.h"
+#include "../../network-settings.h"
+
 /*
 This test case covers QML language issues.  This covers everything that does 
 involve evaluating ECMAScript expressions and bindings.
@@ -69,6 +72,8 @@ private slots:
     void importsBuiltin();
     void importsLocal_data();
     void importsLocal();
+    void importsRemote_data();
+    void importsRemote();
     void importsInstalled_data();
     void importsInstalled();
     void importsOrder_data();
@@ -805,6 +810,8 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 {
     QmlComponent component(&engine, qml.toUtf8(), TEST_FILE("empty.qml")); // just a file for relative local imports
 
+    QTRY_VERIFY(!component.isLoading());
+
     if (type.isEmpty()) {
         QVERIFY(component.isError());
     } else {
@@ -824,8 +831,12 @@ QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
 
+// Import tests (QT-558)
+
 void tst_qmllanguage::importsBuiltin_data()
 {
+    // QT-610
+
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
@@ -842,7 +853,7 @@ void tst_qmllanguage::importsBuiltin_data()
            "Test {}"
         << "TestType";
     QTest::newRow("qualified wrong")
-        << "import com.nokia.Test 1.0 as T\n"
+        << "import com.nokia.Test 1.0 as T\n" // QT-610
            "Test {}"
         << "";
     QTest::newRow("qualified right")
@@ -934,7 +945,7 @@ void tst_qmllanguage::importsLocal_data()
 
     // import locals
     QTest::newRow("local import")
-        << "import \"subdir\"\n"
+        << "import \"subdir\"\n" // QT-613
            "Test {}"
         << "QFxRect";
     QTest::newRow("local import as")
@@ -959,20 +970,47 @@ void tst_qmllanguage::importsLocal()
     testType(qml,type);
 }
 
-void tst_qmllanguage::importsInstalled_data()
+void tst_qmllanguage::importsRemote_data()
 {
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
+    QString serverdir = "http://"
+            + QtNetworkSettings::serverName()
+            + "/qtest/declarative/qmllanguage";
+
+    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QFxRect";
+    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QFxText";
+    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QFxImage";
+}
+
+void tst_qmllanguage::importsRemote()
+{
+    QFETCH(QString, qml);
+    QFETCH(QString, type);
+    testType(qml,type);
+}
+
+void tst_qmllanguage::importsInstalled_data()
+{
+    // QT-610
+
+    QTest::addColumn<QString>("qml");
+    QTest::addColumn<QString>("type");
+
     // import installed
-    QTest::newRow("installed import")
+    QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
         << "QFxRect";
-    QTest::newRow("installed import")
+    QTest::newRow("installed import 2")
         << "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
         << "QFxText";
+    QTest::newRow("installed import visibility") // QT-614
+        << "import com.nokia.installedtest 1.4\n"
+           "PrivateType {}"
+        << "";
 }
 
 void tst_qmllanguage::importsInstalled()
