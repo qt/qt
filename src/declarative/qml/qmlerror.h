@@ -61,6 +61,8 @@ public:
     QmlError &operator=(const QmlError &);
     ~QmlError();
 
+    bool isValid() const;
+
     QUrl url() const;
     void setUrl(const QUrl &);
     QString description() const;

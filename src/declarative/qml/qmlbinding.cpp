@@ -128,10 +128,12 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
                                   idx, a);
 
         } else {
-            bool undefined = false;
-            QVariant value = this->value(&undefined);
+            bool isUndefined = false;
+            QVariant value = this->value(&isUndefined);
 
-            if (!undefined && data->property.object() && !data->property.write(value, flags)) {
+            if (this->hasError()) {
+                qWarning().nospace() << qPrintable(this->error().toString());
+            } else if (!isUndefined && data->property.object() && !data->property.write(value, flags)) {
                 QString fileName = data->fileName;
                 int line = data->line;
                 if (fileName.isEmpty()) fileName = QLatin1String("<Unknown File>");

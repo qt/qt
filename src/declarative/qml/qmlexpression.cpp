@@ -260,7 +260,8 @@ QVariant QmlExpressionPrivate::evalSSE()
     return rv;
 }
 
-void QmlExpressionPrivate::printException(QScriptEngine *scriptEngine)
+void QmlExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine, 
+                                            QmlError &error)
 {
     if (scriptEngine->hasUncaughtException() && 
         scriptEngine->uncaughtException().isError()) {
@@ -277,8 +278,12 @@ void QmlExpressionPrivate::printException(QScriptEngine *scriptEngine)
             fileName = QLatin1String("<Unknown File>");
         }
 
-        qWarning().nospace() << qPrintable(fileName) << ":" << lineNumber << ": "
-                             << qPrintable(exception.toString());
+        error.setUrl(QUrl(fileName));
+        error.setLine(lineNumber);
+        error.setColumn(-1);
+        error.setDescription(exception.toString());
+    } else {
+        error = QmlError();
     }
 }
 
@@ -321,10 +326,13 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
     if (isUndefined)
         *isUndefined = svalue.isUndefined() || scriptEngine->hasUncaughtException();
 
+    // Handle exception
     if (scriptEngine->hasUncaughtException()) {
-       printException(scriptEngine);
+       exceptionToError(scriptEngine, data->error);
        scriptEngine->clearExceptions();
        return QVariant();
+    } else {
+        data->error = QmlError();
     }
 
     if (secondaryScope) {
@@ -418,6 +426,8 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
 
     \a isUndefined is set to true if the expression resulted in an
     undefined value.
+
+    \sa hasError(), error()
 */
 QVariant QmlExpression::value(bool *isUndefined)
 {
@@ -507,6 +517,43 @@ QObject *QmlExpression::scopeObject() const
 {
     Q_D(const QmlExpression);
     return d->data->me;
+}
+
+/*!
+    Returns true if the last call to value() resulted in an error, 
+    otherwise false.
+    
+    \sa error(), clearError()
+*/
+bool QmlExpression::hasError() const
+{
+    Q_D(const QmlExpression);
+    return d->data->error.isValid();
+}
+
+/*!
+    Clear any expression errors.  Calls to hasError() following this will
+    return false.
+
+    \sa hasError(), error()
+*/
+void QmlExpression::clearError()
+{
+    Q_D(QmlExpression);
+    d->data->error = QmlError();
+}
+
+/*!
+    Return any error from the last call to value().  If there was no error,
+    this returns an invalid QmlError instance.
+
+    \sa hasError(), clearError()
+*/
+
+QmlError QmlExpression::error() const
+{
+    Q_D(const QmlExpression);
+    return d->data->error;
 }
 
 /*! \internal */

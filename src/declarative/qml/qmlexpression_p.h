@@ -92,6 +92,8 @@ public:
     bool expressionRewritten:1;
     QScriptValue expressionFunction;
 
+    QmlError error;
+
     QmlBasicScript sse;
     QObject *me;
     bool trackChange;
@@ -151,7 +153,7 @@ public:
         return static_cast<QmlExpressionPrivate *>(QObjectPrivate::get(expr));
     }
 
-    static void printException(QScriptEngine *);
+    static void exceptionToError(QScriptEngine *, QmlError &);
 };
 
 QT_END_NAMESPACE
