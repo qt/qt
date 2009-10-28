@@ -250,6 +250,7 @@ public:
     QVariant scriptValueToVariant(const QScriptValue &);
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
+
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
     static QScriptValue vector(QScriptContext*, QScriptEngine*);
