@@ -889,6 +889,14 @@ void QFxFlickable::viewportMoved()
     }
 }
 
+void QFxFlickable::cancelFlick()
+{
+    Q_D(QFxFlickable);
+    d->timeline.reset(d->_moveX);
+    d->timeline.reset(d->_moveY);
+    movementEnding();
+}
+
 void QFxFlickablePrivate::data_removeAt(int)
 {
     // ###
@@ -1257,6 +1265,7 @@ void QFxFlickable::movementEnding()
         emit flickEnded();
     }
     d->horizontalVelocity.setValue(0);
+    d->verticalVelocity.setValue(0);
 }
 
 void QFxFlickablePrivate::updateVelocity()

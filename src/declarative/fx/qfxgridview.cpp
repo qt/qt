@@ -857,10 +857,12 @@ int QFxGridView::currentIndex() const
 void QFxGridView::setCurrentIndex(int index)
 {
     Q_D(QFxGridView);
-    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0)
+    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+        cancelFlick();
         d->updateCurrent(index);
-    else
+    } else {
         d->currentIndex = index;
+    }
 }
 
 QFxItem *QFxGridView::currentItem()

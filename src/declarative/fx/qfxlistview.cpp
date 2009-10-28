@@ -1172,10 +1172,12 @@ void QFxListView::setCurrentIndex(int index)
 {
     Q_D(QFxListView);
     d->moveReason = QFxListViewPrivate::Other;
-    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0)
+    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+        cancelFlick();
         d->updateCurrent(index);
-    else
+    } else {
         d->currentIndex = index;
+    }
 }
 
 QFxItem *QFxListView::currentItem()

@@ -183,6 +183,7 @@ protected:
 
     bool xflick() const;
     bool yflick() const;
+    void cancelFlick();
 
 protected:
     QFxFlickable(QFxFlickablePrivate &dd, QFxItem *parent);
