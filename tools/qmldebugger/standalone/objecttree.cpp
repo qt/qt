@@ -61,6 +61,7 @@ void ObjectTree::objectFetched()
 {
     dump(m_query->object(), 0);
     buildTree(m_query->object(), 0);
+    setCurrentItem(topLevelItem(0));
 
     delete m_query;
     m_query = 0;

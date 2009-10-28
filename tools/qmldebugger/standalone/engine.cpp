@@ -86,7 +86,7 @@ EnginePane::EnginePane(QmlDebugConnection *conn, QWidget *parent)
     connect(m_watchTableView, SIGNAL(objectActivated(int)),
             m_objTree, SLOT(setCurrentObject(int)));
     
-    m_exprQueryWidget = new ExpressionQueryWidget(m_client);
+    m_exprQueryWidget = new ExpressionQueryWidget(ExpressionQueryWidget::SeparateEntryMode, m_client);
     connect(m_objTree, SIGNAL(currentObjectChanged(QmlDebugObjectReference)),
             m_exprQueryWidget, SLOT(setCurrentObject(QmlDebugObjectReference)));
     

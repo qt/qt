@@ -65,6 +65,7 @@ QT_BEGIN_NAMESPACE
 class QmlWatchProxy;
 class QmlExpression;
 class QmlContext;
+class QMetaProperty;
 
 class QmlWatcher : public QObject
 {
@@ -79,7 +80,7 @@ public:
     void removeWatch(int id);
 
 Q_SIGNALS:
-    void propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value);
+    void propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value);
 
 private:
     friend class QmlWatchProxy;

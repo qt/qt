@@ -168,10 +168,17 @@ void QmlInspectorMode::connectionStateChanged()
     switch (m_conn->state()) {
         default:
         case QAbstractSocket::UnconnectedState:
+        {
             emit statusMessage(tr("[Inspector] disconnected.\n\n"));
             m_addressEdit->setEnabled(true);
             m_portSpinBox->setEnabled(true);
+
+            delete m_engineQuery;
+            m_engineQuery = 0;
+            delete m_contextQuery;
+            m_contextQuery = 0;
             break;
+        }
         case QAbstractSocket::HostLookupState:
             emit statusMessage(tr("[Inspector] resolving host..."));
             break;
@@ -378,7 +385,7 @@ void QmlInspectorMode::initWidgets()
     m_propertiesWidget = new ObjectPropertiesView;
     m_watchTableView = new WatchTableView(m_watchTableModel);
     m_frameRateWidget = new CanvasFrameRate;
-    m_expressionWidget = new ExpressionQueryWidget;
+    m_expressionWidget = new ExpressionQueryWidget(ExpressionQueryWidget::SeparateEntryMode);
 
     // FancyMainWindow uses widgets' window titles for tab labels
     m_objectTreeWidget->setWindowTitle(tr("Object Tree"));
