@@ -44,6 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
+#include <QtDeclarative/qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -81,6 +82,10 @@ public:
     void setSourceLocation(const QUrl &fileName, int line);
 
     QObject *scopeObject() const;
+
+    bool hasError() const;
+    void clearError();
+    QmlError error() const;
 
 public Q_SLOTS:
     QVariant value(bool *isUndefined = 0);
