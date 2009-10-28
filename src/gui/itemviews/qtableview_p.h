@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
 * The key of the first map is the row where the subspan starts, the value of the first map is
 * a list (map) of all subspans that starts at the same row.  It is indexed with its row
 */
-class QSpanCollection
+class Q_AUTOTEST_EXPORT QSpanCollection
 {
 public:
     struct Span
@@ -111,6 +111,10 @@ public:
     void updateInsertedColumns(int start, int end);
     void updateRemovedRows(int start, int end);
     void updateRemovedColumns(int start, int end);
+
+#ifdef QT_BUILD_INTERNAL
+    bool checkConsistency() const;
+#endif
 
     typedef QLinkedList<Span *> SpanList;
     SpanList spans; //lists of all spans

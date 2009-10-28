@@ -117,7 +117,7 @@ void QSpanCollection::updateSpan(QSpanCollection::Span *span, int old_height)
         Index::iterator it_y = index.lowerBound(-span->bottom());
         Q_ASSERT(it_y != index.end()); //it_y must exist since the span is in the list
         while (-it_y.key() <= span->top() + old_height -1) {
-            if(-it_y.key() != span->bottom()) {
+            if (-it_y.key() > span->bottom()) {
                 (*it_y).remove(-span->left());
                 if (it_y->isEmpty()) {
                     it_y = index.erase(it_y) - 1;
@@ -543,6 +543,47 @@ void QSpanCollection::updateRemovedColumns(int start, int end)
 #endif
     qDeleteAll(toBeDeleted);
 }
+
+#ifdef QT_BUILD_INTERNAL
+/*!
+  \internal
+  Checks whether the span index structure is self-consistent, and consistent with the spans list.
+*/
+bool QSpanCollection::checkConsistency() const
+{
+    for (Index::const_iterator it_y = index.begin(); it_y != index.end(); ++it_y) {
+        int y = -it_y.key();
+        const SubIndex &subIndex = it_y.value();
+        for (SubIndex::const_iterator it = subIndex.begin(); it != subIndex.end(); ++it) {
+            int x = -it.key();
+            Span *span = it.value();
+            if (!spans.contains(span) || span->left() != x
+                || y < span->top() || y > span->bottom())
+                return false;
+        }
+    }
+
+    foreach (const Span *span, spans) {
+        if (span->width() < 1 || span->height() < 1
+            || (span->width() == 1 && span->height() == 1))
+            return false;
+        for (int y = span->top(); y <= span->bottom(); ++y) {
+            Index::const_iterator it_y = index.find(-y);
+            if (it_y == index.end()) {
+                if (y == span->top())
+                    return false;
+                else
+                    continue;
+            }
+            const SubIndex &subIndex = it_y.value();
+            SubIndex::const_iterator it = subIndex.find(-span->left());
+            if (it == subIndex.end() || it.value() != span)
+                return false;
+        }
+    }
+    return true;
+}
+#endif
 
 class QTableCornerButton : public QAbstractButton
 {
