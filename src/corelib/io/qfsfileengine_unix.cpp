@@ -1250,6 +1250,12 @@ uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFla
         return 0;
     }
 
+    // If we know the mapping will extend beyond EOF, fail early to avoid
+    // undefined behavior. Otherwise, let mmap have its say.
+    if (doStat()
+            && (QT_OFF_T(size) > st.st_size - QT_OFF_T(offset)))
+        return 0;
+
     int access = 0;
     if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
     if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
