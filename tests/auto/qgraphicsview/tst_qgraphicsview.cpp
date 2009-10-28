@@ -2486,7 +2486,7 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
     scene.addRect(0, 0, 20, 20)->setTransform(QTransform::fromScale(2, 2));
     scene.addRect(50, 50, 20, 20)->setTransform(QTransform::fromTranslate(200, 200));
 
-    QGraphicsView view(&scene);
+    CustomView view(&scene);
     if (!savePainter)
         view.setOptimizationFlag(QGraphicsView::DontSavePainterState);
     view.rotate(45);
@@ -2495,7 +2495,11 @@ void tst_QGraphicsView::optimizationFlags_dontSavePainterState2()
 #ifdef Q_WS_X11
     qt_x11_wait_for_window_manager(&view);
 #endif
-    QTest::qWait(150);
+
+    // Make sure the view is repainted; otherwise the tests below will fail.
+    view.viewport()->repaint();
+    QTest::qWait(200);
+    QVERIFY(view.painted);
 
     // Make sure the painter's world transform is preserved after drawItems.
     const QTransform expectedTransform = view.viewportTransform();
