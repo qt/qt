@@ -223,11 +223,13 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData() : AnchorData()
+    SequentialAnchorData(const QVector<AnchorVertex *> &vertices, const QVector<AnchorData *> &edges)
+        : AnchorData(), m_children(vertices), m_edges(edges)
     {
         type = AnchorData::Sequential;
+        orientation = m_edges.at(0)->orientation;
 #ifdef QT_DEBUG
-        name = QLatin1String("SequentialAnchorData");
+        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
 #endif
     }
 
@@ -235,14 +237,6 @@ struct SequentialAnchorData : public AnchorData
     virtual bool refreshSizeHints(qreal effectiveSpacing);
 
     bool refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
-
-    void setVertices(const QVector<AnchorVertex*> &vertices)
-    {
-        m_children = vertices;
-#ifdef QT_DEBUG
-        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
-#endif
-    }
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
     QVector<AnchorData*> m_edges;               // keep the list of edges too.
@@ -254,6 +248,7 @@ struct ParallelAnchorData : public AnchorData
         : AnchorData(), firstEdge(first), secondEdge(second)
     {
         type = AnchorData::Parallel;
+        orientation = first->orientation;
 
         // ### Those asserts force that both child anchors have the same direction,
         // but can't we simplify a pair of anchors in opposite directions?
