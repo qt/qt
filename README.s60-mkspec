@@ -14,33 +14,39 @@ Compiling:
 
  1. First a few environment variables need to be set:
 
-        export RVCT22INC=<s60-root>/Epoc32/include
-        export RVCT22INC=$RVCT22INC,<s60-root>/Epoc32/include/rvct2_2
-        export RVCT22INC=$RVCT22INC,<s60-root>/Epoc32/include/variant
-        export RVCT22INC=$RVCT22INC,<s60-root>/Epoc32/include/stdapis
-        export RVCT22INC=$RVCT22INC,<s60-root>/Epoc32/include/stdapis/stlport
-        export RVCT22LIB=<s60-root>/Epoc32/release/armv5/lib
-        export PATH=$PATH:<s60-root>/Epoc32/tools
+        export RVCT22INC=<s60-root>/epoc32/include
+        export RVCT22INC=$RVCT22INC,<s60-root>/epoc32/include/rvct2_2
+        export RVCT22INC=$RVCT22INC,<s60-root>/epoc32/include/variant
+        export RVCT22INC=$RVCT22INC,<s60-root>/epoc32/include/stdapis
+        export RVCT22INC=$RVCT22INC,<s60-root>/epoc32/include/stdapis/stlport
+        export RVCT22LIB=<s60-root>/epoc32/release/armv5/lib
+        export PATH=$PATH:<s60-root>/epoc32/tools
         export PATH=$PATH:<qt-root>/bin
 
     Replace the s60-root with the installation directory of your SDK,
     and the qt-root with the root of your Qt repository.
     These are good candidates for putting in a script somewhere.
 
- 2. Run configure. It needs a bit more switches than usual, so here's
+ 2. Switch out a few variables in profiles. Open
+    mkspecs/symbian/linux-armcc/qmake.conf, search for
+    "FIXME/Epoc32" and switch out the FIXME part with your SDK
+    installation directory. You might have to switch the case of the
+    Epoc32 directory as well.
+
+ 3. Run configure. It needs a bit more switches than usual, so here's
     the full line:
 
         ./configure -developer-build -platform linux-g++ -xplatform \
             symbian/linux-armcc -little-endian -host-little-endian \
             -arch symbian
 
- 3. Compile the host tools. This unfortunately does not happen
+ 4. Compile the host tools. This unfortunately does not happen
     automatically.
 
         cd src/tools
         for i in bootstrap moc rcc uic; do make -C $i; done
 
- 4. Compile QtCore.dll:
+ 5. Compile QtCore.dll:
 
         cd ../corelib
         qmake -platform symbian/linux-armcc
@@ -48,13 +54,13 @@ Compiling:
 
     and then wait for a while.
 
- 5. Compile some helloworld application (I leave the details to you
+ 6. Compile some helloworld application (I leave the details to you
     ;-)
 
         qmake -platform symbian/linux-armcc
         make
 
- 6. Package and run on the phone. This is unfortunately a bit of a
+ 7. Package and run on the phone. This is unfortunately a bit of a
     manual step at the moment. Your best bet is to look at a Windows
     build of the same application, and manually grab the .rsc files
     that it refers to and put them in the application directory on
@@ -71,4 +77,4 @@ Compiling:
         winewrapper signsis.exe MyApp_unsigned.sis MyApp.sis \
             selfsigned.cer selfsigned.key
 
- 7. Enjoy QObjects and "hello world" on the phone!
+ 8. Enjoy QObjects and "hello world" on the phone!
