@@ -9,7 +9,6 @@ SUBDIRS += anchors \
            listview \
            numberformatter \
            pathview \
-           qbindablemap \
            qfxloader \
            qfxpixmapcache \
            qfxtext \
