@@ -58,8 +58,44 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_NOCREATE_TYPE(QmlBinding);
 
 QmlBindingData::QmlBindingData()
-: updating(false), enabled(false)
+: updating(false), enabled(false), nextError(0), prevError(0)
 {
+}
+
+QmlBindingData::~QmlBindingData()
+{
+    removeError();
+}
+
+void QmlBindingData::removeError()
+{
+    if (!prevError) return;
+
+    if (nextError) nextError->prevError = prevError;
+    *prevError = nextError;
+    nextError = 0;
+    prevError = 0;
+}
+
+bool QmlBindingData::addError()
+{
+    if (prevError) return false;
+
+    QmlContext *c = context();
+    if (!c) return false;
+    QmlEngine *e = c->engine();
+    if (!e) return false;
+
+    QmlEnginePrivate *p = QmlEnginePrivate::get(e);
+
+    if (p->inProgressCreations == 0) return false; // Not in construction
+
+    prevError = &p->erroredBindings;
+    nextError = p->erroredBindings;
+    p->erroredBindings = this;
+    if (nextError) nextError->prevError = &nextError;
+
+    return true;
 }
 
 QmlBindingPrivate::QmlBindingPrivate()
@@ -131,9 +167,9 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             bool isUndefined = false;
             QVariant value = this->value(&isUndefined);
 
-            if (this->hasError()) {
-                qWarning().nospace() << qPrintable(this->error().toString());
-            } else if (!isUndefined && data->property.object() && !data->property.write(value, flags)) {
+            if (!isUndefined && data->property.object() && 
+                !data->property.write(value, flags)) {
+
                 QString fileName = data->fileName;
                 int line = data->line;
                 if (fileName.isEmpty()) fileName = QLatin1String("<Unknown File>");
@@ -141,9 +177,21 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
                 const char *valueType = 0;
                 if (value.userType() == QVariant::Invalid) valueType = "null";
                 else valueType = QMetaType::typeName(value.userType());
-                qWarning().nospace() << qPrintable(fileName) << ":" << line 
-                                     << " Unable to assign " << valueType << " to " 
-                                     << QMetaType::typeName(data->property.propertyType());
+
+                data->error.setUrl(fileName);
+                data->error.setLine(line);
+                data->error.setColumn(-1);
+                data->error.setDescription(QLatin1String("Unable to assign ") +
+                                           QLatin1String(valueType) +
+                                           QLatin1String(" to ") +
+                                           QLatin1String(QMetaType::typeName(data->property.propertyType())));
+            }
+
+            if (data->error.isValid()) {
+               if (!data->addError()) 
+                   qWarning().nospace() << qPrintable(this->error().toString());
+            } else {
+                data->removeError();
             }
         }
 

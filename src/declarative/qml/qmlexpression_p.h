@@ -83,7 +83,7 @@ class QmlExpressionData : public QmlAbstractExpression, public QmlRefCount
 {
 public:
     QmlExpressionData();
-    ~QmlExpressionData();
+    virtual ~QmlExpressionData();
 
     QmlExpressionPrivate *q;
 

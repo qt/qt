@@ -293,6 +293,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
     QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
 #endif
 
+    QmlExpressionData *data = this->data;
     QmlContextPrivate *ctxtPriv = data->context()->d_func();
     QmlEngine *engine = data->context()->engine();
     QmlEnginePrivate *ep = QmlEnginePrivate::get(engine);
