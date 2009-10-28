@@ -381,14 +381,6 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
         if (!fbo)
             return false;
 
-        glBindTexture(GL_TEXTURE_2D, fbo->texture());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
         // prepare for updateUniforms
         m_textureSize = src.size();
 
@@ -631,14 +623,6 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
 
         if (!fbo)
             return false;
-
-        glBindTexture(GL_TEXTURE_2D, fbo->texture());
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         // prepare for updateUniforms
         m_textureSize = src.size();
