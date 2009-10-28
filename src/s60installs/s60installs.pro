@@ -35,7 +35,7 @@ symbian: {
     qtlibraries.pkg_postrules += qts60plugindeployment
 
     sqlitedeployment = \
-        "; Deploy sqlite onto phone that does not have it (this should be replaced with embedded sis file when available)
+        "; Deploy sqlite onto phone that does not have it (this should be replaced with embedded sis file when available)" \
         "IF NOT package(0x2002533b) " \
         "\"$${EPOCROOT}epoc32/release/$(PLATFORM)/$(TARGET)/sqlite3.dll\" - \"!:\\sys\\bin\\sqlite3.dll\"" \
         "ENDIF"
