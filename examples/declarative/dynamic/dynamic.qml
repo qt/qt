@@ -79,17 +79,17 @@ Item {
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/tree_s.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/rabbit_brown.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
-                    file: "GenericItem.qml"
+                    file: "PerspectiveItem.qml"
                     image: "images/rabbit_bw.png"
                 }
             }
