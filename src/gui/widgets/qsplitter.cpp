@@ -360,12 +360,25 @@ void QSplitterPrivate::recalc(bool update)
       before a hidden widget must be hidden.
     */
     bool first = true;
+    bool allInvisible = n != 0;
     for (int i = 0; i < n ; ++i) {
         QSplitterLayoutStruct *s = list.at(i);
-        s->handle->setHidden(first || s->widget->isHidden());
-        if (!s->widget->isHidden())
+        bool widgetHidden = s->widget->isHidden();
+        if (allInvisible && !widgetHidden && !s->collapsed)
+            allInvisible = false;
+        s->handle->setHidden(first || widgetHidden);
+        if (!widgetHidden)
             first = false;
     }
+
+    if (allInvisible)
+        for (int i = 0; i < n ; ++i) {
+            QSplitterLayoutStruct *s = list.at(i);
+            if (!s->widget->isHidden()) {
+                s->collapsed = false;
+                break;
+            }
+        }
 
     int fi = 2 * q->frameWidth();
     int maxl = fi;
