@@ -406,6 +406,11 @@ void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
 }
 
 /*!
+    \class QmlXmlListModel
+    \internal
+*/
+
+/*!
     \qmlclass XmlListModel
     \brief The XmlListModel element allows you to specify a model using XPath expressions.
 
