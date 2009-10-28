@@ -10,6 +10,7 @@ QT_BEGIN_NAMESPACE
 class QTreeWidget;
 class QTreeWidgetItem;
 class QmlDebugConnection;
+class PropertiesViewItem;
 
 class ObjectPropertiesView : public QWidget
 {
@@ -36,6 +37,7 @@ private slots:
 private:
     void setObject(const QmlDebugObjectReference &object);
     void setWatched(const QString &property, bool watched);
+    void setPropertyValue(PropertiesViewItem *item, const QVariant &value, bool makeGray);
 
     QmlEngineDebug *m_client;
     QmlDebugObjectQuery *m_query;

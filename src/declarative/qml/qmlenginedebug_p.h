@@ -97,14 +97,14 @@ protected:
     virtual void messageReceived(const QByteArray &);
 
 private Q_SLOTS:
-    void propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value);
+    void propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value);
 
 private:
     void buildObjectList(QDataStream &, QmlContext *);
     void buildObjectDump(QDataStream &, QObject *, bool);
     QmlObjectData objectData(QObject *);
     QmlObjectProperty propertyData(QObject *, int);
-    QVariant serializableVariant(const QVariant &value);
+    QVariant valueContents(const QVariant &defaultValue) const;
 
     static QList<QmlEngine *> m_engines;
     QmlWatcher *m_watch;

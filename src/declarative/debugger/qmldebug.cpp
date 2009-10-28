@@ -122,9 +122,10 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         prop.m_binding = data.binding;
         prop.m_hasNotifySignal = data.hasNotifySignal;
         prop.m_valueTypeName = data.valueTypeName;
-        if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic)
+        if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic
+                || data.type == QmlEngineDebugServer::QmlObjectProperty::List) {
             prop.m_value = data.value;
-        else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
+        } else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
             QmlDebugObjectReference obj;
             obj.m_debugId = prop.m_value.toInt();
             prop.m_value = qVariantFromValue(obj);

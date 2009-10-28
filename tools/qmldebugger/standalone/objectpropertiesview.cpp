@@ -16,19 +16,25 @@ class PropertiesViewItem : public QObject, public QTreeWidgetItem
 {
     Q_OBJECT
 public:
-    PropertiesViewItem(QTreeWidget *widget);
-    PropertiesViewItem(QTreeWidgetItem *parent);
+    enum Type {
+        BindingType,
+        OtherType
+    };
+    
+    PropertiesViewItem(QTreeWidget *widget, Type type = OtherType);
+    PropertiesViewItem(QTreeWidgetItem *parent, Type type = OtherType);
 
     QmlDebugPropertyReference property;
+    Type type;
 };
 
-PropertiesViewItem::PropertiesViewItem(QTreeWidget *widget)
-    : QTreeWidgetItem(widget)
+PropertiesViewItem::PropertiesViewItem(QTreeWidget *widget, Type type)
+    : QTreeWidgetItem(widget), type(type)
 {
 }
 
-PropertiesViewItem::PropertiesViewItem(QTreeWidgetItem *parent)
-    : QTreeWidgetItem(parent)
+PropertiesViewItem::PropertiesViewItem(QTreeWidgetItem *parent, Type type)
+    : QTreeWidgetItem(parent), type(type)
 {
 }
 
@@ -109,6 +115,42 @@ void ObjectPropertiesView::queryFinished()
     setObject(obj);
 }
 
+void ObjectPropertiesView::setPropertyValue(PropertiesViewItem *item, const QVariant &value, bool makeGray)
+{
+    if (value.type() == QVariant::List || value.type() == QVariant::StringList) {
+        PropertiesViewItem *bindingItem = static_cast<PropertiesViewItem*>(item->takeChild(item->childCount() - 1));
+        if (bindingItem && bindingItem->type != PropertiesViewItem::BindingType) {
+            delete bindingItem;
+            bindingItem = 0;
+        }    
+            
+        qDeleteAll(item->takeChildren());
+        
+        QVariantList variants = value.toList();
+        item->setText(1, tr("<%1 items>", "%1 = number of items").arg(variants.count()));
+        item->setText(2, QString::fromUtf8(value.typeName()));
+        
+        PropertiesViewItem *child;
+        for (int i=0; i<variants.count(); i++) {
+            child = new PropertiesViewItem(item);
+            setPropertyValue(child, variants[i], makeGray);
+        }
+        
+        if (bindingItem)
+            item->addChild(bindingItem);
+
+        item->setExpanded(false);
+    } else {
+        item->setText(1, (value.isNull() ? QLatin1String("<null>") : value.toString()));
+        item->setExpanded(true);
+    }
+    
+    if (makeGray) {
+        for (int i=0; i<m_tree->columnCount(); i++)
+            item->setForeground(i, Qt::gray);
+    }    
+}
+
 void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
 {
     m_object = object;
@@ -123,20 +165,17 @@ void ObjectPropertiesView::setObject(const QmlDebugObjectReference &object)
 
         item->setText(0, p.name());
         item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        if (!p.hasNotifySignal()) {
-            item->setForeground(0, Qt::gray);
-            item->setForeground(1, Qt::gray);
-        }
+        
+        setPropertyValue(item, p.value(), !p.hasNotifySignal());
+        item->setText(2, p.valueTypeName());
 
+        // binding is set after property value to ensure it is added to the end of the
+        // list, if the value is a list
         if (!p.binding().isEmpty()) {
-            PropertiesViewItem *binding = new PropertiesViewItem(item);
+            PropertiesViewItem *binding = new PropertiesViewItem(item, PropertiesViewItem::BindingType);
             binding->setText(1, p.binding());
             binding->setForeground(1, Qt::darkGreen);
         }
-        
-        item->setText(2, p.valueTypeName());
-
-        item->setExpanded(true);
     }
 }
 
@@ -177,11 +216,8 @@ void ObjectPropertiesView::valueChanged(const QByteArray &name, const QVariant &
     for (int i=0; i<m_tree->topLevelItemCount(); i++) {
         PropertiesViewItem *item = static_cast<PropertiesViewItem *>(m_tree->topLevelItem(i));
         if (item->property.name() == name) {
-            if (value.isNull()) {
-                item->setText(1, QLatin1String("<null>"));
-            } else {
-                item->setText(1, value.toString());
-            }
+            setPropertyValue(item, value, !item->property.hasNotifySignal());
+            return;
         }
     }
 }
