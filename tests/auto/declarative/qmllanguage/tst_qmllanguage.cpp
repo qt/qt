@@ -831,8 +831,12 @@ QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
 QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
 
+// Import tests (QT-558)
+
 void tst_qmllanguage::importsBuiltin_data()
 {
+    // QT-610
+
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
@@ -849,7 +853,7 @@ void tst_qmllanguage::importsBuiltin_data()
            "Test {}"
         << "TestType";
     QTest::newRow("qualified wrong")
-        << "import com.nokia.Test 1.0 as T\n"
+        << "import com.nokia.Test 1.0 as T\n" // QT-610
            "Test {}"
         << "";
     QTest::newRow("qualified right")
@@ -941,7 +945,7 @@ void tst_qmllanguage::importsLocal_data()
 
     // import locals
     QTest::newRow("local import")
-        << "import \"subdir\"\n"
+        << "import \"subdir\"\n" // QT-613
            "Test {}"
         << "QFxRect";
     QTest::newRow("local import as")
@@ -989,18 +993,24 @@ void tst_qmllanguage::importsRemote()
 
 void tst_qmllanguage::importsInstalled_data()
 {
+    // QT-610
+
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
     // import installed
-    QTest::newRow("installed import")
+    QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
         << "QFxRect";
-    QTest::newRow("installed import")
+    QTest::newRow("installed import 2")
         << "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
         << "QFxText";
+    QTest::newRow("installed import visibility") // QT-614
+        << "import com.nokia.installedtest 1.4\n"
+           "PrivateType {}"
+        << "";
 }
 
 void tst_qmllanguage::importsInstalled()
