@@ -86,7 +86,7 @@ QString tst_sql::dbDir() const
 void tst_sql::checkDatabasePath()
 {
     // Check default storage path (we can't use it since we don't want to mess with user's data)
-    QVERIFY(engine->offlineStoragePath().contains("Nokia"));
+    QVERIFY(engine->offlineStoragePath().contains("tst_sql"));
     QVERIFY(engine->offlineStoragePath().contains("OfflineStorage"));
 }
 
