@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGestureRecognizer::ResultFlags
+    \enum QGestureRecognizer::ResultFlag
 
     This enum describes the result of the current event filtering step in
     a gesture recognizer state machine.

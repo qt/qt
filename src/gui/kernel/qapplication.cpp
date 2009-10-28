@@ -5638,7 +5638,9 @@ Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *reco
 */
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {
-    QGestureManager::instance()->unregisterGestureRecognizer(type);
+    QApplicationPrivate *d = qApp->d_func();
+    if (d->gestureManager)
+        d->gestureManager->unregisterGestureRecognizer(type);
 }
 
 QT_END_NAMESPACE

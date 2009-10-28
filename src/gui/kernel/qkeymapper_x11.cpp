@@ -714,47 +714,144 @@ extern bool qt_sm_blockUserInput;
 #define XK_KP_Delete            0xFF9F
 #endif
 
-// the next lines are taken from XFree > 4.0 (X11/XF86keysyms.h), defining some special
+// the next lines are taken on 10/2009 from X.org (X11/XF86keysym.h), defining some special
 // multimedia keys. They are included here as not every system has them.
-#define XF86XK_Standby          0x1008FF10
-#define XF86XK_AudioLowerVolume 0x1008FF11
-#define XF86XK_AudioMute        0x1008FF12
-#define XF86XK_AudioRaiseVolume 0x1008FF13
-#define XF86XK_AudioPlay        0x1008FF14
-#define XF86XK_AudioStop        0x1008FF15
-#define XF86XK_AudioPrev        0x1008FF16
-#define XF86XK_AudioNext        0x1008FF17
-#define XF86XK_HomePage         0x1008FF18
-#define XF86XK_Calculator       0x1008FF1D
-#define XF86XK_Mail             0x1008FF19
-#define XF86XK_Start            0x1008FF1A
-#define XF86XK_Search           0x1008FF1B
-#define XF86XK_AudioRecord      0x1008FF1C
-#define XF86XK_Back             0x1008FF26
-#define XF86XK_Forward          0x1008FF27
-#define XF86XK_Stop             0x1008FF28
-#define XF86XK_Refresh          0x1008FF29
-#define XF86XK_Favorites        0x1008FF30
-#define XF86XK_AudioPause       0x1008FF31
-#define XF86XK_AudioMedia       0x1008FF32
-#define XF86XK_MyComputer       0x1008FF33
-#define XF86XK_OpenURL          0x1008FF38
-#define XF86XK_Launch0          0x1008FF40
-#define XF86XK_Launch1          0x1008FF41
-#define XF86XK_Launch2          0x1008FF42
-#define XF86XK_Launch3          0x1008FF43
-#define XF86XK_Launch4          0x1008FF44
-#define XF86XK_Launch5          0x1008FF45
-#define XF86XK_Launch6          0x1008FF46
-#define XF86XK_Launch7          0x1008FF47
-#define XF86XK_Launch8          0x1008FF48
-#define XF86XK_Launch9          0x1008FF49
-#define XF86XK_LaunchA          0x1008FF4A
-#define XF86XK_LaunchB          0x1008FF4B
-#define XF86XK_LaunchC          0x1008FF4C
-#define XF86XK_LaunchD          0x1008FF4D
-#define XF86XK_LaunchE          0x1008FF4E
-#define XF86XK_LaunchF          0x1008FF4F
+#define XF86XK_MonBrightnessUp     0x1008FF02
+#define XF86XK_MonBrightnessDown   0x1008FF03
+#define XF86XK_KbdLightOnOff       0x1008FF04
+#define XF86XK_KbdBrightnessUp     0x1008FF05
+#define XF86XK_KbdBrightnessDown   0x1008FF06
+#define XF86XK_Standby             0x1008FF10
+#define XF86XK_AudioLowerVolume	   0x1008FF11
+#define XF86XK_AudioMute           0x1008FF12
+#define XF86XK_AudioRaiseVolume    0x1008FF13
+#define XF86XK_AudioPlay           0x1008FF14
+#define XF86XK_AudioStop           0x1008FF15
+#define XF86XK_AudioPrev           0x1008FF16
+#define XF86XK_AudioNext           0x1008FF17
+#define XF86XK_HomePage            0x1008FF18
+#define XF86XK_Mail                0x1008FF19
+#define XF86XK_Start               0x1008FF1A
+#define XF86XK_Search              0x1008FF1B
+#define XF86XK_AudioRecord         0x1008FF1C
+#define XF86XK_Calculator          0x1008FF1D
+#define XF86XK_Memo                0x1008FF1E
+#define XF86XK_ToDoList            0x1008FF1F
+#define XF86XK_Calendar            0x1008FF20
+#define XF86XK_PowerDown           0x1008FF21
+#define XF86XK_ContrastAdjust      0x1008FF22
+#define XF86XK_Back                0x1008FF26
+#define XF86XK_Forward             0x1008FF27
+#define XF86XK_Stop                0x1008FF28
+#define XF86XK_Refresh             0x1008FF29
+#define XF86XK_PowerOff            0x1008FF2A
+#define XF86XK_WakeUp              0x1008FF2B
+#define XF86XK_Eject               0x1008FF2C
+#define XF86XK_ScreenSaver         0x1008FF2D
+#define XF86XK_WWW                 0x1008FF2E
+#define XF86XK_Sleep               0x1008FF2F
+#define XF86XK_Favorites           0x1008FF30
+#define XF86XK_AudioPause          0x1008FF31
+#define XF86XK_AudioMedia          0x1008FF32
+#define XF86XK_MyComputer          0x1008FF33
+#define XF86XK_LightBulb           0x1008FF35
+#define XF86XK_Shop                0x1008FF36
+#define XF86XK_History             0x1008FF37
+#define XF86XK_OpenURL             0x1008FF38
+#define XF86XK_AddFavorite         0x1008FF39
+#define XF86XK_HotLinks            0x1008FF3A
+#define XF86XK_BrightnessAdjust    0x1008FF3B
+#define XF86XK_Finance             0x1008FF3C
+#define XF86XK_Community           0x1008FF3D
+#define XF86XK_AudioRewind         0x1008FF3E
+#define XF86XK_BackForward         0x1008FF3F
+#define XF86XK_Launch0             0x1008FF40
+#define XF86XK_Launch1             0x1008FF41
+#define XF86XK_Launch2             0x1008FF42
+#define XF86XK_Launch3             0x1008FF43
+#define XF86XK_Launch4             0x1008FF44
+#define XF86XK_Launch5             0x1008FF45
+#define XF86XK_Launch6             0x1008FF46
+#define XF86XK_Launch7             0x1008FF47
+#define XF86XK_Launch8             0x1008FF48
+#define XF86XK_Launch9             0x1008FF49
+#define XF86XK_LaunchA             0x1008FF4A
+#define XF86XK_LaunchB             0x1008FF4B
+#define XF86XK_LaunchC             0x1008FF4C
+#define XF86XK_LaunchD             0x1008FF4D
+#define XF86XK_LaunchE             0x1008FF4E
+#define XF86XK_LaunchF             0x1008FF4F
+#define XF86XK_ApplicationLeft     0x1008FF50
+#define XF86XK_ApplicationRight    0x1008FF51
+#define XF86XK_Book                0x1008FF52
+#define XF86XK_CD                  0x1008FF53
+#define XF86XK_Calculater          0x1008FF54
+#define XF86XK_Clear               0x1008FF55
+#define XF86XK_ClearGrab           0x1008FE21
+#define XF86XK_Close               0x1008FF56
+#define XF86XK_Copy                0x1008FF57
+#define XF86XK_Cut                 0x1008FF58
+#define XF86XK_Display             0x1008FF59
+#define XF86XK_DOS                 0x1008FF5A
+#define XF86XK_Documents           0x1008FF5B
+#define XF86XK_Excel               0x1008FF5C
+#define XF86XK_Explorer            0x1008FF5D
+#define XF86XK_Game                0x1008FF5E
+#define XF86XK_Go                  0x1008FF5F
+#define XF86XK_iTouch              0x1008FF60
+#define XF86XK_LogOff              0x1008FF61
+#define XF86XK_Market              0x1008FF62
+#define XF86XK_Meeting             0x1008FF63
+#define XF86XK_MenuKB              0x1008FF65
+#define XF86XK_MenuPB              0x1008FF66
+#define XF86XK_MySites             0x1008FF67
+#define XF86XK_News                0x1008FF69
+#define XF86XK_OfficeHome          0x1008FF6A
+#define XF86XK_Option              0x1008FF6C
+#define XF86XK_Paste               0x1008FF6D
+#define XF86XK_Phone               0x1008FF6E
+#define XF86XK_Reply               0x1008FF72
+#define XF86XK_Reload              0x1008FF73
+#define XF86XK_RotateWindows       0x1008FF74
+#define XF86XK_RotationPB          0x1008FF75
+#define XF86XK_RotationKB          0x1008FF76
+#define XF86XK_Save                0x1008FF77
+#define XF86XK_Send                0x1008FF7B
+#define XF86XK_Spell               0x1008FF7C
+#define XF86XK_SplitScreen         0x1008FF7D
+#define XF86XK_Support             0x1008FF7E
+#define XF86XK_TaskPane            0x1008FF7F
+#define XF86XK_Terminal            0x1008FF80
+#define XF86XK_Tools               0x1008FF81
+#define XF86XK_Travel              0x1008FF82
+#define XF86XK_Video               0x1008FF87
+#define XF86XK_Word                0x1008FF89
+#define XF86XK_Xfer                0x1008FF8A
+#define XF86XK_ZoomIn              0x1008FF8B
+#define XF86XK_ZoomOut             0x1008FF8C
+#define XF86XK_Away                0x1008FF8D
+#define XF86XK_Messenger           0x1008FF8E
+#define XF86XK_WebCam              0x1008FF8F
+#define XF86XK_MailForward         0x1008FF90
+#define XF86XK_Pictures            0x1008FF91
+#define XF86XK_Music               0x1008FF92
+#define XF86XK_Battery             0x1008FF93
+#define XF86XK_Bluetooth           0x1008FF94
+#define XF86XK_WLAN                0x1008FF95
+#define XF86XK_UWB                 0x1008FF96
+#define XF86XK_AudioForward        0x1008FF97
+#define XF86XK_AudioRepeat         0x1008FF98
+#define XF86XK_AudioRandomPlay     0x1008FF99
+#define XF86XK_Subtitle            0x1008FF9A
+#define XF86XK_AudioCycleTrack     0x1008FF9B
+#define XF86XK_Time                0x1008FF9F
+#define XF86XK_Select              0x1008FFA0
+#define XF86XK_View                0x1008FFA1
+#define XF86XK_TopMenu             0x1008FFA2
+#define XF86XK_Suspend             0x1008FFA7
+#define XF86XK_Hibernate           0x1008FFA8
+
+
 // end of XF86keysyms.h
 
 // Special keys used by Qtopia, mapped into the X11 private keypad range.
@@ -942,10 +1039,8 @@ static const unsigned int KeyTbl[] = {
     XK_dead_hook,               Qt::Key_Dead_Hook,
     XK_dead_horn,               Qt::Key_Dead_Horn,
 
-    // Special multimedia keys
-    // currently only tested with MS internet keyboard
-
-    // browsing keys
+    // Special keys from X.org - This include multimedia keys,
+	// wireless/bluetooth/uwb keys, special launcher keys, etc.
     XF86XK_Back,                Qt::Key_Back,
     XF86XK_Forward,             Qt::Key_Forward,
     XF86XK_Stop,                Qt::Key_Stop,
@@ -955,8 +1050,6 @@ static const unsigned int KeyTbl[] = {
     XF86XK_OpenURL,             Qt::Key_OpenUrl,
     XF86XK_HomePage,            Qt::Key_HomePage,
     XF86XK_Search,              Qt::Key_Search,
-
-    // media keys
     XF86XK_AudioLowerVolume,    Qt::Key_VolumeDown,
     XF86XK_AudioMute,           Qt::Key_VolumeMute,
     XF86XK_AudioRaiseVolume,    Qt::Key_VolumeUp,
@@ -965,13 +1058,106 @@ static const unsigned int KeyTbl[] = {
     XF86XK_AudioPrev,           Qt::Key_MediaPrevious,
     XF86XK_AudioNext,           Qt::Key_MediaNext,
     XF86XK_AudioRecord,         Qt::Key_MediaRecord,
-
-    // launch keys
     XF86XK_Mail,                Qt::Key_LaunchMail,
     XF86XK_MyComputer,          Qt::Key_Launch0,
-    XF86XK_Calculator,          Qt::Key_Launch1,
+    XF86XK_Calculator,          Qt::Key_Calculator,
+    XF86XK_Memo,                Qt::Key_Memo,
+    XF86XK_ToDoList,            Qt::Key_ToDoList,
+    XF86XK_Calendar,            Qt::Key_Calendar,
+    XF86XK_PowerDown,           Qt::Key_PowerDown,
+    XF86XK_ContrastAdjust,      Qt::Key_ContrastAdjust,
     XF86XK_Standby,             Qt::Key_Standby,
-
+    XF86XK_MonBrightnessUp,     Qt::Key_MonBrightnessUp,
+    XF86XK_MonBrightnessDown,   Qt::Key_MonBrightnessDown,
+    XF86XK_KbdLightOnOff,       Qt::Key_KeyboardLightOnOff,
+    XF86XK_KbdBrightnessUp,     Qt::Key_KeyboardBrightnessUp,
+    XF86XK_KbdBrightnessDown,   Qt::Key_KeyboardBrightnessDown,
+    XF86XK_PowerOff,            Qt::Key_PowerOff,
+    XF86XK_WakeUp,              Qt::Key_WakeUp,
+    XF86XK_Eject,               Qt::Key_Eject,
+    XF86XK_ScreenSaver,         Qt::Key_ScreenSaver,
+    XF86XK_WWW,                 Qt::Key_WWW,
+    XF86XK_Sleep,               Qt::Key_Sleep,
+    XF86XK_LightBulb,           Qt::Key_LightBulb,
+    XF86XK_Shop,                Qt::Key_Shop,
+    XF86XK_History,             Qt::Key_History,
+    XF86XK_AddFavorite,         Qt::Key_AddFavorite,
+    XF86XK_HotLinks,            Qt::Key_HotLinks,
+    XF86XK_BrightnessAdjust,    Qt::Key_BrightnessAdjust,
+    XF86XK_Finance,             Qt::Key_Finance,
+    XF86XK_Community,           Qt::Key_Community,
+    XF86XK_AudioRewind,         Qt::Key_AudioRewind,
+    XF86XK_BackForward,         Qt::Key_BackForward,
+    XF86XK_ApplicationLeft,     Qt::Key_ApplicationLeft,
+    XF86XK_ApplicationRight,    Qt::Key_ApplicationRight,
+    XF86XK_Book,                Qt::Key_Book,
+    XF86XK_CD,                  Qt::Key_CD,
+    XF86XK_Calculater,          Qt::Key_Calculator,
+    XF86XK_Clear,               Qt::Key_Clear,
+    XF86XK_ClearGrab,           Qt::Key_ClearGrab,
+    XF86XK_Close,               Qt::Key_Close,
+    XF86XK_Copy,                Qt::Key_Copy,
+    XF86XK_Cut,                 Qt::Key_Cut,
+    XF86XK_Display,             Qt::Key_Display,
+    XF86XK_DOS,                 Qt::Key_DOS,
+    XF86XK_Documents,           Qt::Key_Documents,
+    XF86XK_Excel,               Qt::Key_Excel,
+    XF86XK_Explorer,            Qt::Key_Explorer,
+    XF86XK_Game,                Qt::Key_Game,
+    XF86XK_Go,                  Qt::Key_Go,
+    XF86XK_iTouch,              Qt::Key_iTouch,
+    XF86XK_LogOff,              Qt::Key_LogOff,
+    XF86XK_Market,              Qt::Key_Market,
+    XF86XK_Meeting,             Qt::Key_Meeting,
+    XF86XK_MenuKB,              Qt::Key_MenuKB,
+    XF86XK_MenuPB,              Qt::Key_MenuPB,
+    XF86XK_MySites,             Qt::Key_MySites,
+    XF86XK_News,                Qt::Key_News,
+    XF86XK_OfficeHome,          Qt::Key_OfficeHome,
+    XF86XK_Option,              Qt::Key_Option,
+    XF86XK_Paste,               Qt::Key_Paste,
+    XF86XK_Phone,               Qt::Key_Phone,
+    XF86XK_Reply,               Qt::Key_Reply,
+    XF86XK_Reload,              Qt::Key_Reload,
+    XF86XK_RotateWindows,       Qt::Key_RotateWindows,
+    XF86XK_RotationPB,          Qt::Key_RotationPB,
+    XF86XK_RotationKB,          Qt::Key_RotationKB,
+    XF86XK_Save,                Qt::Key_Save,
+    XF86XK_Send,                Qt::Key_Send,
+    XF86XK_Spell,               Qt::Key_Spell,
+    XF86XK_SplitScreen,         Qt::Key_SplitScreen,
+    XF86XK_Support,             Qt::Key_Support,
+    XF86XK_TaskPane,            Qt::Key_TaskPane,
+    XF86XK_Terminal,            Qt::Key_Terminal,
+    XF86XK_Tools,               Qt::Key_Tools,
+    XF86XK_Travel,              Qt::Key_Travel,
+    XF86XK_Video,               Qt::Key_Video,
+    XF86XK_Word,                Qt::Key_Word,
+    XF86XK_Xfer,                Qt::Key_Xfer,
+    XF86XK_ZoomIn,              Qt::Key_ZoomIn,
+    XF86XK_ZoomOut,             Qt::Key_ZoomOut,
+    XF86XK_Away,                Qt::Key_Away,
+    XF86XK_Messenger,           Qt::Key_Messenger,
+    XF86XK_WebCam,              Qt::Key_WebCam,
+    XF86XK_MailForward,         Qt::Key_MailForward,
+    XF86XK_Pictures,            Qt::Key_Pictures,
+    XF86XK_Music,               Qt::Key_Music,
+    XF86XK_Battery,             Qt::Key_Battery,
+    XF86XK_Bluetooth,           Qt::Key_Bluetooth,
+    XF86XK_WLAN,                Qt::Key_WLAN,
+    XF86XK_UWB,                 Qt::Key_UWB,
+    XF86XK_AudioForward,        Qt::Key_AudioForward,
+    XF86XK_AudioRepeat,         Qt::Key_AudioRepeat,
+    XF86XK_AudioRandomPlay,     Qt::Key_AudioRandomPlay,
+    XF86XK_Subtitle,            Qt::Key_Subtitle,
+    XF86XK_AudioCycleTrack,     Qt::Key_AudioCycleTrack,
+    XF86XK_Time,                Qt::Key_Time,
+    XF86XK_Select,              Qt::Key_Select,
+    XF86XK_View,                Qt::Key_View,
+    XF86XK_TopMenu,             Qt::Key_TopMenu,
+    XF86XK_Bluetooth,           Qt::Key_Bluetooth,
+    XF86XK_Suspend,             Qt::Key_Suspend,
+    XF86XK_Hibernate,           Qt::Key_Hibernate,
     XF86XK_Launch0,             Qt::Key_Launch2,
     XF86XK_Launch1,             Qt::Key_Launch3,
     XF86XK_Launch2,             Qt::Key_Launch4,

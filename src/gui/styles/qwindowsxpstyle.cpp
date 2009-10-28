@@ -47,6 +47,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
 #include <private/qstylehelper_p.h>
+#include <private/qwidget_p.h>
 #include <qlibrary.h>
 #include <qpainter.h>
 #include <qpaintengine.h>
@@ -299,7 +300,11 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 
     if (!limboWidget) {
         limboWidget = new QWidget(0);
+        limboWidget->createWinId();
         limboWidget->setObjectName(QLatin1String("xp_limbo_widget"));
+        // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+        if (QWidgetPrivate::allWidgets)
+            QWidgetPrivate::allWidgets->remove(limboWidget);
     }
 
     return limboWidget->winId();

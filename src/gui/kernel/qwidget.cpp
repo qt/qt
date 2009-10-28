@@ -11708,6 +11708,22 @@ void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
     (void)QGestureManager::instance(); // create a gesture manager
 }
 
+/*!
+    Unsubscribes the widget to a given \a gesture type
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::ungrabGesture(Qt::GestureType gesture)
+{
+    Q_D(QWidget);
+    if (d->gestureContext.remove(gesture)) {
+        QGestureManager *manager = QGestureManager::instance();
+        manager->cleanupCachedGestures(this, gesture);
+    }
+}
+
+
 QT_END_NAMESPACE
 
 #include "moc_qwidget.cpp"
