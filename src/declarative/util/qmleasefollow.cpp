@@ -210,7 +210,6 @@ void QmlEaseFollowPrivate::tick(int t)
         qreal value = 0.5 * a * time_seconds * time_seconds + vi * time_seconds;
         value = (invert?-1.0:1.0) * value;
         target.write(initialValue + value);
-
         out = initialValue + value;
     } else if (time_seconds < td) {
 
@@ -397,7 +396,7 @@ void QmlEaseFollow::setSourceValue(qreal s)
 {
     Q_D(QmlEaseFollow);
 
-    if (d->source == s)
+    if (d->clock.state() == QAbstractAnimation::Running && d->source == s)
         return;
 
     d->source = s;
