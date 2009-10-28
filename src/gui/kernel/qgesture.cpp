@@ -129,6 +129,10 @@ QGesture::~QGesture()
 
     \brief The point that is used to find the receiver for the gesture event.
 
+    The hot-spot is a point in the global coordinate system, use
+    QWidget::mapFromGlobal() or QGestureEvent::mapToScene() to get a
+    local hot-spot.
+
     If the hot-spot is not set, the targetObject is used as the receiver of the
     gesture event.
 */
@@ -136,12 +140,6 @@ QGesture::~QGesture()
 /*!
     \property QGesture::hasHotSpot
     \brief whether the gesture has a hot-spot
-*/
-
-/*!
-    \property QGesture::targetObject
-    \brief the target object which will receive the gesture event if the hotSpot is
-    not set
 */
 
 Qt::GestureType QGesture::gestureType() const
@@ -152,16 +150,6 @@ Qt::GestureType QGesture::gestureType() const
 Qt::GestureState QGesture::state() const
 {
     return d_func()->state;
-}
-
-QObject *QGesture::targetObject() const
-{
-    return d_func()->targetObject;
-}
-
-void QGesture::setTargetObject(QObject *value)
-{
-    d_func()->targetObject = value;
 }
 
 QPointF QGesture::hotSpot() const
@@ -241,17 +229,17 @@ QPanGesture::QPanGesture(QObject *parent)
     d_func()->gestureType = Qt::PanGesture;
 }
 
-QSizeF QPanGesture::totalOffset() const
+QPointF QPanGesture::totalOffset() const
 {
     return d_func()->totalOffset;
 }
 
-QSizeF QPanGesture::lastOffset() const
+QPointF QPanGesture::lastOffset() const
 {
     return d_func()->lastOffset;
 }
 
-QSizeF QPanGesture::offset() const
+QPointF QPanGesture::offset() const
 {
     return d_func()->offset;
 }
@@ -262,17 +250,17 @@ qreal QPanGesture::acceleration() const
 }
 
 
-void QPanGesture::setTotalOffset(const QSizeF &value)
+void QPanGesture::setTotalOffset(const QPointF &value)
 {
     d_func()->totalOffset = value;
 }
 
-void QPanGesture::setLastOffset(const QSizeF &value)
+void QPanGesture::setLastOffset(const QPointF &value)
 {
     d_func()->lastOffset = value;
 }
 
-void QPanGesture::setOffset(const QSizeF &value)
+void QPanGesture::setOffset(const QPointF &value)
 {
     d_func()->offset = value;
 }

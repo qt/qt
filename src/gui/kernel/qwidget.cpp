@@ -93,6 +93,7 @@
 # include "qx11info_x11.h"
 #endif
 
+#include <private/qgraphicseffect_p.h>
 #include <private/qwindowsurface_p.h>
 #include <private/qbackingstore_p.h>
 #ifdef Q_WS_MAC
@@ -147,24 +148,6 @@ static inline bool hasBackingStoreSupport()
 #else
     return true;
 #endif
-}
-
-/*!
-    \internal
-
-    Returns true if \a p or any of its parents enable the
-    Qt::BypassGraphicsProxyWidget window flag. Used in QWidget::show() and
-    QWidget::setParent() to determine whether it's necessary to embed the
-    widget into a QGraphicsProxyWidget or not.
-*/
-static inline bool bypassGraphicsProxyWidget(QWidget *p)
-{
-    while (p) {
-        if (p->windowFlags() & Qt::BypassGraphicsProxyWidget)
-            return true;
-        p = p->parentWidget();
-    }
-    return false;
 }
 
 #ifdef Q_WS_MAC
@@ -1806,11 +1789,28 @@ QRegion QWidgetPrivate::clipRegion() const
     return r;
 }
 
+void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
+{
+    Q_Q(QWidget);
+    QWidget *w = q;
+    do {
+        if (w->graphicsEffect()) {
+            QWidgetEffectSourcePrivate *sourced =
+                static_cast<QWidgetEffectSourcePrivate *>(w->graphicsEffect()->source()->d_func());
+            if (!sourced->updateDueToGraphicsEffect)
+                w->graphicsEffect()->source()->d_func()->invalidateCache();
+        }
+        w = w->parentWidget();
+    } while (w);
+}
+
 void QWidgetPrivate::setDirtyOpaqueRegion()
 {
     Q_Q(QWidget);
 
     dirtyOpaqueChildren = true;
+
+    invalidateGraphicsEffectsRecursively();
 
     if (q->isWindow())
         return;
@@ -5215,6 +5215,10 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
+                if (sharedPainter->worldTransform() != sourced->lastEffectTransform) {
+                    sourced->invalidateCache();
+                    sourced->lastEffectTransform = sharedPainter->worldTransform();
+                }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
                 graphicsEffect->draw(sharedPainter, source);
@@ -5487,6 +5491,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     return pixmap;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 /*!
     \internal
 
@@ -5495,7 +5500,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     If successful, the function returns the proxy that embeds the widget, or 0 if no embedded
     widget was found.
 */
-QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origin)
+QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(const QWidget *origin)
 {
     if (origin) {
         QWExtra *extra = origin->d_func()->extra;
@@ -5505,6 +5510,7 @@ QGraphicsProxyWidget * QWidgetPrivate::nearestGraphicsProxyWidget(QWidget *origi
     }
     return 0;
 }
+#endif
 
 /*!
     \property QWidget::locale
@@ -7314,7 +7320,7 @@ void QWidget::setVisible(bool visible)
                     break;
                 parent = parent->parentWidget();
             }
-            if (parent && !d->getOpaqueRegion().isEmpty())
+            if (parent)
                 parent->d_func()->setDirtyOpaqueRegion();
         }
 
@@ -7739,6 +7745,10 @@ void QWidget::adjustSize()
     Q_D(QWidget);
     ensurePolished();
     QSize s = d->adjustedSize();
+
+    if (d->layout)
+        d->layout->activate();
+
     if (s.isValid())
         resize(s);
 }

@@ -3866,7 +3866,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator) {
                 if (!menuItem->text.isEmpty()) {
-                    newSize.setHeight(menuItem->fontMetrics.lineSpacing());
+                    newSize.setHeight(menuItem->fontMetrics.height());
                 }
             }
 #ifndef QT_NO_COMBOBOX

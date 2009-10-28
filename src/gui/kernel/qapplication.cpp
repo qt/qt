@@ -937,11 +937,7 @@ void QApplicationPrivate::initialize()
     graphics_system = QGraphicsSystemFactory::create(graphics_system_name);
 #endif
 #ifndef QT_NO_WHEELEVENT
-#ifdef Q_OS_MAC
-    QApplicationPrivate::wheel_scroll_lines = 1;
-#else
     QApplicationPrivate::wheel_scroll_lines = 3;
-#endif
 #endif
 
     initializeMultitouch();
@@ -2492,6 +2488,7 @@ void QApplication::setActiveWindow(QWidget* act)
 /*!internal
  * Helper function that returns the new focus widget, but does not set the focus reason.
  * Returns 0 if a new focus widget could not be found.
+ * Shared with QGraphicsProxyWidgetPrivate::findFocusChild()
 */
 QWidget *QApplicationPrivate::focusNextPrevChild_helper(QWidget *toplevel, bool next)
 {
@@ -3635,8 +3632,13 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
 
     // walk through parents and check for gestures
     if (d->gestureManager) {
-        if (d->gestureManager->filterEvent(receiver, e))
-            return true;
+        if (receiver->isWidgetType()) {
+            if (d->gestureManager->filterEvent(static_cast<QWidget *>(receiver), e))
+                return true;
+        } else if (QGesture *gesture = qobject_cast<QGesture *>(receiver)) {
+            if (d->gestureManager->filterEvent(gesture, e))
+                return true;
+        }
     }
 
 
@@ -4161,40 +4163,41 @@ bool QApplication::notify(QObject *receiver, QEvent *e)
                     if (wd->gestureContext.contains(type)) {
                         allGestures.removeAt(i);
                         gestures.append(g);
-                        gestureEvent->setAccepted(g, false);
                     } else {
                         ++i;
                     }
                 }
-                if (!gestures.isEmpty()) {
+                if (!gestures.isEmpty()) { // we have gestures for this w
                     QGestureEvent ge(gestures);
                     ge.t = gestureEvent->t;
                     ge.spont = gestureEvent->spont;
                     ge.m_accept = wasAccepted;
+                    ge.d_func()->accepted = gestureEvent->d_func()->accepted;
                     res = d->notify_helper(w, &ge);
                     gestureEvent->spont = false;
                     eventAccepted = ge.isAccepted();
-                    if (res && eventAccepted)
-                        break;
-                    if (!eventAccepted) {
-                        // ### two ways to ignore the event/gesture
-
-                        // if the whole event wasn't accepted, put back those
-                        // gestures that were not accepted.
-                        for (int i = 0; i < gestures.size(); ++i) {
-                            QGesture *g = gestures.at(i);
-                            if (!ge.isAccepted(g))
-                                allGestures.append(g);
+                    for (int i = 0; i < gestures.size(); ++i) {
+                        QGesture *g = gestures.at(i);
+                        if ((res && eventAccepted) || (!eventAccepted && ge.isAccepted(g))) {
+                            // if the gesture was accepted, mark the target widget for it
+                            gestureEvent->d_func()->targetWidgets[g->gestureType()] = w;
+                            gestureEvent->setAccepted(g, true);
+                        } else if (!eventAccepted && !ge.isAccepted(g)) {
+                            // if the gesture was explicitly ignored by the application,
+                            // put it back so a parent can get it
+                            allGestures.append(g);
                         }
                     }
                 }
-                if (allGestures.isEmpty())
+                if (allGestures.isEmpty()) // everything delivered
                     break;
                 if (w->isWindow())
                     break;
                 w = w->parentWidget();
             }
-            gestureEvent->m_accept = eventAccepted;
+            foreach (QGesture *g, allGestures)
+                gestureEvent->setAccepted(g, false);
+            gestureEvent->m_accept = false; // to make sure we check individual gestures
         } else {
             res = d->notify_helper(receiver, e);
         }

@@ -58,6 +58,8 @@ QT_BEGIN_NAMESPACE
     \sa QVector3D, QGenericMatrix
 */
 
+static const qreal inv_dist_to_plane = 1. / 1024.;
+
 /*!
     \fn QMatrix4x4::QMatrix4x4()
 
@@ -1103,7 +1105,111 @@ QMatrix4x4& QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
     return *this;
 }
 
-#ifndef QT_NO_VECTOR4D
+/*!
+    \internal
+*/
+QMatrix4x4& QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
+{
+    // Used by QGraphicsRotation::applyTo() to perform a rotation
+    // and projection back to 2D in a single step.
+    if (angle == 0.0f)
+        return *this;
+    QMatrix4x4 m(1); // The "1" says to not load the identity.
+    qreal c, s, ic;
+    if (angle == 90.0f || angle == -270.0f) {
+        s = 1.0f;
+        c = 0.0f;
+    } else if (angle == -90.0f || angle == 270.0f) {
+        s = -1.0f;
+        c = 0.0f;
+    } else if (angle == 180.0f || angle == -180.0f) {
+        s = 0.0f;
+        c = -1.0f;
+    } else {
+        qreal a = angle * M_PI / 180.0f;
+        c = qCos(a);
+        s = qSin(a);
+    }
+    bool quick = false;
+    if (x == 0.0f) {
+        if (y == 0.0f) {
+            if (z != 0.0f) {
+                // Rotate around the Z axis.
+                m.setIdentity();
+                m.m[0][0] = c;
+                m.m[1][1] = c;
+                if (z < 0.0f) {
+                    m.m[1][0] = s;
+                    m.m[0][1] = -s;
+                } else {
+                    m.m[1][0] = -s;
+                    m.m[0][1] = s;
+                }
+                m.flagBits = General;
+                quick = true;
+            }
+        } else if (z == 0.0f) {
+            // Rotate around the Y axis.
+            m.setIdentity();
+            m.m[0][0] = c;
+            m.m[2][2] = 1.0f;
+            if (y < 0.0f) {
+                m.m[0][3] = -s * inv_dist_to_plane;
+            } else {
+                m.m[0][3] = s * inv_dist_to_plane;
+            }
+            m.flagBits = General;
+            quick = true;
+        }
+    } else if (y == 0.0f && z == 0.0f) {
+        // Rotate around the X axis.
+        m.setIdentity();
+        m.m[1][1] = c;
+        m.m[2][2] = 1.0f;
+        if (x < 0.0f) {
+            m.m[1][3] = s * inv_dist_to_plane;
+        } else {
+            m.m[1][3] = -s * inv_dist_to_plane;
+        }
+        m.flagBits = General;
+        quick = true;
+    }
+    if (!quick) {
+        qreal len = x * x + y * y + z * z;
+        if (!qFuzzyIsNull(len - 1.0f) && !qFuzzyIsNull(len)) {
+            len = qSqrt(len);
+            x /= len;
+            y /= len;
+            z /= len;
+        }
+        ic = 1.0f - c;
+        m.m[0][0] = x * x * ic + c;
+        m.m[1][0] = x * y * ic - z * s;
+        m.m[2][0] = 0.0f;
+        m.m[3][0] = 0.0f;
+        m.m[0][1] = y * x * ic + z * s;
+        m.m[1][1] = y * y * ic + c;
+        m.m[2][1] = 0.0f;
+        m.m[3][1] = 0.0f;
+        m.m[0][2] = 0.0f;
+        m.m[1][2] = 0.0f;
+        m.m[2][2] = 1.0f;
+        m.m[3][2] = 0.0f;
+        m.m[0][3] = (x * z * ic - y * s) * -inv_dist_to_plane;
+        m.m[1][3] = (y * z * ic + x * s) * -inv_dist_to_plane;
+        m.m[2][3] = 0.0f;
+        m.m[3][3] = 1.0f;
+    }
+    int flags = flagBits;
+    *this *= m;
+    if (flags != Identity)
+        flagBits = flags | Rotation;
+    else
+        flagBits = Rotation;
+    return *this;
+}
+
+#ifndef QT_NO_QUATERNION
 
 /*!
     Multiples this matrix by another that rotates coordinates according
@@ -1430,15 +1536,31 @@ QMatrix QMatrix4x4::toAffine() const
                    m[3][0], m[3][1]);
 }
 
-static const qreal inv_dist_to_plane = 1. / 1024.;
+/*!
+    Returns the conventional Qt 2D transformation matrix that
+    corresponds to this matrix.
+
+    The returned QTransform is formed by simply dropping the
+    third row and third column of the QMatrix4x4.  This is suitable
+    for implementing orthographic projections where the z co-ordinate
+    should be dropped rather than projected.
+
+    \sa toAffine()
+*/
+QTransform QMatrix4x4::toTransform() const
+{
+    return QTransform(m[0][0], m[0][1], m[0][3],
+                      m[1][0], m[1][1], m[1][3],
+                      m[3][0], m[3][1], m[3][3]);
+}
 
 /*!
     Returns the conventional Qt 2D transformation matrix that
     corresponds to this matrix.
 
     If \a distanceToPlane is non-zero, it indicates a projection
-    factor to use to adjust for the z co-ordinate.  The default
-    value of 1024 corresponds to the projection factor used
+    factor to use to adjust for the z co-ordinate.  The value of
+    1024 corresponds to the projection factor used
     by QTransform::rotate() for the x and y axes.
 
     If \a distanceToPlane is zero, then the returned QTransform

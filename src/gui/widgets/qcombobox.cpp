@@ -314,7 +314,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 
 
         // height
-        sh.setHeight(qMax(fm.lineSpacing(), 14) + 2);
+        sh.setHeight(qMax(fm.height(), 14) + 2);
         if (hasIcon) {
             sh.setHeight(qMax(sh.height(), iconSize.height() + 2));
         }
@@ -401,13 +401,6 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     QBoxLayout *layout =  new QBoxLayout(QBoxLayout::TopToBottom, this);
     layout->setSpacing(0);
     layout->setMargin(0);
-
-#ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, this);
-    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, this);
-    addAction(selectAction);
-    addAction(cancelAction);
-#endif
 
     // set item view
     setItemView(itemView);
@@ -572,6 +565,13 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
             this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
+
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
+    addAction(selectAction);
+    addAction(cancelAction);
+#endif
 }
 
 /*!
@@ -2452,15 +2452,15 @@ void QComboBox::showPopup()
 
 #if defined(Q_WS_WIN) && !defined(QT_NO_EFFECTS)
     bool scrollDown = (listRect.topLeft() == below);
-    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo) 
+    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo)
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
 
 // Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
 // which means that the window will be visible before the call to container->show() returns.
-// If updates are disabled at this point we'll miss our chance at painting the popup 
-// menu before it's shown, causing flicker since the window then displays the standard gray 
+// If updates are disabled at this point we'll miss our chance at painting the popup
+// menu before it's shown, causing flicker since the window then displays the standard gray
 // background.
 #ifndef Q_WS_MAC
     container->setUpdatesEnabled(false);

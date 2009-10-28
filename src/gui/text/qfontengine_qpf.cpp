@@ -819,7 +819,7 @@ FT_Face QFontEngineQPF::lockFace() const
     FT_Face face = freetype->face;
 
     // ### not perfect
-    const int ysize = fontDef.pixelSize << 6;
+    const int ysize = int(fontDef.pixelSize) << 6;
     const int xsize = ysize;
 
     if (freetype->xsize != xsize || freetype->ysize != ysize) {

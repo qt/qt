@@ -125,6 +125,7 @@ object
 onabort
 onbeforecopy
 onbeforecut
+onbeforeload
 onbeforepaste
 onbeforeunload
 onblur
@@ -157,7 +158,6 @@ onkeyup
 onload
 onloadeddata
 onloadedmetadata
-onloadend
 onloadstart
 onmousedown
 onmousemove

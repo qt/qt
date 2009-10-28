@@ -71,14 +71,6 @@ namespace JSC {
 
         void destroy();
 
-#ifdef JAVASCRIPTCORE_BUILDING_ALL_IN_ONE_FILE
-        // We can inline these functions because everything is compiled as
-        // one file, so the heapAllocate template definitions are available.
-        // However, allocateNumber is used via jsNumberCell outside JavaScriptCore.
-        // Thus allocateNumber needs to provide a non-inline version too.
-        void* inlineAllocateNumber(size_t s) { return heapAllocate<NumberHeap>(s); }
-        void* inlineAllocate(size_t s) { return heapAllocate<PrimaryHeap>(s); }
-#endif
         void* allocateNumber(size_t);
         void* allocate(size_t);
 
@@ -96,7 +88,6 @@ namespace JSC {
         };
         Statistics statistics() const;
 
-        void setGCProtectNeedsLocking();
         void protect(JSValue);
         void unprotect(JSValue);
 
@@ -151,7 +142,6 @@ namespace JSC {
         CollectorHeap primaryHeap;
         CollectorHeap numberHeap;
 
-        OwnPtr<Mutex> m_protectedValuesMutex; // Only non-null if the client explicitly requested it via setGCPrtotectNeedsLocking().
         ProtectCountSet m_protectedValues;
 
         HashSet<MarkedArgumentBuffer*>* m_markListSet;

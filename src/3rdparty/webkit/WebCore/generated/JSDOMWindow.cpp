@@ -36,6 +36,7 @@
 #include "EventListener.h"
 #include "JSAttr.h"
 #include "JSBarInfo.h"
+#include "JSBeforeLoadEvent.h"
 #include "JSCDATASection.h"
 #include "JSCSSCharsetRule.h"
 #include "JSCSSFontFaceRule.h"
@@ -245,7 +246,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[295] =
+static const HashTableValue JSDOMWindowTableValues[296] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -499,6 +500,7 @@ static const HashTableValue JSDOMWindowTableValues[295] =
     { "CanvasFloatArray", DontDelete, (intptr_t)jsDOMWindowCanvasFloatArrayConstructor, (intptr_t)setJSDOMWindowCanvasFloatArrayConstructor },
 #endif
     { "Event", DontDelete, (intptr_t)jsDOMWindowEventConstructor, (intptr_t)setJSDOMWindowEventConstructor },
+    { "BeforeLoadEvent", DontDelete, (intptr_t)jsDOMWindowBeforeLoadEventConstructor, (intptr_t)setJSDOMWindowBeforeLoadEventConstructor },
     { "KeyboardEvent", DontDelete, (intptr_t)jsDOMWindowKeyboardEventConstructor, (intptr_t)setJSDOMWindowKeyboardEventConstructor },
     { "MouseEvent", DontDelete, (intptr_t)jsDOMWindowMouseEventConstructor, (intptr_t)setJSDOMWindowMouseEventConstructor },
     { "MutationEvent", DontDelete, (intptr_t)jsDOMWindowMutationEventConstructor, (intptr_t)setJSDOMWindowMutationEventConstructor },
@@ -2974,6 +2976,14 @@ JSValue jsDOMWindowEventConstructor(ExecState* exec, const Identifier&, const Pr
     return JSEvent::getConstructor(exec, castedThis);
 }
 
+JSValue jsDOMWindowBeforeLoadEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slot.slotBase()));
+    if (!castedThis->allowsAccessFrom(exec))
+        return jsUndefined();
+    return JSBeforeLoadEvent::getConstructor(exec, castedThis);
+}
+
 JSValue jsDOMWindowKeyboardEventConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slot.slotBase()));
@@ -5361,6 +5371,14 @@ void setJSDOMWindowEventConstructor(ExecState* exec, JSObject* thisObject, JSVal
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "Event"), value);
+}
+
+void setJSDOMWindowBeforeLoadEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "BeforeLoadEvent"), value);
 }
 
 void setJSDOMWindowKeyboardEventConstructor(ExecState* exec, JSObject* thisObject, JSValue value)

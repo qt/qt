@@ -29,7 +29,6 @@ namespace JSC {
 
     struct ArrayStorage {
         unsigned m_length;
-        unsigned m_vectorLength;
         unsigned m_numValuesInVector;
         SparseArrayValueMap* m_sparseValueMap;
         void* lazyCreationData; // A JSArray subclass can use this to fill the vector lazily.
@@ -63,18 +62,24 @@ namespace JSC {
         void push(ExecState*, JSValue);
         JSValue pop();
 
-        bool canGetIndex(unsigned i) { return i < m_fastAccessCutoff; }
+        bool canGetIndex(unsigned i) { return i < m_vectorLength && m_storage->m_vector[i]; }
         JSValue getIndex(unsigned i)
         {
             ASSERT(canGetIndex(i));
             return m_storage->m_vector[i];
         }
 
-        bool canSetIndex(unsigned i) { return i < m_fastAccessCutoff; }
-        JSValue setIndex(unsigned i, JSValue v)
+        bool canSetIndex(unsigned i) { return i < m_vectorLength; }
+        void setIndex(unsigned i, JSValue v)
         {
             ASSERT(canSetIndex(i));
-            return m_storage->m_vector[i] = v;
+            JSValue& x = m_storage->m_vector[i];
+            if (!x) {
+                ++m_storage->m_numValuesInVector;
+                if (i >= m_storage->m_length)
+                    m_storage->m_length = i + 1;
+            }
+            x = v;
         }
 
         void fillArgList(ExecState*, MarkedArgumentBuffer&);
@@ -82,12 +87,13 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
         
         inline void markChildrenDirect(MarkStack& markStack);
 
     protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | OverridesMarkChildren | OverridesGetPropertyNames | JSObject::StructureFlags;
         virtual void put(ExecState*, const Identifier& propertyName, JSValue, PutPropertySlot&);
         virtual bool deleteProperty(ExecState*, const Identifier& propertyName);
         virtual bool deleteProperty(ExecState*, unsigned propertyName);
@@ -110,7 +116,7 @@ namespace JSC {
         enum ConsistencyCheckType { NormalConsistencyCheck, DestructorConsistencyCheck, SortConsistencyCheck };
         void checkConsistency(ConsistencyCheckType = NormalConsistencyCheck);
 
-        unsigned m_fastAccessCutoff;
+        unsigned m_vectorLength;
         ArrayStorage* m_storage;
     };
 
@@ -139,7 +145,7 @@ namespace JSC {
         
         ArrayStorage* storage = m_storage;
 
-        unsigned usedVectorLength = std::min(storage->m_length, storage->m_vectorLength);
+        unsigned usedVectorLength = std::min(storage->m_length, m_vectorLength);
         markStack.appendValues(storage->m_vector, usedVectorLength, MayContainNullValues);
 
         if (SparseArrayValueMap* map = storage->m_sparseValueMap) {
@@ -152,7 +158,7 @@ namespace JSC {
     inline void MarkStack::markChildren(JSCell* cell)
     {
         ASSERT(Heap::isCellMarked(cell));
-        if (cell->structure()->typeInfo().hasDefaultMark()) {
+        if (!cell->structure()->typeInfo().overridesMarkChildren()) {
 #ifdef NDEBUG
             asObject(cell)->markChildrenDirect(*this);
 #else

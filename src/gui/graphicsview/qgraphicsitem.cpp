@@ -1228,7 +1228,8 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem with the given \a parent.
+    Constructs a QGraphicsItem with the given \a parent item.
+    It does not modify the parent object returned by QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
     QGraphicsScene::addItem(). The item will then become a top-level item.
@@ -1510,6 +1511,8 @@ const QGraphicsObject *QGraphicsItem::toGraphicsObject() const
     Note that this implicitly adds this graphics item to the scene of
     the parent. You should not \l{QGraphicsScene::addItem()}{add} the
     item to the scene yourself.
+
+    Calling this function on an item that is an ancestor of \a parent have undefined behaviour.
 
     \sa parentItem(), childItems()
 */
@@ -2482,12 +2485,14 @@ void QGraphicsItem::setOpacity(qreal opacity)
     itemChange(ItemOpacityHasChanged, newOpacityVariant);
 
     // Update.
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
+        d_ptr->invalidateGraphicsEffectsRecursively();
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+    }
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->opacityChanged();
@@ -4735,7 +4740,7 @@ bool QGraphicsItem::isObscuredBy(const QGraphicsItem *item) const
 {
     if (!item)
         return false;
-    return QGraphicsSceneBspTreeIndexPrivate::closestItemFirst_withoutCache(item, this)
+    return qt_closestItemFirst(item, this)
         && qt_QGraphicsItem_isObscured(this, item, boundingRect());
 }
 
@@ -4944,6 +4949,22 @@ int QGraphicsItemPrivate::depth() const
         const_cast<QGraphicsItemPrivate *>(this)->resolveDepth();
 
     return itemDepth;
+}
+
+/*!
+    \internal
+*/
+void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
+{
+    QGraphicsItemPrivate *itemPrivate = this;
+    do {
+        if (itemPrivate->graphicsEffect) {
+            itemPrivate->notifyInvalidated = 1;
+
+            if (!itemPrivate->updateDueToGraphicsEffect)
+                static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+    } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
 
 /*!
@@ -5280,11 +5301,7 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
-    QGraphicsItem *item = this;
-    do {
-        if (item->d_ptr->graphicsEffect)
-            item->d_ptr->notifyInvalidated = 1;
-    } while ((item = item->d_ptr->parent));
+    d_ptr->invalidateGraphicsEffectsRecursively();
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -7267,6 +7284,21 @@ static void qt_graphicsItem_highlightSelected(
     The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
     It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
     signals for many of them.
+
+    \section1 Parents and Children
+
+    Each graphics object can be constructed with a parent item. This ensures that the
+    item will be destroyed when its parent item is destroyed. Although QGraphicsObject
+    inherits from both QObject and QGraphicsItem, you should use the functions provided
+    by QGraphicsItem, \e not QObject, to manage the relationships between parent and
+    child items.
+
+    The relationships between items can be explored using the parentItem() and childItems()
+    functions. In the hierarchy of items in a scene, the parentObject() and parentWidget()
+    functions are the equivalent of the QWidget::parent() and QWidget::parentWidget()
+    functions for QWidget subclasses.
+
+    \sa QGraphicsWidget
 */
 
 /*!
@@ -7303,6 +7335,9 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
 /*!
   \property QGraphicsObject::parent
   \brief the parent of the item
+
+  \note The item's parent is set independently of the parent object returned
+  by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
@@ -10721,6 +10756,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     }
 
     pixmapPainter.end();
+
     return pixmap;
 }
 
@@ -10738,6 +10774,23 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
           << ", z =" << item->zValue() << ", flags = "
           << item->flags() << ")";
     return debug;
+}
+
+QDebug operator<<(QDebug debug, QGraphicsObject *item)
+{
+    if (!item) {
+        debug << "QGraphicsObject(0)";
+        return debug;
+    }
+
+    debug.nospace() << item->metaObject()->className() << '(' << (void*)item;
+    if (!item->objectName().isEmpty())
+        debug << ", name = " << item->objectName();
+    debug.nospace() << ", parent = " << ((void*)item->parentItem())
+          << ", pos = " << item->pos()
+          << ", z = " << item->zValue() << ", flags = "
+          << item->flags() << ')';
+    return debug.space();
 }
 
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)

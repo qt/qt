@@ -3048,6 +3048,7 @@ void QWidget::grabMouse()
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &)
 {
     if(isVisible() && !qt_nograb()) {
@@ -3056,6 +3057,7 @@ void QWidget::grabMouse(const QCursor &)
         mac_mouse_grabber=this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {
@@ -3388,10 +3390,17 @@ void QWidgetPrivate::hide_sys()
                 w = q->parentWidget()->window();
             if(!w || (!w->isVisible() && !w->isMinimized())) {
 #ifndef QT_MAC_USE_COCOA
-                for(WindowPtr wp = GetFrontWindowOfClass(kDocumentWindowClass, true);
-                    wp; wp = GetNextWindowOfClass(wp, kDocumentWindowClass, true)) {
+                for (WindowPtr wp = GetFrontWindowOfClass(kMovableModalWindowClass, true);
+                    wp; wp = GetNextWindowOfClass(wp, kMovableModalWindowClass, true)) {
                     if((w = qt_mac_find_window(wp)))
                         break;
+                }
+                if (!w){
+                    for (WindowPtr wp = GetFrontWindowOfClass(kDocumentWindowClass, true);
+                            wp; wp = GetNextWindowOfClass(wp, kDocumentWindowClass, true)) {
+                        if((w = qt_mac_find_window(wp)))
+                            break;
+                    }
                 }
                 if (!w){
                     for(WindowPtr wp = GetFrontWindowOfClass(kSimpleWindowClass, true);

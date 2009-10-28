@@ -470,9 +470,11 @@ QPixmap::operator QVariant() const
     conversion fails.
 
     If the pixmap has 1-bit depth, the returned image will also be 1
-    bit deep. If the pixmap has 2- to 8-bit depth, the returned image
-    has 8-bit depth. If the pixmap has greater than 8-bit depth, the
-    returned image has 32-bit depth.
+    bit deep. Images with more bits will be returned in a format
+    closely represents the underlying system. Usually this will be
+    QImage::Format_ARGB32_Premultiplied for pixmaps with an alpha and
+    QImage::Format_RGB32 or QImage::Format_RGB16 for pixmaps without
+    alpha.
 
     Note that for the moment, alpha masks on monochrome images are
     ignored.
@@ -858,6 +860,9 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
+    if (len == 0 || buf == 0)
+        return false;
+
     return data->fromData(buf, len, format, flags);
 }
 
@@ -1704,8 +1709,8 @@ QPixmap QPixmap::transformed(const QMatrix &matrix, Qt::TransformationMode mode)
 
     In addition, on Symbian, the QPixmap class supports conversion to
     and from CFbsBitmap: the toSymbianCFbsBitmap() function creates
-    CFbsBitmap equivalent to the QPixmap, based on given mode and returns 
-    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a 
+    CFbsBitmap equivalent to the QPixmap, based on given mode and returns
+    a CFbsBitmap object. The fromSymbianCFbsBitmap() function returns a
     QPixmap that is equivalent to the given bitmap and given mode.
 
     \section1 Pixmap Transformations

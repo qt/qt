@@ -177,6 +177,7 @@ public:
         wantsActive(0),
         holesInSiblingIndex(0),
         sequentialOrdering(1),
+        updateDueToGraphicsEffect(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -221,6 +222,7 @@ public:
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+    void invalidateGraphicsEffectsRecursively();
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -502,6 +504,7 @@ public:
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
+    quint32 updateDueToGraphicsEffect : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -539,7 +542,7 @@ struct QGraphicsItemPrivate::TransformData
             QMatrix4x4 m;
             for (int i = 0; i < graphicsTransforms.size(); ++i)
                 graphicsTransforms.at(i)->applyTo(&m);
-            x *= m.toTransform(0);
+            x *= m.toTransform();
         }
         x.translate(xOrigin, yOrigin);
         x.rotate(rotation);
@@ -589,8 +592,11 @@ public:
     inline const QWidget *widget() const
     { return 0; }
 
-    inline void update()
-    { item->update(); }
+    inline void update() {
+        item->d_ptr->updateDueToGraphicsEffect = true;
+        item->update();
+        item->d_ptr->updateDueToGraphicsEffect = false;
+    }
 
     inline void effectBoundingRectChanged()
     { item->prepareGeometryChange(); }
@@ -619,8 +625,74 @@ public:
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
+    QTransform lastEffectTransform;
 };
 
+
+/*!
+    Returns true if \a item1 is on top of \a item2.
+    The items dont need to be siblings.
+
+    \internal
+*/
+inline bool qt_closestItemFirst(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    // Siblings? Just check their z-values.
+    const QGraphicsItemPrivate *d1 = item1->d_ptr.data();
+    const QGraphicsItemPrivate *d2 = item2->d_ptr.data();
+    if (d1->parent == d2->parent)
+        return qt_closestLeaf(item1, item2);
+
+    // Find common ancestor, and each item's ancestor closest to the common
+    // ancestor.
+    int item1Depth = d1->depth();
+    int item2Depth = d2->depth();
+    const QGraphicsItem *p = item1;
+    const QGraphicsItem *t1 = item1;
+    while (item1Depth > item2Depth && (p = p->d_ptr->parent)) {
+        if (p == item2) {
+            // item2 is one of item1's ancestors; item1 is on top
+            return !(t1->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
+        }
+        t1 = p;
+        --item1Depth;
+    }
+    p = item2;
+    const QGraphicsItem *t2 = item2;
+    while (item2Depth > item1Depth && (p = p->d_ptr->parent)) {
+        if (p == item1) {
+            // item1 is one of item2's ancestors; item1 is not on top
+            return (t2->d_ptr->flags & QGraphicsItem::ItemStacksBehindParent);
+        }
+        t2 = p;
+        --item2Depth;
+    }
+
+    // item1Ancestor is now at the same level as item2Ancestor, but not the same.
+    const QGraphicsItem *p1 = t1;
+    const QGraphicsItem *p2 = t2;
+    while (t1 && t1 != t2) {
+        p1 = t1;
+        p2 = t2;
+        t1 = t1->d_ptr->parent;
+        t2 = t2->d_ptr->parent;
+    }
+
+    // in case we have a common ancestor, we compare the immediate children in the ancestor's path.
+    // otherwise we compare the respective items' topLevelItems directly.
+    return qt_closestLeaf(p1, p2);
+}
+
+/*!
+    Returns true if \a item2 is on top of \a item1.
+    The items dont need to be siblings.
+
+    \internal
+*/
+inline bool qt_closestItemLast(const QGraphicsItem *item1, const QGraphicsItem *item2)
+{
+    return qt_closestItemFirst(item2, item1);
+}
 
 /*!
     \internal
@@ -642,7 +714,7 @@ inline bool qt_closestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item
 /*!
     \internal
 */
-static inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
+inline bool qt_notclosestLeaf(const QGraphicsItem *item1, const QGraphicsItem *item2)
 { return qt_closestLeaf(item2, item1); }
 
 /*

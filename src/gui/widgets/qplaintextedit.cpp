@@ -357,10 +357,8 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
     Q_D(QPlainTextDocumentLayout);
     QTextDocument *doc = document();
     qreal margin = doc->documentMargin();
-    QFontMetrics fm(doc->defaultFont());
     qreal blockMaximumWidth = 0;
 
-    int leading = qMax(0, fm.leading());
     qreal height = 0;
     QTextLayout *tl = block.layout();
     QTextOption option = doc->defaultTextOption();
@@ -381,9 +379,8 @@ void QPlainTextDocumentLayout::layoutBlock(const QTextBlock &block)
         QTextLine line = tl->createLine();
         if (!line.isValid())
             break;
+        line.setLeadingIncluded(true);
         line.setLineWidth(availableWidth);
-
-        height += leading;
         line.setPosition(QPointF(margin, height));
         height += line.height();
         blockMaximumWidth = qMax(blockMaximumWidth, line.naturalTextWidth() + 2*margin);
