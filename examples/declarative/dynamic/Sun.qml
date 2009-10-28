@@ -3,9 +3,11 @@ import Qt 4.6
 Image {
     id: sun
     property bool created: false
+    property string image: "images/sun.png"
     onCreatedChanged: if(created){window.activeSuns++;}else{window.activeSuns--;}
 
-    source: "images/sun.png"; 
+    source: image; 
+    z: 1
 
     //x and y get set when instantiated
     //head offscreen

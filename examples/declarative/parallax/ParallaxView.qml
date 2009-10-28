@@ -25,7 +25,8 @@ Item {
         anchors.fill: parent
         model: VisualItemModel { id: visualModel }
 
-        highlight: Item { height: 1; width: 1}
+        highlight: Rectangle { height: 1; width: 1 }
+        highlightMoveSpeed: 2000
         preferredHighlightBegin: 0
         preferredHighlightEnd: 0
         highlightRangeMode: "StrictlyEnforceRange"

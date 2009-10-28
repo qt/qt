@@ -375,6 +375,10 @@ Column {
   \endqml
   \endtable
 
+  Note that the positioner assumes that the x and y positions of its children
+  will not change. If you manually change the x or y properties in script, bind
+  the x or y properties, or use anchors on a child of a positioner, then the
+  positioner may exhibit strange behaviour.
 
 */
 /*!
@@ -539,6 +543,11 @@ Row {
   \endqml
   \image horizontalpositioner_example.png
 
+  Note that the positioner assumes that the x and y positions of its children
+  will not change. If you manually change the x or y properties in script, bind
+  the x or y properties, or use anchors on a child of a positioner, then the
+  positioner may exhibit strange behaviour.
+
 */
 /*!
     \qmlproperty Transition Row::remove
@@ -659,8 +668,10 @@ void QFxRow::doPositioning()
             child->setX(hoffset);
             setMovingItem(0);
         }
-        hoffset += child->width();
-        hoffset += spacing();
+        if(child->width() && child->height()){//don't advance for invisible children
+            hoffset += child->width();
+            hoffset += spacing();
+        }
     }
 }
 
@@ -705,6 +716,11 @@ Grid {
 }
   \endqml
   \endtable
+
+  Note that the positioner assumes that the x and y positions of its children
+  will not change. If you manually change the x or y properties in script, bind
+  the x or y properties, or use anchors on a child of a positioner, then the
+  positioner may exhibit strange behaviour.
 */
 /*!
     \qmlproperty Transition Grid::remove

@@ -809,6 +809,12 @@ void QmlListModelParser::setCustomData(QObject *obj, const QByteArray &d)
 
 QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, ListModel, QmlListModel, QmlListModelParser)
 
+/*!
+    \qmlclass ListElement
+    \brief The ListElement element defines a data item in a ListModel.
+
+    \sa ListModel
+*/
 // ### FIXME
 class QmlListElement : public QObject
 {

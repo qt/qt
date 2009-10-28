@@ -112,7 +112,7 @@ void QmlWatchProxy::notifyValueChanged()
     else
         v = m_property.read(m_object);
 
-    emit m_watch->propertyChanged(m_id, m_debugId, QByteArray(m_property.name()), v);
+    emit m_watch->propertyChanged(m_id, m_debugId, m_property, v);
 }
 
 

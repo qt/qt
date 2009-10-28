@@ -26,7 +26,7 @@ Item {
     Text {
         color: "white"
         anchors.centerIn: buttonImage; font.bold: true
-        text: container.text; style: "Raised"; styleColor: "black"
+        text: container.text; style: Text.Raised; styleColor: "black"
     }
     states: [
         State {

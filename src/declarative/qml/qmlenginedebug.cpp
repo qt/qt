@@ -57,8 +57,8 @@ QmlEngineDebugServer::QmlEngineDebugServer(QObject *parent)
 : QmlDebugService(QLatin1String("QmlEngine"), parent),
   m_watch(new QmlWatcher(this))
 {
-    QObject::connect(m_watch, SIGNAL(propertyChanged(int,int,QByteArray,QVariant)),
-                     this, SLOT(propertyChanged(int,int,QByteArray,QVariant)));
+    QObject::connect(m_watch, SIGNAL(propertyChanged(int,int,QMetaProperty,QVariant)),
+                     this, SLOT(propertyChanged(int,int,QMetaProperty,QVariant)));
 }
 
 QDataStream &operator<<(QDataStream &ds, 
@@ -110,9 +110,11 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
     if (binding)
         rv.binding = binding->expression();
 
+    QVariant value = prop.read(obj);
+    rv.value = valueContents(value);
+
     if (prop.type() < QVariant::UserType) {
         rv.type = QmlObjectProperty::Basic;
-        rv.value = prop.read(obj);
     } else if (QmlMetaType::isObject(prop.userType()))  {
         rv.type = QmlObjectProperty::Object;
     } else if (QmlMetaType::isList(prop.userType()) ||
@@ -121,6 +123,32 @@ QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
     }
 
     return rv;
+}
+
+QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
+{
+    if (value.type() < QVariant::UserType)
+        return value;
+
+    int userType = value.userType();
+
+    if (QmlMetaType::isList(userType) || QmlMetaType::isQmlList(userType)) {
+        int count = QmlMetaType::listCount(value);
+        QVariantList contents;
+        for (int i=0; i<count; i++)
+            contents << valueContents(QmlMetaType::listAt(value, i));
+        return contents;
+    } else if (QmlMetaType::isObject(userType)) {
+        QObject *o = QmlMetaType::toQObject(value);
+        if (o) {
+            QString name = o->objectName();
+            if (name.isEmpty())
+                name = QLatin1String("<unnamed>");
+            return name;
+        }
+    }
+
+    return QLatin1String("<unknown value>");
 }
 
 void QmlEngineDebugServer::buildObjectDump(QDataStream &message, 
@@ -186,32 +214,6 @@ void QmlEngineDebugServer::buildObjectList(QDataStream &message,
     for (int ii = 0; ii < p->instances.count(); ++ii) {
         message << objectData(p->instances.at(ii));
     }
-}
-
-QVariant QmlEngineDebugServer::serializableVariant(const QVariant &value)
-{
-    if (value.type() < QVariant::UserType)
-        return value;
-
-    if (!value.toString().isEmpty())
-        return value.toString();
-
-    QVariant v;
-    if (value.type() == QVariant::UserType || QmlMetaType::isObject(value.userType())) {
-        QObject *o = QmlMetaType::toQObject(value);
-        if (o) {
-            QString objectName = o->objectName();
-            if (objectName.isEmpty())
-                objectName = QLatin1String("<unnamed>");
-            v = QString::fromUtf8(o->metaObject()->className()) +
-                QLatin1String(": ") + objectName;
-        }
-    }
-
-    if (v.isNull())
-        v = QString::fromUtf8(value.typeName());
-
-    return v;
 }
 
 QmlEngineDebugServer::QmlObjectData 
@@ -357,7 +359,7 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
             if (undefined)
                 result = QLatin1String("<undefined>");
             else
-                result = serializableVariant(value);
+                result = valueContents(value);
             delete exprObj;
         } else {
             result = QLatin1String("<unknown context>");
@@ -371,13 +373,12 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
     }
 }
 
-void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QByteArray &property, const QVariant &value)
+void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QMetaProperty &property, const QVariant &value)
 {
     QByteArray reply;
-    QVariant v = serializableVariant(value);
     QDataStream rs(&reply, QIODevice::WriteOnly);
 
-    rs << QByteArray("UPDATE_WATCH") << id << objectId << property << v;
+    rs << QByteArray("UPDATE_WATCH") << id << objectId << QString::fromUtf8(property.name()) << valueContents(value);
 
     sendMessage(reply);
 }

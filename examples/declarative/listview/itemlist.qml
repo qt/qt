@@ -32,7 +32,7 @@ Rectangle {
         preferredHighlightBegin: 0
         preferredHighlightEnd: 0
         highlightRangeMode: "StrictlyEnforceRange"
-        orientation: "Horizontal"
+        orientation: ListView.Horizontal
     }
 
     Rectangle {

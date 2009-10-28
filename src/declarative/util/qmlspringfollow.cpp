@@ -272,10 +272,11 @@ qreal QmlSpringFollow::sourceValue() const
 void QmlSpringFollow::setSourceValue(qreal value)
 {
     Q_D(QmlSpringFollow);
-    if (d->sourceValue != value) {
-        d->sourceValue = value;
-        d->start();
-    }
+    if (d->clock.state() == QAbstractAnimation::Running && d->sourceValue == value)
+        return;
+
+    d->sourceValue = value;
+    d->start();
 }
 
 /*!

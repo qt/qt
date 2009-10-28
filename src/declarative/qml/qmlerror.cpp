@@ -70,7 +70,7 @@ QmlErrorPrivate::QmlErrorPrivate()
     Create an empty error object.
 */
 QmlError::QmlError()
-: d(new QmlErrorPrivate)
+: d(0)
 {
 }
 
@@ -78,7 +78,7 @@ QmlError::QmlError()
     Create a copy of \a other.
 */
 QmlError::QmlError(const QmlError &other)
-: d(new QmlErrorPrivate)
+: d(0)
 {
     *this = other;
 }
@@ -88,10 +88,16 @@ QmlError::QmlError(const QmlError &other)
 */
 QmlError &QmlError::operator=(const QmlError &other)
 {
-    d->url = other.d->url;
-    d->description = other.d->description;
-    d->line = other.d->line;
-    d->column = other.d->column;
+    if (!other.d) {
+        delete d;
+        d = 0;
+    } else {
+        if (!d) d = new QmlErrorPrivate;
+        d->url = other.d->url;
+        d->description = other.d->description;
+        d->line = other.d->line;
+        d->column = other.d->column;
+    }
     return *this;
 }
 
@@ -104,11 +110,20 @@ QmlError::~QmlError()
 }
 
 /*!
+    Return true if this error is valid, otherwise false.
+*/
+bool QmlError::isValid() const
+{
+    return d != 0;
+}
+
+/*!
     Return the url for the file that caused this error.
 */
 QUrl QmlError::url() const
 {
-    return d->url;
+    if (d) return d->url;
+    else return QUrl();
 }
 
 /*!
@@ -116,6 +131,7 @@ QUrl QmlError::url() const
 */
 void QmlError::setUrl(const QUrl &url)
 {
+    if (!d) d = new QmlErrorPrivate;
     d->url = url;
 }
 
@@ -124,7 +140,8 @@ void QmlError::setUrl(const QUrl &url)
 */
 QString QmlError::description() const
 {
-    return d->description;
+    if (d) return d->description;
+    else return QString();
 }
 
 /*!
@@ -132,6 +149,7 @@ QString QmlError::description() const
 */
 void QmlError::setDescription(const QString &description)
 {
+    if (!d) d = new QmlErrorPrivate;
     d->description = description;
 }
 
@@ -140,7 +158,8 @@ void QmlError::setDescription(const QString &description)
 */
 int QmlError::line() const
 {
-    return d->line;
+    if (d) return d->line;
+    else return -1;
 }
 
 /*!
@@ -148,6 +167,7 @@ int QmlError::line() const
 */
 void QmlError::setLine(int line)
 {
+    if (!d) d = new QmlErrorPrivate;
     d->line = line;
 }
 
@@ -156,7 +176,8 @@ void QmlError::setLine(int line)
 */
 int QmlError::column() const
 {
-    return d->column;
+    if (d) return d->column;
+    else return -1;
 }
 
 /*!
@@ -164,6 +185,7 @@ int QmlError::column() const
 */
 void QmlError::setColumn(int column)
 {
+    if (!d) d = new QmlErrorPrivate;
     d->column = column;
 }
 

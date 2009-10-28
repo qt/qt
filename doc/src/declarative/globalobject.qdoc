@@ -56,6 +56,32 @@ Contains all the properties of the ECMAScript global object, plus:
 
 \section1 Qt Object
 
+The Qt object contains functions for
+
+creating types:
+\list
+\o hsla
+\o rgba
+\o rect
+\o point
+\o size
+\o vector3d
+\endlist
+
+manipulating color:
+\list
+\o lighter
+\o darker
+\o tint
+\endlist
+
+and playing sound:
+\list
+\o playSound
+\endlist
+
+It also contains enum values used by some items.
+
 \section1 Asynchronous JavaScript and XML 
 
 \section1 Offline Storage API

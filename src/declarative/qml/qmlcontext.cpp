@@ -77,8 +77,11 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
 
     QScriptValue val = scriptEngine->evaluate(script, fileName, lineNumber);
 
-    if (scriptEngine->hasUncaughtException()) 
-        QmlExpressionPrivate::printException(scriptEngine);
+    if (scriptEngine->hasUncaughtException()) {
+        QmlError error;
+        QmlExpressionPrivate::exceptionToError(scriptEngine, error);
+        qWarning().nospace() << qPrintable(error.toString());
+    }
 
     scriptEngine->popContext();
 
