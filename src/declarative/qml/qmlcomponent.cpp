@@ -75,7 +75,7 @@ int statusId = qRegisterMetaType<QmlComponent::Status>("QmlComponent::Status");
     \brief The Component element encapsulates a QML component description.
 
     Components are reusable, encapsulated Qml element with a well-defined interface.
-    They are often defined in \l {components}{Component Files}.
+    They are often defined in \l {qmldocuments.html}{Component Files}.
 
     The \e Component element allows defining components within a QML file.
     This can be useful for reusing a small component within a single QML
@@ -274,11 +274,22 @@ bool QmlComponent::isLoading() const
     return status() == Loading;
 }
 
+/*!
+    Returns he progress of loading the component, from 0.0 (nothing loaded)
+    to 1.0 (finished).
+*/
 qreal QmlComponent::progress() const
 {
     Q_D(const QmlComponent);
     return d->progress;
 }
+
+/*!
+    \fn void QmlComponent::progressChanged(qreal progress)
+
+    Emitted whenever the component's loading progress changes.  \a progress will be the
+    current progress between 0.0 (nothing loaded) and 1.0 (finished).
+*/
 
 /*!
     \fn void QmlComponent::statusChanged(QmlComponent::Status status)
@@ -375,8 +386,9 @@ void QmlComponent::setData(const QByteArray &data, const QUrl &url)
     QmlCompositeTypeData *typeData = 
         QmlEnginePrivate::get(d->engine)->typeManager.getImmediate(data, url);
     
-    if (typeData->status == QmlCompositeTypeData::Waiting) {
-
+    if (typeData->status == QmlCompositeTypeData::Waiting
+     || typeData->status == QmlCompositeTypeData::WaitingResources)
+    {
         d->typeData = typeData;
         d->typeData->addWaiter(d);
 
@@ -421,7 +433,9 @@ void QmlComponent::loadUrl(const QUrl &url)
     QmlCompositeTypeData *data = 
         QmlEnginePrivate::get(d->engine)->typeManager.get(d->url);
 
-    if (data->status == QmlCompositeTypeData::Waiting) {
+    if (data->status == QmlCompositeTypeData::Waiting
+     || data->status == QmlCompositeTypeData::WaitingResources)
+    {
         d->typeData = data;
         d->typeData->addWaiter(d);
         d->progress = data->progress;
@@ -676,6 +690,9 @@ QmlComponentAttached::~QmlComponentAttached()
     next = 0;
 }
 
+/*!
+    \internal
+*/
 QmlComponentAttached *QmlComponent::qmlAttachedProperties(QObject *obj)
 {
     QmlComponentAttached *a = new QmlComponentAttached(obj);

@@ -604,7 +604,7 @@ public:
 \title Extending types from QML
 
 Many of the elements available for use in QML are implemented in
-\l {QML for C++ Programmers}{C++}.  These types are know as "core types".  QML
+\l {Extending QML}{C++}.  These types are know as "core types".  QML
 allows programmers to build new, fully functional elements without using C++.
 Existing core types can be extended, and new types defined entirely in the QML
 language.

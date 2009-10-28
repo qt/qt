@@ -100,10 +100,4 @@ completely new applications.  QML is fully \l {Extending QML}{extensible from C+
 \o \l {QML Elements}
 \o \l {Extending QML}
 \endlist
-
-\section1 Deprecated
-\list
-\o \l {tutorials-declarative-contacts.html}{Tutorial: 'Introduction to QML'}
-\endlist
-
 */

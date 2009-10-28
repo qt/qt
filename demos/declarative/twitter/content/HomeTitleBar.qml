@@ -52,9 +52,9 @@ Item {
             anchors.left: parent.left; anchors.right: tagButton.left
             anchors.leftMargin: 58; anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
-            elide: "ElideLeft"
+            elide: Text.ElideLeft
             text: "Timeline for " + rssModel.authName
-            font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+            font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
         }
 
         Button {
@@ -67,7 +67,7 @@ Item {
             id: charsLeftText; anchors.horizontalCenter: tagButton.horizontalCenter;
             anchors.top: tagButton.bottom; anchors.topMargin: 2
             text: {140 - editor.text.length;} visible: titleBar.state == "Posting"
-            font.pointSize: 10; font.bold: true; color: "white"; style: "Raised"; styleColor: "black"
+            font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
         }
         Item {
             id: txtEdit;

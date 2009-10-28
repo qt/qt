@@ -79,6 +79,19 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 #include "qfxeffects.cpp"
 
 /*!
+    \qmlclass Transform
+    \brief The Transform elements provide a way of building advanced transformations on Items.
+
+    The Transform elements let you create and control advanced transformations that can be configured
+    independently using specialized properties.
+
+    You can assign any number of Transform elements to an Item. Each Transform is applied in order,
+    one at a time, to the Item it's assigned to.
+
+    \sa Rotation, Scale
+*/
+
+/*!
     \qmlclass Scale
     \brief The Scale object provides a way to scale an Item.
 
@@ -1272,46 +1285,68 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 */
 
 /*!
-    \fn void QFxItem::baselineOffsetChanged()
+    \property QFxItem::baseline
+    \internal
+*/
 
-    This signal is emitted when the baseline offset of the item
-    is changed.
+/*!
+    \property QFxItem::effect
+    \internal
+*/
+
+/*!
+    \property QFxItem::focus
+    \internal
+*/
+
+/*!
+    \property QFxItem::wantsFocus
+    \internal
+*/
+
+/*!
+    \property QFxItem::transformOrigin
+    \internal
+*/
+
+/*!
+    \fn void QFxItem::childrenRectChanged()
+    \internal
+*/
+
+/*!
+    \fn void QFxItem::baselineOffsetChanged()
+    \internal
 */
 
 /*!
     \fn void QFxItem::widthChanged()
-
-    This signal is emitted when the width of the item changes.
+    \internal 
 */
 
 /*!
     \fn void QFxItem::heightChanged()
-
-    This signal is emitted when the height of the item changes.
+    \internal
 */
 
 /*!
     \fn void QFxItem::stateChanged(const QString &state)
-
-    This signal is emitted when the \a state of the item changes.
-
-    \sa states-transitions
+    \internal
 */
 
 /*!
     \fn void QFxItem::parentChanged()
-
-    This signal is emitted when the parent of the item changes.
-
-    \sa setParentItem()
+    \internal
 */
 
 /*!
     \fn void QFxItem::focusChanged()
+    \internal
+*/
 
-    This signal is emitted when the item's focus state changes.
-
-    \sa QFxItem::setFocus()
+/*!
+    \fn void QFxItem::wantsFocusChanged()
+    \internal
 */
 
 static inline void qfxitem_registerAnchorLine() {
@@ -1441,15 +1476,12 @@ QFxItem *QFxItem::parentItem() const
 
 /*!
     \property QFxItem::children
-
-    This property contains the list of visual children of this item.
+    \internal
 */
 
 /*!
     \property QFxItem::resources
-
-    This property contains non-visual resources that you want to
-    reference by name.
+    \internal
 */
 
 /*!
@@ -1469,8 +1501,10 @@ bool QFxItem::isComponentComplete() const
 
 /*!
     \property QFxItem::anchors
-    \brief The anchors (alignments) used by the item.
+    \internal
 */
+
+/*! \internal */
 QFxAnchors *QFxItem::anchors()
 {
     Q_D(QFxItem);
@@ -1663,15 +1697,10 @@ void QFxItemPrivate::transform_clear()
 
 /*!
     \property QFxItem::data
+    \internal
+*/
 
-    The data property is allows you to freely mix the visual children
-    and the non-visual resources of an item.  If you assign a visual
-    item to the data list it becomes a child and if you assign any
-    other object type, it is added as a resource.
-
-    data is a behind-the-scenes property: you should never need to
-    explicitly specify it.
- */
+/*! \internal */
 QmlList<QObject *> *QFxItem::data()
 {
     Q_D(QFxItem);
@@ -1839,9 +1868,7 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
     }
 }
 
-/*!
-  \reimp
-*/
+/*! \internal */
 void QFxItem::keyPressEvent(QKeyEvent *event)
 {
     Q_D(QFxItem);
@@ -1851,9 +1878,7 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
         event->ignore();
 }
 
-/*!
-  \reimp
-*/
+/*! \internal */
 void QFxItem::keyReleaseEvent(QKeyEvent *event)
 {
     Q_D(QFxItem);
@@ -1863,6 +1888,7 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
         event->ignore();
 }
 
+/*! \internal */
 void QFxItem::inputMethodEvent(QInputMethodEvent *event)
 {
     Q_D(QFxItem);
@@ -1872,6 +1898,7 @@ void QFxItem::inputMethodEvent(QInputMethodEvent *event)
         event->ignore();
 }
 
+/*! \internal */
 QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     Q_D(const QFxItem);
@@ -1955,6 +1982,7 @@ QFxAnchorLine QFxItem::verticalCenter() const
     return d->anchorLines()->vCenter;
 }
 
+
 /*!
     \internal
 */
@@ -1966,50 +1994,32 @@ QFxAnchorLine QFxItem::baseline() const
 
 /*!
   \property QFxItem::top
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
   \property QFxItem::bottom
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
   \property QFxItem::left
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
   \property QFxItem::right
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
   \property QFxItem::horizontalCenter
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
   \property QFxItem::verticalCenter
-
-  One of the anchor lines of the item.
-
-  For more information see \l {anchor-layout}{Anchor Layouts}.
+  \internal
 */
 
 /*!
@@ -2112,9 +2122,6 @@ qreal QFxItem::baselineOffset() const
         return d->_baselineOffset;
 }
 
-/*!
-    \internal
-*/
 void QFxItem::setBaselineOffset(qreal offset)
 {
     Q_D(QFxItem);
@@ -2245,7 +2252,7 @@ void QFxItem::setBaselineOffset(qreal offset)
   Returns a value indicating whether mouse input should
   remain with this item exclusively.
 
-  \sa setKeepMouseGrab
+  \sa setKeepMouseGrab()
  */
 bool QFxItem::keepMouseGrab() const
 {
@@ -2278,6 +2285,8 @@ void QFxItem::setKeepMouseGrab(bool keep)
 }
 
 /*!
+  \internal
+
   This function emits the \e focusChanged signal.
 
   Subclasses overriding this function should call up
@@ -2289,12 +2298,14 @@ void QFxItem::focusChanged(bool flag)
     emit focusChanged();
 }
 
+/*! \internal */
 QmlList<QFxItem *> *QFxItem::fxChildren()
 {
     Q_D(QFxItem);
     return &(d->children);
 }
 
+/*! \internal */
 QmlList<QObject *> *QFxItem::resources()
 {
     Q_D(QFxItem);
@@ -2315,15 +2326,14 @@ QmlList<QObject *> *QFxItem::resources()
   }
   \endqml
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstate}{States}
 */
 
 /*!
   \property QFxItem::states
-  This property holds a list of states defined by the item.
-
-  \sa {states-transitions}{States and Transitions}
+  \internal
 */
+/*! \internal */
 QmlList<QmlState *>* QFxItem::states()
 {
     Q_D(QFxItem);
@@ -2344,15 +2354,15 @@ QmlList<QmlState *>* QFxItem::states()
   }
   \endqml
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {state-transitions}{Transitions}
 */
 
 /*!
   \property QFxItem::transitions
-  This property holds a list of transitions defined by the item.
-
-  \sa {states-transitions}{States and Transitions}
+  \internal
 */
+
+/*! \internal */
 QmlList<QmlTransition *>* QFxItem::transitions()
 {
     Q_D(QFxItem);
@@ -2423,34 +2433,15 @@ QmlList<QmlTransition *>* QFxItem::transitions()
   set), \c state will be a blank string. Likewise, you can return an
   item to its base state by setting its current state to \c ''.
 
-  \sa {states-transitions}{States and Transitions}
+  \sa {qmlstates}{States}
 */
 
 /*!
   \property QFxItem::state
-
-  This property holds the name of the current state of the item.
-
-  This property is often used in scripts to change between states. For
-  example:
-
-  \qml
-    Script {
-        function toggle() {
-            if (button.state == 'On')
-                button.state = 'Off';
-            else
-                button.state = 'On';
-        }
-    }
-  \endqml
-
-  If the item is in its base state (i.e. no explicit state has been
-  set), \c state will be a blank string. Likewise, you can return an
-  item to its base state by setting its current state to \c ''.
-
-  \sa {states-transitions}{States and Transitions}
+  \internal
 */
+
+/*! \internal */
 QString QFxItem::state() const
 {
     Q_D(const QFxItem);
@@ -2460,6 +2451,7 @@ QString QFxItem::state() const
         return d->_stateGroup->state();
 }
 
+/*! \internal */
 void QFxItem::setState(const QString &state)
 {
     Q_D(QFxItem);
@@ -2475,8 +2467,10 @@ void QFxItem::setState(const QString &state)
 
 /*!
   \property QFxItem::transform
-  This property holds a list of transformations set on the item.
+  \internal 
 */
+
+/*! \internal */
 QmlList<QGraphicsTransform *>* QFxItem::transform()
 {
     Q_D(QFxItem);
@@ -2484,6 +2478,8 @@ QmlList<QGraphicsTransform *>* QFxItem::transform()
 }
 
 /*!
+  \internal
+
   classBegin() is called when the item is constructed, but its
   properties have not yet been set.
 
@@ -2500,6 +2496,8 @@ void QFxItem::classBegin()
 }
 
 /*!
+  \internal
+
   componentComplete() is called when all items in the component
   have been constructed.  It is often desireable to delay some
   processing until the component is complete an all bindings in the
@@ -2584,9 +2582,7 @@ QPointF QFxItemPrivate::computeTransformOrigin() const
     }
 }
 
-/*!
-    \reimp
-*/
+/*! \internal */
 bool QFxItem::sceneEvent(QEvent *event)
 {
     bool rv = QGraphicsItem::sceneEvent(event);
@@ -2599,9 +2595,7 @@ bool QFxItem::sceneEvent(QEvent *event)
     return rv;
 }
 
-/*!
-    \reimp
-*/
+/*! \internal */
 QVariant QFxItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
@@ -2612,9 +2606,7 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
     return QGraphicsItem::itemChange(change, value);
 }
 
-/*!
-    \reimp
-*/
+/*! \internal */
 QRectF QFxItem::boundingRect() const
 {
     Q_D(const QFxItem);
@@ -2668,18 +2660,33 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
 
     By default smooth transformations are off.
 */
+
+/*!
+    Returns true if the item should be drawn with antialiasing and
+    smooth pixmap filtering, false otherwise.
+
+    The default is false.
+    
+    \sa setSmoothTransform()
+*/
 bool QFxItem::smoothTransform() const
 {
     Q_D(const QFxItem);
     return d->smooth;
 }
 
-void QFxItem::setSmoothTransform(bool s)
+/*!
+    Sets whether the item should be drawn with antialiasing and
+    smooth pixmap filtering to \a smooth.
+
+    \sa smoothTransform()
+*/
+void QFxItem::setSmoothTransform(bool smooth)
 {
     Q_D(QFxItem);
-    if (d->smooth == s)
+    if (d->smooth == smooth)
         return;
-    d->smooth = s;
+    d->smooth = smooth;
     update();
 }
 
@@ -2806,6 +2813,8 @@ bool QFxItem::heightValid() const
 
   This property indicates whether the item has has an active focus request.
 */
+
+/*! \internal */
 bool QFxItem::wantsFocus() const
 {
     return focusItem() != 0;
@@ -2816,11 +2825,14 @@ bool QFxItem::wantsFocus() const
   This property indicates whether the item has keyboard input focus. Set this
   property to true to request focus.
 */
+
+/*! \internal */
 bool QFxItem::hasFocus() const
 {
     return QGraphicsItem::hasFocus();
 }
 
+/*! \internal */
 void QFxItem::setFocus(bool focus)
 {
     if (focus)
@@ -2831,6 +2843,7 @@ void QFxItem::setFocus(bool focus)
 
 /*!
     \reimp
+    \internal
 */
 void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 {
@@ -2838,6 +2851,7 @@ void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 
 /*!
     \reimp
+    \internal
 */
 bool QFxItem::event(QEvent *ev)
 {

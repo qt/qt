@@ -211,7 +211,6 @@ Rectangle {
     }
 }
 \endcode
-\endtable
 
 To detect when a C++ property value - in this case the \c CustomPalette's \c text property - 
 changes, the property must have a corresponding NOTIFY signal.  The NOTIFY signal specifies a signal

@@ -265,7 +265,8 @@ void WatchTableModel::removeAllWatches()
     for (int i=0; i<m_columns.count(); i++) {
         if (m_client)
             m_client->removeWatch(m_columns[i].watch);
-        delete m_columns[i].watch;
+        else    
+            delete m_columns[i].watch;
     }
     m_columns.clear();
     m_values.clear();

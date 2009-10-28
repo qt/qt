@@ -39,13 +39,13 @@ Flipable {
                 right: parent.right; rightMargin: 20
                 top: parent.top; topMargin: 180
             }
-            Text { font.bold: true; color: "white"; elide: "ElideRight"; text: container.photoTitle }
-            Text { color: "white"; elide: "ElideRight"; text: "<b>Size:</b> " + container.photoWidth + 'x' + container.photoHeight }
-            Text { color: "white"; elide: "ElideRight"; text: "<b>Type:</b> " + container.photoType }
-            Text { color: "white"; elide: "ElideRight"; text: "<b>Author:</b> " + container.photoAuthor }
-            Text { color: "white"; elide: "ElideRight"; text: "<b>Published:</b> " + container.photoDate }
-            Text { color: "white"; elide: "ElideRight"; text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
-            Text { color: "white"; elide: "ElideRight"; elide: "ElideRight"; text: container.photoTags }
+            Text { font.bold: true; color: "white"; elide: Text.ElideRight; text: container.photoTitle }
+            Text { color: "white"; elide: Text.ElideRight; text: "<b>Size:</b> " + container.photoWidth + 'x' + container.photoHeight }
+            Text { color: "white"; elide: Text.ElideRight; text: "<b>Type:</b> " + container.photoType }
+            Text { color: "white"; elide: Text.ElideRight; text: "<b>Author:</b> " + container.photoAuthor }
+            Text { color: "white"; elide: Text.ElideRight; text: "<b>Published:</b> " + container.photoDate }
+            Text { color: "white"; elide: Text.ElideRight; text: container.photoTags == "" ? "" : "<b>Tags:</b> " }
+            Text { color: "white"; elide: Text.ElideRight; elide: Text.ElideRight; text: container.photoTags }
         }
     }
 

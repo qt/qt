@@ -319,8 +319,8 @@ void QFxMouseRegion::setEnabled(bool a)
     \code
     Text {
         text: mr.pressedButtons & Qt.RightButton ? "right" : ""
-        horizontalAlignment: "AlignHCenter"
-        verticalAlignment: "AlignVCenter"
+        horizontalAlignment: Text.AlignHCenter
+        verticalAlignment: Text.AlignVCenter
         MouseRegion {
             id: mr
             acceptedButtons: Qt.LeftButton | Qt.RightButton

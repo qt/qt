@@ -16,12 +16,12 @@ class ExpressionQueryWidget : public QWidget
 {
     Q_OBJECT
 public:
-    enum Style {
-        Compact,
-        Shell
+    enum Mode {
+        SeparateEntryMode,
+        ShellMode
     };
 
-    ExpressionQueryWidget(QmlEngineDebug *client = 0, QWidget *parent = 0);
+    ExpressionQueryWidget(Mode mode = SeparateEntryMode, QmlEngineDebug *client = 0, QWidget *parent = 0);
     
     void setEngineDebug(QmlEngineDebug *client);
     void clear();
@@ -42,7 +42,7 @@ private:
     void showCurrentContext();
     void updateTitle();
 
-    Style m_style;
+    Mode m_mode;
 
     QmlEngineDebug *m_client;
     QmlDebugExpressionQuery *m_query;
