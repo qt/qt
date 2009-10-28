@@ -10703,7 +10703,8 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
         effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
     } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
-        effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+        // adjust by 1.5 to account for cosmetic pens
+        effectRect = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5).toAlignedRect();
     } else {
         effectRect = sourceRect.toAlignedRect();
     }

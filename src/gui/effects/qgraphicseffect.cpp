@@ -101,6 +101,7 @@
 
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qpaintengine.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
@@ -260,12 +261,13 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     }
 
     QPixmap pm;
-    if (d->m_cachedSystem == system)
+    if (d->m_cachedSystem == system && d->m_cachedMode == mode)
         QPixmapCache::find(d->m_cacheKey, &pm);
 
     if (pm.isNull()) {
         pm = d->pixmap(system, &d->m_cachedOffset, mode);
         d->m_cachedSystem = system;
+        d->m_cachedMode = mode;
 
         d->invalidateCache();
         d->m_cacheKey = QPixmapCache::insert(pm);
@@ -708,9 +710,13 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
         return;
     }
 
+    QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToEffectRectPadMode;
+    if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
+        mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode;
+
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset, mode);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
@@ -893,9 +899,13 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
         return;
     }
 
+    QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToEffectRectPadMode;
+    if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
+        mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode;
+
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset, mode);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);

@@ -66,7 +66,12 @@ class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffectSource)
 public:
-    QGraphicsEffectSourcePrivate() : QObjectPrivate() {}
+    QGraphicsEffectSourcePrivate()
+        : QObjectPrivate()
+        , m_cachedSystem(Qt::DeviceCoordinates)
+        , m_cachedMode(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+    {}
+
     virtual ~QGraphicsEffectSourcePrivate() { invalidateCache(); }
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
@@ -88,6 +93,7 @@ public:
 
 private:
     mutable Qt::CoordinateSystem m_cachedSystem;
+    mutable QGraphicsEffectSource::PixmapPadMode m_cachedMode;
     mutable QPoint m_cachedOffset;
     mutable QPixmapCache::Key m_cacheKey;
 };

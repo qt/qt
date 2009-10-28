@@ -584,7 +584,7 @@ Qt::RenderHint QPixmapBlurFilter::blurHint() const
 QRectF QPixmapBlurFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapBlurFilter);
-    const qreal delta = d->radius * 2;
+    const qreal delta = d->radius + 1;
     return rect.adjusted(-delta, -delta, delta, delta);
 }
 
@@ -1057,14 +1057,9 @@ void QPixmapDropShadowFilter::setOffset(const QPointF &offset)
 QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
-
-    const qreal delta = qreal(d->radius * 2);
-    qreal x1 = qMin(rect.left(), rect.left() + d->offset.x() - delta);
-    qreal y1 = qMin(rect.top(), rect.top() + d->offset.y() - delta);
-    qreal x2 = qMax(rect.right(), rect.right() + d->offset.x() + delta);
-    qreal y2 = qMax(rect.bottom(), rect.bottom() + d->offset.y() + delta);
-
-    return QRectF(x1, y1, x2 - x1, y2 - y1);
+    qreal delta = d->radius + 1;
+    return rect.adjusted(-2, -2, 2, 2).united(
+            rect.translated(d->offset).adjusted(-delta, -delta, delta, delta));
 }
 
 /*!

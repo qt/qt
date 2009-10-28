@@ -476,7 +476,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
         return false;
 
     bool useCustomSrc = customSrcStage != 0;
-    if (useCustomSrc && srcPixelType != QGLEngineShaderManager::ImageSrc) {
+    if (useCustomSrc && srcPixelType != QGLEngineShaderManager::ImageSrc && srcPixelType != Qt::TexturePattern) {
         useCustomSrc = false;
         qWarning("QGLEngineShaderManager - Ignoring custom shader stage for non image src");
     }

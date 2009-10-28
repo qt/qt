@@ -104,7 +104,7 @@ public:
 
     void setUniforms(QGLShaderProgram *program);
 
-    static QByteArray generateGaussianShader(int radius, bool dropShadow = false);
+    static QByteArray generateGaussianShader(int radius, bool singlePass = false, bool dropShadow = false);
 
 protected:
     bool processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const;
@@ -113,6 +113,7 @@ private:
 
     mutable QSize m_textureSize;
     mutable bool m_horizontalBlur;
+    mutable bool m_singlePass;
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
@@ -132,6 +133,7 @@ protected:
 private:
     mutable QSize m_textureSize;
     mutable bool m_horizontalBlur;
+    mutable bool m_singlePass;
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
@@ -298,123 +300,155 @@ bool QGLPixmapConvolutionFilter::processGL(QPainter *painter, const QPointF &pos
     return true;
 }
 
-static const char *qt_gl_blur_filter_fast =
-    "const int samples = 9;"
-    "uniform mediump vec2 delta;"
-    "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {"
-    "    mediump vec4 color = vec4(0.0, 0.0, 0.0, 0.0);"
-    "    mediump float offset = (float(samples) - 1.0) / 2.0;"
-    "    for (int i = 0; i < samples; i++) {"
-    "        mediump vec2 coord = srcCoords + delta * (offset - float(i)) / offset;"
-    "        color += texture2D(src, coord);"
-    "    }"
-    "    return color * (1.0 / float(samples));"
-    "}";
+static const char *qt_gl_texture_sampling_helper =
+    "lowp float texture2DAlpha(lowp sampler2D src, highp vec2 srcCoords) {\n"
+    "   return texture2D(src, srcCoords).a;\n"
+    "}\n";
 
-static const char *qt_gl_drop_shadow_filter_fast =
-    "const int samples = 9;"
-    "uniform mediump vec2 delta;"
-    "uniform mediump vec4 shadowColor;"
-    "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords) {"
-    "    mediump vec4 color = vec4(0.0, 0.0, 0.0, 0.0);"
-    "    mediump float offset = (float(samples) - 1.0) / 2.0;"
-    "    for (int i = 0; i < samples; i++) {"
-    "        mediump vec2 coord = srcCoords + delta * (offset - float(i)) / offset;"
-    "        color += texture2D(src, coord).a * shadowColor;"
-    "    }"
-    "    return color * (1.0 / float(samples));"
-    "}";
+static const char *qt_gl_clamped_texture_sampling_helper =
+    "highp vec4 texture_dimensions;\n" // x = width, y = height, z = 0.5/width, w = 0.5/height
+    "lowp float clampedTexture2DAlpha(lowp sampler2D src, highp vec2 srcCoords) {\n"
+    "   highp vec2 clampedCoords = clamp(srcCoords, texture_dimensions.zw, vec2(1.0) - texture_dimensions.zw);\n"
+    "   highp vec2 t = clamp(min(srcCoords, vec2(1.0) - srcCoords) * srcDim + 0.5, 0.0, 1.0);\n"
+    "   return texture2D(src, clampedCoords).a * t.x * t.y;\n"
+    "}\n"
+    "lowp vec4 clampedTexture2D(lowp sampler2D src, highp vec2 srcCoords) {\n"
+    "   highp vec2 clampedCoords = clamp(srcCoords, texture_dimensions.zw, vec2(1.0) - texture_dimensions.zw);\n"
+    "   highp vec2 t = clamp(min(srcCoords, vec2(1.0) - srcCoords) * srcDim + 0.5, 0.0, 1.0);\n"
+    "   return texture2D(src, clampedCoords) * t.x * t.y;\n"
+    "}\n";
+
+static QByteArray qt_gl_convertToClamped(const QByteArray &source)
+{
+    QByteArray result;
+    result.append(qt_gl_clamped_texture_sampling_helper);
+    result.append(QByteArray(source).replace("texture2DAlpha", "clampedTexture2DAlpha")
+                                    .replace("texture2D", "clampedTexture2D"));
+    return result;
+}
 
 QGLPixmapBlurFilter::QGLPixmapBlurFilter(Qt::RenderHint hint)
     : m_haveCached(false)
-    , m_cachedRadius(5)
+    , m_cachedRadius(0)
     , m_hint(hint)
 {
-    if (hint == Qt::PerformanceHint) {
-        QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
-        filter->setSource(qt_gl_blur_filter_fast);
-        m_haveCached = true;
-    }
 }
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
 {
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
 
-    int radius = qRound(this->radius());
-    if (!m_haveCached || (m_hint == Qt::QualityHint && radius != m_cachedRadius)) {
+    int actualRadius = qRound(radius());
+    int filterRadius = actualRadius;
+    int fastRadii[] = { 1, 2, 3, 5, 8, 15, 25 };
+    if (m_hint == Qt::PerformanceHint) {
+        uint i = 0;
+        for (; i < (sizeof(fastRadii)/sizeof(*fastRadii))-1; ++i) {
+            if (fastRadii[i+1] > filterRadius)
+                break;
+        }
+        filterRadius = fastRadii[i];
+    }
+
+    m_singlePass = filterRadius <= 3;
+
+    if (!m_haveCached || filterRadius != m_cachedRadius) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
-        m_cachedRadius = radius;
-        filter->setSource(generateGaussianShader(radius));
+        m_cachedRadius = filterRadius;
+        QByteArray source = generateGaussianShader(filterRadius, m_singlePass);
+        filter->setSource(source);
     }
 
-    QGLFramebufferObjectFormat format;
-    format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
-    QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(src.size(), format);
+    QRect targetRect = QRectF(src.rect()).translated(pos).adjusted(-actualRadius, -actualRadius, actualRadius, actualRadius).toAlignedRect();
 
-    if (!fbo)
-        return false;
+    if (m_singlePass) {
+        // prepare for updateUniforms
+        m_textureSize = src.size();
 
-    glBindTexture(GL_TEXTURE_2D, fbo->texture());
+        // ensure GL_LINEAR filtering is used
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(painter);
+        QBrush pixmapBrush = src;
+        pixmapBrush.setTransform(QTransform::fromTranslate(pos.x(), pos.y()));
+        painter->fillRect(targetRect, pixmapBrush);
+        filter->removeFromPainter(painter);
+    } else {
+        QGLFramebufferObjectFormat format;
+        format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
+        QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(targetRect.size(), format);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+        if (!fbo)
+            return false;
 
-    // prepare for updateUniforms
-    m_textureSize = src.size();
+        glBindTexture(GL_TEXTURE_2D, fbo->texture());
 
-    // horizontal pass, to pixmap
-    m_horizontalBlur = true;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-    QPainter fboPainter(fbo);
+        // prepare for updateUniforms
+        m_textureSize = src.size();
 
-    if (src.hasAlphaChannel()) {
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // horizontal pass, to pixmap
+        m_horizontalBlur = true;
+
+        QPainter fboPainter(fbo);
+
+        if (src.hasAlphaChannel()) {
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+
+        // ensure GL_LINEAR filtering is used
+        fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(&fboPainter);
+        QBrush pixmapBrush = src;
+        pixmapBrush.setTransform(QTransform::fromTranslate(actualRadius, actualRadius));
+        fboPainter.fillRect(QRect(0, 0, targetRect.width(), targetRect.height()), pixmapBrush);
+        filter->removeFromPainter(&fboPainter);
+        fboPainter.end();
+
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+
+        // vertical pass, to painter
+        m_horizontalBlur = false;
+        m_textureSize = fbo->size();
+
+        painter->save();
+        // ensure GL_LINEAR filtering is used
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(painter);
+        engine->drawTexture(targetRect, fbo->texture(), fbo->size(), QRect(QPoint(), targetRect.size()).translated(0, fbo->height() - targetRect.height()));
+        filter->removeFromPainter(painter);
+        painter->restore();
+
+        qgl_fbo_pool()->release(fbo);
     }
-
-    // ensure GL_LINEAR filtering is used
-    fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
-    filter->setOnPainter(&fboPainter);
-    fboPainter.drawPixmap(0, 0, src);
-    filter->removeFromPainter(&fboPainter);
-    fboPainter.end();
-
-    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
-
-    // vertical pass, to painter
-    m_horizontalBlur = false;
-
-    painter->save();
-    // ensure GL_LINEAR filtering is used
-    painter->setRenderHint(QPainter::SmoothPixmapTransform);
-    filter->setOnPainter(painter);
-    engine->drawTexture(src.rect().translated(pos.x(), pos.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
-    filter->removeFromPainter(painter);
-    painter->restore();
-
-    qgl_fbo_pool()->release(fbo);
 
     return true;
 }
 
 void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     if (m_hint == Qt::QualityHint) {
-        if (m_horizontalBlur)
+        if (m_singlePass)
+            program->setUniformValue("delta", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
+        else if (m_horizontalBlur)
             program->setUniformValue("delta", 1.0 / m_textureSize.width(), 0.0);
         else
             program->setUniformValue("delta", 0.0, 1.0 / m_textureSize.height());
     } else {
-        // 1.4 is chosen to most closely match the blurriness of the gaussian blur
-        // at low radii
-        qreal blur = radius() / 1.4f;
+        qreal blur = radius() / qreal(m_cachedRadius);
 
-        if (m_horizontalBlur)
+        if (m_singlePass)
+            program->setUniformValue("delta", blur / m_textureSize.width(), blur / m_textureSize.height());
+        else if (m_horizontalBlur)
             program->setUniformValue("delta", blur / m_textureSize.width(), 0.0);
         else
             program->setUniformValue("delta", 0.0, blur / m_textureSize.height());
@@ -426,12 +460,21 @@ static inline qreal gaussian(qreal dx, qreal sigma)
     return exp(-dx * dx / (2 * sigma * sigma)) / (Q_2PI * sigma * sigma);
 }
 
-QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool dropShadow)
+QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool singlePass, bool dropShadow)
 {
     Q_ASSERT(radius >= 1);
 
+    radius = qMin(127, radius);
+
+    static QCache<uint, QByteArray> shaderSourceCache;
+    uint key = radius | (int(singlePass) << 7) | (int(dropShadow) << 8);
+    QByteArray *cached = shaderSourceCache.object(key);
+    if (cached)
+        return *cached;
+
     QByteArray source;
     source.reserve(1000);
+    source.append(qt_gl_texture_sampling_helper);
 
     source.append("uniform highp vec2      delta;\n");
     if (dropShadow)
@@ -446,7 +489,7 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool dropShad
     qreal sigma = radius / 1.65;
 
     qreal sum = 0;
-    for (int i = -radius; i <= radius; ++i) {
+    for (int i = -radius; i < radius; ++i) {
         float value = gaussian(i, sigma);
         gaussianComponents << value;
         sum += value;
@@ -464,43 +507,67 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool dropShad
         weights << weight;
     }
 
-    // odd size ?
-    if (gaussianComponents.size() & 1) {
-        sampleOffsets << radius;
-        weights << gaussianComponents.last();
-    }
+    int limit = sampleOffsets.size();
+    if (singlePass)
+        limit *= limit;
 
-    int currentVariable = 1;
-    source.append("    mediump vec4 sample = vec4(0.0);\n");
-    source.append("    mediump vec2 coord;\n");
+    QByteArray baseCoordinate = "srcCoords";
 
-    qreal weightSum = 0;
-    source.append("    mediump float c;\n");
-    for (int i = 0; i < sampleOffsets.size(); ++i) {
-        qreal delta = sampleOffsets.at(i);
+    for (int i = 0; i < limit; ++i) {
+        QByteArray coordinate = baseCoordinate;
 
-        ++currentVariable;
+        qreal weight;
+        if (singlePass) {
+            const int xIndex = i % sampleOffsets.size();
+            const int yIndex = i / sampleOffsets.size();
 
-        QByteArray coordinate = "srcCoords";
-        if (delta != qreal(0)) {
-            coordinate.append(" + delta * float(");
-            coordinate.append(QByteArray::number(delta));
-            coordinate.append(")");
+            const qreal deltaX = sampleOffsets.at(xIndex);
+            const qreal deltaY = sampleOffsets.at(yIndex);
+            weight = weights.at(xIndex) * weights.at(yIndex);
+
+            if (!qFuzzyCompare(deltaX, deltaY)) {
+                coordinate.append(" + vec2(delta.x * float(");
+                coordinate.append(QByteArray::number(deltaX));
+                coordinate.append("), delta.y * float(");
+                coordinate.append(QByteArray::number(deltaY));
+                coordinate.append("))");
+            } else if (!qFuzzyIsNull(deltaX)) {
+                coordinate.append(" + delta * float(");
+                coordinate.append(QByteArray::number(deltaX));
+                coordinate.append(")");
+            }
+        } else {
+            const qreal delta = sampleOffsets.at(i);
+            weight = weights.at(i);
+            if (!qFuzzyIsNull(delta)) {
+                coordinate.append(" + delta * float(");
+                coordinate.append(QByteArray::number(delta));
+                coordinate.append(")");
+            }
         }
 
-        source.append("    coord = ");
+        if (i == 0) {
+            if (dropShadow)
+                source.append("    mediump float sample = ");
+            else
+                source.append("    mediump vec4 sample = ");
+        } else {
+            if (dropShadow)
+                source.append("    sample += ");
+            else
+                source.append("    sample += ");
+        }
+
+        source.append("texture2D(src, ");
         source.append(coordinate);
-        source.append(";\n");
+        source.append(")");
 
         if (dropShadow)
-            source.append("    sample += texture2D(src, coord).a * shadowColor");
-        else
-            source.append("    sample += texture2D(src, coord)");
+            source.append(".a");
 
-        weightSum += weights.at(i);
-        if (weights.at(i) != qreal(1)) {
+        if (!qFuzzyCompare(weight, qreal(1))) {
             source.append(" * float(");
-            source.append(QByteArray::number(weights.at(i)));
+            source.append(QByteArray::number(weight));
             source.append(");\n");
         } else {
             source.append(";\n");
@@ -508,86 +575,109 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool dropShad
     }
 
     source.append("    return ");
+    if (dropShadow)
+        source.append("shadowColor * ");
     source.append("sample;\n");
     source.append("}\n");
+
+    cached = new QByteArray(source);
+    shaderSourceCache.insert(key, cached);
 
     return source;
 }
 
 QGLPixmapDropShadowFilter::QGLPixmapDropShadowFilter(Qt::RenderHint hint)
     : m_haveCached(false)
-    , m_cachedRadius(5)
+    , m_cachedRadius(0)
     , m_hint(hint)
 {
-    if (hint == Qt::PerformanceHint) {
-        QGLPixmapDropShadowFilter *filter = const_cast<QGLPixmapDropShadowFilter *>(this);
-        filter->setSource(qt_gl_drop_shadow_filter_fast);
-        m_haveCached = true;
-    }
 }
 
 bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &srcRect) const
 {
     QGLPixmapDropShadowFilter *filter = const_cast<QGLPixmapDropShadowFilter *>(this);
 
-    int radius = qRound(this->blurRadius());
-    if (!m_haveCached || (m_hint == Qt::QualityHint && radius != m_cachedRadius)) {
+    int actualRadius = qRound(blurRadius());
+    int filterRadius = actualRadius;
+    m_singlePass = filterRadius <= 3;
+
+    if (!m_haveCached || filterRadius != m_cachedRadius) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
-        m_cachedRadius = radius;
-        filter->setSource(QGLPixmapBlurFilter::generateGaussianShader(radius, true));
+        m_cachedRadius = filterRadius;
+        QByteArray source = QGLPixmapBlurFilter::generateGaussianShader(filterRadius, m_singlePass, true);
+        filter->setSource(source);
     }
 
-    QGLFramebufferObjectFormat format;
-    format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
-    QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(src.size(), format);
+    QRect targetRect = QRectF(src.rect()).translated(pos + offset()).adjusted(-actualRadius, -actualRadius, actualRadius, actualRadius).toAlignedRect();
 
-    if (!fbo)
-        return false;
+    if (m_singlePass) {
+        // prepare for updateUniforms
+        m_textureSize = src.size();
 
-    glBindTexture(GL_TEXTURE_2D, fbo->texture());
+        painter->save();
+        // ensure GL_LINEAR filtering is used
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(painter);
+        QBrush pixmapBrush = src;
+        pixmapBrush.setTransform(QTransform::fromTranslate(pos.x() + offset().x(), pos.y() + offset().y()));
+        painter->fillRect(targetRect, pixmapBrush);
+        filter->removeFromPainter(painter);
+        painter->restore();
+    } else {
+        QGLFramebufferObjectFormat format;
+        format.setInternalTextureFormat(GLenum(src.hasAlphaChannel() ? GL_RGBA : GL_RGB));
+        QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(targetRect.size(), format);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glBindTexture(GL_TEXTURE_2D, 0);
+        if (!fbo)
+            return false;
 
-    // prepare for updateUniforms
-    m_textureSize = src.size();
+        glBindTexture(GL_TEXTURE_2D, fbo->texture());
 
-    // horizontal pass, to pixmap
-    m_horizontalBlur = true;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glBindTexture(GL_TEXTURE_2D, 0);
 
-    QPainter fboPainter(fbo);
+        // prepare for updateUniforms
+        m_textureSize = src.size();
 
-    if (src.hasAlphaChannel()) {
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // horizontal pass, to pixmap
+        m_horizontalBlur = true;
+
+        QPainter fboPainter(fbo);
+
+        if (src.hasAlphaChannel()) {
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+
+        // ensure GL_LINEAR filtering is used
+        fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(&fboPainter);
+        QBrush pixmapBrush = src;
+        pixmapBrush.setTransform(QTransform::fromTranslate(actualRadius, actualRadius));
+        fboPainter.fillRect(QRect(0, 0, targetRect.width(), targetRect.height()), pixmapBrush);
+        filter->removeFromPainter(&fboPainter);
+        fboPainter.end();
+
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+
+        // vertical pass, to painter
+        m_horizontalBlur = false;
+        m_textureSize = fbo->size();
+
+        painter->save();
+        // ensure GL_LINEAR filtering is used
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(painter);
+        engine->drawTexture(targetRect, fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
+        filter->removeFromPainter(painter);
+        painter->restore();
+
+        qgl_fbo_pool()->release(fbo);
     }
-
-    // ensure GL_LINEAR filtering is used
-    fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
-    filter->setOnPainter(&fboPainter);
-    fboPainter.drawPixmap(0, 0, src);
-    filter->removeFromPainter(&fboPainter);
-    fboPainter.end();
-
-    QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
-
-    // vertical pass, to painter
-    m_horizontalBlur = false;
-
-    painter->save();
-    // ensure GL_LINEAR filtering is used
-    painter->setRenderHint(QPainter::SmoothPixmapTransform);
-    filter->setOnPainter(painter);
-    QPointF ofs = offset();
-    engine->drawTexture(src.rect().translated(pos.x() + ofs.x(), pos.y() + ofs.y()), fbo->texture(), fbo->size(), src.rect().translated(0, fbo->height() - src.height()));
-    filter->removeFromPainter(painter);
-    painter->restore();
-
-    qgl_fbo_pool()->release(fbo);
 
     // Now draw the actual pixmap over the top.
     painter->drawPixmap(pos, src, srcRect);
@@ -597,8 +687,11 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
 
 void QGLPixmapDropShadowFilter::setUniforms(QGLShaderProgram *program)
 {
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     QColor col = color();
-    if (m_horizontalBlur) {
+    if (m_horizontalBlur && !m_singlePass) {
         program->setUniformValue("shadowColor", 1.0f, 1.0f, 1.0f, 1.0f);
     } else {
         qreal alpha = col.alphaF();
@@ -607,17 +700,20 @@ void QGLPixmapDropShadowFilter::setUniforms(QGLShaderProgram *program)
                                                 col.blueF() * alpha,
                                                 alpha);
     }
+
     if (m_hint == Qt::QualityHint) {
-        if (m_horizontalBlur)
+        if (m_singlePass)
+            program->setUniformValue("delta", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
+        else if (m_horizontalBlur)
             program->setUniformValue("delta", 1.0 / m_textureSize.width(), 0.0);
         else
             program->setUniformValue("delta", 0.0, 1.0 / m_textureSize.height());
     } else {
-        // 1.4 is chosen to most closely match the blurriness of the gaussian blur
-        // at low radii
-        qreal blur = blurRadius() / 1.4f;
+        qreal blur = blurRadius() / qreal(m_cachedRadius);
 
-        if (m_horizontalBlur)
+        if (m_singlePass)
+            program->setUniformValue("delta", blur / m_textureSize.width(), blur / m_textureSize.height());
+        else if (m_horizontalBlur)
             program->setUniformValue("delta", blur / m_textureSize.width(), 0.0);
         else
             program->setUniformValue("delta", 0.0, blur / m_textureSize.height());
