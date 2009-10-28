@@ -1286,6 +1286,8 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
+    if (d_ptr->isObject)
+        QObjectPrivate::get(static_cast<QGraphicsObject *>(this))->wasDeleted = true;
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
