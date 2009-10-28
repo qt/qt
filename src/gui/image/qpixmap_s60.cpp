@@ -935,18 +935,21 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
             da.beginDataAccess(sourceBitmap);
             uchar *bytes = (uchar*)sourceBitmap->DataAddress();
             QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            img = img.copy();
             da.endDataAccess(sourceBitmap);
+
+            if(displayMode == EGray2) {
+                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+                //So invert mono bitmaps so that masks work correctly.
+                img.invertPixels();
+            } else if(displayMode == EColor16M) {
+                img = img.rgbSwapped(); // EColor16M is BGR
+            }
 
             fromImage(img, Qt::AutoColor);
 
             if(deleteSourceBitmap)
                 delete sourceBitmap;
-
-            if(displayMode == EGray2) {
-                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-                //So invert mono bitmaps so that masks work correctly.
-                image.invertPixels();
-            }
         } else {
             CFbsBitmap* duplicate = 0;
             QT_TRAP_THROWING(duplicate = new (ELeave) CFbsBitmap);
