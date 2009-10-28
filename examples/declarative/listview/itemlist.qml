@@ -33,6 +33,7 @@ Rectangle {
         preferredHighlightEnd: 0
         highlightRangeMode: "StrictlyEnforceRange"
         orientation: ListView.Horizontal
+        flickDeceleration: 2000
     }
 
     Rectangle {
