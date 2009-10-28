@@ -1043,16 +1043,6 @@ void Heap::markStackObjectsConservatively(MarkStack& markStack)
 #endif
 }
 
-void Heap::setGCProtectNeedsLocking()
-{
-    // Most clients do not need to call this, with the notable exception of WebCore.
-    // Clients that use shared heap have JSLock protection, while others are supposed
-    // to do explicit locking. WebCore violates this contract in Database code,
-    // which calls gcUnprotect from a secondary thread.
-    if (!m_protectedValuesMutex)
-        m_protectedValuesMutex.set(new Mutex);
-}
-
 void Heap::protect(JSValue k)
 {
     ASSERT(k);
@@ -1061,13 +1051,7 @@ void Heap::protect(JSValue k)
     if (!k.isCell())
         return;
 
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
     m_protectedValues.add(k.asCell());
-
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
 }
 
 void Heap::unprotect(JSValue k)
@@ -1078,28 +1062,16 @@ void Heap::unprotect(JSValue k)
     if (!k.isCell())
         return;
 
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
     m_protectedValues.remove(k.asCell());
-
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
 }
 
 void Heap::markProtectedObjects(MarkStack& markStack)
 {
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
     ProtectCountSet::iterator end = m_protectedValues.end();
     for (ProtectCountSet::iterator it = m_protectedValues.begin(); it != end; ++it) {
         markStack.append(it->first);
         markStack.drain();
     }
-
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
 }
 
 template <HeapType heapType> size_t Heap::sweep()
@@ -1291,9 +1263,6 @@ size_t Heap::globalObjectCount()
 
 size_t Heap::protectedGlobalObjectCount()
 {
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
     size_t count = 0;
     if (JSGlobalObject* head = m_globalData->head) {
         JSGlobalObject* o = head;
@@ -1304,23 +1273,12 @@ size_t Heap::protectedGlobalObjectCount()
         } while (o != head);
     }
 
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
-
     return count;
 }
 
 size_t Heap::protectedObjectCount()
 {
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
-    size_t result = m_protectedValues.size();
-
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
-
-    return result;
+    return m_protectedValues.size();
 }
 
 static const char* typeName(JSCell* cell)
@@ -1342,15 +1300,9 @@ HashCountedSet<const char*>* Heap::protectedObjectTypeCounts()
 {
     HashCountedSet<const char*>* counts = new HashCountedSet<const char*>;
 
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->lock();
-
     ProtectCountSet::iterator end = m_protectedValues.end();
     for (ProtectCountSet::iterator it = m_protectedValues.begin(); it != end; ++it)
         counts->add(typeName(it->first));
-
-    if (m_protectedValuesMutex)
-        m_protectedValuesMutex->unlock();
 
     return counts;
 }

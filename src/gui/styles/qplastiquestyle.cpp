@@ -5027,7 +5027,7 @@ QSize QPlastiqueStyle::sizeFromContents(ContentsType type, const QStyleOption *o
     case CT_MenuItem:
         if (const QStyleOptionMenuItem *menuItem = qstyleoption_cast<const QStyleOptionMenuItem *>(option)) {
             if (menuItem->menuItemType == QStyleOptionMenuItem::Separator)
-                newSize.setHeight(menuItem->text.isEmpty() ? 2 : menuItem->fontMetrics.lineSpacing());
+                newSize.setHeight(menuItem->text.isEmpty() ? 2 : menuItem->fontMetrics.height());
         }
         break;
     case CT_MenuBarItem:
@@ -5604,11 +5604,11 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
 #ifdef QT3_SUPPORT
         if (widget && widget->inherits("Q3DockWindowTitleBar")) {
             // Q3DockWindow has smaller title bars than QDockWidget
-            ret = qMax(widget->fontMetrics().lineSpacing(), 20);
+            ret = qMax(widget->fontMetrics().height(), 20);
         } else
 #endif
-        ret = qMax(widget ? widget->fontMetrics().lineSpacing() :
-                   (option ? option->fontMetrics.lineSpacing() : 0), 30);
+        ret = qMax(widget ? widget->fontMetrics().height() :
+                   (option ? option->fontMetrics.height() : 0), 30);
         break;
     case PM_MaximumDragDistance:
         return -1;

@@ -851,7 +851,8 @@ void XMLTokenizer::endElementNs()
         if (!scriptHref.isEmpty()) {
             // we have a src attribute 
             String scriptCharset = scriptElement->scriptCharset();
-            if ((m_pendingScript = m_doc->docLoader()->requestScript(scriptHref, scriptCharset))) {
+            if (element->dispatchBeforeLoadEvent(scriptHref) &&
+                (m_pendingScript = m_doc->docLoader()->requestScript(scriptHref, scriptCharset))) {
                 m_scriptElement = element;
                 m_pendingScript->addClient(this);
 
@@ -861,7 +862,7 @@ void XMLTokenizer::endElementNs()
             } else 
                 m_scriptElement = 0;
         } else
-            m_view->frame()->loader()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
+            m_view->frame()->script()->executeScript(ScriptSourceCode(scriptElement->scriptContent(), m_doc->url(), m_scriptStartLine));
     }
     m_requestingScript = false;
     setCurrentNode(parent.get());
@@ -886,7 +887,7 @@ void XMLTokenizer::error(ErrorType type, const char* message, va_list args)
     if (m_parserStopped)
         return;
 
-#if PLATFORM(WIN_OS)
+#if COMPILER(MSVC)
     char m[1024];
     vsnprintf(m, sizeof(m) - 1, message, args);
 #else
@@ -900,7 +901,7 @@ void XMLTokenizer::error(ErrorType type, const char* message, va_list args)
     else
         handleError(type, m, lineNumber(), columnNumber());
 
-#if !PLATFORM(WIN_OS)
+#if !COMPILER(MSVC)
     free(m);
 #endif
 }

@@ -57,6 +57,7 @@
     <file>StoragePanel.js</file>
     <file>StylesSidebarPane.js</file>
     <file>SummaryBar.js</file>
+    <file>TestController.js</file>
     <file>TextPrompt.js</file>
     <file>TimelineAgent.js</file>
     <file>TopDownProfileDataGridTree.js</file>
@@ -65,6 +66,7 @@
     <file>View.js</file>
     <file>WatchExpressionsSidebarPane.js</file>
     <file>inspector.css</file>
+    <file>inspectorSyntaxHighlight.css</file>
     <file>Images/back.png</file>
     <file>Images/checker.png</file>
     <file>Images/clearConsoleButtonGlyph.png</file>

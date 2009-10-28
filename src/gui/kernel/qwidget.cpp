@@ -93,6 +93,7 @@
 # include "qx11info_x11.h"
 #endif
 
+#include <private/qgraphicseffect_p.h>
 #include <private/qwindowsurface_p.h>
 #include <private/qbackingstore_p.h>
 #ifdef Q_WS_MAC
@@ -1788,11 +1789,28 @@ QRegion QWidgetPrivate::clipRegion() const
     return r;
 }
 
+void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
+{
+    Q_Q(QWidget);
+    QWidget *w = q;
+    do {
+        if (w->graphicsEffect()) {
+            QWidgetEffectSourcePrivate *sourced =
+                static_cast<QWidgetEffectSourcePrivate *>(w->graphicsEffect()->source()->d_func());
+            if (!sourced->updateDueToGraphicsEffect)
+                w->graphicsEffect()->source()->d_func()->invalidateCache();
+        }
+        w = w->parentWidget();
+    } while (w);
+}
+
 void QWidgetPrivate::setDirtyOpaqueRegion()
 {
     Q_Q(QWidget);
 
     dirtyOpaqueChildren = true;
+
+    invalidateGraphicsEffectsRecursively();
 
     if (q->isWindow())
         return;
@@ -5197,6 +5215,10 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
+                if (sharedPainter->worldTransform() != sourced->lastEffectTransform) {
+                    sourced->invalidateCache();
+                    sourced->lastEffectTransform = sharedPainter->worldTransform();
+                }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
                 graphicsEffect->draw(sharedPainter, source);
@@ -7298,7 +7320,7 @@ void QWidget::setVisible(bool visible)
                     break;
                 parent = parent->parentWidget();
             }
-            if (parent && !d->getOpaqueRegion().isEmpty())
+            if (parent)
                 parent->d_func()->setDirtyOpaqueRegion();
         }
 

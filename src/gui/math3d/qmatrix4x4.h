@@ -159,7 +159,8 @@ public:
     void toValueArray(qreal *values) const;
 
     QMatrix toAffine() const;
-    QTransform toTransform(qreal distanceToPlane = 1024.0f) const;
+    QTransform toTransform() const;
+    QTransform toTransform(qreal distanceToPlane) const;
 
     QPoint map(const QPoint& point) const;
     QPointF map(const QPointF& point) const;
@@ -206,6 +207,10 @@ private:
     QMatrix4x4(int) { flagBits = General; }
 
     QMatrix4x4 orthonormalInverse() const;
+
+    QMatrix4x4& projectedRotate(qreal angle, qreal x, qreal y, qreal z);
+
+    friend class QGraphicsRotation;
 };
 
 inline QMatrix4x4::QMatrix4x4

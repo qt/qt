@@ -177,6 +177,7 @@ public:
         wantsActive(0),
         holesInSiblingIndex(0),
         sequentialOrdering(1),
+        updateDueToGraphicsEffect(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -221,6 +222,7 @@ public:
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+    void invalidateGraphicsEffectsRecursively();
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -502,6 +504,7 @@ public:
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
+    quint32 updateDueToGraphicsEffect : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -539,7 +542,7 @@ struct QGraphicsItemPrivate::TransformData
             QMatrix4x4 m;
             for (int i = 0; i < graphicsTransforms.size(); ++i)
                 graphicsTransforms.at(i)->applyTo(&m);
-            x *= m.toTransform(0);
+            x *= m.toTransform();
         }
         x.translate(xOrigin, yOrigin);
         x.rotate(rotation);
@@ -589,8 +592,11 @@ public:
     inline const QWidget *widget() const
     { return 0; }
 
-    inline void update()
-    { item->update(); }
+    inline void update() {
+        item->d_ptr->updateDueToGraphicsEffect = true;
+        item->update();
+        item->d_ptr->updateDueToGraphicsEffect = false;
+    }
 
     inline void effectBoundingRectChanged()
     { item->prepareGeometryChange(); }
@@ -619,6 +625,7 @@ public:
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
+    QTransform lastEffectTransform;
 };
 
 

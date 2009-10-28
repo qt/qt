@@ -316,7 +316,7 @@ QSize QComboBoxPrivate::recomputeSizeHint(QSize &sh) const
 
 
         // height
-        sh.setHeight(qMax(fm.lineSpacing(), 14) + 2);
+        sh.setHeight(qMax(fm.height(), 14) + 2);
         if (hasIcon) {
             sh.setHeight(qMax(sh.height(), iconSize.height() + 2));
         }

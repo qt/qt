@@ -71,6 +71,10 @@ WebInspector.ResourcesPanel = function()
     this.dividersElement = document.createElement("div");
     this.dividersElement.id = "resources-dividers";
     this.containerContentElement.appendChild(this.dividersElement);
+    
+    this.eventDividersElement = document.createElement("div");
+    this.eventDividersElement.id = "resources-event-dividers";
+    this.containerContentElement.appendChild(this.eventDividersElement);
 
     this.dividersLabelBarElement = document.createElement("div");
     this.dividersLabelBarElement.id = "resources-dividers-label-bar";
@@ -133,8 +137,12 @@ WebInspector.ResourcesPanel = function()
     this.enableToggleButton.addEventListener("click", this._toggleResourceTracking.bind(this), false);
 
     this.largerResourcesButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "resources-larger-resources-status-bar-item");
-    this.largerResourcesButton.toggled = true;
+    this.largerResourcesButton.toggled = Preferences.resourcesLargeRows;
     this.largerResourcesButton.addEventListener("click", this._toggleLargerResources.bind(this), false);
+    if (!Preferences.resourcesLargeRows) {
+        Preferences.resourcesLargeRows = !Preferences.resourcesLargeRows;
+        this._toggleLargerResources(); // this will toggle the preference back to the original
+    }
 
     this.sortingSelectElement = document.createElement("select");
     this.sortingSelectElement.className = "status-bar-item";
@@ -203,6 +211,37 @@ WebInspector.ResourcesPanel.prototype = {
     get toolbarItemLabel()
     {
         return WebInspector.UIString("Resources");
+    },
+    
+    get mainResourceLoadTime()
+    {
+        return this._mainResourceLoadTime || -1;
+    },
+    
+    set mainResourceLoadTime(x)
+    {
+        if (this._mainResourceLoadTime === x)
+            return;
+        
+        this._mainResourceLoadTime = x;
+        
+        // Update the dividers to draw the new line
+        this._updateGraphDividersIfNeeded(true);
+    },
+    
+    get mainResourceDOMContentTime()
+    {
+        return this._mainResourceDOMContentTime || -1;
+    },
+    
+    set mainResourceDOMContentTime(x)
+    {
+        if (this._mainResourceDOMContentTime === x)
+            return;
+        
+        this._mainResourceDOMContentTime = x;
+        
+        this._updateGraphDividersIfNeeded(true);
     },
 
     get statusBarItems()
@@ -451,6 +490,9 @@ WebInspector.ResourcesPanel.prototype = {
 
         this._resources = [];
         this._staleResources = [];
+        
+        this.mainResourceLoadTime = -1;
+        this.mainResourceDOMContentTime = -1;
 
         this.resourcesTreeElement.removeChildren();
         this.viewsContainerElement.removeChildren();
@@ -702,6 +744,7 @@ WebInspector.ResourcesPanel.prototype = {
         this._currentDividerSlice = slice;
 
         this.dividersElement.removeChildren();
+        this.eventDividersElement.removeChildren();
         this.dividersLabelBarElement.removeChildren();
 
         for (var i = 1; i <= dividerCount; ++i) {
@@ -721,6 +764,43 @@ WebInspector.ResourcesPanel.prototype = {
 
             this.dividersLabelBarElement.appendChild(divider);
         }
+
+        if (this.calculator.startAtZero) {
+            // If our current sorting method starts at zero, that means it shows all
+            // resources starting at the same point, and so onLoad event and DOMContent
+            // event lines really wouldn't make much sense here, so don't render them.
+            return;
+        }
+
+        if (this.mainResourceLoadTime !== -1) {
+            var percent = this.calculator.computePercentageFromEventTime(this.mainResourceLoadTime);
+
+            var loadDivider = document.createElement("div");
+            loadDivider.className = "resources-onload-divider";
+
+            var loadDividerPadding = document.createElement("div");
+            loadDividerPadding.className = "resources-event-divider-padding";
+            loadDividerPadding.style.left = percent + "%";
+            loadDividerPadding.title = WebInspector.UIString("Load event fired");
+            loadDividerPadding.appendChild(loadDivider);
+            
+            this.eventDividersElement.appendChild(loadDividerPadding);
+        }
+        
+        if (this.mainResourceDOMContentTime !== -1) {
+            var percent = this.calculator.computePercentageFromEventTime(this.mainResourceDOMContentTime);
+
+            var domContentDivider = document.createElement("div");
+            domContentDivider.className = "resources-ondomcontent-divider";
+            
+            var domContentDividerPadding = document.createElement("div");
+            domContentDividerPadding.className = "resources-event-divider-padding";
+            domContentDividerPadding.style.left = percent + "%";
+            domContentDividerPadding.title = WebInspector.UIString("DOMContent event fired");
+            domContentDividerPadding.appendChild(domContentDivider);
+            
+            this.eventDividersElement.appendChild(domContentDividerPadding);
+        }
     },
 
     _updateSummaryGraph: function()
@@ -733,6 +813,7 @@ WebInspector.ResourcesPanel.prototype = {
         var scrollTop = this.containerElement.scrollTop;
         var dividersTop = (scrollTop < this.summaryBar.element.offsetHeight ? this.summaryBar.element.offsetHeight : scrollTop);
         this.dividersElement.style.top = scrollTop + "px";
+        this.eventDividersElement.style.top = scrollTop + "px";
         this.dividersLabelBarElement.style.top = dividersTop + "px";
     },
 
@@ -766,6 +847,8 @@ WebInspector.ResourcesPanel.prototype = {
             return;
 
         this.resourcesTreeElement.smallChildren = !this.resourcesTreeElement.smallChildren;
+        Preferences.resourcesLargeRows = !Preferences.resourcesLargeRows;
+        InspectorController.setSetting("resources-large-rows", Preferences.resourcesLargeRows);
 
         if (this.resourcesTreeElement.smallChildren) {
             this.resourcesGraphsElement.addStyleClass("small");
@@ -1048,6 +1131,17 @@ WebInspector.ResourceTimeCalculator.prototype = {
 
         return {start: start, middle: middle, end: end};
     },
+    
+    computePercentageFromEventTime: function(eventTime)
+    {
+        // This function computes a percentage in terms of the total loading time
+        // of a specific event. If startAtZero is set, then this is useless, and we
+        // want to return 0.
+        if (eventTime !== -1 && !this.startAtZero)
+            return ((eventTime - this.minimumBoundary) / this.boundarySpan) * 100;
+
+        return 0;
+    },
 
     computeBarGraphLabels: function(resource)
     {
@@ -1193,13 +1287,12 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
     {
         WebInspector.SidebarTreeElement.prototype.onattach.call(this);
 
-        var link = document.createElement("a");
-        link.href = this.resource.url;
-        link.className = "invisible";
-        while (this._listItemNode.firstChild)
-            link.appendChild(this._listItemNode.firstChild);
-        this._listItemNode.appendChild(link);
         this._listItemNode.addStyleClass("resources-category-" + this.resource.category.name);
+        this._listItemNode.draggable = true;
+        
+        // FIXME: should actually add handler to parent, to be resolved via
+        // https://bugs.webkit.org/show_bug.cgi?id=30227
+        this._listItemNode.addEventListener("dragstart", this.ondragstart.bind(this), false);
     },
 
     onselect: function()
@@ -1210,6 +1303,13 @@ WebInspector.ResourceSidebarTreeElement.prototype = {
     ondblclick: function(treeElement, event)
     {
         InjectedScriptAccess.openInInspectedWindow(this.resource.url, function() {});
+    },
+
+    ondragstart: function(event) {
+        event.dataTransfer.setData("text/plain", this.resource.url);
+        event.dataTransfer.setData("text/uri-list", this.resource.url + "\r\n");
+        event.dataTransfer.effectAllowed = "copy";
+        return true;
     },
 
     get mainTitle()

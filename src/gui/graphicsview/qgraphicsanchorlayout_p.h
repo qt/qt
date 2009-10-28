@@ -151,15 +151,16 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), from(0), to(0),
+        : QSimplexVariable(), item(0), from(0), to(0),
           minSize(0), prefSize(0), expSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false) {}
+          type(Normal), hasSize(true), isLayoutAnchor(false),
+          isCenterAnchor(false), orientation(0) {}
 
     virtual void updateChildrenSizes() {}
-    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
     virtual ~AnchorData() {}
 
@@ -179,6 +180,9 @@ struct AnchorData : public QSimplexVariable {
     {
         hasSize = false;
     }
+
+    // Internal anchors have associated items
+    QGraphicsLayoutItem *item;
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -205,7 +209,9 @@ struct AnchorData : public QSimplexVariable {
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
-    uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
+    uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
+    uint isCenterAnchor : 1;
+    uint orientation : 1;
 };
 
 #ifdef QT_DEBUG
@@ -226,9 +232,9 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
-    void refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     void setVertices(const QVector<AnchorVertex*> &vertices)
     {
@@ -261,9 +267,9 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
-    void refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -427,8 +433,8 @@ public:
     QLayoutStyleInfo &styleInfo() const;
 
     // Activation methods
-    void simplifyGraph(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation);
+    bool simplifyGraph(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
     void restoreSimplifiedGraph(Orientation orientation);
 
     void calculateGraphs();
@@ -440,7 +446,7 @@ public:
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
-    void setAnchorSizeHintsFromItems(Orientation orientation);
+    bool refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);

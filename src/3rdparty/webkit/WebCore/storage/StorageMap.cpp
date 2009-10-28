@@ -30,20 +30,22 @@
 
 namespace WebCore {
 
-PassRefPtr<StorageMap> StorageMap::create()
+PassRefPtr<StorageMap> StorageMap::create(unsigned quota)
 {
-    return adoptRef(new StorageMap);
+    return adoptRef(new StorageMap(quota));
 }
 
-StorageMap::StorageMap()
+StorageMap::StorageMap(unsigned quota)
     : m_iterator(m_map.end())
     , m_iteratorIndex(UINT_MAX)
+    , m_quotaSize(quota)  // quota measured in bytes
+    , m_currentLength(0)
 {
 }
 
 PassRefPtr<StorageMap> StorageMap::copy()
 {
-    RefPtr<StorageMap> newMap = create();
+    RefPtr<StorageMap> newMap = create(m_quotaSize);
     newMap->m_map = m_map;
     return newMap.release();
 }
@@ -54,7 +56,7 @@ void StorageMap::invalidateIterator()
     m_iteratorIndex = UINT_MAX;
 }
 
-void StorageMap::setIteratorToIndex(unsigned index) const
+void StorageMap::setIteratorToIndex(unsigned index)
 {
     // FIXME: Once we have bidirectional iterators for HashMap we can be more intelligent about this.
     // The requested index will be closest to begin(), our current iterator, or end(), and we
@@ -82,7 +84,7 @@ unsigned StorageMap::length() const
     return m_map.size();
 }
 
-String StorageMap::key(unsigned index) const
+String StorageMap::key(unsigned index)
 {
     if (index >= length())
         return String();
@@ -96,27 +98,34 @@ String StorageMap::getItem(const String& key) const
     return m_map.get(key);
 }
 
-PassRefPtr<StorageMap> StorageMap::setItem(const String& key, const String& value, String& oldValue)
+PassRefPtr<StorageMap> StorageMap::setItem(const String& key, const String& value, String& oldValue, bool& quotaException)
 {
     ASSERT(!value.isNull());
+    quotaException = false;
 
     // Implement copy-on-write semantics here.  We're guaranteed that the only refs of StorageMaps belong to Storage objects
     // so if more than one Storage object refs this map, copy it before mutating it.
     if (refCount() > 1) {
         RefPtr<StorageMap> newStorageMap = copy();
-        newStorageMap->setItem(key, value, oldValue);
+        newStorageMap->setItem(key, value, oldValue, quotaException);
         return newStorageMap.release();
     }
 
-    pair<HashMap<String, String>::iterator, bool> addResult = m_map.add(key, value);
-
-    if (addResult.second) {
-        // There was no "oldValue" so null it out.
-        oldValue = String();
-    } else {
-        oldValue = addResult.first->second;
-        addResult.first->second = value;
+    // Quota tracking.  If the quota is enabled and this would go over it, bail.
+    oldValue = m_map.get(key);
+    unsigned newLength = m_currentLength + value.length() - oldValue.length();
+    bool overQuota = newLength > m_quotaSize / sizeof(UChar);
+    bool overflow = (newLength > m_currentLength) != (value.length() > oldValue.length());
+    ASSERT(!overflow);  // If we're debugging, make a fuss.  But it's still worth checking this in the following if statement.
+    if (m_quotaSize != noQuota && (overflow || overQuota)) {
+        quotaException = true;
+        return 0;
     }
+    m_currentLength = newLength;
+
+    pair<HashMap<String, String>::iterator, bool> addResult = m_map.add(key, value);
+    if (!addResult.second)
+        addResult.first->second = value;
 
     invalidateIterator();
 
@@ -137,6 +146,10 @@ PassRefPtr<StorageMap> StorageMap::removeItem(const String& key, String& oldValu
     if (!oldValue.isNull())
         invalidateIterator();
 
+    // Update quota.
+    ASSERT(m_currentLength - oldValue.length() <= m_currentLength);
+    m_currentLength -= oldValue.length();
+
     return 0;
 }
 
@@ -145,14 +158,18 @@ bool StorageMap::contains(const String& key) const
     return m_map.contains(key);
 }
 
-void StorageMap::importItem(const String& key, const String& value) const
+void StorageMap::importItem(const String& key, const String& value)
 {
     // Be sure to copy the keys/values as items imported on a background thread are destined
     // to cross a thread boundary
-    pair<HashMap<String, String>::iterator, bool> result = m_map.add(key.copy(), String());
+    pair<HashMap<String, String>::iterator, bool> result = m_map.add(key.threadsafeCopy(), String());
 
     if (result.second)
-        result.first->second = value.copy();
+        result.first->second = value.threadsafeCopy();
+
+    // Update quota.
+    ASSERT(m_currentLength + value.length() >= m_currentLength);
+    m_currentLength += value.length();
 }
 
 }

@@ -943,7 +943,7 @@ Element* Document::elementFromPoint(int x, int y) const
         return 0;
 
     float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor, y * zoomFactor)) + view()->scrollOffset();
+    IntPoint point = roundedIntPoint(FloatPoint((x + view()->scrollX()) * zoomFactor, (y + view()->scrollY()) * zoomFactor));
 
     if (!frameView->visibleContentRect().contains(point))
         return 0;
@@ -973,7 +973,7 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
         return 0;
 
     float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor, y * zoomFactor)) + view()->scrollOffset();
+    IntPoint point = roundedIntPoint(FloatPoint((x + view()->scrollX()) * zoomFactor, (y + view()->scrollY()) * zoomFactor));
 
     if (!frameView->visibleContentRect().contains(point))
         return 0;
@@ -1561,6 +1561,9 @@ void Document::open(Document* ownerDocument)
 
     implicitOpen();
 
+    if (DOMWindow* domWindow = this->domWindow())
+        domWindow->removeAllEventListeners();
+
     if (m_frame)
         m_frame->loader()->didExplicitOpen();
 }
@@ -1582,7 +1585,11 @@ void Document::implicitOpen()
 {
     cancelParsing();
 
-    clear();
+    delete m_tokenizer;
+    m_tokenizer = 0;
+
+    removeChildren();
+
     m_tokenizer = createTokenizer();
     setParsing(true);
 
@@ -1664,7 +1671,7 @@ void Document::implicitClose()
         return;
     }
 
-    bool wasLocationChangePending = frame() && frame()->loader()->isScheduledLocationChangePending();
+    bool wasLocationChangePending = frame() && frame()->redirectScheduler()->locationChangePending();
     bool doload = !parsing() && m_tokenizer && !m_processingLoadEvent && !wasLocationChangePending;
     
     if (!doload)
@@ -1711,7 +1718,7 @@ void Document::implicitClose()
     if (f)
         f->animation()->resumeAnimations(this);
 
-    ImageLoader::dispatchPendingLoadEvents();
+    ImageLoader::dispatchPendingEvents();
     dispatchWindowLoadEvent();
     dispatchWindowEvent(PageTransitionEvent::create(eventNames().pageshowEvent, false), this);
     if (f)
@@ -1731,7 +1738,7 @@ void Document::implicitClose()
     // fires. This will improve onload scores, and other browsers do it.
     // If they wanna cheat, we can too. -dwh
 
-    if (frame()->loader()->isScheduledLocationChangePending() && elapsedTime() < cLayoutScheduleThreshold) {
+    if (frame()->redirectScheduler()->locationChangePending() && elapsedTime() < cLayoutScheduleThreshold) {
         // Just bail out. Before or during the onload we were shifted to another page.
         // The old i-Bench suite does this. When this happens don't bother painting or laying out.        
         view()->unscheduleRelayout();
@@ -1860,16 +1867,6 @@ void Document::finishParsing()
         m_tokenizer->finish();
 }
 
-void Document::clear()
-{
-    delete m_tokenizer;
-    m_tokenizer = 0;
-
-    removeChildren();
-    if (DOMWindow* domWindow = this->domWindow())
-        domWindow->removeAllEventListeners();
-}
-
 const KURL& Document::virtualURL() const
 {
     return m_url;
@@ -1969,7 +1966,7 @@ const Vector<RefPtr<CSSStyleSheet> >* Document::pageGroupUserSheets() const
         const UserStyleSheetVector* sheets = it->second;
         for (unsigned i = 0; i < sheets->size(); ++i) {
             const UserStyleSheet* sheet = sheets->at(i).get();
-            if (!UserContentURLPattern::matchesPatterns(url(), sheet->patterns()))
+            if (!UserContentURLPattern::matchesPatterns(url(), sheet->whitelist(), sheet->blacklist()))
                 continue;
             RefPtr<CSSStyleSheet> parsedSheet = CSSStyleSheet::create(const_cast<Document*>(this), sheet->url());
             parsedSheet->setIsUserStyleSheet(true);
@@ -2160,7 +2157,7 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
                 url = frame->loader()->url().string();
             else
                 url = completeURL(url).string();
-            frame->loader()->scheduleHTTPRedirection(delay, url);
+            frame->redirectScheduler()->scheduleRedirect(delay, url);
         }
     } else if (equalIgnoringCase(equiv, "set-cookie")) {
         // FIXME: make setCookie work on XML documents too; e.g. in case of <html:meta .....>
@@ -2174,7 +2171,7 @@ void Document::processHttpEquiv(const String& equiv, const String& content)
         FrameLoader* frameLoader = frame->loader();
         if (frameLoader->shouldInterruptLoadForXFrameOptions(content, url())) {
             frameLoader->stopAllLoaders();
-            frameLoader->scheduleLocationChange(blankURL(), String());
+            frame->redirectScheduler()->scheduleLocationChange(blankURL(), String());
         }
     }
 }
@@ -2357,8 +2354,8 @@ void Document::removePendingSheet()
     if (!m_pendingStylesheets && m_tokenizer)
         m_tokenizer->executeScriptsWaitingForStylesheets();
 
-    if (!m_pendingStylesheets && m_gotoAnchorNeededAfterStylesheetsLoad && m_frame)
-        m_frame->loader()->gotoAnchor();
+    if (!m_pendingStylesheets && m_gotoAnchorNeededAfterStylesheetsLoad && view())
+        view()->scrollToFragment(m_frame->loader()->url());
 }
 
 void Document::updateStyleSelector()
@@ -2894,42 +2891,47 @@ void Document::dispatchWindowLoadEvent()
 
 PassRefPtr<Event> Document::createEvent(const String& eventType, ExceptionCode& ec)
 {
+    RefPtr<Event> event;
     if (eventType == "Event" || eventType == "Events" || eventType == "HTMLEvents")
-        return Event::create();
-    if (eventType == "KeyboardEvent" || eventType == "KeyboardEvents")
-        return KeyboardEvent::create();
-    if (eventType == "MessageEvent")
-        return MessageEvent::create();
-    if (eventType == "MouseEvent" || eventType == "MouseEvents")
-        return MouseEvent::create();
-    if (eventType == "MutationEvent" || eventType == "MutationEvents")
-        return MutationEvent::create();
-    if (eventType == "OverflowEvent")
-        return OverflowEvent::create();
-    if (eventType == "PageTransitionEvent")
-        return PageTransitionEvent::create();
-    if (eventType == "ProgressEvent")
-        return ProgressEvent::create();
+        event = Event::create();
+    else if (eventType == "KeyboardEvent" || eventType == "KeyboardEvents")
+        event = KeyboardEvent::create();
+    else if (eventType == "MessageEvent")
+        event = MessageEvent::create();
+    else if (eventType == "MouseEvent" || eventType == "MouseEvents")
+        event = MouseEvent::create();
+    else if (eventType == "MutationEvent" || eventType == "MutationEvents")
+        event = MutationEvent::create();
+    else if (eventType == "OverflowEvent")
+        event = OverflowEvent::create();
+    else if (eventType == "PageTransitionEvent")
+        event = PageTransitionEvent::create();
+    else if (eventType == "ProgressEvent")
+        event = ProgressEvent::create();
 #if ENABLE(DOM_STORAGE)
-    if (eventType == "StorageEvent")
-        return StorageEvent::create();
+    else if (eventType == "StorageEvent")
+        event = StorageEvent::create();
 #endif
-    if (eventType == "TextEvent")
-        return TextEvent::create();
-    if (eventType == "UIEvent" || eventType == "UIEvents")
-        return UIEvent::create();
-    if (eventType == "WebKitAnimationEvent")
-        return WebKitAnimationEvent::create();
-    if (eventType == "WebKitTransitionEvent")
-        return WebKitTransitionEvent::create();
-    if (eventType == "WheelEvent")
-        return WheelEvent::create();
+    else if (eventType == "TextEvent")
+        event = TextEvent::create();
+    else if (eventType == "UIEvent" || eventType == "UIEvents")
+        event = UIEvent::create();
+    else if (eventType == "WebKitAnimationEvent")
+        event = WebKitAnimationEvent::create();
+    else if (eventType == "WebKitTransitionEvent")
+        event = WebKitTransitionEvent::create();
+    else if (eventType == "WheelEvent")
+        event = WheelEvent::create();
 #if ENABLE(SVG)
-    if (eventType == "SVGEvents")
-        return Event::create();
-    if (eventType == "SVGZoomEvents")
-        return SVGZoomEvent::create();
+    else if (eventType == "SVGEvents")
+        event = Event::create();
+    else if (eventType == "SVGZoomEvents")
+        event = SVGZoomEvent::create();
 #endif
+    if (event) {
+        event->setCreatedByDOM(true);
+        return event.release();
+    }
     ec = NOT_SUPPORTED_ERR;
     return 0;
 }
@@ -2960,6 +2962,8 @@ void Document::addListenerTypeIfNeeded(const AtomicString& eventType)
         addListenerType(ANIMATIONITERATION_LISTENER);
     else if (eventType == eventNames().webkitTransitionEndEvent)
         addListenerType(TRANSITIONEND_LISTENER);
+    else if (eventType == eventNames().beforeloadEvent)
+        addListenerType(BEFORELOAD_LISTENER);
 }
 
 CSSStyleDeclaration* Document::getOverrideStyle(Element*, const String&)
@@ -4016,8 +4020,17 @@ void Document::finishedParsing()
 {
     setParsing(false);
     dispatchEvent(Event::create(eventNames().DOMContentLoadedEvent, true, false));
-    if (Frame* f = frame())
+    if (Frame* f = frame()) {
         f->loader()->finishedParsing();
+
+#if ENABLE(INSPECTOR)
+        if (!page())
+            return;
+
+        if (InspectorController* controller = page()->inspectorController())
+            controller->mainResourceFiredDOMContentEvent(f->loader()->documentLoader(), url());
+#endif
+    }
 }
 
 Vector<String> Document::formElementsState() const
@@ -4230,7 +4243,7 @@ void Document::initSecurityContext()
     m_cookieURL = url;
     ScriptExecutionContext::setSecurityOrigin(SecurityOrigin::create(url));
 
-    if (FrameLoader::allowSubstituteDataAccessToLocal()) {
+    if (SecurityOrigin::allowSubstituteDataAccessToLocal()) {
         // If this document was loaded with substituteData, then the document can
         // load local resources.  See https://bugs.webkit.org/show_bug.cgi?id=16756
         // and https://bugs.webkit.org/show_bug.cgi?id=19760 for further
@@ -4494,7 +4507,7 @@ void Document::resourceRetrievedByXMLHttpRequest(unsigned long identifier, const
     Frame* frame = this->frame();
     if (frame) {
         FrameLoader* frameLoader = frame->loader();
-        frameLoader->didLoadResourceByXMLHttpRequest(identifier, sourceString);
+        frameLoader->notifier()->didLoadResourceByXMLHttpRequest(identifier, sourceString);
     }
 }
 

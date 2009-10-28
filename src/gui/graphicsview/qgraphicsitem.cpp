@@ -1228,7 +1228,7 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem with the given \a parent.
+    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor. It does not modify \fn QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
     QGraphicsScene::addItem(). The item will then become a top-level item.
@@ -2484,12 +2484,14 @@ void QGraphicsItem::setOpacity(qreal opacity)
     itemChange(ItemOpacityHasChanged, newOpacityVariant);
 
     // Update.
-    if (d_ptr->scene)
+    if (d_ptr->scene) {
+        d_ptr->invalidateGraphicsEffectsRecursively();
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath=*/false,
                                           /*force=*/false,
                                           /*ignoreOpacity=*/true);
+    }
 
     if (d_ptr->isObject)
         emit static_cast<QGraphicsObject *>(this)->opacityChanged();
@@ -4951,6 +4953,22 @@ int QGraphicsItemPrivate::depth() const
 /*!
     \internal
 */
+void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
+{
+    QGraphicsItemPrivate *itemPrivate = this;
+    do {
+        if (itemPrivate->graphicsEffect) {
+            itemPrivate->notifyInvalidated = 1;
+
+            if (!itemPrivate->updateDueToGraphicsEffect)
+                static_cast<QGraphicsItemEffectSourcePrivate *>(itemPrivate->graphicsEffect->d_func()->source->d_func())->invalidateCache();
+        }
+    } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
+}
+
+/*!
+    \internal
+*/
 void QGraphicsItemPrivate::invalidateDepthRecursively()
 {
     if (itemDepth == -1)
@@ -5282,11 +5300,7 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
-    QGraphicsItem *item = this;
-    do {
-        if (item->d_ptr->graphicsEffect)
-            item->d_ptr->notifyInvalidated = 1;
-    } while ((item = item->d_ptr->parent));
+    d_ptr->invalidateGraphicsEffectsRecursively();
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -7304,7 +7318,7 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
 
 /*!
   \property QGraphicsObject::parent
-  \brief the parent of the item
+  \brief the parent of the item. It is independent from \fn QObject::parent.
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
@@ -10723,6 +10737,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     }
 
     pixmapPainter.end();
+
     return pixmap;
 }
 
@@ -10740,6 +10755,23 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
           << ", z =" << item->zValue() << ", flags = "
           << item->flags() << ")";
     return debug;
+}
+
+QDebug operator<<(QDebug debug, QGraphicsObject *item)
+{
+    if (!item) {
+        debug << "QGraphicsObject(0)";
+        return debug;
+    }
+
+    debug.nospace() << item->metaObject()->className() << '(' << (void*)item;
+    if (!item->objectName().isEmpty())
+        debug << ", name = " << item->objectName();
+    debug.nospace() << ", parent = " << ((void*)item->parentItem())
+          << ", pos = " << item->pos()
+          << ", z = " << item->zValue() << ", flags = "
+          << item->flags() << ')';
+    return debug.space();
 }
 
 QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
