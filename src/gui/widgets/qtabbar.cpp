@@ -1812,6 +1812,7 @@ void QTabBarPrivate::setupMovableTab()
     QPixmap grabImage(grabRect.size());
     grabImage.fill(Qt::transparent);
     QStylePainter p(&grabImage, q);
+    p.initFrom(q);
 
     QStyleOptionTabV3 tab;
     q->initStyleOption(&tab, pressedIndex);
