@@ -67,26 +67,30 @@ int QmlEngineDebugPrivate::getId()
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugEnginesQuery *q)
 {
     QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    p->enginesQuery.remove(q->m_queryId);
+    if (p && q)
+        p->enginesQuery.remove(q->m_queryId);
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, 
                                    QmlDebugRootContextQuery *q)
 {
     QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    p->rootContextQuery.remove(q->m_queryId);
+    if (p && q)
+        p->rootContextQuery.remove(q->m_queryId);
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugObjectQuery *q)
 {
     QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    p->objectQuery.remove(q->m_queryId);
+    if (p && q)
+        p->objectQuery.remove(q->m_queryId);
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugExpressionQuery *q)
 {
     QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    p->expressionQuery.remove(q->m_queryId);
+    if (p && q)
+        p->expressionQuery.remove(q->m_queryId);
 }
 
 Q_DECLARE_METATYPE(QmlDebugObjectReference);
