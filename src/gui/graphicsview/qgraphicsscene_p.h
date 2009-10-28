@@ -122,6 +122,13 @@ public:
 
     void _q_processDirtyItems();
 
+    QSet<QGraphicsItem *> scenePosItems;
+    bool scenePosDescendantsUpdatePending;
+    void setScenePosItemEnabled(QGraphicsItem *item, bool enabled);
+    void registerScenePosItem(QGraphicsItem *item);
+    void unregisterScenePosItem(QGraphicsItem *item);
+    void _q_updateScenePosDescendants();
+
     void removeItemHelper(QGraphicsItem *item);
 
     QBrush backgroundBrush;

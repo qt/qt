@@ -179,6 +179,7 @@ public:
         holesInSiblingIndex(0),
         sequentialOrdering(1),
         updateDueToGraphicsEffect(0),
+        scenePosDescendants(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -429,6 +430,7 @@ public:
     inline void ensureSortedChildren();
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
+    inline void sendScenePosChange();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -483,7 +485,7 @@ public:
 
     // Packed 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 16;
+    quint32 flags : 17;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -498,14 +500,15 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 mouseSetsFocus : 1;
 
     // New 32 bits
+    quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
     quint32 updateDueToGraphicsEffect : 1;
+    quint32 scenePosDescendants : 1;
 
     // Optional stacking order
     int globalStackingOrder;

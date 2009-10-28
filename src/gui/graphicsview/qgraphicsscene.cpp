@@ -294,6 +294,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       needSortTopLevelItems(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
+      scenePosDescendantsUpdatePending(false),
       stickyFocus(false),
       hasFocus(false),
       focusItem(0),
@@ -488,6 +489,55 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 
 /*!
     \internal
+*/
+void QGraphicsScenePrivate::setScenePosItemEnabled(QGraphicsItem *item, bool enabled)
+{
+    QGraphicsItem *p = item->d_ptr->parent;
+    while (p) {
+        p->d_ptr->scenePosDescendants = enabled;
+        p = p->d_ptr->parent;
+    }
+    if (!enabled && !scenePosDescendantsUpdatePending) {
+        scenePosDescendantsUpdatePending = true;
+        QMetaObject::invokeMethod(q_func(), "_q_updateScenePosDescendants", Qt::QueuedConnection);
+    }
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::registerScenePosItem(QGraphicsItem *item)
+{
+    scenePosItems.insert(item);
+    setScenePosItemEnabled(item, true);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::unregisterScenePosItem(QGraphicsItem *item)
+{
+    scenePosItems.remove(item);
+    setScenePosItemEnabled(item, false);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::_q_updateScenePosDescendants()
+{
+    foreach (QGraphicsItem *item, scenePosItems) {
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p) {
+            p->d_ptr->scenePosDescendants = 1;
+            p = p->d_ptr->parent;
+        }
+    }
+    scenePosDescendantsUpdatePending = false;
+}
+
+/*!
+    \internal
 
     Schedules an item for removal. This function leaves some stale indexes
     around in the BSP tree if called from the item's destructor; these will
@@ -522,6 +572,9 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
     }
+
+    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+        unregisterScenePosItem(item);
 
     item->d_func()->scene = 0;
 
@@ -2539,6 +2592,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
                 d->lastActivePanel = item;
         }
     }
+
+    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+        d->registerScenePosItem(item);
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.

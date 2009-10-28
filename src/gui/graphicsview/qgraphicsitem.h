@@ -105,7 +105,8 @@ public:
         ItemAcceptsInputMethod = 0x1000,
         ItemNegativeZStacksBehindParent = 0x2000,
         ItemIsPanel = 0x4000,
-        ItemIsFocusScope = 0x8000 // internal
+        ItemIsFocusScope = 0x8000, // internal
+        ItemSendsScenePositionChanges = 0x10000
         // NB! Don't forget to increase the d_ptr->flags bit field by 1 when adding a new flag.
     };
     Q_DECLARE_FLAGS(GraphicsItemFlags, GraphicsItemFlag)
@@ -137,7 +138,8 @@ public:
         ItemZValueChange,
         ItemZValueHasChanged,
         ItemOpacityChange,
-        ItemOpacityHasChanged
+        ItemOpacityHasChanged,
+        ItemScenePositionHasChanged
     };
 
     enum CacheMode {
