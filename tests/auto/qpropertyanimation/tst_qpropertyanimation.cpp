@@ -495,7 +495,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
-        QTest::qWait(anim->duration() + 50);
+        QTest::qWait(anim->duration() + 100);
         QCOMPARE(runningSpy.count(), 2); //started and then stopped
         QVERIFY(!anim);
     }
@@ -659,7 +659,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.setStartValue(0);
     anim.setEndValue(100);
     anim.start();
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), anim.duration());
 
@@ -667,7 +667,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.setDirection(QVariantAnimation::Backward);
     anim.start();
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 
@@ -676,7 +676,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.start();
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
     QCOMPARE(anim.currentTime(), anim.duration());
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 }
