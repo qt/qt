@@ -21,6 +21,15 @@ private slots:
     void mixedTypes();
 };
 
+#define QTIMED_COMPARE(lhs, rhs) do { \
+    for (int ii = 0; ii < 5; ++ii) { \
+        if (lhs == rhs)  \
+            break; \
+        QTest::qWait(50); \
+    } \
+    QCOMPARE(lhs, rhs); \
+} while (false)
+        
 void tst_animations::simpleNumber()
 {
     QFxRect rect;
@@ -29,8 +38,8 @@ void tst_animations::simpleNumber()
     animation.setProperty("x");
     animation.setTo(200);
     animation.start();
-    QTest::qWait(animation.duration() + 50);
-    QCOMPARE(rect.x(), qreal(200));
+    QTest::qWait(animation.duration());
+    QTIMED_COMPARE(rect.x(), qreal(200));
 
     rect.setX(0);
     animation.start();
@@ -47,8 +56,8 @@ void tst_animations::simpleColor()
     animation.setProperty("color");
     animation.setTo(QColor("red"));
     animation.start();
-    QTest::qWait(animation.duration() + 50);
-    QCOMPARE(rect.color(), QColor("red"));
+    QTest::qWait(animation.duration());
+    QTIMED_COMPARE(rect.color(), QColor("red"));
 
     rect.setColor(QColor("blue"));
     animation.start();
@@ -71,8 +80,8 @@ void tst_animations::alwaysRunToEnd()
     QTest::qWait(1500);
     animation.stop();
     QVERIFY(rect.x() != qreal(200));
-    QTest::qWait(500 + 50);
-    QCOMPARE(rect.x(), qreal(200));
+    QTest::qWait(500);
+    QTIMED_COMPARE(rect.x(), qreal(200));
 }
 
 void tst_animations::dotProperty()
@@ -83,8 +92,8 @@ void tst_animations::dotProperty()
     animation.setProperty("border.width");
     animation.setTo(10);
     animation.start();
-    QTest::qWait(animation.duration() + 50);
-    QCOMPARE(rect.border()->width(), 10);
+    QTest::qWait(animation.duration());
+    QTIMED_COMPARE(rect.border()->width(), 10);
 
     rect.border()->setWidth(0);
     animation.start();
