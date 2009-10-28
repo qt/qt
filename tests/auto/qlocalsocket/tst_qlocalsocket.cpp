@@ -976,7 +976,7 @@ void tst_QLocalSocket::writeOnlySocket()
 #if defined(Q_OS_SYMBIAN)
         QTest::qWait(250);
 #endif
-    QVERIFY(server.waitForNewConnection());
+    QVERIFY(server.waitForNewConnection(200));
     QLocalSocket* serverSocket = server.nextPendingConnection();
     QVERIFY(serverSocket);
 
