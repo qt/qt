@@ -1,14 +1,25 @@
-var sunComponent = null;
+var itemComponent = null;
 var draggedItem = null;
 var startingMouse;
+var startingZ;
 //Until QT-2385 is resolved we need to convert to scene coordinates manually
 var xOffset;
 var yOffset;
+function setSceneOffset()
+{
+    xOffset = 0;
+    yOffset = 0;
+    var p = itemButton;
+    while(p != window){
+        xOffset += p.x;
+        yOffset += p.y;
+        p = p.parent;
+    }
+}
 
 function startDrag(mouse)
 {
-    xOffset = toolbox.x + toolboxPositioner.x;
-    yOffset = toolbox.y + toolboxPositioner.y;
+    setSceneOffset();
     startingMouse = mouse;
     loadComponent();
 }
@@ -17,25 +28,27 @@ function startDrag(mouse)
 //possible external files are loaded.
 
 function loadComponent() {
-    if (sunComponent != null) //Already loaded the component
-        createSun();
+    if (itemComponent != null) //Already loaded the component
+        createItem();
 
-    sunComponent = createComponent("Sun.qml");
-    if(sunComponent.isLoading){
+    itemComponent = createComponent(itemButton.file);
+    if(itemComponent.isLoading){
         component.statusChanged.connect(finishCreation);
     }else{//Depending on the content, it can be ready or error immediately
-        createSun();
+        createItem();
     }
 }
 
-function createSun() {
-    if (sunComponent.isReady && draggedItem == null) {
-        draggedItem = sunComponent.createObject();
+function createItem() {
+    if (itemComponent.isReady && draggedItem == null) {
+        draggedItem = itemComponent.createObject();
         draggedItem.parent = window;
+        draggedItem.image = itemButton.image;
         draggedItem.x = startingMouse.x + xOffset;
         draggedItem.y = startingMouse.y + yOffset;
+        startingZ = draggedItem.z;
         draggedItem.z = 4;//On top
-    } else if (sunComponent.isError) {
+    } else if (itemComponent.isError) {
         draggedItem = null;
         print("error creating component");
         print(component.errorsString());
@@ -56,12 +69,11 @@ function endDrag(mouse)
     if(draggedItem == null)
         return;
 
-    if(draggedItem.x + draggedItem.width > toolbox.x //Don't drop it in the toolbox
-        || draggedItem.y > ground.y){//Don't drop it on the ground
+    if(draggedItem.x + draggedItem.width > toolbox.x){ //Don't drop it in the toolbox
         draggedItem.destroy();
         draggedItem = null;
     }else{
-        draggedItem.z = 1;
+        draggedItem.z = startingZ;
         draggedItem.created = true;
         draggedItem = null;
     }
