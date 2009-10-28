@@ -691,8 +691,7 @@ void QFxListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    updateTrackedItem();
-    if (currentItem && autoHighlight && highlight && !pressed && moveReason != QFxListViewPrivate::Mouse) {
+    if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
         highlightPosAnimator->setSourceValue(currentItem->position());
         highlightSizeAnimator->setSourceValue(currentItem->size());
@@ -704,6 +703,7 @@ void QFxListViewPrivate::updateHighlight()
                 highlight->item->setHeight(currentItem->item->height());
         }
     }
+    updateTrackedItem();
 }
 
 void QFxListViewPrivate::updateSections()
@@ -832,8 +832,10 @@ void QFxListViewPrivate::flickX(qreal velocity)
 {
     Q_Q(QFxListView);
 
-    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange)
+    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
         QFxFlickablePrivate::flickX(velocity);
+        return;
+    }
 
     qreal maxDistance = -1;
     // -ve velocity means list is moving up
@@ -855,19 +857,20 @@ void QFxListViewPrivate::flickX(qreal velocity)
                 v = maxVelocity;
         }
         qreal accel = deceleration;
-        qreal maxAccel = (v * v) / (2.0f * maxDistance);
+        qreal v2 = v * v;
+        qreal maxAccel = v2 / (2.0f * maxDistance);
         if (maxAccel < accel) {
             // If we are not flicking to the end then attempt to stop exactly on an item boundary
-            qreal dist = (v * v) / accel / 2.0;
+            qreal dist = v2 / accel / 2.0;
             if (v > 0)
                 dist = -dist;
-            dist = -_moveX.value() - snapPosAt(-_moveX.value() + dist + highlightRangeStart);
+            dist = -_moveX.value() - snapPosAt(-(_moveX.value() - highlightRangeStart) + dist) + highlightRangeStart;
             if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
                 timeline.reset(_moveX);
                 fixupX();
                 return;
             }
-            accel = (v * v) / (2.0f * qAbs(dist));
+            accel = v2 / (2.0f * qAbs(dist));
         }
         timeline.reset(_moveX);
         timeline.accel(_moveX, v, accel, maxDistance);
@@ -885,7 +888,60 @@ void QFxListViewPrivate::flickX(qreal velocity)
 
 void QFxListViewPrivate::flickY(qreal velocity)
 {
-    QFxFlickablePrivate::flickY(velocity);
+    Q_Q(QFxListView);
+
+    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
+        QFxFlickablePrivate::flickY(velocity);
+        return;
+    }
+
+    qreal maxDistance = -1;
+    // -ve velocity means list is moving up
+    if (velocity > 0) {
+        if (_moveY.value() < q->minYExtent())
+            maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
+        flickTargetY = q->minYExtent();
+    } else {
+        if (_moveY.value() > q->maxYExtent())
+            maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
+        flickTargetY = q->maxYExtent();
+    }
+    if (maxDistance > 0) {
+        qreal v = velocity;
+        if (maxVelocity != -1 && maxVelocity < qAbs(v)) {
+            if (v < 0)
+                v = -maxVelocity;
+            else
+                v = maxVelocity;
+        }
+        qreal accel = deceleration;
+        qreal v2 = v * v;
+        qreal maxAccel = v2 / (2.0f * maxDistance);
+        if (maxAccel < accel) {
+            // If we are not flicking to the end then attempt to stop exactly on an item boundary
+            qreal dist = v2 / accel / 2.0;
+            if (v > 0)
+                dist = -dist;
+            dist = -_moveY.value() - snapPosAt(-(_moveY.value() - highlightRangeStart) + dist) + highlightRangeStart;
+            if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
+                timeline.reset(_moveY);
+                fixupY();
+                return;
+            }
+            accel = v2 / (2.0f * qAbs(dist));
+        }
+        timeline.reset(_moveY);
+        timeline.accel(_moveY, v, accel, maxDistance);
+        timeline.execute(fixupYEvent);
+        if (!flicked) {
+            flicked = true;
+            emit q->flickingChanged();
+            emit q->flickStarted();
+        }
+    } else {
+        timeline.reset(_moveY);
+        fixupY();
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -1185,6 +1241,10 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 
     \snippet doc/src/snippets/declarative/listview/highlight.qml 1
 
+    Note that the highlight animation also affects the way that the view
+    is scrolled.  This is because the view moves to maintain the
+    highlight within the preferred highlight range (or visible viewport).
+
     \sa highlight
 */
 bool QFxListView::highlightFollowsCurrentItem() const
@@ -1445,7 +1505,7 @@ void QFxListView::viewportMoved()
     Q_D(QFxListView);
     QFxFlickable::viewportMoved();
     refill();
-    if (isFlicking() || d->pressed)
+    if (isFlicking() || d->moving)
         d->moveReason = QFxListViewPrivate::Mouse;
     if (d->moveReason == QFxListViewPrivate::Mouse) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
@@ -1606,7 +1666,7 @@ void QFxListView::trackedPositionChanged()
     Q_D(QFxListView);
     if (!d->trackedItem)
         return;
-    if (!isFlicking() && !d->pressed && d->moveReason != QFxListViewPrivate::Mouse) {
+    if (!isFlicking() && !d->moving && d->moveReason != QFxListViewPrivate::Mouse) {
         const qreal trackedPos = d->trackedItem->position();
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
