@@ -117,6 +117,7 @@ private slots:
     void cleanup();
 
     void rootState();
+    void machineWithParent();
     void addAndRemoveState();
     void stateEntryAndExit();
     void assignProperty();
@@ -1043,6 +1044,14 @@ void tst_QStateMachine::rootState()
     QState *s2 = new QState();
     s2->setParent(&machine);
     QCOMPARE(s2->parentState(), static_cast<QState*>(&machine));
+}
+
+void tst_QStateMachine::machineWithParent()
+{
+    QObject object;
+    QStateMachine *machine = new QStateMachine(&object);
+    QCOMPARE(machine->parent(), &object);
+    QCOMPARE(machine->parentState(), (QObject*)0);
 }
 
 void tst_QStateMachine::addAndRemoveState()
