@@ -67,6 +67,7 @@ private slots:
     void listProperties();
     void exceptionClearsOnReeval();
     void transientErrors();
+    void shutdownErrors();
 
 private:
     QmlEngine engine;
@@ -867,6 +868,22 @@ void tst_qmlecmascript::transientErrors()
 
     qInstallMsgHandler(old);
 
+    QCOMPARE(transientErrorsMsgCount, 0);
+}
+
+// Check that errors during shutdown are minimized
+void tst_qmlecmascript::shutdownErrors()
+{
+    QmlComponent component(&engine, TEST_FILE("shutdownErrors.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    transientErrorsMsgCount = 0;
+    QtMsgHandler old = qInstallMsgHandler(transientErrorsMsgHandler);
+
+    delete object;
+
+    qInstallMsgHandler(old);
     QCOMPARE(transientErrorsMsgCount, 0);
 }
 
