@@ -98,7 +98,7 @@ public:
     QObject *me;
     bool trackChange;
 
-    QString fileName;
+    QUrl url;
     int line;
 
     struct SignalGuard : public QGuard<QObject> {
