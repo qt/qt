@@ -2259,7 +2259,7 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
 ** QDockAreaLayout
 */
 
-QDockAreaLayout::QDockAreaLayout(QMainWindow *win) : have_central(false)
+QDockAreaLayout::QDockAreaLayout(QMainWindow *win) : fallbackToSizeHints(true)
 {
     mainWindow = win;
     sep = win->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, win);
@@ -2346,6 +2346,9 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
             for (int i = 0; i < 4; ++i)
                 corners[i] = static_cast<Qt::DockWidgetArea>(cornerData[i]);
         }
+
+        if (!testing)
+            fallbackToSizeHints = false;
     }
 
     return ok;
@@ -2582,9 +2585,7 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
 {
     QSize center_hint(0, 0);
     QSize center_min(0, 0);
-    const bool old_have_central = have_central;
-    have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
-    const bool fallbackToSizeHints = !old_have_central && have_central;
+    const bool have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
     if (have_central) {
         center_hint = centralWidgetRect.size();
         if (!center_hint.isValid())
@@ -2629,6 +2630,8 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     QSize bottom_min = docks[QInternal::BottomDock].minimumSize();
     QSize bottom_max = docks[QInternal::BottomDock].maximumSize();
     bottom_hint = bottom_hint.boundedTo(bottom_max).expandedTo(bottom_min);
+
+    fallbackToSizeHints = !have_central;
 
     if (_ver_struct_list != 0) {
         QVector<QLayoutStruct> &ver_struct_list = *_ver_struct_list;
