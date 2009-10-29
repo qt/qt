@@ -343,6 +343,15 @@ public:
         return true;
     }
 
+    void updateViewport() {
+        Q_Q(QFxListView);
+        if (orient == QFxListView::Vertical)
+            q->setViewportHeight(endPosition() - startPosition());
+        else
+            q->setViewportWidth(endPosition() - startPosition());
+    }
+
+
     // for debugging only
     void checkVisible() const {
         int skip = 0;
@@ -553,10 +562,7 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
         updateAverage();
         if (!sectionExpression.isEmpty())
             updateCurrentSection();
-        if (orient == QFxListView::Vertical)
-            q->setViewportHeight(endPosition() - startPosition());
-        else
-            q->setViewportWidth(endPosition() - startPosition());
+        updateViewport();
     }
 }
 
@@ -581,6 +587,7 @@ void QFxListViewPrivate::layout()
     updateHighlight();
     fixupPosition();
     updateUnrequestedPositions();
+    updateViewport();
 }
 
 void QFxListViewPrivate::updateUnrequestedIndexes()
@@ -1172,10 +1179,12 @@ void QFxListView::setCurrentIndex(int index)
 {
     Q_D(QFxListView);
     d->moveReason = QFxListViewPrivate::Other;
-    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0)
+    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+        cancelFlick();
         d->updateCurrent(index);
-    else
+    } else {
         d->currentIndex = index;
+    }
 }
 
 QFxItem *QFxListView::currentItem()
@@ -1626,6 +1635,7 @@ void QFxListView::incrementCurrentIndex()
     Q_D(QFxListView);
     if (currentIndex() < d->model->count() - 1 || d->wrap) {
         int index = currentIndex()+1;
+        cancelFlick();
         d->updateCurrent(index < d->model->count() ? index : 0);
     }
 }
@@ -1641,6 +1651,7 @@ void QFxListView::decrementCurrentIndex()
     Q_D(QFxListView);
     if (currentIndex() > 0 || d->wrap) {
         int index = currentIndex()-1;
+        cancelFlick();
         d->updateCurrent(index >= 0 ? index : d->model->count()-1);
     }
 }
@@ -1800,6 +1811,7 @@ void QFxListView::itemsInserted(int modelIndex, int count)
     for (int j = 0; j < added.count(); ++j)
         added.at(j)->attached->emitAdd();
     d->updateUnrequestedPositions();
+    d->updateViewport();
     emit countChanged();
 }
 

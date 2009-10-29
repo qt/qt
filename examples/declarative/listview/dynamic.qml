@@ -1,5 +1,6 @@
 import Qt 4.6
 import "content"
+import "../scrollbar"
 
 Rectangle {
     width: 640; height: 480
@@ -99,8 +100,29 @@ Rectangle {
     }
 
     ListView {
+        id: view
         model: fruitModel; delegate: fruitDelegate
         anchors { top: parent.top; left: parent.left; right: parent.right; bottom: buttons.top }
+    }
+
+    // Attach scrollbar to the right edge of the view.
+    ScrollBar {
+        id: verticalScrollBar
+        opacity: 0
+        orientation: "Vertical"
+        position: view.visibleArea.yPosition
+        pageSize: view.visibleArea.heightRatio
+        width: 8
+        height: view.height
+        anchors.right: view.right
+        // Only show the scrollbar when the view is moving.
+        states: [
+            State {
+                name: "ShowBars"; when: view.moving
+                PropertyChanges { target: verticalScrollBar; opacity: 1 }
+            }
+        ]
+        transitions: [ Transition { NumberAnimation { properties: "opacity"; duration: 400 } } ]
     }
 
     Row {

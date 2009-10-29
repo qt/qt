@@ -132,43 +132,11 @@ namespace QmlPrivate
         }
     };
 
-#if defined(Q_CC_MSVC)
-    template <typename T>  
-    class has_attachedPropertiesMember
-    {
-    public:
-        __if_exists(T::qmlAttachedProperties) {
-            static bool const value = true;
-        }
-        __if_not_exists(T::qmlAttachedProperties) {
-            static bool const value = false;
-        }
-    };
-#elif defined(Q_OS_SYMBIAN)
     template <typename T>
     struct has_attachedPropertiesMember
     {
         static bool const value = QmlTypeInfo<T>::hasAttachedProperties;
     };
-#else
-    template <typename T>  
-    class has_attachedPropertiesMember
-    {  
-        typedef int yes_type;
-        typedef char no_type;
-        template <int> 
-        struct Selector {};
-
-        template <typename S> 
-        static yes_type test(Selector<sizeof(&S::qmlAttachedProperties)>*); 
-
-        template <typename S>
-        static no_type test(...);
-
-    public: 
-        static bool const value = sizeof(test<T>(0)) == sizeof(yes_type);
-    };
-#endif
 
     template <typename T, bool hasMember>
     class has_attachedPropertiesMethod 

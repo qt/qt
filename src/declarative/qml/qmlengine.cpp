@@ -75,8 +75,8 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
+#include <QGraphicsObject>
 #include <qmlcomponent.h>
-#include <private/qmlcomponentjs_p.h>
 #include <private/qmlmetaproperty_p.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
@@ -590,7 +590,7 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
                                                QScriptEngine *engine)
 {
-    QmlComponentJS* c;
+    QmlComponent* c;
 
     QmlEnginePrivate *activeEnginePriv =
         static_cast<QmlScriptEngine*>(engine)->p;
@@ -598,14 +598,14 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
 
     QmlContext* context = activeEnginePriv->getContext(ctxt);
     if(ctxt->argumentCount() != 1) {
-        c = new QmlComponentJS(activeEngine);
+        c = new QmlComponent(activeEngine);
     }else{
         QUrl url = QUrl(context->resolvedUrl(ctxt->argument(0).toString()));
         if(!url.isValid())
             url = QUrl(ctxt->argument(0).toString());
-        c = new QmlComponentJS(activeEngine, url, activeEngine);
+        c = new QmlComponent(activeEngine, url, activeEngine);
     }
-    c->setContext(context);
+    c->setCreationContext(context);
     return engine->newQObject(c);
 }
 
@@ -622,8 +622,6 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
-    else
-        url = QUrl(QLatin1String("DynamicQML"));
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
     if (url.isEmpty()) {
@@ -633,6 +631,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     }
 
     QmlComponent component(activeEngine, qml.toUtf8(), url);
+
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         qWarning() <<"QmlEngine::createQmlObject():";
@@ -655,7 +654,10 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 
     if(obj) {
         obj->setParent(parentArg);
-        obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
+        QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
+        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
+        if(gobj && gparent)
+            gobj->setParentItem(gparent);
         return qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();

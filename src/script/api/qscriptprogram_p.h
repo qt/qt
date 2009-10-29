@@ -70,7 +70,7 @@ class QScriptProgramPrivate
 public:
     QScriptProgramPrivate(const QString &sourceCode,
                           const QString &fileName,
-                          int lineNumber);
+                          int firstLineNumber);
     ~QScriptProgramPrivate();
 
     static QScriptProgramPrivate *get(const QScriptProgram &q);
@@ -82,7 +82,7 @@ public:
 
     QString sourceCode;
     QString fileName;
-    int lineNumber;
+    int firstLineNumber;
 
     QScriptEnginePrivate *engine;
     JSC::EvalExecutable *_executable;

@@ -39,12 +39,7 @@
 **
 ****************************************************************************/
 
-#include <QtCore/qglobal.h>
-#ifdef Q_WS_WIN
-#define max max
-#define min min
-#endif
-
+#include "config.h"
 #include "qscriptprogram.h"
 #include "qscriptprogram_p.h"
 #include "qscriptengine.h"
@@ -60,14 +55,25 @@ QT_BEGIN_NAMESPACE
   \since 4.6
   \class QScriptProgram
 
+  \brief The QScriptProgram class encapsulates a Qt Script program.
+
   \ingroup script
 
+  QScriptProgram retains the compiled representation of the script if
+  possible. Thus, QScriptProgram can be used to evaluate the same
+  script multiple times more efficiently.
+
+  \code
+  QScriptEngine engine;
+  QScriptProgram program("1 + 2");
+  QScriptValue result = engine.evaluate(program);
+  \endcode
 */
 
 QScriptProgramPrivate::QScriptProgramPrivate(const QString &src,
                                              const QString &fn,
                                              int ln)
-    : sourceCode(src), fileName(fn), lineNumber(ln),
+    : sourceCode(src), fileName(fn), firstLineNumber(ln),
       engine(0), _executable(0), sourceId(-1), isCompiled(false)
 {
     ref = 0;
@@ -92,9 +98,9 @@ JSC::EvalExecutable *QScriptProgramPrivate::executable(JSC::ExecState *exec,
         delete _executable;
     }
     WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
-        = QScript::UStringSourceProviderWithFeedback::create(sourceCode, fileName, lineNumber, eng);
+        = QScript::UStringSourceProviderWithFeedback::create(sourceCode, fileName, firstLineNumber, eng);
     sourceId = provider->asID();
-    JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
+    JSC::SourceCode source(provider, firstLineNumber); //after construction of SourceCode provider variable will be null.
     _executable = new JSC::EvalExecutable(exec, source);
     engine = eng;
     isCompiled = false;
@@ -111,12 +117,12 @@ QScriptProgram::QScriptProgram()
 
 /*!
   Constructs a new QScriptProgram with the given \a sourceCode, \a
-  fileName and \a lineNumber.
+  fileName and \a firstLineNumber.
 */
 QScriptProgram::QScriptProgram(const QString &sourceCode,
                                const QString fileName,
-                               int lineNumber)
-    : d_ptr(new QScriptProgramPrivate(sourceCode, fileName, lineNumber))
+                               int firstLineNumber)
+    : d_ptr(new QScriptProgramPrivate(sourceCode, fileName, firstLineNumber))
 {
 }
 
@@ -185,12 +191,12 @@ QString QScriptProgram::fileName() const
 /*!
   Returns the line number associated with this program.
 */
-int QScriptProgram::lineNumber() const
+int QScriptProgram::firstLineNumber() const
 {
     Q_D(const QScriptProgram);
     if (!d)
         return -1;
-    return d->lineNumber;
+    return d->firstLineNumber;
 }
 
 /*!
@@ -204,7 +210,7 @@ bool QScriptProgram::operator==(const QScriptProgram &other) const
         return true;
     return (sourceCode() == other.sourceCode())
         && (fileName() == other.fileName())
-        && (lineNumber() == other.lineNumber());
+        && (firstLineNumber() == other.firstLineNumber());
 }
 
 /*!
