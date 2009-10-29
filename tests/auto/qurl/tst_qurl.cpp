@@ -3730,6 +3730,7 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
     QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
     QTest::newRow("spaces-0") << "  http://example.org/test page.html " << QUrl("http://example.org/test%20page.html");
+    QTest::newRow("trash-0") << "example.org/test?someData=42%&someOtherData=abcde#anchor" << QUrl::fromEncoded("http://example.org/test?someData=42%25&someOtherData=abcde#anchor");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");
