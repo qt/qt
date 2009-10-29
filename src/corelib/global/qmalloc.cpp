@@ -42,7 +42,10 @@
 #include "qplatformdefs.h"
 
 #include <stdlib.h>
-#include <malloc.h>
+
+#ifdef Q_OS_WIN
+# include <malloc.h>
+#endif
 
 /*
     Define the container allocation functions in a separate file, so that our
@@ -65,10 +68,6 @@ void *qRealloc(void *ptr, size_t size)
 {
     return ::realloc(ptr, size);
 }
-
-#if ((defined(_POSIX_C_SOURCE) && _POSIX_C_SOURCE >= 200112L) || (defined(_XOPEN_SOURCE) && _XOPEN_SOURCE >= 600))
-# define HAVE_POSIX_MEMALIGN
-#endif
 
 void *qMallocAligned(size_t size, size_t alignment)
 {
