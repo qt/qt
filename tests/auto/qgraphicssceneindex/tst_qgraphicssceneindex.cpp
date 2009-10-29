@@ -45,6 +45,8 @@
 #include <private/qgraphicsscenebsptreeindex_p.h>
 #include <private/qgraphicssceneindex_p.h>
 #include <private/qgraphicsscenelinearindex_p.h>
+#include "../../shared/util.h"
+
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -356,7 +358,7 @@ void tst_QGraphicsSceneIndex::clear()
     MyItem *item = new MyItem;
     scene.addItem(item);
     qApp->processEvents();
-    QCOMPARE(item->numPaints, 1);
+    QTRY_COMPARE(item->numPaints, 1);
 }
 
 QTEST_MAIN(tst_QGraphicsSceneIndex)

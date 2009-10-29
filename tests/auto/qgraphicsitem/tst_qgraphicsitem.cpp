@@ -7463,7 +7463,7 @@ void tst_QGraphicsItem::moveLineItem()
     // Make sure the calculated region is correct.
     item->update();
     QTest::qWait(10);
-    QCOMPARE(view.paintedRegion, expectedRegion);
+    QTRY_COMPARE(view.paintedRegion, expectedRegion);
     view.reset();
 
     // Old position: (50, 50)

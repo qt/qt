@@ -3552,6 +3552,7 @@ void tst_QTreeView::doubleClickedWithSpans()
     view.setModel(&model);
     view.setFirstColumnSpanned(0, QModelIndex(), true);
     view.show();
+    QTest::qWaitForWindowShown(&view);
 
     QPoint p(10, 10);
     QCOMPARE(view.indexAt(p), model.index(0, 0));
