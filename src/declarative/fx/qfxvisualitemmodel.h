@@ -128,7 +128,7 @@ public:
 
     static QFxVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
 
-signals:
+Q_SIGNALS:
     void childrenChanged();
 
 private:

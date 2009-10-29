@@ -122,7 +122,7 @@ public:
     QmlComponentAttached **prev;
     QmlComponentAttached *next;
 
-signals:
+Q_SIGNALS:
     void completed();
 
 private:

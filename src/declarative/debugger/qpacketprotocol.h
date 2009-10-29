@@ -77,7 +77,7 @@ public:
 
     QIODevice * device();
 
-signals:
+Q_SIGNALS:
     void readyRead();
     void invalidPacket();
     void packetWritten();

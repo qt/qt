@@ -45,6 +45,12 @@
 #include <QtCore/qurl.h>
 #include <QtCore/qvariant.h>
 
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+
 class QmlDebugConnection;
 class QmlDebugWatch;
 class QmlDebugPropertyWatch;
@@ -105,7 +111,7 @@ public:
     int objectDebugId() const;
     State state() const;
 
-signals:
+Q_SIGNALS:
     void stateChanged(State);
     //void objectChanged(int, const QmlDebugObjectReference &);
     //void valueChanged(int, const QVariant &);
@@ -161,7 +167,7 @@ public:
 
 //    bool waitUntilCompleted();
 
-signals:
+Q_SIGNALS:
     void stateChanged(State);
 
 protected:
@@ -350,5 +356,9 @@ private:
     QVariant m_result;
 
 };
+
+QT_END_NAMESPACE
+
+QT_END_HEADER
 
 #endif // QMLDEBUG_H

@@ -103,7 +103,7 @@ public:
     virtual void classBegin();
     virtual void componentComplete();
 
-signals:
+Q_SIGNALS:
     void statusChanged(Status);
     void progressChanged(qreal progress);
     void countChanged();

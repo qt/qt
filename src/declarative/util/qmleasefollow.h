@@ -95,7 +95,7 @@ public:
 
     virtual void setTarget(const QmlMetaProperty &);
 
-signals:
+Q_SIGNALS:
     void sourceChanged();
     void velocityChanged();
     void durationChanged();
