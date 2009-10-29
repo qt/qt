@@ -1971,8 +1971,6 @@ bool QStateMachine::cancelDelayedEvent(int id)
 }
 
 /*!
-  \internal
-
    Returns the maximal consistent set of states (including parallel and final
    states) that this state machine is currently in. If a state \c s is in the
    configuration, it is always the case that the parent of \c s is also in
