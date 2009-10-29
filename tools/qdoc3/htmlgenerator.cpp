@@ -3467,10 +3467,13 @@ QString HtmlGenerator::refForNode(const Node *node)
                 ref += "-" + QString::number(func->overloadNumber());
         }
         break;
-    case Node::Property:
-#ifdef QDOC_QML
+#ifdef QDOC_QML        
+    case Node::Fake:
+        if (node->subType() != Node::QmlPropertyGroup)
+            break;
     case Node::QmlProperty:
 #endif        
+    case Node::Property:
         ref = node->name() + "-prop";
         break;
 #ifdef QDOC_QML
@@ -3512,9 +3515,9 @@ QString HtmlGenerator::linkForNode(const Node *node, const Node *relative)
     // ### reintroduce this test, without breaking .dcf files
     if (fn != outFileName())
 #endif
-        link += fn;
+    link += fn;
 
-    if (!node->isInnerNode()) {
+    if (!node->isInnerNode() || node->subType() == Node::QmlPropertyGroup) {
         ref = refForNode(node);
         if (relative && fn == fileName(relative) && ref == refForNode(relative))
             return QString();
