@@ -143,7 +143,7 @@ QVariant QmlEngineDebugServer::valueContents(const QVariant &value) const
         if (o) {
             QString name = o->objectName();
             if (name.isEmpty())
-                name = QLatin1String("<unnamed>");
+                name = QLatin1String("<unnamed object>");
             return name;
         }
     }
