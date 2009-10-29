@@ -1035,15 +1035,24 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
         }
         break;
 
-    case PE_PanelButtonCommand: {
+    case PE_PanelButtonCommand:
+    case PE_PanelButtonTool: {
         bool isDefault = false;
+        bool isTool = (element == PE_PanelButtonTool);
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton*>(option))
             isDefault = btn->features & QStyleOptionButton::DefaultButton;
+
+        // don't draw a frame for tool buttons that have the autoRaise flag and are not enabled or on
+        if (isTool && !(option->state & State_Enabled || option->state & State_On) && (option->state & State_AutoRaise))
+            break;
+        // don't draw a frame for dock widget buttons, unless we are hovering
+        if (widget && widget->inherits("QDockWidgetTitleButton") && !(option->state & State_MouseOver))
+            break;
 
         GtkStateType state = gtkPainter.gtkState(option);
         if (option->state & State_On || option->state & State_Sunken)
             state = GTK_STATE_ACTIVE;
-        GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+        GtkWidget *gtkButton = QGtk::gtkWidget(isTool ? QLS("GtkToolButton.GtkButton") : QLS("GtkButton"));
         gint focusWidth, focusPad;
         gboolean interiorFocus = false;
         QGtk::gtk_widget_style_get (gtkButton,
@@ -1555,7 +1564,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
             QPalette pal = toolbutton->palette;
             if (option->state & State_Enabled && 
                 option->state & State_MouseOver && !(widget && widget->testAttribute(Qt::WA_SetPalette))) {
@@ -1931,13 +1940,26 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 if (!QGtk::gtk_check_version(2, 10, 0))
                     QGtk::gtk_widget_style_get((GtkWidget*)(scaleWidget), "trough-side-details",   &trough_side_details, NULL);
 
-                if (trough_side_details && horizontal) { //### Vertical sliders look broken with this for some reason
+                if (!trough_side_details) {
+                    gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
+                                         GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
+                } else {
+                    QRect upperGroove = grooveRect;
                     QRect lowerGroove = grooveRect;
-                    lowerGroove.setRight(handle.center().x());
+
+                    if (horizontal) {
+                        upperGroove.setLeft(handle.center().x());
+                        lowerGroove.setRight(handle.center().x());
+                    } else {
+                        upperGroove.setBottom(handle.center().y());
+                        lowerGroove.setTop(handle.center().y());
+                    }
+
+                    gtkPainter.paintBox( scaleWidget, "trough-upper", upperGroove, state,
+                                         GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
                     gtkPainter.paintBox( scaleWidget, "trough-lower", lowerGroove, state,
                                          GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
                 }
-
             }
 
             if (option->subControls & SC_SliderTickmarks) {
@@ -3116,7 +3138,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
     case CT_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
             newSize = size + QSize(2 * gtkButton->style->xthickness, 1 + 2 * gtkButton->style->ythickness);
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
                 QSize minSize(0, 25);

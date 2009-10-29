@@ -2140,7 +2140,7 @@ if [ "$OPT_SHADOW" = "maybe" ]; then
     fi
 fi
 if [ "$OPT_SHADOW" = "yes" ]; then
-    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" ]; then
+    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
         echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
         echo >&2 "Cannot proceed."
         exit 1

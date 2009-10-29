@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtScript module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,37 +39,48 @@
 **
 ****************************************************************************/
 
+#ifndef QSCRIPTPROGRAM_H
+#define QSCRIPTPROGRAM_H
 
-#include <QtTest/QtTest>
-#include <QtGui>
+#include <QtCore/qsharedpointer.h>
 
-#if defined(Q_OS_SYMBIAN)
-#define SRCDIR ""
-#endif
+#include <QtCore/qstring.h>
 
-class tst_QSound : public QObject
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Script)
+
+class QScriptProgramPrivate;
+class Q_SCRIPT_EXPORT QScriptProgram
 {
-    Q_OBJECT
-
 public:
-    tst_QSound( QObject* parent=0) : QObject(parent) {}
+    QScriptProgram();
+    QScriptProgram(const QString &sourceCode,
+                   const QString fileName = QString(),
+                   int firstLineNumber = 1);
+    QScriptProgram(const QScriptProgram &other);
+    ~QScriptProgram();
 
-private slots:
-        void checkFinished();
+    QScriptProgram &operator=(const QScriptProgram &other);
+
+    bool isNull() const;
+
+    QString sourceCode() const;
+    QString fileName() const;
+    int firstLineNumber() const;
+
+    bool operator==(const QScriptProgram &other) const;
+    bool operator!=(const QScriptProgram &other) const;
+
+private:
+    QExplicitlySharedDataPointer<QScriptProgramPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QScriptProgram)
 };
 
-void tst_QSound::checkFinished()
-{
-            QSound sound(SRCDIR"4.wav");
-            sound.setLoops(3);
-            sound.play();
-            QTest::qWait(5000);
+QT_END_NAMESPACE
 
-#if defined(Q_WS_QWS)
-            QEXPECT_FAIL("", "QSound buggy on embedded (task QTBUG-157)", Abort);
-#endif
-            QVERIFY(sound.isFinished() );
-}
+QT_END_HEADER
 
-QTEST_MAIN(tst_QSound);
-#include "tst_qsound.moc"
+#endif // QSCRIPTPROGRAM_H
