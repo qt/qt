@@ -3702,34 +3702,34 @@ void tst_QUrl::fromUserInput_data()
     }
 
     // basic latin1
-    QTest::newRow("unicode-0") << QString::fromUtf8("å.com/") << QUrl::fromEncoded(QString::fromUtf8("http://å.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-0") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xc3\xa5.com/").toUtf8(), QUrl::TolerantMode);
     // unicode
-    QTest::newRow("unicode-1") << QString::fromUtf8("?.com/") << QUrl::fromEncoded(QString::fromUtf8("http://?.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-1") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xce\xbb.com/").toUtf8(), QUrl::TolerantMode);
 
     // no scheme
-    QTest::newRow("add scheme-0") << "webkit.org" << QUrl("http://webkit.org");
-    QTest::newRow("add scheme-1") << "www.webkit.org" << QUrl("http://www.webkit.org");
-    QTest::newRow("add scheme-2") << "ftp.webkit.org" << QUrl("ftp://ftp.webkit.org");
+    QTest::newRow("add scheme-0") << "example.org" << QUrl("http://example.org");
+    QTest::newRow("add scheme-1") << "www.example.org" << QUrl("http://www.example.org");
+    QTest::newRow("add scheme-2") << "ftp.example.org" << QUrl("ftp://ftp.example.org");
     QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
 
     // QUrl's tolerant parser should already handle this
-    QTest::newRow("not-encoded-0") << "http://webkit.org/test page.html" << QUrl("http://webkit.org/test%20page.html");
+    QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl("http://example.org/test%20page.html");
 
     // Make sure the :80, i.e. port doesn't screw anything up
-    QUrl portUrl("http://webkit.org");
+    QUrl portUrl("http://example.org");
     portUrl.setPort(80);
-    QTest::newRow("port-0") << "webkit.org:80" << portUrl;
-    QTest::newRow("port-1") << "http://webkit.org:80" << portUrl;
+    QTest::newRow("port-0") << "example.org:80" << portUrl;
+    QTest::newRow("port-1") << "http://example.org:80" << portUrl;
 
     // mailto doesn't have a ://, but is valid
-    QUrl mailto("ben@meyerhome.net");
+    QUrl mailto("ben@example.net");
     mailto.setScheme("mailto");
-    QTest::newRow("mailto") << "mailto:ben@meyerhome.net" << mailto;
+    QTest::newRow("mailto") << "mailto:ben@example.net" << mailto;
 
     // misc
     QTest::newRow("localhost-0") << "localhost" << QUrl("http://localhost");
     QTest::newRow("localhost-1") << "localhost:80" << QUrl("http://localhost:80");
-    QTest::newRow("spaces-0") << "  http://webkit.org/test page.html " << QUrl("http://webkit.org/test%20page.html");
+    QTest::newRow("spaces-0") << "  http://example.org/test page.html " << QUrl("http://example.org/test%20page.html");
 
     // FYI: The scheme in the resulting url user
     QUrl authUrl("user:pass@domain.com");
