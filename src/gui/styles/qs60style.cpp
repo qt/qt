@@ -66,7 +66,6 @@
 #include "qtextedit.h"
 #include "qtoolbar.h"
 #include "qtoolbutton.h"
-#include "qtreeview.h"
 #include "qfocusframe.h"
 
 #include "private/qtoolbarextension_p.h"
@@ -527,7 +526,7 @@ void QS60StylePrivate::drawPart(QS60StyleEnums::SkinParts skinPart,
         true;
 #endif
 
-    const QPixmap skinPartPixMap((doCache ? cachedPart : part)(skinPart, rect.size(), flags));
+    const QPixmap skinPartPixMap((doCache ? cachedPart : part)(skinPart, rect.size(), painter, flags));
     if (!skinPartPixMap.isNull())
         painter->drawPixmap(rect.topLeft(), skinPartPixMap);
 }
@@ -594,14 +593,14 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
 }
 
 QPixmap QS60StylePrivate::cachedPart(QS60StyleEnums::SkinParts part,
-    const QSize &size, SkinElementFlags flags)
+    const QSize &size, QPainter *painter, SkinElementFlags flags)
 {
     QPixmap result;
     const QString cacheKey =
         QString::fromLatin1("S60Style: SkinParts=%1 QSize=%2|%3 SkinPartFlags=%4")
             .arg((int)part).arg(size.width()).arg(size.height()).arg((int)flags);
     if (!QPixmapCache::find(cacheKey, result)) {
-        result = QS60StylePrivate::part(part, size, flags);
+        result = QS60StylePrivate::part(part, size, painter, flags);
         QPixmapCache::insert(cacheKey, result);
     }
     return result;
@@ -1316,13 +1315,13 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->setClipRect(voptAdj.rect);
             const bool isSelected = (vopt->state & QStyle::State_Selected);
 
-            bool isVisible = false;
+            bool isScrollBarVisible = false;
             int scrollBarWidth = 0;
             QList<QScrollBar *> scrollBars = qFindChildren<QScrollBar *>(widget);
             for (int i = 0; i < scrollBars.size(); ++i) {
                 QScrollBar *scrollBar = scrollBars.at(i);
                 if (scrollBar && scrollBar->orientation() == Qt::Vertical) {
-                    isVisible = scrollBar->isVisible();
+                    isScrollBarVisible = scrollBar->isVisible();
                     scrollBarWidth = scrollBar->size().width();
                     break;
                 }
@@ -1330,7 +1329,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             int rightValue = widget ? widget->contentsRect().right() : 0;
 
-            if (isVisible)
+            if (isScrollBarVisible)
                 rightValue -= scrollBarWidth;
 
             if (voptAdj.rect.right() > rightValue)
@@ -1338,40 +1337,40 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 
             const QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &voptAdj, widget);
             QRect textRect = subElementRect(SE_ItemViewItemText, &voptAdj, widget);
+            const QAbstractItemView *itemView = qobject_cast<const QAbstractItemView *>(widget);
 
             // draw themed background for table unless background brush has been defined.
             if (vopt->backgroundBrush == Qt::NoBrush) {
-                const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
-                const QTableView *table = qobject_cast<const QTableView *>(widget);
-                if (table && tableOption) {
-                    const QModelIndex index = tableOption->index;
+                if (itemView) {
+                    const QModelIndex index = vopt->index;
                     //todo: Draw cell background only once - for the first cell.
                     QStyleOptionViewItemV4 voptAdj2 = voptAdj;
-                    const QModelIndex indexFirst = table->model()->index(0,0);
-                    const QModelIndex indexLast = table->model()->index(
-                        table->model()->rowCount()-1,table->model()->columnCount()-1);
-                    if (table->viewport())
-                        voptAdj2.rect = QRect( table->visualRect(indexFirst).topLeft(),
-                            table->visualRect(indexLast).bottomRight()).intersect(table->viewport()->rect());
-                    drawPrimitive(PE_PanelItemViewItem, &voptAdj2, painter, widget);
+                    const QModelIndex indexFirst = itemView->model()->index(0,0);
+                    const QModelIndex indexLast = itemView->model()->index(
+                            itemView->model()->rowCount()-1,itemView->model()->columnCount()-1);
+                    if (itemView->viewport())
+                        voptAdj2.rect = QRect( itemView->visualRect(indexFirst).topLeft(),
+                                itemView->visualRect(indexLast).bottomRight()).intersect(itemView->viewport()->rect());
+                    drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);
                 }
-            } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, option, painter, widget);}
+            } else { QCommonStyle::drawPrimitive(PE_PanelItemViewItem, &voptAdj, painter, widget);}
 
             // draw the focus rect
             if (isSelected) {
                 QRect highlightRect = option->rect.adjusted(1,1,-1,-1);
-                const QAbstractItemView *view = qobject_cast<const QAbstractItemView *>(widget);
-                if (view && view->selectionBehavior() != QAbstractItemView::SelectItems) {
+                QAbstractItemView::SelectionBehavior selectionBehavior =
+                    itemView ? itemView->selectionBehavior() : QAbstractItemView::SelectItems;
+                if (selectionBehavior != QAbstractItemView::SelectItems) {
                     // set highlight rect so that it is continuous from cell to cell, yet sligthly
                     // smaller than cell rect
                     int xBeginning = 0, yBeginning = 0, xEnd = 0, yEnd = 0;
-                    if (view->selectionBehavior() == QAbstractItemView::SelectRows) {
+                    if (selectionBehavior == QAbstractItemView::SelectRows) {
                         yBeginning = 1; yEnd = -1;
                         if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
                             xBeginning = 1;
                         else if (vopt->viewItemPosition == QStyleOptionViewItemV4::End)
                             xEnd = -1;
-                    } else if (view->selectionBehavior() == QAbstractItemView::SelectColumns) {
+                    } else if (selectionBehavior == QAbstractItemView::SelectColumns) {
                         xBeginning = 1; xEnd = -1;
                         if (vopt->viewItemPosition == QStyleOptionViewItemV4::Beginning)
                             yBeginning = 1;
@@ -1380,7 +1379,9 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     }
                     highlightRect = option->rect.adjusted(xBeginning, yBeginning, xEnd, yEnd);
                 }
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
+                if (vopt->showDecorationSelected &&
+                    (vopt->palette.highlight().color() == d->themePalette()->highlight().color()))
+                    QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, highlightRect, flags);
             }
 
              // draw the icon
@@ -1389,48 +1390,44 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
              voptAdj.icon.paint(painter, iconRect, voptAdj.decorationAlignment, mode, state);
 
              // Draw selection check mark. Show check mark only in multi selection modes.
-             if (const QListView *listView = (qobject_cast<const QListView *>(widget))) {
+             if (itemView) {
                  const bool singleSelection =
-                     listView &&
-                     (listView->selectionMode() == QAbstractItemView::SingleSelection ||
-                     listView->selectionMode() == QAbstractItemView::NoSelection);
+                     (itemView->selectionMode() == QAbstractItemView::SingleSelection ||
+                      itemView->selectionMode() == QAbstractItemView::NoSelection);
                  const QRect selectionRect = subElementRect(SE_ItemViewItemCheckIndicator, &voptAdj, widget);
+
+                 QStyleOptionViewItemV4 checkMarkOption(voptAdj);
+                 // Draw selection mark.
                  if (voptAdj.state & QStyle::State_Selected && !singleSelection) {
-                     QStyleOptionViewItemV4 option(voptAdj);
-                     option.rect = selectionRect;
-                     // Draw selection mark.
-                     drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, painter, widget);
+                     checkMarkOption.rect = selectionRect;
+                     drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                      if ( textRect.right() > selectionRect.left() )
                          textRect.setRight(selectionRect.left());
                  } else if (singleSelection &&
-                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator) {
-                     // draw the check mark
-                     if (selectionRect.isValid()) {
-                         QStyleOptionViewItemV4 option(*vopt);
-                         option.rect = selectionRect;
-                         option.state = option.state & ~QStyle::State_HasFocus;
+                     voptAdj.features & QStyleOptionViewItemV2::HasCheckIndicator &&
+                     selectionRect.isValid()) {
+                     checkMarkOption.rect = selectionRect;
+                     checkMarkOption.state = checkMarkOption.state & ~QStyle::State_HasFocus;
 
-                         switch (vopt->checkState) {
-                         case Qt::Unchecked:
-                             option.state |= QStyle::State_Off;
-                             break;
-                         case Qt::PartiallyChecked:
-                             option.state |= QStyle::State_NoChange;
-                             break;
-                         case Qt::Checked:
-                             option.state |= QStyle::State_On;
-                             break;
-                         }
-                         drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &option, painter, widget);
+                     switch (vopt->checkState) {
+                     case Qt::Unchecked:
+                         checkMarkOption.state |= QStyle::State_Off;
+                         break;
+                     case Qt::PartiallyChecked:
+                         checkMarkOption.state |= QStyle::State_NoChange;
+                         break;
+                     case Qt::Checked:
+                         checkMarkOption.state |= QStyle::State_On;
+                         break;
                      }
+                     drawPrimitive(QStyle::PE_IndicatorViewItemCheck, &checkMarkOption, painter, widget);
                  }
              }
 
              // draw the text
             if (!voptAdj.text.isEmpty()) {
-                const QStyleOptionViewItemV4 *tableOption = qstyleoption_cast<const QStyleOptionViewItemV4 *>(option);
                 if (isSelected) {
-                    if (qobject_cast<const QTableView *>(widget) && tableOption)
+                    if (qobject_cast<const QTableView *>(widget))
                         voptAdj.palette.setColor(
                             QPalette::Text, QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnTextColors, 11, 0));
                     else
@@ -1723,8 +1720,11 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 // direction is set to north (and south when in RightToLeft)
                 const QS60StylePrivate::SkinElementFlag arrowDirection = (arrowOptions.direction == Qt::LeftToRight) ?
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointSouth;
+                painter->save();
+                painter->setPen(option->palette.windowText().color());
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnIndiSubMenu, painter, arrowOptions.rect,
                     (flags | QS60StylePrivate::SF_ColorSkinned | arrowDirection));
+                painter->restore();
             }
 
             //draw text
@@ -1831,8 +1831,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         break;
 #endif //QT_NO_TOOLBAR
     case CE_ShapedFrame:
-        if (qobject_cast<const QTextEdit *>(widget)) {
-            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
+        if (const QTextEdit *textEdit = qobject_cast<const QTextEdit *>(widget)) {
+            const QStyleOptionFrame *frame = qstyleoption_cast<const QStyleOptionFrame *>(option);
+            if (frame->palette.base().color()==Qt::transparent)
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_Editor, painter, option->rect, flags);
+            else
+                QCommonStyle::drawControl(element, option, painter, widget);
         } else if (qobject_cast<const QTableView *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
         } else if (const QHeaderView *header = qobject_cast<const QHeaderView *>(widget)) {
@@ -1897,7 +1901,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             painter->setBrush(d->themePalette()->light());
             painter->setRenderHint(QPainter::Antialiasing);
             const qreal roundRectRadius = 4 * goldenRatio;
-            painter->drawRoundedRect(option->rect, roundRectRadius, roundRectRadius);            
+            painter->drawRoundedRect(option->rect, roundRectRadius, roundRectRadius);
             painter->restore();
         }
         break;
@@ -1911,6 +1915,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 */
 void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
 {
+    Q_D(const QS60Style);
     const QS60StylePrivate::SkinElementFlags flags = (option->state & State_Enabled) ?  QS60StylePrivate::SF_StateEnabled : QS60StylePrivate::SF_StateDisabled;
     switch (element) {
 #ifndef QT_NO_LINEEDIT
@@ -1920,19 +1925,27 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             if (widget && qobject_cast<const QComboBox *>(widget->parentWidget()))
                 break;
 #endif
-            QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit,
-                painter, option->rect, flags);
+            QBrush editBrush = option->palette.brush(QPalette::Base);
+            if (editBrush.color() == Qt::transparent)
+                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_FrameLineEdit,
+                        painter, option->rect, flags);
+            else
+                QCommonStyle::drawPrimitive(element, option, painter, widget);
         }
     break;
 #endif // QT_NO_LINEEDIT
     case PE_IndicatorCheckBox:
         {
-            const QRect indicatorRect = option->rect;
             // Draw checkbox indicator as color skinned graphics.
             const QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
                 QS60StyleEnums::SP_QgnIndiCheckboxOn : QS60StyleEnums::SP_QgnIndiCheckboxOff;
-            QS60StylePrivate::drawSkinPart(skinPart, painter, indicatorRect,
-                (flags | QS60StylePrivate::SF_ColorSkinned));
+            painter->save();
+            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
+            QColor buttonTextColor = option->palette.buttonText().color();
+            if (themeColor != buttonTextColor)
+                painter->setPen(buttonTextColor);
+            QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags | QS60StylePrivate::SF_ColorSkinned );
+            painter->restore();
         }
         break;
     case PE_IndicatorViewItemCheck:
@@ -1972,21 +1985,33 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             const int newY = (buttonRect.bottomRight().y() - option->rect.bottomRight().y()) >> 1 ;
             buttonRect.adjust(0,-newY,0,-newY);
 
+            painter->save();
+            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
+            QColor buttonTextColor = option->palette.buttonText().color();
+            if (themeColor != buttonTextColor)
+                painter->setPen(buttonTextColor);
+
             // Draw radiobutton indicator as color skinned graphics.
             QS60StyleEnums::SkinParts skinPart = (option->state & QStyle::State_On) ?
                 QS60StyleEnums::SP_QgnIndiRadiobuttOn : QS60StyleEnums::SP_QgnIndiRadiobuttOff;
             QS60StylePrivate::drawSkinPart(skinPart, painter, buttonRect,
                 (flags | QS60StylePrivate::SF_ColorSkinned));
+            painter->restore();
         }
         break;
     case PE_PanelButtonCommand:
     case PE_PanelButtonTool:
     case PE_PanelButtonBevel:
     case PE_FrameButtonBevel: {
-        const bool isPressed = option->state & QStyle::State_Sunken;
-        const QS60StylePrivate::SkinElements skinElement =
-            isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
-        QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+        QBrush editBrush = option->palette.brush(QPalette::Base);
+        if (editBrush.color() == Qt::transparent) {
+            const bool isPressed = option->state & QStyle::State_Sunken;
+            const QS60StylePrivate::SkinElements skinElement =
+                isPressed ? QS60StylePrivate::SE_ButtonPressed : QS60StylePrivate::SE_ButtonNormal;
+            QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+        } else {
+            QCommonStyle::drawPrimitive(element, option, painter, widget);
+            }
         }
         break;
 #ifndef QT_NO_TOOLBUTTON
@@ -2013,21 +2038,29 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorSpinUp:
         if (const QStyleOptionSpinBox *spinBox = qstyleoption_cast<const QStyleOptionSpinBox *>(option)) {
             QStyleOptionSpinBox optionSpinBox = *spinBox;
-            const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
-                QS60StyleEnums::SP_QgnGrafScrollArrowUp :
-                QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-            const int adjustment = qMin(optionSpinBox.rect.width(), optionSpinBox.rect.height())/6;
-            optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
-            QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect,flags);
+            if (optionSpinBox.palette.base().color()==Qt::transparent) {
+                const QS60StyleEnums::SkinParts part = (element == PE_IndicatorSpinUp) ?
+                    QS60StyleEnums::SP_QgnGrafScrollArrowUp :
+                    QS60StyleEnums::SP_QgnGrafScrollArrowDown;
+                const int adjustment = qMin(optionSpinBox.rect.width(), optionSpinBox.rect.height())/6;
+                optionSpinBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
+                QS60StylePrivate::drawSkinPart(part, painter, optionSpinBox.rect,flags);
+            } else {
+                QCommonStyle::drawPrimitive(element, &optionSpinBox, painter, widget);
+            }
         }
 #ifndef QT_NO_COMBOBOX
         else if (const QStyleOptionFrame *cmb = qstyleoption_cast<const QStyleOptionFrame *>(option)) {
-            // We want to draw down arrow here for comboboxes as well.
-            const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
-            QStyleOptionFrame comboBox = *cmb;
-            const int adjustment = qMin(comboBox.rect.width(), comboBox.rect.height())/6;
-            comboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
-            QS60StylePrivate::drawSkinPart(part, painter, comboBox.rect,flags);
+            if (cmb->palette.base().color()==Qt::transparent) {
+                // We want to draw down arrow here for comboboxes as well.
+                const QS60StyleEnums::SkinParts part = QS60StyleEnums::SP_QgnGrafScrollArrowDown;
+                QStyleOptionFrame comboBox = *cmb;
+                const int adjustment = qMin(comboBox.rect.width(), comboBox.rect.height())/6;
+                comboBox.rect.translate(0, (element == PE_IndicatorSpinDown) ? adjustment : -adjustment );
+                QS60StylePrivate::drawSkinPart(part, painter, comboBox.rect,flags);
+            } else {
+                QCommonStyle::drawPrimitive(element, cmb, painter, widget);
+            }
         }
 #endif //QT_NO_COMBOBOX
         break;
@@ -2057,8 +2090,12 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             || qobject_cast<const QMenu *> (widget)
 #endif //QT_NO_MENU
             ) {
-            QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_OptionsMenu;
-            QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+                if (option->palette.base().color()==Qt::transparent) {
+                    QS60StylePrivate::SkinElements skinElement = QS60StylePrivate::SE_OptionsMenu;
+                    QS60StylePrivate::drawSkinElement(skinElement, painter, option->rect, flags);
+                } else {
+                    QCommonStyle::drawPrimitive(element, option, painter, widget);
+                }
         }
         break;
     case PE_FrameWindow:
@@ -2145,7 +2182,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
                 drawSkinPart = true;
             }
 
-            if ( drawSkinPart )
+            if (drawSkinPart)
                 QS60StylePrivate::drawSkinPart(skinPart, painter, option->rect, flags);
 
             if (option->state & State_Children) {
@@ -2890,7 +2927,7 @@ QIcon QS60Style::standardIconImplementation(StandardPixmap standardIcon,
             return QCommonStyle::standardIconImplementation(standardIcon, option, widget);
     }
     const QS60StylePrivate::SkinElementFlags flags = adjustedFlags;
-    const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), flags));
+    const QPixmap cachedPixMap(QS60StylePrivate::cachedPart(part, iconSize.size(), 0, flags));
     return cachedPixMap.isNull() ?
         QCommonStyle::standardIconImplementation(standardIcon, option, widget) : QIcon(cachedPixMap);
 }
