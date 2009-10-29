@@ -115,8 +115,10 @@
 
 #define QT_FOPEN                ::fopen
 #ifdef QT_LARGEFILE_SUPPORT
-#define QT_FSEEK                ::_fseeki64
-#define QT_FTELL                ::_ftelli64
+// 64-bit versions of fseek/ftell not always available. E.g., when linking
+// dynamically to CRT (/MT)
+#define QT_FSEEK                ::fseek
+#define QT_FTELL                (QT_OFF_T)::ftell
 #else
 #define QT_FSEEK                ::fseek
 #define QT_FTELL                ::ftell
