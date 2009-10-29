@@ -1179,15 +1179,16 @@ JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t
                                                   JSC::EvalExecutable *executable,
                                                   bool &compile)
 {
+    Q_Q(QScriptEngine);
     JSC::JSLock lock(false); // ### hmmm
     QBoolBlocker inEvalBlocker(inEval, true);
-    q_func()->currentContext()->activationObject(); //force the creation of a context for native function;
+    q->currentContext()->activationObject(); //force the creation of a context for native function;
 
     JSC::Debugger* debugger = originalGlobalObject()->debugger();
     if (debugger)
         debugger->evaluateStart(sourceId);
 
-    exec->clearException();
+    q->clearExceptions();
     JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
 
     if (compile) {
@@ -2215,6 +2216,9 @@ QScriptValue QScriptEngine::evaluate(const QString &program, const QString &file
 /*!
   \internal
   \since 4.6
+
+  Evaluates the given \a program and returns the result of the
+  evaluation.
 */
 QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
 {
