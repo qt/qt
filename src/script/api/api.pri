@@ -6,6 +6,7 @@ SOURCES += \
     $$PWD/qscriptengine.cpp \
     $$PWD/qscriptengineagent.cpp \
     $$PWD/qscriptextensionplugin.cpp \
+    $$PWD/qscriptprogram.cpp \
     $$PWD/qscriptstring.cpp \
     $$PWD/qscriptvalue.cpp \
     $$PWD/qscriptvalueiterator.cpp \
@@ -23,6 +24,8 @@ HEADERS += \
     $$PWD/qscriptengineagent_p.h \
     $$PWD/qscriptextensioninterface.h \
     $$PWD/qscriptextensionplugin.h \
+    $$PWD/qscriptprogram.h \
+    $$PWD/qscriptprogram_p.h \
     $$PWD/qscriptstring.h \
     $$PWD/qscriptstring_p.h \
     $$PWD/qscriptvalue.h \

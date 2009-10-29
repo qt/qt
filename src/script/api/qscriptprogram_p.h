@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtCore module of the Qt Toolkit.
+** This file is part of the QtScript module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QSTATE_P_H
-#define QSTATE_P_H
+#ifndef QSCRIPTPROGRAM_P_H
+#define QSCRIPTPROGRAM_P_H
 
 //
 //  W A R N I N G
@@ -53,56 +53,41 @@
 // We mean it.
 //
 
-#include "private/qabstractstate_p.h"
+#include <QtCore/qobjectdefs.h>
 
-#include <QtCore/qlist.h>
-#include <QtCore/qbytearray.h>
-#include <QtCore/qvariant.h>
+namespace JSC
+{
+    class EvalExecutable;
+    class ExecState;
+}
 
 QT_BEGIN_NAMESPACE
 
-struct QPropertyAssignment
-{
-    QPropertyAssignment()
-        : object(0), explicitlySet(true) {}
-    QPropertyAssignment(QObject *o, const QByteArray &n,
-                        const QVariant &v, bool es = true)
-        : object(o), propertyName(n), value(v), explicitlySet(es)
-        {}
-    QObject *object;
-    QByteArray propertyName;
-    QVariant value;
-    bool explicitlySet;
-};
+class QScriptEnginePrivate;
 
-class QAbstractTransition;
-class QHistoryState;
-
-class QState;
-class Q_AUTOTEST_EXPORT QStatePrivate : public QAbstractStatePrivate
+class QScriptProgramPrivate
 {
-    Q_DECLARE_PUBLIC(QState)
 public:
-    QStatePrivate();
-    ~QStatePrivate();
+    QScriptProgramPrivate(const QString &sourceCode,
+                          const QString &fileName,
+                          int firstLineNumber);
+    ~QScriptProgramPrivate();
 
-    static QStatePrivate *get(QState *q) { return q ? q->d_func() : 0; }
-    static const QStatePrivate *get(const QState *q) { return q? q->d_func() : 0; }
+    static QScriptProgramPrivate *get(const QScriptProgram &q);
 
-    QList<QAbstractState*> childStates() const;
-    QList<QHistoryState*> historyStates() const;
-    QList<QAbstractTransition*> transitions() const;
+    JSC::EvalExecutable *executable(JSC::ExecState *exec,
+                                    QScriptEnginePrivate *engine);
 
-    void emitFinished();
-    void emitPolished();
+    QBasicAtomicInt ref;
 
-    QAbstractState *errorState;
-    QAbstractState *initialState;
-    QState::ChildMode childMode;
-    mutable bool transitionsListNeedsRefresh;
-    mutable QList<QAbstractTransition*> transitionsList;
+    QString sourceCode;
+    QString fileName;
+    int firstLineNumber;
 
-    QList<QPropertyAssignment> propertyAssignments;
+    QScriptEnginePrivate *engine;
+    JSC::EvalExecutable *_executable;
+    intptr_t sourceId;
+    bool isCompiled;
 };
 
 QT_END_NAMESPACE
