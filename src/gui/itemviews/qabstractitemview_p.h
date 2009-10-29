@@ -117,6 +117,7 @@ public:
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
+    void _q_headerDataChanged() { doDelayedItemsLayout(); }
 
     void fetchMore();
 
