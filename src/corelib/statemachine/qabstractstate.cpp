@@ -78,7 +78,8 @@ QT_BEGIN_NAMESPACE
   function to perform custom processing when the state is exited.
 */
 
-QAbstractStatePrivate::QAbstractStatePrivate()    
+QAbstractStatePrivate::QAbstractStatePrivate()
+    : parentState(0)
 {
 }
 
@@ -150,7 +151,10 @@ QAbstractState::~QAbstractState()
 */
 QState *QAbstractState::parentState() const
 {
-    return qobject_cast<QState*>(parent());
+    Q_D(const QAbstractState);
+    if (d->parentState != parent())
+        d->parentState = qobject_cast<QState*>(parent());
+    return d->parentState;
 }
 
 /*!

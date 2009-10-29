@@ -431,6 +431,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         ;;
     Z4M|R4M|Q4M)
         LicenseType="Evaluation"
+        QMakeVar add DEFINES QT_EVAL
         case $ProductCode in
          B)
             Edition="Evaluation"
@@ -4068,11 +4069,16 @@ SETTINGS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_stngpath=$QT_I
 EXAMPLES_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_xmplpath=$QT_INSTALL_EXAMPLES"`
 DEMOS_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_demopath=$QT_INSTALL_DEMOS"`
 
+TODAY=`date +%Y-%m-%d`
 cat > "$outpath/src/corelib/global/qconfig.cpp.new" <<EOF
 /* License Info */
 static const char qt_configure_licensee_str          [256 + 12] = "$LICENSE_USER_STR";
 static const char qt_configure_licensed_products_str [256 + 12] = "$LICENSE_PRODUCTS_STR";
+
+/* Installation date */
+static const char qt_configure_installation          [12+11]    = "qt_instdate=$TODAY";
 EOF
+
 
 if [ ! -z "$QT_HOST_PREFIX" ]; then
     HOSTPREFIX_PATH_STR=`"$relpath/config.tests/unix/padstring" 268 "qt_prfxpath=$QT_HOST_PREFIX"`
@@ -4153,6 +4159,22 @@ else
     mv "$outpath/src/corelib/global/qconfig.cpp.new" "$outpath/src/corelib/global/qconfig.cpp"
     chmod -w "$outpath/src/corelib/global/qconfig.cpp"
 fi
+
+# -----------------------------------------------------------------------------
+if [ "$LicenseType" = "Evaluation" ]; then
+    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey=$LicenseKeyExt"`
+elif echo "$D_FLAGS" | grep QT_EVAL >/dev/null 2>&1; then
+    EVALKEY=`"$relpath/config.tests/unix/padstring" 524 "qt_qevalkey="`
+fi
+
+if [ -n "$EVALKEY" ]; then
+    cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
+/* Evaluation license key */
+static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
+EOF
+    chmod -w "$outpath/src/corelib/global/qconfig_eval.cpp"
+fi
+
 
 # -----------------------------------------------------------------------------
 # build qmake

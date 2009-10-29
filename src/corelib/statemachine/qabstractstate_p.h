@@ -76,6 +76,8 @@ public:
 
     void emitEntered();
     void emitExited();
+
+    mutable QState *parentState;
 };
 
 QT_END_NAMESPACE

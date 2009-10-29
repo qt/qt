@@ -1896,25 +1896,26 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     prospectiveContext.clear();
             }
             break;
-        case Tok_Comment:
+        case Tok_Comment: {
             if (!tor)
                 goto case_default;
-            if (yyWord.at(0) == QLatin1Char(':') && yyWord.at(1).isSpace()) {
+            const QChar *ptr = yyWord.unicode();
+            if (*ptr == QLatin1Char(':') && ptr[1].isSpace()) {
                 yyWord.remove(0, 2);
                 extracomment += yyWord;
                 extracomment.detach();
-            } else if (yyWord.at(0) == QLatin1Char('=') && yyWord.at(1).isSpace()) {
+            } else if (*ptr == QLatin1Char('=') && ptr[1].isSpace()) {
                 yyWord.remove(0, 2);
                 msgid = yyWord.simplified();
                 msgid.detach();
-            } else if (yyWord.at(0) == QLatin1Char('~') && yyWord.at(1).isSpace()) {
+            } else if (*ptr == QLatin1Char('~') && ptr[1].isSpace()) {
                 yyWord.remove(0, 2);
                 text = yyWord.trimmed();
                 int k = text.indexOf(QLatin1Char(' '));
                 if (k > -1)
                     extra.insert(text.left(k), text.mid(k + 1).trimmed());
                 text.clear();
-            } else if (yyWord.at(0) == QLatin1Char('%') && yyWord.at(1).isSpace()) {
+            } else if (*ptr == QLatin1Char('%') && ptr[1].isSpace()) {
                 sourcetext.reserve(sourcetext.length() + yyWord.length() - 2);
                 ushort *ptr = (ushort *)sourcetext.data() + sourcetext.length();
                 int p = 2, c;
@@ -1977,6 +1978,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             }
             yyTok = getToken();
             break;
+        }
         case Tok_Arrow:
             yyTok = getToken();
             if (yyTok == Tok_tr || yyTok == Tok_trUtf8)
