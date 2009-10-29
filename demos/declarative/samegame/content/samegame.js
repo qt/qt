@@ -6,6 +6,7 @@ var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
 var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
+var scoresURL = "";
 var timer;
 var component = createComponent(tileSrc);
 
@@ -157,10 +158,8 @@ function victoryCheck()
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
         timer = new Date() - timer;
-        if(scoresURL != "")
-            scoreName.show("You've won! Please enter your name:                ");
-        else
-            dialog.show("Game Over. Your score is " + gameCanvas.score);
+        scoreName.show("You won! Please enter your name:                 ");
+        //dialog.show("Game Over. Your score is " + gameCanvas.score);
     }
 }
 
@@ -205,6 +204,42 @@ function createBlock(xIdx,yIdx){
         return false;
     }
     return true;
+}
+
+function saveHighScore(name) {
+    if(scoresURL!="")
+        sendHighScore(name);
+    //OfflineStorage
+    var db = openDatabase("SameGameScores", "1.0", "Local SameGame High Scores",100);
+    var dataStr = "INSERT INTO Scores VALUES(?, ?, ?, ?)";
+    var data = [name, gameCanvas.score, maxX+"x"+maxY ,Math.floor(timer/1000)];
+    db.transaction(
+        function(tx) {
+            tx.executeSql('CREATE TABLE IF NOT EXISTS Scores(name TEXT, score NUMBER, gridSize TEXT, time NUMBER)',[]);
+            tx.executeSql(dataStr, data);
+
+            tx.executeSql('SELECT * FROM Scores WHERE gridSize = "12x17" ORDER BY score desc LIMIT 10',[],
+                function(tx, rs) {
+                    var r = "\nHIGH SCORES for a standard sized grid\n\n"
+                    for(var i = 0; i < rs.rows.length; i++){
+                        r += (i+1)+". " + rs.rows.item(i).name +' got '
+                            + rs.rows.item(i).score + ' points in '
+                            + rs.rows.item(i).time + ' seconds.\n';
+                    }
+                    dialog.show(r);
+                },
+                function(tx, error) {
+                    print("ERROR:", error.message);
+                }
+            );
+        },
+        function() {
+            print("ERROR in transaction");
+        },
+        function() {
+            //print("Transaction successful");
+        }
+    );
 }
 
 function sendHighScore(name) {

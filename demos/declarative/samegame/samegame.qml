@@ -37,16 +37,21 @@ Rectangle {
     Dialog { id: dialog; anchors.centerIn: parent; z: 21 }
     Dialog {
         id: scoreName; anchors.centerIn: parent; z: 22;
+        Text {
+            id: spacer
+            opacity: 0
+            text: "   You won! Please enter your name:"
+        }
         TextInput {
             id: editor
             onAccepted: {
                 if(scoreName.opacity==1&&editor.text!="")
-                    sendHighScore(editor.text);
+                    saveHighScore(editor.text);
                 scoreName.forceClose();
             }
             anchors.verticalCenter: parent.verticalCenter
             width: 72; focus: true
-            anchors.right: scoreName.right
+            anchors.left: spacer.right
         }
     }
 

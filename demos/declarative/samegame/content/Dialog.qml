@@ -11,7 +11,7 @@ Rectangle {
         page.opacity = 1;
     }
     signal closed();
-    color: "white"; border.width: 1; width: myText.width + 20; height: 60;
+    color: "white"; border.width: 1; width: myText.width + 20; height: myText.height + 40;
     opacity: 0
     opacity: Behavior {
         NumberAnimation { duration: 1000 }
