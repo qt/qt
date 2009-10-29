@@ -3380,6 +3380,10 @@ void tst_QVariant::variantInVariant()
     QVariant var8 = qvariant_cast<QVariant>(QVariant::fromValue(QVariant::fromValue(str)));
     QCOMPARE((int)var8.type(), (int)QVariant::String);
     QCOMPARE(qvariant_cast<QString>(QVariant(qvariant_cast<QVariant>(var8))), str);
+
+    QVariant var9(qMetaTypeId<QVariant>(), &var1);
+    QCOMPARE(var9.userType(), qMetaTypeId<QVariant>());
+    QCOMPARE(qvariant_cast<QVariant>(var9), var1);
 }
 
 QTEST_MAIN(tst_QVariant)
