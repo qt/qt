@@ -62,7 +62,8 @@ QT_BEGIN_NAMESPACE
 
 struct QTreeViewItem
 {
-    QTreeViewItem() : expanded(false), spanning(false), total(0), level(0), height(0) {}
+    QTreeViewItem() : expanded(false), spanning(false), hasChildren(false),
+                      hasMoreSiblings(false), total(0), level(0), height(0) {}
     QModelIndex index; // we remove items whenever the indexes are invalidated
     uint expanded : 1;
     uint spanning : 1;
