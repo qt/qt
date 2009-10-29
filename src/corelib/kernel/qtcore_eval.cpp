@@ -50,6 +50,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#include "qconfig_eval.cpp"
+
 static const char boilerplate_unsuported[] =
     "\nQt %1 Evaluation License\n"
     "Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).\n"
@@ -85,8 +87,6 @@ static const char will_shutdown_now[] =
     "\nThe evaluation of Qt has now reached its automatic\n"
     "timeout and will shut down.\n"
     "Contact http://qt.nokia.com/about/contact-us for pricing and purchasing information.\n";
-
-extern const char qt_eval_key_data[];
 
 static int qt_eval_days_left()
 {
@@ -451,7 +451,7 @@ class EvalMessageBox : public QDialog
 public:
     EvalMessageBox(bool expired)
     {
-        setWindowTitle(" ");
+        setWindowTitle(QLatin1String(" "));
 
         QString str = qt_eval_string();
         if (expired) {
@@ -481,7 +481,7 @@ public:
         border_layout->addWidget(border);
 
         if (expired) {
-            QPushButton *cmd = new QPushButton("OK", border);
+            QPushButton *cmd = new QPushButton(QLatin1String("OK"), border);
             cmd->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             cmd->setDefault(true);
 
@@ -508,11 +508,11 @@ public:
     void timerEvent(QTimerEvent *e) {
         if (e->timerId() == warn) {
             killTimer(warn);
-            QMessageBox::information(0, "Automatic Timeout", will_shutdown_1min);
+            QMessageBox::information(0, QLatin1String("Automatic Timeout"), QLatin1String(will_shutdown_1min));
             kill = startTimer(KILL_DELAY);
         } else if (e->timerId() == kill) {
             killTimer(kill);
-            QMessageBox::information(0, "Automatic Timeout", will_shutdown_now);
+            QMessageBox::information(0, QLatin1String("Automatic Timeout"), QLatin1String(will_shutdown_now));
             qApp->quit();
         }
     }
@@ -558,7 +558,7 @@ void qt_eval_init_widget(QWidget *w)
     if (w->isTopLevel()) {
         QString windowTitle = w->windowTitle();
         if (windowTitle.isEmpty()) {
-            w->setWindowTitle(" ");
+            w->setWindowTitle(QLatin1String(" "));
         } else if (!windowTitle.startsWith(qt_eval_title_prefix())) {
             qt_eval_adapt_window_title(windowTitle);
         }
