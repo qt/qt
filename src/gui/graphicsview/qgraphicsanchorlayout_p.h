@@ -150,6 +150,12 @@ struct AnchorData : public QSimplexVariable {
         Parallel
     };
 
+    enum Dependency {
+        Independent = 0,
+        Master,
+        Slave
+    };
+
     AnchorData()
         : QSimplexVariable(), item(0), from(0), to(0),
           minSize(0), prefSize(0), expSize(0), maxSize(0),
@@ -157,7 +163,8 @@ struct AnchorData : public QSimplexVariable {
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
           type(Normal), hasSize(true), isLayoutAnchor(false),
-          isCenterAnchor(false), orientation(0) {}
+          isCenterAnchor(false), orientation(0),
+          dependency(Independent) {}
 
     virtual void updateChildrenSizes() {}
     virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
@@ -212,6 +219,7 @@ struct AnchorData : public QSimplexVariable {
     uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;
     uint orientation : 1;
+    uint dependency : 2;      // either Independent, Master or Slave
 };
 
 #ifdef QT_DEBUG

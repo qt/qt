@@ -1080,12 +1080,14 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     c->variables.insert(data, 1.0);
     addAnchor_helper(item, firstEdge, item, centerEdge, data);
     data->isCenterAnchor = true;
+    data->dependency = AnchorData::Master;
     data->refreshSizeHints(0);
 
     data = new AnchorData;
     c->variables.insert(data, -1.0);
     addAnchor_helper(item, centerEdge, item, lastEdge, data);
     data->isCenterAnchor = true;
+    data->dependency = AnchorData::Slave;
     data->refreshSizeHints(0);
 
     itemCenterConstraints[orientation].append(c);
@@ -2075,19 +2077,18 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
     // Look for the layout edge. That can be either the first half in case the
     // layout is split in two, or the whole layout anchor.
     Orientation orient = Orientation(anchors.first()->orientation);
-    AnchorData *layoutEdge1 = NULL;
-    AnchorData *layoutEdge2 = NULL;
+    AnchorData *layoutEdge = NULL;
     if (layoutCentralVertex[orient]) {
-        layoutEdge1 = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
-        layoutEdge2 = graph[orient].edgeData(layoutCentralVertex[orient], layoutLastVertex[orient]);
+        layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
     } else {
-        layoutEdge1 = graph[orient].edgeData(layoutFirstVertex[orient], layoutLastVertex[orient]);
+        layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutLastVertex[orient]);
+
         // If maxSize is less then "infinite", that means there are other anchors
         // grouped together with this one. We can't ignore its maximum value so we
         // set back the variable to NULL to prevent the continue condition from being
         // satisfied in the loop below.
-        if (layoutEdge1->maxSize < QWIDGETSIZE_MAX)
-            layoutEdge1 = NULL;
+        if (layoutEdge->maxSize < QWIDGETSIZE_MAX)
+            layoutEdge = NULL;
     }
 
     // For each variable, create constraints based on size hints
@@ -2095,6 +2096,12 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
     bool unboundedProblem = true;
     for (int i = 0; i < anchors.size(); ++i) {
         AnchorData *ad = anchors[i];
+
+        // Anchors that have their size directly linked to another one don't need constraints
+        // For exammple, the second half of an item has exactly the same size as the first half
+        // thus constraining the latter is enough.
+        if (ad->dependency == AnchorData::Slave)
+            continue;
 
         if ((ad->minSize == ad->maxSize) || qFuzzyCompare(ad->minSize, ad->maxSize)) {
             QSimplexConstraint *c = new QSimplexConstraint;
@@ -2113,7 +2120,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
             // We avoid adding restrictions to the layout internal anchors. That's
             // to prevent unnecessary fair distribution from happening due to this
             // artificial restriction.
-            if ((ad == layoutEdge1) || (ad == layoutEdge2))
+            if (ad == layoutEdge)
                 continue;
 
             c = new QSimplexConstraint;
@@ -2128,7 +2135,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
     // If no upper boundary restriction was added, add one to avoid unbounded problem
     if (unboundedProblem) {
         QSimplexConstraint *c = new QSimplexConstraint;
-        c->variables.insert(layoutEdge1, 1.0);
+        c->variables.insert(layoutEdge, 1.0);
         c->constant = QWIDGETSIZE_MAX;
         c->ratio = QSimplexConstraint::LessOrEqual;
         anchorConstraints += c;
