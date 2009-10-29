@@ -132,6 +132,9 @@ tst_QDBusAbstractInterface::tst_QDBusAbstractInterface()
 
 void tst_QDBusAbstractInterface::initTestCase()
 {
+    // enable debugging temporarily:
+    putenv("QDBUS_DEBUG=1");
+
     // register the object
     QDBusConnection con = QDBusConnection::sessionBus();
     QVERIFY(con.isConnected());
@@ -469,7 +472,7 @@ void tst_QDBusAbstractInterface::followSignal()
     QVERIFY(!QTestEventLoop::instance().timeout());
 
     // now the signal must have been received:
-    QVERIFY(s.size() == 1);
+    QCOMPARE(s.size(), 1);
     QVERIFY(s.at(0).size() == 0);
     s.clear();
 
