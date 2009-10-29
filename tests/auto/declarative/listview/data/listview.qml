@@ -31,6 +31,7 @@ Rectangle {
                     x: 200
                     text: wrapper.y
                 }
+                color: ListView.isCurrentItem ? "lightsteelblue" : "white"
             }
         }
     ]
