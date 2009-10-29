@@ -43,10 +43,6 @@
 
 #include <stdlib.h>
 
-#ifdef Q_OS_WIN
-# include <malloc.h>
-#endif
-
 /*
     Define the container allocation functions in a separate file, so that our
     users can easily override them.
@@ -71,38 +67,11 @@ void *qRealloc(void *ptr, size_t size)
 
 void *qMallocAligned(size_t size, size_t alignment)
 {
-#if defined(Q_OS_WIN)
-    return _aligned_malloc(size, alignment);
-#elif defined(HAVE_POSIX_MEMALIGN)
-    if (alignment <= sizeof(void*))
-        return qMalloc(size);
-
-    // we have posix_memalign
-    void *ptr = 0;
-    if (posix_memalign(&ptr, alignment, size) == 0)
-        return ptr;
-    return 0;
-#else
     return qReallocAligned(0, size, 0, alignment);
-#endif
 }
 
 void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t alignment)
 {
-#if defined(Q_OS_WIN)
-    Q_UNUSED(oldsize);
-    return _aligned_realloc(oldptr, newsize, alignment);
-#elif defined(HAVE_POSIX_MEMALIGN)
-    if (alignment <= sizeof(void*))
-        return qRealloc(oldptr, newsize);
-
-    void *newptr = qMallocAligned(newsize, alignment);
-    if (!newptr)
-        return 0;
-    qMemCopy(newptr, oldptr, qMin(oldsize, newsize));
-    qFree(oldptr);
-    return newptr;
-#else
     // fake an aligned allocation
     Q_UNUSED(oldsize);
 
@@ -144,21 +113,14 @@ void *qReallocAligned(void *oldptr, size_t newsize, size_t oldsize, size_t align
     faked.pptr[-1] = real.ptr;
 
     return faked.ptr;
-#endif
 }
 
 void qFreeAligned(void *ptr)
 {
-#if defined(Q_OS_WIN)
-    _aligned_free(ptr);
-#elif defined(HAVE_POSIX_MEMALIGN)
-    ::free(ptr);
-#else
     if (!ptr)
         return;
     void **ptr2 = static_cast<void **>(ptr);
     free(ptr2[-1]);
-#endif
 }
 
 QT_END_NAMESPACE
