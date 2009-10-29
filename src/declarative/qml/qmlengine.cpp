@@ -75,8 +75,8 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qvector3d.h>
 #include <QtGui/qsound.h>
+#include <QGraphicsObject>
 #include <qmlcomponent.h>
-#include <private/qmlcomponentjs_p.h>
 #include <private/qmlmetaproperty_p.h>
 #include <private/qmlbinding_p.h>
 #include <private/qmlvme_p.h>
@@ -110,14 +110,6 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
-QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
-{
-    if(!ctxt->argumentCount())
-        return e->newVariant(QVariant(false));
-    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
-    return e->newVariant(QVariant(ret));
-}
-
 static QString userLocalDataPath(const QString& app)
 {
     return QDesktopServices::storageLocation(QDesktopServices::DataLocation) + QLatin1String("/") + app;
@@ -130,11 +122,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   inProgressCreations(0), scriptEngine(this), componentAttacheds(0), rootComponent(0), 
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
+    // Note that all documentation for stuff put on the global object goes in
+    // doc/src/declarative/globalobject.qdoc
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
-    QScriptValue desktopObject = scriptEngine.newObject();
-    desktopObject.setProperty(QLatin1String("openUrl"),scriptEngine.newFunction(desktopOpenUrl, 1));
-    qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     offlineStoragePath = userLocalDataPath(QLatin1String("QML/OfflineStorage"));
@@ -156,6 +147,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 
     //misc methods
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
+    qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -595,63 +587,10 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
     return contextClass->contextFromValue(scopeNode);
 }
 
-/*!
-    This function is intended for use inside QML only. In C++ just create a
-    component object as usual.
-
-    This function takes the URL of a QML file as its only argument. It returns
-    a component object which can be used to create and load that QML file.
-
-    Example QmlJS is below, remember that QML files that might be loaded
-    over the network cannot be expected to be ready immediately.
-    \code
-        var component;
-        var sprite;
-        function finishCreation(){
-            if(component.isReady()){
-                sprite = component.createObject();
-                if(sprite == 0){
-                    // Error Handling
-                }else{
-                    sprite.parent = page;
-                    sprite.x = 200;
-                    //...
-                }
-            }else if(component.isError()){
-                // Error Handling
-            }
-        }
-
-        component = createComponent("Sprite.qml");
-        if(component.isReady()){
-            finishCreation();
-        }else{
-            component.statusChanged.connect(finishCreation);
-        }
-    \endcode
-
-    If you are certain the files will be local, you could simplify to
-
-    \code
-        component = createComponent("Sprite.qml");
-        sprite = component.createObject();
-        if(sprite == 0){
-            // Error Handling
-            print(component.errorsString());
-        }else{
-            sprite.parent = page;
-            sprite.x = 200;
-            //...
-        }
-    \endcode
-
-    If you want to just create an arbitrary string of QML, instead of
-    loading a qml file, consider the createQmlObject() function.
-*/
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
                                                QScriptEngine *engine)
 {
-    QmlComponentJS* c;
+    QmlComponent* c;
 
     QmlEnginePrivate *activeEnginePriv =
         static_cast<QmlScriptEngine*>(engine)->p;
@@ -659,42 +598,17 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
 
     QmlContext* context = activeEnginePriv->getContext(ctxt);
     if(ctxt->argumentCount() != 1) {
-        c = new QmlComponentJS(activeEngine);
+        c = new QmlComponent(activeEngine);
     }else{
         QUrl url = QUrl(context->resolvedUrl(ctxt->argument(0).toString()));
         if(!url.isValid())
             url = QUrl(ctxt->argument(0).toString());
-        c = new QmlComponentJS(activeEngine, url, activeEngine);
+        c = new QmlComponent(activeEngine, url, activeEngine);
     }
-    c->setContext(context);
+    c->setCreationContext(context);
     return engine->newQObject(c);
 }
 
-/*!
-    Creates a new object from the specified string of QML. It requires a
-    second argument, which is the id of an existing QML object to use as
-    the new object's parent. If a third argument is provided, this is used
-    as the filepath that the qml came from.
-
-    Example (where targetItem is the id of an existing QML item):
-    \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
-        targetItem, "dynamicSnippet1");
-    \endcode
-
-    This function is intended for use inside QML only. It is intended to behave
-    similarly to eval, but for creating QML elements.
-
-    Returns the created object, or null if there is an error. In the case of an
-    error, details of the error are output using qWarning().
-
-    Note that this function returns immediately, and therefore may not work if
-    the QML loads new components. If you are trying to load a new component,
-    for example from a QML file, consider the createComponent() function
-    instead. 'New components' refers to external QML files that have not yet
-    been loaded, and so it is safe to use createQmlObject to load built-in
-    components.
-*/
 QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QmlEnginePrivate *activeEnginePriv =
@@ -708,8 +622,6 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
-    else
-        url = QUrl(QLatin1String("DynamicQML"));
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
     if (url.isEmpty()) {
@@ -719,6 +631,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     }
 
     QmlComponent component(activeEngine, qml.toUtf8(), url);
+
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
         qWarning() <<"QmlEngine::createQmlObject():";
@@ -741,38 +654,15 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 
     if(obj) {
         obj->setParent(parentArg);
-        obj->setProperty("parent", QVariant::fromValue<QObject*>(parentArg));
+        QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
+        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
+        if(gobj && gparent)
+            gobj->setParentItem(gparent);
         return qmlScriptObject(obj, activeEngine);
     }
     return engine->nullValue();
 }
 
-/*!
-    This function is intended for use inside QML only. In C++ just create a
-    QVector3D as usual.
-
-    This function takes three numeric components and combines them into a
-    QVector3D value that can be used with any property that takes a
-    QVector3D argument.  The following QML code:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis: vector(0, 1, 1)
-    }
-    \endcode
-
-    is equivalent to:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis.x: 0; axis.y: 1; axis.z: 0
-    }
-    \endcode
-*/
 QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() < 3)
@@ -898,19 +788,14 @@ QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *en
     return engine->undefinedValue();
 }
 
-/*!
-    This function allows tinting one color with another.
+QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() < 1)
+        return e->newVariant(QVariant(false));
+    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    return e->newVariant(QVariant(ret));
+}
 
-    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
-
-    \qml
-    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
-    \endqml
-    \image declarative-rect_tint.png
-
-    Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
-*/
 QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() < 2)

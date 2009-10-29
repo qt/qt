@@ -108,7 +108,7 @@ Item {
             }
             Button {
                 text: "Create"
-                onClicked: {var obj=createQmlObject(qmlText.text, window, 'CustomObject'); obj.parent=window;}
+                onClicked: createQmlObject(qmlText.text, window, 'CustomObject');
             }
         }
     }
