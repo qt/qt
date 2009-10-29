@@ -82,10 +82,10 @@ when the property has one of the following types:
 There are also string based constructors for these types, see \l{basicqmltypes.html}{Qml Types}.
 
 \section3 Qt.rgba(int red, int green, int blue, int alpha)
-This function returns a Color with the specified \c red, \c green, \c blue and \c alpha components. All components should be in the range 0-255 inclusive.
+This function returns a Color with the specified \c red, \c green, \c blue and \c alpha components. All components should be in the range 0-1 inclusive.
 
 \section3 Qt.hsla(int hue, int saturation, int lightness, int alpha)
-This function returns a Color with the specified \c hue, \c saturation, \c lightness and \c alpha components. All components should be in the range 0-255 inclusive.
+This function returns a Color with the specified \c hue, \c saturation, \c lightness and \c alpha components. All components should be in the range 0-1 inclusive.
 
 \section3 Qt.rect(int x, int y, int width, int height) 
 This function returns a Rect with the top-left corner at \c x,\c y and the specified \c width and \c height.
