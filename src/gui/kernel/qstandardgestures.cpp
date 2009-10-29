@@ -140,7 +140,6 @@ void QPanGestureRecognizer::reset(QGesture *state)
     QGestureRecognizer::reset(state);
 }
 
-/*! \internal */
 /*
 bool QPanGestureRecognizer::event(QEvent *event)
 {

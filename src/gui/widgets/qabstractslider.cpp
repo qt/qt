@@ -693,29 +693,27 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     if (e->orientation() != d->orientation && !rect().contains(e->pos()))
         return;
 
-    qreal currentOffset = qreal(e->delta()) / 120;
-    d->offset_accumulated += currentOffset;
-    if (int(d->offset_accumulated) == 0) {
-        // QAbstractSlider works on integer values. So if the accumulated
-        // offset is less than +/- 1, we need to wait until we get more
-        // wheel events (this means that the wheel resolution is higher than 
-        // 15 degrees, e.g. when using mac mighty mouse/trackpad):
-        return;
-    }
+    int stepsToScroll = 0;
+    qreal offset = qreal(e->delta()) / 120;
 
-    int stepsToScroll;
     if ((e->modifiers() & Qt::ControlModifier) || (e->modifiers() & Qt::ShiftModifier)) {
-        stepsToScroll = currentOffset > 0 ? d->pageStep : -d->pageStep;
+        // Scroll one page regardless of delta:
+        stepsToScroll = qBound(-d->pageStep, int(offset * d->pageStep), d->pageStep);
+        d->offset_accumulated = 0;
     } else {
-        // Calculate the number of steps to scroll (per 15 degrees of rotate):
-#ifdef Q_OS_MAC
-        // On mac, since mouse wheel scrolling is accelerated and
-        // fine tuned by the OS, we skip applying acceleration:
-        stepsToScroll = int(d->offset_accumulated);
-#else
-        stepsToScroll = int(d->offset_accumulated) * QApplication::wheelScrollLines() * d->singleStep;
-#endif
-        stepsToScroll = qBound(-d->pageStep, stepsToScroll, d->pageStep);
+        // Calculate how many lines to scroll. Depending on what delta is (and 
+        // offset), we might end up with a fraction (e.g. scroll 1.3 lines). We can
+        // only scroll whole lines, so we keep the reminder until next event.
+        qreal stepsToScrollF = offset * QApplication::wheelScrollLines() * d->singleStep;
+        // Check if wheel changed direction since last event:
+        if (d->offset_accumulated != 0 && (offset / d->offset_accumulated) < 0)
+            d->offset_accumulated = 0;
+
+        d->offset_accumulated += stepsToScrollF;
+        stepsToScroll = qBound(-d->pageStep, int(d->offset_accumulated), d->pageStep);
+        d->offset_accumulated -= int(d->offset_accumulated);
+        if (stepsToScroll == 0)
+            return;
     }
 
     if (d->invertedControls)
@@ -725,12 +723,10 @@ void QAbstractSlider::wheelEvent(QWheelEvent * e)
     d->position = d->overflowSafeAdd(stepsToScroll); // value will be updated by triggerAction()
     triggerAction(SliderMove);
 
-    if (prevValue == d->value) {
+    if (prevValue == d->value)
         d->offset_accumulated = 0;
-    } else {
-        d->offset_accumulated -= int(d->offset_accumulated);
+    else
         e->accept();
-    }
 }
 #endif
 #ifdef QT_KEYPAD_NAVIGATION

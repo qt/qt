@@ -59,7 +59,7 @@ public:
     QScriptProgram();
     QScriptProgram(const QString &sourceCode,
                    const QString fileName = QString(),
-                   int lineNumber = 1);
+                   int firstLineNumber = 1);
     QScriptProgram(const QScriptProgram &other);
     ~QScriptProgram();
 
@@ -69,7 +69,7 @@ public:
 
     QString sourceCode() const;
     QString fileName() const;
-    int lineNumber() const;
+    int firstLineNumber() const;
 
     bool operator==(const QScriptProgram &other) const;
     bool operator!=(const QScriptProgram &other) const;

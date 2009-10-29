@@ -267,7 +267,7 @@ void tst_QCompleter::filter()
 
     //QModelIndex si = completer->currentIndex();
     //QCOMPARE(completer->model()->data(si).toString(), completion);
-    QCOMPARE(completer->currentCompletion(), completionText);
+    QVERIFY(0 == QString::compare(completer->currentCompletion(), completionText, completer->caseSensitivity()));
 }
 
 // Testing get/set functions

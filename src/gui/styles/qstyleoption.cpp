@@ -45,9 +45,7 @@
 # include "private/qt_mac_p.h"
 # include "qmacstyle_mac.h"
 #endif
-#ifndef QT_NO_DEBUG
 #include <qdebug.h>
-#endif
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
@@ -1254,7 +1252,7 @@ QStyleOptionViewItemV4::QStyleOptionViewItemV4(int version)
     \brief the features of the group box frame
 
     The frame is flat by default.
-    
+
     \sa QStyleOptionFrameV2::FrameFeature
 */
 
@@ -5298,9 +5296,9 @@ QStyleHintReturnVariant::QStyleHintReturnVariant() : QStyleHintReturn(Version, T
     Returns a T or 0 depending on the type of \a hint.
 */
 
-#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
 QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
 {
+#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
     switch (optionType) {
     case QStyleOption::SO_Default:
         debug << "SO_Default"; break;
@@ -5361,19 +5359,21 @@ QDebug operator<<(QDebug debug, const QStyleOption::OptionType &optionType)
     case QStyleOption::SO_GraphicsItem:
         debug << "SO_GraphicsItem"; break;
     }
+#endif
     return debug;
 }
 
 QDebug operator<<(QDebug debug, const QStyleOption &option)
 {
+#if !defined(QT_NO_DEBUG) && !defined(QT_NO_DEBUG_STREAM)
     debug << "QStyleOption(";
     debug << QStyleOption::OptionType(option.type);
     debug << ',' << (option.direction == Qt::RightToLeft ? "RightToLeft" : "LeftToRight");
     debug << ',' << option.state;
     debug << ',' << option.rect;
     debug << ')';
+#endif
     return debug;
 }
-#endif
 
 QT_END_NAMESPACE

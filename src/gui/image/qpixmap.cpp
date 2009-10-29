@@ -860,6 +860,9 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
 
 bool QPixmap::loadFromData(const uchar *buf, uint len, const char *format, Qt::ImageConversionFlags flags)
 {
+    if (len == 0 || buf == 0)
+        return false;
+
     return data->fromData(buf, len, format, flags);
 }
 
