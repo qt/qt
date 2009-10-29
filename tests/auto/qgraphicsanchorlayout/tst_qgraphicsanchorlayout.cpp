@@ -1882,6 +1882,7 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QGraphicsWidget *b = createItem(min, pref, max, "b");
     QGraphicsWidget *c = createItem(min, pref, max, "c");
     QGraphicsWidget *d = createItem(min, pref, max, "d");
+    QGraphicsWidget *e = createItem(min, pref, max, "e");
 
     //<!-- Trunk -->
     setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
@@ -1889,6 +1890,8 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
     setAnchor(l, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
     setAnchor(l, d, Qt::AnchorRight, l, Qt::AnchorRight, 0);
+    setAnchor(l, b, Qt::AnchorHorizontalCenter, e, Qt::AnchorLeft, 0);
+    setAnchor(l, e, Qt::AnchorRight, c, Qt::AnchorHorizontalCenter, 0);
 
     a->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     c->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
