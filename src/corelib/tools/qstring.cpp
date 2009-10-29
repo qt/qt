@@ -1591,12 +1591,12 @@ QString &QString::append(QChar ch)
 */
 QString &QString::remove(int pos, int len)
 {
-    if (pos < 0)
+    if (pos < 0)  // count from end of string
         pos += d->size;
     if (pos < 0 || pos >= d->size) {
         // range problems
-    } else if (pos + len >= d->size) {  // pos ok
-        resize(pos);
+    } else if (len >= d->size - pos) {
+        resize(pos); // truncate
     } else if (len > 0) {
         detach();
         memmove(d->data + pos, d->data + pos + len,

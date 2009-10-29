@@ -586,7 +586,6 @@ private slots:
     void javaScriptWindowObjectClearedOnEvaluate();
     void setHtml();
     void setHtmlWithResource();
-    void setHtmlWithBaseURL();
     void ipv6HostEncoding();
     void metaData();
     void popupFocus();
@@ -2370,28 +2369,6 @@ void tst_QWebFrame::setHtmlWithResource()
 
     QWebElement p = frame->documentElement().findAll("p").at(0);
     QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("red"));
-}
-
-void tst_QWebFrame::setHtmlWithBaseURL()
-{
-    QString html("<html><body><p>hello world</p><img src='resources/image2.png'/></body></html>");
-
-    QWebPage page;
-    QWebFrame* frame = page.mainFrame();
-
-    // in few seconds, the image should be completey loaded
-    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
-
-    frame->setHtml(html, QUrl::fromLocalFile(QDir::currentPath()));
-    QTest::qWait(200);
-    QCOMPARE(spy.count(), 1);
-
-    QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
-    QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
-
-    // no history item has to be added.
-    QCOMPARE(m_view->page()->history()->count(), 0);
 }
 
 class TestNetworkManager : public QNetworkAccessManager

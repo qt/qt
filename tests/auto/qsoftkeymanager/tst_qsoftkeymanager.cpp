@@ -47,6 +47,10 @@
 #include "qdialogbuttonbox.h"
 #include "private/qsoftkeymanager_p.h"
 
+#ifdef Q_OS_SYMBIAN
+#include "qsymbianevent.h"
+#endif
+
 #ifdef Q_WS_S60
 static const int s60CommandStart = 6000;
 #endif
@@ -69,6 +73,13 @@ private slots:
     void updateSoftKeysCompressed();
     void handleCommand();
     void checkSoftkeyEnableStates();
+
+private: // utils
+    inline void simulateSymbianCommand(int command)
+    {
+        QSymbianEvent event1(QSymbianEvent::CommandEvent, command);
+        qApp->symbianProcessEvent(&event1);
+    };
 };
 
 class EventListener : public QObject
@@ -167,8 +178,8 @@ void tst_QSoftKeyManager::handleCommand()
 //    QTest::keyPress(&w, Qt::Key_Context1);
 //    QTest::keyPress(&w, Qt::Key_Context2);
 
-    qApp->symbianHandleCommand(6000);
-    qApp->symbianHandleCommand(6001);
+    simulateSymbianCommand(6000);
+    simulateSymbianCommand(6001);
 
     QApplication::processEvents();
 
@@ -200,9 +211,9 @@ void tst_QSoftKeyManager::checkSoftkeyEnableStates()
     //disabled button gets none.
     for (int i = 0; i < 10; i++) {
         //simulate "Restore Defaults" softkey press
-        qApp->symbianHandleCommand(s60CommandStart);
+        simulateSymbianCommand(s60CommandStart);
         //simulate "help" softkey press
-        qApp->symbianHandleCommand(s60CommandStart + 1);
+        simulateSymbianCommand(s60CommandStart + 1);
     }
     QApplication::processEvents();
     QCOMPARE(spy0.count(), 10);
@@ -212,16 +223,16 @@ void tst_QSoftKeyManager::checkSoftkeyEnableStates()
 
     for (int i = 0; i < 10; i++) {
         //simulate "Restore Defaults" softkey press
-        qApp->symbianHandleCommand(s60CommandStart);
+        simulateSymbianCommand(s60CommandStart);
         //simulate "help" softkey press
-        qApp->symbianHandleCommand(s60CommandStart + 1);
+        simulateSymbianCommand(s60CommandStart + 1);
         //switch enabled button to disabled and vice versa
         pBHelp->setEnabled(!pBHelp->isEnabled());
         pBDefaults->setEnabled(!pBDefaults->isEnabled());
     }
     QApplication::processEvents();
     QCOMPARE(spy0.count(), 5);
-    QCOMPARE(spy1.count(), 5);    
+    QCOMPARE(spy1.count(), 5);
 }
 
 QTEST_MAIN(tst_QSoftKeyManager)

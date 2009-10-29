@@ -66,7 +66,7 @@ void tst_QSound::checkFinished()
             QTest::qWait(5000);
 
 #if defined(Q_WS_QWS)
-            QEXPECT_FAIL("", "QSound buggy on embedded (task 122221)", Abort);
+            QEXPECT_FAIL("", "QSound buggy on embedded (task QTBUG-157)", Abort);
 #endif
             QVERIFY(sound.isFinished() );
 }
