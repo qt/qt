@@ -595,59 +595,6 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
     return contextClass->contextFromValue(scopeNode);
 }
 
-/*!
-    This function is intended for use inside QML only. In C++ just create a
-    component object as usual.
-
-    This function takes the URL of a QML file as its only argument. It returns
-    a component object which can be used to create and load that QML file.
-
-    Example QmlJS is below, remember that QML files that might be loaded
-    over the network cannot be expected to be ready immediately.
-    \code
-        var component;
-        var sprite;
-        function finishCreation(){
-            if(component.isReady()){
-                sprite = component.createObject();
-                if(sprite == 0){
-                    // Error Handling
-                }else{
-                    sprite.parent = page;
-                    sprite.x = 200;
-                    //...
-                }
-            }else if(component.isError()){
-                // Error Handling
-            }
-        }
-
-        component = createComponent("Sprite.qml");
-        if(component.isReady()){
-            finishCreation();
-        }else{
-            component.statusChanged.connect(finishCreation);
-        }
-    \endcode
-
-    If you are certain the files will be local, you could simplify to
-
-    \code
-        component = createComponent("Sprite.qml");
-        sprite = component.createObject();
-        if(sprite == 0){
-            // Error Handling
-            print(component.errorsString());
-        }else{
-            sprite.parent = page;
-            sprite.x = 200;
-            //...
-        }
-    \endcode
-
-    If you want to just create an arbitrary string of QML, instead of
-    loading a qml file, consider the createQmlObject() function.
-*/
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
                                                QScriptEngine *engine)
 {
@@ -670,31 +617,6 @@ QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
     return engine->newQObject(c);
 }
 
-/*!
-    Creates a new object from the specified string of QML. It requires a
-    second argument, which is the id of an existing QML object to use as
-    the new object's parent. If a third argument is provided, this is used
-    as the filepath that the qml came from.
-
-    Example (where targetItem is the id of an existing QML item):
-    \code
-    newObject = createQmlObject('import Qt 4.6; Rectangle {color: "red"; width: 20; height: 20}',
-        targetItem, "dynamicSnippet1");
-    \endcode
-
-    This function is intended for use inside QML only. It is intended to behave
-    similarly to eval, but for creating QML elements.
-
-    Returns the created object, or null if there is an error. In the case of an
-    error, details of the error are output using qWarning().
-
-    Note that this function returns immediately, and therefore may not work if
-    the QML loads new components. If you are trying to load a new component,
-    for example from a QML file, consider the createComponent() function
-    instead. 'New components' refers to external QML files that have not yet
-    been loaded, and so it is safe to use createQmlObject to load built-in
-    components.
-*/
 QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
 {
     QmlEnginePrivate *activeEnginePriv =
