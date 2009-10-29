@@ -1855,7 +1855,7 @@ QTime QTime::currentTime()
     t = localtime(&ltime);
 #endif
     Q_CHECK_PTR(t);
-    
+
     ct.mds = MSECS_PER_HOUR * t->tm_hour + MSECS_PER_MIN * t->tm_min + 1000 * t->tm_sec
              + tv.tv_usec / 1000;
 #else
@@ -3725,11 +3725,11 @@ static QDateTimePrivate::Spec utcToLocal(QDate &date, QTime &time)
     TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
     TTime epochTTime;
     TInt err = epochTTime.Set(KUnixEpoch);
+    tm res;
     if(err == KErrNone) {
         TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
         utcTTime = utcTTime + utcOffset;
         TDateTime utcDateTime = utcTTime.DateTime();
-        tm res;
         res.tm_sec = utcDateTime.Second();
         res.tm_min = utcDateTime.Minute();
         res.tm_hour = utcDateTime.Hour();
@@ -3816,11 +3816,11 @@ static void localToUtc(QDate &date, QTime &time, int isdst)
     TTimeIntervalSeconds tTimeIntervalSecsSince1Jan1970UTC(secsSince1Jan1970UTC);
     TTime epochTTime;
     TInt err = epochTTime.Set(KUnixEpoch);
+    tm res;
     if(err == KErrNone) {
         TTime utcTTime = epochTTime + tTimeIntervalSecsSince1Jan1970UTC;
         utcTTime = utcTTime + utcOffset;
         TDateTime utcDateTime = utcTTime.DateTime();
-        tm res;
         res.tm_sec = utcDateTime.Second();
         res.tm_min = utcDateTime.Minute();
         res.tm_hour = utcDateTime.Hour();
