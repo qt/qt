@@ -3694,7 +3694,6 @@ void tst_QUrl::fromUserInput_data()
 
     // File
     QDirIterator it(QDir::homePath());
-    QString fileString;
     int c = 0;
     while (it.hasNext()) {
         it.next();
@@ -3703,8 +3702,12 @@ void tst_QUrl::fromUserInput_data()
 
     // basic latin1
     QTest::newRow("unicode-0") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xc3\xa5.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-0b") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded("http://%C3%A5.com/", QUrl::TolerantMode);
+    QTest::newRow("unicode-0c") << QString::fromUtf8("\xc3\xa5.com/") << QUrl::fromEncoded("http://xn--5ca.com/", QUrl::TolerantMode);
     // unicode
     QTest::newRow("unicode-1") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded(QString::fromUtf8("http://\xce\xbb.com/").toUtf8(), QUrl::TolerantMode);
+    QTest::newRow("unicode-1b") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded("http://%CE%BB.com/", QUrl::TolerantMode);
+    QTest::newRow("unicode-1c") << QString::fromUtf8("\xce\xbb.com/") << QUrl::fromEncoded("http://xn--wxa.com/", QUrl::TolerantMode);
 
     // no scheme
     QTest::newRow("add scheme-0") << "example.org" << QUrl("http://example.org");
@@ -3713,7 +3716,7 @@ void tst_QUrl::fromUserInput_data()
     QTest::newRow("add scheme-3") << "webkit" << QUrl("webkit");
 
     // QUrl's tolerant parser should already handle this
-    QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl("http://example.org/test%20page.html");
+    QTest::newRow("not-encoded-0") << "http://example.org/test page.html" << QUrl::fromEncoded("http://example.org/test%20page.html");
 
     // Make sure the :80, i.e. port doesn't screw anything up
     QUrl portUrl("http://example.org");
