@@ -215,7 +215,8 @@ QLibraryInfo::buildKey()
 QDate
 QLibraryInfo::buildDate()
 {
-    return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
+    return QDate();
+    //return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
 
 /*!
