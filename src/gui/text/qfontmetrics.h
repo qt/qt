@@ -43,6 +43,7 @@
 #define QFONTMETRICS_H
 
 #include <QtGui/qfont.h>
+#include <QtCore/qsharedpointer.h>
 #ifndef QT_INCLUDE_COMPAT
 #include <QtCore/qrect.h>
 #endif
@@ -131,7 +132,7 @@ private:
     friend class QFontMetricsF;
     friend class QStackTextEngine;
 
-    QFontPrivate *d;
+    QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 
 
@@ -187,7 +188,7 @@ public:
     inline bool operator !=(const QFontMetricsF &other) const { return !operator==(other); }
 
 private:
-    QFontPrivate *d;
+    QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 
 QT_END_NAMESPACE

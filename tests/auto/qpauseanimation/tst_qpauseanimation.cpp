@@ -93,8 +93,7 @@ public:
     virtual ~tst_QPauseAnimation();
 
 public Q_SLOTS:
-    void init();
-    void cleanup();
+    void initTestCase();
 
 private slots:
     void changeDirectionWhileRunning();
@@ -117,20 +116,15 @@ tst_QPauseAnimation::~tst_QPauseAnimation()
 {
 }
 
-void tst_QPauseAnimation::init()
+void tst_QPauseAnimation::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
     qRegisterMetaType<QAbstractAnimation::DeletionPolicy>("QAbstractAnimation::DeletionPolicy");
 }
 
-void tst_QPauseAnimation::cleanup()
-{
-}
-
 void tst_QPauseAnimation::changeDirectionWhileRunning()
 {
-    QUnifiedTimer *timer = QUnifiedTimer::instance();
-    timer->setConsistentTiming(true);
+    EnableConsistentTiming enabled;
 
     TestablePauseAnimation animation;
     animation.setDuration(400);
@@ -140,8 +134,6 @@ void tst_QPauseAnimation::changeDirectionWhileRunning()
     animation.setDirection(QAbstractAnimation::Backward);
     QTest::qWait(animation.totalDuration() + 50);
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
-
-    timer->setConsistentTiming(false);
 }
 
 void tst_QPauseAnimation::noTimerUpdates_data()
@@ -157,8 +149,7 @@ void tst_QPauseAnimation::noTimerUpdates_data()
 
 void tst_QPauseAnimation::noTimerUpdates()
 {
-    QUnifiedTimer *timer = QUnifiedTimer::instance();
-    timer->setConsistentTiming(true);
+    EnableConsistentTiming enabled;
 
     QFETCH(int, duration);
     QFETCH(int, loopCount);
@@ -168,16 +159,19 @@ void tst_QPauseAnimation::noTimerUpdates()
     animation.setLoopCount(loopCount);
     animation.start();
     QTest::qWait(animation.totalDuration() + 100);
+
+#ifdef Q_OS_WIN
+    if (animation.state() != QAbstractAnimation::Stopped)
+        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution", Abort);
+#endif
+
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
     QCOMPARE(animation.m_updateCurrentTimeCount, 1 + loopCount);
-
-    timer->setConsistentTiming(false);
 }
 
 void tst_QPauseAnimation::mulitplePauseAnimations()
 {
-    QUnifiedTimer *timer = QUnifiedTimer::instance();
-    timer->setConsistentTiming(true);
+    EnableConsistentTiming enabled;
 
     TestablePauseAnimation animation;
     animation.setDuration(200);
@@ -188,16 +182,26 @@ void tst_QPauseAnimation::mulitplePauseAnimations()
     animation.start();
     animation2.start();
     QTest::qWait(animation.totalDuration() + 100);
+
+#ifdef Q_OS_WIN
+    if (animation.state() != QAbstractAnimation::Stopped)
+        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution", Abort);
+#endif
+
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
     QVERIFY(animation2.state() == QAbstractAnimation::Running);
     QCOMPARE(animation.m_updateCurrentTimeCount, 2);
     QCOMPARE(animation2.m_updateCurrentTimeCount, 2);
 
     QTest::qWait(550);
+
+#ifdef Q_OS_WIN
+    if (animation2.state() != QAbstractAnimation::Stopped)
+        QEXPECT_FAIL("", "On windows, consistent timing is not working properly due to bad timer resolution", Abort);
+#endif
+
     QVERIFY(animation2.state() == QAbstractAnimation::Stopped);
     QCOMPARE(animation2.m_updateCurrentTimeCount, 3);
-
-    timer->setConsistentTiming(false);
 }
 
 void tst_QPauseAnimation::pauseAndPropertyAnimations()
@@ -243,7 +247,7 @@ void tst_QPauseAnimation::pauseResume()
     animation.pause();
     QVERIFY(animation.state() == QAbstractAnimation::Paused);
     animation.start();
-    QTest::qWait(250);
+    QTest::qWait(300);
     QVERIFY(animation.state() == QAbstractAnimation::Stopped);
     QCOMPARE(animation.m_updateCurrentTimeCount, 3);
 }
@@ -260,6 +264,9 @@ void tst_QPauseAnimation::sequentialPauseGroup()
     animation3.setDuration(200);
 
     group.start();
+    QCOMPARE(animation1.m_updateCurrentTimeCount, 1);
+    QCOMPARE(animation2.m_updateCurrentTimeCount, 0);
+    QCOMPARE(animation3.m_updateCurrentTimeCount, 0);
 
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation1.state() == QAbstractAnimation::Running);
@@ -267,6 +274,9 @@ void tst_QPauseAnimation::sequentialPauseGroup()
     QVERIFY(animation3.state() == QAbstractAnimation::Stopped);
 
     group.setCurrentTime(250);
+    QCOMPARE(animation1.m_updateCurrentTimeCount, 2);
+    QCOMPARE(animation2.m_updateCurrentTimeCount, 1);
+    QCOMPARE(animation3.m_updateCurrentTimeCount, 0);
 
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation1.state() == QAbstractAnimation::Stopped);
@@ -275,6 +285,9 @@ void tst_QPauseAnimation::sequentialPauseGroup()
     QVERIFY(animation3.state() == QAbstractAnimation::Stopped);
 
     group.setCurrentTime(500);
+    QCOMPARE(animation1.m_updateCurrentTimeCount, 2);
+    QCOMPARE(animation2.m_updateCurrentTimeCount, 2);
+    QCOMPARE(animation3.m_updateCurrentTimeCount, 1);
 
     QVERIFY(group.state() == QAbstractAnimation::Running);
     QVERIFY(animation1.state() == QAbstractAnimation::Stopped);

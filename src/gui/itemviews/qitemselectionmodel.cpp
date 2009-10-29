@@ -599,7 +599,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             while (itParent.isValid() && itParent.parent() != parent)
                 itParent = itParent.parent();
 
-            if (parent.isValid() && start <= itParent.row() && itParent.row() <= end) {
+            if (itParent.isValid() && start <= itParent.row() && itParent.row() <= end) {
                 deselected.append(*it);
                 it = ranges.erase(it);
             } else {
