@@ -216,8 +216,8 @@ void QContiguousCache<T>::setCapacity(int asize)
     if (asize == d->alloc)
         return;
     detach();
-    union { QContiguousCacheData *p; QContiguousCacheTypedData<T> *d; } x;
-    x.p = malloc(asize);
+    union { QContiguousCacheData *d; QContiguousCacheTypedData<T> *p; } x;
+    x.d = malloc(asize);
     x.d->alloc = asize;
     x.d->count = qMin(d->count, asize);
     x.d->offset = d->offset + d->count - x.d->count;
@@ -239,7 +239,7 @@ void QContiguousCache<T>::setCapacity(int asize)
         src--;
     }
     /* free old */
-    free(d);
+    free(p);
     d = x.d;
 }
 
