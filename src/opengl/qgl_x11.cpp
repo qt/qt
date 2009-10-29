@@ -53,6 +53,7 @@
 #include <private/qfontengine_ft_p.h>
 #include <private/qt_x11_p.h>
 #include <private/qpixmap_x11_p.h>
+#include <private/qimagepixmapcleanuphooks_p.h>
 #ifdef Q_OS_HPUX
 // for GLXPBuffer
 #include <private/qglpixelbuffer_p.h>
@@ -1704,7 +1705,7 @@ QGLTexture *QGLContextPrivate::bindTextureFromNativePixmap(QPixmapData *pmd, con
         pixmapData->gl_surface = (Qt::HANDLE)glxPixmap;
 
         // Make sure the cleanup hook gets called so we can delete the glx pixmap
-        pixmapData->is_cached = true;
+        QImagePixmapCleanupHooks::enableCleanupHooks(pixmapData);
     }
 
     GLuint textureId;
