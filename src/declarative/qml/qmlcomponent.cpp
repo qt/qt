@@ -409,11 +409,25 @@ valid for components created directly from QML.
 */
 QmlContext *QmlComponent::creationContext() const
 {
+    Q_D(const QmlComponent);
+    if(d->creationContext)
+        return d->creationContext;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(this);
     if (ddata)
         return ddata->context;
     else
         return 0;
+}
+
+/*!
+  \internal
+  Sets the QmlContext the component was created in. This is only
+  desirable for components created in QML script.
+*/
+void QmlComponent::setCreationContext(QmlContext* c)
+{
+    Q_D(QmlComponent);
+    d->creationContext = c;
 }
 
 /*!
@@ -462,6 +476,24 @@ QList<QmlError> QmlComponent::errors() const
 }
 
 /*!
+    \internal
+    errorsString is only meant as a way to get the errors in script
+*/
+QString QmlComponent::errorsString() const
+{
+    Q_D(const QmlComponent);
+    QString ret;
+    if(!isError())
+        return ret;
+    foreach(const QmlError &e, d->errors) {
+        ret += e.url().toString() + QLatin1String(":") +
+               QString::number(e.line()) + QLatin1String(" ") +
+               e.description() + QLatin1String("\n");
+    }
+    return ret;
+}
+
+/*!
     Return the component URL.  This is the URL passed to either the constructor,
     or the loadUrl() or setData() methods.
 */
@@ -479,6 +511,22 @@ QmlComponent::QmlComponent(QmlComponentPrivate &dd, QObject *parent)
 {
 }
 
+
+/*!
+    \internal
+    A version of create which returns a scriptObject, for use in script
+*/
+QScriptValue QmlComponent::createObject()
+{
+    Q_D(QmlComponent);
+    QmlContext* ctxt = creationContext();
+    if(!ctxt){
+        qWarning() << QLatin1String("createObject can only be used in QML");
+        return QScriptValue();
+    }
+    QObject* ret = create(ctxt);
+    return QmlEnginePrivate::qmlScriptObject(ret, d->engine);
+}
 
 /*!
     Create an object instance from this component.  Returns 0 if creation

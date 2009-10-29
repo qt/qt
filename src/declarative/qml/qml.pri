@@ -5,7 +5,6 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmlexpression.cpp \
     qml/qmlbinding.cpp \
     qml/qmlmetaproperty.cpp \
-    qml/qmlcomponentjs.cpp \
     qml/qmlcomponent.cpp \
     qml/qmlcontext.cpp \
     qml/qmlcustomparser.cpp \
@@ -56,8 +55,6 @@ HEADERS += qml/qmlparser_p.h \
     qml/qmlbinding.h \
     qml/qmlbinding_p.h \
     qml/qmlmetaproperty.h \
-    qml/qmlcomponentjs_p.h \
-    qml/qmlcomponentjs_p_p.h \
     qml/qmlcomponent.h \
     qml/qmlcomponent_p.h \
     qml/qmlcustomparser_p.h \
