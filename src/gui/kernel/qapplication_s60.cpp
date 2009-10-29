@@ -1030,6 +1030,14 @@ QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
     if (!CCoeEnv::Static()) {
+        // The S60 framework creates a new trap handler which will render any existing traps
+        // invalid as long as it is active. This means that all code in main() that occurs after
+        // the QApplication construction needs to be surrounded by a new trap, despite having
+        // an outer one already. To avoid this, we save the original trap handler here, and set
+        // it back after the S60 framework is constructed. Then we restore it right before the S60
+        // framework destruction.
+        TTrapHandler *origTrapHandler = User::TrapHandler();
+
         // The S60 framework has not been initalized. We need to do it.
         TApaApplicationFactory factory(S60->s60ApplicationFactory ?
                 S60->s60ApplicationFactory : newS60Application);
@@ -1040,6 +1048,8 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         CEikonEnv* coe = new CEikonEnv;
         QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
         delete commandLine;
+
+        S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
 
         S60->qtOwnsS60Environment = true;
     } else {
@@ -1195,6 +1205,9 @@ void qt_cleanup()
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
     if (S60->qtOwnsS60Environment) {
+        // Restore the S60 framework trap handler. See qt_init().
+        User::SetTrapHandler(S60->s60InstalledTrapHandler);
+
         CEikonEnv* coe = CEikonEnv::Static();
         coe->PrepareToExit();
         // The CEikonEnv itself is destroyed in here.
