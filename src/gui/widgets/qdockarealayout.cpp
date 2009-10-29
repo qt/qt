@@ -2259,7 +2259,7 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
 ** QDockAreaLayout
 */
 
-QDockAreaLayout::QDockAreaLayout(QMainWindow *win)
+QDockAreaLayout::QDockAreaLayout(QMainWindow *win) : have_central(false)
 {
     mainWindow = win;
     sep = win->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, win);
@@ -2582,7 +2582,9 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
 {
     QSize center_hint(0, 0);
     QSize center_min(0, 0);
-    bool have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
+    const bool old_have_central = have_central;
+    have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
+    const bool fallbackToSizeHints = !old_have_central && have_central;
     if (have_central) {
         center_hint = centralWidgetRect.size();
         if (!center_hint.isValid())
@@ -2601,28 +2603,28 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
         center_rect.setBottom(rect.bottom() - docks[QInternal::BottomDock].rect.height() - sep);
 
     QSize left_hint = docks[QInternal::LeftDock].size();
-    if (left_hint.isNull())
+    if (left_hint.isNull() || fallbackToSizeHints)
         left_hint = docks[QInternal::LeftDock].sizeHint();
     QSize left_min = docks[QInternal::LeftDock].minimumSize();
     QSize left_max = docks[QInternal::LeftDock].maximumSize();
     left_hint = left_hint.boundedTo(left_max).expandedTo(left_min);
 
     QSize right_hint = docks[QInternal::RightDock].size();
-    if (right_hint.isNull())
+    if (right_hint.isNull() || fallbackToSizeHints)
         right_hint = docks[QInternal::RightDock].sizeHint();
     QSize right_min = docks[QInternal::RightDock].minimumSize();
     QSize right_max = docks[QInternal::RightDock].maximumSize();
     right_hint = right_hint.boundedTo(right_max).expandedTo(right_min);
 
     QSize top_hint = docks[QInternal::TopDock].size();
-    if (top_hint.isNull())
+    if (top_hint.isNull() || fallbackToSizeHints)
         top_hint = docks[QInternal::TopDock].sizeHint();
     QSize top_min = docks[QInternal::TopDock].minimumSize();
     QSize top_max = docks[QInternal::TopDock].maximumSize();
     top_hint = top_hint.boundedTo(top_max).expandedTo(top_min);
 
     QSize bottom_hint = docks[QInternal::BottomDock].size();
-    if (bottom_hint.isNull())
+    if (bottom_hint.isNull() || fallbackToSizeHints)
         bottom_hint = docks[QInternal::BottomDock].sizeHint();
     QSize bottom_min = docks[QInternal::BottomDock].minimumSize();
     QSize bottom_max = docks[QInternal::BottomDock].maximumSize();

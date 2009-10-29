@@ -233,6 +233,7 @@ public:
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
+    bool have_central;
     mutable QVector<QWidget*> separatorWidgets;
 
     bool isValid() const;

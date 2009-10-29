@@ -56,8 +56,8 @@ class QmlSpringFollowPrivate : public QObjectPrivate
 public:
     QmlSpringFollowPrivate()
         : sourceValue(0), maxVelocity(0), lastTime(0)
-        , mass(1.0), useMass(false), spring(0.), damping(0.), velocity(0), epsilon(0.01)
-        , modulus(0.0), haveModulus(false), enabled(true), mode(Track), clock(this) {}
+        , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01)
+        , modulus(0.0), useMass(false), haveModulus(false), enabled(true), mode(Track), clock(this) {}
 
     QmlMetaProperty property;
     qreal currentValue;
@@ -66,14 +66,15 @@ public:
     qreal velocityms;
     int lastTime;
     qreal mass;
-    bool useMass;
     qreal spring;
     qreal damping;
     qreal velocity;
     qreal epsilon;
     qreal modulus;
-    bool haveModulus;
-    bool enabled;
+
+    bool useMass : 1;
+    bool haveModulus : 1;
+    bool enabled : 1;
 
     enum Mode {
         Track,

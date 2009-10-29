@@ -152,6 +152,7 @@ private slots:
     void subControlRectsWithOffset();
     void task260974_menuItemRectangleForComboBoxPopup();
     void removeItem();
+    void resetModel();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2415,6 +2416,38 @@ void tst_QComboBox::removeItem()
     cb.removeItem(0);
     QCOMPARE(cb.count(), 0);
 }
+
+void tst_QComboBox::resetModel()
+{
+    class StringListModel : public QStringListModel
+    {
+    public:
+        StringListModel(const QStringList &list) : QStringListModel(list)
+        {
+        }
+
+        void reset()
+        {
+            QStringListModel::reset();
+        }
+    };
+    QComboBox cb;
+    StringListModel model( QStringList() << "1" << "2");
+    QSignalSpy spy(&cb, SIGNAL(currentIndexChanged(int)));
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(cb.currentIndex(), -1); //no selection
+
+    cb.setModel(&model);
+
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(cb.currentIndex(), 0); //first item selected
+
+    model.reset();
+    QCOMPARE(spy.count(), 2);
+    QCOMPARE(cb.currentIndex(), -1); //no selection
+
+}
+
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"

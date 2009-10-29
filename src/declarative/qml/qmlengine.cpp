@@ -110,14 +110,6 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
-QScriptValue desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
-{
-    if(!ctxt->argumentCount())
-        return e->newVariant(QVariant(false));
-    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
-    return e->newVariant(QVariant(ret));
-}
-
 static QString userLocalDataPath(const QString& app)
 {
     return QDesktopServices::storageLocation(QDesktopServices::DataLocation) + QLatin1String("/") + app;
@@ -130,11 +122,10 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
   inProgressCreations(0), scriptEngine(this), componentAttacheds(0), rootComponent(0), 
   networkAccessManager(0), typeManager(e), uniqueId(1)
 {
+    // Note that all documentation for stuff put on the global object goes in
+    // doc/src/declarative/globalobject.qdoc
     QScriptValue qtObject =
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
-    QScriptValue desktopObject = scriptEngine.newObject();
-    desktopObject.setProperty(QLatin1String("openUrl"),scriptEngine.newFunction(desktopOpenUrl, 1));
-    qtObject.setProperty(QLatin1String("DesktopServices"), desktopObject);
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
     offlineStoragePath = userLocalDataPath(QLatin1String("QML/OfflineStorage"));
@@ -156,6 +147,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 
     //misc methods
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
+    qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -671,32 +663,6 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
     return engine->nullValue();
 }
 
-/*!
-    This function is intended for use inside QML only. In C++ just create a
-    QVector3D as usual.
-
-    This function takes three numeric components and combines them into a
-    QVector3D value that can be used with any property that takes a
-    QVector3D argument.  The following QML code:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis: vector(0, 1, 1)
-    }
-    \endcode
-
-    is equivalent to:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis.x: 0; axis.y: 1; axis.z: 0
-    }
-    \endcode
-*/
 QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() < 3)
@@ -822,19 +788,14 @@ QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *en
     return engine->undefinedValue();
 }
 
-/*!
-    This function allows tinting one color with another.
+QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() < 1)
+        return e->newVariant(QVariant(false));
+    bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    return e->newVariant(QVariant(ret));
+}
 
-    The tint color should usually be mostly transparent, or you will not be able to see the underlying color. The below example provides a slight red tint by having the tint color be pure red which is only 1/16th opaque.
-
-    \qml
-    Rectangle { x: 0; width: 80; height: 80; color: "lightsteelblue" }
-    Rectangle { x: 100; width: 80; height: 80; color: Qt.tint("lightsteelblue", "#10FF0000") }
-    \endqml
-    \image declarative-rect_tint.png
-
-    Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
-*/
 QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 {
     if(ctxt->argumentCount() < 2)

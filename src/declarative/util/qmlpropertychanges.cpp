@@ -127,11 +127,12 @@ public:
 
     QObject *object;
     QByteArray data;
-    bool decoded;
-    void decode();
 
-    bool restore;
-    bool isExplicit;
+    bool decoded : 1;
+    bool restore : 1;
+    bool isExplicit : 1;
+
+    void decode();
 
     QList<QPair<QByteArray, QVariant> > properties;
     QList<QPair<QByteArray, QmlExpression *> > expressions;

@@ -1132,6 +1132,7 @@ void tst_QListView::selection()
 #endif
 
     v.show();
+    QTest::qWaitForWindowShown(&v);
     QApplication::processEvents();
 
     v.setSelection(selectionRect, QItemSelectionModel::ClearAndSelect);
@@ -1184,6 +1185,7 @@ void tst_QListView::scrollTo()
     lv.setModel(&model);
     lv.setFixedSize(100, 200);
     lv.show();
+    QTest::qWaitForWindowShown(&lv);
 
     //by default, the list view scrolls per item and has no wrapping
     QModelIndex index = model.index(6,0);
@@ -1782,6 +1784,7 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
+    QTest::qWaitForWindowShown(&view);
     QTest::qWait(100);
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(100);

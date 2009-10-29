@@ -148,7 +148,7 @@ public:
     \row    \o \l Qt::BackgroundRole \o QBrush
     \row    \o \l Qt::BackgroundColorRole \o QColor (obsolete; use Qt::BackgroundRole instead)
     \row    \o \l Qt::CheckStateRole \o Qt::CheckState
-    \row    \o \l Qt::DecorationRole \o QIcon and QColor
+    \row    \o \l Qt::DecorationRole \o QIcon, QPixmap, QImage and QColor
     \row    \o \l Qt::DisplayRole \o QString and types with a string representation
     \row    \o \l Qt::EditRole \o See QItemEditorFactory for details
     \row    \o \l Qt::FontRole \o QFont
