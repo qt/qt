@@ -112,7 +112,7 @@ void ExpressionQueryWidget::showCurrentContext()
     m_textEdit->setTextColor(Qt::darkGreen);
     m_textEdit->append(m_currObject.className()
             + QLatin1String(": ")
-            + (m_currObject.name().isEmpty() ? QLatin1String("<unnamed>") : m_currObject.name()));
+            + (m_currObject.name().isEmpty() ? QLatin1String("<unnamed object>") : m_currObject.name()));
     appendPrompt();
 }
 
@@ -149,15 +149,12 @@ void ExpressionQueryWidget::showResult()
         QVariant value = m_query->result();
         QString result;
         
-        if (value.isNull()) {
+        if (value.type() == QVariant::List || value.type() == QVariant::StringList) {
+            result = tr("<%1 items>", "%1 = number of items").arg(value.toList().count());
+        } else if (value.isNull()) {
             result = QLatin1String("<no value>");
         } else {
-            if (value.canConvert(QVariant::String)) {
-                result = value.toString();
-            } else {
-                QDebug debug(&result);
-                debug << value;
-            }
+            result = value.toString();
         }
 
         if (m_mode == SeparateEntryMode) {

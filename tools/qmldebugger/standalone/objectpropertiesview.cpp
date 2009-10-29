@@ -141,7 +141,7 @@ void ObjectPropertiesView::setPropertyValue(PropertiesViewItem *item, const QVar
 
         item->setExpanded(false);
     } else {
-        item->setText(1, (value.isNull() ? QLatin1String("<null>") : value.toString()));
+        item->setText(1, (value.isNull() ? QLatin1String("<no value>") : value.toString()));
         item->setExpanded(true);
     }
     
