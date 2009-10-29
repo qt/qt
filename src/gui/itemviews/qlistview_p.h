@@ -130,6 +130,7 @@ public:
     virtual void clear() = 0;
     virtual void setRowCount(int) = 0;
     virtual QVector<QModelIndex> intersectingSet(const QRect &area) const = 0;
+    virtual void dataChanged(const QModelIndex &, const QModelIndex &) = 0;
 
     virtual int horizontalScrollToValue(int index, QListView::ScrollHint hint,
         bool leftOf, bool rightOf, const QRect &area, const QRect &rect) const;
@@ -141,7 +142,6 @@ public:
     virtual int verticalOffset() const { return verticalScrollBar()->value(); }
     virtual void updateHorizontalScrollBar(const QSize &step);
     virtual void updateVerticalScrollBar(const QSize &step);
-    virtual void dataChanged(const QModelIndex &, const QModelIndex &) { }
     virtual void appendHiddenRow(int row);
     virtual void removeHiddenRow(int row);
     virtual void setPositionForIndex(const QPoint &, const QModelIndex &) { }
@@ -217,6 +217,7 @@ public:
     void clear();
     void setRowCount(int rowCount) { flowPositions.resize(rowCount); }
     QVector<QModelIndex> intersectingSet(const QRect &area) const;
+    void dataChanged(const QModelIndex &, const QModelIndex &);
 
     int horizontalScrollToValue(int index, QListView::ScrollHint hint,
         bool leftOf, bool rightOf,const QRect &area, const QRect &rect) const;

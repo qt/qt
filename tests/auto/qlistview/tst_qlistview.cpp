@@ -119,6 +119,7 @@ private slots:
     void task262152_setModelColumnNavigate();
     void taskQTBUG_2233_scrollHiddenItems_data();
     void taskQTBUG_2233_scrollHiddenItems();
+    void taskQTBUG_633_changeModelData();
 };
 
 // Testing get/set functions
@@ -1831,6 +1832,26 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
         QCOMPARE(index.row(), 2 * i + 1);
     }
 }
+
+void tst_QListView::taskQTBUG_633_changeModelData()
+{
+    QListView view;
+    view.setFlow(QListView::LeftToRight);
+    QStandardItemModel model(5,1);
+    for (int i = 0; i < model.rowCount(); ++i) {
+        model.setData( model.index(i, 0), QString::number(i));
+    }
+
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    model.setData( model.index(1, 0), QLatin1String("long long text"));
+    QTest::qWait(100); //leave time for relayouting the items
+    QRect rectLongText = view.visualRect(model.index(1,0));
+    QRect rect2 = view.visualRect(model.index(2,0));
+    QVERIFY( ! rectLongText.intersects(rect2) );
+}
+
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"
