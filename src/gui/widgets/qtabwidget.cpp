@@ -1167,8 +1167,8 @@ void QTabWidget::tabRemoved(int index)
 void QTabWidget::paintEvent(QPaintEvent *)
 {
     Q_D(QTabWidget);
-    QStylePainter p(this);
     if (documentMode()) {
+        QStylePainter p(this, tabBar());
         if (QWidget *w = cornerWidget(Qt::TopLeftCorner)) {
             QStyleOptionTabBarBaseV2 opt;
             QTabBarPrivate::initStyleBaseOption(&opt, tabBar(), w->size());
@@ -1185,7 +1185,7 @@ void QTabWidget::paintEvent(QPaintEvent *)
         }
         return;
     }
-
+    QStylePainter p(this);
     QStyleOptionTabWidgetFrame opt;
     initStyleOption(&opt);
     opt.rect = d->panelRect;

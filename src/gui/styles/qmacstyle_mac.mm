@@ -342,12 +342,12 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget
         borderHighlightTop = QColor(207, 207, 207);
     }
     p->setPen(borderHighlightTop);
-    p->drawLine(0, 0, width, 0);
+    p->drawLine(tabRect.x(), 0, width, 0);
     p->setPen(borderTop);
-    p->drawLine(0, 1, width, 1);
+    p->drawLine(tabRect.x(), 1, width, 1);
 
     // center block
-    QRect centralRect(0, 2, width, height - 2);
+    QRect centralRect(tabRect.x(), 2, width, height - 2);
     if (active) {
         QColor mainColor = QColor(120, 120, 120);
         p->fillRect(centralRect, mainColor);
@@ -370,9 +370,9 @@ void drawTabBase(QPainter *p, const QStyleOptionTabBarBaseV2 *tbb, const QWidget
         borderBottom = QColor(127, 127, 127);
     }
     p->setPen(borderHighlightBottom);
-    p->drawLine(0, height - 2, width, height - 2);
+    p->drawLine(tabRect.x(), height - 2, width, height - 2);
     p->setPen(borderBottom);
-    p->drawLine(0, height - 1, width, height - 1);
+    p->drawLine(tabRect.x(), height - 1, width, height - 1);
 }
 
 /*
