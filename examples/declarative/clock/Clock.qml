@@ -2,79 +2,76 @@ import Qt 4.6
 
 Item {
     id: clock
-    width: 200; height: 200
-    property var time
+    width: 200; height: 230
+
+    property alias city: cityLabel.text
     property var hours
     property var minutes
     property var seconds
-    onTimeChanged: {
+    property int shift : 0
+
+    function timeChanged() {
         var date = new Date;
-        hours = date.getHours();
-        minutes = date.getMinutes();
-        seconds = date.getSeconds();
-    }
-    Timer {
-        interval: 100; running: true; repeat: true; triggeredOnStart: true
-        onTriggered: clock.time = new Date()
+        hours = date.getUTCHours() + clock.shift
+        minutes = date.getUTCMinutes();
+        seconds = date.getUTCSeconds();
     }
 
-    Image { source: "background.png" }
+    Timer {
+        interval: 1000; running: true; repeat: true; triggeredOnStart: true
+        onTriggered: clock.timeChanged()
+    }
+
+    Image { id: background; source: "clock.png" }
+
     Image {
-        x: 95
-        y: 54
+        x: 92.5; y: 27
         source: "hour.png"
         smooth: true
         transform: Rotation {
             id: hourRotation
-            origin.x: 4; origin.y: 45
-            angle: 0
+            origin.x: 7.5; origin.y: 73; angle: 0
             angle: SpringFollow {
-                spring: 2
-                damping: .2
-                source: clock.hours * 50 * 3 + clock.minutes / 2
+                spring: 2; damping: 0.2; modulus: 360
+                source: (clock.hours * 30) + (clock.minutes * 0.5)
             }
         }
     }
+
     Image {
-        x: 95
-        y: 30
+        x: 93.5; y: 17
         source: "minute.png"
         smooth: true
         transform: Rotation {
             id: minuteRotation
-            origin.x: 4; origin.y: 70
-            angle: 0
+            origin.x: 6.5; origin.y: 83; angle: 0
             angle: SpringFollow {
-                spring: 2
-                damping: .2
+                spring: 2; damping: 0.2; modulus: 360
                 source: clock.minutes * 6
             }
         }
     }
+
     Image {
-        x: 96
-        y: 40
+        x: 97.5; y: 20
         source: "second.png"
         smooth: true
         transform: Rotation {
             id: secondRotation
-            origin.x: 2; origin.y: 60
-            angle: 0
+            origin.x: 2.5; origin.y: 80; angle: 0
             angle: SpringFollow {
-                spring: 5
-                damping: .25
-                modulus: 360
+                spring: 5; damping: 0.25; modulus: 360
                 source: clock.seconds * 6
             }
         }
     }
 
-    Rectangle {
-        x: 93
-        y: 94
-        width: 11
-        height: 11
-        radius: 5
-        color: "black"
+    Image {
+        anchors.centerIn: background; source: "center.png"
+    }
+
+    Text {
+        id: cityLabel; font.bold: true; font.pixelSize: 14; y:200; color: "white"
+        anchors.horizontalCenter: parent.horizontalCenter
     }
 }
