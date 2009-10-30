@@ -34,3 +34,5 @@ wince*: {
       QMAKE_CXXFLAGS_RELEASE ~= s/-O1/-Os -Oy -Ob2/
    }
 }
+
+symbian:TARGET.UID3=0x2001E62B
