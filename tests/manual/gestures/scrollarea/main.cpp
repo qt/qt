@@ -73,11 +73,11 @@ protected:
         QPanGesture *pan = static_cast<QPanGesture *>(event->gesture(Qt::PanGesture));
         if (pan) {
             switch(pan->state()) {
-            case Qt::GestureStarted: qDebug("area: Pan: started"); break;
-            case Qt::GestureFinished: qDebug("area: Pan: finished"); break;
-            case Qt::GestureCanceled: qDebug("area: Pan: canceled"); break;
+            case Qt::GestureStarted: qDebug() << this << "Pan: started"; break;
+            case Qt::GestureFinished: qDebug() << this << "Pan: finished"; break;
+            case Qt::GestureCanceled: qDebug() << this << "Pan: canceled"; break;
             case Qt::GestureUpdated: break;
-            default: qDebug("area: Pan: <unknown state>"); break;
+            default: qDebug() << this << "Pan: <unknown state>"; break;
             }
 
             if (pan->state() == Qt::GestureStarted)
@@ -134,11 +134,11 @@ protected:
         QPanGesture *pan = static_cast<QPanGesture *>(event->gesture(Qt::PanGesture));
         if (pan) {
             switch (pan->state()) {
-            case Qt::GestureStarted: qDebug("slider: Pan: started"); break;
-            case Qt::GestureFinished: qDebug("slider: Pan: finished"); break;
-            case Qt::GestureCanceled: qDebug("slider: Pan: canceled"); break;
+            case Qt::GestureStarted: qDebug() << this << "Pan: started"; break;
+            case Qt::GestureFinished: qDebug() << this << "Pan: finished"; break;
+            case Qt::GestureCanceled: qDebug() << this << "Pan: canceled"; break;
             case Qt::GestureUpdated: break;
-            default: qDebug("slider: Pan: <unknown state>"); break;
+            default: qDebug() << this << "Pan: <unknown state>"; break;
             }
 
             if (pan->state() == Qt::GestureStarted)
@@ -186,6 +186,7 @@ public:
     MainWindow()
     {
         rootScrollArea = new ScrollArea;
+        rootScrollArea->setObjectName(QLatin1String("rootScrollArea"));
         setCentralWidget(rootScrollArea);
 
         QWidget *root = new QWidget;
@@ -193,14 +194,17 @@ public:
         rootScrollArea->setWidget(root);
 
         Slider *verticalSlider = new Slider(Qt::Vertical, root);
+        verticalSlider->setObjectName(QLatin1String("verticalSlider"));
         verticalSlider ->move(650, 1100);
         Slider *horizontalSlider = new Slider(Qt::Horizontal, root);
+        horizontalSlider->setObjectName(QLatin1String("horizontalSlider"));
         horizontalSlider ->move(600, 1000);
 
         childScrollArea = new ScrollArea(root);
+        childScrollArea->setObjectName(QLatin1String("childScrollArea"));
         childScrollArea->move(500, 500);
         QWidget *w = new QWidget;
-        w->setMinimumWidth(400);
+        w->setMinimumWidth(700);
         QVBoxLayout *l = new QVBoxLayout(w);
         l->setMargin(20);
         for (int i = 0; i < 100; ++i) {
@@ -211,6 +215,14 @@ public:
             l->addWidget(w);
         }
         childScrollArea->setWidget(w);
+#if defined(Q_OS_WIN)
+        // Windows can force Qt to create a native window handle for an
+        // intermediate widget and that will block gesture to get touch events.
+        // So this hack to make sure gestures get all touch events they need.
+        foreach (QObject *w, children())
+            if (w->isWidgetType())
+                static_cast<QWidget *>(w)->setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
     }
 private:
     ScrollArea *rootScrollArea;
