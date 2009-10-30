@@ -42,14 +42,22 @@
 #ifndef QATOMIC_SYMBIAN_H
 #define QATOMIC_SYMBIAN_H
 
-QT_BEGIN_HEADER
-
 #if defined(Q_CC_RVCT)
 #  define QT_NO_ARM_EABI
 #  include <QtCore/qatomic_arm.h>
 #elif defined(Q_CC_NOKIAX86) || defined(Q_CC_GCCE)
 #  include <QtCore/qatomic_generic.h>
 #endif
+
+QT_BEGIN_HEADER
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Core)
+
+// Empty, but needed to avoid warnings
+
+QT_END_NAMESPACE
 
 QT_END_HEADER
 
