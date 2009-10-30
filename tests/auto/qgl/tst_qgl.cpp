@@ -118,6 +118,16 @@ public:
     void setAutoBufferSwap(bool on) { QGLWidget::setAutoBufferSwap(on); }
 };
 
+static int appDefaultDepth()
+{
+    static int depth = 0;
+    if (depth == 0) {
+        QPixmap pm(1, 1);
+        depth = pm.depth();
+    }
+    return depth;
+}
+
 // Using INT_MIN and INT_MAX will cause failures on systems
 // where "int" is 64-bit, so use the explicit values instead.
 #define TEST_INT_MIN    (-2147483647 - 1)
@@ -714,6 +724,8 @@ public:
 
 void tst_QGL::graphicsViewClipping()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     const int size = 64;
     UnclippedWidget *widget = new UnclippedWidget;
     widget->setFixedSize(size, size);
@@ -866,6 +878,8 @@ public:
 
 void tst_QGL::glWidgetRendering()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     GLWidget w;
     w.show();
 
@@ -1089,6 +1103,8 @@ protected:
 
 void tst_QGL::glFBOUseInGLWidget()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
         QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
 
@@ -1116,6 +1132,8 @@ void tst_QGL::glFBOUseInGLWidget()
 
 void tst_QGL::glWidgetReparent()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     // Try it as a top-level first:
     GLWidget *widget = new GLWidget;
     widget->setGeometry(0, 0, 200, 30);
@@ -1582,6 +1600,8 @@ protected:
 
 void tst_QGL::replaceClipping()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     ReplaceClippingGLWidget glw;
     glw.resize(300, 300);
     glw.show();
@@ -1707,6 +1727,8 @@ protected:
 
 void tst_QGL::clipTest()
 {
+    if (appDefaultDepth() < 24)
+        QSKIP("This test won't work for bit depths < 24", SkipAll);
     ClipTestGLWidget glw;
     glw.resize(220, 220);
     glw.show();
