@@ -9,7 +9,7 @@ Rectangle {
     Grid {
         columns: 3
         Clock { city: "New York"; shift: -4 }
-        Clock { city: "London" }
-        Clock { city: "Brisbane"; shift: 10 }
+        Clock { city: "Mumbai"; shift: 5.5 }
+        Clock { city: "Tokyo"; shift: 9 }
     }
 }
