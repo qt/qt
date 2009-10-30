@@ -8,12 +8,12 @@ Item {
     property var hours
     property var minutes
     property var seconds
-    property int shift : 0
+    property var shift : 0
 
     function timeChanged() {
         var date = new Date;
-        hours = date.getUTCHours() + clock.shift
-        minutes = date.getUTCMinutes();
+        hours = date.getUTCHours() + Math.floor(clock.shift)
+        minutes = date.getUTCMinutes() + ((clock.shift % 1) * 60);
         seconds = date.getUTCSeconds();
     }
 
