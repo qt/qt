@@ -39,14 +39,14 @@
 **
 ****************************************************************************/
 
-#include "qmltransition.h"
-#include "qmlstategroup.h"
-#include "qmlstate_p.h"
+#include "qmltransition_p.h"
+#include "qmlstategroup_p.h"
+#include "qmlstate_p_p.h"
 #include "qmlbinding.h"
-#include "qmlstateoperations.h"
-#include "qmlanimation.h"
+#include "qmlstateoperations_p.h"
 #include "qmlanimation_p.h"
-#include "qmlstate.h"
+#include "qmlanimation_p_p.h"
+#include "qmlstate_p.h"
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE

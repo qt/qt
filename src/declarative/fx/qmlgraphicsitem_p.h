@@ -54,10 +54,10 @@
 //
 
 #include <QtDeclarative/qmlgraphicsitem.h>
-#include <QtDeclarative/qmlstate.h>
-#include <QtDeclarative/qmlgraphicsanchors.h>
-#include <private/qmlnullablevalue_p.h>
+#include <private/qmlstate_p.h>
 #include <private/qmlgraphicsanchors_p.h>
+#include <private/qmlnullablevalue_p_p.h>
+#include <private/qmlgraphicsanchors_p_p.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtCore/qlist.h>

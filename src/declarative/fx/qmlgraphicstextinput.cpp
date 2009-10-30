@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicstextinput.h"
 #include "qmlgraphicstextinput_p.h"
+#include "qmlgraphicstextinput_p_p.h"
 #include "qmlinfo.h"
 #include <QValidator>
 #include <QApplication>

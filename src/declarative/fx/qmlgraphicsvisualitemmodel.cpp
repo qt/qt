@@ -39,19 +39,19 @@
 **
 ****************************************************************************/
 
-#include "qlistmodelinterface.h"
+#include <private/qlistmodelinterface_p.h>
 #include "qmlgraphicsitem.h"
 #include <qmlcontext.h>
 #include <qmlexpression.h>
-#include "qmlpackage.h"
+#include <private/qmlpackage_p.h>
 #include "qhash.h"
 #include "qlist.h"
 #include "private/qobject_p.h"
 #include "private/qmetaobjectbuilder_p.h"
-#include "qmlopenmetaobject.h"
-#include "qmllistaccessor.h"
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmllistaccessor_p.h>
 #include "qmlinfo.h"
-#include "qmlgraphicsvisualitemmodel.h"
+#include "qmlgraphicsvisualitemmodel_p.h"
 #include "private/qguard_p.h"
 #include <QtCore/qdebug.h>
 
@@ -1029,4 +1029,5 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QmlGraphicsVisua
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QmlGraphicsVisualDataModel)
 
 QT_END_NAMESPACE
-#include "qfxvisualitemmodel.moc"
+
+#include "qmlgraphicsvisualitemmodel.moc"

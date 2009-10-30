@@ -39,43 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSANIMATEDIMAGE_P_H
-#define QMLGRAPHICSANIMATEDIMAGE_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#ifndef QMLGRAPHICSANIMATEDIMAGEITEM_H
+#define QMLGRAPHICSANIMATEDIMAGEITEM_H
 
 #include <private/qmlgraphicsimage_p.h>
 
+QT_BEGIN_HEADER
+
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Declarative)
+
 class QMovie;
-class QNetworkReply;
+class QmlGraphicsAnimatedImageItemPrivate;
 
-class QmlGraphicsAnimatedImageItemPrivate : public QmlGraphicsImagePrivate
+class Q_DECLARATIVE_EXPORT QmlGraphicsAnimatedImageItem : public QmlGraphicsImage
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsAnimatedImageItem)
+    Q_OBJECT
 
+    Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
+    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
+    Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
+    Q_PROPERTY(int frameCount READ frameCount)
 public:
-    QmlGraphicsAnimatedImageItemPrivate()
-      : playing(true), paused(false), _movie(0), reply(0)
-    {
-    }
+    QmlGraphicsAnimatedImageItem(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsAnimatedImageItem();
 
-    bool playing;
-    bool paused;
-    QMovie *_movie;
-    QNetworkReply *reply;
+    bool isPlaying() const;
+    void setPlaying(bool play);
+
+    bool isPaused() const;
+    void setPaused(bool pause);
+
+    int currentFrame() const;
+    void setCurrentFrame(int frame);
+
+    int frameCount() const;
+
+    // Extends QmlGraphicsImage's src property*/
+    virtual void setSource(const QUrl&);
+
+Q_SIGNALS:
+    void playingChanged();
+    void pausedChanged();
+    void frameChanged();
+
+private Q_SLOTS:
+    void movieUpdate();
+    void movieRequestFinished();
+    void playingStatusChanged();
+
+protected:
+    QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsAnimatedImageItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsAnimatedImageItem)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSANIMATEDIMAGE_P_H
+QML_DECLARE_TYPE(QmlGraphicsAnimatedImageItem)
+
+QT_END_HEADER
+
+#endif

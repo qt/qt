@@ -39,76 +39,142 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSMOUSEREGION_P_H
-#define QMLGRAPHICSMOUSEREGION_P_H
+#ifndef QMLGRAPHICSMOUSEREGION_H
+#define QMLGRAPHICSMOUSEREGION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qdatetime.h"
-#include "qbasictimer.h"
-#include "qgraphicssceneevent.h"
-#include "qmlgraphicsitem_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsMouseRegionPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsDrag : public QObject
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsMouseRegion)
+    Q_OBJECT
+
+    Q_ENUMS(Axis)
+    Q_PROPERTY(QmlGraphicsItem *target READ target WRITE setTarget)
+    Q_PROPERTY(Axis axis READ axis WRITE setAxis)
+    Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin)
+    Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax)
+    Q_PROPERTY(qreal minimumY READ ymin WRITE setYmin)
+    Q_PROPERTY(qreal maximumY READ ymax WRITE setYmax)
+    //### consider drag and drop
 
 public:
-    QmlGraphicsMouseRegionPrivate()
-      : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
-    {
-    }
+    QmlGraphicsDrag(QObject *parent=0);
+    ~QmlGraphicsDrag();
 
-    void init()
-    {
-        Q_Q(QmlGraphicsMouseRegion);
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-    }
+    QmlGraphicsItem *target() const;
+    void setTarget(QmlGraphicsItem *);
 
-    void saveEvent(QGraphicsSceneMouseEvent *event) {
-        lastPos = event->pos();
-        lastButton = event->button();
-        lastButtons = event->buttons();
-        lastModifiers = event->modifiers();
-    }
+    enum Axis { XAxis=0x01, YAxis=0x02, XandYAxis=0x03 };
+    Axis axis() const;
+    void setAxis(Axis);
 
-    bool isConnected(const char *signal) {
-        Q_Q(QmlGraphicsMouseRegion);
-        int idx = QObjectPrivate::get(q)->signalIndex(signal);
-        return QObjectPrivate::get(q)->isSignalConnected(idx);
-    }
+    qreal xmin() const;
+    void setXmin(qreal);
+    qreal xmax() const;
+    void setXmax(qreal);
+    qreal ymin() const;
+    void setYmin(qreal);
+    qreal ymax() const;
+    void setYmax(qreal);
 
-    bool absorb : 1;
-    bool hovered : 1;
-    bool pressed : 1;
-    bool longPress : 1;
-    bool moved : 1;
-    bool dragX : 1;
-    bool dragY : 1;
-    bool dragged : 1;
-    QmlGraphicsDrag drag;
-    QPointF start;
-    QPointF startScene;
-    qreal startX;
-    qreal startY;
-    QPointF lastPos;
-    Qt::MouseButton lastButton;
-    Qt::MouseButtons lastButtons;
-    Qt::KeyboardModifiers lastModifiers;
-    QBasicTimer pressAndHoldTimer;
+private:
+    QmlGraphicsItem *_target;
+    Axis _axis;
+    qreal _xmin;
+    qreal _xmax;
+    qreal _ymin;
+    qreal _ymax;
+    Q_DISABLE_COPY(QmlGraphicsDrag)
+};
+
+class QmlGraphicsMouseEvent;
+class QmlGraphicsMouseRegionPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsMouseRegion : public QmlGraphicsItem
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal mouseX READ mouseX NOTIFY positionChanged)
+    Q_PROPERTY(qreal mouseY READ mouseY NOTIFY positionChanged)
+    Q_PROPERTY(bool containsMouse READ hovered NOTIFY hoveredChanged)
+    Q_PROPERTY(bool pressed READ pressed NOTIFY pressedChanged)
+    Q_PROPERTY(bool enabled READ isEnabled WRITE setEnabled NOTIFY enabledChanged)
+    Q_PROPERTY(Qt::MouseButtons pressedButtons READ pressedButtons NOTIFY pressedChanged)
+    Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
+    Q_PROPERTY(bool hoverEnabled READ acceptHoverEvents WRITE setAcceptHoverEvents)
+    Q_PROPERTY(QmlGraphicsDrag *drag READ drag) //### add flicking to QmlGraphicsDrag or add a QmlGraphicsFlick ???
+
+public:
+    QmlGraphicsMouseRegion(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsMouseRegion();
+
+    qreal mouseX() const;
+    qreal mouseY() const;
+
+    bool isEnabled() const;
+    void setEnabled(bool);
+
+    bool hovered() const;
+    bool pressed() const;
+
+    Qt::MouseButtons pressedButtons() const;
+
+    Qt::MouseButtons acceptedButtons() const;
+    void setAcceptedButtons(Qt::MouseButtons buttons);
+
+    QmlGraphicsDrag *drag();
+
+Q_SIGNALS:
+    void hoveredChanged();
+    void pressedChanged();
+    void enabledChanged();
+    void acceptedButtonsChanged();
+    void positionChanged(QmlGraphicsMouseEvent *mouse);
+
+    void pressed(QmlGraphicsMouseEvent *mouse);
+    void pressAndHold(QmlGraphicsMouseEvent *mouse);
+    void released(QmlGraphicsMouseEvent *mouse);
+    void clicked(QmlGraphicsMouseEvent *mouse);
+    void doubleClicked(QmlGraphicsMouseEvent *mouse);
+    void entered();
+    void exited();
+
+protected:
+    void setHovered(bool);
+    bool setPressed(bool);
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+    void hoverMoveEvent(QGraphicsSceneHoverEvent *event);
+    void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+    bool sceneEvent(QEvent *);
+    void timerEvent(QTimerEvent *event);
+
+private:
+    void handlePress();
+    void handleRelease();
+
+protected:
+    QmlGraphicsMouseRegion(QmlGraphicsMouseRegionPrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsMouseRegion)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsMouseRegion)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSMOUSEREGION_P_H
+QML_DECLARE_TYPE(QmlGraphicsDrag)
+QML_DECLARE_TYPE(QmlGraphicsMouseRegion)
+
+QT_END_HEADER
+
+#endif // QMLGRAPHICSMOUSEREGION_H

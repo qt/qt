@@ -39,71 +39,151 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSRECT_P_H
-#define QMLGRAPHICSRECT_P_H
+#ifndef QMLGRAPHICSRECT_H
+#define QMLGRAPHICSRECT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
+#include <QtGui/qbrush.h>
 
-#include "qmlgraphicsitem_p.h"
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsGradient;
-class QmlGraphicsRect;
-class QmlGraphicsRectPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+class Q_DECLARATIVE_EXPORT QmlGraphicsPen : public QObject
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsRect)
+    Q_OBJECT
+
+    Q_PROPERTY(int width READ width WRITE setWidth NOTIFY penChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY penChanged)
+public:
+    QmlGraphicsPen(QObject *parent=0)
+        : QObject(parent), _width(1), _color("#000000"), _valid(false)
+    {}
+
+    int width() const { return _width; }
+    void setWidth(int w);
+
+    QColor color() const { return _color; }
+    void setColor(const QColor &c);
+
+    bool isValid() { return _valid; };
+
+Q_SIGNALS:
+    void penChanged();
+
+private:
+    int _width;
+    QColor _color;
+    bool _valid;
+};
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsGradientStop : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(qreal position READ position WRITE setPosition)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
-    QmlGraphicsRectPrivate() :
-    color(Qt::white), gradient(0), pen(0), radius(0), paintmargin(0)
-    {
-    }
+    QmlGraphicsGradientStop(QObject *parent=0) : QObject(parent) {}
 
-    ~QmlGraphicsRectPrivate()
-    {
-        delete pen;
-    }
+    qreal position() const { return m_position; }
+    void setPosition(qreal position) { m_position = position; updateGradient(); }
 
-    void init()
-    {
-    }
+    QColor color() const { return m_color; }
+    void setColor(const QColor &color) { m_color = color; updateGradient(); }
 
-    QColor getColor();
-    QColor color;
-    QmlGraphicsGradient *gradient;
-    QmlGraphicsPen *getPen() {
-        if (!pen) {
-            Q_Q(QmlGraphicsRect);
-            pen = new QmlGraphicsPen;
-            QObject::connect(pen, SIGNAL(penChanged()), q, SLOT(doUpdate()));
-        }
-        return pen;
-    }
-    QmlGraphicsPen *pen;
-    qreal radius;
-    qreal paintmargin;
-    QPixmap rectImage;
+private:
+    void updateGradient();
 
-    void setPaintMargin(qreal margin)
-    {
-        Q_Q(QmlGraphicsRect);
-        if (margin == paintmargin)
-            return;
-        q->prepareGeometryChange();
-        paintmargin = margin;
-    }
+private:
+    qreal m_position;
+    QColor m_color;
+};
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsGradient : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QList<QmlGraphicsGradientStop *> *stops READ stops)
+    Q_CLASSINFO("DefaultProperty", "stops")
+
+public:
+    QmlGraphicsGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
+    ~QmlGraphicsGradient() { delete m_gradient; }
+
+    QList<QmlGraphicsGradientStop *> *stops() { return &m_stops; }
+
+    const QGradient *gradient() const;
+
+Q_SIGNALS:
+    void updated();
+
+private:
+    void doUpdate();
+
+private:
+    QList<QmlGraphicsGradientStop *> m_stops;
+    mutable QGradient *m_gradient;
+    friend class QmlGraphicsGradientStop;
+};
+
+class QmlGraphicsRectPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsRect : public QmlGraphicsItem
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
+    Q_PROPERTY(QmlGraphicsGradient *gradient READ gradient WRITE setGradient)
+    Q_PROPERTY(QmlGraphicsPen * border READ border CONSTANT)
+    Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged)
+public:
+    QmlGraphicsRect(QmlGraphicsItem *parent=0);
+
+    QColor color() const;
+    void setColor(const QColor &);
+
+    QmlGraphicsPen *border();
+
+    QmlGraphicsGradient *gradient() const;
+    void setGradient(QmlGraphicsGradient *gradient);
+
+    qreal radius() const;
+    void setRadius(qreal radius);
+
+    QRectF boundingRect() const;
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+
+Q_SIGNALS:
+    void colorChanged();
+    void radiusChanged();
+
+private Q_SLOTS:
+    void doUpdate();
+
+private:
+    void generateRoundedRect();
+    void generateBorderedRect();
+    void drawRect(QPainter &painter);
+
+protected:
+    QmlGraphicsRect(QmlGraphicsRectPrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsRect)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRect)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSRECT_P_H
+QML_DECLARE_TYPE(QmlGraphicsPen)
+QML_DECLARE_TYPE(QmlGraphicsGradientStop)
+QML_DECLARE_TYPE(QmlGraphicsGradient)
+QML_DECLARE_TYPE(QmlGraphicsRect)
+
+QT_END_HEADER
+
+#endif // QMLGRAPHICSRECT_H

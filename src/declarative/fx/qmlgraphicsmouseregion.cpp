@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsmouseregion.h"
 #include "qmlgraphicsmouseregion_p.h"
-#include "qmlgraphicsevents_p.h"
+#include "qmlgraphicsmouseregion_p_p.h"
+#include "qmlgraphicsevents_p_p.h"
 #include <QGraphicsSceneMouseEvent>
 
 

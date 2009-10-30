@@ -39,50 +39,67 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSIMAGEITEM_P_H
-#define QMLGRAPHICSIMAGEITEM_P_H
+#ifndef QMLGRAPHICSIMAGEITEM_H
+#define QMLGRAPHICSIMAGEITEM_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include <private/qmlgraphicsitem_p.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsPaintedItemPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsPaintedItemPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsPaintedItem : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsPaintedItem)
+    Q_OBJECT
+
+    Q_PROPERTY(QSize contentsSize READ contentsSize WRITE setContentsSize)
+    Q_PROPERTY(QColor fillColor READ fillColor WRITE setFillColor NOTIFY fillColorChanged)
+    Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
 
 public:
-    QmlGraphicsPaintedItemPrivate()
-      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false)
-    {
-    }
+    QmlGraphicsPaintedItem(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsPaintedItem();
 
-    struct ImageCacheItem {
-        ImageCacheItem() : age(0) {}
-        ~ImageCacheItem() { }
-        int age;
-        QRect area;
-        QRect dirty; // one dirty area (allows optimization of common cases)
-        QPixmap image;
-    };
+    QSize contentsSize() const;
+    void setContentsSize(const QSize &);
 
-    QList<ImageCacheItem*> imagecache;
+    int cacheSize() const;
+    void setCacheSize(int pixels);
 
-    int max_imagecache_size;
-    QSize contentsSize;
-    QColor fillColor;
-    bool cachefrozen;
+    QColor fillColor() const;
+    void setFillColor(const QColor&);
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+
+protected:
+    QmlGraphicsPaintedItem(QmlGraphicsPaintedItemPrivate &dd, QmlGraphicsItem *parent);
+
+    virtual void drawContents(QPainter *p, const QRect &) = 0;
+
+    void setCacheFrozen(bool);
+
+Q_SIGNALS:
+    void fillColorChanged();
+
+protected Q_SLOTS:
+    void dirtyCache(const QRect &);
+    void clearCache();
+
+private:
+    void init();
+    Q_DISABLE_COPY(QmlGraphicsPaintedItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsPaintedItem)
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsPaintedItem)
+
+QT_END_HEADER
+
 #endif

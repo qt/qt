@@ -2,7 +2,7 @@
 #include <QtGui/qwidget.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qscrollbar.h>
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebugclient_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>

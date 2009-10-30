@@ -41,7 +41,7 @@
 
 #include "private/qmlcompiler_p.h"
 #include "private/qmlcompositetypedata_p.h"
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include "qmlparser_p.h"
 #include "private/qmlscriptparser_p.h"
 #include <qmlpropertyvaluesource.h>

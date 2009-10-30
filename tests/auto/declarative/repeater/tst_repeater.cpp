@@ -1,8 +1,8 @@
 #include <QtTest/QtTest>
-#include <qlistmodelinterface.h>
+#include <qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <qmlgraphicsrepeater.h>
-#include <qmlgraphicstext.h>
+#include <qmlgraphicsrepeater_p.h>
+#include <qmlgraphicstext_p.h>
 #include <qmlcontext.h>
 
 class tst_QmlGraphicsRepeater : public QObject

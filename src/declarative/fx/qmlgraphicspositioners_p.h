@@ -39,67 +39,129 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSLAYOUTS_P_H
-#define QMLGRAPHICSLAYOUTS_P_H
+#ifndef QMLGRAPHICSLAYOUTS_H
+#define QMLGRAPHICSLAYOUTS_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <private/qmlgraphicsitem_p.h>
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QtDeclarative/qmlgraphicspositioners.h>
-#include <QtDeclarative/qmlstate.h>
-#include <private/qmltransitionmanager_p.h>
-#include <QtDeclarative/qmlstateoperations.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
+#include <private/qmlstate_p.h>
+
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate
+
+QT_MODULE(Declarative)
+class QmlGraphicsBasePositionerPrivate;
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsBasePositioner : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsBasePositioner)
+    Q_OBJECT
 
+    Q_PROPERTY(int spacing READ spacing WRITE setSpacing NOTIFY spacingChanged)
+    Q_PROPERTY(QmlTransition *move READ move WRITE setMove)
+    Q_PROPERTY(QmlTransition *add READ add WRITE setAdd)
+    Q_PROPERTY(QmlTransition *remove READ remove WRITE setRemove)
 public:
-    QmlGraphicsBasePositionerPrivate()
-        : _ep(false), _componentComplete(false), _spacing(0),
-        aut(QmlGraphicsBasePositioner::None), moveTransition(0), addTransition(0),
-        removeTransition(0), _movingItem(0)
-    {
-    }
+    enum AutoUpdateType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
+    QmlGraphicsBasePositioner(AutoUpdateType, QmlGraphicsItem *parent);
 
-    void init(QmlGraphicsBasePositioner::AutoUpdateType at)
-    {
-        aut = at;
-    }
+    int spacing() const;
+    void setSpacing(int);
 
-    bool _ep;
-    bool _componentComplete;
-    int _spacing;
-    QmlGraphicsBasePositioner::AutoUpdateType aut;
-    QmlTransition *moveTransition;
-    QmlTransition *addTransition;
-    QmlTransition *removeTransition;
-    QSet<QmlGraphicsItem *> _items;
-    QSet<QmlGraphicsItem *> _leavingItems;
-    QSet<QmlGraphicsItem *> _stableItems;
-    QSet<QmlGraphicsItem *> _newItems;
-    QSet<QmlGraphicsItem *> _animated;
-    QmlStateOperation::ActionList addActions;
-    QmlStateOperation::ActionList moveActions;
-    QmlStateOperation::ActionList removeActions;
-    QmlTransitionManager addTransitionManager;
-    QmlTransitionManager moveTransitionManager;
-    QmlTransitionManager removeTransitionManager;
-//    QmlStateGroup *stateGroup;
-    QmlGraphicsItem *_movingItem;
+    QmlTransition *move() const;
+    void setMove(QmlTransition *);
+
+    QmlTransition *add() const;
+    void setAdd(QmlTransition *);
+
+    QmlTransition *remove() const;
+    void setRemove(QmlTransition *);
+
+protected:
+    virtual void componentComplete();
+    virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
+    virtual bool event(QEvent *);
+    QSet<QmlGraphicsItem *>* newItems();
+    QSet<QmlGraphicsItem *>* leavingItems();
+    QSet<QmlGraphicsItem *>* items();
+    void applyAdd(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
+    void applyMove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
+    void applyRemove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
+    void finishApplyTransitions();
+
+Q_SIGNALS:
+    void layoutItemChanged();
+    void spacingChanged();
+
+protected Q_SLOTS:
+    virtual void doPositioning()=0;
+
+private Q_SLOTS:
+    void prePositioning();
+
+protected:
+    QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent);
+    void setMovingItem(QmlGraphicsItem *);
+
+private:
+    void applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target,
+            QmlStateOperation::ActionList &actions);
+    Q_DISABLE_COPY(QmlGraphicsBasePositioner)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsBasePositioner)
+};
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsColumn : public QmlGraphicsBasePositioner
+{
+    Q_OBJECT
+public:
+    QmlGraphicsColumn(QmlGraphicsItem *parent=0);
+protected Q_SLOTS:
+    virtual void doPositioning();
+private:
+    Q_DISABLE_COPY(QmlGraphicsColumn)
+};
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsRow: public QmlGraphicsBasePositioner
+{
+    Q_OBJECT
+public:
+    QmlGraphicsRow(QmlGraphicsItem *parent=0);
+protected Q_SLOTS:
+    virtual void doPositioning();
+private:
+    Q_DISABLE_COPY(QmlGraphicsRow)
+};
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsGrid : public QmlGraphicsBasePositioner
+{
+    Q_OBJECT
+    Q_PROPERTY(int rows READ rows WRITE setRows)
+    Q_PROPERTY(int columns READ columns WRITE setcolumns)
+public:
+    QmlGraphicsGrid(QmlGraphicsItem *parent=0);
+
+    int rows() const {return _rows;}
+    void setRows(const int rows){_rows = rows;}
+
+    int columns() const {return _columns;}
+    void setcolumns(const int columns){_columns = columns;}
+protected Q_SLOTS:
+    virtual void doPositioning();
+
+private:
+    int _rows;
+    int _columns;
+    Q_DISABLE_COPY(QmlGraphicsGrid)
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsColumn)
+QML_DECLARE_TYPE(QmlGraphicsRow)
+QML_DECLARE_TYPE(QmlGraphicsGrid)
+
+QT_END_HEADER
+
 #endif

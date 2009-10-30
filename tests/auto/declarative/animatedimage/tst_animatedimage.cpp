@@ -2,9 +2,9 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qmlgraphicsrect.h>
-#include <QtDeclarative/qmlgraphicsimage.h>
-#include "qmlgraphicsanimatedimageitem.h"
+#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsimage_p.h>
+#include "qmlgraphicsanimatedimageitem_p.h"
 
 class tst_animatedimage : public QObject
 {

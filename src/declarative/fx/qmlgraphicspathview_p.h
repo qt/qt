@@ -39,113 +39,100 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSPATHVIEW_P_H
-#define QMLGRAPHICSPATHVIEW_P_H
+#ifndef QMLGRAPHICSPATHVIEW_H
+#define QMLGRAPHICSPATHVIEW_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
+#include <private/qmlgraphicspath_p.h>
 
-#include "qdatetime.h"
-#include "qmlgraphicspathview.h"
-#include "qmlgraphicsitem_p.h"
-#include "qmlgraphicsvisualitemmodel.h"
-#include "qml.h"
-#include "private/qmlanimation_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-typedef struct PathViewItem{
-    int index;
-    QmlGraphicsItem* item;
-}PathViewItem;
+QT_MODULE(Declarative)
 
-class QmlGraphicsPathViewPrivate : public QmlGraphicsItemPrivate
+class QListModelInterface;
+class QmlGraphicsPathViewPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathView : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsPathView)
+    Q_OBJECT
+
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_PROPERTY(QmlGraphicsPath *path READ path WRITE setPath)
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
+    Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
+    Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition)
+    Q_PROPERTY(qreal dragMargin READ dragMargin WRITE setDragMargin)
+    Q_PROPERTY(int count READ count)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
 
 public:
-    QmlGraphicsPathViewPrivate()
-      : path(0), currentIndex(0), startPc(0), lastDist(0)
-        , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
-        , snapPos(0), dragMargin(0), moveOffset(this, &QmlGraphicsPathViewPrivate::setOffset)
-        , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1), model(0)
-        , moveReason(Other)
-    {
-        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsPathViewPrivate, &QmlGraphicsPathViewPrivate::fixOffset>(&moveOffset, this);
-    }
+    QmlGraphicsPathView(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsPathView();
 
-    void init()
-    {
-        Q_Q(QmlGraphicsPathView);
-        _offset = 0;
-        q->setAcceptedMouseButtons(Qt::LeftButton);
-        q->setFlag(QGraphicsItem::ItemIsFocusScope);
-        q->setFiltersChildEvents(true);
-        q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
-    }
+    QVariant model() const;
+    void setModel(const QVariant &);
 
-    QmlGraphicsItem *getItem(int modelIndex) {
-        Q_Q(QmlGraphicsPathView);
-        requestedIndex = modelIndex;
-        QmlGraphicsItem *item = model->item(modelIndex);
-        if (item)
-            item->setParentItem(q);
-        requestedIndex = -1;
-        return item;
-    }
-    void releaseItem(QmlGraphicsItem *item) {
-        model->release(item);
-    }
+    QmlGraphicsPath *path() const;
+    void setPath(QmlGraphicsPath *);
 
-    bool isValid() const {
-        return model && model->count() > 0 && model->isValid() && path;
-    }
+    int currentIndex() const;
+    void setCurrentIndex(int idx);
 
-    int calcCurrentIndex();
-    void updateCurrent();
-    void fixOffset();
+    qreal offset() const;
     void setOffset(qreal offset);
-    void regenerate();
-    void updateItem(QmlGraphicsItem *, qreal);
-    void snapToCurrent();
-    QPointF pointNear(const QPointF &point, qreal *nearPercent=0) const;
 
-    QmlGraphicsPath *path;
-    int currentIndex;
-    qreal startPc;
-    QPointF startPoint;
-    qreal lastDist;
-    int lastElapsed;
-    qreal _offset;
-    bool stealMouse : 1;
-    bool ownModel : 1;
-    QTime lastPosTime;
-    QPointF lastPos;
-    QmlGraphicsItem *activeItem;
-    qreal snapPos;
-    qreal dragMargin;
-    QmlTimeLine tl;
-    QmlTimeLineValueProxy<QmlGraphicsPathViewPrivate> moveOffset;
-    QmlTimeLineEvent fixupOffsetEvent;
-    int firstIndex;
-    int pathItems;
-    int pathOffset;
-    int requestedIndex;
-    QList<QmlGraphicsItem *> items;
-    QmlGraphicsVisualModel *model;
-    QVariant modelVariant;
-    enum MovementReason { Other, Key, Mouse };
-    MovementReason moveReason;
+    qreal snapPosition() const;
+    void setSnapPosition(qreal pos);
+
+    qreal dragMargin() const;
+    void setDragMargin(qreal margin);
+
+    int count() const;
+
+    QmlComponent *delegate() const;
+    void setDelegate(QmlComponent *);
+
+    int pathItemCount() const;
+    void setPathItemCount(int);
+
+    static QObject *qmlAttachedProperties(QObject *);
+
+Q_SIGNALS:
+    void currentIndexChanged();
+    void offsetChanged();
+
+protected:
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *);
+    bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
+    bool sceneEventFilter(QGraphicsItem *, QEvent *);
+    void componentComplete();
+
+private Q_SLOTS:
+    void refill();
+    void ticked();
+    void itemsInserted(int index, int count);
+    void itemsRemoved(int index, int count);
+    void createdItem(int index, QmlGraphicsItem *item);
+    void destroyingItem(QmlGraphicsItem *item);
+
+protected:
+    QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    friend class QmlGraphicsPathViewAttached;
+    static QHash<QObject*, QObject*> attachedProperties;
+    Q_DISABLE_COPY(QmlGraphicsPathView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsPathView)
 };
 
 QT_END_NAMESPACE
 
-#endif
+QML_DECLARE_TYPE(QmlGraphicsPathView)
+QML_DECLARE_TYPEINFO(QmlGraphicsPathView, QML_HAS_ATTACHED_PROPERTIES)
+QT_END_HEADER
+
+#endif // QMLGRAPHICSPATHVIEW_H

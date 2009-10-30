@@ -3,8 +3,8 @@ SOURCES += \
            widgets/graphicslayouts.cpp \
 
 HEADERS += \
-           widgets/graphicswidgets.h \
-           widgets/graphicslayouts.h \
+           widgets/graphicswidgets_p.h \
+           widgets/graphicslayouts_p.h \
 
 
 

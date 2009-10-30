@@ -9,19 +9,19 @@ SOURCES += \
            extra/qmlfontloader.cpp
 
 HEADERS += \
-           extra/qnumberformat.h \
-           extra/qmlnumberformatter.h \
-           extra/qmldatetimeformatter.h \
-           extra/qmlgraphicsintegermodel.h \
-           extra/qmlgraphicsanimatedimageitem.h \
+           extra/qnumberformat_p.h \
+           extra/qmlnumberformatter_p.h \
+           extra/qmldatetimeformatter_p.h \
+           extra/qmlgraphicsintegermodel_p.h \
            extra/qmlgraphicsanimatedimageitem_p.h \
-           extra/qmlgraphicsparticles.h \
-           extra/qmlbehavior.h \
-           extra/qmlfontloader.h
+           extra/qmlgraphicsanimatedimageitem_p_p.h \
+           extra/qmlgraphicsparticles_p.h \
+           extra/qmlbehavior_p.h \
+           extra/qmlfontloader_p.h
 
 contains(QT_CONFIG, xmlpatterns) {
     QT+=xmlpatterns
     SOURCES += extra/qmlxmllistmodel.cpp
-    HEADERS += extra/qmlxmllistmodel.h
+    HEADERS += extra/qmlxmllistmodel_p.h
 }
 

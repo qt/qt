@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsanchors_p.h"
+#include "qmlgraphicsanchors_p_p.h"
 #include "qmlgraphicsitem.h"
 #include "qmlgraphicsitem_p.h"
 #include <QDebug>
@@ -956,7 +956,7 @@ bool QmlGraphicsAnchorsPrivate::checkVAnchorValid(QmlGraphicsAnchorLine anchor) 
     return true;
 }
 
-QT_END_NAMESPACE
+#include "moc_qmlgraphicsanchors_p.cpp"
 
-#include "moc_qmlgraphicsanchors.cpp"
+QT_END_NAMESPACE
 

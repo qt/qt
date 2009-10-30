@@ -6,7 +6,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qmldebug.h>
+#include <private/qmldebug_p.h>
 
 QT_BEGIN_NAMESPACE
 

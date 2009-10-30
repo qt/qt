@@ -4,7 +4,7 @@
 #include <QtCore/qpointer.h>
 #include <QtGui/qwidget.h>
 
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebugclient_p.h>
 
 QT_BEGIN_NAMESPACE
 

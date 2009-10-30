@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlpackage.h"
+#include "qmlpackage_p.h"
 
 QT_BEGIN_NAMESPACE
 

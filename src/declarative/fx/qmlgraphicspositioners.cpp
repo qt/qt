@@ -42,12 +42,12 @@
 #include <QDebug>
 #include <QCoreApplication>
 #include "qml.h"
-#include "qmlstate.h"
-#include "qmlstategroup.h"
-#include "qmlstateoperations.h"
-#include "private/qfxperf_p.h"
-#include "qmlgraphicspositioners.h"
-#include "qmlgraphicspositioners_p.h"
+#include <private/qmlstate_p.h>
+#include <private/qmlstategroup_p.h>
+#include <private/qmlstateoperations_p.h>
+#include <private/qfxperf_p_p.h>
+#include <private/qmlgraphicspositioners_p.h>
+#include <private/qmlgraphicspositioners_p_p.h>
 
 
 QT_BEGIN_NAMESPACE

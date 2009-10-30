@@ -39,75 +39,113 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSTEXT_P_H
-#define QMLGRAPHICSTEXT_P_H
+#ifndef QMLGRAPHICSTEXT_H
+#define QMLGRAPHICSTEXT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qmlgraphicsitem.h"
-#include "qmlgraphicsitem_p.h"
-#include "qml.h"
-#include <QtGui/qtextlayout.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QTextLayout;
-class QTextDocument;
-class QTextControl;
-
-class QmlGraphicsTextPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+class QmlGraphicsTextPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsText : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsText)
+    Q_OBJECT
+    Q_ENUMS(HAlignment)
+    Q_ENUMS(VAlignment)
+    Q_ENUMS(TextStyle)
+    Q_ENUMS(TextFormat)
+    Q_ENUMS(TextElideMode)
+
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(TextStyle style READ style WRITE setStyle)
+    Q_PROPERTY(QColor styleColor READ styleColor WRITE setStyleColor)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
+    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### there are several wrap modes in Qt
+    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
+    Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
+
 public:
-    QmlGraphicsTextPrivate()
-      : color((QRgb)0), style(QmlGraphicsText::Normal), imgDirty(true),
-        hAlign(QmlGraphicsText::AlignLeft), vAlign(QmlGraphicsText::AlignTop), elideMode(QmlGraphicsText::ElideNone),
-        dirty(true), wrap(false), richText(false), singleline(false), control(0), doc(0),
-        format(QmlGraphicsText::AutoText)
-    {
-    }
+    QmlGraphicsText(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsText();
 
-    void updateSize();
-    void checkImgCache();
+    enum HAlignment { AlignLeft = Qt::AlignLeft,
+                       AlignRight = Qt::AlignRight,
+                       AlignHCenter = Qt::AlignHCenter };
+    enum VAlignment { AlignTop = Qt::AlignTop,
+                       AlignBottom = Qt::AlignBottom,
+                       AlignVCenter = Qt::AlignVCenter };
+    enum TextStyle { Normal,
+                      Outline,
+                      Raised,
+                      Sunken };
+    enum TextFormat { PlainText = Qt::PlainText,
+                       RichText = Qt::RichText,
+                       AutoText = Qt::AutoText };
+    enum TextElideMode { ElideLeft = Qt::ElideLeft,
+                          ElideRight = Qt::ElideRight,
+                          ElideMiddle = Qt::ElideMiddle,
+                          ElideNone = Qt::ElideNone };
 
-    void drawOutline();
-    void drawOutline(int yOffset);
+    QString text() const;
+    void setText(const QString &);
 
-    QPixmap wrappedTextImage(bool drawStyle);
-    QPixmap richTextImage(bool drawStyle);
-    QSize setupTextLayout(QTextLayout *layout);
+    QFont font() const;
+    void setFont(const QFont &font);
 
-    QString text;
-    QFont font;
-    QColor  color;
-    QmlGraphicsText::TextStyle style;
-    QColor  styleColor;
-    QString activeLink;
-    bool imgDirty;
-    QPixmap imgCache;
-    QPixmap imgStyleCache;
-    QmlGraphicsText::HAlignment hAlign;
-    QmlGraphicsText::VAlignment vAlign;
-    QmlGraphicsText::TextElideMode elideMode;
-    bool dirty;
-    bool wrap;
-    bool richText;
-    bool singleline;
-    QTextControl *control;
-    QTextDocument *doc;
-    QTextLayout layout;
-    QSize cachedLayoutSize;
-    QmlGraphicsText::TextFormat format;
+    QColor color() const;
+    void setColor(const QColor &c);
+
+    TextStyle style() const;
+    void setStyle(TextStyle style);
+
+    QColor styleColor() const;
+    void setStyleColor(const QColor &c);
+
+    HAlignment hAlign() const;
+    void setHAlign(HAlignment align);
+
+    VAlignment vAlign() const;
+    void setVAlign(VAlignment align);
+
+    bool wrap() const;
+    void setWrap(bool w);
+
+    TextFormat textFormat() const;
+    void setTextFormat(TextFormat format);
+
+    TextElideMode elideMode() const;
+    void setElideMode(TextElideMode);
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+
+    virtual void componentComplete();
+
+Q_SIGNALS:
+    void textChanged(const QString &text);
+    void linkActivated(const QString &link);
+
+protected:
+    QmlGraphicsText(QmlGraphicsTextPrivate &dd, QmlGraphicsItem *parent);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsText)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsText)
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsText)
+
+QT_END_HEADER
+
 #endif

@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicstext.h"
 #include "qmlgraphicstext_p.h"
+#include "qmlgraphicstext_p_p.h"
 
 #include <private/qtextcontrol_p.h>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QTextLayout>
 #include <QTextLine>
 #include <QTextDocument>

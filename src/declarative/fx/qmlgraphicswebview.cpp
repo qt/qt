@@ -55,11 +55,11 @@
 
 #include "qml.h"
 #include "qmlengine.h"
-#include "qmlstate.h"
-#include "qlistmodelinterface.h"
+#include "qmlstate_p.h"
+#include "qlistmodelinterface_p.h"
 
-#include "qmlgraphicswebview.h"
-#include <private/qmlgraphicspainteditem_p.h>
+#include "qmlgraphicswebview_p.h"
+#include <private/qmlgraphicspainteditem_p_p.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,WebView,QmlGraphicsWebView)
@@ -1385,4 +1385,4 @@ QWebPage *QmlGraphicsWebPage::createWindow(WebWindowType type)
 
 QT_END_NAMESPACE
 
-#include "qfxwebview.moc"
+#include "qmlgraphicswebview.moc"

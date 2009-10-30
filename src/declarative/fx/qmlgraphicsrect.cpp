@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsrect.h"
 #include "qmlgraphicsrect_p.h"
+#include "qmlgraphicsrect_p_p.h"
 
 #include <QPainter>
 #include <QtCore/qmath.h>

@@ -1,9 +1,9 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlpropertymap.h>
+#include <private/qmlpropertymap_p.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlgraphicstext.h>
+#include <private/qmlgraphicstext_p.h>
 #include <QSignalSpy>
 
 class tst_QmlPropertyMap : public QObject

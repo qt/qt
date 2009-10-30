@@ -6,7 +6,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlgraphicstextedit.h>
+#include <private/qmlgraphicstextedit_p.h>
 #include <QFontMetrics>
 #include <QmlView>
 

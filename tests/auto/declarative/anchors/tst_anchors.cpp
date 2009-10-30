@@ -2,8 +2,8 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qmlgraphicsrect.h>
-#include <QtDeclarative/private/qmlgraphicsanchors_p.h>
+#include <private/qmlgraphicsrect_p.h>
+#include <QtDeclarative/private/qmlgraphicsanchors_p_p.h>
 
 
 class tst_anchors : public QObject

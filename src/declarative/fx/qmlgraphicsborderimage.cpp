@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsborderimage.h"
 #include "qmlgraphicsborderimage_p.h"
+#include "qmlgraphicsborderimage_p_p.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>

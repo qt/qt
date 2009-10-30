@@ -39,59 +39,67 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSBORDERIMAGE_P_H
-#define QMLGRAPHICSBORDERIMAGE_P_H
+#ifndef QMLGRAPHICSBORDERIMAGE_H
+#define QMLGRAPHICSBORDERIMAGE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
+#include <QtNetwork/qnetworkreply.h>
 #include "qmlgraphicsimagebase_p.h"
-#include "qmlgraphicsscalegrid_p.h"
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QNetworkReply;
-class QmlGraphicsBorderImagePrivate : public QmlGraphicsImageBasePrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsScaleGrid;
+class QmlGraphicsGridScaledImage;
+class QmlGraphicsBorderImagePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsBorderImage : public QmlGraphicsImageBase
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsBorderImage)
+    Q_OBJECT
+    Q_ENUMS(TileMode)
+
+    Q_PROPERTY(QmlGraphicsScaleGrid *border READ border CONSTANT)
+    Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY horizontalTileModeChanged)
+    Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY verticalTileModeChanged)
 
 public:
-    QmlGraphicsBorderImagePrivate()
-      : border(0), sciReply(0),
-        sciPendingPixmapCache(false),
-        horizontalTileMode(QmlGraphicsBorderImage::Stretch),
-        verticalTileMode(QmlGraphicsBorderImage::Stretch)
-    {
-    }
+    QmlGraphicsBorderImage(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsBorderImage();
 
-    ~QmlGraphicsBorderImagePrivate()
-    {
-    }
+    QmlGraphicsScaleGrid *border();
 
-    QmlGraphicsScaleGrid *getScaleGrid()
-    {
-        Q_Q(QmlGraphicsBorderImage);
-        if (!border)
-            border = new QmlGraphicsScaleGrid(q);
-        return border;
-    }
+    enum TileMode { Stretch = Qt::StretchTile, Repeat = Qt::RepeatTile, Round = Qt::RoundTile };
 
-    QmlGraphicsScaleGrid *border;
-    QUrl sciurl;
-    QNetworkReply *sciReply;
-    bool sciPendingPixmapCache;
-    QmlGraphicsBorderImage::TileMode horizontalTileMode;
-    QmlGraphicsBorderImage::TileMode verticalTileMode;
+    TileMode horizontalTileMode() const;
+    void setHorizontalTileMode(TileMode);
+
+    TileMode verticalTileMode() const;
+    void setVerticalTileMode(TileMode);
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+    void setSource(const QUrl &url);
+
+Q_SIGNALS:
+    void horizontalTileModeChanged();
+    void verticalTileModeChanged();
+
+protected:
+    QmlGraphicsBorderImage(QmlGraphicsBorderImagePrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    void setGridScaledImage(const QmlGraphicsGridScaledImage& sci);
+
+private Q_SLOTS:
+    void requestFinished();
+    void sciRequestFinished();
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsBorderImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsBorderImage)
 };
 
 QT_END_NAMESPACE
+QML_DECLARE_TYPE(QmlGraphicsBorderImage)
+QT_END_HEADER
 
-#endif // QMLGRAPHICSBORDERIMAGE_P_H
+#endif // QMLGRAPHICSBORDERIMAGE_H

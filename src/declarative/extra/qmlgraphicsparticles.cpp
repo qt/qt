@@ -50,12 +50,12 @@
 #ifndef INT_MAX
 #define INT_MAX 2147483647
 #endif
-#include <qmlgraphicspixmapcache.h>
-#include <private/qfxperf_p.h>
-#include <private/qmlanimation_p.h>
+#include <private/qmlgraphicspixmapcache_p.h>
+#include <private/qfxperf_p_p.h>
+#include <private/qmlanimation_p_p.h>
 #include <QNetworkReply>
 
-#include "qmlgraphicsparticles.h"
+#include "qmlgraphicsparticles_p.h"
 #include <QPainter>
 #include <QtGui/qdrawutil.h>
 #include <QVarLengthArray>

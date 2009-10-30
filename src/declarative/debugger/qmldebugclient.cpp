@@ -39,9 +39,9 @@
 **
 ****************************************************************************/
 
-#include "qmldebugclient.h"
+#include "qmldebugclient_p.h"
 #include <private/qobject_p.h>
-#include <QtDeclarative/qpacketprotocol.h>
+#include <private/qpacketprotocol_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 

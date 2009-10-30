@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlopenmetaobject.h"
+#include "qmlopenmetaobject_p.h"
 #include "private/qmetaobjectbuilder_p.h"
 #include <QDebug>
 

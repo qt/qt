@@ -48,7 +48,7 @@
 #include "qmlvme_p.h"
 #include "qml.h"
 #include <QStack>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QStringList>
 #include <qmlengine.h>
 #include <QFileInfo>

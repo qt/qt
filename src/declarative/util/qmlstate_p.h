@@ -39,83 +39,136 @@
 **
 ****************************************************************************/
 
-#ifndef QMLSTATE_P_H
-#define QMLSTATE_P_H
+#ifndef QMLSTATE_H
+#define QMLSTATE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qobject.h>
+#include <QtCore/QSequentialAnimationGroup>
+#include <QtDeclarative/qfxglobal.h>
+#include <QtDeclarative/qml.h>
 
-#include <QtDeclarative/qmlstate.h>
-#include <private/qobject_p.h>
-#include <private/qmlanimation_p.h>
-#include <private/qmltransitionmanager_p.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class SimpleAction
+QT_MODULE(Declarative)
+
+class ActionEvent;
+class QmlBinding;
+class Action
 {
 public:
-    enum State { StartState, EndState };
-    SimpleAction(const Action &a, State state = StartState) 
-    {
-        property = a.property;
-        specifiedObject = a.specifiedObject;
-        specifiedProperty = a.specifiedProperty;
-        event = a.event;
-        if (state == StartState) {
-            value = a.fromValue;
-            binding = property.binding();
-            reverseEvent = true;
-        } else {
-            value = a.toValue;
-            binding = a.toBinding;
-            reverseEvent = false;
-        }
-    }
+    Action();
+    Action(QObject *, const QString &, const QVariant &);
+
+    bool restore:1;
+    bool actionDone:1;
+    bool reverseEvent:1;
+    bool deletableToBinding:1;
 
     QmlMetaProperty property;
-    QVariant value;
-    QmlAbstractBinding *binding;
+    QVariant fromValue;
+    QVariant toValue;
+
+    QmlAbstractBinding *fromBinding;
+    QmlAbstractBinding *toBinding;
+    ActionEvent *event;
+
+    //strictly for matching
     QObject *specifiedObject;
     QString specifiedProperty;
-    ActionEvent *event;
-    bool reverseEvent;
+
+    void deleteFromBinding();
 };
 
-class QmlStatePrivate : public QObjectPrivate
+class ActionEvent
 {
-    Q_DECLARE_PUBLIC(QmlState)
+public:
+    virtual ~ActionEvent();
+    virtual QString typeName() const;
+
+    virtual void execute();
+    virtual bool isReversable();
+    virtual void reverse();
+    virtual void saveOriginals() {}
+
+    //virtual bool hasExtraActions();
+    virtual QList<Action> extraActions();
+
+    virtual bool changesBindings();
+    virtual void clearForwardBindings();
+    virtual void clearReverseBindings();
+    virtual bool override(ActionEvent*other);
+};
+
+//### rename to QmlStateChange?
+class QmlStateGroup;
+class Q_DECLARATIVE_EXPORT QmlStateOperation : public QObject
+{
+    Q_OBJECT
+public:
+    QmlStateOperation(QObject *parent = 0)
+        : QObject(parent) {}
+    typedef QList<Action> ActionList;
+
+    virtual ActionList actions();
+
+protected:
+    QmlStateOperation(QObjectPrivate &dd, QObject *parent = 0);
+};
+
+typedef QmlStateOperation::ActionList QmlStateActions;
+
+class QmlTransition;
+class QmlStatePrivate;
+class Q_DECLARATIVE_EXPORT QmlState : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(QString name READ name WRITE setName)
+    Q_PROPERTY(QmlBinding *when READ when WRITE setWhen)
+    Q_PROPERTY(QString extend READ extends WRITE setExtends)
+    Q_PROPERTY(QmlList<QmlStateOperation *>* changes READ changes)
+    Q_CLASSINFO("DefaultProperty", "changes")
 
 public:
-    QmlStatePrivate()
-    : when(0), inState(false), group(0) {}
+    QmlState(QObject *parent=0);
+    virtual ~QmlState();
 
-    typedef QList<SimpleAction> SimpleActionList;
+    QString name() const;
+    void setName(const QString &);
 
-    QString name;
-    QmlBinding *when;
-    QmlConcreteList<QmlStateOperation *> operations;
+    /*'when' is a QmlBinding to limit state changes oscillation
+     due to the unpredictable order of evaluation of bound expressions*/
+    bool isWhenKnown() const;
+    QmlBinding *when() const;
+    void setWhen(QmlBinding *);
 
-    QmlTransitionManager transitionManager;
+    QString extends() const;
+    void setExtends(const QString &);
 
-    SimpleActionList revertList;
-    QList<QmlMetaProperty> reverting;
-    QString extends;
-    mutable bool inState;
-    QmlStateGroup *group;
+    QmlList<QmlStateOperation *> *changes();
+    QmlState &operator<<(QmlStateOperation *);
 
-    QmlStateOperation::ActionList generateActionList(QmlStateGroup *) const;
-    void complete();
+    void apply(QmlStateGroup *, QmlTransition *, QmlState *revert);
+    void cancel();
+
+    QmlStateGroup *stateGroup() const;
+    void setStateGroup(QmlStateGroup *);
+
+Q_SIGNALS:
+    void completed();
+
+private:
+    Q_DECLARE_PRIVATE(QmlState)
+    Q_DISABLE_COPY(QmlState)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLSTATE_P_H
+QML_DECLARE_TYPE(QmlStateOperation)
+QML_DECLARE_TYPE(QmlState)
+
+QT_END_HEADER
+
+#endif // QMLSTATE_H

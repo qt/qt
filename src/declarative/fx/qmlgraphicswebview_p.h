@@ -1,0 +1,251 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** Contact: Qt Software Information (qt-info@nokia.com)
+**
+** This file is part of the QtDeclarative module of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the either Technology Preview License Agreement or the
+** Beta Release License Agreement.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain
+** additional rights. These rights are described in the Nokia Qt LGPL
+** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
+** package.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** If you are unsure which license is appropriate for your use, please
+** contact the sales department at qt-sales@nokia.com.
+** $QT_END_LICENSE$
+**
+****************************************************************************/
+
+#ifndef QMLGRAPHICSWEBVIEW_H
+#define QMLGRAPHICSWEBVIEW_H
+
+#include <QtGui/QAction>
+#include <QtCore/QUrl>
+#include <QtDeclarative/qfxglobal.h>
+#include <private/qmlgraphicspainteditem_p.h>
+#include <QtNetwork/qnetworkaccessmanager.h>
+#include <QtWebKit/QWebPage>
+
+QT_BEGIN_HEADER
+
+class QWebHistory;
+class QWebSettings;
+
+QT_BEGIN_NAMESPACE
+
+QT_MODULE(Declarative)
+class QmlGraphicsWebViewPrivate;
+class QNetworkRequest;
+class QmlGraphicsWebView;
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsWebPage : public QWebPage
+{
+    Q_OBJECT
+public:
+    explicit QmlGraphicsWebPage(QmlGraphicsWebView *parent);
+    ~QmlGraphicsWebPage();
+protected:
+    QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
+    QWebPage *createWindow(WebWindowType type);
+
+private:
+    QmlGraphicsWebView *viewItem();
+};
+
+
+class QmlGraphicsWebViewAttached;
+class QmlGraphicsWebSettings;
+
+//### TODO: browser plugins
+
+class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
+{
+    Q_OBJECT
+
+    Q_ENUMS(Status)
+
+    Q_PROPERTY(QString title READ title NOTIFY titleChanged)
+    Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
+    Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
+    Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
+    Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
+
+    Q_PROPERTY(QString html READ html WRITE setHtml)
+
+    Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
+    Q_PROPERTY(int webPageWidth READ webPageWidth WRITE setWebPageWidth)
+    Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
+    Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+
+    Q_PROPERTY(QAction* reload READ reloadAction CONSTANT)
+    Q_PROPERTY(QAction* back READ backAction CONSTANT)
+    Q_PROPERTY(QAction* forward READ forwardAction CONSTANT)
+    Q_PROPERTY(QAction* stop READ stopAction CONSTANT)
+
+    Q_PROPERTY(QmlGraphicsWebSettings* settings READ settingsObject CONSTANT)
+
+    Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
+
+    Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
+    Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
+
+    Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled)
+
+public:
+    QmlGraphicsWebView(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsWebView();
+
+    QUrl url() const;
+    void setUrl(const QUrl &);
+
+    QString title() const;
+
+    QPixmap icon() const;
+
+    qreal textSizeMultiplier() const;
+    void setTextSizeMultiplier(qreal);
+
+    qreal zoomFactor() const;
+    void setZoomFactor(qreal);
+
+    int preferredWidth() const;
+    void setPreferredWidth(int);
+    int webPageWidth() const;
+    void setWebPageWidth(int);
+
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
+    QString statusText() const;
+
+    QAction *reloadAction() const;
+    QAction *backAction() const;
+    QAction *forwardAction() const;
+    QAction *stopAction() const;
+
+    QWebPage *page() const;
+    void setPage(QWebPage *page);
+
+    void load(const QNetworkRequest &request,
+              QNetworkAccessManager::Operation operation = QNetworkAccessManager::GetOperation,
+              const QByteArray &body = QByteArray());
+
+    QString html() const;
+
+    void setHtml(const QString &html, const QUrl &baseUrl = QUrl());
+    void setContent(const QByteArray &data, const QString &mimeType = QString(), const QUrl &baseUrl = QUrl());
+
+    QWebHistory *history() const;
+    QWebSettings *settings() const;
+    QmlGraphicsWebSettings *settingsObject() const;
+
+    int pixelCacheSize() const;
+    void setPixelCacheSize(int pixels);
+
+    bool renderingEnabled() const;
+    void setRenderingEnabled(bool);
+
+    QmlList<QObject *> *javaScriptWindowObjects();
+
+    static QmlGraphicsWebViewAttached *qmlAttachedProperties(QObject *);
+
+    QmlComponent *newWindowComponent() const;
+    void setNewWindowComponent(QmlComponent *newWindow);
+    QmlGraphicsItem *newWindowParent() const;
+    void setNewWindowParent(QmlGraphicsItem *newWindow);
+
+Q_SIGNALS:
+    void preferredWidthChanged();
+    void preferredHeightChanged();
+    void urlChanged();
+    void progressChanged();
+    void statusChanged(Status);
+    void titleChanged(const QString&);
+    void iconChanged();
+    void statusTextChanged();
+    void zoomFactorChanged();
+
+    void loadStarted();
+    void loadFinished();
+    void loadFailed();
+
+    void doubleClick(int clickX, int clickY);
+
+    void zooming(qreal zoom, int centerX, int centerY);
+
+public Q_SLOTS:
+    QVariant evaluateJavaScript(const QString&);
+    void heuristicZoom(int clickX, int clickY);
+
+private Q_SLOTS:
+    void expandToWebPage();
+    void paintPage(const QRect&);
+    void doLoadStarted();
+    void doLoadProgress(int p);
+    void doLoadFinished(bool ok);
+    void setStatusText(const QString&);
+    void windowObjectCleared();
+    void pageUrlChanged();
+    void contentsSizeChanged(const QSize&);
+
+protected:
+    QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent);
+
+    void drawContents(QPainter *, const QRect &);
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void hoverMoveEvent (QGraphicsSceneHoverEvent * event);
+    void keyPressEvent(QKeyEvent* event);
+    void keyReleaseEvent(QKeyEvent* event);
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
+    virtual void focusChanged(bool);
+    virtual bool sceneEvent(QEvent *event);
+    QmlGraphicsWebView *createWindow(QWebPage::WebWindowType type);
+    QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
+
+private:
+    void init();
+    virtual void componentComplete();
+    Q_DISABLE_COPY(QmlGraphicsWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsWebView)
+    friend class QmlGraphicsWebPage;
+};
+
+QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsWebView)
+QML_DECLARE_TYPEINFO(QmlGraphicsWebView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QAction)
+
+QT_END_HEADER
+
+#endif

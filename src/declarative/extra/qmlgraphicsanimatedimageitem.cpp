@@ -42,8 +42,8 @@
 #include <QMovie>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
-#include "qmlgraphicsanimatedimageitem.h"
 #include "qmlgraphicsanimatedimageitem_p.h"
+#include "qmlgraphicsanimatedimageitem_p_p.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 

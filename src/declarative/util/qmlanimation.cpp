@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qmlanimation.h"
+#include "qmlanimation_p.h"
 #include "qvariant.h"
 #include "qcolor.h"
 #include "qfile.h"
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
 #include "qmlinfo.h"
-#include "qmlanimation_p.h"
-#include "qmlbehavior.h"
+#include "qmlanimation_p_p.h"
+#include <private/qmlbehavior_p.h>
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qset.h>
@@ -55,7 +55,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmlexpression.h>
-#include <QtDeclarative/qmlstateoperations.h>
+#include <private/qmlstateoperations_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
 

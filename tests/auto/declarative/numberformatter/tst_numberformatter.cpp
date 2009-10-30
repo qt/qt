@@ -2,8 +2,8 @@
 #include <QDebug>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qnumberformat.h>
-#include <QtDeclarative/qmlnumberformatter.h>
+#include <private/qnumberformat_p.h>
+#include <private/qmlnumberformatter_p.h>
 
 class tst_numberformat : public QObject
 {

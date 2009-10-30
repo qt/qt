@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlopenmetaobject.h"
-#include "qmlpropertychanges.h"
+#include "qmlopenmetaobject_p.h"
+#include "qmlpropertychanges_p.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
 #include <private/qmlcustomparser_p.h>

@@ -1,5 +1,5 @@
-#include "qmldebug.h"
-#include "qmldebugclient.h"
+#include "qmldebug_p.h"
+#include "qmldebugclient_p.h"
 #include <private/qobject_p.h>
 #include <private/qmlenginedebug_p.h>
 

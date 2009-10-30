@@ -1,9 +1,9 @@
 #include <QtTest/QtTest>
-#include <qlistmodelinterface.h>
+#include <qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <qmlgraphicspathview.h>
-#include <qmlgraphicstext.h>
-#include <qmlgraphicsrect.h>
+#include <qmlgraphicspathview_p.h>
+#include <qmlgraphicstext_p.h>
+#include <qmlgraphicsrect_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 

@@ -39,13 +39,13 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsimagebase.h"
 #include "qmlgraphicsimagebase_p.h"
+#include "qmlgraphicsimagebase_p_p.h"
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
 #include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlgraphicspixmapcache.h>
+#include <private/qmlgraphicspixmapcache_p.h>
 
 QT_BEGIN_NAMESPACE
 

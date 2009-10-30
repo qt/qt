@@ -1,7 +1,7 @@
 #ifndef QMLDEBUGGER_H
 #define QMLDEBUGGER_H
 
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebugclient_p.h>
 #include <QtNetwork/qtcpsocket.h>
 #include <QtGui/qwidget.h>
 

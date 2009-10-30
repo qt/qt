@@ -39,118 +39,165 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSFLICKABLE_P_H
-#define QMLGRAPHICSFLICKABLE_P_H
+#ifndef QMLGRAPHICSFLICKABLE_H
+#define QMLGRAPHICSFLICKABLE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qdatetime.h"
-#include "qmlgraphicsflickable.h"
-#include "qmlgraphicsitem_p.h"
-#include "qml.h"
-#include "private/qmltimeline_p.h"
-#include "private/qmlanimation_p.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Declarative)
+
+class QmlGraphicsFlickablePrivate;
 class QmlGraphicsFlickableVisibleArea;
-class QmlGraphicsFlickablePrivate : public QmlGraphicsItemPrivate
+class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsFlickable)
+    Q_OBJECT
+
+    Q_PROPERTY(qreal viewportWidth READ viewportWidth WRITE setViewportWidth NOTIFY viewportWidthChanged)
+    Q_PROPERTY(qreal viewportHeight READ viewportHeight WRITE setViewportHeight NOTIFY viewportHeightChanged)
+    Q_PROPERTY(qreal viewportX READ viewportX WRITE setViewportX NOTIFY positionXChanged)
+    Q_PROPERTY(qreal viewportY READ viewportY WRITE setViewportY NOTIFY positionYChanged)
+
+    Q_PROPERTY(qreal horizontalVelocity READ horizontalVelocity NOTIFY horizontalVelocityChanged)
+    Q_PROPERTY(qreal verticalVelocity READ verticalVelocity NOTIFY verticalVelocityChanged)
+    Q_PROPERTY(qreal reportedVelocitySmoothing READ reportedVelocitySmoothing WRITE setReportedVelocitySmoothing NOTIFY reportedVelocitySmoothingChanged)
+
+    Q_PROPERTY(bool overShoot READ overShoot WRITE setOverShoot)
+    Q_PROPERTY(qreal maximumFlickVelocity READ maximumFlickVelocity WRITE setMaximumFlickVelocity)
+    Q_PROPERTY(qreal flickDeceleration READ flickDeceleration WRITE setFlickDeceleration)
+    Q_PROPERTY(bool moving READ isMoving NOTIFY movingChanged)
+    Q_PROPERTY(bool flicking READ isFlicking NOTIFY flickingChanged)
+
+    Q_PROPERTY(bool interactive READ isInteractive WRITE setInteractive)
+    Q_PROPERTY(int pressDelay READ pressDelay WRITE setPressDelay)
+
+    Q_PROPERTY(bool atXEnd READ isAtXEnd NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atYEnd READ isAtYEnd NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
+    Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
+
+    Q_PROPERTY(QmlGraphicsFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
+
+    Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
+    Q_PROPERTY(QmlList<QmlGraphicsItem *>* flickableChildren READ flickableChildren)
+    Q_CLASSINFO("DefaultProperty", "flickableData")
 
 public:
-    QmlGraphicsFlickablePrivate();
-    void init();
-    virtual void flickX(qreal velocity);
-    virtual void flickY(qreal velocity);
-    virtual void fixupX();
-    virtual void fixupY();
-    void updateBeginningEnd();
+    QmlGraphicsFlickable(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsFlickable();
 
-    void captureDelayedPress(QGraphicsSceneMouseEvent *event);
-    void clearDelayedPress();
+    QmlList<QObject *> *flickableData();
+    QmlList<QmlGraphicsItem *> *flickableChildren();
 
-public:
-    QmlGraphicsItem *viewport;
-    QmlTimeLineValueProxy<QmlGraphicsItem> _moveX;
-    QmlTimeLineValueProxy<QmlGraphicsItem> _moveY;
-    QmlTimeLine timeline;
-    qreal vWidth;
-    qreal vHeight;
-    bool overShoot : 1;
-    bool flicked : 1;
-    bool moving : 1;
-    bool stealMouse : 1;
-    bool pressed : 1;
-    bool atXEnd : 1;
-    bool atXBeginning : 1;
-    bool atYEnd : 1;
-    bool atYBeginning : 1;
-    bool interactive : 1;
-    QTime lastPosTime;
-    QPointF lastPos;
-    QPointF pressPos;
-    qreal pressX;
-    qreal pressY;
-    qreal velocityX;
-    qreal velocityY;
-    QTime pressTime;
-    QmlTimeLineEvent fixupXEvent;
-    QmlTimeLineEvent fixupYEvent;
-    qreal deceleration;
-    qreal maxVelocity;
-    QTime velocityTime;
-    QPointF lastFlickablePosition;
-    qreal reportedVelocitySmoothing;
-    int flickTargetX;
-    int flickTargetY;
-    QGraphicsSceneMouseEvent *delayedPressEvent;
-    QGraphicsItem *delayedPressTarget;
-    QBasicTimer delayedPressTimer;
-    int pressDelay;
+    bool overShoot() const;
+    void setOverShoot(bool);
 
-    void updateVelocity();
-    struct Velocity : public QmlTimeLineValue
-    {
-        Velocity(QmlGraphicsFlickablePrivate *p)
-            : parent(p) {}
-        virtual void setValue(qreal v) {
-            QmlTimeLineValue::setValue(v);
-            parent->updateVelocity();
-        }
-        QmlGraphicsFlickablePrivate *parent;
-    };
-    Velocity horizontalVelocity;
-    Velocity verticalVelocity;
-    int vTime;
-    QmlTimeLine velocityTimeline;
-    QmlGraphicsFlickableVisibleArea *visibleArea;
+    qreal viewportWidth() const;
+    void setViewportWidth(qreal);
 
-    void handleMousePressEvent(QGraphicsSceneMouseEvent *);
-    void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
-    void handleMouseReleaseEvent(QGraphicsSceneMouseEvent *);
+    qreal viewportHeight() const;
+    void setViewportHeight(qreal);
 
-    // flickableData property
-    void data_removeAt(int);
-    int data_count() const;
-    void data_append(QObject *);
-    void data_insert(int, QObject *);
-    QObject *data_at(int) const;
-    void data_clear();
+    qreal viewportX() const;
+    void setViewportX(qreal pos);
 
+    qreal viewportY() const;
+    void setViewportY(qreal pos);
+
+    bool isMoving() const;
+    bool isFlicking() const;
+
+    int pressDelay() const;
+    void setPressDelay(int delay);
+
+    qreal reportedVelocitySmoothing() const;
+    void setReportedVelocitySmoothing(qreal);
+
+    qreal maximumFlickVelocity() const;
+    void setMaximumFlickVelocity(qreal);
+
+    qreal flickDeceleration() const;
+    void setFlickDeceleration(qreal);
+
+    bool isInteractive() const;
+    void setInteractive(bool);
+
+    qreal horizontalVelocity() const;
+    qreal verticalVelocity() const;
+
+    bool isAtXEnd() const;
+    bool isAtXBeginning() const;
+    bool isAtYEnd() const;
+    bool isAtYBeginning() const;
+
+    QmlGraphicsItem *viewport();
+
+Q_SIGNALS:
+    void viewportWidthChanged();
+    void viewportHeightChanged();
+    void positionXChanged();
+    void positionYChanged();
+    void movingChanged();
+    void flickingChanged();
+    void movementStarted();
+    void movementEnded();
+    void flickStarted();
+    void flickEnded();
+    void reportedVelocitySmoothingChanged(int);
+    void horizontalVelocityChanged();
+    void verticalVelocityChanged();
+    void isAtBoundaryChanged();
+    void pageChanged();
+
+protected:
+    virtual bool sceneEventFilter(QGraphicsItem *, QEvent *);
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void timerEvent(QTimerEvent *event);
+
+    qreal visibleX() const;
+    qreal visibleY() const;
+
+    QmlGraphicsFlickableVisibleArea *visibleArea();
+
+protected Q_SLOTS:
+    virtual void ticked();
+    void movementStarting();
+    void movementEnding();
+    void heightChange();
+    void widthChange();
+
+protected:
+    virtual qreal minXExtent() const;
+    virtual qreal minYExtent() const;
+    virtual qreal maxXExtent() const;
+    virtual qreal maxYExtent() const;
+    qreal vWidth() const;
+    qreal vHeight() const;
+    virtual void viewportMoved();
+    bool sendMouseEvent(QGraphicsSceneMouseEvent *event);
+
+    bool xflick() const;
+    bool yflick() const;
+    void cancelFlick();
+
+protected:
+    QmlGraphicsFlickable(QmlGraphicsFlickablePrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsFlickable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsFlickable)
     friend class QmlGraphicsFlickableVisibleArea;
-    QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsFlickable)
+
+QT_END_HEADER
 
 #endif

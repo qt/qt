@@ -39,12 +39,12 @@
 **
 ****************************************************************************/
 
-#include "qmldebugservice.h"
+#include "qmldebugservice_p.h"
 #include <QtCore/qdebug.h>
 #include <QtNetwork/qtcpserver.h>
 #include <QtNetwork/qtcpsocket.h>
 #include <private/qobject_p.h>
-#include <QtDeclarative/qpacketprotocol.h>
+#include <private/qpacketprotocol_p.h>
 #include <QtCore/qstringlist.h>
 
 QT_BEGIN_NAMESPACE

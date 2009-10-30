@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlsystempalette.h"
+#include "qmlsystempalette_p.h"
 #include <QApplication>
 
 QT_BEGIN_NAMESPACE

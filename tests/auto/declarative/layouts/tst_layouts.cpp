@@ -1,7 +1,7 @@
 #include <QtTest/QtTest>
-#include <qlistmodelinterface.h>
+#include <qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <qmlgraphicsrect.h>
+#include <qmlgraphicsrect_p.h>
 #include <qmlexpression.h>
 
 class tst_QmlGraphicsLayouts : public QObject

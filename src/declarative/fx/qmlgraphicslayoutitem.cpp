@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicslayoutitem.h"
+#include "qmlgraphicslayoutitem_p.h"
 #include <QDebug>
 #include <limits.h>
 

@@ -39,43 +39,65 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSREPEATER_P_H
-#define QMLGRAPHICSREPEATER_P_H
+#ifndef QMLGRAPHICSREPEATER_H
+#define QMLGRAPHICSREPEATER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qmlgraphicsitem_p.h"
-#include "qmlgraphicsrepeater.h"
-#include <QPointer>
-
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlContext;
-class QmlGraphicsVisualModel;
-class QmlGraphicsRepeaterPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsRepeaterPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsRepeater : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsRepeater)
+    Q_OBJECT
+
+    Q_PROPERTY(QVariant model READ model WRITE setModel)
+    Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
+    Q_CLASSINFO("DefaultProperty", "delegate")
 
 public:
-    QmlGraphicsRepeaterPrivate();
-    ~QmlGraphicsRepeaterPrivate();
+    QmlGraphicsRepeater(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsRepeater();
 
-    QmlGraphicsVisualModel *model;
-    QVariant dataSource;
-    bool ownModel;
+    QVariant model() const;
+    void setModel(const QVariant &);
 
-    QList<QPointer<QmlGraphicsItem> > deletables;
+    QmlComponent *delegate() const;
+    void setDelegate(QmlComponent *);
+
+    int count() const;
+
+Q_SIGNALS:
+    void countChanged();
+
+private:
+    void clear();
+    void regenerate();
+
+protected:
+    virtual void componentComplete();
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+    QmlGraphicsRepeater(QmlGraphicsRepeaterPrivate &dd, QmlGraphicsItem *parent);
+
+private Q_SLOTS:
+    void itemsInserted(int,int);
+    void itemsRemoved(int,int);
+    void itemsMoved(int,int,int);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsRepeater)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRepeater)
 };
 
 QT_END_NAMESPACE
-#endif // QMLGRAPHICSREPEATER_P_H
+
+QML_DECLARE_TYPE(QmlGraphicsRepeater)
+
+QT_END_HEADER
+
+#endif // QMLGRAPHICSREPEATER_H

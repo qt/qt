@@ -41,7 +41,7 @@
 
 #include "qmlvme_p.h"
 #include "qmlcompiler_p.h"
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <private/qmlboundsignal_p.h>
 #include <private/qmlstringconverters_p.h>
 #include "private/qmetaobjectbuilder_p.h"

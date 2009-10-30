@@ -45,7 +45,7 @@
 #include <qmlcontext.h>
 #include <qmlinfo.h>
 #include <QVariant>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>

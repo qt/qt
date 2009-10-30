@@ -2,7 +2,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qmlgraphicsrect.h>
+#include <private/qmlgraphicsrect_p.h>
 #include <QtDeclarative/QmlNumberAnimation>
 
 class tst_animations : public QObject

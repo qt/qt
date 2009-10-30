@@ -1,6 +1,6 @@
 #include <qtest.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmllistaccessor.h>
+#include <private/qmllistaccessor_p.h>
 
 class tst_QmlListAccessor : public QObject
 {

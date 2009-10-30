@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qperformancelog_p.h"
+#include "qperformancelog_p_p.h"
 #include <QHash>
 #include <QDebug>
 

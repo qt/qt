@@ -39,75 +39,196 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSTEXTEDIT_P_H
-#define QMLGRAPHICSTEXTEDIT_P_H
+#ifndef QMLGRAPHICSTEXTEDIT_H
+#define QMLGRAPHICSTEXTEDIT_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <private/qmlgraphicstext_p.h>
+#include <private/qmlgraphicspainteditem_p.h>
 
-#include "qmlgraphicsitem.h"
-#include "qmlgraphicspainteditem_p.h"
-#include "qml.h"
+#include <QtGui/qtextdocument.h>
+#include <QtGui/qtextoption.h>
+#include <QtGui/qtextcursor.h>
+#include <QtGui/qtextformat.h>
 
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-class QTextLayout;
-class QTextDocument;
-class QTextControl;
-class QmlGraphicsTextEditPrivate : public QmlGraphicsPaintedItemPrivate
+
+QT_MODULE(Declarative)
+
+
+class QmlGraphicsTextEditPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsTextEdit : public QmlGraphicsPaintedItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsTextEdit)
+    Q_OBJECT
+    Q_ENUMS(VAlignment)
+    Q_ENUMS(HAlignment)
+    Q_ENUMS(TextFormat)
+
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
+    Q_PROPERTY(VAlignment verticalAlignment READ vAlign WRITE setVAlign)
+    Q_PROPERTY(bool wrap READ wrap WRITE setWrap) //### other wrap modes
+    Q_PROPERTY(TextFormat textFormat READ textFormat WRITE setTextFormat)
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QmlComponent* cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectionChanged)
+    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
+    Q_PROPERTY(bool persistentSelection READ persistentSelection WRITE setPersistentSelection)
+    Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
 
 public:
-    QmlGraphicsTextEditPrivate()
-      : color("black"), imgDirty(true), hAlign(QmlGraphicsTextEdit::AlignLeft), vAlign(QmlGraphicsTextEdit::AlignTop),
-      dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
-      persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
-      cursorComponent(0), cursor(0), format(QmlGraphicsTextEdit::AutoText), document(0)
-    {
-    }
+    QmlGraphicsTextEdit(QmlGraphicsItem *parent=0);
 
-    void init();
+    enum HAlignment {
+        AlignLeft = Qt::AlignLeft,
+        AlignRight = Qt::AlignRight,
+        AlignHCenter = Qt::AlignHCenter
+    };
 
-    void updateDefaultTextOption();
-    void relayoutDocument();
-    void updateSelection();
+    enum VAlignment {
+        AlignTop = Qt::AlignTop,
+        AlignBottom = Qt::AlignBottom,
+        AlignVCenter = Qt::AlignVCenter
+    };
 
-    QString text;
-    QFont font;
-    QColor  color;
-    QColor  selectionColor;
-    QColor  selectedTextColor;
-    QString style;
-    QColor  styleColor;
-    bool imgDirty;
-    QPixmap imgCache;
-    QPixmap imgStyleCache;
-    QmlGraphicsTextEdit::HAlignment hAlign;
-    QmlGraphicsTextEdit::VAlignment vAlign;
-    bool dirty;
-    bool wrap;
-    bool richText;
-    bool cursorVisible;
-    bool focusOnPress;
-    bool persistentSelection;
-    qreal textMargin;
-    int lastSelectionStart;
-    int lastSelectionEnd;
-    QmlComponent* cursorComponent;
-    QmlGraphicsItem* cursor;
-    QmlGraphicsTextEdit::TextFormat format;
-    QTextDocument *document;
-    QTextControl *control;
+    enum TextFormat {
+        PlainText = Qt::PlainText,
+        RichText = Qt::RichText,
+        AutoText = Qt::AutoText
+    };
+
+    QString text() const;
+    void setText(const QString &);
+
+    TextFormat textFormat() const;
+    void setTextFormat(TextFormat format);
+
+    QFont font() const;
+    void setFont(const QFont &font);
+
+    QColor color() const;
+    void setColor(const QColor &c);
+
+    QColor selectionColor() const;
+    void setSelectionColor(const QColor &c);
+
+    QColor selectedTextColor() const;
+    void setSelectedTextColor(const QColor &c);
+
+    HAlignment hAlign() const;
+    void setHAlign(HAlignment align);
+
+    VAlignment vAlign() const;
+    void setVAlign(VAlignment align);
+
+    bool wrap() const;
+    void setWrap(bool w);
+
+    bool isCursorVisible() const;
+    void setCursorVisible(bool on);
+
+    int cursorPosition() const;
+    void setCursorPosition(int pos);
+
+    QmlComponent* cursorDelegate() const;
+    void setCursorDelegate(QmlComponent*);
+
+    int selectionStart() const;
+    void setSelectionStart(int);
+
+    int selectionEnd() const;
+    void setSelectionEnd(int);
+
+    QString selectedText() const;
+
+    bool focusOnPress() const;
+    void setFocusOnPress(bool on);
+
+    bool persistentSelection() const;
+    void setPersistentSelection(bool on);
+
+    qreal textMargin() const;
+    void setTextMargin(qreal margin);
+
+    virtual void componentComplete();
+
+    /* FROM EDIT */
+    void setReadOnly(bool);
+    bool isReadOnly() const;
+
+    void setTextInteractionFlags(Qt::TextInteractionFlags flags);
+    Qt::TextInteractionFlags textInteractionFlags() const;
+
+    QTextCursor cursorForPosition(const QPoint &pos) const;
+    QRect cursorRect(const QTextCursor &cursor) const;
+    QRect cursorRect() const;
+
+    void setTextCursor(const QTextCursor &cursor);
+    QTextCursor textCursor() const;
+
+    void moveCursor(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);
+
+    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+
+Q_SIGNALS:
+    void textChanged(const QString &);
+    void cursorPositionChanged();
+    void selectionStartChanged();
+    void selectionEndChanged();
+    void selectionChanged();
+
+public Q_SLOTS:
+    void selectAll();
+
+private Q_SLOTS:
+    void updateImgCache(const QRectF &rect);
+    void q_textChanged();
+    void updateSelectionMarkers();
+    void moveCursorDelegate();
+    void loadCursorDelegate();
+
+private:
+    void updateSize();
+
+protected:
+    QmlGraphicsTextEdit(QmlGraphicsTextEditPrivate &dd, QmlGraphicsItem *parent);
+    virtual void geometryChanged(const QRectF &newGeometry, 
+                                 const QRectF &oldGeometry);
+
+    bool event(QEvent *);
+    void keyPressEvent(QKeyEvent *);
+    void keyReleaseEvent(QKeyEvent *);
+
+    void focusChanged(bool);
+
+    // mouse filter?
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+    void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+
+    void inputMethodEvent(QInputMethodEvent *e);
+
+    void drawContents(QPainter *, const QRect &);
+private:
+    Q_DISABLE_COPY(QmlGraphicsTextEdit)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsTextEdit)
 };
 
 QT_END_NAMESPACE
+
+QML_DECLARE_TYPE(QmlGraphicsTextEdit)
+
+QT_END_HEADER
+
 #endif

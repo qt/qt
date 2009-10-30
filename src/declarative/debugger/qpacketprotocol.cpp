@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qpacketprotocol.h"
+#include "qpacketprotocol_p.h"
 #include <QBuffer>
 
 QT_BEGIN_NAMESPACE

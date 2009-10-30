@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmltimeline_p.h"
+#include "qmltimeline_p_p.h"
 #include <QDebug>
 #include <QMutex>
 #include <QThread>

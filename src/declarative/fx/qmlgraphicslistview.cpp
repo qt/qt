@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "private/qmlgraphicsflickable_p.h"
-#include "qmleasefollow.h"
-#include "qlistmodelinterface.h"
-#include "qmlgraphicsvisualitemmodel.h"
-#include "qmlgraphicslistview.h"
+#include "private/qmlgraphicsflickable_p_p.h"
+#include <private/qmleasefollow_p.h>
+#include <private/qlistmodelinterface_p.h>
+#include "qmlgraphicsvisualitemmodel_p.h"
+#include "qmlgraphicslistview_p.h"
 #include <qmlexpression.h>
 
 #include <QKeyEvent>
@@ -2032,4 +2032,5 @@ QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
-#include "qfxlistview.moc"
+
+#include "qmlgraphicslistview.moc"

@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlstategroup.h"
-#include "qmltransition.h"
+#include "qmlstategroup_p.h"
+#include "qmltransition_p.h"
 #include <QtDeclarative/qmlbinding.h>
 #include <QtCore/qdebug.h>
 

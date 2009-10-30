@@ -39,44 +39,69 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSLOADER_P_H
-#define QMLGRAPHICSLOADER_P_H
+#ifndef QMLGRAPHICSLOADER_H
+#define QMLGRAPHICSLOADER_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qmlgraphicsitem_p.h"
-#include "qmlgraphicsloader.h"
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlContext;
-class QmlGraphicsLoaderPrivate : public QmlGraphicsItemPrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsLoaderPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsLoader : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsLoader)
+    Q_OBJECT
+    Q_ENUMS(Status)
+    Q_ENUMS(ResizeMode)
+
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QmlComponent *sourceComponent READ sourceComponent WRITE setSourceComponent NOTIFY sourceChanged)
+    Q_PROPERTY(ResizeMode resizeMode READ resizeMode WRITE setResizeMode)
+    Q_PROPERTY(QmlGraphicsItem *item READ item NOTIFY itemChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+    //### sourceItem
 
 public:
-    QmlGraphicsLoaderPrivate();
-    ~QmlGraphicsLoaderPrivate();
+    QmlGraphicsLoader(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsLoader();
 
-    QUrl source;
-    QmlGraphicsItem *item;
-    QmlComponent *component;
-    bool ownComponent;
-    QmlGraphicsLoader::ResizeMode resizeMode;
+    QUrl source() const;
+    void setSource(const QUrl &);
 
-    void _q_sourceLoaded();
-    void _q_updateSize();
+    QmlComponent *sourceComponent() const;
+    void setSourceComponent(QmlComponent *);
+
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
+
+    enum ResizeMode { NoResize, SizeLoaderToItem, SizeItemToLoader };
+    ResizeMode resizeMode() const;
+    void setResizeMode(ResizeMode mode);
+
+    QmlGraphicsItem *item() const;
+
+Q_SIGNALS:
+    void itemChanged();
+    void sourceChanged();
+    void statusChanged();
+    void progressChanged();
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsLoader)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsLoader)
+    Q_PRIVATE_SLOT(d_func(), void _q_sourceLoaded())
+    Q_PRIVATE_SLOT(d_func(), void _q_updateSize())
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSLOADER_P_H
+QML_DECLARE_TYPE(QmlGraphicsLoader)
+
+QT_END_HEADER
+
+#endif // QMLGRAPHICSLOADER_H

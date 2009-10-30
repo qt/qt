@@ -39,39 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSIMAGE_P_H
-#define QMLGRAPHICSIMAGE_P_H
+#ifndef QMLGRAPHICSIMAGE_H
+#define QMLGRAPHICSIMAGE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include "qmlgraphicsitem_p.h"
+#include <QtNetwork/qnetworkreply.h>
 #include "qmlgraphicsimagebase_p.h"
 
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsImagePrivate : public QmlGraphicsImageBasePrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsImagePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsImage : public QmlGraphicsImageBase
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsImage)
+    Q_OBJECT
+    Q_ENUMS(FillMode)
+
+    Q_PROPERTY(QPixmap pixmap READ pixmap WRITE setPixmap DESIGNABLE false)
+    Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
 
 public:
-    QmlGraphicsImagePrivate()
-      : fillMode(QmlGraphicsImage::Stretch)
-    {
-    }
+    QmlGraphicsImage(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsImage();
 
-    QmlGraphicsImage::FillMode fillMode;
+    enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
+    FillMode fillMode() const;
+    void setFillMode(FillMode);
 
+    QPixmap pixmap() const;
+    void setPixmap(const QPixmap &);
+
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+
+Q_SIGNALS:
+    void fillModeChanged();
+
+protected:
+    QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsImage)
 };
 
 QT_END_NAMESPACE
+QML_DECLARE_TYPE(QmlGraphicsImage)
+QT_END_HEADER
 
-#endif // QMLGRAPHICSIMAGE_P_H
+#endif // QMLGRAPHICSIMAGE_H

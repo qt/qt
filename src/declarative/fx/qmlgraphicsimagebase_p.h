@@ -39,45 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSIMAGEBASE_P_H
-#define QMLGRAPHICSIMAGEBASE_P_H
+#ifndef QMLGRAPHICSIMAGEBASE_H
+#define QMLGRAPHICSIMAGEBASE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtDeclarative/qmlgraphicsitem.h>
 
-#include "qmlgraphicsitem_p.h"
-#include <QtCore/QPointer>
-
+QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QNetworkReply;
-class QmlGraphicsImageBasePrivate : public QmlGraphicsItemPrivate
+class QmlGraphicsImageBasePrivate;
+class QmlGraphicsImageBase : public QmlGraphicsItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsImageBase)
+    Q_OBJECT
+    Q_ENUMS(Status)
+
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
 public:
-    QmlGraphicsImageBasePrivate()
-      : status(QmlGraphicsImageBase::Null),
-        progress(0.0),
-        pendingPixmapCache(false)
-    {
-    }
+    QmlGraphicsImageBase(QmlGraphicsItem *parent = 0);
+    ~QmlGraphicsImageBase();
+    enum Status { Null, Ready, Loading, Error };
+    Status status() const;
+    qreal progress() const;
 
-    QPixmap pix;
-    QmlGraphicsImageBase::Status status;
-    QUrl url;
-    qreal progress;
-    bool pendingPixmapCache;
+    QUrl source() const;
+    virtual void setSource(const QUrl &url);
+
+Q_SIGNALS:
+    void sourceChanged(const QUrl &);
+    void statusChanged(Status);
+    void progressChanged(qreal progress);
+
+protected:
+    QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent);
+
+private Q_SLOTS:
+    virtual void requestFinished();
+    void requestProgress(qint64,qint64);
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsImageBase)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsImageBase)
 };
 
 QT_END_NAMESPACE
+QT_END_HEADER
 
-#endif
+#endif // QMLGRAPHICSIMAGEBASE_H

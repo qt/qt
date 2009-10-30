@@ -1,49 +1,49 @@
 HEADERS += \
-           fx/qmlgraphicsanchors.h \
            fx/qmlgraphicsanchors_p.h \
-           fx/qmlgraphicsevents_p.h \
-           fx/qmlgraphicsflickable.h \
+           fx/qmlgraphicsanchors_p_p.h \
+           fx/qmlgraphicsevents_p_p.h \
            fx/qmlgraphicsflickable_p.h \
-           fx/qmlgraphicsflipable.h \
-           fx/qmlgraphicsgridview.h \
-           fx/qmlgraphicsimage.h \
-           fx/qmlgraphicsimagebase.h \
-           fx/qmlgraphicsborderimage.h \
-           fx/qmlgraphicspainteditem.h \
-           fx/qmlgraphicspainteditem_p.h \
+           fx/qmlgraphicsflickable_p_p.h \
+           fx/qmlgraphicsflipable_p.h \
+           fx/qmlgraphicsgridview_p.h \
            fx/qmlgraphicsimage_p.h \
-           fx/qmlgraphicsborderimage_p.h \
            fx/qmlgraphicsimagebase_p.h \
+           fx/qmlgraphicsborderimage_p.h \
+           fx/qmlgraphicspainteditem_p.h \
+           fx/qmlgraphicspainteditem_p_p.h \
+           fx/qmlgraphicsimage_p_p.h \
+           fx/qmlgraphicsborderimage_p_p.h \
+           fx/qmlgraphicsimagebase_p_p.h \
            fx/qmlgraphicsitem.h \
            fx/qmlgraphicsitem_p.h \
-           fx/qmlgraphicsfocuspanel.h \
-           fx/qmlgraphicsfocusscope.h \
-           fx/qmlgraphicspositioners.h \
+           fx/qmlgraphicsfocuspanel_p.h \
+           fx/qmlgraphicsfocusscope_p.h \
            fx/qmlgraphicspositioners_p.h \
-           fx/qmlgraphicsloader.h \
+           fx/qmlgraphicspositioners_p_p.h \
            fx/qmlgraphicsloader_p.h \
-           fx/qmlgraphicsmouseregion.h \
+           fx/qmlgraphicsloader_p_p.h \
            fx/qmlgraphicsmouseregion_p.h \
-           fx/qmlgraphicspath.h \
+           fx/qmlgraphicsmouseregion_p_p.h \
            fx/qmlgraphicspath_p.h \
-           fx/qmlgraphicspathview.h \
+           fx/qmlgraphicspath_p_p.h \
            fx/qmlgraphicspathview_p.h \
-           fx/qmlgraphicsrect.h \
+           fx/qmlgraphicspathview_p_p.h \
            fx/qmlgraphicsrect_p.h \
-           fx/qmlgraphicsrepeater.h \
+           fx/qmlgraphicsrect_p_p.h \
            fx/qmlgraphicsrepeater_p.h \
-           fx/qmlgraphicsscalegrid_p.h \
-           fx/qmlgraphicstextinput.h \
+           fx/qmlgraphicsrepeater_p_p.h \
+           fx/qmlgraphicsscalegrid_p_p.h \
            fx/qmlgraphicstextinput_p.h \
-           fx/qmlgraphicstextedit.h \
+           fx/qmlgraphicstextinput_p_p.h \
            fx/qmlgraphicstextedit_p.h \
-           fx/qmlgraphicstext.h \
+           fx/qmlgraphicstextedit_p_p.h \
            fx/qmlgraphicstext_p.h \
-           fx/qmlgraphicspixmapcache.h \
-           fx/qmlgraphicsvisualitemmodel.h \
-           fx/qmlgraphicslistview.h \
-           fx/qmlgraphicsgraphicsobjectcontainer.h \
-           fx/qmlgraphicslayoutitem.h \
+           fx/qmlgraphicstext_p_p.h \
+           fx/qmlgraphicspixmapcache_p.h \
+           fx/qmlgraphicsvisualitemmodel_p.h \
+           fx/qmlgraphicslistview_p.h \
+           fx/qmlgraphicsgraphicsobjectcontainer_p.h \
+           fx/qmlgraphicslayoutitem_p.h \
            fx/qmlgraphicseffects.cpp
 
 SOURCES += \
@@ -79,6 +79,6 @@ SOURCES += \
 contains(QT_CONFIG, webkit) {
     QT+=webkit
     SOURCES += fx/qmlgraphicswebview.cpp
-    HEADERS += fx/qmlgraphicswebview.h
+    HEADERS += fx/qmlgraphicswebview_p.h
 }
 

@@ -47,21 +47,21 @@
 #include <QNetworkRequest>
 #include <QGraphicsSceneMouseEvent>
 #include <QtScript/qscriptengine.h>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
 
 #include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlopenmetaobject.h>
-#include "qmlstate.h"
-#include "qlistmodelinterface.h"
+#include <private/qmlopenmetaobject_p.h>
+#include <private/qmlstate_p.h>
+#include <private/qlistmodelinterface_p.h>
 
 #include "qmlview.h"
-#include "qmlstategroup.h"
+#include <private/qmlstategroup_p.h>
 
 #include "qmlgraphicsitem_p.h"
 #include "qmlgraphicsitem.h"
-#include "qmlgraphicsevents_p.h"
+#include <private/qmlgraphicsevents_p_p.h>
 #include <qmlcomponent.h>
 
 QT_BEGIN_NAMESPACE
@@ -2909,6 +2909,9 @@ int QmlGraphicsItemPrivate::restart(QTime &t)
     return n;
 }
 
+#include "qmlgraphicsitem.moc"
+#include "moc_qmlgraphicsitem.cpp"
+
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
@@ -2917,5 +2920,3 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QmlGraphicsKeysAttached)
 QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QmlGraphicsKeyNavigationAttached)
 
-#include "moc_qmlgraphicsitem.cpp"
-#include "qfxitem.moc"

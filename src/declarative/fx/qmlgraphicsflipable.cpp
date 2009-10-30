@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsflipable.h"
+#include "qmlgraphicsflipable_p.h"
 #include "private/qmlgraphicsitem_p.h"
 #include "QtGui/qgraphicstransform.h"
 #include <QtDeclarative/qmlinfo.h>
@@ -232,5 +232,3 @@ void QmlGraphicsFlipablePrivate::updateSceneTransformFromParent()
 }
 
 QT_END_NAMESPACE
-
-#include "moc_qmlgraphicsflipable.cpp"

@@ -43,10 +43,10 @@
 #include <qml.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlexpression.h>
-#include "qmlstateoperations.h"
+#include "qmlstateoperations_p.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
-#include <private/qmlgraphicsanchors_p.h>
+#include <private/qmlgraphicsanchors_p_p.h>
 #include <private/qmlgraphicsitem_p.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtCore/qmath.h>
@@ -730,8 +730,8 @@ bool QmlAnchorChanges::override(ActionEvent*other)
     return false;
 }
 
-QT_END_NAMESPACE
-
 #include "qmlstateoperations.moc"
-#include "moc_qmlstateoperations.cpp"
+#include "moc_qmlstateoperations_p.cpp"
+
+QT_END_NAMESPACE
 

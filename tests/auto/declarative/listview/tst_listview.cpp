@@ -1,8 +1,8 @@
 #include <QtTest/QtTest>
-#include <qlistmodelinterface.h>
+#include <qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <qmlgraphicslistview.h>
-#include <qmlgraphicstext.h>
+#include <qmlgraphicslistview_p.h>
+#include <qmlgraphicstext_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 

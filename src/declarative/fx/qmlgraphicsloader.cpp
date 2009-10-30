@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsloader_p.h"
+#include "qmlgraphicsloader_p_p.h"
 #include <private/qmlengine_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -385,6 +385,6 @@ QmlGraphicsItem *QmlGraphicsLoader::item() const
     return d->item;
 }
 
-QT_END_NAMESPACE
+#include "moc_qmlgraphicsloader_p.cpp"
 
-#include "moc_qmlgraphicsloader.cpp"
+QT_END_NAMESPACE

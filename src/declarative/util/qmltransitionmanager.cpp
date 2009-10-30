@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include <QtDeclarative/qmlbinding.h>
-#include <private/qmltransitionmanager_p.h>
-#include <private/qmlstate_p.h>
+#include <private/qmltransitionmanager_p_p.h>
+#include <private/qmlstate_p_p.h>
 
 QT_BEGIN_NAMESPACE
 

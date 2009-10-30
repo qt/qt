@@ -39,71 +39,171 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSTEXTINPUT_P_H
-#define QMLGRAPHICSTEXTINPUT_P_H
+#ifndef QMLGRAPHICSTEXTINPUT_H
+#define QMLGRAPHICSTEXTINPUT_H
 
-#include "qmlgraphicstextinput.h"
-#include "qml.h"
+#include "qmlgraphicstext_p.h"
 #include "qmlgraphicspainteditem_p.h"
-#include "private/qlinecontrol_p.h"
-#include <QPointer>
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
+#include <QGraphicsSceneMouseEvent>
+#include <QIntValidator>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-class QmlGraphicsTextInputPrivate : public QmlGraphicsPaintedItemPrivate
+QT_MODULE(Declarative)
+
+class QmlGraphicsTextInputPrivate;
+class QValidator;
+class Q_DECLARATIVE_EXPORT QmlGraphicsTextInput : public QmlGraphicsPaintedItem
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsTextInput)
+    Q_OBJECT
+    Q_ENUMS(HAlignment)
+    Q_ENUMS(EchoMode)
+
+    Q_PROPERTY(QString text READ text WRITE setText NOTIFY textChanged)
+    Q_PROPERTY(QColor color READ color WRITE setColor)
+    Q_PROPERTY(QColor selectionColor READ selectionColor WRITE setSelectionColor)
+    Q_PROPERTY(QColor selectedTextColor READ selectedTextColor WRITE setSelectedTextColor)
+    Q_PROPERTY(QFont font READ font WRITE setFont)
+    Q_PROPERTY(HAlignment horizontalAlignment READ hAlign WRITE setHAlign)
+
+    Q_PROPERTY(bool readOnly READ isReadOnly WRITE setReadOnly)
+    Q_PROPERTY(bool cursorVisible READ isCursorVisible WRITE setCursorVisible)
+    Q_PROPERTY(int cursorPosition READ cursorPosition WRITE setCursorPosition NOTIFY cursorPositionChanged)
+    Q_PROPERTY(QmlComponent *cursorDelegate READ cursorDelegate WRITE setCursorDelegate)
+    Q_PROPERTY(int selectionStart READ selectionStart WRITE setSelectionStart NOTIFY selectionStartChanged)
+    Q_PROPERTY(int selectionEnd READ selectionEnd WRITE setSelectionEnd NOTIFY selectionEndChanged)
+    Q_PROPERTY(QString selectedText READ selectedText NOTIFY selectedTextChanged)
+
+    Q_PROPERTY(int maximumLength READ maxLength WRITE setMaxLength)
+    Q_PROPERTY(QValidator* validator READ validator WRITE setValidator)
+    Q_PROPERTY(QString inputMask READ inputMask WRITE setInputMask)
+    Q_PROPERTY(bool acceptableInput READ hasAcceptableInput NOTIFY acceptableInputChanged)
+    Q_PROPERTY(EchoMode echoMode READ echoMode WRITE setEchoMode)
+    Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
+
 public:
-    QmlGraphicsTextInputPrivate() : control(new QLineControl(QString())),
-                 color((QRgb)0), style(QmlGraphicsText::Normal),
-                 styleColor((QRgb)0), hAlign(QmlGraphicsTextInput::AlignLeft),
-                 hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
-                 cursorVisible(false)
-    {
-    }
+    QmlGraphicsTextInput(QmlGraphicsItem* parent=0);
+    ~QmlGraphicsTextInput();
 
-    ~QmlGraphicsTextInputPrivate()
-    {
-        delete control;
-    }
+    enum EchoMode {//To match QLineEdit::EchoMode
+        Normal,
+        NoEcho,
+        Password,
+        PasswordEchoOnEdit
+    };
 
-    void init();
-    void startCreatingCursor();
+    enum HAlignment {
+        AlignLeft = Qt::AlignLeft,
+        AlignRight = Qt::AlignRight,
+        AlignHCenter = Qt::AlignHCenter
+    };
 
-    QLineControl* control;
+    //### Should we have this function, x based properties,
+    //### or copy TextEdit with x instead of QTextCursor?
+    Q_INVOKABLE int xToPos(int x);
 
-    QFont font;
-    QColor  color;
-    QColor  selectionColor;
-    QColor  selectedTextColor;
-    QmlGraphicsText::TextStyle style;
-    QColor  styleColor;
-    QmlGraphicsTextInput::HAlignment hAlign;
-    QPointer<QmlComponent> cursorComponent;
-    QPointer<QmlGraphicsItem> cursorItem;
+    QString text() const;
+    void setText(const QString &);
 
-    int lastSelectionStart;
-    int lastSelectionEnd;
-    int oldHeight;
-    int oldWidth;
-    bool oldValidity;
-    int hscroll;
-    int oldScroll;
-    bool focused;
-    bool focusOnPress;
-    bool cursorVisible;
+    QFont font() const;
+    void setFont(const QFont &font);
+
+    QColor color() const;
+    void setColor(const QColor &c);
+
+    QColor selectionColor() const;
+    void setSelectionColor(const QColor &c);
+
+    QColor selectedTextColor() const;
+    void setSelectedTextColor(const QColor &c);
+
+    HAlignment hAlign() const;
+    void setHAlign(HAlignment align);
+
+    bool isReadOnly() const;
+    void setReadOnly(bool);
+
+    bool isCursorVisible() const;
+    void setCursorVisible(bool on);
+
+    int cursorPosition() const;
+    void setCursorPosition(int cp);
+
+    QRect cursorRect() const;
+
+    int selectionStart() const;
+    void setSelectionStart(int);
+
+    int selectionEnd() const;
+    void setSelectionEnd(int);
+
+    QString selectedText() const;
+
+    int maxLength() const;
+    void setMaxLength(int ml);
+
+    QValidator * validator() const;
+    void setValidator(QValidator* v);
+
+    QString inputMask() const;
+    void setInputMask(const QString &im);
+
+    EchoMode echoMode() const;
+    void setEchoMode(EchoMode echo);
+
+    QmlComponent* cursorDelegate() const;
+    void setCursorDelegate(QmlComponent*);
+
+    bool focusOnPress() const;
+    void setFocusOnPress(bool);
+
+    bool hasAcceptableInput() const;
+
+    void drawContents(QPainter *p,const QRect &r);
+Q_SIGNALS:
+    void textChanged();
+    void cursorPositionChanged();
+    void selectionStartChanged();
+    void selectionEndChanged();
+    void selectedTextChanged();
+    void accepted();
+    void acceptableInputChanged();
+
+protected:
+    QmlGraphicsTextInput(QmlGraphicsTextInputPrivate &dd, QmlGraphicsItem *parent);
+    virtual void geometryChanged(const QRectF &newGeometry,
+                                 const QRectF &oldGeometry);
+
+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
+    void keyPressEvent(QKeyEvent* ev);
+    bool event(QEvent *e);
+
+    void focusChanged(bool hasFocus);
+
+public Q_SLOTS:
+    void selectAll();
+
+private Q_SLOTS:
+    void updateSize(bool needsRedraw = true);
+    void q_textChanged();
+    void selectionChanged();
+    void createCursor();
+    void moveCursor();
+    void cursorPosChanged();
+    void updateRect(const QRect &r = QRect());
+
+private:
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsTextInput)
 };
 
 QT_END_NAMESPACE
 
-#endif
+QML_DECLARE_TYPE(QmlGraphicsTextInput)
+QML_DECLARE_TYPE(QValidator)
+QML_DECLARE_TYPE(QIntValidator)
 
+QT_END_HEADER
+
+#endif // QMLGRAPHICSTEXTINPUT_H

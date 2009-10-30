@@ -2,7 +2,7 @@
 #include "../../../shared/util.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmlgraphicstext.h>
+#include <private/qmlgraphicstext_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtWebKit/qwebdatabase.h>

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsintegermodel.h"
+#include "qmlgraphicsintegermodel_p.h"
 
 QT_BEGIN_NAMESPACE
 

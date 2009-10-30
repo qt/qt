@@ -24,28 +24,28 @@ SOURCES += \
 
 HEADERS += \
            util/qmlview.h \
-           util/qfxperf_p.h \
+           util/qfxperf_p_p.h \
            util/qfxglobal.h \
-           util/qperformancelog_p.h \
-           util/qmlconnection.h \
-           util/qmlpackage.h \
-           util/qmlanimation.h \
+           util/qperformancelog_p_p.h \
+           util/qmlconnection_p.h \
+           util/qmlpackage_p.h \
            util/qmlanimation_p.h \
-           util/qmlsystempalette.h \
-           util/qmlspringfollow.h \
-           util/qmleasefollow.h \
-           util/qmlstate.h\
-           util/qmlstateoperations.h \
-           util/qmlpropertychanges.h \
+           util/qmlanimation_p_p.h \
+           util/qmlsystempalette_p.h \
+           util/qmlspringfollow_p.h \
+           util/qmleasefollow_p.h \
            util/qmlstate_p.h\
-           util/qmltransitionmanager_p.h \
-           util/qmlstategroup.h \
-           util/qmltransition.h \
-           util/qmllistmodel.h\
-           util/qmllistaccessor.h \
-           util/qmlopenmetaobject.h \
-           util/qmlnullablevalue_p.h \
-           util/qmltimeline_p.h \
-           util/qmltimer.h \
-           util/qmlbind.h \
-           util/qmlpropertymap.h
+           util/qmlstateoperations_p.h \
+           util/qmlpropertychanges_p.h \
+           util/qmlstate_p_p.h\
+           util/qmltransitionmanager_p_p.h \
+           util/qmlstategroup_p.h \
+           util/qmltransition_p.h \
+           util/qmllistmodel_p.h\
+           util/qmllistaccessor_p.h \
+           util/qmlopenmetaobject_p.h \
+           util/qmlnullablevalue_p_p.h \
+           util/qmltimeline_p_p.h \
+           util/qmltimer_p.h \
+           util/qmlbind_p.h \
+           util/qmlpropertymap_p.h

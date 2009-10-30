@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsvisualitemmodel.h"
-#include "qlistmodelinterface.h"
-#include "qmleasefollow.h"
-#include "private/qmlgraphicsflickable_p.h"
-#include "qmlgraphicsgridview.h"
+#include "qmlgraphicsgridview_p.h"
+#include <private/qmlgraphicsvisualitemmodel_p.h>
+#include <private/qlistmodelinterface_p.h>
+#include <private/qmleasefollow_p.h>
+#include <private/qmlgraphicsflickable_p_p.h>
 
 #include <QKeyEvent>
 
@@ -1582,4 +1582,4 @@ QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, GridView, QmlGraphicsGridView
 
 QT_END_NAMESPACE
 
-#include "qfxgridview.moc"
+#include "qmlgraphicsgridview.moc"
