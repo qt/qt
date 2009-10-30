@@ -208,7 +208,7 @@ public:
 };
 
 /*!
-    \qmlclass WebView
+    \qmlclass WebView QFxWebView
     \brief The WebView item allows you to add web content to a canvas.
     \inherits Item
 

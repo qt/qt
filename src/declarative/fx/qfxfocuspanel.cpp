@@ -48,7 +48,7 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusPanel,QFxFocusPanel)
 
 /*!
-   \qmlclass FocusPanel
+   \qmlclass FocusPanel QFxFocusPanel
    \brief The FocusPanel item explicitly creates a focus panel.
    \inherits Item
 

@@ -125,7 +125,7 @@ QmlStateOperation::QmlStateOperation(QObjectPrivate &dd, QObject *parent)
 }
 
 /*!
-    \qmlclass State
+    \qmlclass State QmlState
     \brief The State element defines configurations of objects and properties.
 
     A state is specified as a set of batched changes from the default configuration.

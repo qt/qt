@@ -62,7 +62,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlRole,QmlXmlListModelRole)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlListModel,QmlXmlListModel)
 
 /*!
-    \qmlclass XmlRole
+    \qmlclass XmlRole QmlXmlListModelRole
     \brief The XmlRole element allows you to specify a role for an XmlListModel.
 */
 
@@ -411,7 +411,7 @@ void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
 */
 
 /*!
-    \qmlclass XmlListModel
+    \qmlclass XmlListModel QmlXmlListModel
     \brief The XmlListModel element allows you to specify a model using XPath expressions.
 
     XmlListModel allows you to construct a model from XML data that can then be used as a data source

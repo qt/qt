@@ -333,7 +333,7 @@ void QFxBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& chan
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QFxColumn)
 /*!
-  \qmlclass Column
+  \qmlclass Column QFxColumn
   \brief The Column item lines up its children vertically.
   \inherits Item
 
@@ -519,7 +519,7 @@ void QFxColumn::doPositioning()
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QFxRow)
 /*!
-  \qmlclass Row
+  \qmlclass Row QFxRow
   \brief The Row item lines up its children horizontally.
   \inherits Item
 

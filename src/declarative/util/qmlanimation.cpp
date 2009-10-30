@@ -139,7 +139,7 @@ QEasingCurve stringToCurve(const QString &curve)
 QML_DEFINE_NOCREATE_TYPE(QmlAbstractAnimation)
 
 /*!
-    \qmlclass Animation
+    \qmlclass Animation QmlAbstractAnimation
     \brief The Animation element is the base of all QML animations.
 
     The Animation element cannot be used directly in a QML file.  It exists
