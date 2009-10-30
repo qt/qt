@@ -1937,7 +1937,7 @@ void QDBusConnectionPrivate::connectSignal(const QString &key, const SignalHook 
 {
     signalHooks.insertMulti(key, hook);
     connect(hook.obj, SIGNAL(destroyed(QObject*)), SLOT(objectDestroyed(QObject*)),
-            Qt::DirectConnection);
+            Qt::ConnectionType(Qt::DirectConnection | Qt::UniqueConnection));
 
     MatchRefCountHash::iterator it = matchRefCounts.find(hook.matchRule);
 
