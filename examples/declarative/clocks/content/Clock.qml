@@ -12,13 +12,13 @@ Item {
 
     function timeChanged() {
         var date = new Date;
-        hours = date.getUTCHours() + Math.floor(clock.shift)
-        minutes = date.getUTCMinutes() + ((clock.shift % 1) * 60);
+        hours = shift ? date.getUTCHours() + Math.floor(clock.shift) : date.getHours()
+        minutes = shift ? date.getUTCMinutes() + ((clock.shift % 1) * 60) : date.getMinutes()
         seconds = date.getUTCSeconds();
     }
 
     Timer {
-        interval: 1000; running: true; repeat: true; triggeredOnStart: true
+        interval: 100; running: true; repeat: true; triggeredOnStart: true
         onTriggered: clock.timeChanged()
     }
 

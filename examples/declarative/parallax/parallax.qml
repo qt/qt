@@ -1,5 +1,5 @@
 import Qt 4.6
-import "../clock"
+import "../clocks/content"
 
 Rectangle {
     id: root
@@ -17,9 +17,7 @@ Rectangle {
             width: 320
             height: 480
 
-            Clock {
-                anchors.centerIn: parent
-            }
+            Clock { anchors.centerIn: parent }
         }
 
         Item {
