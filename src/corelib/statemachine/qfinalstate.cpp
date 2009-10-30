@@ -92,6 +92,7 @@ public:
 };
 
 QFinalStatePrivate::QFinalStatePrivate()
+    : QAbstractStatePrivate(FinalState)
 {
 }
 

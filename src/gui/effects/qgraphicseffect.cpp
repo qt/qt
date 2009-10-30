@@ -65,9 +65,6 @@
     \o QGraphicsDropShadowEffect - renders a dropshadow behind the item
     \o QGraphicsColorizeEffect - renders the item in shades of any given color
     \o QGraphicsOpacityEffect - renders the item with an opacity
-    \o QGraphicsPixelizeEffect - pixelizes the item with any pixel size
-    \o QGraphicsGrayscaleEffect - renders the item in shades of gray
-    \o QGraphicsBloomEffect - applies a blooming / glowing effect
     \endlist
 
     \img graphicseffect-effects.png
@@ -100,9 +97,11 @@
 */
 
 #include "qgraphicseffect_p.h"
+#include <QtGui/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
 #include <QtGui/qpainter.h>
+#include <QtGui/qpaintengine.h>
 #include <QtCore/qrect.h>
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
@@ -251,17 +250,24 @@ bool QGraphicsEffectSource::isPixmap() const
 
     \sa QGraphicsEffect::draw(), boundingRect(), deviceRect()
 */
-QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offset, PixmapPadMode mode) const
 {
     Q_D(const QGraphicsEffectSource);
 
+    // Shortcut, no cache for childless pixmap items...
+    const QGraphicsItem *item = graphicsItem();
+    if (system == Qt::LogicalCoordinates && mode == NoExpandPadMode && item && isPixmap()) {
+        return ((QGraphicsPixmapItem *) item)->pixmap();
+    }
+
     QPixmap pm;
-    if (d->m_cachedSystem == system)
+    if (d->m_cachedSystem == system && d->m_cachedMode == mode)
         QPixmapCache::find(d->m_cacheKey, &pm);
 
     if (pm.isNull()) {
-        pm = d->pixmap(system, &d->m_cachedOffset);
+        pm = d->pixmap(system, &d->m_cachedOffset, mode);
         d->m_cachedSystem = system;
+        d->m_cachedMode = mode;
 
         d->invalidateCache();
         d->m_cacheKey = QPixmapCache::insert(pm);
@@ -353,8 +359,10 @@ void QGraphicsEffect::setEnabled(bool enable)
         return;
 
     d->isEnabled = enable;
-    if (d->source)
+    if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
+        d->source->d_func()->invalidateCache();
+    }
     emit enabledChanged(enable);
 }
 
@@ -408,8 +416,10 @@ QGraphicsEffectSource *QGraphicsEffect::source() const
 void QGraphicsEffect::updateBoundingRect()
 {
     Q_D(QGraphicsEffect);
-    if (d->source)
+    if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
+        d->source->d_func()->invalidateCache();
+    }
 }
 
 /*!
@@ -458,96 +468,6 @@ void QGraphicsEffect::sourceChanged(ChangeFlags flags)
 }
 
 /*!
-    \class QGraphicsGrayscaleEffect
-    \brief The QGraphicsGrayscaleEffect class provides a grayscale effect.
-    \since 4.6
-
-    A grayscale effect renders the source in shades of gray.
-
-    \img graphicseffect-grayscale.png
-
-    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
-        QGraphicsColorizeEffect, QGraphicsOpacityEffect
-*/
-
-/*!
-    Constructs a new QGraphicsGrayscale instance.
-    The \a parent parameter is passed to QGraphicsEffect's constructor.
-*/
-QGraphicsGrayscaleEffect::QGraphicsGrayscaleEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsGrayscaleEffectPrivate, parent)
-{
-}
-
-/*!
-    Destroys the effect.
-*/
-QGraphicsGrayscaleEffect::~QGraphicsGrayscaleEffect()
-{
-}
-
-
-/*!
-    \property QGraphicsGrayscaleEffect::strength
-    \brief the strength of the effect.
-
-    By default, the strength is 1.0.
-    A strength 0.0 equals to no effect, while 1.0 means full grayscale.
-*/
-qreal QGraphicsGrayscaleEffect::strength() const
-{
-    Q_D(const QGraphicsGrayscaleEffect);
-    return d->filter->strength();
-}
-
-void QGraphicsGrayscaleEffect::setStrength(qreal strength)
-{
-    Q_D(QGraphicsGrayscaleEffect);
-    if (qFuzzyCompare(d->filter->strength(), strength))
-        return;
-
-    d->filter->setStrength(strength);
-    d->opaque = !qFuzzyIsNull(strength);
-    update();
-    emit strengthChanged(strength);
-}
-
-/*! \fn void QGraphicsGrayscaleEffect::strengthChanged(qreal strength)
-  This signal is emitted whenever setStrength() changes the grayscale
-  strength property. \a strength contains the new strength value of
-  the grayscale effect.
- */
-
-/*!
-    \reimp
-*/
-void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    Q_D(QGraphicsGrayscaleEffect);
-
-    if (!d->opaque) {
-        source->draw(painter);
-        return;
-    }
-
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        d->filter->draw(painter, offset, pixmap);
-        return;
-    }
-
-    // Draw pixmap in device coordinates to avoid pixmap scaling;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
-    d->filter->draw(painter, offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
-
-}
-
-/*!
     \class QGraphicsColorizeEffect
     \brief The QGraphicsColorizeEffect class provides a colorize effect.
     \since 4.6
@@ -559,8 +479,7 @@ void QGraphicsGrayscaleEffect::draw(QPainter *painter, QGraphicsEffectSource *so
 
     \img graphicseffect-colorize.png
 
-    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
-        QGraphicsGrayscaleEffect, QGraphicsOpacityEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsOpacityEffect
 */
 
 /*!
@@ -655,7 +574,8 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     QPoint offset;
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
+                                              QGraphicsEffectSource::NoExpandPadMode);
         d->filter->draw(painter, offset, pixmap);
         return;
     }
@@ -665,126 +585,6 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
-}
-
-/*!
-    \class QGraphicsPixelizeEffect
-    \brief The QGraphicsPixelizeEffect class provides a pixelize effect.
-    \since 4.6
-
-    A pixelize effect renders the source in lower resolution. This effect is
-    useful for reducing details, like censorship. The resolution can be
-    modified using the setPixelSize() function.
-
-    By default, the pixel size is 3.
-
-    \img graphicseffect-pixelize.png
-
-    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsGrayscaleEffect,
-        QGraphicsColorizeEffect, QGraphicsOpacityEffect
-*/
-
-/*!
-    Constructs a new QGraphicsPixelizeEffect instance.
-    The \a parent parameter is passed to QGraphicsEffect's constructor.
-*/
-QGraphicsPixelizeEffect::QGraphicsPixelizeEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsPixelizeEffectPrivate, parent)
-{
-}
-
-/*!
-    Destroys the effect.
-*/
-QGraphicsPixelizeEffect::~QGraphicsPixelizeEffect()
-{
-}
-
-/*!
-    \property QGraphicsPixelizeEffect::pixelSize
-    \brief the size of a pixel in the effect.
-
-    Setting the pixel size to 2 means two pixels in the source will be used to
-    represent one pixel. Using a bigger size results in lower resolution.
-
-    By default, the pixel size is 3.
-*/
-int QGraphicsPixelizeEffect::pixelSize() const
-{
-    Q_D(const QGraphicsPixelizeEffect);
-    return d->pixelSize;
-}
-
-void QGraphicsPixelizeEffect::setPixelSize(int size)
-{
-    Q_D(QGraphicsPixelizeEffect);
-    if (d->pixelSize == size)
-        return;
-
-    d->pixelSize = size;
-    update();
-    emit pixelSizeChanged(size);
-}
-
-/*!
-    \fn void QGraphicsPixelizeEffect::pixelSizeChanged(int size)
-
-    This signal is emitted whenever the effect's pixel size changes.
-    The \a size parameter holds the effect's new pixel size.
-*/
-
-static inline void pixelize(QImage *image, int pixelSize)
-{
-    Q_ASSERT(pixelSize > 0);
-    Q_ASSERT(image);
-    int width = image->width();
-    int height = image->height();
-    for (int y = 0; y < height; y += pixelSize) {
-        int ys = qMin(height - 1, y + pixelSize / 2);
-        QRgb *sbuf = reinterpret_cast<QRgb*>(image->scanLine(ys));
-        for (int x = 0; x < width; x += pixelSize) {
-            int xs = qMin(width - 1, x + pixelSize / 2);
-            QRgb color = sbuf[xs];
-            for (int yi = 0; yi < qMin(pixelSize, height - y); ++yi) {
-                QRgb *buf = reinterpret_cast<QRgb*>(image->scanLine(y + yi));
-                for (int xi = 0; xi < qMin(pixelSize, width - x); ++xi)
-                    buf[x + xi] = color;
-            }
-        }
-    }
-}
-
-/*!
-    \reimp
-*/
-void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    Q_D(QGraphicsPixelizeEffect);
-    if (d->pixelSize <= 0) {
-        source->draw(painter);
-        return;
-    }
-
-    QPoint offset;
-    if (source->isPixmap()) {
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
-        QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-        pixelize(&image, d->pixelSize);
-        painter->drawImage(offset, image);
-        return;
-    }
-
-    // Draw pixmap in device coordinates to avoid pixmap scaling.
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
-
-    // pixelize routine
-    QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);
-    pixelize(&image, d->pixelSize);
-
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
-    painter->drawImage(offset, image);
     painter->setWorldTransform(restoreTransform);
 }
 
@@ -802,8 +602,7 @@ void QGraphicsPixelizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 
     \img graphicseffect-blur.png
 
-    \sa QGraphicsDropShadowEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
-        QGraphicsColorizeEffect, QGraphicsOpacityEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 
 /*!
@@ -833,16 +632,16 @@ QGraphicsBlurEffect::~QGraphicsBlurEffect()
 
     By default, the blur radius is 5 pixels.
 */
-int QGraphicsBlurEffect::blurRadius() const
+qreal QGraphicsBlurEffect::blurRadius() const
 {
     Q_D(const QGraphicsBlurEffect);
     return d->filter->radius();
 }
 
-void QGraphicsBlurEffect::setBlurRadius(int radius)
+void QGraphicsBlurEffect::setBlurRadius(qreal radius)
 {
     Q_D(QGraphicsBlurEffect);
-    if (d->filter->radius() == radius)
+    if (qFuzzyCompare(d->filter->radius(), radius))
         return;
 
     d->filter->setRadius(radius);
@@ -851,7 +650,7 @@ void QGraphicsBlurEffect::setBlurRadius(int radius)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurRadiusChanged(int radius)
+    \fn void QGraphicsBlurEffect::blurRadiusChanged(qreal radius)
 
     This signal is emitted whenever the effect's blur radius changes.
     The \a radius parameter holds the effect's new blur radius.
@@ -911,9 +710,13 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
         return;
     }
 
+    QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToEffectRectPadMode;
+    if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
+        mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode;
+
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset, mode);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
@@ -937,8 +740,7 @@ void QGraphicsBlurEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 
     \img graphicseffect-drop-shadow.png
 
-    \sa QGraphicsBlurEffect, QGraphicsPixelizeEffect, QGraphicsGrayscaleEffect,
-        QGraphicsColorizeEffect, QGraphicsOpacityEffect
+    \sa QGraphicsBlurEffect, QGraphicsColorizeEffect, QGraphicsOpacityEffect
 */
 
 /*!
@@ -988,6 +790,8 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
 
     By default, the horizontal shadow offset is 8 pixels.
 
+
+
     \sa yOffset(), offset()
 */
 
@@ -1018,16 +822,16 @@ void QGraphicsDropShadowEffect::setOffset(const QPointF &offset)
 
     \sa color(), offset().
 */
-int QGraphicsDropShadowEffect::blurRadius() const
+qreal QGraphicsDropShadowEffect::blurRadius() const
 {
     Q_D(const QGraphicsDropShadowEffect);
     return d->filter->blurRadius();
 }
 
-void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
+void QGraphicsDropShadowEffect::setBlurRadius(qreal blurRadius)
 {
     Q_D(QGraphicsDropShadowEffect);
-    if (d->filter->blurRadius() == blurRadius)
+    if (qFuzzyCompare(d->filter->blurRadius(), blurRadius))
         return;
 
     d->filter->setBlurRadius(blurRadius);
@@ -1036,7 +840,7 @@ void QGraphicsDropShadowEffect::setBlurRadius(int blurRadius)
 }
 
 /*!
-    \fn void QGraphicsDropShadowEffect::blurRadiusChanged(int blurRadius)
+    \fn void QGraphicsDropShadowEffect::blurRadiusChanged(qreal blurRadius)
 
     This signal is emitted whenever the effect's blur radius changes.
     The \a blurRadius parameter holds the effect's new blur radius.
@@ -1095,9 +899,13 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
         return;
     }
 
+    QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToEffectRectPadMode;
+    if (painter->paintEngine()->type() == QPaintEngine::OpenGL2)
+        mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode;
+
     // Draw pixmap in device coordinates to avoid pixmap scaling.
     QPoint offset;
-    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+    const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset, mode);
     QTransform restoreTransform = painter->worldTransform();
     painter->setWorldTransform(QTransform());
     d->filter->draw(painter, offset, pixmap);
@@ -1117,8 +925,7 @@ void QGraphicsDropShadowEffect::draw(QPainter *painter, QGraphicsEffectSource *s
 
     \img graphicseffect-opacity.png
 
-    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
-        QGraphicsGrayscaleEffect, QGraphicsColorizeEffect
+    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsColorizeEffect
 */
 
 /*!
@@ -1242,7 +1049,8 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     if (source->isPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
         if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
+                                                  QGraphicsEffectSource::NoExpandPadMode);
             painter->drawPixmap(offset, pixmap);
         } else {
             QRect srcBrect = source->boundingRect().toAlignedRect();
@@ -1263,7 +1071,8 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;
         if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset,
+                                                  QGraphicsEffectSource::NoExpandPadMode);
             painter->setWorldTransform(QTransform());
             painter->drawPixmap(offset, pixmap);
         } else {
@@ -1296,234 +1105,6 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
     painter->restore();
 }
 
-/*!
-    \class QGraphicsBloomEffect
-    \brief The QGraphicsBloomEffect class provides a bloom/glow effect.
-    \since 4.6
-
-    A bloom/glow effect adds fringes of light around bright areas in the source.
-
-    \img graphicseffect-bloom.png
-
-    \sa QGraphicsDropShadowEffect, QGraphicsBlurEffect, QGraphicsPixelizeEffect,
-        QGraphicsGrayscaleEffect, QGraphicsColorizeEffect
-*/
-
-/*!
-    Constructs a new QGraphicsBloomEffect instance.
-    The \a parent parameter is passed to QGraphicsEffect's constructor.
-*/
-QGraphicsBloomEffect::QGraphicsBloomEffect(QObject *parent)
-    : QGraphicsEffect(*new QGraphicsBloomEffectPrivate, parent)
-{
-    Q_D(QGraphicsBloomEffect);
-    for (int i = 0; i < 256; ++i)
-        d->colorTable[i] = qMin(i + d->brightness, 255);
-}
-
-/*!
-    Destroys the effect.
-*/
-QGraphicsBloomEffect::~QGraphicsBloomEffect()
-{
-}
-
-/*!
-    \reimp
-*/
-QRectF QGraphicsBloomEffect::boundingRectFor(const QRectF &rect) const
-{
-    Q_D(const QGraphicsBloomEffect);
-    const qreal delta = d->blurFilter.radius() * 2;
-    return rect.adjusted(-delta, -delta, delta, delta);
-}
-
-/*!
-    \property QGraphicsBloomEffect::blurRadius
-    \brief the blur radius in pixels of the effect.
-
-    Using a smaller radius results in a sharper appearance, whereas a bigger
-    radius results in a more blurred appearance.
-
-    By default, the blur radius is 5 pixels.
-
-    \sa strength(), brightness()
-*/
-int QGraphicsBloomEffect::blurRadius() const
-{
-    Q_D(const QGraphicsBloomEffect);
-    return d->blurFilter.radius();
-}
-
-void QGraphicsBloomEffect::setBlurRadius(int radius)
-{
-    Q_D(QGraphicsBloomEffect);
-    if (d->blurFilter.radius() == radius)
-        return;
-
-    d->blurFilter.setRadius(radius);
-    updateBoundingRect();
-    emit blurRadiusChanged(radius);
-}
-
-/*!
-    \fn void QGraphicsBloomEffect::blurRadiusChanged(int blurRadius)
-
-    This signal is emitted whenever the effect's blur radius changes.
-    The \a blurRadius parameter holds the effect's new blur radius.
-*/
-
-/*!
-    \property QGraphicsBloomEffect::blurHint
-    \brief the blur hint of the effect.
-
-    Use the Qt::PerformanceHint hint to say that you want a faster blur,
-    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
-
-    When animating the blur radius it's recommended to use Qt::PerformanceHint.
-
-    By default, the blur hint is Qt::PerformanceHint.
-*/
-Qt::RenderHint QGraphicsBloomEffect::blurHint() const
-{
-    Q_D(const QGraphicsBloomEffect);
-    return d->blurFilter.blurHint();
-}
-
-void QGraphicsBloomEffect::setBlurHint(Qt::RenderHint hint)
-{
-    Q_D(QGraphicsBloomEffect);
-    if (d->blurFilter.blurHint() == hint)
-        return;
-
-    d->blurFilter.setBlurHint(hint);
-    emit blurHintChanged(hint);
-}
-
-/*!
-    \fn void QGraphicsBloomEffect::blurHintChanged(Qt::RenderHint hint)
-
-    This signal is emitted whenever the effect's blur hint changes.
-    The \a hint parameter holds the effect's new blur hint.
-*/
-
-/*!
-    \property QGraphicsBloomEffect::brightness
-    \brief the brightness of the glow.
-
-    The value should be in the range of 0 to 255, where 0 is dark
-    and 255 is bright.
-
-    By default, the brightness is 70.
-
-    \sa strength(), blurRadius()
-*/
-int QGraphicsBloomEffect::brightness() const
-{
-    Q_D(const QGraphicsBloomEffect);
-    return d->brightness;
-}
-
-void QGraphicsBloomEffect::setBrightness(int brightness)
-{
-    Q_D(QGraphicsBloomEffect);
-    brightness = qBound(0, brightness, 255);
-    if (d->brightness == brightness)
-        return;
-
-    d->brightness = brightness;
-    for (int i = 0; i < 256; ++i)
-        d->colorTable[i] = qMin(i + brightness, 255);
-
-    update();
-    emit brightnessChanged(brightness);
-}
-
-/*!
-    \fn void QGraphicsBloomEffect::brightnessChanged(int brightness)
-
-    This signal is emitted whenever the effect's brightness changes.
-    The \a brightness parameter holds the effect's new brightness.
-*/
-
-/*!
-    \property QGraphicsBloomEffect::strength
-    \brief the strength of the effect.
-
-    A strength 0.0 equals to no effect, while 1.0 means maximum glow.
-
-    By default, the strength is 0.7.
-*/
-qreal QGraphicsBloomEffect::strength() const
-{
-    Q_D(const QGraphicsBloomEffect);
-    return d->strength;
-}
-
-void QGraphicsBloomEffect::setStrength(qreal strength)
-{
-    Q_D(QGraphicsBloomEffect);
-    strength = qBound(qreal(0.0), strength, qreal(1.0));
-    if (qFuzzyCompare(d->strength, strength))
-        return;
-
-    d->strength = strength;
-    update();
-    emit strengthChanged(strength);
-}
-
-/*!
-    \fn void QGraphicsBloomEffect::strengthChanged(qreal strength)
-
-    This signal is emitted whenever the effect's strength changes.
-    The \a strength parameter holds the effect's new strength.
-*/
-
-extern QPixmap qt_toRasterPixmap(const QPixmap &pixmap);
-
-/*!
-    \reimp
-*/
-void QGraphicsBloomEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
-{
-    Q_D(QGraphicsBloomEffect);
-    if (d->strength < 0.001) {
-        source->draw(painter);
-        return;
-    }
-
-    QPoint offset;
-    QPixmap pixmap = qt_toRasterPixmap(source->pixmap(Qt::DeviceCoordinates, &offset));
-
-    // Blur.
-    QImage overlay(pixmap.size(), QImage::Format_ARGB32_Premultiplied);
-    overlay.fill(0);
-
-    QPainter blurPainter(&overlay);
-    d->blurFilter.draw(&blurPainter, QPointF(), pixmap);
-    blurPainter.end();
-
-    // Brighten.
-    const int numBits = overlay.width() * overlay.height();
-    QRgb *bits = reinterpret_cast<QRgb *>(overlay.bits());
-    for (int i = 0; i < numBits; ++i) {
-        const QRgb pixel = INV_PREMUL(bits[i]);
-        bits[i] = PREMUL(qRgba(d->colorTable[qRed(pixel)], d->colorTable[qGreen(pixel)],
-                               d->colorTable[qBlue(pixel)], qAlpha(pixel)));
-    }
-
-    // Composite.
-    QPainter compPainter(&pixmap);
-    compPainter.setCompositionMode(QPainter::CompositionMode_Overlay);
-    compPainter.setOpacity(d->strength);
-    compPainter.drawImage(0, 0, overlay);
-    compPainter.end();
-
-    QTransform restoreTransform = painter->worldTransform();
-    painter->setWorldTransform(QTransform());
-    painter->drawPixmap(offset, pixmap);
-    painter->setWorldTransform(restoreTransform);
-}
 
 QT_END_NAMESPACE
 

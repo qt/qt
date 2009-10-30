@@ -65,9 +65,17 @@ class QAbstractStatePrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QAbstractState)
 
 public:
-    QAbstractStatePrivate();
+    enum StateType {
+        AbstractState,
+        StandardState,
+        FinalState,
+        HistoryState
+    };
+
+    QAbstractStatePrivate(StateType type);
 
     static QAbstractStatePrivate *get(QAbstractState *q);
+    static const QAbstractStatePrivate *get(const QAbstractState *q);
 
     QStateMachine *machine() const;
 
@@ -76,6 +84,10 @@ public:
 
     void emitEntered();
     void emitExited();
+
+    uint stateType:31;
+    uint isMachine:1;
+    mutable QState *parentState;
 };
 
 QT_END_NAMESPACE

@@ -327,28 +327,13 @@ static int getCursorPosition(HIMC himc)
 
 static QString getString(HIMC himc, DWORD dwindex, int *selStart = 0, int *selLength = 0)
 {
-    static wchar_t *buffer = 0;
-    static int buflen = 0;
-
-    int len = getCompositionString(himc, dwindex, 0, 0) + 1;
-    if (!buffer || len > buflen) {
-        delete [] buffer;
-        buflen = qMin(len, 256);
-        buffer = new wchar_t[buflen];
-    }
-
-    len = getCompositionString(himc, dwindex, buffer, buflen * sizeof(wchar_t));
+    const int bufferSize = 256;
+    wchar_t buffer[bufferSize];
+    int len = getCompositionString(himc, dwindex, buffer, bufferSize * sizeof(wchar_t));
 
     if (selStart) {
-        static wchar_t *attrbuffer = 0;
-        static int attrbuflen = 0;
-        int attrlen = getCompositionString(himc, dwindex, 0, 0) + 1;
-        if (!attrbuffer || attrlen> attrbuflen) {
-            delete [] attrbuffer;
-            attrbuflen = qMin(attrlen, 256);
-            attrbuffer = new wchar_t[attrbuflen];
-        }
-        attrlen = getCompositionString(himc, GCS_COMPATTR, attrbuffer, attrbuflen * sizeof(wchar_t));
+        char attrbuffer[bufferSize];
+        int attrlen = getCompositionString(himc, GCS_COMPATTR, attrbuffer, bufferSize);
         *selStart = attrlen+1;
         *selLength = -1;
         for (int i = 0; i < attrlen; i++) {
