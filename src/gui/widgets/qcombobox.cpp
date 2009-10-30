@@ -489,18 +489,6 @@ void QComboBoxPrivateContainer::viewDestroyed()
 }
 
 /*
-    Sets currentIndex on entered if the LeftButton is not pressed. This
-    means that if mouseTracking(...) is on, we setCurrentIndex and select
-    even when LeftButton is not pressed.
-*/
-void QComboBoxPrivateContainer::setCurrentIndex(const QModelIndex &index)
-{
-    if (QComboBoxDelegate::isSeparator(index))
-        return;
-    view->setCurrentIndex(index);
-}
-
-/*
     Returns the item view used for the combobox popup.
 */
 QAbstractItemView *QComboBoxPrivateContainer::itemView() const
@@ -525,8 +513,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
         disconnect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
                    this, SLOT(updateScrollers()));
 #endif
-        disconnect(view, SIGNAL(entered(QModelIndex)),
-                   this, SLOT(setCurrentIndex(QModelIndex)));
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
 
@@ -563,8 +549,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     connect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
             this, SLOT(updateScrollers()));
 #endif
-    connect(view, SIGNAL(entered(QModelIndex)),
-            this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
 
@@ -655,16 +639,20 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             break;
         }
     break;
-    case QEvent::MouseMove: {
+    case QEvent::MouseMove:
         if (isVisible()) {
             QMouseEvent *m = static_cast<QMouseEvent *>(e);
             QWidget *widget = static_cast<QWidget *>(o);
             QPoint vector = widget->mapToGlobal(m->pos()) - initialClickPosition;
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
+            QModelIndex indexUnderMouse = view->indexAt(m->pos());
+            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
+                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+                view->setCurrentIndex(indexUnderMouse);
+            }
         }
         break;
-    }
     case QEvent::MouseButtonRelease: {
         QMouseEvent *m = static_cast<QMouseEvent *>(e);
         if (isVisible() && view->rect().contains(m->pos()) && view->currentIndex().isValid()

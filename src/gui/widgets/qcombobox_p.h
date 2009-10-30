@@ -231,7 +231,6 @@ public:
 public Q_SLOTS:
     void scrollItemView(int action);
     void updateScrollers();
-    void setCurrentIndex(const QModelIndex &index);
     void viewDestroyed();
 
 protected:
