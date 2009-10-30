@@ -346,12 +346,7 @@ bool QGestureManager::filterEventThroughContexts(const QMultiHash<QObject *,
     QSet<QGesture *> endedGestures =
             finishedGestures + canceledGestures + undeliveredGestures;
     foreach (QGesture *gesture, endedGestures) {
-        if (QGestureRecognizer *recognizer = m_gestureToRecognizer.value(gesture, 0)) {
-            gesture->setGestureCancelPolicy(QGesture::CancelNone);
-            recognizer->reset(gesture);
-        } else {
-            cleanupGesturesForRemovedRecognizer(gesture);
-        }
+        recycle(gesture);
         m_gestureTargets.remove(gesture);
     }
     return ret;
@@ -409,15 +404,8 @@ void QGestureManager::cancelGesturesForChildren(QGesture *original)
         deliverEvents(gestures, &undeliveredGestures);
     }
 
-    for (iter = cancelledGestures.begin(); iter != cancelledGestures.end(); ++iter) {
-        QGestureRecognizer *recognizer = m_gestureToRecognizer.value(*iter, 0);
-        if (recognizer) {
-            (*iter)->setGestureCancelPolicy(QGesture::CancelNone);
-            recognizer->reset(*iter);
-        } else {
-            cleanupGesturesForRemovedRecognizer(*iter);
-        }
-    }
+    for (iter = cancelledGestures.begin(); iter != cancelledGestures.end(); ++iter)
+        recycle(*iter);
 }
 
 void QGestureManager::cleanupGesturesForRemovedRecognizer(QGesture *gesture)
@@ -667,16 +655,21 @@ void QGestureManager::timerEvent(QTimerEvent *event)
             it = m_maybeGestures.erase(it);
             DEBUG() << "QGestureManager::timerEvent: gesture stopped due to timeout:"
                     << gesture;
-            QGestureRecognizer *recognizer = m_gestureToRecognizer.value(gesture, 0);
-            if (recognizer) {
-                gesture->setGestureCancelPolicy(QGesture::CancelNone);
-                recognizer->reset(gesture);
-            } else {
-                cleanupGesturesForRemovedRecognizer(gesture);
-            }
+            recycle(gesture);
         } else {
             ++it;
         }
+    }
+}
+
+void QGestureManager::recycle(QGesture *gesture)
+{
+    QGestureRecognizer *recognizer = m_gestureToRecognizer.value(gesture, 0);
+    if (recognizer) {
+        gesture->setGestureCancelPolicy(QGesture::CancelNone);
+        recognizer->reset(gesture);
+    } else {
+        cleanupGesturesForRemovedRecognizer(gesture);
     }
 }
 

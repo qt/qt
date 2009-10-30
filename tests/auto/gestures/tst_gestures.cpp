@@ -116,7 +116,7 @@ public:
         return new CustomGesture;
     }
 
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject*, QEvent *event)
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject*o , QEvent *event)
     {
         if (event->type() == CustomEvent::EventType) {
             QGestureRecognizer::Result result = 0;
@@ -332,6 +332,7 @@ private slots:
     void consumeEventHint();
     void unregisterRecognizer();
     void autoCancelGestures();
+    void autoCancelGestures2();
 };
 
 tst_Gestures::tst_Gestures()
@@ -1295,20 +1296,6 @@ void tst_Gestures::unregisterRecognizer() // a method on QApplication
 
 void tst_Gestures::autoCancelGestures()
 {
-    class MockRecognizer : public QGestureRecognizer {
-      public:
-        QGestureRecognizer::Result filterEvent(QGesture *gesture, QObject *watched, QEvent *event)
-        {
-            Q_UNUSED(gesture);
-            Q_UNUSED(watched);
-            if (event->type() == QEvent::MouseButtonPress)
-                return QGestureRecognizer::GestureTriggered;
-            if (event->type() == QEvent::MouseButtonRelease)
-                return QGestureRecognizer::GestureFinished;
-            return QGestureRecognizer::Ignore;
-        }
-    };
-
     class MockWidget : public GestureWidget {
       public:
         MockWidget(const char *name) : GestureWidget(name) { }
@@ -1324,14 +1311,18 @@ void tst_Gestures::autoCancelGestures()
         }
     };
 
+    const Qt::GestureType secondGesture = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
+
     MockWidget parent("parent"); // this one sets the cancel policy to CancelAllInContext
     parent.resize(300, 100);
+    parent.setWindowFlags(Qt::X11BypassWindowManagerHint);
     GestureWidget *child = new GestureWidget("child", &parent);
     child->setGeometry(10, 10, 100, 80);
 
-    Qt::GestureType type = QApplication::registerGestureRecognizer(new MockRecognizer());
-    parent.grabGesture(type, Qt::WidgetWithChildrenGesture);
-    child->grabGesture(type, Qt::WidgetWithChildrenGesture);
+    parent.grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture);
+    child->grabGesture(secondGesture, Qt::WidgetWithChildrenGesture);
+    parent.show();
+    QTest::qWaitForWindowShown(&parent);
 
     /*
       An event is send to both the child and the parent, when the child gets it a gesture is triggered
@@ -1340,18 +1331,73 @@ void tst_Gestures::autoCancelGestures()
       parent gets it he accepts it and that causes the cancel policy to activate.
       The cause of that is the gesture for the child is cancelled and send to the child as such.
     */
-    QMouseEvent event(QEvent::MouseButtonPress, QPoint(20,20), Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
+    CustomEvent event;
+    event.serial = CustomGesture::SerialStartedThreshold;
     QApplication::sendEvent(child, &event);
+    QCOMPARE(child->events.all.count(), 2);
     QCOMPARE(child->events.started.count(), 1);
-    QCOMPARE(child->events.all.count(), 1);
-    QCOMPARE(parent.events.all.count(), 0);
-    child->reset();
-    QApplication::sendEvent(&parent, &event);
-    QCOMPARE(parent.events.all.count(), 1);
-    QCOMPARE(parent.events.started.count(), 1);
-    QCOMPARE(child->events.started.count(), 0);
-    QCOMPARE(child->events.all.count(), 1);
     QCOMPARE(child->events.canceled.count(), 1);
+    QCOMPARE(parent.events.all.count(), 1);
+
+    // clean up, make the parent gesture finish
+    event.serial = CustomGesture::SerialFinishedThreshold;
+    QApplication::sendEvent(child, &event);
+    QCOMPARE(parent.events.all.count(), 2);
+}
+
+void tst_Gestures::autoCancelGestures2()
+{
+    class MockItem : public GestureItem {
+      public:
+        MockItem(const char *name) : GestureItem(name) { }
+
+        bool event(QEvent *event) {
+            if (event->type() == QEvent::Gesture) {
+                QGestureEvent *ge = static_cast<QGestureEvent*>(event);
+                Q_ASSERT(ge->allGestures().count() == 1); // can't use QCOMPARE here...
+                ge->allGestures().first()->setGestureCancelPolicy(QGesture::CancelAllInContext);
+            }
+            return GestureItem::event(event);
+        }
+    };
+
+    const Qt::GestureType secondGesture = QApplication::registerGestureRecognizer(new CustomGestureRecognizer);
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.setWindowFlags(Qt::X11BypassWindowManagerHint);
+
+    MockItem *parent = new MockItem("parent");
+    GestureItem *child = new GestureItem("child");
+    child->setParentItem(parent);
+    parent->setPos(0, 0);
+    child->setPos(10, 10);
+    scene.addItem(parent);
+    view.viewport()->grabGesture(CustomGesture::GestureType, Qt::WidgetGesture);
+    view.viewport()->grabGesture(secondGesture, Qt::WidgetGesture);
+    parent->grabGesture(CustomGesture::GestureType, Qt::WidgetWithChildrenGesture);
+    child->grabGesture(secondGesture, Qt::WidgetWithChildrenGesture);
+
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    view.ensureVisible(scene.sceneRect());
+
+    CustomEvent event;
+    event.serial = CustomGesture::SerialStartedThreshold;
+    event.hasHotSpot = true;
+    event.hotSpot = mapToGlobal(QPointF(5, 5), child, &view);
+    // qDebug() << event.hotSpot;
+    scene.sendEvent(child, &event);
+    //QEventLoop().exec();
+    QCOMPARE(parent->events.all.count(), 1);
+    QCOMPARE(child->events.started.count(), 1);
+    QCOMPARE(child->events.canceled.count(), 1);
+    QCOMPARE(child->events.all.count(), 2);
+
+    // clean up, make the parent gesture finish
+    event.serial = CustomGesture::SerialFinishedThreshold;
+    scene.sendEvent(child, &event);
+    QCOMPARE(parent->events.all.count(), 2);
 }
 
 QTEST_MAIN(tst_Gestures)

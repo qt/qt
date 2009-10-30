@@ -222,8 +222,8 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
     QVBoxLayout *vboxLayout = new QVBoxLayout(this);
     QString resourcePath = QLatin1String(":/trolltech/assistant/images/");
 
-#ifndef Q_OS_MAC
     vboxLayout->setMargin(0);
+#ifndef Q_OS_MAC
     resourcePath.append(QLatin1String("win"));
 #else
     resourcePath.append(QLatin1String("mac"));
