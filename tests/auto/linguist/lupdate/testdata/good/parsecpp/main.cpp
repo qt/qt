@@ -228,3 +228,22 @@ QT_TRID_NOOP("this_a_id")
 //~ some thing
 //% "This needs to be here. Really."
 QString test = qtTrId("this_another_id", n);
+
+
+
+class YetAnotherTest : QObject {
+    Q_OBJECT
+
+    int function(void)
+    {
+        //
+        //:
+        //=
+        //~
+        //#
+        //=============
+        //~~~~~~~~~~~~~
+        //:::::::::::::
+        tr("nothing");
+    }
+};

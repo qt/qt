@@ -43,6 +43,7 @@
 #define QLIBRARYINFO_H
 
 #include <QtCore/qstring.h>
+#include <QtCore/QDate>
 
 QT_BEGIN_HEADER
 
@@ -59,6 +60,7 @@ public:
     static QString licensedProducts();
 
     static QString buildKey();
+    static QDate buildDate();
 
     enum LibraryLocation
     {

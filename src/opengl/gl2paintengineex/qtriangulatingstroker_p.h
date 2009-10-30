@@ -48,6 +48,7 @@
 #include <private/qnumeric_p.h>
 #include <private/qmath_p.h>
 
+QT_BEGIN_NAMESPACE
 
 class QTriangulatingStroker
 {
@@ -304,5 +305,6 @@ void QTriangulatingStroker::join(const qreal *pts)
     emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
 }
 
+QT_END_NAMESPACE
 
 #endif

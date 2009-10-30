@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtOpenVG module of the Qt Toolkit.
+** This file is part of the QtScript module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,52 +39,48 @@
 **
 ****************************************************************************/
 
-#ifndef QVGCOMPOSITIONHELPER_H
-#define QVGCOMPOSITIONHELPER_H
+#ifndef QSCRIPTPROGRAM_H
+#define QSCRIPTPROGRAM_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <QtCore/qsharedpointer.h>
 
-#include "qwindowsurface_vgegl_p.h"
+#include <QtCore/qstring.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-#if !defined(QVG_NO_SINGLE_CONTEXT) && !defined(QT_NO_EGL)
+QT_MODULE(Script)
 
-class QVGPaintEnginePrivate;
-class QVGEGLWindowSurfacePrivate;
-
-class Q_OPENVG_EXPORT QVGCompositionHelper
+class QScriptProgramPrivate;
+class Q_SCRIPT_EXPORT QScriptProgram
 {
 public:
-    QVGCompositionHelper();
-    virtual ~QVGCompositionHelper();
+    QScriptProgram();
+    QScriptProgram(const QString &sourceCode,
+                   const QString fileName = QString(),
+                   int firstLineNumber = 1);
+    QScriptProgram(const QScriptProgram &other);
+    ~QScriptProgram();
 
-    void startCompositing(const QSize& screenSize);
-    void endCompositing();
+    QScriptProgram &operator=(const QScriptProgram &other);
 
-    void blitWindow(QVGEGLWindowSurfacePrivate *surface, const QRect& rect,
-                    const QPoint& topLeft, int opacity);
-    void fillBackground(const QRegion& region, const QBrush& brush);
-    void drawCursorPixmap(const QPixmap& pixmap, const QPoint& offset);
-    void setScissor(const QRegion& region);
-    void clearScissor();
+    bool isNull() const;
+
+    QString sourceCode() const;
+    QString fileName() const;
+    int firstLineNumber() const;
+
+    bool operator==(const QScriptProgram &other) const;
+    bool operator!=(const QScriptProgram &other) const;
 
 private:
-    QVGPaintEnginePrivate *d;
-    QSize screenSize;
+    QExplicitlySharedDataPointer<QScriptProgramPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QScriptProgram)
 };
-
-#endif
 
 QT_END_NAMESPACE
 
-#endif
+QT_END_HEADER
+
+#endif // QSCRIPTPROGRAM_H
