@@ -4192,13 +4192,15 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
         out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
+        out() << "<table width=\"100%\" class=\"qmlname\">";
 
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+                if (!qpn->isWritable())
+                    out() << "<span class=\"qmlreadonly\">read-only</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
                 if (qpgn->isDefault()) {
