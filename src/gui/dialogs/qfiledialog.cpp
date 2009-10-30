@@ -3187,7 +3187,17 @@ void QFileDialogTreeView::keyPressEvent(QKeyEvent *e)
     if (!d_ptr->itemViewKeyboardEvent(e)) {
         QTreeView::keyPressEvent(e);
     }
+#ifdef QT_KEYPAD_NAVIGATION
+    else if ((QApplication::navigationMode() == Qt::NavigationModeKeypadTabOrder
+         || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional)
+         && !hasEditFocus()) {
+         e->ignore();
+    } else {
+        e->accept();
+    }
+#else
     e->accept();
+#endif
 }
 
 QSize QFileDialogTreeView::sizeHint() const
