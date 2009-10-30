@@ -1,4 +1,5 @@
 import Qt 4.6
+import "content"
 
 Rectangle {
     width: childrenRect.width
