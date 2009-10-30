@@ -3,7 +3,7 @@ contains(QT_CONFIG,declarative): QT += declarative
 QT += network
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_qfxpixmapcache.cpp
+SOURCES += tst_qmlgraphicspixmapcache.cpp
 
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov

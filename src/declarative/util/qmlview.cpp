@@ -52,7 +52,7 @@
 #include "qbasictimer.h"
 
 #include "qml.h"
-#include "qfxitem.h"
+#include "qmlgraphicsitem.h"
 #include "private/qperformancelog_p.h"
 #include "private/qfxperf_p.h"
 

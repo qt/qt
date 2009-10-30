@@ -1,7 +1,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxloader.h>
+#include <QtDeclarative/qmlgraphicsloader.h>
 
 class tst_qfxloader : public QObject
 

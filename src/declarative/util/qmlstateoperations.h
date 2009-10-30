@@ -43,8 +43,8 @@
 #define QMLSTATEOPERATIONS_H
 
 #include <QtDeclarative/qmlstate.h>
-#include <QtDeclarative/qfxitem.h>
-#include <QtDeclarative/qfxanchors.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
+#include <QtDeclarative/qmlgraphicsanchors.h>
 #include <QtDeclarative/qmlscriptstring.h>
 
 QT_BEGIN_HEADER

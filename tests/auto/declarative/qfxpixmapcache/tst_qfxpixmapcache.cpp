@@ -1,6 +1,6 @@
 #include <qtest.h>
 #include <QtTest/QtTest>
-#include <QtDeclarative/qfxpixmapcache.h>
+#include <QtDeclarative/qmlgraphicspixmapcache.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QNetworkReply>
 

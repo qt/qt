@@ -46,8 +46,8 @@
 #include "qmlstateoperations.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
-#include <private/qfxanchors_p.h>
-#include <private/qfxitem_p.h>
+#include <private/qmlgraphicsanchors_p.h>
+#include <private/qmlgraphicsitem_p.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtCore/qmath.h>
 

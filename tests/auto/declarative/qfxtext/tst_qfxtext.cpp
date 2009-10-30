@@ -2,7 +2,7 @@
 #include <QTextDocument>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxtext.h>
+#include <QtDeclarative/qmlgraphicstext.h>
 #include <QFontMetrics>
 
 class tst_qfxtext : public QObject

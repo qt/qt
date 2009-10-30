@@ -1,7 +1,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxrect.h>
+#include <QtDeclarative/qmlgraphicsrect.h>
 
 class tst_states : public QObject
 {

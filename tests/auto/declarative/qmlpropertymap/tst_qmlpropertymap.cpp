@@ -3,7 +3,7 @@
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlpropertymap.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxtext.h>
+#include <QtDeclarative/qmlgraphicstext.h>
 #include <QSignalSpy>
 
 class tst_QmlPropertyMap : public QObject

@@ -7,7 +7,7 @@
 #include <private/qmlenginedebug_p.h>
 #include <QtDeclarative/qmldebugclient.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxitem.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
 #include <QtDeclarative/qmldebugservice.h>
 
 #include "engine.h"

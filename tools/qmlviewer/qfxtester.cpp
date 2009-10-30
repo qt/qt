@@ -20,7 +20,7 @@
 #include <QDir>
 #include <QCryptographicHash>
 #include <private/qabstractanimation_p.h>
-#include <private/qfxitem_p.h>
+#include <private/qmlgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
