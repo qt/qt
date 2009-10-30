@@ -73,27 +73,27 @@ const uchar qt_pixmap_bit_mask[] = { 0x01, 0x02, 0x04, 0x08,
     used to lock the global bitmap heap. Only used in
     S60 v3.1 and S60 v3.2.
 */
+_LIT(KFBSERVLargeBitmapAccessName,"FbsLargeBitmapAccess");
 class QSymbianFbsClient
 {
 public:
 
-    QSymbianFbsClient() : heapLock(0), heapLocked(false)
+    QSymbianFbsClient() : heapLocked(false)
     {
-        QT_TRAP_THROWING(heapLock = new(ELeave) CFbsBitmap);
-        heapLock->Create(TSize(0,0), S60->screenDevice()->DisplayMode());
+        heapLock.OpenGlobal(KFBSERVLargeBitmapAccessName);
     }
 
     ~QSymbianFbsClient()
     {
-        delete heapLock;
+        heapLock.Close();
     }
 
     bool lockHeap()
     {
         bool wasLocked = heapLocked;
 
-        if (heapLock && !heapLocked) {
-            heapLock->LockHeap(ETrue);
+        if (heapLock.Handle() && !heapLocked) {
+            heapLock.Wait();
             heapLocked = true;
         }
 
@@ -104,8 +104,8 @@ public:
     {
         bool wasLocked = heapLocked;
 
-        if (heapLock && heapLocked) {
-            heapLock->UnlockHeap(ETrue);
+        if (heapLock.Handle() && heapLocked) {
+            heapLock.Signal();
             heapLocked = false;
         }
 
@@ -115,7 +115,7 @@ public:
 
 private:
 
-    CFbsBitmap *heapLock;
+    RMutex heapLock;
     bool heapLocked;
 };
 
@@ -169,7 +169,7 @@ public:
 
     inline void beginDataAccess(CFbsBitmap *bitmap)
     {
-        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3)
+        if (symbianVersion == QSysInfo::SV_9_2)
             heapWasLocked = qt_symbianFbsClient()->lockHeap();
         else
             bitmap->LockHeap(ETrue);
@@ -177,7 +177,7 @@ public:
 
     inline void endDataAccess(CFbsBitmap *bitmap)
     {
-        if (symbianVersion == QSysInfo::SV_9_2 || symbianVersion == QSysInfo::SV_9_3) {
+        if (symbianVersion == QSysInfo::SV_9_2) {
             if (!heapWasLocked)
                 qt_symbianFbsClient()->unlockHeap();
         } else {
