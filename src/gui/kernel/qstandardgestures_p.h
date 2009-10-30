@@ -69,6 +69,17 @@ public:
     void reset(QGesture *state);
 };
 
+class QPinchGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QPinchGestureRecognizer();
+
+    QGesture *createGesture(QObject *target);
+
+    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
 QT_END_NAMESPACE
 
 #endif // QSTANDARDGESTURES_P_H

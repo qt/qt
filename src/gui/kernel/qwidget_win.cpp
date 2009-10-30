@@ -2071,17 +2071,6 @@ void QWidgetPrivate::winSetupGestures()
             gc[0].dwBlock = GC_PAN;
         }
 
-//        gc[1].dwID = GID_ZOOM;
-//        if (gestures.pinch)
-//            gc[1].dwWant = GC_ZOOM;
-//        else
-//            gc[1].dwBlock = GC_ZOOM;
-//        gc[2].dwID = GID_ROTATE;
-//        if (gestures.pinch)
-//            gc[2].dwWant = GC_ROTATE;
-//        else
-//            gc[2].dwBlock = GC_ROTATE;
-
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
 }

@@ -56,16 +56,16 @@ QWinNativePanGestureRecognizer::QWinNativePanGestureRecognizer()
 {
 }
 
-QGesture* QWinNativePanGestureRecognizer::createGesture(QObject *target) const
+QGesture *QWinNativePanGestureRecognizer::createGesture(QObject *target)
 {
     if (!target)
         return new QPanGesture; // a special case
-    if (qobject_cast<QGraphicsObject*>(target))
-        return 0;
     if (!target->isWidgetType())
         return 0;
+    if (qobject_cast<QGraphicsObject *>(target))
+        return 0;
 
-    QWidget *q = static_cast<QWidget*>(target);
+    QWidget *q = static_cast<QWidget *>(target);
     QWidgetPrivate *d = q->d_func();
     d->nativeGesturePanEnabled = true;
     d->winSetupGestures();

@@ -102,17 +102,13 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    if (QGesture *pan = event->gesture(Qt::PanGesture)) {
-        panTriggered(static_cast<QPanGesture*>(pan));
-        return true;
-    } else if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
-        pinchTriggered(static_cast<QPinchGesture*>(pinch));
-        return true;
-    } else if (QGesture *swipe = event->gesture(Qt::SwipeGesture)) {
-        swipeTriggered(static_cast<QSwipeGesture*>(swipe));
-        return true;
-    }
-    return false;
+    if (QGesture *pan = event->gesture(Qt::PanGesture))
+        panTriggered(static_cast<QPanGesture *>(pan));
+    if (QGesture *pinch = event->gesture(Qt::PinchGesture))
+        pinchTriggered(static_cast<QPinchGesture *>(pinch));
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    return true;
 }
 //! [gesture event handler]
 

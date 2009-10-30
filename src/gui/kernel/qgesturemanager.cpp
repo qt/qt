@@ -77,6 +77,7 @@ QGestureManager::QGestureManager(QObject *parent)
   #endif
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
+    registerGestureRecognizer(new QPinchGestureRecognizer);
 #endif
 }
 

@@ -121,6 +121,9 @@ public:
     qreal totalRotationAngle;
     qreal lastRotationAngle;
     qreal rotationAngle;
+
+    bool isNewSequence;
+    QPointF startPosition[2];
 };
 
 class QSwipeGesturePrivate : public QGesturePrivate
