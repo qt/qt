@@ -2266,10 +2266,19 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
             break;
         case CT_TabBarTab:
-            QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+            {
+                const QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+                sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
+                if (naviPaneSize.height() > sz.height())
+                    sz.setHeight(naviPaneSize.height());
+            }
+            break;
+        case CT_ItemViewItem:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
-            if (naviPaneSize.height() > sz.height())
-                sz.setHeight(naviPaneSize.height());
+            if (QS60StylePrivate::isTouchSupported())
+                //Make itemview easier to use in touch devices
+                //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
+                sz.setHeight(sz.height() + 2*pixelMetric(QStyle::PM_FocusFrameVMargin));
             break;
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
