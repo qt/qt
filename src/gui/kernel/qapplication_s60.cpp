@@ -836,7 +836,7 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
-	    }
+        }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
@@ -910,9 +910,9 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         CEikStatusPane* statusPane = S60->statusPane();
         CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
         bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+        if (statusPane && (bool)statusPane->IsVisible() == isFullscreen)
             statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+        if (buttonGroup && (bool)buttonGroup->IsVisible() == isFullscreen)
             buttonGroup->MakeVisible(!isFullscreen);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
@@ -925,6 +925,12 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
+        if (qwidget->isFullScreen()) {
+            SetExtentToWholeScreen();
+        } else if (qwidget->isMaximized()) {
+            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            SetExtent(r.iTl, r.Size());
+        }
         qwidget->d_func()->setWindowIcon_sys(true);
         break;
     case KUidValueCoeFontChangeEvent:
@@ -1080,9 +1086,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
     // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
     // and for dimming behind modal windows
-	S60->windowGroup().EnableFocusChangeEvents();
+    S60->windowGroup().EnableFocusChangeEvents();
 
-	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
+    //Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
     // HAL::Get(HALData::EPen, TInt& result) may set 'result' to 1 on some 3.1 systems (e.g. N95).
     // But we know that S60 systems below 5.0 did not support touch.
@@ -1560,7 +1566,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         }
 #endif
         break;
-	default:
+    default:
         break;
     }
 
