@@ -44,6 +44,7 @@ TR_DIR = $$PWD/../../../translations
 TRANSLATIONS = \
     $$TR_DIR/assistant_da.ts \
     $$TR_DIR/assistant_de.ts \
+    $$TR_DIR/assistant_fr.ts \
     $$TR_DIR/assistant_ja.ts \
     $$TR_DIR/assistant_pl.ts \
     $$TR_DIR/assistant_ru.ts \
