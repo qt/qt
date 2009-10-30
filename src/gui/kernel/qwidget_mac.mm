@@ -2872,6 +2872,7 @@ void QWidgetPrivate::setCursor_sys(const QCursor &)
 #else
      Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created)) {
+        QMacCocoaAutoReleasePool pool;
         [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
     }
 #endif
@@ -2884,6 +2885,7 @@ void QWidgetPrivate::unsetCursor_sys()
 #else
      Q_Q(QWidget);
     if (q->testAttribute(Qt::WA_WState_Created)) {
+        QMacCocoaAutoReleasePool pool;
         [qt_mac_window_for(q) invalidateCursorRectsForView:qt_mac_nativeview_for(q)];
     }
 #endif
