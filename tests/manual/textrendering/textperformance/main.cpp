@@ -84,7 +84,7 @@ public:
 
             p.drawText(2, height() - fm.descent(),
                 QLatin1String("Fps: ") +
-                QString::number(1000 / (qreal)(lastMsecsSum / lastMeasurementsCount), 'f', 1)
+                QString::number(1000 / ((qreal)lastMsecsSum / lastMeasurementsCount), 'f', 1)
             );
         }
 
