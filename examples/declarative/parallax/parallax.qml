@@ -1,5 +1,6 @@
 import Qt 4.6
 import "../clocks/content"
+import "qml"
 
 Rectangle {
     id: root

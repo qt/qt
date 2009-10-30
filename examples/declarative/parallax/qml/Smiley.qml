@@ -7,7 +7,7 @@ Item {
     // The shadow for the smiley face
     Image {
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "pics/shadow.png"; y: smiley.minHeight + 58
+        source: "../pics/shadow.png"; y: smiley.minHeight + 58
         transformOrigin: Item.Center
 
         // The scale property depends on the y position of the smiley face.
@@ -20,7 +20,7 @@ Item {
         property int minHeight: 2 * window.height / 3
 
         anchors.horizontalCenter: parent.horizontalCenter
-        source: "pics/face-smile.png"; y: minHeight
+        source: "../pics/face-smile.png"; y: minHeight
 
         // Animate the y property. Setting repeat to true makes the
         // animation repeat indefinitely, otherwise it would only run once.
