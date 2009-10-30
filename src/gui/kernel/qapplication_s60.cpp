@@ -357,6 +357,9 @@ QSymbianControl::~QSymbianControl()
         setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
+
+    if(m_previousEventLongTap)
+        QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
