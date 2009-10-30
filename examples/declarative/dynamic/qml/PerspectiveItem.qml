@@ -7,6 +7,6 @@ Image {
     onCreatedChanged: if (created && y+height<=window.height/2) { tree.destroy() }
     scale: y+height > window.height/2 ? (y+height-250)*0.01 : 1
     transformOrigin: "Center"
-    source: image; 
+    source: image; smooth: true
     z: y
 }
