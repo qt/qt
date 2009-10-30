@@ -5662,96 +5662,96 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
             return icon;
 #if defined(Q_WS_MAC)
     if (QApplication::desktopSettingsAware()) {
-    OSType iconType = 0;
-    switch (standardIcon) {
-    case QStyle::SP_MessageBoxQuestion:
-    case QStyle::SP_MessageBoxInformation:
-    case QStyle::SP_MessageBoxWarning:
-    case QStyle::SP_MessageBoxCritical:
-        iconType = kGenericApplicationIcon;
-        break;
-    case SP_DesktopIcon:
-        iconType = kDesktopIcon;
-        break;
-    case SP_TrashIcon:
-        iconType = kTrashIcon;
-        break;
-    case SP_ComputerIcon:
-        iconType = kComputerIcon;
-        break;
-    case SP_DriveFDIcon:
-        iconType = kGenericFloppyIcon;
-        break;
-    case SP_DriveHDIcon:
-        iconType = kGenericHardDiskIcon;
-        break;
-    case SP_DriveCDIcon:
-    case SP_DriveDVDIcon:
-        iconType = kGenericCDROMIcon;
-        break;
-    case SP_DriveNetIcon:
-        iconType = kGenericNetworkIcon;
-        break;
-    case SP_DirOpenIcon:
-        iconType = kOpenFolderIcon;
-        break;
-    case SP_DirClosedIcon:
-    case SP_DirLinkIcon:
-        iconType = kGenericFolderIcon;
-        break;
-    case SP_FileLinkIcon:
-    case SP_FileIcon:
-        iconType = kGenericDocumentIcon;
-        break;
-    case SP_DirIcon: {
-        // A rather special case
-        QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, option, widget);
-        QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, option, widget);
-        closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
-        closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
-        return closeIcon;
-    }
-    case SP_TitleBarNormalButton:
-    case SP_TitleBarCloseButton: {
-        QIcon titleBarIcon;
-        if (standardIcon == SP_TitleBarCloseButton) {
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-16.png"));
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
-        } else {
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-16.png"));
-            titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+        OSType iconType = 0;
+        switch (standardIcon) {
+        case QStyle::SP_MessageBoxQuestion:
+        case QStyle::SP_MessageBoxInformation:
+        case QStyle::SP_MessageBoxWarning:
+        case QStyle::SP_MessageBoxCritical:
+            iconType = kGenericApplicationIcon;
+            break;
+        case SP_DesktopIcon:
+            iconType = kDesktopIcon;
+            break;
+        case SP_TrashIcon:
+            iconType = kTrashIcon;
+            break;
+        case SP_ComputerIcon:
+            iconType = kComputerIcon;
+            break;
+        case SP_DriveFDIcon:
+            iconType = kGenericFloppyIcon;
+            break;
+        case SP_DriveHDIcon:
+            iconType = kGenericHardDiskIcon;
+            break;
+        case SP_DriveCDIcon:
+        case SP_DriveDVDIcon:
+            iconType = kGenericCDROMIcon;
+            break;
+        case SP_DriveNetIcon:
+            iconType = kGenericNetworkIcon;
+            break;
+        case SP_DirOpenIcon:
+            iconType = kOpenFolderIcon;
+            break;
+        case SP_DirClosedIcon:
+        case SP_DirLinkIcon:
+            iconType = kGenericFolderIcon;
+            break;
+        case SP_FileLinkIcon:
+        case SP_FileIcon:
+            iconType = kGenericDocumentIcon;
+            break;
+        case SP_DirIcon: {
+            // A rather special case
+            QIcon closeIcon = QStyle::standardIcon(SP_DirClosedIcon, option, widget);
+            QIcon openIcon = QStyle::standardIcon(SP_DirOpenIcon, option, widget);
+            closeIcon.addPixmap(openIcon.pixmap(16, 16), QIcon::Normal, QIcon::On);
+            closeIcon.addPixmap(openIcon.pixmap(32, 32), QIcon::Normal, QIcon::On);
+            closeIcon.addPixmap(openIcon.pixmap(64, 64), QIcon::Normal, QIcon::On);
+            closeIcon.addPixmap(openIcon.pixmap(128, 128), QIcon::Normal, QIcon::On);
+            return closeIcon;
         }
-        return titleBarIcon;
-    }
-    default:
-        break;
-    }
-    if (iconType != 0) {
-        QIcon retIcon;
-        IconRef icon;
-        IconRef overlayIcon = 0;
-        if (iconType != kGenericApplicationIcon) {
-            GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
-        } else {
-            FSRef fsRef;
-            ProcessSerialNumber psn = { 0, kCurrentProcess };
-            GetProcessBundleLocation(&psn, &fsRef);
-            GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
-            if (standardIcon == SP_MessageBoxCritical) {
-                overlayIcon = icon;
-                GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
+        case SP_TitleBarNormalButton:
+        case SP_TitleBarCloseButton: {
+            QIcon titleBarIcon;
+            if (standardIcon == SP_TitleBarCloseButton) {
+                titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-16.png"));
+                titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/closedock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
+            } else {
+                titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-16.png"));
+                titleBarIcon.addFile(QLatin1String(":/trolltech/styles/macstyle/images/dockdock-down-16.png"), QSize(16, 16), QIcon::Normal, QIcon::On);
             }
+            return titleBarIcon;
         }
-        if (icon) {
-            qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
-            ReleaseIconRef(icon);
+        default:
+            break;
         }
-        if (overlayIcon)
-            ReleaseIconRef(overlayIcon);
-        return retIcon;
-    }
+        if (iconType != 0) {
+            QIcon retIcon;
+            IconRef icon;
+            IconRef overlayIcon = 0;
+            if (iconType != kGenericApplicationIcon) {
+                GetIconRef(kOnSystemDisk, kSystemIconsCreator, iconType, &icon);
+            } else {
+                FSRef fsRef;
+                ProcessSerialNumber psn = { 0, kCurrentProcess };
+                GetProcessBundleLocation(&psn, &fsRef);
+                GetIconRefFromFileInfo(&fsRef, 0, 0, 0, 0, kIconServicesNormalUsageFlag, &icon, 0);
+                if (standardIcon == SP_MessageBoxCritical) {
+                    overlayIcon = icon;
+                    GetIconRef(kOnSystemDisk, kSystemIconsCreator, kAlertCautionIcon, &icon);
+                }
+            }
+            if (icon) {
+                qt_mac_constructQIconFromIconRef(icon, overlayIcon, &retIcon, standardIcon);
+                ReleaseIconRef(icon);
+            }
+            if (overlayIcon)
+                ReleaseIconRef(overlayIcon);
+            return retIcon;
+        }
     } // if (QApplication::desktopSettingsAware())
 #endif // Q_WS_MAC
 
