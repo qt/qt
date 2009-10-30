@@ -193,6 +193,13 @@ static QEglContext *createContext(QPaintDevice *device)
         return 0;
     }
 
+    // Set the swap interval for the display.
+    QByteArray interval = qgetenv("QT_VG_SWAP_INTERVAL");
+    if (!interval.isEmpty())
+        eglSwapInterval(context->display(), interval.toInt());
+    else
+        eglSwapInterval(context->display(), 1);
+
     // Choose an appropriate configuration for rendering into the device.
     QEglProperties configProps;
     configProps.setPaintDeviceFormat(device);
