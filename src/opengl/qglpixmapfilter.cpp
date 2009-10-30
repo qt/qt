@@ -100,7 +100,7 @@ private:
 class QGLPixmapBlurFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapBlurFilter>
 {
 public:
-    QGLPixmapBlurFilter(Qt::RenderHint hint);
+    QGLPixmapBlurFilter(QGraphicsBlurEffect::BlurHint hint);
 
     void setUniforms(QGLShaderProgram *program);
 
@@ -117,13 +117,13 @@ private:
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
-    mutable Qt::RenderHint m_hint;
+    mutable QGraphicsBlurEffect::BlurHint m_hint;
 };
 
 class QGLPixmapDropShadowFilter : public QGLCustomShaderStage, public QGLPixmapFilter<QPixmapDropShadowFilter>
 {
 public:
-    QGLPixmapDropShadowFilter(Qt::RenderHint hint);
+    QGLPixmapDropShadowFilter(QGraphicsBlurEffect::BlurHint hint);
 
     void setUniforms(QGLShaderProgram *program);
 
@@ -137,7 +137,7 @@ private:
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
-    mutable Qt::RenderHint m_hint;
+    mutable QGraphicsBlurEffect::BlurHint m_hint;
 };
 
 extern QGLWidget *qt_gl_share_widget();
@@ -153,13 +153,13 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
 
     case QPixmapFilter::BlurFilter: {
         const QPixmapBlurFilter *proto = static_cast<const QPixmapBlurFilter *>(prototype);
-        if (proto->blurHint() == Qt::PerformanceHint || proto->radius() <= 5) {
+        if (proto->blurHint() == QGraphicsBlurEffect::PerformanceHint || proto->radius() <= 5) {
             if (!d->fastBlurFilter)
-                d->fastBlurFilter.reset(new QGLPixmapBlurFilter(Qt::PerformanceHint));
+                d->fastBlurFilter.reset(new QGLPixmapBlurFilter(QGraphicsBlurEffect::PerformanceHint));
             return d->fastBlurFilter.data();
         }
         if (!d->blurFilter)
-            d->blurFilter.reset(new QGLPixmapBlurFilter(Qt::QualityHint));
+            d->blurFilter.reset(new QGLPixmapBlurFilter(QGraphicsBlurEffect::QualityHint));
         return d->blurFilter.data();
         }
 
@@ -167,11 +167,11 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
         const QPixmapDropShadowFilter *proto = static_cast<const QPixmapDropShadowFilter *>(prototype);
         if (proto->blurRadius() <= 5) {
             if (!d->fastDropShadowFilter)
-                d->fastDropShadowFilter.reset(new QGLPixmapDropShadowFilter(Qt::PerformanceHint));
+                d->fastDropShadowFilter.reset(new QGLPixmapDropShadowFilter(QGraphicsBlurEffect::PerformanceHint));
             return d->fastDropShadowFilter.data();
         }
         if (!d->dropShadowFilter)
-            d->dropShadowFilter.reset(new QGLPixmapDropShadowFilter(Qt::QualityHint));
+            d->dropShadowFilter.reset(new QGLPixmapDropShadowFilter(QGraphicsBlurEffect::QualityHint));
         return d->dropShadowFilter.data();
         }
 
@@ -327,7 +327,7 @@ static QByteArray qt_gl_convertToClamped(const QByteArray &source)
     return result;
 }
 
-QGLPixmapBlurFilter::QGLPixmapBlurFilter(Qt::RenderHint hint)
+QGLPixmapBlurFilter::QGLPixmapBlurFilter(QGraphicsBlurEffect::BlurHint hint)
     : m_haveCached(false)
     , m_cachedRadius(0)
     , m_hint(hint)
@@ -341,7 +341,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
     int actualRadius = qRound(radius());
     int filterRadius = actualRadius;
     int fastRadii[] = { 1, 2, 3, 5, 8, 15, 25 };
-    if (m_hint == Qt::PerformanceHint) {
+    if (m_hint == QGraphicsBlurEffect::PerformanceHint) {
         uint i = 0;
         for (; i < (sizeof(fastRadii)/sizeof(*fastRadii))-1; ++i) {
             if (fastRadii[i+1] > filterRadius)
@@ -428,7 +428,7 @@ void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    if (m_hint == Qt::QualityHint) {
+    if (m_hint == QGraphicsBlurEffect::QualityHint) {
         if (m_singlePass)
             program->setUniformValue("delta", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
         else if (m_horizontalBlur)
@@ -578,7 +578,7 @@ QByteArray QGLPixmapBlurFilter::generateGaussianShader(int radius, bool singlePa
     return source;
 }
 
-QGLPixmapDropShadowFilter::QGLPixmapDropShadowFilter(Qt::RenderHint hint)
+QGLPixmapDropShadowFilter::QGLPixmapDropShadowFilter(QGraphicsBlurEffect::BlurHint hint)
     : m_haveCached(false)
     , m_cachedRadius(0)
     , m_hint(hint)
@@ -685,7 +685,7 @@ void QGLPixmapDropShadowFilter::setUniforms(QGLShaderProgram *program)
                                                 alpha);
     }
 
-    if (m_hint == Qt::QualityHint) {
+    if (m_hint == QGraphicsBlurEffect::QualityHint) {
         if (m_singlePass)
             program->setUniformValue("delta", 1.0 / m_textureSize.width(), 1.0 / m_textureSize.height());
         else if (m_horizontalBlur)

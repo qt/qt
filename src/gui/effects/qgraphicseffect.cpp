@@ -613,6 +613,26 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 */
 
 /*!
+    \enum QGraphicsBlurEffect::BlurHint
+    \since 4.6
+
+    This enum describes the possible hints that can be used to control how
+    blur effects are applied. The hints might not have an effect in all the
+    paint engines.
+
+    \value QualityHint Indicates that rendering quality is the most important factor,
+    at the potential cost of lower performance.
+
+    \value PerformanceHint Indicates that rendering performance is the most important factor,
+    at the potential cost of lower quality.
+
+    \value AnimationHint Indicates that the blur radius is going to be animated, hinting
+    that the implementation can keep a cache of blurred verisons of the source pixmap.
+    Do not use this hint if the source item is going to be dynamically changing.
+*/
+
+
+/*!
     Constructs a new QGraphicsBlurEffect instance.
     The \a parent parameter is passed to QGraphicsEffect's constructor.
 */
@@ -620,7 +640,7 @@ QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
     Q_D(QGraphicsBlurEffect);
-    d->filter->setBlurHint(Qt::PerformanceHint);
+    d->filter->setBlurHint(QGraphicsBlurEffect::PerformanceHint);
 }
 
 /*!
@@ -667,20 +687,19 @@ void QGraphicsBlurEffect::setBlurRadius(qreal radius)
     \property QGraphicsBlurEffect::blurHint
     \brief the blur hint of the effect.
 
-    Use the Qt::PerformanceHint hint to say that you want a faster blur,
-    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
+    Use the PerformanceHint hint to say that you want a faster blur,
+    the QualityHint hint to say that you prefer a higher quality blur,
+    or the AnimationHint when you want to animate the blur radius.
 
-    When animating the blur radius it's recommended to use Qt::PerformanceHint.
-
-    By default, the blur hint is Qt::PerformanceHint.
+    By default, the blur hint is PerformanceHint.
 */
-Qt::RenderHint QGraphicsBlurEffect::blurHint() const
+QGraphicsBlurEffect::BlurHint QGraphicsBlurEffect::blurHint() const
 {
     Q_D(const QGraphicsBlurEffect);
     return d->filter->blurHint();
 }
 
-void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
+void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 {
     Q_D(QGraphicsBlurEffect);
     if (d->filter->blurHint() == hint)
@@ -691,7 +710,7 @@ void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::RenderHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::BlurHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
