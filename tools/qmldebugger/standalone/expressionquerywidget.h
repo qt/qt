@@ -43,7 +43,7 @@
 
 #include <QWidget>
 
-#include <QtDeclarative/qmldebug.h>
+#include <private/qmldebug_p.h>
 
 QT_BEGIN_NAMESPACE
 

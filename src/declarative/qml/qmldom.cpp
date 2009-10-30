@@ -218,7 +218,7 @@ QList<QmlError> QmlDomDocument::errors() const
     Returns the document's root object, or an invalid QmlDomObject if the
     document has no root.
 
-    In the sample QML below, the root object will be the QFxItem type.
+    In the sample QML below, the root object will be the QmlGraphicsItem type.
     \qml
 Item {
     Text {

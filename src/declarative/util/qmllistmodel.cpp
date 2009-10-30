@@ -44,9 +44,9 @@
 #include <QXmlStreamReader>
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
-#include "qmlopenmetaobject.h"
+#include "qmlopenmetaobject_p.h"
 #include <qmlcontext.h>
-#include "qmllistmodel.h"
+#include "qmllistmodel_p.h"
 #include <QtScript/qscriptvalueiterator.h>
 
 Q_DECLARE_METATYPE(QListModelInterface *)

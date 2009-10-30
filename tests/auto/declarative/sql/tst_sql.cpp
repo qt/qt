@@ -42,7 +42,7 @@
 #include "../../../shared/util.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxtext.h>
+#include <private/qmlgraphicstext_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtWebKit/qwebdatabase.h>
@@ -197,7 +197,7 @@ void tst_sql::testQml()
 
     engine->setOfflineStoragePath(dbDir());
     QmlComponent component(engine, qml.toUtf8(), QUrl::fromLocalFile(SRCDIR "/empty.qml")); // just a file for relative local imports
-    QFxText *text = qobject_cast<QFxText*>(component.create());
+    QmlGraphicsText *text = qobject_cast<QmlGraphicsText*>(component.create());
     QVERIFY(text != 0);
     QCOMPARE(text->text(),result);
     QCOMPARE(QDir(dbDir()+"/Databases").entryInfoList(QDir::Files|QDir::NoDotAndDotDot).count(), databases*2); // *2 = .ini file + .sqlite file

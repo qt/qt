@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "private/qobject_p.h"
-#include "qmlstategroup.h"
-#include "qmltransition.h"
+#include "qmlstategroup_p.h"
+#include "qmltransition_p.h"
 #include <QtDeclarative/qmlbinding.h>
 #include <QtCore/qdebug.h>
 
@@ -274,7 +274,7 @@ void QmlStateGroupPrivate::setCurrentStateInternal(const QString &state,
     }
 
     if (oldState == 0 || newState == 0) {
-        if (!nullState) { nullState = new QmlState; QFx_setParent_noEvent(nullState, q); }
+        if (!nullState) { nullState = new QmlState; QmlGraphics_setParent_noEvent(nullState, q); }
         if (!oldState) oldState = nullState;
         if (!newState) newState = nullState;
     }

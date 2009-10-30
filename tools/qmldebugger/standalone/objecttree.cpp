@@ -44,9 +44,9 @@
 
 #include <QInputDialog>
 
-#include <QtDeclarative/qmldebugservice.h>
-#include <QtDeclarative/qmldebug.h>
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebugservice_p.h>
+#include <private/qmldebug_p.h>
+#include <private/qmldebugclient_p.h>
 
 #include "objecttree.h"
 

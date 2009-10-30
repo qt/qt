@@ -42,8 +42,8 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qfxrect.h>
-#include <QtDeclarative/private/qfxanchors_p.h>
+#include <private/qmlgraphicsrect_p.h>
+#include <QtDeclarative/private/qmlgraphicsanchors_p_p.h>
 
 
 class tst_anchors : public QObject
@@ -53,7 +53,7 @@ public:
     tst_anchors() {}
 
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id);
+    T *findItem(QmlGraphicsItem *parent, const QString &id);
 
 private slots:
     void basicAnchors();
@@ -67,12 +67,12 @@ private slots:
    Find an item with the specified id.
 */
 template<typename T>
-T *tst_anchors::findItem(QFxItem *parent, const QString &objectName)
+T *tst_anchors::findItem(QmlGraphicsItem *parent, const QString &objectName)
 {
     const QMetaObject &mo = T::staticMetaObject;
     QList<QGraphicsItem *> children = parent->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        QFxItem *item = qobject_cast<QFxItem *>(children.at(i)->toGraphicsObject());
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(children.at(i)->toGraphicsObject());
         if (item) {
             if (mo.cast(item) && (objectName.isEmpty() || item->objectName() == objectName)) {
                 return static_cast<T*>(item);
@@ -95,41 +95,41 @@ void tst_anchors::basicAnchors()
     qApp->processEvents();
 
     //sibling horizontal
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect1"))->x(), 26.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect2"))->x(), 122.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect3"))->x(), 74.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect4"))->x(), 16.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect5"))->x(), 112.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect6"))->x(), 64.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect1"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect2"))->x(), 122.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect3"))->x(), 74.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect4"))->x(), 16.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect5"))->x(), 112.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect6"))->x(), 64.0);
 
     //parent horizontal
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect7"))->x(), 0.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect8"))->x(), 240.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect9"))->x(), 120.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect10"))->x(), -10.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect11"))->x(), 230.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect12"))->x(), 110.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect7"))->x(), 0.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect8"))->x(), 240.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect9"))->x(), 120.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect10"))->x(), -10.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect11"))->x(), 230.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect12"))->x(), 110.0);
 
     //vertical
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect13"))->y(), 20.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect14"))->y(), 155.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect13"))->y(), 20.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect14"))->y(), 155.0);
 
     //stretch
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect15"))->x(), 26.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect15"))->width(), 96.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect16"))->x(), 26.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect16"))->width(), 192.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect17"))->x(), -70.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect17"))->width(), 192.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect15"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect15"))->width(), 96.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect16"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect16"))->width(), 192.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect17"))->x(), -70.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect17"))->width(), 192.0);
 
     //vertical stretch
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect18"))->y(), 20.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect18"))->height(), 40.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect18"))->y(), 20.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect18"))->height(), 40.0);
 
     //more parent horizontal
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect19"))->x(), 115.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect20"))->x(), 235.0);
-    QCOMPARE(findItem<QFxRect>(view->root(), QLatin1String("Rect21"))->x(), -5.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect19"))->x(), 115.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect20"))->x(), 235.0);
+    QCOMPARE(findItem<QmlGraphicsRect>(view->root(), QLatin1String("Rect21"))->x(), -5.0);
 
     delete view;
 }
@@ -142,7 +142,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop1.qml"));
 
-        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":7:5" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
@@ -157,7 +157,7 @@ void tst_anchors::loops()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/loop2.qml"));
 
-        QString expect = "QML QFxImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor.";
+        QString expect = "QML QmlGraphicsImage (" + view->url().toString() + ":14:3" + ") Possible anchor loop detected on horizontal anchor.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
@@ -173,7 +173,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal1.qml"));
 
-        QString expect = "QML QFxRect (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors.";
+        QString expect = "QML QmlGraphicsRect (" + view->url().toString() + ":7:5" + ") Can't specify left, right, and hcenter anchors.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         qApp->processEvents();
@@ -186,7 +186,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal2.qml"));
 
-        QString expect = "QML QFxText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
+        QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":7:5" + ") Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
@@ -199,7 +199,7 @@ void tst_anchors::illegalSets()
 
         view->setUrl(QUrl("file://" SRCDIR "/data/illegal3.qml"));
 
-        QString expect = "QML QFxRect (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling.";
+        QString expect = "QML QmlGraphicsRect (" + view->url().toString() + ":9:5" + ") Can't anchor to an item that isn't a parent or sibling.";
         QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
         view->execute();
         //qApp->processEvents();
@@ -210,25 +210,25 @@ void tst_anchors::illegalSets()
 
 void tst_anchors::reset()
 {
-    QFxItem *aItem = new QFxItem;
-    QFxAnchorLine anchor;
+    QmlGraphicsItem *aItem = new QmlGraphicsItem;
+    QmlGraphicsAnchorLine anchor;
     anchor.item = aItem;
-    anchor.anchorLine = QFxAnchorLine::Top;
+    anchor.anchorLine = QmlGraphicsAnchorLine::Top;
 
-    QFxItem *item = new QFxItem;
+    QmlGraphicsItem *item = new QmlGraphicsItem;
     item->anchors()->setBottom(anchor);
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(QFxAnchors::HasBottomAnchor), true);
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(QmlGraphicsAnchors::HasBottomAnchor), true);
 
     item->anchors()->resetBottom();
-    QCOMPARE(item->anchors()->usedAnchors().testFlag(QFxAnchors::HasBottomAnchor), false);
+    QCOMPARE(item->anchors()->usedAnchors().testFlag(QmlGraphicsAnchors::HasBottomAnchor), false);
 }
 
 void tst_anchors::nullItem()
 {
-    QFxAnchorLine anchor;
+    QmlGraphicsAnchorLine anchor;
 
-    QTest::ignoreMessage(QtWarningMsg, "QML QFxItem (unknown location) Can't anchor to a null item.");
-    QFxItem *item = new QFxItem;
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlGraphicsItem (unknown location) Can't anchor to a null item.");
+    QmlGraphicsItem *item = new QmlGraphicsItem;
     item->anchors()->setBottom(anchor);
 }
 

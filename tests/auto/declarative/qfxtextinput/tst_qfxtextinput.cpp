@@ -43,7 +43,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
 #include <QtDeclarative/qmlview.h>
-#include <QFxTextInput>
+#include <private/qmlgraphicstextinput_p.h>
 #include <QDebug>
 
 class tst_qfxtextinput : public QObject
@@ -100,7 +100,7 @@ void tst_qfxtextinput::text()
 {
     {
         QmlComponent textinputComponent(&engine, "import Qt 4.6\nTextInput {  text: \"\"  }", QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->text(), QString(""));
@@ -110,7 +110,7 @@ void tst_qfxtextinput::text()
     {
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->text(), standard.at(i));
@@ -123,7 +123,7 @@ void tst_qfxtextinput::width()
     // uses Font metrics to find the width for standard
     {
         QmlComponent textinputComponent(&engine, "import Qt 4.6\nTextInput {  text: \"\" }", QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->width(), 1.);//1 for the cursor
@@ -137,7 +137,7 @@ void tst_qfxtextinput::width()
 
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->width(), qreal(metricWidth) + 1.);//1 for the cursor
@@ -150,7 +150,7 @@ void tst_qfxtextinput::font()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.pointSize: 40; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().pointSize(), 40);
@@ -161,7 +161,7 @@ void tst_qfxtextinput::font()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.bold: true; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().bold(), true);
@@ -171,7 +171,7 @@ void tst_qfxtextinput::font()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.italic: true; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().italic(), true);
@@ -181,7 +181,7 @@ void tst_qfxtextinput::font()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.family: \"Helvetica\"; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().family(), QString("Helvetica"));
@@ -192,7 +192,7 @@ void tst_qfxtextinput::font()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  font.family: \"\"; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->font().family(), QString(""));
@@ -206,7 +206,7 @@ void tst_qfxtextinput::color()
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
         //qDebug() << "textinputObject: " << textinputObject->color() << "vs. " << QColor(colorStrings.at(i));
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), QColor(colorStrings.at(i)));
@@ -219,7 +219,7 @@ void tst_qfxtextinput::color()
 
         QString componentStr = "import Qt 4.6\nTextInput {  color: \"" + colorStr + "\"; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-        QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
 
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), testColor);
@@ -231,7 +231,7 @@ void tst_qfxtextinput::selection()
     QString testStr = standard[0];
     QString componentStr = "import Qt 4.6\nTextInput {  text: \""+ testStr +"\"; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
 
 
@@ -310,7 +310,7 @@ void tst_qfxtextinput::maxLength()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
     QVERIFY(textinputObject->text().isEmpty());
     foreach(const QString &str, standard){
@@ -325,7 +325,7 @@ void tst_qfxtextinput::masks()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
 
     //TODO: Me
@@ -335,7 +335,7 @@ void tst_qfxtextinput::validators()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
-    QFxTextInput *textinputObject = qobject_cast<QFxTextInput*>(textinputComponent.create());
+    QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
     QVERIFY(textinputObject != 0);
 
     //TODO: Me
@@ -354,7 +354,7 @@ void tst_qfxtextinput::navigation()
 
     QVERIFY(canvas->root() != 0);
 
-    QFxItem *input = qobject_cast<QFxItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+    QmlGraphicsItem *input = qobject_cast<QmlGraphicsItem *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
 
     QVERIFY(input != 0);
     QTRY_VERIFY(input->hasFocus() == true);
@@ -374,12 +374,12 @@ void tst_qfxtextinput::cursorDelegate()
     view->execute();
     view->show();
     view->setFocus();
-    QFxTextInput *textInputObject = view->root()->findChild<QFxTextInput*>("textInputObject");
+    QmlGraphicsTextInput *textInputObject = view->root()->findChild<QmlGraphicsTextInput*>("textInputObject");
     QVERIFY(textInputObject != 0);
-    QVERIFY(textInputObject->findChild<QFxItem*>("cursorInstance"));
+    QVERIFY(textInputObject->findChild<QmlGraphicsItem*>("cursorInstance"));
     //Test Delegate gets created
     textInputObject->setFocus(true);
-    QFxItem* delegateObject = textInputObject->findChild<QFxItem*>("cursorInstance");
+    QmlGraphicsItem* delegateObject = textInputObject->findChild<QmlGraphicsItem*>("cursorInstance");
     QVERIFY(delegateObject);
     //Test Delegate gets moved
     for(int i=0; i<= textInputObject->text().length(); i++){
@@ -393,7 +393,7 @@ void tst_qfxtextinput::cursorDelegate()
     QCOMPARE(textInputObject->cursorRect().y(), qRound(delegateObject->y()));
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
-    QVERIFY(!textInputObject->findChild<QFxItem*>("cursorInstance"));
+    QVERIFY(!textInputObject->findChild<QmlGraphicsItem*>("cursorInstance"));
 }
 
 void tst_qfxtextinput::simulateKey(QmlView *view, int key)

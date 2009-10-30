@@ -43,11 +43,11 @@
 #include <qml.h>
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlexpression.h>
-#include "qmlstateoperations.h"
+#include "qmlstateoperations_p.h"
 #include <QtCore/qdebug.h>
 #include <QtDeclarative/qmlinfo.h>
-#include <private/qfxanchors_p.h>
-#include <private/qfxitem_p.h>
+#include <private/qmlgraphicsanchors_p_p.h>
+#include <private/qmlgraphicsitem_p.h>
 #include <QtGui/qgraphicsitem.h>
 #include <QtCore/qmath.h>
 
@@ -59,15 +59,15 @@ class QmlParentChangePrivate : public QObjectPrivate
 public:
     QmlParentChangePrivate() : target(0), parent(0), origParent(0), origStackBefore(0) {}
 
-    QFxItem *target;
-    QFxItem *parent;
-    QGuard<QFxItem> origParent;
-    QGuard<QFxItem> origStackBefore;
+    QmlGraphicsItem *target;
+    QmlGraphicsItem *parent;
+    QGuard<QmlGraphicsItem> origParent;
+    QGuard<QmlGraphicsItem> origStackBefore;
 
-    void doChange(QFxItem *targetParent, QFxItem *stackBefore = 0);
+    void doChange(QmlGraphicsItem *targetParent, QmlGraphicsItem *stackBefore = 0);
 };
 
-void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefore)
+void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphicsItem *stackBefore)
 {
     if (targetParent && target && target->parentItem()) {
         //### for backwards direction, can we just restore original x, y, scale, rotation
@@ -105,7 +105,7 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefor
 
         qreal xt = transform.dx();
         qreal yt = transform.dy();
-        if (target->transformOrigin() != QFxItem::TopLeft) {
+        if (target->transformOrigin() != QmlGraphicsItem::TopLeft) {
             qreal tempxt = target->transformOriginPoint().x();
             qreal tempyt = target->transformOriginPoint().y();
             QTransform t;
@@ -166,13 +166,13 @@ QmlParentChange::~QmlParentChange()
     This property holds the item to be reparented
 */
 
-QFxItem *QmlParentChange::object() const
+QmlGraphicsItem *QmlParentChange::object() const
 {
     Q_D(const QmlParentChange);
     return d->target;
 }
 
-void QmlParentChange::setObject(QFxItem *target)
+void QmlParentChange::setObject(QmlGraphicsItem *target)
 {
     Q_D(QmlParentChange);
     d->target = target;
@@ -183,13 +183,13 @@ void QmlParentChange::setObject(QFxItem *target)
     This property holds the parent for the item in this state
 */
 
-QFxItem *QmlParentChange::parent() const
+QmlGraphicsItem *QmlParentChange::parent() const
 {
     Q_D(const QmlParentChange);
     return d->parent;
 }
 
-void QmlParentChange::setParent(QFxItem *parent)
+void QmlParentChange::setParent(QmlGraphicsItem *parent)
 {
     Q_D(QmlParentChange);
     d->parent = parent;
@@ -207,13 +207,13 @@ QmlStateOperation::ActionList QmlParentChange::actions()
     return ActionList() << a;
 }
 
-class AccessibleFxItem : public QFxItem
+class AccessibleFxItem : public QmlGraphicsItem
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsItem)
 public:
     int siblingIndex() {
-        Q_D(QFxItem);
+        Q_D(QmlGraphicsItem);
         return d->siblingIndex;
     }
 };
@@ -238,7 +238,7 @@ void QmlParentChange::saveOriginals()
     int siblingIndex = ((AccessibleFxItem*)d->target)->siblingIndex() + 1;
     QList<QGraphicsItem*> children = d->origParent->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        QFxItem *child = qobject_cast<QFxItem*>(children.at(i));
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem*>(children.at(i));
         if (!child)
             continue;
         if (((AccessibleFxItem*)child)->siblingIndex() == siblingIndex) {
@@ -368,24 +368,24 @@ public:
     QmlAnchorChangesPrivate() : target(0) {}
 
     QString name;
-    QFxItem *target;
+    QmlGraphicsItem *target;
     QString resetString;
     QStringList resetList;
-    QFxAnchorLine left;
-    QFxAnchorLine right;
-    QFxAnchorLine horizontalCenter;
-    QFxAnchorLine top;
-    QFxAnchorLine bottom;
-    QFxAnchorLine verticalCenter;
-    QFxAnchorLine baseline;
+    QmlGraphicsAnchorLine left;
+    QmlGraphicsAnchorLine right;
+    QmlGraphicsAnchorLine horizontalCenter;
+    QmlGraphicsAnchorLine top;
+    QmlGraphicsAnchorLine bottom;
+    QmlGraphicsAnchorLine verticalCenter;
+    QmlGraphicsAnchorLine baseline;
 
-    QFxAnchorLine origLeft;
-    QFxAnchorLine origRight;
-    QFxAnchorLine origHCenter;
-    QFxAnchorLine origTop;
-    QFxAnchorLine origBottom;
-    QFxAnchorLine origVCenter;
-    QFxAnchorLine origBaseline;
+    QmlGraphicsAnchorLine origLeft;
+    QmlGraphicsAnchorLine origRight;
+    QmlGraphicsAnchorLine origHCenter;
+    QmlGraphicsAnchorLine origTop;
+    QmlGraphicsAnchorLine origBottom;
+    QmlGraphicsAnchorLine origVCenter;
+    QmlGraphicsAnchorLine origBaseline;
     qreal origX;
     qreal origY;
     qreal origWidth;
@@ -413,13 +413,13 @@ QmlAnchorChanges::ActionList QmlAnchorChanges::actions()
     return ActionList() << a;
 }
 
-QFxItem *QmlAnchorChanges::object() const
+QmlGraphicsItem *QmlAnchorChanges::object() const
 {
     Q_D(const QmlAnchorChanges);
     return d->target;
 }
 
-void QmlAnchorChanges::setObject(QFxItem *target)
+void QmlAnchorChanges::setObject(QmlGraphicsItem *target)
 {
     Q_D(QmlAnchorChanges);
     d->target = target;
@@ -450,85 +450,85 @@ void QmlAnchorChanges::setReset(const QString &reset)
     These properties change the respective anchors of the item.
 */
 
-QFxAnchorLine QmlAnchorChanges::left() const
+QmlGraphicsAnchorLine QmlAnchorChanges::left() const
 {
     Q_D(const QmlAnchorChanges);
     return d->left;
 }
 
-void QmlAnchorChanges::setLeft(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setLeft(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->left = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::right() const
+QmlGraphicsAnchorLine QmlAnchorChanges::right() const
 {
     Q_D(const QmlAnchorChanges);
     return d->right;
 }
 
-void QmlAnchorChanges::setRight(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setRight(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->right = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::horizontalCenter() const
+QmlGraphicsAnchorLine QmlAnchorChanges::horizontalCenter() const
 {
     Q_D(const QmlAnchorChanges);
     return d->horizontalCenter;
 }
 
-void QmlAnchorChanges::setHorizontalCenter(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setHorizontalCenter(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->horizontalCenter = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::top() const
+QmlGraphicsAnchorLine QmlAnchorChanges::top() const
 {
     Q_D(const QmlAnchorChanges);
     return d->top;
 }
 
-void QmlAnchorChanges::setTop(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setTop(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->top = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::bottom() const
+QmlGraphicsAnchorLine QmlAnchorChanges::bottom() const
 {
     Q_D(const QmlAnchorChanges);
     return d->bottom;
 }
 
-void QmlAnchorChanges::setBottom(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setBottom(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->bottom = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::verticalCenter() const
+QmlGraphicsAnchorLine QmlAnchorChanges::verticalCenter() const
 {
     Q_D(const QmlAnchorChanges);
     return d->verticalCenter;
 }
 
-void QmlAnchorChanges::setVerticalCenter(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setVerticalCenter(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->verticalCenter = edge;
 }
 
-QFxAnchorLine QmlAnchorChanges::baseline() const
+QmlGraphicsAnchorLine QmlAnchorChanges::baseline() const
 {
     Q_D(const QmlAnchorChanges);
     return d->baseline;
 }
 
-void QmlAnchorChanges::setBaseline(const QFxAnchorLine &edge)
+void QmlAnchorChanges::setBaseline(const QmlGraphicsAnchorLine &edge)
 {
     Q_D(QmlAnchorChanges);
     d->baseline = edge;
@@ -541,19 +541,19 @@ void QmlAnchorChanges::execute()
         return;
 
     //set any anchors that have been specified
-    if (d->left.anchorLine != QFxAnchorLine::Invalid)
+    if (d->left.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setLeft(d->left);
-    if (d->right.anchorLine != QFxAnchorLine::Invalid)
+    if (d->right.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setRight(d->right);
-    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->horizontalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setHorizontalCenter(d->horizontalCenter);
-    if (d->top.anchorLine != QFxAnchorLine::Invalid)
+    if (d->top.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setTop(d->top);
-    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
+    if (d->bottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setBottom(d->bottom);
-    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->verticalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setVerticalCenter(d->verticalCenter);
-    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+    if (d->baseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setBaseline(d->baseline);
 }
 
@@ -569,19 +569,19 @@ void QmlAnchorChanges::reverse()
         return;
 
     //restore previous anchors
-    if (d->origLeft.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origLeft.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setLeft(d->origLeft);
-    if (d->origRight.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origRight.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setRight(d->origRight);
-    if (d->origHCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origHCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setHorizontalCenter(d->origHCenter);
-    if (d->origTop.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origTop.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setTop(d->origTop);
-    if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origBottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setBottom(d->origBottom);
-    if (d->origVCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origVCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setVerticalCenter(d->origVCenter);
-    if (d->origBaseline.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origBaseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->setBaseline(d->origBaseline);
 }
 
@@ -662,19 +662,19 @@ void QmlAnchorChanges::clearForwardBindings()
         d->target->anchors()->resetBaseline();
 
     //reset any anchors that we'll be setting in the state
-    if (d->left.anchorLine != QFxAnchorLine::Invalid)
+    if (d->left.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
-    if (d->right.anchorLine != QFxAnchorLine::Invalid)
+    if (d->right.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetRight();
-    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->horizontalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetHorizontalCenter();
-    if (d->top.anchorLine != QFxAnchorLine::Invalid)
+    if (d->top.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetTop();
-    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
+    if (d->bottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
-    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->verticalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetVerticalCenter();
-    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+    if (d->baseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBaseline();
 }
 
@@ -687,35 +687,35 @@ void QmlAnchorChanges::clearReverseBindings()
     d->origHeight = d->target->height();
 
     //reset any anchors that were set in the state
-    if (d->left.anchorLine != QFxAnchorLine::Invalid)
+    if (d->left.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
-    if (d->right.anchorLine != QFxAnchorLine::Invalid)
+    if (d->right.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetRight();
-    if (d->horizontalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->horizontalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetHorizontalCenter();
-    if (d->top.anchorLine != QFxAnchorLine::Invalid)
+    if (d->top.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetTop();
-    if (d->bottom.anchorLine != QFxAnchorLine::Invalid)
+    if (d->bottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
-    if (d->verticalCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->verticalCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetVerticalCenter();
-    if (d->baseline.anchorLine != QFxAnchorLine::Invalid)
+    if (d->baseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBaseline();
 
     //reset any anchors that were set in the original state
-    if (d->origLeft.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origLeft.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetLeft();
-    if (d->origRight.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origRight.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetRight();
-    if (d->origHCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origHCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetHorizontalCenter();
-    if (d->origTop.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origTop.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetTop();
-    if (d->origBottom.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origBottom.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBottom();
-    if (d->origVCenter.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origVCenter.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetVerticalCenter();
-    if (d->origBaseline.anchorLine != QFxAnchorLine::Invalid)
+    if (d->origBaseline.anchorLine != QmlGraphicsAnchorLine::Invalid)
         d->target->anchors()->resetBaseline();
 }
 
@@ -730,8 +730,8 @@ bool QmlAnchorChanges::override(ActionEvent*other)
     return false;
 }
 
-QT_END_NAMESPACE
-
 #include "qmlstateoperations.moc"
-#include "moc_qmlstateoperations.cpp"
+#include "moc_qmlstateoperations_p.cpp"
+
+QT_END_NAMESPACE
 

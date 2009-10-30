@@ -67,7 +67,7 @@ QT_MODULE(Declarative)
         return status == Yes; \
     }
 
-struct QFx_DerivedObject : public QObject
+struct QmlGraphics_DerivedObject : public QObject
 {
     void setParent_noEvent(QObject *parent) {
         bool sce = d_ptr->sendChildEvents;
@@ -82,9 +82,9 @@ struct QFx_DerivedObject : public QObject
     neither \a parent nor the object's previous parent (if it had one) will
     receive ChildRemoved or ChildAdded events.
 */
-inline void QFx_setParent_noEvent(QObject *object, QObject *parent)
+inline void QmlGraphics_setParent_noEvent(QObject *object, QObject *parent)
 {
-    static_cast<QFx_DerivedObject *>(object)->setParent_noEvent(parent);
+    static_cast<QmlGraphics_DerivedObject *>(object)->setParent_noEvent(parent);
 }
 
 QT_END_NAMESPACE

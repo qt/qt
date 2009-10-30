@@ -43,7 +43,7 @@
 #include "qmlmetaproperty_p.h"
 #include "qmlcompositetypedata_p.h"
 #include <qml.h>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QStringList>
 #include "qmlbinding.h"
 #include <qmlcontext.h>

@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmldatetimeformatter.h"
+#include "qmldatetimeformatter_p.h"
 #include "private/qobject_p.h"
 #include <QtCore/qlocale.h>
 

@@ -39,15 +39,15 @@
 **
 ****************************************************************************/
 
-#include "qmlanimation.h"
+#include "qmlanimation_p.h"
 #include "qvariant.h"
 #include "qcolor.h"
 #include "qfile.h"
 #include "qmlpropertyvaluesource.h"
 #include "qml.h"
 #include "qmlinfo.h"
-#include "qmlanimation_p.h"
-#include "qmlbehavior.h"
+#include "qmlanimation_p_p.h"
+#include <private/qmlbehavior_p.h>
 #include <QParallelAnimationGroup>
 #include <QSequentialAnimationGroup>
 #include <QtCore/qset.h>
@@ -55,7 +55,7 @@
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
 #include <QtDeclarative/qmlexpression.h>
-#include <QtDeclarative/qmlstateoperations.h>
+#include <private/qmlstateoperations_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
 
@@ -663,7 +663,7 @@ void QmlPauseAnimationPrivate::init()
 {
     Q_Q(QmlPauseAnimation);
     pa = new QPauseAnimation;
-    QFx_setParent_noEvent(pa, q);
+    QmlGraphics_setParent_noEvent(pa, q);
 }
 
 /*!
@@ -786,7 +786,7 @@ void QmlScriptActionPrivate::init()
 {
     Q_Q(QmlScriptAction);
     rsa = new QActionAnimation(&proxy);
-    QFx_setParent_noEvent(rsa, q);
+    QmlGraphics_setParent_noEvent(rsa, q);
 }
 
 /*!
@@ -904,7 +904,7 @@ void QmlPropertyActionPrivate::init()
 {
     Q_Q(QmlPropertyAction);
     spa = new QActionAnimation;
-    QFx_setParent_noEvent(spa, q);
+    QmlGraphics_setParent_noEvent(spa, q);
 }
 
 /*!
@@ -1097,28 +1097,28 @@ void QmlParentActionPrivate::init()
 {
     Q_Q(QmlParentAction);
     cpa = new QActionAnimation;
-    QFx_setParent_noEvent(cpa, q);
+    QmlGraphics_setParent_noEvent(cpa, q);
 }
 
-QFxItem *QmlParentAction::object() const
+QmlGraphicsItem *QmlParentAction::object() const
 {
     Q_D(const QmlParentAction);
     return d->pcTarget;
 }
 
-void QmlParentAction::setObject(QFxItem *target)
+void QmlParentAction::setObject(QmlGraphicsItem *target)
 {
     Q_D(QmlParentAction);
     d->pcTarget = target;
 }
 
-QFxItem *QmlParentAction::parent() const
+QmlGraphicsItem *QmlParentAction::parent() const
 {
     Q_D(const QmlParentAction);
     return d->pcParent;
 }
 
-void QmlParentAction::setParent(QFxItem *parent)
+void QmlParentAction::setParent(QmlGraphicsItem *parent)
 {
     Q_D(QmlParentAction);
     d->pcParent = parent;
@@ -1516,7 +1516,7 @@ void QmlPropertyAnimationPrivate::init()
 {
     Q_Q(QmlPropertyAnimation);
     va = new QmlTimeLineValueAnimator;
-    QFx_setParent_noEvent(va, q);
+    QmlGraphics_setParent_noEvent(va, q);
 
     va->setStartValue(QVariant(0.0f));
     va->setEndValue(QVariant(1.0f));

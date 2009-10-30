@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxloader.h>
+#include <private/qmlgraphicsloader_p.h>
 
 class tst_qfxloader : public QObject
 
@@ -81,7 +81,7 @@ tst_qfxloader::tst_qfxloader()
 void tst_qfxloader::url()
 {
     QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), QUrl("file://" SRCDIR "/"));
-    QFxLoader *loader = qobject_cast<QFxLoader*>(component.create());
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
@@ -91,10 +91,10 @@ void tst_qfxloader::url()
 void tst_qfxloader::component()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/SetSourceComponent.qml"));
-    QFxItem *item = qobject_cast<QFxItem*>(component.create());
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
     QVERIFY(item);
 
-    QFxLoader *loader = qobject_cast<QFxLoader*>(item->QGraphicsObject::children().at(1)); 
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(item->QGraphicsObject::children().at(1)); 
     QVERIFY(loader);
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
@@ -104,7 +104,7 @@ void tst_qfxloader::component()
 void tst_qfxloader::sizeLoaderToItem()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/SizeToItem.qml"));
-    QFxLoader *loader = qobject_cast<QFxLoader*>(component.create());
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QCOMPARE(loader->width(), 120.0);
     QCOMPARE(loader->height(), 60.0);
@@ -113,12 +113,12 @@ void tst_qfxloader::sizeLoaderToItem()
 void tst_qfxloader::sizeItemToLoader()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/SizeToLoader.qml"));
-    QFxLoader *loader = qobject_cast<QFxLoader*>(component.create());
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
-    QFxItem *rect = loader->item();
+    QmlGraphicsItem *rect = loader->item();
     QVERIFY(rect);
     QCOMPARE(rect->width(), 200.0);
     QCOMPARE(rect->height(), 80.0);
@@ -127,12 +127,12 @@ void tst_qfxloader::sizeItemToLoader()
 void tst_qfxloader::noResize()
 {
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/NoResize.qml"));
-    QFxLoader *loader = qobject_cast<QFxLoader*>(component.create());
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QCOMPARE(loader->width(), 200.0);
     QCOMPARE(loader->height(), 80.0);
 
-    QFxItem *rect = loader->item();
+    QmlGraphicsItem *rect = loader->item();
     QVERIFY(rect);
     QCOMPARE(rect->width(), 120.0);
     QCOMPARE(rect->height(), 60.0);

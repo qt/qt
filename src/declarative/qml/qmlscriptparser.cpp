@@ -55,7 +55,7 @@
 #include <QCoreApplication>
 #include <QtDebug>
 
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -824,7 +824,7 @@ public:
 bool QmlScriptParser::parse(const QByteArray &qmldata, const QUrl &url)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::QmlParsing> pt;
+    QmlPerfTimer<QmlPerf::QmlParsing> pt;
 #endif
     clear();
 

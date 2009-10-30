@@ -42,9 +42,9 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <QtDeclarative/qfxrect.h>
-#include <QtDeclarative/qfximage.h>
-#include "qfxanimatedimageitem.h"
+#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsimage_p.h>
+#include <private/qmlgraphicsanimatedimageitem_p.h>
 
 class tst_animatedimage : public QObject
 {
@@ -61,14 +61,14 @@ private slots:
 
 void tst_animatedimage::play()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     QVERIFY(anim.isPlaying());
 }
 
 void tst_animatedimage::pause()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     anim.setPaused(true);
     QVERIFY(!anim.isPlaying());
@@ -76,7 +76,7 @@ void tst_animatedimage::pause()
 
 void tst_animatedimage::setFrame()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     anim.setPaused(true);
     QVERIFY(!anim.isPlaying());
@@ -86,7 +86,7 @@ void tst_animatedimage::setFrame()
 
 void tst_animatedimage::frameCount()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     QCOMPARE(anim.frameCount(), 299);
 }

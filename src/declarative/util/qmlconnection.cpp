@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlconnection.h"
+#include "qmlconnection_p.h"
 #include <QtDeclarative/qmlexpression.h>
 #include "private/qmlboundsignal_p.h"
 #include "private/qobject_p.h"

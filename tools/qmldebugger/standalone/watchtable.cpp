@@ -45,7 +45,7 @@
 #include <QtGui/qaction.h>
 #include <QtGui/qmenu.h>
 
-#include <QtDeclarative/qmldebug.h>
+#include <private/qmldebug_p.h>
 #include <QtDeclarative/qmlmetatype.h>
 
 QT_BEGIN_NAMESPACE

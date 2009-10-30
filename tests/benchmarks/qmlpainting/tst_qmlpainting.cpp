@@ -327,7 +327,7 @@ void tst_QmlPainting::drawTransformedImageRoundedRect()
     surface.save("ti.png");
 }
 
-//code from QFxRect for drawing rounded rects
+//code from QmlGraphicsRect for drawing rounded rects
 void tst_QmlPainting::drawScaleGridRoundedRect()
 {
     //setup image
@@ -422,7 +422,7 @@ void tst_QmlPainting::drawScaledScaleGridRoundedRect_data()
     //    QTest::newRow(QString(QLatin1String("scale=%1; imagetype=ARGB8565_Pre")).arg(i).toLatin1()) << i << (int)QImage::Format_ARGB8565_Premultiplied;
 }
 
-//code from QFxRect for drawing rounded rects
+//code from QmlGraphicsRect for drawing rounded rects
 void tst_QmlPainting::drawScaledScaleGridRoundedRect()
 {
     QFETCH(float, scale);
@@ -522,7 +522,7 @@ void tst_QmlPainting::drawTransformedScaleGridRoundedRect_data()
 
 }
 
-//code from QFxRect for drawing rounded rects
+//code from QmlGraphicsRect for drawing rounded rects
 void tst_QmlPainting::drawTransformedScaleGridRoundedRect()
 {
     QFETCH(QTransform, transform);

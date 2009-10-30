@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlpropertymap.h"
-#include <qmlopenmetaobject.h>
+#include "qmlpropertymap_p.h"
+#include <private/qmlopenmetaobject_p.h>
 #include <QDebug>
 
 QT_BEGIN_NAMESPACE

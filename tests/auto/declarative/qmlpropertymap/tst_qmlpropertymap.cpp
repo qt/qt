@@ -41,9 +41,9 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlpropertymap.h>
+#include <private/qmlpropertymap_p.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxtext.h>
+#include <private/qmlgraphicstext_p.h>
 #include <QSignalSpy>
 
 class tst_QmlPropertyMap : public QObject
@@ -119,7 +119,7 @@ void tst_QmlPropertyMap::changed()
     QmlComponent component(&engine, "import Qt 4.6\nText { text: { testdata.key1 = 'Hello World'; 'X' } }",
             QUrl("file://"));
     QVERIFY(component.isReady());
-    QFxText *txt = qobject_cast<QFxText*>(component.create());
+    QmlGraphicsText *txt = qobject_cast<QmlGraphicsText*>(component.create());
     QVERIFY(txt);
     QCOMPARE(txt->text(), QString('X'));
     QCOMPARE(spy.count(), 1);

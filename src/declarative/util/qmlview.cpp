@@ -52,15 +52,15 @@
 #include "qbasictimer.h"
 
 #include "qml.h"
-#include "qfxitem.h"
-#include "private/qperformancelog_p.h"
-#include "private/qfxperf_p.h"
+#include "qmlgraphicsitem.h"
+#include "private/qperformancelog_p_p.h"
+#include "private/qfxperf_p_p.h"
 
 #include "qmlview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmldebug.h>
-#include <QtDeclarative/qmldebugservice.h>
+#include <private/qmldebug_p.h>
+#include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>
 
 QT_BEGIN_NAMESPACE
@@ -136,7 +136,7 @@ public:
         : q(w), root(0), component(0), resizable(false) {}
 
     QmlView *q;
-    QFxItem *root;
+    QmlGraphicsItem *root;
 
     QUrl source;
     QString qml;
@@ -193,7 +193,7 @@ void QmlViewPrivate::init()
     QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::FontDatabase> perf;
+    QmlPerfTimer<QmlPerf::FontDatabase> perf;
 #endif
     QFontDatabase database;
 
@@ -213,7 +213,7 @@ void QmlViewPrivate::init()
 }
 
 /*!
-  The destructor clears the view's \l {QFxItem} {items} and
+  The destructor clears the view's \l {QmlGraphicsItem} {items} and
   deletes the internal representation.
 
   \sa clearItems()
@@ -337,7 +337,7 @@ void QmlView::continueExecute()
     }
 
     if (obj) {
-        if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
+        if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
 
             d->scene.addItem(item);
 
@@ -476,11 +476,11 @@ QSize QmlView::sizeHint() const
 
 /*!
   Creates a \l{QmlComponent} {component} from the \a qml
-  string, and returns it as an \l {QFxItem} {item}. If the
+  string, and returns it as an \l {QmlGraphicsItem} {item}. If the
   \a parent item is provided, it becomes the new item's
   parent. \a parent should be in this view's item hierarchy.
  */
-QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
+QmlGraphicsItem* QmlView::addItem(const QString &qml, QmlGraphicsItem* parent)
 {
     if (!d->root)
         return 0;
@@ -508,7 +508,7 @@ QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
     }
 
     if (obj){
-        QFxItem *item = static_cast<QFxItem *>(obj);
+        QmlGraphicsItem *item = static_cast<QmlGraphicsItem *>(obj);
         if (!parent)
             parent = d->root;
 
@@ -519,7 +519,7 @@ QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
 }
 
 /*!
-  Deletes the view's \l {QFxItem} {items} and the \l {QmlEngine}
+  Deletes the view's \l {QmlGraphicsItem} {items} and the \l {QmlEngine}
   {QML engine's} Component cache.
  */
 void QmlView::reset()
@@ -530,7 +530,7 @@ void QmlView::reset()
 }
 
 /*!
-  Deletes the view's \l {QFxItem} {items}.
+  Deletes the view's \l {QmlGraphicsItem} {items}.
  */
 void QmlView::clearItems()
 {
@@ -541,9 +541,9 @@ void QmlView::clearItems()
 }
 
 /*!
-  Returns the view's root \l {QFxItem} {item}.
+  Returns the view's root \l {QmlGraphicsItem} {item}.
  */
-QFxItem *QmlView::root() const
+QmlGraphicsItem *QmlView::root() const
 {
     return d->root;
 }

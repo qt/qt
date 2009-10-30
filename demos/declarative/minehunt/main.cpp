@@ -41,7 +41,7 @@
 #include "qmlengine.h"
 #include "qmlcontext.h"
 #include "qml.h"
-#include <qfxitem.h>
+#include <qmlgraphicsitem.h>
 #include <qmlview.h>
 
 #include <QWidget>

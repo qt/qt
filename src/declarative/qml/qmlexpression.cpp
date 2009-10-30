@@ -252,7 +252,7 @@ void QmlExpression::setExpression(const QString &expression)
 QVariant QmlExpressionPrivate::evalSSE()
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindValueSSE> perfsse;
+    QmlPerfTimer<QmlPerf::BindValueSSE> perfsse;
 #endif
 
     QVariant rv = data->sse.run(data->context(), data->me);
@@ -290,7 +290,7 @@ void QmlExpressionPrivate::exceptionToError(QScriptEngine *scriptEngine,
 QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUndefined)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindValueQt> perfqt;
+    QmlPerfTimer<QmlPerf::BindValueQt> perfqt;
 #endif
 
     QmlExpressionData *data = this->data;
@@ -382,7 +382,7 @@ QVariant QmlExpressionPrivate::value(QObject *secondaryScope, bool *isUndefined)
         return rv;
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindValue> perf;
+    QmlPerfTimer<QmlPerf::BindValue> perf;
 #endif
 
     QmlEnginePrivate *ep = QmlEnginePrivate::get(q->engine());

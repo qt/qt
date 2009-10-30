@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmltimer.h>
+#include <private/qmltimer_p.h>
 
 class tst_qmltimer : public QObject
 {

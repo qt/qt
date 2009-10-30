@@ -45,10 +45,10 @@
 #include <QFile>
 
 #include <private/qmlenginedebug_p.h>
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebugclient_p.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qfxitem.h>
-#include <QtDeclarative/qmldebugservice.h>
+#include <QtDeclarative/qmlgraphicsitem.h>
+#include <private/qmldebugservice_p.h>
 
 #include "engine.h"
 #include "objectpropertiesview.h"

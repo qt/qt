@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmllistaccessor.h"
+#include "qmllistaccessor_p.h"
 #include <QStringList>
 #include <qmlmetatype.h>
 #include <QtCore/qdebug.h>

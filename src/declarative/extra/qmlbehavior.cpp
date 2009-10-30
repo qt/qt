@@ -40,9 +40,9 @@
 ****************************************************************************/
 
 #include <private/qobject_p.h>
-#include "qmlanimation.h"
-#include "qmltransition.h"
-#include "qmlbehavior.h"
+#include <private/qmlanimation_p.h>
+#include <private/qmltransition_p.h>
+#include "qmlbehavior_p.h"
 #include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlinfo.h>
 #include <QtCore/qparallelanimationgroup.h>

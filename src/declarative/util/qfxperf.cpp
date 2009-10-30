@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "private/qfxperf_p.h"
+#include "private/qfxperf_p_p.h"
 
 QT_BEGIN_NAMESPACE
 
-Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
+Q_DEFINE_PERFORMANCE_LOG(QmlPerf, "QmlGraphics") {
     Q_DEFINE_PERFORMANCE_METRIC(QmlParsing, "Compilation: QML Parsing")
     Q_DEFINE_PERFORMANCE_METRIC(Compilation, "             QML Compilation")
     Q_DEFINE_PERFORMANCE_METRIC(VMEExecution, "Execution:   QML VME Execution")
@@ -54,13 +54,13 @@ Q_DEFINE_PERFORMANCE_LOG(QFxPerf, "QFx") {
     Q_DEFINE_PERFORMANCE_METRIC(BindableValueUpdate, "QmlBinding::update")
     Q_DEFINE_PERFORMANCE_METRIC(PixmapLoad, "Pixmap loading")
     Q_DEFINE_PERFORMANCE_METRIC(FontDatabase, "Font database creation")
-    Q_DEFINE_PERFORMANCE_METRIC(QFxPathViewPathCache, "FX Items:    QFxPathView: Path cache")
-    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QFxParticles: Particle creation")
-    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QFxItem::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QFxImage::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QFxBasePositioner::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QFxText::componentComplete")
-    Q_DEFINE_PERFORMANCE_METRIC(QFxText_setText, "             QFxText::setText")
+    Q_DEFINE_PERFORMANCE_METRIC(QmlGraphicsPathViewPathCache, "FX Items:    QmlGraphicsPathView: Path cache")
+    Q_DEFINE_PERFORMANCE_METRIC(CreateParticle, "             QmlGraphicsParticles: Particle creation")
+    Q_DEFINE_PERFORMANCE_METRIC(ItemComponentComplete, "             QmlGraphicsItem::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(ImageComponentComplete, "             QmlGraphicsImage::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(BaseLayoutComponentComplete, "             QmlGraphicsBasePositioner::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(TextComponentComplete, "             QmlGraphicsText::componentComplete")
+    Q_DEFINE_PERFORMANCE_METRIC(QmlGraphicsText_setText, "             QmlGraphicsText::setText")
     Q_DEFINE_PERFORMANCE_METRIC(AddScript, "QmlScript::addScriptToEngine")
 }
 

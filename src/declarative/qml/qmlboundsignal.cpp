@@ -102,7 +102,7 @@ QmlBoundSignal::QmlBoundSignal(QObject *scope, const QMetaMethod &signal,
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QFx_setParent_noEvent(this, parent);
+    QmlGraphics_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_idx, this, evaluateIdx);
 
     if (!signal.parameterTypes().isEmpty())
@@ -121,7 +121,7 @@ QmlBoundSignal::QmlBoundSignal(QmlContext *ctxt, const QString &val,
     // is that they both do the work to figure it out.  Boo hoo.
     if (evaluateIdx == -1) evaluateIdx = metaObject()->methodCount();
 
-    QFx_setParent_noEvent(this, parent);
+    QmlGraphics_setParent_noEvent(this, parent);
     QMetaObject::connect(scope, m_idx, this, evaluateIdx);
 
     m_expression = new QmlExpression(ctxt, val, scope);

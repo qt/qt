@@ -39,324 +39,369 @@
 **
 ****************************************************************************/
 
-#ifndef QMLANIMATION_P_H
-#define QMLANIMATION_P_H
+#ifndef QMLANIMATION_H
+#define QMLANIMATION_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <private/qobject_p.h>
-#include <private/qmlnullablevalue_p.h>
-#include <private/qvariantanimation_p.h>
-#include <QtCore/QPauseAnimation>
-#include <QtCore/QVariantAnimation>
-#include <QtCore/QAnimationGroup>
-#include <QtGui/QColor>
-#include <QtDeclarative/qmlanimation.h>
+#include <QtCore/qvariant.h>
+#include <QtCore/QAbstractAnimation>
+#include <QtGui/qcolor.h>
+#include <private/qmltransition_p.h>
+#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <private/qmlstate_p.h>
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlcontext.h>
-#include <private/qmltimeline_p.h>
+#include <QtDeclarative/qmlscriptstring.h>
+
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
-//interface for classes that provide animation actions for QActionAnimation
-class QAbstractAnimationAction
-{
-public:
-    virtual ~QAbstractAnimationAction() {}
-    virtual void doAction() = 0;
-};
+QT_MODULE(Declarative)
 
-//templated animation action
-//allows us to specify an action that calls a function of a class.
-//(so that class doesn't have to inherit QmlAbstractAnimationAction)
-template<class T, void (T::*method)()>
-class QAnimationActionProxy : public QAbstractAnimationAction
-{
-public:
-    QAnimationActionProxy(T *p) : m_p(p) {}
-    virtual void doAction() { (m_p->*method)(); }
-
-private:
-    T *m_p;
-};
-
-//performs an action of type QAbstractAnimationAction
-class QActionAnimation : public QAbstractAnimation
+class QmlAbstractAnimationPrivate;
+class QmlAnimationGroup;
+class Q_AUTOTEST_EXPORT QmlAbstractAnimation : public QObject, public QmlPropertyValueSource, public QmlParserStatus
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlAbstractAnimation)
+
+    Q_INTERFACES(QmlParserStatus)
+    Q_INTERFACES(QmlPropertyValueSource)
+    Q_PROPERTY(bool running READ isRunning WRITE setRunning NOTIFY runningChanged)
+    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
+    Q_PROPERTY(bool alwaysRunToEnd READ alwaysRunToEnd WRITE setAlwaysRunToEnd NOTIFY alwaysRunToEndChanged())
+    Q_PROPERTY(bool repeat READ repeat WRITE setRepeat NOTIFY repeatChanged)
+    Q_CLASSINFO("DefaultMethod", "start()")
+    Q_INTERFACES(QmlParserStatus)
+
 public:
-    QActionAnimation(QObject *parent = 0) : QAbstractAnimation(parent), animAction(0), policy(KeepWhenStopped) {}
-    QActionAnimation(QAbstractAnimationAction *action, QObject *parent = 0)
-        : QAbstractAnimation(parent), animAction(action), policy(KeepWhenStopped) {}
-    virtual int duration() const { return 0; }
-    void setAnimAction(QAbstractAnimationAction *action, DeletionPolicy p)
-    {
-        if (state() == Running)
-            stop();
-        animAction = action;
-        policy = p;
-    }
+    QmlAbstractAnimation(QObject *parent=0);
+    virtual ~QmlAbstractAnimation();
+
+    bool isRunning() const;
+    void setRunning(bool);
+    bool isPaused() const;
+    void setPaused(bool);
+    bool alwaysRunToEnd() const;
+    void setAlwaysRunToEnd(bool);
+    bool repeat() const;
+    void setRepeat(bool);
+
+    int currentTime();
+    void setCurrentTime(int);
+
+    QmlAnimationGroup *group() const;
+    void setGroup(QmlAnimationGroup *);
+
+    //### these belong at a lower level in the hierarchy
+    QObject *target() const;
+    void setTarget(QObject *);
+    QString property() const;
+    void setProperty(const QString &);
+
+    virtual void setTarget(const QmlMetaProperty &);
+
+    void classBegin();
+    void componentComplete();
+
+Q_SIGNALS:
+    void started();
+    void completed();
+    void runningChanged(bool);
+    void pausedChanged(bool);
+    void repeatChanged(bool);
+    void targetChanged(QObject *, const QString &);
+    void alwaysRunToEndChanged(bool);
+
+public Q_SLOTS:
+    void restart();
+    void start();
+    void pause();
+    void resume();
+    void stop();
+    void complete();
+
 protected:
-    virtual void updateCurrentTime(int) {}
+    QmlAbstractAnimation(QmlAbstractAnimationPrivate &dd, QObject *parent);
 
-    virtual void updateState(State /*oldState*/, State newState)
-    {
-        if (newState == Running) {
-            if (animAction)
-                animAction->doAction();
-        } else if (newState == Stopped && policy == DeleteWhenStopped) {
-            delete animAction;
-            animAction = 0;
-        }
-    }
+public:
+    enum TransitionDirection { Forward, Backward };
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual void prepare(QmlMetaProperty &);
+    virtual QAbstractAnimation *qtAnimation() = 0;
 
-private:
-    QAbstractAnimationAction *animAction;
-    DeletionPolicy policy;
+private Q_SLOTS:
+    void timelineComplete();
 };
 
-//animates QmlTimeLineValue (assumes start and end values will be reals or compatible)
-class QmlTimeLineValueAnimator : public QVariantAnimation
+class QmlPauseAnimationPrivate;
+class QmlPauseAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPauseAnimation)
+
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+
 public:
-    QmlTimeLineValueAnimator(QObject *parent = 0) : QVariantAnimation(parent), animValue(0), fromSourced(0), policy(KeepWhenStopped) {}
-    void setAnimValue(QmlTimeLineValue *value, DeletionPolicy p)
-    {
-        if (state() == Running)
-            stop();
-        animValue = value;
-        policy = p;
-    }
-    void setFromSourcedValue(bool *value)
-    {
-        fromSourced = value;
-    }
+    QmlPauseAnimation(QObject *parent=0);
+    virtual ~QmlPauseAnimation();
+
+    int duration() const;
+    void setDuration(int);
+
+Q_SIGNALS:
+    void durationChanged(int);
+
 protected:
-    virtual void updateCurrentValue(const QVariant &value)
-    {
-        if (animValue)
-            animValue->setValue(value.toDouble());
-    }
-    virtual void updateState(State oldState, State newState)
-    {
-        QVariantAnimation::updateState(oldState, newState);
-        if (newState == Running) {
-            //check for new from every loop
-            if (fromSourced)
-                *fromSourced = false;
-        } else if (newState == Stopped && policy == DeleteWhenStopped) {
-            delete animValue;
-            animValue = 0;
-        }
-    }
-
-private:
-    QmlTimeLineValue *animValue;
-    bool *fromSourced;
-    DeletionPolicy policy;
+    virtual QAbstractAnimation *qtAnimation();
 };
 
-//an animation that just gives a tick
-template<class T, void (T::*method)(int)>
-class QTickAnimationProxy : public QAbstractAnimation
+class QmlScriptActionPrivate;
+class QmlScriptAction : public QmlAbstractAnimation
 {
-    //Q_OBJECT //doesn't work with templating
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlScriptAction)
+
+    Q_PROPERTY(QmlScriptString script READ script WRITE setScript)
+    Q_PROPERTY(QString stateChangeScriptName READ stateChangeScriptName WRITE setStateChangeScriptName)
+
 public:
-    QTickAnimationProxy(T *p, QObject *parent = 0) : QAbstractAnimation(parent), m_p(p) {}
-    virtual int duration() const { return -1; }
+    QmlScriptAction(QObject *parent=0);
+    virtual ~QmlScriptAction();
+
+    QmlScriptString script() const;
+    void setScript(const QmlScriptString &);
+
+    QString stateChangeScriptName() const;
+    void setStateChangeScriptName(const QString &);
+
 protected:
-    virtual void updateCurrentTime(int msec) { (m_p->*method)(msec); }
-
-private:
-    T *m_p;
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
 };
 
-class QmlAbstractAnimationPrivate : public QObjectPrivate
+class QmlPropertyActionPrivate;
+class QmlPropertyAction : public QmlAbstractAnimation
 {
-    Q_DECLARE_PUBLIC(QmlAbstractAnimation)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAction)
+
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+    Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
+
 public:
-    QmlAbstractAnimationPrivate()
-    : running(false), paused(false), alwaysRunToEnd(false), repeat(false),
-      connectedTimeLine(false), componentComplete(true), startOnCompletion(false),
-      target(0), group(0) {}
+    QmlPropertyAction(QObject *parent=0);
+    virtual ~QmlPropertyAction();
 
-    bool running;
-    bool paused;
-    bool alwaysRunToEnd;
-    bool repeat;
-    bool connectedTimeLine;
+    QString properties() const;
+    void setProperties(const QString &);
 
-    bool componentComplete;
-    bool startOnCompletion;
+    QList<QObject *> *targets();
+    QList<QObject *> *exclude();
 
-    void commence();
+    QVariant value() const;
+    void setValue(const QVariant &);
 
-    QmlNullableValue<QmlMetaProperty> userProperty;
-    QObject *target;
-    QString propertyName;
+Q_SIGNALS:
+    void valueChanged(const QVariant &);
+    void propertiesChanged(const QString &);
 
-    QmlMetaProperty property;
-    QmlAnimationGroup *group;
-
-    QmlMetaProperty createProperty(QObject *obj, const QString &str);
+protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+    virtual void prepare(QmlMetaProperty &);
 };
 
-class QmlPauseAnimationPrivate : public QmlAbstractAnimationPrivate
+class QmlGraphicsItem;
+class QmlParentActionPrivate;
+class QmlParentAction : public QmlAbstractAnimation
 {
-    Q_DECLARE_PUBLIC(QmlPauseAnimation)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlParentAction)
+
+    Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
+    Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent)
+
 public:
-    QmlPauseAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), pa(0) {}
+    QmlParentAction(QObject *parent=0);
+    virtual ~QmlParentAction();
 
-    void init();
+    QmlGraphicsItem *object() const;
+    void setObject(QmlGraphicsItem *);
 
-    QPauseAnimation *pa;
+    QmlGraphicsItem *parent() const;
+    void setParent(QmlGraphicsItem *);
+
+protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
 };
 
-class QmlScriptActionPrivate : public QmlAbstractAnimationPrivate
+class QmlPropertyAnimationPrivate;
+class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
 {
-    Q_DECLARE_PUBLIC(QmlScriptAction)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+
+    Q_PROPERTY(int duration READ duration WRITE setDuration NOTIFY durationChanged)
+    Q_PROPERTY(QVariant from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QVariant to READ to WRITE setTo NOTIFY toChanged)
+    Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
+    Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
+    Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
+    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* targets READ targets)
+    Q_PROPERTY(QList<QObject *>* exclude READ exclude)
+
 public:
-    QmlScriptActionPrivate()
-        : QmlAbstractAnimationPrivate(), hasRunScriptScript(false), proxy(this), rsa(0) {}
+    QmlPropertyAnimation(QObject *parent=0);
+    virtual ~QmlPropertyAnimation();
 
-    void init();
+    int duration() const;
+    void setDuration(int);
 
-    QmlScriptString script;
-    QString name;
-    QmlScriptString runScriptScript;
-    bool hasRunScriptScript;
+    QVariant from() const;
+    void setFrom(const QVariant &);
 
-    void execute();
+    QVariant to() const;
+    void setTo(const QVariant &);
 
-    QAnimationActionProxy<QmlScriptActionPrivate,
-                  &QmlScriptActionPrivate::execute> proxy;
-    QActionAnimation *rsa;
+    QString easing() const;
+    void setEasing(const QString &);
+
+    QString properties() const;
+    void setProperties(const QString &);
+
+    QList<QObject *> *targets();
+    QList<QObject *> *exclude();
+
+protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+    virtual void prepare(QmlMetaProperty &);
+
+Q_SIGNALS:
+    void durationChanged(int);
+    void fromChanged(QVariant);
+    void toChanged(QVariant);
+    void easingChanged(const QString &);
+    void propertiesChanged(const QString &);
 };
 
-class QmlPropertyActionPrivate : public QmlAbstractAnimationPrivate
+class Q_AUTOTEST_EXPORT QmlColorAnimation : public QmlPropertyAnimation
 {
-    Q_DECLARE_PUBLIC(QmlPropertyAction)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+    Q_PROPERTY(QColor from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(QColor to READ to WRITE setTo NOTIFY toChanged)
+
 public:
-    QmlPropertyActionPrivate()
-    : QmlAbstractAnimationPrivate(), proxy(this), spa(0) {}
+    QmlColorAnimation(QObject *parent=0);
+    virtual ~QmlColorAnimation();
 
-    void init();
+    QColor from() const;
+    void setFrom(const QColor &);
 
-    QString properties;
-    QList<QObject *> targets;
-    QList<QObject *> exclude;
-
-    QmlNullableValue<QVariant> value;
-
-    void doAction();
-
-    QAnimationActionProxy<QmlPropertyActionPrivate,
-                  &QmlPropertyActionPrivate::doAction> proxy;
-    QActionAnimation *spa;
+    QColor to() const;
+    void setTo(const QColor &);
 };
 
-class QmlParentActionPrivate : public QmlAbstractAnimationPrivate
+class Q_AUTOTEST_EXPORT QmlNumberAnimation : public QmlPropertyAnimation
 {
-    Q_DECLARE_PUBLIC(QmlParentAction)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlPropertyAnimation)
+
+    Q_PROPERTY(qreal from READ from WRITE setFrom NOTIFY fromChanged)
+    Q_PROPERTY(qreal to READ to WRITE setTo NOTIFY toChanged)
+
 public:
-    QmlParentActionPrivate()
-    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
+    QmlNumberAnimation(QObject *parent=0);
+    virtual ~QmlNumberAnimation();
 
-    void init();
+    qreal from() const;
+    void setFrom(qreal);
 
-    QFxItem *pcTarget;
-    QFxItem *pcParent;
-
-    void doAction();
-    QActionAnimation *cpa;
+    qreal to() const;
+    void setTo(qreal);
 };
 
-class QmlAnimationGroupPrivate : public QmlAbstractAnimationPrivate
+class QmlAnimationGroupPrivate;
+class QmlAnimationGroup : public QmlAbstractAnimation
 {
-    Q_DECLARE_PUBLIC(QmlAnimationGroup)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
+
+    Q_CLASSINFO("DefaultProperty", "animations")
+    Q_PROPERTY(QmlList<QmlAbstractAnimation *> *animations READ animations)
+
 public:
-    QmlAnimationGroupPrivate()
-    : QmlAbstractAnimationPrivate(), animations(this), ag(0) {}
+    QmlAnimationGroup(QObject *parent);
+    virtual ~QmlAnimationGroup();
 
-    struct AnimationList : public QmlConcreteList<QmlAbstractAnimation *>
-    {
-        AnimationList(QmlAnimationGroupPrivate *p)
-        : anim(p) {}
-        virtual void append(QmlAbstractAnimation *a) {
-            QmlConcreteList<QmlAbstractAnimation *>::append(a);
-            a->setGroup(anim->q_func());
-        }
-        virtual void clear()
-        {
-            for (int i = 0; i < count(); ++i)
-                at(i)->setGroup(0);
-            QmlConcreteList<QmlAbstractAnimation *>::clear();
-        }
-        virtual void removeAt(int i)
-        {
-            at(i)->setGroup(0);
-            QmlConcreteList<QmlAbstractAnimation *>::removeAt(i);
-        }
-        virtual void insert(int i, QmlAbstractAnimation *a)
-        {
-            QmlConcreteList<QmlAbstractAnimation *>::insert(i, a);
-            a->setGroup(anim->q_func());
-        }
-
-        QmlAnimationGroupPrivate *anim;
-    };
-
-    AnimationList animations;
-    QAnimationGroup *ag;
+    QmlList<QmlAbstractAnimation *>* animations();
+    friend class QmlAbstractAnimation;
 };
 
-class QmlPropertyAnimationPrivate : public QmlAbstractAnimationPrivate
+class QmlSequentialAnimation : public QmlAnimationGroup
 {
-    Q_DECLARE_PUBLIC(QmlPropertyAnimation)
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
+
 public:
-    QmlPropertyAnimationPrivate()
-    : QmlAbstractAnimationPrivate(), fromSourced(false), fromIsDefined(false), toIsDefined(false),
-      defaultToInterpolatorType(0), interpolatorType(0), interpolator(0), va(0),
-      value(this, &QmlPropertyAnimationPrivate::valueChanged) {}
+    QmlSequentialAnimation(QObject *parent=0);
+    virtual ~QmlSequentialAnimation();
 
-    void init();
+protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+    virtual void prepare(QmlMetaProperty &);
+};
 
-    QVariant from;
-    QVariant to;
+class QmlParallelAnimation : public QmlAnimationGroup
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QmlAnimationGroup)
 
-    QString easing;
+public:
+    QmlParallelAnimation(QObject *parent=0);
+    virtual ~QmlParallelAnimation();
 
-    QString properties;
-    QList<QObject *> targets;
-    QList<QObject *> exclude;
-
-    bool fromSourced;
-    bool fromIsDefined;
-    bool toIsDefined;
-    bool defaultToInterpolatorType;
-    int interpolatorType;
-    QVariantAnimation::Interpolator interpolator;
-
-    QmlTimeLineValueAnimator *va;
-    virtual void valueChanged(qreal);
-
-    QmlTimeLineValueProxy<QmlPropertyAnimationPrivate> value;
-
-    static QVariant interpolateVariant(const QVariant &from, const QVariant &to, qreal progress);
-    static void convertVariant(QVariant &variant, int type);
+protected:
+    virtual void transition(QmlStateActions &actions,
+                            QmlMetaProperties &modified,
+                            TransitionDirection direction);
+    virtual QAbstractAnimation *qtAnimation();
+    virtual void prepare(QmlMetaProperty &);
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLANIMATION_P_H
+QML_DECLARE_TYPE(QmlAbstractAnimation)
+QML_DECLARE_TYPE(QmlPauseAnimation)
+QML_DECLARE_TYPE(QmlScriptAction)
+QML_DECLARE_TYPE(QmlPropertyAction)
+QML_DECLARE_TYPE(QmlParentAction)
+QML_DECLARE_TYPE(QmlPropertyAnimation)
+QML_DECLARE_TYPE(QmlColorAnimation)
+QML_DECLARE_TYPE(QmlNumberAnimation)
+QML_DECLARE_TYPE(QmlSequentialAnimation)
+QML_DECLARE_TYPE(QmlParallelAnimation)
+
+QT_END_HEADER
+
+#endif // QMLANIMATION_H

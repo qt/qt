@@ -43,7 +43,7 @@
 #define QMLVIEWER_H
 
 #include <QMenuBar>
-#include <QmlTimer>
+#include <private/qmltimer_p.h>
 #include <QTime>
 #include <QList>
 
@@ -51,10 +51,10 @@ QT_BEGIN_NAMESPACE
 
 class QmlView;
 class PreviewDeviceSkin;
-class QFxTestEngine;
+class QmlGraphicsTestEngine;
 class QProcess;
 class RecordingDialog;
-class QFxTester;
+class QmlGraphicsTester;
 
 class QmlViewer : public QWidget
 {
@@ -154,7 +154,7 @@ private:
 
     QString m_script;
     ScriptOptions m_scriptOptions;
-    QFxTester *tester;
+    QmlGraphicsTester *tester;
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QmlViewer::ScriptOptions)
 

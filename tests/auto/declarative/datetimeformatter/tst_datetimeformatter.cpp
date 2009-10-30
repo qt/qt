@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qmldatetimeformatter.h>
+#include <private/qmldatetimeformatter_p.h>
 #include <QDebug>
 
 class tst_datetimeformatter : public QObject

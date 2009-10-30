@@ -54,8 +54,8 @@
 
 #include <extensionsystem/pluginmanager.h>
 
-#include <QtDeclarative/qmldebug.h>
-#include <QtDeclarative/qmldebugclient.h>
+#include <private/qmldebug_p.h>
+#include <private/qmldebugclient_p.h>
 
 #include "runcontrol.h"
 #include "qmlinspector.h"

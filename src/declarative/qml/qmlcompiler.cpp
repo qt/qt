@@ -41,7 +41,7 @@
 
 #include "private/qmlcompiler_p.h"
 #include "private/qmlcompositetypedata_p.h"
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include "qmlparser_p.h"
 #include "private/qmlscriptparser_p.h"
 #include <qmlpropertyvaluesource.h>
@@ -562,7 +562,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
                           QmlCompiledData *out)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::Compilation> pc;
+    QmlPerfTimer<QmlPerf::Compilation> pc;
 #endif
     exceptions.clear();
 

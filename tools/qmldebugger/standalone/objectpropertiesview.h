@@ -41,7 +41,7 @@
 #ifndef PROPERTIESTABLEMODEL_H
 #define PROPERTIESTABLEMODEL_H
 
-#include <QtDeclarative/qmldebug.h>
+#include <private/qmldebug_p.h>
 
 #include <QtGui/qwidget.h>
 
