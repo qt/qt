@@ -799,14 +799,26 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             }
         }
         if (qmlPropGroup) {
-            new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            const ClassNode *correspondingClass = static_cast<const QmlClassNode*>(qmlPropGroup->parent())->classNode();
+            PropertyNode *correspondingProperty = 0;
+            if (correspondingClass)
+                correspondingProperty = static_cast<PropertyNode*>((Node*)correspondingClass->findNode(property, Node::Property));
+            QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            if (correspondingProperty) {
+                bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+            }
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    new QmlPropertyNode(qmlPropGroup,
+                    QmlPropertyNode * qmlPropNode = new QmlPropertyNode(qmlPropGroup,
                                         property,
                                         type,
                                         attached);
+                    if (correspondingProperty) {
+                        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                        qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+                    }
                 }
                 ++arg;
             }
@@ -1751,9 +1763,10 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
 
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
-        else if (key == "WRITE")
+        else if (key == "WRITE") {
             tre->addPropertyFunction(property, value, PropertyNode::Setter);
-        else if (key == "STORED")
+            property->setWritable(true);
+        } else if (key == "STORED")
             property->setStored(value.toLower() == "true");
         else if (key == "DESIGNABLE")
             property->setDesignable(value.toLower() == "true");

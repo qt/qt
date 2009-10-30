@@ -55,7 +55,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \qmlclass AnimatedImage
+    \qmlclass AnimatedImage QFxAnimatedImageItem
     \inherits Image
 
     This item provides for playing animations stored as images containing a series of frames,
