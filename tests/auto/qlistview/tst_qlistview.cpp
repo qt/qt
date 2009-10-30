@@ -120,6 +120,7 @@ private slots:
     void taskQTBUG_2233_scrollHiddenItems_data();
     void taskQTBUG_2233_scrollHiddenItems();
     void taskQTBUG_633_changeModelData();
+    void taskQTBUG_435_deselectOnViewportClick();
 };
 
 // Testing get/set functions
@@ -1852,6 +1853,28 @@ void tst_QListView::taskQTBUG_633_changeModelData()
     QVERIFY( ! rectLongText.intersects(rect2) );
 }
 
+void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
+{
+    QListView view;
+    QStringListModel model( QStringList() << "1" << "2" << "3" << "4");
+    view.setModel(&model);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+    
+
+    QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
+    //first the left button
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+
+    //and now the right button
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"
