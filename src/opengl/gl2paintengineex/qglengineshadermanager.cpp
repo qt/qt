@@ -231,12 +231,14 @@ QByteArray QGLEngineSharedShaders::snippetNameStr(SnippetName name)
 QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineShaderProg &prog)
 {
     for (int i = 0; i < cachedPrograms.size(); ++i) {
-        if (cachedPrograms[i] == prog)
-            return &cachedPrograms[i];
+        QGLEngineShaderProg *cachedProg = cachedPrograms[i];
+        if (*cachedProg == prog) {
+            // Move the program to the top of the list as a poor-man's cache algo
+            cachedPrograms.move(i, 0);
+            return cachedProg;
+        }
     }
 
-    cachedPrograms.append(prog);
-    QGLEngineShaderProg &cached = cachedPrograms.last();
     QByteArray source;
     source.append(qShaderSnippets[prog.mainFragShader]);
     source.append(qShaderSnippets[prog.srcPixelFragShader]);
@@ -280,20 +282,22 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
     vertexShader->setObjectName(QString::fromLatin1(description));
 #endif
 
+    QGLEngineShaderProg* newProg = new QGLEngineShaderProg(prog);
+
     // If the shader program's not found in the cache, create it now.
-    cached.program = new QGLShaderProgram(ctxGuard.context(), this);
-    cached.program->addShader(vertexShader);
-    cached.program->addShader(fragShader);
+    newProg->program = new QGLShaderProgram(ctxGuard.context(), this);
+    newProg->program->addShader(vertexShader);
+    newProg->program->addShader(fragShader);
 
     // We have to bind the vertex attribute names before the program is linked:
-    cached.program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
-    if (cached.useTextureCoords)
-        cached.program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
-    if (cached.useOpacityAttribute)
-        cached.program->bindAttributeLocation("opacityArray", QT_OPACITY_ATTR);
+    newProg->program->bindAttributeLocation("vertexCoordsArray", QT_VERTEX_COORDS_ATTR);
+    if (newProg->useTextureCoords)
+        newProg->program->bindAttributeLocation("textureCoordArray", QT_TEXTURE_COORDS_ATTR);
+    if (newProg->useOpacityAttribute)
+        newProg->program->bindAttributeLocation("opacityArray", QT_OPACITY_ATTR);
 
-    cached.program->link();
-    if (!cached.program->isLinked()) {
+    newProg->program->link();
+    if (!newProg->program->isLinked()) {
         QLatin1String none("none");
         QLatin1String br("\n");
         QString error;
@@ -307,30 +311,40 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
             + QLatin1String(fragShader->sourceCode()) + br
 #endif
             + QLatin1String("  Error Log:\n")
-            + QLatin1String("    ") + cached.program->log();
+            + QLatin1String("    ") + newProg->program->log();
         qWarning() << error;
-        delete cached.program;
-        cachedPrograms.removeLast();
-        return 0;
-    } else {
-        // taking the address here is safe since
-        // cachePrograms isn't resized anywhere else
-        return &cached;
+        delete newProg; // Deletes the QGLShaderProgram in it's destructor
+        newProg = 0;
     }
-}
+    else {
+        if (cachedPrograms.count() > 30) {
+            // The cache is full, so delete the last 5 programs in the list.
+            // These programs will be least used, as a program us bumped to
+            // the top of the list when it's used.
+            for (int i = 0; i < 5; ++i) {
+                delete cachedPrograms.last();
+                cachedPrograms.removeLast();
+            }
+        }
 
+        cachedPrograms.insert(0, newProg);
+    }
+
+    return newProg;
+}
 
 void QGLEngineSharedShaders::cleanupCustomStage(QGLCustomShaderStage* stage)
 {
     // Remove any shader programs which has this as the custom shader src:
     for (int i = 0; i < cachedPrograms.size(); ++i) {
-        if (cachedPrograms.at(i).customStageSource == stage->source()) {
-            delete cachedPrograms.at(i).program;
-            cachedPrograms.removeAt(i--);
+        QGLEngineShaderProg *cachedProg = cachedPrograms[i];
+        if (cachedProg->customStageSource == stage->source()) {
+            delete cachedProg;
+            cachedPrograms.removeAt(i);
+            i--;
         }
     }
 }
-
 
 
 QGLEngineShaderManager::QGLEngineShaderManager(QGLContext* context)
@@ -487,7 +501,6 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     }
 
     QGLEngineShaderProg requiredProgram;
-    requiredProgram.program = 0;
 
     bool texCoords = false;
 

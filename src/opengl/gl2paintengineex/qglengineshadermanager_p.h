@@ -366,13 +366,22 @@ private:
     QGLSharedResourceGuard ctxGuard;
     QGLShaderProgram *blitShaderProg;
     QGLShaderProgram *simpleShaderProg;
-    QList<QGLEngineShaderProg> cachedPrograms;
+    QList<QGLEngineShaderProg*> cachedPrograms;
 
     static const char* qShaderSnippets[TotalSnippetCount];
 };
 
-struct QGLEngineShaderProg
+
+class QGLEngineShaderProg
 {
+public:
+    QGLEngineShaderProg() : program(0) {}
+
+    ~QGLEngineShaderProg() {
+        if (program)
+            delete program;
+    }
+
     QGLEngineSharedShaders::SnippetName mainVertexShader;
     QGLEngineSharedShaders::SnippetName positionVertexShader;
     QGLEngineSharedShaders::SnippetName mainFragShader;
