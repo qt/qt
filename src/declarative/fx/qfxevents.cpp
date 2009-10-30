@@ -43,7 +43,7 @@
 
 QT_BEGIN_NAMESPACE
 /*!
-    \qmlclass KeyEvent QFxKeyEvent
+    \qmlclass KeyEvent QmlGraphicsKeyEvent
     \brief The KeyEvent object provides information about a key event.
 
     For example, the following changes the Item's state property when the Enter
@@ -58,7 +58,7 @@ Item {
 
 /*!
     \internal
-    \class QFxKeyEvent
+    \class QmlGraphicsKeyEvent
 */
 
 /*!
@@ -112,7 +112,7 @@ Item {
 
 
 /*!
-    \qmlclass MouseEvent QFxMouseEvent
+    \qmlclass MouseEvent QmlGraphicsMouseEvent
     \brief The MouseEvent object provides information about a mouse event.
 
     The position of the mouse can be found via the x and y properties.
@@ -121,7 +121,7 @@ Item {
 
 /*!
     \internal
-    \class QFxMouseEvent
+    \class QmlGraphicsMouseEvent
 */
 
 /*!
@@ -189,7 +189,7 @@ MouseRegion {
     \endqml
 */
 
-QML_DEFINE_NOCREATE_TYPE(QFxKeyEvent)
-QML_DEFINE_NOCREATE_TYPE(QFxMouseEvent)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsKeyEvent)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsMouseEvent)
 
 QT_END_NAMESPACE

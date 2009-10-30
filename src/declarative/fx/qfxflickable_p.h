@@ -62,13 +62,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxFlickableVisibleArea;
-class QFxFlickablePrivate : public QFxItemPrivate
+class QmlGraphicsFlickableVisibleArea;
+class QmlGraphicsFlickablePrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxFlickable)
+    Q_DECLARE_PUBLIC(QmlGraphicsFlickable)
 
 public:
-    QFxFlickablePrivate();
+    QmlGraphicsFlickablePrivate();
     void init();
     virtual void flickX(qreal velocity);
     virtual void flickY(qreal velocity);
@@ -80,9 +80,9 @@ public:
     void clearDelayedPress();
 
 public:
-    QFxItem *viewport;
-    QmlTimeLineValueProxy<QFxItem> _moveX;
-    QmlTimeLineValueProxy<QFxItem> _moveY;
+    QmlGraphicsItem *viewport;
+    QmlTimeLineValueProxy<QmlGraphicsItem> _moveX;
+    QmlTimeLineValueProxy<QmlGraphicsItem> _moveY;
     QmlTimeLine timeline;
     qreal vWidth;
     qreal vHeight;
@@ -121,19 +121,19 @@ public:
     void updateVelocity();
     struct Velocity : public QmlTimeLineValue
     {
-        Velocity(QFxFlickablePrivate *p)
+        Velocity(QmlGraphicsFlickablePrivate *p)
             : parent(p) {}
         virtual void setValue(qreal v) {
             QmlTimeLineValue::setValue(v);
             parent->updateVelocity();
         }
-        QFxFlickablePrivate *parent;
+        QmlGraphicsFlickablePrivate *parent;
     };
     Velocity horizontalVelocity;
     Velocity verticalVelocity;
     int vTime;
     QmlTimeLine velocityTimeline;
-    QFxFlickableVisibleArea *visibleArea;
+    QmlGraphicsFlickableVisibleArea *visibleArea;
 
     void handleMousePressEvent(QGraphicsSceneMouseEvent *);
     void handleMouseMoveEvent(QGraphicsSceneMouseEvent *);
@@ -147,8 +147,8 @@ public:
     QObject *data_at(int) const;
     void data_clear();
 
-    friend class QFxFlickableVisibleArea;
-    QML_DECLARE_LIST_PROXY(QFxFlickablePrivate, QObject *, data)
+    friend class QmlGraphicsFlickableVisibleArea;
+    QML_DECLARE_LIST_PROXY(QmlGraphicsFlickablePrivate, QObject *, data)
 };
 
 QT_END_NAMESPACE

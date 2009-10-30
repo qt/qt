@@ -637,7 +637,7 @@ void QmlViewer::openQml(const QString& file_or_url)
     setWindowTitle(tr("%1 - Qt Declarative UI Viewer").arg(file_or_url));
 
     if (!m_script.isEmpty()) 
-        tester = new QFxTester(m_script, m_scriptOptions, canvas);
+        tester = new QmlGraphicsTester(m_script, m_scriptOptions, canvas);
 
     canvas->reset();
 

@@ -50,9 +50,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxFlickablePrivate;
-class QFxFlickableVisibleArea;
-class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
+class QmlGraphicsFlickablePrivate;
+class QmlGraphicsFlickableVisibleArea;
+class Q_DECLARATIVE_EXPORT QmlGraphicsFlickable : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -79,18 +79,18 @@ class Q_DECLARATIVE_EXPORT QFxFlickable : public QFxItem
     Q_PROPERTY(bool atXBeginning READ isAtXBeginning NOTIFY isAtBoundaryChanged)
     Q_PROPERTY(bool atYBeginning READ isAtYBeginning NOTIFY isAtBoundaryChanged)
 
-    Q_PROPERTY(QFxFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
+    Q_PROPERTY(QmlGraphicsFlickableVisibleArea *visibleArea READ visibleArea CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* flickableData READ flickableData)
-    Q_PROPERTY(QmlList<QFxItem *>* flickableChildren READ flickableChildren)
+    Q_PROPERTY(QmlList<QmlGraphicsItem *>* flickableChildren READ flickableChildren)
     Q_CLASSINFO("DefaultProperty", "flickableData")
 
 public:
-    QFxFlickable(QFxItem *parent=0);
-    ~QFxFlickable();
+    QmlGraphicsFlickable(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsFlickable();
 
     QmlList<QObject *> *flickableData();
-    QmlList<QFxItem *> *flickableChildren();
+    QmlList<QmlGraphicsItem *> *flickableChildren();
 
     bool overShoot() const;
     void setOverShoot(bool);
@@ -133,7 +133,7 @@ public:
     bool isAtYEnd() const;
     bool isAtYBeginning() const;
 
-    QFxItem *viewport();
+    QmlGraphicsItem *viewport();
 
 Q_SIGNALS:
     void viewportWidthChanged();
@@ -162,7 +162,7 @@ protected:
     qreal visibleX() const;
     qreal visibleY() const;
 
-    QFxFlickableVisibleArea *visibleArea();
+    QmlGraphicsFlickableVisibleArea *visibleArea();
 
 protected Q_SLOTS:
     virtual void ticked();
@@ -186,17 +186,17 @@ protected:
     void cancelFlick();
 
 protected:
-    QFxFlickable(QFxFlickablePrivate &dd, QFxItem *parent);
+    QmlGraphicsFlickable(QmlGraphicsFlickablePrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QFxFlickable)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlickable)
-    friend class QFxFlickableVisibleArea;
+    Q_DISABLE_COPY(QmlGraphicsFlickable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsFlickable)
+    friend class QmlGraphicsFlickableVisibleArea;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFlickable)
+QML_DECLARE_TYPE(QmlGraphicsFlickable)
 
 QT_END_HEADER
 

@@ -49,53 +49,53 @@
 
 QT_BEGIN_NAMESPACE
 
-QFxImageBase::QFxImageBase(QFxItem *parent)
-  : QFxItem(*(new QFxImageBasePrivate), parent)
+QmlGraphicsImageBase::QmlGraphicsImageBase(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsImageBasePrivate), parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, true);
 }
 
-QFxImageBase::QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsImageBase::QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, true);
 }
 
-QFxImageBase::~QFxImageBase()
+QmlGraphicsImageBase::~QmlGraphicsImageBase()
 {
-    Q_D(QFxImageBase);
+    Q_D(QmlGraphicsImageBase);
     if (d->pendingPixmapCache)
-        QFxPixmapCache::cancelGet(d->url, this);
+        QmlGraphicsPixmapCache::cancelGet(d->url, this);
 }
 
-QFxImageBase::Status QFxImageBase::status() const
+QmlGraphicsImageBase::Status QmlGraphicsImageBase::status() const
 {
-    Q_D(const QFxImageBase);
+    Q_D(const QmlGraphicsImageBase);
     return d->status;
 }
 
 
-qreal QFxImageBase::progress() const
+qreal QmlGraphicsImageBase::progress() const
 {
-    Q_D(const QFxImageBase);
+    Q_D(const QmlGraphicsImageBase);
     return d->progress;
 }
 
-QUrl QFxImageBase::source() const
+QUrl QmlGraphicsImageBase::source() const
 {
-    Q_D(const QFxImageBase);
+    Q_D(const QmlGraphicsImageBase);
     return d->url;
 }
 
-void QFxImageBase::setSource(const QUrl &url)
+void QmlGraphicsImageBase::setSource(const QUrl &url)
 {
-    Q_D(QFxImageBase);
+    Q_D(QmlGraphicsImageBase);
     //equality is fairly expensive, so we bypass for simple, common case
     if ((d->url.isEmpty() == url.isEmpty()) && url == d->url)
         return;
 
     if (d->pendingPixmapCache) {
-        QFxPixmapCache::cancelGet(d->url, this);
+        QmlGraphicsPixmapCache::cancelGet(d->url, this);
         d->pendingPixmapCache = false;
     }
 
@@ -117,7 +117,7 @@ void QFxImageBase::setSource(const QUrl &url)
         update();
     } else {
         d->status = Loading;
-        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+        QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->url, &d->pix);
         if (reply) {
             d->pendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -141,13 +141,13 @@ void QFxImageBase::setSource(const QUrl &url)
     emit statusChanged(d->status);
 }
 
-void QFxImageBase::requestFinished()
+void QmlGraphicsImageBase::requestFinished()
 {
-    Q_D(QFxImageBase);
+    Q_D(QmlGraphicsImageBase);
 
     d->pendingPixmapCache = false;
 
-    if (!QFxPixmapCache::find(d->url, &d->pix))
+    if (!QmlGraphicsPixmapCache::find(d->url, &d->pix))
         d->status = Error;
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());
@@ -161,9 +161,9 @@ void QFxImageBase::requestFinished()
     update();
 }
 
-void QFxImageBase::requestProgress(qint64 received, qint64 total)
+void QmlGraphicsImageBase::requestProgress(qint64 received, qint64 total)
 {
-    Q_D(QFxImageBase);
+    Q_D(QmlGraphicsImageBase);
     if (d->status == Loading && total > 0) {
         d->progress = qreal(received)/total;
         emit progressChanged(d->progress);

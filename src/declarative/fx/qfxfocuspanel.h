@@ -50,13 +50,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QFxFocusPanel : public QFxItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsFocusPanel : public QmlGraphicsItem
 {
     Q_OBJECT
     Q_PROPERTY(bool active READ isActive WRITE setActive NOTIFY activeChanged)
 public:
-    QFxFocusPanel(QFxItem *parent=0);
-    virtual ~QFxFocusPanel();
+    QmlGraphicsFocusPanel(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsFocusPanel();
 
 Q_SIGNALS:
     void activeChanged();
@@ -65,12 +65,12 @@ protected:
     bool sceneEvent(QEvent *event);
 
 private:
-    Q_DISABLE_COPY(QFxFocusPanel)
+    Q_DISABLE_COPY(QmlGraphicsFocusPanel)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFocusPanel)
+QML_DECLARE_TYPE(QmlGraphicsFocusPanel)
 
 QT_END_HEADER
 

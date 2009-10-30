@@ -59,17 +59,17 @@
 
 
 QT_BEGIN_NAMESPACE
-class QFxPathPrivate : public QObjectPrivate
+class QmlGraphicsPathPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QFxPath)
+    Q_DECLARE_PUBLIC(QmlGraphicsPath)
 
 public:
-    QFxPathPrivate() : startX(0), startY(0) { }
+    QmlGraphicsPathPrivate() : startX(0), startY(0) { }
 
     QPainterPath _path;
-    QList<QFxPathElement*> _pathElements;
+    QList<QmlGraphicsPathElement*> _pathElements;
     mutable QVector<QPointF> _pointCache;
-    QList<QFxPath::AttributePoint> _attributePoints;
+    QList<QmlGraphicsPath::AttributePoint> _attributePoints;
     QStringList _attributes;
     int startX;
     int startY;

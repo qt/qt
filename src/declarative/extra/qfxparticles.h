@@ -50,30 +50,30 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxParticle;
-class QFxParticles;
-class Q_DECLARATIVE_EXPORT QFxParticleMotion : public QObject
+class QmlGraphicsParticle;
+class QmlGraphicsParticles;
+class Q_DECLARATIVE_EXPORT QmlGraphicsParticleMotion : public QObject
 {
     Q_OBJECT
 public:
-    QFxParticleMotion(QObject *parent=0);
+    QmlGraphicsParticleMotion(QObject *parent=0);
 
-    virtual void advance(QFxParticle &, int interval);
-    virtual void created(QFxParticle &);
-    virtual void destroy(QFxParticle &);
+    virtual void advance(QmlGraphicsParticle &, int interval);
+    virtual void created(QmlGraphicsParticle &);
+    virtual void destroy(QmlGraphicsParticle &);
 };
 
-class Q_DECLARATIVE_EXPORT QFxParticleMotionLinear : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QmlGraphicsParticleMotionLinear : public QmlGraphicsParticleMotion
 {
     Q_OBJECT
 public:
-    QFxParticleMotionLinear(QObject *parent=0)
-        : QFxParticleMotion(parent) {}
+    QmlGraphicsParticleMotionLinear(QObject *parent=0)
+        : QmlGraphicsParticleMotion(parent) {}
 
-    virtual void advance(QFxParticle &, int interval);
+    virtual void advance(QmlGraphicsParticle &, int interval);
 };
 
-class Q_DECLARATIVE_EXPORT QFxParticleMotionGravity : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QmlGraphicsParticleMotionGravity : public QmlGraphicsParticleMotion
 {
     Q_OBJECT
 
@@ -81,8 +81,8 @@ class Q_DECLARATIVE_EXPORT QFxParticleMotionGravity : public QFxParticleMotion
     Q_PROPERTY(int yattractor READ yAttractor WRITE setYAttractor)
     Q_PROPERTY(int acceleration READ acceleration WRITE setAcceleration)
 public:
-    QFxParticleMotionGravity(QObject *parent=0)
-        : QFxParticleMotion(parent), _xAttr(0), _yAttr(0), _accel(0.00005) {}
+    QmlGraphicsParticleMotionGravity(QObject *parent=0)
+        : QmlGraphicsParticleMotion(parent), _xAttr(0), _yAttr(0), _accel(0.00005) {}
 
     int xAttractor() const { return _xAttr; }
     void setXAttractor(int x) { _xAttr = x; }
@@ -93,7 +93,7 @@ public:
     int acceleration() const { return int(_accel * 1000000); }
     void setAcceleration(int accel) { _accel = qreal(accel)/1000000.0; }
 
-    virtual void advance(QFxParticle &, int interval);
+    virtual void advance(QmlGraphicsParticle &, int interval);
 
 private:
     int _xAttr;
@@ -101,16 +101,16 @@ private:
     qreal _accel;
 };
 
-class Q_DECLARATIVE_EXPORT QFxParticleMotionWander : public QFxParticleMotion
+class Q_DECLARATIVE_EXPORT QmlGraphicsParticleMotionWander : public QmlGraphicsParticleMotion
 {
     Q_OBJECT
 public:
-    QFxParticleMotionWander()
-        : QFxParticleMotion(), particles(0), _xvariance(0), _yvariance(0) {}
+    QmlGraphicsParticleMotionWander()
+        : QmlGraphicsParticleMotion(), particles(0), _xvariance(0), _yvariance(0) {}
 
-    virtual void advance(QFxParticle &, int interval);
-    virtual void created(QFxParticle &);
-    virtual void destroy(QFxParticle &);
+    virtual void advance(QmlGraphicsParticle &, int interval);
+    virtual void created(QmlGraphicsParticle &);
+    virtual void destroy(QmlGraphicsParticle &);
 
     struct Data {
         qreal x_targetV;
@@ -134,14 +134,14 @@ public:
     void setPace(int pace) { _pace = pace / 1000.0; }
 
 private:
-    QFxParticles *particles;
+    QmlGraphicsParticles *particles;
     qreal _xvariance;
     qreal _yvariance;
     qreal _pace;
 };
 
-class QFxParticlesPrivate;
-class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
+class QmlGraphicsParticlesPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsParticles : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -157,12 +157,12 @@ class Q_DECLARATIVE_EXPORT QFxParticles : public QFxItem
     Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation)
     Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn)
     Q_PROPERTY(bool emitting READ emitting WRITE setEmitting)
-    Q_PROPERTY(QFxParticleMotion *motion READ motion WRITE setMotion)
+    Q_PROPERTY(QmlGraphicsParticleMotion *motion READ motion WRITE setMotion)
     Q_CLASSINFO("DefaultProperty", "motion")
 
 public:
-    QFxParticles(QFxItem *parent=0);
-    ~QFxParticles();
+    QmlGraphicsParticles(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsParticles();
 
     QUrl source() const;
     void setSource(const QUrl &);
@@ -200,30 +200,30 @@ public:
     bool emitting() const;
     void setEmitting(bool);
 
-    QFxParticleMotion *motion() const;
-    void setMotion(QFxParticleMotion *);
+    QmlGraphicsParticleMotion *motion() const;
+    void setMotion(QmlGraphicsParticleMotion *);
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 protected:
     virtual void componentComplete();
-    QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent);
+    QmlGraphicsParticles(QmlGraphicsParticlesPrivate &dd, QmlGraphicsItem *parent);
 
 private Q_SLOTS:
     void imageLoaded();
 
 private:
-    Q_DISABLE_COPY(QFxParticles)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxParticles)
+    Q_DISABLE_COPY(QmlGraphicsParticles)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsParticles)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxParticleMotion)
-QML_DECLARE_TYPE(QFxParticleMotionLinear)
-QML_DECLARE_TYPE(QFxParticleMotionGravity)
-QML_DECLARE_TYPE(QFxParticleMotionWander)
-QML_DECLARE_TYPE(QFxParticles)
+QML_DECLARE_TYPE(QmlGraphicsParticleMotion)
+QML_DECLARE_TYPE(QmlGraphicsParticleMotionLinear)
+QML_DECLARE_TYPE(QmlGraphicsParticleMotionGravity)
+QML_DECLARE_TYPE(QmlGraphicsParticleMotionWander)
+QML_DECLARE_TYPE(QmlGraphicsParticles)
 
 QT_END_HEADER
 

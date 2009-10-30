@@ -70,7 +70,7 @@ QT_BEGIN_NAMESPACE
 #define FLT_MAX 1E+37
 #endif
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QFxItem)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QmlGraphicsItem)
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
@@ -224,13 +224,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 
 /*!
     \internal
-    \class QFxContents
+    \class QmlGraphicsContents
     \ingroup group_utility
-    \brief The QFxContents class gives access to the height and width of an item's contents.
+    \brief The QmlGraphicsContents class gives access to the height and width of an item's contents.
 
 */
 
-QFxContents::QFxContents() : m_x(0), m_y(0), m_width(0), m_height(0)
+QmlGraphicsContents::QmlGraphicsContents() : m_x(0), m_y(0), m_width(0), m_height(0)
 {
 }
 
@@ -245,13 +245,13 @@ QFxContents::QFxContents() : m_x(0), m_y(0), m_width(0), m_height(0)
     sized to fit its children.
 */
 
-QRectF QFxContents::rectF() const
+QRectF QmlGraphicsContents::rectF() const
 {
     return QRectF(m_x, m_y, m_width, m_height);
 }
 
 //TODO: optimization: only check sender(), if there is one
-void QFxContents::calcHeight()
+void QmlGraphicsContents::calcHeight()
 {
     qreal oldy = m_y;
     qreal oldheight = m_height;
@@ -261,8 +261,8 @@ void QFxContents::calcHeight()
 
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QmlGraphicsItem graphicsobjects?
             continue;
         qreal y = child->y();
         if (y + child->height() > bottom)
@@ -279,7 +279,7 @@ void QFxContents::calcHeight()
 }
 
 //TODO: optimization: only check sender(), if there is one
-void QFxContents::calcWidth()
+void QmlGraphicsContents::calcWidth()
 {
     qreal oldx = m_x;
     qreal oldwidth = m_width;
@@ -289,8 +289,8 @@ void QFxContents::calcWidth()
 
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QmlGraphicsItem graphicsobjects?
             continue;
         qreal x = child->x();
         if (x + child->width() > right)
@@ -306,14 +306,14 @@ void QFxContents::calcWidth()
         emit rectChanged();
 }
 
-void QFxContents::setItem(QFxItem *item)
+void QmlGraphicsContents::setItem(QmlGraphicsItem *item)
 {
     m_item = item;
 
     QList<QGraphicsItem *> children = m_item->childItems();
     for (int i = 0; i < children.count(); ++i) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(i));
-        if(!child)//### Should this be ignoring non-QFxItem graphicsobjects?
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(i));
+        if(!child)//### Should this be ignoring non-QmlGraphicsItem graphicsobjects?
             continue;
         connect(child, SIGNAL(heightChanged()), this, SLOT(calcHeight()));
         connect(child, SIGNAL(yChanged()), this, SLOT(calcHeight()));
@@ -327,16 +327,16 @@ void QFxContents::setItem(QFxItem *item)
 }
 
 /*
-    Key filters can be installed on a QFxItem, but not removed.  Currently they
+    Key filters can be installed on a QmlGraphicsItem, but not removed.  Currently they
     are only used by attached objects (which are only destroyed on Item
     destruction), so this isn't a problem.  If in future this becomes any form
     of public API, they will have to support removal too.
 */
-class QFxItemKeyFilter
+class QmlGraphicsItemKeyFilter
 {
 public:
-    QFxItemKeyFilter(QFxItem * = 0);
-    virtual ~QFxItemKeyFilter();
+    QmlGraphicsItemKeyFilter(QmlGraphicsItem * = 0);
+    virtual ~QmlGraphicsItemKeyFilter();
 
     virtual void keyPressed(QKeyEvent *event);
     virtual void keyReleased(QKeyEvent *event);
@@ -345,84 +345,84 @@ public:
     virtual void componentComplete();
 
 private:
-    QFxItemKeyFilter *m_next;
+    QmlGraphicsItemKeyFilter *m_next;
 };
 
-QFxItemKeyFilter::QFxItemKeyFilter(QFxItem *item)
+QmlGraphicsItemKeyFilter::QmlGraphicsItemKeyFilter(QmlGraphicsItem *item)
 : m_next(0)
 {
-    QFxItemPrivate *p =
-        item?static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
+    QmlGraphicsItemPrivate *p =
+        item?static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item)):0;
     if (p) {
         m_next = p->keyHandler;
         p->keyHandler = this;
     }
 }
 
-QFxItemKeyFilter::~QFxItemKeyFilter()
+QmlGraphicsItemKeyFilter::~QmlGraphicsItemKeyFilter()
 {
 }
 
-void QFxItemKeyFilter::keyPressed(QKeyEvent *event)
+void QmlGraphicsItemKeyFilter::keyPressed(QKeyEvent *event)
 {
     if (m_next) m_next->keyPressed(event);
 }
 
-void QFxItemKeyFilter::keyReleased(QKeyEvent *event)
+void QmlGraphicsItemKeyFilter::keyReleased(QKeyEvent *event)
 {
     if (m_next) m_next->keyReleased(event);
 }
 
-void QFxItemKeyFilter::inputMethodEvent(QInputMethodEvent *event)
+void QmlGraphicsItemKeyFilter::inputMethodEvent(QInputMethodEvent *event)
 {
     if (m_next) m_next->inputMethodEvent(event);
 }
 
-QVariant QFxItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
+QVariant QmlGraphicsItemKeyFilter::inputMethodQuery(Qt::InputMethodQuery query) const
 {
     if (m_next) return m_next->inputMethodQuery(query);
     return QVariant();
 }
 
-void QFxItemKeyFilter::componentComplete()
+void QmlGraphicsItemKeyFilter::componentComplete()
 {
     if (m_next) m_next->componentComplete();
 }
 
-class QFxKeyNavigationAttachedPrivate : public QObjectPrivate
+class QmlGraphicsKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
-    QFxKeyNavigationAttachedPrivate()
+    QmlGraphicsKeyNavigationAttachedPrivate()
         : QObjectPrivate(), left(0), right(0), up(0), down(0) {}
 
-    QFxItem *left;
-    QFxItem *right;
-    QFxItem *up;
-    QFxItem *down;
+    QmlGraphicsItem *left;
+    QmlGraphicsItem *right;
+    QmlGraphicsItem *up;
+    QmlGraphicsItem *down;
 };
 
-class QFxKeyNavigationAttached : public QObject, public QFxItemKeyFilter
+class QmlGraphicsKeyNavigationAttached : public QObject, public QmlGraphicsItemKeyFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxKeyNavigationAttached)
+    Q_DECLARE_PRIVATE(QmlGraphicsKeyNavigationAttached)
 
-    Q_PROPERTY(QFxItem *left READ left WRITE setLeft NOTIFY changed)
-    Q_PROPERTY(QFxItem *right READ right WRITE setRight NOTIFY changed)
-    Q_PROPERTY(QFxItem *up READ up WRITE setUp NOTIFY changed)
-    Q_PROPERTY(QFxItem *down READ down WRITE setDown NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *left READ left WRITE setLeft NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *right READ right WRITE setRight NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *up READ up WRITE setUp NOTIFY changed)
+    Q_PROPERTY(QmlGraphicsItem *down READ down WRITE setDown NOTIFY changed)
 public:
-    QFxKeyNavigationAttached(QObject * = 0);
+    QmlGraphicsKeyNavigationAttached(QObject * = 0);
 
-    QFxItem *left() const;
-    void setLeft(QFxItem *);
-    QFxItem *right() const;
-    void setRight(QFxItem *);
-    QFxItem *up() const;
-    void setUp(QFxItem *);
-    QFxItem *down() const;
-    void setDown(QFxItem *);
+    QmlGraphicsItem *left() const;
+    void setLeft(QmlGraphicsItem *);
+    QmlGraphicsItem *right() const;
+    void setRight(QmlGraphicsItem *);
+    QmlGraphicsItem *up() const;
+    void setUp(QmlGraphicsItem *);
+    QmlGraphicsItem *down() const;
+    void setDown(QmlGraphicsItem *);
 
-    static QFxKeyNavigationAttached *qmlAttachedProperties(QObject *);
+    static QmlGraphicsKeyNavigationAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void changed();
@@ -432,73 +432,73 @@ private:
     virtual void keyReleased(QKeyEvent *event);
 };
 
-QFxKeyNavigationAttached::QFxKeyNavigationAttached(QObject *parent)
-: QObject(*(new QFxKeyNavigationAttachedPrivate), parent),
-  QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
+QmlGraphicsKeyNavigationAttached::QmlGraphicsKeyNavigationAttached(QObject *parent)
+: QObject(*(new QmlGraphicsKeyNavigationAttachedPrivate), parent),
+  QmlGraphicsItemKeyFilter(qobject_cast<QmlGraphicsItem*>(parent))
 {
 }
 
-QFxKeyNavigationAttached *
-QFxKeyNavigationAttached::qmlAttachedProperties(QObject *obj)
+QmlGraphicsKeyNavigationAttached *
+QmlGraphicsKeyNavigationAttached::qmlAttachedProperties(QObject *obj)
 {
-    return new QFxKeyNavigationAttached(obj);
+    return new QmlGraphicsKeyNavigationAttached(obj);
 }
 
-QFxItem *QFxKeyNavigationAttached::left() const
+QmlGraphicsItem *QmlGraphicsKeyNavigationAttached::left() const
 {
-    Q_D(const QFxKeyNavigationAttached);
+    Q_D(const QmlGraphicsKeyNavigationAttached);
     return d->left;
 }
 
-void QFxKeyNavigationAttached::setLeft(QFxItem *i)
+void QmlGraphicsKeyNavigationAttached::setLeft(QmlGraphicsItem *i)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
     d->left = i;
     emit changed();
 }
 
-QFxItem *QFxKeyNavigationAttached::right() const
+QmlGraphicsItem *QmlGraphicsKeyNavigationAttached::right() const
 {
-    Q_D(const QFxKeyNavigationAttached);
+    Q_D(const QmlGraphicsKeyNavigationAttached);
     return d->right;
 }
 
-void QFxKeyNavigationAttached::setRight(QFxItem *i)
+void QmlGraphicsKeyNavigationAttached::setRight(QmlGraphicsItem *i)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
     d->right = i;
     emit changed();
 }
 
-QFxItem *QFxKeyNavigationAttached::up() const
+QmlGraphicsItem *QmlGraphicsKeyNavigationAttached::up() const
 {
-    Q_D(const QFxKeyNavigationAttached);
+    Q_D(const QmlGraphicsKeyNavigationAttached);
     return d->up;
 }
 
-void QFxKeyNavigationAttached::setUp(QFxItem *i)
+void QmlGraphicsKeyNavigationAttached::setUp(QmlGraphicsItem *i)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
     d->up = i;
     emit changed();
 }
 
-QFxItem *QFxKeyNavigationAttached::down() const
+QmlGraphicsItem *QmlGraphicsKeyNavigationAttached::down() const
 {
-    Q_D(const QFxKeyNavigationAttached);
+    Q_D(const QmlGraphicsKeyNavigationAttached);
     return d->down;
 }
 
-void QFxKeyNavigationAttached::setDown(QFxItem *i)
+void QmlGraphicsKeyNavigationAttached::setDown(QmlGraphicsItem *i)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
     d->down = i;
     emit changed();
 }
 
-void QFxKeyNavigationAttached::keyPressed(QKeyEvent *event)
+void QmlGraphicsKeyNavigationAttached::keyPressed(QKeyEvent *event)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
 
     event->ignore();
 
@@ -531,12 +531,12 @@ void QFxKeyNavigationAttached::keyPressed(QKeyEvent *event)
         break;
     }
 
-    if (!event->isAccepted()) QFxItemKeyFilter::keyPressed(event);
+    if (!event->isAccepted()) QmlGraphicsItemKeyFilter::keyPressed(event);
 }
 
-void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
+void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
 {
-    Q_D(QFxKeyNavigationAttached);
+    Q_D(QmlGraphicsKeyNavigationAttached);
 
     event->ignore();
 
@@ -565,7 +565,7 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
         break;
     }
 
-    if (!event->isAccepted()) QFxItemKeyFilter::keyReleased(event);
+    if (!event->isAccepted()) QmlGraphicsItemKeyFilter::keyReleased(event);
 }
 
 /*!
@@ -895,10 +895,10 @@ void QFxKeyNavigationAttached::keyReleased(QKeyEvent *event)
 */
 
 
-class QFxKeysAttachedPrivate : public QObjectPrivate
+class QmlGraphicsKeysAttachedPrivate : public QObjectPrivate
 {
 public:
-    QFxKeysAttachedPrivate()
+    QmlGraphicsKeysAttachedPrivate()
         : QObjectPrivate(), inPress(false), inRelease(false)
         , inIM(false), enabled(true), imeItem(0), item(0)
     {}
@@ -921,82 +921,82 @@ public:
     bool enabled : 1;
 
     QGraphicsItem *imeItem;
-    QList<QFxItem *> targets;
-    QFxItem *item;
+    QList<QmlGraphicsItem *> targets;
+    QmlGraphicsItem *item;
 };
 
-class QFxKeysAttached : public QObject, public QFxItemKeyFilter
+class QmlGraphicsKeysAttached : public QObject, public QmlGraphicsItemKeyFilter
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxKeysAttached)
+    Q_DECLARE_PRIVATE(QmlGraphicsKeysAttached)
 
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged)
-    Q_PROPERTY(QList<QFxItem *> *forwardTo READ forwardTo)
+    Q_PROPERTY(QList<QmlGraphicsItem *> *forwardTo READ forwardTo)
 
 public:
-    QFxKeysAttached(QObject *parent=0);
-    ~QFxKeysAttached();
+    QmlGraphicsKeysAttached(QObject *parent=0);
+    ~QmlGraphicsKeysAttached();
 
-    bool enabled() const { Q_D(const QFxKeysAttached); return d->enabled; }
+    bool enabled() const { Q_D(const QmlGraphicsKeysAttached); return d->enabled; }
     void setEnabled(bool enabled) {
-        Q_D(QFxKeysAttached);
+        Q_D(QmlGraphicsKeysAttached);
         if (enabled != d->enabled) {
             d->enabled = enabled;
             emit enabledChanged();
         }
     }
 
-    QList<QFxItem *> *forwardTo() {
-        Q_D(QFxKeysAttached);
+    QList<QmlGraphicsItem *> *forwardTo() {
+        Q_D(QmlGraphicsKeysAttached);
         return &d->targets;
     }
 
     virtual void componentComplete();
 
-    static QFxKeysAttached *qmlAttachedProperties(QObject *);
+    static QmlGraphicsKeysAttached *qmlAttachedProperties(QObject *);
 
 Q_SIGNALS:
     void enabledChanged();
-    void pressed(QFxKeyEvent *event);
-    void released(QFxKeyEvent *event);
-    void digit0Pressed(QFxKeyEvent *event);
-    void digit1Pressed(QFxKeyEvent *event);
-    void digit2Pressed(QFxKeyEvent *event);
-    void digit3Pressed(QFxKeyEvent *event);
-    void digit4Pressed(QFxKeyEvent *event);
-    void digit5Pressed(QFxKeyEvent *event);
-    void digit6Pressed(QFxKeyEvent *event);
-    void digit7Pressed(QFxKeyEvent *event);
-    void digit8Pressed(QFxKeyEvent *event);
-    void digit9Pressed(QFxKeyEvent *event);
+    void pressed(QmlGraphicsKeyEvent *event);
+    void released(QmlGraphicsKeyEvent *event);
+    void digit0Pressed(QmlGraphicsKeyEvent *event);
+    void digit1Pressed(QmlGraphicsKeyEvent *event);
+    void digit2Pressed(QmlGraphicsKeyEvent *event);
+    void digit3Pressed(QmlGraphicsKeyEvent *event);
+    void digit4Pressed(QmlGraphicsKeyEvent *event);
+    void digit5Pressed(QmlGraphicsKeyEvent *event);
+    void digit6Pressed(QmlGraphicsKeyEvent *event);
+    void digit7Pressed(QmlGraphicsKeyEvent *event);
+    void digit8Pressed(QmlGraphicsKeyEvent *event);
+    void digit9Pressed(QmlGraphicsKeyEvent *event);
 
-    void leftPressed(QFxKeyEvent *event);
-    void rightPressed(QFxKeyEvent *event);
-    void upPressed(QFxKeyEvent *event);
-    void downPressed(QFxKeyEvent *event);
+    void leftPressed(QmlGraphicsKeyEvent *event);
+    void rightPressed(QmlGraphicsKeyEvent *event);
+    void upPressed(QmlGraphicsKeyEvent *event);
+    void downPressed(QmlGraphicsKeyEvent *event);
 
-    void asteriskPressed(QFxKeyEvent *event);
-    void numberSignPressed(QFxKeyEvent *event);
-    void escapePressed(QFxKeyEvent *event);
-    void returnPressed(QFxKeyEvent *event);
-    void enterPressed(QFxKeyEvent *event);
-    void deletePressed(QFxKeyEvent *event);
-    void spacePressed(QFxKeyEvent *event);
-    void backPressed(QFxKeyEvent *event);
-    void cancelPressed(QFxKeyEvent *event);
-    void selectPressed(QFxKeyEvent *event);
-    void yesPressed(QFxKeyEvent *event);
-    void noPressed(QFxKeyEvent *event);
-    void context1Pressed(QFxKeyEvent *event);
-    void context2Pressed(QFxKeyEvent *event);
-    void context3Pressed(QFxKeyEvent *event);
-    void context4Pressed(QFxKeyEvent *event);
-    void callPressed(QFxKeyEvent *event);
-    void hangupPressed(QFxKeyEvent *event);
-    void flipPressed(QFxKeyEvent *event);
-    void menuPressed(QFxKeyEvent *event);
-    void volumeUpPressed(QFxKeyEvent *event);
-    void volumeDownPressed(QFxKeyEvent *event);
+    void asteriskPressed(QmlGraphicsKeyEvent *event);
+    void numberSignPressed(QmlGraphicsKeyEvent *event);
+    void escapePressed(QmlGraphicsKeyEvent *event);
+    void returnPressed(QmlGraphicsKeyEvent *event);
+    void enterPressed(QmlGraphicsKeyEvent *event);
+    void deletePressed(QmlGraphicsKeyEvent *event);
+    void spacePressed(QmlGraphicsKeyEvent *event);
+    void backPressed(QmlGraphicsKeyEvent *event);
+    void cancelPressed(QmlGraphicsKeyEvent *event);
+    void selectPressed(QmlGraphicsKeyEvent *event);
+    void yesPressed(QmlGraphicsKeyEvent *event);
+    void noPressed(QmlGraphicsKeyEvent *event);
+    void context1Pressed(QmlGraphicsKeyEvent *event);
+    void context2Pressed(QmlGraphicsKeyEvent *event);
+    void context3Pressed(QmlGraphicsKeyEvent *event);
+    void context4Pressed(QmlGraphicsKeyEvent *event);
+    void callPressed(QmlGraphicsKeyEvent *event);
+    void hangupPressed(QmlGraphicsKeyEvent *event);
+    void flipPressed(QmlGraphicsKeyEvent *event);
+    void menuPressed(QmlGraphicsKeyEvent *event);
+    void volumeUpPressed(QmlGraphicsKeyEvent *event);
+    void volumeDownPressed(QmlGraphicsKeyEvent *event);
 
 private:
     virtual void keyPressed(QKeyEvent *event);
@@ -1026,7 +1026,7 @@ private:
     static const SigMap sigMap[];
 };
 
-const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
+const QmlGraphicsKeysAttached::SigMap QmlGraphicsKeysAttached::sigMap[] = {
     { Qt::Key_Left, "leftPressed" },
     { Qt::Key_Right, "rightPressed" },
     { Qt::Key_Up, "upPressed" },
@@ -1056,26 +1056,26 @@ const QFxKeysAttached::SigMap QFxKeysAttached::sigMap[] = {
     { 0, 0 }
 };
 
-bool QFxKeysAttachedPrivate::isConnected(const char *signalName)
+bool QmlGraphicsKeysAttachedPrivate::isConnected(const char *signalName)
 {
     return isSignalConnected(signalIndex(signalName));
 }
 
-QFxKeysAttached::QFxKeysAttached(QObject *parent)
-: QObject(*(new QFxKeysAttachedPrivate), parent),
-  QFxItemKeyFilter(qobject_cast<QFxItem*>(parent))
+QmlGraphicsKeysAttached::QmlGraphicsKeysAttached(QObject *parent)
+: QObject(*(new QmlGraphicsKeysAttachedPrivate), parent),
+  QmlGraphicsItemKeyFilter(qobject_cast<QmlGraphicsItem*>(parent))
 {
-    Q_D(QFxKeysAttached);
-    d->item = qobject_cast<QFxItem*>(parent);
+    Q_D(QmlGraphicsKeysAttached);
+    d->item = qobject_cast<QmlGraphicsItem*>(parent);
 }
 
-QFxKeysAttached::~QFxKeysAttached()
+QmlGraphicsKeysAttached::~QmlGraphicsKeysAttached()
 {
 }
 
-void QFxKeysAttached::componentComplete()
+void QmlGraphicsKeysAttached::componentComplete()
 {
-    Q_D(QFxKeysAttached);
+    Q_D(QmlGraphicsKeysAttached);
     if (d->item) {
         for (int ii = 0; ii < d->targets.count(); ++ii) {
             QGraphicsItem *targetItem = d->finalFocusProxy(d->targets.at(ii));
@@ -1087,9 +1087,9 @@ void QFxKeysAttached::componentComplete()
     }
 }
 
-void QFxKeysAttached::keyPressed(QKeyEvent *event)
+void QmlGraphicsKeysAttached::keyPressed(QKeyEvent *event)
 {
-    Q_D(QFxKeysAttached);
+    Q_D(QmlGraphicsKeysAttached);
     if (!d->enabled || d->inPress) {
         event->ignore();
         return;
@@ -1111,27 +1111,27 @@ void QFxKeysAttached::keyPressed(QKeyEvent *event)
         d->inPress = false;
     }
 
-    QFxKeyEvent ke(*event);
+    QmlGraphicsKeyEvent ke(*event);
     QByteArray keySignal = keyToSignal(event->key());
     if (!keySignal.isEmpty()) {
-        keySignal += "(QFxKeyEvent*)";
+        keySignal += "(QmlGraphicsKeyEvent*)";
         if (d->isConnected(keySignal)) {
             // If we specifically handle a key then default to accepted
             ke.setAccepted(true);
-            int idx = QFxKeysAttached::staticMetaObject.indexOfSignal(keySignal);
-            metaObject()->method(idx).invoke(this, Q_ARG(QFxKeysAttached, &ke));
+            int idx = QmlGraphicsKeysAttached::staticMetaObject.indexOfSignal(keySignal);
+            metaObject()->method(idx).invoke(this, Q_ARG(QmlGraphicsKeysAttached, &ke));
         }
     }
     if (!ke.isAccepted())
         emit pressed(&ke);
     event->setAccepted(ke.isAccepted());
 
-    if (!event->isAccepted()) QFxItemKeyFilter::keyPressed(event);
+    if (!event->isAccepted()) QmlGraphicsItemKeyFilter::keyPressed(event);
 }
 
-void QFxKeysAttached::keyReleased(QKeyEvent *event)
+void QmlGraphicsKeysAttached::keyReleased(QKeyEvent *event)
 {
-    Q_D(QFxKeysAttached);
+    Q_D(QmlGraphicsKeysAttached);
     if (!d->enabled || d->inRelease) {
         event->ignore();
         return;
@@ -1152,16 +1152,16 @@ void QFxKeysAttached::keyReleased(QKeyEvent *event)
         d->inRelease = false;
     }
 
-    QFxKeyEvent ke(*event);
+    QmlGraphicsKeyEvent ke(*event);
     emit released(&ke);
     event->setAccepted(ke.isAccepted());
 
-    if (!event->isAccepted()) QFxItemKeyFilter::keyReleased(event);
+    if (!event->isAccepted()) QmlGraphicsItemKeyFilter::keyReleased(event);
 }
 
-void QFxKeysAttached::inputMethodEvent(QInputMethodEvent *event)
+void QmlGraphicsKeysAttached::inputMethodEvent(QInputMethodEvent *event)
 {
-    Q_D(QFxKeysAttached);
+    Q_D(QmlGraphicsKeysAttached);
     if (d->item && !d->inIM && d->item->scene()) {
         d->inIM = true;
         for (int ii = 0; ii < d->targets.count(); ++ii) {
@@ -1177,10 +1177,10 @@ void QFxKeysAttached::inputMethodEvent(QInputMethodEvent *event)
         }
         d->inIM = false;
     }
-    if (!event->isAccepted()) QFxItemKeyFilter::inputMethodEvent(event);
+    if (!event->isAccepted()) QmlGraphicsItemKeyFilter::inputMethodEvent(event);
 }
 
-class QFxItemAccessor : public QGraphicsItem
+class QmlGraphicsItemAccessor : public QGraphicsItem
 {
 public:
     QVariant doInputMethodQuery(Qt::InputMethodQuery query) const {
@@ -1188,43 +1188,43 @@ public:
     }
 };
 
-QVariant QFxKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) const
+QVariant QmlGraphicsKeysAttached::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    Q_D(const QFxKeysAttached);
+    Q_D(const QmlGraphicsKeysAttached);
     if (d->item) {
         for (int ii = 0; ii < d->targets.count(); ++ii) {
                 QGraphicsItem *i = d->finalFocusProxy(d->targets.at(ii));
             if (i && (i->flags() & QGraphicsItem::ItemAcceptsInputMethod) && i == d->imeItem) { //### how robust is i == d->imeItem check?
-                QVariant v = static_cast<QFxItemAccessor *>(i)->doInputMethodQuery(query);
+                QVariant v = static_cast<QmlGraphicsItemAccessor *>(i)->doInputMethodQuery(query);
                 if (v.type() == QVariant::RectF)
                     v = d->item->mapRectFromItem(i, v.toRectF());  //### cost?
                 return v;
             }
         }
     }
-    return QFxItemKeyFilter::inputMethodQuery(query);
+    return QmlGraphicsItemKeyFilter::inputMethodQuery(query);
 }
 
-QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
+QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject *obj)
 {
-    return new QFxKeysAttached(obj);
+    return new QmlGraphicsKeysAttached(obj);
 }
 
 /*!
-    \class QFxItem
-    \brief The QFxItem class provides the most basic of all visual items in QML.
+    \class QmlGraphicsItem
+    \brief The QmlGraphicsItem class provides the most basic of all visual items in QML.
 
-    All visual items in Qt Declarative inherit from QFxItem.  Although QFxItem
+    All visual items in Qt Declarative inherit from QmlGraphicsItem.  Although QmlGraphicsItem
     has no visual appearance, it defines all the properties that are
     common across visual items - such as the x and y position, the
     width and height, \l {anchor-layout}{anchoring} and key handling.
 
-    You can subclass QFxItem to provide your own custom visual item that inherits
+    You can subclass QmlGraphicsItem to provide your own custom visual item that inherits
     these features.
 */
 
 /*!
-    \qmlclass Item QFxItem
+    \qmlclass Item QmlGraphicsItem
     \brief The Item is the most basic of all visual items in QML.
 
     All visual items in Qt Declarative inherit from Item.  Although Item
@@ -1285,114 +1285,114 @@ QFxKeysAttached *QFxKeysAttached::qmlAttachedProperties(QObject *obj)
 */
 
 /*!
-    \property QFxItem::baseline
+    \property QmlGraphicsItem::baseline
     \internal
 */
 
 /*!
-    \property QFxItem::effect
+    \property QmlGraphicsItem::effect
     \internal
 */
 
 /*!
-    \property QFxItem::focus
+    \property QmlGraphicsItem::focus
     \internal
 */
 
 /*!
-    \property QFxItem::wantsFocus
+    \property QmlGraphicsItem::wantsFocus
     \internal
 */
 
 /*!
-    \property QFxItem::transformOrigin
+    \property QmlGraphicsItem::transformOrigin
     \internal
 */
 
 /*!
-    \fn void QFxItem::childrenRectChanged()
+    \fn void QmlGraphicsItem::childrenRectChanged()
     \internal
 */
 
 /*!
-    \fn void QFxItem::baselineOffsetChanged()
+    \fn void QmlGraphicsItem::baselineOffsetChanged()
     \internal
 */
 
 /*!
-    \fn void QFxItem::widthChanged()
+    \fn void QmlGraphicsItem::widthChanged()
     \internal 
 */
 
 /*!
-    \fn void QFxItem::heightChanged()
+    \fn void QmlGraphicsItem::heightChanged()
     \internal
 */
 
 /*!
-    \fn void QFxItem::stateChanged(const QString &state)
+    \fn void QmlGraphicsItem::stateChanged(const QString &state)
     \internal
 */
 
 /*!
-    \fn void QFxItem::parentChanged()
+    \fn void QmlGraphicsItem::parentChanged()
     \internal
 */
 
 /*!
-    \fn void QFxItem::focusChanged()
+    \fn void QmlGraphicsItem::focusChanged()
     \internal
 */
 
 /*!
-    \fn void QFxItem::wantsFocusChanged()
+    \fn void QmlGraphicsItem::wantsFocusChanged()
     \internal
 */
 
 static inline void qfxitem_registerAnchorLine() {
     static bool registered = false;
     if (!registered) {
-        qRegisterMetaType<QFxAnchorLine>("QFxAnchorLine");
+        qRegisterMetaType<QmlGraphicsAnchorLine>("QmlGraphicsAnchorLine");
         registered = true;
     }
 }
 
 /*!
-    \fn QFxItem::QFxItem(QFxItem *parent)
+    \fn QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem *parent)
 
-    Constructs a QFxItem with the given \a parent.
+    Constructs a QmlGraphicsItem with the given \a parent.
 */
-QFxItem::QFxItem(QFxItem* parent)
-  : QGraphicsObject(*(new QFxItemPrivate), parent, 0)
+QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItem* parent)
+  : QGraphicsObject(*(new QmlGraphicsItemPrivate), parent, 0)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
 /*! \internal
 */
-QFxItem::QFxItem(QFxItemPrivate &dd, QFxItem *parent)
+QmlGraphicsItem::QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *parent)
   : QGraphicsObject(dd, parent, 0)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     qfxitem_registerAnchorLine();
     d->init(parent);
 }
 
 /*!
-    Destroys the QFxItem.
+    Destroys the QmlGraphicsItem.
 */
-QFxItem::~QFxItem()
+QmlGraphicsItem::~QmlGraphicsItem()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->clearItem(this);
     }
     if (!d->parent || (parentItem() && !parentItem()->QGraphicsItem::d_ptr->inDestructor))
         for (int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-            QFxAnchors *anchor = d->dependantAnchors.at(ii);
+            QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
             if (anchor->d_func()->item && anchor->d_func()->item->parentItem() != this) //child will be deleted anyway
                 anchor->d_func()->updateOnComplete();
         }
@@ -1427,12 +1427,12 @@ QFxItem::~QFxItem()
 */
 
 /*!
-    \property QFxItem::parent
+    \property QmlGraphicsItem::parent
     This property holds the parent of the item.
 */
-void QFxItem::setParentItem(QFxItem *parent)
+void QmlGraphicsItem::setParentItem(QmlGraphicsItem *parent)
 {
-    QFxItem *oldParent = parentItem();
+    QmlGraphicsItem *oldParent = parentItem();
     if (parent == oldParent || !parent) return;
 
     QObject::setParent(parent);
@@ -1440,11 +1440,11 @@ void QFxItem::setParentItem(QFxItem *parent)
 }
 
 /*!
-    Returns the QFxItem parent of this item.
+    Returns the QmlGraphicsItem parent of this item.
 */
-QFxItem *QFxItem::parentItem() const
+QmlGraphicsItem *QmlGraphicsItem::parentItem() const
 {
-    return qobject_cast<QFxItem *>(QGraphicsObject::parentItem());
+    return qobject_cast<QmlGraphicsItem *>(QGraphicsObject::parentItem());
 }
 
 /*!
@@ -1475,12 +1475,12 @@ QFxItem *QFxItem::parentItem() const
 */
 
 /*!
-    \property QFxItem::children
+    \property QmlGraphicsItem::children
     \internal
 */
 
 /*!
-    \property QFxItem::resources
+    \property QmlGraphicsItem::resources
     \internal
 */
 
@@ -1493,86 +1493,86 @@ QFxItem *QFxItem::parentItem() const
 
     \sa componentComplete()
 */
-bool QFxItem::isComponentComplete() const
+bool QmlGraphicsItem::isComponentComplete() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->_componentComplete;
 }
 
 /*!
-    \property QFxItem::anchors
+    \property QmlGraphicsItem::anchors
     \internal
 */
 
 /*! \internal */
-QFxAnchors *QFxItem::anchors()
+QmlGraphicsAnchors *QmlGraphicsItem::anchors()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return d->anchors();
 }
 
-void QFxItemPrivate::data_removeAt(int)
+void QmlGraphicsItemPrivate::data_removeAt(int)
 {
     // ###
 }
 
-int QFxItemPrivate::data_count() const
+int QmlGraphicsItemPrivate::data_count() const
 {
     // ###
     return 0;
 }
 
-void QFxItemPrivate::data_append(QObject *o)
+void QmlGraphicsItemPrivate::data_append(QObject *o)
 {
-    Q_Q(QFxItem);
-    QFxItem *i = qobject_cast<QFxItem *>(o);
+    Q_Q(QmlGraphicsItem);
+    QmlGraphicsItem *i = qobject_cast<QmlGraphicsItem *>(o);
     if (i)
         q->fxChildren()->append(i);
     else
         resources_append(o);
 }
 
-void QFxItemPrivate::data_insert(int, QObject *)
+void QmlGraphicsItemPrivate::data_insert(int, QObject *)
 {
     // ###
 }
 
-QObject *QFxItemPrivate::data_at(int) const
+QObject *QmlGraphicsItemPrivate::data_at(int) const
 {
     // ###
     return 0;
 }
 
-void QFxItemPrivate::data_clear()
+void QmlGraphicsItemPrivate::data_clear()
 {
     // ###
 }
 
-void QFxItemPrivate::resources_removeAt(int)
+void QmlGraphicsItemPrivate::resources_removeAt(int)
 {
     // ###
 }
 
-int QFxItemPrivate::resources_count() const
+int QmlGraphicsItemPrivate::resources_count() const
 {
-    Q_Q(const QFxItem);
+    Q_Q(const QmlGraphicsItem);
     return q->children().count();
 }
 
-void QFxItemPrivate::resources_append(QObject *o)
+void QmlGraphicsItemPrivate::resources_append(QObject *o)
 {
-    Q_Q(QFxItem);
+    Q_Q(QmlGraphicsItem);
     o->setParent(q);
 }
 
-void QFxItemPrivate::resources_insert(int, QObject *)
+void QmlGraphicsItemPrivate::resources_insert(int, QObject *)
 {
     // ###
 }
 
-QObject *QFxItemPrivate::resources_at(int idx) const
+QObject *QmlGraphicsItemPrivate::resources_at(int idx) const
 {
-    Q_Q(const QFxItem);
+    Q_Q(const QmlGraphicsItem);
     QObjectList children = q->children();
     if (idx < children.count())
         return children.at(idx);
@@ -1580,50 +1580,50 @@ QObject *QFxItemPrivate::resources_at(int idx) const
         return 0;
 }
 
-void QFxItemPrivate::resources_clear()
+void QmlGraphicsItemPrivate::resources_clear()
 {
     // ###
 }
 
-void QFxItemPrivate::children_removeAt(int)
+void QmlGraphicsItemPrivate::children_removeAt(int)
 {
     // ###
 }
 
-int QFxItemPrivate::children_count() const
+int QmlGraphicsItemPrivate::children_count() const
 {
-    Q_Q(const QFxItem);
+    Q_Q(const QmlGraphicsItem);
     return q->childItems().count();
 }
 
-void QFxItemPrivate::children_append(QFxItem *i)
+void QmlGraphicsItemPrivate::children_append(QmlGraphicsItem *i)
 {
-    Q_Q(QFxItem);
+    Q_Q(QmlGraphicsItem);
     i->setParentItem(q);
 }
 
-void QFxItemPrivate::children_insert(int, QFxItem *)
+void QmlGraphicsItemPrivate::children_insert(int, QmlGraphicsItem *)
 {
     // ###
 }
 
-QFxItem *QFxItemPrivate::children_at(int idx) const
+QmlGraphicsItem *QmlGraphicsItemPrivate::children_at(int idx) const
 {
-    Q_Q(const QFxItem);
+    Q_Q(const QmlGraphicsItem);
     QList<QGraphicsItem *> children = q->childItems();
     if (idx < children.count())
-        return qobject_cast<QFxItem *>(children.at(idx));
+        return qobject_cast<QmlGraphicsItem *>(children.at(idx));
     else
         return 0;
 }
 
-void QFxItemPrivate::children_clear()
+void QmlGraphicsItemPrivate::children_clear()
 {
     // ###
 }
 
 
-void QFxItemPrivate::transform_removeAt(int i)
+void QmlGraphicsItemPrivate::transform_removeAt(int i)
 {
     if (!transformData)
         return;
@@ -1631,33 +1631,33 @@ void QFxItemPrivate::transform_removeAt(int i)
     dirtySceneTransform = 1;
 }
 
-int QFxItemPrivate::transform_count() const
+int QmlGraphicsItemPrivate::transform_count() const
 {
     return transformData ? transformData->graphicsTransforms.size() : 0;
 }
 
-void QFxItemPrivate::transform_append(QGraphicsTransform *item)
+void QmlGraphicsItemPrivate::transform_append(QGraphicsTransform *item)
 {
     appendGraphicsTransform(item);
 }
 
-void QFxItemPrivate::transform_insert(int, QGraphicsTransform *)
+void QmlGraphicsItemPrivate::transform_insert(int, QGraphicsTransform *)
 {
     // ###
 }
 
-QGraphicsTransform *QFxItemPrivate::transform_at(int idx) const
+QGraphicsTransform *QmlGraphicsItemPrivate::transform_at(int idx) const
 {
     if (!transformData)
         return 0;
     return transformData->graphicsTransforms.at(idx);
 }
 
-void QFxItemPrivate::transform_clear()
+void QmlGraphicsItemPrivate::transform_clear()
 {
     if (!transformData)
         return;
-    Q_Q(QFxItem);
+    Q_Q(QmlGraphicsItem);
     q->setTransformations(QList<QGraphicsTransform *>());
 }
 
@@ -1696,40 +1696,40 @@ void QFxItemPrivate::transform_clear()
  */
 
 /*!
-    \property QFxItem::data
+    \property QmlGraphicsItem::data
     \internal
 */
 
 /*! \internal */
-QmlList<QObject *> *QFxItem::data()
+QmlList<QObject *> *QmlGraphicsItem::data()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return &d->data;
 }
 
 /*!
-    \property QFxItem::childrenRect
+    \property QmlGraphicsItem::childrenRect
     \brief The geometry of an item's children.
 
     childrenRect provides an easy way to access the (collective) position and size of the item's children.
 */
-QRectF QFxItem::childrenRect()
+QRectF QmlGraphicsItem::childrenRect()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (!d->_contents) {
-        d->_contents = new QFxContents;
+        d->_contents = new QmlGraphicsContents;
         d->_contents->setParent(this);
         d->_contents->setItem(this);
     }
     return d->_contents->rectF();
 }
 
-bool QFxItem::clip() const
+bool QmlGraphicsItem::clip() const
 {
     return flags() & ItemClipsChildrenToShape;
 }
 
-void QFxItem::setClip(bool c)
+void QmlGraphicsItem::setClip(bool c)
 {
     setFlag(ItemClipsChildrenToShape, c);
 }
@@ -1748,13 +1748,13 @@ void QFxItem::setClip(bool c)
  */
 
 /*!
-  \property QFxItem::width
+  \property QmlGraphicsItem::width
 
   Defines the item's width relative to its parent.
  */
 
 /*!
-  \property QFxItem::height
+  \property QmlGraphicsItem::height
 
   Defines the item's height relative to its parent.
  */
@@ -1842,15 +1842,15 @@ void QFxItem::setClip(bool c)
   geometry from \a oldGeometry to \a newGeometry. If the two
   geometries are the same, it doesn't do anything.
  */
-void QFxItem::geometryChanged(const QRectF &newGeometry,
+void QmlGraphicsItem::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
 
     if (d->_anchors)
         d->_anchors->d_func()->updateMe();
 
-    if (transformOrigin() != QFxItem::TopLeft)
+    if (transformOrigin() != QmlGraphicsItem::TopLeft)
         setTransformOriginPoint(d->computeTransformOrigin());
 
     if (newGeometry.x() != oldGeometry.x())
@@ -1863,15 +1863,15 @@ void QFxItem::geometryChanged(const QRectF &newGeometry,
         emit heightChanged();
 
     for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->update(this, newGeometry, oldGeometry);
     }
 }
 
 /*! \internal */
-void QFxItem::keyPressEvent(QKeyEvent *event)
+void QmlGraphicsItem::keyPressEvent(QKeyEvent *event)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (d->keyHandler)
         d->keyHandler->keyPressed(event);
     else
@@ -1879,9 +1879,9 @@ void QFxItem::keyPressEvent(QKeyEvent *event)
 }
 
 /*! \internal */
-void QFxItem::keyReleaseEvent(QKeyEvent *event)
+void QmlGraphicsItem::keyReleaseEvent(QKeyEvent *event)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (d->keyHandler)
         d->keyHandler->keyReleased(event);
     else
@@ -1889,9 +1889,9 @@ void QFxItem::keyReleaseEvent(QKeyEvent *event)
 }
 
 /*! \internal */
-void QFxItem::inputMethodEvent(QInputMethodEvent *event)
+void QmlGraphicsItem::inputMethodEvent(QInputMethodEvent *event)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (d->keyHandler)
         d->keyHandler->inputMethodEvent(event);
     else
@@ -1899,9 +1899,9 @@ void QFxItem::inputMethodEvent(QInputMethodEvent *event)
 }
 
 /*! \internal */
-QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
+QVariant QmlGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     QVariant v;
     if (d->keyHandler)
         v = d->keyHandler->inputMethodQuery(query);
@@ -1931,54 +1931,54 @@ QVariant QFxItem::inputMethodQuery(Qt::InputMethodQuery query) const
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::left() const
+QmlGraphicsAnchorLine QmlGraphicsItem::left() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->left;
 }
 
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::right() const
+QmlGraphicsAnchorLine QmlGraphicsItem::right() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->right;
 }
 
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::horizontalCenter() const
+QmlGraphicsAnchorLine QmlGraphicsItem::horizontalCenter() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->hCenter;
 }
 
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::top() const
+QmlGraphicsAnchorLine QmlGraphicsItem::top() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->top;
 }
 
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::bottom() const
+QmlGraphicsAnchorLine QmlGraphicsItem::bottom() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->bottom;
 }
 
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::verticalCenter() const
+QmlGraphicsAnchorLine QmlGraphicsItem::verticalCenter() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->vCenter;
 }
 
@@ -1986,39 +1986,39 @@ QFxAnchorLine QFxItem::verticalCenter() const
 /*!
     \internal
 */
-QFxAnchorLine QFxItem::baseline() const
+QmlGraphicsAnchorLine QmlGraphicsItem::baseline() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->anchorLines()->baseline;
 }
 
 /*!
-  \property QFxItem::top
+  \property QmlGraphicsItem::top
   \internal
 */
 
 /*!
-  \property QFxItem::bottom
+  \property QmlGraphicsItem::bottom
   \internal
 */
 
 /*!
-  \property QFxItem::left
+  \property QmlGraphicsItem::left
   \internal
 */
 
 /*!
-  \property QFxItem::right
+  \property QmlGraphicsItem::right
   \internal
 */
 
 /*!
-  \property QFxItem::horizontalCenter
+  \property QmlGraphicsItem::horizontalCenter
   \internal
 */
 
 /*!
-  \property QFxItem::verticalCenter
+  \property QmlGraphicsItem::verticalCenter
   \internal
 */
 
@@ -2104,7 +2104,7 @@ QFxAnchorLine QFxItem::baseline() const
 */
 
 /*!
-  \property QFxItem::baselineOffset
+  \property QmlGraphicsItem::baselineOffset
   \brief The position of the item's baseline in local coordinates.
 
   The baseline of a Text item is the imaginary line on which the text
@@ -2113,18 +2113,18 @@ QFxAnchorLine QFxItem::baseline() const
 
   For non-text items, a default baseline offset of 0 is used.
 */
-qreal QFxItem::baselineOffset() const
+qreal QmlGraphicsItem::baselineOffset() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     if (!d->_baselineOffset.isValid()) {
         return 0.0;
     } else
         return d->_baselineOffset;
 }
 
-void QFxItem::setBaselineOffset(qreal offset)
+void QmlGraphicsItem::setBaselineOffset(qreal offset)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (offset == d->_baselineOffset)
         return;
 
@@ -2132,7 +2132,7 @@ void QFxItem::setBaselineOffset(qreal offset)
     emit baselineOffsetChanged();
 
     for(int ii = 0; ii < d->dependantAnchors.count(); ++ii) {
-        QFxAnchors *anchor = d->dependantAnchors.at(ii);
+        QmlGraphicsAnchors *anchor = d->dependantAnchors.at(ii);
         anchor->d_func()->updateVerticalAnchors();
     }
 }
@@ -2254,9 +2254,9 @@ void QFxItem::setBaselineOffset(qreal offset)
 
   \sa setKeepMouseGrab()
  */
-bool QFxItem::keepMouseGrab() const
+bool QmlGraphicsItem::keepMouseGrab() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->_keepMouse;
 }
 
@@ -2278,9 +2278,9 @@ bool QFxItem::keepMouseGrab() const
 
   \sa keepMouseGrab
  */
-void QFxItem::setKeepMouseGrab(bool keep)
+void QmlGraphicsItem::setKeepMouseGrab(bool keep)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->_keepMouse = keep;
 }
 
@@ -2292,23 +2292,23 @@ void QFxItem::setKeepMouseGrab(bool keep)
   Subclasses overriding this function should call up
   to their base class.
 */
-void QFxItem::focusChanged(bool flag)
+void QmlGraphicsItem::focusChanged(bool flag)
 {
     Q_UNUSED(flag);
     emit focusChanged();
 }
 
 /*! \internal */
-QmlList<QFxItem *> *QFxItem::fxChildren()
+QmlList<QmlGraphicsItem *> *QmlGraphicsItem::fxChildren()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return &(d->children);
 }
 
 /*! \internal */
-QmlList<QObject *> *QFxItem::resources()
+QmlList<QObject *> *QmlGraphicsItem::resources()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return &(d->resources);
 }
 
@@ -2330,13 +2330,13 @@ QmlList<QObject *> *QFxItem::resources()
 */
 
 /*!
-  \property QFxItem::states
+  \property QmlGraphicsItem::states
   \internal
 */
 /*! \internal */
-QmlList<QmlState *>* QFxItem::states()
+QmlList<QmlState *>* QmlGraphicsItem::states()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return d->states()->statesProperty();
 }
 
@@ -2358,14 +2358,14 @@ QmlList<QmlState *>* QFxItem::states()
 */
 
 /*!
-  \property QFxItem::transitions
+  \property QmlGraphicsItem::transitions
   \internal
 */
 
 /*! \internal */
-QmlList<QmlTransition *>* QFxItem::transitions()
+QmlList<QmlTransition *>* QmlGraphicsItem::transitions()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return d->states()->transitionsProperty();
 }
 
@@ -2401,7 +2401,7 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 */
 
 /*!
-  \property QFxItem::clip
+  \property QmlGraphicsItem::clip
   This property holds whether clipping is enabled.
 
   if clipping is enabled, an item will clip its own painting, as well
@@ -2437,14 +2437,14 @@ QmlList<QmlTransition *>* QFxItem::transitions()
 */
 
 /*!
-  \property QFxItem::state
+  \property QmlGraphicsItem::state
   \internal
 */
 
 /*! \internal */
-QString QFxItem::state() const
+QString QmlGraphicsItem::state() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     if (!d->_stateGroup)
         return QString();
     else
@@ -2452,9 +2452,9 @@ QString QFxItem::state() const
 }
 
 /*! \internal */
-void QFxItem::setState(const QString &state)
+void QmlGraphicsItem::setState(const QString &state)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->states()->setState(state);
 }
 
@@ -2466,14 +2466,14 @@ void QFxItem::setState(const QString &state)
 */
 
 /*!
-  \property QFxItem::transform
+  \property QmlGraphicsItem::transform
   \internal 
 */
 
 /*! \internal */
-QmlList<QGraphicsTransform *>* QFxItem::transform()
+QmlList<QGraphicsTransform *>* QmlGraphicsItem::transform()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     return &(d->transform);
 }
 
@@ -2485,9 +2485,9 @@ QmlList<QGraphicsTransform *>* QFxItem::transform()
 
   \sa componentComplete(), isComponentComplete()
 */
-void QFxItem::classBegin()
+void QmlGraphicsItem::classBegin()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->_componentComplete = false;
     if (d->_stateGroup)
         d->_stateGroup->classBegin();
@@ -2503,13 +2503,13 @@ void QFxItem::classBegin()
   processing until the component is complete an all bindings in the
   component have been resolved.
 */
-void QFxItem::componentComplete()
+void QmlGraphicsItem::componentComplete()
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::ItemComponentComplete> cc;
+    QmlPerfTimer<QmlPerf::ItemComponentComplete> cc;
 #endif
 
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->_componentComplete = true;
     if (d->_stateGroup)
         d->_stateGroup->componentComplete();
@@ -2521,9 +2521,9 @@ void QFxItem::componentComplete()
         d->keyHandler->componentComplete();
 }
 
-QmlStateGroup *QFxItemPrivate::states()
+QmlStateGroup *QmlGraphicsItemPrivate::states()
 {
-    Q_Q(QFxItem);
+    Q_Q(QmlGraphicsItem);
     if (!_stateGroup) {
         _stateGroup = new QmlStateGroup(q);
         if (!_componentComplete)
@@ -2535,55 +2535,55 @@ QmlStateGroup *QFxItemPrivate::states()
     return _stateGroup;
 }
 
-QFxItemPrivate::AnchorLines::AnchorLines(QFxItem *q)
+QmlGraphicsItemPrivate::AnchorLines::AnchorLines(QmlGraphicsItem *q)
 {
     left.item = q;
-    left.anchorLine = QFxAnchorLine::Left;
+    left.anchorLine = QmlGraphicsAnchorLine::Left;
     right.item = q;
-    right.anchorLine = QFxAnchorLine::Right;
+    right.anchorLine = QmlGraphicsAnchorLine::Right;
     hCenter.item = q;
-    hCenter.anchorLine = QFxAnchorLine::HCenter;
+    hCenter.anchorLine = QmlGraphicsAnchorLine::HCenter;
     top.item = q;
-    top.anchorLine = QFxAnchorLine::Top;
+    top.anchorLine = QmlGraphicsAnchorLine::Top;
     bottom.item = q;
-    bottom.anchorLine = QFxAnchorLine::Bottom;
+    bottom.anchorLine = QmlGraphicsAnchorLine::Bottom;
     vCenter.item = q;
-    vCenter.anchorLine = QFxAnchorLine::VCenter;
+    vCenter.anchorLine = QmlGraphicsAnchorLine::VCenter;
     baseline.item = q;
-    baseline.anchorLine = QFxAnchorLine::Baseline;
+    baseline.anchorLine = QmlGraphicsAnchorLine::Baseline;
 }
 
-QPointF QFxItemPrivate::computeTransformOrigin() const
+QPointF QmlGraphicsItemPrivate::computeTransformOrigin() const
 {
-    Q_Q(const QFxItem);
+    Q_Q(const QmlGraphicsItem);
 
     QRectF br = q->boundingRect();
 
     switch(origin) {
     default:
-    case QFxItem::TopLeft:
+    case QmlGraphicsItem::TopLeft:
         return QPointF(0, 0);
-    case QFxItem::Top:
+    case QmlGraphicsItem::Top:
         return QPointF(br.width() / 2., 0);
-    case QFxItem::TopRight:
+    case QmlGraphicsItem::TopRight:
         return QPointF(br.width(), 0);
-    case QFxItem::Left:
+    case QmlGraphicsItem::Left:
         return QPointF(0, br.height() / 2.);
-    case QFxItem::Center:
+    case QmlGraphicsItem::Center:
         return QPointF(br.width() / 2., br.height() / 2.);
-    case QFxItem::Right:
+    case QmlGraphicsItem::Right:
         return QPointF(br.width(), br.height() / 2.);
-    case QFxItem::BottomLeft:
+    case QmlGraphicsItem::BottomLeft:
         return QPointF(0, br.height());
-    case QFxItem::Bottom:
+    case QmlGraphicsItem::Bottom:
         return QPointF(br.width() / 2., br.height());
-    case QFxItem::BottomRight:
+    case QmlGraphicsItem::BottomRight:
         return QPointF(br.width(), br.height());
     }
 }
 
 /*! \internal */
-bool QFxItem::sceneEvent(QEvent *event)
+bool QmlGraphicsItem::sceneEvent(QEvent *event)
 {
     bool rv = QGraphicsItem::sceneEvent(event);
 
@@ -2596,7 +2596,7 @@ bool QFxItem::sceneEvent(QEvent *event)
 }
 
 /*! \internal */
-QVariant QFxItem::itemChange(GraphicsItemChange change,
+QVariant QmlGraphicsItem::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
     if (change == ItemParentHasChanged) {
@@ -2607,14 +2607,14 @@ QVariant QFxItem::itemChange(GraphicsItemChange change,
 }
 
 /*! \internal */
-QRectF QFxItem::boundingRect() const
+QRectF QmlGraphicsItem::boundingRect() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return QRectF(0, 0, d->width, d->height);
 }
 
 /*!
-    \enum QFxItem::TransformOrigin
+    \enum QmlGraphicsItem::TransformOrigin
 
     Controls the point about which simple transforms like scale apply.
 
@@ -2632,18 +2632,18 @@ QRectF QFxItem::boundingRect() const
 /*!
     Returns the current transform origin.
 */
-QFxItem::TransformOrigin QFxItem::transformOrigin() const
+QmlGraphicsItem::TransformOrigin QmlGraphicsItem::transformOrigin() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->origin;
 }
 
 /*!
     Set the transform \a origin.
 */
-void QFxItem::setTransformOrigin(TransformOrigin origin)
+void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (origin != d->origin) {
         d->origin = origin;
         QGraphicsItem::setTransformOriginPoint(d->computeTransformOrigin());
@@ -2651,7 +2651,7 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
 }
 
 /*!
-    \property QFxItem::smooth
+    \property QmlGraphicsItem::smooth
     \brief whether the item is smoothly transformed.
 
     This property is provided purely for the purpose of optimization. Turning
@@ -2669,9 +2669,9 @@ void QFxItem::setTransformOrigin(TransformOrigin origin)
     
     \sa setSmoothTransform()
 */
-bool QFxItem::smoothTransform() const
+bool QmlGraphicsItem::smoothTransform() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->smooth;
 }
 
@@ -2681,24 +2681,24 @@ bool QFxItem::smoothTransform() const
 
     \sa smoothTransform()
 */
-void QFxItem::setSmoothTransform(bool smooth)
+void QmlGraphicsItem::setSmoothTransform(bool smooth)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     if (d->smooth == smooth)
         return;
     d->smooth = smooth;
     update();
 }
 
-qreal QFxItem::width() const
+qreal QmlGraphicsItem::width() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->width;
 }
 
-void QFxItem::setWidth(qreal w)
+void QmlGraphicsItem::setWidth(qreal w)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->widthValid = true;
     if (d->width == w)
         return;
@@ -2713,22 +2713,22 @@ void QFxItem::setWidth(qreal w)
                     QRectF(x(), y(), oldWidth, height()));
 }
 
-void QFxItem::resetWidth()
+void QmlGraphicsItem::resetWidth()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->widthValid = false;
     setImplicitWidth(implicitWidth());
 }
 
-qreal QFxItem::implicitWidth() const
+qreal QmlGraphicsItem::implicitWidth() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->implicitWidth;
 }
 
-void QFxItem::setImplicitWidth(qreal w)
+void QmlGraphicsItem::setImplicitWidth(qreal w)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->implicitWidth = w;
     if (d->width == w || widthValid())
         return;
@@ -2743,21 +2743,21 @@ void QFxItem::setImplicitWidth(qreal w)
                     QRectF(x(), y(), oldWidth, height()));
 }
 
-bool QFxItem::widthValid() const
+bool QmlGraphicsItem::widthValid() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->widthValid;
 }
 
-qreal QFxItem::height() const
+qreal QmlGraphicsItem::height() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->height;
 }
 
-void QFxItem::setHeight(qreal h)
+void QmlGraphicsItem::setHeight(qreal h)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->heightValid = true;
     if (d->height == h)
         return;
@@ -2772,22 +2772,22 @@ void QFxItem::setHeight(qreal h)
                     QRectF(x(), y(), width(), oldHeight));
 }
 
-void QFxItem::resetHeight()
+void QmlGraphicsItem::resetHeight()
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->heightValid = false;
     setImplicitHeight(implicitHeight());
 }
 
-qreal QFxItem::implicitHeight() const
+qreal QmlGraphicsItem::implicitHeight() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->implicitHeight;
 }
 
-void QFxItem::setImplicitHeight(qreal h)
+void QmlGraphicsItem::setImplicitHeight(qreal h)
 {
-    Q_D(QFxItem);
+    Q_D(QmlGraphicsItem);
     d->implicitHeight = h;
     if (d->height == h || heightValid())
         return;
@@ -2802,9 +2802,9 @@ void QFxItem::setImplicitHeight(qreal h)
                     QRectF(x(), y(), width(), oldHeight));
 }
 
-bool QFxItem::heightValid() const
+bool QmlGraphicsItem::heightValid() const
 {
-    Q_D(const QFxItem);
+    Q_D(const QmlGraphicsItem);
     return d->heightValid;
 }
 
@@ -2815,7 +2815,7 @@ bool QFxItem::heightValid() const
 */
 
 /*! \internal */
-bool QFxItem::wantsFocus() const
+bool QmlGraphicsItem::wantsFocus() const
 {
     return focusItem() != 0;
 }
@@ -2827,13 +2827,13 @@ bool QFxItem::wantsFocus() const
 */
 
 /*! \internal */
-bool QFxItem::hasFocus() const
+bool QmlGraphicsItem::hasFocus() const
 {
     return QGraphicsItem::hasFocus();
 }
 
 /*! \internal */
-void QFxItem::setFocus(bool focus)
+void QmlGraphicsItem::setFocus(bool focus)
 {
     if (focus)
         QGraphicsItem::setFocus(Qt::OtherFocusReason);
@@ -2845,7 +2845,7 @@ void QFxItem::setFocus(bool focus)
     \reimp
     \internal
 */
-void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
 {
 }
 
@@ -2853,15 +2853,15 @@ void QFxItem::paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)
     \reimp
     \internal
 */
-bool QFxItem::event(QEvent *ev)
+bool QmlGraphicsItem::event(QEvent *ev)
 {
     return QGraphicsObject::event(ev);
 }
 
-QDebug operator<<(QDebug debug, QFxItem *item)
+QDebug operator<<(QDebug debug, QmlGraphicsItem *item)
 {
     if (!item) {
-        debug << "QFxItem(0)";
+        debug << "QmlGraphicsItem(0)";
         return debug;
     }
 
@@ -2872,13 +2872,13 @@ QDebug operator<<(QDebug debug, QFxItem *item)
     return debug;
 }
 
-int QFxItemPrivate::consistentTime = -1;
-void QFxItemPrivate::setConsistentTime(int t) 
+int QmlGraphicsItemPrivate::consistentTime = -1;
+void QmlGraphicsItemPrivate::setConsistentTime(int t) 
 { 
     consistentTime = t; 
 }
 
-QTime QFxItemPrivate::currentTime()
+QTime QmlGraphicsItemPrivate::currentTime()
 {
     if (consistentTime == -1)
         return QTime::currentTime();
@@ -2886,12 +2886,12 @@ QTime QFxItemPrivate::currentTime()
         return QTime(0, 0).addMSecs(consistentTime);
 }
 
-void QFxItemPrivate::start(QTime &t)
+void QmlGraphicsItemPrivate::start(QTime &t)
 {
     t = currentTime();
 }
 
-int QFxItemPrivate::elapsed(QTime &t)
+int QmlGraphicsItemPrivate::elapsed(QTime &t)
 {
     int n = t.msecsTo(currentTime());
     if (n < 0)                                // passed midnight
@@ -2899,7 +2899,7 @@ int QFxItemPrivate::elapsed(QTime &t)
     return n;
 }
 
-int QFxItemPrivate::restart(QTime &t)
+int QmlGraphicsItemPrivate::restart(QTime &t)
 {
     QTime time = currentTime();
     int n = t.msecsTo(time);
@@ -2911,11 +2911,11 @@ int QFxItemPrivate::restart(QTime &t)
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxKeysAttached)
-QML_DECLARE_TYPEINFO(QFxKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QFxKeysAttached)
-QML_DECLARE_TYPE(QFxKeyNavigationAttached)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QFxKeyNavigationAttached)
+QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
+QML_DECLARE_TYPEINFO(QmlGraphicsKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QmlGraphicsKeysAttached)
+QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QmlGraphicsKeyNavigationAttached)
 
 #include "moc_qfxitem.cpp"
 #include "qfxitem.moc"

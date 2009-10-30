@@ -58,88 +58,88 @@ QT_MODULE(Declarative)
  *****************************************************************************
 *****************************************************************************/
 
-class QFxItem;
+class QmlGraphicsItem;
 class QmlComponent;
 class QmlPackage;
-class QFxVisualDataModelPrivate;
+class QmlGraphicsVisualDataModelPrivate;
 
-class Q_DECLARATIVE_EXPORT QFxVisualModel : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsVisualModel : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
-    QFxVisualModel() {}
-    virtual ~QFxVisualModel() {}
+    QmlGraphicsVisualModel() {}
+    virtual ~QmlGraphicsVisualModel() {}
 
     enum ReleaseFlag { Referenced = 0x01, Destroyed = 0x02 };
     Q_DECLARE_FLAGS(ReleaseFlags, ReleaseFlag)
 
     virtual int count() const = 0;
     virtual bool isValid() const = 0;
-    virtual QFxItem *item(int index, bool complete=true) = 0;
-    virtual ReleaseFlags release(QFxItem *item) = 0;
+    virtual QmlGraphicsItem *item(int index, bool complete=true) = 0;
+    virtual ReleaseFlags release(QmlGraphicsItem *item) = 0;
     virtual void completeItem() = 0;
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext) = 0;
 
-    virtual int indexOf(QFxItem *item, QObject *objectContext) const = 0;
+    virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const = 0;
 
 Q_SIGNALS:
     void countChanged();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
-    void createdItem(int index, QFxItem *item);
-    void destroyingItem(QFxItem *item);
+    void createdItem(int index, QmlGraphicsItem *item);
+    void destroyingItem(QmlGraphicsItem *item);
 
 protected:
-    QFxVisualModel(QObjectPrivate &dd, QObject *parent = 0)
+    QmlGraphicsVisualModel(QObjectPrivate &dd, QObject *parent = 0)
         : QObject(dd, parent) {}
 
 private:
-    Q_DISABLE_COPY(QFxVisualModel)
+    Q_DISABLE_COPY(QmlGraphicsVisualModel)
 };
 
-class QFxVisualItemModelAttached;
-class QFxVisualItemModelPrivate;
-class Q_DECLARATIVE_EXPORT QFxVisualItemModel : public QFxVisualModel
+class QmlGraphicsVisualItemModelAttached;
+class QmlGraphicsVisualItemModelPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsVisualItemModel : public QmlGraphicsVisualModel
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxVisualItemModel)
+    Q_DECLARE_PRIVATE(QmlGraphicsVisualItemModel)
 
-    Q_PROPERTY(QmlList<QFxItem *>* children READ children NOTIFY childrenChanged DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ children NOTIFY childrenChanged DESIGNABLE false)
     Q_CLASSINFO("DefaultProperty", "children")
 
 public:
-    QFxVisualItemModel();
-    virtual ~QFxVisualItemModel() {}
+    QmlGraphicsVisualItemModel();
+    virtual ~QmlGraphicsVisualItemModel() {}
 
     virtual int count() const;
     virtual bool isValid() const;
-    virtual QFxItem *item(int index, bool complete=true);
-    virtual ReleaseFlags release(QFxItem *item);
+    virtual QmlGraphicsItem *item(int index, bool complete=true);
+    virtual ReleaseFlags release(QmlGraphicsItem *item);
     virtual void completeItem();
     virtual QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
-    virtual int indexOf(QFxItem *item, QObject *objectContext) const;
+    virtual int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;
 
-    QmlList<QFxItem *> *children();
+    QmlList<QmlGraphicsItem *> *children();
 
-    static QFxVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
+    static QmlGraphicsVisualItemModelAttached *qmlAttachedProperties(QObject *obj);
 
 signals:
     void childrenChanged();
 
 private:
-    Q_DISABLE_COPY(QFxVisualItemModel)
+    Q_DISABLE_COPY(QmlGraphicsVisualItemModel)
 };
 
 
-class Q_DECLARATIVE_EXPORT QFxVisualDataModel : public QFxVisualModel
+class Q_DECLARATIVE_EXPORT QmlGraphicsVisualDataModel : public QmlGraphicsVisualModel
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QFxVisualDataModel)
+    Q_DECLARE_PRIVATE(QmlGraphicsVisualDataModel)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
@@ -147,9 +147,9 @@ class Q_DECLARATIVE_EXPORT QFxVisualDataModel : public QFxVisualModel
     Q_PROPERTY(QObject *parts READ parts CONSTANT)
     Q_CLASSINFO("DefaultProperty", "delegate")
 public:
-    QFxVisualDataModel();
-    QFxVisualDataModel(QmlContext *);
-    virtual ~QFxVisualDataModel();
+    QmlGraphicsVisualDataModel();
+    QmlGraphicsVisualDataModel(QmlContext *);
+    virtual ~QmlGraphicsVisualDataModel();
 
     QVariant model() const;
     void setModel(const QVariant &);
@@ -162,13 +162,13 @@ public:
 
     int count() const;
     bool isValid() const { return delegate() != 0; }
-    QFxItem *item(int index, bool complete=true);
-    QFxItem *item(int index, const QByteArray &, bool complete=true);
-    ReleaseFlags release(QFxItem *item);
+    QmlGraphicsItem *item(int index, bool complete=true);
+    QmlGraphicsItem *item(int index, const QByteArray &, bool complete=true);
+    ReleaseFlags release(QmlGraphicsItem *item);
     void completeItem();
     QVariant evaluate(int index, const QString &expression, QObject *objectContext);
 
-    int indexOf(QFxItem *item, QObject *objectContext) const;
+    int indexOf(QmlGraphicsItem *item, QObject *objectContext) const;
 
     QObject *parts();
 
@@ -188,15 +188,15 @@ private Q_SLOTS:
     void _q_destroyingPackage(QmlPackage *package);
 
 private:
-    Q_DISABLE_COPY(QFxVisualDataModel)
+    Q_DISABLE_COPY(QmlGraphicsVisualDataModel)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxVisualModel)
-QML_DECLARE_TYPE(QFxVisualItemModel)
-QML_DECLARE_TYPEINFO(QFxVisualItemModel, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(QFxVisualDataModel)
+QML_DECLARE_TYPE(QmlGraphicsVisualModel)
+QML_DECLARE_TYPE(QmlGraphicsVisualItemModel)
+QML_DECLARE_TYPEINFO(QmlGraphicsVisualItemModel, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsVisualDataModel)
 
 QT_END_HEADER
 

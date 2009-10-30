@@ -51,17 +51,17 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 //### set component root as focusscope
-class Q_DECLARATIVE_EXPORT QFxFocusScope : public QFxItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsFocusScope : public QmlGraphicsItem
 {
     Q_OBJECT
 public:
-    QFxFocusScope(QFxItem *parent=0);
-    virtual ~QFxFocusScope();
+    QmlGraphicsFocusScope(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsFocusScope();
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFocusScope)
+QML_DECLARE_TYPE(QmlGraphicsFocusScope)
 
 QT_END_HEADER
 

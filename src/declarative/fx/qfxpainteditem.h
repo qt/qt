@@ -52,8 +52,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxPaintedItemPrivate;
-class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
+class QmlGraphicsPaintedItemPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsPaintedItem : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -62,8 +62,8 @@ class Q_DECLARATIVE_EXPORT QFxPaintedItem : public QFxItem
     Q_PROPERTY(int cacheSize READ cacheSize WRITE setCacheSize)
 
 public:
-    QFxPaintedItem(QFxItem *parent=0);
-    ~QFxPaintedItem();
+    QmlGraphicsPaintedItem(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsPaintedItem();
 
     QSize contentsSize() const;
     void setContentsSize(const QSize &);
@@ -77,7 +77,7 @@ public:
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
 protected:
-    QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent);
+    QmlGraphicsPaintedItem(QmlGraphicsPaintedItemPrivate &dd, QmlGraphicsItem *parent);
 
     virtual void drawContents(QPainter *p, const QRect &) = 0;
 
@@ -92,13 +92,13 @@ protected Q_SLOTS:
 
 private:
     void init();
-    Q_DISABLE_COPY(QFxPaintedItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxPaintedItem)
+    Q_DISABLE_COPY(QmlGraphicsPaintedItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsPaintedItem)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxPaintedItem)
+QML_DECLARE_TYPE(QmlGraphicsPaintedItem)
 
 QT_END_HEADER
 

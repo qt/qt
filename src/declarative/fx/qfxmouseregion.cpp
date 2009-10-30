@@ -49,72 +49,72 @@ QT_BEGIN_NAMESPACE
 static const qreal DragThreshold = 5;
 static const int PressAndHoldDelay = 800;
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Drag,QFxDrag)
-QFxDrag::QFxDrag(QObject *parent)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Drag,QmlGraphicsDrag)
+QmlGraphicsDrag::QmlGraphicsDrag(QObject *parent)
 : QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
 }
 
-QFxDrag::~QFxDrag()
+QmlGraphicsDrag::~QmlGraphicsDrag()
 {
 }
 
-QFxItem *QFxDrag::target() const
+QmlGraphicsItem *QmlGraphicsDrag::target() const
 {
     return _target;
 }
 
-void QFxDrag::setTarget(QFxItem *t)
+void QmlGraphicsDrag::setTarget(QmlGraphicsItem *t)
 {
     _target = t;
 }
 
-QFxDrag::Axis QFxDrag::axis() const
+QmlGraphicsDrag::Axis QmlGraphicsDrag::axis() const
 {
     return _axis;
 }
 
-void QFxDrag::setAxis(QFxDrag::Axis a)
+void QmlGraphicsDrag::setAxis(QmlGraphicsDrag::Axis a)
 {
     _axis = a;
 }
 
-qreal QFxDrag::xmin() const
+qreal QmlGraphicsDrag::xmin() const
 {
     return _xmin;
 }
 
-void QFxDrag::setXmin(qreal m)
+void QmlGraphicsDrag::setXmin(qreal m)
 {
     _xmin = m;
 }
 
-qreal QFxDrag::xmax() const
+qreal QmlGraphicsDrag::xmax() const
 {
     return _xmax;
 }
 
-void QFxDrag::setXmax(qreal m)
+void QmlGraphicsDrag::setXmax(qreal m)
 {
     _xmax = m;
 }
 
-qreal QFxDrag::ymin() const
+qreal QmlGraphicsDrag::ymin() const
 {
     return _ymin;
 }
 
-void QFxDrag::setYmin(qreal m)
+void QmlGraphicsDrag::setYmin(qreal m)
 {
     _ymin = m;
 }
 
-qreal QFxDrag::ymax() const
+qreal QmlGraphicsDrag::ymax() const
 {
     return _ymax;
 }
 
-void QFxDrag::setYmax(qreal m)
+void QmlGraphicsDrag::setYmax(qreal m)
 {
     _ymax = m;
 }
@@ -225,35 +225,35 @@ void QFxDrag::setYmax(qreal m)
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,MouseRegion,QFxMouseRegion)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,MouseRegion,QmlGraphicsMouseRegion)
 
 /*!
     \internal
-    \class QFxMouseRegion
-    \brief The QFxMouseRegion class provides a simple mouse handling abstraction for use within Qml.
+    \class QmlGraphicsMouseRegion
+    \brief The QmlGraphicsMouseRegion class provides a simple mouse handling abstraction for use within Qml.
 
     \ingroup group_coreitems
 
-    All QFxItem derived classes can do mouse handling but the QFxMouseRegion class exposes mouse
+    All QmlGraphicsItem derived classes can do mouse handling but the QmlGraphicsMouseRegion class exposes mouse
     handling data as properties and tracks flicking and dragging of the mouse.
 
-    A QFxMouseRegion object can be instantiated in Qml using the tag \l MouseRegion.
+    A QmlGraphicsMouseRegion object can be instantiated in Qml using the tag \l MouseRegion.
  */
-QFxMouseRegion::QFxMouseRegion(QFxItem *parent)
-  : QFxItem(*(new QFxMouseRegionPrivate), parent)
+QmlGraphicsMouseRegion::QmlGraphicsMouseRegion(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsMouseRegionPrivate), parent)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     d->init();
 }
 
-QFxMouseRegion::QFxMouseRegion(QFxMouseRegionPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsMouseRegion::QmlGraphicsMouseRegion(QmlGraphicsMouseRegionPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     d->init();
 }
 
-QFxMouseRegion::~QFxMouseRegion()
+QmlGraphicsMouseRegion::~QmlGraphicsMouseRegion()
 {
 }
 
@@ -274,15 +274,15 @@ QFxMouseRegion::~QFxMouseRegion()
 
     The coordinates are relative to the MouseRegion.
 */
-qreal QFxMouseRegion::mouseX() const
+qreal QmlGraphicsMouseRegion::mouseX() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->lastPos.x();
 }
 
-qreal QFxMouseRegion::mouseY() const
+qreal QmlGraphicsMouseRegion::mouseY() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->lastPos.y();
 }
 
@@ -290,15 +290,15 @@ qreal QFxMouseRegion::mouseY() const
     \qmlproperty bool MouseRegion::enabled
     This property holds whether the item accepts mouse events.
 */
-bool QFxMouseRegion::isEnabled() const
+bool QmlGraphicsMouseRegion::isEnabled() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->absorb;
 }
 
-void QFxMouseRegion::setEnabled(bool a)
+void QmlGraphicsMouseRegion::setEnabled(bool a)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (a != d->absorb) {
         d->absorb = a;
         emit enabledChanged();
@@ -331,40 +331,40 @@ void QFxMouseRegion::setEnabled(bool a)
 
     \sa acceptedButtons
 */
-Qt::MouseButtons QFxMouseRegion::pressedButtons() const
+Qt::MouseButtons QmlGraphicsMouseRegion::pressedButtons() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->lastButtons;
 }
 
-void QFxMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseRegion::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     d->moved = false;
     if (!d->absorb)
-        QFxItem::mousePressEvent(event);
+        QmlGraphicsItem::mousePressEvent(event);
     else {
         d->longPress = false;
         d->saveEvent(event);
-        d->dragX = drag()->axis() & QFxDrag::XAxis;
-        d->dragY = drag()->axis() & QFxDrag::YAxis;
+        d->dragX = drag()->axis() & QmlGraphicsDrag::XAxis;
+        d->dragY = drag()->axis() & QmlGraphicsDrag::YAxis;
         d->dragged = false;
         setHovered(true);
         d->start = event->pos();
         d->startScene = event->scenePos();
         // we should only start timer if pressAndHold is connected to.
-        if (d->isConnected("pressAndHold(QFxMouseEvent*)"))
+        if (d->isConnected("pressAndHold(QmlGraphicsMouseEvent*)"))
             d->pressAndHoldTimer.start(PressAndHoldDelay, this);
         setKeepMouseGrab(false);
         event->setAccepted(setPressed(true));
     }
 }
 
-void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb) {
-        QFxItem::mouseMoveEvent(event);
+        QmlGraphicsItem::mouseMoveEvent(event);
         return;
     }
 
@@ -424,16 +424,16 @@ void QFxMouseRegion::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         }
     }
     d->moved = true;
-    QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+    QmlGraphicsMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
     emit positionChanged(&me);
 }
 
 
-void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb) {
-        QFxItem::mouseReleaseEvent(event);
+        QmlGraphicsItem::mouseReleaseEvent(event);
     } else {
         d->saveEvent(event);
         setPressed(false);
@@ -444,57 +444,57 @@ void QFxMouseRegion::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void QFxMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsMouseRegion::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb) {
-        QFxItem::mouseDoubleClickEvent(event);
+        QmlGraphicsItem::mouseDoubleClickEvent(event);
     } else {
-        QFxItem::mouseDoubleClickEvent(event);
+        QmlGraphicsItem::mouseDoubleClickEvent(event);
         if (event->isAccepted()) {
             // Only deliver the event if we have accepted the press.
             d->saveEvent(event);
-            QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
+            QmlGraphicsMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, true, false);
             emit this->doubleClicked(&me);
         }
     }
 }
 
-void QFxMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseRegion::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb)
-        QFxItem::hoverEnterEvent(event);
+        QmlGraphicsItem::hoverEnterEvent(event);
     else
         setHovered(true);
 }
 
-void QFxMouseRegion::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseRegion::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb) {
-        QFxItem::hoverEnterEvent(event);
+        QmlGraphicsItem::hoverEnterEvent(event);
     } else {
         d->lastPos = event->pos();
-        QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+        QmlGraphicsMouseEvent me(d->lastPos.x(), d->lastPos.y(), Qt::NoButton, d->lastButtons, d->lastModifiers, false, d->longPress);
         emit positionChanged(&me);
     }
 }
 
-void QFxMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+void QmlGraphicsMouseRegion::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (!d->absorb)
-        QFxItem::hoverLeaveEvent(event);
+        QmlGraphicsItem::hoverLeaveEvent(event);
     else
         setHovered(false);
 }
 
-bool QFxMouseRegion::sceneEvent(QEvent *event)
+bool QmlGraphicsMouseRegion::sceneEvent(QEvent *event)
 {
-    bool rv = QFxItem::sceneEvent(event);
+    bool rv = QmlGraphicsItem::sceneEvent(event);
     if (event->type() == QEvent::UngrabMouse) {
-        Q_D(QFxMouseRegion);
+        Q_D(QmlGraphicsMouseRegion);
         if (d->pressed) {
             // if our mouse grab has been removed (probably by Flickable), fix our
             // state
@@ -507,14 +507,14 @@ bool QFxMouseRegion::sceneEvent(QEvent *event)
     return rv;
 }
 
-void QFxMouseRegion::timerEvent(QTimerEvent *event)
+void QmlGraphicsMouseRegion::timerEvent(QTimerEvent *event)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (event->timerId() == d->pressAndHoldTimer.timerId()) {
         d->pressAndHoldTimer.stop();
         if (d->pressed && d->dragged == false && d->hovered == true) {
             d->longPress = true;
-            QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
+            QmlGraphicsMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, false, d->longPress);
             emit pressAndHold(&me);
         }
     }
@@ -538,9 +538,9 @@ void QFxMouseRegion::timerEvent(QTimerEvent *event)
     \warning This property is not updated if the region moves under the mouse: \e containsMouse will not change.
     In addition, if hoverEnabled is false, containsMouse will only be valid when the mouse is pressed.
 */
-bool QFxMouseRegion::hovered() const
+bool QmlGraphicsMouseRegion::hovered() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->hovered;
 }
 
@@ -548,15 +548,15 @@ bool QFxMouseRegion::hovered() const
     \qmlproperty bool MouseRegion::pressed
     This property holds whether the mouse region is currently pressed.
 */
-bool QFxMouseRegion::pressed() const
+bool QmlGraphicsMouseRegion::pressed() const
 {
-    Q_D(const QFxMouseRegion);
+    Q_D(const QmlGraphicsMouseRegion);
     return d->pressed;
 }
 
-void QFxMouseRegion::setHovered(bool h)
+void QmlGraphicsMouseRegion::setHovered(bool h)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     if (d->hovered != h) {
         d->hovered = h;
         emit hoveredChanged();
@@ -584,12 +584,12 @@ void QFxMouseRegion::setHovered(bool h)
 
     The default is to accept the Left button.
 */
-Qt::MouseButtons QFxMouseRegion::acceptedButtons() const
+Qt::MouseButtons QmlGraphicsMouseRegion::acceptedButtons() const
 {
     return acceptedMouseButtons();
 }
 
-void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
+void QmlGraphicsMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
 {
     if (buttons != acceptedMouseButtons()) {
         setAcceptedMouseButtons(buttons);
@@ -597,14 +597,14 @@ void QFxMouseRegion::setAcceptedButtons(Qt::MouseButtons buttons)
     }
 }
 
-bool QFxMouseRegion::setPressed(bool p)
+bool QmlGraphicsMouseRegion::setPressed(bool p)
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     bool isclick = d->pressed == true && p == false && d->dragged == false && d->hovered == true;
 
     if (d->pressed != p) {
         d->pressed = p;
-        QFxMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
+        QmlGraphicsMouseEvent me(d->lastPos.x(), d->lastPos.y(), d->lastButton, d->lastButtons, d->lastModifiers, isclick, d->longPress);
         if (d->pressed) {
             emit positionChanged(&me);
             emit pressed(&me);
@@ -620,9 +620,9 @@ bool QFxMouseRegion::setPressed(bool p)
     return false;
 }
 
-QFxDrag *QFxMouseRegion::drag()
+QmlGraphicsDrag *QmlGraphicsMouseRegion::drag()
 {
-    Q_D(QFxMouseRegion);
+    Q_D(QmlGraphicsMouseRegion);
     return &(d->drag);
 }
 

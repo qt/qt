@@ -68,7 +68,7 @@ void tst_qfxwebview::testBasicProperties()
     checkNoErrors(component);
     QWebSettings::enablePersistentStorage(tmpDir());
 
-    QFxWebView *wv = qobject_cast<QFxWebView*>(component.create());
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
     QVERIFY(wv != 0);
     QTRY_COMPARE(wv->progress(), 1.0);
     QCOMPARE(wv->title(),QString("Basic"));
@@ -87,7 +87,7 @@ void tst_qfxwebview::testBasicProperties()
     QCOMPARE(wv->preferredWidth(), 0);
     QCOMPARE(wv->zoomFactor(), 1.0);
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
-    QCOMPARE(wv->status(), QFxWebView::Ready);
+    QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
     QVERIFY(wv->reloadAction());
     QVERIFY(wv->reloadAction()->isEnabled());
     QVERIFY(wv->backAction());

@@ -58,19 +58,19 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QmlState;
-class QFxAnchorLine;
+class QmlGraphicsAnchorLine;
 class QmlTransition;
-class QFxKeyEvent;
-class QFxAnchors;
-class QFxItemPrivate;
-class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserStatus
+class QmlGraphicsKeyEvent;
+class QmlGraphicsAnchors;
+class QmlGraphicsItemPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlParserStatus
 {
     Q_OBJECT
     Q_INTERFACES(QmlParserStatus)
 
-    Q_PROPERTY(QFxItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
+    Q_PROPERTY(QmlGraphicsItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QmlList<QFxItem *>* children READ fxChildren DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ fxChildren DESIGNABLE false)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
@@ -78,14 +78,14 @@ class Q_DECLARATIVE_EXPORT QFxItem : public QGraphicsObject, public QmlParserSta
     Q_PROPERTY(qreal width READ width WRITE setWidth NOTIFY widthChanged RESET resetWidth FINAL)
     Q_PROPERTY(qreal height READ height WRITE setHeight NOTIFY heightChanged RESET resetHeight FINAL)
     Q_PROPERTY(QRectF childrenRect READ childrenRect NOTIFY childrenRectChanged DESIGNABLE false FINAL)
-    Q_PROPERTY(QFxAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine left READ left CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine right READ right CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine top READ top CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
-    Q_PROPERTY(QFxAnchorLine baseline READ baseline CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchors * anchors READ anchors DESIGNABLE false CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine left READ left CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine right READ right CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine top READ top CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter CONSTANT FINAL)
+    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline CONSTANT FINAL)
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged)
     Q_PROPERTY(bool clip READ clip WRITE setClip) // ### move to QGI/QGO, NOTIFY
     Q_PROPERTY(bool focus READ hasFocus WRITE setFocus NOTIFY focusChanged FINAL)
@@ -104,18 +104,18 @@ public:
         BottomLeft, Bottom, BottomRight
     };
 
-    QFxItem(QFxItem *parent = 0);
-    virtual ~QFxItem();
+    QmlGraphicsItem(QmlGraphicsItem *parent = 0);
+    virtual ~QmlGraphicsItem();
 
-    QFxItem *parentItem() const;
-    void setParentItem(QFxItem *parent);
-    void setParent(QFxItem *parent) { setParentItem(parent); }
+    QmlGraphicsItem *parentItem() const;
+    void setParentItem(QmlGraphicsItem *parent);
+    void setParent(QmlGraphicsItem *parent) { setParentItem(parent); }
 
     QmlList<QObject *> *data();
-    QmlList<QFxItem *> *fxChildren();
+    QmlList<QmlGraphicsItem *> *fxChildren();
     QmlList<QObject *> *resources();
 
-    QFxAnchors *anchors();
+    QmlGraphicsAnchors *anchors();
     QRectF childrenRect();
 
     bool clip() const;
@@ -190,22 +190,22 @@ protected:
                                  const QRectF &oldGeometry);
 
 protected:
-    QFxItem(QFxItemPrivate &dd, QFxItem *parent = 0);
+    QmlGraphicsItem(QmlGraphicsItemPrivate &dd, QmlGraphicsItem *parent = 0);
 
 private:
     // ### public?
-    QFxAnchorLine left() const;
-    QFxAnchorLine right() const;
-    QFxAnchorLine horizontalCenter() const;
-    QFxAnchorLine top() const;
-    QFxAnchorLine bottom() const;
-    QFxAnchorLine verticalCenter() const;
-    QFxAnchorLine baseline() const;
+    QmlGraphicsAnchorLine left() const;
+    QmlGraphicsAnchorLine right() const;
+    QmlGraphicsAnchorLine horizontalCenter() const;
+    QmlGraphicsAnchorLine top() const;
+    QmlGraphicsAnchorLine bottom() const;
+    QmlGraphicsAnchorLine verticalCenter() const;
+    QmlGraphicsAnchorLine baseline() const;
 
     friend class QmlStatePrivate;
-    friend class QFxAnchors;
-    Q_DISABLE_COPY(QFxItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxItem)
+    friend class QmlGraphicsAnchors;
+    Q_DISABLE_COPY(QmlGraphicsItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsItem)
 };
 
 template<typename T>
@@ -224,11 +224,11 @@ T qobject_cast(QGraphicsItem *item)
     return qobject_cast<T>(o);
 }
 
-QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QFxItem *item);
+QDebug Q_DECLARATIVE_EXPORT operator<<(QDebug debug, QmlGraphicsItem *item);
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxItem)
+QML_DECLARE_TYPE(QmlGraphicsItem)
 QML_DECLARE_TYPE(QGraphicsTransform)
 QML_DECLARE_TYPE(QGraphicsScale)
 QML_DECLARE_TYPE(QGraphicsRotation)

@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsScaleGrid : public QObject
 {
     Q_OBJECT
     Q_ENUMS(TileRule)
@@ -67,8 +67,8 @@ class Q_DECLARATIVE_EXPORT QFxScaleGrid : public QObject
     Q_PROPERTY(int bottom READ bottom WRITE setBottom NOTIFY borderChanged)
 
 public:
-    QFxScaleGrid(QObject *parent=0);
-    ~QFxScaleGrid();
+    QmlGraphicsScaleGrid(QObject *parent=0);
+    ~QmlGraphicsScaleGrid();
 
     bool isNull() const;
 
@@ -94,39 +94,39 @@ private:
     int _bottom;
 };
 
-class Q_DECLARATIVE_EXPORT QFxGridScaledImage
+class Q_DECLARATIVE_EXPORT QmlGraphicsGridScaledImage
 {
 public:
-    QFxGridScaledImage();
-    QFxGridScaledImage(const QFxGridScaledImage &);
-    QFxGridScaledImage(QIODevice*);
-    QFxGridScaledImage &operator=(const QFxGridScaledImage &);
+    QmlGraphicsGridScaledImage();
+    QmlGraphicsGridScaledImage(const QmlGraphicsGridScaledImage &);
+    QmlGraphicsGridScaledImage(QIODevice*);
+    QmlGraphicsGridScaledImage &operator=(const QmlGraphicsGridScaledImage &);
     bool isValid() const;
     int gridLeft() const;
     int gridRight() const;
     int gridTop() const;
     int gridBottom() const;
-    QFxBorderImage::TileMode horizontalTileRule() const { return _h; }
-    QFxBorderImage::TileMode verticalTileRule() const { return _v; }
+    QmlGraphicsBorderImage::TileMode horizontalTileRule() const { return _h; }
+    QmlGraphicsBorderImage::TileMode verticalTileRule() const { return _v; }
 
     QString pixmapUrl() const;
 
 private:
-    static QFxBorderImage::TileMode stringToRule(const QString &);
+    static QmlGraphicsBorderImage::TileMode stringToRule(const QString &);
 
 private:
     int _l;
     int _r;
     int _t;
     int _b;
-    QFxBorderImage::TileMode _h;
-    QFxBorderImage::TileMode _v;
+    QmlGraphicsBorderImage::TileMode _h;
+    QmlGraphicsBorderImage::TileMode _v;
     QString _pix;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxScaleGrid)
+QML_DECLARE_TYPE(QmlGraphicsScaleGrid)
 
 QT_END_HEADER
 

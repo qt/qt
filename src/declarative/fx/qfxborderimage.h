@@ -50,23 +50,23 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxScaleGrid;
-class QFxGridScaledImage;
-class QFxBorderImagePrivate;
-class Q_DECLARATIVE_EXPORT QFxBorderImage : public QFxImageBase
+class QmlGraphicsScaleGrid;
+class QmlGraphicsGridScaledImage;
+class QmlGraphicsBorderImagePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsBorderImage : public QmlGraphicsImageBase
 {
     Q_OBJECT
     Q_ENUMS(TileMode)
 
-    Q_PROPERTY(QFxScaleGrid *border READ border CONSTANT)
+    Q_PROPERTY(QmlGraphicsScaleGrid *border READ border CONSTANT)
     Q_PROPERTY(TileMode horizontalTileMode READ horizontalTileMode WRITE setHorizontalTileMode NOTIFY horizontalTileModeChanged)
     Q_PROPERTY(TileMode verticalTileMode READ verticalTileMode WRITE setVerticalTileMode NOTIFY verticalTileModeChanged)
 
 public:
-    QFxBorderImage(QFxItem *parent=0);
-    ~QFxBorderImage();
+    QmlGraphicsBorderImage(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsBorderImage();
 
-    QFxScaleGrid *border();
+    QmlGraphicsScaleGrid *border();
 
     enum TileMode { Stretch = Qt::StretchTile, Repeat = Qt::RepeatTile, Round = Qt::RoundTile };
 
@@ -84,22 +84,22 @@ Q_SIGNALS:
     void verticalTileModeChanged();
 
 protected:
-    QFxBorderImage(QFxBorderImagePrivate &dd, QFxItem *parent);
+    QmlGraphicsBorderImage(QmlGraphicsBorderImagePrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    void setGridScaledImage(const QFxGridScaledImage& sci);
+    void setGridScaledImage(const QmlGraphicsGridScaledImage& sci);
 
 private Q_SLOTS:
     void requestFinished();
     void sciRequestFinished();
 
 private:
-    Q_DISABLE_COPY(QFxBorderImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxBorderImage)
+    Q_DISABLE_COPY(QmlGraphicsBorderImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsBorderImage)
 };
 
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QFxBorderImage)
+QML_DECLARE_TYPE(QmlGraphicsBorderImage)
 QT_END_HEADER
 
 #endif // QFXBORDERIMAGE_H

@@ -53,9 +53,9 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxTextInputPrivate;
+class QmlGraphicsTextInputPrivate;
 class QValidator;
-class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsTextInput : public QmlGraphicsPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -84,8 +84,8 @@ class Q_DECLARATIVE_EXPORT QFxTextInput : public QFxPaintedItem
     Q_PROPERTY(bool focusOnPress READ focusOnPress WRITE setFocusOnPress)
 
 public:
-    QFxTextInput(QFxItem* parent=0);
-    ~QFxTextInput();
+    QmlGraphicsTextInput(QmlGraphicsItem* parent=0);
+    ~QmlGraphicsTextInput();
 
     enum EchoMode {//To match QLineEdit::EchoMode
         Normal,
@@ -172,7 +172,7 @@ Q_SIGNALS:
     void acceptableInputChanged();
 
 protected:
-    QFxTextInput(QFxTextInputPrivate &dd, QFxItem *parent);
+    QmlGraphicsTextInput(QmlGraphicsTextInputPrivate &dd, QmlGraphicsItem *parent);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
@@ -195,12 +195,12 @@ private Q_SLOTS:
     void updateRect(const QRect &r = QRect());
 
 private:
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextInput)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsTextInput)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxTextInput)
+QML_DECLARE_TYPE(QmlGraphicsTextInput)
 QML_DECLARE_TYPE(QValidator)
 QML_DECLARE_TYPE(QIntValidator)
 

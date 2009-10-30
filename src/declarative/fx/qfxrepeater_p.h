@@ -61,20 +61,20 @@
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
-class QFxVisualModel;
-class QFxRepeaterPrivate : public QFxItemPrivate
+class QmlGraphicsVisualModel;
+class QmlGraphicsRepeaterPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxRepeater)
+    Q_DECLARE_PUBLIC(QmlGraphicsRepeater)
 
 public:
-    QFxRepeaterPrivate();
-    ~QFxRepeaterPrivate();
+    QmlGraphicsRepeaterPrivate();
+    ~QmlGraphicsRepeaterPrivate();
 
-    QFxVisualModel *model;
+    QmlGraphicsVisualModel *model;
     QVariant dataSource;
     bool ownModel;
 
-    QList<QPointer<QFxItem> > deletables;
+    QList<QPointer<QmlGraphicsItem> > deletables;
 };
 
 QT_END_NAMESPACE

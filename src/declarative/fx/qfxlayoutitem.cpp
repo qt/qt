@@ -45,17 +45,17 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QFxLayoutItem)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QmlGraphicsLayoutItem)
 
 /*!
-    \qmlclass LayoutItem QFxLayoutItem
+    \qmlclass LayoutItem QmlGraphicsLayoutItem
     \brief The LayoutItem element allows you to place your Fluid UI elements inside a classical Qt layout.
 */
 
 /*!
     \internal
-    \class QFxLayoutItem
-    \brief The QFxLayoutItem class allows you to place your Fluid UI elements inside a classical Qt layout.
+    \class QmlGraphicsLayoutItem
+    \brief The QmlGraphicsLayoutItem class allows you to place your Fluid UI elements inside a classical Qt layout.
 */
 
 
@@ -77,13 +77,13 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QFxLayoutItem)
     The preferredSize property can be set to specify the preferred size of this LayoutItem
 */
 
-QFxLayoutItem::QFxLayoutItem(QFxItem* parent)
-    : QFxItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(0,0)
+QmlGraphicsLayoutItem::QmlGraphicsLayoutItem(QmlGraphicsItem* parent)
+    : QmlGraphicsItem(parent), m_maximumSize(INT_MAX,INT_MAX), m_minimumSize(0,0), m_preferredSize(0,0)
 {
     setGraphicsItem(this);
 }
 
-void QFxLayoutItem::setGeometry(const QRectF & rect)
+void QmlGraphicsLayoutItem::setGeometry(const QRectF & rect)
 {
     setX(rect.x());
     setY(rect.y());
@@ -91,7 +91,7 @@ void QFxLayoutItem::setGeometry(const QRectF & rect)
     setHeight(rect.height());
 }
 
-QSizeF QFxLayoutItem::sizeHint(Qt::SizeHint w, const QSizeF &constraint) const
+QSizeF QmlGraphicsLayoutItem::sizeHint(Qt::SizeHint w, const QSizeF &constraint) const
 {
     Q_UNUSED(constraint);
     if(w == Qt::MinimumSize){

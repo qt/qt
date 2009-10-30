@@ -54,13 +54,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
-class Q_DECLARATIVE_EXPORT QFxPixmapCache
+class Q_DECLARATIVE_EXPORT QmlGraphicsPixmapCache
 {
 public:
     static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
     static void cancelGet(const QUrl& url, QObject* obj);
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QFxPixmapCache::get, and any returned reply finished.
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QmlGraphicsPixmapCache::get, and any returned reply finished.
 
     static int pendingRequests(); // mainly for test verification
 };

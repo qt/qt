@@ -51,9 +51,9 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QMovie;
-class QFxAnimatedImageItemPrivate;
+class QmlGraphicsAnimatedImageItemPrivate;
 
-class Q_DECLARATIVE_EXPORT QFxAnimatedImageItem : public QFxImage
+class Q_DECLARATIVE_EXPORT QmlGraphicsAnimatedImageItem : public QmlGraphicsImage
 {
     Q_OBJECT
 
@@ -62,8 +62,8 @@ class Q_DECLARATIVE_EXPORT QFxAnimatedImageItem : public QFxImage
     Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
     Q_PROPERTY(int frameCount READ frameCount)
 public:
-    QFxAnimatedImageItem(QFxItem *parent=0);
-    ~QFxAnimatedImageItem();
+    QmlGraphicsAnimatedImageItem(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsAnimatedImageItem();
 
     bool isPlaying() const;
     void setPlaying(bool play);
@@ -76,7 +76,7 @@ public:
 
     int frameCount() const;
 
-    // Extends QFxImage's src property*/
+    // Extends QmlGraphicsImage's src property*/
     virtual void setSource(const QUrl&);
 
 Q_SIGNALS:
@@ -90,16 +90,16 @@ private Q_SLOTS:
     void playingStatusChanged();
 
 protected:
-    QFxAnimatedImageItem(QFxAnimatedImageItemPrivate &dd, QFxItem *parent);
+    QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QFxAnimatedImageItem)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxAnimatedImageItem)
+    Q_DISABLE_COPY(QmlGraphicsAnimatedImageItem)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsAnimatedImageItem)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxAnimatedImageItem)
+QML_DECLARE_TYPE(QmlGraphicsAnimatedImageItem)
 
 QT_END_HEADER
 

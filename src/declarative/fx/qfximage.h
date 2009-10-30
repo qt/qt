@@ -50,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxImagePrivate;
-class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
+class QmlGraphicsImagePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsImage : public QmlGraphicsImageBase
 {
     Q_OBJECT
     Q_ENUMS(FillMode)
@@ -60,8 +60,8 @@ class Q_DECLARATIVE_EXPORT QFxImage : public QFxImageBase
     Q_PROPERTY(FillMode fillMode READ fillMode WRITE setFillMode NOTIFY fillModeChanged)
 
 public:
-    QFxImage(QFxItem *parent=0);
-    ~QFxImage();
+    QmlGraphicsImage(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsImage();
 
     enum FillMode { Stretch, PreserveAspectFit, PreserveAspectCrop, Tile, TileVertically, TileHorizontally };
     FillMode fillMode() const;
@@ -76,15 +76,15 @@ Q_SIGNALS:
     void fillModeChanged();
 
 protected:
-    QFxImage(QFxImagePrivate &dd, QFxItem *parent);
+    QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QFxImage)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxImage)
+    Q_DISABLE_COPY(QmlGraphicsImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsImage)
 };
 
 QT_END_NAMESPACE
-QML_DECLARE_TYPE(QFxImage)
+QML_DECLARE_TYPE(QmlGraphicsImage)
 QT_END_HEADER
 
 #endif // QFXIMAGE_H

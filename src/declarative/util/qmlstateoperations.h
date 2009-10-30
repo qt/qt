@@ -59,17 +59,17 @@ class Q_DECLARATIVE_EXPORT QmlParentChange : public QmlStateOperation, public Ac
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentChange)
 
-    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
-    Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
+    Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
+    Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent)
 public:
     QmlParentChange(QObject *parent=0);
     ~QmlParentChange();
 
-    QFxItem *object() const;
-    void setObject(QFxItem *);
+    QmlGraphicsItem *object() const;
+    void setObject(QmlGraphicsItem *);
 
-    QFxItem *parent() const;
-    void setParent(QFxItem *);
+    QmlGraphicsItem *parent() const;
+    void setParent(QmlGraphicsItem *);
 
     virtual ActionList actions();
 
@@ -111,15 +111,15 @@ class Q_DECLARATIVE_EXPORT QmlAnchorChanges : public QmlStateOperation, public A
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlAnchorChanges)
 
-    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
+    Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
     Q_PROPERTY(QString reset READ reset WRITE setReset)
-    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft)
-    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight)
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter)
-    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop)
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom)
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter)
-    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline)
+    Q_PROPERTY(QmlGraphicsAnchorLine left READ left WRITE setLeft)
+    Q_PROPERTY(QmlGraphicsAnchorLine right READ right WRITE setRight)
+    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter)
+    Q_PROPERTY(QmlGraphicsAnchorLine top READ top WRITE setTop)
+    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom)
+    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter)
+    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline)
 
 public:
     QmlAnchorChanges(QObject *parent=0);
@@ -127,32 +127,32 @@ public:
 
     virtual ActionList actions();
 
-    QFxItem *object() const;
-    void setObject(QFxItem *);
+    QmlGraphicsItem *object() const;
+    void setObject(QmlGraphicsItem *);
 
     QString reset() const;
     void setReset(const QString &);
 
-    QFxAnchorLine left() const;
-    void setLeft(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine left() const;
+    void setLeft(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine right() const;
-    void setRight(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine right() const;
+    void setRight(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine horizontalCenter() const;
-    void setHorizontalCenter(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine horizontalCenter() const;
+    void setHorizontalCenter(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine top() const;
-    void setTop(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine top() const;
+    void setTop(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine bottom() const;
-    void setBottom(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine bottom() const;
+    void setBottom(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine verticalCenter() const;
-    void setVerticalCenter(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine verticalCenter() const;
+    void setVerticalCenter(const QmlGraphicsAnchorLine &edge);
 
-    QFxAnchorLine baseline() const;
-    void setBaseline(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine baseline() const;
+    void setBaseline(const QmlGraphicsAnchorLine &edge);
 
     virtual void execute();
     virtual bool isReversable();

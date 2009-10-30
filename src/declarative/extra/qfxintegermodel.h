@@ -52,13 +52,13 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxIntegerModelPrivate;
-class Q_DECLARATIVE_EXPORT QFxIntegerModel : public QListModelInterface
+class QmlGraphicsIntegerModelPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsIntegerModel : public QListModelInterface
 {
     Q_OBJECT
 public:
-    QFxIntegerModel(QObject *parent=0);
-    ~QFxIntegerModel();
+    QmlGraphicsIntegerModel(QObject *parent=0);
+    ~QmlGraphicsIntegerModel();
 
     Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
     int minimum() const;
@@ -74,12 +74,12 @@ public:
     QString toString(int role) const;
 
 private:
-    QFxIntegerModelPrivate *d;
+    QmlGraphicsIntegerModelPrivate *d;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxIntegerModel)
+QML_DECLARE_TYPE(QmlGraphicsIntegerModel)
 
 QT_END_HEADER
 

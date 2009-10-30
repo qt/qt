@@ -51,18 +51,18 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 
-class QFxVisualModel;
-class QFxListViewAttached;
-class QFxListViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
+class QmlGraphicsVisualModel;
+class QmlGraphicsListViewAttached;
+class QmlGraphicsListViewPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxListView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsListView)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(QmlGraphicsItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
@@ -85,8 +85,8 @@ class Q_DECLARATIVE_EXPORT QFxListView : public QFxFlickable
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
-    QFxListView(QFxItem *parent=0);
-    ~QFxListView();
+    QmlGraphicsListView(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsListView();
 
     QVariant model() const;
     void setModel(const QVariant &);
@@ -97,7 +97,7 @@ public:
     int currentIndex() const;
     void setCurrentIndex(int idx);
 
-    QFxItem *currentItem();
+    QmlGraphicsItem *currentItem();
     int count() const;
 
     QmlComponent *highlight() const;
@@ -139,7 +139,7 @@ public:
     qreal highlightResizeSpeed() const;
     void setHighlightResizeSpeed(qreal);
 
-    static QFxListViewAttached *qmlAttachedProperties(QObject *);
+    static QmlGraphicsListViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
     void incrementCurrentIndex();
@@ -172,14 +172,14 @@ private Q_SLOTS:
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
     void destroyRemoved();
-    void createdItem(int index, QFxItem *item);
-    void destroyingItem(QFxItem *item);
+    void createdItem(int index, QmlGraphicsItem *item);
+    void destroyingItem(QmlGraphicsItem *item);
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPEINFO(QFxListView, QML_HAS_ATTACHED_PROPERTIES)
-QML_DECLARE_TYPE(QFxListView)
+QML_DECLARE_TYPEINFO(QmlGraphicsListView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsListView)
 
 QT_END_HEADER
 

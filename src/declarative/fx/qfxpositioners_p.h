@@ -62,19 +62,19 @@
 #include <QtDeclarative/qmlstateoperations.h>
 
 QT_BEGIN_NAMESPACE
-class QFxBasePositionerPrivate : public QFxItemPrivate
+class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxBasePositioner)
+    Q_DECLARE_PUBLIC(QmlGraphicsBasePositioner)
 
 public:
-    QFxBasePositionerPrivate()
+    QmlGraphicsBasePositionerPrivate()
         : _ep(false), _componentComplete(false), _spacing(0),
-        aut(QFxBasePositioner::None), moveTransition(0), addTransition(0),
+        aut(QmlGraphicsBasePositioner::None), moveTransition(0), addTransition(0),
         removeTransition(0), _movingItem(0)
     {
     }
 
-    void init(QFxBasePositioner::AutoUpdateType at)
+    void init(QmlGraphicsBasePositioner::AutoUpdateType at)
     {
         aut = at;
     }
@@ -82,15 +82,15 @@ public:
     bool _ep;
     bool _componentComplete;
     int _spacing;
-    QFxBasePositioner::AutoUpdateType aut;
+    QmlGraphicsBasePositioner::AutoUpdateType aut;
     QmlTransition *moveTransition;
     QmlTransition *addTransition;
     QmlTransition *removeTransition;
-    QSet<QFxItem *> _items;
-    QSet<QFxItem *> _leavingItems;
-    QSet<QFxItem *> _stableItems;
-    QSet<QFxItem *> _newItems;
-    QSet<QFxItem *> _animated;
+    QSet<QmlGraphicsItem *> _items;
+    QSet<QmlGraphicsItem *> _leavingItems;
+    QSet<QmlGraphicsItem *> _stableItems;
+    QSet<QmlGraphicsItem *> _newItems;
+    QSet<QmlGraphicsItem *> _animated;
     QmlStateOperation::ActionList addActions;
     QmlStateOperation::ActionList moveActions;
     QmlStateOperation::ActionList removeActions;
@@ -98,7 +98,7 @@ public:
     QmlTransitionManager moveTransitionManager;
     QmlTransitionManager removeTransitionManager;
 //    QmlStateGroup *stateGroup;
-    QFxItem *_movingItem;
+    QmlGraphicsItem *_movingItem;
 };
 
 QT_END_NAMESPACE

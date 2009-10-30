@@ -44,16 +44,16 @@
 
 QT_BEGIN_NAMESPACE
 
-QFxLoaderPrivate::QFxLoaderPrivate()
-: item(0), component(0), ownComponent(false), resizeMode(QFxLoader::SizeLoaderToItem)
+QmlGraphicsLoaderPrivate::QmlGraphicsLoaderPrivate()
+: item(0), component(0), ownComponent(false), resizeMode(QmlGraphicsLoader::SizeLoaderToItem)
 {
 }
 
-QFxLoaderPrivate::~QFxLoaderPrivate()
+QmlGraphicsLoaderPrivate::~QmlGraphicsLoaderPrivate()
 {
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QFxLoader)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QmlGraphicsLoader)
 
 /*!
     \qmlclass Loader
@@ -78,22 +78,22 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QFxLoader)
 
 /*!
     \internal
-    \class QFxLoader
+    \class QmlGraphicsLoader
     \qmlclass Loader
  */
 
 /*!
-    Create a new QFxLoader instance.
+    Create a new QmlGraphicsLoader instance.
  */
-QFxLoader::QFxLoader(QFxItem *parent)
-  : QFxItem(*(new QFxLoaderPrivate), parent)
+QmlGraphicsLoader::QmlGraphicsLoader(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsLoaderPrivate), parent)
 {
 }
 
 /*!
     Destroy the loader instance.
  */
-QFxLoader::~QFxLoader()
+QmlGraphicsLoader::~QmlGraphicsLoader()
 {
 }
 
@@ -104,15 +104,15 @@ QFxLoader::~QFxLoader()
 
     \sa status, progress
 */
-QUrl QFxLoader::source() const
+QUrl QmlGraphicsLoader::source() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
     return d->source;
 }
 
-void QFxLoader::setSource(const QUrl &url)
+void QmlGraphicsLoader::setSource(const QUrl &url)
 {
-    Q_D(QFxLoader);
+    Q_D(QmlGraphicsLoader);
     if (d->source == url)
         return;
 
@@ -167,15 +167,15 @@ void QFxLoader::setSource(const QUrl &url)
     \sa source
 */
 
-QmlComponent *QFxLoader::sourceComponent() const
+QmlComponent *QmlGraphicsLoader::sourceComponent() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
     return d->component;
 }
 
-void QFxLoader::setSourceComponent(QmlComponent *comp)
+void QmlGraphicsLoader::setSourceComponent(QmlComponent *comp)
 {
-    Q_D(QFxLoader);
+    Q_D(QmlGraphicsLoader);
     if (comp == d->component)
         return;
 
@@ -211,9 +211,9 @@ void QFxLoader::setSourceComponent(QmlComponent *comp)
     }
 }
 
-void QFxLoaderPrivate::_q_sourceLoaded()
+void QmlGraphicsLoaderPrivate::_q_sourceLoaded()
 {
-    Q_Q(QFxLoader);
+    Q_Q(QmlGraphicsLoader);
 
     if (component) {
         QmlContext *ctxt = new QmlContext(qmlContext(q));
@@ -229,14 +229,14 @@ void QFxLoaderPrivate::_q_sourceLoaded()
 
         QObject *obj = component->create(ctxt);
         if (obj) {
-            item = qobject_cast<QFxItem *>(obj);
+            item = qobject_cast<QmlGraphicsItem *>(obj);
             if (item) {
                 item->setParentItem(q);
 //                item->setFocus(true);
-                QFxItem *resizeItem = 0;
-                if (resizeMode == QFxLoader::SizeLoaderToItem)
+                QmlGraphicsItem *resizeItem = 0;
+                if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem)
                     resizeItem = item;
-                else if (resizeMode == QFxLoader::SizeItemToLoader)
+                else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader)
                     resizeItem = q;
                 if (resizeItem) {
                     QObject::connect(resizeItem, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
@@ -269,12 +269,12 @@ void QFxLoaderPrivate::_q_sourceLoaded()
     \sa progress
 */
 
-QFxLoader::Status QFxLoader::status() const
+QmlGraphicsLoader::Status QmlGraphicsLoader::status() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
 
     if (d->component)
-        return static_cast<QFxLoader::Status>(d->component->status());
+        return static_cast<QmlGraphicsLoader::Status>(d->component->status());
 
     if (d->item)
         return Ready;
@@ -290,9 +290,9 @@ QFxLoader::Status QFxLoader::status() const
 
     \sa status
 */
-qreal QFxLoader::progress() const
+qreal QmlGraphicsLoader::progress() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
 
     if (d->item)
         return 1.0;
@@ -315,20 +315,20 @@ qreal QFxLoader::progress() const
 
     The default resizeMode is SizeLoaderToItem.
 */
-QFxLoader::ResizeMode QFxLoader::resizeMode() const
+QmlGraphicsLoader::ResizeMode QmlGraphicsLoader::resizeMode() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
     return d->resizeMode;
 }
 
-void QFxLoader::setResizeMode(ResizeMode mode)
+void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
 {
-    Q_D(QFxLoader);
+    Q_D(QmlGraphicsLoader);
     if (mode == d->resizeMode)
         return;
 
     if (d->item) {
-        QFxItem *resizeItem = 0;
+        QmlGraphicsItem *resizeItem = 0;
         if (d->resizeMode == SizeLoaderToItem)
             resizeItem = d->item;
         else if (d->resizeMode == SizeItemToLoader)
@@ -342,7 +342,7 @@ void QFxLoader::setResizeMode(ResizeMode mode)
     d->resizeMode = mode;
 
     if (d->item) {
-        QFxItem *resizeItem = 0;
+        QmlGraphicsItem *resizeItem = 0;
         if (d->resizeMode == SizeLoaderToItem)
             resizeItem = d->item;
         else if (d->resizeMode == SizeItemToLoader)
@@ -356,17 +356,17 @@ void QFxLoader::setResizeMode(ResizeMode mode)
     }
 }
 
-void QFxLoaderPrivate::_q_updateSize()
+void QmlGraphicsLoaderPrivate::_q_updateSize()
 {
-    Q_Q(QFxLoader);
+    Q_Q(QmlGraphicsLoader);
     if (!item)
         return;
     switch (resizeMode) {
-    case QFxLoader::SizeLoaderToItem:
+    case QmlGraphicsLoader::SizeLoaderToItem:
         q->setImplicitWidth(item->width());
         q->setImplicitHeight(item->height());
         break;
-    case QFxLoader::SizeItemToLoader:
+    case QmlGraphicsLoader::SizeItemToLoader:
         item->setWidth(q->width());
         item->setHeight(q->height());
         break;
@@ -379,9 +379,9 @@ void QFxLoaderPrivate::_q_updateSize()
     \qmlproperty Item Loader::item
     This property holds the top-level item created from source.
 */
-QFxItem *QFxLoader::item() const
+QmlGraphicsItem *QmlGraphicsLoader::item() const
 {
-    Q_D(const QFxLoader);
+    Q_D(const QmlGraphicsLoader);
     return d->item;
 }
 

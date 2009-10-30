@@ -59,19 +59,19 @@
 QT_BEGIN_NAMESPACE
 
 class QmlContext;
-class QFxLoaderPrivate : public QFxItemPrivate
+class QmlGraphicsLoaderPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxLoader)
+    Q_DECLARE_PUBLIC(QmlGraphicsLoader)
 
 public:
-    QFxLoaderPrivate();
-    ~QFxLoaderPrivate();
+    QmlGraphicsLoaderPrivate();
+    ~QmlGraphicsLoaderPrivate();
 
     QUrl source;
-    QFxItem *item;
+    QmlGraphicsItem *item;
     QmlComponent *component;
     bool ownComponent;
-    QFxLoader::ResizeMode resizeMode;
+    QmlGraphicsLoader::ResizeMode resizeMode;
 
     void _q_sourceLoaded();
     void _q_updateSize();

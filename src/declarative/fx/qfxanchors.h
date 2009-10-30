@@ -53,19 +53,19 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxAnchorsPrivate;
-class QFxAnchorLine;
-class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
+class QmlGraphicsAnchorsPrivate;
+class QmlGraphicsAnchorLine;
+class Q_DECLARATIVE_EXPORT QmlGraphicsAnchors : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QFxAnchorLine left READ left WRITE setLeft RESET resetLeft)
-    Q_PROPERTY(QFxAnchorLine right READ right WRITE setRight RESET resetRight)
-    Q_PROPERTY(QFxAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
-    Q_PROPERTY(QFxAnchorLine top READ top WRITE setTop RESET resetTop)
-    Q_PROPERTY(QFxAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
-    Q_PROPERTY(QFxAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
-    Q_PROPERTY(QFxAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
+    Q_PROPERTY(QmlGraphicsAnchorLine left READ left WRITE setLeft RESET resetLeft)
+    Q_PROPERTY(QmlGraphicsAnchorLine right READ right WRITE setRight RESET resetRight)
+    Q_PROPERTY(QmlGraphicsAnchorLine horizontalCenter READ horizontalCenter WRITE setHorizontalCenter RESET resetHorizontalCenter)
+    Q_PROPERTY(QmlGraphicsAnchorLine top READ top WRITE setTop RESET resetTop)
+    Q_PROPERTY(QmlGraphicsAnchorLine bottom READ bottom WRITE setBottom RESET resetBottom)
+    Q_PROPERTY(QmlGraphicsAnchorLine verticalCenter READ verticalCenter WRITE setVerticalCenter RESET resetVerticalCenter)
+    Q_PROPERTY(QmlGraphicsAnchorLine baseline READ baseline WRITE setBaseline RESET resetBaseline)
     Q_PROPERTY(qreal leftMargin READ leftMargin WRITE setLeftMargin NOTIFY leftMarginChanged)
     Q_PROPERTY(qreal rightMargin READ rightMargin WRITE setRightMargin NOTIFY rightMarginChanged)
     Q_PROPERTY(qreal horizontalCenterOffset READ horizontalCenterOffset WRITE setHorizontalCenterOffset NOTIFY horizontalCenterOffsetChanged())
@@ -73,12 +73,12 @@ class Q_DECLARATIVE_EXPORT QFxAnchors : public QObject
     Q_PROPERTY(qreal bottomMargin READ bottomMargin WRITE setBottomMargin NOTIFY bottomMarginChanged)
     Q_PROPERTY(qreal verticalCenterOffset READ verticalCenterOffset WRITE setVerticalCenterOffset NOTIFY verticalCenterOffsetChanged())
     Q_PROPERTY(qreal baselineOffset READ baselineOffset WRITE setBaselineOffset NOTIFY baselineOffsetChanged())
-    Q_PROPERTY(QFxItem *fill READ fill WRITE setFill)
-    Q_PROPERTY(QFxItem *centerIn READ centerIn WRITE setCenterIn)
+    Q_PROPERTY(QmlGraphicsItem *fill READ fill WRITE setFill)
+    Q_PROPERTY(QmlGraphicsItem *centerIn READ centerIn WRITE setCenterIn)
 
 public:
-    QFxAnchors(QObject *parent=0);
-    virtual ~QFxAnchors();
+    QmlGraphicsAnchors(QObject *parent=0);
+    virtual ~QmlGraphicsAnchors();
 
     enum UsedAnchor { 
         HasLeftAnchor = 0x01,
@@ -93,32 +93,32 @@ public:
     };
     Q_DECLARE_FLAGS(UsedAnchors, UsedAnchor)
 
-    QFxAnchorLine left() const;
-    void setLeft(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine left() const;
+    void setLeft(const QmlGraphicsAnchorLine &edge);
     void resetLeft();
 
-    QFxAnchorLine right() const;
-    void setRight(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine right() const;
+    void setRight(const QmlGraphicsAnchorLine &edge);
     void resetRight();
 
-    QFxAnchorLine horizontalCenter() const;
-    void setHorizontalCenter(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine horizontalCenter() const;
+    void setHorizontalCenter(const QmlGraphicsAnchorLine &edge);
     void resetHorizontalCenter();
 
-    QFxAnchorLine top() const;
-    void setTop(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine top() const;
+    void setTop(const QmlGraphicsAnchorLine &edge);
     void resetTop();
 
-    QFxAnchorLine bottom() const;
-    void setBottom(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine bottom() const;
+    void setBottom(const QmlGraphicsAnchorLine &edge);
     void resetBottom();
 
-    QFxAnchorLine verticalCenter() const;
-    void setVerticalCenter(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine verticalCenter() const;
+    void setVerticalCenter(const QmlGraphicsAnchorLine &edge);
     void resetVerticalCenter();
 
-    QFxAnchorLine baseline() const;
-    void setBaseline(const QFxAnchorLine &edge);
+    QmlGraphicsAnchorLine baseline() const;
+    void setBaseline(const QmlGraphicsAnchorLine &edge);
     void resetBaseline();
 
     qreal leftMargin() const;
@@ -142,15 +142,15 @@ public:
     qreal baselineOffset() const;
     void setBaselineOffset(qreal);
 
-    QFxItem *fill() const;
-    void setFill(QFxItem *);
+    QmlGraphicsItem *fill() const;
+    void setFill(QmlGraphicsItem *);
 
-    QFxItem *centerIn() const;
-    void setCenterIn(QFxItem *);
+    QmlGraphicsItem *centerIn() const;
+    void setCenterIn(QmlGraphicsItem *);
 
     UsedAnchors usedAnchors() const;
 
-    void setItem(QFxItem *item);
+    void setItem(QmlGraphicsItem *item);
 
     void classBegin();
     void componentComplete();
@@ -165,15 +165,15 @@ Q_SIGNALS:
     void baselineOffsetChanged();
 
 private:
-    friend class QFxItem;
-    Q_DISABLE_COPY(QFxAnchors)
-    Q_DECLARE_PRIVATE(QFxAnchors)
+    friend class QmlGraphicsItem;
+    Q_DISABLE_COPY(QmlGraphicsAnchors)
+    Q_DECLARE_PRIVATE(QmlGraphicsAnchors)
 };
-Q_DECLARE_OPERATORS_FOR_FLAGS(QFxAnchors::UsedAnchors)
+Q_DECLARE_OPERATORS_FOR_FLAGS(QmlGraphicsAnchors::UsedAnchors)
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxAnchors)
+QML_DECLARE_TYPE(QmlGraphicsAnchors)
 
 QT_END_HEADER
 

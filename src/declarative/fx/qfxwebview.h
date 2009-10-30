@@ -57,31 +57,31 @@ class QWebSettings;
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxWebViewPrivate;
+class QmlGraphicsWebViewPrivate;
 class QNetworkRequest;
-class QFxWebView;
+class QmlGraphicsWebView;
 
-class Q_DECLARATIVE_EXPORT QFxWebPage : public QWebPage
+class Q_DECLARATIVE_EXPORT QmlGraphicsWebPage : public QWebPage
 {
     Q_OBJECT
 public:
-    explicit QFxWebPage(QFxWebView *parent);
-    ~QFxWebPage();
+    explicit QmlGraphicsWebPage(QmlGraphicsWebView *parent);
+    ~QmlGraphicsWebPage();
 protected:
     QObject *createPlugin(const QString &classid, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
     QWebPage *createWindow(WebWindowType type);
 
 private:
-    QFxWebView *viewItem();
+    QmlGraphicsWebView *viewItem();
 };
 
 
-class QFxWebViewAttached;
-class QFxWebSettings;
+class QmlGraphicsWebViewAttached;
+class QmlGraphicsWebSettings;
 
 //### TODO: browser plugins
 
-class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 {
     Q_OBJECT
 
@@ -107,18 +107,18 @@ class Q_DECLARATIVE_EXPORT QFxWebView : public QFxPaintedItem
     Q_PROPERTY(QAction* forward READ forwardAction CONSTANT)
     Q_PROPERTY(QAction* stop READ stopAction CONSTANT)
 
-    Q_PROPERTY(QFxWebSettings* settings READ settingsObject CONSTANT)
+    Q_PROPERTY(QmlGraphicsWebSettings* settings READ settingsObject CONSTANT)
 
     Q_PROPERTY(QmlList<QObject *>* javaScriptWindowObjects READ javaScriptWindowObjects CONSTANT)
 
     Q_PROPERTY(QmlComponent* newWindowComponent READ newWindowComponent WRITE setNewWindowComponent)
-    Q_PROPERTY(QFxItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
+    Q_PROPERTY(QmlGraphicsItem* newWindowParent READ newWindowParent WRITE setNewWindowParent)
 
     Q_PROPERTY(bool renderingEnabled READ renderingEnabled WRITE setRenderingEnabled)
 
 public:
-    QFxWebView(QFxItem *parent=0);
-    ~QFxWebView();
+    QmlGraphicsWebView(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsWebView();
 
     QUrl url() const;
     void setUrl(const QUrl &);
@@ -162,7 +162,7 @@ public:
 
     QWebHistory *history() const;
     QWebSettings *settings() const;
-    QFxWebSettings *settingsObject() const;
+    QmlGraphicsWebSettings *settingsObject() const;
 
     int pixelCacheSize() const;
     void setPixelCacheSize(int pixels);
@@ -172,12 +172,12 @@ public:
 
     QmlList<QObject *> *javaScriptWindowObjects();
 
-    static QFxWebViewAttached *qmlAttachedProperties(QObject *);
+    static QmlGraphicsWebViewAttached *qmlAttachedProperties(QObject *);
 
     QmlComponent *newWindowComponent() const;
     void setNewWindowComponent(QmlComponent *newWindow);
-    QFxItem *newWindowParent() const;
-    void setNewWindowParent(QFxItem *newWindow);
+    QmlGraphicsItem *newWindowParent() const;
+    void setNewWindowParent(QmlGraphicsItem *newWindow);
 
 Q_SIGNALS:
     void preferredWidthChanged();
@@ -214,7 +214,7 @@ private Q_SLOTS:
     void contentsSizeChanged(const QSize&);
 
 protected:
-    QFxWebView(QFxWebViewPrivate &dd, QFxItem *parent);
+    QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent);
 
     void drawContents(QPainter *, const QRect &);
 
@@ -229,21 +229,21 @@ protected:
                                  const QRectF &oldGeometry);
     virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
-    QFxWebView *createWindow(QWebPage::WebWindowType type);
+    QmlGraphicsWebView *createWindow(QWebPage::WebWindowType type);
     QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
 
 private:
     void init();
     virtual void componentComplete();
-    Q_DISABLE_COPY(QFxWebView)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxWebView)
-    friend class QFxWebPage;
+    Q_DISABLE_COPY(QmlGraphicsWebView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsWebView)
+    friend class QmlGraphicsWebPage;
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxWebView)
-QML_DECLARE_TYPEINFO(QFxWebView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsWebView)
+QML_DECLARE_TYPEINFO(QmlGraphicsWebView, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(QAction)
 
 QT_END_HEADER

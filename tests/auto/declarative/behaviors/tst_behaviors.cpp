@@ -26,12 +26,12 @@ void tst_behaviors::simpleBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/simple.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
     rect->setState("moved");
     QTest::qWait(100);
-    qreal x = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"))->x();
+    qreal x = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
@@ -39,12 +39,12 @@ void tst_behaviors::scriptTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/scripttrigger.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
     rect->setColor(QColor("red"));
     QTest::qWait(100);
-    qreal x = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"))->x();
+    qreal x = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"))->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
 }
 
@@ -52,10 +52,10 @@ void tst_behaviors::cppTriggered()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/cpptrigger.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
-    QFxRect *innerRect = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"));
+    QmlGraphicsRect *innerRect = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"));
     QVERIFY(innerRect);
 
     innerRect->setProperty("x", 200);
@@ -68,7 +68,7 @@ void tst_behaviors::loop()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/loop.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
     //don't crash
@@ -79,12 +79,12 @@ void tst_behaviors::colorBehavior()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/color.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
     rect->setState("red");
     QTest::qWait(100);
-    QColor color = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"))->color();
+    QColor color = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"))->color();
     QVERIFY(color != QColor("red") && color != QColor("green"));  //i.e. the behavior has been triggered
 }
 
@@ -92,12 +92,12 @@ void tst_behaviors::replaceBinding()
 {
     QmlEngine engine;
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/binding.qml"));
-    QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+    QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
     QVERIFY(rect);
 
     rect->setState("moved");
     QTest::qWait(100);
-    QFxRect *innerRect = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"));
+    QmlGraphicsRect *innerRect = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"));
     QVERIFY(innerRect);
     qreal x = innerRect->x();
     QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
@@ -127,24 +127,24 @@ void tst_behaviors::group()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/groupProperty.qml"));
-        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
         QVERIFY(rect);
 
         rect->setState("moved");
         QTest::qWait(100);
-        qreal x = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"))->x();
+        qreal x = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
 
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/groupProperty2.qml"));
-        QFxRect *rect = qobject_cast<QFxRect*>(c.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
         QVERIFY(rect);
 
         rect->setState("moved");
         QTest::qWait(100);
-        qreal x = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("MyRect"))->x();
+        qreal x = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
 }

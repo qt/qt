@@ -48,10 +48,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QmlGraphicsBorderImage)
 
 /*!
-    \qmlclass BorderImage QFxBorderImage
+    \qmlclass BorderImage QmlGraphicsBorderImage
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
 
@@ -64,23 +64,23 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,BorderImage,QFxBorderImage)
 
 /*!
     \internal
-    \class QFxBorderImage BorderImage
-    \brief The QFxBorderImage class provides an image item that you can add to a QmlView.
+    \class QmlGraphicsBorderImage BorderImage
+    \brief The QmlGraphicsBorderImage class provides an image item that you can add to a QmlView.
 */
 
-QFxBorderImage::QFxBorderImage(QFxItem *parent)
-  : QFxImageBase(*(new QFxBorderImagePrivate), parent)
+QmlGraphicsBorderImage::QmlGraphicsBorderImage(QmlGraphicsItem *parent)
+  : QmlGraphicsImageBase(*(new QmlGraphicsBorderImagePrivate), parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxBorderImage::~QFxBorderImage()
+QmlGraphicsBorderImage::~QmlGraphicsBorderImage()
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (d->sciReply)
         d->sciReply->deleteLater();
     if (d->sciPendingPixmapCache)
-        QFxPixmapCache::cancelGet(d->sciurl, this);
+        QmlGraphicsPixmapCache::cancelGet(d->sciurl, this);
 }
 /*!
     \qmlproperty enum BorderImage::status
@@ -147,9 +147,9 @@ static QString toLocalFileOrQrc(const QUrl& url)
 }
 
 
-void QFxBorderImage::setSource(const QUrl &url)
+void QmlGraphicsBorderImage::setSource(const QUrl &url)
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     //equality is fairly expensive, so we bypass for simple, common case
     if ((d->url.isEmpty() == url.isEmpty()) && url == d->url)
         return;
@@ -160,11 +160,11 @@ void QFxBorderImage::setSource(const QUrl &url)
     }
 
     if (d->pendingPixmapCache) {
-        QFxPixmapCache::cancelGet(d->url, this);
+        QmlGraphicsPixmapCache::cancelGet(d->url, this);
         d->pendingPixmapCache = false;
     }
     if (d->sciPendingPixmapCache) {
-        QFxPixmapCache::cancelGet(d->sciurl, this);
+        QmlGraphicsPixmapCache::cancelGet(d->sciurl, this);
         d->sciPendingPixmapCache = false;
     }
 
@@ -193,7 +193,7 @@ void QFxBorderImage::setSource(const QUrl &url)
             if (!lf.isEmpty()) {
                 QFile file(lf);
                 file.open(QIODevice::ReadOnly);
-                setGridScaledImage(QFxGridScaledImage(&file));
+                setGridScaledImage(QmlGraphicsGridScaledImage(&file));
             } else
 #endif
             {
@@ -203,7 +203,7 @@ void QFxBorderImage::setSource(const QUrl &url)
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+            QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->url, &d->pix);
             if (reply) {
                 d->pendingPixmapCache = true;
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -254,9 +254,9 @@ void QFxBorderImage::setSource(const QUrl &url)
     \l {BorderImage::source}{.sci file}.
 */
 
-QFxScaleGrid *QFxBorderImage::border()
+QmlGraphicsScaleGrid *QmlGraphicsBorderImage::border()
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     return d->getScaleGrid();
 }
 
@@ -272,15 +272,15 @@ QFxScaleGrid *QFxBorderImage::border()
     \o Round - Like Repeat, but scales the images down to ensure that the last image is not cropped.
     \endlist
 */
-QFxBorderImage::TileMode QFxBorderImage::horizontalTileMode() const
+QmlGraphicsBorderImage::TileMode QmlGraphicsBorderImage::horizontalTileMode() const
 {
-    Q_D(const QFxBorderImage);
+    Q_D(const QmlGraphicsBorderImage);
     return d->horizontalTileMode;
 }
 
-void QFxBorderImage::setHorizontalTileMode(TileMode t)
+void QmlGraphicsBorderImage::setHorizontalTileMode(TileMode t)
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (t != d->horizontalTileMode) {
         d->horizontalTileMode = t;
         emit horizontalTileModeChanged();
@@ -288,15 +288,15 @@ void QFxBorderImage::setHorizontalTileMode(TileMode t)
     }
 }
 
-QFxBorderImage::TileMode QFxBorderImage::verticalTileMode() const
+QmlGraphicsBorderImage::TileMode QmlGraphicsBorderImage::verticalTileMode() const
 {
-    Q_D(const QFxBorderImage);
+    Q_D(const QmlGraphicsBorderImage);
     return d->verticalTileMode;
 }
 
-void QFxBorderImage::setVerticalTileMode(TileMode t)
+void QmlGraphicsBorderImage::setVerticalTileMode(TileMode t)
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (t != d->verticalTileMode) {
         d->verticalTileMode = t;
         emit verticalTileModeChanged();
@@ -304,14 +304,14 @@ void QFxBorderImage::setVerticalTileMode(TileMode t)
     }
 }
 
-void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
+void QmlGraphicsBorderImage::setGridScaledImage(const QmlGraphicsGridScaledImage& sci)
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (!sci.isValid()) {
         d->status = Error;
         emit statusChanged(d->status);
     } else {
-        QFxScaleGrid *sg = border();
+        QmlGraphicsScaleGrid *sg = border();
         sg->setTop(sci.gridTop());
         sg->setBottom(sci.gridBottom());
         sg->setLeft(sci.gridLeft());
@@ -320,7 +320,7 @@ void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
+        QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
         if (reply) {
             d->sciPendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -342,16 +342,16 @@ void QFxBorderImage::setGridScaledImage(const QFxGridScaledImage& sci)
     }
 }
 
-void QFxBorderImage::requestFinished()
+void QmlGraphicsBorderImage::requestFinished()
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
 
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QFxPixmapCache::find(d->sciurl, &d->pix);
+        QmlGraphicsPixmapCache::find(d->sciurl, &d->pix);
     } else {
         d->pendingPixmapCache = false;
-        if (!QFxPixmapCache::find(d->url, &d->pix))
+        if (!QmlGraphicsPixmapCache::find(d->url, &d->pix))
             d->status = Error;
     }
     setImplicitWidth(d->pix.width());
@@ -366,25 +366,25 @@ void QFxBorderImage::requestFinished()
     update();
 }
 
-void QFxBorderImage::sciRequestFinished()
+void QmlGraphicsBorderImage::sciRequestFinished()
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (d->sciReply->error() != QNetworkReply::NoError) {
         d->status = Error;
         d->sciReply->deleteLater();
         d->sciReply = 0;
         emit statusChanged(d->status);
     } else {
-        QFxGridScaledImage sci(d->sciReply);
+        QmlGraphicsGridScaledImage sci(d->sciReply);
         d->sciReply->deleteLater();
         d->sciReply = 0;
         setGridScaledImage(sci);
     }
 }
 
-void QFxBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QFxBorderImage);
+    Q_D(QmlGraphicsBorderImage);
     if (d->pix.isNull())
         return;
 
@@ -402,8 +402,8 @@ void QFxBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
     }
 }
 
-QFxBorderImage::QFxBorderImage(QFxBorderImagePrivate &dd, QFxItem *parent)
-  : QFxImageBase(dd, parent)
+QmlGraphicsBorderImage::QmlGraphicsBorderImage(QmlGraphicsBorderImagePrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsImageBase(dd, parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }

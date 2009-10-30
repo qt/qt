@@ -64,27 +64,27 @@ QT_BEGIN_NAMESPACE
 
 typedef struct PathViewItem{
     int index;
-    QFxItem* item;
+    QmlGraphicsItem* item;
 }PathViewItem;
 
-class QFxPathViewPrivate : public QFxItemPrivate
+class QmlGraphicsPathViewPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxPathView)
+    Q_DECLARE_PUBLIC(QmlGraphicsPathView)
 
 public:
-    QFxPathViewPrivate()
+    QmlGraphicsPathViewPrivate()
       : path(0), currentIndex(0), startPc(0), lastDist(0)
         , lastElapsed(0), stealMouse(false), ownModel(false), activeItem(0)
-        , snapPos(0), dragMargin(0), moveOffset(this, &QFxPathViewPrivate::setOffset)
+        , snapPos(0), dragMargin(0), moveOffset(this, &QmlGraphicsPathViewPrivate::setOffset)
         , firstIndex(0), pathItems(-1), pathOffset(0), requestedIndex(-1), model(0)
         , moveReason(Other)
     {
-        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QFxPathViewPrivate, &QFxPathViewPrivate::fixOffset>(&moveOffset, this);
+        fixupOffsetEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsPathViewPrivate, &QmlGraphicsPathViewPrivate::fixOffset>(&moveOffset, this);
     }
 
     void init()
     {
-        Q_Q(QFxPathView);
+        Q_Q(QmlGraphicsPathView);
         _offset = 0;
         q->setAcceptedMouseButtons(Qt::LeftButton);
         q->setFlag(QGraphicsItem::ItemIsFocusScope);
@@ -92,16 +92,16 @@ public:
         q->connect(&tl, SIGNAL(updated()), q, SLOT(ticked()));
     }
 
-    QFxItem *getItem(int modelIndex) {
-        Q_Q(QFxPathView);
+    QmlGraphicsItem *getItem(int modelIndex) {
+        Q_Q(QmlGraphicsPathView);
         requestedIndex = modelIndex;
-        QFxItem *item = model->item(modelIndex);
+        QmlGraphicsItem *item = model->item(modelIndex);
         if (item)
             item->setParentItem(q);
         requestedIndex = -1;
         return item;
     }
-    void releaseItem(QFxItem *item) {
+    void releaseItem(QmlGraphicsItem *item) {
         model->release(item);
     }
 
@@ -114,11 +114,11 @@ public:
     void fixOffset();
     void setOffset(qreal offset);
     void regenerate();
-    void updateItem(QFxItem *, qreal);
+    void updateItem(QmlGraphicsItem *, qreal);
     void snapToCurrent();
     QPointF pointNear(const QPointF &point, qreal *nearPercent=0) const;
 
-    QFxPath *path;
+    QmlGraphicsPath *path;
     int currentIndex;
     qreal startPc;
     QPointF startPoint;
@@ -129,18 +129,18 @@ public:
     bool ownModel : 1;
     QTime lastPosTime;
     QPointF lastPos;
-    QFxItem *activeItem;
+    QmlGraphicsItem *activeItem;
     qreal snapPos;
     qreal dragMargin;
     QmlTimeLine tl;
-    QmlTimeLineValueProxy<QFxPathViewPrivate> moveOffset;
+    QmlTimeLineValueProxy<QmlGraphicsPathViewPrivate> moveOffset;
     QmlTimeLineEvent fixupOffsetEvent;
     int firstIndex;
     int pathItems;
     int pathOffset;
     int requestedIndex;
-    QList<QFxItem *> items;
-    QFxVisualModel *model;
+    QList<QmlGraphicsItem *> items;
+    QmlGraphicsVisualModel *model;
     QVariant modelVariant;
     enum MovementReason { Other, Key, Mouse };
     MovementReason moveReason;

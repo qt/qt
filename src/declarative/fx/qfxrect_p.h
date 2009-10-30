@@ -57,19 +57,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxGradient;
-class QFxRect;
-class QFxRectPrivate : public QFxItemPrivate
+class QmlGraphicsGradient;
+class QmlGraphicsRect;
+class QmlGraphicsRectPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxRect)
+    Q_DECLARE_PUBLIC(QmlGraphicsRect)
 
 public:
-    QFxRectPrivate() :
+    QmlGraphicsRectPrivate() :
     color(Qt::white), gradient(0), pen(0), radius(0), paintmargin(0)
     {
     }
 
-    ~QFxRectPrivate()
+    ~QmlGraphicsRectPrivate()
     {
         delete pen;
     }
@@ -80,23 +80,23 @@ public:
 
     QColor getColor();
     QColor color;
-    QFxGradient *gradient;
-    QFxPen *getPen() {
+    QmlGraphicsGradient *gradient;
+    QmlGraphicsPen *getPen() {
         if (!pen) {
-            Q_Q(QFxRect);
-            pen = new QFxPen;
+            Q_Q(QmlGraphicsRect);
+            pen = new QmlGraphicsPen;
             QObject::connect(pen, SIGNAL(penChanged()), q, SLOT(doUpdate()));
         }
         return pen;
     }
-    QFxPen *pen;
+    QmlGraphicsPen *pen;
     qreal radius;
     qreal paintmargin;
     QPixmap rectImage;
 
     void setPaintMargin(qreal margin)
     {
-        Q_Q(QFxRect);
+        Q_Q(QmlGraphicsRect);
         if (margin == paintmargin)
             return;
         q->prepareGeometryChange();

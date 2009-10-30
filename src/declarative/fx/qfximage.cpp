@@ -48,10 +48,10 @@
 QT_BEGIN_NAMESPACE
 
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QmlGraphicsImage)
 
 /*!
-    \qmlclass Image QFxImage
+    \qmlclass Image QmlGraphicsImage
     \brief The Image element allows you to add bitmaps to a scene.
     \inherits Item
 
@@ -112,8 +112,8 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
 
 /*!
     \internal
-    \class QFxImage Image
-    \brief The QFxImage class provides an image item that you can add to a QmlView.
+    \class QmlGraphicsImage Image
+    \brief The QmlGraphicsImage class provides an image item that you can add to a QmlView.
 
     \ingroup group_coreitems
 
@@ -122,34 +122,34 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Image,QFxImage)
     Image { source: "pics/star.png" }
     \endqml
 
-    A QFxImage object can be instantiated in Qml using the tag \l Image.
+    A QmlGraphicsImage object can be instantiated in Qml using the tag \l Image.
 */
 
-QFxImage::QFxImage(QFxItem *parent)
-  : QFxImageBase(*(new QFxImagePrivate), parent)
+QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsItem *parent)
+  : QmlGraphicsImageBase(*(new QmlGraphicsImagePrivate), parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxImage::QFxImage(QFxImagePrivate &dd, QFxItem *parent)
-  : QFxImageBase(dd, parent)
+QmlGraphicsImage::QmlGraphicsImage(QmlGraphicsImagePrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsImageBase(dd, parent)
 {
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxImage::~QFxImage()
+QmlGraphicsImage::~QmlGraphicsImage()
 {
 }
 
-QPixmap QFxImage::pixmap() const
+QPixmap QmlGraphicsImage::pixmap() const
 {
-    Q_D(const QFxImage);
+    Q_D(const QmlGraphicsImage);
     return d->pix;
 }
 
-void QFxImage::setPixmap(const QPixmap &pix)
+void QmlGraphicsImage::setPixmap(const QPixmap &pix)
 {
-    Q_D(QFxImage);
+    Q_D(QmlGraphicsImage);
     if (!d->url.isEmpty())
         return;
     d->pix = pix;
@@ -179,15 +179,15 @@ void QFxImage::setPixmap(const QPixmap &pix)
     \sa examples/declarative/fillmode
     \sa examples/declarative/aspectratio
 */
-QFxImage::FillMode QFxImage::fillMode() const
+QmlGraphicsImage::FillMode QmlGraphicsImage::fillMode() const
 {
-    Q_D(const QFxImage);
+    Q_D(const QmlGraphicsImage);
     return d->fillMode;
 }
 
-void QFxImage::setFillMode(FillMode mode)
+void QmlGraphicsImage::setFillMode(FillMode mode)
 {
-    Q_D(QFxImage);
+    Q_D(QmlGraphicsImage);
     if (d->fillMode == mode)
         return;
     d->fillMode = mode;
@@ -239,9 +239,9 @@ void QFxImage::setFillMode(FillMode mode)
     The URL may be absolute, or relative to the URL of the component.
 */
 
-void QFxImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsImage::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QFxImage);
+    Q_D(QmlGraphicsImage);
     if (d->pix.isNull())
         return;
 

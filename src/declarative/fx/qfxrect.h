@@ -51,14 +51,14 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class Q_DECLARATIVE_EXPORT QFxPen : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsPen : public QObject
 {
     Q_OBJECT
 
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY penChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY penChanged)
 public:
-    QFxPen(QObject *parent=0)
+    QmlGraphicsPen(QObject *parent=0)
         : QObject(parent), _width(1), _color("#000000"), _valid(false)
     {}
 
@@ -79,7 +79,7 @@ private:
     bool _valid;
 };
 
-class Q_DECLARATIVE_EXPORT QFxGradientStop : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsGradientStop : public QObject
 {
     Q_OBJECT
 
@@ -87,7 +87,7 @@ class Q_DECLARATIVE_EXPORT QFxGradientStop : public QObject
     Q_PROPERTY(QColor color READ color WRITE setColor)
 
 public:
-    QFxGradientStop(QObject *parent=0) : QObject(parent) {}
+    QmlGraphicsGradientStop(QObject *parent=0) : QObject(parent) {}
 
     qreal position() const { return m_position; }
     void setPosition(qreal position) { m_position = position; updateGradient(); }
@@ -103,18 +103,18 @@ private:
     QColor m_color;
 };
 
-class Q_DECLARATIVE_EXPORT QFxGradient : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsGradient : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(QList<QFxGradientStop *> *stops READ stops)
+    Q_PROPERTY(QList<QmlGraphicsGradientStop *> *stops READ stops)
     Q_CLASSINFO("DefaultProperty", "stops")
 
 public:
-    QFxGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
-    ~QFxGradient() { delete m_gradient; }
+    QmlGraphicsGradient(QObject *parent=0) : QObject(parent), m_gradient(0) {}
+    ~QmlGraphicsGradient() { delete m_gradient; }
 
-    QList<QFxGradientStop *> *stops() { return &m_stops; }
+    QList<QmlGraphicsGradientStop *> *stops() { return &m_stops; }
 
     const QGradient *gradient() const;
 
@@ -125,30 +125,30 @@ private:
     void doUpdate();
 
 private:
-    QList<QFxGradientStop *> m_stops;
+    QList<QmlGraphicsGradientStop *> m_stops;
     mutable QGradient *m_gradient;
-    friend class QFxGradientStop;
+    friend class QmlGraphicsGradientStop;
 };
 
-class QFxRectPrivate;
-class Q_DECLARATIVE_EXPORT QFxRect : public QFxItem
+class QmlGraphicsRectPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsRect : public QmlGraphicsItem
 {
     Q_OBJECT
 
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
-    Q_PROPERTY(QFxGradient *gradient READ gradient WRITE setGradient)
-    Q_PROPERTY(QFxPen * border READ border CONSTANT)
+    Q_PROPERTY(QmlGraphicsGradient *gradient READ gradient WRITE setGradient)
+    Q_PROPERTY(QmlGraphicsPen * border READ border CONSTANT)
     Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged)
 public:
-    QFxRect(QFxItem *parent=0);
+    QmlGraphicsRect(QmlGraphicsItem *parent=0);
 
     QColor color() const;
     void setColor(const QColor &);
 
-    QFxPen *border();
+    QmlGraphicsPen *border();
 
-    QFxGradient *gradient() const;
-    void setGradient(QFxGradient *gradient);
+    QmlGraphicsGradient *gradient() const;
+    void setGradient(QmlGraphicsGradient *gradient);
 
     qreal radius() const;
     void setRadius(qreal radius);
@@ -170,19 +170,19 @@ private:
     void drawRect(QPainter &painter);
 
 protected:
-    QFxRect(QFxRectPrivate &dd, QFxItem *parent);
+    QmlGraphicsRect(QmlGraphicsRectPrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QFxRect)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxRect)
+    Q_DISABLE_COPY(QmlGraphicsRect)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRect)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxPen)
-QML_DECLARE_TYPE(QFxGradientStop)
-QML_DECLARE_TYPE(QFxGradient)
-QML_DECLARE_TYPE(QFxRect)
+QML_DECLARE_TYPE(QmlGraphicsPen)
+QML_DECLARE_TYPE(QmlGraphicsGradientStop)
+QML_DECLARE_TYPE(QmlGraphicsGradient)
+QML_DECLARE_TYPE(QmlGraphicsRect)
 
 QT_END_HEADER
 

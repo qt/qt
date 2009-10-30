@@ -22,7 +22,7 @@ void tst_states::basicChanges()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicChanges.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -36,7 +36,7 @@ void tst_states::basicChanges()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicChanges2.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -56,7 +56,7 @@ void tst_states::basicChanges()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicChanges3.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -92,7 +92,7 @@ void tst_states::basicExtension()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicExtension.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -125,7 +125,7 @@ void tst_states::basicExtension()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/fakeExtension.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -156,7 +156,7 @@ void tst_states::basicBinding()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicBinding.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -183,7 +183,7 @@ void tst_states::basicBinding()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicBinding2.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -213,7 +213,7 @@ void tst_states::basicBinding()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicBinding3.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -237,7 +237,7 @@ void tst_states::basicBinding()
 
     {
         QmlComponent rectComponent(&engine, SRCDIR "/data/basicBinding4.qml");
-        QFxRect *rect = qobject_cast<QFxRect*>(rectComponent.create());
+        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(rectComponent.create());
         QVERIFY(rect != 0);
 
         QCOMPARE(rect->color(),QColor("red"));
@@ -263,7 +263,7 @@ void tst_states::basicBinding()
     }
 }
 
-class MyRect : public QFxRect
+class MyRect : public QmlGraphicsRect
 {
    Q_OBJECT
 public:
@@ -303,7 +303,7 @@ void tst_states::signalOverride()
         rect->doSomething();
         QCOMPARE(rect->color(),QColor("blue"));
 
-        QFxRect *innerRect = qobject_cast<QFxRect*>(rect->findChild<QFxRect*>("extendedRect"));
+        QmlGraphicsRect *innerRect = qobject_cast<QmlGraphicsRect*>(rect->findChild<QmlGraphicsRect*>("extendedRect"));
 
         innerRect->setState("green");
         rect->doSomething();

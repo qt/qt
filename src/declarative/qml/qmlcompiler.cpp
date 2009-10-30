@@ -562,7 +562,7 @@ bool QmlCompiler::compile(QmlEngine *engine,
                           QmlCompiledData *out)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::Compilation> pc;
+    QmlPerfTimer<QmlPerf::Compilation> pc;
 #endif
     exceptions.clear();
 

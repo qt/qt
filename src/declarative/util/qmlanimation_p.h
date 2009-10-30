@@ -275,8 +275,8 @@ public:
 
     void init();
 
-    QFxItem *pcTarget;
-    QFxItem *pcParent;
+    QmlGraphicsItem *pcTarget;
+    QmlGraphicsItem *pcParent;
 
     void doAction();
     QActionAnimation *cpa;

@@ -51,8 +51,8 @@
 
 QT_BEGIN_NAMESPACE
 class QSharedNetworkReply;
-typedef QHash<QString, QSharedNetworkReply *> QFxSharedNetworkReplyHash;
-static QFxSharedNetworkReplyHash qfxActiveNetworkReplies;
+typedef QHash<QString, QSharedNetworkReply *> QmlGraphicsSharedNetworkReplyHash;
+static QmlGraphicsSharedNetworkReplyHash qfxActiveNetworkReplies;
 
 class QSharedNetworkReply
 {
@@ -118,8 +118,8 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
 
 /*!
     \internal
-    \class QFxPixmapCache
-    \brief Enacapsultes a pixmap for QFx items.
+    \class QmlGraphicsPixmapCache
+    \brief Enacapsultes a pixmap for QmlGraphics items.
 
     This class is NOT reentrant.
  */
@@ -140,10 +140,10 @@ static QString toLocalFileOrQrc(const QUrl& url)
 
     Returns true if the image was loaded without error.
 */
-bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
+bool QmlGraphicsPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::PixmapLoad> perf;
+    QmlPerfTimer<QmlPerf::PixmapLoad> perf;
 #endif
 
     QString key = url.toString();
@@ -166,10 +166,10 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
         } else
 #endif
         {
-            QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+            QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter == qfxActiveNetworkReplies.end()) {
                 // API usage error
-                qWarning() << "QFxPixmapCache: URL not loaded" << url;
+                qWarning() << "QmlGraphicsPixmapCache: URL not loaded" << url;
                 ok = false;
             } else {
                 if ((*iter)->reply->error()) {
@@ -195,7 +195,7 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 #endif
         // We may be the second finder. Still need to check for active replies.
         {
-            QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+            QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter != qfxActiveNetworkReplies.end())
                 (*iter)->release();
         }
@@ -213,7 +213,7 @@ bool QFxPixmapCache::find(const QUrl& url, QPixmap *pixmap)
     The returned QNetworkReply will be deleted when all get() calls are
     matched by a corresponding find() call.
 */
-QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
+QNetworkReply *QmlGraphicsPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(url);
@@ -239,7 +239,7 @@ QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *
         return 0;
     }
 
-    QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+    QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
     if (iter == qfxActiveNetworkReplies.end()) {
         QNetworkRequest req(url);
         QSharedNetworkReply *item = new QSharedNetworkReply(engine->networkAccessManager()->get(req));
@@ -259,10 +259,10 @@ QNetworkReply *QFxPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *
     Any connections from the QNetworkReply returned by get() to \a obj will be
     disconnected.
 */
-void QFxPixmapCache::cancelGet(const QUrl& url, QObject* obj)
+void QmlGraphicsPixmapCache::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
-    QFxSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
+    QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
     if (iter == qfxActiveNetworkReplies.end())
         return;
     if (obj)
@@ -274,7 +274,7 @@ void QFxPixmapCache::cancelGet(const QUrl& url, QObject* obj)
     This function is mainly for test verification. It returns the number of
     requests that are still unfinished.
 */
-int QFxPixmapCache::pendingRequests()
+int QmlGraphicsPixmapCache::pendingRequests()
 {
     return qfxActiveNetworkReplies.count();
 }

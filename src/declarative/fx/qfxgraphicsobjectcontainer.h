@@ -51,9 +51,9 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QGraphicsObject;
-class QFxGraphicsObjectContainerPrivate;
+class QmlGraphicsGraphicsObjectContainerPrivate;
 
-class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsGraphicsObjectContainer : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -62,8 +62,8 @@ class Q_DECLARATIVE_EXPORT QFxGraphicsObjectContainer : public QFxItem
     Q_PROPERTY(bool synchronizedResizing READ synchronizedResizing WRITE setSynchronizedResizing)
 
 public:
-    QFxGraphicsObjectContainer(QFxItem *parent = 0);
-    ~QFxGraphicsObjectContainer();
+    QmlGraphicsGraphicsObjectContainer(QmlGraphicsItem *parent = 0);
+    ~QmlGraphicsGraphicsObjectContainer();
 
     QGraphicsObject *graphicsObject() const;
     void setGraphicsObject(QGraphicsObject *);
@@ -77,13 +77,13 @@ protected:
 
 private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateSize())
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxGraphicsObjectContainer)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsGraphicsObjectContainer)
 };
 
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QGraphicsObject)
-QML_DECLARE_TYPE(QFxGraphicsObjectContainer)
+QML_DECLARE_TYPE(QmlGraphicsGraphicsObjectContainer)
 
 QT_END_HEADER
 

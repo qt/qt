@@ -59,37 +59,37 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QFxBorderImagePrivate : public QFxImageBasePrivate
+class QmlGraphicsBorderImagePrivate : public QmlGraphicsImageBasePrivate
 {
-    Q_DECLARE_PUBLIC(QFxBorderImage)
+    Q_DECLARE_PUBLIC(QmlGraphicsBorderImage)
 
 public:
-    QFxBorderImagePrivate()
+    QmlGraphicsBorderImagePrivate()
       : border(0), sciReply(0),
         sciPendingPixmapCache(false),
-        horizontalTileMode(QFxBorderImage::Stretch),
-        verticalTileMode(QFxBorderImage::Stretch)
+        horizontalTileMode(QmlGraphicsBorderImage::Stretch),
+        verticalTileMode(QmlGraphicsBorderImage::Stretch)
     {
     }
 
-    ~QFxBorderImagePrivate()
+    ~QmlGraphicsBorderImagePrivate()
     {
     }
 
-    QFxScaleGrid *getScaleGrid()
+    QmlGraphicsScaleGrid *getScaleGrid()
     {
-        Q_Q(QFxBorderImage);
+        Q_Q(QmlGraphicsBorderImage);
         if (!border)
-            border = new QFxScaleGrid(q);
+            border = new QmlGraphicsScaleGrid(q);
         return border;
     }
 
-    QFxScaleGrid *border;
+    QmlGraphicsScaleGrid *border;
     QUrl sciurl;
     QNetworkReply *sciReply;
     bool sciPendingPixmapCache;
-    QFxBorderImage::TileMode horizontalTileMode;
-    QFxBorderImage::TileMode verticalTileMode;
+    QmlGraphicsBorderImage::TileMode horizontalTileMode;
+    QmlGraphicsBorderImage::TileMode verticalTileMode;
 };
 
 QT_END_NAMESPACE

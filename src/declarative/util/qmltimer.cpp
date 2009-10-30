@@ -66,7 +66,7 @@ public:
 };
 
 /*!
-    \qmlclass Timer QFxTimer
+    \qmlclass Timer QmlGraphicsTimer
     \brief The Timer item triggers a handler at a specified interval.
 
     A timer can be used to trigger an action either once, or repeatedly

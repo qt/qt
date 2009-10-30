@@ -60,7 +60,7 @@ static const int FlickThreshold = 20;
 // Really slow flicks can be annoying.
 static const int minimumFlickVelocity = 200;
 
-class QFxFlickableVisibleArea : public QObject
+class QmlGraphicsFlickableVisibleArea : public QObject
 {
     Q_OBJECT
 
@@ -70,7 +70,7 @@ class QFxFlickableVisibleArea : public QObject
     Q_PROPERTY(qreal heightRatio READ heightRatio NOTIFY pageChanged)
 
 public:
-    QFxFlickableVisibleArea(QFxFlickable *parent=0);
+    QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent=0);
 
     qreal xPosition() const;
     qreal widthRatio() const;
@@ -83,42 +83,42 @@ signals:
     void pageChanged();
 
 private:
-    QFxFlickable *flickable;
+    QmlGraphicsFlickable *flickable;
     qreal m_xPosition;
     qreal m_widthRatio;
     qreal m_yPosition;
     qreal m_heightRatio;
 };
 
-QFxFlickableVisibleArea::QFxFlickableVisibleArea(QFxFlickable *parent)
+QmlGraphicsFlickableVisibleArea::QmlGraphicsFlickableVisibleArea(QmlGraphicsFlickable *parent)
     : QObject(parent), flickable(parent), m_xPosition(0.), m_widthRatio(0.)
     , m_yPosition(0.), m_heightRatio(0.)
 {
 }
 
-qreal QFxFlickableVisibleArea::widthRatio() const
+qreal QmlGraphicsFlickableVisibleArea::widthRatio() const
 {
     return m_widthRatio;
 }
 
-qreal QFxFlickableVisibleArea::xPosition() const
+qreal QmlGraphicsFlickableVisibleArea::xPosition() const
 {
     return m_xPosition;
 }
 
-qreal QFxFlickableVisibleArea::heightRatio() const
+qreal QmlGraphicsFlickableVisibleArea::heightRatio() const
 {
     return m_heightRatio;
 }
 
-qreal QFxFlickableVisibleArea::yPosition() const
+qreal QmlGraphicsFlickableVisibleArea::yPosition() const
 {
     return m_yPosition;
 }
 
-void QFxFlickableVisibleArea::updateVisible()
+void QmlGraphicsFlickableVisibleArea::updateVisible()
 {
-    QFxFlickablePrivate *p = static_cast<QFxFlickablePrivate *>(QGraphicsItemPrivate::get(flickable));
+    QmlGraphicsFlickablePrivate *p = static_cast<QmlGraphicsFlickablePrivate *>(QGraphicsItemPrivate::get(flickable));
     bool pageChange = false;
 
     // Vertical
@@ -155,21 +155,21 @@ void QFxFlickableVisibleArea::updateVisible()
 }
 
 
-QFxFlickablePrivate::QFxFlickablePrivate()
-  : viewport(new QFxItem), _moveX(viewport, &QFxItem::setX), _moveY(viewport, &QFxItem::setY)
+QmlGraphicsFlickablePrivate::QmlGraphicsFlickablePrivate()
+  : viewport(new QmlGraphicsItem), _moveX(viewport, &QmlGraphicsItem::setX), _moveY(viewport, &QmlGraphicsItem::setY)
     , vWidth(-1), vHeight(-1), overShoot(true), flicked(false), moving(false), stealMouse(false)
     , pressed(false), atXEnd(false), atXBeginning(true), atYEnd(false), atYBeginning(true)
     , interactive(true), deceleration(500), maxVelocity(5000), reportedVelocitySmoothing(100)
     , delayedPressEvent(0), delayedPressTarget(0), pressDelay(0)
     , horizontalVelocity(this), verticalVelocity(this), vTime(0), visibleArea(0)
 {
-    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupX>(&_moveX, this);
-    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QFxFlickablePrivate, &QFxFlickablePrivate::fixupY>(&_moveY, this);
+    fixupXEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupX>(&_moveX, this);
+    fixupYEvent = QmlTimeLineEvent::timeLineEvent<QmlGraphicsFlickablePrivate, &QmlGraphicsFlickablePrivate::fixupY>(&_moveY, this);
 }
 
-void QFxFlickablePrivate::init()
+void QmlGraphicsFlickablePrivate::init()
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     viewport->setParent(q);
     QObject::connect(&timeline, SIGNAL(updated()), q, SLOT(ticked()));
     QObject::connect(&timeline, SIGNAL(completed()), q, SLOT(movementEnding()));
@@ -181,9 +181,9 @@ void QFxFlickablePrivate::init()
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(widthChange()));
 }
 
-void QFxFlickablePrivate::flickX(qreal velocity)
+void QmlGraphicsFlickablePrivate::flickX(qreal velocity)
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     qreal maxDistance = -1;
     if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
         velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
@@ -219,9 +219,9 @@ void QFxFlickablePrivate::flickX(qreal velocity)
     }
 }
 
-void QFxFlickablePrivate::flickY(qreal velocity)
+void QmlGraphicsFlickablePrivate::flickY(qreal velocity)
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     qreal maxDistance = -1;
     // -ve velocity means list is moving up
     if (velocity > 0) {
@@ -255,9 +255,9 @@ void QFxFlickablePrivate::flickY(qreal velocity)
     }
 }
 
-void QFxFlickablePrivate::fixupX()
+void QmlGraphicsFlickablePrivate::fixupX()
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     if (!q->xflick() || _moveX.timeLine())
         return;
 
@@ -277,9 +277,9 @@ void QFxFlickablePrivate::fixupX()
     }
 }
 
-void QFxFlickablePrivate::fixupY()
+void QmlGraphicsFlickablePrivate::fixupY()
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     if (!q->yflick() || _moveY.timeLine())
         return;
 
@@ -299,9 +299,9 @@ void QFxFlickablePrivate::fixupY()
     }
 }
 
-void QFxFlickablePrivate::updateBeginningEnd()
+void QmlGraphicsFlickablePrivate::updateBeginningEnd()
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     bool atBoundaryChange = false;
 
     // Vertical
@@ -341,7 +341,7 @@ void QFxFlickablePrivate::updateBeginningEnd()
         visibleArea->updateVisible();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QFxFlickable)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QmlGraphicsFlickable)
 
 /*!
     \qmlclass Flickable
@@ -369,12 +369,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QFxFlickable)
 
 /*!
     \internal
-    \class QFxFlickable
-    \brief The QFxFlickable class provides a view that can be "flicked".
+    \class QmlGraphicsFlickable
+    \brief The QmlGraphicsFlickable class provides a view that can be "flicked".
 
     \ingroup group_widgets
 
-    QFxFlickable allows its children to be dragged and flicked.
+    QmlGraphicsFlickable allows its children to be dragged and flicked.
 
 \code
 Flickable {
@@ -383,8 +383,8 @@ Flickable {
 }
 \endcode
 
-    Note that QFxFlickable does not automatically clip its contents. If
-    it is not full-screen it is likely that QFxItem::clip should be set
+    Note that QmlGraphicsFlickable does not automatically clip its contents. If
+    it is not full-screen it is likely that QmlGraphicsItem::clip should be set
     to true.
 
 */
@@ -410,21 +410,21 @@ Flickable {
     \endcode
 */
 
-QFxFlickable::QFxFlickable(QFxItem *parent)
-  : QFxItem(*(new QFxFlickablePrivate), parent)
+QmlGraphicsFlickable::QmlGraphicsFlickable(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsFlickablePrivate), parent)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->init();
 }
 
-QFxFlickable::QFxFlickable(QFxFlickablePrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsFlickable::QmlGraphicsFlickable(QmlGraphicsFlickablePrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->init();
 }
 
-QFxFlickable::~QFxFlickable()
+QmlGraphicsFlickable::~QmlGraphicsFlickable()
 {
 }
 
@@ -436,15 +436,15 @@ QFxFlickable::~QFxFlickable()
     corner of the Flickable. For example, if you flick an image up 100 pixels,
     \c yPosition will be 100.
 */
-qreal QFxFlickable::viewportX() const
+qreal QmlGraphicsFlickable::viewportX() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return -d->_moveX.value();
 }
 
-void QFxFlickable::setViewportX(qreal pos)
+void QmlGraphicsFlickable::setViewportX(qreal pos)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     pos = qRound(pos);
     d->timeline.reset(d->_moveX);
     if (-pos != d->_moveX.value()) {
@@ -453,15 +453,15 @@ void QFxFlickable::setViewportX(qreal pos)
     }
 }
 
-qreal QFxFlickable::viewportY() const
+qreal QmlGraphicsFlickable::viewportY() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return -d->_moveY.value();
 }
 
-void QFxFlickable::setViewportY(qreal pos)
+void QmlGraphicsFlickable::setViewportY(qreal pos)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     pos = qRound(pos);
     d->timeline.reset(d->_moveY);
     if (-pos != d->_moveY.value()) {
@@ -479,15 +479,15 @@ void QFxFlickable::setViewportY(qreal pos)
     special interaction with Flickable's children: for example, you might want to
     freeze a flickable map while viewing detailed information on a location popup that is a child of the Flickable.
 */
-bool QFxFlickable::isInteractive() const
+bool QmlGraphicsFlickable::isInteractive() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->interactive;
 }
 
-void QFxFlickable::setInteractive(bool interactive)
+void QmlGraphicsFlickable::setInteractive(bool interactive)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->interactive = interactive;
     if (!interactive && d->flicked) {
         d->timeline.clear();
@@ -507,15 +507,15 @@ void QFxFlickable::setInteractive(bool interactive)
     The reported velocity is smoothed to avoid erratic output.
     reportedVelocitySmoothing determines how much smoothing is applied.
 */
-qreal QFxFlickable::horizontalVelocity() const
+qreal QmlGraphicsFlickable::horizontalVelocity() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->horizontalVelocity.value();
 }
 
-qreal QFxFlickable::verticalVelocity() const
+qreal QmlGraphicsFlickable::verticalVelocity() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->verticalVelocity.value();
 }
 
@@ -528,62 +528,62 @@ qreal QFxFlickable::verticalVelocity() const
     These properties are true if the flickable view is positioned at the beginning,
     or end respecively.
 */
-bool QFxFlickable::isAtXEnd() const
+bool QmlGraphicsFlickable::isAtXEnd() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->atXEnd;
 }
 
-bool QFxFlickable::isAtXBeginning() const
+bool QmlGraphicsFlickable::isAtXBeginning() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->atXBeginning;
 }
 
-bool QFxFlickable::isAtYEnd() const
+bool QmlGraphicsFlickable::isAtYEnd() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->atYEnd;
 }
 
-bool QFxFlickable::isAtYBeginning() const
+bool QmlGraphicsFlickable::isAtYBeginning() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->atYBeginning;
 }
 
-void QFxFlickable::ticked()
+void QmlGraphicsFlickable::ticked()
 {
     viewportMoved();
 }
 
-QFxItem *QFxFlickable::viewport()
+QmlGraphicsItem *QmlGraphicsFlickable::viewport()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     return d->viewport;
 }
 
-qreal QFxFlickable::visibleX() const
+qreal QmlGraphicsFlickable::visibleX() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return -d->_moveX.value();
 }
 
-qreal QFxFlickable::visibleY() const
+qreal QmlGraphicsFlickable::visibleY() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return -d->_moveY.value();
 }
 
-QFxFlickableVisibleArea *QFxFlickable::visibleArea()
+QmlGraphicsFlickableVisibleArea *QmlGraphicsFlickable::visibleArea()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (!d->visibleArea)
-        d->visibleArea = new QFxFlickableVisibleArea(this);
+        d->visibleArea = new QmlGraphicsFlickableVisibleArea(this);
     return d->visibleArea;
 }
 
-void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (interactive && timeline.isActive() && (qAbs(velocityX) > 10 || qAbs(velocityY) > 10))
         stealMouse = true; // If we've been flicked then steal the click.
@@ -594,18 +594,18 @@ void QFxFlickablePrivate::handleMousePressEvent(QGraphicsSceneMouseEvent *event)
     velocityX = 0;
     velocityY = 0;
     lastPos = QPoint();
-    QFxItemPrivate::start(lastPosTime);
+    QmlGraphicsItemPrivate::start(lastPosTime);
     pressPos = event->pos();
     pressX = _moveX.value();
     pressY = _moveY.value();
     flicked = false;
-    QFxItemPrivate::start(pressTime);
-    QFxItemPrivate::start(velocityTime);
+    QmlGraphicsItemPrivate::start(pressTime);
+    QmlGraphicsItemPrivate::start(velocityTime);
 }
 
-void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     if (!interactive || lastPosTime.isNull())
         return;
     bool rejectY = false;
@@ -614,7 +614,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (q->yflick()) {
         int dy = int(event->pos().y() - pressPos.y());
-        if (qAbs(dy) > DragThreshold || QFxItemPrivate::elapsed(pressTime) > 200) {
+        if (qAbs(dy) > DragThreshold || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
             qreal newY = dy + pressY;
             const qreal minY = q->minYExtent();
             const qreal maxY = q->maxYExtent();
@@ -641,7 +641,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     if (q->xflick()) {
         int dx = int(event->pos().x() - pressPos.x());
-        if (qAbs(dx) > DragThreshold || QFxItemPrivate::elapsed(pressTime) > 200) {
+        if (qAbs(dx) > DragThreshold || QmlGraphicsItemPrivate::elapsed(pressTime) > 200) {
             qreal newX = dx + pressX;
             const qreal minX = q->minXExtent();
             const qreal maxX = q->maxXExtent();
@@ -668,7 +668,7 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     if (!lastPos.isNull()) {
-        qreal elapsed = qreal(QFxItemPrivate::restart(lastPosTime)) / 1000.;
+        qreal elapsed = qreal(QmlGraphicsItemPrivate::restart(lastPosTime)) / 1000.;
         if (elapsed <= 0)
             elapsed = 1;
         if (q->yflick()) {
@@ -697,14 +697,14 @@ void QFxFlickablePrivate::handleMouseMoveEvent(QGraphicsSceneMouseEvent *event)
     lastPos = event->pos();
 }
 
-void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     pressed = false;
     if (lastPosTime.isNull())
         return;
 
-    if (QFxItemPrivate::elapsed(lastPosTime) > 100) {
+    if (QmlGraphicsItemPrivate::elapsed(lastPosTime) > 100) {
         // if we drag then pause before release we should not cause a flick.
         velocityX = 0.0;
         velocityY = 0.0;
@@ -736,32 +736,32 @@ void QFxFlickablePrivate::handleMouseReleaseEvent(QGraphicsSceneMouseEvent *even
         q->movementEnding();
 }
 
-void QFxFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickable::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->handleMousePressEvent(event);
     event->accept();
 }
 
-void QFxFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickable::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->handleMouseMoveEvent(event);
     event->accept();
 }
 
-void QFxFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickable::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->clearDelayedPress();
     d->handleMouseReleaseEvent(event);
     event->accept();
     ungrabMouse();
 }
 
-void QFxFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     if (!q->scene() || pressDelay <= 0)
         return;
     delayedPressTarget = q->scene()->mouseGrabberItem();
@@ -787,7 +787,7 @@ void QFxFlickablePrivate::captureDelayedPress(QGraphicsSceneMouseEvent *event)
     delayedPressTimer.start(pressDelay, q);
 }
 
-void QFxFlickablePrivate::clearDelayedPress()
+void QmlGraphicsFlickablePrivate::clearDelayedPress()
 {
     if (delayedPressEvent) {
         delayedPressTimer.stop();
@@ -796,13 +796,13 @@ void QFxFlickablePrivate::clearDelayedPress()
     }
 }
 
-void QFxFlickable::timerEvent(QTimerEvent *event)
+void QmlGraphicsFlickable::timerEvent(QTimerEvent *event)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (event->timerId() == d->delayedPressTimer.timerId()) {
         d->delayedPressTimer.stop();
         if (d->delayedPressEvent) {
-            QFxItem *grabber = scene() ? qobject_cast<QFxItem*>(scene()->mouseGrabberItem()) : 0;
+            QmlGraphicsItem *grabber = scene() ? qobject_cast<QmlGraphicsItem*>(scene()->mouseGrabberItem()) : 0;
             if (!grabber || grabber != this)
                 scene()->sendEvent(d->delayedPressTarget, d->delayedPressEvent);
             delete d->delayedPressEvent;
@@ -811,32 +811,32 @@ void QFxFlickable::timerEvent(QTimerEvent *event)
     }
 }
 
-qreal QFxFlickable::minYExtent() const
+qreal QmlGraphicsFlickable::minYExtent() const
 {
     return 0.0;
 }
 
-qreal QFxFlickable::minXExtent() const
+qreal QmlGraphicsFlickable::minXExtent() const
 {
     return 0.0;
 }
 
 /* returns -ve */
-qreal QFxFlickable::maxXExtent() const
+qreal QmlGraphicsFlickable::maxXExtent() const
 {
     return width() - vWidth();
 }
 /* returns -ve */
-qreal QFxFlickable::maxYExtent() const
+qreal QmlGraphicsFlickable::maxYExtent() const
 {
     return height() - vHeight();
 }
 
-void QFxFlickable::viewportMoved()
+void QmlGraphicsFlickable::viewportMoved()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
 
-    int elapsed = QFxItemPrivate::elapsed(d->velocityTime);
+    int elapsed = QmlGraphicsItemPrivate::elapsed(d->velocityTime);
 
     if (elapsed) {
         qreal prevY = d->lastFlickablePosition.x();
@@ -861,7 +861,7 @@ void QFxFlickable::viewportMoved()
     }
 
     d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
-    QFxItemPrivate::restart(d->velocityTime);
+    QmlGraphicsItemPrivate::restart(d->velocityTime);
     d->updateBeginningEnd();
 
     if (d->flicked) {
@@ -889,61 +889,61 @@ void QFxFlickable::viewportMoved()
     }
 }
 
-void QFxFlickable::cancelFlick()
+void QmlGraphicsFlickable::cancelFlick()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->timeline.reset(d->_moveX);
     d->timeline.reset(d->_moveY);
     movementEnding();
 }
 
-void QFxFlickablePrivate::data_removeAt(int)
+void QmlGraphicsFlickablePrivate::data_removeAt(int)
 {
     // ###
 }
 
-int QFxFlickablePrivate::data_count() const
+int QmlGraphicsFlickablePrivate::data_count() const
 {
     // ###
     return 0;
 }
 
-void QFxFlickablePrivate::data_append(QObject *o)
+void QmlGraphicsFlickablePrivate::data_append(QObject *o)
 {
-    Q_Q(QFxFlickable);
-    QFxItem *i = qobject_cast<QFxItem *>(o);
+    Q_Q(QmlGraphicsFlickable);
+    QmlGraphicsItem *i = qobject_cast<QmlGraphicsItem *>(o);
     if (i)
         viewport->fxChildren()->append(i);
     else
         o->setParent(q);
 }
 
-void QFxFlickablePrivate::data_insert(int, QObject *)
+void QmlGraphicsFlickablePrivate::data_insert(int, QObject *)
 {
     // ###
 }
 
-QObject *QFxFlickablePrivate::data_at(int) const
+QObject *QmlGraphicsFlickablePrivate::data_at(int) const
 {
     // ###
     return 0;
 }
 
-void QFxFlickablePrivate::data_clear()
+void QmlGraphicsFlickablePrivate::data_clear()
 {
     // ###
 }
 
 
-QmlList<QObject *> *QFxFlickable::flickableData()
+QmlList<QObject *> *QmlGraphicsFlickable::flickableData()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     return &d->data;
 }
 
-QmlList<QFxItem *> *QFxFlickable::flickableChildren()
+QmlList<QmlGraphicsItem *> *QmlGraphicsFlickable::flickableChildren()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     return d->viewport->fxChildren();
 }
 
@@ -957,15 +957,15 @@ QmlList<QFxItem *> *QFxFlickable::flickableChildren()
     the feeling that the edges of the view are soft, rather than a hard
     physical boundary.
 */
-bool QFxFlickable::overShoot() const
+bool QmlGraphicsFlickable::overShoot() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->overShoot;
 }
 
-void QFxFlickable::setOverShoot(bool o)
+void QmlGraphicsFlickable::setOverShoot(bool o)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->overShoot = o;
 }
 
@@ -983,15 +983,15 @@ void QFxFlickable::setOverShoot(bool o)
     }
     \endcode
 */
-qreal QFxFlickable::viewportWidth() const
+qreal QmlGraphicsFlickable::viewportWidth() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->vWidth;
 }
 
-void QFxFlickable::setViewportWidth(qreal w)
+void QmlGraphicsFlickable::setViewportWidth(qreal w)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->vWidth == w)
         return;
     d->vWidth = w;
@@ -1006,9 +1006,9 @@ void QFxFlickable::setViewportWidth(qreal w)
     d->updateBeginningEnd();
 }
 
-void QFxFlickable::widthChange()
+void QmlGraphicsFlickable::widthChange()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->vWidth < 0) {
         d->viewport->setWidth(width());
         emit viewportWidthChanged();
@@ -1016,9 +1016,9 @@ void QFxFlickable::widthChange()
     d->updateBeginningEnd();
 }
 
-void QFxFlickable::heightChange()
+void QmlGraphicsFlickable::heightChange()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->vHeight < 0) {
         d->viewport->setHeight(height());
         emit viewportHeightChanged();
@@ -1026,15 +1026,15 @@ void QFxFlickable::heightChange()
     d->updateBeginningEnd();
 }
 
-qreal QFxFlickable::viewportHeight() const
+qreal QmlGraphicsFlickable::viewportHeight() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->vHeight;
 }
 
-void QFxFlickable::setViewportHeight(qreal h)
+void QmlGraphicsFlickable::setViewportHeight(qreal h)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->vHeight == h)
         return;
     d->vHeight = h;
@@ -1049,42 +1049,42 @@ void QFxFlickable::setViewportHeight(qreal h)
     d->updateBeginningEnd();
 }
 
-qreal QFxFlickable::vWidth() const
+qreal QmlGraphicsFlickable::vWidth() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     if (d->vWidth < 0)
         return width();
     else
         return d->vWidth;
 }
 
-qreal QFxFlickable::vHeight() const
+qreal QmlGraphicsFlickable::vHeight() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     if (d->vHeight < 0)
         return height();
     else
         return d->vHeight;
 }
 
-bool QFxFlickable::xflick() const
+bool QmlGraphicsFlickable::xflick() const
 {
     return vWidth() != width();
 }
 
-bool QFxFlickable::yflick() const
+bool QmlGraphicsFlickable::yflick() const
 {
     return vHeight() !=  height();
 }
 
-bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
+bool QmlGraphicsFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     QGraphicsSceneMouseEvent mouseEvent(event->type());
     QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
 
     QGraphicsScene *s = scene();
-    QFxItem *grabber = s ? qobject_cast<QFxItem*>(s->mouseGrabberItem()) : 0;
+    QmlGraphicsItem *grabber = s ? qobject_cast<QmlGraphicsItem*>(s->mouseGrabberItem()) : 0;
     if ((d->stealMouse || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
         mouseEvent.setAccepted(false);
         for (int i = 0x1; i <= 0x10; i <<= 1) {
@@ -1119,7 +1119,7 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         default:
             break;
         }
-        grabber = qobject_cast<QFxItem*>(s->mouseGrabberItem());
+        grabber = qobject_cast<QmlGraphicsItem*>(s->mouseGrabberItem());
         if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this) {
             d->clearDelayedPress();
             grabMouse();
@@ -1134,10 +1134,10 @@ bool QFxFlickable::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     return false;
 }
 
-bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
+bool QmlGraphicsFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 {
     if (!isVisible())
-        return QFxItem::sceneEventFilter(i, e);
+        return QmlGraphicsItem::sceneEventFilter(i, e);
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
     case QEvent::GraphicsSceneMouseMove:
@@ -1147,7 +1147,7 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
         break;
     }
 
-    return QFxItem::sceneEventFilter(i, e);
+    return QmlGraphicsItem::sceneEventFilter(i, e);
 }
 
 /*!
@@ -1156,15 +1156,15 @@ bool QFxFlickable::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 
     The default is 5000 pixels/s
 */
-qreal QFxFlickable::maximumFlickVelocity() const
+qreal QmlGraphicsFlickable::maximumFlickVelocity() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->maxVelocity;
 }
 
-void QFxFlickable::setMaximumFlickVelocity(qreal v)
+void QmlGraphicsFlickable::setMaximumFlickVelocity(qreal v)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (v == d->maxVelocity)
         return;
     d->maxVelocity = v;
@@ -1176,21 +1176,21 @@ void QFxFlickable::setMaximumFlickVelocity(qreal v)
 
     The default is 500.
 */
-qreal QFxFlickable::flickDeceleration() const
+qreal QmlGraphicsFlickable::flickDeceleration() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->deceleration;
 }
 
-void QFxFlickable::setFlickDeceleration(qreal deceleration)
+void QmlGraphicsFlickable::setFlickDeceleration(qreal deceleration)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     d->deceleration = deceleration;
 }
 
-bool QFxFlickable::isFlicking() const
+bool QmlGraphicsFlickable::isFlicking() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->flicked;
 }
 
@@ -1205,29 +1205,29 @@ bool QFxFlickable::isFlicking() const
     the press event will not be delivered.  If the button is released
     within the timeout, both the press and release will be delivered.
 */
-int QFxFlickable::pressDelay() const
+int QmlGraphicsFlickable::pressDelay() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->pressDelay;
 }
 
-void QFxFlickable::setPressDelay(int delay)
+void QmlGraphicsFlickable::setPressDelay(int delay)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->pressDelay == delay)
         return;
     d->pressDelay = delay;
 }
 
-qreal QFxFlickable::reportedVelocitySmoothing() const
+qreal QmlGraphicsFlickable::reportedVelocitySmoothing() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->reportedVelocitySmoothing;
 }
 
-void QFxFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
+void QmlGraphicsFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     Q_ASSERT(reportedVelocitySmoothing >= 0);
     if (reportedVelocitySmoothing == d->reportedVelocitySmoothing)
         return;
@@ -1235,15 +1235,15 @@ void QFxFlickable::setReportedVelocitySmoothing(qreal reportedVelocitySmoothing)
     emit reportedVelocitySmoothingChanged(reportedVelocitySmoothing);
 }
 
-bool QFxFlickable::isMoving() const
+bool QmlGraphicsFlickable::isMoving() const
 {
-    Q_D(const QFxFlickable);
+    Q_D(const QmlGraphicsFlickable);
     return d->moving;
 }
 
-void QFxFlickable::movementStarting()
+void QmlGraphicsFlickable::movementStarting()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (!d->moving) {
         d->moving = true;
         emit movingChanged();
@@ -1251,9 +1251,9 @@ void QFxFlickable::movementStarting()
     }
 }
 
-void QFxFlickable::movementEnding()
+void QmlGraphicsFlickable::movementEnding()
 {
-    Q_D(QFxFlickable);
+    Q_D(QmlGraphicsFlickable);
     if (d->moving) {
         d->moving = false;
         emit movingChanged();
@@ -1268,16 +1268,16 @@ void QFxFlickable::movementEnding()
     d->verticalVelocity.setValue(0);
 }
 
-void QFxFlickablePrivate::updateVelocity()
+void QmlGraphicsFlickablePrivate::updateVelocity()
 {
-    Q_Q(QFxFlickable);
+    Q_Q(QmlGraphicsFlickable);
     emit q->horizontalVelocityChanged();
     emit q->verticalVelocityChanged();
 }
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFlickableVisibleArea)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisibleArea,QFxFlickableVisibleArea)
+QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisibleArea,QmlGraphicsFlickableVisibleArea)
 
 #include "qfxflickable.moc"

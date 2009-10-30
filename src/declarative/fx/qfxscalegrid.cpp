@@ -48,25 +48,25 @@
 QT_BEGIN_NAMESPACE
 /*!
     \internal
-    \class QFxScaleGrid
-    \brief The QFxScaleGrid class allows you to specify a 3x3 grid to use in scaling an image.
+    \class QmlGraphicsScaleGrid
+    \brief The QmlGraphicsScaleGrid class allows you to specify a 3x3 grid to use in scaling an image.
 */
-QML_DEFINE_NOCREATE_TYPE(QFxScaleGrid)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsScaleGrid)
 
-QFxScaleGrid::QFxScaleGrid(QObject *parent) : QObject(parent), _left(0), _top(0), _right(0), _bottom(0)
+QmlGraphicsScaleGrid::QmlGraphicsScaleGrid(QObject *parent) : QObject(parent), _left(0), _top(0), _right(0), _bottom(0)
 {
 }
 
-QFxScaleGrid::~QFxScaleGrid()
+QmlGraphicsScaleGrid::~QmlGraphicsScaleGrid()
 {
 }
 
-bool QFxScaleGrid::isNull() const
+bool QmlGraphicsScaleGrid::isNull() const
 {
     return !_left && !_top && !_right && !_bottom;
 }
 
-void QFxScaleGrid::setLeft(int pos)
+void QmlGraphicsScaleGrid::setLeft(int pos)
 {
     if (_left != pos) {
         _left = pos;
@@ -74,7 +74,7 @@ void QFxScaleGrid::setLeft(int pos)
     }
 }
 
-void QFxScaleGrid::setTop(int pos)
+void QmlGraphicsScaleGrid::setTop(int pos)
 {
     if (_top != pos) {
         _top = pos;
@@ -82,7 +82,7 @@ void QFxScaleGrid::setTop(int pos)
     }
 }
 
-void QFxScaleGrid::setRight(int pos)
+void QmlGraphicsScaleGrid::setRight(int pos)
 {
     if (_right != pos) {
         _right = pos;
@@ -90,7 +90,7 @@ void QFxScaleGrid::setRight(int pos)
     }
 }
 
-void QFxScaleGrid::setBottom(int pos)
+void QmlGraphicsScaleGrid::setBottom(int pos)
 {
     if (_bottom != pos) {
         _bottom = pos;
@@ -98,18 +98,18 @@ void QFxScaleGrid::setBottom(int pos)
     }
 }
 
-QFxGridScaledImage::QFxGridScaledImage()
+QmlGraphicsGridScaledImage::QmlGraphicsGridScaledImage()
 : _l(-1), _r(-1), _t(-1), _b(-1),
-  _h(QFxBorderImage::Stretch), _v(QFxBorderImage::Stretch)
+  _h(QmlGraphicsBorderImage::Stretch), _v(QmlGraphicsBorderImage::Stretch)
 {
 }
 
-QFxGridScaledImage::QFxGridScaledImage(const QFxGridScaledImage &o)
+QmlGraphicsGridScaledImage::QmlGraphicsGridScaledImage(const QmlGraphicsGridScaledImage &o)
 : _l(o._l), _r(o._r), _t(o._t), _b(o._b), _h(o._h), _v(o._v), _pix(o._pix)
 {
 }
 
-QFxGridScaledImage &QFxGridScaledImage::operator=(const QFxGridScaledImage &o)
+QmlGraphicsGridScaledImage &QmlGraphicsGridScaledImage::operator=(const QmlGraphicsGridScaledImage &o)
 {
     _l = o._l;
     _r = o._r;
@@ -121,8 +121,8 @@ QFxGridScaledImage &QFxGridScaledImage::operator=(const QFxGridScaledImage &o)
     return *this;
 }
 
-QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
-: _l(-1), _r(-1), _t(-1), _b(-1), _h(QFxBorderImage::Stretch), _v(QFxBorderImage::Stretch)
+QmlGraphicsGridScaledImage::QmlGraphicsGridScaledImage(QIODevice *data)
+: _l(-1), _r(-1), _t(-1), _b(-1), _h(QmlGraphicsBorderImage::Stretch), _v(QmlGraphicsBorderImage::Stretch)
 {
     int l = -1;
     int r = -1;
@@ -166,45 +166,45 @@ QFxGridScaledImage::QFxGridScaledImage(QIODevice *data)
     _pix = imgFile;
 }
 
-QFxBorderImage::TileMode QFxGridScaledImage::stringToRule(const QString &s)
+QmlGraphicsBorderImage::TileMode QmlGraphicsGridScaledImage::stringToRule(const QString &s)
 {
     if (s == QLatin1String("Stretch"))
-        return QFxBorderImage::Stretch;
+        return QmlGraphicsBorderImage::Stretch;
     if (s == QLatin1String("Repeat"))
-        return QFxBorderImage::Repeat;
+        return QmlGraphicsBorderImage::Repeat;
     if (s == QLatin1String("Round"))
-        return QFxBorderImage::Round;
+        return QmlGraphicsBorderImage::Round;
 
     qWarning() << "Unknown tile rule specified. Using Stretch";
-    return QFxBorderImage::Stretch;
+    return QmlGraphicsBorderImage::Stretch;
 }
 
-bool QFxGridScaledImage::isValid() const
+bool QmlGraphicsGridScaledImage::isValid() const
 {
     return _l >= 0;
 }
 
-int QFxGridScaledImage::gridLeft() const
+int QmlGraphicsGridScaledImage::gridLeft() const
 {
     return _l;
 }
 
-int QFxGridScaledImage::gridRight() const
+int QmlGraphicsGridScaledImage::gridRight() const
 {
     return _r;
 }
 
-int QFxGridScaledImage::gridTop() const
+int QmlGraphicsGridScaledImage::gridTop() const
 {
     return _t;
 }
 
-int QFxGridScaledImage::gridBottom() const
+int QmlGraphicsGridScaledImage::gridBottom() const
 {
     return _b;
 }
 
-QString QFxGridScaledImage::pixmapUrl() const
+QString QmlGraphicsGridScaledImage::pixmapUrl() const
 {
     return _pix;
 }

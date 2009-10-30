@@ -268,7 +268,7 @@ QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
     \code
     QmlEngine engine;
     QmlComponent component(&engine, "Text { text: \"Hello world!\" }");
-    QFxItem *item = qobject_cast<QFxItem *>(component.create());
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(component.create());
 
     //add item to view, etc
     ...
@@ -1233,7 +1233,7 @@ void QmlEngine::addImportPath(const QString& path)
   Returns the directory where SQL and other offline
   storage is placed.
 
-  QFxWebView and the SQL databases created with openDatabase()
+  QmlGraphicsWebView and the SQL databases created with openDatabase()
   are stored here.
 
   The default is QML/OfflineStorage/ in the platform-standard

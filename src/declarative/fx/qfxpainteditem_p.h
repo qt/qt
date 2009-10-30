@@ -57,12 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxPaintedItemPrivate : public QFxItemPrivate
+class QmlGraphicsPaintedItemPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxPaintedItem)
+    Q_DECLARE_PUBLIC(QmlGraphicsPaintedItem)
 
 public:
-    QFxPaintedItemPrivate()
+    QmlGraphicsPaintedItemPrivate()
       : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false)
     {
     }

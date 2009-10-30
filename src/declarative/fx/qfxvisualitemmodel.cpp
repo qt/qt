@@ -59,14 +59,14 @@ QML_DECLARE_TYPE(QListModelInterface)
 
 QT_BEGIN_NAMESPACE
 
-class QFxVisualItemModelAttached : public QObject
+class QmlGraphicsVisualItemModelAttached : public QObject
 {
     Q_OBJECT
 
 public:
-    QFxVisualItemModelAttached(QObject *parent)
+    QmlGraphicsVisualItemModelAttached(QObject *parent)
         : QObject(parent), m_index(0) {}
-    ~QFxVisualItemModelAttached() {
+    ~QmlGraphicsVisualItemModelAttached() {
         attachedProperties.remove(parent());
     }
 
@@ -79,10 +79,10 @@ public:
         }
     }
 
-    static QFxVisualItemModelAttached *properties(QObject *obj) {
-        QFxVisualItemModelAttached *rv = attachedProperties.value(obj);
+    static QmlGraphicsVisualItemModelAttached *properties(QObject *obj) {
+        QmlGraphicsVisualItemModelAttached *rv = attachedProperties.value(obj);
         if (!rv) {
-            rv = new QFxVisualItemModelAttached(obj);
+            rv = new QmlGraphicsVisualItemModelAttached(obj);
             attachedProperties.insert(obj, rv);
         }
         return rv;
@@ -94,37 +94,37 @@ Q_SIGNALS:
 public:
     int m_index;
 
-    static QHash<QObject*, QFxVisualItemModelAttached*> attachedProperties;
+    static QHash<QObject*, QmlGraphicsVisualItemModelAttached*> attachedProperties;
 };
 
-QHash<QObject*, QFxVisualItemModelAttached*> QFxVisualItemModelAttached::attachedProperties;
+QHash<QObject*, QmlGraphicsVisualItemModelAttached*> QmlGraphicsVisualItemModelAttached::attachedProperties;
 
 
-class QFxVisualItemModelPrivate : public QObjectPrivate
+class QmlGraphicsVisualItemModelPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QFxVisualItemModel)
+    Q_DECLARE_PUBLIC(QmlGraphicsVisualItemModel)
 public:
-    QFxVisualItemModelPrivate() : QObjectPrivate(), children(this) {}
+    QmlGraphicsVisualItemModelPrivate() : QObjectPrivate(), children(this) {}
 
-    struct ItemList : public QmlConcreteList<QFxItem *>
+    struct ItemList : public QmlConcreteList<QmlGraphicsItem *>
     {
-        ItemList(QFxVisualItemModelPrivate *m) : QmlConcreteList<QFxItem *>(), model(m) {}
+        ItemList(QmlGraphicsVisualItemModelPrivate *m) : QmlConcreteList<QmlGraphicsItem *>(), model(m) {}
 
-        void append(QFxItem *item);
+        void append(QmlGraphicsItem *item);
 
-        QFxVisualItemModelPrivate *model;
+        QmlGraphicsVisualItemModelPrivate *model;
     };
 
     void itemAppended() {
-        Q_Q(QFxVisualItemModel);
-        QFxVisualItemModelAttached *attached = QFxVisualItemModelAttached::properties(children.last());
+        Q_Q(QmlGraphicsVisualItemModel);
+        QmlGraphicsVisualItemModelAttached *attached = QmlGraphicsVisualItemModelAttached::properties(children.last());
         attached->setIndex(children.count()-1);
         emit q->itemsInserted(children.count()-1, 1);
         emit q->countChanged();
     }
 
     void emitChildrenChanged() {
-        Q_Q(QFxVisualItemModel);
+        Q_Q(QmlGraphicsVisualItemModel);
         emit q->childrenChanged();
     }
     ItemList children;
@@ -132,7 +132,7 @@ public:
 
 
 /*!
-    \qmlclass VisualItemModel QFxVisualItemModel
+    \qmlclass VisualItemModel QmlGraphicsVisualItemModel
     \brief The VisualItemModel allows items to be provided to a view.
 
     The children of the VisualItemModel are provided in a model which
@@ -160,14 +160,14 @@ public:
     }
     \endcode
 */
-QFxVisualItemModel::QFxVisualItemModel()
-    : QFxVisualModel(*(new QFxVisualItemModelPrivate))
+QmlGraphicsVisualItemModel::QmlGraphicsVisualItemModel()
+    : QmlGraphicsVisualModel(*(new QmlGraphicsVisualItemModelPrivate))
 {
 }
 
-QmlList<QFxItem *> *QFxVisualItemModel::children()
+QmlList<QmlGraphicsItem *> *QmlGraphicsVisualItemModel::children()
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QmlGraphicsVisualItemModel);
     return &(d->children);
 }
 
@@ -176,37 +176,37 @@ QmlList<QFxItem *> *QFxVisualItemModel::children()
 
     The number of items in the model.  This property is readonly.
 */
-int QFxVisualItemModel::count() const
+int QmlGraphicsVisualItemModel::count() const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QmlGraphicsVisualItemModel);
     return d->children.count();
 }
 
-bool QFxVisualItemModel::isValid() const
+bool QmlGraphicsVisualItemModel::isValid() const
 {
     return true;
 }
 
-QFxItem *QFxVisualItemModel::item(int index, bool)
+QmlGraphicsItem *QmlGraphicsVisualItemModel::item(int index, bool)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QmlGraphicsVisualItemModel);
     return d->children.at(index);
 }
 
-QFxVisualModel::ReleaseFlags QFxVisualItemModel::release(QFxItem *)
+QmlGraphicsVisualModel::ReleaseFlags QmlGraphicsVisualItemModel::release(QmlGraphicsItem *)
 {
     // Nothing to do
     return 0;
 }
 
-void QFxVisualItemModel::completeItem()
+void QmlGraphicsVisualItemModel::completeItem()
 {
     // Nothing to do
 }
 
-QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
+QVariant QmlGraphicsVisualItemModel::evaluate(int index, const QString &expression, QObject *objectContext)
 {
-    Q_D(QFxVisualItemModel);
+    Q_D(QmlGraphicsVisualItemModel);
     QmlContext *ccontext = qmlContext(this);
     QmlContext *ctxt = new QmlContext(ccontext);
     ctxt->addDefaultObject(d->children.at(index));
@@ -217,41 +217,41 @@ QVariant QFxVisualItemModel::evaluate(int index, const QString &expression, QObj
     return value;
 }
 
-int QFxVisualItemModel::indexOf(QFxItem *item, QObject *) const
+int QmlGraphicsVisualItemModel::indexOf(QmlGraphicsItem *item, QObject *) const
 {
-    Q_D(const QFxVisualItemModel);
+    Q_D(const QmlGraphicsVisualItemModel);
     return d->children.indexOf(item);
 }
 
-void QFxVisualItemModelPrivate::ItemList::append(QFxItem *item)
+void QmlGraphicsVisualItemModelPrivate::ItemList::append(QmlGraphicsItem *item)
 {
-    QmlConcreteList<QFxItem*>::append(item);
+    QmlConcreteList<QmlGraphicsItem*>::append(item);
     item->QObject::setParent(model->q_ptr);
     model->itemAppended();
 
     model->emitChildrenChanged();
 }
 
-QFxVisualItemModelAttached *QFxVisualItemModel::qmlAttachedProperties(QObject *obj)
+QmlGraphicsVisualItemModelAttached *QmlGraphicsVisualItemModel::qmlAttachedProperties(QObject *obj)
 {
-    return QFxVisualItemModelAttached::properties(obj);
+    return QmlGraphicsVisualItemModelAttached::properties(obj);
 }
 
 
-class QFxVisualDataModelParts;
-class QFxVisualDataModelData;
-class QFxVisualDataModelPrivate : public QObjectPrivate
+class QmlGraphicsVisualDataModelParts;
+class QmlGraphicsVisualDataModelData;
+class QmlGraphicsVisualDataModelPrivate : public QObjectPrivate
 {
 public:
-    QFxVisualDataModelPrivate(QmlContext *);
+    QmlGraphicsVisualDataModelPrivate(QmlContext *);
 
-    static QFxVisualDataModelPrivate *get(QFxVisualDataModel *m) {
-        return static_cast<QFxVisualDataModelPrivate *>(QObjectPrivate::get(m));
+    static QmlGraphicsVisualDataModelPrivate *get(QmlGraphicsVisualDataModel *m) {
+        return static_cast<QmlGraphicsVisualDataModelPrivate *>(QObjectPrivate::get(m));
     }
 
     QGuard<QListModelInterface> m_listModelInterface;
     QGuard<QAbstractItemModel> m_abstractItemModel;
-    QGuard<QFxVisualDataModel> m_visualItemModel;
+    QGuard<QmlGraphicsVisualDataModel> m_visualItemModel;
     QString m_part;
 
     QmlComponent *m_delegate;
@@ -334,10 +334,10 @@ public:
     Cache m_cache;
     QHash<QObject *, QmlPackage*> m_packaged;
 
-    QFxVisualDataModelParts *m_parts;
-    friend class QFxVisualItemParts;
+    QmlGraphicsVisualDataModelParts *m_parts;
+    friend class QmlGraphicsVisualItemParts;
 
-    QFxVisualDataModelData *data(QObject *item);
+    QmlGraphicsVisualDataModelData *data(QObject *item);
 
     QVariant m_modelVariant;
     QmlListAccessor *m_listAccessor;
@@ -355,26 +355,26 @@ public:
     }
 };
 
-class QFxVisualDataModelDataMetaObject : public QmlOpenMetaObject
+class QmlGraphicsVisualDataModelDataMetaObject : public QmlOpenMetaObject
 {
 public:
-    QFxVisualDataModelDataMetaObject(QObject *parent)
+    QmlGraphicsVisualDataModelDataMetaObject(QObject *parent)
     : QmlOpenMetaObject(parent) {}
 
     virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
     virtual int createProperty(const char *, const char *);
 
 private:
-    friend class QFxVisualDataModelData;
+    friend class QmlGraphicsVisualDataModelData;
     QList<int> roles;
 };
 
-class QFxVisualDataModelData : public QObject
+class QmlGraphicsVisualDataModelData : public QObject
 {
 Q_OBJECT
 public:
-    QFxVisualDataModelData(int index, QFxVisualDataModel *model);
-    ~QFxVisualDataModelData();
+    QmlGraphicsVisualDataModelData(int index, QmlGraphicsVisualDataModel *model);
+    ~QmlGraphicsVisualDataModelData();
 
     Q_PROPERTY(int index READ index NOTIFY indexChanged)
     int index() const;
@@ -388,37 +388,37 @@ Q_SIGNALS:
     void indexChanged();
 
 private:
-    friend class QFxVisualDataModelDataMetaObject;
+    friend class QmlGraphicsVisualDataModelDataMetaObject;
     int m_index;
-    QGuard<QFxVisualDataModel> m_model;
-    QFxVisualDataModelDataMetaObject *m_meta;
+    QGuard<QmlGraphicsVisualDataModel> m_model;
+    QmlGraphicsVisualDataModelDataMetaObject *m_meta;
 };
 
-int QFxVisualDataModelData::count() const
+int QmlGraphicsVisualDataModelData::count() const
 {
     return m_meta->count();
 }
 
-int QFxVisualDataModelData::role(int id) const
+int QmlGraphicsVisualDataModelData::role(int id) const
 {
     Q_ASSERT(id >= 0 && id < count());
     return m_meta->roles.at(id);
 }
 
-void QFxVisualDataModelData::setValue(int id, const QVariant &val)
+void QmlGraphicsVisualDataModelData::setValue(int id, const QVariant &val)
 {
     m_meta->setValue(id, val);
 }
 
-int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const char *type)
+int QmlGraphicsVisualDataModelDataMetaObject::createProperty(const char *name, const char *type)
 {
-    QFxVisualDataModelData *data =
-        static_cast<QFxVisualDataModelData *>(object());
+    QmlGraphicsVisualDataModelData *data =
+        static_cast<QmlGraphicsVisualDataModelData *>(object());
 
     if (!data->m_model)
         return -1;
 
-    QFxVisualDataModelPrivate *model = QFxVisualDataModelPrivate::get(data->m_model);
+    QmlGraphicsVisualDataModelPrivate *model = QmlGraphicsVisualDataModelPrivate::get(data->m_model);
 
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
         model->ensureRoles();
@@ -439,15 +439,15 @@ int QFxVisualDataModelDataMetaObject::createProperty(const char *name, const cha
 }
 
 QVariant 
-QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+QmlGraphicsVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
 
-    QFxVisualDataModelData *data =
-        static_cast<QFxVisualDataModelData *>(object());
+    QmlGraphicsVisualDataModelData *data =
+        static_cast<QmlGraphicsVisualDataModelData *>(object());
 
     Q_ASSERT(data->m_model);
-    QFxVisualDataModelPrivate *model = QFxVisualDataModelPrivate::get(data->m_model);
+    QmlGraphicsVisualDataModelPrivate *model = QmlGraphicsVisualDataModelPrivate::get(data->m_model);
 
     QString name = QString::fromUtf8(prop.name());
     if ((!model->m_listModelInterface || !model->m_abstractItemModel) && model->m_listAccessor) {
@@ -493,109 +493,109 @@ QFxVisualDataModelDataMetaObject::propertyCreated(int, QMetaPropertyBuilder &pro
     return QVariant();
 }
 
-QFxVisualDataModelData::QFxVisualDataModelData(int index,
-                                               QFxVisualDataModel *model)
+QmlGraphicsVisualDataModelData::QmlGraphicsVisualDataModelData(int index,
+                                               QmlGraphicsVisualDataModel *model)
 : m_index(index), m_model(model), 
-  m_meta(new QFxVisualDataModelDataMetaObject(this))
+  m_meta(new QmlGraphicsVisualDataModelDataMetaObject(this))
 {
 }
 
-QFxVisualDataModelData::~QFxVisualDataModelData()
+QmlGraphicsVisualDataModelData::~QmlGraphicsVisualDataModelData()
 {
 }
 
-int QFxVisualDataModelData::index() const
+int QmlGraphicsVisualDataModelData::index() const
 {
     return m_index;
 }
 
 // This is internal only - it should not be set from qml
-void QFxVisualDataModelData::setIndex(int index)
+void QmlGraphicsVisualDataModelData::setIndex(int index)
 {
     m_index = index;
     emit indexChanged();
 }
 
-class QFxVisualDataModelPartsMetaObject : public QmlOpenMetaObject
+class QmlGraphicsVisualDataModelPartsMetaObject : public QmlOpenMetaObject
 {
 public:
-    QFxVisualDataModelPartsMetaObject(QObject *parent)
+    QmlGraphicsVisualDataModelPartsMetaObject(QObject *parent)
     : QmlOpenMetaObject(parent) {}
 
     virtual QVariant propertyCreated(int, QMetaPropertyBuilder &);
 };
 
-class QFxVisualDataModelParts : public QObject
+class QmlGraphicsVisualDataModelParts : public QObject
 {
 Q_OBJECT
 public:
-    QFxVisualDataModelParts(QFxVisualDataModel *parent);
+    QmlGraphicsVisualDataModelParts(QmlGraphicsVisualDataModel *parent);
 
 private:
-    friend class QFxVisualDataModelPartsMetaObject;
-    QFxVisualDataModel *model;
+    friend class QmlGraphicsVisualDataModelPartsMetaObject;
+    QmlGraphicsVisualDataModel *model;
 };
 
 QVariant 
-QFxVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
+QmlGraphicsVisualDataModelPartsMetaObject::propertyCreated(int, QMetaPropertyBuilder &prop)
 {
     prop.setWritable(false);
 
-    QFxVisualDataModel *m = new QFxVisualDataModel;
+    QmlGraphicsVisualDataModel *m = new QmlGraphicsVisualDataModel;
     m->setParent(object());
     m->setPart(QString::fromUtf8(prop.name()));
-    m->setModel(QVariant::fromValue(static_cast<QFxVisualDataModelParts *>(object())->model));
+    m->setModel(QVariant::fromValue(static_cast<QmlGraphicsVisualDataModelParts *>(object())->model));
 
     QVariant var = QVariant::fromValue((QObject *)m);
     return var;
 }
 
-QFxVisualDataModelParts::QFxVisualDataModelParts(QFxVisualDataModel *parent)
+QmlGraphicsVisualDataModelParts::QmlGraphicsVisualDataModelParts(QmlGraphicsVisualDataModel *parent)
 : QObject(parent), model(parent) 
 {
-    new QFxVisualDataModelPartsMetaObject(this);
+    new QmlGraphicsVisualDataModelPartsMetaObject(this);
 }
 
-QFxVisualDataModelPrivate::QFxVisualDataModelPrivate(QmlContext *ctxt)
+QmlGraphicsVisualDataModelPrivate::QmlGraphicsVisualDataModelPrivate(QmlContext *ctxt)
 : m_listModelInterface(0), m_abstractItemModel(0), m_visualItemModel(0), m_delegate(0)
 , m_context(ctxt), m_parts(0), m_listAccessor(0)
 {
 }
 
-QFxVisualDataModelData *QFxVisualDataModelPrivate::data(QObject *item)
+QmlGraphicsVisualDataModelData *QmlGraphicsVisualDataModelPrivate::data(QObject *item)
 {
-    QFxVisualDataModelData *dataItem =
-        item->findChild<QFxVisualDataModelData *>();
+    QmlGraphicsVisualDataModelData *dataItem =
+        item->findChild<QmlGraphicsVisualDataModelData *>();
     Q_ASSERT(dataItem);
     return dataItem;
 }
 
-QFxVisualDataModel::QFxVisualDataModel()
-: QFxVisualModel(*(new QFxVisualDataModelPrivate(0)))
+QmlGraphicsVisualDataModel::QmlGraphicsVisualDataModel()
+: QmlGraphicsVisualModel(*(new QmlGraphicsVisualDataModelPrivate(0)))
 {
 }
 
-QFxVisualDataModel::QFxVisualDataModel(QmlContext *ctxt)
-: QFxVisualModel(*(new QFxVisualDataModelPrivate(ctxt)))
+QmlGraphicsVisualDataModel::QmlGraphicsVisualDataModel(QmlContext *ctxt)
+: QmlGraphicsVisualModel(*(new QmlGraphicsVisualDataModelPrivate(ctxt)))
 {
 }
 
-QFxVisualDataModel::~QFxVisualDataModel()
+QmlGraphicsVisualDataModel::~QmlGraphicsVisualDataModel()
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_listAccessor)
         delete d->m_listAccessor;
 }
 
-QVariant QFxVisualDataModel::model() const
+QVariant QmlGraphicsVisualDataModel::model() const
 {
-    Q_D(const QFxVisualDataModel);
+    Q_D(const QmlGraphicsVisualDataModel);
     return d->m_modelVariant;
 }
 
-void QFxVisualDataModel::setModel(const QVariant &model)
+void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     delete d->m_listAccessor;
     d->m_listAccessor = 0;
     d->m_modelVariant = model;
@@ -656,7 +656,7 @@ void QFxVisualDataModel::setModel(const QVariant &model)
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
         return;
     }
-    if ((d->m_visualItemModel = qvariant_cast<QFxVisualDataModel *>(model))) {
+    if ((d->m_visualItemModel = qvariant_cast<QmlGraphicsVisualDataModel *>(model))) {
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
         QObject::connect(d->m_visualItemModel, SIGNAL(itemsRemoved(int,int)),
@@ -677,17 +677,17 @@ void QFxVisualDataModel::setModel(const QVariant &model)
     }
 }
 
-QmlComponent *QFxVisualDataModel::delegate() const
+QmlComponent *QmlGraphicsVisualDataModel::delegate() const
 {
-    Q_D(const QFxVisualDataModel);
+    Q_D(const QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->delegate();
     return d->m_delegate;
 }
 
-void QFxVisualDataModel::setDelegate(QmlComponent *delegate)
+void QmlGraphicsVisualDataModel::setDelegate(QmlComponent *delegate)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     d->m_delegate = delegate;
     if (d->modelCount()) {
         emit itemsInserted(0, d->modelCount());
@@ -695,27 +695,27 @@ void QFxVisualDataModel::setDelegate(QmlComponent *delegate)
     }
 }
 
-QString QFxVisualDataModel::part() const
+QString QmlGraphicsVisualDataModel::part() const
 {
-    Q_D(const QFxVisualDataModel);
+    Q_D(const QmlGraphicsVisualDataModel);
     return d->m_part;
 }
 
-void QFxVisualDataModel::setPart(const QString &part)
+void QmlGraphicsVisualDataModel::setPart(const QString &part)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     d->m_part = part;
 }
 
-int QFxVisualDataModel::count() const
+int QmlGraphicsVisualDataModel::count() const
 {
-    Q_D(const QFxVisualDataModel);
+    Q_D(const QmlGraphicsVisualDataModel);
     return d->modelCount();
 }
 
-QFxItem *QFxVisualDataModel::item(int index, bool complete)
+QmlGraphicsItem *QmlGraphicsVisualDataModel::item(int index, bool complete)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, d->m_part.toUtf8(), complete);
     return item(index, QByteArray(), complete);
@@ -724,9 +724,9 @@ QFxItem *QFxVisualDataModel::item(int index, bool complete)
 /*
   Returns ReleaseStatus flags.
 */
-QFxVisualDataModel::ReleaseFlags QFxVisualDataModel::release(QFxItem *item)
+QmlGraphicsVisualDataModel::ReleaseFlags QmlGraphicsVisualDataModel::release(QmlGraphicsItem *item)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->release(item);
 
@@ -757,17 +757,17 @@ QFxVisualDataModel::ReleaseFlags QFxVisualDataModel::release(QFxItem *item)
     return stat;
 }
 
-QObject *QFxVisualDataModel::parts()
+QObject *QmlGraphicsVisualDataModel::parts()
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (!d->m_parts) 
-        d->m_parts = new QFxVisualDataModelParts(this);
+        d->m_parts = new QmlGraphicsVisualDataModelParts(this);
     return d->m_parts;
 }
 
-QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool complete)
+QmlGraphicsItem *QmlGraphicsVisualDataModel::item(int index, const QByteArray &viewId, bool complete)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->item(index, viewId, complete);
 
@@ -779,7 +779,7 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, this);
+        QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
         ctxt->setContextProperty(QLatin1String("model"), data);
         ctxt->addDefaultObject(data);
         nobj = d->m_delegate->beginCreate(ctxt);
@@ -797,27 +797,27 @@ QFxItem *QFxVisualDataModel::item(int index, const QByteArray &viewId, bool comp
             qWarning() << d->m_delegate->errors();
         }
     }
-    QFxItem *item = qobject_cast<QFxItem *>(nobj);
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
     if (!item) {
         QmlPackage *package = qobject_cast<QmlPackage *>(nobj);
         if (package) {
             QObject *o = package->part(QString::fromUtf8(viewId));
-            item = qobject_cast<QFxItem *>(o);
+            item = qobject_cast<QmlGraphicsItem *>(o);
             if (item)
                 d->m_packaged.insertMulti(item, package);
         }
     }
     if (!item) {
         d->m_cache.releaseItem(nobj);
-        qmlInfo(QFxVisualDataModel::tr("Delegate component must be Item type."), d->m_delegate);
+        qmlInfo(QmlGraphicsVisualDataModel::tr("Delegate component must be Item type."), d->m_delegate);
     }
 
     return item;
 }
 
-void QFxVisualDataModel::completeItem()
+void QmlGraphicsVisualDataModel::completeItem()
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel) {
         d->m_visualItemModel->completeItem();
         return;
@@ -826,9 +826,9 @@ void QFxVisualDataModel::completeItem()
     d->m_delegate->completeCreate();
 }
 
-QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
+QVariant QmlGraphicsVisualDataModel::evaluate(int index, const QString &expression, QObject *objectContext)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     if (d->m_visualItemModel)
         return d->m_visualItemModel->evaluate(index, expression, objectContext);
 
@@ -838,7 +838,7 @@ QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObj
     QVariant value;
     QObject *nobj = d->m_cache.item(index);
     if (nobj) {
-        QFxItem *item = qobject_cast<QFxItem *>(nobj);
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
         if (item) {
             QmlExpression e(qmlContext(item), expression, objectContext);
             e.setTrackChange(false);
@@ -848,7 +848,7 @@ QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObj
         QmlContext *ccontext = d->m_context;
         if (!ccontext) ccontext = qmlContext(this);
         QmlContext *ctxt = new QmlContext(ccontext);
-        QFxVisualDataModelData *data = new QFxVisualDataModelData(index, this);
+        QmlGraphicsVisualDataModelData *data = new QmlGraphicsVisualDataModelData(index, this);
         ctxt->addDefaultObject(data);
         QmlExpression e(ctxt, expression, objectContext);
         e.setTrackChange(false);
@@ -860,7 +860,7 @@ QVariant QFxVisualDataModel::evaluate(int index, const QString &expression, QObj
     return value;
 }
 
-int QFxVisualDataModel::indexOf(QFxItem *item, QObject *objectContext) const
+int QmlGraphicsVisualDataModel::indexOf(QmlGraphicsItem *item, QObject *objectContext) const
 {
     QmlExpression e(qmlContext(item), QLatin1String("index"), objectContext);
     e.setTrackChange(false);
@@ -870,15 +870,15 @@ int QFxVisualDataModel::indexOf(QFxItem *item, QObject *objectContext) const
     return -1;
 }
 
-void QFxVisualDataModel::_q_itemsChanged(int index, int count,
+void QmlGraphicsVisualDataModel::_q_itemsChanged(int index, int count,
                                          const QList<int> &roles)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     // XXX - highly inefficient
     for (int ii = index; ii < index + count; ++ii) {
 
         if (QObject *item = d->m_cache.item(ii)) {
-            QFxVisualDataModelData *data = d->data(item);
+            QmlGraphicsVisualDataModelData *data = d->data(item);
 
             for (int prop = 0; prop < data->count(); ++prop) {
 
@@ -897,22 +897,22 @@ void QFxVisualDataModel::_q_itemsChanged(int index, int count,
     }
 }
 
-void QFxVisualDataModel::_q_itemsInserted(int index, int count)
+void QmlGraphicsVisualDataModel::_q_itemsInserted(int index, int count)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     // XXX - highly inefficient
-    QHash<int,QFxVisualDataModelPrivate::ObjectRef> items;
-    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= index) {
-            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() + count;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
 
-            QFxVisualDataModelData *data = d->data(objRef.obj);
+            QmlGraphicsVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -924,25 +924,25 @@ void QFxVisualDataModel::_q_itemsInserted(int index, int count)
     emit countChanged();
 }
 
-void QFxVisualDataModel::_q_itemsRemoved(int index, int count)
+void QmlGraphicsVisualDataModel::_q_itemsRemoved(int index, int count)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     // XXX - highly inefficient
-    QHash<int, QFxVisualDataModelPrivate::ObjectRef> items;
-    for (QHash<int, QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int, QmlGraphicsVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int, QmlGraphicsVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
         if (iter.key() >= index && iter.key() < index + count) {
-            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
             iter = d->m_cache.erase(iter);
             items.insertMulti(-1, objRef); //XXX perhaps better to maintain separately
-            QFxVisualDataModelData *data = d->data(objRef.obj);
+            QmlGraphicsVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(-1);
         } else if (iter.key() >= index + count) {
-            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - count;
             iter = d->m_cache.erase(iter);
             items.insert(index, objRef);
-            QFxVisualDataModelData *data = d->data(objRef.obj);
+            QmlGraphicsVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -954,38 +954,38 @@ void QFxVisualDataModel::_q_itemsRemoved(int index, int count)
     emit countChanged();
 }
 
-void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
+void QmlGraphicsVisualDataModel::_q_itemsMoved(int from, int to, int count)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     // XXX - highly inefficient
-    QHash<int,QFxVisualDataModelPrivate::ObjectRef> items;
-    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef> items;
+    for (QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= from && iter.key() < from + count) {
-            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() - from + to;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
 
-            QFxVisualDataModelData *data = d->data(objRef.obj);
+            QmlGraphicsVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
         }
     }
-    for (QHash<int,QFxVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
+    for (QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
         if (iter.key() >= qMin(from,to) && iter.key() < qMax(from+count,to+count)) {
-            QFxVisualDataModelPrivate::ObjectRef objRef = *iter;
+            QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
             int index = iter.key() + from - to;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
 
-            QFxVisualDataModelData *data = d->data(objRef.obj);
+            QmlGraphicsVisualDataModelData *data = d->data(objRef.obj);
             data->setIndex(index);
         } else {
             ++iter;
@@ -996,37 +996,37 @@ void QFxVisualDataModel::_q_itemsMoved(int from, int to, int count)
     emit itemsMoved(from, to, count);
 }
 
-void QFxVisualDataModel::_q_rowsInserted(const QModelIndex &, int begin, int end)
+void QmlGraphicsVisualDataModel::_q_rowsInserted(const QModelIndex &, int begin, int end)
 {
     _q_itemsInserted(begin, end - begin + 1);
 }
 
-void QFxVisualDataModel::_q_rowsRemoved(const QModelIndex &, int begin, int end)
+void QmlGraphicsVisualDataModel::_q_rowsRemoved(const QModelIndex &, int begin, int end)
 {
     _q_itemsRemoved(begin, end - begin + 1);
 }
 
-void QFxVisualDataModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
+void QmlGraphicsVisualDataModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
 {
-    Q_D(QFxVisualDataModel);
+    Q_D(QmlGraphicsVisualDataModel);
     _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
 }
 
-void QFxVisualDataModel::_q_createdPackage(int index, QmlPackage *package)
+void QmlGraphicsVisualDataModel::_q_createdPackage(int index, QmlPackage *package)
 {
-    Q_D(QFxVisualDataModel);
-    emit createdItem(index, qobject_cast<QFxItem*>(package->part(d->m_part)));
+    Q_D(QmlGraphicsVisualDataModel);
+    emit createdItem(index, qobject_cast<QmlGraphicsItem*>(package->part(d->m_part)));
 }
 
-void QFxVisualDataModel::_q_destroyingPackage(QmlPackage *package)
+void QmlGraphicsVisualDataModel::_q_destroyingPackage(QmlPackage *package)
 {
-    Q_D(QFxVisualDataModel);
-    emit destroyingItem(qobject_cast<QFxItem*>(package->part(d->m_part)));
+    Q_D(QmlGraphicsVisualDataModel);
+    emit destroyingItem(qobject_cast<QmlGraphicsItem*>(package->part(d->m_part)));
 }
 
-QML_DEFINE_NOCREATE_TYPE(QFxVisualModel);
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QFxVisualItemModel)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QFxVisualDataModel)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsVisualModel);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QmlGraphicsVisualItemModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QmlGraphicsVisualDataModel)
 
 QT_END_NAMESPACE
 #include "qfxvisualitemmodel.moc"

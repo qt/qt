@@ -49,18 +49,18 @@
 #include <QKeyEvent>
 
 QT_BEGIN_NAMESPACE
-class QFxListViewAttached : public QObject
+class QmlGraphicsListViewAttached : public QObject
 {
     Q_OBJECT
 public:
-    QFxListViewAttached(QObject *parent)
+    QmlGraphicsListViewAttached(QObject *parent)
         : QObject(parent), m_view(0), m_isCurrent(false), m_delayRemove(false) {}
-    ~QFxListViewAttached() {
+    ~QmlGraphicsListViewAttached() {
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxListView *view READ view CONSTANT)
-    QFxListView *view() { return m_view; }
+    Q_PROPERTY(QmlGraphicsListView *view READ view CONSTANT)
+    QmlGraphicsListView *view() { return m_view; }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
@@ -98,10 +98,10 @@ public:
         }
     }
 
-    static QFxListViewAttached *properties(QObject *obj) {
-        QFxListViewAttached *rv = attachedProperties.value(obj);
+    static QmlGraphicsListViewAttached *properties(QObject *obj) {
+        QmlGraphicsListViewAttached *rv = attachedProperties.value(obj);
         if (!rv) {
-            rv = new QFxListViewAttached(obj);
+            rv = new QmlGraphicsListViewAttached(obj);
             attachedProperties.insert(obj, rv);
         }
         return rv;
@@ -119,64 +119,64 @@ Q_SIGNALS:
     void remove();
 
 public:
-    QFxListView *m_view;
+    QmlGraphicsListView *m_view;
     bool m_isCurrent;
     mutable QString m_section;
     QString m_prevSection;
     bool m_delayRemove;
 
-    static QHash<QObject*, QFxListViewAttached*> attachedProperties;
+    static QHash<QObject*, QmlGraphicsListViewAttached*> attachedProperties;
 };
 
-QHash<QObject*, QFxListViewAttached*> QFxListViewAttached::attachedProperties;
+QHash<QObject*, QmlGraphicsListViewAttached*> QmlGraphicsListViewAttached::attachedProperties;
 
 //----------------------------------------------------------------------------
 
 class FxListItem
 {
 public:
-    FxListItem(QFxItem *i, QFxListView *v) : item(i), view(v) {
-        attached = QFxListViewAttached::properties(item);
+    FxListItem(QmlGraphicsItem *i, QmlGraphicsListView *v) : item(i), view(v) {
+        attached = QmlGraphicsListViewAttached::properties(item);
         attached->m_view = view;
     }
     ~FxListItem() {}
 
-    qreal position() const { return (view->orientation() == QFxListView::Vertical ? item->y() : item->x()); }
-    int size() const { return (view->orientation() == QFxListView::Vertical ? item->height() : item->width()); }
+    qreal position() const { return (view->orientation() == QmlGraphicsListView::Vertical ? item->y() : item->x()); }
+    int size() const { return (view->orientation() == QmlGraphicsListView::Vertical ? item->height() : item->width()); }
     qreal endPosition() const {
-        return (view->orientation() == QFxListView::Vertical
+        return (view->orientation() == QmlGraphicsListView::Vertical
                                         ? item->y() + (item->height() > 0 ? item->height() : 1)
                                         : item->x() + (item->width() > 0 ? item->width() : 1)) - 1;
     }
     void setPosition(qreal pos) {
-        if (view->orientation() == QFxListView::Vertical) {
+        if (view->orientation() == QmlGraphicsListView::Vertical) {
             item->setY(pos);
         } else {
             item->setX(pos);
         }
     }
 
-    QFxItem *item;
-    QFxListView *view;
-    QFxListViewAttached *attached;
+    QmlGraphicsItem *item;
+    QmlGraphicsListView *view;
+    QmlGraphicsListViewAttached *attached;
     int index;
 };
 
 //----------------------------------------------------------------------------
 
-class QFxListViewPrivate : public QFxFlickablePrivate
+class QmlGraphicsListViewPrivate : public QmlGraphicsFlickablePrivate
 {
-    Q_DECLARE_PUBLIC(QFxListView)
+    Q_DECLARE_PUBLIC(QmlGraphicsListView)
 
 public:
-    QFxListViewPrivate()
-        : model(0), currentItem(0), orient(QFxListView::Vertical)
+    QmlGraphicsListViewPrivate()
+        : model(0), currentItem(0), orient(QmlGraphicsListView::Vertical)
         , visiblePos(0), visibleIndex(0)
         , averageSize(100.0), currentIndex(-1), requestedIndex(-1)
         , highlightRangeStart(0), highlightRangeEnd(0)
         , highlightComponent(0), highlight(0), trackedItem(0)
         , moveReason(Other), buffer(0), highlightPosAnimator(0), highlightSizeAnimator(0), spacing(0.0)
-        , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QFxListView::NoHighlightRange)
+        , highlightMoveSpeed(400), highlightResizeSpeed(400), highlightRange(QmlGraphicsListView::NoHighlightRange)
         , ownModel(false), wrap(false), autoHighlight(true)
         , haveHighlightRange(false)
     {}
@@ -198,19 +198,19 @@ public:
     }
 
     qreal position() const {
-        Q_Q(const QFxListView);
-        return orient == QFxListView::Vertical ? q->viewportY() : q->viewportX();
+        Q_Q(const QmlGraphicsListView);
+        return orient == QmlGraphicsListView::Vertical ? q->viewportY() : q->viewportX();
     }
     void setPosition(qreal pos) {
-        Q_Q(QFxListView);
-        if (orient == QFxListView::Vertical)
+        Q_Q(QmlGraphicsListView);
+        if (orient == QmlGraphicsListView::Vertical)
             q->setViewportY(pos);
         else
             q->setViewportX(pos);
     }
     qreal size() const {
-        Q_Q(const QFxListView);
-        return orient == QFxListView::Vertical ? q->height() : q->width();
+        Q_Q(const QmlGraphicsListView);
+        return orient == QmlGraphicsListView::Vertical ? q->height() : q->width();
     }
 
     qreal startPosition() const {
@@ -261,7 +261,7 @@ public:
     }
 
     QString sectionAt(int modelIndex) {
-        Q_Q(QFxListView);
+        Q_Q(QmlGraphicsListView);
         if (FxListItem *item = visibleItem(modelIndex))
             return item->attached->section();
         QString section;
@@ -344,8 +344,8 @@ public:
     }
 
     void updateViewport() {
-        Q_Q(QFxListView);
-        if (orient == QFxListView::Vertical)
+        Q_Q(QmlGraphicsListView);
+        if (orient == QmlGraphicsListView::Vertical)
             q->setViewportHeight(endPosition() - startPosition());
         else
             q->setViewportWidth(endPosition() - startPosition());
@@ -382,12 +382,12 @@ public:
     virtual void flickX(qreal velocity);
     virtual void flickY(qreal velocity);
 
-    QFxVisualModel *model;
+    QmlGraphicsVisualModel *model;
     QVariant modelVariant;
     QList<FxListItem*> visibleItems;
-    QHash<QFxItem*,int> unrequestedItems;
+    QHash<QmlGraphicsItem*,int> unrequestedItems;
     FxListItem *currentItem;
-    QFxListView::Orientation orient;
+    QmlGraphicsListView::Orientation orient;
     int visiblePos;
     int visibleIndex;
     qreal averageSize;
@@ -408,7 +408,7 @@ public:
     qreal spacing;
     qreal highlightMoveSpeed;
     qreal highlightResizeSpeed;
-    QFxListView::HighlightRangeMode highlightRange;
+    QmlGraphicsListView::HighlightRangeMode highlightRange;
 
     bool ownModel : 1;
     bool wrap : 1;
@@ -416,15 +416,15 @@ public:
     bool haveHighlightRange : 1;
 };
 
-void QFxListViewPrivate::init()
+void QmlGraphicsListViewPrivate::init()
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
 }
 
-void QFxListViewPrivate::clear()
+void QmlGraphicsListViewPrivate::clear()
 {
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
@@ -438,13 +438,13 @@ void QFxListViewPrivate::clear()
     trackedItem = 0;
 }
 
-FxListItem *QFxListViewPrivate::createItem(int modelIndex)
+FxListItem *QmlGraphicsListViewPrivate::createItem(int modelIndex)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     // create object
     requestedIndex = modelIndex;
     FxListItem *listItem = 0;
-    if (QFxItem *item = model->item(modelIndex, false)) {
+    if (QmlGraphicsItem *item = model->item(modelIndex, false)) {
         listItem = new FxListItem(item, q);
         listItem->index = modelIndex;
         // initialise attached properties
@@ -463,7 +463,7 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
         model->completeItem();
         listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
-        if (orient == QFxListView::Vertical)
+        if (orient == QmlGraphicsListView::Vertical)
             QObject::connect(listItem->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
         else
             QObject::connect(listItem->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
@@ -473,14 +473,14 @@ FxListItem *QFxListViewPrivate::createItem(int modelIndex)
     return listItem;
 }
 
-void QFxListViewPrivate::releaseItem(FxListItem *item)
+void QmlGraphicsListViewPrivate::releaseItem(FxListItem *item)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     if (!item)
         return;
     if (trackedItem == item) {
-        const char *notifier1 = orient == QFxListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-        const char *notifier2 = orient == QFxListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+        const char *notifier1 = orient == QmlGraphicsListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
+        const char *notifier2 = orient == QmlGraphicsListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, notifier2, q, SLOT(trackedPositionChanged()));
         trackedItem = 0;
@@ -488,7 +488,7 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     if (model->release(item->item) == 0) {
         // item was not destroyed, and we no longer reference it.
         unrequestedItems.insert(item->item, model->indexOf(item->item, q));
-        if (orient == QFxListView::Vertical)
+        if (orient == QmlGraphicsListView::Vertical)
             QObject::disconnect(item->item, SIGNAL(heightChanged()), q, SLOT(itemResized()));
         else
             QObject::disconnect(item->item, SIGNAL(widthChanged()), q, SLOT(itemResized()));
@@ -496,9 +496,9 @@ void QFxListViewPrivate::releaseItem(FxListItem *item)
     delete item;
 }
 
-void QFxListViewPrivate::refill(qreal from, qreal to)
+void QmlGraphicsListViewPrivate::refill(qreal from, qreal to)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     if (!isValid() || !q->isComponentComplete())
         return;
     from -= buffer;
@@ -566,9 +566,9 @@ void QFxListViewPrivate::refill(qreal from, qreal to)
     }
 }
 
-void QFxListViewPrivate::layout()
+void QmlGraphicsListViewPrivate::layout()
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     if (!visibleItems.isEmpty()) {
         int oldEnd = visibleItems.last()->endPosition();
         int pos = visibleItems.first()->endPosition() + spacing + 1;
@@ -590,38 +590,38 @@ void QFxListViewPrivate::layout()
     updateViewport();
 }
 
-void QFxListViewPrivate::updateUnrequestedIndexes()
+void QmlGraphicsListViewPrivate::updateUnrequestedIndexes()
 {
-    Q_Q(QFxListView);
-    QHash<QFxItem*,int>::iterator it;
+    Q_Q(QmlGraphicsListView);
+    QHash<QmlGraphicsItem*,int>::iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it)
         *it = model->indexOf(it.key(), q);
 }
 
-void QFxListViewPrivate::updateUnrequestedPositions()
+void QmlGraphicsListViewPrivate::updateUnrequestedPositions()
 {
-    QHash<QFxItem*,int>::const_iterator it;
+    QHash<QmlGraphicsItem*,int>::const_iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
         if (visibleItem(*it))
             continue;
-        if (orient == QFxListView::Vertical)
+        if (orient == QmlGraphicsListView::Vertical)
             it.key()->setY(positionAt(*it));
         else
             it.key()->setX(positionAt(*it));
     }
 }
 
-void QFxListViewPrivate::updateTrackedItem()
+void QmlGraphicsListViewPrivate::updateTrackedItem()
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     FxListItem *item = currentItem;
     if (highlight)
         item = highlight;
 
     FxListItem *oldTracked = trackedItem;
 
-    const char *notifier1 = orient == QFxListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
-    const char *notifier2 = orient == QFxListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
+    const char *notifier1 = orient == QmlGraphicsListView::Vertical ? SIGNAL(yChanged()) : SIGNAL(xChanged());
+    const char *notifier2 = orient == QmlGraphicsListView::Vertical ? SIGNAL(heightChanged()) : SIGNAL(widthChanged());
 
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, notifier1, q, SLOT(trackedPositionChanged()));
@@ -638,9 +638,9 @@ void QFxListViewPrivate::updateTrackedItem()
         q->trackedPositionChanged();
 }
 
-void QFxListViewPrivate::createHighlight()
+void QmlGraphicsListViewPrivate::createHighlight()
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
@@ -654,13 +654,13 @@ void QFxListViewPrivate::createHighlight()
     }
 
     if (currentItem) {
-        QFxItem *item = 0;
+        QmlGraphicsItem *item = 0;
         if (highlightComponent) {
             QmlContext *highlightContext = new QmlContext(qmlContext(q));
             QObject *nobj = highlightComponent->create(highlightContext);
             if (nobj) {
                 highlightContext->setParent(nobj);
-                item = qobject_cast<QFxItem *>(nobj);
+                item = qobject_cast<QmlGraphicsItem *>(nobj);
                 if (!item) {
                     delete nobj;
                 } else {
@@ -670,22 +670,22 @@ void QFxListViewPrivate::createHighlight()
                 delete highlightContext;
             }
         } else {
-            item = new QFxItem;
+            item = new QmlGraphicsItem;
             item->setParent(q->viewport());
         }
         if (item) {
             item->setZValue(0);
             highlight = new FxListItem(item, q);
-            if (orient == QFxListView::Vertical)
+            if (orient == QmlGraphicsListView::Vertical)
                 highlight->item->setHeight(currentItem->item->height());
             else
                 highlight->item->setWidth(currentItem->item->width());
-            const QLatin1String posProp(orient == QFxListView::Vertical ? "y" : "x");
+            const QLatin1String posProp(orient == QmlGraphicsListView::Vertical ? "y" : "x");
             highlightPosAnimator = new QmlEaseFollow(q);
             highlightPosAnimator->setTarget(QmlMetaProperty(highlight->item, posProp));
             highlightPosAnimator->setVelocity(highlightMoveSpeed);
             highlightPosAnimator->setEnabled(autoHighlight);
-            const QLatin1String sizeProp(orient == QFxListView::Vertical ? "height" : "width");
+            const QLatin1String sizeProp(orient == QmlGraphicsListView::Vertical ? "height" : "width");
             highlightSizeAnimator = new QmlEaseFollow(q);
             highlightSizeAnimator->setVelocity(highlightResizeSpeed);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
@@ -694,7 +694,7 @@ void QFxListViewPrivate::createHighlight()
     }
 }
 
-void QFxListViewPrivate::updateHighlight()
+void QmlGraphicsListViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
@@ -702,7 +702,7 @@ void QFxListViewPrivate::updateHighlight()
         // auto-update highlight
         highlightPosAnimator->setSourceValue(currentItem->position());
         highlightSizeAnimator->setSourceValue(currentItem->size());
-        if (orient == QFxListView::Vertical) {
+        if (orient == QmlGraphicsListView::Vertical) {
             if (highlight->item->width() == 0)
                 highlight->item->setWidth(currentItem->item->width());
         } else {
@@ -713,7 +713,7 @@ void QFxListViewPrivate::updateHighlight()
     updateTrackedItem();
 }
 
-void QFxListViewPrivate::updateSections()
+void QmlGraphicsListViewPrivate::updateSections()
 {
     if (!sectionExpression.isEmpty()) {
         QString prevSection;
@@ -721,7 +721,7 @@ void QFxListViewPrivate::updateSections()
             prevSection = sectionAt(visibleIndex-1);
         for (int i = 0; i < visibleItems.count(); ++i) {
             if (visibleItems.at(i)->index != -1) {
-                QFxListViewAttached *attached = visibleItems.at(i)->attached;
+                QmlGraphicsListViewAttached *attached = visibleItems.at(i)->attached;
                 attached->setPrevSection(prevSection);
                 prevSection = attached->section();
             }
@@ -729,7 +729,7 @@ void QFxListViewPrivate::updateSections()
     }
 }
 
-void QFxListViewPrivate::updateCurrentSection()
+void QmlGraphicsListViewPrivate::updateCurrentSection()
 {
     if (sectionExpression.isEmpty() || visibleItems.isEmpty()) {
         currentSection = QString();
@@ -745,9 +745,9 @@ void QFxListViewPrivate::updateCurrentSection()
         currentSection = visibleItems.first()->attached->section();
 }
 
-void QFxListViewPrivate::updateCurrent(int modelIndex)
+void QmlGraphicsListViewPrivate::updateCurrent(int modelIndex)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
     if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
             currentItem->attached->setIsCurrentItem(false);
@@ -787,7 +787,7 @@ void QFxListViewPrivate::updateCurrent(int modelIndex)
     releaseItem(oldCurrentItem);
 }
 
-void QFxListViewPrivate::updateAverage()
+void QmlGraphicsListViewPrivate::updateAverage()
 {
     if (!visibleItems.count())
         return;
@@ -797,21 +797,21 @@ void QFxListViewPrivate::updateAverage()
     averageSize = sum / visibleItems.count();
 }
 
-void QFxListViewPrivate::fixupPosition()
+void QmlGraphicsListViewPrivate::fixupPosition()
 {
-    if (orient == QFxListView::Vertical)
+    if (orient == QmlGraphicsListView::Vertical)
         fixupY();
     else
         fixupX();
 }
 
-void QFxListViewPrivate::fixupY()
+void QmlGraphicsListViewPrivate::fixupY()
 {
-    QFxFlickablePrivate::fixupY();
-    if (orient == QFxListView::Horizontal)
+    QmlGraphicsFlickablePrivate::fixupY();
+    if (orient == QmlGraphicsListView::Horizontal)
         return;
 
-    if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
+    if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
@@ -820,13 +820,13 @@ void QFxListViewPrivate::fixupY()
     }
 }
 
-void QFxListViewPrivate::fixupX()
+void QmlGraphicsListViewPrivate::fixupX()
 {
-    QFxFlickablePrivate::fixupX();
-    if (orient == QFxListView::Vertical)
+    QmlGraphicsFlickablePrivate::fixupX();
+    if (orient == QmlGraphicsListView::Vertical)
         return;
 
-    if (haveHighlightRange && highlightRange == QFxListView::StrictlyEnforceRange) {
+    if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
             timeline.clear();
@@ -835,12 +835,12 @@ void QFxListViewPrivate::fixupX()
     }
 }
 
-void QFxListViewPrivate::flickX(qreal velocity)
+void QmlGraphicsListViewPrivate::flickX(qreal velocity)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
 
-    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
-        QFxFlickablePrivate::flickX(velocity);
+    if (!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) {
+        QmlGraphicsFlickablePrivate::flickX(velocity);
         return;
     }
 
@@ -893,12 +893,12 @@ void QFxListViewPrivate::flickX(qreal velocity)
     }
 }
 
-void QFxListViewPrivate::flickY(qreal velocity)
+void QmlGraphicsListViewPrivate::flickY(qreal velocity)
 {
-    Q_Q(QFxListView);
+    Q_Q(QmlGraphicsListView);
 
-    if (!haveHighlightRange || highlightRange != QFxListView::StrictlyEnforceRange) {
-        QFxFlickablePrivate::flickY(velocity);
+    if (!haveHighlightRange || highlightRange != QmlGraphicsListView::StrictlyEnforceRange) {
+        QmlGraphicsFlickablePrivate::flickY(velocity);
         return;
     }
 
@@ -977,16 +977,16 @@ void QFxListViewPrivate::flickY(qreal velocity)
     the model would be implemented in C++, or perhaps via a SQL data source.
 */
 
-QFxListView::QFxListView(QFxItem *parent)
-    : QFxFlickable(*(new QFxListViewPrivate), parent)
+QmlGraphicsListView::QmlGraphicsListView(QmlGraphicsItem *parent)
+    : QmlGraphicsFlickable(*(new QmlGraphicsListViewPrivate), parent)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->init();
 }
 
-QFxListView::~QFxListView()
+QmlGraphicsListView::~QmlGraphicsListView()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->clear();
     if (d->ownModel)
         delete d->model;
@@ -1079,27 +1079,27 @@ QFxListView::~QFxListView()
 
     \sa {qmlmodels}{Data Models}
 */
-QVariant QFxListView::model() const
+QVariant QmlGraphicsListView::model() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->modelVariant;
 }
 
-void QFxListView::setModel(const QVariant &model)
+void QmlGraphicsListView::setModel(const QVariant &model)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
-        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
     }
     d->clear();
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
+    QmlGraphicsVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QmlGraphicsVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -1107,10 +1107,10 @@ void QFxListView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualDataModel(qmlContext(this));
+            d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             dataModel->setModel(model);
     }
     if (d->model) {
@@ -1121,8 +1121,8 @@ void QFxListView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
-        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
         refill();
         emit countChanged();
     }
@@ -1136,25 +1136,25 @@ void QFxListView::setModel(const QVariant &model)
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/listview/listview.qml 0
 */
-QmlComponent *QFxListView::delegate() const
+QmlComponent *QmlGraphicsListView::delegate() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     if (d->model) {
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             return dataModel->delegate();
     }
 
     return 0;
 }
 
-void QFxListView::setDelegate(QmlComponent *delegate)
+void QmlGraphicsListView::setDelegate(QmlComponent *delegate)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (!d->ownModel) {
-        d->model = new QFxVisualDataModel(qmlContext(this));
+        d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+    if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         d->updateCurrent(d->currentIndex);
         refill();
@@ -1169,16 +1169,16 @@ void QFxListView::setDelegate(QmlComponent *delegate)
     \c currentItem is the current item.  Note that the position of the current item
     may only be approximate until it becomes visible in the view.
 */
-int QFxListView::currentIndex() const
+int QmlGraphicsListView::currentIndex() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->currentIndex;
 }
 
-void QFxListView::setCurrentIndex(int index)
+void QmlGraphicsListView::setCurrentIndex(int index)
 {
-    Q_D(QFxListView);
-    d->moveReason = QFxListViewPrivate::Other;
+    Q_D(QmlGraphicsListView);
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
     if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         cancelFlick();
         d->updateCurrent(index);
@@ -1187,9 +1187,9 @@ void QFxListView::setCurrentIndex(int index)
     }
 }
 
-QFxItem *QFxListView::currentItem()
+QmlGraphicsItem *QmlGraphicsListView::currentItem()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (!d->currentItem)
         return 0;
     return d->currentItem->item;
@@ -1199,9 +1199,9 @@ QFxItem *QFxListView::currentItem()
   \qmlproperty int ListView::count
   This property holds the number of items in the view.
 */
-int QFxListView::count() const
+int QmlGraphicsListView::count() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     if (d->model)
         return d->model->count();
     return 0;
@@ -1224,15 +1224,15 @@ int QFxListView::count() const
 
     \sa highlightFollowsCurrentItem
 */
-QmlComponent *QFxListView::highlight() const
+QmlComponent *QmlGraphicsListView::highlight() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->highlightComponent;
 }
 
-void QFxListView::setHighlight(QmlComponent *highlight)
+void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     delete d->highlightComponent;
     d->highlightComponent = highlight;
     d->updateCurrent(d->currentIndex);
@@ -1256,15 +1256,15 @@ void QFxListView::setHighlight(QmlComponent *highlight)
 
     \sa highlight
 */
-bool QFxListView::highlightFollowsCurrentItem() const
+bool QmlGraphicsListView::highlightFollowsCurrentItem() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->autoHighlight;
 }
 
-void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
+void QmlGraphicsListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->autoHighlight = autoHighlight;
     if (d->highlightPosAnimator) {
         d->highlightPosAnimator->setEnabled(d->autoHighlight);
@@ -1296,41 +1296,41 @@ void QFxListView::setHighlightFollowsCurrentItem(bool autoHighlight)
     Note that a valid range requires preferredHighlightEnd to be greater
     than or equal to preferredHighlightBegin.
 */
-qreal QFxListView::preferredHighlightBegin() const
+qreal QmlGraphicsListView::preferredHighlightBegin() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->highlightRangeStart;
 }
 
-void QFxListView::setPreferredHighlightBegin(qreal start)
+void QmlGraphicsListView::setPreferredHighlightBegin(qreal start)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->highlightRangeStart = start;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
 
-qreal QFxListView::preferredHighlightEnd() const
+qreal QmlGraphicsListView::preferredHighlightEnd() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->highlightRangeEnd;
 }
 
-void QFxListView::setPreferredHighlightEnd(qreal end)
+void QmlGraphicsListView::setPreferredHighlightEnd(qreal end)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->highlightRangeEnd = end;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
 
-QFxListView::HighlightRangeMode QFxListView::highlightRangeMode() const
+QmlGraphicsListView::HighlightRangeMode QmlGraphicsListView::highlightRangeMode() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->highlightRange;
 }
 
-void QFxListView::setHighlightRangeMode(HighlightRangeMode mode)
+void QmlGraphicsListView::setHighlightRangeMode(HighlightRangeMode mode)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->highlightRange = mode;
     d->haveHighlightRange = d->highlightRange != NoHighlightRange && d->highlightRangeStart <= d->highlightRangeEnd;
 }
@@ -1340,15 +1340,15 @@ void QFxListView::setHighlightRangeMode(HighlightRangeMode mode)
 
     This property holds the spacing to leave between items.
 */
-qreal QFxListView::spacing() const
+qreal QmlGraphicsListView::spacing() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->spacing;
 }
 
-void QFxListView::setSpacing(qreal spacing)
+void QmlGraphicsListView::setSpacing(qreal spacing)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (spacing != d->spacing) {
         d->spacing = spacing;
         d->layout();
@@ -1367,18 +1367,18 @@ void QFxListView::setSpacing(qreal spacing)
     Horizontal Example:
     \image ListViewHorizontal.png
 */
-QFxListView::Orientation QFxListView::orientation() const
+QmlGraphicsListView::Orientation QmlGraphicsListView::orientation() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->orient;
 }
 
-void QFxListView::setOrientation(QFxListView::Orientation orientation)
+void QmlGraphicsListView::setOrientation(QmlGraphicsListView::Orientation orientation)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (d->orient != orientation) {
         d->orient = orientation;
-        if (d->orient == QFxListView::Vertical)
+        if (d->orient == QmlGraphicsListView::Vertical)
             setViewportWidth(-1);
         else
             setViewportHeight(-1);
@@ -1396,15 +1396,15 @@ void QFxListView::setOrientation(QFxListView::Orientation orientation)
     If this property is true then key presses to move off of one end of the list will cause the
     current item to jump to the other end.
 */
-bool QFxListView::isWrapEnabled() const
+bool QmlGraphicsListView::isWrapEnabled() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->wrap;
 }
 
-void QFxListView::setWrapEnabled(bool wrap)
+void QmlGraphicsListView::setWrapEnabled(bool wrap)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->wrap = wrap;
 }
 
@@ -1416,15 +1416,15 @@ void QFxListView::setWrapEnabled(bool wrap)
     and below the bottom of the list to cache.  Setting this value can make
     scrolling the list smoother at the expense of additional memory usage.
 */
-int QFxListView::cacheBuffer() const
+int QmlGraphicsListView::cacheBuffer() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->buffer;
 }
 
-void QFxListView::setCacheBuffer(int b)
+void QmlGraphicsListView::setCacheBuffer(int b)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (d->buffer != b) {
         d->buffer = b;
         if (isComponentComplete())
@@ -1446,24 +1446,24 @@ void QFxListView::setCacheBuffer(int b)
 
     \image ListViewSections.png
 */
-QString QFxListView::sectionExpression() const
+QString QmlGraphicsListView::sectionExpression() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->sectionExpression;
 }
 
-void QFxListView::setSectionExpression(const QString &expression)
+void QmlGraphicsListView::setSectionExpression(const QString &expression)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (d->sectionExpression != expression) {
         d->sectionExpression = expression;
         emit sectionExpressionChanged();
     }
 }
 
-QString QFxListView::currentSection() const
+QString QmlGraphicsListView::currentSection() const
 {
-    Q_D(const QFxListView);
+    Q_D(const QmlGraphicsListView);
     return d->currentSection;
 }
 
@@ -1472,15 +1472,15 @@ QString QFxListView::currentSection() const
 
     This property holds the moving animation speed of the highlight delegate.
 */
-qreal QFxListView::highlightMoveSpeed() const
+qreal QmlGraphicsListView::highlightMoveSpeed() const
 {
-    Q_D(const QFxListView);\
+    Q_D(const QmlGraphicsListView);\
     return d->highlightMoveSpeed;
 }
 
-void QFxListView::setHighlightMoveSpeed(qreal speed)
+void QmlGraphicsListView::setHighlightMoveSpeed(qreal speed)
 {
-    Q_D(QFxListView);\
+    Q_D(QmlGraphicsListView);\
     if (d->highlightMoveSpeed != speed)
     {
         d->highlightMoveSpeed = speed;
@@ -1493,15 +1493,15 @@ void QFxListView::setHighlightMoveSpeed(qreal speed)
 
     This property holds the resizing animation speed of the highlight delegate.
 */
-qreal QFxListView::highlightResizeSpeed() const
+qreal QmlGraphicsListView::highlightResizeSpeed() const
 {
-    Q_D(const QFxListView);\
+    Q_D(const QmlGraphicsListView);\
     return d->highlightResizeSpeed;
 }
 
-void QFxListView::setHighlightResizeSpeed(qreal speed)
+void QmlGraphicsListView::setHighlightResizeSpeed(qreal speed)
 {
-    Q_D(QFxListView);\
+    Q_D(QmlGraphicsListView);\
     if (d->highlightResizeSpeed != speed)
     {
         d->highlightResizeSpeed = speed;
@@ -1509,14 +1509,14 @@ void QFxListView::setHighlightResizeSpeed(qreal speed)
     }
 }
 
-void QFxListView::viewportMoved()
+void QmlGraphicsListView::viewportMoved()
 {
-    Q_D(QFxListView);
-    QFxFlickable::viewportMoved();
+    Q_D(QmlGraphicsListView);
+    QmlGraphicsFlickable::viewportMoved();
     refill();
     if (isFlicking() || d->moving)
-        d->moveReason = QFxListViewPrivate::Mouse;
-    if (d->moveReason == QFxListViewPrivate::Mouse) {
+        d->moveReason = QmlGraphicsListViewPrivate::Mouse;
+    if (d->moveReason == QmlGraphicsListViewPrivate::Mouse) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
             int idx = d->snapIndex();
             if (idx >= 0 && idx != d->currentIndex)
@@ -1532,11 +1532,11 @@ void QFxListView::viewportMoved()
     }
 }
 
-qreal QFxListView::minYExtent() const
+qreal QmlGraphicsListView::minYExtent() const
 {
-    Q_D(const QFxListView);
-    if (d->orient == QFxListView::Horizontal)
-        return QFxFlickable::minYExtent();
+    Q_D(const QmlGraphicsListView);
+    if (d->orient == QmlGraphicsListView::Horizontal)
+        return QmlGraphicsFlickable::minYExtent();
     qreal extent = -d->startPosition();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
@@ -1544,11 +1544,11 @@ qreal QFxListView::minYExtent() const
     return extent;
 }
 
-qreal QFxListView::maxYExtent() const
+qreal QmlGraphicsListView::maxYExtent() const
 {
-    Q_D(const QFxListView);
-    if (d->orient == QFxListView::Horizontal)
-        return QFxFlickable::maxYExtent();
+    Q_D(const QmlGraphicsListView);
+    if (d->orient == QmlGraphicsListView::Horizontal)
+        return QmlGraphicsFlickable::maxYExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
@@ -1560,11 +1560,11 @@ qreal QFxListView::maxYExtent() const
     return extent;
 }
 
-qreal QFxListView::minXExtent() const
+qreal QmlGraphicsListView::minXExtent() const
 {
-    Q_D(const QFxListView);
-    if (d->orient == QFxListView::Vertical)
-        return QFxFlickable::minXExtent();
+    Q_D(const QmlGraphicsListView);
+    if (d->orient == QmlGraphicsListView::Vertical)
+        return QmlGraphicsFlickable::minXExtent();
     qreal extent = -d->startPosition();
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent += d->highlightRangeStart;
@@ -1572,11 +1572,11 @@ qreal QFxListView::minXExtent() const
     return extent;
 }
 
-qreal QFxListView::maxXExtent() const
+qreal QmlGraphicsListView::maxXExtent() const
 {
-    Q_D(const QFxListView);
-    if (d->orient == QFxListView::Vertical)
-        return QFxFlickable::maxXExtent();
+    Q_D(const QmlGraphicsListView);
+    if (d->orient == QmlGraphicsListView::Vertical)
+        return QmlGraphicsFlickable::maxXExtent();
     qreal extent;
     if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange)
         extent = -(d->positionAt(count()-1) - d->highlightRangeEnd);
@@ -1588,18 +1588,18 @@ qreal QFxListView::maxXExtent() const
     return extent;
 }
 
-void QFxListView::keyPressEvent(QKeyEvent *event)
+void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
 {
-    Q_D(QFxListView);
-    QFxFlickable::keyPressEvent(event);
+    Q_D(QmlGraphicsListView);
+    QmlGraphicsFlickable::keyPressEvent(event);
     if (event->isAccepted())
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        if ((d->orient == QFxListView::Horizontal && event->key() == Qt::Key_Left)
-                    || (d->orient == QFxListView::Vertical && event->key() == Qt::Key_Up)) {
+        if ((d->orient == QmlGraphicsListView::Horizontal && event->key() == Qt::Key_Left)
+                    || (d->orient == QmlGraphicsListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
-                d->moveReason = QFxListViewPrivate::Key;
+                d->moveReason = QmlGraphicsListViewPrivate::Key;
                 decrementCurrentIndex();
                 event->accept();
                 return;
@@ -1607,10 +1607,10 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
                 event->accept();
                 return;
             }
-        } else if ((d->orient == QFxListView::Horizontal && event->key() == Qt::Key_Right)
-                    || (d->orient == QFxListView::Vertical && event->key() == Qt::Key_Down)) {
+        } else if ((d->orient == QmlGraphicsListView::Horizontal && event->key() == Qt::Key_Right)
+                    || (d->orient == QmlGraphicsListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
-                d->moveReason = QFxListViewPrivate::Key;
+                d->moveReason = QmlGraphicsListViewPrivate::Key;
                 incrementCurrentIndex();
                 event->accept();
                 return;
@@ -1620,7 +1620,7 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
             }
         }
     }
-    d->moveReason = QFxListViewPrivate::Other;
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
     event->ignore();
 }
 
@@ -1630,9 +1630,9 @@ void QFxListView::keyPressEvent(QKeyEvent *event)
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
 */
-void QFxListView::incrementCurrentIndex()
+void QmlGraphicsListView::incrementCurrentIndex()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (currentIndex() < d->model->count() - 1 || d->wrap) {
         int index = currentIndex()+1;
         cancelFlick();
@@ -1646,9 +1646,9 @@ void QFxListView::incrementCurrentIndex()
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.
 */
-void QFxListView::decrementCurrentIndex()
+void QmlGraphicsListView::decrementCurrentIndex()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (currentIndex() > 0 || d->wrap) {
         int index = currentIndex()-1;
         cancelFlick();
@@ -1656,28 +1656,28 @@ void QFxListView::decrementCurrentIndex()
     }
 }
 
-void QFxListView::componentComplete()
+void QmlGraphicsListView::componentComplete()
 {
-    Q_D(QFxListView);
-    QFxFlickable::componentComplete();
+    Q_D(QmlGraphicsListView);
+    QmlGraphicsFlickable::componentComplete();
     if (d->currentIndex < 0)
         d->updateCurrent(0);
     refill();
     d->fixupPosition();
 }
 
-void QFxListView::refill()
+void QmlGraphicsListView::refill()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->refill(d->position(), d->position()+d->size()-1);
 }
 
-void QFxListView::trackedPositionChanged()
+void QmlGraphicsListView::trackedPositionChanged()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (!d->trackedItem)
         return;
-    if (!isFlicking() && !d->moving && d->moveReason != QFxListViewPrivate::Mouse) {
+    if (!isFlicking() && !d->moving && d->moveReason != QmlGraphicsListViewPrivate::Mouse) {
         const qreal trackedPos = d->trackedItem->position();
         const qreal viewPos = d->position();
         if (d->haveHighlightRange) {
@@ -1726,19 +1726,19 @@ void QFxListView::trackedPositionChanged()
     }
 }
 
-void QFxListView::itemResized()
+void QmlGraphicsListView::itemResized()
 {
-    Q_D(QFxListView);
-    QFxItem *item = qobject_cast<QFxItem*>(sender());
+    Q_D(QmlGraphicsListView);
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(sender());
     if (item) {
         d->layout();
         d->fixupPosition();
     }
 }
 
-void QFxListView::itemsInserted(int modelIndex, int count)
+void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->updateUnrequestedIndexes();
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->layout();
@@ -1824,9 +1824,9 @@ void QFxListView::itemsInserted(int modelIndex, int count)
     emit countChanged();
 }
 
-void QFxListView::itemsRemoved(int modelIndex, int count)
+void QmlGraphicsListView::itemsRemoved(int modelIndex, int count)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->updateUnrequestedIndexes();
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     if (!d->mapRangeFromModel(modelIndex, count)) {
@@ -1921,9 +1921,9 @@ void QFxListView::itemsRemoved(int modelIndex, int count)
     emit countChanged();
 }
 
-void QFxListView::destroyRemoved()
+void QmlGraphicsListView::destroyRemoved()
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     for (QList<FxListItem*>::Iterator it = d->visibleItems.begin();
             it != d->visibleItems.end();) {
         FxListItem *listItem = *it;
@@ -1939,9 +1939,9 @@ void QFxListView::destroyRemoved()
     d->layout();
 }
 
-void QFxListView::itemsMoved(int from, int to, int count)
+void QmlGraphicsListView::itemsMoved(int from, int to, int count)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     qreal firstItemPos = d->visibleItems.first()->position();
     QHash<int,FxListItem*> moved;
     int moveBy = 0;
@@ -2005,31 +2005,31 @@ void QFxListView::itemsMoved(int from, int to, int count)
     d->layout();
 }
 
-void QFxListView::createdItem(int index, QFxItem *item)
+void QmlGraphicsListView::createdItem(int index, QmlGraphicsItem *item)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     if (d->requestedIndex != index) {
         item->setParentItem(viewport());
         d->unrequestedItems.insert(item, index);
-        if (d->orient == QFxListView::Vertical)
+        if (d->orient == QmlGraphicsListView::Vertical)
             item->setY(d->positionAt(index));
         else
             item->setX(d->positionAt(index));
     }
 }
 
-void QFxListView::destroyingItem(QFxItem *item)
+void QmlGraphicsListView::destroyingItem(QmlGraphicsItem *item)
 {
-    Q_D(QFxListView);
+    Q_D(QmlGraphicsListView);
     d->unrequestedItems.remove(item);
 }
 
-QFxListViewAttached *QFxListView::qmlAttachedProperties(QObject *obj)
+QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject *obj)
 {
-    return QFxListViewAttached::properties(obj);
+    return QmlGraphicsListViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ListView,QFxListView)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
 #include "qfxlistview.moc"

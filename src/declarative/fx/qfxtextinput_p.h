@@ -59,19 +59,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxTextInputPrivate : public QFxPaintedItemPrivate
+class QmlGraphicsTextInputPrivate : public QmlGraphicsPaintedItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxTextInput)
+    Q_DECLARE_PUBLIC(QmlGraphicsTextInput)
 public:
-    QFxTextInputPrivate() : control(new QLineControl(QString())),
-                 color((QRgb)0), style(QFxText::Normal),
-                 styleColor((QRgb)0), hAlign(QFxTextInput::AlignLeft),
+    QmlGraphicsTextInputPrivate() : control(new QLineControl(QString())),
+                 color((QRgb)0), style(QmlGraphicsText::Normal),
+                 styleColor((QRgb)0), hAlign(QmlGraphicsTextInput::AlignLeft),
                  hscroll(0), oldScroll(0), focused(false), focusOnPress(true),
                  cursorVisible(false)
     {
     }
 
-    ~QFxTextInputPrivate()
+    ~QmlGraphicsTextInputPrivate()
     {
         delete control;
     }
@@ -85,11 +85,11 @@ public:
     QColor  color;
     QColor  selectionColor;
     QColor  selectedTextColor;
-    QFxText::TextStyle style;
+    QmlGraphicsText::TextStyle style;
     QColor  styleColor;
-    QFxTextInput::HAlignment hAlign;
+    QmlGraphicsTextInput::HAlignment hAlign;
     QPointer<QmlComponent> cursorComponent;
-    QPointer<QFxItem> cursorItem;
+    QPointer<QmlGraphicsItem> cursorItem;
 
     int lastSelectionStart;
     int lastSelectionEnd;

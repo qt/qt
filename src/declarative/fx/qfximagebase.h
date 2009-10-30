@@ -47,8 +47,8 @@
 QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
-class QFxImageBasePrivate;
-class QFxImageBase : public QFxItem
+class QmlGraphicsImageBasePrivate;
+class QmlGraphicsImageBase : public QmlGraphicsItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
@@ -58,8 +58,8 @@ class QFxImageBase : public QFxItem
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
 
 public:
-    QFxImageBase(QFxItem *parent = 0);
-    ~QFxImageBase();
+    QmlGraphicsImageBase(QmlGraphicsItem *parent = 0);
+    ~QmlGraphicsImageBase();
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
     qreal progress() const;
@@ -73,15 +73,15 @@ Q_SIGNALS:
     void progressChanged(qreal progress);
 
 protected:
-    QFxImageBase(QFxImageBasePrivate &dd, QFxItem *parent);
+    QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent);
 
 private Q_SLOTS:
     virtual void requestFinished();
     void requestProgress(qint64,qint64);
 
 private:
-    Q_DISABLE_COPY(QFxImageBase)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxImageBase)
+    Q_DISABLE_COPY(QmlGraphicsImageBase)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsImageBase)
 };
 
 QT_END_NAMESPACE

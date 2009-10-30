@@ -54,20 +54,20 @@ static const int FlickThreshold = 5;
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathView,QFxPathView)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathView,QmlGraphicsPathView)
 
-class QFxPathViewAttached : public QObject
+class QmlGraphicsPathViewAttached : public QObject
 {
     Q_OBJECT
 public:
-    QFxPathViewAttached(QObject *parent)
+    QmlGraphicsPathViewAttached(QObject *parent)
     : QObject(parent), mo(new QmlOpenMetaObject(this))
     {
     }
 
-    ~QFxPathViewAttached()
+    ~QmlGraphicsPathViewAttached()
     {
-        QFxPathView::attachedProperties.remove(parent());
+        QmlGraphicsPathView::attachedProperties.remove(parent());
     }
 
     QVariant value(const QByteArray &name) const
@@ -86,14 +86,14 @@ private:
 
 /*!
     \internal
-    \class QFxPathView
-    \brief The QFxPathView class lays out items provided by a model on a path.
+    \class QmlGraphicsPathView
+    \brief The QmlGraphicsPathView class lays out items provided by a model on a path.
 
     \ingroup group_views
 
     The model must be a \l QListModelInterface subclass.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 */
 
 /*!
@@ -112,23 +112,23 @@ private:
     \sa Path
 */
 
-QFxPathView::QFxPathView(QFxItem *parent)
-  : QFxItem(*(new QFxPathViewPrivate), parent)
+QmlGraphicsPathView::QmlGraphicsPathView(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsPathViewPrivate), parent)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->init();
 }
 
-QFxPathView::QFxPathView(QFxPathViewPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsPathView::QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->init();
 }
 
-QFxPathView::~QFxPathView()
+QmlGraphicsPathView::~QmlGraphicsPathView()
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->ownModel)
         delete d->model;
 }
@@ -143,21 +143,21 @@ QFxPathView::~QFxPathView()
 
     \sa {qmlmodels}{Data Models}
 */
-QVariant QFxPathView::model() const
+QVariant QmlGraphicsPathView::model() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->modelVariant;
 }
 
-void QFxPathView::setModel(const QVariant &model)
+void QmlGraphicsPathView::setModel(const QVariant &model)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
-        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
         for (int i=0; i<d->items.count(); i++){
-            QFxItem *p = d->items[i];
+            QmlGraphicsItem *p = d->items[i];
             d->model->release(p);
         }
         d->items.clear();
@@ -165,8 +165,8 @@ void QFxPathView::setModel(const QVariant &model)
 
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
+    QmlGraphicsVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QmlGraphicsVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -174,16 +174,16 @@ void QFxPathView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualDataModel(qmlContext(this));
+            d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             dataModel->setModel(model);
     }
     if (d->model) {
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
-        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
+        connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
     }
     d->firstIndex = 0;
     d->pathOffset = 0;
@@ -195,9 +195,9 @@ void QFxPathView::setModel(const QVariant &model)
     \qmlproperty int PathView::count
     This property holds the number of items in the model.
 */
-int QFxPathView::count() const
+int QmlGraphicsPathView::count() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->model ? d->model->count() : 0;
 }
 
@@ -207,15 +207,15 @@ int QFxPathView::count() const
     This property holds the path used to lay out the items.
     For more information see the \l Path documentation.
 */
-QFxPath *QFxPathView::path() const
+QmlGraphicsPath *QmlGraphicsPathView::path() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->path;
 }
 
-void QFxPathView::setPath(QFxPath *path)
+void QmlGraphicsPathView::setPath(QmlGraphicsPath *path)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->path = path;
     connect(d->path, SIGNAL(changed()), this, SLOT(refill()));
     d->regenerate();
@@ -225,15 +225,15 @@ void QFxPathView::setPath(QFxPath *path)
     \qmlproperty int PathView::currentIndex
     This property holds the index of the current item.
 */
-int QFxPathView::currentIndex() const
+int QmlGraphicsPathView::currentIndex() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->currentIndex;
 }
 
-void QFxPathView::setCurrentIndex(int idx)
+void QmlGraphicsPathView::setCurrentIndex(int idx)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->model && d->model->count())
         idx = qAbs(idx % d->model->count());
     if (d->model && idx != d->currentIndex) {
@@ -253,22 +253,22 @@ void QFxPathView::setCurrentIndex(int idx)
 
     The offset specifies how far along the path the items are from their initial positions.
 */
-qreal QFxPathView::offset() const
+qreal QmlGraphicsPathView::offset() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->_offset;
 }
 
-void QFxPathView::setOffset(qreal offset)
+void QmlGraphicsPathView::setOffset(qreal offset)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->setOffset(offset);
     d->updateCurrent();
 }
 
-void QFxPathViewPrivate::setOffset(qreal o)
+void QmlGraphicsPathViewPrivate::setOffset(qreal o)
 {
-    Q_Q(QFxPathView);
+    Q_Q(QmlGraphicsPathView);
     if (_offset != o) {
         _offset = fmod(o, 100.0);
         if (_offset < 0)
@@ -282,15 +282,15 @@ void QFxPathViewPrivate::setOffset(qreal o)
 
     This property determines the position (0-100) the nearest item will snap to.
 */
-qreal QFxPathView::snapPosition() const
+qreal QmlGraphicsPathView::snapPosition() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->snapPos;
 }
 
-void QFxPathView::setSnapPosition(qreal pos)
+void QmlGraphicsPathView::setSnapPosition(qreal pos)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->snapPos = pos/100;
     d->fixOffset();
 }
@@ -303,15 +303,15 @@ void QFxPathView::setSnapPosition(qreal pos)
     dragMargin is greater than zero, a drag can be initiated by clicking
     within dragMargin pixels of the path.
 */
-qreal QFxPathView::dragMargin() const
+qreal QmlGraphicsPathView::dragMargin() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->dragMargin;
 }
 
-void QFxPathView::setDragMargin(qreal dragMargin)
+void QmlGraphicsPathView::setDragMargin(qreal dragMargin)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->dragMargin = dragMargin;
 }
 
@@ -323,25 +323,25 @@ void QFxPathView::setDragMargin(qreal dragMargin)
     Here is an example delegate:
     \snippet doc/src/snippets/declarative/pathview/pathview.qml 1
 */
-QmlComponent *QFxPathView::delegate() const
+QmlComponent *QmlGraphicsPathView::delegate() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
      if (d->model) {
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             return dataModel->delegate();
     }
 
     return 0;
 }
 
-void QFxPathView::setDelegate(QmlComponent *c)
+void QmlGraphicsPathView::setDelegate(QmlComponent *c)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (!d->ownModel) {
-        d->model = new QFxVisualDataModel(qmlContext(this));
+        d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+    if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(c);
         d->regenerate();
     }
@@ -351,22 +351,22 @@ void QFxPathView::setDelegate(QmlComponent *c)
   \qmlproperty int PathView::pathItemCount
   This property holds the number of items visible on the path at any one time
 */
-int QFxPathView::pathItemCount() const
+int QmlGraphicsPathView::pathItemCount() const
 {
-    Q_D(const QFxPathView);
+    Q_D(const QmlGraphicsPathView);
     return d->pathItems;
 }
 
-void QFxPathView::setPathItemCount(int i)
+void QmlGraphicsPathView::setPathItemCount(int i)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (i == d->pathItems)
         return;
     d->pathItems = i;
     d->regenerate();
 }
 
-QPointF QFxPathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) const
+QPointF QmlGraphicsPathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) const
 {
     //XXX maybe do recursively at increasing resolution.
     qreal mindist = 1e10; // big number
@@ -390,9 +390,9 @@ QPointF QFxPathViewPrivate::pointNear(const QPointF &point, qreal *nearPercent) 
 }
 
 
-void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (!d->items.count())
         return;
     QPointF scenePoint = mapToScene(event->pos());
@@ -416,13 +416,13 @@ void QFxPathView::mousePressEvent(QGraphicsSceneMouseEvent *event)
     d->stealMouse = false;
     d->lastElapsed = 0;
     d->lastDist = 0;
-    QFxItemPrivate::start(d->lastPosTime);
+    QmlGraphicsItemPrivate::start(d->lastPosTime);
     d->tl.clear();
 }
 
-void QFxPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->lastPosTime.isNull())
         return;
 
@@ -433,7 +433,7 @@ void QFxPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 
     if (d->stealMouse) {
-        d->moveReason = QFxPathViewPrivate::Mouse;
+        d->moveReason = QmlGraphicsPathViewPrivate::Mouse;
         qreal newPc;
         d->pointNear(event->pos(), &newPc);
         qreal diff = newPc - d->startPc;
@@ -445,20 +445,20 @@ void QFxPathView::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             else if (diff < -50)
                 diff += 100;
 
-            d->lastElapsed = QFxItemPrivate::restart(d->lastPosTime);
+            d->lastElapsed = QmlGraphicsItemPrivate::restart(d->lastPosTime);
             d->lastDist = diff;
             d->startPc = newPc;
         }
     }
 }
 
-void QFxPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void QmlGraphicsPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->lastPosTime.isNull())
         return;
 
-    qreal elapsed = qreal(d->lastElapsed + QFxItemPrivate::elapsed(d->lastPosTime)) / 1000.;
+    qreal elapsed = qreal(d->lastElapsed + QmlGraphicsItemPrivate::elapsed(d->lastPosTime)) / 1000.;
     qreal velocity = elapsed > 0. ? d->lastDist / elapsed : 0;
     if (d->model && d->model->count() && qAbs(velocity) > 5) {
         if (velocity > 100)
@@ -479,13 +479,13 @@ void QFxPathView::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
     ungrabMouse();
 }
 
-bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
+bool QmlGraphicsPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     QGraphicsSceneMouseEvent mouseEvent(event->type());
     QRectF myRect = mapToScene(QRectF(0, 0, width(), height())).boundingRect();
     QGraphicsScene *s = scene();
-    QFxItem *grabber = s ? qobject_cast<QFxItem*>(s->mouseGrabberItem()) : 0;
+    QmlGraphicsItem *grabber = s ? qobject_cast<QmlGraphicsItem*>(s->mouseGrabberItem()) : 0;
     if ((d->stealMouse || myRect.contains(event->scenePos().toPoint())) && (!grabber || !grabber->keepMouseGrab())) {
         mouseEvent.setAccepted(false);
         for (int i = 0x1; i <= 0x10; i <<= 1) {
@@ -512,7 +512,7 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
         default:
             break;
         }
-        grabber = qobject_cast<QFxItem*>(s->mouseGrabberItem());
+        grabber = qobject_cast<QmlGraphicsItem*>(s->mouseGrabberItem());
         if (grabber && d->stealMouse && !grabber->keepMouseGrab() && grabber != this)
             grabMouse();
 
@@ -523,10 +523,10 @@ bool QFxPathView::sendMouseEvent(QGraphicsSceneMouseEvent *event)
     return false;
 }
 
-bool QFxPathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
+bool QmlGraphicsPathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
 {
     if (!isVisible())
-        return QFxItem::sceneEventFilter(i, e);
+        return QmlGraphicsItem::sceneEventFilter(i, e);
 
     switch (e->type()) {
     case QEvent::GraphicsSceneMousePress:
@@ -542,13 +542,13 @@ bool QFxPathView::sceneEventFilter(QGraphicsItem *i, QEvent *e)
         break;
     }
 
-    return QFxItem::sceneEventFilter(i, e);
+    return QmlGraphicsItem::sceneEventFilter(i, e);
 }
 
-void QFxPathView::componentComplete()
+void QmlGraphicsPathView::componentComplete()
 {
-    Q_D(QFxPathView);
-    QFxItem::componentComplete();
+    Q_D(QmlGraphicsPathView);
+    QmlGraphicsItem::componentComplete();
     d->regenerate();
 
     // move to correct offset
@@ -567,14 +567,14 @@ void QFxPathView::componentComplete()
     }
 }
 
-void QFxPathViewPrivate::regenerate()
+void QmlGraphicsPathViewPrivate::regenerate()
 {
-    Q_Q(QFxPathView);
+    Q_Q(QmlGraphicsPathView);
     if (!q->isComponentComplete())
         return;
 
     for (int i=0; i<items.count(); i++){
-        QFxItem *p = items[i];
+        QmlGraphicsItem *p = items[i];
         releaseItem(p);
     }
     items.clear();
@@ -590,7 +590,7 @@ void QFxPathViewPrivate::regenerate()
     int numItems = pathItems >= 0 ? pathItems : model->count();
     for (int i=0; i < numItems && i < model->count(); ++i){
         int index = (i + firstIndex) % model->count();
-        QFxItem *item = getItem(index);
+        QmlGraphicsItem *item = getItem(index);
         if (!item) {
             qWarning() << "PathView: Cannot create item, index" << (i + firstIndex) % model->count();
             return;
@@ -603,20 +603,20 @@ void QFxPathViewPrivate::regenerate()
     q->refill();
 }
 
-void QFxPathViewPrivate::updateItem(QFxItem *item, qreal percent)
+void QmlGraphicsPathViewPrivate::updateItem(QmlGraphicsItem *item, qreal percent)
 {
-    if (QObject *obj = QFxPathView::qmlAttachedProperties(item)) {
+    if (QObject *obj = QmlGraphicsPathView::qmlAttachedProperties(item)) {
         foreach(const QString &attr, path->attributes())
-            static_cast<QFxPathViewAttached *>(obj)->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
+            static_cast<QmlGraphicsPathViewAttached *>(obj)->setValue(attr.toUtf8(), path->attributeAt(attr, percent));
     }
     QPointF pf = path->pointAt(percent);
     item->setX(pf.x() - item->width()*item->scale()/2);
     item->setY(pf.y() - item->height()*item->scale()/2);
 }
 
-void QFxPathView::refill()
+void QmlGraphicsPathView::refill()
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (!d->isValid() || !isComponentComplete())
         return;
 
@@ -649,13 +649,13 @@ void QFxPathView::refill()
         //A wraparound has occured
         if (wrapIndex < d->items.count()/2){
             while(wrapIndex-- >= 0){
-                QFxItem* p = d->items.takeFirst();
+                QmlGraphicsItem* p = d->items.takeFirst();
                 d->updateItem(p, 0.0);
                 d->releaseItem(p);
                 d->firstIndex++;
                 d->firstIndex %= d->model->count();
                 int index = (d->firstIndex + d->items.count())%d->model->count();
-                QFxItem *item = d->getItem(index);
+                QmlGraphicsItem *item = d->getItem(index);
                 item->setZValue(wrapIndex);
                 if (d->currentIndex == index)
                     item->setFocus(true);
@@ -665,13 +665,13 @@ void QFxPathView::refill()
             }
         } else {
             while(wrapIndex++ < d->items.count()-1){
-                QFxItem* p = d->items.takeLast();
+                QmlGraphicsItem* p = d->items.takeLast();
                 d->updateItem(p, 1.0);
                 d->releaseItem(p);
                 d->firstIndex--;
                 if (d->firstIndex < 0)
                     d->firstIndex = d->model->count() - 1;
-                QFxItem *item = d->getItem(d->firstIndex);
+                QmlGraphicsItem *item = d->getItem(d->firstIndex);
                 item->setZValue(d->firstIndex);
                 if (d->currentIndex == d->firstIndex)
                     item->setFocus(true);
@@ -689,15 +689,15 @@ void QFxPathView::refill()
         d->updateItem(d->items.at(i), rotatedPositions[i]);
 }
 
-void QFxPathView::itemsInserted(int modelIndex, int count)
+void QmlGraphicsPathView::itemsInserted(int modelIndex, int count)
 {
     //XXX support animated insertion
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (!d->isValid() || !isComponentComplete())
         return;
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
-            QFxItem *item = d->getItem(modelIndex + i);
+            QmlGraphicsItem *item = d->getItem(modelIndex + i);
             item->setZValue(modelIndex + i);
             d->items.insert(modelIndex + i, item);
         }
@@ -719,15 +719,15 @@ void QFxPathView::itemsInserted(int modelIndex, int count)
         d->moveOffset.setValue(targetOffset);
 }
 
-void QFxPathView::itemsRemoved(int modelIndex, int count)
+void QmlGraphicsPathView::itemsRemoved(int modelIndex, int count)
 {
     //XXX support animated removal
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (!d->isValid() || !isComponentComplete())
         return;
     if (d->pathItems == -1) {
         for (int i = 0; i < count; ++i) {
-            QFxItem* p = d->items.takeAt(modelIndex);
+            QmlGraphicsItem* p = d->items.takeAt(modelIndex);
             d->model->release(p);
         }
         d->snapToCurrent();
@@ -756,28 +756,28 @@ void QFxPathView::itemsRemoved(int modelIndex, int count)
         d->moveOffset.setValue(targetOffset);
 }
 
-void QFxPathView::createdItem(int index, QFxItem *item)
+void QmlGraphicsPathView::createdItem(int index, QmlGraphicsItem *item)
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     if (d->requestedIndex != index) {
         item->setParentItem(this);
         d->updateItem(item, index < d->firstIndex ? 0.0 : 1.0);
     }
 }
 
-void QFxPathView::destroyingItem(QFxItem *item)
+void QmlGraphicsPathView::destroyingItem(QmlGraphicsItem *item)
 {
     Q_UNUSED(item);
 }
 
-void QFxPathView::ticked()
+void QmlGraphicsPathView::ticked()
 {
-    Q_D(QFxPathView);
+    Q_D(QmlGraphicsPathView);
     d->updateCurrent();
 }
 
 // find the item closest to the snap position
-int QFxPathViewPrivate::calcCurrentIndex()
+int QmlGraphicsPathViewPrivate::calcCurrentIndex()
 {
     int current = -1;
     if (model && items.count()) {
@@ -816,9 +816,9 @@ int QFxPathViewPrivate::calcCurrentIndex()
     return current;
 }
 
-void QFxPathViewPrivate::updateCurrent()
+void QmlGraphicsPathViewPrivate::updateCurrent()
 {
-    Q_Q(QFxPathView);
+    Q_Q(QmlGraphicsPathView);
     if (moveReason != Mouse)
         return;
     int idx = calcCurrentIndex();
@@ -831,9 +831,9 @@ void QFxPathViewPrivate::updateCurrent()
     }
 }
 
-void QFxPathViewPrivate::fixOffset()
+void QmlGraphicsPathViewPrivate::fixOffset()
 {
-    Q_Q(QFxPathView);
+    Q_Q(QmlGraphicsPathView);
     if (model && items.count()) {
         int curr = calcCurrentIndex();
         if (curr != currentIndex)
@@ -843,7 +843,7 @@ void QFxPathViewPrivate::fixOffset()
     }
 }
 
-void QFxPathViewPrivate::snapToCurrent()
+void QmlGraphicsPathViewPrivate::snapToCurrent()
 {
     if (!model || model->count() <= 0)
         return;
@@ -897,12 +897,12 @@ void QFxPathViewPrivate::snapToCurrent()
     }
 }
 
-QHash<QObject*, QObject*> QFxPathView::attachedProperties;
-QObject *QFxPathView::qmlAttachedProperties(QObject *obj)
+QHash<QObject*, QObject*> QmlGraphicsPathView::attachedProperties;
+QObject *QmlGraphicsPathView::qmlAttachedProperties(QObject *obj)
 {
     QObject *rv = attachedProperties.value(obj);
     if (!rv) {
-        rv = new QFxPathViewAttached(obj);
+        rv = new QmlGraphicsPathViewAttached(obj);
         attachedProperties.insert(obj, rv);
     }
     return rv;

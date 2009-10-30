@@ -21,13 +21,13 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxVisualTest : public QObject
+class QmlGraphicsVisualTest : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QList<QObject *>* events READ events CONSTANT)
     Q_CLASSINFO("DefaultProperty", "events")
 public:
-    QFxVisualTest() {}
+    QmlGraphicsVisualTest() {}
 
     QList<QObject *> *events() { return &m_events; }
 
@@ -37,16 +37,16 @@ public:
 private:
     QList<QObject *> m_events;
 };
-QML_DECLARE_TYPE(QFxVisualTest)
+QML_DECLARE_TYPE(QmlGraphicsVisualTest)
 
-class QFxVisualTestFrame : public QObject
+class QmlGraphicsVisualTestFrame : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int msec READ msec WRITE setMsec)
     Q_PROPERTY(QString hash READ hash WRITE setHash)
     Q_PROPERTY(QUrl image READ image WRITE setImage)
 public:
-    QFxVisualTestFrame() : m_msec(-1) {}
+    QmlGraphicsVisualTestFrame() : m_msec(-1) {}
 
     int msec() const { return m_msec; }
     void setMsec(int m) { m_msec = m; }
@@ -62,9 +62,9 @@ private:
     QString m_hash;
     QUrl m_image;
 };
-QML_DECLARE_TYPE(QFxVisualTestFrame)
+QML_DECLARE_TYPE(QmlGraphicsVisualTestFrame)
 
-class QFxVisualTestMouse : public QObject
+class QmlGraphicsVisualTestMouse : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int type READ type WRITE setType)
@@ -75,7 +75,7 @@ class QFxVisualTestMouse : public QObject
     Q_PROPERTY(int modifiers READ modifiers WRITE setModifiers)
     Q_PROPERTY(bool sendToViewport READ sendToViewport WRITE setSendToViewport)
 public:
-    QFxVisualTestMouse() : m_type(0), m_button(0), m_buttons(0), m_x(0), m_y(0), m_modifiers(0), m_viewport(false) {}
+    QmlGraphicsVisualTestMouse() : m_type(0), m_button(0), m_buttons(0), m_x(0), m_y(0), m_modifiers(0), m_viewport(false) {}
 
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
@@ -106,9 +106,9 @@ private:
     int m_modifiers;
     bool m_viewport;
 };
-QML_DECLARE_TYPE(QFxVisualTestMouse)
+QML_DECLARE_TYPE(QmlGraphicsVisualTestMouse)
 
-class QFxVisualTestKey : public QObject
+class QmlGraphicsVisualTestKey : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int type READ type WRITE setType)
@@ -119,7 +119,7 @@ class QFxVisualTestKey : public QObject
     Q_PROPERTY(int count READ count WRITE setCount)
     Q_PROPERTY(bool sendToViewport READ sendToViewport WRITE setSendToViewport)
 public:
-    QFxVisualTestKey() : m_type(0), m_key(0), m_modifiers(0), m_autorep(false), m_count(0), m_viewport(false) {}
+    QmlGraphicsVisualTestKey() : m_type(0), m_key(0), m_modifiers(0), m_autorep(false), m_count(0), m_viewport(false) {}
 
     int type() const { return m_type; }
     void setType(int t) { m_type = t; }
@@ -150,13 +150,13 @@ private:
     int m_count;
     bool m_viewport;
 };
-QML_DECLARE_TYPE(QFxVisualTestKey)
+QML_DECLARE_TYPE(QmlGraphicsVisualTestKey)
 
-class QFxTester : public QAbstractAnimation
+class QmlGraphicsTester : public QAbstractAnimation
 {
 public:
-    QFxTester(const QString &script, QmlViewer::ScriptOptions options, QmlView *parent);
-    ~QFxTester();
+    QmlGraphicsTester(const QString &script, QmlViewer::ScriptOptions options, QmlView *parent);
+    ~QmlGraphicsTester();
 
     virtual int duration() const;
 
@@ -222,7 +222,7 @@ private:
 
     QmlViewer::ScriptOptions options;
     int testscriptidx;
-    QFxVisualTest *testscript;
+    QmlGraphicsVisualTest *testscript;
 
     bool hasCompleted;
     bool hasFailed;

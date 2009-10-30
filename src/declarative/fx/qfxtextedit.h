@@ -58,8 +58,8 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 
-class QFxTextEditPrivate;
-class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
+class QmlGraphicsTextEditPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsTextEdit : public QmlGraphicsPaintedItem
 {
     Q_OBJECT
     Q_ENUMS(VAlignment)
@@ -87,7 +87,7 @@ class Q_DECLARATIVE_EXPORT QFxTextEdit : public QFxPaintedItem
     Q_PROPERTY(qreal textMargin READ textMargin WRITE setTextMargin)
 
 public:
-    QFxTextEdit(QFxItem *parent=0);
+    QmlGraphicsTextEdit(QmlGraphicsItem *parent=0);
 
     enum HAlignment {
         AlignLeft = Qt::AlignLeft,
@@ -201,7 +201,7 @@ private:
     void updateSize();
 
 protected:
-    QFxTextEdit(QFxTextEditPrivate &dd, QFxItem *parent);
+    QmlGraphicsTextEdit(QmlGraphicsTextEditPrivate &dd, QmlGraphicsItem *parent);
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 
@@ -221,13 +221,13 @@ protected:
 
     void drawContents(QPainter *, const QRect &);
 private:
-    Q_DISABLE_COPY(QFxTextEdit)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxTextEdit)
+    Q_DISABLE_COPY(QmlGraphicsTextEdit)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsTextEdit)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxTextEdit)
+QML_DECLARE_TYPE(QmlGraphicsTextEdit)
 
 QT_END_HEADER
 

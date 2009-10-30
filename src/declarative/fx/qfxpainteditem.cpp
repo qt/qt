@@ -53,8 +53,8 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QFxPaintedItem
-    \brief The QFxPaintedItem class is an abstract base class for QmlView items that want cached painting.
+    \class QmlGraphicsPaintedItem
+    \brief The QmlGraphicsPaintedItem class is an abstract base class for QmlView items that want cached painting.
     \internal
 
     This is a convenience class for implementing items that paint their contents
@@ -62,21 +62,21 @@ QT_BEGIN_NAMESPACE
     The dirtyCache() function should be called if the contents change to
     ensure the cache is refreshed the next time painting occurs.
 
-    To subclass QFxPaintedItem, you must reimplement drawContents() to draw
+    To subclass QmlGraphicsPaintedItem, you must reimplement drawContents() to draw
     the contents of the item.
 */
 
 /*!
-    \fn void QFxPaintedItem::drawContents(QPainter *painter, const QRect &rect)
+    \fn void QmlGraphicsPaintedItem::drawContents(QPainter *painter, const QRect &rect)
 
     This function is called when the cache needs to be refreshed. When
-    sub-classing QFxPaintedItem this function should be implemented so as to
+    sub-classing QmlGraphicsPaintedItem this function should be implemented so as to
     paint the contents of the item using the given \a painter for the
     area of the contents specified by \a rect.
 */
 
 /*!
-    \property QFxPaintedItem::contentsSize
+    \property QmlGraphicsPaintedItem::contentsSize
     \brief The size of the contents
 
     The contents size is the size of the item in regards to how it is painted
@@ -94,11 +94,11 @@ static int inpaint_clearcache=0;
 
     \sa clearCache()
 */
-void QFxPaintedItem::dirtyCache(const QRect& rect)
+void QmlGraphicsPaintedItem::dirtyCache(const QRect& rect)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     for (int i=0; i < d->imagecache.count(); ) {
-        QFxPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
+        QmlGraphicsPaintedItemPrivate::ImageCacheItem *c = d->imagecache[i];
         QRect isect = (c->area & rect) | c->dirty;
         if (isect == c->area && !inpaint) {
             delete d->imagecache.takeAt(i);
@@ -114,13 +114,13 @@ void QFxPaintedItem::dirtyCache(const QRect& rect)
 
     \sa dirtyCache()
 */
-void QFxPaintedItem::clearCache()
+void QmlGraphicsPaintedItem::clearCache()
 {
     if (inpaint) {
         inpaint_clearcache=1;
         return;
     }
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     qDeleteAll(d->imagecache);
     d->imagecache.clear();
 }
@@ -130,9 +130,9 @@ void QFxPaintedItem::clearCache()
 
     \sa setContentsSize()
 */
-QSize QFxPaintedItem::contentsSize() const
+QSize QmlGraphicsPaintedItem::contentsSize() const
 {
-    Q_D(const QFxPaintedItem);
+    Q_D(const QmlGraphicsPaintedItem);
     return d->contentsSize;
 }
 
@@ -141,9 +141,9 @@ QSize QFxPaintedItem::contentsSize() const
 
     \sa contentsSize()
 */
-void QFxPaintedItem::setContentsSize(const QSize &size)
+void QmlGraphicsPaintedItem::setContentsSize(const QSize &size)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     if (d->contentsSize == size) return;
     d->contentsSize = size;
     clearCache();
@@ -151,21 +151,21 @@ void QFxPaintedItem::setContentsSize(const QSize &size)
 }
 
 /*!
-    Constructs a new QFxPaintedItem with the given \a parent.
+    Constructs a new QmlGraphicsPaintedItem with the given \a parent.
 */
-QFxPaintedItem::QFxPaintedItem(QFxItem *parent)
-  : QFxItem(*(new QFxPaintedItemPrivate), parent)
+QmlGraphicsPaintedItem::QmlGraphicsPaintedItem(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsPaintedItemPrivate), parent)
 {
     init();
 }
 
 /*!
     \internal
-    Constructs a new QFxPaintedItem with the given \a parent and
+    Constructs a new QmlGraphicsPaintedItem with the given \a parent and
     initialized private data member \a dd.
 */
-QFxPaintedItem::QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsPaintedItem::QmlGraphicsPaintedItem(QmlGraphicsPaintedItemPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
     init();
 }
@@ -173,7 +173,7 @@ QFxPaintedItem::QFxPaintedItem(QFxPaintedItemPrivate &dd, QFxItem *parent)
 /*!
     Destroys the image item.
 */
-QFxPaintedItem::~QFxPaintedItem()
+QmlGraphicsPaintedItem::~QmlGraphicsPaintedItem()
 {
     clearCache();
 }
@@ -181,16 +181,16 @@ QFxPaintedItem::~QFxPaintedItem()
 /*!
     \internal
 */
-void QFxPaintedItem::init()
+void QmlGraphicsPaintedItem::init()
 {
     connect(this,SIGNAL(widthChanged()),this,SLOT(clearCache()));
     connect(this,SIGNAL(heightChanged()),this,SLOT(clearCache()));
     connect(this,SIGNAL(visibleChanged()),this,SLOT(clearCache()));
 }
 
-void QFxPaintedItem::setCacheFrozen(bool frozen)
+void QmlGraphicsPaintedItem::setCacheFrozen(bool frozen)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     if (d->cachefrozen == frozen)
         return;
     d->cachefrozen = frozen;
@@ -200,9 +200,9 @@ void QFxPaintedItem::setCacheFrozen(bool frozen)
 /*!
     \reimp
 */
-void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     const QRect content(QPoint(0,0),d->contentsSize);
     if (content.width() <= 0 || content.height() <= 0)
         return;
@@ -290,7 +290,7 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
                     qp.translate(-r.x(),-r.y());
                     drawContents(&qp, r);
                 }
-                QFxPaintedItemPrivate::ImageCacheItem *newitem = new QFxPaintedItemPrivate::ImageCacheItem;
+                QmlGraphicsPaintedItemPrivate::ImageCacheItem *newitem = new QmlGraphicsPaintedItemPrivate::ImageCacheItem;
                 newitem->area = r;
                 newitem->image = img;
                 d->imagecache.append(newitem);
@@ -320,21 +320,21 @@ void QFxPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidge
 */
 
 /*!
-  \property QFxPaintedItem::cacheSize
+  \property QmlGraphicsPaintedItem::cacheSize
 
   The maximum number of pixels of image cache to allow. The default
   is 0.1 megapixels. The cache will not be larger than the (unscaled)
-  size of the QFxPaintedItem.
+  size of the QmlGraphicsPaintedItem.
 */
-int QFxPaintedItem::cacheSize() const
+int QmlGraphicsPaintedItem::cacheSize() const
 {
-    Q_D(const QFxPaintedItem);
+    Q_D(const QmlGraphicsPaintedItem);
     return d->max_imagecache_size;
 }
 
-void QFxPaintedItem::setCacheSize(int pixels)
+void QmlGraphicsPaintedItem::setCacheSize(int pixels)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     if (pixels < d->max_imagecache_size) {
         int cachesize=0;
         for (int i=0; i<d->imagecache.count(); ++i) {
@@ -359,7 +359,7 @@ void QFxPaintedItem::setCacheSize(int pixels)
 }
 
 /*!
-    \property QFxPaintedItem::fillColor
+    \property QmlGraphicsPaintedItem::fillColor
 
     The color to be used to fill the item prior to calling drawContents().
     By default, this is Qt::transparent.
@@ -367,9 +367,9 @@ void QFxPaintedItem::setCacheSize(int pixels)
     Performance improvements can be achieved if subclasses call this with either an
     invalid color (QColor()), or an appropriate solid color.
 */
-void QFxPaintedItem::setFillColor(const QColor& c)
+void QmlGraphicsPaintedItem::setFillColor(const QColor& c)
 {
-    Q_D(QFxPaintedItem);
+    Q_D(QmlGraphicsPaintedItem);
     if (d->fillColor == c)
         return;
     d->fillColor = c;
@@ -377,9 +377,9 @@ void QFxPaintedItem::setFillColor(const QColor& c)
     update();
 }
 
-QColor QFxPaintedItem::fillColor() const
+QColor QmlGraphicsPaintedItem::fillColor() const
 {
-    Q_D(const QFxPaintedItem);
+    Q_D(const QmlGraphicsPaintedItem);
     return d->fillColor;
 }
 

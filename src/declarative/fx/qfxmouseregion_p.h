@@ -60,19 +60,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxMouseRegionPrivate : public QFxItemPrivate
+class QmlGraphicsMouseRegionPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxMouseRegion)
+    Q_DECLARE_PUBLIC(QmlGraphicsMouseRegion)
 
 public:
-    QFxMouseRegionPrivate()
+    QmlGraphicsMouseRegionPrivate()
       : absorb(true), hovered(false), pressed(false), longPress(false), drag(0)
     {
     }
 
     void init()
     {
-        Q_Q(QFxMouseRegion);
+        Q_Q(QmlGraphicsMouseRegion);
         q->setAcceptedMouseButtons(Qt::LeftButton);
     }
 
@@ -84,7 +84,7 @@ public:
     }
 
     bool isConnected(const char *signal) {
-        Q_Q(QFxMouseRegion);
+        Q_Q(QmlGraphicsMouseRegion);
         int idx = QObjectPrivate::get(q)->signalIndex(signal);
         return QObjectPrivate::get(q)->isSignalConnected(idx);
     }
@@ -97,7 +97,7 @@ public:
     bool dragX : 1;
     bool dragY : 1;
     bool dragged : 1;
-    QFxDrag drag;
+    QmlGraphicsDrag drag;
     QPointF start;
     QPointF startScene;
     qreal startX;

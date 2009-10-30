@@ -67,18 +67,18 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QFxItemKeyFilter;
+class QmlGraphicsItemKeyFilter;
 
 //### merge into private?
-class QFxContents : public QObject
+class QmlGraphicsContents : public QObject
 {
     Q_OBJECT
 public:
-    QFxContents();
+    QmlGraphicsContents();
 
     QRectF rectF() const;
 
-    void setItem(QFxItem *item);
+    void setItem(QmlGraphicsItem *item);
 
 public Q_SLOTS:
     void calcHeight();
@@ -88,34 +88,34 @@ Q_SIGNALS:
     void rectChanged();
 
 private:
-    QFxItem *m_item;
+    QmlGraphicsItem *m_item;
     qreal m_x;
     qreal m_y;
     qreal m_width;
     qreal m_height;
 };
 
-class QFxItemPrivate : public QGraphicsItemPrivate
+class QmlGraphicsItemPrivate : public QGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxItem)
+    Q_DECLARE_PUBLIC(QmlGraphicsItem)
 
 public:
-    QFxItemPrivate()
+    QmlGraphicsItemPrivate()
     : _anchors(0), _contents(0),
       _baselineOffset(0),
       _anchorLines(0),
-      _stateGroup(0), origin(QFxItem::TopLeft),
+      _stateGroup(0), origin(QmlGraphicsItem::TopLeft),
       widthValid(false), heightValid(false),
       _componentComplete(true), _keepMouse(false),
       smooth(false), keyHandler(0),
       width(0), height(0), implicitWidth(0), implicitHeight(0)
     {}
-    ~QFxItemPrivate()
+    ~QmlGraphicsItemPrivate()
     { delete _anchors; }
 
-    void init(QFxItem *parent)
+    void init(QmlGraphicsItem *parent)
     {
-        Q_Q(QFxItem);
+        Q_Q(QmlGraphicsItem);
 
         if (parent)
             q->setParentItem(parent);
@@ -136,7 +136,7 @@ public:
     void data_insert(int, QObject *);
     QObject *data_at(int) const;
     void data_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, data)
+    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, data)
 
     // resources property
     void resources_removeAt(int);
@@ -145,16 +145,16 @@ public:
     void resources_insert(int, QObject *);
     QObject *resources_at(int) const;
     void resources_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QObject *, resources)
+    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QObject *, resources)
 
     // children property
     void children_removeAt(int);
     int children_count() const;
-    void children_append(QFxItem *);
-    void children_insert(int, QFxItem *);
-    QFxItem *children_at(int) const;
+    void children_append(QmlGraphicsItem *);
+    void children_insert(int, QmlGraphicsItem *);
+    QmlGraphicsItem *children_at(int) const;
     void children_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QFxItem *, children)
+    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QmlGraphicsItem *, children)
 
     // transform property
     void transform_removeAt(int);
@@ -163,53 +163,53 @@ public:
     void transform_insert(int, QGraphicsTransform *);
     QGraphicsTransform *transform_at(int) const;
     void transform_clear();
-    QML_DECLARE_LIST_PROXY(QFxItemPrivate, QGraphicsTransform *, transform)
+    QML_DECLARE_LIST_PROXY(QmlGraphicsItemPrivate, QGraphicsTransform *, transform)
 
-    QFxAnchors *anchors() {
+    QmlGraphicsAnchors *anchors() {
         if (!_anchors) {
-            Q_Q(QFxItem);
-            _anchors = new QFxAnchors;
+            Q_Q(QmlGraphicsItem);
+            _anchors = new QmlGraphicsAnchors;
             _anchors->setItem(q);
             if (!_componentComplete)
                 _anchors->classBegin();
         }
         return _anchors;
     }
-    QList<QFxAnchors *> dependantAnchors;
-    QFxAnchors *_anchors;
-    QFxContents *_contents;
+    QList<QmlGraphicsAnchors *> dependantAnchors;
+    QmlGraphicsAnchors *_anchors;
+    QmlGraphicsContents *_contents;
 
     QmlNullableValue<qreal> _baselineOffset;
 
     struct AnchorLines {
-        AnchorLines(QFxItem *);
-        QFxAnchorLine left;
-        QFxAnchorLine right;
-        QFxAnchorLine hCenter;
-        QFxAnchorLine top;
-        QFxAnchorLine bottom;
-        QFxAnchorLine vCenter;
-        QFxAnchorLine baseline;
+        AnchorLines(QmlGraphicsItem *);
+        QmlGraphicsAnchorLine left;
+        QmlGraphicsAnchorLine right;
+        QmlGraphicsAnchorLine hCenter;
+        QmlGraphicsAnchorLine top;
+        QmlGraphicsAnchorLine bottom;
+        QmlGraphicsAnchorLine vCenter;
+        QmlGraphicsAnchorLine baseline;
     };
     mutable AnchorLines *_anchorLines;
     AnchorLines *anchorLines() const {
-        Q_Q(const QFxItem);
+        Q_Q(const QmlGraphicsItem);
         if (!_anchorLines) _anchorLines =
-            new AnchorLines(const_cast<QFxItem *>(q));
+            new AnchorLines(const_cast<QmlGraphicsItem *>(q));
         return _anchorLines;
     }
 
     QmlStateGroup *states();
     QmlStateGroup *_stateGroup;
 
-    QFxItem::TransformOrigin origin:4;
+    QmlGraphicsItem::TransformOrigin origin:4;
     bool widthValid:1;
     bool heightValid:1;
     bool _componentComplete:1;
     bool _keepMouse:1;
     bool smooth:1;
 
-    QFxItemKeyFilter *keyHandler;
+    QmlGraphicsItemKeyFilter *keyHandler;
 
     qreal width;
     qreal height;
@@ -220,7 +220,7 @@ public:
 
     virtual void setPosHelper(const QPointF &pos)
     {
-        Q_Q(QFxItem);
+        Q_Q(QmlGraphicsItem);
         QRectF oldGeometry(this->pos.x(), this->pos.y(), width, height);
         QGraphicsItemPrivate::setPosHelper(pos);
         q->geometryChanged(QRectF(this->pos.x(), this->pos.y(), width, height), oldGeometry);

@@ -58,10 +58,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxAnchorLine
+class QmlGraphicsAnchorLine
 {
 public:
-    QFxAnchorLine() : item(0), anchorLine(Invalid)
+    QmlGraphicsAnchorLine() : item(0), anchorLine(Invalid)
     {
     }
 
@@ -78,16 +78,16 @@ public:
         Vertical_Mask = Top | Bottom | VCenter | Baseline
     };
 
-    QFxItem *item;
+    QmlGraphicsItem *item;
     AnchorLine anchorLine;
 };
-Q_DECLARE_METATYPE(QFxAnchorLine)
+Q_DECLARE_METATYPE(QmlGraphicsAnchorLine)
 
-class QFxAnchorsPrivate : public QObjectPrivate
+class QmlGraphicsAnchorsPrivate : public QObjectPrivate
 {
-    Q_DECLARE_PUBLIC(QFxAnchors)
+    Q_DECLARE_PUBLIC(QmlGraphicsAnchors)
 public:
-    QFxAnchorsPrivate()
+    QmlGraphicsAnchorsPrivate()
       : updatingMe(false), updatingHorizontalAnchor(0),
         updatingVerticalAnchor(0), item(0), usedAnchors(0), fill(0),
         centerIn(0), leftMargin(0), rightMargin(0), topMargin(0),
@@ -100,10 +100,10 @@ public:
     {
     }
 
-    void clearItem(QFxItem *);
+    void clearItem(QmlGraphicsItem *);
 
-    void addDepend(QFxItem *);
-    void remDepend(QFxItem *);
+    void addDepend(QmlGraphicsItem *);
+    void remDepend(QmlGraphicsItem *);
     bool isItemComplete() const;
 
     bool updatingMe;
@@ -118,32 +118,32 @@ public:
 
     void updateOnComplete();
     void updateMe();
-    void update(QFxItem *, const QRectF &, const QRectF &);
+    void update(QmlGraphicsItem *, const QRectF &, const QRectF &);
 
     bool checkHValid() const;
     bool checkVValid() const;
-    bool checkHAnchorValid(QFxAnchorLine anchor) const;
-    bool checkVAnchorValid(QFxAnchorLine anchor) const;
-    bool calcStretch(const QFxAnchorLine &edge1, const QFxAnchorLine &edge2, int offset1, int offset2, QFxAnchorLine::AnchorLine line, int &stretch);
+    bool checkHAnchorValid(QmlGraphicsAnchorLine anchor) const;
+    bool checkVAnchorValid(QmlGraphicsAnchorLine anchor) const;
+    bool calcStretch(const QmlGraphicsAnchorLine &edge1, const QmlGraphicsAnchorLine &edge2, int offset1, int offset2, QmlGraphicsAnchorLine::AnchorLine line, int &stretch);
 
     void updateHorizontalAnchors();
     void updateVerticalAnchors();
     void fillChanged();
     void centerInChanged();
 
-    QFxItem *item;
-    QFxAnchors::UsedAnchors usedAnchors;
+    QmlGraphicsItem *item;
+    QmlGraphicsAnchors::UsedAnchors usedAnchors;
 
-    QFxItem *fill;
-    QFxItem *centerIn;
+    QmlGraphicsItem *fill;
+    QmlGraphicsItem *centerIn;
 
-    QFxAnchorLine left;
-    QFxAnchorLine right;
-    QFxAnchorLine top;
-    QFxAnchorLine bottom;
-    QFxAnchorLine vCenter;
-    QFxAnchorLine hCenter;
-    QFxAnchorLine baseline;
+    QmlGraphicsAnchorLine left;
+    QmlGraphicsAnchorLine right;
+    QmlGraphicsAnchorLine top;
+    QmlGraphicsAnchorLine bottom;
+    QmlGraphicsAnchorLine vCenter;
+    QmlGraphicsAnchorLine hCenter;
+    QmlGraphicsAnchorLine baseline;
 
     qreal leftMargin;
     qreal rightMargin;

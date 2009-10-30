@@ -53,7 +53,7 @@
 #include <QPainter>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextEdit,QFxTextEdit)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextEdit,QmlGraphicsTextEdit)
 
 /*!
     \qmlclass TextEdit
@@ -80,42 +80,42 @@ TextEdit {
 
 /*!
     \internal
-    \class QFxTextEdit
+    \class QmlGraphicsTextEdit
     \qmlclass TextEdit
     \ingroup group_coreitems
 
-    \brief The QFxTextEdit class provides an editable formatted text item that you can add to a QmlView.
+    \brief The QmlGraphicsTextEdit class provides an editable formatted text item that you can add to a QmlView.
 
     It can display both plain and rich text.
 
     \image declarative-textedit.png
 
-    A QFxTextEdit object can be instantiated in Qml using the tag \c &lt;TextEdit&gt;.
+    A QmlGraphicsTextEdit object can be instantiated in Qml using the tag \c &lt;TextEdit&gt;.
 */
 
 /*!
-    Constructs a new QFxTextEdit.
+    Constructs a new QmlGraphicsTextEdit.
 */
-QFxTextEdit::QFxTextEdit(QFxItem *parent)
-: QFxPaintedItem(*(new QFxTextEditPrivate), parent)
+QmlGraphicsTextEdit::QmlGraphicsTextEdit(QmlGraphicsItem *parent)
+: QmlGraphicsPaintedItem(*(new QmlGraphicsTextEditPrivate), parent)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->init();
 }
 
 /*!
 \internal
 */
-QFxTextEdit::QFxTextEdit(QFxTextEditPrivate &dd, QFxItem *parent)
-    : QFxPaintedItem(dd, parent)
+QmlGraphicsTextEdit::QmlGraphicsTextEdit(QmlGraphicsTextEditPrivate &dd, QmlGraphicsItem *parent)
+    : QmlGraphicsPaintedItem(dd, parent)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->init();
 }
 
-QString QFxTextEdit::text() const
+QString QmlGraphicsTextEdit::text() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
 
     if (d->richText)
         return d->document->toHtml();
@@ -141,10 +141,10 @@ QString QFxTextEdit::text() const
     automatically determine whether the text should be treated as
     rich text.  This determination is made using Qt::mightBeRichText().
 */
-void QFxTextEdit::setText(const QString &text)
+void QmlGraphicsTextEdit::setText(const QString &text)
 {
-    Q_D(QFxTextEdit);
-    if (QFxTextEdit::text() == text)
+    Q_D(QmlGraphicsTextEdit);
+    if (QmlGraphicsTextEdit::text() == text)
         return;
     d->text = text;
     d->richText = d->format == RichText || (d->format == AutoText && Qt::mightBeRichText(text));
@@ -192,15 +192,15 @@ Column {
     \o \image declarative-textformat.png
     \endtable
 */
-QFxTextEdit::TextFormat QFxTextEdit::textFormat() const
+QmlGraphicsTextEdit::TextFormat QmlGraphicsTextEdit::textFormat() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->format;
 }
 
-void QFxTextEdit::setTextFormat(TextFormat format)
+void QmlGraphicsTextEdit::setTextFormat(TextFormat format)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (format == d->format)
         return;
     bool wasRich = d->richText;
@@ -216,15 +216,15 @@ void QFxTextEdit::setTextFormat(TextFormat format)
     d->format = format;
 }
 
-QFont QFxTextEdit::font() const
+QFont QmlGraphicsTextEdit::font() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->font;
 }
 
-void QFxTextEdit::setFont(const QFont &font)
+void QmlGraphicsTextEdit::setFont(const QFont &font)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->font = font;
 
     clearCache();
@@ -250,15 +250,15 @@ TextEdit { color: "#00FF00"; ...  }
 TextEdit { color: "steelblue"; ...  }
     \endqml
 */
-QColor QFxTextEdit::color() const
+QColor QmlGraphicsTextEdit::color() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->color;
 }
 
-void QFxTextEdit::setColor(const QColor &color)
+void QmlGraphicsTextEdit::setColor(const QColor &color)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->color == color)
         return;
 
@@ -275,15 +275,15 @@ void QFxTextEdit::setColor(const QColor &color)
 
     The text highlight color, used behind selections.
 */
-QColor QFxTextEdit::selectionColor() const
+QColor QmlGraphicsTextEdit::selectionColor() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->selectionColor;
 }
 
-void QFxTextEdit::setSelectionColor(const QColor &color)
+void QmlGraphicsTextEdit::setSelectionColor(const QColor &color)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->selectionColor == color)
         return;
 
@@ -300,15 +300,15 @@ void QFxTextEdit::setSelectionColor(const QColor &color)
 
     The selected text color, used in selections.
 */
-QColor QFxTextEdit::selectedTextColor() const
+QColor QmlGraphicsTextEdit::selectedTextColor() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->selectedTextColor;
 }
 
-void QFxTextEdit::setSelectedTextColor(const QColor &color)
+void QmlGraphicsTextEdit::setSelectedTextColor(const QColor &color)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->selectedTextColor == color)
         return;
 
@@ -331,15 +331,15 @@ void QFxTextEdit::setSelectedTextColor(const QColor &color)
     \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
-QFxTextEdit::HAlignment QFxTextEdit::hAlign() const
+QmlGraphicsTextEdit::HAlignment QmlGraphicsTextEdit::hAlign() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->hAlign;
 }
 
-void QFxTextEdit::setHAlign(QFxTextEdit::HAlignment alignment)
+void QmlGraphicsTextEdit::setHAlign(QmlGraphicsTextEdit::HAlignment alignment)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (alignment == d->hAlign)
         return;
     d->hAlign = alignment;
@@ -347,15 +347,15 @@ void QFxTextEdit::setHAlign(QFxTextEdit::HAlignment alignment)
     updateSize();
 }
 
-QFxTextEdit::VAlignment QFxTextEdit::vAlign() const
+QmlGraphicsTextEdit::VAlignment QmlGraphicsTextEdit::vAlign() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->vAlign;
 }
 
-void QFxTextEdit::setVAlign(QFxTextEdit::VAlignment alignment)
+void QmlGraphicsTextEdit::setVAlign(QmlGraphicsTextEdit::VAlignment alignment)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (alignment == d->vAlign)
         return;
     d->vAlign = alignment;
@@ -363,9 +363,9 @@ void QFxTextEdit::setVAlign(QFxTextEdit::VAlignment alignment)
     updateSize();
 }
 
-bool QFxTextEdit::wrap() const
+bool QmlGraphicsTextEdit::wrap() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->wrap;
 }
 
@@ -377,9 +377,9 @@ bool QFxTextEdit::wrap() const
 
     Wrapping is done on word boundaries (i.e. it is a "word-wrap"). Wrapping is off by default.
 */
-void QFxTextEdit::setWrap(bool w)
+void QmlGraphicsTextEdit::setWrap(bool w)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (w == d->wrap)
         return;
     d->wrap = w;
@@ -394,15 +394,15 @@ void QFxTextEdit::setWrap(bool w)
     This property is set and unset when the text edit gets focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
 */
-bool QFxTextEdit::isCursorVisible() const
+bool QmlGraphicsTextEdit::isCursorVisible() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->cursorVisible;
 }
 
-void QFxTextEdit::setCursorVisible(bool on)
+void QmlGraphicsTextEdit::setCursorVisible(bool on)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->cursorVisible == on)
         return;
     d->cursorVisible = on;
@@ -416,15 +416,15 @@ void QFxTextEdit::setCursorVisible(bool on)
     \qmlproperty int TextEdit::cursorPosition
     The position of the cursor in the TextEdit.
 */
-int QFxTextEdit::cursorPosition() const
+int QmlGraphicsTextEdit::cursorPosition() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textCursor().position();
 }
 
-void QFxTextEdit::setCursorPosition(int pos)
+void QmlGraphicsTextEdit::setCursorPosition(int pos)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     QTextCursor cursor = d->control->textCursor();
     if (cursor.position() == pos)
         return;
@@ -442,18 +442,18 @@ void QFxTextEdit::setCursorPosition(int pos)
     needed, and the x and y properties of delegate instance will be set so as
     to be one pixel before the top left of the current character.
 
-    Note that the root item of the delegate component must be a QFxItem or
-    QFxItem derived item.
+    Note that the root item of the delegate component must be a QmlGraphicsItem or
+    QmlGraphicsItem derived item.
 */
-QmlComponent* QFxTextEdit::cursorDelegate() const
+QmlComponent* QmlGraphicsTextEdit::cursorDelegate() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->cursorComponent;
 }
 
-void QFxTextEdit::setCursorDelegate(QmlComponent* c)
+void QmlGraphicsTextEdit::setCursorDelegate(QmlComponent* c)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(d->cursorComponent){
         if(d->cursor){
             disconnect(d->control, SIGNAL(cursorPositionChanged()),
@@ -474,12 +474,12 @@ void QFxTextEdit::setCursorDelegate(QmlComponent* c)
     }
 }
 
-void QFxTextEdit::loadCursorDelegate()
+void QmlGraphicsTextEdit::loadCursorDelegate()
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(d->cursorComponent->isLoading())
         return;
-    d->cursor = qobject_cast<QFxItem*>(d->cursorComponent->create(qmlContext(this)));
+    d->cursor = qobject_cast<QmlGraphicsItem*>(d->cursorComponent->create(qmlContext(this)));
     if(d->cursor){
         connect(d->control, SIGNAL(cursorPositionChanged()),
                 this, SLOT(moveCursorDelegate()));
@@ -506,15 +506,15 @@ void QFxTextEdit::loadCursorDelegate()
 
     \sa selectionEnd, cursorPosition, selectedText
 */
-int QFxTextEdit::selectionStart() const
+int QmlGraphicsTextEdit::selectionStart() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textCursor().selectionStart();
 }
 
-void QFxTextEdit::setSelectionStart(int s)
+void QmlGraphicsTextEdit::setSelectionStart(int s)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(d->lastSelectionStart == s || s < 0 || s > text().length())
         return;
     d->lastSelectionStart = s;
@@ -534,15 +534,15 @@ void QFxTextEdit::setSelectionStart(int s)
 
     \sa selectionStart, cursorPosition, selectedText
 */
-int QFxTextEdit::selectionEnd() const
+int QmlGraphicsTextEdit::selectionEnd() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textCursor().selectionEnd();
 }
 
-void QFxTextEdit::setSelectionEnd(int s)
+void QmlGraphicsTextEdit::setSelectionEnd(int s)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(d->lastSelectionEnd == s || s < 0 || s > text().length())
         return;
     d->lastSelectionEnd = s;
@@ -563,9 +563,9 @@ void QFxTextEdit::setSelectionEnd(int s)
             myTextEdit.selectionEnd);
     \endcode
 */
-QString QFxTextEdit::selectedText() const
+QString QmlGraphicsTextEdit::selectedText() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textCursor().selectedText();
 }
 
@@ -575,15 +575,15 @@ QString QFxTextEdit::selectedText() const
     Whether the TextEdit should gain focus on a mouse press. By default this is
     set to false;
 */
-bool QFxTextEdit::focusOnPress() const
+bool QmlGraphicsTextEdit::focusOnPress() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->focusOnPress;
 }
 
-void QFxTextEdit::setFocusOnPress(bool on)
+void QmlGraphicsTextEdit::setFocusOnPress(bool on)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->focusOnPress == on)
         return;
     d->focusOnPress = on;
@@ -595,51 +595,51 @@ void QFxTextEdit::setFocusOnPress(bool on)
     Whether the TextEdit should keep the selection visible when it loses focus to another
     item in the scene. By default this is set to true;
 */
-bool QFxTextEdit::persistentSelection() const
+bool QmlGraphicsTextEdit::persistentSelection() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->persistentSelection;
 }
 
-void QFxTextEdit::setPersistentSelection(bool on)
+void QmlGraphicsTextEdit::setPersistentSelection(bool on)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->persistentSelection == on)
         return;
     d->persistentSelection = on;
 }
 
-qreal QFxTextEdit::textMargin() const
+qreal QmlGraphicsTextEdit::textMargin() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->textMargin;
 }
 
-void QFxTextEdit::setTextMargin(qreal margin)
+void QmlGraphicsTextEdit::setTextMargin(qreal margin)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->textMargin == margin)
         return;
     d->textMargin = margin;
     d->document->setDocumentMargin(d->textMargin);
 }
 
-void QFxTextEdit::geometryChanged(const QRectF &newGeometry,
+void QmlGraphicsTextEdit::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
     if (newGeometry.width() != oldGeometry.width())
         updateSize();
-    QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
+    QmlGraphicsPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
 /*!
     Ensures any delayed caching or data loading the class
     needs to performed is complete.
 */
-void QFxTextEdit::componentComplete()
+void QmlGraphicsTextEdit::componentComplete()
 {
-    Q_D(QFxTextEdit);
-    QFxPaintedItem::componentComplete();
+    Q_D(QmlGraphicsTextEdit);
+    QmlGraphicsPaintedItem::componentComplete();
     if (d->dirty) {
         updateSize();
         d->dirty = false;
@@ -654,9 +654,9 @@ void QFxTextEdit::componentComplete()
 
     By default this property is false.
 */
-void QFxTextEdit::setReadOnly(bool r)
+void QmlGraphicsTextEdit::setReadOnly(bool r)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
 
     Qt::TextInteractionFlags flags = Qt::NoTextInteraction;
     if (r) {
@@ -669,9 +669,9 @@ void QFxTextEdit::setReadOnly(bool r)
         d->control->moveCursor(QTextCursor::End);
 }
 
-bool QFxTextEdit::isReadOnly() const
+bool QmlGraphicsTextEdit::isReadOnly() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return !(d->control->textInteractionFlags() & Qt::TextEditable);
 }
 
@@ -679,9 +679,9 @@ bool QFxTextEdit::isReadOnly() const
     Sets how the text edit should interact with user input to the given
     \a flags.
 */
-void QFxTextEdit::setTextInteractionFlags(Qt::TextInteractionFlags flags)
+void QmlGraphicsTextEdit::setTextInteractionFlags(Qt::TextInteractionFlags flags)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->setTextInteractionFlags(flags);
 }
 
@@ -689,9 +689,9 @@ void QFxTextEdit::setTextInteractionFlags(Qt::TextInteractionFlags flags)
     Returns the flags specifying how the text edit should interact
     with user input.
 */
-Qt::TextInteractionFlags QFxTextEdit::textInteractionFlags() const
+Qt::TextInteractionFlags QmlGraphicsTextEdit::textInteractionFlags() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textInteractionFlags();
 }
 
@@ -699,9 +699,9 @@ Qt::TextInteractionFlags QFxTextEdit::textInteractionFlags() const
     Returns the cursor for the point at the given \a pos on the
     text edit.
 */
-QTextCursor QFxTextEdit::cursorForPosition(const QPoint &pos) const
+QTextCursor QmlGraphicsTextEdit::cursorForPosition(const QPoint &pos) const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->cursorForPosition(pos);
 }
 
@@ -709,9 +709,9 @@ QTextCursor QFxTextEdit::cursorForPosition(const QPoint &pos) const
     Returns the rectangle where the given text \a cursor is rendered
     within the text edit.
 */
-QRect QFxTextEdit::cursorRect(const QTextCursor &cursor) const
+QRect QmlGraphicsTextEdit::cursorRect(const QTextCursor &cursor) const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     if (cursor.isNull())
         return QRect();
 
@@ -722,9 +722,9 @@ QRect QFxTextEdit::cursorRect(const QTextCursor &cursor) const
     Returns the rectangle where the text cursor is rendered
     within the text edit.
 */
-QRect QFxTextEdit::cursorRect() const
+QRect QmlGraphicsTextEdit::cursorRect() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->cursorRect().toRect();
 }
 
@@ -732,18 +732,18 @@ QRect QFxTextEdit::cursorRect() const
 /*!
     Sets the text cursor for the text edit to the given \a cursor.
 */
-void QFxTextEdit::setTextCursor(const QTextCursor &cursor)
+void QmlGraphicsTextEdit::setTextCursor(const QTextCursor &cursor)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->setTextCursor(cursor);
 }
 
 /*!
     Returns the text cursor for the text edit.
 */
-QTextCursor QFxTextEdit::textCursor() const
+QTextCursor QmlGraphicsTextEdit::textCursor() const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->textCursor();
 }
 
@@ -752,9 +752,9 @@ Moves the cursor by performing the given \a operation.
 
 If \a mode is QTextCursor::KeepAnchor, the cursor selects the text it moves over. This is the same effect that the user achieves when they hold down the Shift key and move the cursor with the cursor keys.
 */
-void QFxTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode)
+void QmlGraphicsTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::MoveMode mode)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->moveCursor(operation, mode);
 }
 
@@ -762,23 +762,23 @@ void QFxTextEdit::moveCursor(QTextCursor::MoveOperation operation, QTextCursor::
 \overload
 Handles the given \a event.
 */
-bool QFxTextEdit::event(QEvent *event)
+bool QmlGraphicsTextEdit::event(QEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (event->type() == QEvent::ShortcutOverride) {
         d->control->processEvent(event, QPointF(0, 0));
         return event->isAccepted();
     }
-    return QFxPaintedItem::event(event);
+    return QmlGraphicsPaintedItem::event(event);
 }
 
 /*!
 \overload
 Handles the given key \a event.
 */
-void QFxTextEdit::keyPressEvent(QKeyEvent *event)
+void QmlGraphicsTextEdit::keyPressEvent(QKeyEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     //### this causes non-standard cursor behavior in some cases.
     //     is it still needed?
     /*QTextCursor c = textCursor();
@@ -803,19 +803,19 @@ void QFxTextEdit::keyPressEvent(QKeyEvent *event)
         d->control->processEvent(event, QPointF(0, 0));
 
     if (!event->isAccepted())
-        QFxPaintedItem::keyPressEvent(event);
+        QmlGraphicsPaintedItem::keyPressEvent(event);
 }
 
 /*!
 \overload
 Handles the given key \a event.
 */
-void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
+void QmlGraphicsTextEdit::keyReleaseEvent(QKeyEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QFxPaintedItem::keyReleaseEvent(event);
+        QmlGraphicsPaintedItem::keyReleaseEvent(event);
 }
 
 /*!
@@ -825,18 +825,18 @@ void QFxTextEdit::keyReleaseEvent(QKeyEvent *event)
     like KeyProxy can give the behavior of focus even when hasFocus() isn't
     true.
 */
-void QFxTextEdit::focusChanged(bool hasFocus)
+void QmlGraphicsTextEdit::focusChanged(bool hasFocus)
 {
     setCursorVisible(hasFocus);
-    QFxItem::focusChanged(hasFocus);
+    QmlGraphicsItem::focusChanged(hasFocus);
 }
 
 /*!
     Causes all text to be selected.
 */
-void QFxTextEdit::selectAll()
+void QmlGraphicsTextEdit::selectAll()
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->selectAll();
 }
 
@@ -844,59 +844,59 @@ void QFxTextEdit::selectAll()
 \overload
 Handles the given mouse \a event.
 */
-void QFxTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsTextEdit::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (d->focusOnPress)
         setFocus(true);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QFxPaintedItem::mousePressEvent(event);
+        QmlGraphicsPaintedItem::mousePressEvent(event);
 }
 
 /*!
 \overload
 Handles the given mouse \a event.
 */
-void QFxTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsTextEdit::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QFxPaintedItem::mousePressEvent(event);
+        QmlGraphicsPaintedItem::mousePressEvent(event);
 }
 
 /*!
 \overload
 Handles the given mouse \a event.
 */
-void QFxTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsTextEdit::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QFxPaintedItem::mouseDoubleClickEvent(event);
+        QmlGraphicsPaintedItem::mouseDoubleClickEvent(event);
 }
 
 /*!
 \overload
 Handles the given mouse \a event.
 */
-void QFxTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsTextEdit::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
     if (!event->isAccepted())
-        QFxPaintedItem::mousePressEvent(event);
+        QmlGraphicsPaintedItem::mousePressEvent(event);
 }
 
 /*!
 \overload
 Handles the given input method \a event.
 */
-void QFxTextEdit::inputMethodEvent(QInputMethodEvent *event)
+void QmlGraphicsTextEdit::inputMethodEvent(QInputMethodEvent *event)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     d->control->processEvent(event, QPointF(0, 0));
 }
 
@@ -904,9 +904,9 @@ void QFxTextEdit::inputMethodEvent(QInputMethodEvent *event)
 \overload
 Returns the value of the given \a property.
 */
-QVariant QFxTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
+QVariant QmlGraphicsTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 {
-    Q_D(const QFxTextEdit);
+    Q_D(const QmlGraphicsTextEdit);
     return d->control->inputMethodQuery(property);
 }
 
@@ -914,16 +914,16 @@ QVariant QFxTextEdit::inputMethodQuery(Qt::InputMethodQuery property) const
 Draws the contents of the text edit using the given \a painter within
 the given \a bounds.
 */
-void QFxTextEdit::drawContents(QPainter *painter, const QRect &bounds)
+void QmlGraphicsTextEdit::drawContents(QPainter *painter, const QRect &bounds)
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
 
     painter->setRenderHint(QPainter::TextAntialiasing, true);
 
     d->control->drawContents(painter, bounds);
 }
 
-void QFxTextEdit::updateImgCache(const QRectF &r)
+void QmlGraphicsTextEdit::updateImgCache(const QRectF &r)
 {
     dirtyCache(r.toRect());
     emit update();
@@ -942,9 +942,9 @@ void QFxTextEdit::updateImgCache(const QRectF &r)
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
-void QFxTextEditPrivate::init()
+void QmlGraphicsTextEditPrivate::init()
 {
-    Q_Q(QFxTextEdit);
+    Q_Q(QmlGraphicsTextEdit);
 
     q->setSmoothTransform(smooth);
     q->setAcceptedMouseButtons(Qt::LeftButton);
@@ -969,16 +969,16 @@ void QFxTextEditPrivate::init()
     updateDefaultTextOption();
 }
 
-void QFxTextEdit::q_textChanged()
+void QmlGraphicsTextEdit::q_textChanged()
 {
     if (!widthValid())
         updateSize();   //### optimize: we get 3 calls to updateSize every time a letter is typed
     emit textChanged(text());
 }
 
-void QFxTextEdit::moveCursorDelegate()
+void QmlGraphicsTextEdit::moveCursorDelegate()
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(!d->cursor)
         return;
     QRectF cursorRect = d->control->cursorRect();
@@ -986,9 +986,9 @@ void QFxTextEdit::moveCursorDelegate()
     d->cursor->setY(cursorRect.y());
 }
 
-void QFxTextEditPrivate::updateSelection()
+void QmlGraphicsTextEditPrivate::updateSelection()
 {
-    Q_Q(QFxTextEdit);
+    Q_Q(QmlGraphicsTextEdit);
     QTextCursor cursor = control->textCursor();
     bool startChange = (lastSelectionStart != cursor.selectionStart());
     bool endChange = (lastSelectionEnd != cursor.selectionEnd());
@@ -1005,12 +1005,12 @@ void QFxTextEditPrivate::updateSelection()
     startChange = (lastSelectionStart != control->textCursor().selectionStart());
     endChange = (lastSelectionEnd != control->textCursor().selectionEnd());
     if(startChange || endChange)
-        qWarning() << "QFxTextEditPrivate::updateSelection() has failed you.";
+        qWarning() << "QmlGraphicsTextEditPrivate::updateSelection() has failed you.";
 }
 
-void QFxTextEdit::updateSelectionMarkers()
+void QmlGraphicsTextEdit::updateSelectionMarkers()
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if(d->lastSelectionStart != d->control->textCursor().selectionStart()){
         d->lastSelectionStart = d->control->textCursor().selectionStart();
         emit selectionStartChanged();
@@ -1023,9 +1023,9 @@ void QFxTextEdit::updateSelectionMarkers()
 
 //### we should perhaps be a bit smarter here -- depending on what has changed, we shouldn't
 //    need to do all the calculations each time
-void QFxTextEdit::updateSize()
+void QmlGraphicsTextEdit::updateSize()
 {
-    Q_D(QFxTextEdit);
+    Q_D(QmlGraphicsTextEdit);
     if (isComponentComplete()) {
         QFontMetrics fm = QFontMetrics(d->font);
         int dy = height();
@@ -1064,7 +1064,7 @@ void QFxTextEdit::updateSize()
     emit update();
 }
 
-void QFxTextEditPrivate::updateDefaultTextOption()
+void QmlGraphicsTextEditPrivate::updateDefaultTextOption()
 {
     QTextOption opt = document->defaultTextOption();
     int oldAlignment = opt.alignment();

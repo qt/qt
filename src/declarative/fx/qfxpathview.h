@@ -52,13 +52,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 class QListModelInterface;
-class QFxPathViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxPathView : public QFxItem
+class QmlGraphicsPathViewPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathView : public QmlGraphicsItem
 {
     Q_OBJECT
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
-    Q_PROPERTY(QFxPath *path READ path WRITE setPath)
+    Q_PROPERTY(QmlGraphicsPath *path READ path WRITE setPath)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(qreal offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal snapPosition READ snapPosition WRITE setSnapPosition)
@@ -68,14 +68,14 @@ class Q_DECLARATIVE_EXPORT QFxPathView : public QFxItem
     Q_PROPERTY(int pathItemCount READ pathItemCount WRITE setPathItemCount)
 
 public:
-    QFxPathView(QFxItem *parent=0);
-    virtual ~QFxPathView();
+    QmlGraphicsPathView(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsPathView();
 
     QVariant model() const;
     void setModel(const QVariant &);
 
-    QFxPath *path() const;
-    void setPath(QFxPath *);
+    QmlGraphicsPath *path() const;
+    void setPath(QmlGraphicsPath *);
 
     int currentIndex() const;
     void setCurrentIndex(int idx);
@@ -116,23 +116,23 @@ private Q_SLOTS:
     void ticked();
     void itemsInserted(int index, int count);
     void itemsRemoved(int index, int count);
-    void createdItem(int index, QFxItem *item);
-    void destroyingItem(QFxItem *item);
+    void createdItem(int index, QmlGraphicsItem *item);
+    void destroyingItem(QmlGraphicsItem *item);
 
 protected:
-    QFxPathView(QFxPathViewPrivate &dd, QFxItem *parent);
+    QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    friend class QFxPathViewAttached;
+    friend class QmlGraphicsPathViewAttached;
     static QHash<QObject*, QObject*> attachedProperties;
-    Q_DISABLE_COPY(QFxPathView)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxPathView)
+    Q_DISABLE_COPY(QmlGraphicsPathView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsPathView)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxPathView)
-QML_DECLARE_TYPEINFO(QFxPathView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsPathView)
+QML_DECLARE_TYPEINFO(QmlGraphicsPathView, QML_HAS_ATTACHED_PROPERTIES)
 QT_END_HEADER
 
 #endif // QFXPATHVIEW_H

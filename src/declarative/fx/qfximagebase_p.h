@@ -59,20 +59,20 @@
 QT_BEGIN_NAMESPACE
 
 class QNetworkReply;
-class QFxImageBasePrivate : public QFxItemPrivate
+class QmlGraphicsImageBasePrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxImageBase)
+    Q_DECLARE_PUBLIC(QmlGraphicsImageBase)
 
 public:
-    QFxImageBasePrivate()
-      : status(QFxImageBase::Null),
+    QmlGraphicsImageBasePrivate()
+      : status(QmlGraphicsImageBase::Null),
         progress(0.0),
         pendingPixmapCache(false)
     {
     }
 
     QPixmap pix;
-    QFxImageBase::Status status;
+    QmlGraphicsImageBase::Status status;
     QUrl url;
     qreal progress;
     bool pendingPixmapCache;

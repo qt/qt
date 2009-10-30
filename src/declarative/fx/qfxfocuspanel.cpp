@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusPanel,QFxFocusPanel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusPanel,QmlGraphicsFocusPanel)
 
 /*!
    \qmlclass FocusPanel
@@ -59,16 +59,16 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusPanel,QFxFocusPanel)
 
 /*!
     \internal
-    \class QFxFocusPanel
+    \class QmlGraphicsFocusPanel
 */
 
-QFxFocusPanel::QFxFocusPanel(QFxItem *parent) :
-    QFxItem(parent)
+QmlGraphicsFocusPanel::QmlGraphicsFocusPanel(QmlGraphicsItem *parent) :
+    QmlGraphicsItem(parent)
 {
     setFlag(ItemIsPanel);
 }
 
-QFxFocusPanel::~QFxFocusPanel()
+QmlGraphicsFocusPanel::~QmlGraphicsFocusPanel()
 {
 }
 
@@ -78,12 +78,12 @@ QFxFocusPanel::~QFxFocusPanel()
     Sets whether the item is the active focus panel.
 */
 
-bool QFxFocusPanel::sceneEvent(QEvent *event)
+bool QmlGraphicsFocusPanel::sceneEvent(QEvent *event)
 {
     if (event->type() == QEvent::WindowActivate ||
         event->type() == QEvent::WindowDeactivate)
         emit activeChanged();
-    return QFxItem::sceneEvent(event);
+    return QmlGraphicsItem::sceneEvent(event);
 }
 
 QT_END_NAMESPACE

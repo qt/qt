@@ -58,17 +58,17 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxImagePrivate : public QFxImageBasePrivate
+class QmlGraphicsImagePrivate : public QmlGraphicsImageBasePrivate
 {
-    Q_DECLARE_PUBLIC(QFxImage)
+    Q_DECLARE_PUBLIC(QmlGraphicsImage)
 
 public:
-    QFxImagePrivate()
-      : fillMode(QFxImage::Stretch)
+    QmlGraphicsImagePrivate()
+      : fillMode(QmlGraphicsImage::Stretch)
     {
     }
 
-    QFxImage::FillMode fillMode;
+    QmlGraphicsImage::FillMode fillMode;
 
 };
 

@@ -50,7 +50,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \class QFxAnimatedImageItem
+    \class QmlGraphicsAnimatedImageItem
     \internal
 */
 
@@ -77,21 +77,21 @@ Item {
     \endqml
     \endtable
 */
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnimatedImage,QFxAnimatedImageItem)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnimatedImage,QmlGraphicsAnimatedImageItem)
 
-QFxAnimatedImageItem::QFxAnimatedImageItem(QFxItem *parent)
-    : QFxImage(*(new QFxAnimatedImageItemPrivate), parent)
+QmlGraphicsAnimatedImageItem::QmlGraphicsAnimatedImageItem(QmlGraphicsItem *parent)
+    : QmlGraphicsImage(*(new QmlGraphicsAnimatedImageItemPrivate), parent)
 {
 }
 
-QFxAnimatedImageItem::QFxAnimatedImageItem(QFxAnimatedImageItemPrivate &dd, QFxItem *parent)
-    : QFxImage(dd, parent)
+QmlGraphicsAnimatedImageItem::QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent)
+    : QmlGraphicsImage(dd, parent)
 {
 }
 
-QFxAnimatedImageItem::~QFxAnimatedImageItem()
+QmlGraphicsAnimatedImageItem::~QmlGraphicsAnimatedImageItem()
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     delete d->_movie;
 }
 
@@ -101,17 +101,17 @@ QFxAnimatedImageItem::~QFxAnimatedImageItem()
 
   Defaults to false, and can be set to true when you want to pause.
 */
-bool QFxAnimatedImageItem::isPaused() const
+bool QmlGraphicsAnimatedImageItem::isPaused() const
 {
-    Q_D(const QFxAnimatedImageItem);
+    Q_D(const QmlGraphicsAnimatedImageItem);
     if(!d->_movie)
         return false;
     return d->_movie->state()==QMovie::Paused;
 }
 
-void QFxAnimatedImageItem::setPaused(bool pause)
+void QmlGraphicsAnimatedImageItem::setPaused(bool pause)
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     if(pause == d->paused)
         return;
     d->paused = pause;
@@ -125,17 +125,17 @@ void QFxAnimatedImageItem::setPaused(bool pause)
 
   Defaults to true, so as to start playing immediately.
 */
-bool QFxAnimatedImageItem::isPlaying() const
+bool QmlGraphicsAnimatedImageItem::isPlaying() const
 {
-    Q_D(const QFxAnimatedImageItem);
+    Q_D(const QmlGraphicsAnimatedImageItem);
     if (!d->_movie)
         return false;
     return d->_movie->state()!=QMovie::NotRunning;
 }
 
-void QFxAnimatedImageItem::setPlaying(bool play)
+void QmlGraphicsAnimatedImageItem::setPlaying(bool play)
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     if(play == d->playing)
         return;
     d->playing = play;
@@ -155,33 +155,33 @@ void QFxAnimatedImageItem::setPlaying(bool play)
   allow other things to animate at the same time as the image. frameCount is the number
   of frames in the animation. For some animation formats, frameCount is unknown and set to zero.
 */
-int QFxAnimatedImageItem::currentFrame() const
+int QmlGraphicsAnimatedImageItem::currentFrame() const
 {
-    Q_D(const QFxAnimatedImageItem);
+    Q_D(const QmlGraphicsAnimatedImageItem);
     if (!d->_movie)
         return -1;
     return d->_movie->currentFrameNumber();
 }
 
-void QFxAnimatedImageItem::setCurrentFrame(int frame)
+void QmlGraphicsAnimatedImageItem::setCurrentFrame(int frame)
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     if (!d->_movie)
         return;
     d->_movie->jumpToFrame(frame);
 }
 
-int QFxAnimatedImageItem::frameCount() const
+int QmlGraphicsAnimatedImageItem::frameCount() const
 {
-    Q_D(const QFxAnimatedImageItem);
+    Q_D(const QmlGraphicsAnimatedImageItem);
     if (!d->_movie)
         return 0;
     return d->_movie->frameCount();
 }
 
-void QFxAnimatedImageItem::setSource(const QUrl &url)
+void QmlGraphicsAnimatedImageItem::setSource(const QUrl &url)
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     if (url == d->url)
         return;
 
@@ -209,9 +209,9 @@ void QFxAnimatedImageItem::setSource(const QUrl &url)
     emit statusChanged(d->status);
 }
 
-void QFxAnimatedImageItem::movieRequestFinished()
+void QmlGraphicsAnimatedImageItem::movieRequestFinished()
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     d->_movie = new QMovie(d->reply);
     if (!d->_movie->isValid()){
         qWarning() << "Error Reading Animated Image File " << d->url;
@@ -233,16 +233,16 @@ void QFxAnimatedImageItem::movieRequestFinished()
     setPixmap(d->_movie->currentPixmap());
 }
 
-void QFxAnimatedImageItem::movieUpdate()
+void QmlGraphicsAnimatedImageItem::movieUpdate()
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     setPixmap(d->_movie->currentPixmap());
     emit frameChanged();
 }
 
-void QFxAnimatedImageItem::playingStatusChanged()
+void QmlGraphicsAnimatedImageItem::playingStatusChanged()
 {
-    Q_D(QFxAnimatedImageItem);
+    Q_D(QmlGraphicsAnimatedImageItem);
     if((d->_movie->state() != QMovie::NotRunning) != d->playing){
         d->playing = (d->_movie->state() != QMovie::NotRunning);
         emit playingChanged();

@@ -49,7 +49,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextInput,QFxTextInput);
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextInput,QmlGraphicsTextInput);
 QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
@@ -63,24 +63,24 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
     Input constraints include setting a QValidator, an input mask, or a
     maximum input length.
 */
-QFxTextInput::QFxTextInput(QFxItem* parent)
-    : QFxPaintedItem(*(new QFxTextInputPrivate), parent)
+QmlGraphicsTextInput::QmlGraphicsTextInput(QmlGraphicsItem* parent)
+    : QmlGraphicsPaintedItem(*(new QmlGraphicsTextInputPrivate), parent)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->init();
 }
 
 /*
    \internal
 */
-QFxTextInput::QFxTextInput(QFxTextInputPrivate &dd, QFxItem* parent)
-    : QFxPaintedItem(dd, parent)
+QmlGraphicsTextInput::QmlGraphicsTextInput(QmlGraphicsTextInputPrivate &dd, QmlGraphicsItem* parent)
+    : QmlGraphicsPaintedItem(dd, parent)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->init();
 }
 
-QFxTextInput::~QFxTextInput()
+QmlGraphicsTextInput::~QmlGraphicsTextInput()
 {
 }
 
@@ -90,15 +90,15 @@ QFxTextInput::~QFxTextInput()
     The text in the TextInput.
 */
 
-QString QFxTextInput::text() const
+QString QmlGraphicsTextInput::text() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->text();
 }
 
-void QFxTextInput::setText(const QString &s)
+void QmlGraphicsTextInput::setText(const QString &s)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(s == text())
         return;
     d->control->setText(s);
@@ -115,15 +115,15 @@ void QFxTextInput::setText(const QString &s)
 
     Set the TextInput's font attributes.
 */
-QFont QFxTextInput::font() const
+QFont QmlGraphicsTextInput::font() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->font;
 }
 
-void QFxTextInput::setFont(const QFont &font)
+void QmlGraphicsTextInput::setFont(const QFont &font)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->font = font;
 
     d->control->setFont(d->font);
@@ -139,15 +139,15 @@ void QFxTextInput::setFont(const QFont &font)
 
     The text color.
 */
-QColor QFxTextInput::color() const
+QColor QmlGraphicsTextInput::color() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->color;
 }
 
-void QFxTextInput::setColor(const QColor &c)
+void QmlGraphicsTextInput::setColor(const QColor &c)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->color = c;
 }
 
@@ -157,15 +157,15 @@ void QFxTextInput::setColor(const QColor &c)
 
     The text highlight color, used behind selections.
 */
-QColor QFxTextInput::selectionColor() const
+QColor QmlGraphicsTextInput::selectionColor() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->selectionColor;
 }
 
-void QFxTextInput::setSelectionColor(const QColor &color)
+void QmlGraphicsTextInput::setSelectionColor(const QColor &color)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if (d->selectionColor == color)
         return;
 
@@ -180,15 +180,15 @@ void QFxTextInput::setSelectionColor(const QColor &color)
 
     The highlighted text color, used in selections.
 */
-QColor QFxTextInput::selectedTextColor() const
+QColor QmlGraphicsTextInput::selectedTextColor() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->selectedTextColor;
 }
 
-void QFxTextInput::setSelectedTextColor(const QColor &color)
+void QmlGraphicsTextInput::setSelectedTextColor(const QColor &color)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if (d->selectedTextColor == color)
         return;
 
@@ -213,40 +213,40 @@ void QFxTextInput::setSelectedTextColor(const QColor &color)
     The valid values for \c horizontalAlignment are \c AlignLeft, \c AlignRight and
     \c AlignHCenter.
 */
-QFxTextInput::HAlignment QFxTextInput::hAlign() const
+QmlGraphicsTextInput::HAlignment QmlGraphicsTextInput::hAlign() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->hAlign;
 }
 
-void QFxTextInput::setHAlign(HAlignment align)
+void QmlGraphicsTextInput::setHAlign(HAlignment align)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->hAlign = align;
     //TODO: implement
 }
 
-bool QFxTextInput::isReadOnly() const
+bool QmlGraphicsTextInput::isReadOnly() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->isReadOnly();
 }
 
-void QFxTextInput::setReadOnly(bool ro)
+void QmlGraphicsTextInput::setReadOnly(bool ro)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setReadOnly(ro);
 }
 
-int QFxTextInput::maxLength() const
+int QmlGraphicsTextInput::maxLength() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->maxLength();
 }
 
-void QFxTextInput::setMaxLength(int ml)
+void QmlGraphicsTextInput::setMaxLength(int ml)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setMaxLength(ml);
 }
 
@@ -257,15 +257,15 @@ void QFxTextInput::setMaxLength(int ml)
     This property is set and unset when the line edit gets focus, but it can also
     be set directly (useful, for example, if a KeyProxy might forward keys to it).
 */
-bool QFxTextInput::isCursorVisible() const
+bool QmlGraphicsTextInput::isCursorVisible() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->cursorVisible;
 }
 
-void QFxTextInput::setCursorVisible(bool on)
+void QmlGraphicsTextInput::setCursorVisible(bool on)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if (d->cursorVisible == on)
         return;
     d->cursorVisible = on;
@@ -277,14 +277,14 @@ void QFxTextInput::setCursorVisible(bool on)
     \qmlproperty int TextInput::cursorPosition
     The position of the cursor in the TextInput.
 */
-int QFxTextInput::cursorPosition() const
+int QmlGraphicsTextInput::cursorPosition() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->cursor();
 }
-void QFxTextInput::setCursorPosition(int cp)
+void QmlGraphicsTextInput::setCursorPosition(int cp)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->moveCursor(cp);
 }
 
@@ -294,9 +294,9 @@ void QFxTextInput::setCursorPosition(int cp)
   Returns a Rect which encompasses the cursor, but which may be larger than is
   required. Ignores custom cursor delegates.
 */
-QRect QFxTextInput::cursorRect() const
+QRect QmlGraphicsTextInput::cursorRect() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->cursorRect();
 }
 
@@ -313,15 +313,15 @@ QRect QFxTextInput::cursorRect() const
 
     \sa selectionEnd, cursorPosition, selectedText
 */
-int QFxTextInput::selectionStart() const
+int QmlGraphicsTextInput::selectionStart() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->lastSelectionStart;
 }
 
-void QFxTextInput::setSelectionStart(int s)
+void QmlGraphicsTextInput::setSelectionStart(int s)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(d->lastSelectionStart == s || s < 0 || s > text().length())
         return;
     d->lastSelectionStart = s;
@@ -341,15 +341,15 @@ void QFxTextInput::setSelectionStart(int s)
 
     \sa selectionStart, cursorPosition, selectedText
 */
-int QFxTextInput::selectionEnd() const
+int QmlGraphicsTextInput::selectionEnd() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->lastSelectionEnd;
 }
 
-void QFxTextInput::setSelectionEnd(int s)
+void QmlGraphicsTextInput::setSelectionEnd(int s)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(d->lastSelectionEnd == s || s < 0 || s > text().length())
         return;
     d->lastSelectionEnd = s;
@@ -370,9 +370,9 @@ void QFxTextInput::setSelectionEnd(int s)
         myTextInput.selectionEnd);
     \endqml
 */
-QString QFxTextInput::selectedText() const
+QString QmlGraphicsTextInput::selectedText() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->selectedText();
 }
 
@@ -382,15 +382,15 @@ QString QFxTextInput::selectedText() const
     Whether the TextInput should gain focus on a mouse press. By default this is
     set to true.
 */
-bool QFxTextInput::focusOnPress() const
+bool QmlGraphicsTextInput::focusOnPress() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->focusOnPress;
 }
 
-void QFxTextInput::setFocusOnPress(bool b)
+void QmlGraphicsTextInput::setFocusOnPress(bool b)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->focusOnPress = b;
 }
 
@@ -404,16 +404,16 @@ void QFxTextInput::setFocusOnPress(bool b)
 
     \sa acceptableInput, inputMask
 */
-QValidator* QFxTextInput::validator() const
+QValidator* QmlGraphicsTextInput::validator() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     //###const cast isn't good, but needed for property system?
     return const_cast<QValidator*>(d->control->validator());
 }
 
-void QFxTextInput::setValidator(QValidator* v)
+void QmlGraphicsTextInput::setValidator(QValidator* v)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setValidator(v);
     if(!d->control->hasAcceptableInput()){
         d->oldValidity = false;
@@ -430,15 +430,15 @@ void QFxTextInput::setValidator(QValidator* v)
 
     \sa acceptableInput, validator
 */
-QString QFxTextInput::inputMask() const
+QString QmlGraphicsTextInput::inputMask() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->inputMask();
 }
 
-void QFxTextInput::setInputMask(const QString &im)
+void QmlGraphicsTextInput::setInputMask(const QString &im)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setInputMask(im);
 }
 
@@ -450,9 +450,9 @@ void QFxTextInput::setInputMask(const QString &im)
     if the current text is acceptable to the validator or input mask as a final
     string (not as an intermediate string).
 */
-bool QFxTextInput::hasAcceptableInput() const
+bool QmlGraphicsTextInput::hasAcceptableInput() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->hasAcceptableInput();
 }
 
@@ -466,15 +466,15 @@ bool QFxTextInput::hasAcceptableInput() const
     current character as asterixes.
 
 */
-QFxTextInput::EchoMode QFxTextInput::echoMode() const
+QmlGraphicsTextInput::EchoMode QmlGraphicsTextInput::echoMode() const
 {
-    Q_D(const QFxTextInput);
-    return (QFxTextInput::EchoMode)d->control->echoMode();
+    Q_D(const QmlGraphicsTextInput);
+    return (QmlGraphicsTextInput::EchoMode)d->control->echoMode();
 }
 
-void QFxTextInput::setEchoMode(QFxTextInput::EchoMode echo)
+void QmlGraphicsTextInput::setEchoMode(QmlGraphicsTextInput::EchoMode echo)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setEchoMode((uint)echo);
 }
 
@@ -488,18 +488,18 @@ void QFxTextInput::setEchoMode(QFxTextInput::EchoMode echo)
     needed, and the x property of delegate instance will be set so as
     to be one pixel before the top left of the current character.
 
-    Note that the root item of the delegate component must be a QFxItem or
-    QFxItem derived item.
+    Note that the root item of the delegate component must be a QmlGraphicsItem or
+    QmlGraphicsItem derived item.
 */
-QmlComponent* QFxTextInput::cursorDelegate() const
+QmlComponent* QmlGraphicsTextInput::cursorDelegate() const
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->cursorComponent;
 }
 
-void QFxTextInput::setCursorDelegate(QmlComponent* c)
+void QmlGraphicsTextInput::setCursorDelegate(QmlComponent* c)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->cursorComponent = c;
     if(!c){
         //note that the components are owned by something else
@@ -511,9 +511,9 @@ void QFxTextInput::setCursorDelegate(QmlComponent* c)
     }
 }
 
-void QFxTextInputPrivate::startCreatingCursor()
+void QmlGraphicsTextInputPrivate::startCreatingCursor()
 {
-    Q_Q(QFxTextInput);
+    Q_Q(QmlGraphicsTextInput);
     q->connect(control, SIGNAL(cursorPositionChanged(int, int)),
             q, SLOT(moveCursor()));
     if(cursorComponent->isReady()){
@@ -522,14 +522,14 @@ void QFxTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qmlInfo(QFxTextInput::tr("Could not load cursor delegate"), q);
+        qmlInfo(QmlGraphicsTextInput::tr("Could not load cursor delegate"), q);
         qWarning() << cursorComponent->errors();
     }
 }
 
-void QFxTextInput::createCursor()
+void QmlGraphicsTextInput::createCursor()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(d->cursorComponent->isError()){
         qmlInfo(tr("Could not load cursor delegate"),this);
         qWarning() << d->cursorComponent->errors();
@@ -541,7 +541,7 @@ void QFxTextInput::createCursor()
 
     if(d->cursorItem)
         delete d->cursorItem;
-    d->cursorItem = qobject_cast<QFxItem*>(d->cursorComponent->create());
+    d->cursorItem = qobject_cast<QmlGraphicsItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
         qmlInfo(tr("Could not instantiate cursor delegate"),this);
         //The failed instantiation should print its own error messages
@@ -553,31 +553,31 @@ void QFxTextInput::createCursor()
     d->cursorItem->setHeight(d->control->height());
 }
 
-void QFxTextInput::moveCursor()
+void QmlGraphicsTextInput::moveCursor()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(!d->cursorItem)
         return;
     d->cursorItem->setX(d->control->cursorToX() - d->hscroll);
 }
 
-int QFxTextInput::xToPos(int x)
+int QmlGraphicsTextInput::xToPos(int x)
 {
-    Q_D(const QFxTextInput);
+    Q_D(const QmlGraphicsTextInput);
     return d->control->xToPos(x - d->hscroll);
 }
 
-void QFxTextInput::focusChanged(bool hasFocus)
+void QmlGraphicsTextInput::focusChanged(bool hasFocus)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->focused = hasFocus;
     setCursorVisible(hasFocus);
-    QFxItem::focusChanged(hasFocus);
+    QmlGraphicsItem::focusChanged(hasFocus);
 }
 
-void QFxTextInput::keyPressEvent(QKeyEvent* ev)
+void QmlGraphicsTextInput::keyPressEvent(QKeyEvent* ev)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if((d->control->cursor() == 0 && ev->key() == Qt::Key_Left)
             || (d->control->cursor() == d->control->text().length()
                 && ev->key() == Qt::Key_Right)){
@@ -587,12 +587,12 @@ void QFxTextInput::keyPressEvent(QKeyEvent* ev)
         d->control->processKeyEvent(ev);
     }
     if (!ev->isAccepted())
-        QFxPaintedItem::keyPressEvent(ev);
+        QmlGraphicsPaintedItem::keyPressEvent(ev);
 }
 
-void QFxTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     if(d->focusOnPress){
         setFocus(true);
         setCursorVisible(true);
@@ -601,9 +601,9 @@ void QFxTextInput::mousePressEvent(QGraphicsSceneMouseEvent *event)
     d->control->processEvent(event);
 }
 
-bool QFxTextInput::event(QEvent* ev)
+bool QmlGraphicsTextInput::event(QEvent* ev)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     //Anything we don't deal with ourselves, pass to the control
     bool handled = false;
     switch(ev->type()){
@@ -615,21 +615,21 @@ bool QFxTextInput::event(QEvent* ev)
             handled = d->control->processEvent(ev);
     }
     if(!handled)
-        return QFxPaintedItem::event(ev);
+        return QmlGraphicsPaintedItem::event(ev);
     return true;
 }
 
-void QFxTextInput::geometryChanged(const QRectF &newGeometry,
+void QmlGraphicsTextInput::geometryChanged(const QRectF &newGeometry,
                                   const QRectF &oldGeometry)
 {
     if (newGeometry.width() != oldGeometry.width())
         updateSize();
-    QFxPaintedItem::geometryChanged(newGeometry, oldGeometry);
+    QmlGraphicsPaintedItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void QFxTextInput::drawContents(QPainter *p, const QRect &r)
+void QmlGraphicsTextInput::drawContents(QPainter *p, const QRect &r)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     p->setRenderHint(QPainter::TextAntialiasing, true);
     p->save();
     p->setPen(QPen(d->color));
@@ -647,9 +647,9 @@ void QFxTextInput::drawContents(QPainter *p, const QRect &r)
     p->restore();
 }
 
-void QFxTextInput::selectAll()
+void QmlGraphicsTextInput::selectAll()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     d->control->setSelection(0, d->control->text().length());
 }
 
@@ -667,9 +667,9 @@ void QFxTextInput::selectAll()
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
-void QFxTextInputPrivate::init()
+void QmlGraphicsTextInputPrivate::init()
 {
-    Q_Q(QFxTextInput);
+    Q_Q(QmlGraphicsTextInput);
     control->setCursorWidth(1);
     control->setPasswordCharacter(QLatin1Char('*'));
     control->setLayoutDirection(Qt::LeftToRight);
@@ -698,9 +698,9 @@ void QFxTextInputPrivate::init()
     lastSelectionEnd = 0;
 }
 
-void QFxTextInput::cursorPosChanged()
+void QmlGraphicsTextInput::cursorPosChanged()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     emit cursorPositionChanged();
 
     if(!d->control->hasSelectedText()){
@@ -715,9 +715,9 @@ void QFxTextInput::cursorPosChanged()
     }
 }
 
-void QFxTextInput::selectionChanged()
+void QmlGraphicsTextInput::selectionChanged()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     emit selectedTextChanged();
 
     if(d->lastSelectionStart != d->control->selectionStart()){
@@ -734,9 +734,9 @@ void QFxTextInput::selectionChanged()
     }
 }
 
-void QFxTextInput::q_textChanged()
+void QmlGraphicsTextInput::q_textChanged()
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     updateSize();
     emit textChanged();
     if(hasAcceptableInput() != d->oldValidity){
@@ -745,7 +745,7 @@ void QFxTextInput::q_textChanged()
     }
 }
 
-void QFxTextInput::updateRect(const QRect &r)
+void QmlGraphicsTextInput::updateRect(const QRect &r)
 {
     if(r == QRect())
         clearCache();
@@ -754,9 +754,9 @@ void QFxTextInput::updateRect(const QRect &r)
     update();
 }
 
-void QFxTextInput::updateSize(bool needsRedraw)
+void QmlGraphicsTextInput::updateSize(bool needsRedraw)
 {
-    Q_D(QFxTextInput);
+    Q_D(QmlGraphicsTextInput);
     int w = width();
     int h = height();
     setImplicitHeight(d->control->height());

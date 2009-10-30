@@ -6,11 +6,11 @@
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 
-class tst_QFxListView : public QObject
+class tst_QmlGraphicsListView : public QObject
 {
     Q_OBJECT
 public:
-    tst_QFxListView();
+    tst_QmlGraphicsListView();
 
 private slots:
     // Test both QListModelInterface and QAbstractItemModel model types
@@ -33,9 +33,9 @@ private:
     template <class T> void removed();
     QmlView *createView(const QString &filename);
     template<typename T>
-    T *findItem(QFxItem *parent, const QString &id, int index=-1);
+    T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
     template<typename T>
-    QList<T*> findItems(QFxItem *parent, const QString &objectName);
+    QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
 };
 
 class TestModel : public QListModelInterface
@@ -164,12 +164,12 @@ private:
     QList<QPair<QString,QString> > list;
 };
 
-tst_QFxListView::tst_QFxListView()
+tst_QmlGraphicsListView::tst_QmlGraphicsListView()
 {
 }
 
 template <class T>
-void tst_QFxListView::items()
+void tst_QmlGraphicsListView::items()
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -184,19 +184,19 @@ void tst_QFxListView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QFxFlickable *listview = findItem<QFxFlickable>(canvas->root(), "list");
+    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
-    QFxItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
-        QFxText *name = findItem<QFxText>(viewport, "textName", i);
+        QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
-        QFxText *number = findItem<QFxText>(viewport, "textNumber", i);
+        QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", i);
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
@@ -205,7 +205,7 @@ void tst_QFxListView::items()
 }
 
 template <class T>
-void tst_QFxListView::changed()
+void tst_QmlGraphicsListView::changed()
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -220,17 +220,17 @@ void tst_QFxListView::changed()
     canvas->execute();
     qApp->processEvents();
 
-    QFxFlickable *listview = findItem<QFxFlickable>(canvas->root(), "list");
+    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
-    QFxItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
     model.modifyItem(1, "Will", "9876");
-    QFxText *name = findItem<QFxText>(viewport, "textName", 1);
+    QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
     QCOMPARE(name->text(), model.name(1));
-    QFxText *number = findItem<QFxText>(viewport, "textNumber", 1);
+    QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", 1);
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(1));
 
@@ -238,7 +238,7 @@ void tst_QFxListView::changed()
 }
 
 template <class T>
-void tst_QFxListView::inserted()
+void tst_QmlGraphicsListView::inserted()
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -253,10 +253,10 @@ void tst_QFxListView::inserted()
     canvas->execute();
     qApp->processEvents();
 
-    QFxListView *listview = findItem<QFxListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
-    QFxItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
     model.insertItem(1, "Will", "9876");
@@ -266,16 +266,16 @@ void tst_QFxListView::inserted()
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
-    QFxText *name = findItem<QFxText>(viewport, "textName", 1);
+    QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
     QCOMPARE(name->text(), model.name(1));
-    QFxText *number = findItem<QFxText>(viewport, "textNumber", 1);
+    QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", 1);
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(1));
 
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         QVERIFY(item->y() == i*20);
     }
 
@@ -286,10 +286,10 @@ void tst_QFxListView::inserted()
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
-    name = findItem<QFxText>(viewport, "textName", 0);
+    name = findItem<QmlGraphicsText>(viewport, "textName", 0);
     QVERIFY(name != 0);
     QCOMPARE(name->text(), model.name(0));
-    number = findItem<QFxText>(viewport, "textNumber", 0);
+    number = findItem<QmlGraphicsText>(viewport, "textNumber", 0);
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(0));
 
@@ -297,7 +297,7 @@ void tst_QFxListView::inserted()
 
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         QVERIFY(item->y() == i*20);
     }
 
@@ -305,7 +305,7 @@ void tst_QFxListView::inserted()
 }
 
 template <class T>
-void tst_QFxListView::removed()
+void tst_QmlGraphicsListView::removed()
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -319,10 +319,10 @@ void tst_QFxListView::removed()
     canvas->execute();
     qApp->processEvents();
 
-    QFxListView *listview = findItem<QFxListView>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
-    QFxItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
     model.removeItem(1);
@@ -330,17 +330,17 @@ void tst_QFxListView::removed()
     // let transitions settle.
     QTest::qWait(1000);
 
-    QFxText *name = findItem<QFxText>(viewport, "textName", 1);
+    QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
     QCOMPARE(name->text(), model.name(1));
-    QFxText *number = findItem<QFxText>(viewport, "textNumber", 1);
+    QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", 1);
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(1));
 
     // Confirm items positioned correctly
-    int itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QVERIFY(item->y() == i*20);
@@ -352,17 +352,17 @@ void tst_QFxListView::removed()
     // let transitions settle.
     QTest::qWait(1000);
 
-    name = findItem<QFxText>(viewport, "textName", 0);
+    name = findItem<QmlGraphicsText>(viewport, "textName", 0);
     QVERIFY(name != 0);
     QCOMPARE(name->text(), model.name(0));
-    number = findItem<QFxText>(viewport, "textNumber", 0);
+    number = findItem<QmlGraphicsText>(viewport, "textNumber", 0);
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(0));
 
     // Confirm items positioned correctly
-    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QCOMPARE(item->y(),i*20.0 + 20.0);
@@ -374,9 +374,9 @@ void tst_QFxListView::removed()
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QCOMPARE(item->y(),i*20.0+20.0);
@@ -392,7 +392,7 @@ void tst_QFxListView::removed()
 
     // Confirm items positioned correctly
     for (int i = 2; i < 18; ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QCOMPARE(item->y(),40+i*20.0);
@@ -403,9 +403,9 @@ void tst_QFxListView::removed()
     QTest::qWait(1000);
 
     // Confirm items positioned correctly
-    itemCount = findItems<QFxItem>(viewport, "wrapper").count();
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QFxItem *item = findItem<QFxItem>(viewport, "wrapper", i);
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
         QCOMPARE(item->y(),40+i*20.0);
@@ -414,47 +414,47 @@ void tst_QFxListView::removed()
     delete canvas;
 }
 
-void tst_QFxListView::qListModelInterface_items()
+void tst_QmlGraphicsListView::qListModelInterface_items()
 {
     items<TestModel>();
 }
 
-void tst_QFxListView::qAbstractItemModel_items()
+void tst_QmlGraphicsListView::qAbstractItemModel_items()
 {
     items<TestModel2>();
 }
 
-void tst_QFxListView::qListModelInterface_changed()
+void tst_QmlGraphicsListView::qListModelInterface_changed()
 {
     changed<TestModel>();
 }
 
-void tst_QFxListView::qAbstractItemModel_changed()
+void tst_QmlGraphicsListView::qAbstractItemModel_changed()
 {
     changed<TestModel2>();
 }
 
-void tst_QFxListView::qListModelInterface_inserted()
+void tst_QmlGraphicsListView::qListModelInterface_inserted()
 {
     inserted<TestModel>();
 }
 
-void tst_QFxListView::qAbstractItemModel_inserted()
+void tst_QmlGraphicsListView::qAbstractItemModel_inserted()
 {
     inserted<TestModel2>();
 }
 
-void tst_QFxListView::qListModelInterface_removed()
+void tst_QmlGraphicsListView::qListModelInterface_removed()
 {
     removed<TestModel>();
 }
 
-void tst_QFxListView::qAbstractItemModel_removed()
+void tst_QmlGraphicsListView::qAbstractItemModel_removed()
 {
     removed<TestModel2>();
 }
 
-QmlView *tst_QFxListView::createView(const QString &filename)
+QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
@@ -472,12 +472,12 @@ QmlView *tst_QFxListView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QFxListView::findItem(QFxItem *parent, const QString &objectName, int index)
+T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
     for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
@@ -500,13 +500,13 @@ T *tst_QFxListView::findItem(QFxItem *parent, const QString &objectName, int ind
 }
 
 template<typename T>
-QList<T*> tst_QFxListView::findItems(QFxItem *parent, const QString &objectName)
+QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
     for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
-        QFxItem *item = qobject_cast<QFxItem*>(parent->QGraphicsObject::children().at(i));
+        QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(parent->QGraphicsObject::children().at(i));
         if(!item)
             continue;
         //qDebug() << "try" << item;
@@ -519,6 +519,6 @@ QList<T*> tst_QFxListView::findItems(QFxItem *parent, const QString &objectName)
 }
 
 
-QTEST_MAIN(tst_QFxListView)
+QTEST_MAIN(tst_QmlGraphicsListView)
 
 #include "tst_listview.moc"

@@ -21,14 +21,14 @@ private slots:
 
 void tst_animatedimage::play()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     QVERIFY(anim.isPlaying());
 }
 
 void tst_animatedimage::pause()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     anim.setPaused(true);
     QVERIFY(!anim.isPlaying());
@@ -36,7 +36,7 @@ void tst_animatedimage::pause()
 
 void tst_animatedimage::setFrame()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     anim.setPaused(true);
     QVERIFY(!anim.isPlaying());
@@ -46,7 +46,7 @@ void tst_animatedimage::setFrame()
 
 void tst_animatedimage::frameCount()
 {
-    QFxAnimatedImageItem anim;
+    QmlGraphicsAnimatedImageItem anim;
     anim.setSource(QUrl("file://" SRCDIR "/data/stickman.gif"));
     QCOMPARE(anim.frameCount(), 299);
 }

@@ -64,15 +64,15 @@ class QTextLayout;
 class QTextDocument;
 class QTextControl;
 
-class QFxTextPrivate : public QFxItemPrivate
+class QmlGraphicsTextPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxText)
+    Q_DECLARE_PUBLIC(QmlGraphicsText)
 public:
-    QFxTextPrivate()
-      : color((QRgb)0), style(QFxText::Normal), imgDirty(true),
-        hAlign(QFxText::AlignLeft), vAlign(QFxText::AlignTop), elideMode(QFxText::ElideNone),
+    QmlGraphicsTextPrivate()
+      : color((QRgb)0), style(QmlGraphicsText::Normal), imgDirty(true),
+        hAlign(QmlGraphicsText::AlignLeft), vAlign(QmlGraphicsText::AlignTop), elideMode(QmlGraphicsText::ElideNone),
         dirty(true), wrap(false), richText(false), singleline(false), control(0), doc(0),
-        format(QFxText::AutoText)
+        format(QmlGraphicsText::AutoText)
     {
     }
 
@@ -89,15 +89,15 @@ public:
     QString text;
     QFont font;
     QColor  color;
-    QFxText::TextStyle style;
+    QmlGraphicsText::TextStyle style;
     QColor  styleColor;
     QString activeLink;
     bool imgDirty;
     QPixmap imgCache;
     QPixmap imgStyleCache;
-    QFxText::HAlignment hAlign;
-    QFxText::VAlignment vAlign;
-    QFxText::TextElideMode elideMode;
+    QmlGraphicsText::HAlignment hAlign;
+    QmlGraphicsText::VAlignment vAlign;
+    QmlGraphicsText::TextElideMode elideMode;
     bool dirty;
     bool wrap;
     bool richText;
@@ -106,7 +106,7 @@ public:
     QTextDocument *doc;
     QTextLayout layout;
     QSize cachedLayoutSize;
-    QFxText::TextFormat format;
+    QmlGraphicsText::TextFormat format;
 };
 
 QT_END_NAMESPACE

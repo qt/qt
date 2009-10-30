@@ -648,7 +648,7 @@ QmlComponentPrivate::beginCreate(QmlContext *context, const QBitField &bindings)
 
 
     if (rv) {
-        QFx_setParent_noEvent(ctxt, rv);
+        QmlGraphics_setParent_noEvent(ctxt, rv);
     } else {
         delete ctxt;
     }
@@ -676,7 +676,7 @@ void QmlComponentPrivate::completeCreate()
     if (completePending) {
         {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-            QFxPerfTimer<QFxPerf::BindInit> bi;
+            QmlPerfTimer<QmlPerf::BindInit> bi;
 #endif
             for (int ii = 0; ii < bindValues.count(); ++ii) {
                 QmlEnginePrivate::SimpleList<QmlAbstractBinding> bv = 

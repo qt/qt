@@ -47,14 +47,14 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Path,QFxPath)
-QML_DEFINE_NOCREATE_TYPE(QFxPathElement)
-QML_DEFINE_NOCREATE_TYPE(QFxCurve)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathAttribute,QFxPathAttribute)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathPercent,QFxPathPercent)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathLine,QFxPathLine)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathQuad,QFxPathQuad)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QFxPathCubic)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Path,QmlGraphicsPath)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsPathElement)
+QML_DEFINE_NOCREATE_TYPE(QmlGraphicsCurve)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathAttribute,QmlGraphicsPathAttribute)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathPercent,QmlGraphicsPathPercent)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathLine,QmlGraphicsPathLine)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathQuad,QmlGraphicsPathQuad)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QmlGraphicsPathCubic)
 
 /*!
     \qmlclass PathElement
@@ -68,12 +68,12 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QFxPathCubic)
 
 /*!
     \internal
-    \class QFxPathElement
+    \class QmlGraphicsPathElement
     \ingroup group_utility
 */
 
 /*!
-    \qmlclass Path QFxPath
+    \qmlclass Path QmlGraphicsPath
     \brief A Path object defines a path for use by \l PathView.
 
     A Path is composed of one or more path segments - PathLine, PathQuad,
@@ -90,22 +90,22 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QFxPathCubic)
 
 /*!
     \internal
-    \class QFxPath
+    \class QmlGraphicsPath
     \ingroup group_utility
-    \brief The QFxPath class defines a path.
-    \sa QFxPathView
+    \brief The QmlGraphicsPath class defines a path.
+    \sa QmlGraphicsPathView
 */
-QFxPath::QFxPath(QObject *parent)
- : QObject(*(new QFxPathPrivate), parent)
+QmlGraphicsPath::QmlGraphicsPath(QObject *parent)
+ : QObject(*(new QmlGraphicsPathPrivate), parent)
 {
 }
 
-QFxPath::QFxPath(QFxPathPrivate &dd, QObject *parent)
+QmlGraphicsPath::QmlGraphicsPath(QmlGraphicsPathPrivate &dd, QObject *parent)
  : QObject(dd, parent)
 {
 }
 
-QFxPath::~QFxPath()
+QmlGraphicsPath::~QmlGraphicsPath()
 {
 }
 
@@ -114,27 +114,27 @@ QFxPath::~QFxPath()
     \qmlproperty real Path::startY
     This property holds the starting position of the path.
 */
-qreal QFxPath::startX() const
+qreal QmlGraphicsPath::startX() const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     return d->startX;
 }
 
-void QFxPath::setStartX(qreal x)
+void QmlGraphicsPath::setStartX(qreal x)
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     d->startX = x;
 }
 
-qreal QFxPath::startY() const
+qreal QmlGraphicsPath::startY() const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     return d->startY;
 }
 
-void QFxPath::setStartY(qreal y)
+void QmlGraphicsPath::setStartY(qreal y)
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     d->startY = y;
 }
 
@@ -156,15 +156,15 @@ void QFxPath::setStartY(qreal y)
     \snippet doc/src/snippets/declarative/pathview/pathattributes.qml 2
 */
 
-QList<QFxPathElement *>* QFxPath::pathElements()
+QList<QmlGraphicsPathElement *>* QmlGraphicsPath::pathElements()
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     return &(d->_pathElements);
 }
 
-void QFxPath::interpolate(int idx, const QString &name, qreal value)
+void QmlGraphicsPath::interpolate(int idx, const QString &name, qreal value)
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     if (!idx)
         return;
 
@@ -193,9 +193,9 @@ void QFxPath::interpolate(int idx, const QString &name, qreal value)
     }
 }
 
-void QFxPath::endpoint(const QString &name)
+void QmlGraphicsPath::endpoint(const QString &name)
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     const AttributePoint &first = d->_attributePoints.first();
     qreal val = first.values.value(name);
     for (int ii = d->_attributePoints.count() - 1; ii >= 0; ii--) {
@@ -210,9 +210,9 @@ void QFxPath::endpoint(const QString &name)
     }
 }
 
-void QFxPath::processPath()
+void QmlGraphicsPath::processPath()
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
 
     d->_pointCache.clear();
     d->_attributePoints.clear();
@@ -225,17 +225,17 @@ void QFxPath::processPath()
 
     d->_path.moveTo(d->startX, d->startY);
 
-    foreach (QFxPathElement *pathElement, d->_pathElements) {
-        if (QFxCurve *curve = qobject_cast<QFxCurve *>(pathElement)) {
+    foreach (QmlGraphicsPathElement *pathElement, d->_pathElements) {
+        if (QmlGraphicsCurve *curve = qobject_cast<QmlGraphicsCurve *>(pathElement)) {
             curve->addToPath(d->_path);
             AttributePoint p;
             p.origpercent = d->_path.length();
             d->_attributePoints << p;
-        } else if (QFxPathAttribute *attribute = qobject_cast<QFxPathAttribute *>(pathElement)) {
+        } else if (QmlGraphicsPathAttribute *attribute = qobject_cast<QmlGraphicsPathAttribute *>(pathElement)) {
             AttributePoint &point = d->_attributePoints.last();
             point.values[attribute->name()] = attribute->value();
             interpolate(d->_attributePoints.count() - 1, attribute->name(), attribute->value());
-        } else if (QFxPathPercent *percent = qobject_cast<QFxPathPercent *>(pathElement)) {
+        } else if (QmlGraphicsPathPercent *percent = qobject_cast<QmlGraphicsPathPercent *>(pathElement)) {
             AttributePoint &point = d->_attributePoints.last();
             point.values[QLatin1String("_qfx_percent")] = percent->value();
             interpolate(d->_attributePoints.count() - 1, QLatin1String("_qfx_percent"), percent->value());
@@ -255,7 +255,7 @@ void QFxPath::processPath()
     qreal prevorigpercent = 0;
     for (int ii = 0; ii < d->_attributePoints.count(); ++ii) {
         const AttributePoint &point = d->_attributePoints.at(ii);
-        if (point.values.contains(QLatin1String("_qfx_percent"))) { //special string for QFxPathPercent
+        if (point.values.contains(QLatin1String("_qfx_percent"))) { //special string for QmlGraphicsPathPercent
             if ( ii > 0) {
                 qreal scale = (d->_attributePoints[ii].origpercent/length - prevorigpercent) /
                             (point.values.value(QLatin1String("_qfx_percent"))-prevpercent);
@@ -274,33 +274,33 @@ void QFxPath::processPath()
     emit changed();
 }
 
-void QFxPath::componentComplete()
+void QmlGraphicsPath::componentComplete()
 {
-    Q_D(QFxPath);
+    Q_D(QmlGraphicsPath);
     QSet<QString> attrs;
     // First gather up all the attributes
-    foreach (QFxPathElement *pathElement, d->_pathElements) {
-        if (QFxPathAttribute *attribute =
-            qobject_cast<QFxPathAttribute *>(pathElement))
+    foreach (QmlGraphicsPathElement *pathElement, d->_pathElements) {
+        if (QmlGraphicsPathAttribute *attribute =
+            qobject_cast<QmlGraphicsPathAttribute *>(pathElement))
             attrs.insert(attribute->name());
     }
     d->_attributes = attrs.toList();
 
     processPath();
 
-    foreach (QFxPathElement *pathElement, d->_pathElements)
+    foreach (QmlGraphicsPathElement *pathElement, d->_pathElements)
         connect(pathElement, SIGNAL(changed()), this, SLOT(processPath()));
 }
 
-QPainterPath QFxPath::path() const
+QPainterPath QmlGraphicsPath::path() const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     return d->_path;
 }
 
-QStringList QFxPath::attributes() const
+QStringList QmlGraphicsPath::attributes() const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     return d->_attributes;
 }
 #include <QTime>
@@ -342,11 +342,11 @@ static inline QBezier nextBezier(const QPainterPath &path, int *from, qreal *bez
     return QBezier();
 }
 
-void QFxPath::createPointCache() const
+void QmlGraphicsPath::createPointCache() const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::QFxPathViewPathCache> pc;
+    QmlPerfTimer<QmlPerf::QmlGraphicsPathViewPathCache> pc;
 #endif
     qreal pathLength = d->_path.length();
     const int points = int(pathLength*2);
@@ -393,9 +393,9 @@ void QFxPath::createPointCache() const
     }
 }
 
-QPointF QFxPath::pointAt(qreal p) const
+QPointF QmlGraphicsPath::pointAt(qreal p) const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     if (d->_pointCache.isEmpty()) {
         createPointCache();
     }
@@ -407,9 +407,9 @@ QPointF QFxPath::pointAt(qreal p) const
     return d->_pointCache.at(idx);
 }
 
-qreal QFxPath::attributeAt(const QString &name, qreal percent) const
+qreal QmlGraphicsPath::attributeAt(const QString &name, qreal percent) const
 {
-    Q_D(const QFxPath);
+    Q_D(const QmlGraphicsPath);
     if (percent < 0 || percent > 1)
         return 0;
 
@@ -435,12 +435,12 @@ qreal QFxPath::attributeAt(const QString &name, qreal percent) const
 
 /****************************************************************************/
 
-qreal QFxCurve::x() const
+qreal QmlGraphicsCurve::x() const
 {
     return _x;
 }
 
-void QFxCurve::setX(qreal x)
+void QmlGraphicsCurve::setX(qreal x)
 {
     if (_x != x) {
         _x = x;
@@ -448,12 +448,12 @@ void QFxCurve::setX(qreal x)
     }
 }
 
-qreal QFxCurve::y() const
+qreal QmlGraphicsCurve::y() const
 {
     return _y;
 }
 
-void QFxCurve::setY(qreal y)
+void QmlGraphicsCurve::setY(qreal y)
 {
     if (_y != y) {
         _y = y;
@@ -492,11 +492,11 @@ void QFxCurve::setY(qreal y)
 
 /*!
     \internal
-    \class QFxPathAttribute
+    \class QmlGraphicsPathAttribute
     \ingroup group_utility
-    \brief The QFxPathAttribute class allows to set the value of an attribute at a given position in the path.
+    \brief The QmlGraphicsPathAttribute class allows to set the value of an attribute at a given position in the path.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 */
 
 
@@ -509,12 +509,12 @@ void QFxCurve::setY(qreal y)
     the name of the attribute to change.
 */
 
-QString QFxPathAttribute::name() const
+QString QmlGraphicsPathAttribute::name() const
 {
     return _name;
 }
 
-void QFxPathAttribute::setName(const QString &name)
+void QmlGraphicsPathAttribute::setName(const QString &name)
 {
     _name = name;
 }
@@ -527,12 +527,12 @@ void QFxPathAttribute::setName(const QString &name)
 /*!
     the new value of the attribute.
 */
-qreal QFxPathAttribute::value() const
+qreal QmlGraphicsPathAttribute::value() const
 {
     return _value;
 }
 
-void QFxPathAttribute::setValue(qreal value)
+void QmlGraphicsPathAttribute::setValue(qreal value)
 {
     if (_value != value) {
         _value = value;
@@ -561,11 +561,11 @@ void QFxPathAttribute::setValue(qreal value)
 
 /*!
     \internal
-    \class QFxPathLine
+    \class QmlGraphicsPathLine
     \ingroup group_utility
-    \brief The QFxPathLine class defines a straight line.
+    \brief The QmlGraphicsPathLine class defines a straight line.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 */
 
 /*!
@@ -575,7 +575,7 @@ void QFxPathAttribute::setValue(qreal value)
     Defines the end point of the line.
 */
 
-void QFxPathLine::addToPath(QPainterPath &path)
+void QmlGraphicsPathLine::addToPath(QPainterPath &path)
 {
     path.lineTo(x(), y());
 }
@@ -604,11 +604,11 @@ void QFxPathLine::addToPath(QPainterPath &path)
 
 /*!
     \internal
-    \class QFxPathQuad
+    \class QmlGraphicsPathQuad
     \ingroup group_utility
-    \brief The QFxPathQuad class defines a quadratic Bezier curve with a control point.
+    \brief The QmlGraphicsPathQuad class defines a quadratic Bezier curve with a control point.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 */
 
 
@@ -629,12 +629,12 @@ void QFxPathLine::addToPath(QPainterPath &path)
 /*!
     the x position of the control point.
 */
-qreal QFxPathQuad::controlX() const
+qreal QmlGraphicsPathQuad::controlX() const
 {
     return _controlX;
 }
 
-void QFxPathQuad::setControlX(qreal x)
+void QmlGraphicsPathQuad::setControlX(qreal x)
 {
     if (_controlX != x) {
         _controlX = x;
@@ -646,12 +646,12 @@ void QFxPathQuad::setControlX(qreal x)
 /*!
     the y position of the control point.
 */
-qreal QFxPathQuad::controlY() const
+qreal QmlGraphicsPathQuad::controlY() const
 {
     return _controlY;
 }
 
-void QFxPathQuad::setControlY(qreal y)
+void QmlGraphicsPathQuad::setControlY(qreal y)
 {
     if (_controlY != y) {
         _controlY = y;
@@ -659,7 +659,7 @@ void QFxPathQuad::setControlY(qreal y)
     }
 }
 
-void QFxPathQuad::addToPath(QPainterPath &path)
+void QmlGraphicsPathQuad::addToPath(QPainterPath &path)
 {
     path.quadTo(controlX(), controlY(), x(), y());
 }
@@ -691,11 +691,11 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 
 /*!
     \internal
-    \class QFxPathCubic
+    \class QmlGraphicsPathCubic
     \ingroup group_utility
-    \brief The QFxPathCubic class defines a cubic Bezier curve with two control points.
+    \brief The QmlGraphicsPathCubic class defines a cubic Bezier curve with two control points.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 */
 
 /*!
@@ -711,12 +711,12 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 
     Defines the position of the first control point.
 */
-qreal QFxPathCubic::control1X() const
+qreal QmlGraphicsPathCubic::control1X() const
 {
     return _control1X;
 }
 
-void QFxPathCubic::setControl1X(qreal x)
+void QmlGraphicsPathCubic::setControl1X(qreal x)
 {
     if (_control1X != x) {
         _control1X = x;
@@ -724,12 +724,12 @@ void QFxPathCubic::setControl1X(qreal x)
     }
 }
 
-qreal QFxPathCubic::control1Y() const
+qreal QmlGraphicsPathCubic::control1Y() const
 {
     return _control1Y;
 }
 
-void QFxPathCubic::setControl1Y(qreal y)
+void QmlGraphicsPathCubic::setControl1Y(qreal y)
 {
     if (_control1Y != y) {
         _control1Y = y;
@@ -743,12 +743,12 @@ void QFxPathCubic::setControl1Y(qreal y)
 
     Defines the position of the second control point.
 */
-qreal QFxPathCubic::control2X() const
+qreal QmlGraphicsPathCubic::control2X() const
 {
     return _control2X;
 }
 
-void QFxPathCubic::setControl2X(qreal x)
+void QmlGraphicsPathCubic::setControl2X(qreal x)
 {
     if (_control2X != x) {
         _control2X = x;
@@ -756,12 +756,12 @@ void QFxPathCubic::setControl2X(qreal x)
     }
 }
 
-qreal QFxPathCubic::control2Y() const
+qreal QmlGraphicsPathCubic::control2Y() const
 {
     return _control2Y;
 }
 
-void QFxPathCubic::setControl2Y(qreal y)
+void QmlGraphicsPathCubic::setControl2Y(qreal y)
 {
     if (_control2Y != y) {
         _control2Y = y;
@@ -769,7 +769,7 @@ void QFxPathCubic::setControl2Y(qreal y)
     }
 }
 
-void QFxPathCubic::addToPath(QPainterPath &path)
+void QmlGraphicsPathCubic::addToPath(QPainterPath &path)
 {
     path.cubicTo(control1X(), control1Y(), control2X(), control2Y(), x(), y());
 }
@@ -816,23 +816,23 @@ void QFxPathCubic::addToPath(QPainterPath &path)
 
 /*!
     \internal
-    \class QFxPathPercent
+    \class QmlGraphicsPathPercent
     \ingroup group_utility
-    \brief The QFxPathPercent class manipulates the way a path is interpreted.
+    \brief The QmlGraphicsPathPercent class manipulates the way a path is interpreted.
 
-    QFxPathPercent allows you to bunch up items (or spread out items) along various
-    segments of a QFxPathView's path.
+    QmlGraphicsPathPercent allows you to bunch up items (or spread out items) along various
+    segments of a QmlGraphicsPathView's path.
 
-    \sa QFxPath
+    \sa QmlGraphicsPath
 
 */
 
-qreal QFxPathPercent::value() const
+qreal QmlGraphicsPathPercent::value() const
 {
     return _value;
 }
 
-void QFxPathPercent::setValue(qreal value)
+void QmlGraphicsPathPercent::setValue(qreal value)
 {
     _value = value;
 }

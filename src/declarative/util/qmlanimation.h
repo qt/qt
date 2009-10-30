@@ -221,25 +221,25 @@ protected:
     virtual void prepare(QmlMetaProperty &);
 };
 
-class QFxItem;
+class QmlGraphicsItem;
 class QmlParentActionPrivate;
 class QmlParentAction : public QmlAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlParentAction)
 
-    Q_PROPERTY(QFxItem *target READ object WRITE setObject)
-    Q_PROPERTY(QFxItem *parent READ parent WRITE setParent)
+    Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
+    Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent)
 
 public:
     QmlParentAction(QObject *parent=0);
     virtual ~QmlParentAction();
 
-    QFxItem *object() const;
-    void setObject(QFxItem *);
+    QmlGraphicsItem *object() const;
+    void setObject(QmlGraphicsItem *);
 
-    QFxItem *parent() const;
-    void setParent(QFxItem *);
+    QmlGraphicsItem *parent() const;
+    void setParent(QmlGraphicsItem *);
 
 protected:
     virtual void transition(QmlStateActions &actions,

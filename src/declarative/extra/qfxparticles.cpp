@@ -81,10 +81,10 @@ inline qreal fastCos(qreal theta)
     return fastSin(theta);
 }
 
-class QFxParticle
+class QmlGraphicsParticle
 {
 public:
-    QFxParticle(int time) : lifeSpan(1000), fadeOutAge(800)
+    QmlGraphicsParticle(int time) : lifeSpan(1000), fadeOutAge(800)
         , opacity(0), birthTime(time), x_velocity(0), y_velocity(0)
         , state(FadeIn), data(0)
     {
@@ -105,21 +105,21 @@ public:
 
 //---------------------------------------------------------------------------
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotion,QFxParticleMotion)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotion,QmlGraphicsParticleMotion)
 
 /*!
-    \class QFxParticleMotion
+    \class QmlGraphicsParticleMotion
     \ingroup group_effects
-    \brief The QFxParticleMotion class is the base class for particle motion.
+    \brief The QmlGraphicsParticleMotion class is the base class for particle motion.
     \internal
 
     This class causes the particles to remain static.
 */
 
 /*!
-    Constructs a QFxParticleMotion with parent object \a parent.
+    Constructs a QmlGraphicsParticleMotion with parent object \a parent.
 */
-QFxParticleMotion::QFxParticleMotion(QObject *parent) :
+QmlGraphicsParticleMotion::QmlGraphicsParticleMotion(QObject *parent) :
     QObject(parent)
 {
 }
@@ -128,7 +128,7 @@ QFxParticleMotion::QFxParticleMotion(QObject *parent) :
     Move the \a particle to its new position.  \a interval is the number of
     milliseconds elapsed since it was last moved.
 */
-void QFxParticleMotion::advance(QFxParticle &particle, int interval)
+void QmlGraphicsParticleMotion::advance(QmlGraphicsParticle &particle, int interval)
 {
     Q_UNUSED(particle);
     Q_UNUSED(interval);
@@ -138,7 +138,7 @@ void QFxParticleMotion::advance(QFxParticle &particle, int interval)
     The \a particle has just been created.  Some motion strategies require
     additional state information.  This can be allocated by this function.
 */
-void QFxParticleMotion::created(QFxParticle &particle)
+void QmlGraphicsParticleMotion::created(QmlGraphicsParticle &particle)
 {
     Q_UNUSED(particle);
 }
@@ -147,7 +147,7 @@ void QFxParticleMotion::created(QFxParticle &particle)
     The \a particle is about to be destroyed.  Any additional memory
     that has been allocated for the particle should be freed.
 */
-void QFxParticleMotion::destroy(QFxParticle &particle)
+void QmlGraphicsParticleMotion::destroy(QmlGraphicsParticle &particle)
 {
     Q_UNUSED(particle);
 }
@@ -161,14 +161,14 @@ void QFxParticleMotion::destroy(QFxParticle &particle)
 
 /*!
     \internal
-    \class QFxParticleMotionLinear
+    \class QmlGraphicsParticleMotionLinear
     \ingroup group_effects
-    \brief The QFxParticleMotionLinear class moves the particles linearly.
+    \brief The QmlGraphicsParticleMotionLinear class moves the particles linearly.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionLinear,QFxParticleMotionLinear)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionLinear,QmlGraphicsParticleMotionLinear)
 
-void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
+void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interval)
 {
     p.x += interval * p.x_velocity;
     p.y += interval * p.y_velocity;
@@ -183,12 +183,12 @@ void QFxParticleMotionLinear::advance(QFxParticle &p, int interval)
 
 /*!
     \internal
-    \class QFxParticleMotionGravity
+    \class QmlGraphicsParticleMotionGravity
     \ingroup group_effects
-    \brief The QFxParticleMotionGravity class moves the particles towards a point.
+    \brief The QmlGraphicsParticleMotionGravity class moves the particles towards a point.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionGravity,QFxParticleMotionGravity)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionGravity,QmlGraphicsParticleMotionGravity)
 
 /*!
     \qmlproperty int ParticleMotionGravity::xattractor
@@ -202,21 +202,21 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionGravity,QFxParticl
 */
 
 /*!
-    \property QFxParticleMotionGravity::xattractor
+    \property QmlGraphicsParticleMotionGravity::xattractor
     \brief the x coordinate of the point attracting the particles.
 */
 
 /*!
-    \property QFxParticleMotionGravity::yattractor
+    \property QmlGraphicsParticleMotionGravity::yattractor
     \brief the y coordinate of the point attracting the particles.
 */
 
 /*!
-    \property QFxParticleMotionGravity::acceleration
+    \property QmlGraphicsParticleMotionGravity::acceleration
     \brief the acceleration to apply to the particles.
 */
 
-void QFxParticleMotionGravity::advance(QFxParticle &p, int interval)
+void QmlGraphicsParticleMotionGravity::advance(QmlGraphicsParticle &p, int interval)
 {
     qreal xdiff = p.x - _xAttr;
     qreal ydiff = p.y - _yAttr;
@@ -270,32 +270,32 @@ Rectangle {
 
 /*!
     \internal
-    \class QFxParticleMotionWander
+    \class QmlGraphicsParticleMotionWander
     \ingroup group_effects
-    \brief The QFxParticleMotionWander class moves particles in a somewhat random fashion.
+    \brief The QmlGraphicsParticleMotionWander class moves particles in a somewhat random fashion.
 
     The particles will continue roughly in the original direction, however will randomly
     drift to each side.
 */
 
 /*!
-    \qmlproperty int QFxParticleMotionWander::xvariance
-    \qmlproperty int QFxParticleMotionWander::yvariance
+    \qmlproperty int QmlGraphicsParticleMotionWander::xvariance
+    \qmlproperty int QmlGraphicsParticleMotionWander::yvariance
 
     These properties set the amount to wander in the x and y directions.
 */
 
 /*!
-    \qmlproperty int QFxParticleMotionWander::pace
+    \qmlproperty int QmlGraphicsParticleMotionWander::pace
     This property holds how quickly the paricles will move from side to side.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionWander,QFxParticleMotionWander)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionWander,QmlGraphicsParticleMotionWander)
 
-void QFxParticleMotionWander::advance(QFxParticle &p, int interval)
+void QmlGraphicsParticleMotionWander::advance(QmlGraphicsParticle &p, int interval)
 {
     if (!particles)
-        particles = qobject_cast<QFxParticles*>(parent());
+        particles = qobject_cast<QmlGraphicsParticles*>(parent());
     if (particles) {
         Data *d = (Data*)p.data;
         if (_xvariance != 0.) {
@@ -320,7 +320,7 @@ void QFxParticleMotionWander::advance(QFxParticle &p, int interval)
     }
 }
 
-void QFxParticleMotionWander::created(QFxParticle &p)
+void QmlGraphicsParticleMotionWander::created(QmlGraphicsParticle &p)
 {
     if (!p.data) {
         Data *d = new Data;
@@ -334,18 +334,18 @@ void QFxParticleMotionWander::created(QFxParticle &p)
     }
 }
 
-void QFxParticleMotionWander::destroy(QFxParticle &p)
+void QmlGraphicsParticleMotionWander::destroy(QmlGraphicsParticle &p)
 {
     if (p.data)
         delete (Data*)p.data;
 }
 
 //---------------------------------------------------------------------------
-class QFxParticlesPainter : public QFxItem
+class QmlGraphicsParticlesPainter : public QmlGraphicsItem
 {
 public:
-    QFxParticlesPainter(QFxParticlesPrivate *p, QFxItem* parent)
-        : QFxItem(parent), d(p)
+    QmlGraphicsParticlesPainter(QmlGraphicsParticlesPrivate *p, QmlGraphicsItem* parent)
+        : QmlGraphicsItem(parent), d(p)
     {
         setFlag(QGraphicsItem::ItemHasNoContents, false);
         maxX = minX = maxY = minY = 0;
@@ -359,15 +359,15 @@ public:
     qreal minX;
     qreal maxY;
     qreal minY;
-    QFxParticlesPrivate* d;
+    QmlGraphicsParticlesPrivate* d;
 };
 
 //---------------------------------------------------------------------------
-class QFxParticlesPrivate : public QFxItemPrivate
+class QmlGraphicsParticlesPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxParticles)
+    Q_DECLARE_PUBLIC(QmlGraphicsParticles)
 public:
-    QFxParticlesPrivate()
+    QmlGraphicsParticlesPrivate()
         : count(1), lifeSpan(1000), lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
         , angle(0), angleDev(0), velocity(0), velocityDev(0)
         , addParticleTime(0), addParticleCount(0), lastAdvTime(0), stream(false), streamDelay(0)
@@ -375,19 +375,19 @@ public:
     {
     }
 
-    ~QFxParticlesPrivate()
+    ~QmlGraphicsParticlesPrivate()
     {
     }
 
     void init()
     {
-        Q_Q(QFxParticles);
-        paintItem = new QFxParticlesPainter(this, q);
+        Q_Q(QmlGraphicsParticles);
+        paintItem = new QmlGraphicsParticlesPainter(this, q);
     }
 
     void tick(int time);
     void createParticle(int time);
-    void updateOpacity(QFxParticle &p, int age);
+    void updateOpacity(QmlGraphicsParticle &p, int age);
 
     QUrl url;
     QPixmap image;
@@ -406,30 +406,30 @@ public:
     bool stream;
     int streamDelay;
     bool emitting;
-    QFxParticleMotion *motion;
-    QFxParticlesPainter *paintItem;
+    QmlGraphicsParticleMotion *motion;
+    QmlGraphicsParticlesPainter *paintItem;
 
     bool pendingPixmapCache;
 
-    QList<QFxParticle> particles;
-    QTickAnimationProxy<QFxParticlesPrivate, &QFxParticlesPrivate::tick> clock;
+    QList<QmlGraphicsParticle> particles;
+    QTickAnimationProxy<QmlGraphicsParticlesPrivate, &QmlGraphicsParticlesPrivate::tick> clock;
 
 };
 
-void QFxParticlesPrivate::tick(int time)
+void QmlGraphicsParticlesPrivate::tick(int time)
 {
-    Q_Q(QFxParticles);
+    Q_Q(QmlGraphicsParticles);
     if (!motion)
-        motion = new QFxParticleMotionLinear(q);
+        motion = new QmlGraphicsParticleMotionLinear(q);
 
     int oldCount = particles.count();
     int removed = 0;
     int interval = time - lastAdvTime;
     for (int i = 0; i < particles.count(); ) {
-        QFxParticle &particle = particles[i];
+        QmlGraphicsParticle &particle = particles[i];
         int age = time - particle.birthTime;
         if (age >= particle.lifeSpan)  {
-            QFxParticle part = particles.takeAt(i);
+            QmlGraphicsParticle part = particles.takeAt(i);
             motion->destroy(part);
             ++removed;
         } else {
@@ -478,13 +478,13 @@ void QFxParticlesPrivate::tick(int time)
     }
 }
 
-void QFxParticlesPrivate::createParticle(int time)
+void QmlGraphicsParticlesPrivate::createParticle(int time)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::CreateParticle> x;
+    QmlPerfTimer<QmlPerf::CreateParticle> x;
 #endif
-    Q_Q(QFxParticles);
-    QFxParticle p(time);
+    Q_Q(QmlGraphicsParticles);
+    QmlGraphicsParticle p(time);
     p.x = q->x() + q->width() * qreal(rand()) / RAND_MAX - image.width()/2.0;
     p.y = q->y() + q->height() * qreal(rand()) / RAND_MAX - image.height()/2.0;
     p.lifeSpan = lifeSpan;
@@ -492,7 +492,7 @@ void QFxParticlesPrivate::createParticle(int time)
         p.lifeSpan += int(lifeSpanDev/2 - lifeSpanDev * qreal(rand()) / RAND_MAX);
     p.fadeOutAge = p.lifeSpan - fadeOutDur;
     if (fadeInDur == 0.) {
-        p.state= QFxParticle::Solid;
+        p.state= QmlGraphicsParticle::Solid;
         p.opacity = 1.0;
     }
     qreal a = angle;
@@ -509,32 +509,32 @@ void QFxParticlesPrivate::createParticle(int time)
     motion->created(particles.last());
 }
 
-void QFxParticlesPrivate::updateOpacity(QFxParticle &p, int age)
+void QmlGraphicsParticlesPrivate::updateOpacity(QmlGraphicsParticle &p, int age)
 {
     switch (p.state) {
-    case QFxParticle::FadeIn:
+    case QmlGraphicsParticle::FadeIn:
         if (age <= fadeInDur) {
             p.opacity = qreal(age) / fadeInDur;
             break;
         } else {
             p.opacity = 1.0;
-            p.state = QFxParticle::Solid;
+            p.state = QmlGraphicsParticle::Solid;
             // Fall through
         }
-    case QFxParticle::Solid:
+    case QmlGraphicsParticle::Solid:
         if (age <= p.fadeOutAge) {
             break;
         } else {
-            p.state = QFxParticle::FadeOut;
+            p.state = QmlGraphicsParticle::FadeOut;
             // Fall through
         }
-    case QFxParticle::FadeOut:
+    case QmlGraphicsParticle::FadeOut:
         p.opacity = qreal(p.lifeSpan - age) / fadeOutDur;
         break;
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Particles,QFxParticles)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Particles,QmlGraphicsParticles)
 
 /*!
     \qmlclass Particles
@@ -596,30 +596,30 @@ Rectangle {
 
 /*!
     \internal
-    \class QFxParticles
+    \class QmlGraphicsParticles
     \ingroup group_effects
-    \brief The QFxParticles class generates and moves particles.
+    \brief The QmlGraphicsParticles class generates and moves particles.
 */
 
-QFxParticles::QFxParticles(QFxItem *parent)
-    : QFxItem(*(new QFxParticlesPrivate), parent)
+QmlGraphicsParticles::QmlGraphicsParticles(QmlGraphicsItem *parent)
+    : QmlGraphicsItem(*(new QmlGraphicsParticlesPrivate), parent)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->init();
 }
 
-QFxParticles::QFxParticles(QFxParticlesPrivate &dd, QFxItem *parent)
-    : QFxItem(dd, parent)
+QmlGraphicsParticles::QmlGraphicsParticles(QmlGraphicsParticlesPrivate &dd, QmlGraphicsItem *parent)
+    : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->init();
 }
 
-QFxParticles::~QFxParticles()
+QmlGraphicsParticles::~QmlGraphicsParticles()
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     if (d->pendingPixmapCache)
-        QFxPixmapCache::cancelGet(d->url, this);
+        QmlGraphicsPixmapCache::cancelGet(d->url, this);
 }
 
 /*!
@@ -628,33 +628,33 @@ QFxParticles::~QFxParticles()
 */
 
 /*!
-    \property QFxParticles::source
+    \property QmlGraphicsParticles::source
     \brief the URL of the particle image.
 */
-QUrl QFxParticles::source() const
+QUrl QmlGraphicsParticles::source() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->url;
 }
 
-void QFxParticles::imageLoaded()
+void QmlGraphicsParticles::imageLoaded()
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->pendingPixmapCache = false;
-    QFxPixmapCache::find(d->url, &d->image);
+    QmlGraphicsPixmapCache::find(d->url, &d->image);
     d->paintItem->updateSize();
     d->paintItem->update();
 }
 
-void QFxParticles::setSource(const QUrl &name)
+void QmlGraphicsParticles::setSource(const QUrl &name)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
 
     if ((d->url.isEmpty() == name.isEmpty()) && name == d->url)
         return;
 
     if (d->pendingPixmapCache) {
-        QFxPixmapCache::cancelGet(d->url, this);
+        QmlGraphicsPixmapCache::cancelGet(d->url, this);
         d->pendingPixmapCache = false;
     }
     if (name.isEmpty()) {
@@ -665,7 +665,7 @@ void QFxParticles::setSource(const QUrl &name)
     } else {
         d->url = name;
         Q_ASSERT(!name.isRelative());
-        QNetworkReply *reply = QFxPixmapCache::get(qmlEngine(this), d->url, &d->image);
+        QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->url, &d->image);
         if (reply) {
             connect(reply, SIGNAL(finished()), this, SLOT(imageLoaded()));
             d->pendingPixmapCache = true;
@@ -683,18 +683,18 @@ void QFxParticles::setSource(const QUrl &name)
 */
 
 /*!
-    \property QFxParticles::count
+    \property QmlGraphicsParticles::count
     \brief the target number of particles
 */
-int QFxParticles::count() const
+int QmlGraphicsParticles::count() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->count;
 }
 
-void QFxParticles::setCount(int cnt)
+void QmlGraphicsParticles::setCount(int cnt)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     if (cnt == d->count)
         return;
 
@@ -731,27 +731,27 @@ Particles {
 */
 
 /*!
-    \property QFxParticles::lifeSpan
+    \property QmlGraphicsParticles::lifeSpan
     \brief the life span of each particle.
 
     Default value is 1000ms.
 
-    \sa QFxParticles::lifeSpanDeviation
+    \sa QmlGraphicsParticles::lifeSpanDeviation
 */
-int QFxParticles::lifeSpan() const
+int QmlGraphicsParticles::lifeSpan() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->lifeSpan;
 }
 
-void QFxParticles::setLifeSpan(int ls)
+void QmlGraphicsParticles::setLifeSpan(int ls)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->lifeSpan = ls;
 }
 
 /*!
-    \property QFxParticles::lifeSpanDeviation
+    \property QmlGraphicsParticles::lifeSpanDeviation
     \brief the maximum possible deviation from the set lifeSpan.
 
     Randomly varies the lifeSpan up to the specified variation.  For
@@ -766,17 +766,17 @@ Particles {
 }
 \endqml
 
-    \sa QFxParticles::lifeSpan
+    \sa QmlGraphicsParticles::lifeSpan
 */
-int QFxParticles::lifeSpanDeviation() const
+int QmlGraphicsParticles::lifeSpanDeviation() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->lifeSpanDev;
 }
 
-void QFxParticles::setLifeSpanDeviation(int dev)
+void QmlGraphicsParticles::setLifeSpanDeviation(int dev)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->lifeSpanDev = dev;
 }
 
@@ -789,39 +789,39 @@ void QFxParticles::setLifeSpanDeviation(int dev)
 */
 
 /*!
-    \property QFxParticles::fadeInDuration
+    \property QmlGraphicsParticles::fadeInDuration
     \brief the time taken to fade in the particles.
 
     Default value is 200ms.
 */
-int QFxParticles::fadeInDuration() const
+int QmlGraphicsParticles::fadeInDuration() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->fadeInDur;
 }
 
-void QFxParticles::setFadeInDuration(int dur)
+void QmlGraphicsParticles::setFadeInDuration(int dur)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     if (dur >= 0.0)
         d->fadeInDur = dur;
 }
 
 /*!
-    \property QFxParticles::fadeOutDuration
+    \property QmlGraphicsParticles::fadeOutDuration
     \brief the time taken to fade out the particles.
 
     Default value is 300ms.
 */
-int QFxParticles::fadeOutDuration() const
+int QmlGraphicsParticles::fadeOutDuration() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->fadeOutDur;
 }
 
-void QFxParticles::setFadeOutDuration(int dur)
+void QmlGraphicsParticles::setFadeOutDuration(int dur)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     if (dur >= 0.0)
         d->fadeOutDur = dur;
 }
@@ -846,25 +846,25 @@ Particles {
 */
 
 /*!
-    \property QFxParticles::angle
+    \property QmlGraphicsParticles::angle
     \brief the initial angle of direction.
 
-    \sa QFxParticles::angleDeviation
+    \sa QmlGraphicsParticles::angleDeviation
 */
-qreal QFxParticles::angle() const
+qreal QmlGraphicsParticles::angle() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->angle * 180.0 / M_PI;
 }
 
-void QFxParticles::setAngle(qreal angle)
+void QmlGraphicsParticles::setAngle(qreal angle)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->angle = angle * M_PI / 180.0;
 }
 
 /*!
-    \property QFxParticles::angleDeviation
+    \property QmlGraphicsParticles::angleDeviation
     \brief the maximum possible deviation from the set angle.
 
     Randomly varies the direction up to the specified variation.  For
@@ -879,17 +879,17 @@ Particles {
 }
 \endqml
 
-    \sa QFxParticles::angle
+    \sa QmlGraphicsParticles::angle
 */
-qreal QFxParticles::angleDeviation() const
+qreal QmlGraphicsParticles::angleDeviation() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->angleDev * 180.0 / M_PI;
 }
 
-void QFxParticles::setAngleDeviation(qreal dev)
+void QmlGraphicsParticles::setAngleDeviation(qreal dev)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->angleDev = dev * M_PI / 180.0;;
 }
 
@@ -913,25 +913,25 @@ Particles {
 */
 
 /*!
-    \property QFxParticles::velocity
+    \property QmlGraphicsParticles::velocity
     \brief the initial velocity of the particles.
 
-    \sa QFxParticles::velocityDeviation
+    \sa QmlGraphicsParticles::velocityDeviation
 */
-qreal QFxParticles::velocity() const
+qreal QmlGraphicsParticles::velocity() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->velocity * 1000.0;
 }
 
-void QFxParticles::setVelocity(qreal velocity)
+void QmlGraphicsParticles::setVelocity(qreal velocity)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->velocity = velocity / 1000.0;
 }
 
 /*!
-    \property QFxParticles::velocityDeviation
+    \property QmlGraphicsParticles::velocityDeviation
     \brief the maximum possible deviation from the set velocity.
 
     Randomly varies the velocity up to the specified variation.  For
@@ -946,17 +946,17 @@ Particles {
 }
 \endqml
 
-    \sa QFxParticles::velocity
+    \sa QmlGraphicsParticles::velocity
 */
-qreal QFxParticles::velocityDeviation() const
+qreal QmlGraphicsParticles::velocityDeviation() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->velocityDev * 1000.0;
 }
 
-void QFxParticles::setVelocityDeviation(qreal velocity)
+void QmlGraphicsParticles::setVelocityDeviation(qreal velocity)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->velocityDev = velocity / 1000.0;
 }
 
@@ -970,7 +970,7 @@ void QFxParticles::setVelocityDeviation(qreal velocity)
   particles to unclump over time.
 */
 /*!
-  \property QFxParticles::streamIn
+  \property QmlGraphicsParticles::streamIn
   \brief determines whether the particles stream in at a constant rate
 
   When stream is set to true the particles will stream in at a constant rate.
@@ -979,15 +979,15 @@ void QFxParticles::setVelocityDeviation(qreal velocity)
 
 */
 //The name may need a rethink
-bool QFxParticles::streamIn() const
+bool QmlGraphicsParticles::streamIn() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->stream;
 }
 
-void QFxParticles::setStreamIn(bool b)
+void QmlGraphicsParticles::setStreamIn(bool b)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->stream = b;
 }
 
@@ -1003,7 +1003,7 @@ void QFxParticles::setStreamIn(bool b)
   will be produced until it is set to true.
 */
 /*!
-  \property QFxParticles::emitting
+  \property QmlGraphicsParticles::emitting
   If emitting is set to false no new particles will be created. This means that
   when a particle reaches the end of its lifespan it is not replaced. This
   property can be used to turn particles on and off with a more natural look.
@@ -1011,15 +1011,15 @@ void QFxParticles::setStreamIn(bool b)
   The default setting is true. Note that if it initialized to false no particles
   will be produced until it is set to true.
 */
-bool QFxParticles::emitting() const
+bool QmlGraphicsParticles::emitting() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->emitting;
 }
 
-void QFxParticles::setEmitting(bool r)
+void QmlGraphicsParticles::setEmitting(bool r)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->emitting = r;
     if (d->count && r)
         d->clock.start();
@@ -1036,28 +1036,28 @@ void QFxParticles::setEmitting(bool r)
 */
 
 /*!
-    \property QFxParticles::motion
+    \property QmlGraphicsParticles::motion
     \brief sets the type of motion to apply to the particles.
 
     When a particle is created it will have an initial direction and velocity.
     The motion of the particle during its lifeSpan is then influenced by the
     motion property.
 
-    Default motion is QFxParticleMotionLinear.
+    Default motion is QmlGraphicsParticleMotionLinear.
 */
-QFxParticleMotion *QFxParticles::motion() const
+QmlGraphicsParticleMotion *QmlGraphicsParticles::motion() const
 {
-    Q_D(const QFxParticles);
+    Q_D(const QmlGraphicsParticles);
     return d->motion;
 }
 
-void QFxParticles::setMotion(QFxParticleMotion *motion)
+void QmlGraphicsParticles::setMotion(QmlGraphicsParticleMotion *motion)
 {
-    Q_D(QFxParticles);
+    Q_D(QmlGraphicsParticles);
     d->motion = motion;
 }
 
-void QFxParticlesPainter::updateSize()
+void QmlGraphicsParticlesPainter::updateSize()
 {
     if (!isComponentComplete())
         return;
@@ -1065,7 +1065,7 @@ void QFxParticlesPainter::updateSize()
     const int parentX = parentItem()->x();
     const int parentY = parentItem()->y();
     for (int i = 0; i < d->particles.count(); ++i) {
-        const QFxParticle &particle = d->particles.at(i);
+        const QmlGraphicsParticle &particle = d->particles.at(i);
         if(particle.x > maxX)
             maxX = particle.x;
         if(particle.x < minX)
@@ -1086,13 +1086,13 @@ void QFxParticlesPainter::updateSize()
     setY(myY);
 }
 
-void QFxParticles::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsParticles::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     Q_UNUSED(p);
     //painting is done by the ParticlesPainter, so it can have the right size
 }
 
-void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
     if (d->image.isNull() || d->particles.isEmpty())
         return;
@@ -1106,7 +1106,7 @@ void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, Q
 
     const QRectF sourceRect = d->image.rect();
     for (int i = 0; i < d->particles.count(); ++i) {
-        const QFxParticle &particle = d->particles.at(i);
+        const QmlGraphicsParticle &particle = d->particles.at(i);
         pixmapData[i].point = QPointF(particle.x - myX, particle.y - myY);
         pixmapData[i].opacity = particle.opacity;
 
@@ -1119,10 +1119,10 @@ void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, Q
     qDrawPixmaps(p, pixmapData.data(), d->particles.count(), d->image);
 }
 
-void QFxParticles::componentComplete()
+void QmlGraphicsParticles::componentComplete()
 {
-    Q_D(QFxParticles);
-    QFxItem::componentComplete();
+    Q_D(QmlGraphicsParticles);
+    QmlGraphicsItem::componentComplete();
     if (d->count) {
         d->paintItem->updateSize();
         d->clock.start();

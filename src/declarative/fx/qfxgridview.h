@@ -49,18 +49,18 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxVisualModel;
-class QFxGridViewAttached;
-class QFxGridViewPrivate;
-class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
+class QmlGraphicsVisualModel;
+class QmlGraphicsGridViewAttached;
+class QmlGraphicsGridViewPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsGridView : public QmlGraphicsFlickable
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxGridView)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsGridView)
 
     Q_PROPERTY(QVariant model READ model WRITE setModel)
     Q_PROPERTY(QmlComponent *delegate READ delegate WRITE setDelegate)
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
-    Q_PROPERTY(QFxItem *currentItem READ currentItem NOTIFY currentIndexChanged)
+    Q_PROPERTY(QmlGraphicsItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
@@ -72,8 +72,8 @@ class Q_DECLARATIVE_EXPORT QFxGridView : public QFxFlickable
     Q_CLASSINFO("DefaultProperty", "data")
 
 public:
-    QFxGridView(QFxItem *parent=0);
-    ~QFxGridView();
+    QmlGraphicsGridView(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsGridView();
 
     QVariant model() const;
     void setModel(const QVariant &);
@@ -84,7 +84,7 @@ public:
     int currentIndex() const;
     void setCurrentIndex(int idx);
 
-    QFxItem *currentItem();
+    QmlGraphicsItem *currentItem();
     int count() const;
 
     QmlComponent *highlight() const;
@@ -110,7 +110,7 @@ public:
     int cellHeight() const;
     void setCellHeight(int);
 
-    static QFxGridViewAttached *qmlAttachedProperties(QObject *);
+    static QmlGraphicsGridViewAttached *qmlAttachedProperties(QObject *);
 
 public Q_SLOTS:
     void moveCurrentIndexUp();
@@ -139,8 +139,8 @@ private Q_SLOTS:
     void itemsRemoved(int index, int count);
     void itemsMoved(int from, int to, int count);
     void destroyRemoved();
-    void createdItem(int index, QFxItem *item);
-    void destroyingItem(QFxItem *item);
+    void createdItem(int index, QmlGraphicsItem *item);
+    void destroyingItem(QmlGraphicsItem *item);
     void sizeChange();
 
 private:
@@ -149,8 +149,8 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxGridView)
-QML_DECLARE_TYPEINFO(QFxGridView, QML_HAS_ATTACHED_PROPERTIES)
+QML_DECLARE_TYPE(QmlGraphicsGridView)
+QML_DECLARE_TYPEINFO(QmlGraphicsGridView, QML_HAS_ATTACHED_PROPERTIES)
 
 QT_END_HEADER
 

@@ -42,7 +42,7 @@
 #ifndef QFXGRAPHICSLAYOUTITEM_H
 #define QFXGRAPHICSLAYOUTITEM_H
 #include <QGraphicsLayoutItem>
-#include <QFxItem>
+#include <QmlGraphicsItem>
 #include <QSizeF>
 
 QT_BEGIN_HEADER
@@ -51,7 +51,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxLayoutItem : public QFxItem, public QGraphicsLayoutItem
+class QmlGraphicsLayoutItem : public QmlGraphicsItem, public QGraphicsLayoutItem
 {
     Q_OBJECT
     Q_INTERFACES(QGraphicsLayoutItem)
@@ -59,7 +59,7 @@ class QFxLayoutItem : public QFxItem, public QGraphicsLayoutItem
     Q_PROPERTY(QSizeF minimumSize READ minimumSize WRITE setMinimumSize NOTIFY minimumSizeChanged)
     Q_PROPERTY(QSizeF preferredSize READ preferredSize WRITE setPreferredSize NOTIFY preferredSizeChanged)
 public:
-    QFxLayoutItem(QFxItem* parent=0);
+    QmlGraphicsLayoutItem(QmlGraphicsItem* parent=0);
 
     QSizeF maximumSize() const { return m_maximumSize; }
     void setMaximumSize(const QSizeF &s) { if(s==m_maximumSize) return; m_maximumSize = s; emit maximumSizeChanged(); }
@@ -87,7 +87,7 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxLayoutItem)
+QML_DECLARE_TYPE(QmlGraphicsLayoutItem)
 
 QT_END_HEADER
 #endif

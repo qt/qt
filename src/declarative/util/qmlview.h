@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxItem;
+class QmlGraphicsItem;
 class QmlEngine;
 class QmlContext;
 class QmlError;
@@ -78,10 +78,10 @@ public:
     virtual void execute();
     virtual void reset();
 
-    virtual QFxItem* addItem(const QString &qml, QFxItem* parent=0);
+    virtual QmlGraphicsItem* addItem(const QString &qml, QmlGraphicsItem* parent=0);
     virtual void clearItems();
 
-    virtual QFxItem *root() const;
+    virtual QmlGraphicsItem *root() const;
 
     void setContentResizable(bool);
     bool contentResizable() const;

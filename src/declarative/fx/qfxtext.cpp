@@ -52,10 +52,10 @@
 #include <QPainter>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QmlGraphicsText)
 
 /*!
-    \qmlclass Text QFxText
+    \qmlclass Text QmlGraphicsText
     \brief The Text item allows you to add formatted text to a scene.
     \inherits Item
 
@@ -80,11 +80,11 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
 
 /*!
     \internal
-    \class QFxText
+    \class QmlGraphicsText
     \qmlclass Text
     \ingroup group_coreitems
 
-    \brief The QFxText class provides a formatted text item that you can add to a QmlView.
+    \brief The QmlGraphicsText class provides a formatted text item that you can add to a QmlView.
 
     Text was designed for read-only text; it does not allow for any text editing.
     It can display both plain and rich text. For example:
@@ -102,23 +102,23 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Text,QFxText)
 
     The \c elide property can alternatively be used to fit a line of plain text to a set width.
 
-    A QFxText object can be instantiated in Qml using the tag \c Text.
+    A QmlGraphicsText object can be instantiated in Qml using the tag \c Text.
 */
-QFxText::QFxText(QFxItem *parent)
-  : QFxItem(*(new QFxTextPrivate), parent)
+QmlGraphicsText::QmlGraphicsText(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsTextPrivate), parent)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxText::QFxText(QFxTextPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsText::QmlGraphicsText(QmlGraphicsTextPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
     setAcceptedMouseButtons(Qt::LeftButton);
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxText::~QFxText()
+QmlGraphicsText::~QmlGraphicsText()
 {
 }
 
@@ -132,15 +132,15 @@ QFxText::~QFxText()
 
     Set the Text's font attributes.
 */
-QFont QFxText::font() const
+QFont QmlGraphicsText::font() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->font;
 }
 
-void QFxText::setFont(const QFont &font)
+void QmlGraphicsText::setFont(const QFont &font)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     d->font = font;
 
     d->imgDirty = true;
@@ -148,12 +148,12 @@ void QFxText::setFont(const QFont &font)
     update();
 }
 
-void QFxText::setText(const QString &n)
+void QmlGraphicsText::setText(const QString &n)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::QFxText_setText> st;
+    QmlPerfTimer<QmlPerf::QmlGraphicsText_setText> st;
 #endif
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (d->text == n)
         return;
 
@@ -184,15 +184,15 @@ void QFxText::setText(const QString &n)
     The item will try to automatically determine whether the text should
     be treated as rich text. This determination is made using Qt::mightBeRichText().
 */
-QString QFxText::text() const
+QString QmlGraphicsText::text() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->text;
 }
 
-void QFxText::setColor(const QColor &color)
+void QmlGraphicsText::setColor(const QColor &color)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (d->color == color)
         return;
 
@@ -215,9 +215,9 @@ void QFxText::setColor(const QColor &color)
     \endqml
 */
 
-QColor QFxText::color() const
+QColor QmlGraphicsText::color() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->color;
 }
 
@@ -239,15 +239,15 @@ QColor QFxText::color() const
 
     \image declarative-textstyle.png
 */
-QFxText::TextStyle QFxText::style() const
+QmlGraphicsText::TextStyle QmlGraphicsText::style() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->style;
 }
 
-void QFxText::setStyle(QFxText::TextStyle style)
+void QmlGraphicsText::setStyle(QmlGraphicsText::TextStyle style)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (d->style == style)
         return;
 
@@ -256,9 +256,9 @@ void QFxText::setStyle(QFxText::TextStyle style)
     update();
 }
 
-void QFxText::setStyleColor(const QColor &color)
+void QmlGraphicsText::setStyleColor(const QColor &color)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (d->styleColor == color)
         return;
 
@@ -276,9 +276,9 @@ void QFxText::setStyleColor(const QColor &color)
     shadow color for raised or sunken text. If no style has been set, it is not
     used at all.
  */
-QColor QFxText::styleColor() const
+QColor QmlGraphicsText::styleColor() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->styleColor;
 }
 
@@ -293,27 +293,27 @@ QColor QFxText::styleColor() const
     \c AlignHCenter.  The valid values for \c verticalAlignment are \c AlignTop, \c AlignBottom
     and \c AlignVCenter.
 */
-QFxText::HAlignment QFxText::hAlign() const
+QmlGraphicsText::HAlignment QmlGraphicsText::hAlign() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->hAlign;
 }
 
-void QFxText::setHAlign(HAlignment align)
+void QmlGraphicsText::setHAlign(HAlignment align)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     d->hAlign = align;
 }
 
-QFxText::VAlignment QFxText::vAlign() const
+QmlGraphicsText::VAlignment QmlGraphicsText::vAlign() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->vAlign;
 }
 
-void QFxText::setVAlign(VAlignment align)
+void QmlGraphicsText::setVAlign(VAlignment align)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     d->vAlign = align;
 }
 
@@ -330,15 +330,15 @@ void QFxText::setVAlign(VAlignment align)
     Wrapping is off by default.
 */
 //### Future may provide choice of wrap modes, such as QTextOption::WrapAtWordBoundaryOrAnywhere
-bool QFxText::wrap() const
+bool QmlGraphicsText::wrap() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->wrap;
 }
 
-void QFxText::setWrap(bool w)
+void QmlGraphicsText::setWrap(bool w)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (w == d->wrap)
         return;
 
@@ -384,15 +384,15 @@ Column {
     \endtable
 */
 
-QFxText::TextFormat QFxText::textFormat() const
+QmlGraphicsText::TextFormat QmlGraphicsText::textFormat() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->format;
 }
 
-void QFxText::setTextFormat(TextFormat format)
+void QmlGraphicsText::setTextFormat(TextFormat format)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (format == d->format)
         return;
     bool wasRich = d->richText;
@@ -435,15 +435,15 @@ void QFxText::setTextFormat(TextFormat format)
     Multi-length strings are ordered from longest to shortest, separated by the
     Unicode "String Terminator" character \c U009C (write this in QML with \c{"\\x9C"}).
 */
-QFxText::TextElideMode QFxText::elideMode() const
+QmlGraphicsText::TextElideMode QmlGraphicsText::elideMode() const
 {
-    Q_D(const QFxText);
+    Q_D(const QmlGraphicsText);
     return d->elideMode;
 }
 
-void QFxText::setElideMode(QFxText::TextElideMode mode)
+void QmlGraphicsText::setElideMode(QmlGraphicsText::TextElideMode mode)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (mode == d->elideMode)
         return;
 
@@ -453,22 +453,22 @@ void QFxText::setElideMode(QFxText::TextElideMode mode)
     d->updateSize();
 }
 
-void QFxText::geometryChanged(const QRectF &newGeometry,
+void QmlGraphicsText::geometryChanged(const QRectF &newGeometry,
                               const QRectF &oldGeometry)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     if (newGeometry.width() != oldGeometry.width()) {
-        if (d->wrap || d->elideMode != QFxText::ElideNone) {
+        if (d->wrap || d->elideMode != QmlGraphicsText::ElideNone) {
             d->imgDirty = true;
             d->updateSize();
         }
     }
-    QFxItem::geometryChanged(newGeometry, oldGeometry);
+    QmlGraphicsItem::geometryChanged(newGeometry, oldGeometry);
 }
 
-void QFxTextPrivate::updateSize()
+void QmlGraphicsTextPrivate::updateSize()
 {
-    Q_Q(QFxText);
+    Q_Q(QmlGraphicsText);
     if (q->isComponentComplete()) {
         QFontMetrics fm(font);
         if (text.isEmpty()) {
@@ -486,7 +486,7 @@ void QFxTextPrivate::updateSize()
                 tmp = text;
                 tmp.replace(QLatin1Char('\n'), QChar::LineSeparator);
                 singleline = !tmp.contains(QChar::LineSeparator);
-                if (singleline && elideMode != QFxText::ElideNone && q->widthValid())
+                if (singleline && elideMode != QmlGraphicsText::ElideNone && q->widthValid())
                     tmp = fm.elidedText(tmp,(Qt::TextElideMode)elideMode,q->width()); // XXX still worth layout...?
                 layout.clearLayout();
                 layout.setFont(font);
@@ -514,9 +514,9 @@ void QFxTextPrivate::updateSize()
         int yoff = 0;
 
         if (q->heightValid()) {
-            if (vAlign == QFxText::AlignBottom)
+            if (vAlign == QmlGraphicsText::AlignBottom)
                 yoff = dy;
-            else if (vAlign == QFxText::AlignVCenter)
+            else if (vAlign == QmlGraphicsText::AlignVCenter)
                 yoff = dy/2;
         }
         q->setBaselineOffset(fm.ascent() + yoff);
@@ -532,7 +532,7 @@ void QFxTextPrivate::updateSize()
 // ### text layout handling should be profiled and optimized as needed
 // what about QStackTextEngine engine(tmp, d->font.font()); QTextLayout textLayout(&engine);
 
-void QFxTextPrivate::drawOutline()
+void QmlGraphicsTextPrivate::drawOutline()
 {
     QPixmap img = QPixmap(imgCache.size());
     img.fill(Qt::transparent);
@@ -556,7 +556,7 @@ void QFxTextPrivate::drawOutline()
     imgCache = img;
 }
 
-void QFxTextPrivate::drawOutline(int yOffset)
+void QmlGraphicsTextPrivate::drawOutline(int yOffset)
 {
     QPixmap img = QPixmap(imgCache.size());
     img.fill(Qt::transparent);
@@ -574,9 +574,9 @@ void QFxTextPrivate::drawOutline(int yOffset)
     imgCache = img;
 }
 
-QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
+QSize QmlGraphicsTextPrivate::setupTextLayout(QTextLayout *layout)
 {
-    Q_Q(QFxText);
+    Q_Q(QmlGraphicsText);
     layout->setCacheEnabled(true);
 
     QFontMetrics fm = QFontMetrics(font);
@@ -586,7 +586,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     qreal lineWidth = 0;
 
     //set manual width
-    if ((wrap || elideMode != QFxText::ElideNone) && q->widthValid())
+    if ((wrap || elideMode != QmlGraphicsText::ElideNone) && q->widthValid())
         lineWidth = q->width();
 
     layout->beginLayout();
@@ -596,7 +596,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
         if (!line.isValid())
             break;
 
-        if ((wrap || elideMode != QFxText::ElideNone) && q->widthValid())
+        if ((wrap || elideMode != QmlGraphicsText::ElideNone) && q->widthValid())
             line.setLineWidth(lineWidth);
     }
     layout->endLayout();
@@ -610,7 +610,7 @@ QSize QFxTextPrivate::setupTextLayout(QTextLayout *layout)
     return QSize((int)widthUsed, height);
 }
 
-QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
+QPixmap QmlGraphicsTextPrivate::wrappedTextImage(bool drawStyle)
 {
     //do layout
     QSize size = cachedLayoutSize;
@@ -618,11 +618,11 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
     int x = 0;
     for (int i = 0; i < layout.lineCount(); ++i) {
         QTextLine line = layout.lineAt(i);
-        if (hAlign == QFxText::AlignLeft) {
+        if (hAlign == QmlGraphicsText::AlignLeft) {
             x = 0;
-        } else if (hAlign == QFxText::AlignRight) {
+        } else if (hAlign == QmlGraphicsText::AlignRight) {
             x = size.width() - (int)line.naturalTextWidth();
-        } else if (hAlign == QFxText::AlignHCenter) {
+        } else if (hAlign == QmlGraphicsText::AlignHCenter) {
             x = (size.width() - (int)line.naturalTextWidth()) / 2;
         }
         line.setPosition(QPoint(x, (int)line.y()));
@@ -644,7 +644,7 @@ QPixmap QFxTextPrivate::wrappedTextImage(bool drawStyle)
     return img;
 }
 
-QPixmap QFxTextPrivate::richTextImage(bool drawStyle)
+QPixmap QmlGraphicsTextPrivate::richTextImage(bool drawStyle)
 {
     QSize size = doc->size().toSize();
 
@@ -671,7 +671,7 @@ QPixmap QFxTextPrivate::richTextImage(bool drawStyle)
     return img;
 }
 
-void QFxTextPrivate::checkImgCache()
+void QmlGraphicsTextPrivate::checkImgCache()
 {
     if (!imgDirty)
         return;
@@ -682,22 +682,22 @@ void QFxTextPrivate::checkImgCache()
         imgStyleCache = QPixmap();
     } else if (richText) {
         imgCache = richTextImage(false);
-        if (style != QFxText::Normal)
+        if (style != QmlGraphicsText::Normal)
             imgStyleCache = richTextImage(true); //### should use styleColor
     } else {
         imgCache = wrappedTextImage(false);
-        if (style != QFxText::Normal)
+        if (style != QmlGraphicsText::Normal)
             imgStyleCache = wrappedTextImage(true); //### should use styleColor
     }
     if (!empty)
         switch (style) {
-        case QFxText::Outline:
+        case QmlGraphicsText::Outline:
             drawOutline();
             break;
-        case QFxText::Sunken:
+        case QmlGraphicsText::Sunken:
             drawOutline(-1);
             break;
-        case QFxText::Raised:
+        case QmlGraphicsText::Raised:
             drawOutline(1);
             break;
         default:
@@ -707,9 +707,9 @@ void QFxTextPrivate::checkImgCache()
     imgDirty = false;
 }
 
-void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
     d->checkImgCache();
     if (d->imgCache.isNull())
         return;
@@ -779,13 +779,13 @@ void QFxText::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
     filtering at the beginning of the animation and reenable it at the conclusion.
 */
 
-void QFxText::componentComplete()
+void QmlGraphicsText::componentComplete()
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::TextComponentComplete> cc;
+    QmlPerfTimer<QmlPerf::TextComponentComplete> cc;
 #endif
-    QFxItem::componentComplete();
+    QmlGraphicsItem::componentComplete();
     if (d->dirty) {
         d->updateSize();
         d->dirty = false;
@@ -796,9 +796,9 @@ void QFxText::componentComplete()
   \overload
   Handles the given mouse \a event.
  */
-void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsText::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
 
     if (!d->richText || !d->doc || d->control->anchorAt(event->pos()).isEmpty()) {
         event->setAccepted(false);
@@ -810,7 +810,7 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
     // ### may malfunction if two of the same links are clicked & dragged onto each other)
 
     if (!event->isAccepted())
-        QFxItem::mousePressEvent(event);
+        QmlGraphicsItem::mousePressEvent(event);
 
 }
 
@@ -824,9 +824,9 @@ void QFxText::mousePressEvent(QGraphicsSceneMouseEvent *event)
   \overload
   Handles the given mouse \a event.
  */
-void QFxText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void QmlGraphicsText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    Q_D(QFxText);
+    Q_D(QmlGraphicsText);
 
         // ### confirm the link, and send a signal out
     if (d->richText && d->doc && d->activeLink == d->control->anchorAt(event->pos()))
@@ -835,6 +835,6 @@ void QFxText::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->setAccepted(false);
 
     if (!event->isAccepted())
-        QFxItem::mouseReleaseEvent(event);
+        QmlGraphicsItem::mouseReleaseEvent(event);
 }
 QT_END_NAMESPACE

@@ -53,9 +53,9 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxBasePositionerPrivate;
+class QmlGraphicsBasePositionerPrivate;
 
-class Q_DECLARATIVE_EXPORT QFxBasePositioner : public QFxItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsBasePositioner : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -65,7 +65,7 @@ class Q_DECLARATIVE_EXPORT QFxBasePositioner : public QFxItem
     Q_PROPERTY(QmlTransition *remove READ remove WRITE setRemove)
 public:
     enum AutoUpdateType { None = 0x0, Horizontal = 0x1, Vertical = 0x2, Both = 0x3 };
-    QFxBasePositioner(AutoUpdateType, QFxItem *parent);
+    QmlGraphicsBasePositioner(AutoUpdateType, QmlGraphicsItem *parent);
 
     int spacing() const;
     void setSpacing(int);
@@ -83,12 +83,12 @@ protected:
     virtual void componentComplete();
     virtual QVariant itemChange(GraphicsItemChange, const QVariant &);
     virtual bool event(QEvent *);
-    QSet<QFxItem *>* newItems();
-    QSet<QFxItem *>* leavingItems();
-    QSet<QFxItem *>* items();
-    void applyAdd(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
-    void applyMove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
-    void applyRemove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target);
+    QSet<QmlGraphicsItem *>* newItems();
+    QSet<QmlGraphicsItem *>* leavingItems();
+    QSet<QmlGraphicsItem *>* items();
+    void applyAdd(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
+    void applyMove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
+    void applyRemove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target);
     void finishApplyTransitions();
 
 Q_SIGNALS:
@@ -102,45 +102,45 @@ private Q_SLOTS:
     void prePositioning();
 
 protected:
-    QFxBasePositioner(QFxBasePositionerPrivate &dd, AutoUpdateType at, QFxItem *parent);
-    void setMovingItem(QFxItem *);
+    QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent);
+    void setMovingItem(QmlGraphicsItem *);
 
 private:
-    void applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target,
+    void applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target,
             QmlStateOperation::ActionList &actions);
-    Q_DISABLE_COPY(QFxBasePositioner)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxBasePositioner)
+    Q_DISABLE_COPY(QmlGraphicsBasePositioner)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsBasePositioner)
 };
 
-class Q_DECLARATIVE_EXPORT QFxColumn : public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QmlGraphicsColumn : public QmlGraphicsBasePositioner
 {
     Q_OBJECT
 public:
-    QFxColumn(QFxItem *parent=0);
+    QmlGraphicsColumn(QmlGraphicsItem *parent=0);
 protected Q_SLOTS:
     virtual void doPositioning();
 private:
-    Q_DISABLE_COPY(QFxColumn)
+    Q_DISABLE_COPY(QmlGraphicsColumn)
 };
 
-class Q_DECLARATIVE_EXPORT QFxRow: public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QmlGraphicsRow: public QmlGraphicsBasePositioner
 {
     Q_OBJECT
 public:
-    QFxRow(QFxItem *parent=0);
+    QmlGraphicsRow(QmlGraphicsItem *parent=0);
 protected Q_SLOTS:
     virtual void doPositioning();
 private:
-    Q_DISABLE_COPY(QFxRow)
+    Q_DISABLE_COPY(QmlGraphicsRow)
 };
 
-class Q_DECLARATIVE_EXPORT QFxGrid : public QFxBasePositioner
+class Q_DECLARATIVE_EXPORT QmlGraphicsGrid : public QmlGraphicsBasePositioner
 {
     Q_OBJECT
     Q_PROPERTY(int rows READ rows WRITE setRows)
     Q_PROPERTY(int columns READ columns WRITE setcolumns)
 public:
-    QFxGrid(QFxItem *parent=0);
+    QmlGraphicsGrid(QmlGraphicsItem *parent=0);
 
     int rows() const {return _rows;}
     void setRows(const int rows){_rows = rows;}
@@ -153,14 +153,14 @@ protected Q_SLOTS:
 private:
     int _rows;
     int _columns;
-    Q_DISABLE_COPY(QFxGrid)
+    Q_DISABLE_COPY(QmlGraphicsGrid)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxColumn)
-QML_DECLARE_TYPE(QFxRow)
-QML_DECLARE_TYPE(QFxGrid)
+QML_DECLARE_TYPE(QmlGraphicsColumn)
+QML_DECLARE_TYPE(QmlGraphicsRow)
+QML_DECLARE_TYPE(QmlGraphicsGrid)
 
 QT_END_HEADER
 

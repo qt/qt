@@ -62,16 +62,16 @@ QT_BEGIN_NAMESPACE
 class QTextLayout;
 class QTextDocument;
 class QTextControl;
-class QFxTextEditPrivate : public QFxPaintedItemPrivate
+class QmlGraphicsTextEditPrivate : public QmlGraphicsPaintedItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxTextEdit)
+    Q_DECLARE_PUBLIC(QmlGraphicsTextEdit)
 
 public:
-    QFxTextEditPrivate()
-      : color("black"), imgDirty(true), hAlign(QFxTextEdit::AlignLeft), vAlign(QFxTextEdit::AlignTop),
+    QmlGraphicsTextEditPrivate()
+      : color("black"), imgDirty(true), hAlign(QmlGraphicsTextEdit::AlignLeft), vAlign(QmlGraphicsTextEdit::AlignTop),
       dirty(false), wrap(false), richText(false), cursorVisible(false), focusOnPress(false),
       persistentSelection(true), textMargin(0.0), lastSelectionStart(0), lastSelectionEnd(0),
-      cursorComponent(0), cursor(0), format(QFxTextEdit::AutoText), document(0)
+      cursorComponent(0), cursor(0), format(QmlGraphicsTextEdit::AutoText), document(0)
     {
     }
 
@@ -91,8 +91,8 @@ public:
     bool imgDirty;
     QPixmap imgCache;
     QPixmap imgStyleCache;
-    QFxTextEdit::HAlignment hAlign;
-    QFxTextEdit::VAlignment vAlign;
+    QmlGraphicsTextEdit::HAlignment hAlign;
+    QmlGraphicsTextEdit::VAlignment vAlign;
     bool dirty;
     bool wrap;
     bool richText;
@@ -103,8 +103,8 @@ public:
     int lastSelectionStart;
     int lastSelectionEnd;
     QmlComponent* cursorComponent;
-    QFxItem* cursor;
-    QFxTextEdit::TextFormat format;
+    QmlGraphicsItem* cursor;
+    QmlGraphicsTextEdit::TextFormat format;
     QTextDocument *document;
     QTextControl *control;
 };

@@ -53,26 +53,26 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxFlipablePrivate;
-class Q_DECLARATIVE_EXPORT QFxFlipable : public QFxItem
+class QmlGraphicsFlipablePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsFlipable : public QmlGraphicsItem
 {
     Q_OBJECT
 
     Q_ENUMS(Side)
-    Q_PROPERTY(QFxItem *front READ front WRITE setFront)
-    Q_PROPERTY(QFxItem *back READ back WRITE setBack)
+    Q_PROPERTY(QmlGraphicsItem *front READ front WRITE setFront)
+    Q_PROPERTY(QmlGraphicsItem *back READ back WRITE setBack)
     Q_PROPERTY(Side side READ side NOTIFY sideChanged)
     //### flipAxis
     //### flipRotation
 public:
-    QFxFlipable(QFxItem *parent=0);
-    ~QFxFlipable();
+    QmlGraphicsFlipable(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsFlipable();
 
-    QFxItem *front();
-    void setFront(QFxItem *);
+    QmlGraphicsItem *front();
+    void setFront(QmlGraphicsItem *);
 
-    QFxItem *back();
-    void setBack(QFxItem *);
+    QmlGraphicsItem *back();
+    void setBack(QmlGraphicsItem *);
 
     enum Side { Front, Back };
     Side side() const;
@@ -81,13 +81,13 @@ Q_SIGNALS:
     void sideChanged();
 
 private:
-    Q_DISABLE_COPY(QFxFlipable)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxFlipable)
+    Q_DISABLE_COPY(QmlGraphicsFlipable)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsFlipable)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxFlipable)
+QML_DECLARE_TYPE(QmlGraphicsFlipable)
 
 QT_END_HEADER
 

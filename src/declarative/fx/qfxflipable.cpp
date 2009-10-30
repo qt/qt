@@ -46,23 +46,23 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flipable,QFxFlipable)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flipable,QmlGraphicsFlipable)
 
-class QFxFlipablePrivate : public QFxItemPrivate
+class QmlGraphicsFlipablePrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxFlipable)
+    Q_DECLARE_PUBLIC(QmlGraphicsFlipable)
 public:
-    QFxFlipablePrivate() : current(QFxFlipable::Front), front(0), back(0) {}
+    QmlGraphicsFlipablePrivate() : current(QmlGraphicsFlipable::Front), front(0), back(0) {}
 
     void updateSceneTransformFromParent();
 
-    QFxFlipable::Side current;
-    QFxItem *front;
-    QFxItem *back;
+    QmlGraphicsFlipable::Side current;
+    QmlGraphicsItem *front;
+    QmlGraphicsItem *back;
 };
 
 /*!
-    \qmlclass Flipable QFxFlipable
+    \qmlclass Flipable QmlGraphicsFlipable
     \brief The Flipable item provides a surface that can be flipped.
     \inherits Item
 
@@ -107,21 +107,21 @@ public:
 
 /*!
     \internal
-    \class QFxFlipable
-    \brief The QFxFlipable class provides a flipable surface.
+    \class QmlGraphicsFlipable
+    \brief The QmlGraphicsFlipable class provides a flipable surface.
 
     \ingroup group_widgets
 
-    QFxFlipable allows you to specify a front and a back, as well as an
+    QmlGraphicsFlipable allows you to specify a front and a back, as well as an
     axis for the flip.
 */
 
-QFxFlipable::QFxFlipable(QFxItem *parent)
-: QFxItem(*(new QFxFlipablePrivate), parent)
+QmlGraphicsFlipable::QmlGraphicsFlipable(QmlGraphicsItem *parent)
+: QmlGraphicsItem(*(new QmlGraphicsFlipablePrivate), parent)
 {
 }
 
-QFxFlipable::~QFxFlipable()
+QmlGraphicsFlipable::~QmlGraphicsFlipable()
 {
 }
 
@@ -132,15 +132,15 @@ QFxFlipable::~QFxFlipable()
   The front and back sides of the flipable.
 */
 
-QFxItem *QFxFlipable::front()
+QmlGraphicsItem *QmlGraphicsFlipable::front()
 {
-    Q_D(const QFxFlipable);
+    Q_D(const QmlGraphicsFlipable);
     return d->front;
 }
 
-void QFxFlipable::setFront(QFxItem *front)
+void QmlGraphicsFlipable::setFront(QmlGraphicsItem *front)
 {
-    Q_D(QFxFlipable);
+    Q_D(QmlGraphicsFlipable);
     if (d->front) {
         qmlInfo(tr("front is a write-once property"),this);
         return;
@@ -151,15 +151,15 @@ void QFxFlipable::setFront(QFxItem *front)
         d->front->setOpacity(0.);
 }
 
-QFxItem *QFxFlipable::back()
+QmlGraphicsItem *QmlGraphicsFlipable::back()
 {
-    Q_D(const QFxFlipable);
+    Q_D(const QmlGraphicsFlipable);
     return d->back;
 }
 
-void QFxFlipable::setBack(QFxItem *back)
+void QmlGraphicsFlipable::setBack(QmlGraphicsItem *back)
 {
-    Q_D(QFxFlipable);
+    Q_D(QmlGraphicsFlipable);
     if (d->back) {
         qmlInfo(tr("back is a write-once property"),this);
         return;
@@ -176,11 +176,11 @@ void QFxFlipable::setBack(QFxItem *back)
   The side of the Flippable currently visible. Possible values are \c
   Front and \c Back.
 */
-QFxFlipable::Side QFxFlipable::side() const
+QmlGraphicsFlipable::Side QmlGraphicsFlipable::side() const
 {
-    Q_D(const QFxFlipable);
+    Q_D(const QmlGraphicsFlipable);
     if (d->dirtySceneTransform)
-        const_cast<QFxFlipablePrivate *>(d)->updateSceneTransformFromParent();
+        const_cast<QmlGraphicsFlipablePrivate *>(d)->updateSceneTransformFromParent();
 
     return d->current;
 }
@@ -188,11 +188,11 @@ QFxFlipable::Side QFxFlipable::side() const
 // determination on the currently visible side of the flipable
 // has to be done on the complete scene transform to give
 // correct results.
-void QFxFlipablePrivate::updateSceneTransformFromParent()
+void QmlGraphicsFlipablePrivate::updateSceneTransformFromParent()
 {
-    Q_Q(QFxFlipable);
+    Q_Q(QmlGraphicsFlipable);
 
-    QFxItemPrivate::updateSceneTransformFromParent();
+    QmlGraphicsItemPrivate::updateSceneTransformFromParent();
     QPointF p1(0, 0);
     QPointF p2(1, 0);
     QPointF p3(1, 1);
@@ -204,16 +204,16 @@ void QFxFlipablePrivate::updateSceneTransformFromParent()
     qreal cross = (p1.x() - p2.x()) * (p3.y() - p2.y()) -
                   (p1.y() - p2.y()) * (p3.x() - p2.x());
 
-    QFxFlipable::Side newSide;
+    QmlGraphicsFlipable::Side newSide;
     if (cross > 0) {
-       newSide = QFxFlipable::Back;
+       newSide = QmlGraphicsFlipable::Back;
     } else {
-        newSide = QFxFlipable::Front;
+        newSide = QmlGraphicsFlipable::Front;
     }
 
     if (newSide != current) {
         current = newSide;
-        if (current == QFxFlipable::Back) {
+        if (current == QmlGraphicsFlipable::Back) {
             QTransform mat;
             mat.translate(back->width()/2,back->height()/2);
             if (back->width() && p1.x() >= p2.x())
@@ -224,9 +224,9 @@ void QFxFlipablePrivate::updateSceneTransformFromParent()
             back->setTransform(mat);
         }
         if (front)
-            front->setOpacity((current==QFxFlipable::Front)?1.:0.);
+            front->setOpacity((current==QmlGraphicsFlipable::Front)?1.:0.);
         if (back)
-            back->setOpacity((current==QFxFlipable::Back)?1.:0.);
+            back->setOpacity((current==QmlGraphicsFlipable::Back)?1.:0.);
         emit q->sideChanged();
     }
 }

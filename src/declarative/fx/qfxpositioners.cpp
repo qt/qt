@@ -54,11 +54,11 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \internal
-    \class QFxBasePositioner
+    \class QmlGraphicsBasePositioner
     \ingroup group_layouts
-    \brief The QFxBasePositioner class provides a base for QFx layouts.
+    \brief The QmlGraphicsBasePositioner class provides a base for QmlGraphics layouts.
 
-    To create a QFx Positioner, simply subclass QFxBasePositioner and implement
+    To create a QmlGraphics Positioner, simply subclass QmlGraphicsBasePositioner and implement
     doLayout(), which is automatically called when the layout might need
     updating.
 
@@ -70,29 +70,29 @@ QT_BEGIN_NAMESPACE
     Note also that the subclass is responsible for adding the
     spacing in between items.
 */
-QFxBasePositioner::QFxBasePositioner(AutoUpdateType at, QFxItem *parent)
-    : QFxItem(*(new QFxBasePositionerPrivate), parent)
+QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(AutoUpdateType at, QmlGraphicsItem *parent)
+    : QmlGraphicsItem(*(new QmlGraphicsBasePositionerPrivate), parent)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->init(at);
 }
 
-QFxBasePositioner::QFxBasePositioner(QFxBasePositionerPrivate &dd, AutoUpdateType at, QFxItem *parent)
-    : QFxItem(dd, parent)
+QmlGraphicsBasePositioner::QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent)
+    : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->init(at);
 }
 
-int QFxBasePositioner::spacing() const
+int QmlGraphicsBasePositioner::spacing() const
 {
-    Q_D(const QFxBasePositioner);
+    Q_D(const QmlGraphicsBasePositioner);
     return d->_spacing;
 }
 
-void QFxBasePositioner::setSpacing(int s)
+void QmlGraphicsBasePositioner::setSpacing(int s)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     if (s==d->_spacing)
         return;
     d->_spacing = s;
@@ -100,52 +100,52 @@ void QFxBasePositioner::setSpacing(int s)
     emit spacingChanged();
 }
 
-QmlTransition *QFxBasePositioner::move() const
+QmlTransition *QmlGraphicsBasePositioner::move() const
 {
-    Q_D(const QFxBasePositioner);
+    Q_D(const QmlGraphicsBasePositioner);
     return d->moveTransition;
 }
 
-void QFxBasePositioner::setMove(QmlTransition *mt)
+void QmlGraphicsBasePositioner::setMove(QmlTransition *mt)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->moveTransition = mt;
 }
 
-QmlTransition *QFxBasePositioner::add() const
+QmlTransition *QmlGraphicsBasePositioner::add() const
 {
-    Q_D(const QFxBasePositioner);
+    Q_D(const QmlGraphicsBasePositioner);
     return d->addTransition;
 }
 
-void QFxBasePositioner::setAdd(QmlTransition *add)
+void QmlGraphicsBasePositioner::setAdd(QmlTransition *add)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->addTransition = add;
 }
 
-QmlTransition *QFxBasePositioner::remove() const
+QmlTransition *QmlGraphicsBasePositioner::remove() const
 {
-    Q_D(const QFxBasePositioner);
+    Q_D(const QmlGraphicsBasePositioner);
     return d->removeTransition;
 }
 
-void QFxBasePositioner::setRemove(QmlTransition *remove)
+void QmlGraphicsBasePositioner::setRemove(QmlTransition *remove)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->removeTransition = remove;
 }
 
-void QFxBasePositioner::componentComplete()
+void QmlGraphicsBasePositioner::componentComplete()
 {
-    QFxItem::componentComplete();
+    QmlGraphicsItem::componentComplete();
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BasepositionerComponentComplete> cc;
+    QmlPerfTimer<QmlPerf::BasepositionerComponentComplete> cc;
 #endif
     prePositioning();
 }
 
-QVariant QFxBasePositioner::itemChange(GraphicsItemChange change,
+QVariant QmlGraphicsBasePositioner::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
     if (change == ItemChildAddedChange ||
@@ -153,12 +153,12 @@ QVariant QFxBasePositioner::itemChange(GraphicsItemChange change,
         prePositioning();
     }
 
-    return QFxItem::itemChange(change, value);
+    return QmlGraphicsItem::itemChange(change, value);
 }
 
-bool QFxBasePositioner::event(QEvent *e)
+bool QmlGraphicsBasePositioner::event(QEvent *e)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     if (e->type() == QEvent::User) {
         d->_ep = false;
         d->_stableItems += d->_newItems;
@@ -166,25 +166,25 @@ bool QFxBasePositioner::event(QEvent *e)
         d->_newItems.clear();
         return true;
     }
-    return QFxItem::event(e);
+    return QmlGraphicsItem::event(e);
 }
 
 /*!
   Items that have just been added to the positioner. This includes invisible items
   that have turned visible.
 */
-QSet<QFxItem *>* QFxBasePositioner::newItems()
+QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::newItems()
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     return &d->_newItems;
 }
 
 /*!
   Items that are visible in the positioner, not including ones that have just been added.
 */
-QSet<QFxItem *>* QFxBasePositioner::items()
+QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::items()
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     return &d->_stableItems;
 }
 
@@ -192,15 +192,15 @@ QSet<QFxItem *>* QFxBasePositioner::items()
   Items that have just left the positioner. This includes visible items
   that have turned invisible.
 */
-QSet<QFxItem *>* QFxBasePositioner::leavingItems()
+QSet<QmlGraphicsItem *>* QmlGraphicsBasePositioner::leavingItems()
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     return &d->_leavingItems;
 }
 
-void QFxBasePositioner::prePositioning()
+void QmlGraphicsBasePositioner::prePositioning()
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     if (!isComponentComplete() || d->_movingItem)
         return;
 
@@ -208,10 +208,10 @@ void QFxBasePositioner::prePositioning()
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
-    QSet<QFxItem *> allItems;
+    QSet<QmlGraphicsItem *> allItems;
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child)
             continue;
         if (!d->_items.contains(child)){
@@ -235,8 +235,8 @@ void QFxBasePositioner::prePositioning()
         }
         allItems += child;
     }
-    QSet<QFxItem *> deletedItems = d->_items - allItems;
-    foreach(QFxItem *child, d->_items){
+    QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
+    foreach(QmlGraphicsItem *child, d->_items){
         if (!allItems.contains(child)){
             if (!deletedItems.contains(child)) {
                 QObject::disconnect(child, SIGNAL(opacityChanged()),
@@ -256,7 +256,7 @@ void QFxBasePositioner::prePositioning()
     //###To keep this valid, do we need to update on pos change as well?
     qreal h = 0.0f;
     qreal w = 0.0f;
-    foreach(QFxItem *child, d->_items){
+    foreach(QmlGraphicsItem *child, d->_items){
         if(!child->isVisible() || child->opacity() <= 0)
             continue;
         h = qMax(h, child->y() + child->height());
@@ -266,9 +266,9 @@ void QFxBasePositioner::prePositioning()
     setImplicitWidth(w);
 }
 
-void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& changes, QFxItem* target, QmlStateOperation::ActionList &actions)
+void QmlGraphicsBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target, QmlStateOperation::ActionList &actions)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     if (!target)
         return;
 
@@ -282,9 +282,9 @@ void QFxBasePositioner::applyTransition(const QList<QPair<QString, QVariant> >& 
     d->_animated << target;
 }
 
-void QFxBasePositioner::finishApplyTransitions()
+void QmlGraphicsBasePositioner::finishApplyTransitions()
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     // Note that if a transition is not set the transition manager will
     // apply the changes directly, in the case someone uses applyAdd/Move/Remove
     // without testing add()/move()/remove().
@@ -295,9 +295,9 @@ void QFxBasePositioner::finishApplyTransitions()
     d->moveActions.clear();
     d->removeActions.clear();
 }
-void QFxBasePositioner::setMovingItem(QFxItem *i)
+void QmlGraphicsBasePositioner::setMovingItem(QmlGraphicsItem *i)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     d->_movingItem = i;
 }
 
@@ -305,9 +305,9 @@ void QFxBasePositioner::setMovingItem(QFxItem *i)
   Applies the positioner's add transition to the \a target item.\a changes is a list of property,value
   pairs which will be changed on the target using the add transition.
 */
-void QFxBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
+void QmlGraphicsBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     applyTransition(changes,target, d->addActions);
 }
 
@@ -315,9 +315,9 @@ void QFxBasePositioner::applyAdd(const QList<QPair<QString, QVariant> >& changes
   Applies the positioner's move transition to the \a target.\a changes is a list of property,value pairs
   which will be changed on the target using the move transition.
 */
-void QFxBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
+void QmlGraphicsBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     applyTransition(changes,target, d->moveActions);
 }
 
@@ -325,13 +325,13 @@ void QFxBasePositioner::applyMove(const QList<QPair<QString, QVariant> >& change
   Applies the positioner's remove transition to the \a target item.\a changes is a list of
   property,value pairs which will be changed on the target using the remove transition.
 */
-void QFxBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& changes, QFxItem* target)
+void QmlGraphicsBasePositioner::applyRemove(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target)
 {
-    Q_D(QFxBasePositioner);
+    Q_D(QmlGraphicsBasePositioner);
     applyTransition(changes,target, d->removeActions);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QFxColumn)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QmlGraphicsColumn)
 /*!
   \qmlclass Column
   \brief The Column item lines up its children vertically.
@@ -472,20 +472,20 @@ Column {
 */
 /*!
     \internal
-    \class QFxColumn
-    \brief The QFxColumn class lines up items vertically.
+    \class QmlGraphicsColumn
+    \brief The QmlGraphicsColumn class lines up items vertically.
     \ingroup group_positioners
 */
-QFxColumn::QFxColumn(QFxItem *parent)
-: QFxBasePositioner(Vertical, parent)
+QmlGraphicsColumn::QmlGraphicsColumn(QmlGraphicsItem *parent)
+: QmlGraphicsBasePositioner(Vertical, parent)
 {
 }
 
-void QFxColumn::doPositioning()
+void QmlGraphicsColumn::doPositioning()
 {
     int voffset = 0;
 
-    foreach(QFxItem* item, *leavingItems()){
+    foreach(QmlGraphicsItem* item, *leavingItems()){
         if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
@@ -494,7 +494,7 @@ void QFxColumn::doPositioning()
 
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child || child->opacity() == 0.0)
             continue;
 
@@ -517,7 +517,7 @@ void QFxColumn::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QFxRow)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QmlGraphicsRow)
 /*!
   \qmlclass Row
   \brief The Row item lines up its children horizontally.
@@ -629,20 +629,20 @@ Row {
 */
 /*!
     \internal
-    \class QFxRow
-    \brief The QFxRow class lines up items horizontally.
+    \class QmlGraphicsRow
+    \brief The QmlGraphicsRow class lines up items horizontally.
     \ingroup group_positioners
 */
-QFxRow::QFxRow(QFxItem *parent)
-: QFxBasePositioner(Horizontal, parent)
+QmlGraphicsRow::QmlGraphicsRow(QmlGraphicsItem *parent)
+: QmlGraphicsBasePositioner(Horizontal, parent)
 {
 }
 
-void QFxRow::doPositioning()
+void QmlGraphicsRow::doPositioning()
 {
     int hoffset = 0;
 
-    foreach(QFxItem* item, *leavingItems()){
+    foreach(QmlGraphicsItem* item, *leavingItems()){
         if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
@@ -650,7 +650,7 @@ void QFxRow::doPositioning()
     }
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
-        QFxItem *child = qobject_cast<QFxItem *>(children.at(ii));
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child || child->opacity() == 0.0)
             continue;
 
@@ -675,10 +675,10 @@ void QFxRow::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grid,QFxGrid)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grid,QmlGraphicsGrid)
 
 /*!
-  \qmlclass Grid QFxGrid
+  \qmlclass Grid QmlGraphicsGrid
   \brief The Grid item positions its children in a grid.
   \inherits Item
 
@@ -810,13 +810,13 @@ Grid {
 */
 /*!
     \internal
-    \class QFxGrid
-    \brief The QFxGrid class lays out items in a grid.
+    \class QmlGraphicsGrid
+    \brief The QmlGraphicsGrid class lays out items in a grid.
     \ingroup group_layouts
 
 */
-QFxGrid::QFxGrid(QFxItem *parent) :
-    QFxBasePositioner(Both, parent)
+QmlGraphicsGrid::QmlGraphicsGrid(QmlGraphicsItem *parent) :
+    QmlGraphicsBasePositioner(Both, parent)
 {
     _columns=-1;
     _rows=-1;
@@ -840,7 +840,7 @@ QFxGrid::QFxGrid(QFxItem *parent) :
     many rows some rows will be of zero width.
 */
 
-void QFxGrid::doPositioning()
+void QmlGraphicsGrid::doPositioning()
 {
     int c=_columns,r=_rows;//Actual number of rows/columns
     int numVisible = items()->size() + newItems()->size();
@@ -866,7 +866,7 @@ void QFxGrid::doPositioning()
 
             if (childIndex == children.count())
                 continue;
-            QFxItem *child = qobject_cast<QFxItem *>(children.at(childIndex++));
+            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(childIndex++));
             if (!child || child->opacity() == 0.0)
                 continue;
             if (child->width() > maxColWidth[j])
@@ -880,14 +880,14 @@ void QFxGrid::doPositioning()
     int yoffset=0;
     int curRow =0;
     int curCol =0;
-    foreach(QFxItem* item, *leavingItems()){
+    foreach(QmlGraphicsItem* item, *leavingItems()){
         if (remove()){
             QList<QPair<QString,QVariant> > changes;
             applyRemove(changes, item);
         }
     }
     foreach(QGraphicsItem* schild, children){
-        QFxItem *child = qobject_cast<QFxItem *>(schild);
+        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(schild);
         if (!child || child->opacity() == 0.0)
             continue;
         bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);

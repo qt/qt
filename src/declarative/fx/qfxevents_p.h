@@ -60,7 +60,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxKeyEvent : public QObject
+class QmlGraphicsKeyEvent : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int key READ key)
@@ -71,9 +71,9 @@ class QFxKeyEvent : public QObject
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
 
 public:
-    QFxKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers, const QString &text=QString(), bool autorep=false, ushort count=1)
+    QmlGraphicsKeyEvent(QEvent::Type type, int key, Qt::KeyboardModifiers modifiers, const QString &text=QString(), bool autorep=false, ushort count=1)
         : event(type, key, modifiers, text, autorep, count) { event.setAccepted(false); }
-    QFxKeyEvent(const QKeyEvent &ke)
+    QmlGraphicsKeyEvent(const QKeyEvent &ke)
         : event(ke) { event.setAccepted(false); }
 
     int key() const { return event.key(); }
@@ -89,7 +89,7 @@ private:
     QKeyEvent event;
 };
 
-class QFxMouseEvent : public QObject
+class QmlGraphicsMouseEvent : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int x READ x)
@@ -102,7 +102,7 @@ class QFxMouseEvent : public QObject
     Q_PROPERTY(bool accepted READ isAccepted WRITE setAccepted)
 
 public:
-    QFxMouseEvent(int x, int y, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers
+    QmlGraphicsMouseEvent(int x, int y, Qt::MouseButton button, Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers
                   , bool isClick=false, bool wasHeld=false)
         : _x(x), _y(y), _button(button), _buttons(buttons), _modifiers(modifiers)
           , _wasHeld(wasHeld), _isClick(isClick), _accepted(true) {}
@@ -131,7 +131,7 @@ private:
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxKeyEvent)
-QML_DECLARE_TYPE(QFxMouseEvent)
+QML_DECLARE_TYPE(QmlGraphicsKeyEvent)
+QML_DECLARE_TYPE(QmlGraphicsMouseEvent)
 
 #endif // QFXEVENTS_P_H

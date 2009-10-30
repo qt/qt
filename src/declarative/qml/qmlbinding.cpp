@@ -138,7 +138,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
     Q_D(QmlBinding);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
+    QmlPerfTimer<QmlPerf::BindableValueUpdate> bu;
 #endif
     QmlBindingData *data = d->bindingData();
 

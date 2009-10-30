@@ -53,23 +53,23 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class Q_DECLARATIVE_EXPORT QFxPathElement : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathElement : public QObject
 {
     Q_OBJECT
 public:
-    QFxPathElement(QObject *parent=0) : QObject(parent) {}
+    QmlGraphicsPathElement(QObject *parent=0) : QObject(parent) {}
 Q_SIGNALS:
     void changed();
 };
 
-class Q_DECLARATIVE_EXPORT QFxPathAttribute : public QFxPathElement
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathAttribute : public QmlGraphicsPathElement
 {
     Q_OBJECT
 
     Q_PROPERTY(QString name READ name WRITE setName)
     Q_PROPERTY(qreal value READ value WRITE setValue NOTIFY changed)
 public:
-    QFxPathAttribute(QObject *parent=0) : QFxPathElement(parent), _value(0) {}
+    QmlGraphicsPathAttribute(QObject *parent=0) : QmlGraphicsPathElement(parent), _value(0) {}
 
 
     QString name() const;
@@ -83,14 +83,14 @@ private:
     qreal _value;
 };
 
-class Q_DECLARATIVE_EXPORT QFxCurve : public QFxPathElement
+class Q_DECLARATIVE_EXPORT QmlGraphicsCurve : public QmlGraphicsPathElement
 {
     Q_OBJECT
 
     Q_PROPERTY(qreal x READ x WRITE setX NOTIFY changed)
     Q_PROPERTY(qreal y READ y WRITE setY NOTIFY changed)
 public:
-    QFxCurve(QObject *parent=0) : QFxPathElement(parent), _x(0), _y(0) {}
+    QmlGraphicsCurve(QObject *parent=0) : QmlGraphicsPathElement(parent), _x(0), _y(0) {}
 
     qreal x() const;
     void setX(qreal x);
@@ -105,23 +105,23 @@ private:
     qreal _y;
 };
 
-class Q_DECLARATIVE_EXPORT QFxPathLine : public QFxCurve
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathLine : public QmlGraphicsCurve
 {
     Q_OBJECT
 public:
-    QFxPathLine(QObject *parent=0) : QFxCurve(parent) {}
+    QmlGraphicsPathLine(QObject *parent=0) : QmlGraphicsCurve(parent) {}
 
     void addToPath(QPainterPath &path);
 };
 
-class Q_DECLARATIVE_EXPORT QFxPathQuad : public QFxCurve
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathQuad : public QmlGraphicsCurve
 {
     Q_OBJECT
 
     Q_PROPERTY(qreal controlX READ controlX WRITE setControlX NOTIFY changed)
     Q_PROPERTY(qreal controlY READ controlY WRITE setControlY NOTIFY changed)
 public:
-    QFxPathQuad(QObject *parent=0) : QFxCurve(parent), _controlX(0), _controlY(0) {}
+    QmlGraphicsPathQuad(QObject *parent=0) : QmlGraphicsCurve(parent), _controlX(0), _controlY(0) {}
 
     qreal controlX() const;
     void setControlX(qreal x);
@@ -136,7 +136,7 @@ private:
     qreal _controlY;
 };
 
-class Q_DECLARATIVE_EXPORT QFxPathCubic : public QFxCurve
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathCubic : public QmlGraphicsCurve
 {
     Q_OBJECT
 
@@ -145,7 +145,7 @@ class Q_DECLARATIVE_EXPORT QFxPathCubic : public QFxCurve
     Q_PROPERTY(qreal control2X READ control2X WRITE setControl2X NOTIFY changed)
     Q_PROPERTY(qreal control2Y READ control2Y WRITE setControl2Y NOTIFY changed)
 public:
-    QFxPathCubic(QObject *parent=0) : QFxCurve(parent), _control1X(0), _control1Y(0), _control2X(0), _control2Y(0) {}
+    QmlGraphicsPathCubic(QObject *parent=0) : QmlGraphicsCurve(parent), _control1X(0), _control1Y(0), _control2X(0), _control2Y(0) {}
 
     qreal control1X() const;
     void setControl1X(qreal x);
@@ -168,12 +168,12 @@ private:
     int _control2Y;
 };
 
-class Q_DECLARATIVE_EXPORT QFxPathPercent : public QFxPathElement
+class Q_DECLARATIVE_EXPORT QmlGraphicsPathPercent : public QmlGraphicsPathElement
 {
     Q_OBJECT
     Q_PROPERTY(qreal value READ value WRITE setValue)
 public:
-    QFxPathPercent(QObject *parent=0) : QFxPathElement(parent) {}
+    QmlGraphicsPathPercent(QObject *parent=0) : QmlGraphicsPathElement(parent) {}
 
     qreal value() const;
     void setValue(qreal value);
@@ -182,22 +182,22 @@ private:
     qreal _value;
 };
 
-class QFxPathPrivate;
-class Q_DECLARATIVE_EXPORT QFxPath : public QObject, public QmlParserStatus
+class QmlGraphicsPathPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsPath : public QObject, public QmlParserStatus
 {
     Q_OBJECT
 
     Q_INTERFACES(QmlParserStatus)
-    Q_PROPERTY(QList<QFxPathElement *>* pathElements READ pathElements)
+    Q_PROPERTY(QList<QmlGraphicsPathElement *>* pathElements READ pathElements)
     Q_PROPERTY(qreal startX READ startX WRITE setStartX)
     Q_PROPERTY(qreal startY READ startY WRITE setStartY)
     Q_CLASSINFO("DefaultProperty", "pathElements")
     Q_INTERFACES(QmlParserStatus)
 public:
-    QFxPath(QObject *parent=0);
-    ~QFxPath();
+    QmlGraphicsPath(QObject *parent=0);
+    ~QmlGraphicsPath();
 
-    QList<QFxPathElement *>* pathElements();
+    QList<QmlGraphicsPathElement *>* pathElements();
 
     qreal startX() const;
     void setStartX(qreal x);
@@ -215,7 +215,7 @@ Q_SIGNALS:
 
 protected:
     virtual void componentComplete();
-    QFxPath(QFxPathPrivate &dd, QObject *parent);
+    QmlGraphicsPath(QmlGraphicsPathPrivate &dd, QObject *parent);
 
 private Q_SLOTS:
     void processPath();
@@ -239,20 +239,20 @@ private:
     void createPointCache() const;
 
 private:
-    Q_DISABLE_COPY(QFxPath)
-    Q_DECLARE_PRIVATE(QFxPath)
+    Q_DISABLE_COPY(QmlGraphicsPath)
+    Q_DECLARE_PRIVATE(QmlGraphicsPath)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxPathElement)
-QML_DECLARE_TYPE(QFxPathAttribute)
-QML_DECLARE_TYPE(QFxCurve)
-QML_DECLARE_TYPE(QFxPathLine)
-QML_DECLARE_TYPE(QFxPathQuad)
-QML_DECLARE_TYPE(QFxPathCubic)
-QML_DECLARE_TYPE(QFxPathPercent)
-QML_DECLARE_TYPE(QFxPath)
+QML_DECLARE_TYPE(QmlGraphicsPathElement)
+QML_DECLARE_TYPE(QmlGraphicsPathAttribute)
+QML_DECLARE_TYPE(QmlGraphicsCurve)
+QML_DECLARE_TYPE(QmlGraphicsPathLine)
+QML_DECLARE_TYPE(QmlGraphicsPathQuad)
+QML_DECLARE_TYPE(QmlGraphicsPathCubic)
+QML_DECLARE_TYPE(QmlGraphicsPathPercent)
+QML_DECLARE_TYPE(QmlGraphicsPath)
 
 QT_END_HEADER
 

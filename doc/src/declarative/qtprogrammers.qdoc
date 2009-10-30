@@ -84,14 +84,14 @@ QML Items also serve these purposes. Each is considered separately below.
 
 \section2 Simple Widgets
 
-The most important rule to remember while implementing a new QFxItem in C++
+The most important rule to remember while implementing a new QmlGraphicsItem in C++
 is that it should not contain any look and feel policies - leave that to the
 QML usage of the item.
 
 As an example, imagine you wanted a reusable Button item. If you therefore
-decided to write a QFxItem subclass to implement a button,
+decided to write a QmlGraphicsItem subclass to implement a button,
 just as QToolButton subclasses QWidget for this purpose, following the rule above, your
-\c QFxButton would not have any appearance - just the notions of enabled, triggering, etc.
+\c QmlGraphicsButton would not have any appearance - just the notions of enabled, triggering, etc.
 
 But there is already an object in Qt that does this: QAction.
 
@@ -103,8 +103,8 @@ The look and feel of an action - the appearance of the button, the transition be
 and exactly how it respond to mouse, key, or touch input, should all be left for definition
 in QML.
 
-It is illustrative to note that QFxTextEdit is built upon QTextControl,
-QFxWebView is built upon QWebPage, and ListView uses QListModelInterface,
+It is illustrative to note that QmlGraphicsTextEdit is built upon QTextControl,
+QmlGraphicsWebView is built upon QWebPage, and ListView uses QListModelInterface,
 just as QTextEdit, QWebView, and QListView are built upon
 those same UI-agnostic components.
 

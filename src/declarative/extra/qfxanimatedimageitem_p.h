@@ -60,12 +60,12 @@ QT_BEGIN_NAMESPACE
 class QMovie;
 class QNetworkReply;
 
-class QFxAnimatedImageItemPrivate : public QFxImagePrivate
+class QmlGraphicsAnimatedImageItemPrivate : public QmlGraphicsImagePrivate
 {
-    Q_DECLARE_PUBLIC(QFxAnimatedImageItem)
+    Q_DECLARE_PUBLIC(QmlGraphicsAnimatedImageItem)
 
 public:
-    QFxAnimatedImageItemPrivate()
+    QmlGraphicsAnimatedImageItemPrivate()
       : playing(true), paused(false), _movie(0), reply(0)
     {
     }

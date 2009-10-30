@@ -47,19 +47,19 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxGraphicsObjectContainerPrivate : public QFxItemPrivate
+class QmlGraphicsGraphicsObjectContainerPrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QFxGraphicsObjectContainer)
+    Q_DECLARE_PUBLIC(QmlGraphicsGraphicsObjectContainer)
 
 public:
-    QFxGraphicsObjectContainerPrivate() : QFxItemPrivate(), graphicsObject(0), syncedResize(false)
+    QmlGraphicsGraphicsObjectContainerPrivate() : QmlGraphicsItemPrivate(), graphicsObject(0), syncedResize(false)
     { }
 
     void _q_updateSize();
 
     void setFiltering(bool on)
     {
-        Q_Q(QFxGraphicsObjectContainer);
+        Q_Q(QmlGraphicsGraphicsObjectContainer);
         if (graphicsObject && graphicsObject->isWidget()) {
             if (!on) {
                 graphicsObject->removeEventFilter(q);
@@ -80,31 +80,31 @@ public:
 
 
 /*!
-    \qmlclass GraphicsObjectContainer QFxGraphicsObjectContainer
+    \qmlclass GraphicsObjectContainer QmlGraphicsGraphicsObjectContainer
     \brief The GraphicsObjectContainer element allows you to add QGraphicsObjects into Fluid UI elements.
 */
 
 /*!
     \internal
-    \class QFxGraphicsObjectContainer
-    \brief The QFxGraphicsObjectContainer class allows you to add QGraphicsObjects into Fluid UI applications.
+    \class QmlGraphicsGraphicsObjectContainer
+    \brief The QmlGraphicsGraphicsObjectContainer class allows you to add QGraphicsObjects into Fluid UI applications.
 */
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GraphicsObjectContainer,QFxGraphicsObjectContainer)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GraphicsObjectContainer,QmlGraphicsGraphicsObjectContainer)
 
-QFxGraphicsObjectContainer::QFxGraphicsObjectContainer(QFxItem *parent)
-: QFxItem(*new QFxGraphicsObjectContainerPrivate, parent)
+QmlGraphicsGraphicsObjectContainer::QmlGraphicsGraphicsObjectContainer(QmlGraphicsItem *parent)
+: QmlGraphicsItem(*new QmlGraphicsGraphicsObjectContainerPrivate, parent)
 {
 }
 
-QFxGraphicsObjectContainer::~QFxGraphicsObjectContainer()
+QmlGraphicsGraphicsObjectContainer::~QmlGraphicsGraphicsObjectContainer()
 {
 }
 
-QGraphicsObject *QFxGraphicsObjectContainer::graphicsObject() const
+QGraphicsObject *QmlGraphicsGraphicsObjectContainer::graphicsObject() const
 {
-    Q_D(const QFxGraphicsObjectContainer);
+    Q_D(const QmlGraphicsGraphicsObjectContainer);
     return d->graphicsObject;
 }
 
@@ -112,9 +112,9 @@ QGraphicsObject *QFxGraphicsObjectContainer::graphicsObject() const
     \qmlproperty QGraphicsObject GraphicsObjectContainer::graphicsObject
     The QGraphicsObject associated with this element.
 */
-void QFxGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
+void QmlGraphicsGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
 {
-    Q_D(QFxGraphicsObjectContainer);
+    Q_D(QmlGraphicsGraphicsObjectContainer);
     if (object == d->graphicsObject)
         return;
 
@@ -147,20 +147,20 @@ void QFxGraphicsObjectContainer::setGraphicsObject(QGraphicsObject *object)
     }
 }
 
-QVariant QFxGraphicsObjectContainer::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant QmlGraphicsGraphicsObjectContainer::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    Q_D(QFxGraphicsObjectContainer);
+    Q_D(QmlGraphicsGraphicsObjectContainer);
     if (change == ItemSceneHasChanged) {
         QGraphicsObject *o = d->graphicsObject;
         d->graphicsObject = 0;
         setGraphicsObject(o);
     }
-    return QFxItem::itemChange(change, value);
+    return QmlGraphicsItem::itemChange(change, value);
 }
 
-bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
+bool QmlGraphicsGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
 {
-    Q_D(QFxGraphicsObjectContainer);
+    Q_D(QmlGraphicsGraphicsObjectContainer);
     if (watched == d->graphicsObject && e->type() == QEvent::GraphicsSceneResize) {
         if (d->graphicsObject && d->graphicsObject->isWidget() && d->syncedResize) {
            QSizeF newSize = static_cast<QGraphicsWidget*>(d->graphicsObject)->size();
@@ -168,7 +168,7 @@ bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
            setImplicitHeight(newSize.height());
        }
     }
-    return QFxItem::eventFilter(watched, e);
+    return QmlGraphicsItem::eventFilter(watched, e);
 }
 
 /*!
@@ -190,15 +190,15 @@ bool QFxGraphicsObjectContainer::eventFilter(QObject *watched, QEvent *e)
     widget's size will be reflected in the container.
     \endlist
 */
-bool QFxGraphicsObjectContainer::synchronizedResizing() const
+bool QmlGraphicsGraphicsObjectContainer::synchronizedResizing() const
 {
-    Q_D(const QFxGraphicsObjectContainer);
+    Q_D(const QmlGraphicsGraphicsObjectContainer);
     return d->syncedResize;
 }
 
-void QFxGraphicsObjectContainer::setSynchronizedResizing(bool on)
+void QmlGraphicsGraphicsObjectContainer::setSynchronizedResizing(bool on)
 {
-    Q_D(QFxGraphicsObjectContainer);
+    Q_D(QmlGraphicsGraphicsObjectContainer);
     if (on == d->syncedResize)
         return;
 
@@ -206,7 +206,7 @@ void QFxGraphicsObjectContainer::setSynchronizedResizing(bool on)
     d->setFiltering(on);
 }
 
-void QFxGraphicsObjectContainerPrivate::_q_updateSize()
+void QmlGraphicsGraphicsObjectContainerPrivate::_q_updateSize()
 {
     if (!graphicsObject || !graphicsObject->isWidget() || !syncedResize)
         return;

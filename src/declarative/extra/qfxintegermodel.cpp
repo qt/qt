@@ -43,53 +43,53 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,IntegerModel,QFxIntegerModel)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,IntegerModel,QmlGraphicsIntegerModel)
 
-class QFxIntegerModelPrivate
+class QmlGraphicsIntegerModelPrivate
 {
 public:
-    QFxIntegerModelPrivate() : minimum(0), maximum(0) {}
+    QmlGraphicsIntegerModelPrivate() : minimum(0), maximum(0) {}
     int minimum;
     int maximum;
 };
 
-QFxIntegerModel::QFxIntegerModel(QObject *parent)
+QmlGraphicsIntegerModel::QmlGraphicsIntegerModel(QObject *parent)
     : QListModelInterface(parent)
 {
-    d = new QFxIntegerModelPrivate;
+    d = new QmlGraphicsIntegerModelPrivate;
 }
 
-QFxIntegerModel::~QFxIntegerModel()
+QmlGraphicsIntegerModel::~QmlGraphicsIntegerModel()
 {
     delete d;
 }
 
-int QFxIntegerModel::minimum() const
+int QmlGraphicsIntegerModel::minimum() const
 {
     return d->minimum;
 }
 
-void QFxIntegerModel::setMinimum(int minimum)
+void QmlGraphicsIntegerModel::setMinimum(int minimum)
 {
     d->minimum = minimum;
 }
 
-int QFxIntegerModel::maximum() const
+int QmlGraphicsIntegerModel::maximum() const
 {
     return d->maximum;
 }
 
-void QFxIntegerModel::setMaximum(int maximum)
+void QmlGraphicsIntegerModel::setMaximum(int maximum)
 {
     d->maximum = maximum;
 }
 
-int QFxIntegerModel::count() const
+int QmlGraphicsIntegerModel::count() const
 {
     return qMax(0, d->maximum - d->minimum + 1);
 }
 
-QHash<int,QVariant> QFxIntegerModel::data(int index, const QList<int> &roles) const
+QHash<int,QVariant> QmlGraphicsIntegerModel::data(int index, const QList<int> &roles) const
 {
     QHash<int,QVariant> returnHash;
 
@@ -108,7 +108,7 @@ QHash<int,QVariant> QFxIntegerModel::data(int index, const QList<int> &roles) co
     return returnHash;
 }
 
-QString QFxIntegerModel::toString(int role) const
+QString QmlGraphicsIntegerModel::toString(int role) const
 {
     switch(role) {
     case Qt::DisplayRole:
@@ -118,7 +118,7 @@ QString QFxIntegerModel::toString(int role) const
     }
 }
 
-QList<int> QFxIntegerModel::roles() const
+QList<int> QmlGraphicsIntegerModel::roles() const
 {
     return QList<int>() << Qt::DisplayRole;
 }

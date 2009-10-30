@@ -46,14 +46,14 @@
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pen,QFxPen)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GradientStop,QFxGradientStop)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pen,QmlGraphicsPen)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GradientStop,QmlGraphicsGradientStop)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QmlGraphicsGradient)
 
 /*!
     \internal
-    \class QFxPen
-    \brief The QFxPen class provides a pen used for drawing rectangle borders on a QmlView.
+    \class QmlGraphicsPen
+    \brief The QmlGraphicsPen class provides a pen used for drawing rectangle borders on a QmlView.
 
     By default, the pen is invalid and nothing is drawn. You must either set a color (then the default
     width is 1) or a width (then the default color is black).
@@ -66,14 +66,14 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QFxGradient)
     \endqml
 */
 
-void QFxPen::setColor(const QColor &c)
+void QmlGraphicsPen::setColor(const QColor &c)
 {
     _color = c;
     _valid = _color.alpha() ? true : false;
     emit penChanged();
 }
 
-void QFxPen::setWidth(int w)
+void QmlGraphicsPen::setWidth(int w)
 {
     if (_width == w && _valid)
         return;
@@ -85,7 +85,7 @@ void QFxPen::setWidth(int w)
 
 
 /*!
-    \qmlclass GradientStop QFxGradientStop
+    \qmlclass GradientStop QmlGraphicsGradientStop
     \brief The GradientStop item defines the color at a position in a Gradient
 
     \sa Gradient
@@ -98,14 +98,14 @@ void QFxPen::setWidth(int w)
     Sets a \e color at a \e position in a gradient.
 */
 
-void QFxGradientStop::updateGradient()
+void QmlGraphicsGradientStop::updateGradient()
 {
-    if (QFxGradient *grad = qobject_cast<QFxGradient*>(parent()))
+    if (QmlGraphicsGradient *grad = qobject_cast<QmlGraphicsGradient*>(parent()))
         grad->doUpdate();
 }
 
 /*!
-    \qmlclass Gradient QFxGradient
+    \qmlclass Gradient QmlGraphicsGradient
     \brief The Gradient item defines a gradient fill.
 
     A gradient is defined by two or more colors, which will be blended seemlessly.  The
@@ -128,12 +128,12 @@ void QFxGradientStop::updateGradient()
     This property holds the gradient stops describing the gradient.
 */
 
-const QGradient *QFxGradient::gradient() const
+const QGradient *QmlGraphicsGradient::gradient() const
 {
     if (!m_gradient && !m_stops.isEmpty()) {
         m_gradient = new QLinearGradient(0,0,0,1.0);
         for (int i = 0; i < m_stops.count(); ++i) {
-            const QFxGradientStop *stop = m_stops.at(i);
+            const QmlGraphicsGradientStop *stop = m_stops.at(i);
             m_gradient->setCoordinateMode(QGradient::ObjectBoundingMode);
             m_gradient->setColorAt(stop->position(), stop->color());
         }
@@ -142,17 +142,17 @@ const QGradient *QFxGradient::gradient() const
     return m_gradient;
 }
 
-void QFxGradient::doUpdate()
+void QmlGraphicsGradient::doUpdate()
 {
     delete m_gradient;
     m_gradient = 0;
     emit updated();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QFxRect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QmlGraphicsRect)
 
 /*!
-    \qmlclass Rectangle QFxRect
+    \qmlclass Rectangle QmlGraphicsRect
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 
@@ -175,28 +175,28 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QFxRect)
 
 /*!
     \internal
-    \class QFxRect
-    \brief The QFxRect class provides a rectangle item that you can add to a QmlView.
+    \class QmlGraphicsRect
+    \brief The QmlGraphicsRect class provides a rectangle item that you can add to a QmlView.
 */
-QFxRect::QFxRect(QFxItem *parent)
-  : QFxItem(*(new QFxRectPrivate), parent)
+QmlGraphicsRect::QmlGraphicsRect(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsRectPrivate), parent)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     d->init();
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QFxRect::QFxRect(QFxRectPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsRect::QmlGraphicsRect(QmlGraphicsRectPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     d->init();
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-void QFxRect::doUpdate()
+void QmlGraphicsRect::doUpdate()
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     d->rectImage = QPixmap();
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
     d->setPaintMargin((pw+1)/2);
@@ -214,9 +214,9 @@ void QFxRect::doUpdate()
     To keep the border smooth (rather than blurry), odd widths cause the rectangle to be painted at
     a half-pixel offset;
 */
-QFxPen *QFxRect::border()
+QmlGraphicsPen *QmlGraphicsRect::border()
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     return d->getPen();
 }
 
@@ -254,15 +254,15 @@ QFxPen *QFxRect::border()
 
     \sa Gradient, color
 */
-QFxGradient *QFxRect::gradient() const
+QmlGraphicsGradient *QmlGraphicsRect::gradient() const
 {
-    Q_D(const QFxRect);
+    Q_D(const QmlGraphicsRect);
     return d->gradient;
 }
 
-void QFxRect::setGradient(QFxGradient *gradient)
+void QmlGraphicsRect::setGradient(QmlGraphicsGradient *gradient)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->gradient == gradient)
         return;
     if (d->gradient)
@@ -282,15 +282,15 @@ void QFxRect::setGradient(QFxGradient *gradient)
     painted as a normal rectangle. The same radius is used by all 4 corners; there is currently
     no way to specify different radii for different corners.
 */
-qreal QFxRect::radius() const
+qreal QmlGraphicsRect::radius() const
 {
-    Q_D(const QFxRect);
+    Q_D(const QmlGraphicsRect);
     return d->radius;
 }
 
-void QFxRect::setRadius(qreal radius)
+void QmlGraphicsRect::setRadius(qreal radius)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->radius == radius)
         return;
 
@@ -316,15 +316,15 @@ void QFxRect::setRadius(qreal radius)
 
     If both a gradient and a color are specified, the gradient will be used.
 */
-QColor QFxRect::color() const
+QColor QmlGraphicsRect::color() const
 {
-    Q_D(const QFxRect);
+    Q_D(const QmlGraphicsRect);
     return d->color;
 }
 
-void QFxRect::setColor(const QColor &c)
+void QmlGraphicsRect::setColor(const QColor &c)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->color == c)
         return;
 
@@ -334,9 +334,9 @@ void QFxRect::setColor(const QColor &c)
     emit colorChanged();
 }
 
-void QFxRect::generateRoundedRect()
+void QmlGraphicsRect::generateRoundedRect()
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
@@ -358,9 +358,9 @@ void QFxRect::generateRoundedRect()
     }
 }
 
-void QFxRect::generateBorderedRect()
+void QmlGraphicsRect::generateBorderedRect()
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
@@ -382,9 +382,9 @@ void QFxRect::generateBorderedRect()
     }
 }
 
-void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->radius > 0 || (d->pen && d->pen->isValid())
         || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
@@ -399,9 +399,9 @@ void QFxRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
     }
 }
 
-void QFxRect::drawRect(QPainter &p)
+void QmlGraphicsRect::drawRect(QPainter &p)
 {
-    Q_D(QFxRect);
+    Q_D(QmlGraphicsRect);
     if (d->gradient && d->gradient->gradient()) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
@@ -466,9 +466,9 @@ void QFxRect::drawRect(QPainter &p)
     \image rect-smooth.png
 */
 
-QRectF QFxRect::boundingRect() const
+QRectF QmlGraphicsRect::boundingRect() const
 {
-    Q_D(const QFxRect);
+    Q_D(const QmlGraphicsRect);
     return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
 }
 

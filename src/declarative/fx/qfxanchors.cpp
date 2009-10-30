@@ -47,36 +47,36 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Anchors,QFxAnchors)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Anchors,QmlGraphicsAnchors)
 
 //TODO: should we cache relationships, so we don't have to check each time (parent-child or sibling)?
 //TODO: support non-parent, non-sibling (need to find lowest common ancestor)
 
 //### const item?
 //local position
-static qreal position(QFxItem *item, QFxAnchorLine::AnchorLine anchorLine)
+static qreal position(QmlGraphicsItem *item, QmlGraphicsAnchorLine::AnchorLine anchorLine)
 {
     qreal ret = 0.0;
     switch(anchorLine) {
-    case QFxAnchorLine::Left:
+    case QmlGraphicsAnchorLine::Left:
         ret = item->x();
         break;
-    case QFxAnchorLine::Right:
+    case QmlGraphicsAnchorLine::Right:
         ret = item->x() + item->width();
         break;
-    case QFxAnchorLine::Top:
+    case QmlGraphicsAnchorLine::Top:
         ret = item->y();
         break;
-    case QFxAnchorLine::Bottom:
+    case QmlGraphicsAnchorLine::Bottom:
         ret = item->y() + item->height();
         break;
-    case QFxAnchorLine::HCenter:
+    case QmlGraphicsAnchorLine::HCenter:
         ret = item->x() + item->width()/2;
         break;
-    case QFxAnchorLine::VCenter:
+    case QmlGraphicsAnchorLine::VCenter:
         ret = item->y() + item->height()/2;
         break;
-    case QFxAnchorLine::Baseline:
+    case QmlGraphicsAnchorLine::Baseline:
         ret = item->y() + item->baselineOffset();
         break;
     default:
@@ -87,29 +87,29 @@ static qreal position(QFxItem *item, QFxAnchorLine::AnchorLine anchorLine)
 }
 
 //position when origin is 0,0
-static qreal adjustedPosition(QFxItem *item, QFxAnchorLine::AnchorLine anchorLine)
+static qreal adjustedPosition(QmlGraphicsItem *item, QmlGraphicsAnchorLine::AnchorLine anchorLine)
 {
     int ret = 0;
     switch(anchorLine) {
-    case QFxAnchorLine::Left:
+    case QmlGraphicsAnchorLine::Left:
         ret = 0;
         break;
-    case QFxAnchorLine::Right:
+    case QmlGraphicsAnchorLine::Right:
         ret = item->width();
         break;
-    case QFxAnchorLine::Top:
+    case QmlGraphicsAnchorLine::Top:
         ret = 0;
         break;
-    case QFxAnchorLine::Bottom:
+    case QmlGraphicsAnchorLine::Bottom:
         ret = item->height();
         break;
-    case QFxAnchorLine::HCenter:
+    case QmlGraphicsAnchorLine::HCenter:
         ret = item->width()/2;
         break;
-    case QFxAnchorLine::VCenter:
+    case QmlGraphicsAnchorLine::VCenter:
         ret = item->height()/2;
         break;
-    case QFxAnchorLine::Baseline:
+    case QmlGraphicsAnchorLine::Baseline:
         ret = item->baselineOffset();
         break;
     default:
@@ -121,21 +121,21 @@ static qreal adjustedPosition(QFxItem *item, QFxAnchorLine::AnchorLine anchorLin
 
 /*!
     \internal
-    \class QFxAnchors
+    \class QmlGraphicsAnchors
     \ingroup group_layouts
-    \brief The QFxAnchors class provides a way to lay out items relative to other items.
+    \brief The QmlGraphicsAnchors class provides a way to lay out items relative to other items.
 
     \warning Currently, only anchoring to siblings or parent is supported.
 */
 
-QFxAnchors::QFxAnchors(QObject *parent)
-  : QObject(*new QFxAnchorsPrivate(), parent)
+QmlGraphicsAnchors::QmlGraphicsAnchors(QObject *parent)
+  : QObject(*new QmlGraphicsAnchorsPrivate(), parent)
 {
 }
 
-QFxAnchors::~QFxAnchors()
+QmlGraphicsAnchors::~QmlGraphicsAnchors()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->remDepend(d->fill);
     d->remDepend(d->centerIn);
     d->remDepend(d->left.item);
@@ -147,7 +147,7 @@ QFxAnchors::~QFxAnchors()
     d->remDepend(d->baseline.item);
 }
 
-void QFxAnchorsPrivate::fillChanged()
+void QmlGraphicsAnchorsPrivate::fillChanged()
 {
     if (!fill || !isItemComplete())
         return;
@@ -161,7 +161,7 @@ void QFxAnchorsPrivate::fillChanged()
     setItemHeight(fill->height()-topMargin-bottomMargin);
 }
 
-void QFxAnchorsPrivate::centerInChanged()
+void QmlGraphicsAnchorsPrivate::centerInChanged()
 {
     if (!centerIn || fill || !isItemComplete())
         return;
@@ -179,7 +179,7 @@ void QFxAnchorsPrivate::centerInChanged()
     }
 }
 
-void QFxAnchorsPrivate::clearItem(QFxItem *item)
+void QmlGraphicsAnchorsPrivate::clearItem(QmlGraphicsItem *item)
 {
     if (!item)
         return;
@@ -189,107 +189,107 @@ void QFxAnchorsPrivate::clearItem(QFxItem *item)
         centerIn = 0;
     if (left.item == item) {
         left.item = 0;
-        usedAnchors &= ~QFxAnchors::HasLeftAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasLeftAnchor;
     }
     if (right.item == item) {
         right.item = 0;
-        usedAnchors &= ~QFxAnchors::HasRightAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasRightAnchor;
     }
     if (top.item == item) {
         top.item = 0;
-        usedAnchors &= ~QFxAnchors::HasTopAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasTopAnchor;
     }
     if (bottom.item == item) {
         bottom.item = 0;
-        usedAnchors &= ~QFxAnchors::HasBottomAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasBottomAnchor;
     }
     if (vCenter.item == item) {
         vCenter.item = 0;
-        usedAnchors &= ~QFxAnchors::HasVCenterAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasVCenterAnchor;
     }
     if (hCenter.item == item) {
         hCenter.item = 0;
-        usedAnchors &= ~QFxAnchors::HasHCenterAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasHCenterAnchor;
     }
     if (baseline.item == item) {
         baseline.item = 0;
-        usedAnchors &= ~QFxAnchors::HasBaselineAnchor;
+        usedAnchors &= ~QmlGraphicsAnchors::HasBaselineAnchor;
     }
 }
 
-void QFxAnchorsPrivate::addDepend(QFxItem *item)
+void QmlGraphicsAnchorsPrivate::addDepend(QmlGraphicsItem *item)
 {
-    Q_Q(QFxAnchors);
+    Q_Q(QmlGraphicsAnchors);
     if (!item)
         return;
-    QFxItemPrivate *p =
-        static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
+    QmlGraphicsItemPrivate *p =
+        static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.append(q);
 }
 
-void QFxAnchorsPrivate::remDepend(QFxItem *item)
+void QmlGraphicsAnchorsPrivate::remDepend(QmlGraphicsItem *item)
 {
-    Q_Q(QFxAnchors);
+    Q_Q(QmlGraphicsAnchors);
     if (!item)
         return;
-    QFxItemPrivate *p =
-        static_cast<QFxItemPrivate *>(QGraphicsItemPrivate::get(item));
+    QmlGraphicsItemPrivate *p =
+        static_cast<QmlGraphicsItemPrivate *>(QGraphicsItemPrivate::get(item));
     p->dependantAnchors.removeOne(q);
 }
 
-bool QFxAnchorsPrivate::isItemComplete() const
+bool QmlGraphicsAnchorsPrivate::isItemComplete() const
 {
     return componentComplete;
 }
 
-void QFxAnchors::classBegin()
+void QmlGraphicsAnchors::classBegin()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->componentComplete = false;
 }
 
-void QFxAnchors::componentComplete()
+void QmlGraphicsAnchors::componentComplete()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->componentComplete = true;
 }
 
-void QFxAnchorsPrivate::setItemHeight(qreal v)
+void QmlGraphicsAnchorsPrivate::setItemHeight(qreal v)
 {
     updatingMe = true;
     item->setHeight(v);
     updatingMe = false;
 }
 
-void QFxAnchorsPrivate::setItemWidth(qreal v)
+void QmlGraphicsAnchorsPrivate::setItemWidth(qreal v)
 {
     updatingMe = true;
     item->setWidth(v);
     updatingMe = false;
 }
 
-void QFxAnchorsPrivate::setItemX(qreal v)
+void QmlGraphicsAnchorsPrivate::setItemX(qreal v)
 {
     updatingMe = true;
     item->setX(v);
     updatingMe = false;
 }
 
-void QFxAnchorsPrivate::setItemY(qreal v)
+void QmlGraphicsAnchorsPrivate::setItemY(qreal v)
 {
     updatingMe = true;
     item->setY(v);
     updatingMe = false;
 }
 
-void QFxAnchorsPrivate::setItemPos(const QPointF &v)
+void QmlGraphicsAnchorsPrivate::setItemPos(const QPointF &v)
 {
     updatingMe = true;
     item->setPos(v);
     updatingMe = false;
 }
 
-void QFxAnchorsPrivate::updateMe()
+void QmlGraphicsAnchorsPrivate::updateMe()
 {
     if (updatingMe) {
         updatingMe = false;
@@ -302,7 +302,7 @@ void QFxAnchorsPrivate::updateMe()
     updateVerticalAnchors();
 }
 
-void QFxAnchorsPrivate::updateOnComplete()
+void QmlGraphicsAnchorsPrivate::updateOnComplete()
 {
     fillChanged();
     centerInChanged();
@@ -310,7 +310,7 @@ void QFxAnchorsPrivate::updateOnComplete()
     updateVerticalAnchors();
 }
 
-void QFxAnchorsPrivate::update(QFxItem *, const QRectF &newG, const QRectF &oldG)
+void QmlGraphicsAnchorsPrivate::update(QmlGraphicsItem *, const QRectF &newG, const QRectF &oldG)
 {
     fillChanged();
     centerInChanged();
@@ -321,15 +321,15 @@ void QFxAnchorsPrivate::update(QFxItem *, const QRectF &newG, const QRectF &oldG
         updateVerticalAnchors();
 }
 
-QFxItem *QFxAnchors::fill() const
+QmlGraphicsItem *QmlGraphicsAnchors::fill() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->fill;
 }
 
-void QFxAnchors::setFill(QFxItem *f)
+void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!f) {
         d->remDepend(d->fill);
         d->fill = f;
@@ -346,15 +346,15 @@ void QFxAnchors::setFill(QFxItem *f)
     d->fillChanged();
 }
 
-QFxItem *QFxAnchors::centerIn() const
+QmlGraphicsItem *QmlGraphicsAnchors::centerIn() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->centerIn;
 }
 
-void QFxAnchors::setCenterIn(QFxItem* c)
+void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!c) {
         d->remDepend(d->centerIn);
         d->centerIn = c;
@@ -372,11 +372,11 @@ void QFxAnchors::setCenterIn(QFxItem* c)
     d->centerInChanged();
 }
 
-bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
-                                    const QFxAnchorLine &edge2,
+bool QmlGraphicsAnchorsPrivate::calcStretch(const QmlGraphicsAnchorLine &edge1,
+                                    const QmlGraphicsAnchorLine &edge2,
                                     int offset1,
                                     int offset2,
-                                    QFxAnchorLine::AnchorLine line,
+                                    QmlGraphicsAnchorLine::AnchorLine line,
                                     int &stretch)
 {
     bool edge1IsParent = (edge1.item == item->parentItem());
@@ -401,21 +401,21 @@ bool QFxAnchorsPrivate::calcStretch(const QFxAnchorLine &edge1,
     return invalid;
 }
 
-void QFxAnchorsPrivate::updateVerticalAnchors()
+void QmlGraphicsAnchorsPrivate::updateVerticalAnchors()
 {
     if (fill || centerIn || !isItemComplete())
         return;
 
     if (updatingVerticalAnchor < 2) {
         ++updatingVerticalAnchor;
-        if (usedAnchors & QFxAnchors::HasTopAnchor) {
+        if (usedAnchors & QmlGraphicsAnchors::HasTopAnchor) {
             //Handle stretching
             bool invalid = true;
             int height = 0;
-            if (usedAnchors & QFxAnchors::HasBottomAnchor) {
-                invalid = calcStretch(top, bottom, topMargin, -bottomMargin, QFxAnchorLine::Top, height);
-            } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
-                invalid = calcStretch(top, vCenter, topMargin, vCenterOffset, QFxAnchorLine::Top, height);
+            if (usedAnchors & QmlGraphicsAnchors::HasBottomAnchor) {
+                invalid = calcStretch(top, bottom, topMargin, -bottomMargin, QmlGraphicsAnchorLine::Top, height);
+            } else if (usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor) {
+                invalid = calcStretch(top, vCenter, topMargin, vCenterOffset, QmlGraphicsAnchorLine::Top, height);
                 height *= 2;
             }
             if (!invalid)
@@ -427,12 +427,12 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
             } else if (top.item->parentItem() == item->parentItem()) {
                 setItemY(position(top.item, top.anchorLine) + topMargin);
             }
-        } else if (usedAnchors & QFxAnchors::HasBottomAnchor) {
+        } else if (usedAnchors & QmlGraphicsAnchors::HasBottomAnchor) {
             //Handle stretching (top + bottom case is handled above)
-            if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
+            if (usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor) {
                 int height = 0;
                 bool invalid = calcStretch(vCenter, bottom, vCenterOffset, -bottomMargin,
-                                              QFxAnchorLine::Top, height);
+                                              QmlGraphicsAnchorLine::Top, height);
                 if (!invalid)
                     setItemHeight(height*2);
             }
@@ -443,7 +443,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
             } else if (bottom.item->parentItem() == item->parentItem()) {
                 setItemY(position(bottom.item, bottom.anchorLine) - item->height() - bottomMargin);
             }
-        } else if (usedAnchors & QFxAnchors::HasVCenterAnchor) {
+        } else if (usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor) {
             //(stetching handled above)
 
             //Handle vCenter
@@ -453,7 +453,7 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
             } else if (vCenter.item->parentItem() == item->parentItem()) {
                 setItemY(position(vCenter.item, vCenter.anchorLine) - item->height()/2 + vCenterOffset);
             }
-        } else if (usedAnchors & QFxAnchors::HasBaselineAnchor) {
+        } else if (usedAnchors & QmlGraphicsAnchors::HasBaselineAnchor) {
             //Handle baseline
             if (baseline.item->parentItem() == item->parentItem()) {
                 setItemY(position(baseline.item, baseline.anchorLine) - item->baselineOffset() + baselineOffset);
@@ -462,11 +462,11 @@ void QFxAnchorsPrivate::updateVerticalAnchors()
         --updatingVerticalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(QFxAnchors::tr("Possible anchor loop detected on vertical anchor."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on vertical anchor."), item);
     }
 }
 
-void QFxAnchorsPrivate::updateHorizontalAnchors()
+void QmlGraphicsAnchorsPrivate::updateHorizontalAnchors()
 {
     if (fill || centerIn || !isItemComplete())
         return;
@@ -474,14 +474,14 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
     if (updatingHorizontalAnchor < 2) {
         ++updatingHorizontalAnchor;
 
-        if (usedAnchors & QFxAnchors::HasLeftAnchor) {
+        if (usedAnchors & QmlGraphicsAnchors::HasLeftAnchor) {
             //Handle stretching
             bool invalid = true;
             int width = 0;
-            if (usedAnchors & QFxAnchors::HasRightAnchor) {
-                invalid = calcStretch(left, right, leftMargin, -rightMargin, QFxAnchorLine::Left, width);
-            } else if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
-                invalid = calcStretch(left, hCenter, leftMargin, hCenterOffset, QFxAnchorLine::Left, width);
+            if (usedAnchors & QmlGraphicsAnchors::HasRightAnchor) {
+                invalid = calcStretch(left, right, leftMargin, -rightMargin, QmlGraphicsAnchorLine::Left, width);
+            } else if (usedAnchors & QmlGraphicsAnchors::HasHCenterAnchor) {
+                invalid = calcStretch(left, hCenter, leftMargin, hCenterOffset, QmlGraphicsAnchorLine::Left, width);
                 width *= 2;
             }
             if (!invalid)
@@ -493,12 +493,12 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
             } else if (left.item->parentItem() == item->parentItem()) {
                 setItemX(position(left.item, left.anchorLine) + leftMargin);
             }
-        } else if (usedAnchors & QFxAnchors::HasRightAnchor) {
+        } else if (usedAnchors & QmlGraphicsAnchors::HasRightAnchor) {
             //Handle stretching (left + right case is handled in updateLeftAnchor)
-            if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
+            if (usedAnchors & QmlGraphicsAnchors::HasHCenterAnchor) {
                 int width = 0;
                 bool invalid = calcStretch(hCenter, right, hCenterOffset, -rightMargin,
-                                              QFxAnchorLine::Left, width);
+                                              QmlGraphicsAnchorLine::Left, width);
                 if (!invalid)
                     setItemWidth(width*2);
             }
@@ -509,7 +509,7 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
             } else if (right.item->parentItem() == item->parentItem()) {
                 setItemX(position(right.item, right.anchorLine) - item->width() - rightMargin);
             }
-        } else if (usedAnchors & QFxAnchors::HasHCenterAnchor) {
+        } else if (usedAnchors & QmlGraphicsAnchors::HasHCenterAnchor) {
             //Handle hCenter
             if (hCenter.item == item->parentItem()) {
                 setItemX(adjustedPosition(hCenter.item, hCenter.anchorLine) - item->width()/2 + hCenterOffset);
@@ -521,19 +521,19 @@ void QFxAnchorsPrivate::updateHorizontalAnchors()
         --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(QFxAnchors::tr("Possible anchor loop detected on horizontal anchor."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on horizontal anchor."), item);
     }
 }
 
-QFxAnchorLine QFxAnchors::top() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::top() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->top;
 }
 
-void QFxAnchors::setTop(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setTop(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkVAnchorValid(edge))
         return;
 
@@ -550,24 +550,24 @@ void QFxAnchors::setTop(const QFxAnchorLine &edge)
     d->updateVerticalAnchors();
 }
 
-void QFxAnchors::resetTop()
+void QmlGraphicsAnchors::resetTop()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasTopAnchor;
     d->remDepend(d->top.item);
-    d->top = QFxAnchorLine();
+    d->top = QmlGraphicsAnchorLine();
     d->updateVerticalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::bottom() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::bottom() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->bottom;
 }
 
-void QFxAnchors::setBottom(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setBottom(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkVAnchorValid(edge))
         return;
 
@@ -584,24 +584,24 @@ void QFxAnchors::setBottom(const QFxAnchorLine &edge)
     d->updateVerticalAnchors();
 }
 
-void QFxAnchors::resetBottom()
+void QmlGraphicsAnchors::resetBottom()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasBottomAnchor;
     d->remDepend(d->bottom.item);
-    d->bottom = QFxAnchorLine();
+    d->bottom = QmlGraphicsAnchorLine();
     d->updateVerticalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::verticalCenter() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::verticalCenter() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->vCenter;
 }
 
-void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setVerticalCenter(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkVAnchorValid(edge))
         return;
 
@@ -618,24 +618,24 @@ void QFxAnchors::setVerticalCenter(const QFxAnchorLine &edge)
     d->updateVerticalAnchors();
 }
 
-void QFxAnchors::resetVerticalCenter()
+void QmlGraphicsAnchors::resetVerticalCenter()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasVCenterAnchor;
     d->remDepend(d->vCenter.item);
-    d->vCenter = QFxAnchorLine();
+    d->vCenter = QmlGraphicsAnchorLine();
     d->updateVerticalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::baseline() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::baseline() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->baseline;
 }
 
-void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setBaseline(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkVAnchorValid(edge))
         return;
 
@@ -652,24 +652,24 @@ void QFxAnchors::setBaseline(const QFxAnchorLine &edge)
     d->updateVerticalAnchors();
 }
 
-void QFxAnchors::resetBaseline()
+void QmlGraphicsAnchors::resetBaseline()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasBaselineAnchor;
     d->remDepend(d->baseline.item);
-    d->baseline = QFxAnchorLine();
+    d->baseline = QmlGraphicsAnchorLine();
     d->updateVerticalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::left() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::left() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->left;
 }
 
-void QFxAnchors::setLeft(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setLeft(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkHAnchorValid(edge))
         return;
 
@@ -686,24 +686,24 @@ void QFxAnchors::setLeft(const QFxAnchorLine &edge)
     d->updateHorizontalAnchors();
 }
 
-void QFxAnchors::resetLeft()
+void QmlGraphicsAnchors::resetLeft()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasLeftAnchor;
     d->remDepend(d->left.item);
-    d->left = QFxAnchorLine();
+    d->left = QmlGraphicsAnchorLine();
     d->updateHorizontalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::right() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::right() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->right;
 }
 
-void QFxAnchors::setRight(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setRight(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkHAnchorValid(edge))
         return;
 
@@ -721,24 +721,24 @@ void QFxAnchors::setRight(const QFxAnchorLine &edge)
     d->updateHorizontalAnchors();
 }
 
-void QFxAnchors::resetRight()
+void QmlGraphicsAnchors::resetRight()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasRightAnchor;
     d->remDepend(d->right.item);
-    d->right = QFxAnchorLine();
+    d->right = QmlGraphicsAnchorLine();
     d->updateHorizontalAnchors();
 }
 
-QFxAnchorLine QFxAnchors::horizontalCenter() const
+QmlGraphicsAnchorLine QmlGraphicsAnchors::horizontalCenter() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->hCenter;
 }
 
-void QFxAnchors::setHorizontalCenter(const QFxAnchorLine &edge)
+void QmlGraphicsAnchors::setHorizontalCenter(const QmlGraphicsAnchorLine &edge)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (!d->checkHAnchorValid(edge))
         return;
 
@@ -755,24 +755,24 @@ void QFxAnchors::setHorizontalCenter(const QFxAnchorLine &edge)
     d->updateHorizontalAnchors();
 }
 
-void QFxAnchors::resetHorizontalCenter()
+void QmlGraphicsAnchors::resetHorizontalCenter()
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->usedAnchors &= ~HasHCenterAnchor;
     d->remDepend(d->hCenter.item);
-    d->hCenter = QFxAnchorLine();
+    d->hCenter = QmlGraphicsAnchorLine();
     d->updateHorizontalAnchors();
 }
 
-qreal QFxAnchors::leftMargin() const
+qreal QmlGraphicsAnchors::leftMargin() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->leftMargin;
 }
 
-void QFxAnchors::setLeftMargin(qreal offset)
+void QmlGraphicsAnchors::setLeftMargin(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->leftMargin == offset)
         return;
     d->leftMargin = offset;
@@ -780,15 +780,15 @@ void QFxAnchors::setLeftMargin(qreal offset)
     emit leftMarginChanged();
 }
 
-qreal QFxAnchors::rightMargin() const
+qreal QmlGraphicsAnchors::rightMargin() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->rightMargin;
 }
 
-void QFxAnchors::setRightMargin(qreal offset)
+void QmlGraphicsAnchors::setRightMargin(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->rightMargin == offset)
         return;
     d->rightMargin = offset;
@@ -796,15 +796,15 @@ void QFxAnchors::setRightMargin(qreal offset)
     emit rightMarginChanged();
 }
 
-qreal QFxAnchors::horizontalCenterOffset() const
+qreal QmlGraphicsAnchors::horizontalCenterOffset() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->hCenterOffset;
 }
 
-void QFxAnchors::setHorizontalCenterOffset(qreal offset)
+void QmlGraphicsAnchors::setHorizontalCenterOffset(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->hCenterOffset == offset)
         return;
     d->hCenterOffset = offset;
@@ -812,15 +812,15 @@ void QFxAnchors::setHorizontalCenterOffset(qreal offset)
     emit horizontalCenterOffsetChanged();
 }
 
-qreal QFxAnchors::topMargin() const
+qreal QmlGraphicsAnchors::topMargin() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->topMargin;
 }
 
-void QFxAnchors::setTopMargin(qreal offset)
+void QmlGraphicsAnchors::setTopMargin(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->topMargin == offset)
         return;
     d->topMargin = offset;
@@ -828,15 +828,15 @@ void QFxAnchors::setTopMargin(qreal offset)
     emit topMarginChanged();
 }
 
-qreal QFxAnchors::bottomMargin() const
+qreal QmlGraphicsAnchors::bottomMargin() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->bottomMargin;
 }
 
-void QFxAnchors::setBottomMargin(qreal offset)
+void QmlGraphicsAnchors::setBottomMargin(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->bottomMargin == offset)
         return;
     d->bottomMargin = offset;
@@ -844,15 +844,15 @@ void QFxAnchors::setBottomMargin(qreal offset)
     emit bottomMarginChanged();
 }
 
-qreal QFxAnchors::verticalCenterOffset() const
+qreal QmlGraphicsAnchors::verticalCenterOffset() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->vCenterOffset;
 }
 
-void QFxAnchors::setVerticalCenterOffset(qreal offset)
+void QmlGraphicsAnchors::setVerticalCenterOffset(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->vCenterOffset == offset)
         return;
     d->vCenterOffset = offset;
@@ -860,15 +860,15 @@ void QFxAnchors::setVerticalCenterOffset(qreal offset)
     emit verticalCenterOffsetChanged();
 }
 
-qreal QFxAnchors::baselineOffset() const
+qreal QmlGraphicsAnchors::baselineOffset() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->baselineOffset;
 }
 
-void QFxAnchors::setBaselineOffset(qreal offset)
+void QmlGraphicsAnchors::setBaselineOffset(qreal offset)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     if (d->baselineOffset == offset)
         return;
     d->baselineOffset = offset;
@@ -876,80 +876,80 @@ void QFxAnchors::setBaselineOffset(qreal offset)
     emit baselineOffsetChanged();
 }
 
-QFxAnchors::UsedAnchors QFxAnchors::usedAnchors() const
+QmlGraphicsAnchors::UsedAnchors QmlGraphicsAnchors::usedAnchors() const
 {
-    Q_D(const QFxAnchors);
+    Q_D(const QmlGraphicsAnchors);
     return d->usedAnchors;
 }
 
-void QFxAnchors::setItem(QFxItem *item)
+void QmlGraphicsAnchors::setItem(QmlGraphicsItem *item)
 {
-    Q_D(QFxAnchors);
+    Q_D(QmlGraphicsAnchors);
     d->item = item;
 }
 
-bool QFxAnchorsPrivate::checkHValid() const
+bool QmlGraphicsAnchorsPrivate::checkHValid() const
 {
-    if (usedAnchors & QFxAnchors::HasLeftAnchor &&
-        usedAnchors & QFxAnchors::HasRightAnchor &&
-        usedAnchors & QFxAnchors::HasHCenterAnchor) {
-        qmlInfo(QFxAnchors::tr("Can't specify left, right, and hcenter anchors."), item);
+    if (usedAnchors & QmlGraphicsAnchors::HasLeftAnchor &&
+        usedAnchors & QmlGraphicsAnchors::HasRightAnchor &&
+        usedAnchors & QmlGraphicsAnchors::HasHCenterAnchor) {
+        qmlInfo(QmlGraphicsAnchors::tr("Can't specify left, right, and hcenter anchors."), item);
         return false;
     }
 
     return true;
 }
 
-bool QFxAnchorsPrivate::checkHAnchorValid(QFxAnchorLine anchor) const
+bool QmlGraphicsAnchorsPrivate::checkHAnchorValid(QmlGraphicsAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(QFxAnchors::tr("Can't anchor to a null item."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to a null item."), item);
         return false;
-    } else if (anchor.anchorLine & QFxAnchorLine::Vertical_Mask) {
-        qmlInfo(QFxAnchors::tr("Can't anchor a horizontal edge to a vertical edge."), item);
+    } else if (anchor.anchorLine & QmlGraphicsAnchorLine::Vertical_Mask) {
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor a horizontal edge to a vertical edge."), item);
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(QFxAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
         return false;
     } else if (anchor.item == item) {
-        qmlInfo(QFxAnchors::tr("Can't anchor item to self."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor item to self."), item);
         return false;
     }
 
     return true;
 }
 
-bool QFxAnchorsPrivate::checkVValid() const
+bool QmlGraphicsAnchorsPrivate::checkVValid() const
 {
-    if (usedAnchors & QFxAnchors::HasTopAnchor &&
-        usedAnchors & QFxAnchors::HasBottomAnchor &&
-        usedAnchors & QFxAnchors::HasVCenterAnchor) {
-        qmlInfo(QFxAnchors::tr("Can't specify top, bottom, and vcenter anchors."), item);
+    if (usedAnchors & QmlGraphicsAnchors::HasTopAnchor &&
+        usedAnchors & QmlGraphicsAnchors::HasBottomAnchor &&
+        usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor) {
+        qmlInfo(QmlGraphicsAnchors::tr("Can't specify top, bottom, and vcenter anchors."), item);
         return false;
-    } else if (usedAnchors & QFxAnchors::HasBaselineAnchor &&
-               (usedAnchors & QFxAnchors::HasTopAnchor ||
-                usedAnchors & QFxAnchors::HasBottomAnchor ||
-                usedAnchors & QFxAnchors::HasVCenterAnchor)) {
-        qmlInfo(QFxAnchors::tr("Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors."), item);
+    } else if (usedAnchors & QmlGraphicsAnchors::HasBaselineAnchor &&
+               (usedAnchors & QmlGraphicsAnchors::HasTopAnchor ||
+                usedAnchors & QmlGraphicsAnchors::HasBottomAnchor ||
+                usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor)) {
+        qmlInfo(QmlGraphicsAnchors::tr("Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors."), item);
         return false;
     }
 
     return true;
 }
 
-bool QFxAnchorsPrivate::checkVAnchorValid(QFxAnchorLine anchor) const
+bool QmlGraphicsAnchorsPrivate::checkVAnchorValid(QmlGraphicsAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(QFxAnchors::tr("Can't anchor to a null item."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to a null item."), item);
         return false;
-    } else if (anchor.anchorLine & QFxAnchorLine::Horizontal_Mask) {
-        qmlInfo(QFxAnchors::tr("Can't anchor a vertical edge to a horizontal edge."), item);
+    } else if (anchor.anchorLine & QmlGraphicsAnchorLine::Horizontal_Mask) {
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor a vertical edge to a horizontal edge."), item);
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(QFxAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
         return false;
     } else if (anchor.item == item){
-        qmlInfo(QFxAnchors::tr("Can't anchor item to self."), item);
+        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor item to self."), item);
         return false;
     }
 

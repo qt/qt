@@ -49,8 +49,8 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
-class QFxTextPrivate;
-class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
+class QmlGraphicsTextPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsText : public QmlGraphicsItem
 {
     Q_OBJECT
     Q_ENUMS(HAlignment)
@@ -71,8 +71,8 @@ class Q_DECLARATIVE_EXPORT QFxText : public QFxItem
     Q_PROPERTY(TextElideMode elide READ elideMode WRITE setElideMode) //### elideMode?
 
 public:
-    QFxText(QFxItem *parent=0);
-    ~QFxText();
+    QmlGraphicsText(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsText();
 
     enum HAlignment { AlignLeft = Qt::AlignLeft,
                        AlignRight = Qt::AlignRight,
@@ -131,20 +131,20 @@ Q_SIGNALS:
     void linkActivated(const QString &link);
 
 protected:
-    QFxText(QFxTextPrivate &dd, QFxItem *parent);
+    QmlGraphicsText(QmlGraphicsTextPrivate &dd, QmlGraphicsItem *parent);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 
 private:
-    Q_DISABLE_COPY(QFxText)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxText)
+    Q_DISABLE_COPY(QmlGraphicsText)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsText)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxText)
+QML_DECLARE_TYPE(QmlGraphicsText)
 
 QT_END_HEADER
 

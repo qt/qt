@@ -49,18 +49,18 @@
 
 QT_BEGIN_NAMESPACE
 
-class QFxGridViewAttached : public QObject
+class QmlGraphicsGridViewAttached : public QObject
 {
     Q_OBJECT
 public:
-    QFxGridViewAttached(QObject *parent)
+    QmlGraphicsGridViewAttached(QObject *parent)
         : QObject(parent), m_isCurrent(false), m_delayRemove(false) {}
-    ~QFxGridViewAttached() {
+    ~QmlGraphicsGridViewAttached() {
         attachedProperties.remove(parent());
     }
 
-    Q_PROPERTY(QFxGridView *view READ view CONSTANT)
-    QFxGridView *view() { return m_view; }
+    Q_PROPERTY(QmlGraphicsGridView *view READ view CONSTANT)
+    QmlGraphicsGridView *view() { return m_view; }
 
     Q_PROPERTY(bool isCurrentItem READ isCurrentItem NOTIFY currentItemChanged)
     bool isCurrentItem() const { return m_isCurrent; }
@@ -80,10 +80,10 @@ public:
         }
     }
 
-    static QFxGridViewAttached *properties(QObject *obj) {
-        QFxGridViewAttached *rv = attachedProperties.value(obj);
+    static QmlGraphicsGridViewAttached *properties(QObject *obj) {
+        QmlGraphicsGridViewAttached *rv = attachedProperties.value(obj);
         if (!rv) {
-            rv = new QFxGridViewAttached(obj);
+            rv = new QmlGraphicsGridViewAttached(obj);
             attachedProperties.insert(obj, rv);
         }
         return rv;
@@ -99,14 +99,14 @@ Q_SIGNALS:
     void remove();
 
 public:
-    QFxGridView *m_view;
+    QmlGraphicsGridView *m_view;
     bool m_isCurrent;
     bool m_delayRemove;
 
-    static QHash<QObject*, QFxGridViewAttached*> attachedProperties;
+    static QHash<QObject*, QmlGraphicsGridViewAttached*> attachedProperties;
 };
 
-QHash<QObject*, QFxGridViewAttached*> QFxGridViewAttached::attachedProperties;
+QHash<QObject*, QmlGraphicsGridViewAttached*> QmlGraphicsGridViewAttached::attachedProperties;
 
 
 //----------------------------------------------------------------------------
@@ -114,42 +114,42 @@ QHash<QObject*, QFxGridViewAttached*> QFxGridViewAttached::attachedProperties;
 class FxGridItem
 {
 public:
-    FxGridItem(QFxItem *i, QFxGridView *v) : item(i), view(v) {
-        attached = QFxGridViewAttached::properties(item);
+    FxGridItem(QmlGraphicsItem *i, QmlGraphicsGridView *v) : item(i), view(v) {
+        attached = QmlGraphicsGridViewAttached::properties(item);
         attached->m_view = view;
     }
     ~FxGridItem() {}
 
-    qreal rowPos() const { return (view->flow() == QFxGridView::LeftToRight ? item->y() : item->x()); }
-    qreal colPos() const { return (view->flow() == QFxGridView::LeftToRight ? item->x() : item->y()); }
+    qreal rowPos() const { return (view->flow() == QmlGraphicsGridView::LeftToRight ? item->y() : item->x()); }
+    qreal colPos() const { return (view->flow() == QmlGraphicsGridView::LeftToRight ? item->x() : item->y()); }
     qreal endRowPos() const {
-        return view->flow() == QFxGridView::LeftToRight
+        return view->flow() == QmlGraphicsGridView::LeftToRight
                                 ? item->y() + view->cellHeight() - 1
                                 : item->x() + view->cellWidth() - 1;
     }
     void setPosition(qreal col, qreal row) {
-        if (view->flow() == QFxGridView::LeftToRight) {
+        if (view->flow() == QmlGraphicsGridView::LeftToRight) {
             item->setPos(QPointF(col, row));
         } else {
             item->setPos(QPointF(row, col));
         }
     }
 
-    QFxItem *item;
-    QFxGridView *view;
-    QFxGridViewAttached *attached;
+    QmlGraphicsItem *item;
+    QmlGraphicsGridView *view;
+    QmlGraphicsGridViewAttached *attached;
     int index;
 };
 
 //----------------------------------------------------------------------------
 
-class QFxGridViewPrivate : public QFxFlickablePrivate
+class QmlGraphicsGridViewPrivate : public QmlGraphicsFlickablePrivate
 {
-    Q_DECLARE_PUBLIC(QFxGridView)
+    Q_DECLARE_PUBLIC(QmlGraphicsGridView)
 
 public:
-    QFxGridViewPrivate()
-    : model(0), currentItem(0), flow(QFxGridView::LeftToRight)
+    QmlGraphicsGridViewPrivate()
+    : model(0), currentItem(0), flow(QmlGraphicsGridView::LeftToRight)
     , visiblePos(0), visibleIndex(0) , currentIndex(-1)
     , cellWidth(100), cellHeight(100), columns(1), requestedIndex(-1)
     , highlightComponent(0), highlight(0), trackedItem(0)
@@ -184,19 +184,19 @@ public:
     }
 
     qreal position() const {
-        Q_Q(const QFxGridView);
-        return flow == QFxGridView::LeftToRight ? q->viewportY() : q->viewportX();
+        Q_Q(const QmlGraphicsGridView);
+        return flow == QmlGraphicsGridView::LeftToRight ? q->viewportY() : q->viewportX();
     }
     void setPosition(qreal pos) {
-        Q_Q(QFxGridView);
-        if (flow == QFxGridView::LeftToRight)
+        Q_Q(QmlGraphicsGridView);
+        if (flow == QmlGraphicsGridView::LeftToRight)
             q->setViewportY(pos);
         else
             q->setViewportX(pos);
     }
     int size() const {
-        Q_Q(const QFxGridView);
-        return flow == QFxGridView::LeftToRight ? q->height() : q->width();
+        Q_Q(const QmlGraphicsGridView);
+        return flow == QmlGraphicsGridView::LeftToRight ? q->height() : q->width();
     }
     qreal startPosition() const {
         qreal pos = 0;
@@ -217,10 +217,10 @@ public:
     }
 
     int rowSize() const {
-        return flow == QFxGridView::LeftToRight ? cellHeight : cellWidth;
+        return flow == QmlGraphicsGridView::LeftToRight ? cellHeight : cellWidth;
     }
     int colSize() const {
-        return flow == QFxGridView::LeftToRight ? cellWidth : cellHeight;
+        return flow == QmlGraphicsGridView::LeftToRight ? cellWidth : cellHeight;
     }
 
     qreal colPosAt(int modelIndex) const {
@@ -293,12 +293,12 @@ public:
         }
     }
 
-    QFxVisualModel *model;
+    QmlGraphicsVisualModel *model;
     QVariant modelVariant;
     QList<FxGridItem*> visibleItems;
-    QHash<QFxItem*,int> unrequestedItems;
+    QHash<QmlGraphicsItem*,int> unrequestedItems;
     FxGridItem *currentItem;
-    QFxGridView::Flow flow;
+    QmlGraphicsGridView::Flow flow;
     int visiblePos;
     int visibleIndex;
     int currentIndex;
@@ -321,15 +321,15 @@ public:
     int fixCurrentVisibility : 1;
 };
 
-void QFxGridViewPrivate::init()
+void QmlGraphicsGridViewPrivate::init()
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(sizeChange()));
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(sizeChange()));
 }
 
-void QFxGridViewPrivate::clear()
+void QmlGraphicsGridViewPrivate::clear()
 {
     for (int i = 0; i < visibleItems.count(); ++i)
         releaseItem(visibleItems.at(i));
@@ -343,13 +343,13 @@ void QFxGridViewPrivate::clear()
     trackedItem = 0;
 }
 
-FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
+FxGridItem *QmlGraphicsGridViewPrivate::createItem(int modelIndex)
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     // create object
     requestedIndex = modelIndex;
     FxGridItem *listItem = 0;
-    if (QFxItem *item = model->item(modelIndex, false)) {
+    if (QmlGraphicsItem *item = model->item(modelIndex, false)) {
         listItem = new FxGridItem(item, q);
         listItem->index = modelIndex;
         // complete
@@ -362,9 +362,9 @@ FxGridItem *QFxGridViewPrivate::createItem(int modelIndex)
 }
 
 
-void QFxGridViewPrivate::releaseItem(FxGridItem *item)
+void QmlGraphicsGridViewPrivate::releaseItem(FxGridItem *item)
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     if (!item)
         return;
     if (trackedItem == item) {
@@ -379,9 +379,9 @@ void QFxGridViewPrivate::releaseItem(FxGridItem *item)
     delete item;
 }
 
-void QFxGridViewPrivate::refill(qreal from, qreal to)
+void QmlGraphicsGridViewPrivate::refill(qreal from, qreal to)
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     if (!isValid() || !q->isComponentComplete())
         return;
 
@@ -463,28 +463,28 @@ void QFxGridViewPrivate::refill(qreal from, qreal to)
         changed = true;
     }
     if (changed) {
-        if (flow == QFxGridView::LeftToRight)
+        if (flow == QmlGraphicsGridView::LeftToRight)
             q->setViewportHeight(endPosition() - startPosition());
         else
             q->setViewportWidth(endPosition() - startPosition());
     }
 }
 
-void QFxGridViewPrivate::updateGrid()
+void QmlGraphicsGridViewPrivate::updateGrid()
 {
-    Q_Q(QFxGridView);
-    columns = (int)qMax((flow == QFxGridView::LeftToRight ? q->width() : q->height()) / colSize(), qreal(1.));
+    Q_Q(QmlGraphicsGridView);
+    columns = (int)qMax((flow == QmlGraphicsGridView::LeftToRight ? q->width() : q->height()) / colSize(), qreal(1.));
     if (isValid()) {
-        if (flow == QFxGridView::LeftToRight)
+        if (flow == QmlGraphicsGridView::LeftToRight)
             q->setViewportHeight(endPosition() - startPosition());
         else
             q->setViewportWidth(endPosition() - startPosition());
     }
 }
 
-void QFxGridViewPrivate::layout(bool removed)
+void QmlGraphicsGridViewPrivate::layout(bool removed)
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     if (visibleItems.count()) {
         qreal rowPos = visibleItems.first()->rowPos();
         qreal colPos = visibleItems.first()->colPos();
@@ -510,7 +510,7 @@ void QFxGridViewPrivate::layout(bool removed)
     q->refill();
     q->trackedPositionChanged();
     updateHighlight();
-    if (flow == QFxGridView::LeftToRight) {
+    if (flow == QmlGraphicsGridView::LeftToRight) {
         q->setViewportHeight(endPosition() - startPosition());
         fixupY();
     } else {
@@ -520,19 +520,19 @@ void QFxGridViewPrivate::layout(bool removed)
     updateUnrequestedPositions();
 }
 
-void QFxGridViewPrivate::updateUnrequestedIndexes()
+void QmlGraphicsGridViewPrivate::updateUnrequestedIndexes()
 {
-    Q_Q(QFxGridView);
-    QHash<QFxItem*,int>::iterator it;
+    Q_Q(QmlGraphicsGridView);
+    QHash<QmlGraphicsItem*,int>::iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it)
         *it = model->indexOf(it.key(), q);
 }
 
-void QFxGridViewPrivate::updateUnrequestedPositions()
+void QmlGraphicsGridViewPrivate::updateUnrequestedPositions()
 {
-    QHash<QFxItem*,int>::const_iterator it;
+    QHash<QmlGraphicsItem*,int>::const_iterator it;
     for (it = unrequestedItems.begin(); it != unrequestedItems.end(); ++it) {
-        if (flow == QFxGridView::LeftToRight) {
+        if (flow == QmlGraphicsGridView::LeftToRight) {
             it.key()->setPos(QPointF(colPosAt(*it), rowPosAt(*it)));
         } else {
             it.key()->setPos(QPointF(rowPosAt(*it), colPosAt(*it)));
@@ -540,9 +540,9 @@ void QFxGridViewPrivate::updateUnrequestedPositions()
     }
 }
 
-void QFxGridViewPrivate::updateTrackedItem()
+void QmlGraphicsGridViewPrivate::updateTrackedItem()
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     FxGridItem *item = currentItem;
     if (highlight)
         item = highlight;
@@ -563,9 +563,9 @@ void QFxGridViewPrivate::updateTrackedItem()
         q->trackedPositionChanged();
 }
 
-void QFxGridViewPrivate::createHighlight()
+void QmlGraphicsGridViewPrivate::createHighlight()
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
@@ -586,7 +586,7 @@ void QFxGridViewPrivate::createHighlight()
         QObject *nobj = highlightComponent->create(highlightContext);
         if (nobj) {
             highlightContext->setParent(nobj);
-            QFxItem *item = qobject_cast<QFxItem *>(nobj);
+            QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
             if (item) {
                 item->setParent(q->viewport());
                 highlight = new FxGridItem(item, q);
@@ -605,7 +605,7 @@ void QFxGridViewPrivate::createHighlight()
     }
 }
 
-void QFxGridViewPrivate::updateHighlight()
+void QmlGraphicsGridViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
@@ -619,9 +619,9 @@ void QFxGridViewPrivate::updateHighlight()
     }
 }
 
-void QFxGridViewPrivate::updateCurrent(int modelIndex)
+void QmlGraphicsGridViewPrivate::updateCurrent(int modelIndex)
 {
-    Q_Q(QFxGridView);
+    Q_Q(QmlGraphicsGridView);
     if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
             currentItem->attached->setIsCurrentItem(false);
@@ -680,16 +680,16 @@ void QFxGridViewPrivate::updateCurrent(int modelIndex)
     In this case ListModel is a handy way for us to test our UI.  In practice
     the model would be implemented in C++, or perhaps via a SQL data source.
 */
-QFxGridView::QFxGridView(QFxItem *parent)
-    : QFxFlickable(*(new QFxGridViewPrivate), parent)
+QmlGraphicsGridView::QmlGraphicsGridView(QmlGraphicsItem *parent)
+    : QmlGraphicsFlickable(*(new QmlGraphicsGridViewPrivate), parent)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->init();
 }
 
-QFxGridView::~QFxGridView()
+QmlGraphicsGridView::~QmlGraphicsGridView()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->clear();
     if (d->ownModel)
         delete d->model;
@@ -758,27 +758,27 @@ QFxGridView::~QFxGridView()
 
   \sa {qmlmodels}{Data Models}
 */
-QVariant QFxGridView::model() const
+QVariant QmlGraphicsGridView::model() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->modelVariant;
 }
 
-void QFxGridView::setModel(const QVariant &model)
+void QmlGraphicsGridView::setModel(const QVariant &model)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
-        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
     }
     d->clear();
     d->modelVariant = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
+    QmlGraphicsVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QmlGraphicsVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -786,10 +786,10 @@ void QFxGridView::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualDataModel(qmlContext(this));
+            d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             dataModel->setModel(model);
     }
     if (d->model) {
@@ -800,8 +800,8 @@ void QFxGridView::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
-        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
         refill();
         emit countChanged();
     }
@@ -815,25 +815,25 @@ void QFxGridView::setModel(const QVariant &model)
   Here is an example delegate:
   \snippet doc/src/snippets/declarative/gridview/gridview.qml 0
 */
-QmlComponent *QFxGridView::delegate() const
+QmlComponent *QmlGraphicsGridView::delegate() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     if (d->model) {
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             return dataModel->delegate();
     }
 
     return 0;
 }
 
-void QFxGridView::setDelegate(QmlComponent *delegate)
+void QmlGraphicsGridView::setDelegate(QmlComponent *delegate)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (!d->ownModel) {
-        d->model = new QFxVisualDataModel(qmlContext(this));
+        d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+    if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         d->updateCurrent(d->currentIndex);
         refill();
@@ -848,15 +848,15 @@ void QFxGridView::setDelegate(QmlComponent *delegate)
   \c currentItem is the current item.  Note that the position of the current item
   may only be approximate until it becomes visible in the view.
 */
-int QFxGridView::currentIndex() const
+int QmlGraphicsGridView::currentIndex() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->currentIndex;
 }
 
-void QFxGridView::setCurrentIndex(int index)
+void QmlGraphicsGridView::setCurrentIndex(int index)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         cancelFlick();
         d->updateCurrent(index);
@@ -865,9 +865,9 @@ void QFxGridView::setCurrentIndex(int index)
     }
 }
 
-QFxItem *QFxGridView::currentItem()
+QmlGraphicsItem *QmlGraphicsGridView::currentItem()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (!d->currentItem)
         return 0;
     return d->currentItem->item;
@@ -877,9 +877,9 @@ QFxItem *QFxGridView::currentItem()
   \qmlproperty int GridView::count
   This property holds the number of items in the view.
 */
-int QFxGridView::count() const
+int QmlGraphicsGridView::count() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     if (d->model)
         return d->model->count();
     return 0;
@@ -898,15 +898,15 @@ int QFxGridView::count() const
 
   \sa highlightFollowsCurrentItem
 */
-QmlComponent *QFxGridView::highlight() const
+QmlComponent *QmlGraphicsGridView::highlight() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->highlightComponent;
 }
 
-void QFxGridView::setHighlight(QmlComponent *highlight)
+void QmlGraphicsGridView::setHighlight(QmlComponent *highlight)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     delete d->highlightComponent;
     d->highlightComponent = highlight;
     d->updateCurrent(d->currentIndex);
@@ -932,15 +932,15 @@ void QFxGridView::setHighlight(QmlComponent *highlight)
   }
   \endcode
 */
-bool QFxGridView::highlightFollowsCurrentItem() const
+bool QmlGraphicsGridView::highlightFollowsCurrentItem() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->autoHighlight;
 }
 
-void QFxGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
+void QmlGraphicsGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->autoHighlight = autoHighlight;
     if (d->highlightXAnimator) {
         d->highlightXAnimator->setEnabled(d->autoHighlight);
@@ -958,15 +958,15 @@ void QFxGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
   If \a flow is \c LeftToRight, the view will scroll vertically.
   If \a flow is \c TopToBottom, the view will scroll horizontally.
 */
-QFxGridView::Flow QFxGridView::flow() const
+QmlGraphicsGridView::Flow QmlGraphicsGridView::flow() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->flow;
 }
 
-void QFxGridView::setFlow(Flow flow)
+void QmlGraphicsGridView::setFlow(Flow flow)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (d->flow != flow) {
         d->flow = flow;
         if (d->flow == LeftToRight)
@@ -987,15 +987,15 @@ void QFxGridView::setFlow(Flow flow)
   If this property is true then key presses to move off of one end of the grid will cause the
   selection to jump to the other side.
 */
-bool QFxGridView::isWrapEnabled() const
+bool QmlGraphicsGridView::isWrapEnabled() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->wrap;
 }
 
-void QFxGridView::setWrapEnabled(bool wrap)
+void QmlGraphicsGridView::setWrapEnabled(bool wrap)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->wrap = wrap;
 }
 
@@ -1007,15 +1007,15 @@ void QFxGridView::setWrapEnabled(bool wrap)
   and below the bottom of the view to cache.  Setting this value can make
   scrolling the view smoother at the expense of additional memory usage.
 */
-int QFxGridView::cacheBuffer() const
+int QmlGraphicsGridView::cacheBuffer() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->buffer;
 }
 
-void QFxGridView::setCacheBuffer(int buffer)
+void QmlGraphicsGridView::setCacheBuffer(int buffer)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (d->buffer != buffer) {
         d->buffer = buffer;
         if (isComponentComplete())
@@ -1031,15 +1031,15 @@ void QFxGridView::setCacheBuffer(int buffer)
 
   The default sell size is 100x100.
 */
-int QFxGridView::cellWidth() const
+int QmlGraphicsGridView::cellWidth() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->cellWidth;
 }
 
-void QFxGridView::setCellWidth(int cellWidth)
+void QmlGraphicsGridView::setCellWidth(int cellWidth)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (cellWidth != d->cellWidth && cellWidth > 0) {
         d->cellWidth = qMax(1, cellWidth);
         d->updateGrid();
@@ -1048,15 +1048,15 @@ void QFxGridView::setCellWidth(int cellWidth)
     }
 }
 
-int QFxGridView::cellHeight() const
+int QmlGraphicsGridView::cellHeight() const
 {
-    Q_D(const QFxGridView);
+    Q_D(const QmlGraphicsGridView);
     return d->cellHeight;
 }
 
-void QFxGridView::setCellHeight(int cellHeight)
+void QmlGraphicsGridView::setCellHeight(int cellHeight)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (cellHeight != d->cellHeight && cellHeight > 0) {
         d->cellHeight = qMax(1, cellHeight);
         d->updateGrid();
@@ -1065,62 +1065,62 @@ void QFxGridView::setCellHeight(int cellHeight)
     }
 }
 
-void QFxGridView::sizeChange()
+void QmlGraphicsGridView::sizeChange()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (isComponentComplete()) {
         d->updateGrid();
         d->layout();
     }
 }
 
-void QFxGridView::viewportMoved()
+void QmlGraphicsGridView::viewportMoved()
 {
-    QFxFlickable::viewportMoved();
+    QmlGraphicsFlickable::viewportMoved();
     refill();
 }
 
-qreal QFxGridView::minYExtent() const
+qreal QmlGraphicsGridView::minYExtent() const
 {
-    Q_D(const QFxGridView);
-    if (d->flow == QFxGridView::TopToBottom)
-        return QFxFlickable::minYExtent();
+    Q_D(const QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::TopToBottom)
+        return QmlGraphicsFlickable::minYExtent();
     return -d->startPosition();
 }
 
-qreal QFxGridView::maxYExtent() const
+qreal QmlGraphicsGridView::maxYExtent() const
 {
-    Q_D(const QFxGridView);
-    if (d->flow == QFxGridView::TopToBottom)
-        return QFxFlickable::maxYExtent();
+    Q_D(const QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::TopToBottom)
+        return QmlGraphicsFlickable::maxYExtent();
     return -(d->endPosition() - height());
 }
 
-qreal QFxGridView::minXExtent() const
+qreal QmlGraphicsGridView::minXExtent() const
 {
-    Q_D(const QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight)
-        return QFxFlickable::minXExtent();
+    Q_D(const QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight)
+        return QmlGraphicsFlickable::minXExtent();
     return -d->startPosition();
 }
 
-qreal QFxGridView::maxXExtent() const
+qreal QmlGraphicsGridView::maxXExtent() const
 {
-    Q_D(const QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight)
-        return QFxFlickable::maxXExtent();
+    Q_D(const QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight)
+        return QmlGraphicsFlickable::maxXExtent();
     return -(d->endPosition() - width());
 }
 
-void QFxGridView::keyPressEvent(QKeyEvent *event)
+void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)
 {
-    Q_D(QFxGridView);
-    QFxFlickable::keyPressEvent(event);
+    Q_D(QmlGraphicsGridView);
+    QmlGraphicsFlickable::keyPressEvent(event);
     if (event->isAccepted())
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        d->moveReason = QFxGridViewPrivate::Key;
+        d->moveReason = QmlGraphicsGridViewPrivate::Key;
         int oldCurrent = currentIndex();
         switch (event->key()) {
         case Qt::Key_Up:
@@ -1143,7 +1143,7 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
             return;
         }
     }
-    d->moveReason = QFxGridViewPrivate::Other;
+    d->moveReason = QmlGraphicsGridViewPrivate::Other;
     event->ignore();
 }
 
@@ -1154,10 +1154,10 @@ void QFxGridView::keyPressEvent(QKeyEvent *event)
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
 */
-void QFxGridView::moveCurrentIndexUp()
+void QmlGraphicsGridView::moveCurrentIndexUp()
 {
-    Q_D(QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight) {
+    Q_D(QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight) {
         if (currentIndex() >= d->columns || d->wrap) {
             int index = currentIndex() - d->columns;
             setCurrentIndex(index >= 0 ? index : d->model->count()-1);
@@ -1177,10 +1177,10 @@ void QFxGridView::moveCurrentIndexUp()
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
 */
-void QFxGridView::moveCurrentIndexDown()
+void QmlGraphicsGridView::moveCurrentIndexDown()
 {
-    Q_D(QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight) {
+    Q_D(QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight) {
         if (currentIndex() < d->model->count() - d->columns || d->wrap) {
             int index = currentIndex()+d->columns;
             setCurrentIndex(index < d->model->count() ? index : 0);
@@ -1200,10 +1200,10 @@ void QFxGridView::moveCurrentIndexDown()
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
 */
-void QFxGridView::moveCurrentIndexLeft()
+void QmlGraphicsGridView::moveCurrentIndexLeft()
 {
-    Q_D(QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight) {
+    Q_D(QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight) {
         if (currentIndex() > 0 || d->wrap) {
             int index = currentIndex() - 1;
             setCurrentIndex(index >= 0 ? index : d->model->count()-1);
@@ -1223,10 +1223,10 @@ void QFxGridView::moveCurrentIndexLeft()
     The current index will wrap if keyNavigationWraps is true and it
     is currently at the end.
 */
-void QFxGridView::moveCurrentIndexRight()
+void QmlGraphicsGridView::moveCurrentIndexRight()
 {
-    Q_D(QFxGridView);
-    if (d->flow == QFxGridView::LeftToRight) {
+    Q_D(QmlGraphicsGridView);
+    if (d->flow == QmlGraphicsGridView::LeftToRight) {
         if (currentIndex() < d->model->count() - 1 || d->wrap) {
             int index = currentIndex() + 1;
             setCurrentIndex(index < d->model->count() ? index : 0);
@@ -1239,22 +1239,22 @@ void QFxGridView::moveCurrentIndexRight()
     }
 }
 
-void QFxGridView::componentComplete()
+void QmlGraphicsGridView::componentComplete()
 {
-    Q_D(QFxGridView);
-    QFxFlickable::componentComplete();
+    Q_D(QmlGraphicsGridView);
+    QmlGraphicsFlickable::componentComplete();
     d->updateGrid();
     if (d->currentIndex < 0)
         d->updateCurrent(0);
     refill();
 }
 
-void QFxGridView::trackedPositionChanged()
+void QmlGraphicsGridView::trackedPositionChanged()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (!d->trackedItem)
         return;
-    if (!isFlicking() && !d->pressed && d->moveReason == QFxGridViewPrivate::Key) {
+    if (!isFlicking() && !d->pressed && d->moveReason == QmlGraphicsGridViewPrivate::Key) {
         if (d->trackedItem->rowPos() < d->position()) {
             d->setPosition(d->trackedItem->rowPos());
         } else if (d->trackedItem->endRowPos() > d->position() + d->size()) {
@@ -1266,9 +1266,9 @@ void QFxGridView::trackedPositionChanged()
     }
 }
 
-void QFxGridView::itemsInserted(int modelIndex, int count)
+void QmlGraphicsGridView::itemsInserted(int modelIndex, int count)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         refill();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
@@ -1377,9 +1377,9 @@ void QFxGridView::itemsInserted(int modelIndex, int count)
     emit countChanged();
 }
 
-void QFxGridView::itemsRemoved(int modelIndex, int count)
+void QmlGraphicsGridView::itemsRemoved(int modelIndex, int count)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     bool currentRemoved = d->currentIndex >= modelIndex && d->currentIndex < modelIndex + count;
     int index = d->mapFromModel(modelIndex);
     if (index == -1) {
@@ -1465,9 +1465,9 @@ void QFxGridView::itemsRemoved(int modelIndex, int count)
     emit countChanged();
 }
 
-void QFxGridView::destroyRemoved()
+void QmlGraphicsGridView::destroyRemoved()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     for (QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
             it != d->visibleItems.end();) {
         FxGridItem *listItem = *it;
@@ -1483,9 +1483,9 @@ void QFxGridView::destroyRemoved()
     d->layout();
 }
 
-void QFxGridView::itemsMoved(int from, int to, int count)
+void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     QHash<int,FxGridItem*> moved;
 
     QList<FxGridItem*>::Iterator it = d->visibleItems.begin();
@@ -1544,14 +1544,14 @@ void QFxGridView::itemsMoved(int from, int to, int count)
     d->layout();
 }
 
-void QFxGridView::createdItem(int index, QFxItem *item)
+void QmlGraphicsGridView::createdItem(int index, QmlGraphicsItem *item)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     item->setParentItem(this);
     if (d->requestedIndex != index) {
         item->setParentItem(this);
         d->unrequestedItems.insert(item, index);
-        if (d->flow == QFxGridView::LeftToRight) {
+        if (d->flow == QmlGraphicsGridView::LeftToRight) {
             item->setPos(QPointF(d->colPosAt(index), d->rowPosAt(index)));
         } else {
             item->setPos(QPointF(d->rowPosAt(index), d->colPosAt(index)));
@@ -1559,26 +1559,26 @@ void QFxGridView::createdItem(int index, QFxItem *item)
     }
 }
 
-void QFxGridView::destroyingItem(QFxItem *item)
+void QmlGraphicsGridView::destroyingItem(QmlGraphicsItem *item)
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->unrequestedItems.remove(item);
 }
 
 
-void QFxGridView::refill()
+void QmlGraphicsGridView::refill()
 {
-    Q_D(QFxGridView);
+    Q_D(QmlGraphicsGridView);
     d->refill(d->position(), d->position()+d->size()-1);
 }
 
 
-QFxGridViewAttached *QFxGridView::qmlAttachedProperties(QObject *obj)
+QmlGraphicsGridViewAttached *QmlGraphicsGridView::qmlAttachedProperties(QObject *obj)
 {
-    return QFxGridViewAttached::properties(obj);
+    return QmlGraphicsGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, GridView, QFxGridView)
+QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, GridView, QmlGraphicsGridView)
 
 QT_END_NAMESPACE
 

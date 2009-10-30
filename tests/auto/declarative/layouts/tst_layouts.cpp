@@ -4,11 +4,11 @@
 #include <qfxrect.h>
 #include <qmlexpression.h>
 
-class tst_QFxLayouts : public QObject
+class tst_QmlGraphicsLayouts : public QObject
 {
     Q_OBJECT
 public:
-    tst_QFxLayouts();
+    tst_QmlGraphicsLayouts();
 
 private slots:
     void test_horizontal();
@@ -22,24 +22,24 @@ private:
     QmlView *createView(const QString &filename);
 };
 
-tst_QFxLayouts::tst_QFxLayouts()
+tst_QmlGraphicsLayouts::tst_QmlGraphicsLayouts()
 {
 }
 
-void tst_QFxLayouts::test_horizontal()
+void tst_QmlGraphicsLayouts::test_horizontal()
 {
     QmlView *canvas = createView(SRCDIR "/data/horizontal.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -50,20 +50,20 @@ void tst_QFxLayouts::test_horizontal()
     QCOMPARE(three->y(), 0.0);
 }
 
-void tst_QFxLayouts::test_horizontal_spacing()
+void tst_QmlGraphicsLayouts::test_horizontal_spacing()
 {
     QmlView *canvas = createView(SRCDIR "/data/horizontal-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -74,20 +74,20 @@ void tst_QFxLayouts::test_horizontal_spacing()
     QCOMPARE(three->y(), 0.0);
 }
 
-void tst_QFxLayouts::test_vertical()
+void tst_QmlGraphicsLayouts::test_vertical()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -98,20 +98,20 @@ void tst_QFxLayouts::test_vertical()
     QCOMPARE(three->y(), 60.0);
 }
 
-void tst_QFxLayouts::test_vertical_spacing()
+void tst_QmlGraphicsLayouts::test_vertical_spacing()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
 
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
 
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -122,22 +122,22 @@ void tst_QFxLayouts::test_vertical_spacing()
     QCOMPARE(three->y(), 80.0);
 }
 
-void tst_QFxLayouts::test_grid()
+void tst_QmlGraphicsLayouts::test_grid()
 {
     QmlView *canvas = createView("data/grid.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
-    QFxRect *four = canvas->root()->findChild<QFxRect*>("four");
+    QmlGraphicsRect *four = canvas->root()->findChild<QmlGraphicsRect*>("four");
     QVERIFY(four != 0);
-    QFxRect *five = canvas->root()->findChild<QFxRect*>("five");
+    QmlGraphicsRect *five = canvas->root()->findChild<QmlGraphicsRect*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -152,22 +152,22 @@ void tst_QFxLayouts::test_grid()
     QCOMPARE(five->y(), 50.0);
 }
 
-void tst_QFxLayouts::test_grid_spacing()
+void tst_QmlGraphicsLayouts::test_grid_spacing()
 {
     QmlView *canvas = createView("data/grid-spacing.qml");
 
     canvas->execute();
     qApp->processEvents();
 
-    QFxRect *one = canvas->root()->findChild<QFxRect*>("one");
+    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
     QVERIFY(one != 0);
-    QFxRect *two = canvas->root()->findChild<QFxRect*>("two");
+    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
     QVERIFY(two != 0);
-    QFxRect *three = canvas->root()->findChild<QFxRect*>("three");
+    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
     QVERIFY(three != 0);
-    QFxRect *four = canvas->root()->findChild<QFxRect*>("four");
+    QmlGraphicsRect *four = canvas->root()->findChild<QmlGraphicsRect*>("four");
     QVERIFY(four != 0);
-    QFxRect *five = canvas->root()->findChild<QFxRect*>("five");
+    QmlGraphicsRect *five = canvas->root()->findChild<QmlGraphicsRect*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -182,7 +182,7 @@ void tst_QFxLayouts::test_grid_spacing()
     QCOMPARE(five->y(), 54.0);
 }
 
-QmlView *tst_QFxLayouts::createView(const QString &filename)
+QmlView *tst_QmlGraphicsLayouts::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
@@ -195,6 +195,6 @@ QmlView *tst_QFxLayouts::createView(const QString &filename)
 }
 
 
-QTEST_MAIN(tst_QFxLayouts)
+QTEST_MAIN(tst_QmlGraphicsLayouts)
 
 #include "tst_layouts.moc"

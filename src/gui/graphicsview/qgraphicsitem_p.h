@@ -604,7 +604,7 @@ public:
     inline bool isPixmap() const
     {
         return (item->type() == QGraphicsPixmapItem::Type);
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const

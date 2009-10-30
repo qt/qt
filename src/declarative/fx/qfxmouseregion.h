@@ -50,12 +50,12 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class Q_DECLARATIVE_EXPORT QFxDrag : public QObject
+class Q_DECLARATIVE_EXPORT QmlGraphicsDrag : public QObject
 {
     Q_OBJECT
 
     Q_ENUMS(Axis)
-    Q_PROPERTY(QFxItem *target READ target WRITE setTarget)
+    Q_PROPERTY(QmlGraphicsItem *target READ target WRITE setTarget)
     Q_PROPERTY(Axis axis READ axis WRITE setAxis)
     Q_PROPERTY(qreal minimumX READ xmin WRITE setXmin)
     Q_PROPERTY(qreal maximumX READ xmax WRITE setXmax)
@@ -64,11 +64,11 @@ class Q_DECLARATIVE_EXPORT QFxDrag : public QObject
     //### consider drag and drop
 
 public:
-    QFxDrag(QObject *parent=0);
-    ~QFxDrag();
+    QmlGraphicsDrag(QObject *parent=0);
+    ~QmlGraphicsDrag();
 
-    QFxItem *target() const;
-    void setTarget(QFxItem *);
+    QmlGraphicsItem *target() const;
+    void setTarget(QmlGraphicsItem *);
 
     enum Axis { XAxis=0x01, YAxis=0x02, XandYAxis=0x03 };
     Axis axis() const;
@@ -84,18 +84,18 @@ public:
     void setYmax(qreal);
 
 private:
-    QFxItem *_target;
+    QmlGraphicsItem *_target;
     Axis _axis;
     qreal _xmin;
     qreal _xmax;
     qreal _ymin;
     qreal _ymax;
-    Q_DISABLE_COPY(QFxDrag)
+    Q_DISABLE_COPY(QmlGraphicsDrag)
 };
 
-class QFxMouseEvent;
-class QFxMouseRegionPrivate;
-class Q_DECLARATIVE_EXPORT QFxMouseRegion : public QFxItem
+class QmlGraphicsMouseEvent;
+class QmlGraphicsMouseRegionPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsMouseRegion : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -107,11 +107,11 @@ class Q_DECLARATIVE_EXPORT QFxMouseRegion : public QFxItem
     Q_PROPERTY(Qt::MouseButtons pressedButtons READ pressedButtons NOTIFY pressedChanged)
     Q_PROPERTY(Qt::MouseButtons acceptedButtons READ acceptedButtons WRITE setAcceptedButtons NOTIFY acceptedButtonsChanged)
     Q_PROPERTY(bool hoverEnabled READ acceptHoverEvents WRITE setAcceptHoverEvents)
-    Q_PROPERTY(QFxDrag *drag READ drag) //### add flicking to QFxDrag or add a QFxFlick ???
+    Q_PROPERTY(QmlGraphicsDrag *drag READ drag) //### add flicking to QmlGraphicsDrag or add a QmlGraphicsFlick ???
 
 public:
-    QFxMouseRegion(QFxItem *parent=0);
-    ~QFxMouseRegion();
+    QmlGraphicsMouseRegion(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsMouseRegion();
 
     qreal mouseX() const;
     qreal mouseY() const;
@@ -127,20 +127,20 @@ public:
     Qt::MouseButtons acceptedButtons() const;
     void setAcceptedButtons(Qt::MouseButtons buttons);
 
-    QFxDrag *drag();
+    QmlGraphicsDrag *drag();
 
 Q_SIGNALS:
     void hoveredChanged();
     void pressedChanged();
     void enabledChanged();
     void acceptedButtonsChanged();
-    void positionChanged(QFxMouseEvent *mouse);
+    void positionChanged(QmlGraphicsMouseEvent *mouse);
 
-    void pressed(QFxMouseEvent *mouse);
-    void pressAndHold(QFxMouseEvent *mouse);
-    void released(QFxMouseEvent *mouse);
-    void clicked(QFxMouseEvent *mouse);
-    void doubleClicked(QFxMouseEvent *mouse);
+    void pressed(QmlGraphicsMouseEvent *mouse);
+    void pressAndHold(QmlGraphicsMouseEvent *mouse);
+    void released(QmlGraphicsMouseEvent *mouse);
+    void clicked(QmlGraphicsMouseEvent *mouse);
+    void doubleClicked(QmlGraphicsMouseEvent *mouse);
     void entered();
     void exited();
 
@@ -163,17 +163,17 @@ private:
     void handleRelease();
 
 protected:
-    QFxMouseRegion(QFxMouseRegionPrivate &dd, QFxItem *parent);
+    QmlGraphicsMouseRegion(QmlGraphicsMouseRegionPrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QFxMouseRegion)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxMouseRegion)
+    Q_DISABLE_COPY(QmlGraphicsMouseRegion)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsMouseRegion)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxDrag)
-QML_DECLARE_TYPE(QFxMouseRegion)
+QML_DECLARE_TYPE(QmlGraphicsDrag)
+QML_DECLARE_TYPE(QmlGraphicsMouseRegion)
 
 QT_END_HEADER
 

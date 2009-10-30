@@ -47,16 +47,16 @@
 
 
 QT_BEGIN_NAMESPACE
-QFxRepeaterPrivate::QFxRepeaterPrivate()
+QmlGraphicsRepeaterPrivate::QmlGraphicsRepeaterPrivate()
 : model(0), ownModel(false)
 {
 }
 
-QFxRepeaterPrivate::~QFxRepeaterPrivate()
+QmlGraphicsRepeaterPrivate::~QmlGraphicsRepeaterPrivate()
 {
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QmlGraphicsRepeater)
 
 /*!
     \qmlclass Repeater
@@ -103,7 +103,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
 
 /*!
     \internal
-    \class QFxRepeater
+    \class QmlGraphicsRepeater
     \qmlclass Repeater
 
     XXX Repeater is very conservative in how it instatiates/deletes items.  Also
@@ -111,18 +111,18 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
  */
 
 /*!
-    Create a new QFxRepeater instance.
+    Create a new QmlGraphicsRepeater instance.
  */
-QFxRepeater::QFxRepeater(QFxItem *parent)
-  : QFxItem(*(new QFxRepeaterPrivate), parent)
+QmlGraphicsRepeater::QmlGraphicsRepeater(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsRepeaterPrivate), parent)
 {
 }
 
 /*!
     \internal
  */
-QFxRepeater::QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent)
-  : QFxItem(dd, parent)
+QmlGraphicsRepeater::QmlGraphicsRepeater(QmlGraphicsRepeaterPrivate &dd, QmlGraphicsItem *parent)
+  : QmlGraphicsItem(dd, parent)
 {
 }
 
@@ -130,7 +130,7 @@ QFxRepeater::QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent)
     Destroy the repeater instance.  All items it instantiated are also
     destroyed.
  */
-QFxRepeater::~QFxRepeater()
+QmlGraphicsRepeater::~QmlGraphicsRepeater()
 {
 }
 
@@ -154,29 +154,29 @@ QFxRepeater::~QFxRepeater()
 
     \sa {qmlmodels}{Data Models}
 */
-QVariant QFxRepeater::model() const
+QVariant QmlGraphicsRepeater::model() const
 {
-    Q_D(const QFxRepeater);
+    Q_D(const QmlGraphicsRepeater);
     return d->dataSource;
 }
 
-void QFxRepeater::setModel(const QVariant &model)
+void QmlGraphicsRepeater::setModel(const QVariant &model)
 {
-    Q_D(QFxRepeater);
+    Q_D(QmlGraphicsRepeater);
     clear();
     if (d->model) {
         disconnect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         disconnect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         disconnect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         /*
-        disconnect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        disconnect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        disconnect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        disconnect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
     */
     }
     d->dataSource = model;
     QObject *object = qvariant_cast<QObject*>(model);
-    QFxVisualModel *vim = 0;
-    if (object && (vim = qobject_cast<QFxVisualModel *>(object))) {
+    QmlGraphicsVisualModel *vim = 0;
+    if (object && (vim = qobject_cast<QmlGraphicsVisualModel *>(object))) {
         if (d->ownModel) {
             delete d->model;
             d->ownModel = false;
@@ -184,10 +184,10 @@ void QFxRepeater::setModel(const QVariant &model)
         d->model = vim;
     } else {
         if (!d->ownModel) {
-            d->model = new QFxVisualDataModel(qmlContext(this));
+            d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
             d->ownModel = true;
         }
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             dataModel->setModel(model);
     }
     if (d->model) {
@@ -195,8 +195,8 @@ void QFxRepeater::setModel(const QVariant &model)
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         /*
-        connect(d->model, SIGNAL(createdItem(int, QFxItem*)), this, SLOT(createdItem(int,QFxItem*)));
-        connect(d->model, SIGNAL(destroyingItem(QFxItem*)), this, SLOT(destroyingItem(QFxItem*)));
+        connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
+        connect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
         */
         regenerate();
         emit countChanged();
@@ -209,25 +209,25 @@ void QFxRepeater::setModel(const QVariant &model)
 
     The delegate provides a template describing what each item instantiated by the repeater should look and act like.
  */
-QmlComponent *QFxRepeater::delegate() const
+QmlComponent *QmlGraphicsRepeater::delegate() const
 {
-    Q_D(const QFxRepeater);
+    Q_D(const QmlGraphicsRepeater);
     if (d->model) {
-        if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model))
+        if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model))
             return dataModel->delegate();
     }
 
     return 0;
 }
 
-void QFxRepeater::setDelegate(QmlComponent *delegate)
+void QmlGraphicsRepeater::setDelegate(QmlComponent *delegate)
 {
-    Q_D(QFxRepeater);
+    Q_D(QmlGraphicsRepeater);
     if (!d->ownModel) {
-        d->model = new QFxVisualDataModel(qmlContext(this));
+        d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
     }
-    if (QFxVisualDataModel *dataModel = qobject_cast<QFxVisualDataModel*>(d->model)) {
+    if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
         regenerate();
     }
@@ -238,9 +238,9 @@ void QFxRepeater::setDelegate(QmlComponent *delegate)
 
     This property holds the number of items in the repeater.
 */
-int QFxRepeater::count() const
+int QmlGraphicsRepeater::count() const
 {
-    Q_D(const QFxRepeater);
+    Q_D(const QmlGraphicsRepeater);
     if (d->model)
         return d->model->count();
     return 0;
@@ -250,19 +250,19 @@ int QFxRepeater::count() const
 /*!
     \internal
  */
-void QFxRepeater::componentComplete()
+void QmlGraphicsRepeater::componentComplete()
 {
-    QFxItem::componentComplete();
+    QmlGraphicsItem::componentComplete();
     regenerate();
 }
 
 /*!
     \internal
  */
-QVariant QFxRepeater::itemChange(GraphicsItemChange change,
+QVariant QmlGraphicsRepeater::itemChange(GraphicsItemChange change,
                                        const QVariant &value)
 {
-    QVariant rv = QFxItem::itemChange(change, value);
+    QVariant rv = QmlGraphicsItem::itemChange(change, value);
     if (change == ItemParentHasChanged) {
         regenerate();
     }
@@ -270,11 +270,11 @@ QVariant QFxRepeater::itemChange(GraphicsItemChange change,
     return rv;
 }
 
-void QFxRepeater::clear()
+void QmlGraphicsRepeater::clear()
 {
-    Q_D(QFxRepeater);
+    Q_D(QmlGraphicsRepeater);
     if (d->model) {
-        foreach (QFxItem *item, d->deletables)
+        foreach (QmlGraphicsItem *item, d->deletables)
             d->model->release(item);
     }
     d->deletables.clear();
@@ -283,9 +283,9 @@ void QFxRepeater::clear()
 /*!
     \internal
  */
-void QFxRepeater::regenerate()
+void QmlGraphicsRepeater::regenerate()
 {
-    Q_D(QFxRepeater);
+    Q_D(QmlGraphicsRepeater);
 
     clear();
 
@@ -293,7 +293,7 @@ void QFxRepeater::regenerate()
         return;
 
     for (int ii = 0; ii < count(); ++ii) {
-        QFxItem *item = d->model->item(ii);
+        QmlGraphicsItem *item = d->model->item(ii);
         if (item) {
             item->setParent(parentItem());
             item->stackBefore(this);
@@ -302,17 +302,17 @@ void QFxRepeater::regenerate()
     }
 }
 
-void QFxRepeater::itemsInserted(int, int)
+void QmlGraphicsRepeater::itemsInserted(int, int)
 {
     regenerate();
 }
 
-void QFxRepeater::itemsRemoved(int, int)
+void QmlGraphicsRepeater::itemsRemoved(int, int)
 {
     regenerate();
 }
 
-void QFxRepeater::itemsMoved(int,int,int)
+void QmlGraphicsRepeater::itemsMoved(int,int,int)
 {
     regenerate();
 }

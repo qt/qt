@@ -43,7 +43,7 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusScope,QFxFocusScope)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusScope,QmlGraphicsFocusScope)
 
 /*!
     \qmlclass FocusScope
@@ -57,16 +57,16 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FocusScope,QFxFocusScope)
 
 /*!
     \internal
-    \class QFxFocusScope
+    \class QmlGraphicsFocusScope
 */
 
-QFxFocusScope::QFxFocusScope(QFxItem *parent) :
-    QFxItem(parent)
+QmlGraphicsFocusScope::QmlGraphicsFocusScope(QmlGraphicsItem *parent) :
+    QmlGraphicsItem(parent)
 {
     setFlag(QGraphicsItem::ItemIsFocusScope);
 }
 
-QFxFocusScope::~QFxFocusScope()
+QmlGraphicsFocusScope::~QmlGraphicsFocusScope()
 {
 }
 QT_END_NAMESPACE

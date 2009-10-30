@@ -50,8 +50,8 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QFxRepeaterPrivate;
-class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
+class QmlGraphicsRepeaterPrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsRepeater : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -61,8 +61,8 @@ class Q_DECLARATIVE_EXPORT QFxRepeater : public QFxItem
     Q_CLASSINFO("DefaultProperty", "delegate")
 
 public:
-    QFxRepeater(QFxItem *parent=0);
-    virtual ~QFxRepeater();
+    QmlGraphicsRepeater(QmlGraphicsItem *parent=0);
+    virtual ~QmlGraphicsRepeater();
 
     QVariant model() const;
     void setModel(const QVariant &);
@@ -82,7 +82,7 @@ private:
 protected:
     virtual void componentComplete();
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    QFxRepeater(QFxRepeaterPrivate &dd, QFxItem *parent);
+    QmlGraphicsRepeater(QmlGraphicsRepeaterPrivate &dd, QmlGraphicsItem *parent);
 
 private Q_SLOTS:
     void itemsInserted(int,int);
@@ -90,13 +90,13 @@ private Q_SLOTS:
     void itemsMoved(int,int,int);
 
 private:
-    Q_DISABLE_COPY(QFxRepeater)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QFxRepeater)
+    Q_DISABLE_COPY(QmlGraphicsRepeater)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRepeater)
 };
 
 QT_END_NAMESPACE
 
-QML_DECLARE_TYPE(QFxRepeater)
+QML_DECLARE_TYPE(QmlGraphicsRepeater)
 
 QT_END_HEADER
 
