@@ -89,6 +89,10 @@ QList<QGraphicsSystemScreen *> QGraphicsSystem::screens() const
     return QList<QGraphicsSystemScreen *>();
 }
 
+QGraphicsSystemScreen::QGraphicsSystemScreen(QObject *parent)
+  : QObject(parent)
+{}
+
 QGraphicsSystemScreen::~QGraphicsSystemScreen()
 {
 }

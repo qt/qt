@@ -60,9 +60,11 @@ QT_BEGIN_NAMESPACE
 
 class QPixmapFilter;
 
-class Q_GUI_EXPORT QGraphicsSystemScreen
+class Q_GUI_EXPORT QGraphicsSystemScreen : public QObject
 {
+    Q_OBJECT
 public:
+    QGraphicsSystemScreen(QObject *parent = 0);
     virtual ~QGraphicsSystemScreen();
 
     virtual QRect geometry() const = 0;
