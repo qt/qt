@@ -152,8 +152,8 @@ private:
 
 MainWindow::MainWindow()
 {
-    (void)qApp->registerGestureRecognizer(new MousePanGestureRecognizer);
-    ThreeFingerSlideGesture::Type = qApp->registerGestureRecognizer(new ThreeFingerSlideGestureRecognizer);
+    (void)QApplication::registerGestureRecognizer(new MousePanGestureRecognizer);
+    ThreeFingerSlideGesture::Type = QApplication::registerGestureRecognizer(new ThreeFingerSlideGestureRecognizer);
 
     tabWidget = new QTabWidget;
 

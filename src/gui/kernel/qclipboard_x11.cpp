@@ -78,6 +78,7 @@
 #include "qimagewriter.h"
 #include "qvariant.h"
 #include "qdnd_p.h"
+#include <private/qwidget_p.h>
 
 #ifndef QT_NO_XFIXES
 #include <X11/extensions/Xfixes.h>
@@ -131,6 +132,11 @@ void setupOwner()
     requestor = new QWidget(0);
     requestor->createWinId();
     requestor->setObjectName(QLatin1String("internal clipboard requestor"));
+    // We dont need this internal widgets to appear in QApplication::topLevelWidgets()
+    if (QWidgetPrivate::allWidgets) {
+        QWidgetPrivate::allWidgets->remove(owner);
+        QWidgetPrivate::allWidgets->remove(requestor);
+    }
     qAddPostRoutine(cleanup);
 }
 
@@ -769,6 +775,9 @@ QByteArray QX11Data::clipboardReadIncrementalProperty(Window win, Atom property,
     delete requestor;
     requestor = new QWidget(0);
     requestor->setObjectName(QLatin1String("internal clipboard requestor"));
+    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    if (QWidgetPrivate::allWidgets)
+        QWidgetPrivate::allWidgets->remove(requestor);
 
     return QByteArray();
 }

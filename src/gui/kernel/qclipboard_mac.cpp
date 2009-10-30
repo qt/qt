@@ -532,7 +532,7 @@ QMacPasteboard::retrieveData(const QString &format, QVariant::Type) const
                 // Try to get the NSStringPboardType from NSPasteboard, newlines are mapped
                 // correctly (as '\n') in this data. The 'public.utf16-plain-text' type
                 // usually maps newlines to '\r' instead.
-                QString str = qt_mac_get_pasteboardString();
+                QString str = qt_mac_get_pasteboardString(paste);
                 if (!str.isEmpty())
                     return str;
             }

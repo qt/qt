@@ -62,6 +62,7 @@ public:
     }
     bool mousePressEventRecieved;
     bool mouseReleaseEventRecieved;
+    bool mouseMoveEventRecieved;
 #ifdef QT3_SUPPORT
     int mousePressStateBefore;
     int mousePressStateAfter;
@@ -76,6 +77,13 @@ public:
     int mouseReleaseButton;
     int mouseReleaseButtons;
     int mouseReleaseModifiers;
+#ifdef QT3_SUPPORT
+    int mouseMoveStateBefore;
+    int mouseMoveStateAfter;
+#endif
+    int mouseMoveButton;
+    int mouseMoveButtons;
+    int mouseMoveModifiers;
 protected:
     void mousePressEvent(QMouseEvent *e)
     {
@@ -103,6 +111,19 @@ protected:
 	mouseReleaseEventRecieved = TRUE;
 	e->accept();
     }
+    void mouseMoveEvent(QMouseEvent *e)
+    {
+        QWidget::mouseMoveEvent(e);
+#ifdef QT3_SUPPORT
+        mouseMoveStateBefore = e->state();
+        mouseMoveStateAfter = e->stateAfter();
+#endif
+        mouseMoveButton = e->button();
+        mouseMoveButtons = e->buttons();
+        mouseMoveModifiers = e->modifiers();
+        mouseMoveEventRecieved = TRUE;
+        e->accept();
+    }
 };
 
 class tst_QMouseEvent : public QObject
@@ -124,6 +145,8 @@ private slots:
     void checkMousePressEvent();
     void checkMouseReleaseEvent_data();
     void checkMouseReleaseEvent();
+    void checkMouseMoveEvent_data();
+    void checkMouseMoveEvent();
 
     void qt3supportConstructors();
 
@@ -157,11 +180,14 @@ void tst_QMouseEvent::init()
 {
     testMouseWidget->mousePressEventRecieved = FALSE;
     testMouseWidget->mouseReleaseEventRecieved = FALSE;
+    testMouseWidget->mouseMoveEventRecieved = FALSE;
 #ifdef QT3_SUPPORT
     testMouseWidget->mousePressStateBefore = 0;
     testMouseWidget->mousePressStateAfter = 0;
     testMouseWidget->mouseReleaseStateBefore = 0;
     testMouseWidget->mouseReleaseStateAfter = 0;
+    testMouseWidget->mouseMoveStateBefore = 0;
+    testMouseWidget->mouseMoveStateAfter = 0;
 #endif
     testMouseWidget->mousePressButton = 0;
     testMouseWidget->mousePressButtons = 0;
@@ -169,6 +195,9 @@ void tst_QMouseEvent::init()
     testMouseWidget->mouseReleaseButton = 0;
     testMouseWidget->mouseReleaseButtons = 0;
     testMouseWidget->mouseReleaseModifiers = 0;
+    testMouseWidget->mouseMoveButton = 0;
+    testMouseWidget->mouseMoveButtons = 0;
+    testMouseWidget->mouseMoveModifiers = 0;
 }
 
 void tst_QMouseEvent::cleanup()
@@ -263,6 +292,52 @@ void tst_QMouseEvent::checkMouseReleaseEvent()
     QCOMPARE(testMouseWidget->mouseReleaseStateBefore, stateBefore);
     QCOMPARE(testMouseWidget->mouseReleaseStateAfter, stateAfter);
 #endif
+}
+
+void tst_QMouseEvent::checkMouseMoveEvent_data()
+{
+    QTest::addColumn<int>("buttonMoved");
+    QTest::addColumn<int>("keyPressed");
+
+    QTest::newRow("leftButton-nokey") << int(Qt::LeftButton) << int(Qt::NoButton);
+    QTest::newRow("leftButton-shiftkey") << int(Qt::LeftButton) << int(Qt::ShiftModifier);
+    QTest::newRow("leftButton-controlkey") << int(Qt::LeftButton) << int(Qt::ControlModifier);
+    QTest::newRow("leftButton-altkey") << int(Qt::LeftButton) << int(Qt::AltModifier);
+    QTest::newRow("leftButton-metakey") << int(Qt::LeftButton) << int(Qt::MetaModifier);
+    QTest::newRow("rightButton-nokey") << int(Qt::RightButton) << int(Qt::NoButton);
+    QTest::newRow("rightButton-shiftkey") << int(Qt::RightButton) << int(Qt::ShiftModifier);
+    QTest::newRow("rightButton-controlkey") << int(Qt::RightButton) << int(Qt::ControlModifier);
+    QTest::newRow("rightButton-altkey") << int(Qt::RightButton) << int(Qt::AltModifier);
+    QTest::newRow("rightButton-metakey") << int(Qt::RightButton) << int(Qt::MetaModifier);
+    QTest::newRow("midButton-nokey") << int(Qt::MidButton) << int(Qt::NoButton);
+    QTest::newRow("midButton-shiftkey") << int(Qt::MidButton) << int(Qt::ShiftModifier);
+    QTest::newRow("midButton-controlkey") << int(Qt::MidButton) << int(Qt::ControlModifier);
+    QTest::newRow("midButton-altkey") << int(Qt::MidButton) << int(Qt::AltModifier);
+    QTest::newRow("midButton-metakey") << int(Qt::MidButton) << int(Qt::MetaModifier);
+}
+
+void tst_QMouseEvent::checkMouseMoveEvent()
+{
+    QFETCH(int,buttonMoved);
+    QFETCH(int,keyPressed);
+    int button = (int)Qt::NoButton;
+    int buttons = buttonMoved;
+    int modifiers = keyPressed;
+
+    QTest::mousePress(testMouseWidget, Qt::MouseButton(buttonMoved), Qt::KeyboardModifiers(keyPressed));
+    QTest::mouseMove(testMouseWidget, QPoint(10,10));
+    QVERIFY(testMouseWidget->mouseMoveEventRecieved);
+    QCOMPARE(testMouseWidget->mouseMoveButton, button);
+    QCOMPARE(testMouseWidget->mouseMoveButtons, buttons);
+    QCOMPARE(testMouseWidget->mouseMoveModifiers, modifiers);
+#ifdef QT3_SUPPORT
+    int stateAfter = buttons|modifiers;
+    int stateBefore = stateAfter|button;
+
+    QCOMPARE(testMouseWidget->mouseMoveStateBefore, stateBefore);
+    QCOMPARE(testMouseWidget->mouseMoveStateAfter, stateAfter);
+#endif
+    QTest::mouseRelease(testMouseWidget, Qt::MouseButton(buttonMoved), Qt::KeyboardModifiers(keyPressed));
 }
 
 void tst_QMouseEvent::qt3supportConstructors()
