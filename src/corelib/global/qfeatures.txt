@@ -28,17 +28,10 @@ Requires:
 Name: CssParser
 SeeAlso: ???
 
-Feature: THREAD
-Description: Supports multithreaded programming.
-Section: Kernel
-Requires:
-Name: QThread
-SeeAlso: ???
-
 Feature: CONCURRENT
 Description: Provides a high-level multi-threaded APIs
 Section: Kernel
-Requires: THREAD
+Requires:
 Name: QtConcurrent
 SeeAlso: ???
 
@@ -195,7 +188,7 @@ SeeAlso: ???
 Feature: PROCESS
 Description: Supports external process invocation.
 Section: File I/O
-Requires: THREAD
+Requires:
 Name: QProcess
 SeeAlso: ???
 
@@ -245,7 +238,7 @@ Feature: FILESYSTEMWATCHER
 Description: Provides an interface for monitoring files and directories
 for modications.
 Section: File I/O
-Requires: THREAD
+Requires:
 Name: QFileSystemWatcher
 SeeAlso: ???
 
@@ -1166,7 +1159,7 @@ SeeAlso: ???
 Feature: ANIMATION
 Description: Provides a framework for animations.
 Section: Utilities
-Requires: PROPERTIES THREAD
+Requires: PROPERTIES
 Name: Animation
 SeeAlso: ???
 

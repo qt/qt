@@ -55,6 +55,9 @@
 // Color Names
 //#define QT_NO_COLORNAMES
 
+// QtConcurrent
+//#define QT_NO_CONCURRENT
+
 // QCopChannel
 //#define QT_NO_COP
 
@@ -75,6 +78,9 @@
 
 // Effects
 //#define QT_NO_EFFECTS
+
+// QFileSystemWatcher
+//#define QT_NO_FILESYSTEMWATCHER
 
 // Freetype Font Engine
 //#define QT_NO_FREETYPE
@@ -150,6 +156,9 @@
 
 // QPicture
 //#define QT_NO_PICTURE
+
+// QProcess
+//#define QT_NO_PROCESS
 
 // QProgressBar
 //#define QT_NO_PROGRESSBAR
@@ -274,9 +283,6 @@
 // QTextStream
 //#define QT_NO_TEXTSTREAM
 
-// QThread
-//#define QT_NO_THREAD
-
 // QToolTip
 //#define QT_NO_TOOLTIP
 
@@ -301,6 +307,11 @@
 // 
 //#define QT_NO_XMLSTREAM
 
+// Animation
+#if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES))
+#define QT_NO_ANIMATION
+#endif
+
 // QButtonGroup
 #if !defined(QT_NO_BUTTONGROUP) && (defined(QT_NO_GROUPBOX))
 #define QT_NO_BUTTONGROUP
@@ -316,11 +327,6 @@
 #define QT_NO_CODECS
 #endif
 
-// QtConcurrent
-#if !defined(QT_NO_CONCURRENT) && (defined(QT_NO_THREAD))
-#define QT_NO_CONCURRENT
-#endif
-
 // QDate/QTime/QDateTime
 #if !defined(QT_NO_DATESTRING) && (defined(QT_NO_TEXTDATE))
 #define QT_NO_DATESTRING
@@ -331,9 +337,9 @@
 #define QT_NO_DIAL
 #endif
 
-// QFileSystemWatcher
-#if !defined(QT_NO_FILESYSTEMWATCHER) && (defined(QT_NO_THREAD))
-#define QT_NO_FILESYSTEMWATCHER
+// QFileSystemModel
+#if !defined(QT_NO_FILESYSTEMMODEL) && (defined(QT_NO_FILESYSTEMWATCHER))
+#define QT_NO_FILESYSTEMMODEL
 #endif
 
 // QHostInfo
@@ -369,11 +375,6 @@
 // Phonon::VolumeFaderEffect
 #if !defined(QT_NO_PHONON_VOLUMEFADEREFFECT) && (defined(QT_NO_PHONON_EFFECT))
 #define QT_NO_PHONON_VOLUMEFADEREFFECT
-#endif
-
-// QProcess
-#if !defined(QT_NO_PROCESS) && (defined(QT_NO_THREAD))
-#define QT_NO_PROCESS
 #endif
 
 // QProgressDialog
@@ -491,19 +492,9 @@
 #define QT_NO_XMLSTREAMWRITER
 #endif
 
-// Animation
-#if !defined(QT_NO_ANIMATION) && (defined(QT_NO_PROPERTIES) || defined(QT_NO_THREAD))
-#define QT_NO_ANIMATION
-#endif
-
 // Context menu
 #if !defined(QT_NO_CONTEXTMENU) && (defined(QT_NO_MENU))
 #define QT_NO_CONTEXTMENU
-#endif
-
-// QFileSystemModel
-#if !defined(QT_NO_FILESYSTEMMODEL) && (defined(QT_NO_FILESYSTEMWATCHER))
-#define QT_NO_FILESYSTEMMODEL
 #endif
 
 // File Transfer Protocol
@@ -796,14 +787,14 @@
 #define QT_NO_CUPS
 #endif
 
-// QDockwidget
-#if !defined(QT_NO_DOCKWIDGET) && (defined(QT_NO_RUBBERBAND) || defined(QT_NO_MAINWINDOW))
-#define QT_NO_DOCKWIDGET
-#endif
-
 // QDirModel
 #if !defined(QT_NO_DIRMODEL) && (defined(QT_NO_ITEMVIEWS) || defined(QT_NO_FILESYSTEMMODEL))
 #define QT_NO_DIRMODEL
+#endif
+
+// QDockwidget
+#if !defined(QT_NO_DOCKWIDGET) && (defined(QT_NO_RUBBERBAND) || defined(QT_NO_MAINWINDOW))
+#define QT_NO_DOCKWIDGET
 #endif
 
 // QUndoView
@@ -811,14 +802,14 @@
 #define QT_NO_UNDOVIEW
 #endif
 
-// QGraphicsSvgItem
-#if !defined(QT_NO_GRAPHICSSVGITEM) && (defined(QT_NO_SVGRENDERER) || defined(QT_NO_GRAPHICSVIEW))
-#define QT_NO_GRAPHICSSVGITEM
-#endif
-
 // QCompleter
 #if !defined(QT_NO_FSCOMPLETER) && (defined(QT_NO_FILESYSTEMMODEL) || defined(QT_NO_COMPLETER))
 #define QT_NO_FSCOMPLETER
+#endif
+
+// QGraphicsSvgItem
+#if !defined(QT_NO_GRAPHICSSVGITEM) && (defined(QT_NO_SVGRENDERER) || defined(QT_NO_GRAPHICSVIEW))
+#define QT_NO_GRAPHICSSVGITEM
 #endif
 
 // QComboBox

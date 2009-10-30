@@ -255,9 +255,6 @@
 #ifndef QT_NO_TEXTHTMLPARSER
 #  define QT_NO_TEXTHTMLPARSER
 #endif
-#ifndef QT_NO_THREAD
-#  define QT_NO_THREAD
-#endif
 #ifndef QT_NO_CONCURRENT
 #  define QT_NO_CONCURRENT
 #endif
