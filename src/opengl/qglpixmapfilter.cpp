@@ -43,6 +43,8 @@
 #include "private/qpixmapdata_gl_p.h"
 #include "private/qpaintengineex_opengl2_p.h"
 #include "private/qglengineshadermanager_p.h"
+#include "private/qpixmapdata_p.h"
+#include "private/qimagepixmapcleanuphooks_p.h"
 #include "qglpixmapfilter_p.h"
 #include "qgraphicssystem_gl_p.h"
 #include "qpaintengine_opengl_p.h"
@@ -54,7 +56,7 @@
 
 #include "private/qapplication_p.h"
 #include "private/qmath_p.h"
-
+#include "qmath.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -114,6 +116,10 @@ private:
     mutable QSize m_textureSize;
     mutable bool m_horizontalBlur;
     mutable bool m_singlePass;
+    mutable bool m_animatedBlur;
+
+    mutable qreal m_t;
+    mutable QSize m_targetSize;
 
     mutable bool m_haveCached;
     mutable int m_cachedRadius;
@@ -153,6 +159,11 @@ QPixmapFilter *QGL2PaintEngineEx::pixmapFilter(int type, const QPixmapFilter *pr
 
     case QPixmapFilter::BlurFilter: {
         const QPixmapBlurFilter *proto = static_cast<const QPixmapBlurFilter *>(prototype);
+        if (proto->blurHint() == QGraphicsBlurEffect::AnimationHint) {
+            if (!d->animationBlurFilter)
+                d->animationBlurFilter.reset(new QGLPixmapBlurFilter(proto->blurHint()));
+            return d->animationBlurFilter.data();
+        }
         if (proto->blurHint() == QGraphicsBlurEffect::PerformanceHint || proto->radius() <= 5) {
             if (!d->fastBlurFilter)
                 d->fastBlurFilter.reset(new QGLPixmapBlurFilter(QGraphicsBlurEffect::PerformanceHint));
@@ -328,20 +339,343 @@ static QByteArray qt_gl_convertToClamped(const QByteArray &source)
 }
 
 QGLPixmapBlurFilter::QGLPixmapBlurFilter(QGraphicsBlurEffect::BlurHint hint)
-    : m_haveCached(false)
+    : m_animatedBlur(false)
+    , m_haveCached(false)
     , m_cachedRadius(0)
     , m_hint(hint)
 {
+}
+
+// should be even numbers as they will be divided by two
+static const int qCachedBlurLevels[] = { 6, 14, 30 };
+static const int qNumCachedBlurTextures = sizeof(qCachedBlurLevels) / sizeof(*qCachedBlurLevels);
+static const int qMaxCachedBlurLevel = qCachedBlurLevels[qNumCachedBlurTextures - 1];
+
+static qreal qLogBlurLevel(int level)
+{
+    static bool initialized = false;
+    static qreal logBlurLevelCache[qNumCachedBlurTextures];
+    if (!initialized) {
+        for (int i = 0; i < qNumCachedBlurTextures; ++i)
+            logBlurLevelCache[i] = qLn(qCachedBlurLevels[i]);
+        initialized = true;
+    }
+    return logBlurLevelCache[level];
+}
+
+class QGLBlurTextureInfo
+{
+public:
+    QGLBlurTextureInfo(QSize size, GLuint textureIds[])
+        : m_size(size)
+    {
+        for (int i = 0; i < qNumCachedBlurTextures; ++i)
+            m_textureIds[i] = textureIds[i];
+    }
+
+    ~QGLBlurTextureInfo()
+    {
+        glDeleteTextures(qNumCachedBlurTextures, m_textureIds);
+    }
+
+    QSize size() const { return m_size; }
+    GLuint textureId(int i) const { return m_textureIds[i]; }
+
+private:
+    GLuint m_textureIds[qNumCachedBlurTextures];
+    QSize m_size;
+};
+
+class QGLBlurTextureCache : public QObject
+{
+public:
+    static QGLBlurTextureCache *cacheForContext(const QGLContext *context);
+
+    QGLBlurTextureCache();
+    ~QGLBlurTextureCache();
+
+    QGLBlurTextureInfo *takeBlurTextureInfo(const QPixmap &pixmap);
+    bool fitsInCache(const QPixmap &pixmap) const;
+    bool hasBlurTextureInfo(const QPixmap &pixmap) const;
+    void insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTextureInfo *info);
+    void clearBlurTextureInfo(const QPixmap &pixmap);
+
+    void timerEvent(QTimerEvent *event);
+
+private:
+    static void pixmapDestroyed(QPixmap *pixmap);
+
+    QCache<quint64, QGLBlurTextureInfo > cache;
+
+    static QList<QGLBlurTextureCache *> blurTextureCaches;
+
+    int timerId;
+};
+
+QList<QGLBlurTextureCache *> QGLBlurTextureCache::blurTextureCaches;
+
+static void QGLBlurTextureCache_free(void *ptr)
+{
+    delete reinterpret_cast<QGLBlurTextureCache *>(ptr);
+}
+
+Q_GLOBAL_STATIC_WITH_ARGS(QGLContextResource, qt_blur_texture_caches, (QGLBlurTextureCache_free))
+
+QGLBlurTextureCache::QGLBlurTextureCache()
+    : timerId(0)
+{
+    cache.setMaxCost(4 * 1024 * 1024);
+    blurTextureCaches.append(this);
+}
+
+QGLBlurTextureCache::~QGLBlurTextureCache()
+{
+    blurTextureCaches.removeAt(blurTextureCaches.indexOf(this));
+}
+
+void QGLBlurTextureCache::timerEvent(QTimerEvent *event)
+{
+    killTimer(timerId);
+    timerId = 0;
+
+    cache.clear();
+}
+
+QGLBlurTextureCache *QGLBlurTextureCache::cacheForContext(const QGLContext *context)
+{
+    QGLBlurTextureCache *p = reinterpret_cast<QGLBlurTextureCache *>(qt_blur_texture_caches()->value(context));
+    if (!p) {
+        p = new QGLBlurTextureCache;
+        qt_blur_texture_caches()->insert(context, p);
+    }
+    return p;
+}
+
+QGLBlurTextureInfo *QGLBlurTextureCache::takeBlurTextureInfo(const QPixmap &pixmap)
+{
+    return cache.take(pixmap.cacheKey());
+}
+
+void QGLBlurTextureCache::clearBlurTextureInfo(const QPixmap &pixmap)
+{
+    cache.remove(pixmap.cacheKey());
+}
+
+bool QGLBlurTextureCache::hasBlurTextureInfo(const QPixmap &pixmap) const
+{
+    return cache.contains(pixmap.cacheKey());
+}
+
+void QGLBlurTextureCache::insertBlurTextureInfo(const QPixmap &pixmap, QGLBlurTextureInfo *info)
+{
+    static bool hookAdded = false;
+    if (!hookAdded) {
+        QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(pixmapDestroyed);
+        hookAdded = true;
+    }
+
+    QImagePixmapCleanupHooks::enableCleanupHooks(pixmap);
+    cache.insert(pixmap.cacheKey(), info, pixmap.width() * pixmap.height());
+
+    if (timerId)
+        killTimer(timerId);
+
+    timerId = startTimer(1000);
+}
+
+bool QGLBlurTextureCache::fitsInCache(const QPixmap &pixmap) const
+{
+    return pixmap.width() * pixmap.height() <= cache.maxCost();
+}
+
+void QGLBlurTextureCache::pixmapDestroyed(QPixmap *pixmap)
+{
+    foreach (QGLBlurTextureCache *cache, blurTextureCaches) {
+        if (cache->hasBlurTextureInfo(*pixmap))
+            cache->clearBlurTextureInfo(*pixmap);
+    }
+}
+
+static const char *qt_gl_interpolate_filter =
+        "uniform lowp float interpolationValue;"
+        "uniform lowp sampler2D interpolateTarget;"
+        "uniform highp vec4 interpolateMapping;"
+        "lowp vec4 customShader(lowp sampler2D src, highp vec2 srcCoords)"
+        "{"
+        "    return mix(texture2D(interpolateTarget, interpolateMapping.xy + interpolateMapping.zw * srcCoords),"
+        "               texture2D(src, srcCoords), interpolationValue);"
+        "}";
+
+static void initializeTexture(GLuint id, int width, int height)
+{
+    glBindTexture(GL_TEXTURE_2D, id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const QPixmap &src, const QRectF &) const
 {
     QGLPixmapBlurFilter *filter = const_cast<QGLPixmapBlurFilter *>(this);
 
+    QGLContext *ctx = const_cast<QGLContext *>(QGLContext::currentContext());
+    QGLBlurTextureCache *blurTextureCache = QGLBlurTextureCache::cacheForContext(ctx);
+
+    if (m_hint == QGraphicsBlurEffect::AnimationHint && blurTextureCache->fitsInCache(src)) {
+        QRect targetRect = src.rect().adjusted(-qMaxCachedBlurLevel, -qMaxCachedBlurLevel, qMaxCachedBlurLevel, qMaxCachedBlurLevel);
+        // ensure even dimensions (going to divide by two)
+        targetRect.setWidth((targetRect.width() + 1) & ~1);
+        targetRect.setHeight((targetRect.height() + 1) & ~1);
+
+        QGLBlurTextureInfo *info = 0;
+        if (blurTextureCache->hasBlurTextureInfo(src)) {
+            info = blurTextureCache->takeBlurTextureInfo(src);
+        } else {
+            m_animatedBlur = false;
+            m_hint = QGraphicsBlurEffect::QualityHint;
+            m_singlePass = false;
+
+            QGLFramebufferObjectFormat format;
+            format.setInternalTextureFormat(GL_RGBA);
+            QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(targetRect.size() / 2, format, true);
+
+            if (!fbo)
+                return false;
+
+            QPainter fboPainter(fbo);
+            QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(fboPainter.paintEngine());
+
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            // ensure GL_LINEAR filtering is used for scaling down to half the size
+            fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+            fboPainter.setCompositionMode(QPainter::CompositionMode_Source);
+            fboPainter.drawPixmap(qMaxCachedBlurLevel / 2, qMaxCachedBlurLevel / 2,
+                    targetRect.width() / 2 - qMaxCachedBlurLevel, targetRect.height() / 2 - qMaxCachedBlurLevel, src);
+
+            GLuint textures[qNumCachedBlurTextures]; // blur textures
+            glGenTextures(qNumCachedBlurTextures, textures);
+            GLuint temp; // temp texture
+            glGenTextures(1, &temp);
+
+            initializeTexture(temp, fbo->width(), fbo->height());
+            m_textureSize = fbo->size();
+
+            int currentBlur = 0;
+
+            QRect fboRect(0, 0, fbo->width(), fbo->height());
+            GLuint sourceTexture = fbo->texture();
+            for (int i = 0; i < qNumCachedBlurTextures; ++i) {
+                int targetBlur = qCachedBlurLevels[i] / 2;
+
+                int blurDelta = qRound(qSqrt(targetBlur * targetBlur - currentBlur * currentBlur));
+                QByteArray source = generateGaussianShader(blurDelta);
+                filter->setSource(source);
+
+                currentBlur = targetBlur;
+
+                // now we're going to be nasty and keep using the same FBO with different textures
+                glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                        GL_TEXTURE_2D, temp, 0);
+
+                m_horizontalBlur = true;
+                filter->setOnPainter(&fboPainter);
+                engine->drawTexture(fboRect, sourceTexture, fbo->size(), fboRect);
+                filter->removeFromPainter(&fboPainter);
+
+                sourceTexture = textures[i];
+                initializeTexture(sourceTexture, fbo->width(), fbo->height());
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                        GL_TEXTURE_2D, textures[i], 0);
+
+                m_horizontalBlur = false;
+                filter->setOnPainter(&fboPainter);
+                engine->drawTexture(fboRect, temp, fbo->size(), fboRect);
+                filter->removeFromPainter(&fboPainter);
+            }
+
+            glDeleteTextures(1, &temp);
+
+            // reattach the original FBO texture
+            glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                    GL_TEXTURE_2D, fbo->texture(), 0);
+
+            fboPainter.end();
+
+            qgl_fbo_pool()->release(fbo);
+
+            info = new QGLBlurTextureInfo(fboRect.size(), textures);
+        }
+
+        if (!m_haveCached || !m_animatedBlur) {
+            m_haveCached = true;
+            m_animatedBlur = true;
+            m_hint = QGraphicsBlurEffect::AnimationHint;
+            filter->setSource(qt_gl_interpolate_filter);
+        }
+
+        QGL2PaintEngineEx *engine = static_cast<QGL2PaintEngineEx *>(painter->paintEngine());
+        painter->setRenderHint(QPainter::SmoothPixmapTransform);
+        filter->setOnPainter(painter);
+
+        qreal logRadius = qLn(radius());
+
+        int t;
+        for (t = -1; t < qNumCachedBlurTextures - 2; ++t) {
+            if (logRadius < qLogBlurLevel(t+1))
+                break;
+        }
+
+        qreal logBase = t >= 0 ? qLogBlurLevel(t) : 0;
+        m_t = qBound(qreal(0), (logRadius - logBase) / (qLogBlurLevel(t+1) - logBase), qreal(1));
+
+        m_textureSize = info->size();
+
+        glActiveTexture(GL_TEXTURE0 + 3);
+        if (t >= 0) {
+            glBindTexture(GL_TEXTURE_2D, info->textureId(t));
+            m_targetSize = info->size();
+        } else {
+            QGLTexture *texture =
+                ctx->d_func()->bindTexture(src, GL_TEXTURE_2D, GL_RGBA,
+                                           QGLContext::InternalBindOption
+                                           | QGLContext::CanFlipNativePixmapBindOption);
+            m_targetSize = src.size();
+            if (!(texture->options & QGLContext::InvertedYBindOption))
+                m_targetSize.setHeight(-m_targetSize.height());
+        }
+
+        // restrict the target rect to the max of the radii we are interpolating between
+        int radiusDelta = qMaxCachedBlurLevel - qCachedBlurLevels[t+1];
+        targetRect = targetRect.translated(pos.toPoint()).adjusted(radiusDelta, radiusDelta, -radiusDelta, -radiusDelta);
+
+        radiusDelta /= 2;
+        QRect sourceRect = QRect(QPoint(), m_textureSize).adjusted(radiusDelta, radiusDelta, -radiusDelta, -radiusDelta);
+
+        engine->drawTexture(targetRect, info->textureId(t+1), m_textureSize, sourceRect);
+
+        glActiveTexture(GL_TEXTURE0 + 3);
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        filter->removeFromPainter(painter);
+        blurTextureCache->insertBlurTextureInfo(src, info);
+
+        return true;
+    }
+
+    if (blurTextureCache->hasBlurTextureInfo(src))
+        blurTextureCache->clearBlurTextureInfo(src);
+
     int actualRadius = qRound(radius());
     int filterRadius = actualRadius;
     int fastRadii[] = { 1, 2, 3, 5, 8, 15, 25 };
-    if (m_hint == QGraphicsBlurEffect::PerformanceHint) {
+    if (m_hint != QGraphicsBlurEffect::QualityHint) {
         uint i = 0;
         for (; i < (sizeof(fastRadii)/sizeof(*fastRadii))-1; ++i) {
             if (fastRadii[i+1] > filterRadius)
@@ -352,9 +686,10 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
     m_singlePass = filterRadius <= 3;
 
-    if (!m_haveCached || filterRadius != m_cachedRadius) {
+    if (!m_haveCached || m_animatedBlur || filterRadius != m_cachedRadius) {
         // Only regenerate the shader from source if parameters have changed.
         m_haveCached = true;
+        m_animatedBlur = false;
         m_cachedRadius = filterRadius;
         QByteArray source = generateGaussianShader(filterRadius, m_singlePass);
         filter->setSource(source);
@@ -389,13 +724,12 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
 
         QPainter fboPainter(fbo);
 
-        if (src.hasAlphaChannel()) {
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // ensure GL_LINEAR filtering is used
         fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+        fboPainter.setCompositionMode(QPainter::CompositionMode_Source);
         filter->setOnPainter(&fboPainter);
         QBrush pixmapBrush = src;
         pixmapBrush.setTransform(QTransform::fromTranslate(actualRadius, actualRadius));
@@ -427,6 +761,28 @@ void QGLPixmapBlurFilter::setUniforms(QGLShaderProgram *program)
 {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    if (m_animatedBlur) {
+        program->setUniformValue("interpolateTarget", 3);
+        program->setUniformValue("interpolationValue", GLfloat(m_t));
+
+        if (m_textureSize == m_targetSize) {
+            program->setUniformValue("interpolateMapping", 0.0f, 0.0f, 1.0f, 1.0f);
+        } else {
+            float offsetX = (-qMaxCachedBlurLevel - 0.5) / qreal(m_targetSize.width());
+            float offsetY = (-qMaxCachedBlurLevel - 0.5) / qreal(m_targetSize.height());
+
+            if (m_targetSize.height() < 0)
+                offsetY = 1 + offsetY;
+
+            float scaleX = 2.0f * qreal(m_textureSize.width()) / qreal(m_targetSize.width());
+            float scaleY = 2.0f * qreal(m_textureSize.height()) / qreal(m_targetSize.height());
+
+            program->setUniformValue("interpolateMapping", offsetX, offsetY, scaleX, scaleY);
+        }
+
+        return;
+    }
 
     if (m_hint == QGraphicsBlurEffect::QualityHint) {
         if (m_singlePass)
@@ -632,13 +988,12 @@ bool QGLPixmapDropShadowFilter::processGL(QPainter *painter, const QPointF &pos,
 
         QPainter fboPainter(fbo);
 
-        if (src.hasAlphaChannel()) {
-            glClearColor(0, 0, 0, 0);
-            glClear(GL_COLOR_BUFFER_BIT);
-        }
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         // ensure GL_LINEAR filtering is used
         fboPainter.setRenderHint(QPainter::SmoothPixmapTransform);
+        fboPainter.setCompositionMode(QPainter::CompositionMode_Source);
         filter->setOnPainter(&fboPainter);
         QBrush pixmapBrush = src;
         pixmapBrush.setTransform(QTransform::fromTranslate(actualRadius, actualRadius));

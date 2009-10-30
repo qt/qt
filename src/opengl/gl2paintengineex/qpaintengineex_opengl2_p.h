@@ -289,6 +289,7 @@ public:
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
+    QScopedPointer<QPixmapFilter> animationBlurFilter;
     QScopedPointer<QPixmapFilter> fastBlurFilter;
     QScopedPointer<QPixmapFilter> dropShadowFilter;
     QScopedPointer<QPixmapFilter> fastDropShadowFilter;
