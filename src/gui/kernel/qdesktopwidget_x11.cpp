@@ -384,10 +384,8 @@ void QDesktopWidget::resizeEvent(QResizeEvent *event)
     Q_D(QDesktopWidget);
     int oldScreenCount = d->screenCount;
     QVector<QRect> oldRects(oldScreenCount);
-    QVector<QRect> oldWorks(oldScreenCount);
     for (int i = 0; i < oldScreenCount; ++i) {
         oldRects[i] = d->rects[i];
-        oldWorks[i] = d->workareas[i];
     }
 
     d->init();
@@ -395,13 +393,6 @@ void QDesktopWidget::resizeEvent(QResizeEvent *event)
     for (int i = 0; i < qMin(oldScreenCount, d->screenCount); ++i) {
         if (oldRects.at(i) != d->rects[i])
             emit resized(i);
-    }
-
-    // ### workareas are just reset by init, not filled with new values
-    // ### so this will not work correctly
-    for (int j = 0; j < qMin(oldScreenCount, d->screenCount); ++j) {
-        if (oldWorks.at(j) != d->workareas[j])
-            emit workAreaResized(j);
     }
 
     if (oldScreenCount != d->screenCount) {

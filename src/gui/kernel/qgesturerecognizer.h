@@ -56,7 +56,7 @@ class QGesture;
 class Q_GUI_EXPORT QGestureRecognizer
 {
 public:
-    enum ResultFlags
+    enum ResultFlag
     {
         Ignore            = 0x0001,
         NotGesture        = 0x0002,
@@ -73,7 +73,7 @@ public:
 
         ResultHint_Mask   = 0xff00
     };
-    Q_DECLARE_FLAGS(Result, ResultFlags)
+    Q_DECLARE_FLAGS(Result, ResultFlag)
 
     QGestureRecognizer();
     virtual ~QGestureRecognizer();
