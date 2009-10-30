@@ -88,8 +88,6 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
     const QRect final_geometry = _final_geometry.isValid() || widget->isWindow() ? _final_geometry :
         QRect(QPoint(-500 - widget->width(), -500 - widget->height()), widget->size());
 
-    if (r == final_geometry)
-        return; //the widget is already where it should be
 #ifndef QT_NO_ANIMATION
     AnimationMap::const_iterator it = m_animation_map.constFind(widget);
     if (it != m_animation_map.constEnd() && (*it)->endValue().toRect() == final_geometry)
@@ -112,11 +110,6 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
 bool QWidgetAnimator::animating() const
 {
     return !m_animation_map.isEmpty();
-}
-
-bool QWidgetAnimator::animating(QWidget *widget) const
-{
-    return m_animation_map.contains(widget);
 }
 
 QT_END_NAMESPACE
