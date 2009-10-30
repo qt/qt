@@ -39,4 +39,35 @@
 **
 ****************************************************************************/
 
+
+// SCENARIO 3
+// this is the "no harm done" version. Only operator% is active,
+// with NO_CAST * _not_ defined
+#define P %
+#undef QT_USE_FAST_OPERATOR_PLUS
+#undef QT_USE_FAST_CONCATENATION
+#undef QT_NO_CAST_FROM_ASCII
+#undef QT_NO_CAST_TO_ASCII
+
+
+#include <QtTest/QtTest>
+
+//TESTED_CLASS=QStringBuilder
+//TESTED_FILES=qstringbuilder.cpp
+
+#define LITERAL "some literal"
+
+void runScenario(); // Defined in stringbuilder.cpp #included below.
+
+class tst_QStringBuilder3 : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void scenario() { runScenario(); }
+};
+
 #include "../qstringbuilder1/stringbuilder.cpp"
+#include "tst_qstringbuilder3.moc"
+
+QTEST_APPLESS_MAIN(tst_QStringBuilder3)

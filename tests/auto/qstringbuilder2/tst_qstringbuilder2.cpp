@@ -39,4 +39,36 @@
 **
 ****************************************************************************/
 
+
+// SCENARIO 2
+// this is the "full" version. Operator+ is replaced by a QStringBuilder
+// based version
+// with NO_CAST * defined
+#define P +
+#define QT_USE_FAST_OPERATOR_PLUS
+#define QT_USE_FAST_CONCATENATION
+#define QT_NO_CAST_FROM_ASCII
+#define QT_NO_CAST_TO_ASCII
+
+
+#include <QtTest/QtTest>
+
+//TESTED_CLASS=QStringBuilder
+//TESTED_FILES=qstringbuilder.cpp
+
+#define LITERAL "some literal"
+
+void runScenario(); // Defined in stringbuilder.cpp #included below.
+
+class tst_QStringBuilder2 : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void scenario() { runScenario(); }
+};
+
 #include "../qstringbuilder1/stringbuilder.cpp"
+#include "tst_qstringbuilder2.moc"
+
+QTEST_APPLESS_MAIN(tst_QStringBuilder2)
