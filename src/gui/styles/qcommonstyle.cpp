@@ -5657,10 +5657,11 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
         default:
             break;
         }
-
+    } // if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty())
         if (!icon.isNull())
             return icon;
 #if defined(Q_WS_MAC)
+    if (QApplication::desktopSettingsAware()) {
     OSType iconType = 0;
     switch (standardIcon) {
     case QStyle::SP_MessageBoxQuestion:
@@ -5751,8 +5752,8 @@ QIcon QCommonStyle::standardIconImplementation(StandardPixmap standardIcon, cons
             ReleaseIconRef(overlayIcon);
         return retIcon;
     }
+    } // if (QApplication::desktopSettingsAware())
 #endif // Q_WS_MAC
-    }
 
     switch (standardIcon) {
 #ifndef QT_NO_IMAGEFORMAT_PNG
