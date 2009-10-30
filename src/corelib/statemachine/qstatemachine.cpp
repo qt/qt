@@ -1216,8 +1216,7 @@ void QStateMachinePrivate::_q_process()
             delete e;
             e = 0;
         }
-        if (enabledTransitions.isEmpty() && !internalEventQueue.isEmpty()) {
-            e = internalEventQueue.takeFirst();
+        if (enabledTransitions.isEmpty() && ((e = dequeueInternalEvent()) != 0)) {
 #ifdef QSTATEMACHINE_DEBUG
             qDebug() << q << ": dequeued internal event" << e << "of type" << e->type();
 #endif
@@ -1228,13 +1227,7 @@ void QStateMachinePrivate::_q_process()
             }
         }
         if (enabledTransitions.isEmpty()) {
-            if (externalEventQueue.isEmpty()) {
-                if (internalEventQueue.isEmpty()) {
-                    processing = false;
-                    stopProcessingReason = EventQueueEmpty;
-                }
-            } else {
-                e = externalEventQueue.takeFirst();
+            if ((e = dequeueExternalEvent()) != 0) {
 #ifdef QSTATEMACHINE_DEBUG
                 qDebug() << q << ": dequeued external event" << e << "of type" << e->type();
 #endif
@@ -1242,6 +1235,11 @@ void QStateMachinePrivate::_q_process()
                 if (enabledTransitions.isEmpty()) {
                     delete e;
                     e = 0;
+                }
+            } else {
+                if (isInternalEventQueueEmpty()) {
+                    processing = false;
+                    stopProcessingReason = EventQueueEmpty;
                 }
             }
         }
@@ -1278,17 +1276,60 @@ void QStateMachinePrivate::_q_process()
     }
 }
 
+void QStateMachinePrivate::postInternalEvent(QEvent *e)
+{
+    QMutexLocker locker(&internalEventMutex);
+    internalEventQueue.append(e);
+}
+
+void QStateMachinePrivate::postExternalEvent(QEvent *e)
+{
+    QMutexLocker locker(&externalEventMutex);
+    externalEventQueue.append(e);
+}
+
+QEvent *QStateMachinePrivate::dequeueInternalEvent()
+{
+    QMutexLocker locker(&internalEventMutex);
+    if (internalEventQueue.isEmpty())
+        return 0;
+    return internalEventQueue.takeFirst();
+}
+
+QEvent *QStateMachinePrivate::dequeueExternalEvent()
+{
+    QMutexLocker locker(&externalEventMutex);
+    if (externalEventQueue.isEmpty())
+        return 0;
+    return externalEventQueue.takeFirst();
+}
+
+bool QStateMachinePrivate::isInternalEventQueueEmpty()
+{
+    QMutexLocker locker(&internalEventMutex);
+    return internalEventQueue.isEmpty();
+}
+
+bool QStateMachinePrivate::isExternalEventQueueEmpty()
+{
+    QMutexLocker locker(&externalEventMutex);
+    return externalEventQueue.isEmpty();
+}
+
 void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 {
+    Q_Q(QStateMachine);
     if ((state != Running) || processing || processingScheduled)
         return;
     switch (processingMode) {
     case DirectProcessing:
-        _q_process();
-        break;
+        if (QThread::currentThread() == q->thread()) {
+            _q_process();
+            break;
+        } // fallthrough -- processing must be done in the machine thread
     case QueuedProcessing:
         processingScheduled = true;
-        QMetaObject::invokeMethod(q_func(), "_q_process", Qt::QueuedConnection);
+        QMetaObject::invokeMethod(q, "_q_process", Qt::QueuedConnection);
         break;
     }
 }
@@ -1296,6 +1337,7 @@ void QStateMachinePrivate::processEvents(EventProcessingMode processingMode)
 void QStateMachinePrivate::cancelAllDelayedEvents()
 {
     Q_Q(QStateMachine);
+    QMutexLocker locker(&delayedEventsMutex);
     QHash<int, QEvent*>::const_iterator it;
     for (it = delayedEvents.constBegin(); it != delayedEvents.constEnd(); ++it) {
         int id = it.key();
@@ -1547,7 +1589,7 @@ void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
 {
     Q_ASSERT(qobjectEvents.contains(watched));
     if (qobjectEvents[watched].contains(event->type())) {
-        internalEventQueue.append(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
+        postInternalEvent(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
         processEvents(DirectProcessing);
     }
 }
@@ -1571,7 +1613,7 @@ void QStateMachinePrivate::handleTransitionSignal(QObject *sender, int signalInd
     qDebug() << q_func() << ": sending signal event ( sender =" << sender
              << ", signal =" << sender->metaObject()->method(signalIndex).signature() << ')';
 #endif
-    internalEventQueue.append(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
+    postInternalEvent(new QStateMachine::SignalEvent(sender, signalIndex, vargs));
     processEvents(DirectProcessing);
 }
 
@@ -1825,6 +1867,8 @@ void QStateMachine::stop()
 }
 
 /*!
+  \threadsafe
+
   Posts the given \a event of the given \a priority for processing by this
   state machine.
 
@@ -1852,16 +1896,18 @@ void QStateMachine::postEvent(QEvent *event, EventPriority priority)
 #endif
     switch (priority) {
     case NormalPriority:
-        d->externalEventQueue.append(event);
+        d->postExternalEvent(event);
         break;
     case HighPriority:
-        d->internalEventQueue.append(event);
+        d->postInternalEvent(event);
         break;
     }
     d->processEvents(QStateMachinePrivate::QueuedProcessing);
 }
 
 /*!
+  \threadsafe
+
   Posts the given \a event for processing by this state machine, with the
   given \a delay in milliseconds. Returns an identifier associated with the
   delayed event, or -1 if the event could not be posted.
@@ -1893,12 +1939,15 @@ int QStateMachine::postDelayedEvent(QEvent *event, int delay)
 #ifdef QSTATEMACHINE_DEBUG
     qDebug() << this << ": posting event" << event << "with delay" << delay;
 #endif
+    QMutexLocker locker(&d->delayedEventsMutex);
     int tid = startTimer(delay);
     d->delayedEvents[tid] = event;
     return tid;
 }
 
 /*!
+  \threadsafe
+
   Cancels the delayed event identified by the given \a id. The id should be a
   value returned by a call to postDelayedEvent(). Returns true if the event
   was successfully cancelled, otherwise returns false.
@@ -1912,6 +1961,7 @@ bool QStateMachine::cancelDelayedEvent(int id)
         qWarning("QStateMachine::cancelDelayedEvent: the machine is not running");
         return false;
     }
+    QMutexLocker locker(&d->delayedEventsMutex);
     QEvent *e = d->delayedEvents.take(id);
     if (!e)
         return false;
@@ -1921,8 +1971,6 @@ bool QStateMachine::cancelDelayedEvent(int id)
 }
 
 /*!
-  \internal
-
    Returns the maximal consistent set of states (including parallel and final
    states) that this state machine is currently in. If a state \c s is in the
    configuration, it is always the case that the parent of \c s is also in
@@ -1963,18 +2011,23 @@ bool QStateMachine::event(QEvent *e)
         int tid = te->timerId();
         if (d->state != QStateMachinePrivate::Running) {
             // This event has been cancelled already
+            QMutexLocker locker(&d->delayedEventsMutex);
             Q_ASSERT(!d->delayedEvents.contains(tid));
             return true;
         }
+        d->delayedEventsMutex.lock();
         QEvent *ee = d->delayedEvents.take(tid);
         if (ee != 0) {
             killTimer(tid);
-            d->externalEventQueue.append(ee);
+            d->delayedEventsMutex.unlock();
+            d->postExternalEvent(ee);
             d->processEvents(QStateMachinePrivate::DirectProcessing);
             return true;
+        } else {
+            d->delayedEventsMutex.unlock();
         }
     }
-    return QObject::event(e);
+    return QState::event(e);
 }
 
 #ifndef QT_NO_STATEMACHINE_EVENTFILTER

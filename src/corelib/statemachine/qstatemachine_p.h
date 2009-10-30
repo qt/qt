@@ -58,6 +58,7 @@
 #include <QtCore/qcoreevent.h>
 #include <QtCore/qhash.h>
 #include <QtCore/qlist.h>
+#include <QtCore/qmutex.h>
 #include <QtCore/qpair.h>
 #include <QtCore/qset.h>
 #include <QtCore/qvector.h>
@@ -159,6 +160,13 @@ public:
     void unregisterAllTransitions();
     void handleTransitionSignal(QObject *sender, int signalIndex,
                                 void **args);    
+
+    void postInternalEvent(QEvent *e);
+    void postExternalEvent(QEvent *e);
+    QEvent *dequeueInternalEvent();
+    QEvent *dequeueExternalEvent();
+    bool isInternalEventQueueEmpty();
+    bool isExternalEventQueueEmpty();
     void processEvents(EventProcessingMode processingMode);
     void cancelAllDelayedEvents();
     
@@ -181,6 +189,8 @@ public:
     QSet<QAbstractState*> configuration;
     QList<QEvent*> internalEventQueue;
     QList<QEvent*> externalEventQueue;
+    QMutex internalEventMutex;
+    QMutex externalEventMutex;
 
     QStateMachine::Error error;
     QStateMachine::RestorePolicy globalRestorePolicy;
@@ -214,6 +224,7 @@ public:
     QHash<QObject*, QHash<QEvent::Type, int> > qobjectEvents;
 #endif
     QHash<int, QEvent*> delayedEvents;
+    QMutex delayedEventsMutex;
   
     typedef QEvent* (*f_cloneEvent)(QEvent*);
     struct Handler {
