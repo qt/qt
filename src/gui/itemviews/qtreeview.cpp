@@ -2113,6 +2113,12 @@ QModelIndex QTreeView::moveCursor(CursorAction cursorAction, Qt::KeyboardModifie
     if (vi < 0)
         vi = qMax(0, d->viewIndex(current));
 
+    if (isRightToLeft()) {
+        if (cursorAction == MoveRight)
+            cursorAction = MoveLeft;
+        else if (cursorAction == MoveLeft)
+            cursorAction = MoveRight;
+    }
     switch (cursorAction) {
     case MoveNext:
     case MoveDown:
