@@ -3,7 +3,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QFile>
 #include <QtDeclarative/qmlview.h>
-#include <QmlGraphicsTextInput>
+#include <private/qmlgraphicstextinput_p.h>
 #include <QDebug>
 
 class tst_qfxtextinput : public QObject

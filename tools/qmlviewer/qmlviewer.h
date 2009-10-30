@@ -15,7 +15,7 @@
 #define QMLVIEWER_H
 
 #include <QMenuBar>
-#include <QmlTimer>
+#include <private/qmltimer_p.h>
 #include <QTime>
 #include <QList>
 

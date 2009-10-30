@@ -4,7 +4,7 @@
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrect_p.h>
 #include <private/qmlgraphicsimage_p.h>
-#include "qmlgraphicsanimatedimageitem_p.h"
+#include <private/qmlgraphicsanimatedimageitem_p.h>
 
 class tst_animatedimage : public QObject
 {

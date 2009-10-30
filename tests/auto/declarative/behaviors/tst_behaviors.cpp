@@ -3,7 +3,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrect_p.h>
-#include <QtDeclarative/QmlNumberAnimation>
+#include <private/qmlanimation_p.h>
 
 class tst_behaviors : public QObject
 {
