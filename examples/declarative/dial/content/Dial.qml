@@ -29,7 +29,7 @@ Item {
             angle: SpringFollow {
                 spring: 1.4
                 damping: .15
-                source: Math.min(Math.max(-130, root.value*2.2 - 130), 133)
+                source: Math.min(Math.max(-130, root.value*2.6 - 130), 133)
             }
         }
     }
