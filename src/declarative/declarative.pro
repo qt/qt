@@ -17,7 +17,7 @@ include(../qbase.pri)
 #modules
 include(3rdparty/3rdparty.pri)
 include(util/util.pri)
-include(fx/fx.pri)
+include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)
 include(extra/extra.pri)
 include(widgets/widgets.pri)
