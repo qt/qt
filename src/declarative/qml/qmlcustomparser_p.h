@@ -55,7 +55,6 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qxmlstream.h>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlerror.h>
 #include <private/qmlparser_p.h>

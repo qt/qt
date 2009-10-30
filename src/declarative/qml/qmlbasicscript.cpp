@@ -49,6 +49,7 @@
 #include <private/qmlrefcount_p.h>
 #include <private/qmljsast_p.h>
 #include <private/qmljsengine_p.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

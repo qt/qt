@@ -43,7 +43,6 @@
 #define QMLBINDING_H
 
 #include <QtCore/QObject>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qmlexpression.h>

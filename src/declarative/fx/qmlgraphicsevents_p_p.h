@@ -53,7 +53,6 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtCore/qobject.h>
 #include <QtGui/qevent.h>

@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 #include <qml.h>
-#include <qfxglobal.h>
 #include <QtGui/qgraphicseffect.h>
 
 QML_DECLARE_TYPE(QGraphicsEffect)

@@ -42,7 +42,6 @@
 #ifndef QMLBIND_H
 #define QMLBIND_H
 
-#include <QtDeclarative/qfxglobal.h>
 #include <QtCore/qobject.h>
 #include <QtDeclarative/qml.h>
 

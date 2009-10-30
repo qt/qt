@@ -48,6 +48,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QString>
 #include "qmlscriptparser_p.h"
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

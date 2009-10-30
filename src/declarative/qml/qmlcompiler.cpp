@@ -70,6 +70,7 @@
 #include "qmlmetaproperty_p.h"
 #include "qmlrewrite_p.h"
 #include <QtDeclarative/qmlscriptstring.h>
+#include <private/qmlglobal_p.h>
 
 #include "qmlscriptparser_p.h"
 

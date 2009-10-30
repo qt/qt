@@ -44,7 +44,6 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QList>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtGui/qgraphicsitem.h>

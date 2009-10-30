@@ -44,11 +44,11 @@
 #include "private/qmlengine_p.h"
 #include "private/qmlexpression_p.h"
 #include "private/qmlcontext_p.h"
-#include <qfxglobal.h>
 #include <qmlmetatype.h>
 #include <qml.h>
 #include <qmlcontext.h>
-#include <QDebug>
+#include <QtCore/qdebug.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

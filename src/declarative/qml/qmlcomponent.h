@@ -45,7 +45,6 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtScript/qscriptvalue.h>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlerror.h>
 

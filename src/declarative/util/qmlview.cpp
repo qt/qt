@@ -62,6 +62,7 @@
 #include <private/qmldebug_p.h>
 #include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

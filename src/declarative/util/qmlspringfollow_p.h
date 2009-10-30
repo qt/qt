@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLFOLLOW_H
-#define QMLFOLLOW_H
+#ifndef QMLSMOOTHFOLLOW_H
+#define QMLSMOOTHFOLLOW_H
 
 #include <QtDeclarative/qmlpropertyvaluesource.h>
 #include <QtDeclarative/qml.h>
@@ -110,4 +110,4 @@ QML_DECLARE_TYPE(QmlSpringFollow)
 
 QT_END_HEADER
 
-#endif // QFXFOLLOW_H
+#endif // QMLSMOOTHFOLLOW_H

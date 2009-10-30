@@ -42,7 +42,6 @@
 #ifndef QMLTIMER_H
 #define QMLTIMER_H
 
-#include <QtDeclarative/qfxglobal.h>
 #include <QtCore/qobject.h>
 #include <QtCore/qabstractanimation.h>
 #include <QtDeclarative/qml.h>

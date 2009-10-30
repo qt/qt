@@ -48,6 +48,7 @@
 #include "qmlanimation_p_p.h"
 #include "qmlstate_p.h"
 #include <QtCore/qdebug.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

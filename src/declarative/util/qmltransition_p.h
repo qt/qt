@@ -43,7 +43,6 @@
 #define QMLTRANSITION_H
 
 #include <QtCore/qobject.h>
-#include <QtDeclarative/qfxglobal.h>
 #include <private/qmlstate_p.h>
 #include <QtDeclarative/qml.h>
 

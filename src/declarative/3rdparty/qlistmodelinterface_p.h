@@ -44,7 +44,6 @@
 
 #include <QtCore/QHash>
 #include <QtCore/QVariant>
-#include <QtDeclarative/qfxglobal.h>
 
 
 QT_BEGIN_HEADER

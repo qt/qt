@@ -40,8 +40,8 @@
 ****************************************************************************/
 
 #include "qmlrewrite_p.h"
-#include <QtDeclarative/qfxglobal.h>
 #include <QtCore/qdebug.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

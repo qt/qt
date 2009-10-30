@@ -42,7 +42,6 @@
 #ifndef QMLGRAPHICSIMAGEITEM_H
 #define QMLGRAPHICSIMAGEITEM_H
 
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmlgraphicsitem.h>
 
 

@@ -49,6 +49,7 @@ SOURCES += qml/qmlparser.cpp \
     qml/qmllistscriptclass.cpp
 
 HEADERS += qml/qmlparser_p.h \
+    qml/qmlglobal_p.h \
     qml/qmlinstruction_p.h \
     qml/qmlvmemetaobject_p.h \
     qml/qml.h \

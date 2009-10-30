@@ -42,7 +42,6 @@
 #ifndef QMLPROPERTYMAP_H
 #define QMLPROPERTYMAP_H
 
-#include <QtDeclarative/qfxglobal.h>
 #include <QtCore/QObject>
 #include <QtCore/QHash>
 #include <QtCore/QStringList>

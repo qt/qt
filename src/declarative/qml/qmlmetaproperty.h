@@ -42,8 +42,7 @@
 #ifndef QMLMETAPROPERTY_H
 #define QMLMETAPROPERTY_H
 
-#include <QtDeclarative/qfxglobal.h>
-#include <QtCore/QMetaProperty>
+#include <QtCore/qmetaobject.h>
 
 QT_BEGIN_HEADER
 

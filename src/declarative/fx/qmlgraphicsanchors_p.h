@@ -43,7 +43,6 @@
 #define QMLGRAPHICSANCHORS_H
 
 #include <QtCore/QObject>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlgraphicsitem.h>
 

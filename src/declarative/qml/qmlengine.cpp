@@ -87,6 +87,7 @@
 #include <private/qmltypenamescriptclass_p.h>
 #include <private/qmllistscriptclass_p.h>
 #include <QtDeclarative/qmlscriptstring.h>
+#include <private/qmlglobal_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"

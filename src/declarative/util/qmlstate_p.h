@@ -44,7 +44,6 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/QSequentialAnimationGroup>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qml.h>
 
 QT_BEGIN_HEADER

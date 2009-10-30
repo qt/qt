@@ -56,6 +56,7 @@
 #include <QtCore/qdebug.h>
 #include <QApplication>
 #include <private/qmlbinding_p.h>
+#include <private/qmlglobal_p.h>
 
 #include "qmlscriptparser_p.h"
 

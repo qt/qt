@@ -58,6 +58,7 @@
 #include <private/qmlstateoperations_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 

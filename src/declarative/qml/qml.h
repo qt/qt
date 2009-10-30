@@ -46,7 +46,6 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qmetaobject.h>
-#include <QtDeclarative/qfxglobal.h>
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlmetaproperty.h>
 #include <QtDeclarative/qmlparserstatus.h>
