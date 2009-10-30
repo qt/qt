@@ -210,7 +210,23 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 */
 void QGraphicsEffectSource::draw(QPainter *painter)
 {
-    d_func()->draw(painter);
+    Q_D(const QGraphicsEffectSource);
+
+    QPixmap pm;
+    if (QPixmapCache::find(d->m_cacheKey, &pm)) {
+        QTransform restoreTransform;
+        if (d->m_cachedSystem == Qt::DeviceCoordinates) {
+            restoreTransform = painter->worldTransform();
+            painter->setWorldTransform(QTransform());
+        }
+
+        painter->drawPixmap(d->m_cachedOffset, pm);
+
+        if (d->m_cachedSystem == Qt::DeviceCoordinates)
+            painter->setWorldTransform(restoreTransform);
+    } else {
+        d_func()->draw(painter);
+    }
 }
 
 /*!
