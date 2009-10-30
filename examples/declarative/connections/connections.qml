@@ -1,7 +1,8 @@
 import Qt 4.6
+import "content"
 
 Rectangle {
-    id: window; color: "#343434"
+    id: window; color: "#646464"
     width: 640; height: 480
 
     function turnLeft() {
@@ -12,16 +13,16 @@ Rectangle {
     }
 
     Image {
-        id: image; source: "bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
+        id: image; source: "content/bg1.jpg"; anchors.centerIn: parent; transformOrigin: Item.Center
         rotation: Behavior { NumberAnimation { easing: "easeOutCubic"; duration: 300 } }
     }
 
     Button {
-        id: leftButton; image: "rotate-left.png"
+        id: leftButton; image: "content/rotate-left.png"
         anchors { left: parent.left; bottom: parent.bottom; leftMargin: 10; bottomMargin: 10 }
     }
     Button {
-        id: rightButton; image: "rotate-right.png"
+        id: rightButton; image: "content/rotate-right.png"
         anchors { right: parent.right; bottom: parent.bottom; rightMargin: 10; bottomMargin: 10 }
     }
 

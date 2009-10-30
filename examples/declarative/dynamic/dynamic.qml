@@ -1,4 +1,5 @@
 import Qt 4.6
+import "qml"
 
 Item {
     id: window
@@ -71,26 +72,26 @@ Item {
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
                     file: "Sun.qml";
-                    image: "images/sun.png"
+                    image: "../images/sun.png"
                 }
                 PaletteItem{ 
                     file: "GenericItem.qml"
-                    image: "images/moon.png"
+                    image: "../images/moon.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
-                    image: "images/tree_s.png"
+                    image: "../images/tree_s.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
-                    image: "images/rabbit_brown.png"
+                    image: "../images/rabbit_brown.png"
                 }
                 PaletteItem{ 
                     anchors.verticalCenter: parent.verticalCenter
                     file: "PerspectiveItem.qml"
-                    image: "images/rabbit_bw.png"
+                    image: "../images/rabbit_bw.png"
                 }
             }
             Text{ text: "Active Suns: " + activeSuns }

@@ -32,6 +32,7 @@ function loadComponent() {
         createItem();
 
     itemComponent = createComponent(itemButton.file);
+    print(itemButton.file)
     if(itemComponent.isLoading){
         component.statusChanged.connect(finishCreation);
     }else{//Depending on the content, it can be ready or error immediately
