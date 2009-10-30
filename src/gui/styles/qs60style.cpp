@@ -1752,7 +1752,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 #endif //QT_NO_MENUBAR
 
     case CE_HeaderSection:
-        if ( const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             painter->save();
             QPen linePen = QPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 1, header));
             const int penWidth = (header->orientation == Qt::Horizontal) ?
@@ -1770,6 +1770,25 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 }
             }
             painter->restore();
+
+            //Draw corner button as normal pushButton.
+            if (qobject_cast<const QAbstractButton *>(widget)) {
+                //Make cornerButton slightly smaller so that it is not on top of table border graphic.
+                QStyleOptionHeader subopt = *header;
+                const int borderTweak = 
+                    QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)>>1;
+                if (subopt.direction == Qt::LeftToRight)
+                    subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
+                else
+                    subopt.rect.adjust(0, borderTweak, -borderTweak, -borderTweak);
+                drawPrimitive(PE_PanelButtonBevel, &subopt, painter, widget);
+            } else if ((header->palette.brush(QPalette::Button) != Qt::transparent)) {
+                //Draw non-themed background. Background for theme is drawn in CE_ShapedFrame
+                //to get continuous theme graphic across all the header cells.
+                qDrawShadePanel(painter, header->rect, header->palette,
+                                header->state & (State_Sunken | State_On), penWidth,
+                                &header->palette.brush(QPalette::Button));
+            }
         }
         break;
     case CE_HeaderEmptyArea: // no need to draw this
@@ -1840,15 +1859,24 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         } else if (qobject_cast<const QTableView *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
         } else if (const QHeaderView *header = qobject_cast<const QHeaderView *>(widget)) {
-            if (header->orientation() == Qt::Horizontal) {
-                QRect headerRect = option->rect;
-                const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                headerRect.adjust(0,frameWidth,-2*frameWidth,0);
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, headerRect, flags);
-            } else {
+            //QS60style draws header background here instead of in each headersection, to get
+            //continuous graphic from section to section.
+            QS60StylePrivate::SkinElementFlags adjustableFlags = flags;
+            QRect headerRect = option->rect;
+            if (header->orientation() != Qt::Horizontal) {
                 //todo: update to horizontal table graphic
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
+                adjustableFlags = (adjustableFlags | QS60StylePrivate::SF_PointWest);
+            } else {
+                const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                if (option->direction == Qt::LeftToRight) 
+                    headerRect.adjust(-2*frameWidth, 0, 0, 0);
+                else
+                    headerRect.adjust(0, 0, 2*frameWidth, 0);
             }
+            if (option->palette.brush(QPalette::Button).color() == Qt::transparent)
+                QS60StylePrivate::drawSkinElement(
+                        QS60StylePrivate::SE_TableHeaderItem, painter, headerRect, adjustableFlags);
+
         } else if (qobject_cast<const QFrame *>(widget)) {
             QCommonStyle::drawControl(element, option, painter, widget);
         }
