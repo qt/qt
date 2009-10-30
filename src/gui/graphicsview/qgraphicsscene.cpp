@@ -5941,6 +5941,13 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
             continue;
         }
     }
+    foreach (QGesture *g, startedGestures) {
+        if (g->gestureCancelPolicy() == QGesture::CancelAllInContext) {
+            DEBUG() << "lets try to cancel some";
+            // find gestures in context in Qt::GestureStarted or Qt::GestureUpdated state and cancel them
+            cancelGesturesForChildren(g, event->widget());
+        }
+    }
 
     // forget about targets for gestures that have ended
     foreach (QGesture *g, allGestures) {
@@ -5952,6 +5959,89 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
         default:
             break;
         }
+    }
+}
+
+void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidget *viewport)
+{
+    Q_ASSERT(original);
+    QGraphicsItem *originalItem = gestureTargets.value(original);
+    Q_ASSERT(originalItem);
+
+    // iterate over all active gestures and for each find the owner
+    // if the owner is part of our sub-hierarchy, cancel it.
+
+    QSet<QGesture *> canceledGestures;
+    QHash<QGesture *, QGraphicsObject *>::Iterator iter = gestureTargets.begin();
+    while (iter != gestureTargets.end()) {
+        QGraphicsObject *item = iter.value();
+        // note that we don't touch the gestures for our originalItem
+        if (item != originalItem && originalItem->isAncestorOf(item)) {
+            DEBUG() << "  found a gesture to cancel" << iter.key();
+            iter.key()->d_func()->state = Qt::GestureCanceled;
+            canceledGestures << iter.key();
+        }
+        ++iter;
+    }
+
+    // sort them per target item by cherry picking from almostCanceledGestures and delivering
+    QSet<QGesture *> almostCanceledGestures = canceledGestures;
+    QSet<QGesture *>::Iterator setIter;
+    while (!almostCanceledGestures.isEmpty()) {
+        QGraphicsObject *target = 0;
+        QSet<QGesture*> gestures;
+        setIter = almostCanceledGestures.begin();
+        // sort per target item
+        while (setIter != almostCanceledGestures.end()) {
+            QGraphicsObject *item = gestureTargets.value(*setIter);
+            if (target == 0)
+                target = item;
+            if (target == item) {
+                gestures << *setIter;
+                setIter = almostCanceledGestures.erase(setIter);
+            } else {
+                ++setIter;
+            }
+        }
+        Q_ASSERT(target);
+
+        QList<QGesture *> list = gestures.toList();
+        QGestureEvent ev(list);
+        sendEvent(target, &ev);
+
+        foreach (QGesture *g, list) {
+            if (ev.isAccepted() || ev.isAccepted(g))
+                gestures.remove(g);
+        }
+
+        foreach (QGesture *g, gestures) {
+            if (!g->hasHotSpot())
+                continue;
+
+            QPoint screenPos = g->hotSpot().toPoint();
+            QList<QGraphicsItem *> items = itemsAtPosition(screenPos, QPointF(), viewport);
+            for (int j = 0; j < items.size(); ++j) {
+                QGraphicsObject *item = items.at(j)->toGraphicsObject();
+                if (!item)
+                    continue;
+                QGraphicsItemPrivate *d = item->QGraphicsItem::d_func();
+                if (d->gestureContext.contains(g->gestureType())) {
+                    QList<QGesture *> list;
+                    list << g;
+                    QGestureEvent ev(list);
+                    sendEvent(item, &ev);
+                    if (ev.isAccepted() || ev.isAccepted(g))
+                        break; // successfully delivered
+                }
+            }
+        }
+    }
+
+    QGestureManager *gm = QApplicationPrivate::instance()->gestureManager;
+    Q_ASSERT(gm); // it would be very odd if we got called without a manager.
+    for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
+        gm->recycle(*setIter);
+        gestureTargets.remove(*setIter);
     }
 }
 

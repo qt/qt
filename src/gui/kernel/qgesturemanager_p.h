@@ -81,6 +81,8 @@ public:
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
 
+    void recycle(QGesture *gesture);
+
 protected:
     void timerEvent(QTimerEvent *event);
     bool filterEventThroughContexts(const QMultiHash<QObject *, Qt::GestureType> &contexts,

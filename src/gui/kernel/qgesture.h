@@ -97,6 +97,7 @@ private:
     friend class QGestureEvent;
     friend class QGestureRecognizer;
     friend class QGestureManager;
+    friend class QGraphicsScenePrivate;
 };
 
 class QPanGesturePrivate;
