@@ -5,12 +5,12 @@ SOURCES   = imagewidget.cpp \
             mainwidget.cpp
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/gestures/imageviewer
+target.path = $$[QT_INSTALL_EXAMPLES]/gestures/imagegestures
 sources.files = $$SOURCES \
     $$HEADERS \
     $$RESOURCES \
     $$FORMS \
-    imageviewer.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]/gestures/imageviewer
+    imagegestures.pro
+sources.path = $$[QT_INSTALL_EXAMPLES]/gestures/imagegestures
 INSTALLS += target \
     sources
