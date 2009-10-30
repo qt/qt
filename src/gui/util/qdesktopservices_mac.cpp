@@ -153,9 +153,12 @@ QString QDesktopServices::storageLocation(StandardLocation type)
 
     QString path = getFullPath(ref);
 
-    QString appName = QCoreApplication::applicationName();
-    if (!appName.isEmpty() && (type == DataLocation || type == CacheLocation))
-        path += QLatin1Char('/') + appName;
+    if (type == DataLocation || type == CacheLocation) {
+        if (QCoreApplication::organizationName().isEmpty() == false)
+            path += QLatin1Char('/') + QCoreApplication::organizationName();
+        if (QCoreApplication::applicationName().isEmpty() == false)
+            path += QLatin1Char('/') + QCoreApplication::applicationName();
+    }
 
     return path;
 }

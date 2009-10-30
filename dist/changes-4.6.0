@@ -143,3 +143,7 @@ information about a particular change.
    function setFloatingPointPrecision(). Set Qt_4_5 as the version of the 
    QDataStream to get the behavior of previous versions.
    
+ - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
+   QCoreApplication::organizationName() and QCoreApplication::applicationName()
+   if those are set. This matches the behavior on the other platforms.
+   
