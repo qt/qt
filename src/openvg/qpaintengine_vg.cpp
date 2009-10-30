@@ -3574,51 +3574,48 @@ void QVGCompositionHelper::fillBackground
     }
 }
 
-void QVGCompositionHelper::drawCursorImage
-    (const QImage& image, const QPoint& offset)
-{
-    QImage img = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
-    VGImage vgImg = vgCreateImage
-        (VG_sARGB_8888_PRE, img.width(), img.height(),
-         VG_IMAGE_QUALITY_FASTER);
-    vgImageSubData
-        (vgImg, img.bits() + img.bytesPerLine() * (img.height() - 1),
-         -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
-         img.width(), img.height());
-
-    QTransform transform;
-    int y = screenSize.height() - (offset.y() + img.height());
-    transform.translate(offset.x() + 0.5f, y + 0.5f);
-    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-    vgDrawImage(vgImg);
-
-    vgDestroyImage(vgImg);
-}
-
 void QVGCompositionHelper::drawCursorPixmap
     (const QPixmap& pixmap, const QPoint& offset)
 {
+    VGImage vgImage = VG_INVALID_HANDLE;
+
+    // Fetch the VGImage from the pixmap if possible.
     QPixmapData *pd = pixmap.pixmapData();
     if (pd->classId() == QPixmapData::OpenVGClass) {
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
-        if (vgpd->isValid()) {
-            VGfloat devh = screenSize.height() - 1;
-            QTransform transform(1.0f, 0.0f, 0.0f,
-                                 0.0f, -1.0f, 0.0f,
-                                 -0.5f, devh + 0.5f, 1.0f);
-            transform.translate(offset.x(), offset.y());
-            d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-            d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-            vgDrawImage(vgpd->toVGImage());
-            return;
-        }
+        if (vgpd->isValid())
+            vgImage = vgpd->toVGImage();
     }
 
-    drawCursorImage(pixmap.toImage(), offset);
+    // Set the image transformation and modes.
+    VGfloat devh = screenSize.height() - 1;
+    QTransform transform(1.0f, 0.0f, 0.0f,
+                         0.0f, -1.0f, 0.0f,
+                         -0.5f, devh + 0.5f, 1.0f);
+    transform.translate(offset.x(), offset.y());
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+
+    // Draw the VGImage.
+    if (vgImage != VG_INVALID_HANDLE) {
+        vgDrawImage(vgImage);
+    } else {
+        QImage img = pixmap.toImage().convertToFormat
+            (QImage::Format_ARGB32_Premultiplied);
+
+        vgImage = vgCreateImage
+            (VG_sARGB_8888_PRE, img.width(), img.height(),
+             VG_IMAGE_QUALITY_FASTER);
+        if (vgImage == VG_INVALID_HANDLE)
+            return;
+        vgImageSubData
+            (vgImage, img.bits() + img.bytesPerLine() * (img.height() - 1),
+             -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
+             img.width(), img.height());
+
+        vgDrawImage(vgImage);
+        vgDestroyImage(vgImage);
+    }
 }
 
 void QVGCompositionHelper::setScissor(const QRegion& region)
