@@ -3376,3 +3376,18 @@ CONFIG(QTDIR_build):isEqual(QT_MAJOR_VERSION, 4):greaterThan(QT_MINOR_VERSION, 4
             plugins/win/PaintHooks.asm
     }
 }
+
+# Temporary workaround to pick up the DEF file from the same place as all the others
+symbian {
+    shared {
+        contains(MMP_RULES, defBlock) {
+            MMP_RULES -= defBlock
+
+            MMP_RULES += "$${LITERAL_HASH}ifdef WINSCW" \
+                    "DEFFILE ../../../s60installs/bwins/$${TARGET}.def" \
+                    "$${LITERAL_HASH}elif defined EABI" \
+                    "DEFFILE ../../../s60installs/eabi/$${TARGET}.def" \
+                    "$${LITERAL_HASH}endif"
+        }
+    }
+}

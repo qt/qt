@@ -1448,10 +1448,10 @@ void Configure::applySpecSpecifics()
         dictionary[ "IWMMXT" ]              = "no";
         dictionary[ "CE_CRT" ]              = "no";
         dictionary[ "DIRECT3D" ]            = "no";
-        dictionary[ "WEBKIT" ]              = "no";
+        dictionary[ "WEBKIT" ]              = "yes";
         dictionary[ "ASSISTANT_WEBKIT" ]    = "no";
         dictionary[ "PHONON" ]              = "yes";
-        dictionary[ "XMLPATTERNS" ]         = "no";
+        dictionary[ "XMLPATTERNS" ]         = "yes";
         dictionary[ "QT_GLIB" ]             = "no";
         dictionary[ "S60" ]                 = "yes";
         // iconv makes makes apps start and run ridiculously slowly in symbian emulator (HW not tested)
@@ -2780,17 +2780,6 @@ QString Configure::addDefine(QString def)
 }
 
 #if !defined(EVAL)
-// ### This should be removed once Qt for S60 is out.
-static void applyTemporarySymbianFlags(QStringList &qconfigList)
-{
-    qconfigList += "QT_NO_CONCURRENT";
-    qconfigList += "QT_NO_QFUTURE";
-    // This is removed because it uses UNIX signals which are not implemented yet
-    qconfigList += "QT_NO_CRASHHANDLER";
-    qconfigList += "QT_NO_PRINTER";
-    qconfigList += "QT_NO_SYSTEMTRAYICON";
-}
-
 void Configure::generateConfigfiles()
 {
     QDir(buildPath).mkpath("src/corelib/global");
@@ -2913,9 +2902,14 @@ void Configure::generateConfigfiles()
         if (dictionary["GRAPHICS_SYSTEM"] == "openvg") qconfigList += "QT_GRAPHICSSYSTEM_OPENVG";
         if (dictionary["GRAPHICS_SYSTEM"] == "opengl") qconfigList += "QT_GRAPHICSSYSTEM_OPENGL";
         if (dictionary["GRAPHICS_SYSTEM"] == "raster") qconfigList += "QT_GRAPHICSSYSTEM_RASTER";
-        // ### This block should be removed once Qt for S60 is out.
+
         if (dictionary.contains("XQMAKESPEC") && dictionary["XQMAKESPEC"].startsWith("symbian")) {
-            applyTemporarySymbianFlags(qconfigList);
+            // These features are not ported to Symbian (yet)
+            qconfigList += "QT_NO_CONCURRENT";
+            qconfigList += "QT_NO_QFUTURE";
+            qconfigList += "QT_NO_CRASHHANDLER";
+            qconfigList += "QT_NO_PRINTER";
+            qconfigList += "QT_NO_SYSTEMTRAYICON";
         }
 
         qconfigList.sort();

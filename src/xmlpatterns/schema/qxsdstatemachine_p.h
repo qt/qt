@@ -204,8 +204,14 @@ namespace QPatternist
 
             /**
              * Returns the information of all transitions of the state machine.
+             *
+             * The implementation is inlined in order to workaround a compiler
+             * bug on Symbian/winscw.
              */
-            QHash<StateId, QHash<TransitionType, QVector<StateId> > > transitions() const;
+            QHash<StateId, QHash<TransitionType, QVector<StateId> > > transitions() const
+            {
+                return m_transitions;
+            }
 
         private:
             /**
@@ -217,14 +223,71 @@ namespace QPatternist
             /**
              * Returns the set of all states that can be reached from the set of @p input states
              * by the epsilon transition.
+             *
+             * The implementation is inlined in order to workaround a compiler
+             * bug on Symbian/winscw.
              */
-            QSet<StateId> epsilonClosure(const QSet<StateId> &input) const;
+            QSet<StateId> epsilonClosure(const QSet<StateId> &input) const
+            {
+                // every state can reach itself by epsilon transition, so include the input states
+                // in the result as well
+                QSet<StateId> result = input;
+
+                // add the input states to the list of to be processed states
+                QList<StateId> workStates = input.toList();
+                while (!workStates.isEmpty()) { // while there are states to be processed left...
+
+                    // dequeue one state from list
+                    const StateId state = workStates.takeFirst();
+
+                    // get the list of states that can be reached by the epsilon transition
+                    // from the current 'state'
+                    const QVector<StateId> targetStates = m_epsilonTransitions.value(state);
+                    for (int i = 0; i < targetStates.count(); ++i) {
+                        // if we have this target state not in our result set yet...
+                        if (!result.contains(targetStates.at(i))) {
+                            // ... add it to the result set
+                            result.insert(targetStates.at(i));
+
+                            // add the target state to the list of to be processed states as well,
+                            // as we want to have the epsilon transitions not only for the first
+                            // level of following states
+                            workStates.append(targetStates.at(i));
+                        }
+                    }
+                }
+
+                return result;
+            }
 
             /**
              * Returns the set of all states that can be reached from the set of given @p states
              * by the given @p input.
+             *
+             * The implementation is inlined in order to workaround a compiler
+             * bug on Symbian/winscw.
              */
-            QSet<StateId> move(const QSet<StateId> &states, TransitionType input) const;
+            QSet<StateId> move(const QSet<StateId> &states, TransitionType input) const
+            {
+                QSet<StateId> result;
+
+                QSetIterator<StateId> it(states);
+                while (it.hasNext()) { // iterate over all given states
+                    const StateId state = it.next();
+
+                    // get the transition table for the current state
+                    const QHash<TransitionType, QVector<StateId> > transitions = m_transitions.value(state);
+
+                    // get the target states for the given input
+                    const QVector<StateId> targetStates = transitions.value(input);
+
+                    // add all target states to the result
+                    for (int i = 0; i < targetStates.size(); ++i)
+                        result.insert(targetStates.at(i));
+                }
+
+                return result;
+            }
 
             NamePool::Ptr                                             m_namePool;
             QHash<StateId, StateType>                                 m_states;

@@ -684,9 +684,10 @@ void QS60PixmapData::beginDataAccess()
 
     uchar* newBytes = (uchar*)cfbsBitmap->DataAddress();
 
-    if (newBytes == bytes)
-        return;
+    TSize size = cfbsBitmap->SizeInPixels();
 
+    if (newBytes == bytes && image.width() == size.iWidth && image.height() == size.iHeight)
+        return;
 
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
@@ -694,8 +695,6 @@ void QS60PixmapData::beginDataAccess()
     //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
     if (format == QImage::Format_ARGB32)
         format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
-
-    TSize size = cfbsBitmap->SizeInPixels();
 
     QVector<QRgb> savedColorTable;
     if (!image.isNull())
@@ -935,18 +934,21 @@ void QS60PixmapData::fromNativeType(void* pixmap, NativeType nativeType)
             da.beginDataAccess(sourceBitmap);
             uchar *bytes = (uchar*)sourceBitmap->DataAddress();
             QImage img = QImage(bytes, size.iWidth, size.iHeight, format);
+            img = img.copy();
             da.endDataAccess(sourceBitmap);
+
+            if(displayMode == EGray2) {
+                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
+                //So invert mono bitmaps so that masks work correctly.
+                img.invertPixels();
+            } else if(displayMode == EColor16M) {
+                img = img.rgbSwapped(); // EColor16M is BGR
+            }
 
             fromImage(img, Qt::AutoColor);
 
             if(deleteSourceBitmap)
                 delete sourceBitmap;
-
-            if(displayMode == EGray2) {
-                //Symbian thinks set pixels are white/transparent, Qt thinks they are foreground/solid
-                //So invert mono bitmaps so that masks work correctly.
-                image.invertPixels();
-            }
         } else {
             CFbsBitmap* duplicate = 0;
             QT_TRAP_THROWING(duplicate = new (ELeave) CFbsBitmap);

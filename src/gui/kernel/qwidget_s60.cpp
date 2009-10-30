@@ -716,62 +716,6 @@ void QWidgetPrivate::s60UpdateIsOpaque()
         window->SetTransparentRegion(TRegionFix<1>());
 }
 
-CFbsBitmap* qt_pixmapToNativeBitmap(QPixmap pixmap, bool invert)
-{
-    CFbsBitmap* fbsBitmap = q_check_ptr(new CFbsBitmap);    // CBase derived object needs check on new
-    TSize size(pixmap.size().width(), pixmap.size().height());
-    TDisplayMode mode(EColor16MU);
-
-    bool isNull = pixmap.isNull();
-    int depth = pixmap.depth();
-
-    // TODO: dummy assumptions from bit amounts for each color
-    // Will fix later on when native pixmap is implemented
-    switch(pixmap.depth()) {
-    case 1:
-        mode = EGray2;
-        break;
-    case 4:
-        mode = EColor16;
-        break;
-    case 8:
-        mode = EColor256;
-        break;
-    case 12:
-        mode = EColor4K;
-        break;
-    case 16:
-        mode = EColor64K;
-        break;
-    case 24:
-        mode = EColor16M;
-        break;
-    case 32:
-        case EColor16MU:
-        break;
-    default:
-        qFatal("Unsupported pixmap depth");
-        break;
-    }
-
-    qt_symbian_throwIfError(fbsBitmap->Create(size, mode));
-    fbsBitmap->LockHeap();
-    QImage image = pixmap.toImage();
-
-    if (invert)
-        image.invertPixels();
-
-    int height = pixmap.size().height();
-    for(int i=0;i<height;i++ )
-        {
-        TPtr8 scanline(image.scanLine(i), image.bytesPerLine(), image.bytesPerLine());
-        fbsBitmap->SetScanLine( scanline, i );
-        }
-
-    fbsBitmap->UnlockHeap();
-    return fbsBitmap;
-}
-
 void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 {
 #ifdef Q_WS_S60
@@ -800,12 +744,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                 mask.fill(Qt::color1);
             }
 
-            // Convert to CFbsBitmp
-            // TODO: When QPixmap is adapted to use native CFbsBitmap,
-            // it could be set directly to context pane
-            CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-            CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+            CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+            CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
             contextPane->SetPicture(nBitmap,nMask);
         } else {
             // Icon set to null -> set context pane picture to default
@@ -836,12 +776,8 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
                     mask.fill(Qt::color1);
                 }
 
-                // Convert to CFbsBitmp
-                // TODO: When QPixmap is adapted to use native CFbsBitmap,
-                // it could be set directly to context pane
-                CFbsBitmap* nBitmap = qt_pixmapToNativeBitmap(pm, false);
-                CFbsBitmap* nMask = qt_pixmapToNativeBitmap(mask, true);
-
+                CFbsBitmap* nBitmap = pm.toSymbianCFbsBitmap();
+                CFbsBitmap* nMask = mask.toSymbianCFbsBitmap();
                 titlePane->SetSmallPicture( nBitmap, nMask, ETrue );
             } else {
                 // Icon set to null -> set context pane picture to default
