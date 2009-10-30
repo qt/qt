@@ -1,7 +1,5 @@
 import Qt 4.6
 import "content" as Twitter
-import "../flickr/common" as Common
-import "../flickr/mobile" as Mobile
 
 Item {
     id: screen; width: 320; height: 480
@@ -20,7 +18,6 @@ Item {
     //Workaround for bug 260266
     Timer{ interval: 1; running: false; repeat: false; onTriggered: reallySetUser(); id:hack }
     Script {
-//        var tmpStr;
         function setUser(str){hack.running = true; tmpStr = str}
         function reallySetUser(){rssModel.tags = tmpStr;}
     }
@@ -29,10 +26,10 @@ Item {
         id: background
         anchors.fill: parent; color: "#343434";
 
-        Image { source: "../flickr/mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
+        Image { source: "content/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Twitter.RssModel { id: rssModel }
-        Common.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
+        Twitter.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
         Text {
             width: 180
             text: "Could not access twitter using this screen name and password pair.";
@@ -61,10 +58,10 @@ Item {
         }
 
         Twitter.MultiTitleBar { id: titleBar; width: parent.width }
-        Mobile.ToolBar { id: toolBar; height: 40;
+        Twitter.ToolBar { id: toolBar; height: 40;
             //anchors.bottom: parent.bottom;
             //TODO: Use anchor changes instead of hard coding
-            y: 440
+            y: screen.height - 40
             width: parent.width; opacity: 0.9
             button1Label: "Update"
             button2Label: "View others"
@@ -86,7 +83,7 @@ Item {
                 PropertyChanges { target: authView; x: 0 }
                 PropertyChanges { target: mainView; x: -(parent.width * 1.5) }
                 PropertyChanges { target: titleBar; y: -80 }
-                PropertyChanges { target: toolBar; y: screen.height + 80 }
+                PropertyChanges { target: toolBar; y: screen.height }
             }
         ]
         transitions: [

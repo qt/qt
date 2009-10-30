@@ -1,6 +1,4 @@
 import Qt 4.6
-import "../../flickr/common"
-import "../../flickr/mobile"
 
 Item {
     id: wrapper
@@ -12,14 +10,14 @@ Item {
             Text {
                 width: 100
                 text: "Screen name:"
-                font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
+                font.pointSize: 14; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Qt.AlignRight
             }
             Item {
                 width: 160
                 height: 28
-                BorderImage { source: "../../flickr/mobile/images/lineedit.sci"; anchors.fill: parent }
+                BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
                 TextInput{
                     id: nameIn
                     width: parent.width - 8
@@ -42,14 +40,14 @@ Item {
             Text {
                 width: 100
                 text: "Password:"
-                font.pointSize: 10; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
+                font.pointSize: 14; font.bold: true; color: "white"; style: Text.Raised; styleColor: "black"
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Qt.AlignRight
             }
             Item {
                 width: 160
                 height: 28
-                BorderImage { source: "../../flickr/mobile/images/lineedit.sci"; anchors.fill: parent }
+                BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
                 TextInput{
                     id: passIn
                     width: parent.width - 8
