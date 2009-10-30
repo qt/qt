@@ -45,3 +45,34 @@ contains(TEMPLATE, app) {
 
     QMAKE_LIBS += -leexe.lib\\(uc_exe_.o\\)
 }
+
+# Symbian resource files
+
+linux-armcc:symbian_resources_INCLUDES = -I$$(RVCT22INC)
+symbian_resources_INCLUDES = $$replace(symbian_resources_INCLUDES, ",", " -I")
+symbian_resources_INCLUDES += $$join(INCLUDEPATH, " -I", "-I")
+symbian_resources_DEFINES = $$join(DEFINES, " -D", "-D")
+symbian_resources_RCC_DIR = $$replace(RCC_DIR, "/$", "")
+
+for(symbian_resource, SYMBIAN_RESOURCES) {
+    symbian_resource = $$basename(symbian_resource)
+    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rsc")
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
+    symbian_resource_clean = $$replace(symbian_resource, "\.rss$", ".rpp")
+    QMAKE_CLEAN += $${symbian_resources_RCC_DIR}/$${symbian_resource_clean}
+}
+
+symbianresources.input = SYMBIAN_RESOURCES
+symbianresources.output = $$symbian_resources_RCC_DIR/${QMAKE_FILE_BASE}.rsg
+symbianresources.commands = cpp -nostdinc -undef \
+                            $$symbian_resources_INCLUDES \
+                            $$symbian_resources_DEFINES \
+                            ${QMAKE_FILE_NAME} \
+                            -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
+                            && rcomp -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
+                            -o$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsc \
+                            -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
+                            -i${QMAKE_FILE_NAME}
+symbianresources.CONFIG = target_predeps no_link
+
+QMAKE_EXTRA_COMPILERS += symbianresources
