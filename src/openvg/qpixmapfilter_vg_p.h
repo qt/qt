@@ -61,7 +61,7 @@ QT_BEGIN_NAMESPACE
 
 #if !defined(QT_SHIVAVG)
 
-class Q_OPENVG_EXPORT QVGPixmapConvolutionFilter : public QPixmapConvolutionFilter
+class QVGPixmapConvolutionFilter : public QPixmapConvolutionFilter
 {
     Q_OBJECT
 public:
@@ -71,7 +71,7 @@ public:
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapColorizeFilter : public QPixmapColorizeFilter
+class QVGPixmapColorizeFilter : public QPixmapColorizeFilter
 {
     Q_OBJECT
 public:
@@ -81,7 +81,7 @@ public:
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
+class QVGPixmapDropShadowFilter : public QPixmapDropShadowFilter
 {
     Q_OBJECT
 public:
@@ -91,7 +91,7 @@ public:
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src) const;
 };
 
-class Q_OPENVG_EXPORT QVGPixmapBlurFilter : public QPixmapBlurFilter
+class QVGPixmapBlurFilter : public QPixmapBlurFilter
 {
     Q_OBJECT
 public:
