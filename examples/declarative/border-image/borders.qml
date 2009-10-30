@@ -8,11 +8,11 @@ Rectangle {
     BorderImage {
         x: 20; y: 20; width: 230; height: 240
         smooth: true
-        source: "colors-stretch.sci"
+        source: "content/colors-stretch.sci"
     }
     BorderImage {
         x: 270; y: 20; width: 230; height: 240
         smooth: true
-        source: "colors-round.sci"
+        source: "content/colors-round.sci"
     }
 }
