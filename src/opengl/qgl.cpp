@@ -2137,7 +2137,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     Q_ASSERT(texture);
 
     if (texture->id > 0)
-        const_cast<QImage &>(image).data_ptr()->is_cached = true;
+        QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
     return texture;
 }
@@ -2396,7 +2396,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     Q_ASSERT(texture);
 
     if (texture->id > 0)
-        const_cast<QPixmap &>(pixmap).data_ptr()->is_cached = true;
+        QImagePixmapCleanupHooks::enableCleanupHooks(pixmap);
 
     return texture;
 }
