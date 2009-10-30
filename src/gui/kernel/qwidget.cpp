@@ -1825,18 +1825,6 @@ void QWidgetPrivate::setDirtyOpaqueRegion()
         pd->setDirtyOpaqueRegion();
 }
 
-QRegion QWidgetPrivate::getOpaqueRegion() const
-{
-    Q_Q(const QWidget);
-
-    QRegion r = isOpaque ? q->rect() : getOpaqueChildren();
-    if (extra && extra->hasMask)
-        r &= extra->mask;
-    if (r.isEmpty())
-        return r;
-    return r & clipRect();
-}
-
 const QRegion &QWidgetPrivate::getOpaqueChildren() const
 {
     if (!dirtyOpaqueChildren)
@@ -1851,9 +1839,17 @@ const QRegion &QWidgetPrivate::getOpaqueChildren() const
             continue;
 
         const QPoint offset = child->geometry().topLeft();
-        that->opaqueChildren += child->d_func()->getOpaqueRegion().translated(offset);
+        QWidgetPrivate *childd = child->d_func();
+        QRegion r = childd->isOpaque ? child->rect() : childd->getOpaqueChildren();
+        if (childd->extra && childd->extra->hasMask)
+            r &= childd->extra->mask;
+        if (r.isEmpty())
+            continue;
+        r.translate(offset);
+        that->opaqueChildren += r;
     }
 
+    that->opaqueChildren &= q_func()->rect();
     that->dirtyOpaqueChildren = false;
 
     return that->opaqueChildren;

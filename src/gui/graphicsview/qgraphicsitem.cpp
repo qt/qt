@@ -1039,13 +1039,31 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     // Update focus scope item ptr in new scope.
-    if (newParent) {
+    QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+    if (newFocusScopeItem && newParent) {
+        if (subFocusItem) {
+            // Find the subFocusItem's topmost focus scope.
+            QGraphicsItem *ancestorScope = 0;
+            QGraphicsItem *p = subFocusItem->d_ptr->parent;
+            while (p) {
+                if (p->flags() & QGraphicsItem::ItemIsFocusScope)
+                    ancestorScope = p;
+                if (p->isPanel())
+                    break;
+                p = p->parentItem();
+            }
+            if (ancestorScope)
+                newFocusScopeItem = ancestorScope;
+        }
+
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
-                // ### The below line might not make sense...
-                if (subFocusItem)
+                p->d_ptr->focusScopeItem = newFocusScopeItem;
+                // Ensure the new item is no longer the subFocusItem. The
+                // only way to set focus on a child of a focus scope is
+                // by setting focus on the scope itself.
+                if (subFocusItem && !p->focusItem())
                     subFocusItem->d_ptr->clearSubFocus();
                 break;
             }
@@ -1287,6 +1305,8 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
+    if (d_ptr->isObject)
+        QObjectPrivate::get(static_cast<QGraphicsObject *>(this))->wasDeleted = true;
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
@@ -2982,8 +3002,11 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!q_ptr->isActive() || !p->focusItem())
+            if (!p->focusItem()) {
+                // If you call setFocus on a child of a focus scope that
+                // doesn't currently have a focus item, then stop.
                 return;
+            }
             break;
         }
         p = p->d_ptr->parent;
@@ -4264,7 +4287,7 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
     // Only move items with the same Z value, and that need moving.
     int siblingIndex = sibling->d_ptr->siblingIndex;
     int myIndex = d_ptr->siblingIndex;
-    if (myIndex >= siblingIndex && d_ptr->z == sibling->d_ptr->z) {
+    if (myIndex >= siblingIndex) {
         siblings->move(myIndex, siblingIndex);
         // Fixup the insertion ordering.
         for (int i = 0; i < siblings->size(); ++i) {
@@ -10788,8 +10811,12 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    debug << "QGraphicsItem(this =" << ((void*)item)
-          << ", parent =" << ((void*)item->parentItem())
+    if (QGraphicsObject *o = item->toGraphicsObject())
+        debug << o->metaObject()->className();
+    else
+        debug << "QGraphicsItem";
+    debug << "(this =" << (void*)item
+          << ", parent =" << (void*)item->parentItem()
           << ", pos =" << item->pos()
           << ", z =" << item->zValue() << ", flags = "
           << item->flags() << ")";

@@ -86,6 +86,7 @@ private slots:
     void visibilityChanged();
     void dockLocationChanged();
     void setTitleBarWidget();
+    void titleBarDoubleClick();
     // task specific tests:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
@@ -694,6 +695,24 @@ void tst_QDockWidget::setTitleBarWidget()
     QCOMPARE(w2.isVisible(), false);
 }
 
+void tst_QDockWidget::titleBarDoubleClick()
+{
+    QMainWindow win;
+    QDockWidget dock(&win);
+    win.show();
+    dock.setFloating(true);
+
+    QEvent e(QEvent::NonClientAreaMouseButtonDblClick);
+    QApplication::sendEvent(&dock, &e);
+    QVERIFY(dock.isFloating());
+    QCOMPARE(win.dockWidgetArea(&dock), Qt::NoDockWidgetArea);
+
+    win.addDockWidget(Qt::TopDockWidgetArea, &dock);
+    dock.setFloating(true);
+    QApplication::sendEvent(&dock, &e);
+    QVERIFY(!dock.isFloating());
+    QCOMPARE(win.dockWidgetArea(&dock), Qt::TopDockWidgetArea);
+}
 
 void tst_QDockWidget::task165177_deleteFocusWidget()
 {

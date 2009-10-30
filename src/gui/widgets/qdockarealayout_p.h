@@ -233,6 +233,7 @@ public:
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
+    bool fallbackToSizeHints; //determines if we should use the sizehint for the dock areas (true until the layout is restored or the central widget is set)
     mutable QVector<QWidget*> separatorWidgets;
 
     bool isValid() const;
