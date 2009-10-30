@@ -43,7 +43,7 @@
 #define QMLXMLLISTMODEL_H
 
 #include <QtDeclarative/qml.h>
-#include <QtDeclarative/QListModelInterface>
+#include <private/qlistmodelinterface_p.h>
 #include <QtDeclarative/qmlinfo.h>
 
 QT_BEGIN_HEADER

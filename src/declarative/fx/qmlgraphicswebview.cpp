@@ -55,8 +55,8 @@
 
 #include "qml.h"
 #include "qmlengine.h"
-#include "qmlstate_p.h"
-#include "qlistmodelinterface_p.h"
+#include <private/qmlstate_p.h>
+#include <private/qlistmodelinterface_p.h>
 
 #include "qmlgraphicswebview_p.h"
 #include <private/qmlgraphicspainteditem_p_p.h>
