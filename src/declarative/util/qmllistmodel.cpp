@@ -72,7 +72,7 @@ struct ListModelData
 static void dump(ModelNode *node, int ind);
 
 /*!
-    \qmlclass ListModel 
+    \qmlclass ListModel QmlListModel
     \brief The ListModel element defines a free-form list data source.
 
     The ListModel is a simple hierarchy of elements containing data roles. The contents can

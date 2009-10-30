@@ -170,15 +170,15 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             if (!isUndefined && data->property.object() && 
                 !data->property.write(value, flags)) {
 
-                QString fileName = data->fileName;
+                QUrl url = data->url;
                 int line = data->line;
-                if (fileName.isEmpty()) fileName = QLatin1String("<Unknown File>");
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
                 const char *valueType = 0;
                 if (value.userType() == QVariant::Invalid) valueType = "null";
                 else valueType = QMetaType::typeName(value.userType());
 
-                data->error.setUrl(fileName);
+                data->error.setUrl(url);
                 data->error.setLine(line);
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign ") +

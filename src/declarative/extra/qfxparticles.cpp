@@ -359,7 +359,6 @@ public:
     qreal minX;
     qreal maxY;
     qreal minY;
-    QVarLengthArray<QDrawPixmaps::Data, 50> pixmapData;
     QFxParticlesPrivate* d;
 };
 
@@ -384,7 +383,6 @@ public:
     {
         Q_Q(QFxParticles);
         paintItem = new QFxParticlesPainter(this, q);
-        paintItem->pixmapData.resize(count);
     }
 
     void tick(int time);
@@ -702,8 +700,6 @@ void QFxParticles::setCount(int cnt)
 
     int oldCount = d->count;
     d->count = cnt;
-    if (cnt > oldCount)
-        d->paintItem->pixmapData.resize(d->count);
     d->addParticleTime = 0;
     d->addParticleCount = d->particles.count();
     if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count) {
@@ -1103,6 +1099,10 @@ void QFxParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsItem *, Q
 
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
+
+    static QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
+    if (pixmapData.count() < d->particles.count())
+        pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
     for (int i = 0; i < d->particles.count(); ++i) {

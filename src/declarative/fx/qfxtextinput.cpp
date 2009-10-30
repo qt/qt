@@ -54,7 +54,7 @@ QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
 /*!
-    \qmlclass TextInput
+    \qmlclass TextInput QFxTextInput
     The TextInput item allows you to add an editable line of text to a scene.
 
     TextInput can only display a single line of text, and can only display

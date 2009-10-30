@@ -10,7 +10,7 @@ Rectangle {
     height: text.height + 10
     width: text.width + 20
     border.width: 1
-    radius: 4
+    radius: 4; smooth: true
     gradient: Gradient {
         GradientStop { position: 0.0; 
             color: if(!mr.pressed){activePalette.light;}else{activePalette.button;}

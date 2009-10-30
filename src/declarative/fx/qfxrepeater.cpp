@@ -59,7 +59,7 @@ QFxRepeaterPrivate::~QFxRepeaterPrivate()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QFxRepeater)
 
 /*!
-    \qmlclass Repeater
+    \qmlclass Repeater QFxRepeater
     \inherits Item
 
     \brief The Repeater item allows you to repeat a component based on a model.

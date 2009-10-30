@@ -92,7 +92,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, const QString &expr,
 void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc, 
                                 QObject *me, const QUrl &url, int lineNumber)
 {
-    data->fileName = url.toString();
+    data->url = url;
     data->line = lineNumber;
 
     quint32 *exprData = (quint32 *)expr;
@@ -113,7 +113,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
 #if !defined(Q_OS_SYMBIAN) //XXX Why doesn't this work?
         if (!dd->programs.at(progIdx)) {
             dd->programs[progIdx] =
-                new QScriptProgram(data->expression, data->fileName, data->line);
+                new QScriptProgram(data->expression, data->url.toString(), data->line);
         }
 #endif
 
@@ -310,12 +310,12 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
 
         if (data->expressionRewritten) {
             data->expressionFunction = scriptEngine->evaluate(data->expression, 
-                                                              data->fileName, data->line);
+                                                              data->url.toString(), data->line);
         } else {
             QmlRewrite::RewriteBinding rewriteBinding;
 
             const QString code = rewriteBinding(data->expression);
-            data->expressionFunction = scriptEngine->evaluate(code, data->fileName, data->line);
+            data->expressionFunction = scriptEngine->evaluate(code, data->url.toString(), data->line);
         }
 
         scriptEngine->popContext();
@@ -484,7 +484,7 @@ void QmlExpression::setTrackChange(bool trackChange)
 QUrl QmlExpression::sourceFile() const
 {
     Q_D(const QmlExpression);
-    return QUrl(d->data->fileName);
+    return d->data->url;
 }
 
 /*!
@@ -498,13 +498,13 @@ int QmlExpression::lineNumber() const
 }
 
 /*!
-    Set the location of this expression to \a line of \a fileName. This information
+    Set the location of this expression to \a line of \a url. This information
     is used by the script engine.
 */
-void QmlExpression::setSourceLocation(const QUrl &fileName, int line)
+void QmlExpression::setSourceLocation(const QUrl &url, int line)
 {
     Q_D(QmlExpression);
-    d->data->fileName = fileName.toString();
+    d->data->url = url;
     d->data->line = line;
 }
 

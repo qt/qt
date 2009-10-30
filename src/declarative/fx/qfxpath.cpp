@@ -57,7 +57,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathQuad,QFxPathQuad)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QFxPathCubic)
 
 /*!
-    \qmlclass PathElement
+    \qmlclass PathElement QFxPathElement
     \brief PathElement is the base path type.
 
     This type is the base for all path types.  It cannot
@@ -464,7 +464,7 @@ void QFxCurve::setY(qreal y)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathAttribute
+    \qmlclass PathAttribute QFxPathAttribute
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
     The PathAttribute object allows attibutes consisting of a name and
@@ -543,7 +543,7 @@ void QFxPathAttribute::setValue(qreal value)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathLine
+    \qmlclass PathLine QFxPathLine
     \brief The PathLine defines a straight line.
 
     The example below creates a path consisting of a straight line from
@@ -583,7 +583,7 @@ void QFxPathLine::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathQuad
+    \qmlclass PathQuad QFxPathQuad
     \brief The PathQuad defines a quadratic Bezier curve with a control point.
 
     The following QML produces the path shown below:
@@ -667,7 +667,7 @@ void QFxPathQuad::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathCubic
+   \qmlclass PathCubic QFxPathCubic
    \brief The PathCubic defines a cubic Bezier curve with two control points.
 
     The following QML produces the path shown below:
@@ -777,7 +777,7 @@ void QFxPathCubic::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathPercent
+    \qmlclass PathPercent QFxPathPercent
     \brief The PathPercent manipulates the way a path is interpreted.
 
     The examples below show the normal distrubution of items along a path

@@ -1039,13 +1039,31 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     }
 
     // Update focus scope item ptr in new scope.
-    if (newParent) {
+    QGraphicsItem *newFocusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
+    if (newFocusScopeItem && newParent) {
+        if (subFocusItem) {
+            // Find the subFocusItem's topmost focus scope.
+            QGraphicsItem *ancestorScope = 0;
+            QGraphicsItem *p = subFocusItem->d_ptr->parent;
+            while (p) {
+                if (p->flags() & QGraphicsItem::ItemIsFocusScope)
+                    ancestorScope = p;
+                if (p->isPanel())
+                    break;
+                p = p->parentItem();
+            }
+            if (ancestorScope)
+                newFocusScopeItem = ancestorScope;
+        }
+
         QGraphicsItem *p = newParent;
         while (p) {
             if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
-                p->d_ptr->focusScopeItem = subFocusItem ? subFocusItem : parentFocusScopeItem;
-                // ### The below line might not make sense...
-                if (subFocusItem)
+                p->d_ptr->focusScopeItem = newFocusScopeItem;
+                // Ensure the new item is no longer the subFocusItem. The
+                // only way to set focus on a child of a focus scope is
+                // by setting focus on the scope itself.
+                if (subFocusItem && !p->focusItem())
                     subFocusItem->d_ptr->clearSubFocus();
                 break;
             }
@@ -1228,7 +1246,8 @@ void QGraphicsItemCache::purge()
 }
 
 /*!
-    Constructs a QGraphicsItem, passing \a item to QGraphicsItem's constructor. It does not modify \fn QObject::parent().
+    Constructs a QGraphicsItem with the given \a parent item.
+    It does not modify the parent object returned by QObject::parent().
 
     If \a parent is 0, you can add the item to a scene by calling
     QGraphicsScene::addItem(). The item will then become a top-level item.
@@ -1286,6 +1305,8 @@ QGraphicsItem::QGraphicsItem(QGraphicsItemPrivate &dd, QGraphicsItem *parent,
 */
 QGraphicsItem::~QGraphicsItem()
 {
+    if (d_ptr->isObject)
+        QObjectPrivate::get(static_cast<QGraphicsObject *>(this))->wasDeleted = true;
     d_ptr->inDestructor = 1;
     d_ptr->removeExtraItemCache();
 
@@ -2981,8 +3002,11 @@ void QGraphicsItemPrivate::setFocusHelper(Qt::FocusReason focusReason, bool clim
     while (p) {
         if (p->flags() & QGraphicsItem::ItemIsFocusScope) {
             p->d_ptr->focusScopeItem = q_ptr;
-            if (!q_ptr->isActive() || !p->focusItem())
+            if (!p->focusItem()) {
+                // If you call setFocus on a child of a focus scope that
+                // doesn't currently have a focus item, then stop.
                 return;
+            }
             break;
         }
         p = p->d_ptr->parent;
@@ -4273,7 +4297,7 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
     // Only move items with the same Z value, and that need moving.
     int siblingIndex = sibling->d_ptr->siblingIndex;
     int myIndex = d_ptr->siblingIndex;
-    if (myIndex >= siblingIndex && d_ptr->z == sibling->d_ptr->z) {
+    if (myIndex >= siblingIndex) {
         siblings->move(myIndex, siblingIndex);
         // Fixup the insertion ordering.
         for (int i = 0; i < siblings->size(); ++i) {
@@ -7293,6 +7317,21 @@ static void qt_graphicsItem_highlightSelected(
     The class extends a QGraphicsItem with QObject's signal/slot and property mechanisms.
     It maps many of QGraphicsItem's basic setters and getters to properties and adds notification
     signals for many of them.
+
+    \section1 Parents and Children
+
+    Each graphics object can be constructed with a parent item. This ensures that the
+    item will be destroyed when its parent item is destroyed. Although QGraphicsObject
+    inherits from both QObject and QGraphicsItem, you should use the functions provided
+    by QGraphicsItem, \e not QObject, to manage the relationships between parent and
+    child items.
+
+    The relationships between items can be explored using the parentItem() and childItems()
+    functions. In the hierarchy of items in a scene, the parentObject() and parentWidget()
+    functions are the equivalent of the QWidget::parent() and QWidget::parentWidget()
+    functions for QWidget subclasses.
+
+    \sa QGraphicsWidget
 */
 
 /*!
@@ -7328,7 +7367,10 @@ void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext co
 
 /*!
   \property QGraphicsObject::parent
-  \brief the parent of the item. It is independent from \fn QObject::parent.
+  \brief the parent of the item
+
+  \note The item's parent is set independently of the parent object returned
+  by QObject::parent().
 
   \sa QGraphicsItem::setParentItem(), QGraphicsItem::parentObject()
 */
@@ -10759,8 +10801,12 @@ QDebug operator<<(QDebug debug, QGraphicsItem *item)
         return debug;
     }
 
-    debug << "QGraphicsItem(this =" << ((void*)item)
-          << ", parent =" << ((void*)item->parentItem())
+    if (QGraphicsObject *o = item->toGraphicsObject())
+        debug << o->metaObject()->className();
+    else
+        debug << "QGraphicsItem";
+    debug << "(this =" << (void*)item
+          << ", parent =" << (void*)item->parentItem()
           << ", pos =" << item->pos()
           << ", z =" << item->zValue() << ", flags = "
           << item->flags() << ")";

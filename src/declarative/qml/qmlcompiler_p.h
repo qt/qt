@@ -255,6 +255,8 @@ private:
 
     void addId(const QString &, QmlParser::Object *);
 
+    void dumpStats();
+
     struct BindingReference {
         QmlParser::Variant expression;
         QmlParser::Property *property;
@@ -280,9 +282,25 @@ private:
     };
     ComponentCompileState compileState;
 
+    struct ComponentStat
+    {
+        ComponentStat() 
+            : ids(0), scriptBindings(0), optimizedBindings(0), objects(0) {}
+
+        int lineNumber;
+
+        int ids;
+        int scriptBindings;
+        int optimizedBindings;
+        int objects;
+    };
+    ComponentStat componentStat;
+
     void saveComponentState();
+
     ComponentCompileState componentState(QmlParser::Object *);
     QHash<QmlParser::Object *, ComponentCompileState> savedCompileStates;
+    QList<ComponentStat> savedComponentStats;
 
     QList<QmlError> exceptions;
     QmlCompiledData *output;

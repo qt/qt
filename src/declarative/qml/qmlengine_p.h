@@ -255,6 +255,7 @@ public:
     QVariant scriptValueToVariant(const QScriptValue &);
 
     static QScriptValue qmlScriptObject(QObject*, QmlEngine*);
+
     static QScriptValue createComponent(QScriptContext*, QScriptEngine*);
     static QScriptValue createQmlObject(QScriptContext*, QScriptEngine*);
     static QScriptValue vector(QScriptContext*, QScriptEngine*);
@@ -269,6 +270,7 @@ public:
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
     static QScriptValue playSound(QScriptContext*, QScriptEngine*);
+    static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
 
     static QScriptEngine *getScriptEngine(QmlEngine *e) { return &e->d_func()->scriptEngine; }
     static QmlEngine *getEngine(QScriptEngine *e) { return static_cast<QmlScriptEngine*>(e)->p->q_func(); }

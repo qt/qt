@@ -3,7 +3,7 @@ import Qt 4.6
 Image {
     id: sun
     property bool created: false
-    property string image: "images/sun.png"
+    property string image: "../images/sun.png"
     onCreatedChanged: if(created){window.activeSuns++;}else{window.activeSuns--;}
 
     source: image; 
@@ -18,7 +18,7 @@ Image {
     }
 
     states: State {
-        name: "OffScreen"; when: created && y > window.height/2;//Below the ground
+        name: "OffScreen"; when: created && y > window.height / 2;//Below the ground
         StateChangeScript { script: { sun.created = false; sun.destroy() } }
     }
 }

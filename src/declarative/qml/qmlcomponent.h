@@ -64,6 +64,10 @@ class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlComponent)
+    Q_PROPERTY(bool isNull READ isNull NOTIFY statusChanged)
+    Q_PROPERTY(bool isReady READ isReady NOTIFY statusChanged)
+    Q_PROPERTY(bool isError READ isError NOTIFY statusChanged)
+    Q_PROPERTY(bool isLoading READ isLoading NOTIFY statusChanged)
 
 public:
     QmlComponent(QObject *parent = 0);
@@ -84,6 +88,7 @@ public:
     bool isLoading() const;
 
     QList<QmlError> errors() const;
+    Q_INVOKABLE QString errorsString() const;
 
     qreal progress() const;
 
@@ -93,9 +98,12 @@ public:
     virtual QObject *beginCreate(QmlContext *);
     virtual void completeCreate();
 
+    Q_INVOKABLE QScriptValue createObject();
+
     void loadUrl(const QUrl &url);
     void setData(const QByteArray &, const QUrl &baseUrl);
 
+    void setCreationContext(QmlContext*);
     QmlContext *creationContext() const;
 
     static QmlComponentAttached *qmlAttachedProperties(QObject *);

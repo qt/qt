@@ -59,7 +59,7 @@
 #include "qmap.h"
 #include "qpair.h"
 #include "qvector.h"
-
+#include "qgraphicslayout_p.h"
 #include <float.h>
 
 QT_BEGIN_NAMESPACE
@@ -126,29 +126,6 @@ class QStretchParameter : public QLayoutParameter<int>
 public:
     QStretchParameter() : QLayoutParameter<int>(-1) {}
 
-};
-
-class QLayoutStyleInfo
-{
-public:
-    inline QLayoutStyleInfo() { invalidate(); }
-    inline QLayoutStyleInfo(QStyle *style, QWidget *widget)
-        : q_valid(true), q_style(style), q_widget(widget) {}
-
-    inline void invalidate() { q_valid = false; q_style = 0; q_widget = 0; }
-
-    inline QStyle *style() const { return q_style; }
-    inline QWidget *widget() const { return q_widget; }
-
-    inline bool operator==(const QLayoutStyleInfo &other)
-        { return q_style == other.q_style && q_widget == other.q_widget; }
-    inline bool operator!=(const QLayoutStyleInfo &other)
-        { return !(*this == other); }
-
-private:
-    bool q_valid;
-    QStyle *q_style;
-    QWidget *q_widget;
 };
 
 class QGridLayoutBox

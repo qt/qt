@@ -40,11 +40,10 @@
 ****************************************************************************/
 
 #include "qglobal.h"
-
-QT_BEGIN_NAMESPACE
-
 #include "qdesktopwidget.h"
 #include "qwidget_p.h"
+
+QT_BEGIN_NAMESPACE
 
 const QRect QDesktopWidget::screenGeometry(const QWidget *widget) const
 {

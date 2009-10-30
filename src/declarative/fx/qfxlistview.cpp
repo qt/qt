@@ -954,7 +954,7 @@ void QFxListViewPrivate::flickY(qreal velocity)
 //----------------------------------------------------------------------------
 
 /*!
-    \qmlclass ListView
+    \qmlclass ListView QFxListView
     \inherits Flickable
     \brief The ListView item provides a list view of items provided by a model.
 
@@ -1679,37 +1679,46 @@ void QFxListView::trackedPositionChanged()
         return;
     if (!isFlicking() && !d->moving && d->moveReason != QFxListViewPrivate::Mouse) {
         const qreal trackedPos = d->trackedItem->position();
+        const qreal viewPos = d->position();
         if (d->haveHighlightRange) {
             if (d->highlightRange == StrictlyEnforceRange) {
-                qreal pos = d->position();
+                qreal pos = viewPos;
                 if (trackedPos > pos + d->highlightRangeEnd - d->trackedItem->size())
                     pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
                 if (trackedPos < pos + d->highlightRangeStart)
                     pos = trackedPos - d->highlightRangeStart;
                 d->setPosition(pos);
             } else {
-                qreal pos = d->position();
+                qreal pos = viewPos;
                 if (trackedPos < d->startPosition() + d->highlightRangeStart) {
                     pos = d->startPosition();
                 } else if (d->trackedItem->endPosition() > d->endPosition() - d->size() + d->highlightRangeEnd) {
                     pos = d->endPosition() - d->size();
                 } else {
-                    if (trackedPos < d->position() + d->highlightRangeStart) {
+                    if (trackedPos < viewPos + d->highlightRangeStart) {
                         pos = trackedPos - d->highlightRangeStart;
-                    } else if (trackedPos > d->position() + d->highlightRangeEnd - d->trackedItem->size()) {
+                    } else if (trackedPos > viewPos + d->highlightRangeEnd - d->trackedItem->size()) {
                         pos = trackedPos - d->highlightRangeEnd + d->trackedItem->size();
                     }
                 }
                 d->setPosition(pos);
             }
         } else {
-            if (trackedPos < d->position()) {
-                d->setPosition(trackedPos);
+            if (trackedPos < viewPos && d->currentItem->position() < viewPos) {
+                d->setPosition(d->currentItem->position() < trackedPos ? trackedPos : d->currentItem->position());
                 d->fixupPosition();
-            } else if (d->trackedItem->endPosition() > d->position() + d->size()) {
-                qreal pos = d->trackedItem->endPosition() - d->size();
-                if (d->trackedItem->size() > d->size())
-                    pos = trackedPos;
+            } else if (d->trackedItem->endPosition() > viewPos + d->size()
+                        && d->currentItem->endPosition() > viewPos + d->size()) {
+                qreal pos;
+                if (d->trackedItem->endPosition() < d->currentItem->endPosition()) {
+                    pos = d->trackedItem->endPosition() - d->size();
+                    if (d->trackedItem->size() > d->size())
+                        pos = trackedPos;
+                } else {
+                    pos = d->currentItem->endPosition() - d->size();
+                    if (d->currentItem->size() > d->size())
+                        pos = d->currentItem->position();
+                }
                 d->setPosition(pos);
                 d->fixupPosition();
             }

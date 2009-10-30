@@ -97,7 +97,7 @@ private:
 */
 
 /*!
-    \qmlclass PathView
+    \qmlclass PathView QFxPathView
     \brief The PathView element lays out model-provided items on a path.
     \inherits Item
 

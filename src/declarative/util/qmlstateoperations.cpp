@@ -138,7 +138,7 @@ void QmlParentChangePrivate::doChange(QFxItem *targetParent, QFxItem *stackBefor
 
 /*!
     \preliminary
-    \qmlclass ParentChange
+    \qmlclass ParentChange QmlParentChange
     \brief The ParentChange element allows you to reparent an Item in a state change.
 
     ParentChange reparents an Item while preserving its visual appearance (position, rotation,
@@ -352,7 +352,7 @@ QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
 }
 
 /*!
-    \qmlclass AnchorChanges
+    \qmlclass AnchorChanges QmlAnchorChanges
     \brief The AnchorChanges element allows you to change the anchors of an item in a state.
 
     \snippet examples/declarative/anchors/anchor-changes.qml 0

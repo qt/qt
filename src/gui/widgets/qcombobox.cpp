@@ -192,6 +192,8 @@ void QComboBoxPrivate::_q_modelReset()
         lineEdit->setText(QString());
         updateLineEditGeometry();
     }
+    if (currentIndex.row() != indexBeforeChange)
+        _q_emitCurrentIndexChanged(currentIndex);
     q->update();
 }
 
@@ -402,13 +404,6 @@ QComboBoxPrivateContainer::QComboBoxPrivateContainer(QAbstractItemView *itemView
     layout->setSpacing(0);
     layout->setMargin(0);
 
-#ifdef QT_SOFTKEYS_ENABLED
-    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, this);
-    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, this);
-    addAction(selectAction);
-    addAction(cancelAction);
-#endif
-
     // set item view
     setItemView(itemView);
 
@@ -572,6 +567,13 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
             this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
+
+#ifdef QT_SOFTKEYS_ENABLED
+    selectAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::SelectSoftKey, Qt::Key_Select, itemView);
+    cancelAction = QSoftKeyManager::createKeyedAction(QSoftKeyManager::CancelSoftKey, Qt::Key_Escape, itemView);
+    addAction(selectAction);
+    addAction(cancelAction);
+#endif
 }
 
 /*!
@@ -992,14 +994,6 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeInserted(const QModelIndex & parent,
-                                             int /*start*/, int /*end*/)
-{
-    if (parent != root)
-        return;
-    indexBeforeChange = currentIndex.row();
-}
-
 void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int end)
 {
     Q_Q(QComboBox);
@@ -1022,11 +1016,8 @@ void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &parent, int /*start*/, int /*end*/)
+void QComboBoxPrivate::_q_updateIndexBeforeChange()
 {
-    if (parent != root)
-        return;
-
     indexBeforeChange = currentIndex.row();
 }
 
@@ -1868,15 +1859,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
         disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
         disconnect(d->model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()),
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(modelReset()),
                    this, SLOT(_q_modelReset()));
         if (d->model->QObject::parent() == this)
@@ -1888,15 +1881,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
     connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
     connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
     connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
     connect(model, SIGNAL(destroyed()),
             this, SLOT(_q_modelDestroyed()));
+    connect(model, SIGNAL(modelAboutToBeReset()),
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(modelReset()),
             this, SLOT(_q_modelReset()));
 
@@ -2452,15 +2447,15 @@ void QComboBox::showPopup()
 
 #if defined(Q_WS_WIN) && !defined(QT_NO_EFFECTS)
     bool scrollDown = (listRect.topLeft() == below);
-    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo) 
+    if (QApplication::isEffectEnabled(Qt::UI_AnimateCombo)
         && !style->styleHint(QStyle::SH_ComboBox_Popup, &opt, this) && !window()->testAttribute(Qt::WA_DontShowOnScreen))
         qScrollEffect(container, scrollDown ? QEffects::DownScroll : QEffects::UpScroll, 150);
 #endif
 
 // Don't disable updates on Mac OS X. Windows are displayed immediately on this platform,
 // which means that the window will be visible before the call to container->show() returns.
-// If updates are disabled at this point we'll miss our chance at painting the popup 
-// menu before it's shown, causing flicker since the window then displays the standard gray 
+// If updates are disabled at this point we'll miss our chance at painting the popup
+// menu before it's shown, causing flicker since the window then displays the standard gray
 // background.
 #ifndef Q_WS_MAC
     container->setUpdatesEnabled(false);

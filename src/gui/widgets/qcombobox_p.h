@@ -357,9 +357,8 @@ public:
 #endif
     void _q_resetButton();
     void _q_dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void _q_rowsAboutToBeInserted(const QModelIndex & parent, int start, int end);
+    void _q_updateIndexBeforeChange();
     void _q_rowsInserted(const QModelIndex & parent, int start, int end);
-    void _q_rowsAboutToBeRemoved(const QModelIndex & parent, int start, int end);
     void _q_rowsRemoved(const QModelIndex & parent, int start, int end);
     void updateArrow(QStyle::StateFlag state);
     bool updateHoverControl(const QPoint &pos);

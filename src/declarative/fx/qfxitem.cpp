@@ -79,7 +79,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 #include "qfxeffects.cpp"
 
 /*!
-    \qmlclass Transform
+    \qmlclass Transform QGraphicsTransform
     \brief The Transform elements provide a way of building advanced transformations on Items.
 
     The Transform elements let you create and control advanced transformations that can be configured
@@ -92,7 +92,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 */
 
 /*!
-    \qmlclass Scale
+    \qmlclass Scale QGraphicsScale
     \brief The Scale object provides a way to scale an Item.
 
     The Scale object gives more control over scaling than using Item's scale property. Specifically,
@@ -130,7 +130,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
 */
 
 /*!
-    \qmlclass Rotation
+    \qmlclass Rotation QGraphicsRotation
     \brief The Rotation object provides a way to rotate an Item.
 
     The Rotation object gives more control over rotation than using Item's rotation property.

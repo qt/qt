@@ -88,11 +88,6 @@ public:
     bool compile(const QString& source);
     bool compileFile(const QString& fileName);
 
-    bool setShaderBinary(GLenum format, const void *binary, int length);
-    bool setShaderBinary(QGLShader& otherShader, GLenum format, const void *binary, int length);
-
-    static QList<GLenum> shaderBinaryFormats();
-
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
@@ -132,10 +127,6 @@ public:
     bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
-
-    QByteArray programBinary(int *format) const;
-    bool setProgramBinary(int format, const QByteArray& binary);
-    static QList<int> programBinaryFormats();
 
     virtual bool link();
     bool isLinked() const;

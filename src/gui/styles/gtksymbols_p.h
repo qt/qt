@@ -96,6 +96,7 @@ typedef GtkWidget* (*Ptr_gtk_combo_box_entry_new)(void);
 typedef GtkWidget* (*Ptr_gtk_toolbar_new)(void);
 typedef GtkWidget* (*Ptr_gtk_spin_button_new)(GtkAdjustment*, double, int);
 typedef GtkWidget* (*Ptr_gtk_button_new)(void);
+typedef GtkWidget* (*Ptr_gtk_tool_button_new)(GtkWidget *, const gchar *);
 typedef GtkWidget* (*Ptr_gtk_hbutton_box_new)(void);
 typedef GtkWidget* (*Ptr_gtk_check_button_new)(void);
 typedef GtkWidget* (*Ptr_gtk_radio_button_new)(GSList *);
@@ -261,6 +262,7 @@ public:
     static Ptr_gtk_menu_new gtk_menu_new;
     static Ptr_gtk_expander_new gtk_expander_new;
     static Ptr_gtk_button_new gtk_button_new;
+    static Ptr_gtk_tool_button_new gtk_tool_button_new;
     static Ptr_gtk_hbutton_box_new gtk_hbutton_box_new;
     static Ptr_gtk_check_button_new gtk_check_button_new;
     static Ptr_gtk_radio_button_new gtk_radio_button_new;

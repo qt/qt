@@ -56,7 +56,7 @@ QFxLoaderPrivate::~QFxLoaderPrivate()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QFxLoader)
 
 /*!
-    \qmlclass Loader
+    \qmlclass Loader QFxLoader
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based

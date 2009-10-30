@@ -332,6 +332,7 @@ private slots:
     void doubleRepaint();
 #ifndef Q_WS_MAC
     void resizeInPaintEvent();
+    void opaqueChildren();
 #endif
 
     void setMaskInResizeEvent();
@@ -2982,7 +2983,7 @@ void tst_QWidget::stackUnder()
             qApp->processEvents();
 #endif
 #ifndef Q_WS_MAC
-            QEXPECT_FAIL(0, "Task 153869", Continue);
+            QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
             QCOMPARE(child->numPaintEvents, 0);
         } else {
@@ -8271,6 +8272,47 @@ void tst_QWidget::resizeInPaintEvent()
     QTest::qWait(10);
     // Make sure the resize triggers another update.
     QTRY_COMPARE(widget.numPaintEvents, 1);
+}
+
+void tst_QWidget::opaqueChildren()
+{
+    QWidget widget;
+    widget.resize(200, 200);
+
+    QWidget child(&widget);
+    child.setGeometry(-700, -700, 200, 200);
+
+    QWidget grandChild(&child);
+    grandChild.resize(200, 200);
+
+    QWidget greatGrandChild(&grandChild);
+    greatGrandChild.setGeometry(50, 50, 200, 200);
+    greatGrandChild.setPalette(Qt::red);
+    greatGrandChild.setAutoFillBackground(true); // Opaque child widget.
+
+    widget.show();
+#ifdef Q_WS_X11
+    qt_x11_wait_for_window_manager(&widget);
+#endif
+    QTest::qWait(100);
+
+    // Child, grandChild and greatGrandChild are outside the ancestor clip.
+    QRegion expectedOpaqueRegion(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Now they are all inside the ancestor clip.
+    child.setGeometry(50, 50, 150, 150);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Set mask on greatGrandChild.
+    const QRegion mask(10, 10, 50, 50);
+    greatGrandChild.setMask(mask);
+    expectedOpaqueRegion &= mask.translated(50, 50);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), expectedOpaqueRegion);
+
+    // Make greatGrandChild "transparent".
+    greatGrandChild.setAutoFillBackground(false);
+    QCOMPARE(qt_widget_private(&grandChild)->getOpaqueChildren(), QRegion());
 }
 #endif
 

@@ -76,6 +76,7 @@
 QT_BEGIN_NAMESPACE
 
 DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP);
+DEFINE_BOOL_CONFIG_OPTION(compilerStatDump, QML_COMPILER_STATISTICS_DUMP);
 
 using namespace QmlParser;
 
@@ -613,6 +614,8 @@ bool QmlCompiler::compile(QmlEngine *engine,
     if (!isError()) {
         if (compilerDump())
             out->dumpInstructions();
+        if (compilerStatDump())
+            dumpStats();
     } else {
         reset(out);
     }
@@ -664,6 +667,8 @@ void QmlCompiler::compileTree(Object *tree)
 
 bool QmlCompiler::buildObject(Object *obj, const BindingContext &ctxt)
 {
+    componentStat.objects++;
+
     Q_ASSERT (obj->type != -1);
     const QmlCompiledData::TypeReference &tr =
         output->types.at(obj->type);
@@ -1148,8 +1153,13 @@ bool QmlCompiler::buildComponentFromRoot(QmlParser::Object *obj,
                                          const BindingContext &ctxt)
 {
     ComponentCompileState oldComponentCompileState = compileState;
+    ComponentStat oldComponentStat = componentStat;
+
     compileState = ComponentCompileState();
     compileState.root = obj;
+
+    componentStat = ComponentStat();
+    componentStat.lineNumber = obj->location.start.line;
 
     if (obj)
         COMPILE_CHECK(buildObject(obj, ctxt));
@@ -1157,6 +1167,7 @@ bool QmlCompiler::buildComponentFromRoot(QmlParser::Object *obj,
     COMPILE_CHECK(completeComponentBuild());
 
     compileState = oldComponentCompileState;
+    componentStat = oldComponentStat;
 
     return true;
 }
@@ -1646,6 +1657,7 @@ void QmlCompiler::saveComponentState()
     Q_ASSERT(!savedCompileStates.contains(compileState.root));
 
     savedCompileStates.insert(compileState.root, compileState);
+    savedComponentStats.append(componentStat);
 }
 
 QmlCompiler::ComponentCompileState
@@ -2454,6 +2466,8 @@ int QmlCompiler::genContextCache()
 
 bool QmlCompiler::completeComponentBuild()
 {
+    componentStat.ids = compileState.ids.count();
+
     for (int ii = 0; ii < compileState.aliasingObjects.count(); ++ii) {
         Object *aliasObject = compileState.aliasingObjects.at(ii);
         COMPILE_CHECK(buildDynamicMeta(aliasObject, ResolveAliases));
@@ -2478,6 +2492,8 @@ bool QmlCompiler::completeComponentBuild()
                 QByteArray(bs.compileData(), bs.compileDataSize());
             type = QmlExpressionPrivate::BasicScriptEngineData;
             binding.isBasicScript = true;
+
+            componentStat.optimizedBindings++;
         } else {
             type = QmlExpressionPrivate::PreTransformedQtScriptData;
 
@@ -2495,6 +2511,8 @@ bool QmlCompiler::completeComponentBuild()
                 QByteArray((const char *)expression.constData(), 
                            expression.length() * sizeof(QChar));
             binding.isBasicScript = false;
+
+            componentStat.scriptBindings++;
         }
         binding.compiledData.prepend(QByteArray((const char *)&type, 
                                                 sizeof(quint32)));
@@ -2503,6 +2521,19 @@ bool QmlCompiler::completeComponentBuild()
     saveComponentState();
 
     return true;
+}
+
+void QmlCompiler::dumpStats()
+{
+    qWarning().nospace() << "QML Document: " << output->url.toString();
+    for (int ii = 0; ii < savedComponentStats.count(); ++ii) {
+        const ComponentStat &stat = savedComponentStats.at(ii);
+        qWarning().nospace() << "    Component Line " << stat.lineNumber;
+        qWarning().nospace() << "        Total Objects:      " << stat.objects;
+        qWarning().nospace() << "        IDs Used:           " << stat.ids;
+        qWarning().nospace() << "        Optimized Bindings: " << stat.optimizedBindings;
+        qWarning().nospace() << "        QScript Bindings:   " << stat.scriptBindings;
+    }
 }
 
 /*!

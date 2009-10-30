@@ -98,6 +98,7 @@ Ptr_gtk_check_menu_item_new QGtk::gtk_check_menu_item_new = 0;
 Ptr_gtk_menu_bar_new QGtk::gtk_menu_bar_new = 0;
 Ptr_gtk_menu_new QGtk::gtk_menu_new = 0;
 Ptr_gtk_button_new QGtk::gtk_button_new = 0;
+Ptr_gtk_tool_button_new QGtk::gtk_tool_button_new = 0;
 Ptr_gtk_hbutton_box_new QGtk::gtk_hbutton_box_new = 0;
 Ptr_gtk_check_button_new QGtk::gtk_check_button_new = 0;
 Ptr_gtk_radio_button_new QGtk::gtk_radio_button_new = 0;
@@ -266,6 +267,7 @@ static void resolveGtk()
     QGtk::gtk_separator_tool_item_new = (Ptr_gtk_separator_tool_item_new)libgtk.resolve("gtk_separator_tool_item_new");
     QGtk::gtk_toolbar_insert = (Ptr_gtk_toolbar_insert)libgtk.resolve("gtk_toolbar_insert");
     QGtk::gtk_button_new = (Ptr_gtk_button_new)libgtk.resolve("gtk_button_new");
+    QGtk::gtk_tool_button_new = (Ptr_gtk_tool_button_new)libgtk.resolve("gtk_tool_button_new");
     QGtk::gtk_hbutton_box_new = (Ptr_gtk_hbutton_box_new)libgtk.resolve("gtk_hbutton_box_new");
     QGtk::gtk_check_button_new = (Ptr_gtk_check_button_new)libgtk.resolve("gtk_check_button_new");
     QGtk::gtk_radio_button_new = (Ptr_gtk_radio_button_new)libgtk.resolve("gtk_radio_button_new");
@@ -717,6 +719,7 @@ void QGtk::initGtkWidgets()
             GtkWidget *gtkButton = QGtk::gtk_button_new();
             add_widget(gtkButton);
             g_signal_connect(gtkButton, "style-set", G_CALLBACK(gtkStyleSetCallback), NULL);
+            add_widget(QGtk::gtk_tool_button_new(NULL, NULL));
             add_widget(QGtk::gtk_arrow_new(GTK_ARROW_DOWN, GTK_SHADOW_NONE));
             add_widget(QGtk::gtk_hbutton_box_new());
             add_widget(QGtk::gtk_check_button_new());

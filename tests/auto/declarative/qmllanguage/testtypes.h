@@ -151,6 +151,7 @@ private:
     MyQmlObject *m_qmlobject;
     MyCustomVariantType m_custom;
 };
+QML_DECLARE_TYPEINFO(MyQmlObject, QML_HAS_ATTACHED_PROPERTIES)
 QML_DECLARE_TYPE(MyQmlObject);
 
 class MyGroupedObject : public QObject

@@ -77,7 +77,7 @@ public:
         { return *i2 < *i1; }
 };
 
-class QListModel : public QAbstractListModel
+class Q_AUTOTEST_EXPORT QListModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
@@ -90,6 +90,7 @@ public:
     void insert(int row, const QStringList &items);
     void remove(QListWidgetItem *item);
     QListWidgetItem *take(int row);
+    void move(int srcRow, int dstRow);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
