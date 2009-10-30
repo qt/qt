@@ -142,12 +142,6 @@ QGesture::~QGesture()
     \brief whether the gesture has a hot-spot
 */
 
-/*!
-    \property QGesture::targetObject
-    \brief the target object which will receive the gesture event if the hotSpot is
-    not set
-*/
-
 Qt::GestureType QGesture::gestureType() const
 {
     return d_func()->gestureType;

@@ -166,6 +166,7 @@ private slots:
     void fromImage_crash();
 
     void fromData();
+    void loadFromDataNullValues();
 
     void preserveDepth();
 };
@@ -1434,6 +1435,26 @@ void tst_QPixmap::fromData()
 
     QCOMPARE(img.pixel(0, 0), QRgb(0xffffffff));
     QCOMPARE(img.pixel(0, 1), QRgb(0xff000000));
+}
+
+void tst_QPixmap::loadFromDataNullValues()
+{
+    {
+    QPixmap pixmap;
+    pixmap.loadFromData(QByteArray());
+    QVERIFY(pixmap.isNull());
+    }
+    {
+    QPixmap pixmap;
+    pixmap.loadFromData(0, 123);
+    QVERIFY(pixmap.isNull());
+    }
+    {
+    QPixmap pixmap;
+    const uchar bla[] = "bla";
+    pixmap.loadFromData(bla, 0);
+    QVERIFY(pixmap.isNull());
+    }
 }
 
 void tst_QPixmap::task_246446()

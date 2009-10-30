@@ -70,6 +70,7 @@
 
 namespace JSC
 {
+    class EvalExecutable;
     class ExecState;
     typedef ExecState CallFrame;
     class JSCell;
@@ -210,6 +211,10 @@ public:
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
                                        void **result);
+
+    JSC::JSValue evaluateHelper(JSC::ExecState *exec, intptr_t sourceId,
+                                JSC::EvalExecutable *executable,
+                                bool &compile);
 
     QScript::QObjectData *qobjectData(QObject *object);
     void disposeQObject(QObject *object);

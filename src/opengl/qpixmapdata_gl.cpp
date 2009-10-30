@@ -76,6 +76,19 @@ static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
     return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
 }
 
+extern int qt_next_power_of_two(int v);
+
+static inline QSize maybeRoundToNextPowerOfTwo(const QSize &sz)
+{
+#ifdef QT_OPENGL_ES_2
+    QSize rounded(qt_next_power_of_two(sz.width()), qt_next_power_of_two(sz.height()));
+    if (rounded.width() * rounded.height() < 1.20 * sz.width() * sz.height())
+        return rounded;
+#endif
+    return sz;
+}
+
+
 QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
 {
     QGLFramebufferObject *chosen = 0;
@@ -106,7 +119,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
             if (sz != fboSize) {
                 delete candidate;
-                candidate = new QGLFramebufferObject(sz, requestFormat);
+                candidate = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(sz), requestFormat);
             }
 
             chosen = candidate;
@@ -114,7 +127,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
     }
 
     if (!chosen->isValid()) {

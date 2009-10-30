@@ -101,18 +101,6 @@ QImage::Format qt_vg_config_to_image_format(QEglContext *context)
         return argbFormat;       // XXX
 }
 
-static void copySubImage(QImage *image, VGImage vgImage, const QRect& rect)
-{
-    vgGetImageSubData
-        (vgImage,
-         image->bits() + rect.bottom() * image->bytesPerLine() +
-            rect.x() * (image->depth() / 8),
-         -(image->bytesPerLine()),
-         qt_vg_image_to_vg_format(image->format()),
-         rect.x(), (image->height() - 1) - rect.bottom(),
-         rect.width(), rect.height());
-}
-
 #if !defined(QVG_NO_SINGLE_CONTEXT)
 
 class QVGSharedContext
@@ -204,6 +192,13 @@ static QEglContext *createContext(QPaintDevice *device)
         delete context;
         return 0;
     }
+
+    // Set the swap interval for the display.
+    QByteArray interval = qgetenv("QT_VG_SWAP_INTERVAL");
+    if (!interval.isEmpty())
+        eglSwapInterval(context->display(), interval.toInt());
+    else
+        eglSwapInterval(context->display(), 1);
 
     // Choose an appropriate configuration for rendering into the device.
     QEglProperties configProps;
@@ -334,20 +329,6 @@ QVGEGLWindowSurfacePrivate::~QVGEGLWindowSurfacePrivate()
 {
     // Destroy the paint engine if it hasn't been destroyed already.
     destroyPaintEngine();
-}
-
-QVGEGLWindowSurfacePrivate *QVGEGLWindowSurfacePrivate::create
-    (SurfaceType type, QWindowSurface *win)
-{
-#if defined(QVG_VGIMAGE_BACKBUFFERS)
-    if (type == VGImageSurface)
-        return new QVGEGLWindowSurfaceVGImage(win);
-    else if (type == QImageSurface)
-        return new QVGEGLWindowSurfaceQImage(win);
-#endif
-    if (type == WindowSurface)
-        return new QVGEGLWindowSurfaceDirect(win);
-    return 0;
 }
 
 QVGPaintEngine *QVGEGLWindowSurfacePrivate::paintEngine()
@@ -512,39 +493,6 @@ EGLSurface QVGEGLWindowSurfaceVGImage::mainSurface() const
         return windowSurface;
     else
         return qt_vg_shared_surface();
-}
-
-QVGEGLWindowSurfaceQImage::QVGEGLWindowSurfaceQImage(QWindowSurface *win)
-    : QVGEGLWindowSurfaceVGImage(win)
-{
-}
-
-QVGEGLWindowSurfaceQImage::~QVGEGLWindowSurfaceQImage()
-{
-}
-
-void QVGEGLWindowSurfaceQImage::endPaint
-        (QWidget *widget, const QRegion& region, QImage *image)
-{
-    QEglContext *context = ensureContext(widget);
-    if (context) {
-        if (backBufferSurface != EGL_NO_SURFACE) {
-            if (isPaintingActive)
-                vgFlush();
-            context->makeCurrent(mainSurface());
-            QRegion rgn = region.intersected
-                (QRect(0, 0, image->width(), image->height()));
-            if (rgn.numRects() == 1) {
-                copySubImage(image, backBuffer, rgn.boundingRect());
-            } else {
-                QVector<QRect> rects = rgn.rects();
-                for (int index = 0; index < rects.size(); ++index)
-                    copySubImage(image, backBuffer, rects[index]);
-            }
-            context->lazyDoneCurrent();
-        }
-        isPaintingActive = false;
-    }
 }
 
 #endif // QVG_VGIMAGE_BACKBUFFERS
