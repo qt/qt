@@ -54,6 +54,7 @@ QVNCWindowSurface::QVNCWindowSurface(QVNCGraphicsSystem *graphicsSystem,
       mScreen(screen),
       visibleFlag(false)
 {
+    Q_UNUSED(graphicsSystem);
     mImage = QImage(window->size(), mScreen->format());
 }
 

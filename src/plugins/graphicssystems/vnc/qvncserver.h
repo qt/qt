@@ -466,6 +466,7 @@ public:
     inline bool hasClientCursor() const { return qvnc_cursor != 0; }
 #endif
 
+    void setCursor(QVNCCursor *c) { cursor = c; }
 private:
     void setPixelFormat();
     void setEncodings();
@@ -516,6 +517,7 @@ private:
 #endif
 
     QRfbEncoder *encoder;
+    QVNCCursor * cursor;
 };
 
 

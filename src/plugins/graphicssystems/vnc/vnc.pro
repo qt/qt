@@ -11,6 +11,8 @@ HEADERS = qgraphicssystem_vnc.h qwindowsurface_vnc.h
 HEADERS += qvncserver.h
 SOURCES += qvncserver.cpp
 
+HEADERS += qvnccursor.h
+SOURCES += qvnccursor.cpp
 
 target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 INSTALLS += target

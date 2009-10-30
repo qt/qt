@@ -349,13 +349,13 @@ bool QRfbClientCutText::read(QTcpSocket *s)
 //===========================================================================
 
 QVNCServer::QVNCServer(QVNCGraphicsSystemScreen *screen)
-    : qvnc_screen(screen)
+    : qvnc_screen(screen), cursor(0)
 {
     init(5900);
 }
 
 QVNCServer::QVNCServer(QVNCGraphicsSystemScreen *screen, int id)
-    : qvnc_screen(screen)
+    : qvnc_screen(screen), cursor(0)
 {
     init(5900 + id);
 }
@@ -679,6 +679,7 @@ void QVNCServer::setEncodings()
         DesktopSize = -223
     };
 
+    supportCursor = false;
     if (encodingsPending && (unsigned)client->bytesAvailable() >=
                                 encodingsPending * sizeof(quint32)) {
         for (int i = 0; i < encodingsPending; ++i) {
@@ -782,6 +783,8 @@ void QVNCServer::setEncodings()
         qDebug("QVNCServer::setEncodings: fallback using raw");
 #endif
     }
+    if (cursor)
+        cursor->setCursorMode(supportCursor);
 }
 
 void QVNCServer::frameBufferUpdateRequest()
@@ -830,7 +833,10 @@ void QVNCServer::pointerEvent()
         if (buttonChange(buttons, ev.buttons, &button, &isPress))
             type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         QMouseEvent me(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
-        QApplicationPrivate::handleMouseEvent(0, me);
+        if (cursor)
+            cursor->pointerEvent(me);
+        else
+            QApplicationPrivate::handleMouseEvent(0, me);
         buttons = ev.buttons;
         handleMsg = false;
     }

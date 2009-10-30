@@ -49,6 +49,9 @@
 
 #include <QtCore/QTimer>
 
+#include <private/qapplication_p.h>
+
+#include "qvnccursor.h"
 
 QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
         : mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0)
@@ -77,6 +80,9 @@ QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
     repaintTimer->setSingleShot(true);
     repaintTimer->setInterval(0);
     QObject::connect(repaintTimer, SIGNAL(timeout()), helper, SLOT(fireSlot()));
+
+    cursor = new QVNCCursor(d_ptr->vncServer, this);
+    d_ptr->vncServer->setCursor(cursor);
 }
 
 
@@ -103,8 +109,11 @@ void QVNCGraphicsSystemScreen::setDirty(const QRect &rect)
 
 void QVNCGraphicsSystemScreen::doRedraw()
 {
+    repaintRegion += cursor->dirtyRect();
+
     if (repaintRegion.isEmpty())
         return;
+
     QPainter compositePainter(mScreenImage);
 
     QVector<QRect> rects = repaintRegion.rects();
@@ -127,8 +136,13 @@ void QVNCGraphicsSystemScreen::doRedraw()
             compositePainter.drawImage(intersect, windowStack[i]->image(),
                                        windowIntersect);
         }
-        d_ptr->setDirty(rect);
     }
+
+    QRect pointerRect = cursor->drawCursor(compositePainter);
+    repaintRegion += pointerRect;
+    rects = repaintRegion.rects();
+    for (int i = 0; i < rects.size(); i ++)
+        d_ptr->setDirty(rects[i]);
 
     repaintRegion = QRegion();
 }
@@ -141,8 +155,8 @@ QVNCGraphicsSystem::QVNCGraphicsSystem()
     mPrimaryScreen = new QVNCGraphicsSystemScreen();
 
 
-    int dw = mPrimaryScreen->geometry().width();
-    int dh = mPrimaryScreen->geometry().height();
+    //int dw = mPrimaryScreen->geometry().width();
+    //int dh = mPrimaryScreen->geometry().height();
 
 
     mScreens.append(mPrimaryScreen);
@@ -167,4 +181,9 @@ void QVNCGraphicsSystemScreen::removeWindowSurface(QVNCWindowSurface * surface)
 {
     windowStack.removeOne(surface);
     setDirty(surface->geometry());
+}
+
+void QVNCGraphicsSystemScreen::pointerEvent(QMouseEvent & me)
+{
+    QApplicationPrivate::handleMouseEvent(0, me);
 }

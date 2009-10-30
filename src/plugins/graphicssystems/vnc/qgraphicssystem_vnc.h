@@ -44,6 +44,7 @@
 
 #include <QtGui/private/qgraphicssystem_p.h>
 #include "qwindowsurface_vnc.h"
+#include "qvnccursor.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -72,6 +73,7 @@ public:
 
     void removeWindowSurface(QVNCWindowSurface * surface);
     void addWindowSurface(QVNCWindowSurface * surface) { windowStack.append(surface); }
+    void pointerEvent(QMouseEvent & me);
 
 public:
     QRect mGeometry;
@@ -79,7 +81,6 @@ public:
     QImage::Format mFormat;
     QSize mPhysicalSize;
     QImage *mScreenImage;
-    QVNCServer *server;
 
     QVNCGraphicsSystemScreenPrivate *d_ptr;
 private:
@@ -89,6 +90,8 @@ private:
     QVNCGraphicsSystemScreenTimerHelper * helper;
     void doRedraw();
     friend class QVNCGraphicsSystemScreenTimerHelper;
+
+    QVNCCursor * cursor;
 };
 
 class QVNCGraphicsSystemScreenTimerHelper : public QObject
