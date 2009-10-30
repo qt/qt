@@ -7,13 +7,13 @@ Rectangle {
 
     Image {
         id: blur
-        source: "pic.jpg"
+        source: "pic.png"
 
         effect: Blur {
             blurRadius: NumberAnimation {
                 id: blurEffect
                 from: 0; to: 10
-                duration: 200
+                duration: 1000
                 repeat: true
             }
         }
@@ -25,7 +25,7 @@ Rectangle {
 
     Image {
         id: grayscale
-        source: "pic.jpg"
+        source: "pic.png"
         x: 200
 
         effect: Grayscale {}
@@ -35,7 +35,7 @@ Rectangle {
 
     Image {
         id: colorize
-        source: "pic.jpg"
+        source: "pic.png"
         x: 400
 
         effect: Colorize { color: "blue" }
@@ -45,14 +45,14 @@ Rectangle {
 
     Image {
         id: pixelize
-        source: "pic.jpg"
+        source: "pic.png"
         y: 300
 
         effect: Pixelize {
             pixelSize: NumberAnimation {
                 id: pixelizeEffect
                 from: 0; to: 10
-                duration: 200
+                duration: 1000
                 repeat: true
             }
         }
@@ -64,14 +64,14 @@ Rectangle {
 
     Image {
         id: dropShadow
-        source: "pic.jpg"
+        source: "pic.png"
         x: 200
         y: 300
 
         effect: DropShadow {
             blurRadius: 3
             offset.x: 3
-            offset.y: NumberAnimation { id: dropShadowEffect; from: 0; to: 10; duration: 200; repeat: true; }
+            offset.y: NumberAnimation { id: dropShadowEffect; from: 0; to: 10; duration: 1000; repeat: true; }
         }
 
         MouseRegion { anchors.fill: parent; onClicked: dropShadowEffect.running = !dropShadowEffect.running }
@@ -81,7 +81,7 @@ Rectangle {
 
     Image {
         id: bloom
-        source: "pic.jpg"
+        source: "pic.png"
         x: 400
         y: 300
 
@@ -91,7 +91,7 @@ Rectangle {
             strength: NumberAnimation {
                 id: bloomEffect
                 from: 0; to: 1
-                duration: 200
+                duration: 1000
                 repeat: true
             }
         }
