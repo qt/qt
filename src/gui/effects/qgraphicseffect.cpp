@@ -279,6 +279,13 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     return pm;
 }
 
+void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+{
+    if (effectRectChanged && m_cachedMode != QGraphicsEffectSource::ExpandToEffectRectPadMode)
+        return;
+    QPixmapCache::remove(m_cacheKey);
+}
+
 /*!
     Constructs a new QGraphicsEffect instance having the
     specified \a parent.
@@ -418,7 +425,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache();
+        d->source->d_func()->invalidateCache(true);
     }
 }
 

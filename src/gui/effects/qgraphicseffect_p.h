@@ -85,7 +85,7 @@ public:
     virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
                            QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode) const = 0;
     virtual void effectBoundingRectChanged() = 0;
-    void invalidateCache() const { QPixmapCache::remove(m_cacheKey); }
+    void invalidateCache(bool effectRectChanged = false) const;
 
     friend class QGraphicsScenePrivate;
     friend class QGraphicsItem;
