@@ -37,6 +37,11 @@ Item {
     ListView {
         id: selector
 
+        Rectangle {
+            color: "#60FFFFFF"
+            x: -10; y: -10; radius: 10; z: -1
+            width: parent.width + 20; height: parent.height + 20
+        }
         currentIndex: root.currentIndex
         onCurrentIndexChanged: root.currentIndex = currentIndex
 
@@ -80,12 +85,5 @@ Item {
              }
         }
         model: visualModel.children
-
-        Rectangle {
-            color: "#40FFFFFF"
-            x: -10; 
-            y: -10;
-            width: parent.width + 20; height: parent.height + 10
-        }
     }
 }
