@@ -29,7 +29,7 @@ Item {
         id: background
         anchors.fill: parent; color: "#343434";
 
-        Image { source: "mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
+        Image { source: "../flickr/mobile/images/stripes.png"; fillMode: Image.Tile; anchors.fill: parent; opacity: 0.3 }
 
         Twitter.RssModel { id: rssModel }
         Common.Loading { anchors.centerIn: parent; visible: rssModel.status==XmlListModel.Loading && state!='unauthed'}
