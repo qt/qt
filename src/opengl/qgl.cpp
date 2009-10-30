@@ -2156,6 +2156,11 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     time.start();
 #endif
 
+#ifndef QT_NO_DEBUG
+    // Reset the gl error stack...git
+    while (glGetError() != GL_NO_ERROR);
+#endif
+
     // Scale the pixmap if needed. GL textures needs to have the
     // dimensions 2^n+2(border) x 2^m+2(border), unless we're using GL
     // 2.0 or use the GL_TEXTURE_RECTANGLE texture target

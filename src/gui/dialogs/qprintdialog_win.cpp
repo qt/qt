@@ -139,7 +139,7 @@ static void qt_win_setup_PRINTDLGEX(PRINTDLGEX *pd, QWidget *parent,
     if (d->ep->printToFile)
         pd->Flags |= PD_PRINTTOFILE;
     Q_ASSERT(parent != 0 && parent->testAttribute(Qt::WA_WState_Created));
-    pd->hwndOwner = parent->winId();
+    pd->hwndOwner = parent->window()->winId();
     pd->lpPageRanges[0].nFromPage = qMax(pdlg->fromPage(), pdlg->minPage());
     pd->lpPageRanges[0].nToPage   = (pdlg->toPage() > 0) ? qMin(pdlg->toPage(), pdlg->maxPage()) : 1;
     pd->nCopies = d->ep->num_copies;

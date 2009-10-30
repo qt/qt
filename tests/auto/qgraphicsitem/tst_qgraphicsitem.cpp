@@ -3111,7 +3111,7 @@ void tst_QGraphicsItem::boundingRects()
 void tst_QGraphicsItem::boundingRects2()
 {
     QGraphicsPixmapItem pixmap(QPixmap::fromImage(QImage(100, 100, QImage::Format_ARGB32_Premultiplied)));
-    QCOMPARE(pixmap.boundingRect(), QRectF(-0.5, -0.5, 101, 101));
+    QCOMPARE(pixmap.boundingRect(), QRectF(0, 0, 100, 100));
 
     QGraphicsLineItem line(0, 0, 100, 0);
     line.setPen(QPen(Qt::black, 1));
@@ -4041,7 +4041,7 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsPixmapItem()
     item.setOffset(QPointF(-10, -10));
     QCOMPARE(item.offset(), QPointF(-10, -10));
 
-    QCOMPARE(item.boundingRect(), QRectF(-10.5, -10.5, 301, 201));
+    QCOMPARE(item.boundingRect(), QRectF(-10, -10, 300, 200));
 }
 
 void tst_QGraphicsItem::defaultItemTest_QGraphicsTextItem()

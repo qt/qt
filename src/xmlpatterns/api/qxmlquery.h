@@ -74,7 +74,7 @@ namespace QPatternist
     class XsdSchemaParser;
     class XsdValidatingInstanceReader;
     class VariableLoader;
-};
+}
 
 class Q_XMLPATTERNS_EXPORT QXmlQuery
 {

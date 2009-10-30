@@ -1933,9 +1933,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 QRect grooveRect = option->rect.adjusted(focusFrameMargin, outerSize + focusFrameMargin,
                                    -focusFrameMargin, -outerSize - focusFrameMargin);
 
-                gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
-                                     GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
-
                 gboolean trough_side_details = false; // Indicates if the upper or lower scale background differs
                 if (!QGtk::gtk_check_version(2, 10, 0))
                     QGtk::gtk_widget_style_get((GtkWidget*)(scaleWidget), "trough-side-details",   &trough_side_details, NULL);

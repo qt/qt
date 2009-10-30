@@ -383,7 +383,7 @@ void tst_QPixmapFilter::dropShadowBoundingRectFor()
     QPixmapDropShadowFilter filter;
     filter.setBlurRadius(0);
 
-    QCOMPARE(filter.blurRadius(), 0);
+    QCOMPARE(filter.blurRadius(), 0.);
 
     const QRectF rect1(0, 0, 50, 50);
     const QRectF rect2(30, 20, 10, 40);

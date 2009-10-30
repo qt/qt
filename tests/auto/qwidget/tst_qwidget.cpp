@@ -2983,7 +2983,7 @@ void tst_QWidget::stackUnder()
             qApp->processEvents();
 #endif
 #ifndef Q_WS_MAC
-            QEXPECT_FAIL(0, "Task 153869", Continue);
+            QEXPECT_FAIL(0, "See QTBUG-493", Continue);
 #endif
             QCOMPARE(child->numPaintEvents, 0);
         } else {

@@ -1678,7 +1678,7 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
         d_ptr->scene->d_func()->index->itemChange(this, ItemFlagsChange, quint32(flags));
 
     // Flags that alter the geometry of the item (or its children).
-    const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations);
+    const quint32 geomChangeFlagsMask = (ItemClipsChildrenToShape | ItemClipsToShape | ItemIgnoresTransformations | ItemIsSelectable);
     bool fullUpdate = (quint32(flags) & geomChangeFlagsMask) != (d_ptr->flags & geomChangeFlagsMask);
     if (fullUpdate)
         d_ptr->paintedViewBoundingRectsNeedRepaint = 1;
@@ -9180,10 +9180,14 @@ void QGraphicsPixmapItem::setOffset(const QPointF &offset)
 QRectF QGraphicsPixmapItem::boundingRect() const
 {
     Q_D(const QGraphicsPixmapItem);
-    qreal pw = 1.0;
     if (d->pixmap.isNull())
         return QRectF();
-    return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+    if (d->flags & ItemIsSelectable) {
+        qreal pw = 1.0;
+        return QRectF(d->offset, d->pixmap.size()).adjusted(-pw/2, -pw/2, pw/2, pw/2);
+    } else {
+        return QRectF(d->offset, d->pixmap.size());
+    }
 }
 
 /*!
@@ -10702,7 +10706,8 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
     }
 }
 
-QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                                                 QGraphicsEffectSource::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!info && deviceCoordinates) {
@@ -10716,7 +10721,17 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     QGraphicsScenePrivate *scened = item->d_ptr->scene->d_func();
 
     const QRectF sourceRect = boundingRect(system);
-    QRect effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    QRect effectRect;
+
+    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+        effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+        // adjust by 1.5 to account for cosmetic pens
+        effectRect = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5).toAlignedRect();
+    } else {
+        effectRect = sourceRect.toAlignedRect();
+    }
+
     if (offset)
         *offset = effectRect.topLeft();
 
@@ -10744,9 +10759,14 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
             effectRect.setBottom(deviceHeight -1);
 
     }
-
     if (effectRect.isEmpty())
         return QPixmap();
+
+    if (system == Qt::LogicalCoordinates
+        && effectRect.size() == sourceRect.size()
+        && isPixmap()) {
+        return static_cast<QGraphicsPixmapItem *>(item)->pixmap();
+    }
 
     QPixmap pixmap(effectRect.size());
     pixmap.fill(Qt::transparent);

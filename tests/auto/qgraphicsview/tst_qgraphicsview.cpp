@@ -3788,7 +3788,7 @@ void tst_QGraphicsView::task259503_scrollingArtifacts()
             {
 //                qDebug() << event->region();
 //                qDebug() << updateRegion;
-                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See task #259503.", Continue);
+                QEXPECT_FAIL("", "The event region doesn't include the original item position region. See QTBUG-4416", Continue);
                 QCOMPARE(event->region(), updateRegion);
             }
         }

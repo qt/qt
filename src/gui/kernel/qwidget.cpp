@@ -5433,7 +5433,8 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
                    context->sharedPainter, context->backingStore);
 }
 
-QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                                           QGraphicsEffectSource::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!context && deviceCoordinates) {
@@ -5451,7 +5452,20 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
         pixmapOffset = painterTransform.map(pixmapOffset);
     }
 
-    QRect effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+
+    QRect effectRect;
+
+    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+        effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+
+    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+        effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+
+    } else {
+        effectRect = sourceRect.toAlignedRect();
+
+    }
+
     if (offset)
         *offset = effectRect.topLeft();
 
