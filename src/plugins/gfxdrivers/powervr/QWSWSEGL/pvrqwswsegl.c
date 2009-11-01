@@ -132,6 +132,16 @@ static WSEGLError wseglCloseDisplay(WSEGLDisplayHandle display)
     return WSEGL_SUCCESS;
 }
 
+static WSEGLRotationAngle wseglRotationValue(int degrees)
+{
+    switch (degrees) {
+    case 90:  return WSEGL_ROTATE_90;
+    case 180: return WSEGL_ROTATE_180;
+    case 270: return WSEGL_ROTATE_270;
+    default:  return WSEGL_ROTATE_0;
+    }
+}
+
 /* Create the WSEGL drawable version of a native window */
 static WSEGLError wseglCreateWindowDrawable
     (WSEGLDisplayHandle display, WSEGLConfig *config,
@@ -152,7 +162,7 @@ static WSEGLError wseglCreateWindowDrawable
         *drawable = (WSEGLDrawableHandle)screen;
         if (!pvrQwsAllocBuffers(screen))
             return WSEGL_OUT_OF_MEMORY;
-        *rotationAngle = WSEGL_ROTATE_0;
+        *rotationAngle = wseglRotationValue(screen->rotationAngle);
         return WSEGL_SUCCESS;
     }
 
@@ -163,7 +173,7 @@ static WSEGLError wseglCreateWindowDrawable
 
     /* The drawable is ready to go */
     *drawable = (WSEGLDrawableHandle)draw;
-    *rotationAngle = WSEGL_ROTATE_0;
+    *rotationAngle = wseglRotationValue(draw->rotationAngle);
     if (!pvrQwsAllocBuffers(draw))
         return WSEGL_OUT_OF_MEMORY;
     return WSEGL_SUCCESS;

@@ -45,12 +45,12 @@
 #include <private/qglwindowsurface_qws_p.h>
 #include "pvrqwsdrawable.h"
 
-class QScreen;
+class PvrEglScreen;
 
 class PvrEglWindowSurface : public QWSGLWindowSurface
 {
 public:
-    PvrEglWindowSurface(QWidget *widget, QScreen *screen, int screenNum);
+    PvrEglWindowSurface(QWidget *widget, PvrEglScreen *screen, int screenNum);
     PvrEglWindowSurface();
     ~PvrEglWindowSurface();
 
@@ -76,8 +76,10 @@ public:
 private:
     QWidget *widget;
     PvrQwsDrawable *drawable;
-    QScreen *screen;
+    PvrEglScreen *screen;
     QPaintDevice *pdevice;
+
+    void transformRects(PvrQwsRect *rects, int count) const;
 };
 
 #endif
