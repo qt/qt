@@ -66,12 +66,7 @@ public:
     enum ShaderTypeBits
     {
         VertexShader            = 0x0001,
-        FragmentShader          = 0x0002,
-
-        PartialShader           = 0x1000,
-
-        PartialVertexShader     = PartialShader | VertexShader,
-        PartialFragmentShader   = PartialShader | FragmentShader
+        FragmentShader          = 0x0002
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBits)
 
@@ -100,8 +95,6 @@ private:
 
     Q_DISABLE_COPY(QGLShader)
     Q_DECLARE_PRIVATE(QGLShader)
-
-    bool compile(const QList<QGLShader *>& shaders, QGLShader::ShaderType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)

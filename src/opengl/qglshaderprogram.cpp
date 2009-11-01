@@ -106,30 +106,6 @@ QT_BEGIN_NAMESPACE
 
     \snippet doc/src/snippets/code/src_opengl_qglshaderprogram.cpp 2
 
-    \section1 Partial shaders
-
-    Desktop GLSL can attach an arbitrary number of vertex and fragment
-    shaders to a shader program.  Embedded GLSL/ES on the other hand
-    supports only a single shader of each type on a shader program.
-
-    Multiple shaders of the same type can be useful when large libraries
-    of shaders are needed.  Common functions can be factored out into
-    library shaders that can be reused in multiple shader programs.
-
-    To support this use of shaders, the application programmer can
-    create shaders with the QGLShader::PartialVertexShader and
-    QGLShader::PartialFragmentShader types.  These types direct
-    QGLShader and QGLShaderProgram to delay shader compilation until
-    link time.
-
-    When link() is called, the sources for the partial shaders are
-    concatenated, and a single vertex or fragment shader is compiled
-    and linked into the shader program.
-
-    It is more efficient to use the QGLShader::VertexShader and
-    QGLShader::FragmentShader when there is only one shader of that
-    type in the program.
-
     \sa QGLShader
 */
 
@@ -154,11 +130,6 @@ QT_BEGIN_NAMESPACE
 
     \value VertexShader Vertex shader written in the OpenGL Shading Language (GLSL).
     \value FragmentShader Fragment shader written in the OpenGL Shading Language (GLSL).
-
-    \value PartialVertexShader Partial vertex shader that will be concatenated with all other partial vertex shaders at link time.
-    \value PartialFragmentShader Partial fragment shader that will be concatenated with all other partial fragment shaders at link time.
-
-    \omitvalue PartialShader
 */
 
 #ifndef GL_FRAGMENT_SHADER
@@ -209,8 +180,6 @@ public:
         : shaderGuard(context)
         , shaderType(type)
         , compiled(false)
-        , isPartial((type & QGLShader::PartialShader) != 0)
-        , hasPartialSource(false)
     {
     }
     ~QGLShaderPrivate();
@@ -218,10 +187,7 @@ public:
     QGLSharedResourceGuard shaderGuard;
     QGLShader::ShaderType shaderType;
     bool compiled;
-    bool isPartial;
-    bool hasPartialSource;
     QString log;
-    QByteArray partialSource;
 
     bool create();
     bool compile(QGLShader *q);
@@ -243,8 +209,6 @@ bool QGLShaderPrivate::create()
     const QGLContext *context = shaderGuard.context();
     if (!context)
         return false;
-    if (isPartial)
-        return true;
     if (qt_resolve_glsl_extensions(const_cast<QGLContext *>(context))) {
         GLuint shader;
         if (shaderType == QGLShader::VertexShader)
@@ -264,11 +228,6 @@ bool QGLShaderPrivate::create()
 
 bool QGLShaderPrivate::compile(QGLShader *q)
 {
-    // Partial shaders are compiled during QGLShaderProgram::link().
-    if (isPartial && hasPartialSource) {
-        compiled = true;
-        return true;
-    }
     GLuint shader = shaderGuard.id();
     if (!shader)
         return false;
@@ -441,21 +400,12 @@ static const char redefineHighp[] =
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
     \sa compileFile()
 */
 bool QGLShader::compile(const char *source)
 {
     Q_D(QGLShader);
-    if (d->isPartial) {
-        d->partialSource = QByteArray(source);
-        d->hasPartialSource = true;
-        return d->compile(this);
-    } else if (d->shaderGuard.id()) {
+    if (d->shaderGuard.id()) {
         QVarLengthArray<const char *, 4> src;
         QVarLengthArray<GLint, 4> srclen;
         int headerLen = 0;
@@ -481,8 +431,7 @@ bool QGLShader::compile(const char *source)
         srclen.append(GLint(sizeof(qualifierDefines) - 1));
 #endif
 #ifdef QGL_REDEFINE_HIGHP
-        if (d->shaderType == FragmentShader ||
-                d->shaderType == PartialFragmentShader) {
+        if (d->shaderType == FragmentShader) {
             src.append(redefineHighp);
             srclen.append(GLint(sizeof(redefineHighp) - 1));
         }
@@ -497,70 +446,10 @@ bool QGLShader::compile(const char *source)
 }
 
 /*!
-    \internal
-*/
-bool QGLShader::compile
-    (const QList<QGLShader *>& shaders, QGLShader::ShaderType type)
-{
-    Q_D(QGLShader);
-    QVarLengthArray<const char *, 16> src;
-    QVarLengthArray<GLint, 16> srclen;
-    if (!d->shaderGuard.id())
-        return false;
-    foreach (QGLShader *shader, shaders) {
-        if (shader->shaderType() != type)
-            continue;
-        const char *source = shader->d_func()->partialSource.constData();
-        int headerLen = 0;
-        if (src.isEmpty()) {
-            // First shader: handle the #version and #extension tags
-            // plus the precision qualifiers.
-            while (source && source[headerLen] == '#') {
-                // Skip #version and #extension directives at the start of
-                // the shader code.  We need to insert the qualifierDefines
-                // and redefineHighp just after them.
-                if (qstrncmp(source + headerLen, "#version", 8) != 0 &&
-                        qstrncmp(source + headerLen, "#extension", 10) != 0) {
-                    break;
-                }
-                while (source[headerLen] != '\0' && source[headerLen] != '\n')
-                    ++headerLen;
-                if (source[headerLen] == '\n')
-                    ++headerLen;
-            }
-            if (headerLen > 0) {
-                src.append(source);
-                srclen.append(GLint(headerLen));
-            }
-#ifdef QGL_DEFINE_QUALIFIERS
-            src.append(qualifierDefines);
-            srclen.append(GLint(sizeof(qualifierDefines) - 1));
-#endif
-#ifdef QGL_REDEFINE_HIGHP
-            if (d->shaderType == FragmentShader ||
-                    d->shaderType == PartialFragmentShader) {
-                src.append(redefineHighp);
-                srclen.append(GLint(sizeof(redefineHighp) - 1));
-            }
-#endif
-        }
-        src.append(source + headerLen);
-        srclen.append(GLint(qstrlen(source + headerLen)));
-    }
-    glShaderSource(d->shaderGuard.id(), src.size(), src.data(), srclen.data());
-    return d->compile(this);
-}
-
-/*!
     \overload
 
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
-
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
 
     \sa compileFile()
 */
@@ -575,11 +464,6 @@ bool QGLShader::compile(const QByteArray& source)
     Sets the \a source code for this shader and compiles it.
     Returns true if the source was successfully compiled, false otherwise.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
-
     \sa compileFile()
 */
 bool QGLShader::compile(const QString& source)
@@ -591,11 +475,6 @@ bool QGLShader::compile(const QString& source)
     Sets the source code for this shader to the contents of \a fileName
     and compiles it.  Returns true if the file could be opened and the
     source compiled, false otherwise.
-
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    then this function will always return true, even if the source code
-    is invalid.  Partial shaders are compiled when QGLShaderProgram::link()
-    is called.
 
     \sa compile()
 */
@@ -619,8 +498,6 @@ bool QGLShader::compileFile(const QString& fileName)
 QByteArray QGLShader::sourceCode() const
 {
     Q_D(const QGLShader);
-    if (d->isPartial)
-        return d->partialSource;
     GLuint shader = d->shaderGuard.id();
     if (!shader)
         return QByteArray();
@@ -661,10 +538,6 @@ QString QGLShader::log() const
 /*!
     Returns the OpenGL identifier associated with this shader.
 
-    If shaderType() is PartialVertexShader or PartialFragmentShader,
-    this function will always return zero.  Partial shaders are
-    created and compiled when QGLShaderProgram::link() is called.
-
     \sa QGLShaderProgram::programId()
 */
 GLuint QGLShader::shaderId() const
@@ -684,7 +557,6 @@ public:
         : programGuard(context)
         , linked(false)
         , inited(false)
-        , hasPartialShaders(false)
         , removingShaders(false)
         , vertexShader(0)
         , fragmentShader(0)
@@ -695,7 +567,6 @@ public:
     QGLSharedResourceGuard programGuard;
     bool linked;
     bool inited;
-    bool hasPartialShaders;
     bool removingShaders;
     QString log;
     QList<QGLShader *> shaders;
@@ -812,13 +683,9 @@ bool QGLShaderProgram::addShader(QGLShader *shader)
         }
         if (!shader->d_func()->compiled)
             return false;
-        if (!shader->d_func()->isPartial) {
-            if (!shader->d_func()->shaderGuard.id())
-                return false;
-            glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
-        } else {
-            d->hasPartialShaders = true;
-        }
+        if (!shader->d_func()->shaderGuard.id())
+            return false;
+        glAttachShader(d->programGuard.id(), shader->d_func()->shaderGuard.id());
         d->linked = false;  // Program needs to be relinked.
         d->shaders.append(shader);
         connect(shader, SIGNAL(destroyed()), this, SLOT(shaderDestroyed()));
@@ -999,45 +866,6 @@ bool QGLShaderProgram::link()
     GLuint program = d->programGuard.id();
     if (!program)
         return false;
-    if (d->hasPartialShaders) {
-        // Compile the partial vertex and fragment shaders.
-        if (d->hasShader(QGLShader::PartialVertexShader)) {
-            if (!d->vertexShader) {
-                d->vertexShader =
-                    new QGLShader(QGLShader::VertexShader, this);
-            }
-            if (!d->vertexShader->compile
-                    (d->shaders, QGLShader::PartialVertexShader)) {
-                d->log = d->vertexShader->log();
-                return false;
-            }
-            glAttachShader(program, d->vertexShader->d_func()->shaderGuard.id());
-        } else {
-            if (d->vertexShader) {
-                glDetachShader(program, d->vertexShader->d_func()->shaderGuard.id());
-                delete d->vertexShader;
-                d->vertexShader = 0;
-            }
-        }
-        if (d->hasShader(QGLShader::PartialFragmentShader)) {
-            if (!d->fragmentShader) {
-                d->fragmentShader =
-                    new QGLShader(QGLShader::FragmentShader, this);
-            }
-            if (!d->fragmentShader->compile
-                    (d->shaders, QGLShader::PartialFragmentShader)) {
-                d->log = d->fragmentShader->log();
-                return false;
-            }
-            glAttachShader(program, d->fragmentShader->d_func()->shaderGuard.id());
-        } else {
-            if (d->fragmentShader) {
-                glDetachShader(program, d->fragmentShader->d_func()->shaderGuard.id());
-                delete d->fragmentShader;
-                d->fragmentShader = 0;
-            }
-        }
-    }
     glLinkProgram(program);
     GLint value = 0;
     glGetProgramiv(program, GL_LINK_STATUS, &value);
