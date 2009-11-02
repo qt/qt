@@ -110,6 +110,15 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
     if (simple)
         return;
 
+    int childCount;
+    bool recur;
+    ds >> childCount >> recur;
+
+    for (int ii = 0; ii < childCount; ++ii) {
+        o.m_children.append(QmlDebugObjectReference());
+        decode(ds, o.m_children.last(), !recur);
+    }
+
     int propCount;
     ds >> propCount;
 
@@ -122,24 +131,25 @@ void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
         prop.m_binding = data.binding;
         prop.m_hasNotifySignal = data.hasNotifySignal;
         prop.m_valueTypeName = data.valueTypeName;
-        if (data.type == QmlEngineDebugServer::QmlObjectProperty::Basic
-                || data.type == QmlEngineDebugServer::QmlObjectProperty::List) {
-            prop.m_value = data.value;
-        } else if (data.type == QmlEngineDebugServer::QmlObjectProperty::Object) {
-            QmlDebugObjectReference obj;
-            obj.m_debugId = prop.m_value.toInt();
-            prop.m_value = qVariantFromValue(obj);
+        switch (data.type) {
+            case QmlEngineDebugServer::QmlObjectProperty::Basic:
+            case QmlEngineDebugServer::QmlObjectProperty::List:
+            case QmlEngineDebugServer::QmlObjectProperty::SignalProperty:
+            {
+                prop.m_value = data.value;
+                break;
+            }
+            case QmlEngineDebugServer::QmlObjectProperty::Object:
+            {
+                QmlDebugObjectReference obj;
+                obj.m_debugId = prop.m_value.toInt();
+                prop.m_value = qVariantFromValue(obj);
+                break;
+            }
+            case QmlEngineDebugServer::QmlObjectProperty::Unknown:
+                break;
         }
         o.m_properties << prop;
-    }
-
-    int childCount;
-    bool recur;
-    ds >> childCount >> recur;
-
-    for (int ii = 0; ii < childCount; ++ii) {
-        o.m_children.append(QmlDebugObjectReference());
-        decode(ds, o.m_children.last(), !recur);
     }
 }
 

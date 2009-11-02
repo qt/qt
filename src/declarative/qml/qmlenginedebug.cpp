@@ -155,21 +155,61 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
                                            QObject *object, bool recur)
 {
     message << objectData(object);
-    message << object->metaObject()->propertyCount();
+
+    // Some children aren't added to an object until particular properties are read
+    // - e.g. child state objects aren't added until the 'states' property is read -
+    // but this should only affect internal objects that aren't shown by the
+    // debugger anyway.
+
+    QObjectList children = object->children();
+    
+    int childrenCount = children.count();
+    for (int ii = 0; ii < children.count(); ++ii) {
+        if (QmlBoundSignal::cast(children[ii]))
+            --childrenCount;
+    }
+
+    message << childrenCount << recur;
+
+    QList<QmlObjectProperty> fakeProperties;
+
+    for (int ii = 0; ii < children.count(); ++ii) {
+        QObject *child = children.at(ii);
+        QmlBoundSignal *signal = QmlBoundSignal::cast(child);
+        if (signal) {
+            QmlObjectProperty prop;
+            prop.type = QmlObjectProperty::SignalProperty;
+            prop.hasNotifySignal = false;
+            QmlExpression *expr = signal->expression();
+            if (expr) {
+                prop.value = expr->expression();
+                QObject *scope = expr->scopeObject();
+                if (scope) {
+                    QString sig = scope->metaObject()->method(signal->index()).signature();
+                    int lparen = sig.indexOf(QLatin1Char('('));
+                    if (lparen >= 0) {
+                        QString methodName = sig.mid(0, lparen);
+                        prop.name = QLatin1String("on") + methodName[0].toUpper()
+                                + methodName.mid(1);
+                    }
+                }
+            }
+            fakeProperties << prop;
+        } else {
+            if (recur)
+                buildObjectDump(message, child, recur);
+            else
+                message << objectData(child);
+        }
+    }
+
+    message << (object->metaObject()->propertyCount() + fakeProperties.count());
 
     for (int ii = 0; ii < object->metaObject()->propertyCount(); ++ii) 
         message << propertyData(object, ii);
 
-    QObjectList children = object->children();
-    message << children.count() << recur;
-
-    for (int ii = 0; ii < children.count(); ++ii) {
-        QObject *child = children.at(ii);
-        if (recur)
-            buildObjectDump(message, child, recur);
-        else
-            message << objectData(child);
-    }
+    for (int ii = 0; ii < fakeProperties.count(); ++ii)
+        message << fakeProperties[ii];
 }
 
 void QmlEngineDebugServer::buildObjectList(QDataStream &message, 
