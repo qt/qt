@@ -2158,7 +2158,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 #ifndef QT_NO_DEBUG
     // Reset the gl error stack...git
-    while (glGetError() != GL_NO_ERROR);
+    while (glGetError() != GL_NO_ERROR) ;
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
