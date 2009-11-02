@@ -88,8 +88,12 @@ int QEglProperties::value(int name) const
 #if defined(EGL_ALPHA_MASK_SIZE)
     case EGL_ALPHA_MASK_SIZE: return 0;
 #endif
+#if defined(EGL_BIND_TO_TEXTURE_RGB)
     case EGL_BIND_TO_TEXTURE_RGB: return EGL_DONT_CARE;
+#endif
+#if defined(EGL_BIND_TO_TEXTURE_RGBA)
     case EGL_BIND_TO_TEXTURE_RGBA: return EGL_DONT_CARE;
+#endif
 #if defined(EGL_COLOR_BUFFER_TYPE)
     case EGL_COLOR_BUFFER_TYPE: return EGL_RGB_BUFFER;
 #endif
