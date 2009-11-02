@@ -357,7 +357,7 @@ QListView::LayoutMode QListView::layoutMode() const
 
 /*!
     \property QListView::spacing
-    \brief the space between items in the layout
+    \brief the space around the items in the layout
 
     This property is the size of the empty space that is padded around
     an item in the layout.
@@ -972,9 +972,9 @@ void QListView::paintEvent(QPaintEvent *e)
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)
-            option.rect.setWidth(qMin(viewport()->size().width(), option.rect.width()));
+            option.rect.setWidth(qMin(viewport()->size().width() - 2 * d->spacing(), option.rect.width()));
         else
-            option.rect.setHeight(qMin(viewport()->size().height(), option.rect.height()));
+            option.rect.setHeight(qMin(viewport()->size().height() - 2 * d->spacing(), option.rect.height()));
 
         option.state = state;
         if (selections && selections->isSelected(*it))
@@ -1837,14 +1837,14 @@ void QCommonListViewBase::updateHorizontalScrollBar(const QSize &step)
 {
     horizontalScrollBar()->setSingleStep(step.width() + spacing());
     horizontalScrollBar()->setPageStep(viewport()->width());
-    horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width());
+    horizontalScrollBar()->setRange(0, contentsSize.width() - viewport()->width() - 2 * spacing());
 }
 
 void QCommonListViewBase::updateVerticalScrollBar(const QSize &step)
 {
     verticalScrollBar()->setSingleStep(step.height() + spacing());
     verticalScrollBar()->setPageStep(viewport()->height());
-    verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height());
+    verticalScrollBar()->setRange(0, contentsSize.height() - viewport()->height() - 2 * spacing());
 }
 
 void QCommonListViewBase::scrollContentsBy(int dx, int dy, bool /*scrollElasticBand*/)

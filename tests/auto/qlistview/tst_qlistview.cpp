@@ -121,6 +121,7 @@ private slots:
     void taskQTBUG_2233_scrollHiddenItems();
     void taskQTBUG_633_changeModelData();
     void taskQTBUG_435_deselectOnViewportClick();
+    void taskQTBUG_2678_spacingAndWrappedText();
 };
 
 // Testing get/set functions
@@ -1874,6 +1875,20 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     //and now the right button
     QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
     QVERIFY(!view.selectionModel()->hasSelection());
+}
+
+void tst_QListView::taskQTBUG_2678_spacingAndWrappedText()
+{
+    static const QString lorem("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+    QStringListModel model(QStringList() << lorem << lorem << "foo" << lorem << "bar" << lorem << lorem);
+    QListView w;
+    w.setModel(&model);
+    w.setViewMode(QListView::ListMode);
+    w.setWordWrap(true);
+    w.setSpacing(10);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QCOMPARE(w.horizontalScrollBar()->minimum(), w.horizontalScrollBar()->maximum());
 }
 
 QTEST_MAIN(tst_QListView)
