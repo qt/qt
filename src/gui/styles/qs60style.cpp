@@ -743,7 +743,7 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     const QColor mainAreaTextColor =
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0);
 
-    widgetPalette.setColor(QPalette::All, QPalette::WindowText,
+    widgetPalette.setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QSlider");
     // return to original palette after each widget
@@ -767,34 +767,34 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QHeaderView");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
+    widgetPalette.setColor(QPalette::ButtonText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QMenuBar");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
+    widgetPalette.setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
     QApplication::setPalette(widgetPalette, "QTabBar");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::Text,
+    widgetPalette.setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::Text,
+    widgetPalette.setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 34, 0));
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
     widgetPalette = *palette;
