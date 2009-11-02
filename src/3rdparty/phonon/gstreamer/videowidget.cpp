@@ -33,6 +33,7 @@
 #include "widgetrenderer.h"
 #include "x11renderer.h"
 
+#ifndef QT_NO_PHONON_VIDEO
 QT_BEGIN_NAMESPACE
 
 namespace Phonon
@@ -383,5 +384,6 @@ void VideoWidget::mediaNodeEvent(const MediaNodeEvent *event)
 } //namespace Phonon::Gstreamer
 
 QT_END_NAMESPACE
+#endif //QT_NO_PHONON_VIDEO
 
 #include "moc_videowidget.cpp"

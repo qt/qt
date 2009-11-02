@@ -1246,7 +1246,6 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
             return;
         }
     }
-#endif // QT_NO_SHORTCUT
 
     if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
@@ -1274,6 +1273,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
+#endif // QT_NO_SHORTCUT
 
     {
         QTextCursor cursor = d->control->textCursor();

@@ -467,6 +467,7 @@ bool QGestureManager::filterEvent(QWidget *receiver, QEvent *event)
     return filterEventThroughContexts(contexts, event);
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
 {
     QSet<Qt::GestureType> types;
@@ -498,6 +499,7 @@ bool QGestureManager::filterEvent(QGraphicsObject *receiver, QEvent *event)
     }
     return filterEventThroughContexts(contexts, event);
 }
+#endif
 
 bool QGestureManager::filterEvent(QGesture *state, QEvent *event)
 {
