@@ -521,20 +521,22 @@ void QTestLiteWindowSurface::handleKeyEvent(QEvent::Type type, void *ev)
 
     int count = XLookupString(e, chars.data(), chars.size(), &keySym, 0);
 
-//     qDebug() << "QTLWS::handleKeyEvent" << count << hex << "XKeysym:" << keySym;
-//     if (count)
-//         qDebug() << hex << int(chars[0]) << "String:"             << chars;
+//      qDebug() << "QTLWS::handleKeyEvent" << count << hex << "XKeysym:" << keySym;
+//      if (count)
+//          qDebug() << hex << int(chars[0]) << "String:"             << chars;
 
     Qt::KeyboardModifiers modifiers = translateModifiers(e->state);
 
     int qtcode = lookupCode(keySym);
-//    qDebug() << "lookup: " << hex << keySym << qtcode;
+//    qDebug() << "lookup: " << hex << keySym << qtcode << "mod" << modifiers;
 
     if (qtcode) {
         QKeyEvent keyEvent(type, qtcode, modifiers);
         QApplicationPrivate::handleKeyEvent(window(), &keyEvent);
     } else if (chars[0]) {
         int qtcode = chars.toUpper()[0]; //Not exactly right...
+	if (modifiers & Qt::ControlModifier && qtcode < ' ')
+	  qtcode = chars[0] + '@';
         QKeyEvent keyEvent(type, qtcode, modifiers, QString::fromLatin1(chars));
         QApplicationPrivate::handleKeyEvent(window(), &keyEvent);
     } else {
