@@ -73,13 +73,13 @@ void tst_QmlGraphicsLayouts::test_horizontal()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -97,13 +97,13 @@ void tst_QmlGraphicsLayouts::test_horizontal_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -121,13 +121,13 @@ void tst_QmlGraphicsLayouts::test_vertical()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -145,13 +145,13 @@ void tst_QmlGraphicsLayouts::test_vertical_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
 
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
 
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -169,15 +169,15 @@ void tst_QmlGraphicsLayouts::test_grid()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
-    QmlGraphicsRect *four = canvas->root()->findChild<QmlGraphicsRect*>("four");
+    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
     QVERIFY(four != 0);
-    QmlGraphicsRect *five = canvas->root()->findChild<QmlGraphicsRect*>("five");
+    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);
@@ -199,15 +199,15 @@ void tst_QmlGraphicsLayouts::test_grid_spacing()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsRect *one = canvas->root()->findChild<QmlGraphicsRect*>("one");
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
     QVERIFY(one != 0);
-    QmlGraphicsRect *two = canvas->root()->findChild<QmlGraphicsRect*>("two");
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
     QVERIFY(two != 0);
-    QmlGraphicsRect *three = canvas->root()->findChild<QmlGraphicsRect*>("three");
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
     QVERIFY(three != 0);
-    QmlGraphicsRect *four = canvas->root()->findChild<QmlGraphicsRect*>("four");
+    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
     QVERIFY(four != 0);
-    QmlGraphicsRect *five = canvas->root()->findChild<QmlGraphicsRect*>("five");
+    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
     QVERIFY(five != 0);
 
     QCOMPARE(one->x(), 0.0);

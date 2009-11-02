@@ -130,8 +130,8 @@ private:
     friend class QmlGraphicsGradientStop;
 };
 
-class QmlGraphicsRectPrivate;
-class Q_DECLARATIVE_EXPORT QmlGraphicsRect : public QmlGraphicsItem
+class QmlGraphicsRectanglePrivate;
+class Q_DECLARATIVE_EXPORT QmlGraphicsRectangle : public QmlGraphicsItem
 {
     Q_OBJECT
 
@@ -140,7 +140,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsRect : public QmlGraphicsItem
     Q_PROPERTY(QmlGraphicsPen * border READ border CONSTANT)
     Q_PROPERTY(qreal radius READ radius WRITE setRadius NOTIFY radiusChanged)
 public:
-    QmlGraphicsRect(QmlGraphicsItem *parent=0);
+    QmlGraphicsRectangle(QmlGraphicsItem *parent=0);
 
     QColor color() const;
     void setColor(const QColor &);
@@ -170,11 +170,11 @@ private:
     void drawRect(QPainter &painter);
 
 protected:
-    QmlGraphicsRect(QmlGraphicsRectPrivate &dd, QmlGraphicsItem *parent);
+    QmlGraphicsRectangle(QmlGraphicsRectanglePrivate &dd, QmlGraphicsItem *parent);
 
 private:
-    Q_DISABLE_COPY(QmlGraphicsRect)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRect)
+    Q_DISABLE_COPY(QmlGraphicsRectangle)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRectangle)
 };
 
 QT_END_NAMESPACE
@@ -182,7 +182,7 @@ QT_END_NAMESPACE
 QML_DECLARE_TYPE(QmlGraphicsPen)
 QML_DECLARE_TYPE(QmlGraphicsGradientStop)
 QML_DECLARE_TYPE(QmlGraphicsGradient)
-QML_DECLARE_TYPE(QmlGraphicsRect)
+QML_DECLARE_TYPE(QmlGraphicsRectangle)
 
 QT_END_HEADER
 

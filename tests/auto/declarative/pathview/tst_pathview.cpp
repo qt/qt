@@ -190,7 +190,7 @@ void tst_QmlGraphicsPathView::pathMoved()
     QmlGraphicsPathView *pathview = findItem<QmlGraphicsPathView>(canvas->root(), "view");
     QVERIFY(pathview != 0);
 
-    QmlGraphicsRect *firstItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 0);
+    QmlGraphicsRectangle *firstItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 0);
     QVERIFY(firstItem);
     QmlGraphicsPath *path = qobject_cast<QmlGraphicsPath*>(pathview->path());
     QVERIFY(path);
@@ -203,7 +203,7 @@ void tst_QmlGraphicsPathView::pathMoved()
     QTest::qWait(1000);//Moving is animated?
 
     for(int i=0; i<model.count(); i++){
-        QmlGraphicsRect *curItem = findItem<QmlGraphicsRect>(pathview, "wrapper", i);
+        QmlGraphicsRectangle *curItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", i);
         QCOMPARE(curItem->pos() + offset, path->pointAt(0.1 + i*0.25));
     }
 
@@ -234,22 +234,22 @@ void tst_QmlGraphicsPathView::limitedItems()
     pathview->setPathItemCount(10);
     QCOMPARE(pathview->pathItemCount(), 10);
 
-    QmlGraphicsRect *testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 0);
+    QmlGraphicsRectangle *testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 0);
     QVERIFY(testItem != 0);
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 9);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 9);
     QVERIFY(testItem != 0);
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 10);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 10);
     QVERIFY(testItem == 0);
 
     pathview->setCurrentIndex(50);
     QTest::qWait(5100);//Moving is animated and it's travelling far - should be reconsidered.
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 0);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 0);
     QVERIFY(testItem == 0);
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 1);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 1);
     QVERIFY(testItem == 0);
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 9);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 9);
     QVERIFY(testItem == 0);
-    testItem = findItem<QmlGraphicsRect>(pathview, "wrapper", 50);
+    testItem = findItem<QmlGraphicsRectangle>(pathview, "wrapper", 50);
     QVERIFY(testItem != 0);
 }
 

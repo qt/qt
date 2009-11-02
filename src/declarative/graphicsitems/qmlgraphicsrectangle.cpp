@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicsrect_p.h"
-#include "qmlgraphicsrect_p_p.h"
+#include "qmlgraphicsrectangle_p.h"
+#include "qmlgraphicsrectangle_p_p.h"
 
 #include <QPainter>
 #include <QtCore/qmath.h>
@@ -149,10 +149,10 @@ void QmlGraphicsGradient::doUpdate()
     emit updated();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QmlGraphicsRect)
+QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QmlGraphicsRectangle)
 
 /*!
-    \qmlclass Rectangle QmlGraphicsRect
+    \qmlclass Rectangle QmlGraphicsRectangle
     \brief The Rectangle item allows you to add rectangles to a scene.
     \inherits Item
 
@@ -175,28 +175,28 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QmlGraphicsRect)
 
 /*!
     \internal
-    \class QmlGraphicsRect
-    \brief The QmlGraphicsRect class provides a rectangle item that you can add to a QmlView.
+    \class QmlGraphicsRectangle
+    \brief The QmlGraphicsRectangle class provides a rectangle item that you can add to a QmlView.
 */
-QmlGraphicsRect::QmlGraphicsRect(QmlGraphicsItem *parent)
-  : QmlGraphicsItem(*(new QmlGraphicsRectPrivate), parent)
+QmlGraphicsRectangle::QmlGraphicsRectangle(QmlGraphicsItem *parent)
+  : QmlGraphicsItem(*(new QmlGraphicsRectanglePrivate), parent)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     d->init();
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QmlGraphicsRect::QmlGraphicsRect(QmlGraphicsRectPrivate &dd, QmlGraphicsItem *parent)
+QmlGraphicsRectangle::QmlGraphicsRectangle(QmlGraphicsRectanglePrivate &dd, QmlGraphicsItem *parent)
   : QmlGraphicsItem(dd, parent)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     d->init();
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-void QmlGraphicsRect::doUpdate()
+void QmlGraphicsRectangle::doUpdate()
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     d->rectImage = QPixmap();
     const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
     d->setPaintMargin((pw+1)/2);
@@ -214,9 +214,9 @@ void QmlGraphicsRect::doUpdate()
     To keep the border smooth (rather than blurry), odd widths cause the rectangle to be painted at
     a half-pixel offset;
 */
-QmlGraphicsPen *QmlGraphicsRect::border()
+QmlGraphicsPen *QmlGraphicsRectangle::border()
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     return d->getPen();
 }
 
@@ -254,15 +254,15 @@ QmlGraphicsPen *QmlGraphicsRect::border()
 
     \sa Gradient, color
 */
-QmlGraphicsGradient *QmlGraphicsRect::gradient() const
+QmlGraphicsGradient *QmlGraphicsRectangle::gradient() const
 {
-    Q_D(const QmlGraphicsRect);
+    Q_D(const QmlGraphicsRectangle);
     return d->gradient;
 }
 
-void QmlGraphicsRect::setGradient(QmlGraphicsGradient *gradient)
+void QmlGraphicsRectangle::setGradient(QmlGraphicsGradient *gradient)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->gradient == gradient)
         return;
     if (d->gradient)
@@ -282,15 +282,15 @@ void QmlGraphicsRect::setGradient(QmlGraphicsGradient *gradient)
     painted as a normal rectangle. The same radius is used by all 4 corners; there is currently
     no way to specify different radii for different corners.
 */
-qreal QmlGraphicsRect::radius() const
+qreal QmlGraphicsRectangle::radius() const
 {
-    Q_D(const QmlGraphicsRect);
+    Q_D(const QmlGraphicsRectangle);
     return d->radius;
 }
 
-void QmlGraphicsRect::setRadius(qreal radius)
+void QmlGraphicsRectangle::setRadius(qreal radius)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->radius == radius)
         return;
 
@@ -316,15 +316,15 @@ void QmlGraphicsRect::setRadius(qreal radius)
 
     If both a gradient and a color are specified, the gradient will be used.
 */
-QColor QmlGraphicsRect::color() const
+QColor QmlGraphicsRectangle::color() const
 {
-    Q_D(const QmlGraphicsRect);
+    Q_D(const QmlGraphicsRectangle);
     return d->color;
 }
 
-void QmlGraphicsRect::setColor(const QColor &c)
+void QmlGraphicsRectangle::setColor(const QColor &c)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->color == c)
         return;
 
@@ -334,9 +334,9 @@ void QmlGraphicsRect::setColor(const QColor &c)
     emit colorChanged();
 }
 
-void QmlGraphicsRect::generateRoundedRect()
+void QmlGraphicsRectangle::generateRoundedRect()
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         const int radius = qCeil(d->radius);    //ensure odd numbered width/height so we get 1-pixel center
@@ -358,9 +358,9 @@ void QmlGraphicsRect::generateRoundedRect()
     }
 }
 
-void QmlGraphicsRect::generateBorderedRect()
+void QmlGraphicsRectangle::generateBorderedRect()
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->rectImage.isNull()) {
         const int pw = d->pen && d->pen->isValid() ? d->pen->width() : 0;
         d->rectImage = QPixmap(pw*2 + 3, pw*2 + 3);
@@ -382,9 +382,9 @@ void QmlGraphicsRect::generateBorderedRect()
     }
 }
 
-void QmlGraphicsRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
+void QmlGraphicsRectangle::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidget *)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->radius > 0 || (d->pen && d->pen->isValid())
         || (d->gradient && d->gradient->gradient()) ) {
         drawRect(*p);
@@ -399,9 +399,9 @@ void QmlGraphicsRect::paint(QPainter *p, const QStyleOptionGraphicsItem *, QWidg
     }
 }
 
-void QmlGraphicsRect::drawRect(QPainter &p)
+void QmlGraphicsRectangle::drawRect(QPainter &p)
 {
-    Q_D(QmlGraphicsRect);
+    Q_D(QmlGraphicsRectangle);
     if (d->gradient && d->gradient->gradient()) {
         // XXX This path is still slower than the image path
         // Image path won't work for gradients though
@@ -466,9 +466,9 @@ void QmlGraphicsRect::drawRect(QPainter &p)
     \image rect-smooth.png
 */
 
-QRectF QmlGraphicsRect::boundingRect() const
+QRectF QmlGraphicsRectangle::boundingRect() const
 {
-    Q_D(const QmlGraphicsRect);
+    Q_D(const QmlGraphicsRectangle);
     return QRectF(-d->paintmargin, -d->paintmargin, d->width+d->paintmargin*2, d->height+d->paintmargin*2);
 }
 
