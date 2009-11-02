@@ -851,6 +851,11 @@ public:
     void ignore(QGesture *);
     bool isAccepted(QGesture *) const;
 
+    void setAccepted(Qt::GestureType, bool);
+    void accept(Qt::GestureType);
+    void ignore(Qt::GestureType);
+    bool isAccepted(Qt::GestureType) const;
+
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 

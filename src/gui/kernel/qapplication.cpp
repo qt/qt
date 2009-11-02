@@ -474,9 +474,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-bool QApplicationPrivate::inSizeMove = false;
-#endif
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -5641,7 +5638,9 @@ Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *reco
 */
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {
-    QGestureManager::instance()->unregisterGestureRecognizer(type);
+    QApplicationPrivate *d = qApp->d_func();
+    if (d->gestureManager)
+        d->gestureManager->unregisterGestureRecognizer(type);
 }
 
 QT_END_NAMESPACE

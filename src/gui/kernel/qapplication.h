@@ -288,8 +288,8 @@ public:
     static Qt::NavigationMode navigationMode();
 #endif
 
-    Qt::GestureType registerGestureRecognizer(QGestureRecognizer *recognizer);
-    void unregisterGestureRecognizer(Qt::GestureType type);
+    static Qt::GestureType registerGestureRecognizer(QGestureRecognizer *recognizer);
+    static void unregisterGestureRecognizer(Qt::GestureType type);
 
 Q_SIGNALS:
     void lastWindowClosed();

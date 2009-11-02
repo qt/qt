@@ -1326,4 +1326,24 @@
     <source>Close All Except %1</source>
     <target>Fermer tout sauf %1</target>
 </phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Suppression</target>
+</phrase>
+<phrase>
+    <source>About...</source>
+    <target>À propos…</target>
+</phrase>
+<phrase>
+    <source>Minimize</source>
+    <target>Minimiser</target>
+</phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Supprimer</target>
+</phrase>
+<phrase>
+    <source>Select All</source>
+    <target>Sélectionner tout</target>
+</phrase>
 </QPH>

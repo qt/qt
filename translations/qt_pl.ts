@@ -12,7 +12,7 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2191"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2193"/>
         <source>Fake error !</source>
         <translation type="unfinished"></translation>
     </message>
@@ -932,7 +932,7 @@ na
         <translation>Operacja na gnieździe nieobsługiwana</translation>
     </message>
     <message>
-        <location line="+567"/>
+        <location line="+580"/>
         <source>Socket is not connected</source>
         <translation>Gniazdo nie jest podłączone</translation>
     </message>
@@ -966,6 +966,14 @@ na
     </message>
 </context>
 <context>
+    <name>QAccessibleButton</name>
+    <message>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+250"/>
+        <source>Press</source>
+        <translation type="unfinished">Wciśnij</translation>
+    </message>
+</context>
+<context>
     <name>QApplication</name>
     <message>
         <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
@@ -988,7 +996,7 @@ na
         <translation>Niekompatybilność biblioteki Qt</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2293"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2290"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -1020,7 +1028,7 @@ na
 <context>
     <name>QCheckBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+117"/>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="-133"/>
         <source>Check</source>
         <translation>Zaznacz</translation>
     </message>
@@ -1276,7 +1284,7 @@ na
 <context>
     <name>QDialogButtonBox</name>
     <message>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+654"/>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+653"/>
         <source>Abort</source>
         <translation>Przerwij</translation>
     </message>
@@ -1472,7 +1480,7 @@ na
         <translation>Błąd krytyczny:</translation>
     </message>
     <message>
-        <location line="+200"/>
+        <location line="+201"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
@@ -1482,7 +1490,7 @@ na
         <translation>&amp;Pokaż ten komunikat ponownie</translation>
     </message>
     <message>
-        <location line="-202"/>
+        <location line="-203"/>
         <source>Warning:</source>
         <translation>Ostrzeżenie:</translation>
     </message>
@@ -1851,52 +1859,52 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
     <name>QFontDatabase</name>
     <message>
         <location filename="../src/gui/text/qfontdatabase.cpp" line="+102"/>
-        <location line="+1334"/>
+        <location line="+1335"/>
         <source>Normal</source>
         <translation>Normalny</translation>
     </message>
     <message>
-        <location line="-1331"/>
+        <location line="-1332"/>
         <location line="+12"/>
-        <location line="+1307"/>
+        <location line="+1308"/>
         <source>Bold</source>
         <translation>Pogrubiony</translation>
     </message>
     <message>
-        <location line="-1316"/>
-        <location line="+1318"/>
+        <location line="-1317"/>
+        <location line="+1319"/>
         <source>Demi Bold</source>
         <translation>Na wpół pogrubiony</translation>
     </message>
     <message>
-        <location line="-1315"/>
+        <location line="-1316"/>
         <location line="+18"/>
-        <location line="+1293"/>
+        <location line="+1294"/>
         <source>Black</source>
         <translatorcomment>it&apos;s about font weight</translatorcomment>
         <translation>Bardzo gruby</translation>
     </message>
     <message>
-        <location line="-1303"/>
+        <location line="-1304"/>
         <source>Demi</source>
         <translation>Na wpół</translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+1303"/>
+        <location line="+1304"/>
         <source>Light</source>
         <translatorcomment>it&apos;s about font weight</translatorcomment>
         <translation>Cienki</translation>
     </message>
     <message>
-        <location line="-1157"/>
-        <location line="+1160"/>
+        <location line="-1158"/>
+        <location line="+1161"/>
         <source>Italic</source>
         <translation>Kursywa</translation>
     </message>
     <message>
-        <location line="-1157"/>
-        <location line="+1159"/>
+        <location line="-1158"/>
+        <location line="+1160"/>
         <source>Oblique</source>
         <translation>Pochyły</translation>
     </message>
@@ -2340,7 +2348,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Host %1 znaleziony</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="+2634"/>
+        <location filename="../src/network/access/qhttp.cpp" line="+2639"/>
         <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="-453"/>
         <source>Host %1 not found</source>
@@ -2360,7 +2368,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Komenda HTTP zakończona błędem</translation>
     </message>
     <message>
-        <location line="+198"/>
+        <location line="+219"/>
         <location line="+48"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+109"/>
         <location line="+47"/>
@@ -2374,7 +2382,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Niepoprawny nagłówek odpowiedzi HTTP</translation>
     </message>
     <message>
-        <location line="-319"/>
+        <location line="-340"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="-173"/>
         <source>No server set to connect to</source>
         <translation>Brak serwera do podłączenia</translation>
@@ -2411,7 +2419,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Błędna długość zawartości</translation>
     </message>
     <message>
-        <location line="+183"/>
+        <location line="+204"/>
         <source>Unknown authentication method</source>
         <translation>Nieznana metoda autoryzacji</translation>
     </message>
@@ -2456,7 +2464,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
         <translation>Nawiązanie sesji SSL nie powiodło się</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-307"/>
+        <location filename="../src/network/access/qhttp.cpp" line="-328"/>
         <source>Connection refused (or timed out)</source>
         <translation>Połączenie odrzucone (przekroczony czas połączenia)</translation>
     </message>
@@ -3105,7 +3113,7 @@ Proszę o sprawdzenie podanej nazwy pliku.</translation>
 <context>
     <name>QMenuBar</name>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+404"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+410"/>
         <source>Actions</source>
         <translation>Akcje</translation>
     </message>
@@ -4361,7 +4369,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location/>
         <source>Selection</source>
-        <translation>Wybór</translation>
+        <translation>Wybrane strony</translation>
     </message>
     <message>
         <location/>
@@ -4449,7 +4457,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location/>
         <source>Location:</source>
-        <translation>Lokalizacja:</translation>
+        <translation>Położenie:</translation>
     </message>
     <message>
         <location/>
@@ -4505,7 +4513,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Przekroczony czas operacji procesu</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+851"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+855"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
         <location line="+50"/>
@@ -4726,7 +4734,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+2"/>
         <source>Location</source>
-        <translation>Miejsce</translation>
+        <translation>Położenie</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4967,7 +4975,7 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+2"/>
         <source>Location</source>
-        <translation>Miejsce</translation>
+        <translation>Położenie</translation>
     </message>
 </context>
 <context>
@@ -5847,7 +5855,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Anuluj</translation>
     </message>
     <message>
-        <location line="+152"/>
+        <location line="+151"/>
         <source>Exit</source>
         <translation>Wyjście</translation>
     </message>
@@ -6071,7 +6079,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2014"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2018"/>
         <source>&amp;Copy</source>
         <translation>S&amp;kopiuj</translation>
     </message>
@@ -6114,7 +6122,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QToolButton</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+256"/>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+312"/>
         <location line="+8"/>
         <source>Open</source>
         <translation>Otwórz</translation>
@@ -6229,7 +6237,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QWebFrame</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+704"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+711"/>
         <source>Request cancelled</source>
         <translation>Prośba anulowana</translation>
     </message>
@@ -6262,7 +6270,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+41"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
         <translation>Wyślij</translation>
@@ -6280,7 +6288,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Wyczyść</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>Choose File</source>
         <comment>title for file button used in HTML forms</comment>
         <translation>Wybierz plik</translation>
@@ -6766,12 +6774,12 @@ Proszę wybrać inną nazwę pliku.</translation>
         <translation>Nieznany</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+170"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+167"/>
         <source>Web Inspector - %2</source>
         <translation>Wizytator sieciowy - %2</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+416"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+406"/>
         <source>Bad HTTP request</source>
         <translation>Niepoprawna komenda HTTP</translation>
     </message>
@@ -6875,7 +6883,7 @@ Proszę wybrać inną nazwę pliku.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1727"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1708"/>
         <source>JavaScript Alert - %1</source>
         <translation>Ostrzeżenie JavaScript - %1</translation>
     </message>
@@ -7121,7 +7129,7 @@ Proszę wybrać inną nazwę pliku.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5652"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5672"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -9596,32 +9604,32 @@ Proszę wybrać inną nazwę pliku.</translation>
     <message>
         <location line="+15"/>
         <source>Duration content does not match the maxInclusive facet.</source>
-        <translation>Wartość czasu trwania koliduje z aspektem &quot;maxInclusive&quot;.</translation>
+        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;maxInclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the maxExclusive facet.</source>
-        <translation>Wartość czasu trwania koliduje z aspektem &quot;maxExclusive&quot;.</translation>
+        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;maxExclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the minInclusive facet.</source>
-        <translation>Wartość czasu trwania koliduje z aspektem &quot;minInclusive&quot;.</translation>
+        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;minInclusive&quot;.</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>Duration content does not match the minExclusive facet.</source>
-        <translation>Wartość czasu trwania koliduje z aspektem &quot;minExclusive&quot;.</translation>
+        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;minExclusive&quot;.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Duration content is not listed in the enumeration facet.</source>
-        <translation>Wartość czasu trwania nie widnieje na liście aspektu &quot;enumeration&quot;.</translation>
+        <translation>Wartość długości okresu czasu nie widnieje na liście aspektu &quot;enumeration&quot;.</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Duration content does not match pattern facet.</source>
-        <translation>Wartość czasu trwania koliduje z aspektem &quot;pattern&quot;.</translation>
+        <translation>Wartość długości okresu czasu koliduje z aspektem &quot;pattern&quot;.</translation>
     </message>
     <message>
         <location line="+27"/>

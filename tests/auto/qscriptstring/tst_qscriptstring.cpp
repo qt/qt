@@ -59,6 +59,8 @@ public:
 private slots:
     void test();
     void hash();
+    void toArrayIndex_data();
+    void toArrayIndex();
 };
 
 tst_QScriptString::tst_QScriptString()
@@ -153,6 +155,41 @@ void tst_QScriptString::hash()
     stringToInt.insert(bar, 456);
     QCOMPARE(stringToInt.value(bar), 456);
     QCOMPARE(stringToInt.value(foo), 123);
+}
+
+void tst_QScriptString::toArrayIndex_data()
+{
+    QTest::addColumn<QString>("input");
+    QTest::addColumn<bool>("expectSuccess");
+    QTest::addColumn<quint32>("expectedIndex");
+    QTest::newRow("foo") << QString::fromLatin1("foo") << false << quint32(0xffffffff);
+    QTest::newRow("empty") << QString::fromLatin1("") << false << quint32(0xffffffff);
+    QTest::newRow("0") << QString::fromLatin1("0") << true << quint32(0);
+    QTest::newRow("00") << QString::fromLatin1("00") << false << quint32(0xffffffff);
+    QTest::newRow("1") << QString::fromLatin1("1") << true << quint32(1);
+    QTest::newRow("123") << QString::fromLatin1("123") << true << quint32(123);
+    QTest::newRow("-1") << QString::fromLatin1("-1") << false << quint32(0xffffffff);
+    QTest::newRow("0a") << QString::fromLatin1("0a") << false << quint32(0xffffffff);
+    QTest::newRow("0x1") << QString::fromLatin1("0x1") << false << quint32(0xffffffff);
+    QTest::newRow("01") << QString::fromLatin1("01") << false << quint32(0xffffffff);
+    QTest::newRow("4294967294") << QString::fromLatin1("4294967294") << true << quint32(0xfffffffe);
+    QTest::newRow("4294967295") << QString::fromLatin1("4294967295") << false << quint32(0xffffffff);
+}
+
+void tst_QScriptString::toArrayIndex()
+{
+    QFETCH(QString, input);
+    QFETCH(bool, expectSuccess);
+    QFETCH(quint32, expectedIndex);
+    QScriptEngine engine;
+    for (int x = 0; x < 2; ++x) {
+        bool isArrayIndex;
+        bool *ptr = (x == 0) ? &isArrayIndex : (bool*)0;
+        quint32 result = engine.toStringHandle(input).toArrayIndex(ptr);
+        if (x == 0)
+            QCOMPARE(isArrayIndex, expectSuccess);
+        QCOMPARE(result, expectedIndex);
+    }
 }
 
 QTEST_MAIN(tst_QScriptString)
