@@ -1715,8 +1715,6 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QCOMPARE(widgets[item.index]->geometry(), item.rect);
     }
 
-    // ###: not supported yet
-/*
     // Test mirrored mode
     widget->setLayoutDirection(Qt::RightToLeft);
     layout->activate();
@@ -1731,7 +1729,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QCOMPARE(widgets[item.index]->geometry(), mirroredRect);
         delete widgets[item.index];
     }
-*/
+
     delete widget;
 }
 
