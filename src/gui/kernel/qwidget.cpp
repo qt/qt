@@ -11712,7 +11712,7 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 /*!
     Subscribes the widget to a given \a gesture with a \a context.
 
-    \sa QGestureEvent
+    \sa ungrabGesture(), QGestureEvent
     \since 4.6
 */
 void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
@@ -11725,7 +11725,7 @@ void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
 /*!
     Unsubscribes the widget to a given \a gesture type
 
-    \sa QGestureEvent
+    \sa grabGesture(), QGestureEvent
     \since 4.6
 */
 void QWidget::ungrabGesture(Qt::GestureType gesture)

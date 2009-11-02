@@ -7322,14 +7322,27 @@ QGraphicsObject::QGraphicsObject(QGraphicsItemPrivate &dd, QGraphicsItem *parent
 /*!
     Subscribes the graphics object to the given \a gesture for the specified \a context.
 
-    \sa QGestureEvent
+    \sa ungrabGesture(), QGestureEvent
 */
-
 void QGraphicsObject::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
 {
     QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
     d->gestureContext.insert(gesture, context);
     (void)QGestureManager::instance(); // create a gesture manager
+}
+
+/*!
+    Unsubscribes the graphics object from the given \a gesture.
+
+    \sa grabGesture(), QGestureEvent
+*/
+void QGraphicsObject::ungrabGesture(Qt::GestureType gesture)
+{
+    QGraphicsItemPrivate * const d = QGraphicsItem::d_func();
+    if (d->gestureContext.remove(gesture)) {
+        QGestureManager *manager = QGestureManager::instance();
+        manager->cleanupCachedGestures(this, gesture);
+    }
 }
 
 /*!
