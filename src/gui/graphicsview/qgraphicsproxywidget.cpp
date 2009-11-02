@@ -397,7 +397,7 @@ QWidget *QGraphicsProxyWidgetPrivate::findFocusChild(QWidget *child, bool next) 
     do {
         if (child->isEnabled()
 	    && child->isVisibleTo(widget)
-            && (child->focusPolicy() & focus_flag == focus_flag)
+            && ((child->focusPolicy() & focus_flag) == focus_flag)
             && !(child->d_func()->extra && child->d_func()->extra->focus_proxy)) {
             return child;
         }

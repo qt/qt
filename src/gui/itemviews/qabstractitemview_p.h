@@ -117,6 +117,7 @@ public:
     virtual void _q_columnsInserted(const QModelIndex &parent, int start, int end);
     virtual void _q_modelDestroyed();
     virtual void _q_layoutChanged();
+    void _q_headerDataChanged() { doDelayedItemsLayout(); }
 
     void fetchMore();
 
@@ -164,7 +165,8 @@ public:
     }
 
 #ifndef QT_NO_DRAGANDDROP
-    QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+
     inline bool canDecode(QDropEvent *e) const {
         QStringList modelTypes = model->mimeTypes();
         const QMimeData *mime = e->mimeData();

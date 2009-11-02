@@ -116,7 +116,7 @@ typedef struct CGPoint NSPoint;
 QT_BEGIN_NAMESPACE
 Qt::MouseButtons qt_mac_get_buttons(int buttons);
 Qt::MouseButton qt_mac_get_button(EventMouseButton button);
-void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds = 0);
+void macWindowFade(void * /*OSWindowRef*/ window, float durationSeconds = 0.15);
 bool macWindowIsTextured(void * /*OSWindowRef*/ window);
 void macWindowToolbarShow(const QWidget *widget, bool show );
 void macWindowToolbarSet( void * /*OSWindowRef*/ window, void* toolbarRef );
@@ -170,7 +170,7 @@ void *qt_mac_QStringListToNSMutableArrayVoid(const QStringList &list);
 void qt_syncCocoaTitleBarButtons(OSWindowRef window, QWidget *widgetForWindow);
 
 CGFloat qt_mac_get_scalefactor();
-QString qt_mac_get_pasteboardString();
+QString qt_mac_get_pasteboardString(OSPasteboardRef paste);
 
 #ifdef __OBJC__
 inline NSMutableArray *qt_mac_QStringListToNSMutableArray(const QStringList &qstrlist)

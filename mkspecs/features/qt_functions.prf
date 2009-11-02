@@ -54,6 +54,10 @@ defineTest(qtAddLibrary) {
             # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
             INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtXmlPatterns
         }
+        isEqual(LIB_NAME, QtXmlPatterns) {
+            # Needed for #include <QtXmlPatterns/QtXmlPatterns> because relative inclusion problem in toolchain
+            INCLUDEPATH *= $$QMAKE_INCDIR_QT/QtNetwork
+        }
     }
     isEmpty(LINKAGE) {
        if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {

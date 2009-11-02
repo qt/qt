@@ -61,6 +61,7 @@
 #include <private/qgraphicstransform_p.h>
 
 #include <private/qgraphicseffect_p.h>
+#include <qgraphicseffect.h>
 
 #include <QtCore/qpoint.h>
 
@@ -603,8 +604,10 @@ public:
 
     inline bool isPixmap() const
     {
-        return (item->type() == QGraphicsPixmapItem::Type);
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+        return item->type() == QGraphicsPixmapItem::Type
+               && !(item->flags() & QGraphicsItem::ItemIsSelectable)
+               && item->d_ptr->children.size() == 0;
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const
@@ -621,7 +624,9 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system,
+                   QPoint *offset,
+                   QGraphicsEffectSource::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

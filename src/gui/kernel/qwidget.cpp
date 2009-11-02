@@ -1828,18 +1828,6 @@ void QWidgetPrivate::setDirtyOpaqueRegion()
         pd->setDirtyOpaqueRegion();
 }
 
-QRegion QWidgetPrivate::getOpaqueRegion() const
-{
-    Q_Q(const QWidget);
-
-    QRegion r = isOpaque ? q->rect() : getOpaqueChildren();
-    if (extra && extra->hasMask)
-        r &= extra->mask;
-    if (r.isEmpty())
-        return r;
-    return r & clipRect();
-}
-
 const QRegion &QWidgetPrivate::getOpaqueChildren() const
 {
     if (!dirtyOpaqueChildren)
@@ -1854,9 +1842,17 @@ const QRegion &QWidgetPrivate::getOpaqueChildren() const
             continue;
 
         const QPoint offset = child->geometry().topLeft();
-        that->opaqueChildren += child->d_func()->getOpaqueRegion().translated(offset);
+        QWidgetPrivate *childd = child->d_func();
+        QRegion r = childd->isOpaque ? child->rect() : childd->getOpaqueChildren();
+        if (childd->extra && childd->extra->hasMask)
+            r &= childd->extra->mask;
+        if (r.isEmpty())
+            continue;
+        r.translate(offset);
+        that->opaqueChildren += r;
     }
 
+    that->opaqueChildren &= q_func()->rect();
     that->dirtyOpaqueChildren = false;
 
     return that->opaqueChildren;
@@ -5457,7 +5453,8 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
                    context->sharedPainter, context->backingStore);
 }
 
-QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset) const
+QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                                           QGraphicsEffectSource::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!context && deviceCoordinates) {
@@ -5475,7 +5472,20 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
         pixmapOffset = painterTransform.map(pixmapOffset);
     }
 
-    QRect effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+
+    QRect effectRect;
+
+    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+        effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
+
+    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+        effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
+
+    } else {
+        effectRect = sourceRect.toAlignedRect();
+
+    }
+
     if (offset)
         *offset = effectRect.topLeft();
 
@@ -11737,6 +11747,22 @@ void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
     d->gestureContext.insert(gesture, context);
     (void)QGestureManager::instance(); // create a gesture manager
 }
+
+/*!
+    Unsubscribes the widget to a given \a gesture type
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::ungrabGesture(Qt::GestureType gesture)
+{
+    Q_D(QWidget);
+    if (d->gestureContext.remove(gesture)) {
+        QGestureManager *manager = QGestureManager::instance();
+        manager->cleanupCachedGestures(this, gesture);
+    }
+}
+
 
 QT_END_NAMESPACE
 

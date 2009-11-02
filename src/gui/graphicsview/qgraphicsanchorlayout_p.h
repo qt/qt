@@ -151,15 +151,16 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), from(0), to(0),
+        : QSimplexVariable(), item(0), from(0), to(0),
           minSize(0), prefSize(0), expSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtExpanding(0), sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false) {}
+          type(Normal), hasSize(true), isLayoutAnchor(false),
+          isCenterAnchor(false), orientation(0) {}
 
     virtual void updateChildrenSizes() {}
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
     virtual ~AnchorData() {}
 
@@ -179,6 +180,9 @@ struct AnchorData : public QSimplexVariable {
     {
         hasSize = false;
     }
+
+    // Internal anchors have associated items
+    QGraphicsLayoutItem *item;
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -205,7 +209,9 @@ struct AnchorData : public QSimplexVariable {
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
     uint hasSize : 1;         // if false, get size from style.
-    uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
+    uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
+    uint isCenterAnchor : 1;
+    uint orientation : 1;
 };
 
 #ifdef QT_DEBUG
@@ -217,26 +223,20 @@ inline QString AnchorData::toString() const
 
 struct SequentialAnchorData : public AnchorData
 {
-    SequentialAnchorData() : AnchorData()
+    SequentialAnchorData(const QVector<AnchorVertex *> &vertices, const QVector<AnchorData *> &edges)
+        : AnchorData(), m_children(vertices), m_edges(edges)
     {
         type = AnchorData::Sequential;
-#ifdef QT_DEBUG
-        name = QLatin1String("SequentialAnchorData");
-#endif
-    }
-
-    virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
-
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
-
-    void setVertices(const QVector<AnchorVertex*> &vertices)
-    {
-        m_children = vertices;
+        orientation = m_edges.at(0)->orientation;
 #ifdef QT_DEBUG
         name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
 #endif
     }
+
+    virtual void updateChildrenSizes();
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
     QVector<AnchorData*> m_edges;               // keep the list of edges too.
@@ -248,6 +248,7 @@ struct ParallelAnchorData : public AnchorData
         : AnchorData(), firstEdge(first), secondEdge(second)
     {
         type = AnchorData::Parallel;
+        orientation = first->orientation;
 
         // ### Those asserts force that both child anchors have the same direction,
         // but can't we simplify a pair of anchors in opposite directions?
@@ -261,9 +262,9 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
 
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -423,13 +424,12 @@ public:
                               Qt::AnchorPoint &firstEdge,
                               QGraphicsLayoutItem *&secondItem,
                               Qt::AnchorPoint &secondEdge);
-    // for getting the actual spacing (will query the style if the
-    // spacing is not explicitly set).
-    qreal effectiveSpacing(Orientation orientation) const;
+
+    QLayoutStyleInfo &styleInfo() const;
 
     // Activation methods
-    void simplifyGraph(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation);
+    bool simplifyGraph(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
     void restoreSimplifiedGraph(Orientation orientation);
 
     void calculateGraphs();
@@ -441,7 +441,7 @@ public:
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
-    void setAnchorSizeHintsFromItems(Orientation orientation);
+    bool refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
@@ -524,6 +524,8 @@ public:
 #endif
 
     uint calculateGraphCacheDirty : 1;
+    mutable uint styleInfoDirty : 1;
+    mutable QLayoutStyleInfo cachedStyleInfo;
 
     friend class QGraphicsAnchorPrivate;
 };

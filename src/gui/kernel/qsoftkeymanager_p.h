@@ -97,6 +97,7 @@ protected:
     Q_DISABLE_COPY(QSoftKeyManager)
 
 private Q_SLOTS:
+    void cleanupHash(QObject* obj);
     void sendKeyEvent();
 };
 

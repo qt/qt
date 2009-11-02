@@ -599,7 +599,7 @@ void QItemSelectionModelPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &pare
             while (itParent.isValid() && itParent.parent() != parent)
                 itParent = itParent.parent();
 
-            if (parent.isValid() && start <= itParent.row() && itParent.row() <= end) {
+            if (itParent.isValid() && start <= itParent.row() && itParent.row() <= end) {
                 deselected.append(*it);
                 it = ranges.erase(it);
             } else {
@@ -1587,7 +1587,8 @@ void QItemSelectionModel::emitSelectionChanged(const QItemSelection &newSelectio
         }
     }
 
-    emit selectionChanged(selected, deselected);
+    if (!selected.isEmpty() || !deselected.isEmpty())
+        emit selectionChanged(selected, deselected);
 }
 
 #ifndef QT_NO_DEBUG_STREAM

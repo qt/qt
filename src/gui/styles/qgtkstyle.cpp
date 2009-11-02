@@ -1004,32 +1004,27 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             gtkPainter.setAlphaSupport(false);
             GtkShadowType shadow = GTK_SHADOW_OUT;
             GtkStateType state = GTK_STATE_NORMAL; // Only state supported by gtknotebook
-            if (const QTabWidget *tabwidget = qobject_cast<const QTabWidget*>(widget)) {
-                // We should introduce QStyleOptionTabWidgetFrameV2 to obtain this information
-                // No gap if we do not show the actual tabs
-                QTabBar *tabBar = tabwidget->findChild<QTabBar*>();
-                if (tabwidget->count() > 0 && tabBar->isVisible()) {
-                    QRect tabRect = tabBar->tabRect(tabBar->currentIndex());
-                    int begin = 0, size = 0;
-                    GtkPositionType frameType = GTK_POS_TOP;
-                    QTabBar::Shape shape = frame->shape;
-                    if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
-                        begin = option->direction == Qt::LeftToRight ?
-                                frame->leftCornerWidgetSize.width() + tabRect.left() :
-                                frame->rect.width() - frame->tabBarSize.width() + tabRect.left()
-                                - frame->rightCornerWidgetSize.width();
-                        size = tabRect.width();
-                        frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
-                    } else {
-                        begin = frame->leftCornerWidgetSize.height() + tabRect.top();
-                        size = tabRect.height();
-                        frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
-                    }
-                    gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
-                                            begin, size, style);
-                    break; // done
+            bool reverse = (option->direction == Qt::RightToLeft);
+            QGtk::gtk_widget_set_direction(gtkNotebook, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            if (const QStyleOptionTabWidgetFrameV2 *tabframe = qstyleoption_cast<const QStyleOptionTabWidgetFrameV2*>(option)) {
+                GtkPositionType frameType = GTK_POS_TOP;
+                QTabBar::Shape shape = frame->shape;
+                int gapStart = 0;
+                int gapSize = 0;
+                if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
+                    frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
+                    gapStart = tabframe->selectedTabRect.left();
+                    gapSize = tabframe->selectedTabRect.width();
+                } else {
+                    frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
+                    gapStart = tabframe->selectedTabRect.y();
+                    gapSize = tabframe->selectedTabRect.height();
                 }
+                gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
+                                        gapStart, gapSize, style);
+                break; // done
             }
+
             // Note this is only the fallback option
             gtkPainter.paintBox(gtkNotebook, "notebook",  option->rect, state, shadow, style);
         }
@@ -1932,9 +1927,6 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 int focusFrameMargin = 2;
                 QRect grooveRect = option->rect.adjusted(focusFrameMargin, outerSize + focusFrameMargin,
                                    -focusFrameMargin, -outerSize - focusFrameMargin);
-
-                gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
-                                     GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
 
                 gboolean trough_side_details = false; // Indicates if the upper or lower scale background differs
                 if (!QGtk::gtk_check_version(2, 10, 0))

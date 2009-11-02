@@ -1625,6 +1625,7 @@ void qt_init(QApplicationPrivate *priv, int,
 
     // MIT-SHM
     X11->use_mitshm = false;
+    X11->use_mitshm_pixmaps = false;
     X11->mitshm_major = 0;
 
     X11->sip_serial = 0;
@@ -1918,12 +1919,13 @@ void qt_init(QApplicationPrivate *priv, int,
             bool local = displayName.isEmpty() || displayName.lastIndexOf(QLatin1Char(':')) == 0;
             if (local && (qgetenv("QT_X11_NO_MITSHM").toInt() == 0)) {
                 Visual *defaultVisual = DefaultVisual(X11->display, DefaultScreen(X11->display));
-                X11->use_mitshm = mitshm_pixmaps && ((defaultVisual->red_mask == 0xff0000
-                                                      || defaultVisual->red_mask == 0xf800)
-                                                     && (defaultVisual->green_mask == 0xff00
-                                                         || defaultVisual->green_mask == 0x7e0)
-                                                     && (defaultVisual->blue_mask == 0xff
-                                                         || defaultVisual->blue_mask == 0x1f));
+                X11->use_mitshm = ((defaultVisual->red_mask == 0xff0000
+                                    || defaultVisual->red_mask == 0xf800)
+                                   && (defaultVisual->green_mask == 0xff00
+                                       || defaultVisual->green_mask == 0x7e0)
+                                   && (defaultVisual->blue_mask == 0xff
+                                       || defaultVisual->blue_mask == 0x1f));
+                X11->use_mitshm_pixmaps = X11->use_mitshm && mitshm_pixmaps;
             }
         }
 #endif // QT_NO_MITSHM
@@ -3750,6 +3752,12 @@ int QApplication::x11ProcessEvent(XEvent* event)
                 qt_get_net_virtual_roots();
             } else if (event->xproperty.atom == ATOM(_NET_WORKAREA)) {
                 qt_desktopwidget_update_workarea();
+
+                // emit the workAreaResized() signal
+                QDesktopWidget *desktop = QApplication::desktop();
+                int numScreens = desktop->numScreens();
+                for (int i = 0; i < numScreens; ++i)
+                    emit desktop->workAreaResized(i);
             }
         } else if (widget) {
             widget->translatePropertyEvent(event);

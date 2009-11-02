@@ -165,7 +165,7 @@ void tst_QGraphicsPixmapItem::boundingRect_data()
     QTest::addColumn<QPixmap>("pixmap");
     QTest::addColumn<QRectF>("boundingRect");
     QTest::newRow("null") << QPixmap() << QRectF();
-    QTest::newRow("10x10") << QPixmap(10, 10) << QRectF(-0.5, -0.5, 11, 11);
+    QTest::newRow("10x10") << QPixmap(10, 10) << QRectF(0, 0, 10, 10);
 }
 
 // public QRectF boundingRect() const

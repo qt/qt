@@ -166,6 +166,9 @@ private slots:
     void deviceRect();
     void pixmap();
 
+    void pixmapPadding_data();
+    void pixmapPadding();
+
 private:
     QGraphicsView *view;
     QGraphicsScene *scene;
@@ -316,6 +319,102 @@ void tst_QGraphicsEffectSource::pixmap()
     // Make sure default value is Qt::LogicalCoordinates.
     QPixmap pixmap2 = effect->source()->pixmap();
     QCOMPARE(pixmap1, pixmap2);
+}
+
+class PaddingEffect : public QGraphicsEffect
+{
+public:
+    PaddingEffect(QObject *parent) : QGraphicsEffect(parent)
+    {
+    }
+
+    QRectF boundingRectFor(const QRectF &src) const {
+        return src.adjusted(-10, -10, 10, 10);
+    }
+
+    void draw(QPainter *, QGraphicsEffectSource *source) {
+        pix = source->pixmap(coordinateMode, &offset, padMode);
+    }
+
+    QPixmap pix;
+    QPoint offset;
+    QGraphicsEffectSource::PixmapPadMode padMode;
+    Qt::CoordinateSystem coordinateMode;
+};
+
+void tst_QGraphicsEffectSource::pixmapPadding_data()
+{
+    QTest::addColumn<int>("coordinateMode");
+    QTest::addColumn<int>("padMode");
+    QTest::addColumn<QSize>("size");
+    QTest::addColumn<QPoint>("offset");
+    QTest::addColumn<uint>("ulPixel");
+
+    QTest::newRow("log,nopad") << int(Qt::LogicalCoordinates)
+                               << int(QGraphicsEffectSource::NoExpandPadMode)
+                               << QSize(10, 10) << QPoint(0, 0)
+                               << 0xffff0000u;
+
+    QTest::newRow("log,transparent") << int(Qt::LogicalCoordinates)
+                                     << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+                                     << QSize(12, 12) << QPoint(-1, -1)
+                                     << 0x00000000u;
+
+    QTest::newRow("log,effectrect") << int(Qt::LogicalCoordinates)
+                                    << int(QGraphicsEffectSource::ExpandToEffectRectPadMode)
+                                    << QSize(30, 30) << QPoint(-10, -10)
+                                    << 0x00000000u;
+
+    QTest::newRow("dev,nopad") << int(Qt::DeviceCoordinates)
+                               << int(QGraphicsEffectSource::NoExpandPadMode)
+                               << QSize(20, 20) << QPoint(40, 40)
+                               << 0xffff0000u;
+
+    QTest::newRow("dev,transparent") << int(Qt::DeviceCoordinates)
+                                     << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+                                     << QSize(22, 22) << QPoint(39, 39)
+                                     << 0x00000000u;
+
+    QTest::newRow("dev,effectrect") << int(Qt::DeviceCoordinates)
+                                    << int(QGraphicsEffectSource::ExpandToEffectRectPadMode)
+                                    << QSize(40, 40) << QPoint(30, 30)
+                                    << 0x00000000u;
+
+}
+
+void tst_QGraphicsEffectSource::pixmapPadding()
+{
+    QPixmap dummyTarget(100, 100);
+    QPainter dummyPainter(&dummyTarget);
+    dummyPainter.translate(40, 40);
+    dummyPainter.scale(2, 2);
+
+    QPixmap pm(10, 10);
+    pm.fill(Qt::red);
+
+    QGraphicsScene *scene = new QGraphicsScene();
+    PaddingEffect *effect = new PaddingEffect(scene);
+    QGraphicsPixmapItem *pmItem = new QGraphicsPixmapItem(pm);
+    scene->addItem(pmItem);
+    pmItem->setGraphicsEffect(effect);
+
+    QFETCH(int, coordinateMode);
+    QFETCH(int, padMode);
+    QFETCH(QPoint, offset);
+    QFETCH(QSize, size);
+    QFETCH(uint, ulPixel);
+
+    effect->padMode = (QGraphicsEffectSource::PixmapPadMode) padMode;
+    effect->coordinateMode = (Qt::CoordinateSystem) coordinateMode;
+
+    scene->render(&dummyPainter, scene->itemsBoundingRect(), scene->itemsBoundingRect());
+
+    QCOMPARE(effect->pix.size(), size);
+    QCOMPARE(effect->offset, offset);
+    QCOMPARE(effect->pix.toImage().pixel(0, 0), ulPixel);
+
+    // ### Fix corruption in scene destruction, then enable...
+    // delete scene;
 }
 
 QTEST_MAIN(tst_QGraphicsEffectSource)

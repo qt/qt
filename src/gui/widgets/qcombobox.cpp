@@ -192,6 +192,8 @@ void QComboBoxPrivate::_q_modelReset()
         lineEdit->setText(QString());
         updateLineEditGeometry();
     }
+    if (currentIndex.row() != indexBeforeChange)
+        _q_emitCurrentIndexChanged(currentIndex);
     q->update();
 }
 
@@ -487,18 +489,6 @@ void QComboBoxPrivateContainer::viewDestroyed()
 }
 
 /*
-    Sets currentIndex on entered if the LeftButton is not pressed. This
-    means that if mouseTracking(...) is on, we setCurrentIndex and select
-    even when LeftButton is not pressed.
-*/
-void QComboBoxPrivateContainer::setCurrentIndex(const QModelIndex &index)
-{
-    if (QComboBoxDelegate::isSeparator(index))
-        return;
-    view->setCurrentIndex(index);
-}
-
-/*
     Returns the item view used for the combobox popup.
 */
 QAbstractItemView *QComboBoxPrivateContainer::itemView() const
@@ -523,8 +513,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
         disconnect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
                    this, SLOT(updateScrollers()));
 #endif
-        disconnect(view, SIGNAL(entered(QModelIndex)),
-                   this, SLOT(setCurrentIndex(QModelIndex)));
         disconnect(view, SIGNAL(destroyed()),
                    this, SLOT(viewDestroyed()));
 
@@ -561,8 +549,6 @@ void QComboBoxPrivateContainer::setItemView(QAbstractItemView *itemView)
     connect(view->verticalScrollBar(), SIGNAL(rangeChanged(int,int)),
             this, SLOT(updateScrollers()));
 #endif
-    connect(view, SIGNAL(entered(QModelIndex)),
-            this, SLOT(setCurrentIndex(QModelIndex)));
     connect(view, SIGNAL(destroyed()),
             this, SLOT(viewDestroyed()));
 
@@ -653,16 +639,20 @@ bool QComboBoxPrivateContainer::eventFilter(QObject *o, QEvent *e)
             break;
         }
     break;
-    case QEvent::MouseMove: {
+    case QEvent::MouseMove:
         if (isVisible()) {
             QMouseEvent *m = static_cast<QMouseEvent *>(e);
             QWidget *widget = static_cast<QWidget *>(o);
             QPoint vector = widget->mapToGlobal(m->pos()) - initialClickPosition;
             if (vector.manhattanLength() > 9 && blockMouseReleaseTimer.isActive())
                 blockMouseReleaseTimer.stop();
+            QModelIndex indexUnderMouse = view->indexAt(m->pos());
+            if (indexUnderMouse.isValid() && indexUnderMouse != view->currentIndex()
+                    && !QComboBoxDelegate::isSeparator(indexUnderMouse)) {
+                view->setCurrentIndex(indexUnderMouse);
+            }
         }
         break;
-    }
     case QEvent::MouseButtonRelease: {
         QMouseEvent *m = static_cast<QMouseEvent *>(e);
         if (isVisible() && view->rect().contains(m->pos()) && view->currentIndex().isValid()
@@ -992,14 +982,6 @@ void QComboBoxPrivate::_q_dataChanged(const QModelIndex &topLeft, const QModelIn
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeInserted(const QModelIndex & parent,
-                                             int /*start*/, int /*end*/)
-{
-    if (parent != root)
-        return;
-    indexBeforeChange = currentIndex.row();
-}
-
 void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int end)
 {
     Q_Q(QComboBox);
@@ -1022,11 +1004,8 @@ void QComboBoxPrivate::_q_rowsInserted(const QModelIndex &parent, int start, int
     }
 }
 
-void QComboBoxPrivate::_q_rowsAboutToBeRemoved(const QModelIndex &parent, int /*start*/, int /*end*/)
+void QComboBoxPrivate::_q_updateIndexBeforeChange()
 {
-    if (parent != root)
-        return;
-
     indexBeforeChange = currentIndex.row();
 }
 
@@ -1868,15 +1847,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
         disconnect(d->model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
                    this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
         disconnect(d->model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsInserted(QModelIndex,int,int)),
                    this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-                   this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
                    this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
         disconnect(d->model, SIGNAL(destroyed()),
                    this, SLOT(_q_modelDestroyed()));
+        disconnect(d->model, SIGNAL(modelAboutToBeReset()),
+                   this, SLOT(_q_updateIndexBeforeChange()));
         disconnect(d->model, SIGNAL(modelReset()),
                    this, SLOT(_q_modelReset()));
         if (d->model->QObject::parent() == this)
@@ -1888,15 +1869,17 @@ void QComboBox::setModel(QAbstractItemModel *model)
     connect(model, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
             this, SLOT(_q_dataChanged(QModelIndex,QModelIndex)));
     connect(model, SIGNAL(rowsAboutToBeInserted(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeInserted(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsInserted(QModelIndex,int,int)),
             this, SLOT(_q_rowsInserted(QModelIndex,int,int)));
     connect(model, SIGNAL(rowsAboutToBeRemoved(QModelIndex,int,int)),
-            this, SLOT(_q_rowsAboutToBeRemoved(QModelIndex,int,int)));
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(rowsRemoved(QModelIndex,int,int)),
             this, SLOT(_q_rowsRemoved(QModelIndex,int,int)));
     connect(model, SIGNAL(destroyed()),
             this, SLOT(_q_modelDestroyed()));
+    connect(model, SIGNAL(modelAboutToBeReset()),
+            this, SLOT(_q_updateIndexBeforeChange()));
     connect(model, SIGNAL(modelReset()),
             this, SLOT(_q_modelReset()));
 

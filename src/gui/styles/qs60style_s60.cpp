@@ -99,7 +99,7 @@ public:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap skinnedGraphics(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap colorSkinnedGraphics(const QS60StyleEnums::SkinParts &stylepart,
-        const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+        const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags);
     static QColor colorValue(const TAknsItemID &colorGroup, int colorIndex);
     static QPixmap fromFbsBitmap(CFbsBitmap *icon, CFbsBitmap *mask, QS60StylePrivate::SkinElementFlags flags, QImage::Format format);
     static bool disabledPartGraphic(QS60StyleEnums::SkinParts &part);
@@ -112,14 +112,12 @@ private:
         const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap createSkinnedGraphicsLX(QS60StylePrivate::SkinFrameElements frameElement, const QSize &size, QS60StylePrivate::SkinElementFlags flags);
     static QPixmap colorSkinnedGraphicsLX(const QS60StyleEnums::SkinParts &stylepart,
-        const QSize &size, QS60StylePrivate::SkinElementFlags flags);
+        const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags);
     static void frameIdAndCenterId(QS60StylePrivate::SkinFrameElements frameElement, TAknsItemID &frameId, TAknsItemID &centerId);
     static TRect innerRectFromElement(QS60StylePrivate::SkinFrameElements frameElement, const TRect &outerRect);
     static void checkAndUnCompressBitmapL(CFbsBitmap*& aOriginalBitmap);
     static void checkAndUnCompressBitmap(CFbsBitmap*& aOriginalBitmap);
     static void unCompressBitmapL(const TRect& aTrgRect, CFbsBitmap* aTrgBitmap, CFbsBitmap* aSrcBitmap);
-    static void colorGroupAndIndex(QS60StyleEnums::SkinParts skinID,
-        TAknsItemID &colorGroup, int &colorIndex);
     static void fallbackInfo(const QS60StyleEnums::SkinParts &stylepart, TDes& fallbackFileName, TInt& fallbackIndex);
     static bool checkSupport(const int supportedRelease);
     static TAknsItemID checkAndUpdateReleaseSpecificGraphics(int part);
@@ -361,11 +359,11 @@ QPixmap QS60StyleModeSpecifics::skinnedGraphics(
 }
 
 QPixmap QS60StyleModeSpecifics::colorSkinnedGraphics(
-    const QS60StyleEnums::SkinParts &stylepart,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    const QS60StyleEnums::SkinParts &stylepart, const QSize &size, QPainter *painter, 
+    QS60StylePrivate::SkinElementFlags flags)
 {
     QPixmap colorGraphics;
-    TRAPD(error, QT_TRYCATCH_LEAVING(colorGraphics = colorSkinnedGraphicsLX(stylepart, size, flags)));
+    TRAPD(error, QT_TRYCATCH_LEAVING(colorGraphics = colorSkinnedGraphicsLX(stylepart, size, painter, flags)));
     return error ? QPixmap() : colorGraphics;
 }
 
@@ -525,7 +523,7 @@ void QS60StyleModeSpecifics::fallbackInfo(const QS60StyleEnums::SkinParts &style
 
 QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     const QS60StyleEnums::SkinParts &stylepart,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    const QSize &size, QPainter *painter, QS60StylePrivate::SkinElementFlags flags)
 {
     // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     const int stylepartIndex = (int)stylepart;
@@ -537,8 +535,13 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
     fallbackInfo(stylepart, fileNamePtr, fallbackGraphicID);
 
     TAknsItemID colorGroup = KAknsIIDQsnIconColors;
-    int colorIndex = 0;
-    colorGroupAndIndex(stylepart, colorGroup, colorIndex);
+    TRgb defaultColor = KRgbBlack;
+    int colorIndex = -1; //set a bogus value to color index to ensure that painter color is used
+                         //to color the icon
+    if (painter) {
+        QRgb widgetColor = painter->pen().color().rgb();
+        defaultColor = TRgb(qRed(widgetColor), qGreen(widgetColor), qBlue(widgetColor));
+    }
 
     const bool rotatedBy90or270 =
         (flags & (QS60StylePrivate::SF_PointEast | QS60StylePrivate::SF_PointWest));
@@ -550,7 +553,7 @@ QPixmap QS60StyleModeSpecifics::colorSkinnedGraphicsLX(
         fallbackGraphicID == KErrNotFound?KErrNotFound:fallbackGraphicID+1; //masks are auto-generated as next in mif files
     MAknsSkinInstance* skinInstance = AknsUtils::SkinInstance();
     AknsUtils::CreateColorIconLC(
-        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID, KRgbBlack);
+        skinInstance, skinId, colorGroup, colorIndex, icon, iconMask, fileNamePtr, fallbackGraphicID , fallbackGraphicsMaskID, defaultColor);
     User::LeaveIfError(AknIconUtils::SetSize(icon, targetSize, EAspectRatioNotPreserved));
     User::LeaveIfError(AknIconUtils::SetSize(iconMask, targetSize, EAspectRatioNotPreserved));
     QPixmap result = fromFbsBitmap(icon, iconMask, flags, qt_TDisplayMode2Format(icon->DisplayMode()));
@@ -652,8 +655,8 @@ QPoint qt_s60_fill_background_offset(const QWidget *targetWidget)
 }
 
 QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
-    QS60StyleEnums::SkinParts part,
-    const QSize &size, QS60StylePrivate::SkinElementFlags flags)
+    QS60StyleEnums::SkinParts part, const QSize &size, 
+    QS60StylePrivate::SkinElementFlags flags)
 {
     // this function can throw both exceptions and leaves. There are no cleanup dependencies between Qt and Symbian parts.
     if (!size.isValid())
@@ -700,13 +703,13 @@ QPixmap QS60StyleModeSpecifics::createSkinnedGraphicsLX(
             CleanupStack::PushL(background);
             User::LeaveIfError(background->Create(targetSize, EColor16MA));
 
-            CFbsBitmapDevice* dev = CFbsBitmapDevice::NewL(background);
+            CFbsBitmapDevice *dev = CFbsBitmapDevice::NewL(background);
             CleanupStack::PushL(dev);
-            CFbsBitGc* gc = NULL;
+            CFbsBitGc *gc = NULL;
             User::LeaveIfError(dev->CreateContext(gc));
             CleanupStack::PushL(gc);
 
-            CAknsBasicBackgroundControlContext* bgContext = CAknsBasicBackgroundControlContext::NewL(
+            CAknsBasicBackgroundControlContext *bgContext = CAknsBasicBackgroundControlContext::NewL(
                 skinId,
                 targetSize,
                 EFalse);
@@ -1145,12 +1148,12 @@ QPixmap QS60StyleModeSpecifics::generateMissingThemeGraphic(QS60StyleEnums::Skin
 }
 
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part,
-    const QSize &size, SkinElementFlags flags)
+    const QSize &size, QPainter *painter, SkinElementFlags flags)
 {
     QSymbianFbsHeapLock lock(QSymbianFbsHeapLock::Unlock);
 
     QPixmap result = (flags & SF_ColorSkinned)?
-          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, flags)
+          QS60StyleModeSpecifics::colorSkinnedGraphics(part, size, painter, flags)
         : QS60StyleModeSpecifics::skinnedGraphics(part, size, flags);
 
     lock.relock();
@@ -1189,7 +1192,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 {
     if (!m_background) {
         QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen,
-                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), SkinElementFlags());
+                QSize(S60->screenWidthInPixels, S60->screenHeightInPixels), 0, SkinElementFlags());
         m_background = new QPixmap(background);
     }
     return *m_background;
@@ -1341,26 +1344,6 @@ QSize QS60StylePrivate::screenSize()
 {
     const TSize screenSize = QS60Data::screenDevice()->SizeInPixels();
     return QSize(screenSize.iWidth, screenSize.iHeight);
-}
-
-void QS60StyleModeSpecifics::colorGroupAndIndex(
-    QS60StyleEnums::SkinParts skinID, TAknsItemID &colorGroup, int &colorIndex)
-{
-    switch(skinID) {
-        case QS60StyleEnums::SP_QgnIndiSubMenu:
-            colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG1;
-            break;
-        case QS60StyleEnums::SP_QgnIndiRadiobuttOff:
-        case QS60StyleEnums::SP_QgnIndiRadiobuttOn:
-        case QS60StyleEnums::SP_QgnIndiCheckboxOff:
-        case QS60StyleEnums::SP_QgnIndiCheckboxOn:
-            colorGroup = KAknsIIDQsnIconColors;
-            colorIndex = EAknsCIQsnIconColorsCG14;
-            break;
-        default:
-            break;
-    }
 }
 
 QS60Style::QS60Style()

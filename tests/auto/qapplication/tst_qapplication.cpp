@@ -129,6 +129,7 @@ private slots:
     void style();
 
     void allWidgets();
+    void topLevelWidgets();
 
     void setAttribute();
 
@@ -1794,6 +1795,27 @@ void tst_QApplication::allWidgets()
     w = 0;
     QVERIFY(!app.allWidgets().contains(w)); // removal test
 }
+
+void tst_QApplication::topLevelWidgets()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QWidget *w = new QWidget;
+    w->show();
+#ifndef QT_NO_CLIPBOARD
+    QClipboard *clipboard = QApplication::clipboard();
+    QString originalText = clipboard->text();
+    clipboard->setText(QString("newText"));
+#endif
+    app.processEvents();
+    QVERIFY(QApplication::topLevelWidgets().contains(w));
+    QCOMPARE(QApplication::topLevelWidgets().count(), 1);
+    delete w;
+    w = 0;
+    app.processEvents();
+    QCOMPARE(QApplication::topLevelWidgets().count(), 0);
+}
+
 
 
 void tst_QApplication::setAttribute()
