@@ -617,6 +617,16 @@ void pvrQwsGetGeometry(PvrQwsDrawable *drawable, PvrQwsRect *rect)
     *rect = drawable->rect;
 }
 
+void pvrQwsSetRotation(PvrQwsDrawable *drawable, int angle)
+{
+    if (drawable->rotationAngle != angle) {
+        drawable->rotationAngle = angle;
+
+        /* Force the buffers to be recreated if the rotation angle changes */
+        pvrQwsInvalidateBuffers(drawable);
+    }
+}
+
 int pvrQwsGetStride(PvrQwsDrawable *drawable)
 {
     if (drawable->backBuffersValid)
@@ -652,7 +662,7 @@ int pvrQwsAllocBuffers(PvrQwsDrawable *drawable)
                 PVR2DMemFree(pvrQwsDisplay.context, drawable->backBuffers[index]);
         }
     }
-    drawable->stridePixels = (drawable->rect.width + 7) & ~7;
+    drawable->stridePixels = (drawable->rect.width + 31) & ~31;
     drawable->strideBytes =
         drawable->stridePixels *
         pvrQwsDisplay.screens[drawable->screen].bytesPerPixel;
@@ -817,64 +827,4 @@ void pvrQwsSetSwapFunction
 {
     drawable->swapFunction = func;
     drawable->userData = userData;
-}
-
-unsigned long pvrQwsGetMemoryId(PvrQwsDrawable *drawable)
-{
-    unsigned long addr;
-    unsigned long start;
-    unsigned long end;
-    unsigned long off;
-    unsigned long offset;
-    FILE *file;
-    char buffer[BUFSIZ];
-    char flags[16];
-
-    if (!drawable->backBuffersValid)
-        return 0;
-    addr = (unsigned long)
-        (drawable->backBuffers[drawable->currentBackBuffer]->pBase);
-
-    /* Search /proc/self/maps for the memory region that contains "addr".
-       The file offset for that memory region is the identifier we need */
-    file = fopen("/proc/self/maps", "r");
-    if (!file) {
-        perror("/proc/self/maps");
-        return 0;
-    }
-    offset = 0;
-    while (fgets(buffer, sizeof(buffer), file)) {
-        if (sscanf(buffer, "%lx-%lx %s %lx",
-                   &start, &end, flags, &off) < 4)
-            continue;
-        if (start <= addr && addr < end) {
-            offset = off;
-            break;
-        }
-    }
-    fclose(file);
-    return offset;
-}
-
-void *pvrQwsMapMemory(unsigned long id, int size)
-{
-    void *addr;
-    int fd = open("/dev/pvrsrv", O_RDWR, 0);
-    if (fd < 0) {
-        perror("/dev/pvrsrv");
-        return 0;
-    }
-    addr = mmap(0, (size_t)size, PROT_READ | PROT_WRITE,
-                MAP_SHARED, fd, (off_t)id);
-    if (addr == (void *)(-1)) {
-        perror("mmap pvr memory region");
-        addr = 0;
-    }
-    close(fd);
-    return addr;
-}
-
-void pvrQwsUnmapMemory(void *addr, int size)
-{
-    munmap(addr, size);
 }
