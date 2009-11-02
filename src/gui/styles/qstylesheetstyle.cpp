@@ -4277,23 +4277,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                     p->fillRect(v2->rect, v2->palette.alternateBase());
                 subRule.drawRule(p, opt->rect);
             } else {
-                QStyleOptionViewItemV2 v2Copy(*v2);
-                if (v2->showDecorationSelected) {
-                    QRenderRule subRule2 = renderRule(w, opt, PseudoElement_ViewItem);
-                    if (v2->state & QStyle::State_Selected) {
-                        subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::Highlight);
-                    } else if (v2->features & QStyleOptionViewItemV2::Alternate) {
-                        subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::AlternateBase);
-                    } else if (subRule2.hasBackground()) {
-                        p->fillRect(v2->rect, subRule2.background()->brush);
-                    }
-                } else if (v2->features & QStyleOptionViewItemV2::Alternate) {
-                    quint64 pc = v2->state & QStyle::State_Enabled ? PseudoClass_Enabled : PseudoClass_Disabled;
-                    pc |= PseudoClass_Alternate;
-                    QRenderRule subRule2 = renderRule(w, PseudoElement_ViewItem, pc);
-                    subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::AlternateBase);
-                }
-                baseStyle()->drawPrimitive(pe, &v2Copy, p, w);
+                baseStyle()->drawPrimitive(pe, v2, p, w);
             }
         }
         return;
@@ -4358,18 +4342,6 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 
     case PE_PanelItemViewItem:
-        if (!styleHint(SH_ItemView_ShowDecorationSelected, opt, w)) {
-            rect = subElementRect(QStyle::SE_ItemViewItemText,  opt, w)
-                   | subElementRect(QStyle::SE_ItemViewItemDecoration, opt, w)
-                   | subElementRect(QStyle::SE_ItemViewItemCheckIndicator, opt, w);
-        }
-        pseudoElement = PseudoElement_ViewItem;
-        break;
-
-    case PE_PanelItemViewRow:
-        ParentStyle::drawPrimitive(pe, opt, p, w);
-        if (!styleHint(SH_ItemView_ShowDecorationSelected, opt, w))
-            return;
         pseudoElement = PseudoElement_ViewItem;
         break;
 
