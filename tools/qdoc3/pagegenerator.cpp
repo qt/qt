@@ -81,14 +81,13 @@ QString PageGenerator::fileBase(const Node *node)
 {
     if (node->relates())
 	node = node->relates();
-    else if (!node->isInnerNode()) {
+    else if (!node->isInnerNode())
 	node = node->parent();
 #ifdef QDOC_QML
-        if (node->subType() == Node::QmlPropertyGroup) {
-            node = node->parent();
-        }
-#endif        
+    if (node->subType() == Node::QmlPropertyGroup) {
+        node = node->parent();
     }
+#endif        
 
     QString base = node->doc().baseName();
     if (!base.isEmpty())
@@ -97,6 +96,7 @@ QString PageGenerator::fileBase(const Node *node)
     const Node *p = node;
 
     forever {
+        const Node *pp = p->parent();
         base.prepend(p->name());
 #ifdef QDOC_QML
         /*
@@ -104,15 +104,10 @@ QString PageGenerator::fileBase(const Node *node)
           we prepend "qml-" to the file name of QML element doc
           files.
          */
-        if ((p->subType() == Node::QmlClass) ||
-            (p->subType() == Node::QmlPropertyGroup))
+        if (p->subType() == Node::QmlClass) {
             base.prepend("qml-");
-        else if ((p->type() == Node::QmlProperty) ||
-                 (p->type() == Node::QmlSignal) ||
-                 (p->type() == Node::QmlMethod))
-            base.prepend("qml-");
+        }
 #endif        
-        const Node *pp = p->parent();
         if (!pp || pp->name().isEmpty() || pp->type() == Node::Fake)
             break;
         base.prepend(QLatin1Char('-'));
