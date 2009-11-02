@@ -2438,14 +2438,17 @@ void Configure::generateOutputVars()
 
     if ( dictionary["OPENGL_ES_CM"] == "yes" ) {
         qtConfig += "opengles1";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENGL_ES_2"] == "yes" ) {
         qtConfig += "opengles2";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
         qtConfig += "opengles1cl";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENVG"] == "yes" ) {
