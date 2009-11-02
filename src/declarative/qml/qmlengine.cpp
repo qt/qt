@@ -666,7 +666,7 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
 
 QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 3)
+    if(ctxt->argumentCount() != 3)
         return engine->nullValue();
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
@@ -677,41 +677,54 @@ QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engin
 QScriptValue QmlEnginePrivate::rgba(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
-    if(argCount < 3)
+    if(argCount < 3 || argCount > 4)
         return engine->nullValue();
     qsreal r = ctxt->argument(0).toNumber();
     qsreal g = ctxt->argument(1).toNumber();
     qsreal b = ctxt->argument(2).toNumber();
     qsreal a = (argCount == 4) ? ctxt->argument(3).toNumber() : 1;
+
+    if (r < 0 || r > 1 || g < 0 || g > 1 || b < 0 || b > 1 || a < 0 || a > 1)
+        return engine->nullValue();
+
     return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromRgbF(r, g, b, a)));
 }
 
 QScriptValue QmlEnginePrivate::hsla(QScriptContext *ctxt, QScriptEngine *engine)
 {
     int argCount = ctxt->argumentCount();
-    if(argCount < 3)
+    if(argCount < 3 || argCount > 4)
         return engine->nullValue();
     qsreal h = ctxt->argument(0).toNumber();
     qsreal s = ctxt->argument(1).toNumber();
     qsreal l = ctxt->argument(2).toNumber();
     qsreal a = (argCount == 4) ? ctxt->argument(3).toNumber() : 1;
+
+    if (h < 0 || h > 1 || s < 0 || s > 1 || l < 0 || l > 1 || a < 0 || a > 1)
+        return engine->nullValue();
+
     return qScriptValueFromValue(engine, qVariantFromValue(QColor::fromHslF(h, s, l, a)));
 }
 
 QScriptValue QmlEnginePrivate::rect(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 4)
+    if(ctxt->argumentCount() != 4)
         return engine->nullValue();
+
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
     qsreal w = ctxt->argument(2).toNumber();
     qsreal h = ctxt->argument(3).toNumber();
+
+    if (w < 0 || h < 0)
+        return engine->nullValue();
+
     return qScriptValueFromValue(engine, qVariantFromValue(QRectF(x, y, w, h)));
 }
 
 QScriptValue QmlEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 2)
+    if(ctxt->argumentCount() != 2)
         return engine->nullValue();
     qsreal x = ctxt->argument(0).toNumber();
     qsreal y = ctxt->argument(1).toNumber();
@@ -720,7 +733,7 @@ QScriptValue QmlEnginePrivate::point(QScriptContext *ctxt, QScriptEngine *engine
 
 QScriptValue QmlEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 2)
+    if(ctxt->argumentCount() != 2)
         return engine->nullValue();
     qsreal w = ctxt->argument(0).toNumber();
     qsreal h = ctxt->argument(1).toNumber();
@@ -729,7 +742,7 @@ QScriptValue QmlEnginePrivate::size(QScriptContext *ctxt, QScriptEngine *engine)
 
 QScriptValue QmlEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 1)
+    if(ctxt->argumentCount() != 1)
         return engine->nullValue();
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
@@ -748,7 +761,7 @@ QScriptValue QmlEnginePrivate::lighter(QScriptContext *ctxt, QScriptEngine *engi
 
 QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 1)
+    if(ctxt->argumentCount() != 1)
         return engine->nullValue();
     QVariant v = ctxt->argument(0).toVariant();
     QColor color;
@@ -767,7 +780,7 @@ QScriptValue QmlEnginePrivate::darker(QScriptContext *ctxt, QScriptEngine *engin
 
 QScriptValue QmlEnginePrivate::playSound(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if (ctxt->argumentCount() < 1)
+    if (ctxt->argumentCount() != 1)
         return engine->undefinedValue();
 
     QUrl url(ctxt->argument(0).toString());
@@ -799,7 +812,7 @@ QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngin
 
 QScriptValue QmlEnginePrivate::tint(QScriptContext *ctxt, QScriptEngine *engine)
 {
-    if(ctxt->argumentCount() < 2)
+    if(ctxt->argumentCount() != 2)
         return engine->nullValue();
     //get color
     QVariant v = ctxt->argument(0).toVariant();

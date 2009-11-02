@@ -92,34 +92,9 @@ This function returns a Rect with the top-left corner at \c x,\c y and the speci
 \section3 Qt.point(int x, int y)
 This function returns a Point with the specified \c x and \c y coordinates.
 \section3 Qt.size(int width, int height)
-returns as Size with the specified width and height.
-\section3 Qt.vector(real x, real y, real z)
-    This function is intended for use inside QML only. In C++ just create a
-    QVector3D as usual.
-
-    This function takes three numeric components and combines them into a
-    QVector3D value that can be used with any property that takes a
-    QVector3D argument.  The following QML code:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis: vector(0, 1, 1)
-    }
-    \endcode
-
-    is equivalent to:
-
-    \code
-    transform: Rotation {
-        id: rotation
-        origin.x: Container.width / 2;
-        axis.x: 0; axis.y: 1; axis.z: 0
-    }
-    \endcode
-
-
+This function returns as Size with the specified width and height.
+\section3 Qt.vector3d(real x, real y, real z)
+This function returns a Vector3D with the specified x, y and z.
 \section2 Functions
 The Qt object also contains the following miscellaneous functions which expose Qt functionality for use in QML.
 
