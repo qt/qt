@@ -418,7 +418,7 @@ void QmlEngineDebugServer::propertyChanged(int id, int objectId, const QMetaProp
     QByteArray reply;
     QDataStream rs(&reply, QIODevice::WriteOnly);
 
-    rs << QByteArray("UPDATE_WATCH") << id << objectId << QString::fromUtf8(property.name()) << valueContents(value);
+    rs << QByteArray("UPDATE_WATCH") << id << objectId << QByteArray(property.name()) << valueContents(value);
 
     sendMessage(reply);
 }
