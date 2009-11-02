@@ -305,6 +305,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_itemSelected(const QModelIndex &item))
     Q_PRIVATE_SLOT(d_func(), void _q_emitHighlighted(const QModelIndex &))
     Q_PRIVATE_SLOT(d_func(), void _q_emitCurrentIndexChanged(const QModelIndex &index))
+    Q_PRIVATE_SLOT(d_func(), void _q_editingFinished())
     Q_PRIVATE_SLOT(d_func(), void _q_returnPressed())
     Q_PRIVATE_SLOT(d_func(), void _q_resetButton())
     Q_PRIVATE_SLOT(d_func(), void _q_dataChanged(const QModelIndex &, const QModelIndex &))

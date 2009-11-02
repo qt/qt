@@ -57,6 +57,7 @@
 #include <qtreewidget.h>
 #include <qtablewidget.h>
 #include <qscrollbar.h>
+#include <qboxlayout.h>
 #ifdef Q_WS_MAC
 #include <qmacstyle_mac.h>
 #elif defined Q_WS_X11
@@ -154,6 +155,7 @@ private slots:
     void removeItem();
     void resetModel();
     void keyBoardNavigationWithMouse();
+    void task_QTBUG_1071_changingFocusEmitsActivated();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -813,21 +815,25 @@ void tst_QComboBox::autoCompletionCaseSensitivity()
 
     // case insensitive
     testWidget->clearEditText();
+    QSignalSpy spyReturn(testWidget, SIGNAL(activated(int)));
     testWidget->setAutoCompletionCaseSensitivity(Qt::CaseInsensitive);
     QVERIFY(testWidget->autoCompletionCaseSensitivity() == Qt::CaseInsensitive);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_A);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aww"));
+    QCOMPARE(spyReturn.count(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_B);
     qApp->processEvents();
     // autocompletions preserve userkey-case from 4.2
     QCOMPARE(testWidget->currentText(), QString("abCDEF"));
+    QCOMPARE(spyReturn.count(), 0);
 
     QTest::keyClick(testWidget->lineEdit(), Qt::Key_Enter);
     qApp->processEvents();
     QCOMPARE(testWidget->currentText(), QString("aBCDEF")); // case restored to item's case
+    QCOMPARE(spyReturn.count(), 1);
 
     testWidget->clearEditText();
     QTest::keyClick(testWidget->lineEdit(), 'c');
@@ -2500,6 +2506,31 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
     QTRY_COMPARE(combo.currentText(), QString::number(final));
 }
 
+void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
+{
+    QWidget w;
+    QVBoxLayout layout(&w);
+    QComboBox cb;
+    cb.setEditable(true);
+    QSignalSpy spy(&cb, SIGNAL(activated(int)));
+    cb.addItem("0");
+    cb.addItem("1");
+    cb.addItem("2");
+    QLineEdit edit;
+    layout.add(&cb);
+    layout.add(&edit);
+
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    cb.clearEditText();
+    cb.setFocus();
+    QApplication::processEvents();
+    QTest::keyClick(0, '1');
+    QCOMPARE(spy.count(), 0);
+    edit.setFocus();
+    QTRY_VERIFY(edit.hasFocus());
+    QCOMPARE(spy.count(), 1);
+}
 
 QTEST_MAIN(tst_QComboBox)
 #include "tst_qcombobox.moc"
