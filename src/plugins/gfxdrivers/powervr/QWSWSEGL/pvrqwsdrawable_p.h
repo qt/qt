@@ -114,6 +114,7 @@ struct _PvrQwsDrawable
     int                 isFullScreen;
     int                 strideBytes;
     int                 stridePixels;
+    int                 rotationAngle;
     PvrQwsSwapFunction  swapFunction;
     void               *userData;
     PvrQwsDrawable     *nextWinId;
