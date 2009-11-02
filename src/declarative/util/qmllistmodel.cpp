@@ -457,6 +457,7 @@ void QmlListModel::remove(int index)
         if (node)
             delete node;
         emit itemsRemoved(index,1);
+        emit countChanged(_root->values.count());
     }
 }
 
@@ -488,6 +489,7 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
     mn->setObjectValue(valuemap);
     _root->values.insert(index,qVariantFromValue(mn));
     emit itemsInserted(index,1);
+    emit countChanged(_root->values.count());
 }
 
 /*!
@@ -563,6 +565,7 @@ void QmlListModel::append(const QScriptValue& valuemap)
     mn->setObjectValue(valuemap);
     _root->values << qVariantFromValue(mn);
     emit itemsInserted(count()-1,1);
+    emit countChanged(_root->values.count());
 }
 
 /*!
@@ -641,7 +644,6 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
         node->setProperty(property,value);
     emit itemsChanged(index,1,roles);
 }
-
 
 class QmlListModelParser : public QmlCustomParser
 {

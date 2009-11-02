@@ -58,18 +58,18 @@
 QT_BEGIN_NAMESPACE
 
 class QmlGraphicsGradient;
-class QmlGraphicsRect;
-class QmlGraphicsRectPrivate : public QmlGraphicsItemPrivate
+class QmlGraphicsRectangle;
+class QmlGraphicsRectanglePrivate : public QmlGraphicsItemPrivate
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsRect)
+    Q_DECLARE_PUBLIC(QmlGraphicsRectangle)
 
 public:
-    QmlGraphicsRectPrivate() :
+    QmlGraphicsRectanglePrivate() :
     color(Qt::white), gradient(0), pen(0), radius(0), paintmargin(0)
     {
     }
 
-    ~QmlGraphicsRectPrivate()
+    ~QmlGraphicsRectanglePrivate()
     {
         delete pen;
     }
@@ -83,7 +83,7 @@ public:
     QmlGraphicsGradient *gradient;
     QmlGraphicsPen *getPen() {
         if (!pen) {
-            Q_Q(QmlGraphicsRect);
+            Q_Q(QmlGraphicsRectangle);
             pen = new QmlGraphicsPen;
             QObject::connect(pen, SIGNAL(penChanged()), q, SLOT(doUpdate()));
         }
@@ -96,7 +96,7 @@ public:
 
     void setPaintMargin(qreal margin)
     {
-        Q_Q(QmlGraphicsRect);
+        Q_Q(QmlGraphicsRectangle);
         if (margin == paintmargin)
             return;
         q->prepareGeometryChange();

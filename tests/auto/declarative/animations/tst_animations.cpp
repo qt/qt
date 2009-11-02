@@ -42,7 +42,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
-#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlanimation_p.h>
 
 class tst_animations : public QObject
@@ -72,7 +72,7 @@ private slots:
         
 void tst_animations::simpleNumber()
 {
-    QmlGraphicsRect rect;
+    QmlGraphicsRectangle rect;
     QmlNumberAnimation animation;
     animation.setTarget(&rect);
     animation.setProperty("x");
@@ -90,7 +90,7 @@ void tst_animations::simpleNumber()
 
 void tst_animations::simpleColor()
 {
-    QmlGraphicsRect rect;
+    QmlGraphicsRectangle rect;
     QmlColorAnimation animation;
     animation.setTarget(&rect);
     animation.setProperty("color");
@@ -108,7 +108,7 @@ void tst_animations::simpleColor()
 
 void tst_animations::alwaysRunToEnd()
 {
-    QmlGraphicsRect rect;
+    QmlGraphicsRectangle rect;
     QmlPropertyAnimation animation;
     animation.setTarget(&rect);
     animation.setProperty("x");
@@ -126,7 +126,7 @@ void tst_animations::alwaysRunToEnd()
 
 void tst_animations::dotProperty()
 {
-    QmlGraphicsRect rect;
+    QmlGraphicsRectangle rect;
     QmlNumberAnimation animation;
     animation.setTarget(&rect);
     animation.setProperty("border.width");
@@ -181,12 +181,12 @@ void tst_animations::badTypes()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badtype4.qml"));
-        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("state1");
         QTest::qWait(1000 + 50);
-        QmlGraphicsRect *myRect = qobject_cast<QmlGraphicsRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
         QVERIFY(myRect);
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -198,7 +198,7 @@ void tst_animations::badProperties()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
-        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
@@ -214,12 +214,12 @@ void tst_animations::mixedTypes()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype1.qml"));
-        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("state1");
         QTest::qWait(500);
-        QmlGraphicsRect *myRect = qobject_cast<QmlGraphicsRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
         QVERIFY(myRect);
 
         //rather inexact -- is there a better way?
@@ -230,12 +230,12 @@ void tst_animations::mixedTypes()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/mixedtype2.qml"));
-        QmlGraphicsRect *rect = qobject_cast<QmlGraphicsRect*>(c.create());
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
         rect->setState("state1");
         QTest::qWait(500);
-        QmlGraphicsRect *myRect = qobject_cast<QmlGraphicsRect*>(rect->QGraphicsObject::children().at(3));    //### not robust
+        QmlGraphicsRectangle *myRect = qobject_cast<QmlGraphicsRectangle*>(rect->QGraphicsObject::children().at(3));    //### not robust
         QVERIFY(myRect);
 
         //rather inexact -- is there a better way?

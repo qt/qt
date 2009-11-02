@@ -9,10 +9,12 @@ Item {
     property var minutes
     property var seconds
     property var shift : 0
+    property bool night: false
 
     function timeChanged() {
         var date = new Date;
         hours = shift ? date.getUTCHours() + Math.floor(clock.shift) : date.getHours()
+        if ( hours < 7 || hours > 19 ) night = true; else night = false
         minutes = shift ? date.getUTCMinutes() + ((clock.shift % 1) * 60) : date.getMinutes()
         seconds = date.getUTCSeconds();
     }
@@ -22,7 +24,8 @@ Item {
         onTriggered: clock.timeChanged()
     }
 
-    Image { id: background; source: "clock.png" }
+    Image { id: background; source: "clock.png"; visible: clock.night == false }
+    Image { source: "clock-night.png"; visible: clock.night == true }
 
     Image {
         x: 92.5; y: 27

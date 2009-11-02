@@ -28,8 +28,8 @@ HEADERS += \
            graphicsitems/qmlgraphicspath_p_p.h \
            graphicsitems/qmlgraphicspathview_p.h \
            graphicsitems/qmlgraphicspathview_p_p.h \
-           graphicsitems/qmlgraphicsrect_p.h \
-           graphicsitems/qmlgraphicsrect_p_p.h \
+           graphicsitems/qmlgraphicsrectangle_p.h \
+           graphicsitems/qmlgraphicsrectangle_p_p.h \
            graphicsitems/qmlgraphicsrepeater_p.h \
            graphicsitems/qmlgraphicsrepeater_p_p.h \
            graphicsitems/qmlgraphicsscalegrid_p_p.h \
@@ -64,7 +64,7 @@ SOURCES += \
            graphicsitems/qmlgraphicsmouseregion.cpp \
            graphicsitems/qmlgraphicspath.cpp \
            graphicsitems/qmlgraphicspathview.cpp \
-           graphicsitems/qmlgraphicsrect.cpp \
+           graphicsitems/qmlgraphicsrectangle.cpp \
            graphicsitems/qmlgraphicsrepeater.cpp \
            graphicsitems/qmlgraphicsscalegrid.cpp \
            graphicsitems/qmlgraphicstextinput.cpp \
