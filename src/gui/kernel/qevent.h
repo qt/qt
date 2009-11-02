@@ -827,7 +827,7 @@ public:
     QGestureEvent(const QList<QGesture *> &gestures);
     ~QGestureEvent();
 
-    QList<QGesture *> allGestures() const;
+    QList<QGesture *> gestures() const;
     QGesture *gesture(Qt::GestureType type) const;
 
     QList<QGesture *> activeGestures() const;
@@ -859,7 +859,7 @@ public:
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
-    QPointF mapToScene(const QPointF &gesturePoint) const;
+    QPointF mapToGraphicsScene(const QPointF &gesturePoint) const;
 
 private:
     QGestureEventPrivate *d_func();

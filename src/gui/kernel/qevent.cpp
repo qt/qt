@@ -4202,7 +4202,7 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     \brief The QGestureEvent class provides the description of triggered gestures.
 
     The QGestureEvent class contains a list of gestures, which can be obtained using the
-    allGestures() function.
+    gestures() function.
 
     The gestures are either active or canceled. A list of those that are currently being
     executed can be obtained using the activeGestures() function. A list of those which
@@ -4211,10 +4211,11 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     focus, for example, or because of a timeout, or for other reasons.
 
     If the event handler does not accept the event by calling the generic
-    QEvent::accept() function, all individual QGesture object that were not accepted
-    will be propagated up the parent widget chain until a widget accepts them
-    individually, by calling QGestureEvent::accept() for each of them, or an event
-    filter consumes the event.
+    QEvent::accept() function, all individual QGesture object that were not
+    accepted and in the Qt::GestureStarted state will be propagated up the
+    parent widget chain until a widget accepts them individually, by calling
+    QGestureEvent::accept() for each of them, or an event filter consumes the
+    event.
 
     \sa QGesture, QGestureRecognizer,
         QWidget::grabGesture(), QGraphicsObject::grabGesture()
@@ -4240,7 +4241,7 @@ QGestureEvent::~QGestureEvent()
 /*!
     Returns all gestures that are delivered in the event.
 */
-QList<QGesture *> QGestureEvent::allGestures() const
+QList<QGesture *> QGestureEvent::gestures() const
 {
     return d_func()->gestures;
 }
@@ -4417,11 +4418,16 @@ QWidget *QGestureEvent::widget() const
 }
 
 /*!
-    Returns the scene-local coordinates if the \a gesturePoint is inside a graphics view.
+    Returns the scene-local coordinates if the \a gesturePoint is inside a
+    graphics view.
+
+    This functional might be useful when the gesture event is delivered to a
+    QGraphicsObject to translate a point in screen coordinates to scene-local
+    coordinates.
 
     \sa QPointF::isNull().
 */
-QPointF QGestureEvent::mapToScene(const QPointF &gesturePoint) const
+QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 {
     QWidget *w = widget();
     if (w) // we get the viewport as widget, not the graphics view

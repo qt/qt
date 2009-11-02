@@ -50,7 +50,7 @@ public:
     ScrollArea(QWidget *parent = 0)
         : QScrollArea(parent), outside(false)
     {
-        viewport()->grabGesture(Qt::PanGesture);
+        viewport()->grabGesture(Qt::PanGesture, Qt::ReceivePartialGestures);
     }
 
 protected:
@@ -87,8 +87,8 @@ protected:
             if (outside)
                 return;
 
-            const QPointF offset = pan->offset();
-            const QPointF totalOffset = pan->totalOffset();
+            const QPointF delta = pan->delta();
+            const QPointF totalOffset = pan->offset();
             QScrollBar *vbar = verticalScrollBar();
             QScrollBar *hbar = horizontalScrollBar();
 
@@ -102,8 +102,8 @@ protected:
                 outside = true;
                 return;
             }
-            vbar->setValue(vbar->value() - offset.y());
-            hbar->setValue(hbar->value() - offset.x());
+            vbar->setValue(vbar->value() - delta.y());
+            hbar->setValue(hbar->value() - delta.x());
             event->accept(pan);
         }
     }
@@ -147,8 +147,8 @@ protected:
             event->ignore(pan);
             if (outside)
                 return;
-            const QPointF offset = pan->offset();
-            const QPointF totalOffset = pan->totalOffset();
+            const QPointF delta = pan->delta();
+            const QPointF totalOffset = pan->offset();
             if (orientation() == Qt::Horizontal) {
                 if ((value() == minimum() && totalOffset.x() < -10) ||
                     (value() == maximum() && totalOffset.x() > 10)) {
@@ -156,7 +156,7 @@ protected:
                     return;
                 }
                 if (totalOffset.y() < 40 && totalOffset.y() > -40) {
-                    setValue(value() + offset.x());
+                    setValue(value() + delta.x());
                     event->accept(pan);
                 } else {
                     outside = true;
@@ -168,7 +168,7 @@ protected:
                     return;
                 }
                 if (totalOffset.x() < 40 && totalOffset.x() > -40) {
-                    setValue(value() - offset.y());
+                    setValue(value() - delta.y());
                     event->accept(pan);
                 } else {
                     outside = true;
@@ -232,7 +232,7 @@ private:
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
-    app.registerGestureRecognizer(new MousePanGestureRecognizer);
+    QGestureRecognizer::registerRecognizer(new MousePanGestureRecognizer);
     MainWindow w;
     w.show();
     return app.exec();

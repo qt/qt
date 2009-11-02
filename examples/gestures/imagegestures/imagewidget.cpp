@@ -132,13 +132,13 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
 
 void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
-    QPinchGesture::WhatChanged whatChanged = gesture->whatChanged();
-    if (whatChanged & QPinchGesture::RotationAngleChanged) {
+    QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
+    if (changeFlags & QPinchGesture::RotationAngleChanged) {
         qreal value = gesture->property("rotationAngle").toReal();
         qreal lastValue = gesture->property("lastRotationAngle").toReal();
         rotationAngle += value - lastValue;
     }
-    if (whatChanged & QPinchGesture::ScaleFactorChanged) {
+    if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
         qreal lastValue = gesture->property("lastScaleFactor").toReal();
         scaleFactor += value - lastValue;

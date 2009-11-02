@@ -90,7 +90,6 @@ public:
     {
     }
 
-    QPointF totalOffset;
     QPointF lastOffset;
     QPointF offset;
     QPoint lastPosition;
@@ -103,12 +102,15 @@ class QPinchGesturePrivate : public QGesturePrivate
 
 public:
     QPinchGesturePrivate()
-        : whatChanged(0), totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
-          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0)
+        : totalChangeFlags(0), changeFlags(0),
+          totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0),
+          isNewSequence(true)
     {
     }
 
-    QPinchGesture::WhatChanged whatChanged;
+    QPinchGesture::ChangeFlags totalChangeFlags;
+    QPinchGesture::ChangeFlags changeFlags;
 
     QPointF startCenterPoint;
     QPointF lastCenterPoint;

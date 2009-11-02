@@ -76,7 +76,6 @@ public:
     bool filterEvent(QGesture *receiver, QEvent *event);
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 
-    // declared in qapplication.cpp
     static QGestureManager* instance();
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
@@ -140,6 +139,8 @@ private:
 
     void cancelGesturesForChildren(QGesture *originatingGesture);
 };
+
+extern QGestureManager *qt_gestureManager;
 
 QT_END_NAMESPACE
 

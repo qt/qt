@@ -1060,9 +1060,8 @@ bool QGraphicsScenePrivate::filterEvent(QGraphicsItem *item, QEvent *event)
 bool QGraphicsScenePrivate::sendEvent(QGraphicsItem *item, QEvent *event)
 {
     if (QGraphicsObject *object = item->toGraphicsObject()) {
-        QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-        if (qAppPriv->gestureManager) {
-            if (qAppPriv->gestureManager->filterEvent(object, event))
+        if (qt_gestureManager) {
+            if (qt_gestureManager->filterEvent(object, event))
                 return true;
         }
     }
@@ -5761,7 +5760,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
     QWidget *viewport = event->widget();
     if (!viewport)
         return;
-    QList<QGesture *> allGestures = event->allGestures();
+    QList<QGesture *> allGestures = event->gestures();
     DEBUG() << "QGraphicsScenePrivate::gestureEventHandler:"
             << "Delivering gestures:" <<  allGestures;
 
@@ -5900,11 +5899,11 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
 
         QGraphicsItemPrivate *gid = item->QGraphicsItem::d_func();
         foreach(QGesture *g, alreadyIgnoredGestures) {
-            QMap<Qt::GestureType, Qt::GestureContext>::iterator contextit =
+            QMap<Qt::GestureType, Qt::GestureFlags>::iterator contextit =
                     gid->gestureContext.find(g->gestureType());
             bool deliver = contextit != gid->gestureContext.end() &&
                 (g->state() == Qt::GestureStarted ||
-                 (contextit.value() & Qt::GestureContextHint_Mask) & Qt::AcceptPartialGesturesHint);
+                 (contextit.value() & Qt::ReceivePartialGestures));
             if (deliver)
                 gestures += g;
         }
@@ -6046,10 +6045,9 @@ void QGraphicsScenePrivate::cancelGesturesForChildren(QGesture *original, QWidge
         }
     }
 
-    QGestureManager *gm = QApplicationPrivate::instance()->gestureManager;
-    Q_ASSERT(gm); // it would be very odd if we got called without a manager.
+    Q_ASSERT(qt_gestureManager); // it would be very odd if we got called without a manager.
     for (setIter = canceledGestures.begin(); setIter != canceledGestures.end(); ++setIter) {
-        gm->recycle(*setIter);
+        qt_gestureManager->recycle(*setIter);
         gestureTargets.remove(*setIter);
     }
 }

@@ -122,7 +122,7 @@
 
     \section2 Filtering Input Events
 
-    The \l{QGestureRecognizer::}{filterEvent()} function must be reimplemented.
+    The \l{QGestureRecognizer::}{recognize()} function must be reimplemented.
     This function handles and filters the incoming input events for the target objects
     and determines whether or not they correspond to the gesture the recognizer is
     looking for.
@@ -132,15 +132,15 @@
     persistent information about the state of the recognition process in the QGesture
     object supplied.
 
-    Your \l{QGestureRecognizer::}{filterEvent()} function must return a value of
-    Qt::GestureState that indicates the state of recognition for a given gesture and
+    Your \l{QGestureRecognizer::}{recognize()} function must return a value of
+    QGestureRecognizer::Result that indicates the state of recognition for a given gesture and
     target object. This determines whether or not a gesture event will be delivered
     to a target object.
 
     \section2 Custom Gestures
 
     If you choose to represent a gesture by a custom QGesture subclass, you will need to
-    reimplement the \l{QGestureRecognizer::}{createGesture()} function to construct
+    reimplement the \l{QGestureRecognizer::}{create()} function to construct
     instances of your gesture class instead of standard QGesture instances. Alternatively,
     you may want to use standard QGesture instances, but add additional dynamic properties
     to them to express specific details of the gesture you want to handle.
@@ -152,7 +152,7 @@
     \l{QGestureRecognizer::}{reset()} function to perform these special tasks.
 
     Note that QGesture objects are only created once for each combination of target object
-    and gesture type, and they are reused every time the user attempts to perform the
+    and gesture type, and they might be reused every time the user attempts to perform the
     same gesture type on the target object. As a result, it can be useful to reimplement
     the \l{QGestureRecognizer::}{reset()} function to clean up after each previous attempt
     at recognizing a gesture.
@@ -162,8 +162,8 @@
 
     To use a gesture recognizer, construct an instance of your QGestureRecognizer
     subclass, and register it with the application with
-    QApplication::registerGestureRecognizer(). A recognizer for a given type of
-    gesture can be removed with QApplication::unregisterGestureRecognizer().
+    QGestureRecognizer::registerRecognizer(). A recognizer for a given type of
+    gesture can be removed with QGestureRecognizer::unregisterRecognizer().
 
 
     \section1 Further Reading

@@ -1458,15 +1458,15 @@ bool QPlainTextEdit::event(QEvent *e)
             QScrollBar *vBar = verticalScrollBar();
             if (g->state() == Qt::GestureStarted)
                 d->originalOffsetY = vBar->value();
-            QPointF totalOffset = g->totalOffset();
-            if (!totalOffset.isNull()) {
+            QPointF offset = g->offset();
+            if (!offset.isNull()) {
                 if (QApplication::isRightToLeft())
-                    totalOffset.rx() *= -1;
+                    offset.rx() *= -1;
                 // QPlainTextEdit scrolls by lines only in vertical direction
                 QFontMetrics fm(document()->defaultFont());
                 int lineHeight = fm.height();
                 int newX = hBar->value() - g->lastOffset().x();
-                int newY = d->originalOffsetY - totalOffset.y()/lineHeight;
+                int newY = d->originalOffsetY - offset.y()/lineHeight;
                 hBar->setValue(newX);
                 vBar->setValue(newY);
             }
