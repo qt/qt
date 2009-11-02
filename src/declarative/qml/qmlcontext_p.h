@@ -105,6 +105,7 @@ public:
     void dump(int depth);
 
     void invalidateEngines();
+    void refreshExpressions();
     QSet<QmlContext *> childContexts;
 
     QmlAbstractExpression *expressions;

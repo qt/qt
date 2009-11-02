@@ -67,6 +67,14 @@ QmlBindingData::~QmlBindingData()
     removeError();
 }
 
+void QmlBindingData::refresh()
+{
+    if (enabled && !updating && q) {
+        QmlBinding *b = static_cast<QmlBinding *>(QmlExpressionPrivate::get(q));
+        b->update();
+    }
+}
+
 void QmlBindingData::removeError()
 {
     if (!prevError) return;
