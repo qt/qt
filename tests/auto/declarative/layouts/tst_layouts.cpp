@@ -41,7 +41,7 @@
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsrectangle_p.h>
 #include <qmlexpression.h>
 
 class tst_QmlGraphicsLayouts : public QObject

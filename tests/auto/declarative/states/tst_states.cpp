@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
-#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsrectangle_p.h>
 
 class tst_states : public QObject
 {

@@ -43,7 +43,7 @@
 #include <qmlview.h>
 #include <private/qmlgraphicspathview_p.h>
 #include <private/qmlgraphicstext_p.h>
-#include <private/qmlgraphicsrect_p.h>
+#include <private/qmlgraphicsrectangle_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 
