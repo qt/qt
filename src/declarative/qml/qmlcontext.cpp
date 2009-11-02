@@ -180,9 +180,9 @@ void QmlContextPrivate::init()
     component.create(&context);
     \endcode
 
-    Each context may have up to 32 default objects, and objects added first take
-    precedence over those added later.  All properties added explicitly by
-    QmlContext::setContextProperty() take precedence over default object properties.
+    Default objects added first take precedence over those added later.  All properties 
+    added explicitly by QmlContext::setContextProperty() take precedence over default 
+    object properties.
 
     Contexts are hierarchal, with the \l {QmlEngine::rootContext()}{root context}
     being created by the QmlEngine.  A component instantiated in a given context
@@ -323,6 +323,26 @@ void QmlContextPrivate::invalidateEngines()
     }
 }
 
+/* 
+Refreshes all expressions that could possibly depend on this context.
+Refreshing flushes all context-tree dependent caches in the expressions, and should occur every
+time the context tree *structure* (not values) changes.
+*/
+void QmlContextPrivate::refreshExpressions()
+{
+    for (QSet<QmlContext *>::ConstIterator iter = childContexts.begin();
+            iter != childContexts.end();
+            ++iter) {
+        (*iter)->d_func()->refreshExpressions();
+    }
+
+    QmlAbstractExpression *expression = expressions;
+    while (expression) {
+        expression->refresh();
+        expression = expression->m_nextExpression;
+    }
+}
+
 /*!
     Return the context's QmlEngine, or 0 if the context has no QmlEngine or the
     QmlEngine was destroyed.
@@ -373,6 +393,8 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
         if (idx == -1) {
             d->propertyNames->add(name, d->idValueCount + d->propertyValues.count());
             d->propertyValues.append(value);
+
+            d->refreshExpressions();
         } else {
             d->propertyValues[idx] = value;
             QMetaObject::activate(this, idx + d->notifyIndex, 0);
@@ -404,7 +426,7 @@ void QmlContextPrivate::setIdPropertyData(QmlIntegerCache *data)
 /*!
     Set a the \a value of the \a name property on this context.
 
-    QmlContext does \b not take ownership of \a value.
+    QmlContext does \bold not take ownership of \a value.
 */
 void QmlContext::setContextProperty(const QString &name, QObject *value)
 {
@@ -418,6 +440,8 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
     if (idx == -1) {
         d->propertyNames->add(name, d->idValueCount  + d->propertyValues.count());
         d->propertyValues.append(QVariant::fromValue(value));
+
+        d->refreshExpressions();
     } else {
         d->propertyValues[idx] = QVariant::fromValue(value);
         QMetaObject::activate(this, idx + d->notifyIndex, 0);
@@ -432,6 +456,7 @@ void QmlContext::setContextProperty(const QString &name, QObject *value)
 */
 QUrl QmlContext::resolvedUrl(const QUrl &src)
 {
+    Q_D(QmlContext);
     QmlContext *ctxt = this;
     if (src.isRelative() && !src.isEmpty()) {
         if (ctxt) {
@@ -444,6 +469,8 @@ QUrl QmlContext::resolvedUrl(const QUrl &src)
 
             if (ctxt)
                 return ctxt->d_func()->url.resolved(src);
+            else if (d->engine)
+                return d->engine->baseUrl().resolved(src);
         }
         return QUrl();
     } else {
