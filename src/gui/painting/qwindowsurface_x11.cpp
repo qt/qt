@@ -94,6 +94,8 @@ QPaintDevice *QX11WindowSurface::paintDevice()
 void QX11WindowSurface::beginPaint(const QRegion &rgn)
 {
 #ifndef QT_NO_XRENDER
+    Q_ASSERT(!d_ptr->device.isNull());
+
     if (d_ptr->translucentBackground) {
         if (d_ptr->device.depth() != 32)
             static_cast<QX11PixmapData *>(d_ptr->device.data_ptr().data())->convertToARGB32();
@@ -157,8 +159,8 @@ void QX11WindowSurface::setGeometry(const QRect &rect)
         QPixmap::x11SetDefaultScreen(d_ptr->widget->x11Info().screen());
 
         QX11PixmapData *oldData = static_cast<QX11PixmapData *>(d_ptr->device.pixmapData());
-        Q_ASSERT(oldData);
-        if (!(oldData->flags & QX11PixmapData::Uninitialized) && hasStaticContents()) {
+
+        if (oldData && !(oldData->flags & QX11PixmapData::Uninitialized) && hasStaticContents()) {
             // Copy the content of the old pixmap into the new one.
             QX11PixmapData *newData = new QX11PixmapData(QPixmapData::PixmapType);
             newData->resize(size.width(), size.height());
