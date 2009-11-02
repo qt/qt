@@ -3180,28 +3180,31 @@ void tst_QDataStream::streamRealDataTypes()
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_4_2);
 
-        stream >> a >> b >> c >> d >> e >> f >> point
-               >> rect >> polygon >> matrix >> p;
-        if (i == 1)
-            stream >> pict;
-        stream >> textLength >> col >> rGrad >> cGrad
-               >> pen;
-
-        QCOMPARE(stream.status(), QDataStream::Ok);
-
+        stream >> a;
         QCOMPARE(a, qreal(0));
+        stream >> b;
         QCOMPARE(b, qreal(1.0));
+        stream >> c;
         QCOMPARE(c, qreal(1.1));
+        stream >> d;
         QCOMPARE(d, qreal(3.14));
+        stream >> e;
         QCOMPARE(e, qreal(-3.14));
+        stream >> f;
         QCOMPARE(f, qreal(-1));
+        stream >> point;
         QCOMPARE(point, QPointF(3, 5));
+        stream >> rect;
         QCOMPARE(rect, QRectF(-1, -2, 3, 4));
+        stream >> polygon;
         QCOMPARE((QVector<QPointF> &)polygon, (QPolygonF() << QPointF(0, 0) << QPointF(1, 2)));
+        stream >> matrix;
         QCOMPARE(matrix, QMatrix().rotate(90).scale(2, 2));
+        stream >> p;
         QCOMPARE(p, path);
+        if (i == 1) {
+            stream >> pict;
 
-        if (i == 0) {
             QByteArray pictA, pictB;
             QBuffer bufA, bufB;
             QVERIFY(bufA.open(QIODevice::ReadWrite));
@@ -3212,8 +3215,11 @@ void tst_QDataStream::streamRealDataTypes()
 
             QCOMPARE(pictA, pictB);
         }
+        stream >> textLength;
         QCOMPARE(textLength, QTextLength(QTextLength::VariableLength, 1.5));
+        stream >> col;
         QCOMPARE(col, color);
+        stream >> rGrad;
         QCOMPARE(rGrad.style(), radialBrush.style());
         QCOMPARE(rGrad.matrix(), radialBrush.matrix());
         QCOMPARE(rGrad.gradient()->type(), radialBrush.gradient()->type());
@@ -3222,6 +3228,7 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->center(), ((QRadialGradient *)radialBrush.gradient())->center());
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->focalPoint(), ((QRadialGradient *)radialBrush.gradient())->focalPoint());
         QCOMPARE(((QRadialGradient *)rGrad.gradient())->radius(), ((QRadialGradient *)radialBrush.gradient())->radius());
+        stream >> cGrad;
         QCOMPARE(cGrad.style(), conicalBrush.style());
         QCOMPARE(cGrad.matrix(), conicalBrush.matrix());
         QCOMPARE(cGrad.gradient()->type(), conicalBrush.gradient()->type());
@@ -3231,7 +3238,10 @@ void tst_QDataStream::streamRealDataTypes()
         QCOMPARE(((QConicalGradient *)cGrad.gradient())->angle(), ((QConicalGradient *)conicalBrush.gradient())->angle());
 
         QCOMPARE(cGrad, conicalBrush);
+        stream >> pen;
         QCOMPARE(pen.widthF(), qreal(1.5));
+
+        QCOMPARE(stream.status(), QDataStream::Ok);
     }
 #if defined(Q_OS_SYMBIAN)
     #undef qreal
