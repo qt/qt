@@ -439,9 +439,13 @@
     application language.
 
     The default event handler for QWidget subclasses responds to the
-    QEvent::LanguageChange event, and will call this function when necessary;
-    other application components can also force widgets to update themselves
-    by posting the \l{QEvent::LanguageChange}{LanguageChange} event to them.
+    QEvent::LanguageChange event, and will call this function when necessary.
+
+    \l{QEvent::LanguageChange}{LanguageChange} events are posted when a new
+    translation is installed using the QCoreApplication::installTranslator()
+    function. Additionally, other application components can also force
+    widgets to update themselves by posting LanguageChange events to them.
+
 
     \section1 Translating Non-Qt Classes
 
