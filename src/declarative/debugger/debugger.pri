@@ -4,8 +4,8 @@ SOURCES += debugger/qmldebuggerstatus.cpp \
            debugger/qmldebugclient.cpp \
            debugger/qmldebug.cpp
 
-HEADERS += debugger/qmldebuggerstatus.h \
-           debugger/qpacketprotocol.h \
-           debugger/qmldebugservice.h \
-           debugger/qmldebugclient.h \
-           debugger/qmldebug.h
+HEADERS += debugger/qmldebuggerstatus_p.h \
+           debugger/qpacketprotocol_p.h \
+           debugger/qmldebugservice_p.h \
+           debugger/qmldebugclient_p.h \
+           debugger/qmldebug_p.h

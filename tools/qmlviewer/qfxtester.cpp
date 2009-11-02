@@ -1,13 +1,41 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-$THISYEAR$ $TROLLTECH$. All rights reserved.
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the $MODULE$ of the Qt Toolkit.
+** This file is part of the tools applications of the Qt Toolkit.
 **
-** $TROLLTECH_DUAL_LICENSE$
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
-** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
-** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
 **
 ****************************************************************************/
 
@@ -20,16 +48,16 @@
 #include <QDir>
 #include <QCryptographicHash>
 #include <private/qabstractanimation_p.h>
-#include <private/qfxitem_p.h>
+#include <private/qmlgraphicsitem_p.h>
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, VisualTest, QFxVisualTest);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Frame, QFxVisualTestFrame);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Mouse, QFxVisualTestMouse);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Key, QFxVisualTestKey);
+QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, VisualTest, QmlGraphicsVisualTest);
+QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Frame, QmlGraphicsVisualTestFrame);
+QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Mouse, QmlGraphicsVisualTestMouse);
+QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Key, QmlGraphicsVisualTestKey);
 
-QFxTester::QFxTester(const QString &script, QmlViewer::ScriptOptions opts, 
+QmlGraphicsTester::QmlGraphicsTester(const QString &script, QmlViewer::ScriptOptions opts, 
                      QmlView *parent)
 : QAbstractAnimation(parent), m_script(script), m_view(parent), filterEvents(true), options(opts), 
   testscript(0), hasCompleted(false), hasFailed(false)
@@ -42,7 +70,7 @@ QFxTester::QFxTester(const QString &script, QmlViewer::ScriptOptions opts,
     start();
 }
 
-QFxTester::~QFxTester()
+QmlGraphicsTester::~QmlGraphicsTester()
 {
     if (!hasFailed && 
         options & QmlViewer::Record && 
@@ -50,26 +78,26 @@ QFxTester::~QFxTester()
         save();
 }
 
-int QFxTester::duration() const
+int QmlGraphicsTester::duration() const
 {
     return -1;
 }
 
-void QFxTester::addMouseEvent(Destination dest, QMouseEvent *me)
+void QmlGraphicsTester::addMouseEvent(Destination dest, QMouseEvent *me)
 {
     MouseEvent e(me);
     e.destination = dest;
     m_mouseEvents << e;
 }
 
-void QFxTester::addKeyEvent(Destination dest, QKeyEvent *ke)
+void QmlGraphicsTester::addKeyEvent(Destination dest, QKeyEvent *ke)
 {
     KeyEvent e(ke);
     e.destination = dest;
     m_keyEvents << e;
 }
 
-bool QFxTester::eventFilter(QObject *o, QEvent *e)
+bool QmlGraphicsTester::eventFilter(QObject *o, QEvent *e)
 {
     if (!filterEvents)
         return false;
@@ -100,7 +128,7 @@ bool QFxTester::eventFilter(QObject *o, QEvent *e)
     return false;
 }
 
-void QFxTester::executefailure()
+void QmlGraphicsTester::executefailure()
 {
     hasFailed = true;
 
@@ -108,7 +136,7 @@ void QFxTester::executefailure()
         exit(-1);
 }
 
-void QFxTester::imagefailure()
+void QmlGraphicsTester::imagefailure()
 {
     hasFailed = true;
 
@@ -116,7 +144,7 @@ void QFxTester::imagefailure()
         exit(-1);
 }
 
-void QFxTester::complete()
+void QmlGraphicsTester::complete()
 {
     if (options & QmlViewer::ExitOnComplete) 
         QApplication::exit(hasFailed?-1:0);
@@ -129,17 +157,17 @@ void QFxTester::complete()
         qWarning("Script playback complete");
 }
 
-void QFxTester::run()
+void QmlGraphicsTester::run()
 {
     QmlComponent c(m_view->engine(), m_script + QLatin1String(".qml"));
 
-    testscript = qobject_cast<QFxVisualTest *>(c.create());
+    testscript = qobject_cast<QmlGraphicsVisualTest *>(c.create());
     if (testscript) testscript->setParent(this);
     else executefailure();
     testscriptidx = 0;
 }
 
-void QFxTester::save()
+void QmlGraphicsTester::save()
 {
     QString filename = m_script + QLatin1String(".qml");
     QFileInfo filenameInfo(filename);
@@ -206,9 +234,9 @@ void QFxTester::save()
     file.close();
 }
 
-void QFxTester::updateCurrentTime(int msec)
+void QmlGraphicsTester::updateCurrentTime(int msec)
 {
-    QFxItemPrivate::setConsistentTime(msec);
+    QmlGraphicsItemPrivate::setConsistentTime(msec);
 
     QImage img(m_view->width(), m_view->height(), QImage::Format_RGB32);
 
@@ -268,17 +296,17 @@ void QFxTester::updateCurrentTime(int msec)
 
         QObject *event = testscript->event(testscriptidx);
 
-        if (QFxVisualTestFrame *frame = qobject_cast<QFxVisualTestFrame *>(event)) {
+        if (QmlGraphicsVisualTestFrame *frame = qobject_cast<QmlGraphicsVisualTestFrame *>(event)) {
             if (frame->msec() < msec) {
                 if (options & QmlViewer::TestImages) {
-                    qWarning() << "QFxTester: Extra frame.  Seen:" 
+                    qWarning() << "QmlGraphicsTester: Extra frame.  Seen:" 
                                << msec << "Expected:" << frame->msec();
                     imagefailure();
                 }
             } else if (frame->msec() == msec) {
                 if (frame->hash().toUtf8() != fe.hash.toHex()) {
                     if (options & QmlViewer::TestImages) {
-                        qWarning() << "QFxTester: Mismatched frame hash.  Seen:" 
+                        qWarning() << "QmlGraphicsTester: Mismatched frame hash.  Seen:" 
                                    << fe.hash.toHex() << "Expected:" 
                                    << frame->hash().toUtf8();
                         imagefailure();
@@ -292,13 +320,13 @@ void QFxTester::updateCurrentTime(int msec)
                 QImage goodImage(frame->image().toLocalFile());
                 if (goodImage != img) {
                     QString reject(frame->image().toLocalFile() + ".reject.png");
-                    qWarning() << "QFxTester: Image mismatch.  Reject saved to:" 
+                    qWarning() << "QmlGraphicsTester: Image mismatch.  Reject saved to:" 
                                << reject;
                     img.save(reject);
                     imagefailure();
                 }
             }
-        } else if (QFxVisualTestMouse *mouse = qobject_cast<QFxVisualTestMouse *>(event)) {
+        } else if (QmlGraphicsVisualTestMouse *mouse = qobject_cast<QmlGraphicsVisualTestMouse *>(event)) {
             QPoint pos(mouse->x(), mouse->y());
             QPoint globalPos = m_view->mapToGlobal(QPoint(0, 0)) + pos;
             QMouseEvent event((QEvent::Type)mouse->type(), pos, globalPos, (Qt::MouseButton)mouse->button(), (Qt::MouseButtons)mouse->buttons(), (Qt::KeyboardModifiers)mouse->modifiers());
@@ -313,7 +341,7 @@ void QFxTester::updateCurrentTime(int msec)
                 me.destination = ViewPort;
             }
             m_savedMouseEvents.append(me);
-        } else if (QFxVisualTestKey *key = qobject_cast<QFxVisualTestKey *>(event)) {
+        } else if (QmlGraphicsVisualTestKey *key = qobject_cast<QmlGraphicsVisualTestKey *>(event)) {
 
             QKeyEvent event((QEvent::Type)key->type(), key->key(), (Qt::KeyboardModifiers)key->modifiers(), QString::fromUtf8(QByteArray::fromHex(key->text().toUtf8())), key->autorep(), key->count());
 

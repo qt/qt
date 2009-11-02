@@ -39,18 +39,18 @@
 **
 ****************************************************************************/
 
-#include "qlistmodelinterface.h"
+#include "qlistmodelinterface_p.h"
 
 QT_BEGIN_NAMESPACE
 
 /*!
   \internal
   \class QListModelInterface
-  \brief The QListModelInterface class can be subclassed to provide C++ models to QFx Views
+  \brief The QListModelInterface class can be subclassed to provide C++ models to QmlGraphics Views
 
   This class is comprised primarily of pure virtual functions which
   you must implement in a subclass. You can then use the subclass
-  as a model for a QFx view, such as a QFxListView.
+  as a model for a QmlGraphics view, such as a QmlGraphicsListView.
 */
 
 /*! \fn QListModelInterface::QListModelInterface(QObject *parent)

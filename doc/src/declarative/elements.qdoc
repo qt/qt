@@ -88,7 +88,6 @@ The following table lists the QML elements provided by the Qt Declarative module
 \o \l ListModel, \l ListElement
 \o \l VisualItemModel
 \o \l XmlListModel and XmlRole
-\o \l SqlQuery, \l SqlConnection, and \l SqlBind
 \o \l DateTimeFormatter
 \o \l NumberFormatter
 \endlist

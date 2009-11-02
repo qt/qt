@@ -1,6 +1,4 @@
 import Qt 4.6
-import "../../flickr/mobile"
-import "../../flickr/common"
 
 Item {
     id: titleBar
@@ -8,7 +6,7 @@ Item {
     signal update()
     onYChanged: state="" //When switching titlebars
 
-    BorderImage { source: "../../flickr/mobile/images/titlebar.sci"; width: parent.width; height: parent.height + 14; y: -7 }
+    BorderImage { source: "images/titlebar.sci"; width: parent.width; height: parent.height + 14; y: -7 }
     Item {
         id: container
         width: (parent.width * 2) - 55 ; height: parent.height
@@ -73,7 +71,7 @@ Item {
             id: txtEdit;
             anchors.left: tagButton.right; anchors.leftMargin: 5; y: 4
             anchors.right: parent.right; anchors.rightMargin: 40; height: parent.height - 9
-            BorderImage { source: "../../flickr/mobile/images/lineedit.sci"; anchors.fill: parent }
+            BorderImage { source: "images/lineedit.sci"; anchors.fill: parent }
 
             Binding {//TODO: Can this be a function, which also resets the cursor? And flashes?
                 when: editor.text.length > 140

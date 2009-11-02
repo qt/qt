@@ -56,6 +56,7 @@
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptcontext.h>
 #include <QtScript/qscriptstring.h>
+#include <QtScript/qscriptprogram.h>
 
 QT_BEGIN_HEADER
 
@@ -67,7 +68,6 @@ class QDateTime;
 class QScriptClass;
 class QScriptEngineAgent;
 class QScriptEnginePrivate;
-class QScriptProgram;
 
 #ifndef QT_NO_QOBJECT
 

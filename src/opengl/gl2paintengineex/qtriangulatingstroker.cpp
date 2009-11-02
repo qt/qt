@@ -42,6 +42,7 @@
 #include "qtriangulatingstroker_p.h"
 #include <qmath.h>
 
+QT_BEGIN_NAMESPACE
 
 #define CURVE_FLATNESS Q_PI / 8
 
@@ -338,3 +339,6 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen)
 
     m_dash_stroker.end();
 }
+
+QT_END_NAMESPACE
+

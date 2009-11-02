@@ -189,7 +189,8 @@ bool QSoftKeyManager::event(QEvent *e)
         } while (source);
 
         QSoftKeyManagerPrivate::softKeySource = source;
-        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
+        if (source)
+            QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
         return true;
     }
     return false;
@@ -237,7 +238,8 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
         }
     }
 
-    if (needsExitButton)
+    Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource->window()->windowType();
+    if (needsExitButton && sourceWindowType != Qt::Dialog && sourceWindowType != Qt::Popup)
         QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation

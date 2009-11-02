@@ -1,5 +1,4 @@
 import Qt 4.6
-import "../../flickr/mobile"
 
 Item {
     height: homeBar.height

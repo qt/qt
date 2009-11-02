@@ -3319,6 +3319,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     if (!(d->optimizationFlags & IndirectPainting)) {
         d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
                                       &d->exposedRegion, viewport());
+        // Make sure the painter's world transform is restored correctly when
+        // drawing without painter state protection (DontSavePainterState).
+        // We only change the worldTransform() so there's no need to do a full-blown
+        // save() and restore(). Also note that we don't have to do this in case of
+        // IndirectPainting (the else branch), because in that case we always save()
+        // and restore() in QGraphicsScene::drawItems().
+        if (!d->scene->d_func()->painterStateProtection)
+            painter.setWorldTransform(viewTransform);
     } else {
         // Find all exposed items
         bool allItems = false;

@@ -1,7 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -48,7 +48,7 @@
 #include "qmlvme_p.h"
 #include "qml.h"
 #include <QStack>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QStringList>
 #include <qmlengine.h>
 #include <QFileInfo>
@@ -56,6 +56,7 @@
 #include <QtCore/qdebug.h>
 #include <QApplication>
 #include <private/qmlbinding_p.h>
+#include <private/qmlglobal_p.h>
 
 #include "qmlscriptparser_p.h"
 
@@ -409,11 +410,25 @@ valid for components created directly from QML.
 */
 QmlContext *QmlComponent::creationContext() const
 {
+    Q_D(const QmlComponent);
+    if(d->creationContext)
+        return d->creationContext;
     QmlDeclarativeData *ddata = QmlDeclarativeData::get(this);
     if (ddata)
         return ddata->context;
     else
         return 0;
+}
+
+/*!
+  \internal
+  Sets the QmlContext the component was created in. This is only
+  desirable for components created in QML script.
+*/
+void QmlComponent::setCreationContext(QmlContext* c)
+{
+    Q_D(QmlComponent);
+    d->creationContext = c;
 }
 
 /*!
@@ -462,6 +477,24 @@ QList<QmlError> QmlComponent::errors() const
 }
 
 /*!
+    \internal
+    errorsString is only meant as a way to get the errors in script
+*/
+QString QmlComponent::errorsString() const
+{
+    Q_D(const QmlComponent);
+    QString ret;
+    if(!isError())
+        return ret;
+    foreach(const QmlError &e, d->errors) {
+        ret += e.url().toString() + QLatin1String(":") +
+               QString::number(e.line()) + QLatin1String(" ") +
+               e.description() + QLatin1String("\n");
+    }
+    return ret;
+}
+
+/*!
     Return the component URL.  This is the URL passed to either the constructor,
     or the loadUrl() or setData() methods.
 */
@@ -479,6 +512,22 @@ QmlComponent::QmlComponent(QmlComponentPrivate &dd, QObject *parent)
 {
 }
 
+
+/*!
+    \internal
+    A version of create which returns a scriptObject, for use in script
+*/
+QScriptValue QmlComponent::createObject()
+{
+    Q_D(QmlComponent);
+    QmlContext* ctxt = creationContext();
+    if(!ctxt){
+        qWarning() << QLatin1String("createObject can only be used in QML");
+        return QScriptValue();
+    }
+    QObject* ret = create(ctxt);
+    return QmlEnginePrivate::qmlScriptObject(ret, d->engine);
+}
 
 /*!
     Create an object instance from this component.  Returns 0 if creation
@@ -600,7 +649,7 @@ QmlComponentPrivate::beginCreate(QmlContext *context, const QBitField &bindings)
 
 
     if (rv) {
-        QFx_setParent_noEvent(ctxt, rv);
+        QmlGraphics_setParent_noEvent(ctxt, rv);
     } else {
         delete ctxt;
     }
@@ -628,7 +677,7 @@ void QmlComponentPrivate::completeCreate()
     if (completePending) {
         {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-            QFxPerfTimer<QFxPerf::BindInit> bi;
+            QmlPerfTimer<QmlPerf::BindInit> bi;
 #endif
             for (int ii = 0; ii < bindValues.count(); ++ii) {
                 QmlEnginePrivate::SimpleList<QmlAbstractBinding> bv = 

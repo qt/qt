@@ -45,7 +45,6 @@
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qdebug.h>
-#include <QtCore/qvariant.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -1,7 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -52,16 +52,17 @@
 #include "qbasictimer.h"
 
 #include "qml.h"
-#include "qfxitem.h"
-#include "private/qperformancelog_p.h"
-#include "private/qfxperf_p.h"
+#include "qmlgraphicsitem.h"
+#include "private/qperformancelog_p_p.h"
+#include "private/qfxperf_p_p.h"
 
 #include "qmlview.h"
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmldebug.h>
-#include <QtDeclarative/qmldebugservice.h>
+#include <private/qmldebug_p.h>
+#include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>
+#include <private/qmlglobal_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -136,7 +137,7 @@ public:
         : q(w), root(0), component(0), resizable(false) {}
 
     QmlView *q;
-    QFxItem *root;
+    QmlGraphicsItem *root;
 
     QUrl source;
     QString qml;
@@ -193,7 +194,7 @@ void QmlViewPrivate::init()
     QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::FontDatabase> perf;
+    QmlPerfTimer<QmlPerf::FontDatabase> perf;
 #endif
     QFontDatabase database;
 
@@ -213,7 +214,7 @@ void QmlViewPrivate::init()
 }
 
 /*!
-  The destructor clears the view's \l {QFxItem} {items} and
+  The destructor clears the view's \l {QmlGraphicsItem} {items} and
   deletes the internal representation.
 
   \sa clearItems()
@@ -337,7 +338,7 @@ void QmlView::continueExecute()
     }
 
     if (obj) {
-        if (QFxItem *item = qobject_cast<QFxItem *>(obj)) {
+        if (QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(obj)) {
 
             d->scene.addItem(item);
 
@@ -476,11 +477,11 @@ QSize QmlView::sizeHint() const
 
 /*!
   Creates a \l{QmlComponent} {component} from the \a qml
-  string, and returns it as an \l {QFxItem} {item}. If the
+  string, and returns it as an \l {QmlGraphicsItem} {item}. If the
   \a parent item is provided, it becomes the new item's
   parent. \a parent should be in this view's item hierarchy.
  */
-QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
+QmlGraphicsItem* QmlView::addItem(const QString &qml, QmlGraphicsItem* parent)
 {
     if (!d->root)
         return 0;
@@ -508,7 +509,7 @@ QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
     }
 
     if (obj){
-        QFxItem *item = static_cast<QFxItem *>(obj);
+        QmlGraphicsItem *item = static_cast<QmlGraphicsItem *>(obj);
         if (!parent)
             parent = d->root;
 
@@ -519,7 +520,7 @@ QFxItem* QmlView::addItem(const QString &qml, QFxItem* parent)
 }
 
 /*!
-  Deletes the view's \l {QFxItem} {items} and the \l {QmlEngine}
+  Deletes the view's \l {QmlGraphicsItem} {items} and the \l {QmlEngine}
   {QML engine's} Component cache.
  */
 void QmlView::reset()
@@ -530,7 +531,7 @@ void QmlView::reset()
 }
 
 /*!
-  Deletes the view's \l {QFxItem} {items}.
+  Deletes the view's \l {QmlGraphicsItem} {items}.
  */
 void QmlView::clearItems()
 {
@@ -541,9 +542,9 @@ void QmlView::clearItems()
 }
 
 /*!
-  Returns the view's root \l {QFxItem} {item}.
+  Returns the view's root \l {QmlGraphicsItem} {item}.
  */
-QFxItem *QmlView::root() const
+QmlGraphicsItem *QmlView::root() const
 {
     return d->root;
 }

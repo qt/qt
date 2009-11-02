@@ -1,7 +1,8 @@
 /****************************************************************************
 **
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
-** Contact: Qt Software Information (qt-info@nokia.com)
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
 **
 ** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
@@ -9,8 +10,8 @@
 ** No Commercial Usage
 ** This file contains pre-release code and may not be distributed.
 ** You may use this file in accordance with the terms and conditions
-** contained in the either Technology Preview License Agreement or the
-** Beta Release License Agreement.
+** contained in the Technology Preview License Agreement accompanying
+** this package.
 **
 ** GNU Lesser General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU Lesser
@@ -20,21 +21,20 @@
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
 **
-** In addition, as a special exception, Nokia gives you certain
-** additional rights. These rights are described in the Nokia Qt LGPL
-** Exception version 1.0, included in the file LGPL_EXCEPTION.txt in this
-** package.
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
 **
-** GNU General Public License Usage
-** Alternatively, this file may be used under the terms of the GNU
-** General Public License version 3.0 as published by the Free Software
-** Foundation and appearing in the file LICENSE.GPL included in the
-** packaging of this file.  Please review the following information to
-** ensure the GNU General Public License version 3.0 requirements will be
-** met: http://www.gnu.org/copyleft/gpl.html.
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
 **
-** If you are unsure which license is appropriate for your use, please
-** contact the sales department at qt-sales@nokia.com.
+**
+**
+**
+**
+**
+**
+**
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
@@ -45,7 +45,7 @@
 #include <qmlcontext.h>
 #include <qmlinfo.h>
 #include <QVariant>
-#include <private/qfxperf_p.h>
+#include <private/qfxperf_p_p.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmldeclarativedata_p.h>
@@ -138,7 +138,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
     Q_D(QmlBinding);
 
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QFxPerfTimer<QFxPerf::BindableValueUpdate> bu;
+    QmlPerfTimer<QmlPerf::BindableValueUpdate> bu;
 #endif
     QmlBindingData *data = d->bindingData();
 
@@ -170,15 +170,15 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             if (!isUndefined && data->property.object() && 
                 !data->property.write(value, flags)) {
 
-                QString fileName = data->fileName;
+                QUrl url = data->url;
                 int line = data->line;
-                if (fileName.isEmpty()) fileName = QLatin1String("<Unknown File>");
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
 
                 const char *valueType = 0;
                 if (value.userType() == QVariant::Invalid) valueType = "null";
                 else valueType = QMetaType::typeName(value.userType());
 
-                data->error.setUrl(fileName);
+                data->error.setUrl(url);
                 data->error.setLine(line);
                 data->error.setColumn(-1);
                 data->error.setDescription(QLatin1String("Unable to assign ") +

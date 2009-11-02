@@ -1,3 +1,43 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
@@ -947,11 +987,11 @@ void tst_qmllanguage::importsLocal_data()
     QTest::newRow("local import")
         << "import \"subdir\"\n" // QT-613
            "Test {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
     QTest::newRow("local import as")
         << "import \"subdir\" as T\n"
            "T.Test {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
     QTest::newRow("wrong local import as")
         << "import \"subdir\" as T\n"
            "Test {}"
@@ -979,9 +1019,9 @@ void tst_qmllanguage::importsRemote_data()
             + QtNetworkSettings::serverName()
             + "/qtest/declarative/qmllanguage";
 
-    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QFxRect";
-    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QFxText";
-    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QFxImage";
+    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QmlGraphicsRect";
+    QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QmlGraphicsText";
+    QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QmlGraphicsImage";
 }
 
 void tst_qmllanguage::importsRemote()
@@ -1002,11 +1042,11 @@ void tst_qmllanguage::importsInstalled_data()
     QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
     QTest::newRow("installed import 2")
         << "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QFxText";
+        << "QmlGraphicsText";
     QTest::newRow("installed import visibility") // QT-614
         << "import com.nokia.installedtest 1.4\n"
            "PrivateType {}"
@@ -1030,36 +1070,36 @@ void tst_qmllanguage::importsOrder_data()
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QFxText";
+        << "QmlGraphicsText";
     QTest::newRow("installed import overrides 2") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
     QTest::newRow("installed import re-overrides 1") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
-        << "QFxText";
+        << "QmlGraphicsText";
     QTest::newRow("installed import re-overrides 2") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
 
     QTest::newRow("installed import versus builtin 1") <<
            "import com.nokia.installedtest 1.5\n"
            "import Qt 4.6\n"
            "Rectangle {}"
-        << "QFxRect";
+        << "QmlGraphicsRect";
     QTest::newRow("installed import versus builtin 2") <<
            "import Qt 4.6\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle {}"
-        << "QFxText";
+        << "QmlGraphicsText";
     QTest::newRow("namespaces cannot be overridden by types 1") <<
            "import Qt 4.6 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
@@ -1069,7 +1109,7 @@ void tst_qmllanguage::importsOrder_data()
            "import Qt 4.6 as Rectangle\n"
            "import com.nokia.installedtest 1.5\n"
            "Rectangle.Image {}"
-        << "QFxImage";
+        << "QmlGraphicsImage";
 }
 
 void tst_qmllanguage::importsOrder()

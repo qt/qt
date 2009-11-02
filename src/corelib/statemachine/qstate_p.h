@@ -99,6 +99,8 @@ public:
     QAbstractState *errorState;
     QAbstractState *initialState;
     QState::ChildMode childMode;
+    mutable bool transitionsListNeedsRefresh;
+    mutable QList<QAbstractTransition*> transitionsList;
 
     QList<QPropertyAssignment> propertyAssignments;
 };

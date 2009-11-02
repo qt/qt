@@ -386,7 +386,6 @@ public:
     bool paintOnScreen() const;
     void invalidateGraphicsEffectsRecursively();
 
-    QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
 

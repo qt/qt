@@ -231,6 +231,11 @@ public:
 
 #ifndef QT_NO_DRAGANDDROP
     void paintDragDrop(QPainter *painter);
+
+    // The next two methods are to be used on LefToRight flow only.
+    // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
+    QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    void dragMoveEvent(QDragMoveEvent *e);
 #endif
 
 private:
@@ -355,6 +360,10 @@ public:
 
     QItemSelection selection(const QRect &rect) const;
     void selectAll(QItemSelectionModel::SelectionFlags command);
+
+#ifndef QT_NO_DRAGANDDROP
+    virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+#endif
 
     inline void setGridSize(const QSize &size) { grid = size; }
     inline QSize gridSize() const { return grid; }

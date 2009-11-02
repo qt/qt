@@ -1,6 +1,46 @@
+/****************************************************************************
+**
+** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
+** All rights reserved.
+** Contact: Nokia Corporation (qt-info@nokia.com)
+**
+** This file is part of the test suite of the Qt Toolkit.
+**
+** $QT_BEGIN_LICENSE:LGPL$
+** No Commercial Usage
+** This file contains pre-release code and may not be distributed.
+** You may use this file in accordance with the terms and conditions
+** contained in the Technology Preview License Agreement accompanying
+** this package.
+**
+** GNU Lesser General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** In addition, as a special exception, Nokia gives you certain additional
+** rights.  These rights are described in the Nokia Qt LGPL Exception
+** version 1.1, included in the file LGPL_EXCEPTION.txt in this package.
+**
+** If you have questions regarding the use of this file, please contact
+** Nokia at qt-info@nokia.com.
+**
+**
+**
+**
+**
+**
+**
+**
+** $QT_END_LICENSE$
+**
+****************************************************************************/
 #include <qtest.h>
 #include <QtTest/QtTest>
-#include <QtDeclarative/qfxpixmapcache.h>
+#include <private/qmlgraphicspixmapcache_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QNetworkReply>
 
@@ -59,7 +99,7 @@ static const bool localfile_optimized = false;
 
 void tst_qfxpixmapcache::single_data()
 {
-    // Note, since QFxPixmapCache is shared, tests affect each other!
+    // Note, since QmlGraphicsPixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
 
     QTest::addColumn<QUrl>("target");
@@ -90,7 +130,7 @@ void tst_qfxpixmapcache::single()
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QNetworkReply *reply= QFxPixmapCache::get(&engine, target, &pixmap);
+    QNetworkReply *reply= QmlGraphicsPixmapCache::get(&engine, target, &pixmap);
 
     if (incache) {
         QVERIFY(!reply);
@@ -108,20 +148,20 @@ void tst_qfxpixmapcache::single()
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
         if (exists) {
-            QVERIFY(QFxPixmapCache::find(target, &pixmap));
+            QVERIFY(QmlGraphicsPixmapCache::find(target, &pixmap));
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(!QFxPixmapCache::find(target, &pixmap));
+            QVERIFY(!QmlGraphicsPixmapCache::find(target, &pixmap));
             QVERIFY(pixmap.width() <= 0);
         }
     }
 
-    QCOMPARE(QFxPixmapCache::pendingRequests(), 0);
+    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), 0);
 }
 
 void tst_qfxpixmapcache::parallel_data()
 {
-    // Note, since QFxPixmapCache is shared, tests affect each other!
+    // Note, since QmlGraphicsPixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
 
     QTest::addColumn<QUrl>("target1");
@@ -187,7 +227,7 @@ void tst_qfxpixmapcache::parallel()
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
         QPixmap pixmap;
-        QNetworkReply *reply = QFxPixmapCache::get(&engine, target, &pixmap);
+        QNetworkReply *reply = QmlGraphicsPixmapCache::get(&engine, target, &pixmap);
         replies.append(reply);
         if (!reply) {
             QVERIFY(pixmap.width() > 0);
@@ -200,10 +240,10 @@ void tst_qfxpixmapcache::parallel()
     }
 
     QCOMPARE(incache+slotters, targets.count());
-    QCOMPARE(QFxPixmapCache::pendingRequests(), requests);
+    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), requests);
 
     if (cancel >= 0) {
-        QFxPixmapCache::cancelGet(targets.at(cancel), getters[cancel]);
+        QmlGraphicsPixmapCache::cancelGet(targets.at(cancel), getters[cancel]);
         slotters--;
     }
 
@@ -220,14 +260,14 @@ void tst_qfxpixmapcache::parallel()
             } else {
                 QVERIFY(getters[i]->gotslot);
                 QPixmap pixmap;
-                QVERIFY(QFxPixmapCache::find(targets[i], &pixmap));
+                QVERIFY(QmlGraphicsPixmapCache::find(targets[i], &pixmap));
                 QVERIFY(pixmap.width() > 0);
             }
             delete getters[i];
         }
     }
 
-    QCOMPARE(QFxPixmapCache::pendingRequests(), 0);
+    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), 0);
 }
 
 QTEST_MAIN(tst_qfxpixmapcache)

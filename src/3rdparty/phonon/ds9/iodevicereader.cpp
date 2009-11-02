@@ -36,16 +36,19 @@ namespace Phonon
         //these mediatypes define a stream, its type will be autodetected by DirectShow
         static QVector<AM_MEDIA_TYPE> getMediaTypes()
         {
-            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_NULL, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
+            //the order here is important because otherwise,
+            //directshow might not be able to detect the stream type correctly
+
+            AM_MEDIA_TYPE mt = { MEDIATYPE_Stream, MEDIASUBTYPE_Avi, TRUE, FALSE, 1, GUID_NULL, 0, 0, 0};
 
             QVector<AM_MEDIA_TYPE> ret;
-            //normal auto-detect stream
-            ret << mt;
             //AVI stream
-            mt.subtype = MEDIASUBTYPE_Avi;
             ret << mt;
             //WAVE stream
             mt.subtype = MEDIASUBTYPE_WAVE;
+            ret << mt;
+            //normal auto-detect stream (must be at the end!)
+            mt.subtype = MEDIASUBTYPE_NULL;
             ret << mt;
             return ret;
         }

@@ -467,6 +467,9 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
     return retVal;
 }
 
+/*!
+    \reimp
+*/
 void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
     Q_D(QSslSocket);
@@ -474,6 +477,9 @@ void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVa
         d->plainSocket->setSocketOption(option, value);
 }
 
+/*!
+    \reimp
+*/
 QVariant QSslSocket::socketOption(QAbstractSocket::SocketOption option)
 {
     Q_D(QSslSocket);

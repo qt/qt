@@ -105,7 +105,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtScript module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -159,7 +159,7 @@
 ** Copyright (C) 2009 Nokia Corporation and/or its subsidiary(-ies).
 ** Contact: Qt Software Information (qt-info@nokia.com)
 **
-** This file is part of the QtScript module of the Qt Toolkit.
+** This file is part of the QtDeclarative module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -2949,7 +2949,7 @@ PropertyNameAndValueListOpt: PropertyNameAndValueList ;
         const int errorState = state_stack[tos];
 
         // automatic insertion of `;'
-        if (t_action(errorState, T_AUTOMATIC_SEMICOLON) && automatic(driver, yytoken)) {
+        if (yytoken != -1 && t_action(errorState, T_AUTOMATIC_SEMICOLON) && automatic(driver, yytoken)) {
             SavedToken &tk = token_buffer[0];
             tk.token = yytoken;
             tk.dval = yylval;

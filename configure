@@ -672,7 +672,7 @@ CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
 CFG_SVG=yes
-CFG_DECLARATIVE=yes
+CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
 CFG_JAVASCRIPTCORE_JIT=auto
 
@@ -1846,7 +1846,7 @@ while [ "$#" -gt 0 ]; do
         fi
         ;;
     declarative)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "auto" ]; then
+        if [ "$VAL" = "yes" ]; then
             CFG_DECLARATIVE="yes"
         else
             if [ "$VAL" = "no" ]; then
@@ -2152,7 +2152,7 @@ if [ "$OPT_SHADOW" = "maybe" ]; then
     fi
 fi
 if [ "$OPT_SHADOW" = "yes" ]; then
-    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" ]; then
+    if [ -f "$relpath/.qmake.cache" -o -f "$relpath/src/corelib/global/qconfig.h" -o -f "$relpath/src/corelib/global/qconfig.cpp" ]; then
         echo >&2 "You cannot make a shadow build from a source tree containing a previous build."
         echo >&2 "Cannot proceed."
         exit 1
@@ -3235,7 +3235,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-qt-zlib] [-system-zlib] [-no-gif] [-qt-gif] [-no-libtiff] [-qt-libtiff] [-system-libtiff]
         [-no-libpng] [-qt-libpng] [-system-libpng] [-no-libmng] [-qt-libmng]
         [-system-libmng] [-no-libjpeg] [-qt-libjpeg] [-system-libjpeg] [-make <part>]
-        [-no-make <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
+        [-nomake <part>] [-R <string>]  [-l <string>] [-no-rpath]  [-rpath] [-continue]
         [-verbose] [-v] [-silent] [-no-nis] [-nis] [-no-cups] [-cups] [-no-iconv]
         [-iconv] [-no-pch] [-pch] [-no-dbus] [-dbus] [-dbus-linked]
         [-no-separate-debug-info] [-no-mmx] [-no-3dnow] [-no-sse] [-no-sse2]
@@ -3402,8 +3402,8 @@ fi
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
 
-    -no-declarative .....Do not build the declarative module.
- +  -declarative ....... Build the declarative module.
+ +  -no-declarative .....Do not build the declarative module.
+    -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -5778,6 +5778,19 @@ if [ "$CFG_ALSA" = "auto" ]; then
         CFG_ALSA=yes
     else
         CFG_ALSA=no
+    fi
+fi
+
+if [ -f "$relpath/src/declarative/declarative.pro" ]; then
+    if [ "$CFG_DECLARATIVE" = "auto" ]; then
+        CFG_DECLARATIVE=yes
+    fi
+else
+    if [ "$CFG_DECLARATIVE" = "auto" ] || [ "$CFG_DECLARATIVE" = "no" ]; then
+        CFG_DECLARATIVE=no
+    else
+        echo "Error: Unable to locate the qt-declarative package. Refer to the documentation on how to build the package."
+        exit 1
     fi
 fi
 

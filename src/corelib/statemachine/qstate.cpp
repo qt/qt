@@ -124,7 +124,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), initialState(0), childMode(QState::ExclusiveStates)
+    : errorState(0), initialState(0), childMode(QState::ExclusiveStates),
+      transitionsListNeedsRefresh(true)
 {
 }
 
@@ -205,14 +206,17 @@ QList<QHistoryState*> QStatePrivate::historyStates() const
 
 QList<QAbstractTransition*> QStatePrivate::transitions() const
 {
-    QList<QAbstractTransition*> result;
-    QList<QObject*>::const_iterator it;
-    for (it = children.constBegin(); it != children.constEnd(); ++it) {
-        QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
-        if (t)
-            result.append(t);
+    if (transitionsListNeedsRefresh) {
+        transitionsList.clear();
+        QList<QObject*>::const_iterator it;
+        for (it = children.constBegin(); it != children.constEnd(); ++it) {
+            QAbstractTransition *t = qobject_cast<QAbstractTransition*>(*it);
+            if (t)
+                transitionsList.append(t);
+        }
+        transitionsListNeedsRefresh = false;
     }
-    return result;
+    return transitionsList;
 }
 
 #ifndef QT_NO_PROPERTIES
@@ -468,6 +472,9 @@ void QState::setChildMode(ChildMode mode)
 */
 bool QState::event(QEvent *e)
 {
+    Q_D(QState);
+    if ((e->type() == QEvent::ChildAdded) || (e->type() == QEvent::ChildRemoved))
+        d->transitionsListNeedsRefresh = true;
     return QAbstractState::event(e);
 }
 
