@@ -373,11 +373,11 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::changeState, EAudioInternal);
 
-    // TODO: add some invariants to check that the transition is valid
-    AbstractPlayer::changeState(newState);
-
     const Phonon::State oldPhononState = phononState(privateState());
     const Phonon::State newPhononState = phononState(newState);
+
+    // TODO: add some invariants to check that the transition is valid
+    AbstractPlayer::changeState(newState);
 
     if (LoadingState == oldPhononState && StoppedState == newPhononState) {
         // Ensure initial volume is set on MMF API before starting playback
