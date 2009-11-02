@@ -2342,6 +2342,8 @@ For example:
      \l{#QMAKESPEC}{qmake.conf} and rarely needs to be modified.
 
     \section1 QMAKE_LFLAGS_RPATH
+
+    \e {This is used on Unix platforms only.}
     
     Library paths in this definition are added to the executable at link
     time so that the added paths will be preferentially searched at runtime.
@@ -2673,10 +2675,14 @@ For example:
     \snippet doc/src/snippets/code/doc_src_qmake-manual.qdoc 45
 
     \section1 QMAKE_RPATH
+    
+    \e {This is used on Unix platforms only.}
 
     Is equivalent to \l QMAKE_LFLAGS_RPATH.
 
     \section1 QMAKE_RPATHDIR
+
+    \e {This is used on Unix platforms only.}
 
     A list of library directory paths, these paths are added to the
     executable at link time so that the paths will be preferentially
