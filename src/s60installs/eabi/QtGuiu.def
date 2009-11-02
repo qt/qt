@@ -1051,12 +1051,12 @@ EXPORTS
 	_ZN11QPaintEventD2Ev @ 1050 NONAME
 	_ZN11QPanGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 1051 NONAME
 	_ZN11QPanGesture11qt_metacastEPKc @ 1052 NONAME
-	_ZN11QPanGesture13setLastOffsetERK6QSizeF @ 1053 NONAME
-	_ZN11QPanGesture14setTotalOffsetERK6QSizeF @ 1054 NONAME
+	_ZN11QPanGesture13setLastOffsetERK6QSizeF @ 1053 NONAME ABSENT
+	_ZN11QPanGesture14setTotalOffsetERK6QSizeF @ 1054 NONAME ABSENT
 	_ZN11QPanGesture15setAccelerationEf @ 1055 NONAME
 	_ZN11QPanGesture16staticMetaObjectE @ 1056 NONAME DATA 16
 	_ZN11QPanGesture19getStaticMetaObjectEv @ 1057 NONAME
-	_ZN11QPanGesture9setOffsetERK6QSizeF @ 1058 NONAME
+	_ZN11QPanGesture9setOffsetERK6QSizeF @ 1058 NONAME ABSENT
 	_ZN11QPanGestureC1EP7QObject @ 1059 NONAME
 	_ZN11QPanGestureC2EP7QObject @ 1060 NONAME
 	_ZN11QPixmapData12toNativeTypeENS_10NativeTypeE @ 1061 NONAME
@@ -6366,7 +6366,7 @@ EXPORTS
 	_ZN8QGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 6365 NONAME
 	_ZN8QGesture11qt_metacastEPKc @ 6366 NONAME
 	_ZN8QGesture12unsetHotSpotEv @ 6367 NONAME
-	_ZN8QGesture15setTargetObjectEP7QObject @ 6368 NONAME
+	_ZN8QGesture15setTargetObjectEP7QObject @ 6368 NONAME ABSENT
 	_ZN8QGesture16staticMetaObjectE @ 6369 NONAME DATA 16
 	_ZN8QGesture19getStaticMetaObjectEv @ 6370 NONAME
 	_ZN8QGestureC1EN2Qt11GestureTypeEP7QObject @ 6371 NONAME ABSENT
@@ -7888,7 +7888,7 @@ EXPORTS
 	_ZNK11QTextCursorneERKS_ @ 7887 NONAME
 	_ZNK11QTextEngine10attributesEv @ 7888 NONAME
 	_ZNK11QTextEngine10elidedTextEN2Qt13TextElideModeERK6QFixedi @ 7889 NONAME
-	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_ @ 7890 NONAME
+	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_ @ 7890 NONAME ABSENT
 	_ZNK11QTextEngine11boundingBoxEii @ 7891 NONAME
 	_ZNK11QTextEngine11formatIndexEPK11QScriptItem @ 7892 NONAME
 	_ZNK11QTextEngine11setBoundaryEi @ 7893 NONAME
@@ -10163,7 +10163,7 @@ EXPORTS
 	_ZNK8QGesture10hasHotSpotEv @ 10162 NONAME
 	_ZNK8QGesture10metaObjectEv @ 10163 NONAME
 	_ZNK8QGesture11gestureTypeEv @ 10164 NONAME
-	_ZNK8QGesture12targetObjectEv @ 10165 NONAME
+	_ZNK8QGesture12targetObjectEv @ 10165 NONAME ABSENT
 	_ZNK8QGesture5stateEv @ 10166 NONAME
 	_ZNK8QGesture7hotSpotEv @ 10167 NONAME
 	_ZNK8QMdiArea10backgroundEv @ 10168 NONAME
@@ -11615,4 +11615,24 @@ EXPORTS
 	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11614 NONAME
 	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
 	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
+	_ZN11QPanGesture13setLastOffsetERK7QPointF @ 11617 NONAME
+	_ZN11QPanGesture14setTotalOffsetERK7QPointF @ 11618 NONAME
+	_ZN11QPanGesture9setOffsetERK7QPointF @ 11619 NONAME
+	_ZN13QGestureEvent6d_funcEv @ 11620 NONAME
+	_ZN13QGestureEvent9setWidgetEP7QWidget @ 11621 NONAME
+	_ZN13QGestureEventD0Ev @ 11622 NONAME
+	_ZN13QGestureEventD1Ev @ 11623 NONAME
+	_ZN13QGestureEventD2Ev @ 11624 NONAME
+	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11625 NONAME
+	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11626 NONAME
+	_ZNK13QGestureEvent10mapToSceneERK7QPointF @ 11627 NONAME
+	_ZNK13QGestureEvent6d_funcEv @ 11628 NONAME
+	_ZNK13QGestureEvent6widgetEv @ 11629 NONAME
+	_Zls6QDebugP15QGraphicsObject @ 11630 NONAME
+	_ZN10QMatrix4x415projectedRotateEffff @ 11631 NONAME
+	_ZN9QTextLine18setLeadingIncludedEb @ 11632 NONAME
+	_ZNK10QMatrix4x411toTransformEv @ 11633 NONAME
+	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_S4_ @ 11634 NONAME
+	_ZNK9QTextLine15leadingIncludedEv @ 11635 NONAME
+	_ZNK9QTextLine7leadingEv @ 11636 NONAME
 

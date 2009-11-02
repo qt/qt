@@ -72,18 +72,6 @@ private:
     int m_last;
 };
 
-static qint32 toArrayIndex(const QString &str)
-{
-    QByteArray bytes = str.toUtf8();
-    char *eptr;
-    quint32 pos = strtoul(bytes.constData(), &eptr, 10);
-    if ((eptr == bytes.constData() + bytes.size())
-        && (QByteArray::number(pos) == bytes)) {
-        return pos;
-    }
-    return -1;
-}
-
 //! [0]
 ByteArrayClass::ByteArrayClass(QScriptEngine *engine)
     : QObject(engine), QScriptClass(engine)
@@ -120,8 +108,9 @@ QScriptClass::QueryFlags ByteArrayClass::queryProperty(const QScriptValue &objec
     if (name == length) {
         return flags;
     } else {
-        qint32 pos = toArrayIndex(name);
-        if (pos == -1)
+        bool isArrayIndex;
+        qint32 pos = name.toArrayIndex(&isArrayIndex);
+        if (!isArrayIndex)
             return 0;
         *id = pos;
         if ((flags & HandlesReadAccess) && (pos >= ba->size()))

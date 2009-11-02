@@ -42,7 +42,7 @@
 #include <qscreendriverplugin_qws.h>
 #include <qscreentransformed_qws.h>
 #include <qstringlist.h>
-
+#ifndef QT_NO_LIBRARY
 QT_BEGIN_NAMESPACE
 
 class GfxTransformedDriver : public QScreenDriverPlugin
@@ -68,9 +68,12 @@ QStringList GfxTransformedDriver::keys() const
 
 QScreen* GfxTransformedDriver::create(const QString& driver, int displayId)
 {
+#ifndef QT_NO_QWS_TRANSFORMED
     if (driver.toLower() == "transformed")
         return new QTransformedScreen(displayId);
-
+#else //QT_NO_QWS_TRANSFORMED
+    printf("QT buildt with QT_NO_QWS_TRANSFORMED. No screen driver returned\n");
+#endif //QT_NO_QWS_TRANSFORMED
     return 0;
 }
 
@@ -78,3 +81,4 @@ Q_EXPORT_STATIC_PLUGIN(GfxTransformedDriver)
 Q_EXPORT_PLUGIN2(qgfxtransformed, GfxTransformedDriver)
 
 QT_END_NAMESPACE
+#endif //QT_NO_LIBRARY

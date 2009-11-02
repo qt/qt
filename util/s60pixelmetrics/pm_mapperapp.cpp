@@ -138,7 +138,7 @@ void CPixelMetricsMapperAppUi::ConstructL()
 //
 TKeyResponse CPixelMetricsMapperAppUi::HandleKeyEventL(
         const TKeyEvent& /*aKeyEvent*/,
-        TEventCode aType )
+        TEventCode /*aType*/ )
     {
     return EKeyWasNotConsumed;
     }

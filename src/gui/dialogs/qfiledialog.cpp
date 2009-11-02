@@ -777,7 +777,7 @@ void QFileDialog::setDirectory(const QString &directory)
     QModelIndex root = d->model->setRootPath(newDirectory);
     d->qFileDialogUi->newFolderButton->setEnabled(d->model->flags(root) & Qt::ItemIsDropEnabled);
     if (root != d->rootIndex()) {
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     if (directory.endsWith(QLatin1Char('/')))
         d->completer->setCompletionPrefix(newDirectory);
     else
@@ -2177,12 +2177,12 @@ void QFileDialogPrivate::createWidgets()
 #ifndef QT_NO_SHORTCUT
     qFileDialogUi->fileNameLabel->setBuddy(qFileDialogUi->fileNameEdit);
 #endif
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
     completer = new QFSCompleter(model, q);
     qFileDialogUi->fileNameEdit->setCompleter(completer);
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
             q, SLOT(_q_autoCompleteFileName(QString)));
-#endif // QT_NO_COMPLETER
+#endif // QT_NO_FSCOMPLETER
     QObject::connect(qFileDialogUi->fileNameEdit, SIGNAL(textChanged(QString)),
                      q, SLOT(_q_updateOkButton()));
 
@@ -2302,7 +2302,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         proxyModel->setSourceModel(d->model);
         d->qFileDialogUi->listView->setModel(d->proxyModel);
         d->qFileDialogUi->treeView->setModel(d->proxyModel);
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
         d->completer->setModel(d->proxyModel);
         d->completer->proxyModel = d->proxyModel;
 #endif
@@ -2312,7 +2312,7 @@ void QFileDialog::setProxyModel(QAbstractProxyModel *proxyModel)
         d->proxyModel = 0;
         d->qFileDialogUi->listView->setModel(d->model);
         d->qFileDialogUi->treeView->setModel(d->model);
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
         d->completer->setModel(d->model);
         d->completer->sourceModel = d->model;
         d->completer->proxyModel = 0;
@@ -3218,7 +3218,7 @@ void QFileDialogLineEdit::keyPressEvent(QKeyEvent *e)
     }
 }
 
-#ifndef QT_NO_COMPLETER
+#ifndef QT_NO_FSCOMPLETER
 
 QString QFSCompleter::pathFromIndex(const QModelIndex &index) const
 {

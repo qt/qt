@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGestureRecognizer::ResultFlags
+    \enum QGestureRecognizer::ResultFlag
 
     This enum describes the result of the current event filtering step in
     a gesture recognizer state machine.
@@ -178,7 +178,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
         QGesturePrivate *d = gesture->d_func();
         d->state = Qt::NoGesture;
         d->hotSpot = QPointF();
-        d->targetObject = 0;
+        d->isHotSpotSet = false;
     }
 }
 

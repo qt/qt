@@ -93,8 +93,8 @@
 #include <QDebug>
 #include <QtCore/qmath.h>
 
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
-
 void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 {
     if (item == i)
@@ -565,3 +565,4 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 #include "moc_qgraphicstransform.cpp"
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

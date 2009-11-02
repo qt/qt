@@ -474,9 +474,6 @@ bool QApplicationPrivate::fade_tooltip = false;
 bool QApplicationPrivate::animate_toolbox = false;
 bool QApplicationPrivate::widgetCount = false;
 bool QApplicationPrivate::load_testability = false;
-#if defined(Q_WS_WIN) && !defined(Q_WS_WINCE)
-bool QApplicationPrivate::inSizeMove = false;
-#endif
 #ifdef QT_KEYPAD_NAVIGATION
 #  ifdef Q_OS_SYMBIAN
 Qt::NavigationMode QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
@@ -2081,7 +2078,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
         }
         QWidget *prev = focus_widget;
         focus_widget = focus;
-
+#ifndef QT_NO_IM
         if (prev && ((reason != Qt::PopupFocusReason && reason != Qt::MenuBarFocusReason
             && prev->testAttribute(Qt::WA_InputMethodEnabled))
             // Do reset the input context, in case the new focus widget won't accept keyboard input
@@ -2094,6 +2091,7 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                 qic->setFocusWidget(0);
             }
         }
+#endif //QT_NO_IM
 
         if(focus_widget)
             focus_widget->d_func()->setFocus_sys();
@@ -2125,12 +2123,14 @@ void QApplicationPrivate::setFocusWidget(QWidget *focus, Qt::FocusReason reason)
                     QApplication::sendEvent(that->style(), &out);
             }
             if(focus && QApplicationPrivate::focus_widget == focus) {
+#ifndef QT_NO_IM
                 if (focus->testAttribute(Qt::WA_InputMethodEnabled)) {
                     QInputContext *qic = focus->inputContext();
                     if (qic && focus->testAttribute(Qt::WA_WState_Created)
                         && focus->isEnabled())
                         qic->setFocusWidget(focus);
                 }
+#endif //QT_NO_IM
                 QFocusEvent in(QEvent::FocusIn, reason);
                 QPointer<QWidget> that = focus;
                 QApplication::sendEvent(focus, &in);
@@ -5641,7 +5641,9 @@ Qt::GestureType QApplication::registerGestureRecognizer(QGestureRecognizer *reco
 */
 void QApplication::unregisterGestureRecognizer(Qt::GestureType type)
 {
-    QGestureManager::instance()->unregisterGestureRecognizer(type);
+    QApplicationPrivate *d = qApp->d_func();
+    if (d->gestureManager)
+        d->gestureManager->unregisterGestureRecognizer(type);
 }
 
 QT_END_NAMESPACE

@@ -29,8 +29,8 @@
 
 #include <gst/gst.h>
 
+#ifndef QT_NO_PHONON_EFFECT
 QT_BEGIN_NAMESPACE
-
 namespace Phonon
 {
 namespace Gstreamer
@@ -49,7 +49,7 @@ namespace Gstreamer
             QString m_effectName;
     };
 }} //namespace Phonon::Gstreamer
-
 QT_END_NAMESPACE
+#endif //QT_NO_PHONON_EFFECT
 
 #endif // Phonon_GSTREAMER_AUDIOEFFECT_H
