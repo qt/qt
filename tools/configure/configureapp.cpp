@@ -3032,7 +3032,7 @@ void Configure::generateConfigfiles()
                   << "static const char qt_configure_licensed_products_str [512 + 12] = \"qt_lcnsprod=" << dictionary["EDITION"] << "\";" << endl
                   << endl
                   << "/* Build date */" << endl
-                  << "static const char qt_configure_installation          [11 + 12] = \"" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
+                  << "static const char qt_configure_installation          [11  + 12] = \"qt_instdate=" << QDate::currentDate().toString(Qt::ISODate) << "\";" << endl
                   << endl;
         if(!dictionary[ "QT_HOST_PREFIX" ].isNull())
             tmpStream << "#if !defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE)" << endl;
