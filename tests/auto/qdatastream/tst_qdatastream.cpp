@@ -3100,22 +3100,6 @@ void tst_QDataStream::streamToAndFromQByteArray()
 
 void tst_QDataStream::streamRealDataTypes()
 {
-#if defined(Q_OS_WINCE)
-    // Note: Probably actually same 'qreal being typedeffed as float instead of double' issue as in Symbian
-    // instead of what CE skip message says.
-    QSKIP("Skipped on CE as it demands too much memory and fragments", SkipAll);
-#elif defined(Q_OS_SYMBIAN)
-    // qreal is typedeffed float in symbian instead of double like in most platforms, so reference stream
-    // gets corrupted. Basically this test is flawed, as one shouldn't use naked typedeffed types in
-    // streams that are meant to work cross-platform.
-    // As this test also tests other floating point using classes, we do not simply skip it, but work around
-    // the qreal issue by redefining qreal as double for the duration of this function.
-    // Note that streaming classes works because they do explicitly use double instead of qreal when
-    // writing/reading to/from stream.
-#   define qreal double
-    qWarning("Note: streamRealDataTypes test redefines qreal as double in symbian!!!");
-#endif
-
     // Generate QPicture from SVG.
     QSvgRenderer renderer(svgFile);
     QVERIFY(renderer.isValid());
@@ -3163,7 +3147,6 @@ void tst_QDataStream::streamRealDataTypes()
             file.close();
         }
 
-        qreal a, b, c, d, e, f;
         QPointF point;
         QRectF rect;
         QPolygonF polygon;
@@ -3180,18 +3163,37 @@ void tst_QDataStream::streamRealDataTypes()
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_4_2);
 
-        stream >> a;
-        QCOMPARE(a, qreal(0));
-        stream >> b;
-        QCOMPARE(b, qreal(1.0));
-        stream >> c;
-        QCOMPARE(c, qreal(1.1));
-        stream >> d;
-        QCOMPARE(d, qreal(3.14));
-        stream >> e;
-        QCOMPARE(e, qreal(-3.14));
-        stream >> f;
-        QCOMPARE(f, qreal(-1));
+        if (i == 0) {
+            // the reference stream for 4.2 contains doubles,
+            // so we must read them out as doubles!
+            double a, b, c, d, e, f;
+            stream >> a;
+            QCOMPARE(a, 0.0);
+            stream >> b;
+            QCOMPARE(b, 1.0);
+            stream >> c;
+            QCOMPARE(c, 1.1);
+            stream >> d;
+            QCOMPARE(d, 3.14);
+            stream >> e;
+            QCOMPARE(e, -3.14);
+            stream >> f;
+            QCOMPARE(f, -1.0);
+        } else {
+            qreal a, b, c, d, e, f;
+            stream >> a;
+            QCOMPARE(a, qreal(0));
+            stream >> b;
+            QCOMPARE(b, qreal(1.0));
+            stream >> c;
+            QCOMPARE(c, qreal(1.1));
+            stream >> d;
+            QCOMPARE(d, qreal(3.14));
+            stream >> e;
+            QCOMPARE(e, qreal(-3.14));
+            stream >> f;
+            QCOMPARE(f, qreal(-1));
+        }
         stream >> point;
         QCOMPARE(point, QPointF(3, 5));
         stream >> rect;
@@ -3243,9 +3245,6 @@ void tst_QDataStream::streamRealDataTypes()
 
         QCOMPARE(stream.status(), QDataStream::Ok);
     }
-#if defined(Q_OS_SYMBIAN)
-    #undef qreal
-#endif
 }
 
 #ifdef QT3_SUPPORT
