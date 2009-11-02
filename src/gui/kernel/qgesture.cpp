@@ -217,7 +217,7 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 */
 
 /*!
-    \property QGesture::GestureCancelPolicy
+    \property QGesture::gestureCancelPolicy
     \brief the policy for deciding what happens on accepting a gesture
 
     On accepting one gesture Qt can automatically cancel other gestures

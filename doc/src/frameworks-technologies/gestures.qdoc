@@ -168,6 +168,6 @@
 
     \section1 Further Reading
 
-    The \l{Image Gestures Example} shows how to enable gestures for a widget in
-    a simple image viewer application.
+    The \l{gestures/imagegestures}{Image Gestures Example} shows how to enable
+    gestures for a widget in a simple image viewer application.
 */

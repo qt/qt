@@ -4344,8 +4344,9 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
     Sets the accept flag of the given \a gestureType object to the specified
     \a value.
 
-    Setting the accept flag indicates that the event receiver wants the \a gesture.
-    Unwanted gestures may be propagated to the parent widget.
+    Setting the accept flag indicates that the event receiver wants the gesture
+    of type \a gestureType. Unwanted gestures may be propagated to the parent
+    widget.
 
     By default, gestures in events of type QEvent::Gesture are accepted, and
     gestures in QEvent::GestureOverride events are ignored.
