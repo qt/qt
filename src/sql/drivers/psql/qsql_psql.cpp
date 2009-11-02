@@ -357,7 +357,7 @@ QVariant QPSQLResult::data(int i)
             }
             return QString::fromAscii(val);
         }
-        return strtod(val, 0);
+        return QString::fromAscii(val).toDouble();
     case QVariant::Date:
         if (val[0] == '\0') {
             return QVariant(QDate());
