@@ -6,7 +6,7 @@ In this chapter, we make this example a little bit more dynamic by introducing s
 
 We want our text to move to the bottom of the screen, rotate and become red when clicked.
 
-\image declarative-tutorial3.gif
+\image declarative-tutorial3_animation.gif
 
 Here is the QML code:
 
