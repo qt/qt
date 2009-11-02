@@ -57,7 +57,6 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout;
     setLayout(layout);
 
-
     QHBoxLayout *connectLayout = new QHBoxLayout;
     layout->addLayout(connectLayout);
     connectLayout->addStretch(2);
@@ -101,6 +100,8 @@ QmlDebugger::QmlDebugger(QWidget *parent)
                      this, SLOT(connectionError(QAbstractSocket::SocketError)));
 
     m_tabs->setCurrentIndex(1);
+    
+    connectToHost();
 }
 
 void QmlDebugger::setHost(const QString &host)
