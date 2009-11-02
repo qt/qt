@@ -89,12 +89,21 @@ static inline QSize maybeRoundToNextPowerOfTwo(const QSize &sz)
 }
 
 
-QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
+QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat, bool strictSize)
 {
     QGLFramebufferObject *chosen = 0;
     QGLFramebufferObject *candidate = 0;
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
+
+        if (strictSize) {
+            if (fbo->size() == requestSize && fbo->format() == requestFormat) {
+                chosen = fbo;
+                break;
+            } else {
+                continue;
+            }
+        }
 
         if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
@@ -127,7 +136,10 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
+        if (strictSize)
+            chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        else
+            chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
     }
 
     if (!chosen->isValid()) {
@@ -140,7 +152,8 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
 void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
 {
-    m_fbos << fbo;
+    if (fbo)
+        m_fbos << fbo;
 }
 
 

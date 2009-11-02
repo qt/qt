@@ -504,10 +504,10 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
 class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
 {
 public:
-    QPixmapBlurFilterPrivate() : radius(5), hint(Qt::PerformanceHint) {}
+    QPixmapBlurFilterPrivate() : radius(5), hint(QGraphicsBlurEffect::PerformanceHint) {}
 
     qreal radius;
-    Qt::RenderHint hint;
+    QGraphicsBlurEffect::BlurHint hint;
 };
 
 
@@ -556,12 +556,18 @@ qreal QPixmapBlurFilter::radius() const
     Setting the blur hint to PerformanceHint causes the implementation
     to trade off visual quality to blur the image faster.  Setting the
     blur hint to QualityHint causes the implementation to improve
-    visual quality at the expense of speed.  The implementation is free
-    to ignore this value if it only has a single blur algorithm.
+    visual quality at the expense of speed.
+
+    AnimationHint causes the implementation to optimize for animating
+    the blur radius, possibly by caching blurred versions of the source
+    pixmap.
+
+    The implementation is free to ignore this value if it only has a single
+    blur algorithm.
 
     \internal
 */
-void QPixmapBlurFilter::setBlurHint(Qt::RenderHint hint)
+void QPixmapBlurFilter::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 {
     Q_D(QPixmapBlurFilter);
     d->hint = hint;
@@ -572,7 +578,7 @@ void QPixmapBlurFilter::setBlurHint(Qt::RenderHint hint)
 
     \internal
 */
-Qt::RenderHint QPixmapBlurFilter::blurHint() const
+QGraphicsBlurEffect::BlurHint QPixmapBlurFilter::blurHint() const
 {
     Q_D(const QPixmapBlurFilter);
     return d->hint;

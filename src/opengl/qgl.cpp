@@ -1773,10 +1773,12 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 
 /*!
     \enum QGLContext::BindOption
+    \since 4.6
+
     A set of options to decide how to bind a texture using bindTexture().
 
     \value NoBindOption Don't do anything, pass the texture straight
-    thru.
+    through.
 
     \value InvertedYBindOption Specifies that the texture should be flipped
     over the X axis so that the texture coordinate 0,0 corresponds to
@@ -2158,7 +2160,7 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
 
 #ifndef QT_NO_DEBUG
     // Reset the gl error stack...git
-    while (glGetError() != GL_NO_ERROR);
+    while (glGetError() != GL_NO_ERROR) ;
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
