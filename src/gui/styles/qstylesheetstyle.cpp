@@ -3370,7 +3370,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (rule.hasPosition() && rule.position()->textAlignment != 0) {
                 Qt::Alignment textAlignment = rule.position()->textAlignment;
                 QRect textRect = button->rect;
-                uint tf = Qt::AlignVCenter | Qt::TextShowMnemonic;
+                uint tf = Qt::TextShowMnemonic;
+                const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignLeft;
+                tf |= (textAlignment & verticalAlignMask) ? (textAlignment & verticalAlignMask) : Qt::AlignVCenter;
                 if (!styleHint(SH_UnderlineShortcut, button, w))
                     tf |= Qt::TextHideMnemonic;
                 if (!button->icon.isNull()) {
