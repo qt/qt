@@ -511,6 +511,7 @@ public:
 #endif
 
     QGestureManager *gestureManager;
+    QWidget *gestureWidget;
 
     QMap<int, QWidget *> widgetForTouchPointId;
     QMap<int, QTouchEvent::TouchPoint> appCurrentTouchPoints;

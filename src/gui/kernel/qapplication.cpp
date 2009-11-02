@@ -186,6 +186,7 @@ QApplicationPrivate::QApplicationPrivate(int &argc, char **argv, QApplication::T
 #endif
 
     gestureManager = 0;
+    gestureWidget = 0;
 
     if (!self)
         self = this;

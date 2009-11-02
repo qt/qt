@@ -52,6 +52,9 @@
 #ifdef Q_WS_MAC
 #include "qmacgesturerecognizer_mac_p.h"
 #endif
+#if defined(Q_OS_WIN)
+#include "qwinnativepangesturerecognizer_win_p.h"
+#endif
 
 #include "qdebug.h"
 
@@ -78,6 +81,9 @@ QGestureManager::QGestureManager(QObject *parent)
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
     registerGestureRecognizer(new QPinchGestureRecognizer);
+#if defined(Q_OS_WIN)
+    registerGestureRecognizer(new QWinNativePanGestureRecognizer);
+#endif
 #endif
 }
 
