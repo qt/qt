@@ -97,6 +97,8 @@
 */
 
 #include "qgraphicseffect_p.h"
+#include "private/qgraphicsitem_p.h"
+
 #include <QtGui/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
@@ -258,6 +260,12 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     const QGraphicsItem *item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == NoExpandPadMode && item && isPixmap()) {
         return ((QGraphicsPixmapItem *) item)->pixmap();
+    }
+
+    if (system == Qt::DeviceCoordinates && item
+        && !static_cast<const QGraphicsItemEffectSourcePrivate *>(d_func())->info) {
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
     }
 
     QPixmap pm;
