@@ -2445,6 +2445,9 @@ int QGLContextPrivate::maxTextureSize()
 */
 GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, target, format, false, DefaultBindOption);
     return texture->id;
@@ -2477,6 +2480,9 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 */
 GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format, BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, target, format, false, options);
     return texture->id;
@@ -2486,6 +2492,9 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format,
 /*! \internal */
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, DefaultBindOption);
     return texture->id;
@@ -2495,6 +2504,9 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
                                BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, options);
     return texture->id;
@@ -2507,6 +2519,9 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
 */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, target, format, DefaultBindOption);
     return texture->id;
@@ -2521,6 +2536,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, BindOptions options)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, target, format, options);
     return texture->id;
@@ -2530,6 +2548,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 /*! \internal */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), DefaultBindOption);
     return texture->id;
@@ -2538,6 +2559,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format,
                                BindOptions options)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), options);
     return texture->id;
@@ -4595,6 +4619,9 @@ bool QGLWidget::autoBufferSwap() const
 */
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(image, target, format, QGLContext::DefaultBindOption);
 }
@@ -4608,6 +4635,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
  */
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, QGLContext::BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(image, target, format, options);
 }
@@ -4617,6 +4647,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, 
 /*! \internal */
 GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (image.isNull())
+        return 0;
+
    Q_D(QGLWidget);
    return d->glcx->bindTexture(image, GLenum(target), GLint(format), QGLContext::DefaultBindOption);
 }
@@ -4624,6 +4657,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMac
 GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
                               QGLContext::BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
    Q_D(QGLWidget);
    return d->glcx->bindTexture(image, GLenum(target), GLint(format), options);
 }
@@ -4637,6 +4673,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMac
 */
 GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(pixmap, target, format, QGLContext::DefaultBindOption);
 }

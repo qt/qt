@@ -254,7 +254,7 @@ static const GLuint QT_VERTEX_COORDS_ATTR  = 0;
 static const GLuint QT_TEXTURE_COORDS_ATTR = 1;
 static const GLuint QT_OPACITY_ATTR = 2;
 
-struct QGLEngineShaderProg;
+class QGLEngineShaderProg;
 
 class QGLEngineSharedShaders : public QObject
 {
