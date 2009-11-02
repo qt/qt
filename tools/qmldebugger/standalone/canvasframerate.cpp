@@ -38,23 +38,26 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include "canvasframerate.h"
-#include <QtGui/qwidget.h>
-#include <QtGui/qpainter.h>
-#include <QtGui/qscrollbar.h>
-#include <private/qmldebugclient_p.h>
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>
+
+#include <QtGui/qpainter.h>
+#include <QtGui/qslider.h>
+#include <QtGui/qscrollbar.h>
+#include <QtGui/qspinbox.h>
+#include <QtGui/qgroupbox.h>
 #include <QtGui/qboxlayout.h>
+#include <QtGui/qlabel.h>
+#include <QtGui/qlineedit.h>
+#include <QtGui/qpushbutton.h>
+#include <QtGui/qtabwidget.h>
+
 #include <QResizeEvent>
 #include <QShowEvent>
-#include <QTabWidget>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QCheckBox>
-#include <QSpinBox>
-#include <QLabel>
+
+#include <private/qmldebugclient_p.h>
+#include "canvasframerate.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -62,22 +65,23 @@ class QLineGraph : public QWidget
 {
 Q_OBJECT
 public:
-    QLineGraph(QWidget * = 0);
+    QLineGraph(QAbstractSlider *slider, QWidget * = 0);
 
     void setPosition(int);
 
 public slots:
     void addSample(int, int, int, bool);
     void setResolutionForHeight(int);
+    void clear();
 
 protected:
     virtual void paintEvent(QPaintEvent *);
 
 private slots:
-    void scrollbarChanged(int);
+    void sliderChanged(int);
 
 private:
-    void updateScrollbar();
+    void updateSlider();
     void drawSample(QPainter *, int, const QRect &);
     void drawTime(QPainter *, const QRect &);
     struct Sample { 
@@ -86,50 +90,53 @@ private:
     };
     QList<Sample> _samples;
 
-    QScrollBar sb;
+    QAbstractSlider *slider;
     int position;
     int samplesPerWidth;
     int resolutionForHeight;
     bool ignoreScroll;
 };
 
-QLineGraph::QLineGraph(QWidget *parent)
-: QWidget(parent), sb(Qt::Horizontal, this), position(-1), samplesPerWidth(99), resolutionForHeight(50), ignoreScroll(false)
+QLineGraph::QLineGraph(QAbstractSlider *slider, QWidget *parent)
+: QWidget(parent), slider(slider), position(-1), samplesPerWidth(99), resolutionForHeight(50), ignoreScroll(false)
 {
     setMinimumHeight(200);
 
-    sb.setMaximum(0);
-    sb.setMinimum(0);
-    sb.setSingleStep(1);
-
-    QVBoxLayout *layout = new QVBoxLayout;
-    setLayout(layout);
-    layout->addStretch(2);
-    layout->addWidget(&sb);
-    QObject::connect(&sb, SIGNAL(valueChanged(int)), this, SLOT(scrollbarChanged(int)));
+    slider->setMaximum(0);
+    slider->setMinimum(0);
+    slider->setSingleStep(1);
+    
+    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChanged(int)));
 }
 
-void QLineGraph::scrollbarChanged(int v)
+void QLineGraph::sliderChanged(int v)
 {
     if(ignoreScroll)
         return;
 
-    if (v == sb.maximum())
+    if (v == slider->maximum())
         position = -1;
     else
         position = v;
     update();
 }
 
-void QLineGraph::updateScrollbar()
+void QLineGraph::clear()
+{
+    _samples.clear();
+    updateSlider();
+    update();
+}
+
+void QLineGraph::updateSlider()
 {
     ignoreScroll = true;
-    sb.setMaximum(qMax(0, _samples.count() - samplesPerWidth - 1));
+    slider->setMaximum(qMax(0, _samples.count() - samplesPerWidth - 1));
 
     if(position == -1) {
-        sb.setValue(sb.maximum());
+        slider->setValue(slider->maximum());
     } else {
-        sb.setValue(position);
+        slider->setValue(position);
     }
     ignoreScroll = false;
 }
@@ -142,13 +149,13 @@ void QLineGraph::addSample(int a, int b, int d, bool isBreak)
     s.sample[1] = b;
     s.sample[2] = d;
     _samples << s;
-    updateScrollbar();
+    updateSlider();
     update();
 }
 
 void QLineGraph::setPosition(int p)
 {
-    scrollbarChanged(p);
+    sliderChanged(p);
 }
 
 void QLineGraph::drawTime(QPainter *p, const QRect &rect)
@@ -218,7 +225,14 @@ void QLineGraph::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    QRect r(50, 10, width() - 60, height() - 60);
+    QRect r(65, 10, width() - 71, height() - 40);
+
+    p.save();
+    p.rotate(-90);
+    p.translate(-r.height()/2 - r.width()/2 - 71, -r.height()/2);
+    p.drawText(r, Qt::AlignCenter, tr("Time per frame (ms)"));
+    p.restore();
+
     p.setBrush(QColor("lightsteelblue"));
     drawSample(&p, 0, r);
 
@@ -227,6 +241,8 @@ void QLineGraph::paintEvent(QPaintEvent *)
 
     p.setBrush(Qt::NoBrush);
     p.drawRect(r);
+
+    slider->setGeometry(x() + r.x(), slider->y(), r.width(), slider->height());
 
     for(int ii = 0; ii <= resolutionForHeight; ++ii) {
         int y = 1 + r.bottom() - ii * r.height() / resolutionForHeight;
@@ -249,9 +265,58 @@ void QLineGraph::setResolutionForHeight(int resolution)
     update();
 }
 
+
+class GraphWindow : public QWidget
+{
+    Q_OBJECT
+public:
+    GraphWindow(QWidget *parent = 0);
+
+public slots:
+    void addSample(int, int, int, bool);
+    void setResolutionForHeight(int);
+    void clear();
+
+private:
+    QLineGraph *m_graph;
+};
+
+GraphWindow::GraphWindow(QWidget *parent)
+    : QWidget(parent)
+{
+    QSlider *scroll = new QSlider(Qt::Horizontal);
+    m_graph = new QLineGraph(scroll);
+
+    QLabel *label = new QLabel(tr("Total time elapsed (ms)"));
+    label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setContentsMargins(0, 0, 5, 5);
+    layout->setSpacing(0);
+    layout->addWidget(m_graph);
+    layout->addWidget(label, 0, Qt::AlignHCenter);
+    layout->addWidget(scroll);
+}
+
+void GraphWindow::addSample(int a, int b, int d, bool isBreak)
+{
+    m_graph->addSample(a, b, d, isBreak);
+}
+
+void GraphWindow::setResolutionForHeight(int res)
+{
+    m_graph->setResolutionForHeight(res);
+}
+
+void GraphWindow::clear()
+{
+    m_graph->clear();
+}
+
+
 class CanvasFrameRatePlugin : public QmlDebugClient
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     CanvasFrameRatePlugin(QmlDebugConnection *client);
 
@@ -290,38 +355,44 @@ CanvasFrameRate::CanvasFrameRate(QWidget *parent)
 : QWidget(parent),
   m_plugin(0)
 {
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(0,0,0,0);
-    layout->setSpacing(0);
-    setLayout(layout);
-
     m_tabs = new QTabWidget(this);
-    layout->addWidget(m_tabs);
 
     QHBoxLayout *bottom = new QHBoxLayout;
-    bottom->setContentsMargins(5, 0, 5, 0);
+    bottom->setMargin(0);
     bottom->setSpacing(10);
-    layout->addLayout(bottom);
 
-    QLabel *label = new QLabel("Resolution", this);
-    bottom->addWidget(label);
+    m_res = new QSpinBox;
+    m_res->setRange(50, 200);
+    m_res->setValue(m_res->minimum());
+    m_res->setSingleStep(10);
+    m_res->setSuffix(QLatin1String("ms"));
+    bottom->addWidget(new QLabel(tr("Resolution:")));
+    bottom->addWidget(m_res);
 
-    m_spin = new QSpinBox(this);
-    m_spin->setRange(50,200);
-    m_spin->setValue(50);
-    m_spin->setSuffix("ms");
-    bottom->addWidget(m_spin);
+    bottom->addStretch();
 
-    bottom->addStretch(2);
+    m_clearButton = new QPushButton(tr("Clear"));
+    connect(m_clearButton, SIGNAL(clicked()), SLOT(clearGraph()));
+    bottom->addWidget(m_clearButton);
 
-    m_enabledCheckBox = new QCheckBox("Enable", this);
-    bottom->addWidget(m_enabledCheckBox);
-    QObject::connect(m_enabledCheckBox, SIGNAL(stateChanged(int)), 
-                     this, SLOT(enabledStateChanged(int)));
-
-    QPushButton *pb = new QPushButton(tr("New Tab"), this);
-    QObject::connect(pb, SIGNAL(clicked()), this, SLOT(newTab()));
+    QPushButton *pb = new QPushButton(tr("New Graph"), this);
+    connect(pb, SIGNAL(clicked()), this, SLOT(newTab()));
     bottom->addWidget(pb);
+    
+    m_group = new QGroupBox(tr("Enabled"));
+    m_group->setCheckable(true);
+    m_group->setChecked(false);
+    connect(m_group, SIGNAL(toggled(bool)), SLOT(enabledToggled(bool)));
+
+    QVBoxLayout *groupLayout = new QVBoxLayout(m_group);
+    groupLayout->addWidget(m_tabs);
+    groupLayout->addLayout(bottom);
+    
+    QVBoxLayout *layout = new QVBoxLayout;
+    layout->setMargin(0);
+    layout->setSpacing(0);
+    layout->addWidget(m_group);
+    setLayout(layout);
 }
 
 void CanvasFrameRate::reset(QmlDebugConnection *conn)
@@ -358,7 +429,7 @@ void CanvasFrameRate::handleConnected(QmlDebugConnection *conn)
 {
     delete m_plugin;
     m_plugin = new CanvasFrameRatePlugin(conn);
-    enabledStateChanged(m_enabledCheckBox->checkState());
+    enabledToggled(m_group->isChecked());
     newTab();
 }
 
@@ -370,6 +441,14 @@ void CanvasFrameRate::setSizeHint(const QSize &size)
 QSize CanvasFrameRate::sizeHint() const
 {
     return m_sizeHint;
+}
+
+void CanvasFrameRate::clearGraph()
+{
+    if (m_tabs->count()) {
+        GraphWindow *w = qobject_cast<GraphWindow*>(m_tabs->widget(m_tabs->count() - 1));
+        w->clear();
+    }
 }
 
 void CanvasFrameRate::newTab()
@@ -385,20 +464,20 @@ void CanvasFrameRate::newTab()
 
     int id = m_tabs->count();
 
-    QLineGraph *graph = new QLineGraph(this);
-    QObject::connect(m_plugin, SIGNAL(sample(int,int,int,bool)),
-                     graph, SLOT(addSample(int,int,int,bool)));
-    QObject::connect(m_spin, SIGNAL(valueChanged(int)), graph, SLOT(setResolutionForHeight(int)));
+    GraphWindow *graph = new GraphWindow;
+    graph->setResolutionForHeight(m_res->value());
+    connect(m_plugin, SIGNAL(sample(int,int,int,bool)),
+            graph, SLOT(addSample(int,int,int,bool)));
+    connect(m_res, SIGNAL(valueChanged(int)),
+            graph, SLOT(setResolutionForHeight(int)));
 
     QString name = QLatin1String("Graph ") + QString::number(id);
     m_tabs->addTab(graph, name);
     m_tabs->setCurrentIndex(id);
 }
 
-void CanvasFrameRate::enabledStateChanged(int s)
+void CanvasFrameRate::enabledToggled(bool checked)
 {
-    bool checked = s != 0;
-
     if (m_plugin)
         static_cast<QmlDebugClient *>(m_plugin)->setEnabled(checked);
 }
