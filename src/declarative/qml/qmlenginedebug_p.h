@@ -81,7 +81,7 @@ public:
     };
 
     struct QmlObjectProperty {
-        enum Type { Unknown, Basic, Object, List };
+        enum Type { Unknown, Basic, Object, List, SignalProperty };
         Type type;
         QString name;
         QVariant value;
