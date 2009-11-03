@@ -305,11 +305,15 @@ void QMacPixmapData::fromImage(const QImage &img,
             }
             break;
         }
-        case QImage::Format_Indexed8:
-            for (int x = 0; x < w; ++x) {
-                *(drow+x) = PREMUL(image.color(*(srow + x)));
+        case QImage::Format_Indexed8: {
+            int numColors = image.numColors();
+            if (numColors > 0) {
+                for (int x = 0; x < w; ++x) {
+                    int index = *(srow + x);
+                    *(drow+x) = PREMUL(image.color(qMin(index, numColors)));
+                }
             }
-            break;
+        } break;
         case QImage::Format_RGB32:
             for (int x = 0; x < w; ++x)
                 *(drow+x) = *(((quint32*)srow) + x) | 0xFF000000;
