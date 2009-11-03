@@ -44,6 +44,7 @@
 #include <QmlEngine>
 #include <QmlContext>
 #include <QmlComponent>
+#include <QmlExpression>
 
 class tst_qmlcontext : public QObject
 {
@@ -58,6 +59,7 @@ private slots:
     void parentContext();
     void setContextProperty();
     void addDefaultObject();
+    void destruction();
 
 private:
     QmlEngine engine;
@@ -110,6 +112,14 @@ void tst_qmlcontext::resolvedUrl()
         delete ctxt; ctxt = 0;
 
         QCOMPARE(ctxt2.resolvedUrl(QUrl("main2.qml")), QUrl());
+    }
+
+    // Absolute
+    {
+        QmlContext ctxt(&engine);
+
+        QCOMPARE(ctxt.resolvedUrl(QUrl("http://www.nokia.com/main2.qml")), QUrl("http://www.nokia.com/main2.qml"));
+        QCOMPARE(ctxt.resolvedUrl(QUrl("file:///main2.qml")), QUrl("file:///main2.qml"));
     }
 }
 
@@ -256,10 +266,10 @@ void tst_qmlcontext::setContextProperty()
     // Static context properties
     ctxt.setContextProperty("a", QVariant(10));
     ctxt.setContextProperty("b", QVariant(9));
+    ctxt2.setContextProperty("d", &obj2);
     ctxt2.setContextProperty("b", QVariant(19));
     ctxt2.setContextProperty("c", QVariant(QString("Hello World!")));
     ctxt.setContextProperty("d", &obj1);
-    ctxt2.setContextProperty("d", &obj2);
     ctxt.setContextProperty("e", &obj1);
 
     TEST_CONTEXT_PROPERTY(&ctxt2, a, QVariant(10));
@@ -334,6 +344,26 @@ void tst_qmlcontext::setContextProperty()
 
         delete obj; 
     }
+
+    // Setting an object-variant context property
+    {
+        QmlComponent component(&engine);
+        component.setData("import Qt 4.6; Object { id: root; property int a: 10; property int test: ctxtProp.a; property var obj: root; }", QUrl());
+
+        QmlContext ctxt(engine.rootContext());
+        ctxt.setContextProperty("ctxtProp", QVariant());
+
+        QTest::ignoreMessage(QtWarningMsg, "<Unknown File>:1: TypeError: Result of expression 'ctxtProp' [undefined] is not an object.");
+        QObject *obj = component.create(&ctxt);
+
+        QVariant v = obj->property("obj");
+
+        ctxt.setContextProperty("ctxtProp", v);
+
+        QCOMPARE(obj->property("test"), QVariant(10));
+
+        delete obj;
+    }
 }
 
 void tst_qmlcontext::addDefaultObject()
@@ -380,6 +410,23 @@ void tst_qmlcontext::addDefaultObject()
 
         delete obj; 
     }
+}
+
+void tst_qmlcontext::destruction()
+{
+    QmlContext *ctxt = new QmlContext(&engine);
+
+    QObject obj;
+    QmlEngine::setContextForObject(&obj, ctxt);
+    QmlExpression expr(ctxt, "a", 0);
+
+    QCOMPARE(ctxt, QmlEngine::contextForObject(&obj));
+    QCOMPARE(ctxt, expr.context());
+
+    delete ctxt; ctxt = 0;
+
+    QCOMPARE(ctxt, QmlEngine::contextForObject(&obj));
+    QCOMPARE(ctxt, expr.context());
 }
 
 QTEST_MAIN(tst_qmlcontext)
