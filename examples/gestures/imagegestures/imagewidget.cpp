@@ -124,9 +124,9 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
             setCursor(Qt::ArrowCursor);
     }
 #endif
-    QPointF lastOffset = gesture->offset();
-    horizontalOffset += lastOffset.x();
-    verticalOffset += lastOffset.y();
+    QPointF delta = gesture->delta();
+    horizontalOffset += delta.x();
+    verticalOffset += delta.y();
     update();
 }
 

@@ -79,7 +79,6 @@ QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state, QOb
     case QEvent::TouchBegin: {
         result = QGestureRecognizer::MayBeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-        d->lastPosition = p.pos().toPoint();
         d->lastOffset = d->offset = QPointF();
         break;
     }
@@ -134,7 +133,6 @@ void QPanGestureRecognizer::reset(QGesture *state)
     QPanGesturePrivate *d = pan->d_func();
 
     d->lastOffset = d->offset = QPointF();
-    d->lastPosition = QPoint();
     d->acceleration = 0;
 
     QGestureRecognizer::reset(state);

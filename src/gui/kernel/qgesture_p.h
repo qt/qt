@@ -92,7 +92,7 @@ public:
 
     QPointF lastOffset;
     QPointF offset;
-    QPoint lastPosition;
+    QPoint startPosition;
     qreal acceleration;
 };
 
