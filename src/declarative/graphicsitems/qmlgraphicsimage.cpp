@@ -152,12 +152,18 @@ void QmlGraphicsImage::setPixmap(const QPixmap &pix)
     Q_D(QmlGraphicsImage);
     if (!d->url.isEmpty())
         return;
-    d->pix = pix;
+    d->setPixmap(pix);
+}
 
-    setImplicitWidth(d->pix.width());
-    setImplicitHeight(d->pix.height());
+void QmlGraphicsImagePrivate::setPixmap(const QPixmap &pixmap)
+{
+    Q_Q(QmlGraphicsImage);
+    pix = pixmap;
 
-    update();
+    q->setImplicitWidth(pix.width());
+    q->setImplicitHeight(pix.height());
+
+    q->update();
 }
 
 /*!
