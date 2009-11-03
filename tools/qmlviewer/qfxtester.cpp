@@ -146,6 +146,13 @@ void QmlGraphicsTester::imagefailure()
 
 void QmlGraphicsTester::complete()
 {
+    if ((options & QmlViewer::TestErrorProperty) && !hasFailed) {
+        QString e = m_view->root()->property("error").toString();
+        if (!e.isEmpty()) {
+            qWarning() << "Test failed:" << e;
+            hasFailed = true;
+        }
+    }
     if (options & QmlViewer::ExitOnComplete) 
         QApplication::exit(hasFailed?-1:0);
 
@@ -240,13 +247,15 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
 
     QImage img(m_view->width(), m_view->height(), QImage::Format_RGB32);
 
-    QPainter p(&img);
-    m_view->render(&p);
+    if (options & QmlViewer::TestImages) {
+        QPainter p(&img);
+        m_view->render(&p);
+    }
 
     FrameEvent fe;
     fe.msec = msec;
-    if (msec == 0) {
-        // Skip first frame
+    if (msec == 0 || !(options & QmlViewer::TestImages)) {
+        // Skip first frame, skip if not doing images
     } else if (0 == (m_savedFrameEvents.count() % 60)) {
         fe.image = img;
     } else {
@@ -297,6 +306,8 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
         QObject *event = testscript->event(testscriptidx);
 
         if (QmlGraphicsVisualTestFrame *frame = qobject_cast<QmlGraphicsVisualTestFrame *>(event)) {
+            if ((options & QmlViewer::TestImages) && (options & QmlViewer::Record))
+                break; // recording and playing, no point "testing" results
             if (frame->msec() < msec) {
                 if (options & QmlViewer::TestImages) {
                     qWarning() << "QmlGraphicsTester: Extra frame.  Seen:" 
@@ -304,7 +315,7 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
                     imagefailure();
                 }
             } else if (frame->msec() == msec) {
-                if (frame->hash().toUtf8() != fe.hash.toHex()) {
+                if (!frame->hash().isEmpty() && frame->hash().toUtf8() != fe.hash.toHex()) {
                     if (options & QmlViewer::TestImages) {
                         qWarning() << "QmlGraphicsTester: Mismatched frame hash.  Seen:" 
                                    << fe.hash.toHex() << "Expected:" 
