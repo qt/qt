@@ -110,6 +110,9 @@ MMF::VideoPlayer::~VideoPlayer()
     TRACE_CONTEXT(VideoPlayer::~VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
+    if (m_videoOutput)
+        m_videoOutput->setObserver(0);
+
     TRACE_EXIT_0();
 }
 
