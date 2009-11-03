@@ -495,9 +495,9 @@
   message box will pop up before the geometry of the button has actually been set.
 
   To ensure that the message box does not pop up until the geometry actually reaches its final
-  value, we can use the state's polished() signal. The polished() signal will be emitted when the
-  the property is assigned its final value, whether this is done immediately or after the animation
-  has finished playing.
+  value, we can use the state's propertiesAssigned() signal. The propertiesAssigned() signal will be
+  emitted when the property is assigned its final value, whether this is done immediately or
+  after the animation has finished playing.
 
   \snippet doc/src/snippets/statemachine/main5.cpp 6
 
@@ -512,14 +512,14 @@
   has been assigned the defined value.
 
   If the global restore policy is set to QStateMachine::RestoreProperties, the state will not emit
-  the polished() signal until these have been executed as well.
+  the propertiesAssigned() signal until these have been executed as well.
 
   \section1 What Happens If A State Is Exited Before The Animation Has Finished
 
   If a state has property assignments, and the transition into the state has animations for the
   properties, the state can potentially be exited before the properties have been assigned to the
   values defines by the state. This is true in particular when there are transitions out from the
-  state that do not depend on the state being polished, as described in the previous section.
+  state that do not depend on the propertiesAssigned signal, as described in the previous section.
 
   The State Machine API guarantees that a property assigned by the state machine either:
   \list
