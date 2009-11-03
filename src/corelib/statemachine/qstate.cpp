@@ -124,7 +124,8 @@ QT_BEGIN_NAMESPACE
 */
 
 QStatePrivate::QStatePrivate()
-    : errorState(0), initialState(0), childMode(QState::ExclusiveStates),
+    : QAbstractStatePrivate(StandardState),
+      errorState(0), initialState(0), childMode(QState::ExclusiveStates),
       childStatesListNeedsRefresh(true), transitionsListNeedsRefresh(true)
 {
 }

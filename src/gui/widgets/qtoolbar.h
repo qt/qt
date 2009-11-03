@@ -142,6 +142,7 @@ Q_SIGNALS:
     void orientationChanged(Qt::Orientation orientation);
     void iconSizeChanged(const QSize &iconSize);
     void toolButtonStyleChanged(Qt::ToolButtonStyle toolButtonStyle);
+    void topLevelChanged(bool topLevel);
 
 protected:
     void actionEvent(QActionEvent *event);

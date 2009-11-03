@@ -73,6 +73,8 @@ class QSignalEventGenerator;
 class QSignalTransition;
 class QAbstractState;
 class QAbstractTransition;
+class QFinalState;
+class QHistoryState;
 class QState;
 
 #ifndef QT_NO_ANIMATION
@@ -137,6 +139,11 @@ public:
     void applyProperties(const QList<QAbstractTransition*> &transitionList,
                          const QList<QAbstractState*> &exitedStates,
                          const QList<QAbstractState*> &enteredStates);
+
+    static QState *toStandardState(QAbstractState *state);
+    static const QState *toStandardState(const QAbstractState *state);
+    static QFinalState *toFinalState(QAbstractState *state);
+    static QHistoryState *toHistoryState(QAbstractState *state);
 
     bool isInFinalState(QAbstractState *s) const;
     static bool isFinal(const QAbstractState *s);

@@ -835,14 +835,7 @@ QObject::QObject(QObjectPrivate &dd, QObject *parent)
 QObject::~QObject()
 {
     Q_D(QObject);
-    if (d->wasDeleted) {
-#if defined(QT_DEBUG)
-        qWarning("QObject: Double deletion detected");
-#endif
-        return;
-    }
     d->wasDeleted = true;
-
     d->blockSig = 0; // unblock signals so we always emit destroyed()
 
     if (!d->isWidget) {

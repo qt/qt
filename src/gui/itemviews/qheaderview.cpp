@@ -2516,6 +2516,8 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
     Q_D(const QHeaderView);
     Q_ASSERT(logicalIndex >= 0);
 
+    ensurePolished();
+
     // use SizeHintRole
     QVariant variant = d->model->headerData(logicalIndex, d->orientation, Qt::SizeHintRole);
     if (variant.isValid())

@@ -312,7 +312,7 @@ Przyjmie on uniwersalną formę liczby pojedynczej.</translation>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+747"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+748"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation>
             <numerusform>Opuszczono %n wyrażenie które nie miało identyfikatora.</numerusform>

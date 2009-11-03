@@ -2065,6 +2065,9 @@ Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
 Q_CORE_EXPORT void *qMalloc(size_t size);
 Q_CORE_EXPORT void qFree(void *ptr);
 Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size);
+Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment);
+Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment);
+Q_CORE_EXPORT void qFreeAligned(void *ptr);
 Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
 Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 

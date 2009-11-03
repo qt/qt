@@ -76,6 +76,16 @@ QT_BEGIN_NAMESPACE
 #  endif
 #endif
 
+#ifdef Q_OS_SYMBIAN
+    // Using default 4k block in symbian is highly inefficient due to
+    // the fact that each file operation requires slow IPC calls, so
+    // use somewhat larger block size.
+#  define FDFH_BLOCK_SIZE 16384
+#else
+    // Read/write in blocks of 4k to avoid platform limitations (Windows
+    // commonly bails out if you read or write too large blocks at once).
+#  define FDFH_BLOCK_SIZE 4096
+#endif
 
 /*! \class QFSFileEngine
     \brief The QFSFileEngine class implements Qt's default file engine.
@@ -160,11 +170,11 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         if (
 #ifdef Q_OS_SYMBIAN
             // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance, 
+            // are handling the last path element. This not only slightly improves performance,
             // but also saves us from lot of unnecessary platform security check failures
             // when dealing with files under *:/private directories.
             separatorPos == -1 &&
-#endif            
+#endif
             !nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
@@ -628,14 +638,12 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
         qint64 read = 0;
         int retry = 0;
 
-        // Read in blocks of 4k to avoid platform limitations (Windows
-        // commonly bails out if you read or write too large blocks at once).
         qint64 bytesToRead;
         do {
             if (retry == 1)
                 retry = 2;
 
-            bytesToRead = qMin<qint64>(4096, len - read);
+            bytesToRead = qMin<qint64>(FDFH_BLOCK_SIZE, len - read);
             do {
                 readBytes = fread(data + read, 1, size_t(bytesToRead), fh);
             } while (readBytes == 0 && !feof(fh) && errno == EINTR);
@@ -666,10 +674,8 @@ qint64 QFSFileEnginePrivate::readFdFh(char *data, qint64 len)
         qint64 read = 0;
         errno = 0;
 
-        // Read in blocks of 4k to avoid platform limitations (Windows
-        // commonly bails out if you read or write too large blocks at once).
         do {
-            qint64 bytesToRead = qMin<qint64>(4096, len - read);
+            qint64 bytesToRead = qMin<qint64>(FDFH_BLOCK_SIZE, len - read);
             do {
                 result = QT_READ(fd, data + read, int(bytesToRead));
             } while (result == -1 && errno == EINTR);
@@ -770,9 +776,7 @@ qint64 QFSFileEnginePrivate::writeFdFh(const char *data, qint64 len)
     qint64 written = 0;
 
     do {
-        // Write blocks of 4k to avoid platform limitations (Windows commonly
-        // bails out if you read or write too large blocks at once).
-        qint64 bytesToWrite = qMin<qint64>(4096, len - written);
+        qint64 bytesToWrite = qMin<qint64>(FDFH_BLOCK_SIZE, len - written);
         if (fh) {
             do {
                 // Buffered stdlib mode.
@@ -903,7 +907,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
   For Unix, returns the current working directory for the file
   engine.
-  
+
   For Windows, returns the canonicalized form of the current path used
   by the file engine for the drive specified by \a fileName.  On
   Windows, each drive has its own current directory, so a different

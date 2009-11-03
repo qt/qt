@@ -47,6 +47,7 @@
 #include <private/qpaintengine_raster_p.h>
 #include <private/qapplication_p.h>
 #include <private/qstylehelper_p.h>
+#include <private/qwidget_p.h>
 #include <qlibrary.h>
 #include <qpainter.h>
 #include <qpaintengine.h>
@@ -299,7 +300,11 @@ HWND QWindowsXPStylePrivate::winId(const QWidget *widget)
 
     if (!limboWidget) {
         limboWidget = new QWidget(0);
+        limboWidget->createWinId();
         limboWidget->setObjectName(QLatin1String("xp_limbo_widget"));
+        // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+        if (QWidgetPrivate::allWidgets)
+            QWidgetPrivate::allWidgets->remove(limboWidget);
     }
 
     return limboWidget->winId();
@@ -1577,7 +1582,7 @@ case PE_Frame:
                 // This should work, but currently there's an error in the ::drawBackgroundDirectly()
                 // code, when using the HDC directly..
                 if (useGradient) {
-                    QStyleOptionTabWidgetFrame frameOpt = *tab;
+                    QStyleOptionTabWidgetFrameV2 frameOpt = *tab;
                     frameOpt.rect = widget->rect();
                     QRect contentsRect = subElementRect(SE_TabWidgetTabContents, &frameOpt, widget);
                     QRegion reg = option->rect;
@@ -2836,8 +2841,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
 
             State bflags = toolbutton->state & ~State_Sunken;
             State mflags = bflags;
-
-            if (bflags & State_AutoRaise) {
+            bool autoRaise = flags & State_AutoRaise;
+            if (autoRaise) {
                 if (!(bflags & State_MouseOver) || !(bflags & State_Enabled)) {
                     bflags &= ~State_Raised;
                 }
@@ -2856,8 +2861,8 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             QStyleOption tool(0);
             tool.palette = toolbutton->palette;
             if (toolbutton->subControls & SC_ToolButton) {
-                if (flags & (State_Sunken | State_On | State_Raised) || !(flags & State_AutoRaise)) {
-                    if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup) {
+                if (flags & (State_Sunken | State_On | State_Raised) || !autoRaise) {
+                    if (toolbutton->features & QStyleOptionToolButton::MenuButtonPopup && autoRaise) {
                         XPThemeData theme(widget, p, QLatin1String("TOOLBAR"));
                         theme.partId = TP_SPLITBUTTON;
                         theme.rect = button;
@@ -2876,13 +2881,12 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                         theme.stateId = stateId;
                         d->drawBackground(theme);
                     } else {
-                        tool.rect = button;
+                        tool.rect = option->rect;
                         tool.state = bflags;
-                        if (widget && !qobject_cast<QToolBar*>(widget->parentWidget())
-                                   && !(bflags & State_AutoRaise))
-                            proxy()->drawPrimitive(PE_PanelButtonBevel, &tool, p, widget);
-                        else
+                        if (autoRaise) // for tool bars
                             proxy()->drawPrimitive(PE_PanelButtonTool, &tool, p, widget);
+                        else
+                            proxy()->drawPrimitive(PE_PanelButtonBevel, &tool, p, widget);
                     }
                 }
             }
@@ -2899,13 +2903,40 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
             int fw = 2;
+            if (!autoRaise)
+                label.state &= ~State_Sunken;
             label.rect = button.adjusted(fw, fw, -fw, -fw);
             proxy()->drawControl(CE_ToolButtonLabel, &label, p, widget);
 
             if (toolbutton->subControls & SC_ToolButtonMenu) {
                 tool.rect = menuarea;
                 tool.state = mflags;
-                proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
+                if (autoRaise) {
+                    proxy()->drawPrimitive(PE_IndicatorButtonDropDown, &tool, p, widget);
+                } else {
+                    tool.state = mflags;
+                    menuarea.adjust(-2, 0, 0, 0);
+                    // Draw menu button
+                    if ((bflags & State_Sunken) != (mflags & State_Sunken)){
+                        p->save();
+                        p->setClipRect(menuarea);
+                        tool.rect = option->rect;
+                        proxy()->drawPrimitive(PE_PanelButtonBevel, &tool, p, 0);
+                        p->restore();
+                    }
+                    // Draw arrow
+                    p->save();
+                    p->setPen(option->palette.dark());
+                    p->drawLine(menuarea.left(), menuarea.top() + 3,
+                                menuarea.left(), menuarea.bottom() - 3);
+                    p->setPen(option->palette.light());
+                    p->drawLine(menuarea.left() - 1, menuarea.top() + 3,
+                                menuarea.left() - 1, menuarea.bottom() - 3);
+
+                    tool.rect = menuarea.adjusted(2, 3, -2, -1);
+                    proxy()->drawPrimitive(PE_IndicatorArrowDown, &tool, p, widget);
+                    p->restore();
+                }
             } else if (toolbutton->features & QStyleOptionToolButton::HasMenu) {
                 int mbi = proxy()->pixelMetric(PM_MenuButtonIndicator, toolbutton, widget);
                 QRect ir = toolbutton->rect;
