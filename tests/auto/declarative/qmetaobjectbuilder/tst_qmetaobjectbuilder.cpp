@@ -52,8 +52,8 @@ void tst_QMetaObjectBuilder::mocVersionCheck()
     // It is intended as a reminder to also update QMetaObjectBuilder
     // whenenver moc changes.  Once QMetaObjectBuilder has been
     // updated, this test can be changed to check for the next version.
-    QCOMPARE(int(QObject::staticMetaObject.d.data[0]), 2);
-    QCOMPARE(int(staticMetaObject.d.data[0]), 2);
+    QCOMPARE(int(QObject::staticMetaObject.d.data[0]), 4);
+    QCOMPARE(int(staticMetaObject.d.data[0]), 4);
 }
 
 void tst_QMetaObjectBuilder::create()
