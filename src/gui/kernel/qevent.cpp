@@ -4400,7 +4400,7 @@ bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
 /*!
     \internal
 
-    Sets the widget for this event.
+    Sets the widget for this event to the \a widget specified.
 */
 void QGestureEvent::setWidget(QWidget *widget)
 {

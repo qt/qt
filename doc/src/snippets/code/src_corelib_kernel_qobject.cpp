@@ -235,9 +235,8 @@ MyWindow::MyWindow()
 {
     QLabel *senderLabel = new QLabel(tr("Name:"));
     QLabel *recipientLabel = new QLabel(tr("Name:", "recipient"));
-    ...
-}
 //! [17]
+}
 
 
 //! [18]
