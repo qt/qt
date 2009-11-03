@@ -204,15 +204,6 @@ void tst_qmlmetatype::copy()
     COPY_TEST(QObject *, QObjectStar, &objectValue, 0);
     COPY_TEST(QWidget *, QWidgetStar, &widgetValue, 0);
     COPY_TEST(qreal, QReal, 10.2, 0);
-
-
-#if 0
-    enum Type {
-
-        QReal = 0,
-        User = 256
-    };
-#endif
 }
 
 QTEST_MAIN(tst_qmlmetatype)
