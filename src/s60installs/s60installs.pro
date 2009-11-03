@@ -107,7 +107,7 @@ symbian: {
 
     graphicssystems_plugins.path = c:$$QT_PLUGINS_BASE_DIR/graphicssystems
     contains(QT_CONFIG, openvg) {
-        qtlibraries.sources = QtOpenVG.dll
+        qtlibraries.sources += QtOpenVG.dll
         graphicssystems_plugins.sources += qvggraphicssystem.dll
     }
 
