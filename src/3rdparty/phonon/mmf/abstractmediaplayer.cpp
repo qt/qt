@@ -318,7 +318,8 @@ void MMF::AbstractMediaPlayer::doVolumeChanged()
     case PausedState:
     case PlayingState:
     case BufferingState: {
-        const int err = setDeviceVolume(m_volume * m_mmfMaxVolume);
+        const qreal volume = (m_volume * m_mmfMaxVolume) + 0.5;
+        const int err = setDeviceVolume(volume);
 
         if (KErrNone != err) {
             setError(NormalError);
