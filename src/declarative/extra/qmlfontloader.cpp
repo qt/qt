@@ -163,6 +163,8 @@ void QmlFontLoader::setName(const QString &name)
         return;
     d->name = name;
     emit nameChanged();
+    d->status = Ready;
+    emit statusChanged();
 }
 
 /*!
