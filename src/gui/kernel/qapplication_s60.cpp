@@ -1052,8 +1052,17 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
         CEikonEnv* coe = new CEikonEnv;
-        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+        if(err == KErrNone)
+            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
         delete commandLine;
+        if(err != KErrNone) {
+            qWarning() << "qt_init: Eikon application construct failed ("
+                       << err
+                       << "), maybe missing resource file on S60 3.1?";
+            delete coe;
+            qt_symbian_throwIfError(err);
+        }
 
         S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
 
