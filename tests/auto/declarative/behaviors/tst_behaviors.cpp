@@ -43,6 +43,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
+#include <private/qmlbehavior_p.h>
 #include <private/qmlanimation_p.h>
 
 class tst_behaviors : public QObject
@@ -60,6 +61,9 @@ private slots:
     void replaceBinding();
     //void transitionOverrides();
     void group();
+    void emptyBehavior();
+    void nonSelectingBehavior();
+    void reassignedAnimation();
 };
 
 void tst_behaviors::simpleBehavior()
@@ -68,6 +72,7 @@ void tst_behaviors::simpleBehavior()
     QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/simple.qml"));
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
+    QVERIFY(qobject_cast<QmlBehavior*>(rect->findChild<QmlBehavior*>("MyBehavior"))->animation());
 
     rect->setState("moved");
     QTest::qWait(100);
@@ -187,6 +192,44 @@ void tst_behaviors::group()
         qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
         QVERIFY(x > 0 && x < 200);  //i.e. the behavior has been triggered
     }
+}
+
+void tst_behaviors::emptyBehavior()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/empty.qml"));
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    rect->setState("moved");
+    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+    QCOMPARE(x, qreal(200));    //should change immediately
+}
+
+void tst_behaviors::nonSelectingBehavior()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting.qml"));
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+
+    rect->setState("moved");
+    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+    QCOMPARE(x, qreal(200));    //should change immediately
+}
+
+void tst_behaviors::reassignedAnimation()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/reassignedAnimation.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlBehavior (file://" SRCDIR "/data/reassignedAnimation.qml:9:12) Can't change the animation assigned to a Behavior.");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+    QVERIFY(rect);
+    
+    rect->setState("moved");
+    QTest::qWait(200 + 100);
+    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+    QCOMPARE(x, qreal(200));  //i.e. the right behavior has been triggered
 }
 
 QTEST_MAIN(tst_behaviors)

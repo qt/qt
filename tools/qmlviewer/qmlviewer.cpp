@@ -249,7 +249,7 @@ private:
 
 class ConfiguredNetworkAccessManager : public QNetworkAccessManager {
 public:
-    ConfiguredNetworkAccessManager() { }
+    ConfiguredNetworkAccessManager(QObject *parent) : QNetworkAccessManager(parent) { }
 
     QNetworkReply *createRequest (Operation op, const QNetworkRequest &req, QIODevice * outgoingData)
     {
@@ -334,7 +334,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
     canvas->setAttribute(Qt::WA_OpaquePaintEvent);
     canvas->setAttribute(Qt::WA_NoSystemBackground);
     canvas->setContentResizable(!skin || !scaleSkin);
-    canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager);
+    canvas->engine()->setNetworkAccessManager(new ConfiguredNetworkAccessManager(canvas->engine()));
     canvas->setFocus();
 
     QObject::connect(canvas, SIGNAL(sceneResized(QSize)), this, SLOT(sceneResized(QSize)));

@@ -87,7 +87,8 @@ void scriptOptsUsage()
     qWarning(" options:");
     qWarning("  record ................................... record a new script");
     qWarning("  play ..................................... playback an existing script");
-    qWarning("  testimages ............................... compare images on playback");
+    qWarning("  testimages ............................... record images or compare images on playback");
+    qWarning("  testerror ................................ test 'error' property of root item on playback");
     qWarning("  exitoncomplete ........................... cleanly exit the viewer on script completion");
     qWarning("  exitonfailure ............................ immediately exit the viewer on script failure");
     qWarning("  saveonexit ............................... save recording on viewer exit");
@@ -235,6 +236,8 @@ int main(int argc, char ** argv)
                 scriptOptions |= QmlViewer::Record;
             } else if (option == QLatin1String("testimages")) {
                 scriptOptions |= QmlViewer::TestImages;
+            } else if (option == QLatin1String("testerror")) {
+                scriptOptions |= QmlViewer::TestErrorProperty;
             } else if (option == QLatin1String("exitoncomplete")) {
                 scriptOptions |= QmlViewer::ExitOnComplete;
             } else if (option == QLatin1String("exitonfailure")) {
