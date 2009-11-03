@@ -229,7 +229,7 @@ void tst_behaviors::reassignedAnimation()
     rect->setState("moved");
     QTest::qWait(200 + 100);
     qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-    QVERIFY(x > 0 && x < 200);  //i.e. the right behavior has been triggered
+    QCOMPARE(x, qreal(200));  //i.e. the right behavior has been triggered
 }
 
 QTEST_MAIN(tst_behaviors)
