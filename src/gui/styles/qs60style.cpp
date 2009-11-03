@@ -994,6 +994,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             const State bflags = toolBtn->state;
             const QRect button(subControlRect(control, toolBtn, SC_ToolButton, widget));
+            QRect menuRect = QRect();
+            if (toolBtn->subControls & SC_ToolButtonMenu)
+                menuRect = subControlRect(control, toolBtn, SC_ToolButtonMenu, widget);
+
             QStyleOptionToolButton toolButton = *toolBtn;
 
             if (sub&SC_ToolButton) {
@@ -1006,7 +1010,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     toolBar = qobject_cast<QToolBar *>(widget->parentWidget());
 
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
-                    tool.rect = button;
+                    tool.rect = button.unite(menuRect);
                     tool.state = bflags;
 
                     // todo: I'd like to move extension button next to where last button is
@@ -1060,6 +1064,12 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                             */
                     } else {
                         drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                    }
+
+                    if (toolButton.subControls & SC_ToolButtonMenu) {
+                        tool.rect = menuRect;
+                        tool.state = bflags;
+                        drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
                     }
                 }
             }
@@ -2232,7 +2242,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
-    case PE_IndicatorButtonDropDown:
     case PE_IndicatorDockWidgetResizeHandle:
     case PE_PanelTipLabel:
     case PE_PanelScrollAreaCorner:
@@ -2559,6 +2568,29 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 default:
                     break;
             }
+        }
+        break;
+    case CC_ToolButton:
+        if (const QStyleOptionToolButton *toolButton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
+            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator, toolButton, widget) +
+                                      2*pixelMetric(PM_ButtonMargin, toolButton, widget);
+            ret = toolButton->rect;
+            const bool popup = (toolButton->features & 
+                    (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
+                    == QStyleOptionToolButton::MenuButtonPopup;
+            switch (scontrol) {
+            case SC_ToolButton:
+                if (popup)
+                    ret.adjust(0, 0, -indicatorRect, 0);
+                break;
+            case SC_ToolButtonMenu:
+                if (popup)
+                    ret.adjust(ret.width() - indicatorRect, ret.height() - indicatorRect, 0, 0);
+                break;
+            default:
+                break;
+            }
+            ret = visualRect(toolButton->direction, toolButton->rect, ret);
         }
         break;
     default:
