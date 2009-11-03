@@ -11,8 +11,9 @@ SOURCES += ../xmlpatternsxqts/test/tst_suitetest.cpp
 
 PATTERNIST_SDK = QtXmlPatternsSDK
 if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-    win32:PATTERNIST_SDK = $${PATTERNIST_SDK}d
-    else: PATTERNIST_SDK = $${PATTERNIST_SDK}_debug
+    symbian:    PATTERNIST_SDK = $${PATTERNIST_SDK}
+    else:win32: PATTERNIST_SDK = $${PATTERNIST_SDK}d
+    else:       PATTERNIST_SDK = $${PATTERNIST_SDK}_debug
 }
 
 LIBS += -l$$PATTERNIST_SDK
