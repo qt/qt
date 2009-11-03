@@ -445,8 +445,12 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
+#ifdef Q_OS_WIN
+    tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
+#else
+    tmp->setShortcut(QKeySequence::Quit);
+#endif
 
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
