@@ -1412,7 +1412,6 @@ void Configure::applySpecSpecifics()
         dictionary[ "WEBKIT" ]              = "no";
         dictionary[ "PHONON" ]              = "yes";
         dictionary[ "DIRECTSHOW" ]          = "no";
-        dictionary[ "LTCG" ]                = "yes";
         // We only apply MMX/IWMMXT for mkspecs we know they work
         if (dictionary[ "XQMAKESPEC" ].startsWith("wincewm")) {
             dictionary[ "MMX" ]    = "yes";
@@ -2438,14 +2437,17 @@ void Configure::generateOutputVars()
 
     if ( dictionary["OPENGL_ES_CM"] == "yes" ) {
         qtConfig += "opengles1";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENGL_ES_2"] == "yes" ) {
         qtConfig += "opengles2";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENGL_ES_CL"] == "yes" ) {
         qtConfig += "opengles1cl";
+        qtConfig += "egl";
     }
 
     if ( dictionary["OPENVG"] == "yes" ) {

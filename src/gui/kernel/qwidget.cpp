@@ -1549,7 +1549,9 @@ void QWidgetPrivate::createExtra()
         extra = new QWExtra;
         extra->glContext = 0;
         extra->topextra = 0;
+#ifndef QT_NO_GRAPHICSVIEW
         extra->proxyWidget = 0;
+#endif
 #ifndef QT_NO_CURSOR
         extra->curs = 0;
 #endif
@@ -1699,12 +1701,13 @@ void QWidgetPrivate::propagatePaletteChange()
 {
     Q_Q(QWidget);
     // Propagate a new inherited mask to all children.
-    if (!q->parentWidget() && extra && extra->proxyWidget) {
 #ifndef QT_NO_GRAPHICSVIEW
+    if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedPaletteResolveMask = p->d_func()->inheritedPaletteResolveMask | p->palette().resolve();
+    } else
 #endif //QT_NO_GRAPHICSVIEW
-    } else if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
+        if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedPaletteResolveMask = 0;
     }
     int mask = data.pal.resolve() | inheritedPaletteResolveMask;
@@ -1825,18 +1828,6 @@ void QWidgetPrivate::setDirtyOpaqueRegion()
         pd->setDirtyOpaqueRegion();
 }
 
-QRegion QWidgetPrivate::getOpaqueRegion() const
-{
-    Q_Q(const QWidget);
-
-    QRegion r = isOpaque ? q->rect() : getOpaqueChildren();
-    if (extra && extra->hasMask)
-        r &= extra->mask;
-    if (r.isEmpty())
-        return r;
-    return r & clipRect();
-}
-
 const QRegion &QWidgetPrivate::getOpaqueChildren() const
 {
     if (!dirtyOpaqueChildren)
@@ -1851,9 +1842,17 @@ const QRegion &QWidgetPrivate::getOpaqueChildren() const
             continue;
 
         const QPoint offset = child->geometry().topLeft();
-        that->opaqueChildren += child->d_func()->getOpaqueRegion().translated(offset);
+        QWidgetPrivate *childd = child->d_func();
+        QRegion r = childd->isOpaque ? child->rect() : childd->getOpaqueChildren();
+        if (childd->extra && childd->extra->hasMask)
+            r &= childd->extra->mask;
+        if (r.isEmpty())
+            continue;
+        r.translate(offset);
+        that->opaqueChildren += r;
     }
 
+    that->opaqueChildren &= q_func()->rect();
     that->dirtyOpaqueChildren = false;
 
     return that->opaqueChildren;
@@ -3072,6 +3071,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #if defined(Q_WS_MAC)
     setEnabled_helper_sys(enable);
 #endif
+#ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
         QInputContext *qic = inputContext();
         if (enable) {
@@ -3081,6 +3081,7 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
             qic->setFocusWidget(0);
         }
     }
+#endif //QT_NO_IM
     QEvent e(QEvent::EnabledChange);
     QApplication::sendEvent(q, &e);
 #ifdef QT3_SUPPORT
@@ -4379,7 +4380,11 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
     Q_Q(const QWidget);
     QPalette naturalPalette = QApplication::palette(q);
     if (!q->testAttribute(Qt::WA_StyleSheet)
-        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation) || (extra && extra->proxyWidget))) {
+        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
+#ifndef QT_NO_GRAPHICSVIEW
+            || (extra && extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet)) {
                 if (!naturalPalette.isCopyOf(QApplication::palette())) {
@@ -4390,13 +4395,14 @@ QPalette QWidgetPrivate::naturalWidgetPalette(uint inheritedMask) const
                     naturalPalette = p->palette();
                 }
             }
-        } else if (extra && extra->proxyWidget) {
+        }
 #ifndef QT_NO_GRAPHICSVIEW
+        else if (extra && extra->proxyWidget) {
             QPalette inheritedPalette = extra->proxyWidget->palette();
             inheritedPalette.resolve(inheritedMask);
             naturalPalette = inheritedPalette.resolve(naturalPalette);
-#endif //QT_NO_GRAPHICSVIEW
         }
+#endif //QT_NO_GRAPHICSVIEW
     }
     naturalPalette.resolve(0);
     return naturalPalette;
@@ -4514,7 +4520,11 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
     Q_Q(const QWidget);
     QFont naturalFont = QApplication::font(q);
     if (!q->testAttribute(Qt::WA_StyleSheet)
-        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation) || (extra && extra->proxyWidget))) {
+        && (!q->isWindow() || q->testAttribute(Qt::WA_WindowPropagation)
+#ifndef QT_NO_GRAPHICSVIEW
+            || (extra && extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+            )) {
         if (QWidget *p = q->parentWidget()) {
             if (!p->testAttribute(Qt::WA_StyleSheet)) {
                 if (!naturalFont.isCopyOf(QApplication::font())) {
@@ -4525,13 +4535,14 @@ QFont QWidgetPrivate::naturalWidgetFont(uint inheritedMask) const
                     naturalFont = p->font();
                 }
             }
-        } else if (extra && extra->proxyWidget) {
+        }
 #ifndef QT_NO_GRAPHICSVIEW
+        else if (extra && extra->proxyWidget) {
             QFont inheritedFont = extra->proxyWidget->font();
             inheritedFont.resolve(inheritedMask);
             naturalFont = inheritedFont.resolve(naturalFont);
-#endif //QT_NO_GRAPHICSVIEW
         }
+#endif //QT_NO_GRAPHICSVIEW
     }
     naturalFont.resolve(0);
     return naturalFont;
@@ -4578,12 +4589,13 @@ void QWidgetPrivate::updateFont(const QFont &font)
     data.fnt.x11SetScreen(xinfo.screen());
 #endif
     // Combine new mask with natural mask and propagate to children.
-    if (!q->parentWidget() && extra && extra->proxyWidget) {
 #ifndef QT_NO_GRAPHICSVIEW
+    if (!q->parentWidget() && extra && extra->proxyWidget) {
         QGraphicsProxyWidget *p = extra->proxyWidget;
         inheritedFontResolveMask = p->d_func()->inheritedFontResolveMask | p->font().resolve();
+    } else 
 #endif //QT_NO_GRAPHICSVIEW
-    } else if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
+    if (q->isWindow() && !q->testAttribute(Qt::WA_WindowPropagation)) {
         inheritedFontResolveMask = 0;
     }
     uint newMask = data.fnt.resolve() | inheritedFontResolveMask;
@@ -5394,7 +5406,11 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
                                , sharedPainter, backingStore);
     }
 
-    if (w->updatesEnabled() && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)) {
+    if (w->updatesEnabled()
+#ifndef QT_NO_GRAPHICSVIEW
+            && (!w->d_func()->extra || !w->d_func()->extra->proxyWidget)
+#endif //QT_NO_GRAPHICSVIEW
+       ) {
         QRegion wRegion(rgn);
         wRegion &= wd->effectiveRectFor(w->data->crect);
         wRegion.translate(-widgetPos);
@@ -8964,11 +8980,16 @@ QVariant QWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 Qt::InputMethodHints QWidget::inputMethodHints() const
 {
     Q_D(const QWidget);
+#ifndef QT_NO_IM
     return d->imHints;
+#else //QT_NO_IM
+    return 0;
+#endif //QT_NO_IM
 }
 
 void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
+#ifndef QT_NO_IM
     Q_D(QWidget);
     d->imHints = hints;
     // Optimisation to update input context only it has already been created.
@@ -8977,6 +8998,7 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
         if (ic)
             ic->update();
     }
+#endif //QT_NO_IM
 }
 
 
@@ -10308,6 +10330,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         QApplication::sendEvent(this, &e);
         break; }
     case Qt::WA_NativeWindow: {
+#ifndef QT_NO_IM
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
             ic = d->inputContext();
@@ -10320,6 +10343,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
             d->createWinId();
         if (ic && isEnabled())
             ic->setFocusWidget(this);
+#endif //QT_NO_IM
         break;
     }
     case Qt::WA_PaintOnScreen:
@@ -10349,6 +10373,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
 #endif
         break;
     case Qt::WA_InputMethodEnabled: {
+#ifndef QT_NO_IM
         QInputContext *ic = d->ic;
         if (!ic && (!on || hasFocus()))
             ic = d->inputContext();
@@ -10360,6 +10385,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
                 ic->setFocusWidget(0);
             }
         }
+#endif //QT_NO_IM
         break;
     }
     case Qt::WA_WindowPropagation:
@@ -11721,6 +11747,22 @@ void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
     d->gestureContext.insert(gesture, context);
     (void)QGestureManager::instance(); // create a gesture manager
 }
+
+/*!
+    Unsubscribes the widget to a given \a gesture type
+
+    \sa QGestureEvent
+    \since 4.6
+*/
+void QWidget::ungrabGesture(Qt::GestureType gesture)
+{
+    Q_D(QWidget);
+    if (d->gestureContext.remove(gesture)) {
+        QGestureManager *manager = QGestureManager::instance();
+        manager->cleanupCachedGestures(this, gesture);
+    }
+}
+
 
 QT_END_NAMESPACE
 

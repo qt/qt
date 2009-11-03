@@ -100,6 +100,20 @@ void tst_QFontMetrics::same()
     QFontMetrics fm(font);
     const QString text = QLatin1String("Some stupid STRING");
     QCOMPARE(fm.size(0, text), fm.size(0, text)) ;
+
+    {
+        QImage image;
+        QFontMetrics fm2(font, &image);
+        QString text2 =  QLatin1String("Foo Foo");
+        QCOMPARE(fm2.size(0, text2), fm2.size(0, text2));  //used to crash
+    }
+
+    {
+        QImage image;
+        QFontMetricsF fm3(font, &image);
+        QString text2 =  QLatin1String("Foo Foo");
+        QCOMPARE(fm3.size(0, text2), fm3.size(0, text2));  //used to crash
+    }
 }
 
 

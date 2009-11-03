@@ -56,8 +56,7 @@ public:
     virtual ~tst_QParallelAnimationGroup();
 
 public Q_SLOTS:
-    void init();
-    void cleanup();
+    void initTestCase();
 
 private slots:
     void construction();
@@ -86,13 +85,13 @@ tst_QParallelAnimationGroup::~tst_QParallelAnimationGroup()
 {
 }
 
-void tst_QParallelAnimationGroup::init()
+void tst_QParallelAnimationGroup::initTestCase()
 {
     qRegisterMetaType<QAbstractAnimation::State>("QAbstractAnimation::State");
-}
-
-void tst_QParallelAnimationGroup::cleanup()
-{
+#if defined(Q_OS_SYMBIAN) || defined(Q_WS_MAC) || defined(Q_WS_WINCE)
+    // give the Symbian and mac app start event queue time to clear
+    QTest::qWait(1000);
+#endif
 }
 
 void tst_QParallelAnimationGroup::construction()
@@ -486,10 +485,6 @@ void tst_QParallelAnimationGroup::updateChildrenWithRunningGroup()
 
 void tst_QParallelAnimationGroup::deleteChildrenWithRunningGroup()
 {
-#if defined(Q_OS_SYMBIAN)
-    // give the Symbian app start event queue time to clear
-    QTest::qWait(1000);
-#endif
     // test if children can be activated when their group is stopped
     QParallelAnimationGroup group;
 

@@ -49,7 +49,7 @@ MousePanGestureRecognizer::MousePanGestureRecognizer()
 {
 }
 
-QGesture* MousePanGestureRecognizer::createGesture(QObject *) const
+QGesture* MousePanGestureRecognizer::createGesture(QObject *)
 {
     return new QPanGesture;
 }

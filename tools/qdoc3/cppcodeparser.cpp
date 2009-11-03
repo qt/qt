@@ -1759,7 +1759,6 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
             property->setDesignable(value.toLower() == "true");
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
-
         else if (key == "NOTIFY") {
             tre->addPropertyFunction(property, value, PropertyNode::Notifier);
         }

@@ -86,6 +86,18 @@ private:
     uint sel_count;
 };
 
+class Menu : public QMenu
+{
+    Q_OBJECT
+        public slots:
+            void addActions()
+            {
+                //this will change the geometry of the menu
+                addAction("action1");
+                addAction("action2");
+            }
+};
+
 class tst_QMenuBar : public QObject
 {
     Q_OBJECT
@@ -1442,7 +1454,7 @@ void tst_QMenuBar::check_menuPosition()
 #ifdef Q_OS_WINCE_WM
     QSKIP("Qt/CE uses native menubar", SkipAll);
 #endif
-    QMenu menu;
+    Menu menu;
 #ifdef QT3_SUPPORT
     initComplexMenubar();
 #else
@@ -1494,6 +1506,21 @@ void tst_QMenuBar::check_menuPosition()
         QPoint secondPoint = QPoint(mbItemRect.right()+1, availRect.bottom() - menu.height() + 1);
         QVERIFY(menu.pos() == firstPoint || menu.pos() == secondPoint);
         menu.close();
+    }
+
+    //in RTL, the menu should be stuck at the right of the action geometry
+    {
+        Qt::LayoutDirection dir = qApp->layoutDirection();
+        qApp->setLayoutDirection(Qt::RightToLeft);
+        menu.clear();
+        QObject::connect(&menu, SIGNAL(aboutToShow()), &menu, SLOT(addActions()));
+        QRect mbItemRect = mw->menuBar()->actionGeometry(menu_action);
+        mbItemRect.moveTo(mw->menuBar()->mapToGlobal(mbItemRect.topLeft()));
+        QTest::keyClick(mw, Qt::Key_M, Qt::AltModifier );
+        QVERIFY(menu.isActiveWindow());
+        QCOMPARE(menu.geometry().right(), mbItemRect.right());
+        menu.close();
+        qApp->setLayoutDirection(dir);
     }
 
 }

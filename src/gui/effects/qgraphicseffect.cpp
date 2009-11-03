@@ -1042,66 +1042,36 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
         return;
     }
 
+
+    QPoint offset;
+    Qt::CoordinateSystem system = source->isPixmap() ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
+    QPixmap pixmap = source->pixmap(system, &offset, QGraphicsEffectSource::NoExpandPadMode);
+    if (pixmap.isNull())
+        return;
+
+
     painter->save();
     painter->setOpacity(d->opacity);
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
-                                                  QGraphicsEffectSource::NoExpandPadMode);
-            painter->drawPixmap(offset, pixmap);
-        } else {
-            QRect srcBrect = source->boundingRect().toAlignedRect();
-            offset = srcBrect.topLeft();
-            QPixmap pixmap(srcBrect.size());
-            pixmap.fill(Qt::transparent);
-
-            QPainter pixmapPainter(&pixmap);
-            pixmapPainter.setRenderHints(painter->renderHints());
-            pixmapPainter.translate(-offset);
-            source->draw(&pixmapPainter);
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-            pixmapPainter.fillRect(srcBrect, d->opacityMask);
-            pixmapPainter.end();
-
-            painter->drawPixmap(offset, pixmap);
-        }
-    } else {
-        // Draw pixmap in device coordinates to avoid pixmap scaling;
-        if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset,
-                                                  QGraphicsEffectSource::NoExpandPadMode);
-            painter->setWorldTransform(QTransform());
-            painter->drawPixmap(offset, pixmap);
-        } else {
+    if (d->hasOpacityMask) {
+        QPainter pixmapPainter(&pixmap);
+        pixmapPainter.setRenderHints(painter->renderHints());
+        pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+        if (system == Qt::DeviceCoordinates) {
             QTransform worldTransform = painter->worldTransform();
-
-            // Calculate source bounding rect in logical and device coordinates.
-            QRectF srcBrect = source->boundingRect();
-            QRect srcDeviceBrect = worldTransform.mapRect(srcBrect).toAlignedRect();
-            srcDeviceBrect &= source->deviceRect();
-
-            offset = srcDeviceBrect.topLeft();
-            worldTransform *= QTransform::fromTranslate(-srcDeviceBrect.x(), -srcDeviceBrect.y());
-
-            QPixmap pixmap(srcDeviceBrect.size());
-            pixmap.fill(Qt::transparent);
-
-            QPainter pixmapPainter(&pixmap);
-            pixmapPainter.setRenderHints(painter->renderHints());
+            worldTransform *= QTransform::fromTranslate(-offset.x(), -offset.y());
             pixmapPainter.setWorldTransform(worldTransform);
-            source->draw(&pixmapPainter);
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-            pixmapPainter.fillRect(srcBrect, d->opacityMask);
-            pixmapPainter.end();
-
-            painter->setWorldTransform(QTransform());
-            painter->drawPixmap(offset, pixmap);
+            pixmapPainter.fillRect(source->boundingRect(), d->opacityMask);
+        } else {
+            pixmapPainter.translate(-offset);
+            pixmapPainter.fillRect(pixmap.rect(), d->opacityMask);
         }
     }
 
+    if (system == Qt::DeviceCoordinates)
+        painter->setWorldTransform(QTransform());
+
+    painter->drawPixmap(offset, pixmap);
     painter->restore();
 }
 

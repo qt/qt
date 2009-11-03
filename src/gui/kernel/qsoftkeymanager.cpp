@@ -48,6 +48,7 @@
 #include "private/qsoftkeymanager_p.h"
 #include "private/qobject_p.h"
 
+#ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_S60
@@ -285,4 +286,4 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &)
 #endif
 
 QT_END_NAMESPACE
-
+#endif //QT_NO_SOFTKEYMANAGER

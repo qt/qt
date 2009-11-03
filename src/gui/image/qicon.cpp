@@ -66,6 +66,7 @@
 #include "private/qkde_p.h"
 #endif
 
+#ifndef QT_NO_ICON
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1217,3 +1218,4 @@ QSize QIcon::pixmapSize(Size which)
 */
 
 QT_END_NAMESPACE
+#endif //QT_NO_ICON

@@ -96,6 +96,7 @@ private slots:
 
     void task_180617();
     void task_180617_data() { generic_data(); }
+    void task_QTBUG_4963_setHeaderDataWithProxyModel();
 
 private:
     void generic_data(const QString &engine=QString());
@@ -428,6 +429,8 @@ void tst_QSqlQueryModel::setHeaderData()
     QVERIFY(!model.setHeaderData(5, Qt::Vertical, "foo"));
     QVERIFY(model.headerData(5, Qt::Vertical).isValid());
 
+    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+
     qRegisterMetaType<Qt::Orientation>("Qt::Orientation");
     QSignalSpy spy(&model, SIGNAL(headerDataChanged(Qt::Orientation, int, int)));
     QVERIFY(model.setHeaderData(2, Qt::Horizontal, "bar"));
@@ -437,10 +440,8 @@ void tst_QSqlQueryModel::setHeaderData()
     QCOMPARE(spy.value(0).value(1).toInt(), 2);
     QCOMPARE(spy.value(0).value(2).toInt(), 2);
 
-    QVERIFY(model.setHeaderData(7, Qt::Horizontal, "foo", Qt::ToolTipRole));
-    QVERIFY(model.headerData(7, Qt::Horizontal, Qt::ToolTipRole).isValid());
-
-    model.setQuery(QSqlQuery("select * from " + qTableName("test"), db));
+    QVERIFY(!model.setHeaderData(7, Qt::Horizontal, "foo", Qt::ToolTipRole));
+    QVERIFY(!model.headerData(7, Qt::Horizontal, Qt::ToolTipRole).isValid());
 
     bool isToUpper = db.driverName().startsWith("QIBASE") || db.driverName().startsWith("QOCI") || db.driverName().startsWith("QDB2");
     QCOMPARE(model.headerData(0, Qt::Horizontal).toString(), isToUpper ? QString("ID") : QString("id"));
@@ -601,6 +602,15 @@ void tst_QSqlQueryModel::task_180617()
 
     QCOMPARE(view.columnAt(0),  (error)?-1:0 );
     QCOMPARE(view.rowAt(0), -1);
+}
+
+void tst_QSqlQueryModel::task_QTBUG_4963_setHeaderDataWithProxyModel()
+{
+    QSqlQueryModel plainModel;
+    QSortFilterProxyModel proxyModel;
+    proxyModel.setSourceModel(&plainModel);
+    QVERIFY(!plainModel.setHeaderData(0, Qt::Horizontal, QObject::tr("ID")));
+    // And it should not crash.
 }
 
 QTEST_MAIN(tst_QSqlQueryModel)
