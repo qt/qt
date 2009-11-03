@@ -42,6 +42,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlfontloader_p.h>
+#include "../../../shared/util.h"
 
 class tst_qmlfontloader : public QObject
 
@@ -51,8 +52,10 @@ public:
     tst_qmlfontloader();
 
 private slots:
+    void nofont();
     void namedfont();
     void localfont();
+    void webfont();
 
 private slots:
 
@@ -62,6 +65,16 @@ private:
 
 tst_qmlfontloader::tst_qmlfontloader()
 {
+}
+
+void tst_qmlfontloader::nofont()
+{
+    QString componentStr = "import Qt 4.6\nFontLoader { }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+    QCOMPARE(fontObject->name(), QString(""));
 }
 
 void tst_qmlfontloader::namedfont()
@@ -82,6 +95,16 @@ void tst_qmlfontloader::localfont()
 
     QVERIFY(fontObject != 0);
     QCOMPARE(fontObject->name(), QString("Fontin"));
+}
+
+void tst_qmlfontloader::webfont()
+{
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://www.princexml.com/fonts/steffmann/Starburst.ttf\" }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+    QTRY_COMPARE(fontObject->name(), QString("Starburst"));
 }
 
 QTEST_MAIN(tst_qmlfontloader)
