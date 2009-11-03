@@ -108,41 +108,41 @@ QPixmap QGtkPainter::renderTheme(uchar *bdata, uchar *wdata, const QRect &rect)
         return;                                                                                    \
     QRect pixmapRect(0, 0, rect.width(), rect.height());                                           \
     {                                                                                              \
-        GdkPixmap *pixmap = QGtk::gdk_pixmap_new((GdkDrawable*)(m_window->window),                    \
+        GdkPixmap *pixmap = QGtkStylePrivate::gdk_pixmap_new((GdkDrawable*)(m_window->window),                    \
                                             rect.width(), rect.height(), -1);                      \
         if (!pixmap)                                                                               \
             return;                                                                                \
-        style = QGtk::gtk_style_attach (style, m_window->window);                                  \
-        QGtk::gdk_draw_rectangle(pixmap, m_alpha ? style->black_gc : *style->bg_gc, true,                \
+        style = QGtkStylePrivate::gtk_style_attach (style, m_window->window);                                  \
+        QGtkStylePrivate::gdk_draw_rectangle(pixmap, m_alpha ? style->black_gc : *style->bg_gc, true,                \
                            0, 0, rect.width(), rect.height());                                     \
         draw_func;                                                                                 \
-        GdkPixbuf *imgb = QGtk::gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, rect.width(), rect.height());\
+        GdkPixbuf *imgb = QGtkStylePrivate::gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, rect.width(), rect.height());\
         if (!imgb)                                                                                 \
             return;                                                                                \
-        imgb = QGtk::gdk_pixbuf_get_from_drawable(imgb, pixmap, NULL, 0, 0, 0, 0,                  \
+        imgb = QGtkStylePrivate::gdk_pixbuf_get_from_drawable(imgb, pixmap, NULL, 0, 0, 0, 0,                  \
                                             rect.width(), rect.height());                          \
-        uchar* bdata = (uchar*)QGtk::gdk_pixbuf_get_pixels(imgb);                                  \
+        uchar* bdata = (uchar*)QGtkStylePrivate::gdk_pixbuf_get_pixels(imgb);                                  \
         if (m_alpha) {                                                                             \
-            QGtk::gdk_draw_rectangle(pixmap, style->white_gc, true, 0, 0, rect.width(), rect.height());  \
+            QGtkStylePrivate::gdk_draw_rectangle(pixmap, style->white_gc, true, 0, 0, rect.width(), rect.height());  \
             draw_func;                                                                             \
-            GdkPixbuf *imgw = QGtk::gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, rect.              \
+            GdkPixbuf *imgw = QGtkStylePrivate::gdk_pixbuf_new(GDK_COLORSPACE_RGB, true, 8, rect.              \
                                              width(), rect.height());                              \
             if (!imgw)                                                                             \
                 return;                                                                            \
-            imgw = QGtk::gdk_pixbuf_get_from_drawable(imgw, pixmap, NULL, 0, 0, 0, 0,              \
+            imgw = QGtkStylePrivate::gdk_pixbuf_get_from_drawable(imgw, pixmap, NULL, 0, 0, 0, 0,              \
                                                 rect.width(), rect.height());                      \
-            uchar* wdata = (uchar*)QGtk::gdk_pixbuf_get_pixels(imgw);                                    \
+            uchar* wdata = (uchar*)QGtkStylePrivate::gdk_pixbuf_get_pixels(imgw);                                    \
             cache = renderTheme(bdata, wdata, rect);                                               \
-            QGtk::gdk_pixbuf_unref(imgw);                                                          \
+            QGtkStylePrivate::gdk_pixbuf_unref(imgw);                                                          \
         } else {                                                                                   \
             cache = renderTheme(bdata, 0, rect);                                                   \
         }                                                                                          \
-        QGtk::gdk_drawable_unref(pixmap);                                                          \
-        QGtk::gdk_pixbuf_unref(imgb);                                                              \
+        QGtkStylePrivate::gdk_drawable_unref(pixmap);                                                          \
+        QGtkStylePrivate::gdk_pixbuf_unref(imgb);                                                              \
     }
 
 QGtkPainter::QGtkPainter(QPainter *_painter)
-        : m_window(QGtk::gtkWidget(QLatin1String("GtkWindow")))
+        : m_window(QGtkStylePrivate::gtkWidget(QLatin1String("GtkWindow")))
         , m_painter(_painter)
         , m_alpha(true)
         , m_hflipped(false)
@@ -185,18 +185,18 @@ GtkStyle* QGtkPainter::getStyle(GtkWidget *gtkWidget)
 
 QPixmap QGtkPainter::getIcon(const char* iconName, GtkIconSize size)
 {
-    GtkStyle *style = QGtk::gtkStyle();
-    GtkIconSet* iconSet  = QGtk::gtk_icon_factory_lookup_default (iconName);
-    GdkPixbuf* icon = QGtk::gtk_icon_set_render_icon(iconSet,
+    GtkStyle *style = QGtkStylePrivate::gtkStyle();
+    GtkIconSet* iconSet  = QGtkStylePrivate::gtk_icon_factory_lookup_default (iconName);
+    GdkPixbuf* icon = QGtkStylePrivate::gtk_icon_set_render_icon(iconSet,
                                                  style,
                                                  GTK_TEXT_DIR_LTR,
                                                  GTK_STATE_NORMAL,
                                                  size,
                                                  NULL,
                                                  "button");
-    uchar* data = (uchar*)QGtk::gdk_pixbuf_get_pixels(icon);
-    int width = QGtk::gdk_pixbuf_get_width(icon);
-    int height = QGtk::gdk_pixbuf_get_height(icon);
+    uchar* data = (uchar*)QGtkStylePrivate::gdk_pixbuf_get_pixels(icon);
+    int width = QGtkStylePrivate::gdk_pixbuf_get_width(icon);
+    int height = QGtkStylePrivate::gdk_pixbuf_get_height(icon);
     QImage converted(width, height, QImage::Format_ARGB32);
     uchar* tdata = (uchar*)converted.bits();
 
@@ -208,7 +208,7 @@ QPixmap QGtkPainter::getIcon(const char* iconName, GtkIconSize size)
         tdata[index + QT_ALPHA] = data[index + GTK_ALPHA];
     }
 
-    QGtk::gdk_pixbuf_unref(icon);
+    QGtkStylePrivate::gdk_pixbuf_unref(icon);
 
     // should we free iconset?
     return QPixmap::fromImage(converted);
@@ -240,7 +240,7 @@ void QGtkPainter::paintBoxGap(GtkWidget *gtkWidget, const gchar* part,
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size(), gtkWidget) + gapExtras;
 
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_box_gap (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_box_gap (style,
                                            pixmap,
                                            state,
                                            shadow,
@@ -305,7 +305,7 @@ void QGtkPainter::paintBox(GtkWidget *gtkWidget, const gchar* part,
                                     rect.size(), gtkWidget) + pmKey;
 
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_box (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_box (style,
                                            pixmap,
                                            state,
                                            shadow,
@@ -356,7 +356,7 @@ void QGtkPainter::paintHline(GtkWidget *gtkWidget, const gchar* part,
     QString pixmapName = uniqueName(QLS(part), state, GTK_SHADOW_NONE, rect.size(), gtkWidget)
                          + hLineExtras + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_hline (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_hline (style,
                                          pixmap,
                                          state,
                                          NULL,
@@ -383,7 +383,7 @@ void QGtkPainter::paintVline(GtkWidget *gtkWidget, const gchar* part,
     QString pixmapName = uniqueName(QLS(part), state, GTK_SHADOW_NONE, rect.size(),
                                     gtkWidget) + vLineExtras +pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_vline (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_vline (style,
                                          pixmap,
                                          state,
                                          NULL,
@@ -410,7 +410,7 @@ void QGtkPainter::paintExpander(GtkWidget *gtkWidget,
     QString pixmapName = uniqueName(QLS(part), state, GTK_SHADOW_NONE, rect.size(),
                                     gtkWidget) + QString::number(expander_state) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_expander (style, pixmap,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_expander (style, pixmap,
                                             state, NULL,
                                             gtkWidget, part,
                                             rect.width()/2,
@@ -433,7 +433,7 @@ void QGtkPainter::paintFocus(GtkWidget *gtkWidget, const gchar* part,
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, GTK_SHADOW_NONE, rect.size(), gtkWidget) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_focus (style, pixmap, state, NULL,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_focus (style, pixmap, state, NULL,
                                          gtkWidget,
                                          part,
                                          0, 0,
@@ -458,7 +458,7 @@ void QGtkPainter::paintResizeGrip(GtkWidget *gtkWidget, const gchar* part,
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size(), gtkWidget) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_resize_grip (style, pixmap, state,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_resize_grip (style, pixmap, state,
                                                NULL, gtkWidget,
                                                part, edge, 0, 0,
                                                rect.width(),
@@ -488,7 +488,7 @@ void QGtkPainter::paintArrow(GtkWidget *gtkWidget, const gchar* part,
     int xOffset = m_cliprect.isValid() ? arrowrect.x() - m_cliprect.x() : 0;
     int yOffset = m_cliprect.isValid() ? arrowrect.y() - m_cliprect.y() : 0;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_arrow (style, pixmap, state, shadow,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_arrow (style, pixmap, state, shadow,
                                          &gtkCliprect,
                                          gtkWidget,
                                          part,
@@ -515,7 +515,7 @@ void QGtkPainter::paintHandle(GtkWidget *gtkWidget, const gchar* part, const QRe
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size())
                          + QString::number(orientation);
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_handle (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_handle (style,
                                           pixmap,
                                           state,
                                           shadow,
@@ -543,7 +543,7 @@ void QGtkPainter::paintSlider(GtkWidget *gtkWidget, const gchar* part, const QRe
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size(), gtkWidget) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_slider (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_slider (style,
                                           pixmap,
                                           state,
                                           shadow,
@@ -574,7 +574,7 @@ void QGtkPainter::paintShadow(GtkWidget *gtkWidget, const gchar* part,
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size()) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_shadow(style, pixmap, state, shadow, NULL,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_shadow(style, pixmap, state, shadow, NULL,
                                          gtkWidget, part, 0, 0, rect.width(), rect.height()));
         if (m_usePixmapCache)
             QPixmapCache::insert(pixmapName, cache);
@@ -593,7 +593,7 @@ void QGtkPainter::paintFlatBox(GtkWidget *gtkWidget, const gchar* part,
     QPixmap cache;
     QString pixmapName = uniqueName(QLS(part), state, shadow, rect.size()) + pmKey;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_flat_box (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_flat_box (style,
                                             pixmap,
                                             state,
                                             shadow,
@@ -622,7 +622,7 @@ void QGtkPainter::paintExtention(GtkWidget *gtkWidget,
     pixmapName += QString::number(gap_pos);
 
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_extension (style, pixmap, state, shadow,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_extension (style, pixmap, state, shadow,
                                              NULL, gtkWidget,
                                              (gchar*)part, 0, 0,
                                              rect.width(),
@@ -651,7 +651,7 @@ void QGtkPainter::paintOption(GtkWidget *gtkWidget, const QRect &radiorect,
     int xOffset = m_cliprect.isValid() ? radiorect.x() - m_cliprect.x() : 0;
     int yOffset = m_cliprect.isValid() ? radiorect.y() - m_cliprect.y() : 0;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_option(style, pixmap,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_option(style, pixmap,
                                          state, shadow,
                                          &gtkCliprect,
                                          gtkWidget,
@@ -683,7 +683,7 @@ void QGtkPainter::paintCheckbox(GtkWidget *gtkWidget, const QRect &checkrect,
     int xOffset = m_cliprect.isValid() ? checkrect.x() - m_cliprect.x() : 0;
     int yOffset = m_cliprect.isValid() ? checkrect.y() - m_cliprect.y() : 0;
     if (!m_usePixmapCache || !QPixmapCache::find(pixmapName, cache)) {
-        DRAW_TO_CACHE(QGtk::gtk_paint_check (style,
+        DRAW_TO_CACHE(QGtkStylePrivate::gtk_paint_check (style,
                                          pixmap,
                                          state,
                                          shadow,
