@@ -135,6 +135,11 @@ struct Namespace {
     // Nested classes may be forward-declared inside a definition, and defined in another file.
     // The latter will detach the class' child list, so clones need a backlink to the original
     // definition (either one in case of multiple definitions).
+    // Namespaces can have tr() functions as well, so we need to track parent definitions for
+    // them as well. The complication is that we may have to deal with a forrest instead of
+    // a tree - in that case the parent will be arbitrary. However, it seem likely that
+    // Q_DECLARE_TR_FUNCTIONS would be used either in "class-like" namespaces with a central
+    // header or only locally in a file.
     Namespace *classDef;
 
     QString trQualification;
@@ -1635,7 +1640,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                         break;
                     NamespaceList nsl;
                     if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                        modifyNamespace(&namespaces, false)->aliases[ns] = nsl;
+                        modifyNamespace(&namespaces)->aliases[ns] = nsl;
                 }
             } else if (yyTok == Tok_LeftBrace) {
                 // Anonymous namespace
@@ -1661,7 +1666,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 NamespaceList nsl;
                 if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                    modifyNamespace(&namespaces, false)->usings << HashStringList(nsl);
+                    modifyNamespace(&namespaces)->usings << HashStringList(nsl);
             } else {
                 QList<HashString> fullName;
                 if (yyTok == Tok_ColonColon)
@@ -1678,7 +1683,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     break;
                 NamespaceList nsl;
                 if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                    modifyNamespace(&namespaces, true)->aliases[nsl.last()] = nsl;
+                    modifyNamespace(&namespaces)->aliases[nsl.last()] = nsl;
             }
             break;
         case Tok_tr:
@@ -1875,7 +1880,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             break;
         case Tok_Q_DECLARE_TR_FUNCTIONS:
             if (getMacroArgs()) {
-                Namespace *ns = modifyNamespace(&namespaces, true);
+                Namespace *ns = modifyNamespace(&namespaces);
                 ns->hasTrFunctions = true;
                 ns->trQualification = yyWord;
                 ns->trQualification.detach();
@@ -1883,7 +1888,7 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
             yyTok = getToken();
             break;
         case Tok_Q_OBJECT:
-            modifyNamespace(&namespaces, true)->hasTrFunctions = true;
+            modifyNamespace(&namespaces)->hasTrFunctions = true;
             yyTok = getToken();
             break;
         case Tok_Ident:
