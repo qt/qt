@@ -954,7 +954,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
 //----------------------------------------------------------------------------
 
 /*!
-    \qmlclass ListView QFxListView
+    \qmlclass ListView QmlGraphicsListView
     \inherits Flickable
     \brief The ListView item provides a list view of items provided by a model.
 
