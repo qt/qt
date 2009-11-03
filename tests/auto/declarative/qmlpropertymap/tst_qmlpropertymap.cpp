@@ -55,6 +55,7 @@ public:
 private slots:
     void insert();
     void operatorInsert();
+    void operatorValue();
     void clear();
     void changed();
     void count();
@@ -66,6 +67,7 @@ void tst_QmlPropertyMap::insert()
     map.insert(QLatin1String("key1"),100);
     map.insert(QLatin1String("key2"),200);
     QVERIFY(map.keys().count() == 2);
+    QVERIFY(map.contains(QLatin1String("key1")));
 
     QCOMPARE(map.value(QLatin1String("key1")), QVariant(100));
     QCOMPARE(map.value(QLatin1String("key2")), QVariant(200));
@@ -88,6 +90,20 @@ void tst_QmlPropertyMap::operatorInsert()
     QCOMPARE(map.value(QLatin1String("key1")), QVariant("Hello World"));
 }
 
+void tst_QmlPropertyMap::operatorValue()
+{
+    QmlPropertyMap map;
+    map.insert(QLatin1String("key1"),100);
+    map.insert(QLatin1String("key2"),200);
+    QVERIFY(map.keys().count() == 2);
+    QVERIFY(map.contains(QLatin1String("key1")));
+
+    QCOMPARE(map.value(QLatin1String("key1")), QVariant(100));
+    QCOMPARE(map.value(QLatin1String("key2")), QVariant(200));
+    QCOMPARE(map[QLatin1String("key1")], map.value(QLatin1String("key1")));
+    QCOMPARE(map[QLatin1String("key2")], map.value(QLatin1String("key2")));
+}
+
 void tst_QmlPropertyMap::clear()
 {
     QmlPropertyMap map;
@@ -98,6 +114,7 @@ void tst_QmlPropertyMap::clear()
 
     map.clear(QLatin1String("key1"));
     QVERIFY(map.keys().count() == 1);
+    QVERIFY(map.contains(QLatin1String("key1")));
     QCOMPARE(map.value(QLatin1String("key1")), QVariant());
 }
 
@@ -143,6 +160,7 @@ void tst_QmlPropertyMap::count()
     //clearing doesn't remove the key
     map.clear(QLatin1String("key3"));
     QCOMPARE(map.count(), 3);
+    QCOMPARE(map.size(), map.count());
 }
 
 QTEST_MAIN(tst_QmlPropertyMap)
