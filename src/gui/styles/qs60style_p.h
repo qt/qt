@@ -372,7 +372,7 @@ public:
 
         SF_StateEnabled =     0x0010, // Enabled = the default
         SF_StateDisabled =    0x0020,
-        SF_ColorSkinned =     0x0040,
+        SF_ColorSkinned =     0x0040, // pixmap is colored with foreground pen color
     };
 
     enum CacheClearReason {
@@ -472,7 +472,7 @@ private:
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QPixmap cachedPart(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap cachedFrame(SkinFrameElements frame, const QSize &size,
         SkinElementFlags flags = KDefaultSkinElementFlags);
 
@@ -489,7 +489,7 @@ private:
     static QSize partSize(QS60StyleEnums::SkinParts part,
         SkinElementFlags flags = KDefaultSkinElementFlags);
     static QPixmap part(QS60StyleEnums::SkinParts part, const QSize &size,
-        SkinElementFlags flags = KDefaultSkinElementFlags);
+        QPainter *painter, SkinElementFlags flags = KDefaultSkinElementFlags);
 
     static QFont s60Font_specific(QS60StyleEnums::FontCategories fontCategory, int pointSize);
 

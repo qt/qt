@@ -201,6 +201,7 @@ private slots:
     void repeatedSignature() const;
     void repeated() const;
     void repeated_data() const;
+    void task262677remove();
 };
 
 typedef QList<int> IntList;
@@ -4668,6 +4669,14 @@ void tst_QString::repeated_data() const
         << QString(QLatin1String("abcabcabcabc"))
         << 4;
 }
+
+void tst_QString::task262677remove()
+{
+    QString driveName = QLatin1String("V:\\blahblah\\more_blahblah\\");
+    driveName.remove(2, INT_MAX); // should be "V:" - instead, it's "V::\\blahblah\\more_blahblah\\"
+    QVERIFY(driveName == QLatin1String("V:"));
+}
+
 
 QTEST_APPLESS_MAIN(tst_QString)
 

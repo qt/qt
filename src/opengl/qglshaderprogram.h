@@ -88,11 +88,6 @@ public:
     bool compile(const QString& source);
     bool compileFile(const QString& fileName);
 
-    bool setShaderBinary(GLenum format, const void *binary, int length);
-    bool setShaderBinary(QGLShader& otherShader, GLenum format, const void *binary, int length);
-
-    static QList<GLenum> shaderBinaryFormats();
-
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
@@ -101,11 +96,12 @@ public:
     GLuint shaderId() const;
 
 private:
-    QGLShaderPrivate *d;
-
     friend class QGLShaderProgram;
 
     Q_DISABLE_COPY(QGLShader)
+    Q_DECLARE_PRIVATE(QGLShader)
+
+    bool compile(const QList<QGLShader *>& shaders, QGLShader::ShaderType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
@@ -131,10 +127,6 @@ public:
     bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
-
-    QByteArray programBinary(int *format) const;
-    bool setProgramBinary(int format, const QByteArray& binary);
-    static QList<int> programBinaryFormats();
 
     virtual bool link();
     bool isLinked() const;
@@ -286,9 +278,8 @@ private Q_SLOTS:
     void shaderDestroyed();
 
 private:
-    QGLShaderProgramPrivate *d;
-
     Q_DISABLE_COPY(QGLShaderProgram)
+    Q_DECLARE_PRIVATE(QGLShaderProgram)
 
     bool init();
 };

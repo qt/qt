@@ -386,7 +386,6 @@ public:
     bool paintOnScreen() const;
     void invalidateGraphicsEffectsRecursively();
 
-    QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
 
@@ -819,7 +818,8 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                   QGraphicsEffectSource::PixmapPadMode mode) const;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;

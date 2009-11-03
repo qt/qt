@@ -136,11 +136,11 @@ QT_BEGIN_NAMESPACE
 #define TDLG_SECONDARYPANEL         8
 #endif
 
-class Animation
+class QWindowsVistaAnimation
 {
 public :
-    Animation() : _running(true) { }
-    virtual ~Animation() { }
+    QWindowsVistaAnimation() : _running(true) { }
+    virtual ~QWindowsVistaAnimation() { }
     QWidget * widget() const { return _widget; }
     bool running() const { return _running; }
     const QTime &startTime() const { return _startTime; }
@@ -161,11 +161,11 @@ protected:
 
 
 // Handles state transition animations
-class Transition : public Animation
+class QWindowsVistaTransition : public QWindowsVistaAnimation
 {
 public :
-    Transition() : Animation() {}
-    virtual ~Transition() { }
+    QWindowsVistaTransition() : QWindowsVistaAnimation() {}
+    virtual ~QWindowsVistaTransition() { }
     void setDuration(int duration) { _duration = duration; }
     void setStartImage(const QImage &image) { _primaryImage = image; }
     void setEndImage(const QImage &image) { _secondaryImage = image; }
@@ -176,11 +176,11 @@ public :
 
 
 // Handles pulse animations (default buttons)
-class Pulse: public Animation
+class QWindowsVistaPulse: public QWindowsVistaAnimation
 {
 public :
-    Pulse() : Animation() {}
-    virtual ~Pulse() { }
+    QWindowsVistaPulse() : QWindowsVistaAnimation() {}
+    virtual ~QWindowsVistaPulse() { }
     void setDuration(int duration) { _duration = duration; }
     void setPrimaryImage(const QImage &image) { _primaryImage = image; }
     void setAlternateImage(const QImage &image) { _secondaryImage = image; }
@@ -199,15 +199,15 @@ public:
     ~QWindowsVistaStylePrivate();
     static bool resolveSymbols();
     static inline bool useVista();
-    void startAnimation(Animation *);
+    void startAnimation(QWindowsVistaAnimation *);
     void stopAnimation(const QWidget *);
-    Animation* widgetAnimation(const QWidget *) const;
+    QWindowsVistaAnimation* widgetAnimation(const QWidget *) const;
     void timerEvent();
     bool transitionsEnabled() const;
     QWidget *treeViewHelper();
 
 private:
-    QList <Animation*> animations;
+    QList <QWindowsVistaAnimation*> animations;
     QBasicTimer animationTimer;
     QWidget *m_treeViewHelper;
 };

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the test suite of the Qt Toolkit.
+** This file is part of the QtScript module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,17 +39,57 @@
 **
 ****************************************************************************/
 
-#ifndef TST_QSTRINGBUILDER_H
-#define TST_QSTRINGBUILDER_H
+#ifndef QSCRIPTPROGRAM_P_H
+#define QSCRIPTPROGRAM_P_H
 
-#include <qobject.h>
+//
+//  W A R N I N G
+//  -------------
+//
+// This file is not part of the Qt API.  It exists purely as an
+// implementation detail.  This header file may change from version to
+// version without notice, or even be removed.
+//
+// We mean it.
+//
 
-class tst_QStringBuilder : public QObject
+#include <QtCore/qobjectdefs.h>
+
+namespace JSC
 {
-    Q_OBJECT
+    class EvalExecutable;
+    class ExecState;
+}
 
-private slots:
-    void scenario();
+QT_BEGIN_NAMESPACE
+
+class QScriptEnginePrivate;
+
+class QScriptProgramPrivate
+{
+public:
+    QScriptProgramPrivate(const QString &sourceCode,
+                          const QString &fileName,
+                          int firstLineNumber);
+    ~QScriptProgramPrivate();
+
+    static QScriptProgramPrivate *get(const QScriptProgram &q);
+
+    JSC::EvalExecutable *executable(JSC::ExecState *exec,
+                                    QScriptEnginePrivate *engine);
+
+    QBasicAtomicInt ref;
+
+    QString sourceCode;
+    QString fileName;
+    int firstLineNumber;
+
+    QScriptEnginePrivate *engine;
+    JSC::EvalExecutable *_executable;
+    intptr_t sourceId;
+    bool isCompiled;
 };
+
+QT_END_NAMESPACE
 
 #endif

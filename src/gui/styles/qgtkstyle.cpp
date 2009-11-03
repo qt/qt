@@ -1004,46 +1004,50 @@ void QGtkStyle::drawPrimitive(PrimitiveElement element,
             gtkPainter.setAlphaSupport(false);
             GtkShadowType shadow = GTK_SHADOW_OUT;
             GtkStateType state = GTK_STATE_NORMAL; // Only state supported by gtknotebook
-            if (const QTabWidget *tabwidget = qobject_cast<const QTabWidget*>(widget)) {
-                // We should introduce QStyleOptionTabWidgetFrameV2 to obtain this information
-                // No gap if we do not show the actual tabs
-                QTabBar *tabBar = tabwidget->findChild<QTabBar*>();
-                if (tabwidget->count() > 0 && tabBar->isVisible()) {
-                    QRect tabRect = tabBar->tabRect(tabBar->currentIndex());
-                    int begin = 0, size = 0;
-                    GtkPositionType frameType = GTK_POS_TOP;
-                    QTabBar::Shape shape = frame->shape;
-                    if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
-                        begin = option->direction == Qt::LeftToRight ?
-                                frame->leftCornerWidgetSize.width() + tabRect.left() :
-                                frame->rect.width() - frame->tabBarSize.width() + tabRect.left()
-                                - frame->rightCornerWidgetSize.width();
-                        size = tabRect.width();
-                        frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
-                    } else {
-                        begin = frame->leftCornerWidgetSize.height() + tabRect.top();
-                        size = tabRect.height();
-                        frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
-                    }
-                    gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
-                                            begin, size, style);
-                    break; // done
+            bool reverse = (option->direction == Qt::RightToLeft);
+            QGtk::gtk_widget_set_direction(gtkNotebook, reverse ? GTK_TEXT_DIR_RTL : GTK_TEXT_DIR_LTR);
+            if (const QStyleOptionTabWidgetFrameV2 *tabframe = qstyleoption_cast<const QStyleOptionTabWidgetFrameV2*>(option)) {
+                GtkPositionType frameType = GTK_POS_TOP;
+                QTabBar::Shape shape = frame->shape;
+                int gapStart = 0;
+                int gapSize = 0;
+                if (shape == QTabBar::RoundedNorth || shape == QTabBar::RoundedSouth) {
+                    frameType = (shape == QTabBar::RoundedNorth) ? GTK_POS_TOP : GTK_POS_BOTTOM;
+                    gapStart = tabframe->selectedTabRect.left();
+                    gapSize = tabframe->selectedTabRect.width();
+                } else {
+                    frameType = (shape == QTabBar::RoundedWest) ? GTK_POS_LEFT : GTK_POS_RIGHT;
+                    gapStart = tabframe->selectedTabRect.y();
+                    gapSize = tabframe->selectedTabRect.height();
                 }
+                gtkPainter.paintBoxGap(gtkNotebook, "notebook",  option->rect, state, shadow, frameType,
+                                        gapStart, gapSize, style);
+                break; // done
             }
+
             // Note this is only the fallback option
             gtkPainter.paintBox(gtkNotebook, "notebook",  option->rect, state, shadow, style);
         }
         break;
 
-    case PE_PanelButtonCommand: {
+    case PE_PanelButtonCommand:
+    case PE_PanelButtonTool: {
         bool isDefault = false;
+        bool isTool = (element == PE_PanelButtonTool);
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton*>(option))
             isDefault = btn->features & QStyleOptionButton::DefaultButton;
+
+        // don't draw a frame for tool buttons that have the autoRaise flag and are not enabled or on
+        if (isTool && !(option->state & State_Enabled || option->state & State_On) && (option->state & State_AutoRaise))
+            break;
+        // don't draw a frame for dock widget buttons, unless we are hovering
+        if (widget && widget->inherits("QDockWidgetTitleButton") && !(option->state & State_MouseOver))
+            break;
 
         GtkStateType state = gtkPainter.gtkState(option);
         if (option->state & State_On || option->state & State_Sunken)
             state = GTK_STATE_ACTIVE;
-        GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+        GtkWidget *gtkButton = QGtk::gtkWidget(isTool ? QLS("GtkToolButton.GtkButton") : QLS("GtkButton"));
         gint focusWidth, focusPad;
         gboolean interiorFocus = false;
         QGtk::gtk_widget_style_get (gtkButton,
@@ -1555,7 +1559,7 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
 
             QStyleOptionToolButton label = *toolbutton;
             label.state = bflags;
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
             QPalette pal = toolbutton->palette;
             if (option->state & State_Enabled && 
                 option->state & State_MouseOver && !(widget && widget->testAttribute(Qt::WA_SetPalette))) {
@@ -1924,20 +1928,30 @@ void QGtkStyle::drawComplexControl(ComplexControl control, const QStyleOptionCom
                 QRect grooveRect = option->rect.adjusted(focusFrameMargin, outerSize + focusFrameMargin,
                                    -focusFrameMargin, -outerSize - focusFrameMargin);
 
-                gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
-                                     GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
-
                 gboolean trough_side_details = false; // Indicates if the upper or lower scale background differs
                 if (!QGtk::gtk_check_version(2, 10, 0))
                     QGtk::gtk_widget_style_get((GtkWidget*)(scaleWidget), "trough-side-details",   &trough_side_details, NULL);
 
-                if (trough_side_details && horizontal) { //### Vertical sliders look broken with this for some reason
+                if (!trough_side_details) {
+                    gtkPainter.paintBox( scaleWidget, "trough", grooveRect, state,
+                                         GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
+                } else {
+                    QRect upperGroove = grooveRect;
                     QRect lowerGroove = grooveRect;
-                    lowerGroove.setRight(handle.center().x());
+
+                    if (horizontal) {
+                        upperGroove.setLeft(handle.center().x());
+                        lowerGroove.setRight(handle.center().x());
+                    } else {
+                        upperGroove.setBottom(handle.center().y());
+                        lowerGroove.setTop(handle.center().y());
+                    }
+
+                    gtkPainter.paintBox( scaleWidget, "trough-upper", upperGroove, state,
+                                         GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
                     gtkPainter.paintBox( scaleWidget, "trough-lower", lowerGroove, state,
                                          GTK_SHADOW_IN, style, QString(QLS("p%0")).arg(slider->sliderPosition));
                 }
-
             }
 
             if (option->subControls & SC_SliderTickmarks) {
@@ -3116,7 +3130,7 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
 
     case CT_ToolButton:
         if (const QStyleOptionToolButton *toolbutton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkButton"));
+            GtkWidget *gtkButton = QGtk::gtkWidget(QLS("GtkToolButton.GtkButton"));
             newSize = size + QSize(2 * gtkButton->style->xthickness, 1 + 2 * gtkButton->style->ythickness);
             if (widget && qobject_cast<QToolBar *>(widget->parentWidget())) {
                 QSize minSize(0, 25);

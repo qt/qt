@@ -333,6 +333,11 @@ QHostAddress tst_NetworkSelfTest::serverIpAddress()
     if (cachedIpAddress.protocol() == QAbstractSocket::UnknownNetworkLayerProtocol) {
         // need resolving
         QHostInfo resolved = QHostInfo::fromName(QtNetworkSettings::serverName());
+        if(resolved.error() != QHostInfo::NoError ||
+            !resolved.addresses().isEmpty()) {
+            qWarning("QHostInfo::fromName failed (%d).", resolved.error());
+            return QHostAddress(QHostAddress::Null);
+        }
         cachedIpAddress = resolved.addresses().first();
     }
     return cachedIpAddress;

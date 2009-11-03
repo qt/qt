@@ -42,6 +42,7 @@
 #include "qtriangulatingstroker_p.h"
 #include <qmath.h>
 
+QT_BEGIN_NAMESPACE
 
 #define CURVE_FLATNESS Q_PI / 8
 
@@ -130,8 +131,8 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
     if (m_roundness > 24)
         m_roundness = 24;
 
-    m_sin_theta = qSin(Q_PI / m_roundness); // ### Use qFastSin
-    m_cos_theta = qCos(Q_PI / m_roundness);
+    m_sin_theta = qFastSin(Q_PI / m_roundness);
+    m_cos_theta = qFastCos(Q_PI / m_roundness);
 
     const qreal *endPts = pts + (count<<1);
     const qreal *startPts;
@@ -338,3 +339,6 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen)
 
     m_dash_stroker.end();
 }
+
+QT_END_NAMESPACE
+

@@ -41,6 +41,7 @@
 
 
 #include <QtGui/QtGui>
+#include <private/qtablewidget_p.h>
 #include <QtTest/QtTest>
 #include "../../shared/util.h"
 #include "private/qapplication_p.h"
@@ -57,6 +58,13 @@
             QTest::qWait(step); \
         } \
     } while(0)
+
+#ifdef QT_BUILD_INTERNAL
+#define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) \
+    QVERIFY(static_cast<QTableViewPrivate*>(QObjectPrivate::get(TEST_VIEW_))->spans.checkConsistency())
+#else
+#define VERIFY_SPANS_CONSISTENCY(TEST_VIEW_) (void)false
+#endif
 
 typedef QList<int> IntList;
 Q_DECLARE_METATYPE(IntList)
@@ -188,12 +196,15 @@ private slots:
     void task248688_autoScrollNavigation();
     void task259308_scrollVerticalHeaderSwappedSections();
     void task191545_dragSelectRows();
+    void taskQTBUG_5062_spansInconsistency();
 
     void mouseWheel_data();
     void mouseWheel();
 
     void addColumnWhileEditing();
     void task234926_setHeaderSorting();
+
+    void changeHeaderData();
 };
 
 // Testing get/set functions
@@ -2017,8 +2028,9 @@ void tst_QTableView::resizeRowsToContents()
     view.resizeRowsToContents();
 
     QCOMPARE(resizedSpy.count(), model.rowCount());
-    for (int r = 0; r < model.rowCount(); ++r)
+    for (int r = 0; r < model.rowCount(); ++r) {
         QCOMPARE(view.rowHeight(r), rowHeight);
+    }
 }
 
 void tst_QTableView::resizeColumnsToContents_data()
@@ -2898,6 +2910,8 @@ void tst_QTableView::span()
     view.clearSpans();
     QCOMPARE(view.rowSpan(row, column), 1);
     QCOMPARE(view.columnSpan(row, column), 1);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 typedef QVector<QRect> SpanList;
@@ -3033,6 +3047,8 @@ void tst_QTableView::spans()
 
     QCOMPARE(view.columnSpan(pos.x(), pos.y()), expectedColumnSpan);
     QCOMPARE(view.rowSpan(pos.x(), pos.y()), expectedRowSpan);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterRowInsertion()
@@ -3067,6 +3083,8 @@ void tst_QTableView::spansAfterRowInsertion()
     view.model()->insertRows(12, 2);
     QCOMPARE(view.rowSpan(7, 3), 5);
     QCOMPARE(view.columnSpan(7, 3), 3);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterColumnInsertion()
@@ -3101,6 +3119,8 @@ void tst_QTableView::spansAfterColumnInsertion()
     view.model()->insertColumns(12, 2);
     QCOMPARE(view.rowSpan(3, 7), 3);
     QCOMPARE(view.columnSpan(3, 7), 5);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterRowRemoval()
@@ -3138,6 +3158,8 @@ void tst_QTableView::spansAfterRowRemoval()
         QCOMPARE(view.columnSpan(span.top(), span.left()), span.width());
         QCOMPARE(view.rowSpan(span.top(), span.left()), span.height());
     }
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 void tst_QTableView::spansAfterColumnRemoval()
@@ -3176,6 +3198,8 @@ void tst_QTableView::spansAfterColumnRemoval()
         QCOMPARE(view.columnSpan(span.left(), span.top()), span.height());
         QCOMPARE(view.rowSpan(span.left(), span.top()), span.width());
     }
+
+    VERIFY_SPANS_CONSISTENCY(&view);
 }
 
 class Model : public QAbstractTableModel {
@@ -3267,12 +3291,12 @@ void tst_QTableView::resizeToContents()
 
     //now let's check the row/col sizes
     for(int i = 0;i<table.columnCount();i++) {
-        QVERIFY( table.columnWidth(i) == table2.columnWidth(i));
-        QVERIFY( table2.columnWidth(i) == table3.columnWidth(i));
+        QCOMPARE( table.columnWidth(i), table2.columnWidth(i));
+        QCOMPARE( table2.columnWidth(i), table3.columnWidth(i));
     }
     for(int i = 0;i<table.rowCount();i++) {
-        QVERIFY( table.rowHeight(i) == table2.rowHeight(i));
-        QVERIFY( table2.rowHeight(i) == table3.rowHeight(i));
+        QCOMPARE( table.rowHeight(i), table2.rowHeight(i));
+        QCOMPARE( table2.rowHeight(i), table3.rowHeight(i));
     }
 
 }
@@ -3843,6 +3867,42 @@ void tst_QTableView::task234926_setHeaderSorting()
     QApplication::processEvents();
     QCOMPARE(model.stringList() , sortedDataD);
 }
+
+void tst_QTableView::taskQTBUG_5062_spansInconsistency()
+{
+    const int nRows = 5;
+    const int nColumns = 5;
+
+    QtTestTableModel model(nRows, nColumns);
+    QtTestTableView view;
+    view.setModel(&model);
+
+    for (int i = 0; i < nRows; ++i)
+       view.setSpan(i, 0, 1, nColumns);
+    view.setSpan(2, 0, 1, 1);
+    view.setSpan(3, 0, 1, 1);
+
+    VERIFY_SPANS_CONSISTENCY(&view);
+}
+
+void tst_QTableView::changeHeaderData()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QString text = "long long long text";
+    const int textWidth = view.fontMetrics().width(text);
+    QVERIFY(view.verticalHeader()->width() < textWidth);
+
+    model.setHeaderData(2, Qt::Vertical, text);
+    QTest::qWait(100); //leave time for layout
+
+    QVERIFY(view.verticalHeader()->width() > textWidth);
+}
+
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

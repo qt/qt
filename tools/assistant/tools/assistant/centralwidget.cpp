@@ -230,6 +230,7 @@ CentralWidget::CentralWidget(QHelpEngine *engine, MainWindow *parent)
 #endif
 
     tabWidget = new QTabWidget(this);
+    tabWidget->setDocumentMode(true);
     connect(tabWidget, SIGNAL(currentChanged(int)), this,
         SLOT(currentPageChanged(int)));
 

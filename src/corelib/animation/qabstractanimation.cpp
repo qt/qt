@@ -157,19 +157,7 @@
 #ifndef QT_NO_ANIMATION
 
 #define DEFAULT_TIMER_INTERVAL 16
-
-#ifdef Q_WS_WIN
-    /// Fix for Qt 4.7
-    //on windows if you're currently dragging a widget an inner eventloop was started by the system
-    //to make sure that this timer is getting fired, we need to make sure to use the system timers
-    //that will send a WM_TIMER event. We do that by settings the timer interval to 11
-    //It is 16 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
-    //is greater than 11 to determine if it should use a system timer (or the multimedia timer).
-#define STARTSTOP_TIMER_DELAY 16
-#else
 #define STARTSTOP_TIMER_DELAY 0
-#endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -194,15 +182,10 @@ QUnifiedTimer *QUnifiedTimer::instance()
     return inst;
 }
 
-void QUnifiedTimer::ensureTimerUpdate(QAbstractAnimation *animation)
+void QUnifiedTimer::ensureTimerUpdate()
 {
-    if (isPauseTimerActive) {
+    if (isPauseTimerActive)
         updateAnimationsTime();
-    } else {
-        // this code is needed when ensureTimerUpdate is called from setState because we update
-        // the currentTime when an animation starts running (otherwise we could remove it)
-        animation->setCurrentTime(animation->currentTime());
-    }
 }
 
 void QUnifiedTimer::updateAnimationsTime()
@@ -381,7 +364,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     case QAbstractAnimation::Paused:
         if (hasRegisteredTimer)
             // currentTime needs to be updated if pauseTimer is active
-            QUnifiedTimer::instance()->ensureTimerUpdate(q);
+            QUnifiedTimer::instance()->ensureTimerUpdate();
         if (!guard)
             return;
         //here we're sure that we were in running state before and that the
@@ -395,9 +378,11 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
 
             // this ensures that the value is updated now that the animation is running
             if (oldState == QAbstractAnimation::Stopped) {
-                if (isTopLevel)
+                if (isTopLevel) {
                     // currentTime needs to be updated if pauseTimer is active
-                    QUnifiedTimer::instance()->ensureTimerUpdate(q);
+                    QUnifiedTimer::instance()->ensureTimerUpdate();
+                    q->setCurrentTime(totalCurrentTime);
+                }
             }
         }
         break;
@@ -558,7 +543,7 @@ void QAbstractAnimation::setDirection(Direction direction)
     // the commands order below is important: first we need to setCurrentTime with the old direction,
     // then update the direction on this and all children and finally restart the pauseTimer if needed
     if (d->hasRegisteredTimer)
-        QUnifiedTimer::instance()->ensureTimerUpdate(this);
+        QUnifiedTimer::instance()->ensureTimerUpdate();
 
     d->direction = direction;
     updateDirection(direction);

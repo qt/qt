@@ -216,24 +216,14 @@ void QLocalServerPrivate::waitForNewConnection(int msec, bool *timedOut)
     timeout.tv_sec = msec / 1000;
     timeout.tv_usec = (msec % 1000) * 1000;
 
-    // timeout can not be 0 or else select will return an error.
-    if (0 == msec)
-        timeout.tv_usec = 1000;
-
     int result = -1;
-    // on Linux timeout will be updated by select, but _not_ on other systems.
-    QTime timer;
-    timer.start();
-    while (pendingConnections.isEmpty() && (-1 == msec || timer.elapsed() < msec)) {
-        result = ::select(listenSocket + 1, &readfds, 0, 0, &timeout);
-        if (-1 == result && errno != EINTR) {
-            setError(QLatin1String("QLocalServer::waitForNewConnection"));
-            closeServer();
-            break;
-        }
-        if (result > 0)
-            _q_onNewConnection();
+    result = qt_safe_select(listenSocket + 1, &readfds, 0, 0, (msec == -1) ? 0 : &timeout);
+    if (-1 == result) {
+        setError(QLatin1String("QLocalServer::waitForNewConnection"));
+        closeServer();
     }
+    if (result > 0)
+        _q_onNewConnection();
     if (timedOut)
         *timedOut = (result == 0);
 }

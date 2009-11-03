@@ -70,6 +70,7 @@
 
 namespace JSC
 {
+    class EvalExecutable;
     class ExecState;
     typedef ExecState CallFrame;
     class JSCell;
@@ -101,11 +102,22 @@ namespace QScript
     class TimeoutCheckerProxy;
 
     //some conversion helper functions
-    QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
+    inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec);
     bool isFunction(JSC::JSValue value);
 
     class UStringSourceProviderWithFeedback;
-}
+
+struct GlobalClientData : public JSC::JSGlobalData::ClientData
+{
+    GlobalClientData(QScriptEnginePrivate *e)
+        : engine(e) {}
+    virtual ~GlobalClientData() {}
+    virtual void mark(JSC::MarkStack& markStack);
+
+    QScriptEnginePrivate *engine;
+};
+
+} // namespace QScript
 
 class QScriptEnginePrivate
 #ifndef QT_NO_QOBJECT
@@ -147,16 +159,16 @@ public:
     JSC::JSValue defaultPrototype(int metaTypeId) const;
     void setDefaultPrototype(int metaTypeId, JSC::JSValue prototype);
 
-    static QScriptContext *contextForFrame(JSC::ExecState *frame);
-    static JSC::ExecState *frameForContext(QScriptContext *context);
-    static const JSC::ExecState *frameForContext(const QScriptContext *context);
+    static inline QScriptContext *contextForFrame(JSC::ExecState *frame);
+    static inline JSC::ExecState *frameForContext(QScriptContext *context);
+    static inline const JSC::ExecState *frameForContext(const QScriptContext *context);
 
     JSC::JSGlobalObject *originalGlobalObject() const;
     JSC::JSObject *getOriginalGlobalObjectProxy();
     JSC::JSObject *customGlobalObject() const;
     JSC::JSObject *globalObject() const;
     void setGlobalObject(JSC::JSObject *object);
-    JSC::ExecState *globalExec() const;
+    inline JSC::ExecState *globalExec() const;
     JSC::JSValue toUsableValue(JSC::JSValue value);
     static JSC::JSValue thisForContext(JSC::ExecState *frame);
     static JSC::Register *thisRegisterForFrame(JSC::ExecState *frame);
@@ -199,6 +211,10 @@ public:
     static bool convertToNativeQObject(const QScriptValue &value,
                                        const QByteArray &targetType,
                                        void **result);
+
+    JSC::JSValue evaluateHelper(JSC::ExecState *exec, intptr_t sourceId,
+                                JSC::EvalExecutable *executable,
+                                bool &compile);
 
     QScript::QObjectData *qobjectData(QObject *object);
     void disposeQObject(QObject *object);
@@ -367,6 +383,11 @@ private:
     JSC::ExecState *oldFrame;
 };
 
+inline QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
+{
+    return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
+}
+
 } // namespace QScript
 
 inline QScriptValuePrivate *QScriptEnginePrivate::allocateScriptValuePrivate(size_t size)
@@ -473,6 +494,28 @@ inline QScriptValue QScriptValuePrivate::property(const QString &name, int resol
     return property(JSC::Identifier(exec, name), resolveMode);
 }
 
+inline QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+{
+    Q_ASSERT(isObject());
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSObject *object = JSC::asObject(jscValue);
+    JSC::PropertySlot slot(object);
+    if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, id, slot))
+        return engine->scriptValueFromJSCValue(slot.getValue(exec, id));
+    return propertyHelper(id, resolveMode);
+}
+
+inline QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+{
+    Q_ASSERT(isObject());
+    JSC::ExecState *exec = engine->currentFrame;
+    JSC::JSObject *object = JSC::asObject(jscValue);
+    JSC::PropertySlot slot(object);
+    if ((resolveMode & QScriptValue::ResolvePrototype) && object->getPropertySlot(exec, index, slot))
+        return engine->scriptValueFromJSCValue(slot.getValue(exec, index));
+    return propertyHelper(index, resolveMode);
+}
+
 inline void* QScriptValuePrivate::operator new(size_t size, QScriptEnginePrivate *engine)
 {
     if (engine)
@@ -487,6 +530,22 @@ inline void QScriptValuePrivate::operator delete(void *ptr)
         d->engine->freeScriptValuePrivate(d);
     else
         qFree(d);
+}
+
+inline void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
+{
+    if (exec) {
+        *val = exec->exception();
+        exec->clearException();
+    } else {
+        *val = JSC::JSValue();
+    }
+}
+
+inline void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
+{
+    if (exec && val)
+        exec->setException(val);
 }
 
 inline void QScriptEnginePrivate::registerScriptString(QScriptStringPrivate *value)
@@ -510,6 +569,31 @@ inline void QScriptEnginePrivate::unregisterScriptString(QScriptStringPrivate *v
         registeredScriptStrings = value->next;
     value->prev = 0;
     value->next = 0;
+}
+
+inline QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
+{
+    if (frame && frame->callerFrame()->hasHostCallFrameFlag() && !frame->callee()
+        && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
+        //skip the "fake" context created in Interpreter::execute.
+        frame = frame->callerFrame()->removeHostCallFrameFlag();
+    }
+    return reinterpret_cast<QScriptContext *>(frame);
+}
+
+inline JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
+{
+    return reinterpret_cast<JSC::ExecState*>(context);
+}
+
+inline const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
+{
+    return reinterpret_cast<const JSC::ExecState*>(context);
+}
+
+inline JSC::ExecState *QScriptEnginePrivate::globalExec() const
+{
+    return originalGlobalObject()->globalExec();
 }
 
 QT_END_NAMESPACE

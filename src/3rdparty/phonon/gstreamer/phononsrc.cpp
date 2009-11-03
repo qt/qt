@@ -109,18 +109,25 @@ static void phonon_src_class_init (PhononSrcClass * klass)
 static void phonon_src_init (PhononSrc * src, PhononSrcClass * g_class)
 {
     Q_UNUSED(g_class);
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     src->device = 0;
+#else
+    Q_UNUSED(src);
+#endif
 }
 
 static void phonon_src_finalize (GObject * object)
 {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     PhononSrc *src;
     src = GST_PHONON_SRC (object);
     delete src->device;
     src->device = 0;
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
     G_OBJECT_CLASS (parent_class)->finalize (object);
 }
 
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
 static gboolean phonon_src_set_device(PhononSrc * src, StreamReader* device)
 {
     GstState state;
@@ -145,6 +152,7 @@ wrong_state:
         return FALSE;
     }
 }
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
 
 static void phonon_src_set_property (GObject * object, guint prop_id, const GValue * value, GParamSpec * pspec)
 {
@@ -153,6 +161,7 @@ static void phonon_src_set_property (GObject * object, guint prop_id, const GVal
     src = GST_PHONON_SRC (object);
 
     switch (prop_id) {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     case ARG_PHONONSRC:
     {
         StreamReader *dev = (StreamReader*)(g_value_get_pointer(value));
@@ -160,6 +169,9 @@ static void phonon_src_set_property (GObject * object, guint prop_id, const GVal
             phonon_src_set_device(src, dev);
         break;
     }
+#else
+    Q_UNUSED(value);
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
    default:
        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
        break;
@@ -174,9 +186,13 @@ static void phonon_src_get_property (GObject * object, guint prop_id, GValue * v
     src = GST_PHONON_SRC (object);
 
     switch (prop_id) {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     case ARG_PHONONSRC:
         g_value_set_pointer(value, src->device);
         break;
+#else //QT_NO_PHONON_ABSTRACTMEDIASTREAM
+    Q_UNUSED(value);
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -185,6 +201,7 @@ static void phonon_src_get_property (GObject * object, guint prop_id, GValue * v
 
 static GstFlowReturn phonon_src_create_read (PhononSrc * src, guint64 offset, guint length, GstBuffer ** buffer)
 {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     Q_ASSERT(src->device);
     if (!src->device)
         return GST_FLOW_ERROR;
@@ -204,6 +221,13 @@ static GstFlowReturn phonon_src_create_read (PhononSrc * src, guint64 offset, gu
 
     gst_mini_object_unref(GST_MINI_OBJECT(buf));
     return GST_FLOW_ERROR;
+#else //QT_NO_PHONON_ABSTRACTMEDIASTREAM
+    Q_UNUSED(src);
+    Q_UNUSED(offset);
+    Q_UNUSED(length);
+    Q_UNUSED(buffer);
+    return GST_FLOW_ERROR;
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
 }
 
 static GstFlowReturn phonon_src_create (GstBaseSrc * basesrc, guint64 offset, guint length, GstBuffer ** buffer)
@@ -218,19 +242,23 @@ static GstFlowReturn phonon_src_create (GstBaseSrc * basesrc, guint64 offset, gu
 static gboolean phonon_src_is_seekable (GstBaseSrc * basesrc)
 {
     PhononSrc *src = GST_PHONON_SRC (basesrc);
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     if (src->device)
         return src->device->streamSeekable();
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
     return false;
 }
 
 static gboolean phonon_src_get_size (GstBaseSrc * basesrc, guint64 * size)
 {
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     PhononSrc *src;
     src = GST_PHONON_SRC (basesrc);
     if (src->device && src->device->streamSeekable()) {
         *size = src->device->streamSize();
         return TRUE;
     }
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
     *size = 0;
     return FALSE;
 }

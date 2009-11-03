@@ -853,8 +853,13 @@ void QListView::resizeEvent(QResizeEvent *e)
 */
 void QListView::dragMoveEvent(QDragMoveEvent *e)
 {
-    if (!d_func()->commonListView->filterDragMoveEvent(e))
-        QAbstractItemView::dragMoveEvent(e);
+    Q_D(QListView);
+    if (!d->commonListView->filterDragMoveEvent(e)) {
+        if (viewMode() == QListView::ListMode && flow() == QListView::LeftToRight)
+            static_cast<QListModeViewBase *>(d->commonListView)->dragMoveEvent(e);
+        else
+            QAbstractItemView::dragMoveEvent(e);
+    }
 }
 
 
@@ -1804,6 +1809,16 @@ QItemSelection QListViewPrivate::selection(const QRect &rect) const
     return selection;
 }
 
+#ifndef QT_NO_DRAGANDDROP
+QAbstractItemView::DropIndicatorPosition QListViewPrivate::position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const
+{
+    if (viewMode == QListView::ListMode && flow == QListView::LeftToRight)
+        return static_cast<QListModeViewBase *>(commonListView)->position(pos, rect, idx);
+    else
+        return QAbstractItemViewPrivate::position(pos, rect, idx);
+}
+#endif
+
 /*
  * Common ListView Implementation
 */
@@ -1893,6 +1908,96 @@ void QListModeViewBase::paintDragDrop(QPainter *painter)
     // in IconMode, it makes no sense to show it
     dd->paintDropIndicator(painter);
 }
+
+QAbstractItemView::DropIndicatorPosition QListModeViewBase::position(const QPoint &pos, const QRect &rect, const QModelIndex &index) const
+{
+    QAbstractItemView::DropIndicatorPosition r = QAbstractItemView::OnViewport;
+    if (!dd->overwrite) {
+        const int margin = 2;
+        if (pos.x() - rect.left() < margin) {
+            r = QAbstractItemView::AboveItem;   // Visually, on the left
+        } else if (rect.right() - pos.x() < margin) {
+            r = QAbstractItemView::BelowItem;   // Visually, on the right
+        } else if (rect.contains(pos, true)) {
+            r = QAbstractItemView::OnItem;
+        }
+    } else {
+        QRect touchingRect = rect;
+        touchingRect.adjust(-1, -1, 1, 1);
+        if (touchingRect.contains(pos, false)) {
+            r = QAbstractItemView::OnItem;
+        }
+    }
+
+    if (r == QAbstractItemView::OnItem && (!(dd->model->flags(index) & Qt::ItemIsDropEnabled)))
+        r = pos.x() < rect.center().x() ? QAbstractItemView::AboveItem : QAbstractItemView::BelowItem;
+
+    return r;
+}
+
+void QListModeViewBase::dragMoveEvent(QDragMoveEvent *event)
+{
+    if (qq->dragDropMode() == QAbstractItemView::InternalMove
+        && (event->source() != qq || !(event->possibleActions() & Qt::MoveAction)))
+        return;
+
+    // ignore by default
+    event->ignore();
+
+    QModelIndex index = qq->indexAt(event->pos());
+    dd->hover = index;
+    if (!dd->droppingOnItself(event, index)
+        && dd->canDecode(event)) {
+
+        if (index.isValid() && dd->showDropIndicator) {
+            QRect rect = qq->visualRect(index);
+            dd->dropIndicatorPosition = position(event->pos(), rect, index);
+            switch (dd->dropIndicatorPosition) {
+            case QAbstractItemView::AboveItem:
+                if (dd->isIndexDropEnabled(index.parent())) {
+                    dd->dropIndicatorRect = QRect(rect.left(), rect.top(), 0, rect.height());
+                    event->accept();
+                } else {
+                    dd->dropIndicatorRect = QRect();
+                }
+                break;
+            case QAbstractItemView::BelowItem:
+                if (dd->isIndexDropEnabled(index.parent())) {
+                    dd->dropIndicatorRect = QRect(rect.right(), rect.top(), 0, rect.height());
+                    event->accept();
+                } else {
+                    dd->dropIndicatorRect = QRect();
+                }
+                break;
+            case QAbstractItemView::OnItem:
+                if (dd->isIndexDropEnabled(index)) {
+                    dd->dropIndicatorRect = rect;
+                    event->accept();
+                } else {
+                    dd->dropIndicatorRect = QRect();
+                }
+                break;
+            case QAbstractItemView::OnViewport:
+                dd->dropIndicatorRect = QRect();
+                if (dd->isIndexDropEnabled(qq->rootIndex())) {
+                    event->accept(); // allow dropping in empty areas
+                }
+                break;
+            }
+        } else {
+            dd->dropIndicatorRect = QRect();
+            dd->dropIndicatorPosition = QAbstractItemView::OnViewport;
+            if (dd->isIndexDropEnabled(qq->rootIndex())) {
+                event->accept(); // allow dropping in empty areas
+            }
+        }
+        dd->viewport->update();
+    } // can decode
+
+    if (dd->shouldAutoScroll(event->pos()))
+        qq->startAutoScroll();
+}
+
 #endif //QT_NO_DRAGANDDROP
 
 void QListModeViewBase::updateVerticalScrollBar(const QSize &step)
@@ -2297,6 +2402,12 @@ QVector<QModelIndex> QListModeViewBase::intersectingSet(const QRect &area) const
     }
     return ret;
 }
+
+void QListModeViewBase::dataChanged(const QModelIndex &, const QModelIndex &)
+{
+    dd->doDelayedItemsLayout();
+}
+
 
 QRect QListModeViewBase::mapToViewport(const QRect &rect) const
 {

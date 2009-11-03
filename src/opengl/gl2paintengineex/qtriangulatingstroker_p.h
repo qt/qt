@@ -48,6 +48,7 @@
 #include <private/qnumeric_p.h>
 #include <private/qmath_p.h>
 
+QT_BEGIN_NAMESPACE
 
 class QTriangulatingStroker
 {
@@ -124,7 +125,16 @@ inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, fl
 {
     float dx = x2 - x1;
     float dy = y2 - y1;
-    float pw = m_width / sqrt(dx*dx + dy*dy);
+
+    float pw;
+
+    if (dx == 0)
+        pw = m_width / dy;
+    else if (dy == 0)
+        pw = m_width / dx;
+    else
+        pw = m_width / sqrt(dx*dx + dy*dy);
+
     *nx = -dy * pw;
     *ny = dx * pw;
 }
@@ -295,5 +305,6 @@ void QTriangulatingStroker::join(const qreal *pts)
     emitLineSegment(m_cx, m_cy, m_nvx, m_nvy);
 }
 
+QT_END_NAMESPACE
 
 #endif

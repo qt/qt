@@ -45,6 +45,7 @@
 #include <QtGui/qgraphicswidget.h>
 #include <QtGui/qgraphicsproxywidget.h>
 #include <QtGui/qgraphicsview.h>
+#include <QtGui/qwindowsstyle.h>
 
 class tst_QGraphicsAnchorLayout : public QObject {
     Q_OBJECT;
@@ -72,6 +73,7 @@ private slots:
     void proportionalPreferred();
     void example();
     void setSpacing();
+    void styleDefaults();
     void hardComplexS60();
     void stability();
     void delete_anchor();
@@ -82,6 +84,8 @@ private slots:
     void expandingParallel();
     void floatConflict();
     void infiniteMaxSizes();
+    void simplifiableUnfeasible();
+    void simplificationVsOrder();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1102,6 +1106,166 @@ void tst_QGraphicsAnchorLayout::setSpacing()
     delete view;
 }
 
+class CustomLayoutStyle : public QWindowsStyle
+{
+    Q_OBJECT
+public:
+    CustomLayoutStyle() : QWindowsStyle()
+    {
+        hspacing = 5;
+        vspacing = 10;
+    }
+
+    virtual int pixelMetric(PixelMetric metric, const QStyleOption * option = 0,
+                            const QWidget * widget = 0 ) const;
+
+    int hspacing;
+    int vspacing;
+
+protected slots:
+    int layoutSpacingImplementation(QSizePolicy::ControlType control1,
+                                    QSizePolicy::ControlType control2,
+                                    Qt::Orientation orientation,
+                                    const QStyleOption *option = 0,
+                                    const QWidget *widget = 0) const;
+
+};
+
+#define CT1(c) CT2(c, c)
+#define CT2(c1, c2) ((uint)c1 << 16) | (uint)c2
+
+int CustomLayoutStyle::layoutSpacingImplementation(QSizePolicy::ControlType control1,
+                                QSizePolicy::ControlType control2,
+                                Qt::Orientation orientation,
+                                const QStyleOption * /*option = 0*/,
+                                const QWidget * /*widget = 0*/) const
+{
+    if (orientation == Qt::Horizontal) {
+        switch (CT2(control1, control2)) {
+            case CT1(QSizePolicy::PushButton):
+                return 2;
+                break;
+        }
+        return 5;
+    } else {
+        switch (CT2(control1, control2)) {
+            case CT1(QSizePolicy::RadioButton):
+                return 2;
+                break;
+
+        }
+        return 10;
+    }
+}
+
+int CustomLayoutStyle::pixelMetric(PixelMetric metric, const QStyleOption * option /*= 0*/,
+                                   const QWidget * widget /*= 0*/ ) const
+{
+    switch (metric) {
+        case PM_LayoutLeftMargin:
+            return 0;
+        break;
+        case PM_LayoutTopMargin:
+            return 3;
+        break;
+        case PM_LayoutRightMargin:
+            return 6;
+        break;
+        case PM_LayoutBottomMargin:
+            return 9;
+        break;
+        case PM_LayoutHorizontalSpacing:
+            return hspacing;
+        case PM_LayoutVerticalSpacing:
+            return vspacing;
+        break;
+        default:
+            break;
+    }
+    return QWindowsStyle::pixelMetric(metric, option, widget);
+}
+
+void tst_QGraphicsAnchorLayout::styleDefaults()
+{
+    QSizeF min (10, 10);
+    QSizeF pref(20, 20);
+    QSizeF max (50, 50);
+
+    /* 
+    create this layout, where a,b have controlType QSizePolicy::RadioButton
+    c,d have controlType QSizePolicy::PushButton:
+    +-------+
+    |a      |
+    |  b    |
+    |    c  |
+    |      d|
+    +-------+
+    */
+    QGraphicsScene scene;
+    QGraphicsWidget *a = createItem(min, pref, max);
+    QSizePolicy spRadioButton = a->sizePolicy();
+    spRadioButton.setControlType(QSizePolicy::RadioButton);
+    a->setSizePolicy(spRadioButton);
+
+    QGraphicsWidget *b = createItem(min, pref, max);
+    b->setSizePolicy(spRadioButton);
+
+    QGraphicsWidget *c = createItem(min, pref, max);
+    QSizePolicy spPushButton = c->sizePolicy();
+    spPushButton.setControlType(QSizePolicy::PushButton);
+    c->setSizePolicy(spPushButton);
+
+    QGraphicsWidget *d = createItem(min, pref, max);
+    d->setSizePolicy(spPushButton);
+
+    QGraphicsWidget *window = new QGraphicsWidget(0, Qt::Window);
+
+    // Test layoutSpacingImplementation
+    CustomLayoutStyle *style = new CustomLayoutStyle;
+    style->hspacing = -1;
+    style->vspacing = -1;
+    window->setStyle(style);
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+
+    l->addCornerAnchors(l, Qt::TopLeftCorner, a, Qt::TopLeftCorner);
+    l->addCornerAnchors(a, Qt::BottomRightCorner, b, Qt::TopLeftCorner);
+    l->addCornerAnchors(b, Qt::BottomRightCorner, c, Qt::TopLeftCorner);
+    l->addCornerAnchors(c, Qt::BottomRightCorner, d, Qt::TopLeftCorner);
+    l->addCornerAnchors(d, Qt::BottomRightCorner, l, Qt::BottomRightCorner);
+
+    window->setLayout(l);
+
+    scene.addItem(window);
+
+    window->show();
+    QGraphicsView *view = new QGraphicsView(&scene);
+    view->resize(200, 200);
+    view->show();
+
+    window->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));    //radio
+    QCOMPARE(b->geometry(), QRectF(25, 25, 20, 20));    //radio
+    QCOMPARE(c->geometry(), QRectF(50, 55, 20, 20));    //push
+    QCOMPARE(d->geometry(), QRectF(72, 85, 20, 20));    //push
+    QCOMPARE(l->geometry(), QRectF(0,   0, 98, 114));
+
+
+    // Test pixelMetric(PM_Layout{Horizontal|Vertical}Spacing
+    window->setStyle(0);
+
+    style->hspacing = 1;
+    style->vspacing = 2;
+
+    window->setStyle(style);
+    window->adjustSize();
+    QCOMPARE(a->geometry(), QRectF(0,   3, 20, 20));
+    QCOMPARE(b->geometry(), QRectF(21, 25, 20, 20));     
+    QCOMPARE(c->geometry(), QRectF(42, 47, 20, 20));
+    QCOMPARE(d->geometry(), QRectF(63, 69, 20, 20));
+    QCOMPARE(l->geometry(), QRectF(0,   0, 89, 98));
+}
+
+
 /*!
     Taken from "hard" complex case, found at
     https://cwiki.nokia.com/S60QTUI/AnchorLayoutComplexCases
@@ -1753,6 +1917,101 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QCOMPARE(b->geometry(), QRectF(expMaxSize, 0, 50, 10));
     QCOMPARE(c->geometry(), QRectF(expMaxSize + 50, 0, expMaxSize, 10));
     QCOMPARE(d->geometry(), QRectF(QWIDGETSIZE_MAX - 50, 0, 50, 10));
+}
+
+void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
+{
+    QGraphicsWidget *a = createItem(QSizeF(70.0, 100.0),
+                                    QSizeF(100.0, 100.0),
+                                    QSizeF(100.0, 100.0), "A");
+
+    QGraphicsWidget *b = createItem(QSizeF(110.0, 100.0),
+                                    QSizeF(150.0, 100.0),
+                                    QSizeF(190.0, 100.0), "B");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+    l->setContentsMargins(0, 0, 0, 0);
+    l->setSpacing(0);
+
+    l->addAnchor(l, Qt::AnchorTop, a, Qt::AnchorTop);
+    l->addAnchor(a, Qt::AnchorBottom, b, Qt::AnchorTop);
+    l->addAnchor(b, Qt::AnchorBottom, l, Qt::AnchorBottom);
+
+    l->addAnchors(l, a, Qt::Horizontal);
+    l->addAnchor(l, Qt::AnchorLeft, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    QCOMPARE(l->count(), 2);
+
+    QGraphicsWidget p;
+    p.setLayout(l);
+
+    l->invalidate();
+    QVERIFY(layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+
+    // Now we make it valid again
+    b->setMinimumWidth(100);
+
+    l->invalidate();
+    QVERIFY(!layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+
+    // And make it invalid again
+    a->setPreferredWidth(70);
+    a->setMaximumWidth(70);
+
+    l->invalidate();
+    QVERIFY(layoutHasConflict(l));
+    if (hasSimplification)
+        QVERIFY(!usedSimplex(l, Qt::Horizontal));
+}
+
+/*
+  Test whether the anchor direction can prevent it from
+  being simplificated
+*/
+void tst_QGraphicsAnchorLayout::simplificationVsOrder()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 10);
+    QSizeF max(50, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max);
+    QGraphicsWidget *b = createItem(min, pref, max);
+    QGraphicsWidget *c = createItem(min, pref, max);
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+
+    // Bulk anchors
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(a, Qt::AnchorRight, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorLeft, c, Qt::AnchorLeft);
+    l->addAnchor(c, Qt::AnchorRight, l, Qt::AnchorRight);
+
+    // Problematic anchor, direction b->c
+    QGraphicsAnchor *anchor = l->addAnchor(b, Qt::AnchorRight, c, Qt::AnchorRight);
+    anchor->setSpacing(5);
+
+    l->effectiveSizeHint(Qt::MinimumSize);
+    if (hasSimplification) {
+        QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
+        QCOMPARE(usedSimplex(l, Qt::Vertical), false);
+    }
+
+    // Problematic anchor, direction c->b
+    delete anchor;
+    anchor = l->addAnchor(c, Qt::AnchorRight, b, Qt::AnchorRight);
+    anchor->setSpacing(5);
+
+    l->effectiveSizeHint(Qt::MinimumSize);
+    if (hasSimplification) {
+        QEXPECT_FAIL("", "Sequential anchors cannot handle children of opposite directions", Continue);
+        QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
+        QCOMPARE(usedSimplex(l, Qt::Vertical), false);
+    }
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

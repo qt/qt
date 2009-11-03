@@ -1755,9 +1755,7 @@ void tst_QSslSocket::readFromClosedSocket()
     socket->close();
     QVERIFY(!socket->bytesAvailable());
     QVERIFY(!socket->bytesToWrite());
-    socket->waitForDisconnected();
-    QVERIFY(!socket->bytesAvailable());
-    QVERIFY(!socket->bytesToWrite());
+    QVERIFY(socket->state() == QAbstractSocket::UnconnectedState);
 }
 
 void tst_QSslSocket::writeBigChunk()

@@ -92,6 +92,24 @@ QRectF QVectorPath::controlPointRect() const
     return QRectF(QPointF(m_cp_rect.x1, m_cp_rect.y1), QPointF(m_cp_rect.x2, m_cp_rect.y2));
 }
 
+
+QVectorPath::CacheEntry *QVectorPath::addCacheData(QPaintEngineEx *engine, void *data,
+                                                   qvectorpath_cache_cleanup cleanup) {
+    Q_ASSERT(!lookupCacheData(engine));
+    if ((m_hints & IsCachedHint) == 0) {
+        m_cache = 0;
+        m_hints |= IsCachedHint;
+    }
+    CacheEntry *e = new CacheEntry;
+    e->engine = engine;
+    e->data = data;
+    e->cleanup = cleanup;
+    e->next = m_cache;
+    m_cache = e;
+    return m_cache;
+}
+
+
 const QVectorPath &qtVectorPathForPath(const QPainterPath &path)
 {
     Q_ASSERT(path.d_func());
@@ -414,7 +432,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
     // Some engines might decide to optimize for the non-shape hint later on...
     uint flags = QVectorPath::WindingFill;
     if (d->stroker.capStyle() == Qt::RoundCap || d->stroker.joinStyle() == Qt::RoundJoin)
-        flags |= QVectorPath::CurvedShapeHint;
+        flags |= QVectorPath::CurvedShapeMask;
 
     // ### Perspective Xforms are currently not supported...
     if (!pen.isCosmetic()) {
@@ -442,7 +460,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                                               points[4], points[5]);
                     points += 6;
                     types += 3;
-                    flags |= QVectorPath::CurvedShapeHint;
+                    flags |= QVectorPath::CurvedShapeMask;
                     break;
                 default:
                     break;
@@ -504,7 +522,7 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
                         d->activeStroker->cubicTo(c1.x(), c1.y(), c2.x(), c2.y(), e.x(), e.y());
                         points += 6;
                         types += 3;
-                        flags |= QVectorPath::CurvedShapeHint;
+                        flags |= QVectorPath::CurvedShapeMask;
                         break;
                     }
                     default:
@@ -736,7 +754,7 @@ void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yR
         x1 + xRadius, y1
     };
 
-    QVectorPath path(pts, 17, qpaintengineex_roundedrect_types);
+    QVectorPath path(pts, 17, qpaintengineex_roundedrect_types, QVectorPath::RoundedRectHint);
     draw(path);
 }
 
@@ -827,7 +845,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
                 pts[++oset] = points[i].x() + 0.001;
                 pts[++oset] = points[i].y();
             }
-            QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::NonCurvedShapeHint);
+            QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
             stroke(path, pen);
             pointCount -= 16;
             points += 16;
@@ -858,7 +876,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
                 pts[++oset] = points[i].x() + 0.001;
                 pts[++oset] = points[i].y();
             }
-            QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::NonCurvedShapeHint);
+            QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
             stroke(path, pen);
             pointCount -= 16;
             points += 16;

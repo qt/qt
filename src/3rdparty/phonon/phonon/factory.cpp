@@ -111,6 +111,7 @@ void Factory::setBackend(QObject *b)
 
 bool FactoryPrivate::createBackend()
 {
+#ifndef QT_NO_LIBRARY
     Q_ASSERT(m_backendObject == 0);
 #ifndef QT_NO_PHONON_PLATFORMPLUGIN
     PlatformPlugin *f = globalFactory->platformPlugin();
@@ -186,14 +187,20 @@ bool FactoryPrivate::createBackend()
             SLOT(objectDescriptionChanged(ObjectDescriptionType)));
 
     return true;
+#else //QT_NO_LIBRARY
+    pWarning() << Q_FUNC_INFO << "Trying to use Phonon with QT_NO_LIBRARY defined. "
+                                 "That is currently not supported";
+    return false;
+#endif
 }
 
 FactoryPrivate::FactoryPrivate()
+    :
 #ifndef QT_NO_PHONON_PLATFORMPLUGIN
-    : m_platformPlugin(0),
-    m_noPlatformPlugin(false)
+    m_platformPlugin(0),
+    m_noPlatformPlugin(false),
 #endif //QT_NO_PHONON_PLATFORMPLUGIN
-    , m_backendObject(0)
+    m_backendObject(0)
 {
     // Add the post routine to make sure that all other global statics (especially the ones from Qt)
     // are still available. If the FactoryPrivate dtor is called too late many bad things can happen
@@ -442,6 +449,7 @@ QObject *Factory::backend(bool createWhenNull)
     return globalFactory->m_backendObject;
 }
 
+#ifndef QT_NO_PROPERTIES
 #define GET_STRING_PROPERTY(name) \
 QString Factory::name() \
 { \
@@ -457,7 +465,7 @@ GET_STRING_PROPERTY(backendComment)
 GET_STRING_PROPERTY(backendVersion)
 GET_STRING_PROPERTY(backendIcon)
 GET_STRING_PROPERTY(backendWebsite)
-
+#endif //QT_NO_PROPERTIES
 QObject *Factory::registerQObject(QObject *o)
 {
     if (o) {

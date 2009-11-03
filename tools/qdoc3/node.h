@@ -420,19 +420,31 @@ class QmlPropertyNode : public LeafNode
 class QmlSignalNode : public LeafNode
 {
  public:
-    QmlSignalNode(QmlClassNode* parent, const QString& name);
+    QmlSignalNode(QmlClassNode* parent, 
+                  const QString& name,
+                  bool attached);
     virtual ~QmlSignalNode() { }
 
     const QString& element() const { return parent()->name(); }
+    bool isAttached() const { return att; }
+
+ private:
+    bool    att;
 };
 
 class QmlMethodNode : public LeafNode
 {
  public:
-    QmlMethodNode(QmlClassNode* parent, const QString& name);
+    QmlMethodNode(QmlClassNode* parent,
+                  const QString& name,
+                  bool attached);
     virtual ~QmlMethodNode() { }
 
     const QString& element() const { return parent()->name(); }
+    bool isAttached() const { return att; }
+
+ private:
+    bool    att;
 };
 #endif
 

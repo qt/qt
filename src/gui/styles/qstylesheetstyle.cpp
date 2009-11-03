@@ -4325,7 +4325,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
             QRenderRule subRule = renderRule(w, opt, PseudoElement_TabWidgetPane);
             if (subRule.hasNativeBorder()) {
                 subRule.drawBackground(p, opt->rect);
-                QStyleOptionTabWidgetFrame frmCopy(*frm);
+                QStyleOptionTabWidgetFrameV2 frmCopy(*frm);
                 subRule.configurePalette(&frmCopy.palette, QPalette::WindowText, QPalette::Window);
                 baseStyle()->drawPrimitive(pe, &frmCopy, p, w);
             } else {
@@ -4722,7 +4722,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return subRule.size().height();
         else if (subRule.hasBox() || subRule.hasBorder()) {
             QFontMetrics fm = opt ?  opt->fontMetrics : w->fontMetrics();
-            return subRule.size(QSize(0, fm.lineSpacing())).height();
+            return subRule.size(QSize(0, fm.height())).height();
         }
         break;
                             }

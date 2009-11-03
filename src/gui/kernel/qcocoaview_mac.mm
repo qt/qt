@@ -745,7 +745,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::LeftButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super mouseDragged:theEvent];
@@ -755,7 +755,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::RightButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super rightMouseDragged:theEvent];
@@ -765,8 +765,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    Qt::MouseButton mouseButton = cocoaButton2QtButton([theEvent buttonNumber]);
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, mouseButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super otherMouseDragged:theEvent];
@@ -795,23 +794,23 @@ extern "C" {
 
     const EventRef carbonEvent = (EventRef)[theEvent eventRef];
     const UInt32 carbonEventKind = carbonEvent ? ::GetEventKind(carbonEvent) : 0;
-    if (carbonEventKind == kEventMouseScroll) {
+    const bool scrollEvent = carbonEventKind == kEventMouseScroll;
+
+    if (scrollEvent) {
         // The mouse device containts pixel scroll wheel support (Mighty Mouse, Trackpad).
         // Since deviceDelta is delivered as pixels rather than degrees, we need to
         // convert from pixels to degrees in a sensible manner.
         // It looks like four degrees per pixel behaves most native.
         // Qt expects the unit for delta to be 1/8 of a degree:
-        const int scrollFactor = 4 * 8;
-        deltaX = (int)[theEvent deviceDeltaX] * scrollFactor;
-        deltaY = (int)[theEvent deviceDeltaY] * scrollFactor;
-        deltaZ = (int)[theEvent deviceDeltaZ] * scrollFactor;
-    } else { // carbonEventKind == kEventMouseWheelMoved
-        // Mouse wheel deltas seem to tick in at increments of 0.1.
-        // Qt widgets expect the delta to be a multiple of 120.
-        const int scrollFactor = 10 * 120;
-        deltaX = [theEvent deltaX] * scrollFactor;
-        deltaY = [theEvent deltaY] * scrollFactor;
-        deltaZ = [theEvent deltaZ] * scrollFactor;
+        deltaX = [theEvent deviceDeltaX];
+        deltaY = [theEvent deviceDeltaY];
+        deltaZ = [theEvent deviceDeltaZ];
+    } else {
+        // carbonEventKind == kEventMouseWheelMoved
+        // Remove acceleration, and use either -120 or 120 as delta:
+        deltaX = qBound(-120, int([theEvent deltaX] * 10000), 120);
+        deltaY = qBound(-120, int([theEvent deltaY] * 10000), 120);
+        deltaZ = qBound(-120, int([theEvent deltaZ] * 10000), 120);
     }
 
     if (deltaX != 0) {

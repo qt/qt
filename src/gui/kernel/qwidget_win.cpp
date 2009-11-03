@@ -161,6 +161,9 @@ static void qt_tablet_init()
     qt_tablet_widget = new QWidget(0);
     qt_tablet_widget->createWinId();
     qt_tablet_widget->setObjectName(QLatin1String("Qt internal tablet widget"));
+    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    if (QWidgetPrivate::allWidgets)
+        QWidgetPrivate::allWidgets->remove(qt_tablet_widget);
     LOGCONTEXT lcMine;
     qAddPostRoutine(qt_tablet_cleanup);
     struct tagAXIS tpOri[3];
@@ -851,10 +854,13 @@ void QWidget::grabMouse()
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrb = this;
+#ifndef QT_NO_CURSOR
         mouseGrbCur = new QCursor(mouseGrb->cursor());
+#endif
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
     if (!qt_nograb()) {
@@ -868,6 +874,7 @@ void QWidget::grabMouse(const QCursor &cursor)
         mouseGrb = this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {
