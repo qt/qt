@@ -41,8 +41,10 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qstringlist.h>
 #include <QtCore/qdatastream.h>
+#include <QtCore/qmargins.h>
 
 #include <QtGui/qpainter.h>
+#include <QtGui/qtooltip.h>
 #include <QtGui/qslider.h>
 #include <QtGui/qscrollbar.h>
 #include <QtGui/qspinbox.h>
@@ -76,14 +78,17 @@ public slots:
 
 protected:
     virtual void paintEvent(QPaintEvent *);
+    virtual void mouseMoveEvent(QMouseEvent *);
+    virtual void leaveEvent(QEvent *);
 
 private slots:
     void sliderChanged(int);
 
 private:
     void updateSlider();
-    void drawSample(QPainter *, int, const QRect &);
+    void drawSample(QPainter *, int, const QRect &, QList<QRect> *);
     void drawTime(QPainter *, const QRect &);
+    QRect findContainingRect(const QList<QRect> &rects, const QPoint &pos) const;
     struct Sample { 
         int sample[3];
         bool isBreak;
@@ -95,12 +100,18 @@ private:
     int samplesPerWidth;
     int resolutionForHeight;
     bool ignoreScroll;
+    QMargins graphMargins;
+
+    QList<QRect> rectsPaintTime;    // time to do a paintEvent()
+    QList<QRect> rectsTimeBetween;  // time between frames
+    QRect highlightedBar;
 };
 
 QLineGraph::QLineGraph(QAbstractSlider *slider, QWidget *parent)
-: QWidget(parent), slider(slider), position(-1), samplesPerWidth(99), resolutionForHeight(50), ignoreScroll(false)
+: QWidget(parent), slider(slider), position(-1), samplesPerWidth(99), resolutionForHeight(50),
+  ignoreScroll(false), graphMargins(65, 10, 71, 40)
 {
-    setMinimumHeight(200);
+    setMouseTracking(true);
 
     slider->setMaximum(0);
     slider->setMinimum(0);
@@ -124,6 +135,11 @@ void QLineGraph::sliderChanged(int v)
 void QLineGraph::clear()
 {
     _samples.clear();
+    rectsPaintTime.clear();
+    rectsTimeBetween.clear();
+    highlightedBar = QRect();
+    position = -1;
+
     updateSlider();
     update();
 }
@@ -189,7 +205,7 @@ void QLineGraph::drawTime(QPainter *p, const QRect &rect)
 
 }
 
-void QLineGraph::drawSample(QPainter *p, int s, const QRect &rect)
+void QLineGraph::drawSample(QPainter *p, int s, const QRect &rect, QList<QRect> *record)
 {
     if(_samples.isEmpty())
         return;
@@ -212,8 +228,11 @@ void QLineGraph::drawSample(QPainter *p, int s, const QRect &rect)
         xEnd = rect.left() + scaleX * (ii - first);
         int yEnd = rect.bottom() - _samples.at(ii).sample[s] * scaleY;
 
-        if (!(s == 0 && _samples.at(ii).isBreak)) 
-            p->drawRect(QRect(lastXEnd, yEnd, scaleX, _samples.at(ii).sample[s] * scaleY));
+        if (!(s == 0 && _samples.at(ii).isBreak)) {
+            QRect bar(lastXEnd, yEnd, scaleX, _samples.at(ii).sample[s] * scaleY);
+            record->append(bar);
+            p->drawRect(bar);
+        }
 
         lastXEnd = xEnd;
     }
@@ -225,19 +244,27 @@ void QLineGraph::paintEvent(QPaintEvent *)
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
 
-    QRect r(65, 10, width() - 71, height() - 40);
+    QRect r(graphMargins.left(), graphMargins.top(),
+            width() - graphMargins.right(), height() - graphMargins.bottom());
 
     p.save();
     p.rotate(-90);
-    p.translate(-r.height()/2 - r.width()/2 - 71, -r.height()/2);
+    p.translate(-r.height()/2 - r.width()/2 - graphMargins.right(), -r.height()/2);
     p.drawText(r, Qt::AlignCenter, tr("Time per frame (ms)"));
     p.restore();
 
     p.setBrush(QColor("lightsteelblue"));
-    drawSample(&p, 0, r);
+    rectsTimeBetween.clear();
+    drawSample(&p, 0, r, &rectsTimeBetween);
 
     p.setBrush(QColor("pink"));
-    drawSample(&p, 1, r);
+    rectsPaintTime.clear();
+    drawSample(&p, 1, r, &rectsPaintTime);
+
+    if (!highlightedBar.isNull()) {
+        p.setBrush(Qt::darkGreen);
+        p.drawRect(highlightedBar);
+    }
 
     p.setBrush(Qt::NoBrush);
     p.drawRect(r);
@@ -259,10 +286,48 @@ void QLineGraph::paintEvent(QPaintEvent *)
     drawTime(&p, r);
 }
 
+void QLineGraph::mouseMoveEvent(QMouseEvent *event)
+{
+    QPoint pos = event->pos();
+
+    QRect rect = findContainingRect(rectsPaintTime, pos);
+    if (rect.isNull())
+        rect = findContainingRect(rectsTimeBetween, pos);
+
+    if (!highlightedBar.isNull())
+        update(highlightedBar.adjusted(-1, -1, 1, 1));
+    highlightedBar = rect;
+
+    if (!rect.isNull()) {
+        QRect graph(graphMargins.left(), graphMargins.top(),
+                    width() - graphMargins.right(), height() - graphMargins.bottom());
+        qreal scaleY = qreal(graph.height()) / resolutionForHeight;
+        QToolTip::showText(event->globalPos(), QString::number(qRound(rect.height() / scaleY)), this, rect);
+        update(rect.adjusted(-1, -1, 1, 1));
+    }
+}
+
+void QLineGraph::leaveEvent(QEvent *)
+{
+    if (!highlightedBar.isNull()) {
+        highlightedBar = QRect();
+        update(highlightedBar.adjusted(-1, -1, 1, 1));
+    }
+}
+
 void QLineGraph::setResolutionForHeight(int resolution)
 {
     resolutionForHeight = resolution;
     update();
+}
+
+QRect QLineGraph::findContainingRect(const QList<QRect> &rects, const QPoint &pos) const
+{
+    for (int i=0; i<rects.count(); i++) {
+        if (rects[i].contains(pos))
+            return rects[i]; 
+    }
+    return QRect();
 }
 
 
@@ -285,17 +350,20 @@ GraphWindow::GraphWindow(QWidget *parent)
     : QWidget(parent)
 {
     QSlider *scroll = new QSlider(Qt::Horizontal);
+    scroll->setFocusPolicy(Qt::WheelFocus);
     m_graph = new QLineGraph(scroll);
 
-    QLabel *label = new QLabel(tr("Total time elapsed (ms)"));
-    label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+    setFocusPolicy(Qt::WheelFocus);
+    setFocusProxy(scroll);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 5, 5);
     layout->setSpacing(0);
-    layout->addWidget(m_graph);
-    layout->addWidget(label, 0, Qt::AlignHCenter);
+    layout->addWidget(m_graph, 2);
+    layout->addWidget(new QLabel(tr("Total time elapsed (ms)")), 0, Qt::AlignHCenter);
     layout->addWidget(scroll);
+
+    setMinimumSize(QSize(400, 200));
 }
 
 void GraphWindow::addSample(int a, int b, int d, bool isBreak)
@@ -362,7 +430,7 @@ CanvasFrameRate::CanvasFrameRate(QWidget *parent)
     bottom->setSpacing(10);
 
     m_res = new QSpinBox;
-    m_res->setRange(50, 200);
+    m_res->setRange(30, 200);
     m_res->setValue(m_res->minimum());
     m_res->setSingleStep(10);
     m_res->setSuffix(QLatin1String("ms"));
@@ -385,14 +453,18 @@ CanvasFrameRate::CanvasFrameRate(QWidget *parent)
     connect(m_group, SIGNAL(toggled(bool)), SLOT(enabledToggled(bool)));
 
     QVBoxLayout *groupLayout = new QVBoxLayout(m_group);
+    groupLayout->setContentsMargins(5, 0, 5, 0);
+    groupLayout->setSpacing(5);
     groupLayout->addWidget(m_tabs);
     groupLayout->addLayout(bottom);
     
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setMargin(0);
+    layout->setContentsMargins(0, 15, 0, 0);
     layout->setSpacing(0);
     layout->addWidget(m_group);
     setLayout(layout);
+
+    setFocusPolicy(Qt::StrongFocus);
 }
 
 void CanvasFrameRate::reset(QmlDebugConnection *conn)
@@ -446,8 +518,9 @@ QSize CanvasFrameRate::sizeHint() const
 void CanvasFrameRate::clearGraph()
 {
     if (m_tabs->count()) {
-        GraphWindow *w = qobject_cast<GraphWindow*>(m_tabs->widget(m_tabs->count() - 1));
-        w->clear();
+        GraphWindow *w = qobject_cast<GraphWindow*>(m_tabs->currentWidget());
+        if (w)
+            w->clear();
     }
 }
 
@@ -462,7 +535,7 @@ void CanvasFrameRate::newTab()
                             w, SLOT(addSample(int,int,int,bool)));
     }
 
-    int id = m_tabs->count();
+    int count = m_tabs->count();
 
     GraphWindow *graph = new GraphWindow;
     graph->setResolutionForHeight(m_res->value());
@@ -471,9 +544,9 @@ void CanvasFrameRate::newTab()
     connect(m_res, SIGNAL(valueChanged(int)),
             graph, SLOT(setResolutionForHeight(int)));
 
-    QString name = QLatin1String("Graph ") + QString::number(id);
+    QString name = QLatin1String("Graph ") + QString::number(count + 1);
     m_tabs->addTab(graph, name);
-    m_tabs->setCurrentIndex(id);
+    m_tabs->setCurrentIndex(count);
 }
 
 void CanvasFrameRate::enabledToggled(bool checked)
