@@ -70,9 +70,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \property QMouseEventTransition::modifiersMask
+    \property QMouseEventTransition::modifierMask
 
-    \brief the keyboard modifiers mask that this mouse event transition checks for
+    \brief the keyboard modifier mask that this mouse event transition checks for
 */
 
 class QMouseEventTransitionPrivate : public QEventTransitionPrivate
@@ -139,23 +139,23 @@ void QMouseEventTransition::setButton(Qt::MouseButton button)
 }
 
 /*!
-  Returns the keyboard modifiers mask that this mouse event transition checks
+  Returns the keyboard modifier mask that this mouse event transition checks
   for.
 */
-Qt::KeyboardModifiers QMouseEventTransition::modifiersMask() const
+Qt::KeyboardModifiers QMouseEventTransition::modifierMask() const
 {
     Q_D(const QMouseEventTransition);
-    return d->transition->modifiersMask();
+    return d->transition->modifierMask();
 }
 
 /*!
-  Sets the keyboard \a modifiers mask that this mouse event transition will
-  check for.
+  Sets the keyboard modifier mask that this mouse event transition will
+  check for to \a modifierMask.
 */
-void QMouseEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+void QMouseEventTransition::setModifierMask(Qt::KeyboardModifiers modifierMask)
 {
     Q_D(QMouseEventTransition);
-    d->transition->setModifiersMask(modifiersMask);
+    d->transition->setModifierMask(modifierMask);
 }
 
 /*!
