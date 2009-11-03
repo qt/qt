@@ -2918,5 +2918,5 @@ QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
 QML_DECLARE_TYPEINFO(QmlGraphicsKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QmlGraphicsKeysAttached)
 QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
+QML_DECLARE_TYPEINFO(QmlGraphicsKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QmlGraphicsKeyNavigationAttached)
-
