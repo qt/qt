@@ -2366,7 +2366,7 @@ bool QmlCompiler::buildBinding(QmlParser::Value *value,
                                QmlParser::Property *prop,
                                const BindingContext &ctxt)
 {
-    Q_ASSERT(prop->index);
+    Q_ASSERT(prop->index != -1);
     Q_ASSERT(prop->parent);
     Q_ASSERT(prop->parent->metaObject());
 
