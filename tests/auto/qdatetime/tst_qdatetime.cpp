@@ -450,11 +450,12 @@ void tst_QDateTime::toString_enumformat()
     qDebug() << str3;
     QVERIFY(!str3.isEmpty());
     //check for date/time components in any order
-    QVERIFY(str3.contains("1995"));
+    //year may be 2 or 4 digits
+    QVERIFY(str3.contains("95"));
     //day and month may be in numeric or word form
     QVERIFY(str3.contains("12"));
     QVERIFY(str3.contains("34"));
-    QVERIFY(str3.contains("56"));
+    //seconds may be absent
 }
 
 void tst_QDateTime::addDays()
