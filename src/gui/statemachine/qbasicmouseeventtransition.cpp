@@ -169,18 +169,18 @@ void QBasicMouseEventTransition::setModifierMask(Qt::KeyboardModifiers modifierM
 }
 
 /*!
-  Returns the path for this mouse event transition.
+  Returns the hit test path for this mouse event transition.
 */
-QPainterPath QBasicMouseEventTransition::path() const
+QPainterPath QBasicMouseEventTransition::hitTestPath() const
 {
     Q_D(const QBasicMouseEventTransition);
     return d->path;
 }
 
 /*!
-  Sets the path for this mouse event transition.
+  Sets the hit test path for this mouse event transition.
 */
-void QBasicMouseEventTransition::setPath(const QPainterPath &path)
+void QBasicMouseEventTransition::setHitTestPath(const QPainterPath &path)
 {
     Q_D(QBasicMouseEventTransition);
     d->path = path;

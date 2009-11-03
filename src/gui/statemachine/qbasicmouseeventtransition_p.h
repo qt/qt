@@ -82,8 +82,8 @@ public:
     Qt::KeyboardModifiers modifierMask() const;
     void setModifierMask(Qt::KeyboardModifiers modifiers);
 
-    QPainterPath path() const;
-    void setPath(const QPainterPath &path);
+    QPainterPath hitTestPath() const;
+    void setHitTestPath(const QPainterPath &path);
 
 protected:
     bool eventTest(QEvent *event);
