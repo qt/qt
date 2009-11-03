@@ -57,12 +57,12 @@ public:
         : interval(1000), running(false), repeating(false), triggeredOnStart(false)
         , classBegun(false), componentComplete(false) {}
     int interval;
-    bool running;
-    bool repeating;
-    bool triggeredOnStart;
     QPauseAnimation pause;
-    bool classBegun;
-    bool componentComplete;
+    bool running : 1;
+    bool repeating : 1;
+    bool triggeredOnStart : 1;
+    bool classBegun : 1;
+    bool componentComplete : 1;
 };
 
 /*!
@@ -82,6 +82,9 @@ public:
     }
     \endqml
 
+    QmlTimer is synchronized with the animation timer.  Since the animation
+    timer is usually set to 60fps, the resolution of QmlTimer will be
+    at best 16ms.
 */
 
 QmlTimer::QmlTimer(QObject *parent)
@@ -89,7 +92,6 @@ QmlTimer::QmlTimer(QObject *parent)
 {
     Q_D(QmlTimer);
     connect(&d->pause, SIGNAL(currentLoopChanged(int)), this, SLOT(ticked()));
-    connect(&d->pause, SIGNAL(finished()), this, SLOT(ticked()));
     connect(&d->pause, SIGNAL(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State))
             , this, SLOT(stateChanged(QAbstractAnimation::State,QAbstractAnimation::State)));
     d->pause.setLoopCount(1);
@@ -259,7 +261,9 @@ void QmlTimer::componentComplete()
 */
 void QmlTimer::ticked()
 {
-    emit triggered();
+    Q_D(QmlTimer);
+    if (d->running)
+        emit triggered();
 }
 
 void QmlTimer::stateChanged(QAbstractAnimation::State, QAbstractAnimation::State state)
@@ -267,6 +271,7 @@ void QmlTimer::stateChanged(QAbstractAnimation::State, QAbstractAnimation::State
     Q_D(QmlTimer);
     if (d->running && state != QAbstractAnimation::Running) {
         d->running = false;
+        emit triggered();
         emit runningChanged();
     }
 }

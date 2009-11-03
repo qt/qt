@@ -88,18 +88,6 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
     scripts.append(scope);
 }
 
-void QmlContextPrivate::dump()
-{
-    dump(0);
-}
-
-void QmlContextPrivate::dump(int depth)
-{
-    QByteArray ba(depth * 4, ' ');
-    if (parent)
-        parent->d_func()->dump(depth + 1);
-}
-
 void QmlContextPrivate::destroyed(ContextGuard *guard)
 {
     Q_Q(QmlContext);
@@ -382,8 +370,8 @@ void QmlContext::setContextProperty(const QString &name, const QVariant &value)
     if (d->notifyIndex == -1)
         d->notifyIndex = this->metaObject()->methodCount();
 
-    if (QmlMetaType::isObject(value.userType())) {
-        QObject *o = QmlMetaType::toQObject(value);
+    if (d->engine && QmlEnginePrivate::get(d->engine)->isObject(value.userType())) {
+        QObject *o = *(QObject **)value.constData();
         setContextProperty(name, o);
     } else {
 

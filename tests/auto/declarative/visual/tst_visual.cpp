@@ -47,7 +47,7 @@
 #include <QProcess>
 #include <QFile>
 
-enum Mode { Record, Play, TestVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
+enum Mode { Record, RecordNoVisuals, Play, TestVisuals, RemoveVisuals, UpdateVisuals, UpdatePlatformVisuals, Test };
 
 static QString testdir;
 class tst_visual : public QObject
@@ -115,7 +115,7 @@ void tst_visual::visual()
 
     QStringList arguments;
     arguments << "-script" << testdata
-              << "-scriptopts" << "play,testimages,exitoncomplete,exitonfailure" 
+              << "-scriptopts" << "play,testimages,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
     p.start(qmlviewer, arguments);
@@ -208,38 +208,44 @@ void action(Mode mode, const QString &file)
 
     QString testdata = tst_visual::toTestScript(file,mode);
 
-    if (Record == mode) {
-        QStringList arguments;
-        arguments << "-script" << testdata
+    QStringList arguments;
+    switch (mode) {
+        case Test:
+            // Don't run qmlviewer
+            break;
+        case Record:
+            arguments << "-script" << testdata
+                  << "-scriptopts" << "record,testimages,saveonexit"
+                  << file;
+            break;
+        case RecordNoVisuals:
+            arguments << "-script" << testdata
                   << "-scriptopts" << "record,saveonexit"
                   << file;
-        QProcess p;
-        p.setProcessChannelMode(QProcess::ForwardedChannels);
-        p.start(tst_visual::viewer(), arguments);
-        p.waitForFinished();
-    } else if (Play == mode) {
-        QStringList arguments;
-        arguments << "-script" << testdata
-                  << "-scriptopts" << "play,testimages,exitoncomplete"
+            break;
+        case Play:
+            arguments << "-script" << testdata
+                  << "-scriptopts" << "play,testimages,testerror,exitoncomplete"
                   << file;
-        QProcess p;
-        p.setProcessChannelMode(QProcess::ForwardedChannels);
-        p.start(tst_visual::viewer(), arguments);
-        p.waitForFinished();
-    } else if (TestVisuals == mode) {
-        QStringList arguments;
+            break;
+        case TestVisuals:
         arguments << "-script" << testdata
                   << "-scriptopts" << "play"
                   << file;
-        QProcess p;
-        p.setProcessChannelMode(QProcess::ForwardedChannels);
-        p.start(tst_visual::viewer(), arguments);
-        p.waitForFinished();
-    } else if (UpdateVisuals == mode || UpdatePlatformVisuals == mode) {
-        QStringList arguments;
-        arguments << "-script" << testdata
+            break;
+        case UpdateVisuals:
+        case UpdatePlatformVisuals:
+            arguments << "-script" << testdata
+                  << "-scriptopts" << "play,record,testimages,exitoncomplete,saveonexit"
+                  << file;
+            break;
+        case RemoveVisuals:
+            arguments << "-script" << testdata
                   << "-scriptopts" << "play,record,exitoncomplete,saveonexit"
                   << file;
+            break;
+    }
+    if (!arguments.isEmpty()) {
         QProcess p;
         p.setProcessChannelMode(QProcess::ForwardedChannels);
         p.start(tst_visual::viewer(), arguments);
@@ -278,8 +284,14 @@ int main(int argc, char **argv)
         } else if (arg == "-record" && (ii + 1) < argc) {
             mode = Record;
             file = argv[++ii];
+        } else if (arg == "-recordnovisuals" && (ii + 1) < argc) {
+            mode = RecordNoVisuals;
+            file = argv[++ii];
         } else if (arg == "-testvisuals" && (ii + 1) < argc) {
             mode = TestVisuals;
+            file = argv[++ii];
+        } else if (arg == "-removevisuals" && (ii + 1) < argc) {
+            mode = RemoveVisuals;
             file = argv[++ii];
         } else if (arg == "-updatevisuals" && (ii + 1) < argc) {
             mode = UpdateVisuals;

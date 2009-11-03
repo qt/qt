@@ -42,6 +42,7 @@
 #include <QLibraryInfo>
 #include <QDir>
 #include <QProcess>
+#include <QDebug>
 
 class tst_examples : public QObject
 {
@@ -179,9 +180,12 @@ void tst_examples::examples()
 {
     QFETCH(QString, file);
 
+    QFileInfo fi(file);
+    QFileInfo dir(fi.path());
+    QFileInfo testdata("data/"+dir.baseName()+"/"+fi.baseName());
     QStringList arguments;
-    arguments << "-script" << "data/dummytest" 
-              << "-scriptopts" << "play,exitoncomplete,exitonfailure" 
+    arguments << "-script" << (testdata.exists() ? testdata.filePath() : QLatin1String("data/dummytest"))
+              << "-scriptopts" << "play,testerror,exitoncomplete,exitonfailure" 
               << file;
     QProcess p;
     p.start(qmlviewer, arguments);

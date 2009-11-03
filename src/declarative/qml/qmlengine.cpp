@@ -181,8 +181,6 @@ QmlEnginePrivate::~QmlEnginePrivate()
     typeNameClass = 0;
     delete listClass;
     listClass = 0;
-    delete networkAccessManager;
-    networkAccessManager = 0;
     delete nodeListClass;
     nodeListClass = 0;
     delete namedNodeMapClass;
@@ -336,14 +334,16 @@ QmlContext *QmlEngine::rootContext()
     Sets the common QNetworkAccessManager, \a network, used by all QML elements
     instantiated by this engine.
 
-    Any previously set manager is deleted and \a network is owned by the
-    QmlEngine.  This method should only be called before any QmlComponents are
-    instantiated.
+    If the parent of \a network is this engine, the engine takes ownership and
+    will delete it as needed. Otherwise, ownership remains with the caller.
+
+    This method should only be called before any QmlComponents are instantiated.
 */
 void QmlEngine::setNetworkAccessManager(QNetworkAccessManager *network)
 {
     Q_D(QmlEngine);
-    delete d->networkAccessManager;
+    if (d->networkAccessManager && d->networkAccessManager->parent() == this)
+        delete d->networkAccessManager;
     d->networkAccessManager = network;
 }
 
@@ -358,7 +358,7 @@ QNetworkAccessManager *QmlEngine::networkAccessManager() const
 {
     Q_D(const QmlEngine);
     if (!d->networkAccessManager)
-        d->networkAccessManager = new QNetworkAccessManager;
+        d->networkAccessManager = new QNetworkAccessManager(const_cast<QmlEngine*>(this));
     return d->networkAccessManager;
 }
 

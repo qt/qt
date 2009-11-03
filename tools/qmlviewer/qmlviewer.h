@@ -66,9 +66,10 @@ public:
         Play = 0x00000001,
         Record = 0x00000002,
         TestImages = 0x00000004,
-        SaveOnExit = 0x00000008,
-        ExitOnComplete = 0x00000010,
-        ExitOnFailure = 0x00000020
+        TestErrorProperty = 0x00000008,
+        SaveOnExit = 0x00000010,
+        ExitOnComplete = 0x00000020,
+        ExitOnFailure = 0x00000040
     };
     Q_DECLARE_FLAGS(ScriptOptions, ScriptOption)
     void setScript(const QString &s) { m_script = s; }
