@@ -45,12 +45,12 @@
 #include <private/qmlgraphicstext_p.h>
 #include <QFontMetrics>
 
-class tst_qfxtext : public QObject
+class tst_qmlgraphicstext : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qfxtext();
+    tst_qmlgraphicstext();
 
 private slots:
     void text();
@@ -84,7 +84,7 @@ private:
     QmlEngine engine;
 };
 
-tst_qfxtext::tst_qfxtext()
+tst_qmlgraphicstext::tst_qmlgraphicstext()
 {
     standard << "the quick brown fox jumped over the lazy dog"
              << "the quick brown fox\n jumped over the lazy dog";
@@ -137,7 +137,7 @@ tst_qfxtext::tst_qfxtext()
                  // 
 }
 
-void tst_qfxtext::text()
+void tst_qmlgraphicstext::text()
 {
     {
         QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\" }", QUrl("file://"));
@@ -169,7 +169,7 @@ void tst_qfxtext::text()
     }
 }
 
-void tst_qfxtext::width()
+void tst_qmlgraphicstext::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
@@ -208,10 +208,8 @@ void tst_qfxtext::width()
     }
 }
 
-void tst_qfxtext::wrap()
+void tst_qmlgraphicstext::wrap()
 {
-    // XXX Poor coverage - should at least be testing an expected height.
-
     int textHeight = 0;
     // for specified width and wrap set true
     {
@@ -244,7 +242,7 @@ void tst_qfxtext::wrap()
 
 }
 
-void tst_qfxtext::elide()
+void tst_qmlgraphicstext::elide()
 {
     for (Qt::TextElideMode m = Qt::ElideLeft; m<=Qt::ElideNone; m=Qt::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
@@ -281,7 +279,7 @@ void tst_qfxtext::elide()
 }
 
 //the alignment tests may be trivial o.oa
-void tst_qfxtext::horizontalAlignment()
+void tst_qmlgraphicstext::horizontalAlignment()
 {
     //test one align each, and then test if two align fails.
 
@@ -311,7 +309,7 @@ void tst_qfxtext::horizontalAlignment()
 
 }
 
-void tst_qfxtext::verticalAlignment()
+void tst_qmlgraphicstext::verticalAlignment()
 {
     //test one align each, and then test if two align fails.
 
@@ -340,7 +338,7 @@ void tst_qfxtext::verticalAlignment()
 
 }
 
-void tst_qfxtext::font()
+void tst_qmlgraphicstext::font()
 {
     //test size, then bold, then italic, then family
     {
@@ -400,7 +398,7 @@ void tst_qfxtext::font()
     }
 }
 
-void tst_qfxtext::style()
+void tst_qmlgraphicstext::style()
 {
     //test style
     for (int i = 0; i < styles.size(); i++)
@@ -414,7 +412,7 @@ void tst_qfxtext::style()
     }
 }
 
-void tst_qfxtext::color()
+void tst_qmlgraphicstext::color()
 {
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
@@ -463,7 +461,7 @@ void tst_qfxtext::color()
     }
 }
 
-void tst_qfxtext::smooth()
+void tst_qmlgraphicstext::smooth()
 {
     for (int i = 0; i < standard.size(); i++)
     {
@@ -497,6 +495,6 @@ void tst_qfxtext::smooth()
     }
 }
 
-QTEST_MAIN(tst_qfxtext)
+QTEST_MAIN(tst_qmlgraphicstext)
 
-#include "tst_qfxtext.moc"
+#include "tst_qmlgraphicstext.moc"
