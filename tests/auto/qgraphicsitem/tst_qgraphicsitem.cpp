@@ -7676,20 +7676,6 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QCOMPARE(items.size(), 1);
     QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
-    item1->repaints = 0;
-    item2->repaints = 0;
-    item3->repaints = 0;
-
-    view.viewport()->update(75, 75, 20, 20);
-    QTest::qWait(50);
-
-    // item1 is the effect source and must therefore be repainted.
-    // item2 intersects with the exposed region
-    // item3 is just another child outside the exposed region
-    QCOMPARE(item1->repaints, 1);
-    QCOMPARE(item2->repaints, 1);
-    QCOMPARE(item3->repaints, 0);
-
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     QTest::qWait(100);
 
