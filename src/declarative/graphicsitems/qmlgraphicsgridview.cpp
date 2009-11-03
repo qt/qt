@@ -658,7 +658,7 @@ void QmlGraphicsGridViewPrivate::updateCurrent(int modelIndex)
 //----------------------------------------------------------------------------
 
 /*!
-    \qmlclass GridView QFxGridView
+    \qmlclass GridView QmlGraphicsGridView
     \inherits Flickable
     \brief The GridView item provides a grid view of items provided by a model.
 

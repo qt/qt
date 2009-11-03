@@ -56,7 +56,7 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,TextEdit,QmlGraphicsTextEdit)
 
 /*!
-    \qmlclass TextEdit QFxTextEdit
+    \qmlclass TextEdit QmlGraphicsTextEdit
     \brief The TextEdit item allows you to add editable formatted text to a scene.
 
     It can display both plain and rich text. For example:

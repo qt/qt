@@ -56,7 +56,7 @@ QmlGraphicsLoaderPrivate::~QmlGraphicsLoaderPrivate()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QmlGraphicsLoader)
 
 /*!
-    \qmlclass Loader QFxLoader
+    \qmlclass Loader QmlGraphicsLoader
     \inherits Item
 
     \brief The Loader item allows dynamically loading an Item-based

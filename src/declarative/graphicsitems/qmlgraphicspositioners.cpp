@@ -333,7 +333,7 @@ void QmlGraphicsBasePositioner::applyRemove(const QList<QPair<QString, QVariant>
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QmlGraphicsColumn)
 /*!
-  \qmlclass Column QFxColumn
+  \qmlclass Column QmlGraphicsColumn
   \brief The Column item lines up its children vertically.
   \inherits Item
 
@@ -524,7 +524,7 @@ void QmlGraphicsColumn::doPositioning()
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QmlGraphicsRow)
 /*!
-  \qmlclass Row QFxRow
+  \qmlclass Row QmlGraphicsRow
   \brief The Row item lines up its children horizontally.
   \inherits Item
 

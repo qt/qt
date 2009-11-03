@@ -84,6 +84,34 @@ public:
     void updateAutoState();
 };
 
+/*!
+   \qmlclass StateGroup QmlStateGroup
+   \brief The StateGroup element provides state support for non-Item elements.
+
+   Item (and all dervied elements) provides built in support for states and transitions
+   via its state, states and transitions properties. StateGroup provides an easy way to
+   use this support in other (non-Item-derived) elements.
+
+   \qml
+   MyCustomObject {
+       StateGroup {
+           id: myStateGroup
+           states: State {
+               name: "state1"
+               ...
+           }
+           transitions: Transition {
+               ...
+           }
+       }
+
+       onSomethingHappened: myStateGroup.state = "state1";
+   }
+   \endqml
+
+   \sa {qmlstate}{States} and {state-transitions}{Transitions}
+*/
+
 QmlStateGroup::QmlStateGroup(QObject *parent)
     : QObject(*(new QmlStateGroupPrivate(this)), parent)
 {
@@ -99,18 +127,75 @@ QList<QmlState *> QmlStateGroup::states() const
     return d->states;
 }
 
+/*!
+  \qmlproperty list<State> StateGroup::states
+  This property holds a list of states defined by the state group.
+
+  \qml
+  StateGroup {
+    states: [
+      State { ... },
+      State { ... }
+      ...
+    ]
+  }
+  \endqml
+
+  \sa {qmlstate}{States}
+*/
 QmlList<QmlState *>* QmlStateGroup::statesProperty()
 {
     Q_D(QmlStateGroup);
     return &(d->states);
 }
 
+/*!
+  \qmlproperty list<Transition> StateGroup::transitions
+  This property holds a list of transitions defined by the state group.
+
+  \qml
+  StateGroup {
+    transitions: [
+      Transition { ... },
+      Transition { ... }
+      ...
+    ]
+  }
+  \endqml
+
+  \sa {state-transitions}{Transitions}
+*/
 QmlList<QmlTransition *>* QmlStateGroup::transitionsProperty()
 {
     Q_D(QmlStateGroup);
     return &(d->transitions);
 }
 
+/*!
+  \qmlproperty string StateGroup::state
+
+  This property holds the name of the current state of the state group.
+
+  This property is often used in scripts to change between states. For
+  example:
+
+  \qml
+    Script {
+        function toggle() {
+            if (button.state == 'On')
+                button.state = 'Off';
+            else
+                button.state = 'On';
+        }
+    }
+  \endqml
+
+  If the state group is in its base state (i.e. no explicit state has been
+  set), \c state will be a blank string. Likewise, you can return a
+  state group to its base state by setting its current state to \c ''.
+
+  \sa {qmlstates}{States}
+*/
 QString QmlStateGroup::state() const
 {
     Q_D(const QmlStateGroup);
