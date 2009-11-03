@@ -11,7 +11,6 @@ SUBDIRS += anchors \
            pathview \
            qfxloader \
            qfxpixmapcache \
-           qfxtext \
            qfxtextedit \
            qfxtextinput \
            qfxwebview \
@@ -19,10 +18,12 @@ SUBDIRS += anchors \
            qmlcontext \
            qmldom \
            qmlecmascript \
+           qmlgraphicstext \
            qmllanguage \
            qmllist \
            qmllistaccessor \
            qmlmetaproperty \
+           qmlmetatype \
            qmlpropertymap \
            qmltimer \
            repeater \

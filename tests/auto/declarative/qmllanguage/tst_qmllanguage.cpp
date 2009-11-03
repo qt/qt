@@ -123,6 +123,7 @@ private slots:
 
     // regression tests for crashes
     void crash1();
+    void crash2();
 
 private:
     QmlEngine engine;
@@ -1150,6 +1151,11 @@ void tst_qmllanguage::qmlAttachedPropertiesObjectMethod()
 void tst_qmllanguage::crash1()
 {
     QmlComponent component(&engine, "Component {}");
+}
+
+void tst_qmllanguage::crash2()
+{
+    QmlComponent component(&engine, TEST_FILE("crash2.qml"));
 }
 
 QTEST_MAIN(tst_qmllanguage)
