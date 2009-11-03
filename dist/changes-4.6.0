@@ -30,6 +30,10 @@ information about a particular change.
 
     * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
+ - QGraphicsBlurEffect
+    * Since the 4.6 beta Qt::RenderHint has been moved to
+      QGraphicsBlurEffect::BlurHint.
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()

@@ -281,6 +281,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qinputcontext.h>
 #ifdef Q_WS_X11
+#include <QtGui/qpaintengine.h>
 #include <private/qt_x11_p.h>
 #endif
 
@@ -3294,7 +3295,12 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             if (viewTransformed)
                 backgroundPainter.setTransform(viewTransform);
-            backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
+#ifdef Q_WS_X11
+#undef X11
+            if (backgroundPainter.paintEngine()->type() != QPaintEngine::X11)
+#define X11 qt_x11Data
+#endif
+                backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
