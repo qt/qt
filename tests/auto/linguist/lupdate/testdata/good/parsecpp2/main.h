@@ -39,57 +39,13 @@
 **
 ****************************************************************************/
 
-// IMPORTANT!!!! If you want to add testdata to this file, 
+// IMPORTANT!!!! If you want to add testdata to this file,
 // always add it to the end in order to not change the linenumbers of translations!!!
 
-// nothing here
-
-// sickness: multi-\
-line c++ comment } (with brace)
-
-#define This is a closing brace } which was ignored
-} // complain here
-
-#define This is another \
-    closing brace } which was ignored
-} // complain here
-
-#define This is another /* comment in } define */\
-     something /* comment )
-       spanning {multiple} lines */ \
-    closing brace } which was ignored
-} // complain here
-
-#define This is another // comment in } define \
-     something } comment
-} // complain here
-
-
-
-// Nested class in same file
-class TopLevel {
+class TopLevel2 {
     Q_OBJECT
 
     class Nested;
 };
 
-class TopLevel::Nested {
-    void foo();
-};
 
-TopLevel::Nested::foo()
-{
-    TopLevel::tr("TopLevel");
-}
-
-// Nested class in other file
-#include "main.h"
-
-class TopLevel2::Nested {
-    void foo();
-};
-
-TopLevel2::Nested::foo()
-{
-    TopLevel2::tr("TopLevel2");
-}

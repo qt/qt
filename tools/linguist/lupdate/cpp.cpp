@@ -271,7 +271,7 @@ private:
     const Namespace *findNamespace(const NamespaceList &namespaces, int nsCount = -1) const;
     void enterNamespace(NamespaceList *namespaces, const HashString &name);
     void truncateNamespaces(NamespaceList *namespaces, int lenght);
-    Namespace *modifyNamespace(NamespaceList *namespaces, bool tryOrigin = true);
+    Namespace *modifyNamespace(NamespaceList *namespaces, bool haveLast = true);
 
     enum {
         Tok_Eof, Tok_class, Tok_friend, Tok_namespace, Tok_using, Tok_return,
@@ -963,7 +963,7 @@ void CppParser::loadState(const SavedState *state)
     pendingContext = state->pendingContext;
 }
 
-Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool tryOrigin)
+Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool haveLast)
 {
     Namespace *pns, *ns = &results->rootNamespace;
     for (int i = 1; i < namespaces->count(); ++i) {
@@ -971,7 +971,7 @@ Namespace *CppParser::modifyNamespace(NamespaceList *namespaces, bool tryOrigin)
         if (!(ns = pns->children.value(namespaces->at(i)))) {
             do {
                 ns = new Namespace;
-                if (tryOrigin)
+                if (haveLast || i < namespaces->count() - 1)
                     if (const Namespace *ons = findNamespace(*namespaces, i + 1))
                         ns->classDef = ons->classDef;
                 pns->children.insert(namespaces->at(i), ns);
