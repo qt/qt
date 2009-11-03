@@ -5164,7 +5164,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pm.isNull())
         return;
 
 #ifndef QT_NO_DEBUG
