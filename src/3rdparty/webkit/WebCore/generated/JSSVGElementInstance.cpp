@@ -153,7 +153,7 @@ JSSVGElementInstance::JSSVGElementInstance(NonNullPassRefPtr<Structure> structur
 
 JSSVGElementInstance::~JSSVGElementInstance()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGElementInstance::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -724,7 +724,7 @@ void setJSSVGElementInstanceOnabort(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnabort(globalObject->createJSAttributeEventListener(value));
@@ -734,7 +734,7 @@ void setJSSVGElementInstanceOnblur(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnblur(globalObject->createJSAttributeEventListener(value));
@@ -744,7 +744,7 @@ void setJSSVGElementInstanceOnchange(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnchange(globalObject->createJSAttributeEventListener(value));
@@ -754,7 +754,7 @@ void setJSSVGElementInstanceOnclick(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnclick(globalObject->createJSAttributeEventListener(value));
@@ -764,7 +764,7 @@ void setJSSVGElementInstanceOncontextmenu(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncontextmenu(globalObject->createJSAttributeEventListener(value));
@@ -774,7 +774,7 @@ void setJSSVGElementInstanceOndblclick(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndblclick(globalObject->createJSAttributeEventListener(value));
@@ -784,7 +784,7 @@ void setJSSVGElementInstanceOnerror(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));
@@ -794,7 +794,7 @@ void setJSSVGElementInstanceOnfocus(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnfocus(globalObject->createJSAttributeEventListener(value));
@@ -804,7 +804,7 @@ void setJSSVGElementInstanceOninput(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOninput(globalObject->createJSAttributeEventListener(value));
@@ -814,7 +814,7 @@ void setJSSVGElementInstanceOnkeydown(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeydown(globalObject->createJSAttributeEventListener(value));
@@ -824,7 +824,7 @@ void setJSSVGElementInstanceOnkeypress(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeypress(globalObject->createJSAttributeEventListener(value));
@@ -834,7 +834,7 @@ void setJSSVGElementInstanceOnkeyup(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeyup(globalObject->createJSAttributeEventListener(value));
@@ -844,7 +844,7 @@ void setJSSVGElementInstanceOnload(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnload(globalObject->createJSAttributeEventListener(value));
@@ -854,7 +854,7 @@ void setJSSVGElementInstanceOnmousedown(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousedown(globalObject->createJSAttributeEventListener(value));
@@ -864,7 +864,7 @@ void setJSSVGElementInstanceOnmousemove(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousemove(globalObject->createJSAttributeEventListener(value));
@@ -874,7 +874,7 @@ void setJSSVGElementInstanceOnmouseout(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseout(globalObject->createJSAttributeEventListener(value));
@@ -884,7 +884,7 @@ void setJSSVGElementInstanceOnmouseover(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseover(globalObject->createJSAttributeEventListener(value));
@@ -894,7 +894,7 @@ void setJSSVGElementInstanceOnmouseup(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseup(globalObject->createJSAttributeEventListener(value));
@@ -904,7 +904,7 @@ void setJSSVGElementInstanceOnmousewheel(ExecState* exec, JSObject* thisObject, 
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousewheel(globalObject->createJSAttributeEventListener(value));
@@ -914,7 +914,7 @@ void setJSSVGElementInstanceOnbeforecut(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforecut(globalObject->createJSAttributeEventListener(value));
@@ -924,7 +924,7 @@ void setJSSVGElementInstanceOncut(ExecState* exec, JSObject* thisObject, JSValue
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncut(globalObject->createJSAttributeEventListener(value));
@@ -934,7 +934,7 @@ void setJSSVGElementInstanceOnbeforecopy(ExecState* exec, JSObject* thisObject, 
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforecopy(globalObject->createJSAttributeEventListener(value));
@@ -944,7 +944,7 @@ void setJSSVGElementInstanceOncopy(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncopy(globalObject->createJSAttributeEventListener(value));
@@ -954,7 +954,7 @@ void setJSSVGElementInstanceOnbeforepaste(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforepaste(globalObject->createJSAttributeEventListener(value));
@@ -964,7 +964,7 @@ void setJSSVGElementInstanceOnpaste(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnpaste(globalObject->createJSAttributeEventListener(value));
@@ -974,7 +974,7 @@ void setJSSVGElementInstanceOndragenter(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragenter(globalObject->createJSAttributeEventListener(value));
@@ -984,7 +984,7 @@ void setJSSVGElementInstanceOndragover(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragover(globalObject->createJSAttributeEventListener(value));
@@ -994,7 +994,7 @@ void setJSSVGElementInstanceOndragleave(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragleave(globalObject->createJSAttributeEventListener(value));
@@ -1004,7 +1004,7 @@ void setJSSVGElementInstanceOndrop(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndrop(globalObject->createJSAttributeEventListener(value));
@@ -1014,7 +1014,7 @@ void setJSSVGElementInstanceOndragstart(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragstart(globalObject->createJSAttributeEventListener(value));
@@ -1024,7 +1024,7 @@ void setJSSVGElementInstanceOndrag(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndrag(globalObject->createJSAttributeEventListener(value));
@@ -1034,7 +1034,7 @@ void setJSSVGElementInstanceOndragend(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragend(globalObject->createJSAttributeEventListener(value));
@@ -1044,7 +1044,7 @@ void setJSSVGElementInstanceOnreset(ExecState* exec, JSObject* thisObject, JSVal
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnreset(globalObject->createJSAttributeEventListener(value));
@@ -1054,7 +1054,7 @@ void setJSSVGElementInstanceOnresize(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnresize(globalObject->createJSAttributeEventListener(value));
@@ -1064,7 +1064,7 @@ void setJSSVGElementInstanceOnscroll(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnscroll(globalObject->createJSAttributeEventListener(value));
@@ -1074,7 +1074,7 @@ void setJSSVGElementInstanceOnsearch(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnsearch(globalObject->createJSAttributeEventListener(value));
@@ -1084,7 +1084,7 @@ void setJSSVGElementInstanceOnselect(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnselect(globalObject->createJSAttributeEventListener(value));
@@ -1094,7 +1094,7 @@ void setJSSVGElementInstanceOnselectstart(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnselectstart(globalObject->createJSAttributeEventListener(value));
@@ -1104,7 +1104,7 @@ void setJSSVGElementInstanceOnsubmit(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnsubmit(globalObject->createJSAttributeEventListener(value));
@@ -1114,7 +1114,7 @@ void setJSSVGElementInstanceOnunload(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     SVGElementInstance* imp = static_cast<SVGElementInstance*>(static_cast<JSSVGElementInstance*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnunload(globalObject->createJSAttributeEventListener(value));

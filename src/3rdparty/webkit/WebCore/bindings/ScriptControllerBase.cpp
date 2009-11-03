@@ -53,12 +53,16 @@ ScriptValue ScriptController::executeScript(const ScriptSourceCode& sourceCode)
     return result;
 }
 
+
 bool ScriptController::executeIfJavaScriptURL(const KURL& url, bool userGesture, bool replaceDocument)
 {
     if (!protocolIsJavaScript(url))
         return false;
 
     if (m_frame->page() && !m_frame->page()->javaScriptURLsAreAllowed())
+        return true;
+
+    if (m_frame->inViewSourceMode())
         return true;
 
     const int javascriptSchemeLength = sizeof("javascript:") - 1;

@@ -94,7 +94,7 @@ JSSVGPoint::JSSVGPoint(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSSVGPoint::~JSSVGPoint()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGPoint::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

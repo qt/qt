@@ -142,7 +142,7 @@ JSMimeTypeArray::JSMimeTypeArray(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSMimeTypeArray::~JSMimeTypeArray()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMimeTypeArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
