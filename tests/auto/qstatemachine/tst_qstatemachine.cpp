@@ -1340,11 +1340,11 @@ void tst_QStateMachine::assignPropertyWithAnimation()
     // Single animation
     {
         QStateMachine machine;
-        QVERIFY(machine.animationsEnabled());
-        machine.setAnimationsEnabled(false);
-        QVERIFY(!machine.animationsEnabled());
-        machine.setAnimationsEnabled(true);
-        QVERIFY(machine.animationsEnabled());
+        QVERIFY(machine.isAnimated());
+        machine.setAnimated(false);
+        QVERIFY(!machine.isAnimated());
+        machine.setAnimated(true);
+        QVERIFY(machine.isAnimated());
         QObject obj;
         obj.setProperty("foo", 321);
         obj.setProperty("bar", 654);

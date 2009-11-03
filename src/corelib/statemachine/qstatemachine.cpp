@@ -164,7 +164,7 @@ QT_BEGIN_NAMESPACE
 
 #ifndef QT_NO_ANIMATION
 /*!
-    \property QStateMachine::animationsEnabled
+    \property QStateMachine::animated
 
     \brief whether animations are enabled
 
@@ -188,7 +188,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
-    animationsEnabled = true;
+    animated = true;
 #endif
 }
 
@@ -742,7 +742,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    if (animationsEnabled) {
+    if (animated) {
         for (int i = 0; i < transitionList.size(); ++i) {
             QAbstractTransition *transition = transitionList.at(i);
 
@@ -2116,19 +2116,19 @@ void QStateMachine::onExit(QEvent *event)
 /*!
   Returns whether animations are enabled for this state machine.
 */
-bool QStateMachine::animationsEnabled() const
+bool QStateMachine::isAnimated() const
 {
     Q_D(const QStateMachine);
-    return d->animationsEnabled;
+    return d->animated;
 }
 
 /*!
   Sets whether animations are \a enabled for this state machine.
 */
-void QStateMachine::setAnimationsEnabled(bool enabled)
+void QStateMachine::setAnimated(bool enabled)
 {
     Q_D(QStateMachine);
-    d->animationsEnabled = enabled;
+    d->animated = enabled;
 }
 
 /*!
