@@ -7604,7 +7604,7 @@ start_lengthVariant:
             l.setPosition(QPointF(0., height));
             height += l.height();
             width = qMax(width, l.naturalTextWidth());
-            if (!brect && height >= r.height())
+            if (!dontclip && !brect && height >= r.height())
                 break;
         }
         textLayout.endLayout();

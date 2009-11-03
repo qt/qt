@@ -153,13 +153,8 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
         // Check that all the elements have been filled:
         for (int i = 0; i < TotalSnippetCount; ++i) {
             if (qShaderSnippets[i] == 0) {
-                QByteArray msg;
-                msg.append("Fatal: Shader Snippet for ");
-                msg.append(snippetNameStr(SnippetName(i)));
-                msg.append(" (");
-                msg.append(QByteArray::number(i));
-                msg.append(") is missing!");
-                qFatal(msg.constData());
+                qFatal("Shader snippet for %s (#%d) is missing!",
+                       snippetNameStr(SnippetName(i)).constData(), i);
             }
         }
 #endif

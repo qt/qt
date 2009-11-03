@@ -316,28 +316,6 @@ static const char *qt_gl_texture_sampling_helper =
     "   return texture2D(src, srcCoords).a;\n"
     "}\n";
 
-static const char *qt_gl_clamped_texture_sampling_helper =
-    "highp vec4 texture_dimensions;\n" // x = width, y = height, z = 0.5/width, w = 0.5/height
-    "lowp float clampedTexture2DAlpha(lowp sampler2D src, highp vec2 srcCoords) {\n"
-    "   highp vec2 clampedCoords = clamp(srcCoords, texture_dimensions.zw, vec2(1.0) - texture_dimensions.zw);\n"
-    "   highp vec2 t = clamp(min(srcCoords, vec2(1.0) - srcCoords) * srcDim + 0.5, 0.0, 1.0);\n"
-    "   return texture2D(src, clampedCoords).a * t.x * t.y;\n"
-    "}\n"
-    "lowp vec4 clampedTexture2D(lowp sampler2D src, highp vec2 srcCoords) {\n"
-    "   highp vec2 clampedCoords = clamp(srcCoords, texture_dimensions.zw, vec2(1.0) - texture_dimensions.zw);\n"
-    "   highp vec2 t = clamp(min(srcCoords, vec2(1.0) - srcCoords) * srcDim + 0.5, 0.0, 1.0);\n"
-    "   return texture2D(src, clampedCoords) * t.x * t.y;\n"
-    "}\n";
-
-static QByteArray qt_gl_convertToClamped(const QByteArray &source)
-{
-    QByteArray result;
-    result.append(qt_gl_clamped_texture_sampling_helper);
-    result.append(QByteArray(source).replace("texture2DAlpha", "clampedTexture2DAlpha")
-                                    .replace("texture2D", "clampedTexture2D"));
-    return result;
-}
-
 QGLPixmapBlurFilter::QGLPixmapBlurFilter(QGraphicsBlurEffect::BlurHint hint)
     : m_animatedBlur(false)
     , m_haveCached(false)
@@ -433,7 +411,7 @@ QGLBlurTextureCache::~QGLBlurTextureCache()
     blurTextureCaches.removeAt(blurTextureCaches.indexOf(this));
 }
 
-void QGLBlurTextureCache::timerEvent(QTimerEvent *event)
+void QGLBlurTextureCache::timerEvent(QTimerEvent *)
 {
     killTimer(timerId);
     timerId = 0;
