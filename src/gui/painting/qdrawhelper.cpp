@@ -7424,6 +7424,14 @@ QT_RECTFILL(qrgb444)
 QT_RECTFILL(qargb4444)
 #undef QT_RECTFILL
 
+inline static void qt_rectfill_nonpremul_quint32(QRasterBuffer *rasterBuffer,
+                                                 int x, int y, int width, int height,
+                                                 quint32 color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         INV_PREMUL(color), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
 
 // Map table for destination image format. Contains function pointers
 // for blends of various types unto the destination
@@ -7466,7 +7474,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_quint32
+        qt_rectfill_nonpremul_quint32
     },
     // Format_ARGB32_Premultiplied
     {
