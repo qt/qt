@@ -3325,9 +3325,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         break;
 
     case CE_PushButton:
-        ParentStyle::drawControl(ce, opt, p, w);
-        return;
-
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            if (rule.hasDrawable() || rule.hasBox() || rule.hasPosition() || rule.hasPalette() ||
+                    ((btn->features & QStyleOptionButton::HasMenu) && hasStyleRule(w, PseudoElement_PushButtonMenuIndicator))) {
+                ParentStyle::drawControl(ce, opt, p, w);
+                return;
+            }
+        }
+        break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton btnOpt(*btn);
