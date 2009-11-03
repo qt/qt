@@ -184,7 +184,7 @@ private slots:
     void twoAnimatedTransitions();
     void playAnimationTwice();
     void nestedTargetStateForAnimation();
-    void polishedSignalTransitionsReuseAnimationGroup();
+    void propertiesAssignedSignalTransitionsReuseAnimationGroup();
     void animatedGlobalRestoreProperty();
     void specificTargetValueOfAnimation();
 
@@ -1319,9 +1319,9 @@ void tst_QStateMachine::assignProperty()
     QCOMPARE(s1->objectName(), QString::fromLatin1("foo"));
 
     {
-        QSignalSpy polishedSpy(s1, SIGNAL(polished()));
+        QSignalSpy propertiesAssignedSpy(s1, SIGNAL(propertiesAssigned()));
         machine.start();
-        QTRY_COMPARE(polishedSpy.count(), 1);
+        QTRY_COMPARE(propertiesAssignedSpy.count(), 1);
     }
 
     // nested states
@@ -1371,7 +1371,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         QCOMPARE(trans->animations().size(), 1);
         QCOMPARE(trans->animations().at(0), (QAbstractAnimation*)&anim);
         QFinalState *s3 = new QFinalState(&machine);
-        s2->addTransition(s2, SIGNAL(polished()), s3);
+        s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -1399,7 +1399,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         anim2.setDuration(150);
         trans->addAnimation(&anim2);
         QFinalState *s3 = new QFinalState(&machine);
-        s2->addTransition(s2, SIGNAL(polished()), s3);
+        s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -1427,7 +1427,7 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         group.addAnimation(new QPropertyAnimation(&obj, "bar"));
         trans->addAnimation(&group);
         QFinalState *s3 = new QFinalState(&machine);
-        s2->addTransition(s2, SIGNAL(polished()), s3);
+        s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -1473,10 +1473,10 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         anim2.setDuration(250);
         trans->addAnimation(&anim2);
 
-        s21->addTransition(s21, SIGNAL(polished()), s22);
+        s21->addTransition(s21, SIGNAL(propertiesAssigned()), s22);
 
         QFinalState *s3 = new QFinalState(&machine);
-        s22->addTransition(s2, SIGNAL(polished()), s3);
+        s22->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 
         machine.setInitialState(s1);
         QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
@@ -1513,13 +1513,13 @@ void tst_QStateMachine::assignPropertyWithAnimation()
         machine.setInitialState(group);
         machine.start();
         QTRY_COMPARE(machine.configuration().contains(s1), true);
-        QSignalSpy polishedSpy(s2, SIGNAL(polished()));
+        QSignalSpy propertiesAssignedSpy(s2, SIGNAL(propertiesAssigned()));
         emitter.emitSignalWithNoArg();
         QTRY_COMPARE(machine.configuration().contains(s2), true);
-        QVERIFY(polishedSpy.isEmpty());
+        QVERIFY(propertiesAssignedSpy.isEmpty());
         emitter.emitSignalWithNoArg(); // will cause animations from s1-->s2 to abort
         QTRY_COMPARE(machine.configuration().contains(s3), true);
-        QVERIFY(polishedSpy.isEmpty());
+        QVERIFY(propertiesAssignedSpy.isEmpty());
         QCOMPARE(obj.property("foo").toInt(), 911);
         QCOMPARE(obj.property("bar").toInt(), 789);
     }
@@ -3089,7 +3089,7 @@ void tst_QStateMachine::twoAnimations()
 
     QState *s3 = new QState(&machine);
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
-    s2->addTransition(s2, SIGNAL(polished()), s3);
+    s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 
     machine.setInitialState(s1);
     machine.start();
@@ -3241,7 +3241,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     at->addAnimation(animation);
 
     QState *s3 = new QState(&machine);
-    s2->addTransition(s2Child, SIGNAL(polished()), s3);
+    s2->addTransition(s2Child, SIGNAL(propertiesAssigned()), s3);
 
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
@@ -3258,7 +3258,7 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
     QCOMPARE(counter.counter, 2);
 }
 
-void tst_QStateMachine::polishedSignalTransitionsReuseAnimationGroup()
+void tst_QStateMachine::propertiesAssignedSignalTransitionsReuseAnimationGroup()
 {
     QStateMachine machine;
     QObject *object = new QObject(&machine);
@@ -3275,9 +3275,9 @@ void tst_QStateMachine::polishedSignalTransitionsReuseAnimationGroup()
     QParallelAnimationGroup animationGroup;
     animationGroup.addAnimation(new QPropertyAnimation(object, "foo"));
     QSignalSpy animationFinishedSpy(&animationGroup, SIGNAL(finished()));
-    s1->addTransition(s1, SIGNAL(polished()), s2)->addAnimation(&animationGroup);
-    s2->addTransition(s2, SIGNAL(polished()), s3)->addAnimation(&animationGroup);
-    s3->addTransition(s3, SIGNAL(polished()), s4);
+    s1->addTransition(s1, SIGNAL(propertiesAssigned()), s2)->addAnimation(&animationGroup);
+    s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3)->addAnimation(&animationGroup);
+    s3->addTransition(s3, SIGNAL(propertiesAssigned()), s4);
 
     machine.setInitialState(s1);
     QSignalSpy machineFinishedSpy(&machine, SIGNAL(finished()));

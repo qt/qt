@@ -139,10 +139,10 @@ void QStatePrivate::emitFinished()
     emit q->finished();
 }
 
-void QStatePrivate::emitPolished()
+void QStatePrivate::emitPropertiesAssigned()
 {
     Q_Q(QState);
-    emit q->polished();
+    emit q->propertiesAssigned();
 }
 
 /*!
@@ -228,7 +228,7 @@ QList<QAbstractTransition*> QStatePrivate::transitions() const
   Instructs this state to set the property with the given \a name of the given
   \a object to the given \a value when the state is entered.
 
-  \sa polished()
+  \sa propertiesAssigned()
 */
 void QState::assignProperty(QObject *object, const char *name,
                             const QVariant &value)
@@ -491,9 +491,15 @@ bool QState::event(QEvent *e)
 */
 
 /*!
-  \fn QState::polished()
+  \fn QState::propertiesAssigned()
 
-  This signal is emitted when all properties have been assigned their final value.
+  This signal is emitted when all properties have been assigned their final value. If the state
+  assigns a value to one or more properties for which an animation exists (either set on the
+  transition or as a default animation on the state machine), then the signal will not be emitted
+  until all such animations have finished playing.
+
+  If there are no relevant animations, or no property assignments defined for the state, then
+  the signal will be emitted immediately before the state is entered.
 
   \sa QState::assignProperty(), QAbstractTransition::addAnimation()
 */

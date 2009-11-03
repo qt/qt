@@ -94,7 +94,7 @@ public:
 
 Q_SIGNALS:
     void finished();
-    void polished();
+    void propertiesAssigned();
 
 protected:
     void onEntry(QEvent *event);

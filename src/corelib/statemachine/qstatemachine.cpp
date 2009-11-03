@@ -807,7 +807,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             if (anim->state() == QAbstractAnimation::Running) {
                 // The animation is still running. This can happen if the
                 // animation is a group, and one of its children just finished,
-                // and that caused a state to emit its polished() signal, and
+                // and that caused a state to emit its propertiesAssigned() signal, and
                 // that triggered a transition in the machine.
                 // Just stop the animation so it is correctly restarted again.
                 anim->stop();
@@ -829,7 +829,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
     }
 
-    // Emit polished signal for entered states that have no animated properties.
+    // Emit propertiesAssigned signal for entered states that have no animated properties.
     for (int i = 0; i < enteredStates.size(); ++i) {
         QState *s = qobject_cast<QState*>(enteredStates.at(i));
         if (s 
@@ -837,7 +837,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             && !animationsForState.contains(s)
 #endif
             )
-            QStatePrivate::get(s)->emitPolished();
+            QStatePrivate::get(s)->emitPropertiesAssigned();
     }
 }
 
@@ -1100,7 +1100,7 @@ void QStateMachinePrivate::_q_animationFinished()
     animations.removeOne(anim);
     if (animations.isEmpty()) {
         animationsForState.erase(it);
-        QStatePrivate::get(qobject_cast<QState*>(state))->emitPolished();
+        QStatePrivate::get(qobject_cast<QState*>(state))->emitPropertiesAssigned();
     }
 }
 
