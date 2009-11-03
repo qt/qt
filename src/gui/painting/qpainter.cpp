@@ -2275,8 +2275,9 @@ void QPainter::setBrushOrigin(const QPointF &p)
 /*!
     Sets the composition mode to the given \a mode.
 
-    \warning You can only set the composition mode for QPainter
-    objects that operates on a QImage.
+    \warning Only a QPainter operating on a QImage fully supports all
+    composition modes. The RasterOp modes are supported for X11 as
+    described in compositionMode().
 
     \sa compositionMode()
 */
