@@ -136,13 +136,19 @@ public:
     QSwipeGesturePrivate()
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
-          swipeAngle(0)
+          swipeAngle(0),
+          started(false), speed(0)
     {
     }
 
     QSwipeGesture::SwipeDirection horizontalDirection;
     QSwipeGesture::SwipeDirection verticalDirection;
     qreal swipeAngle;
+
+    QPoint lastPositions[3];
+    bool started;
+    qreal speed;
+    QTime time;
 };
 
 QT_END_NAMESPACE

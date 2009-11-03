@@ -103,12 +103,12 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    if (QGesture *pan = event->gesture(Qt::PanGesture))
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    else if (QGesture *pan = event->gesture(Qt::PanGesture))
         panTriggered(static_cast<QPanGesture *>(pan));
     if (QGesture *pinch = event->gesture(Qt::PinchGesture))
         pinchTriggered(static_cast<QPinchGesture *>(pinch));
-    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
-        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
     return true;
 }
 //! [gesture event handler]
@@ -154,12 +154,14 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 //! [swipe function]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
-    if (gesture->horizontalDirection() == QSwipeGesture::Left
+    if (gesture->state() == Qt::GestureFinished) {
+        if (gesture->horizontalDirection() == QSwipeGesture::Left
             || gesture->verticalDirection() == QSwipeGesture::Up)
-        goPrevImage();
-    else
-        goNextImage();
-    update();
+            goPrevImage();
+        else
+            goNextImage();
+        update();
+    }
 }
 //! [swipe function]
 

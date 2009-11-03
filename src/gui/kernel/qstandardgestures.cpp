@@ -45,6 +45,7 @@
 #include "qevent.h"
 #include "qwidget.h"
 #include "qabstractscrollarea.h"
+#include "qdebug.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -66,7 +67,9 @@ QGesture *QPanGestureRecognizer::create(QObject *target)
     return new QPanGesture;
 }
 
-QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state,
+                                                            QObject *,
+                                                            QEvent *event)
 {
     QPanGesture *q = static_cast<QPanGesture *>(state);
     QPanGesturePrivate *d = q->d_func();
@@ -155,7 +158,9 @@ QGesture *QPinchGestureRecognizer::create(QObject *target)
     return new QPinchGesture;
 }
 
-QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
+                                                              QObject *,
+                                                              QEvent *event)
 {
     QPinchGesture *q = static_cast<QPinchGesture *>(state);
     QPinchGesturePrivate *d = q->d_func();
@@ -199,8 +204,9 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state, Q
             d->centerPoint = centerPoint;
             d->changeFlags |= QPinchGesture::CenterPointChanged;
 
-            const qreal scaleFactor = QLineF(p1.pos(), p2.pos()).length()
-                                      / QLineF(d->startPosition[0],  d->startPosition[1]).length();
+            const qreal scaleFactor =
+                    QLineF(p1.pos(), p2.pos()).length()
+                    / QLineF(d->startPosition[0],  d->startPosition[1]).length();
             if (d->isNewSequence) {
                 d->lastScaleFactor = scaleFactor;
             } else {
@@ -252,6 +258,145 @@ void QPinchGestureRecognizer::reset(QGesture *state)
     d->totalRotationAngle = d->lastRotationAngle = d->rotationAngle = 0;
 
     d->isNewSequence = true;
+
+    QGestureRecognizer::reset(state);
+}
+
+//
+// QSwipeGestureRecognizer
+//
+
+QSwipeGestureRecognizer::QSwipeGestureRecognizer()
+{
+}
+
+QGesture *QSwipeGestureRecognizer::create(QObject *target)
+{
+    if (target && target->isWidgetType()) {
+        static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+    }
+    return new QSwipeGesture;
+}
+
+QGestureRecognizer::Result QSwipeGestureRecognizer::recognize(QGesture *state,
+                                                              QObject *,
+                                                              QEvent *event)
+{
+    QSwipeGesture *q = static_cast<QSwipeGesture *>(state);
+    QSwipeGesturePrivate *d = q->d_func();
+
+    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+
+    QGestureRecognizer::Result result;
+
+    switch (event->type()) {
+    case QEvent::TouchBegin: {
+        d->speed = 1;
+        d->time = QTime::currentTime();
+        d->started = true;
+        result = QGestureRecognizer::MayBeGesture;
+        break;
+    }
+    case QEvent::TouchEnd: {
+        if (q->state() != Qt::NoGesture) {
+            result = QGestureRecognizer::FinishGesture;
+        } else {
+            result = QGestureRecognizer::CancelGesture;
+        }
+        break;
+    }
+    case QEvent::TouchUpdate: {
+        if (!d->started)
+            result = QGestureRecognizer::CancelGesture;
+        else if (ev->touchPoints().size() == 3) {
+            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+            QTouchEvent::TouchPoint p3 = ev->touchPoints().at(2);
+
+            if (d->lastPositions[0].isNull()) {
+                d->lastPositions[0] = p1.startScreenPos().toPoint();
+                d->lastPositions[1] = p2.startScreenPos().toPoint();
+                d->lastPositions[2] = p3.startScreenPos().toPoint();
+            }
+            d->hotSpot = p1.screenPos();
+            d->isHotSpotSet = true;
+
+            int xDistance = (p1.screenPos().x() - d->lastPositions[0].x() +
+                             p2.screenPos().x() - d->lastPositions[1].x() +
+                             p3.screenPos().x() - d->lastPositions[2].x()) / 3;
+            int yDistance = (p1.screenPos().y() - d->lastPositions[0].y() +
+                             p2.screenPos().y() - d->lastPositions[1].y() +
+                             p3.screenPos().y() - d->lastPositions[2].y()) / 3;
+
+            const int distance = xDistance >= yDistance ? xDistance : yDistance;
+            int elapsedTime = d->time.msecsTo(QTime::currentTime());
+            if (!elapsedTime)
+                elapsedTime = 1;
+            d->speed = 0.9 * d->speed + distance / elapsedTime;
+            d->time = QTime::currentTime();
+            d->swipeAngle = QLineF(p1.startScreenPos(), p1.screenPos()).angle();
+
+            static const int MoveThreshold = 50;
+            if (xDistance > MoveThreshold || yDistance > MoveThreshold) {
+                // measure the distance to check if the direction changed
+                d->lastPositions[0] = p1.screenPos().toPoint();
+                d->lastPositions[1] = p2.screenPos().toPoint();
+                d->lastPositions[2] = p3.screenPos().toPoint();
+                QSwipeGesture::SwipeDirection horizontal =
+                        xDistance > 0 ? QSwipeGesture::Right : QSwipeGesture::Left;
+                QSwipeGesture::SwipeDirection vertical =
+                        yDistance > 0 ? QSwipeGesture::Down : QSwipeGesture::Up;
+                if (d->verticalDirection == QSwipeGesture::NoDirection)
+                    d->verticalDirection = vertical;
+                if (d->horizontalDirection == QSwipeGesture::NoDirection)
+                    d->horizontalDirection = horizontal;
+                if (d->verticalDirection != vertical || d->horizontalDirection != horizontal) {
+                    // the user has changed the direction!
+                    result = QGestureRecognizer::CancelGesture;
+                }
+                result = QGestureRecognizer::TriggerGesture;
+            } else {
+                if (q->state() != Qt::NoGesture)
+                    result = QGestureRecognizer::TriggerGesture;
+                else
+                    result = QGestureRecognizer::MayBeGesture;
+            }
+        } else if (ev->touchPoints().size() > 3) {
+            result = QGestureRecognizer::CancelGesture;
+        } else { // less than 3 touch points
+            if (d->started && (ev->touchPointStates() & Qt::TouchPointPressed))
+                result = QGestureRecognizer::CancelGesture;
+            else if (d->started)
+                result = QGestureRecognizer::Ignore;
+            else
+                result = QGestureRecognizer::MayBeGesture;
+        }
+        break;
+    }
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+        result = QGestureRecognizer::Ignore;
+        break;
+    default:
+        result = QGestureRecognizer::Ignore;
+        break;
+    }
+    return result;
+}
+
+void QSwipeGestureRecognizer::reset(QGesture *state)
+{
+    QSwipeGesture *q = static_cast<QSwipeGesture *>(state);
+    QSwipeGesturePrivate *d = q->d_func();
+
+    d->verticalDirection = d->horizontalDirection = QSwipeGesture::NoDirection;
+    d->swipeAngle = 0;
+
+    d->lastPositions[0] = d->lastPositions[1] = d->lastPositions[2] = QPoint();
+    d->started = false;
+    d->speed = 0;
+    d->time = QTime();
 
     QGestureRecognizer::reset(state);
 }

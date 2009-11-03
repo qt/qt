@@ -90,6 +90,7 @@ QGestureManager::QGestureManager(QObject *parent)
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
     registerGestureRecognizer(new QPinchGestureRecognizer);
+    registerGestureRecognizer(new QSwipeGestureRecognizer);
 #if defined(Q_OS_WIN)
     registerGestureRecognizer(new QWinNativePanGestureRecognizer);
 #endif
