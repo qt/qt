@@ -3037,11 +3037,11 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
 
     bool first = d_func()->elements.size() < 2;
 
-    arcMoveTo(x, y, rxx2, ryy2, 90);
-    arcTo(x, y, rxx2, ryy2, 90, 90);
-    arcTo(x, y+h-ryy2, rxx2, ryy2, 2*90, 90);
-    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 3*90, 90);
-    arcTo(x+w-rxx2, y, rxx2, ryy2, 0, 90);
+    arcMoveTo(x, y, rxx2, ryy2, 180);
+    arcTo(x, y, rxx2, ryy2, 180, -90);
+    arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+    arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
     closeSubpath();
 
     d_func()->require_moveTo = true;
@@ -3094,11 +3094,11 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
 
     bool first = d_func()->elements.size() < 2;
 
-    arcMoveTo(x, y, rxx2, ryy2, 90);
-    arcTo(x, y, rxx2, ryy2, 90, 90);
-    arcTo(x, y+h-ryy2, rxx2, ryy2, 2*90, 90);
-    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 3*90, 90);
-    arcTo(x+w-rxx2, y, rxx2, ryy2, 0, 90);
+    arcMoveTo(x, y, rxx2, ryy2, 180);
+    arcTo(x, y, rxx2, ryy2, 180, -90);
+    arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+    arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
     closeSubpath();
 
     d_func()->require_moveTo = true;
