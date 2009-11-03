@@ -71,7 +71,9 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_cursorVisibility(1),
       m_inlinePosition(0),
       m_formatRetriever(0),
-      m_pointerHandler(0)
+      m_pointerHandler(0),
+      m_longPress(0),
+      m_cursorPos(0)
 {
     m_fepState->SetObjectProvider(this);
     m_fepState->SetFlags(EAknEditorFlagDefault);
@@ -488,6 +490,8 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
 
     m_isEditing = true;
 
+    m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
+    
     QList<QInputMethodEvent::Attribute> attributes;
 
     m_cursorVisibility = aCursorVisibility ? 1 : 0;
@@ -691,15 +695,22 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
     if (m_preeditString.size() == 0) {
+		QWidget *w = focusWidget();
+		if(triggeredBySymbian && w){
+			// We must replace the last character only if the input box has already accepted one 
+			if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
+				m_longPress = 1;
+		}
         return;
     }
 
     QList<QInputMethodEvent::Attribute> attributes;
     QInputMethodEvent event(QLatin1String(""), attributes);
-    event.setCommitString(m_preeditString, 0, 0);//m_preeditString.size());
+    event.setCommitString(m_preeditString, 0-m_longPress, m_longPress);
     m_preeditString.clear();
     sendEvent(event);
 
+    m_longPress = 0;
     m_isEditing = false;
 
     if (!triggeredBySymbian) {
