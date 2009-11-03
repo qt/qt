@@ -534,7 +534,7 @@ void QmlGraphicsTextPrivate::updateSize()
 
 void QmlGraphicsTextPrivate::drawOutline()
 {
-    QPixmap img = QPixmap(imgCache.size());
+    QPixmap img = QPixmap(imgStyleCache.width()+2,imgStyleCache.height()+2);
     img.fill(Qt::transparent);
 
     QPainter ppm(&img);
@@ -558,7 +558,7 @@ void QmlGraphicsTextPrivate::drawOutline()
 
 void QmlGraphicsTextPrivate::drawOutline(int yOffset)
 {
-    QPixmap img = QPixmap(imgCache.size());
+    QPixmap img = QPixmap(imgStyleCache.width()+2,imgStyleCache.height()+2);
     img.fill(Qt::transparent);
 
     QPainter ppm(&img);
