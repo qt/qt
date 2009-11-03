@@ -19,6 +19,7 @@ SUBDIRS += anchors \
            qmldom \
            qmlecmascript \
            qmlgraphicstext \
+           qmlfontloader \
            qmllanguage \
            qmllist \
            qmllistaccessor \
