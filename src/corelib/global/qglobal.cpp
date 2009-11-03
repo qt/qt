@@ -2558,11 +2558,11 @@ void qsrand()
         *pseed = QDateTime::currentDateTime().toTime_t()
                  + quintptr(&pseed)
                  + serial.fetchAndAddRelaxed(1);
-    }
 #if defined(Q_OS_WIN)
-    // for Windows the srand function must still be called.
-    srand(*pseed);
+        // for Windows the srand function must still be called.
+        srand(*pseed);
 #endif
+    }
 
 #elif defined(Q_OS_WIN)
     static unsigned int seed = 0;
