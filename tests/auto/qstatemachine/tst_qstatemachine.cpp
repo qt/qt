@@ -162,7 +162,7 @@ private slots:
 
     void defaultGlobalRestorePolicy();
     void globalRestorePolicySetToRestore();
-    void globalRestorePolicySetToDoNotRestore();
+    void globalRestorePolicySetToDontRestore();
 
     void noInitialStateForInitialState();
 
@@ -984,7 +984,7 @@ void tst_QStateMachine::customErrorStateNotInGraph()
 void tst_QStateMachine::restoreProperties()
 {
     QStateMachine machine;
-    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::DoNotRestoreProperties);
+    QCOMPARE(machine.globalRestorePolicy(), QStateMachine::DontRestoreProperties);
     machine.setGlobalRestorePolicy(QStateMachine::RestoreProperties);
 
     QObject *object = new QObject(&machine);
@@ -2736,10 +2736,10 @@ void tst_QStateMachine::restorePolicyNotInherited()
 
 }*/
 
-void tst_QStateMachine::globalRestorePolicySetToDoNotRestore()
+void tst_QStateMachine::globalRestorePolicySetToDontRestore()
 {
     QStateMachine machine;
-    machine.setGlobalRestorePolicy(QStateMachine::DoNotRestoreProperties);
+    machine.setGlobalRestorePolicy(QStateMachine::DontRestoreProperties);
 
     QObject *propertyHolder = new QObject(&machine);
     propertyHolder->setProperty("a", 1);

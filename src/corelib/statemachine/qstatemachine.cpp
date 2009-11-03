@@ -159,7 +159,7 @@ QT_BEGIN_NAMESPACE
     \brief the restore policy for states of this state machine.
 
     The default value of this property is
-    QStateMachine::DoNotRestoreProperties.
+    QStateMachine::DontRestoreProperties.
 */
 
 #ifndef QT_NO_ANIMATION
@@ -185,7 +185,7 @@ QStateMachinePrivate::QStateMachinePrivate()
     stop = false;
     stopProcessingReason = EventQueueEmpty;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
+    globalRestorePolicy = QStateMachine::DontRestoreProperties;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
     animated = true;
@@ -1696,7 +1696,7 @@ QStateMachine::~QStateMachine()
    already been saved by the state machine, it will not be overwritten until the property has been
    successfully restored. 
 
-   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
+   \value DontRestoreProperties The state machine should not save the initial values of properties
           and restore them later.
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
@@ -1746,7 +1746,7 @@ QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 
 /*!
    Sets the restore policy of the state machine to \a restorePolicy. The default 
-   restore policy is QAbstractState::DoNotRestoreProperties.
+   restore policy is QAbstractState::DontRestoreProperties.
    
    \sa globalRestorePolicy()
 */

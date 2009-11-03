@@ -109,7 +109,7 @@ public:
     };
 
     enum RestorePolicy {
-        DoNotRestoreProperties,
+        DontRestoreProperties,
         RestoreProperties
     };
 
