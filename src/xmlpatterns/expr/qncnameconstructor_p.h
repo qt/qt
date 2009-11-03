@@ -112,7 +112,7 @@ namespace QPatternist
         {
             return QtXmlPatterns::tr("The target name in a processing instruction "
                                      "cannot be %1 in any combination of upper "
-                                     "and lower case. Therefore, is %2 invalid.")
+                                     "and lower case. Therefore, %2 is invalid.")
                 .arg(formatKeyword("xml"), formatKeyword(lexTarget));
         }
     };

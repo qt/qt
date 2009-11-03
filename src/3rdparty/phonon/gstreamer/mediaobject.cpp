@@ -87,7 +87,7 @@ MediaObject::MediaObject(Backend *backend, QObject *parent)
     m_name = "MediaObject" + QString::number(count++);
 
     if (!m_backend->isValid()) {
-        setError(tr("Cannot start playback. \n\nCheck your Gstreamer installation and make sure you "
+        setError(tr("Cannot start playback. \n\nCheck your GStreamer installation and make sure you "
                     "\nhave libgstreamer-plugins-base installed."), Phonon::FatalError);
     } else {
         m_root = this;

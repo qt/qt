@@ -251,10 +251,10 @@ QString QSslError::errorString() const
         errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "One of the CA certificates is invalid"));
         break;
     case PathLengthExceeded:
-        errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "The basicConstraints pathlength parameter has been exceeded"));
+        errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "The basicConstraints path length parameter has been exceeded"));
         break;
     case InvalidPurpose:
-        errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "The supplied certificate is unsuited for this purpose"));
+        errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "The supplied certificate is unsuitable for this purpose"));
         break;
     case CertificateUntrusted:
         errStr = QObject::tr(QT_TRANSLATE_NOOP(QSslError, "The root CA certificate is not trusted for this purpose"));
