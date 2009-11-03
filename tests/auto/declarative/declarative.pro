@@ -15,6 +15,7 @@ SUBDIRS += anchors \
            qfxtextedit \
            qfxtextinput \
            qfxwebview \
+           qmetaobjectbuilder \
            qmlcontext \
            qmldom \
            qmlecmascript \
