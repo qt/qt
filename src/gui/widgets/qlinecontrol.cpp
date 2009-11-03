@@ -1509,6 +1509,18 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 #endif // QT_NO_COMPLETER
 
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+        if (hasAcceptableInput() || fixup()) {
+            emit accepted();
+            emit editingFinished();
+        }
+        if (inlineCompletionAccepted)
+            event->accept();
+        else
+            event->ignore();
+        return;
+    }
+
     if (echoMode() == QLineEdit::PasswordEchoOnEdit
         && !passwordEchoEditing()
         && !isReadOnly()
@@ -1529,17 +1541,6 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         clear();
     }
 
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        if (hasAcceptableInput() || fixup()) {
-            emit accepted();
-            emit editingFinished();
-        }
-        if (inlineCompletionAccepted)
-            event->accept();
-        else
-            event->ignore();
-        return;
-    }
     bool unknown = false;
 
     if (false) {
