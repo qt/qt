@@ -309,7 +309,7 @@ QFontPrivate *QFontPrivate::smallCapsFontPrivate() const
     QFont font(const_cast<QFontPrivate *>(this));
     qreal pointSize = font.pointSizeF();
     if (pointSize > 0)
-        font.setPointSizeF(pointSize * .7);
+        font.setPointSizeF(pointSize * qreal(.7));
     else
         font.setPixelSize((font.pixelSize() * 7 + 5) / 10);
     scFont = font.d.data();
@@ -2143,7 +2143,7 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
 
     if (s.version() >= QDataStream::Qt_4_0) {
         // 4.0
-        double pointSize = font.d->request.pointSize;
+        qreal pointSize = font.d->request.pointSize;
         qint32 pixelSize = font.d->request.pixelSize;
         s << pointSize;
         s << pixelSize;
@@ -2205,7 +2205,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 
     if (s.version() >= QDataStream::Qt_4_0) {
         // 4.0
-        double pointSize;
+        qreal pointSize;
         qint32 pixelSize;
         s >> pointSize;
         s >> pixelSize;

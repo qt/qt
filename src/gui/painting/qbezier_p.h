@@ -83,7 +83,7 @@ public:
     void addToPolygonIterative(QPolygonF *p) const;
     void addToPolygonMixed(QPolygonF *p) const;
     QRectF bounds() const;
-    qreal length(qreal error = 0.01) const;
+    qreal length(qreal error = qreal(0.01)) const;
     void addIfClose(qreal *length, qreal error) const;
 
     qreal tAtLength(qreal len) const;
@@ -122,13 +122,14 @@ public:
 
 inline QPointF QBezier::midPoint() const
 {
-    return QPointF((x1 + x4 + 3*(x2 + x3))/8., (y1 + y4 + 3*(y2 + y3))/8.);
+    const qreal inv_8 = 1 / qreal(8.);
+    return QPointF((x1 + x4 + 3*(x2 + x3))*inv_8, (y1 + y4 + 3*(y2 + y3))*inv_8);
 }
 
 inline QLineF QBezier::midTangent() const
 {
     QPointF mid = midPoint();
-    QLineF dir(QLineF(x1, y1, x2, y2).pointAt(0.5), QLineF(x3, y3, x4, y4).pointAt(0.5));
+    QLineF dir(QLineF(x1, y1, x2, y2).pointAt(qreal(0.5)), QLineF(x3, y3, x4, y4).pointAt(qreal(0.5)));
     return QLineF(mid.x() - dir.dx(), mid.y() - dir.dy(),
                   mid.x() + dir.dx(), mid.y() + dir.dy());
 }
@@ -155,13 +156,13 @@ inline QLineF QBezier::endTangent() const
 
 inline void QBezier::coefficients(qreal t, qreal &a, qreal &b, qreal &c, qreal &d)
 {
-    qreal m_t = 1. - t;
+    qreal m_t = qreal(1.) - t;
     b = m_t * m_t;
     c = t * t;
     d = c * t;
     a = b * m_t;
-    b *= 3. * t;
-    c *= 3. * m_t;
+    b *= qreal(3.) * t;
+    c *= qreal(3.) * m_t;
 }
 
 inline QPointF QBezier::pointAt(qreal t) const
@@ -174,7 +175,7 @@ inline QPointF QBezier::pointAt(qreal t) const
     return QPointF(a*x1 + b*x2 + c*x3 + d*x4, a*y1 + b*y2 + c*y3 + d*y4);
 #else
     // numerically more stable:
-    qreal m_t = 1. - t;
+    qreal m_t = qreal(1.) - t;
     qreal a = x1*m_t + x2*t;
     qreal b = x2*m_t + x3*t;
     qreal c = x3*m_t + x4*t;
@@ -193,7 +194,7 @@ inline QPointF QBezier::pointAt(qreal t) const
 
 inline QPointF QBezier::normalVector(qreal t) const
 {
-    qreal m_t = 1. - t;
+    qreal m_t = qreal(1.) - t;
     qreal a = m_t * m_t;
     qreal b = t * m_t;
     qreal c = t * t;
@@ -205,7 +206,7 @@ inline QPointF QBezier::derivedAt(qreal t) const
 {
     // p'(t) = 3 * (-(1-2t+t^2) * p0 + (1 - 4 * t + 3 * t^2) * p1 + (2 * t - 3 * t^2) * p2 + t^2 * p3)
 
-    qreal m_t = 1. - t;
+    qreal m_t = qreal(1.) - t;
 
     qreal d = t * t;
     qreal a = -m_t * m_t;
@@ -218,7 +219,7 @@ inline QPointF QBezier::derivedAt(qreal t) const
 
 inline QPointF QBezier::secondDerivedAt(qreal t) const
 {
-    qreal a = 2. - 2. * t;
+    qreal a = qreal(2.) - qreal(2.) * t;
     qreal b = -4 + 6 * t;
     qreal c = 2 - 6 * t;
     qreal d = 2 * t;
@@ -232,23 +233,23 @@ inline void QBezier::split(QBezier *firstHalf, QBezier *secondHalf) const
     Q_ASSERT(firstHalf);
     Q_ASSERT(secondHalf);
 
-    qreal c = (x2 + x3)*.5;
-    firstHalf->x2 = (x1 + x2)*.5;
-    secondHalf->x3 = (x3 + x4)*.5;
+    qreal c = (x2 + x3)*qreal(.5);
+    firstHalf->x2 = (x1 + x2)*qreal(.5);
+    secondHalf->x3 = (x3 + x4)*qreal(.5);
     firstHalf->x1 = x1;
     secondHalf->x4 = x4;
-    firstHalf->x3 = (firstHalf->x2 + c)*.5;
-    secondHalf->x2 = (secondHalf->x3 + c)*.5;
-    firstHalf->x4 = secondHalf->x1 = (firstHalf->x3 + secondHalf->x2)*.5;
+    firstHalf->x3 = (firstHalf->x2 + c)*qreal(.5);
+    secondHalf->x2 = (secondHalf->x3 + c)*qreal(.5);
+    firstHalf->x4 = secondHalf->x1 = (firstHalf->x3 + secondHalf->x2)*qreal(.5);
 
-    c = (y2 + y3)/2;
-    firstHalf->y2 = (y1 + y2)*.5;
-    secondHalf->y3 = (y3 + y4)*.5;
+    c = (y2 + y3)*qreal(.5);
+    firstHalf->y2 = (y1 + y2)*qreal(.5);
+    secondHalf->y3 = (y3 + y4)*qreal(.5);
     firstHalf->y1 = y1;
     secondHalf->y4 = y4;
-    firstHalf->y3 = (firstHalf->y2 + c)*.5;
-    secondHalf->y2 = (secondHalf->y3 + c)*.5;
-    firstHalf->y4 = secondHalf->y1 = (firstHalf->y3 + secondHalf->y2)*.5;
+    firstHalf->y3 = (firstHalf->y2 + c)*qreal(.5);
+    secondHalf->y2 = (secondHalf->y3 + c)*qreal(.5);
+    firstHalf->y4 = secondHalf->y1 = (firstHalf->y3 + secondHalf->y2)*qreal(.5);
 }
 
 inline void QBezier::parameterSplitLeft(qreal t, QBezier *left)

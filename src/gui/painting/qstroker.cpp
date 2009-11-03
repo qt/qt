@@ -788,12 +788,12 @@ qreal qt_t_for_arc_angle(qreal angle)
     if (qFuzzyCompare(angle, qreal(90)))
         return 1;
 
-    qreal radians = Q_PI * angle / 180;
+    qreal radians = Q_PI180 * angle;
     qreal cosAngle = qCos(radians);
     qreal sinAngle = qSin(radians);
 
     // initial guess
-    qreal tc = angle / 90;
+    qreal tc = angle / qreal(90);
     // do some iterations of newton's method to approximate cosAngle
     // finds the zero of the function b.pointAt(tc).x() - cosAngle
     tc -= ((((2-3*QT_PATH_KAPPA) * tc + 3*(QT_PATH_KAPPA-1)) * tc) * tc + 1 - cosAngle) // value
@@ -812,7 +812,7 @@ qreal qt_t_for_arc_angle(qreal angle)
 
     // use the average of the t that best approximates cosAngle
     // and the t that best approximates sinAngle
-    qreal t = 0.5 * (tc + ts);
+    qreal t = qreal(0.5) * (tc + ts);
 
 #if 0
     printf("angle: %f, t: %f\n", angle, t);
@@ -861,11 +861,11 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     qreal y = rect.y();
 
     qreal w = rect.width();
-    qreal w2 = rect.width() / 2;
+    qreal w2 = rect.width() * qreal(0.5);
     qreal w2k = w2 * QT_PATH_KAPPA;
 
     qreal h = rect.height();
-    qreal h2 = rect.height() / 2;
+    qreal h2 = rect.height() * qreal(0.5);
     qreal h2k = h2 * QT_PATH_KAPPA;
 
     QPointF points[16] =
@@ -898,23 +898,24 @@ QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLengt
     else if (sweepLength < -360) sweepLength = -360;
 
     // Special case fast paths
-    if (startAngle == 0.0) {
-        if (sweepLength == 360.0) {
+    if (startAngle == qreal(0.0)) {
+        if (sweepLength == qreal(360.0)) {
             for (int i = 11; i >= 0; --i)
                 curves[(*point_count)++] = points[i];
             return points[12];
-        } else if (sweepLength == -360.0) {
+        } else if (sweepLength == qreal(-360.0)) {
             for (int i = 1; i <= 12; ++i)
                 curves[(*point_count)++] = points[i];
             return points[0];
         }
     }
 
-    int startSegment = int(floor(startAngle / 90));
-    int endSegment = int(floor((startAngle + sweepLength) / 90));
+    qreal inv_90 = qreal(1) / qreal(90);
+    int startSegment = int(floor(startAngle * inv_90));
+    int endSegment = int(floor((startAngle + sweepLength) * inv_90));
 
-    qreal startT = (startAngle - startSegment * 90) / 90;
-    qreal endT = (startAngle + sweepLength - endSegment * 90) / 90;
+    qreal startT = (startAngle - startSegment * 90) * inv_90;
+    qreal endT = (startAngle + sweepLength - endSegment * 90) * inv_90;
 
     int delta = sweepLength > 0 ? 1 : -1;
     if (delta < 0) {

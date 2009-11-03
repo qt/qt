@@ -66,6 +66,7 @@
 #include "qnumeric.h"
 #include "qvarlengtharray.h"
 #include "private/qmath_p.h"
+#include "private/qnumeric_p.h"
 
 #include "float.h"
 
@@ -908,7 +909,7 @@ static inline qreal convertToNumber(const QString &str, QSvgHandler *handler, bo
     QSvgHandler::LengthType type;
     qreal num = parseLength(str, type, handler, ok);
     if (type == QSvgHandler::LT_PERCENT) {
-        num = num/100.0;
+        num = num * qreal(0.01);
     }
     return num;
 }
@@ -943,13 +944,13 @@ static qreal convertToPixels(qreal len, bool , QSvgHandler::LengthType type)
     case QSvgHandler::LT_PC:
         break;
     case QSvgHandler::LT_PT:
-        return len * 1.25;
+        return len * qreal(1.25);
         break;
     case QSvgHandler::LT_MM:
-        return len * 3.543307;
+        return len * qreal(3.543307);
         break;
     case QSvgHandler::LT_CM:
-        return len * 35.43307;
+        return len * qreal(35.43307);
         break;
     case QSvgHandler::LT_IN:
         return len * 90;
@@ -1372,16 +1373,16 @@ static void pathArcSegment(QPainterPath &path,
     qreal t;
     qreal thHalf;
 
-    sinTh = qSin(xAxisRotation * (Q_PI / 180.0));
-    cosTh = qCos(xAxisRotation * (Q_PI / 180.0));
+    sinTh = qSin(xAxisRotation * Q_PI180);
+    cosTh = qCos(xAxisRotation * Q_PI180);
 
     a00 =  cosTh * rx;
     a01 = -sinTh * ry;
     a10 =  sinTh * rx;
     a11 =  cosTh * ry;
 
-    thHalf = 0.5 * (th1 - th0);
-    t = (8.0 / 3.0) * qSin(thHalf * 0.5) * qSin(thHalf * 0.5) / qSin(thHalf);
+    thHalf = qreal(0.5) * (th1 - th0);
+    t = (qreal(8.0) / qreal(3.0)) * qSin(thHalf * qreal(0.5)) * qSin(thHalf * qreal(0.5)) / qSin(thHalf);
     x1 = xc + qCos(th0) - t * qSin(th0);
     y1 = yc + qSin(th0) + t * qCos(th0);
     x3 = xc + qCos(th1);
@@ -1441,11 +1442,11 @@ static void pathArc(QPainterPath &path,
     rx = qAbs(rx);
     ry = qAbs(ry);
 
-    sin_th = qSin(x_axis_rotation * (Q_PI / 180.0));
-    cos_th = qCos(x_axis_rotation * (Q_PI / 180.0));
+    sin_th = qSin(x_axis_rotation * Q_PI180);
+    cos_th = qCos(x_axis_rotation * Q_PI180);
 
-    dx = (curx - x) / 2.0;
-    dy = (cury - y) / 2.0;
+    dx = (curx - x) * qreal(0.5);
+    dy = (cury - y) * qreal(0.5);
     dx1 =  cos_th * dx + sin_th * dy;
     dy1 = -sin_th * dx + cos_th * dy;
     Pr1 = rx * rx;
@@ -1459,10 +1460,12 @@ static void pathArc(QPainterPath &path,
         ry = ry * qSqrt(check);
     }
 
-    a00 =  cos_th / rx;
-    a01 =  sin_th / rx;
-    a10 = -sin_th / ry;
-    a11 =  cos_th / ry;
+    const qreal inv_rx = 1 / rx;
+    const qreal inv_ry = 1 / ry;
+    a00 =  cos_th * inv_rx;
+    a01 =  sin_th * inv_rx;
+    a10 = -sin_th * inv_ry;
+    a11 =  cos_th * inv_ry;
     x0 = a00 * curx + a01 * cury;
     y0 = a10 * curx + a11 * cury;
     x1 = a00 * x + a01 * y;
@@ -1473,12 +1476,12 @@ static void pathArc(QPainterPath &path,
        The arc fits a unit-radius circle in this space.
     */
     d = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
-    sfactor_sq = 1.0 / d - 0.25;
+    sfactor_sq = qreal(1.0) / d - qreal(0.25);
     if (sfactor_sq < 0) sfactor_sq = 0;
     sfactor = qSqrt(sfactor_sq);
     if (sweep_flag == large_arc_flag) sfactor = -sfactor;
-    xc = 0.5 * (x0 + x1) - sfactor * (y1 - y0);
-    yc = 0.5 * (y0 + y1) + sfactor * (x1 - x0);
+    xc = qreal(0.5) * (x0 + x1) - sfactor * (y1 - y0);
+    yc = qreal(0.5) * (y0 + y1) + sfactor * (x1 - x0);
     /* (xc, yc) is center of the circle. */
 
     th0 = atan2(y0 - yc, x0 - xc);
@@ -1486,16 +1489,18 @@ static void pathArc(QPainterPath &path,
 
     th_arc = th1 - th0;
     if (th_arc < 0 && sweep_flag)
-        th_arc += 2 * Q_PI;
+        th_arc += Q_2PI;
     else if (th_arc > 0 && !sweep_flag)
-        th_arc -= 2 * Q_PI;
+        th_arc -= Q_2PI;
 
-    n_segs = qCeil(qAbs(th_arc / (Q_PI * 0.5 + 0.001)));
+    n_segs = qCeil(qAbs(th_arc / (Q_PI2 + qreal(0.001))));
 
+    const qreal th_arc_div_n_segs = th_arc / n_segs;
     for (i = 0; i < n_segs; i++) {
+        const qreal i_mul_th_arc_div_n_segs = i * th_arc_div_n_segs;
         pathArcSegment(path, xc, yc,
-                       th0 + i * th_arc / n_segs,
-                       th0 + (i + 1) * th_arc / n_segs,
+                       th0 + i_mul_th_arc_div_n_segs,
+                       th0 + i_mul_th_arc_div_n_segs + th_arc_div_n_segs,
                        rx, ry, x_axis_rotation);
     }
 }
@@ -2969,10 +2974,10 @@ static QSvgNode *createRectNode(QSvgNode *parent,
     //9.2 The 'rect'  element clearly specifies it
     // but the case might in fact be handled because
     // we draw rounded rectangles differently
-    if (nrx > bounds.width()/2)
-        nrx = bounds.width()/2;
-    if (nry > bounds.height()/2)
-        nry = bounds.height()/2;
+    if (nrx > bounds.width()*qreal(0.5))
+        nrx = bounds.width()*qreal(0.5);
+    if (nry > bounds.height()*qreal(0.5))
+        nry = bounds.height()*qreal(0.5);
 
     if (nrx && !nry)
         nry = nrx;
@@ -2982,8 +2987,8 @@ static QSvgNode *createRectNode(QSvgNode *parent,
     //we draw rounded rect from 0...99
     //svg from 0...bounds.width()/2 so we're adjusting the
     //coordinates
-    nrx *= (100/(bounds.width()/2));
-    nry *= (100/(bounds.height()/2));
+    nrx *= (200/bounds.width());
+    nry *= (200/bounds.height());
 
     QSvgNode *rect = new QSvgRect(parent, bounds,
                                   int(nrx),
@@ -3073,7 +3078,7 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     bool ok = true;
     qreal offset = convertToNumber(offsetStr, handler, &ok);
     if (!ok)
-        offset = 0.0;
+        offset = qreal(0.0);
     QString black = QString::fromLatin1("#000000");
     if (colorStr.isEmpty()) {
         colorStr = QStringRef(&black);
@@ -3093,9 +3098,9 @@ static bool parseStopNode(QSvgStyleProperty *parent,
     }
 
     // If offset is greater than one, it must be clamped to one.
-    if (offset > 1.0) {
-        if ((stops.size() == 1) || (stops.at(stops.size() - 2).first < 1.0 - FLT_EPSILON)) {
-            stops.back().first = 1.0 - FLT_EPSILON;
+    if (offset > qreal(1.0)) {
+        if ((stops.size() == 1) || (stops.at(stops.size() - 2).first < qreal(1.0) - FLT_EPSILON)) {
+            stops.back().first = qreal(1.0) - FLT_EPSILON;
             grad->setStops(stops);
         }
         offset = 1.0;

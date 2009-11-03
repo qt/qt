@@ -269,11 +269,12 @@ void QQuaternion::normalize()
         return;
 
     len = qSqrt(len);
+    const double inv_len = 1 / len;
 
-    xp /= len;
-    yp /= len;
-    zp /= len;
-    wp /= len;
+    xp *= inv_len;
+    yp *= inv_len;
+    zp *= inv_len;
+    wp *= inv_len;
 }
 
 /*!
@@ -357,7 +358,7 @@ QQuaternion QQuaternion::fromAxisAndAngle(const QVector3D& axis, qreal angle)
     // http://www.j3d.org/matrix_faq/matrfaq_latest.html#Q56
     // We normalize the result just in case the values are close
     // to zero, as suggested in the above FAQ.
-    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal a = (angle * 0.5f) * Q_PI180;
     qreal s = qSin(a);
     qreal c = qCos(a);
     QVector3D ax = axis.normalized();
@@ -375,11 +376,12 @@ QQuaternion QQuaternion::fromAxisAndAngle
 {
     qreal length = qSqrt(x * x + y * y + z * z);
     if (!qFuzzyIsNull(length - 1.0f) && !qFuzzyIsNull(length)) {
-        x /= length;
-        y /= length;
-        z /= length;
+        const qreal inv_length = 1 / length;
+        x *= inv_length;
+        y *= inv_length;
+        z *= inv_length;
     }
-    qreal a = (angle / 2.0f) * M_PI / 180.0f;
+    qreal a = (angle * 0.5f) * Q_PI180;
     qreal s = qSin(a);
     qreal c = qCos(a);
     return QQuaternion(c, x * s, y * s, z * s).normalized();
@@ -516,12 +518,13 @@ QQuaternion QQuaternion::slerp
     // then revert to simple linear interpolation.
     qreal factor1 = 1.0f - t;
     qreal factor2 = t;
-    if ((1.0f - dot) > 0.0000001) {
+    if ((1.0f - dot) > qreal(0.0000001)) {
         qreal angle = qreal(qAcos(dot));
         qreal sinOfAngle = qreal(qSin(angle));
-        if (sinOfAngle > 0.0000001) {
-            factor1 = qreal(qSin((1.0f - t) * angle)) / sinOfAngle;
-            factor2 = qreal(qSin(t * angle)) / sinOfAngle;
+        if (sinOfAngle > qreal(0.0000001)) {
+            const qreal inv_sinOfAngle = 1 / sinOfAngle;
+            factor1 = qreal(qSin((1.0f - t) * angle)) * inv_sinOfAngle;
+            factor2 = qreal(qSin(t * angle)) * inv_sinOfAngle;
         }
     }
 

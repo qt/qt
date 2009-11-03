@@ -57,6 +57,12 @@
 
 QT_BEGIN_NAMESPACE
 
+static const qreal Q_PI   = qreal(3.14159265358979323846);   // pi
+static const qreal Q_2PI  = qreal(6.28318530717958647693);   // 2*pi
+static const qreal Q_PI2  =  qreal(1.57079632679489661923);   // pi/2
+static const qreal Q_PI180  = qreal(0.01745329251994329577);   // pi/180
+static const qreal Q_180PI  = qreal(57.29577951308232087685);   // 180/pi
+
 #if !defined(Q_CC_MIPS)
 
 static const union { unsigned char c[8]; double d; } qt_be_inf_bytes = { { 0x7f, 0xf0, 0, 0, 0, 0, 0, 0 } };

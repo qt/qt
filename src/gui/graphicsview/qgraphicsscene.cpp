@@ -4109,13 +4109,13 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
     QGraphicsWidget *widgetItem = static_cast<QGraphicsWidget *>(item);
     QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
     const qreal windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
-                                ? proxy->widget()->windowOpacity() : 1.0;
+                                ? proxy->widget()->windowOpacity() : qreal(1.0);
     const qreal oldPainterOpacity = painter->opacity();
 
     if (qFuzzyIsNull(windowOpacity))
         return;
     // Set new painter opacity.
-    if (windowOpacity < 1.0)
+    if (windowOpacity < qreal(1.0))
         painter->setOpacity(oldPainterOpacity * windowOpacity);
 
     // set layoutdirection on the painter
@@ -4209,7 +4209,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     QGraphicsProxyWidget *proxy = item->isWidget() ? qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(item)) : 0;
     if (proxy && proxy->widget()) {
         const qreal windowOpacity = proxy->widget()->windowOpacity();
-        if (windowOpacity < 1.0)
+        if (windowOpacity < qreal(1.0))
             newPainterOpacity *= windowOpacity;
     }
 
