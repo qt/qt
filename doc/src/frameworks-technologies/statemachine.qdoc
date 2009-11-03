@@ -426,9 +426,8 @@
   value of the property before any property assignments in states were executed.)
 
   Take the following code:
-  \code
-  \snippet doc/src/snippets/statemachine/main5.cpp 0
-  \endcode
+
+  \snippet doc/src/snippets/statemachine/main5.cpp 0  
 
   Lets say the property \c fooBar is 0.0 when the machine starts. When the machine is in state
   \c s1, the property will be 1.0, since the state explicitly assigns this value to it. When the
@@ -437,9 +436,8 @@
 
   If we are using nested states, the parent defines a value for the property which is inherited by
   all descendants that do not explicitly assign a value to the property.
-  \code
+
   \snippet doc/src/snippets/statemachine/main5.cpp 2
-  \endcode
 
   Here \c s1 has two children: \c s2 and \c s3. When \c s2 is entered, the property \c fooBar
   will have the value 2.0, since this is explicitly defined for the state. When the machine is in
@@ -452,9 +450,8 @@
   properties as they are assigned in states.
 
   Say we have the following code:
-  \code
+
   \snippet doc/src/snippets/statemachine/main5.cpp 3
-  \endcode
 
   Here we define two states of a user interface. In \c s1 the \c button is small, and in \c s2
   it is bigger. If we click the button to transition from \c s1 to \c s2, the geometry of the button
@@ -462,9 +459,7 @@
   smooth, however, all we need to do is make a QPropertyAnimation and add this to the transition
   object.
 
-  \code
   \snippet doc/src/snippets/statemachine/main5.cpp 4
-  \endcode
 
   Adding an animation for the property in question means that the property assignment will no
   longer take immediate effect when the state has been entered. Instead, the animation will start
@@ -486,9 +481,8 @@
   the value defined by a state.
 
   Say we have the following code:
-  \code
+
   \snippet doc/src/snippets/statemachine/main5.cpp 5
-  \endcode
 
   When \c button is clicked, the machine will transition into state \c s2, which will set the
   geometry of the button, and then pop up a message box to alert the user that the geometry has
@@ -504,9 +498,8 @@
   value, we can use the state's polished() signal. The polished() signal will be emitted when the
   the property is assigned its final value, whether this is done immediately or after the animation
   has finished playing.
-  \code
+
   \snippet doc/src/snippets/statemachine/main5.cpp 6
-  \endcode
 
   In this example, when \c button is clicked, the machine will enter \c s2. It will remain in state
   \c s2 until the \c geometry property has been set to \c QRect(0, 0, 50, 50). Then it will
