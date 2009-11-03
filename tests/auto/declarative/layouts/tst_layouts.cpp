@@ -58,6 +58,7 @@ private slots:
     void test_grid();
     void test_grid_spacing();
 
+    void test_repeater();
 private:
     QmlView *createView(const QString &filename);
 };
@@ -220,6 +221,30 @@ void tst_QmlGraphicsLayouts::test_grid_spacing()
     QCOMPARE(four->y(), 54.0);
     QCOMPARE(five->x(), 54.0);
     QCOMPARE(five->y(), 54.0);
+}
+
+void tst_QmlGraphicsLayouts::test_repeater()
+{
+    QmlView *canvas = createView("data/repeater.qml");
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QVERIFY(one != 0);
+
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QVERIFY(two != 0);
+
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QVERIFY(three != 0);
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 100.0);
+    QCOMPARE(three->y(), 0.0);
 }
 
 QmlView *tst_QmlGraphicsLayouts::createView(const QString &filename)

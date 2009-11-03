@@ -104,6 +104,7 @@ private Q_SLOTS:
 protected:
     QmlGraphicsBasePositioner(QmlGraphicsBasePositionerPrivate &dd, AutoUpdateType at, QmlGraphicsItem *parent);
     void setMovingItem(QmlGraphicsItem *);
+    QList<QmlGraphicsItem *> positionedItems;
 
 private:
     void applyTransition(const QList<QPair<QString, QVariant> >& changes, QmlGraphicsItem* target,
