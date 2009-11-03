@@ -286,8 +286,8 @@ void tst_QStateMachine::transitionToRootState()
     machine.addState(initialState);
     machine.setInitialState(initialState);
 
-    QAbstractTransition *trans = initialState->addTransition(new EventTransition(QEvent::User, &machine));
-    QVERIFY(trans != 0);
+    QAbstractTransition *trans = new EventTransition(QEvent::User, &machine);
+    initialState->addTransition(trans);
     QCOMPARE(trans->sourceState(), initialState);
     QCOMPARE(trans->targetState(), static_cast<QAbstractState *>(&machine));
 
@@ -310,7 +310,7 @@ void tst_QStateMachine::transitionFromRootState()
     QState *root = &machine;
     QState *s1 = new QState(root);
     EventTransition *trans = new EventTransition(QEvent::User, s1);
-    QCOMPARE(root->addTransition(trans), static_cast<QAbstractTransition *>(trans));
+    root->addTransition(trans);
     QCOMPARE(trans->sourceState(), root);
     QCOMPARE(trans->targetState(), static_cast<QAbstractState *>(s1));
 }
@@ -1155,7 +1155,7 @@ void tst_QStateMachine::stateEntryAndExit()
         QCOMPARE(t->targetState(), (QAbstractState*)s2);
         QCOMPARE(t->targetStates().size(), 1);
         QCOMPARE(t->targetStates().at(0), (QAbstractState*)s2);
-        QCOMPARE(s1->addTransition(t), (QAbstractTransition*)t);
+        s1->addTransition(t);
         QCOMPARE(t->sourceState(), (QState*)s1);
         QCOMPARE(t->machine(), &machine);
 
@@ -1173,7 +1173,7 @@ void tst_QStateMachine::stateEntryAndExit()
             s2->removeTransition(trans);
             QCOMPARE(trans->sourceState(), (QState*)0);
             QCOMPARE(trans->targetState(), (QAbstractState*)s3);
-            QCOMPARE(s2->addTransition(trans), trans);
+            s2->addTransition(trans);
             QCOMPARE(trans->sourceState(), (QState*)s2);
         }
 
@@ -3117,7 +3117,9 @@ void tst_QStateMachine::twoAnimatedTransitions()
     QState *s2 = new QState(&machine);
     s2->assignProperty(object, "foo", 5.0);
     QPropertyAnimation *fooAnimation = new QPropertyAnimation(object, "foo", s2);
-    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
+    EventTransition *trans = new EventTransition(QEvent::User, s2);
+    s1->addTransition(trans);
+    trans->addAnimation(fooAnimation);
 
     QState *s3 = new QState(&machine);
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
@@ -3126,7 +3128,9 @@ void tst_QStateMachine::twoAnimatedTransitions()
     QState *s4 = new QState(&machine);
     s4->assignProperty(object, "foo", 2.0);
     QPropertyAnimation *fooAnimation2 = new QPropertyAnimation(object, "foo", s4);
-    s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation2);
+    trans = new EventTransition(QEvent::User, s4);
+    s3->addTransition(trans);
+    trans->addAnimation(fooAnimation2);
 
     QState *s5 = new QState(&machine);
     QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
@@ -3161,7 +3165,9 @@ void tst_QStateMachine::playAnimationTwice()
     QState *s2 = new QState(&machine);
     s2->assignProperty(object, "foo", 5.0);
     QPropertyAnimation *fooAnimation = new QPropertyAnimation(object, "foo", s2);
-    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(fooAnimation);
+    EventTransition *trans = new EventTransition(QEvent::User, s2);
+    s1->addTransition(trans);
+    trans->addAnimation(fooAnimation);
 
     QState *s3 = new QState(&machine);
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
@@ -3169,7 +3175,9 @@ void tst_QStateMachine::playAnimationTwice()
 
     QState *s4 = new QState(&machine);
     s4->assignProperty(object, "foo", 2.0);
-    s3->addTransition(new EventTransition(QEvent::User, s4))->addAnimation(fooAnimation);
+    trans = new EventTransition(QEvent::User, s4);
+    s3->addTransition(trans);
+    trans->addAnimation(fooAnimation);
 
     QState *s5 = new QState(&machine);
     QObject::connect(s5, SIGNAL(entered()), QApplication::instance(), SLOT(quit()));
@@ -3213,14 +3221,16 @@ void tst_QStateMachine::nestedTargetStateForAnimation()
 
     QState *s2Child2 = new QState(s2);
     s2Child2->assignProperty(object, "bar", 11.0);
-    QAbstractTransition *at = s2Child->addTransition(new EventTransition(QEvent::User, s2Child2));
+    QAbstractTransition *at = new EventTransition(QEvent::User, s2Child2);
+    s2Child->addTransition(at);
 
     QPropertyAnimation *animation = new QPropertyAnimation(object, "bar", s2);
     animation->setDuration(2000);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(animation);
 
-    at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    at = new EventTransition(QEvent::User, s2);
+    s1->addTransition(at);
 
     animation = new QPropertyAnimation(object, "foo", s2);
     connect(animation, SIGNAL(finished()), &counter, SLOT(slot()));
@@ -3299,7 +3309,8 @@ void tst_QStateMachine::animatedGlobalRestoreProperty()
     QState *s4 = new QState(&machine);
     QObject::connect(s4, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
-    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    QAbstractTransition *at = new EventTransition(QEvent::User, s2);
+    s1->addTransition(at);
     QPropertyAnimation *pa = new QPropertyAnimation(object, "foo", s2);
     connect(pa, SIGNAL(finished()), &counter, SLOT(slot()));
     at->addAnimation(pa);
@@ -3341,7 +3352,9 @@ void tst_QStateMachine::specificTargetValueOfAnimation()
 
     QPropertyAnimation *anim = new QPropertyAnimation(object, "foo");
     anim->setEndValue(10.0);
-    s1->addTransition(new EventTransition(QEvent::User, s2))->addAnimation(anim);
+    EventTransition *trans = new EventTransition(QEvent::User, s2);
+    s1->addTransition(trans);
+    trans->addAnimation(anim);
 
     QState *s3 = new QState(&machine);
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
@@ -3495,7 +3508,8 @@ void tst_QStateMachine::overrideDefaultAnimationWithSpecific()
     QState *s3 = new QState(&machine);
     QObject::connect(s3, SIGNAL(entered()), QCoreApplication::instance(), SLOT(quit()));
 
-    QAbstractTransition *at = s1->addTransition(new EventTransition(QEvent::User, s2));
+    QAbstractTransition *at = new EventTransition(QEvent::User, s2);
+    s1->addTransition(at);
 
     QPropertyAnimation *defaultAnimation = new QPropertyAnimation(object, "foo");
     connect(defaultAnimation, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), &counter, SLOT(slot()));

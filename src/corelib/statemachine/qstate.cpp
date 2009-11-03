@@ -286,15 +286,14 @@ void QState::setErrorState(QAbstractState *state)
 
 /*!
   Adds the given \a transition. The transition has this state as the source.
-  This state takes ownership of the transition. If the transition is successfully
-  added, the function will return the \a transition pointer. Otherwise it will return null.
+  This state takes ownership of the transition. 
 */
-QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
+void QState::addTransition(QAbstractTransition *transition)
 {
     Q_D(QState);
     if (!transition) {
         qWarning("QState::addTransition: cannot add null transition");
-        return 0;
+        return ;
     }
 
     transition->setParent(this);
@@ -303,18 +302,17 @@ QAbstractTransition *QState::addTransition(QAbstractTransition *transition)
         QAbstractState *t = targets.at(i).data();
         if (!t) {
             qWarning("QState::addTransition: cannot add transition to null state");
-            return 0;
+            return ;
         }
         if ((QAbstractStatePrivate::get(t)->machine() != d->machine())
             && QAbstractStatePrivate::get(t)->machine() && d->machine()) {
             qWarning("QState::addTransition: cannot add transition "
                      "to a state in a different state machine");
-            return 0;
+            return ;
         }
     }
     if (machine() != 0 && machine()->configuration().contains(this))
         QStateMachinePrivate::get(machine())->registerTransitions(this);
-    return transition;
 }
 
 /*!
@@ -379,7 +377,8 @@ QAbstractTransition *QState::addTransition(QAbstractState *target)
         return 0;
     }
     UnconditionalTransition *trans = new UnconditionalTransition(target);
-    return addTransition(trans);
+    addTransition(trans);
+    return trans;
 }
 
 /*!
