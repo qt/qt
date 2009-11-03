@@ -333,7 +333,7 @@ void QmlGraphicsBasePositioner::applyRemove(const QList<QPair<QString, QVariant>
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QmlGraphicsColumn)
 /*!
-  \qmlclass Column QFxColumn
+  \qmlclass Column QmlGraphicsColumn
   \brief The Column item lines up its children vertically.
   \inherits Item
 
@@ -481,6 +481,11 @@ QmlGraphicsColumn::QmlGraphicsColumn(QmlGraphicsItem *parent)
 {
 }
 
+inline bool isInvisible(QmlGraphicsItem *child)
+{
+    return child->opacity() == 0.0 || !child->isVisible() || !child->width() || !child->height();
+}
+
 void QmlGraphicsColumn::doPositioning()
 {
     int voffset = 0;
@@ -495,7 +500,7 @@ void QmlGraphicsColumn::doPositioning()
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
-        if (!child || child->opacity() == 0.0)
+        if (!child || isInvisible(child))
             continue;
 
         bool needMove = (child->y() != voffset || child->x());
@@ -519,7 +524,7 @@ void QmlGraphicsColumn::doPositioning()
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QmlGraphicsRow)
 /*!
-  \qmlclass Row QFxRow
+  \qmlclass Row QmlGraphicsRow
   \brief The Row item lines up its children horizontally.
   \inherits Item
 
@@ -651,7 +656,7 @@ void QmlGraphicsRow::doPositioning()
     QList<QGraphicsItem *> children = childItems();
     for (int ii = 0; ii < children.count(); ++ii) {
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
-        if (!child || child->opacity() == 0.0)
+        if (!child || isInvisible(child))
             continue;
 
         bool needMove = (child->x() != hoffset || child->y());
@@ -668,10 +673,8 @@ void QmlGraphicsRow::doPositioning()
             child->setX(hoffset);
             setMovingItem(0);
         }
-        if(child->width() && child->height()){//don't advance for invisible children
-            hoffset += child->width();
-            hoffset += spacing();
-        }
+        hoffset += child->width();
+        hoffset += spacing();
     }
 }
 
@@ -867,7 +870,7 @@ void QmlGraphicsGrid::doPositioning()
             if (childIndex == children.count())
                 continue;
             QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(childIndex++));
-            if (!child || child->opacity() == 0.0)
+            if (!child || isInvisible(child))
                 continue;
             if (child->width() > maxColWidth[j])
                 maxColWidth[j] = child->width();
@@ -888,7 +891,7 @@ void QmlGraphicsGrid::doPositioning()
     }
     foreach(QGraphicsItem* schild, children){
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(schild);
-        if (!child || child->opacity() == 0.0)
+        if (!child || isInvisible(child))
             continue;
         bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);
         QList<QPair<QString, QVariant> > changes;

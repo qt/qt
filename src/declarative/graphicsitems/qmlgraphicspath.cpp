@@ -57,7 +57,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathQuad,QmlGraphicsPathQuad)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QmlGraphicsPathCubic)
 
 /*!
-    \qmlclass PathElement QFxPathElement
+    \qmlclass PathElement QmlGraphicsPathElement
     \brief PathElement is the base path type.
 
     This type is the base for all path types.  It cannot
@@ -464,7 +464,7 @@ void QmlGraphicsCurve::setY(qreal y)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathAttribute QFxPathAttribute
+    \qmlclass PathAttribute QmlGraphicsPathAttribute
     \brief The PathAttribute allows setting an attribute at a given position in a Path.
 
     The PathAttribute object allows attibutes consisting of a name and
@@ -543,7 +543,7 @@ void QmlGraphicsPathAttribute::setValue(qreal value)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathLine QFxPathLine
+    \qmlclass PathLine QmlGraphicsPathLine
     \brief The PathLine defines a straight line.
 
     The example below creates a path consisting of a straight line from
@@ -583,7 +583,7 @@ void QmlGraphicsPathLine::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathQuad QFxPathQuad
+    \qmlclass PathQuad QmlGraphicsPathQuad
     \brief The PathQuad defines a quadratic Bezier curve with a control point.
 
     The following QML produces the path shown below:
@@ -667,7 +667,7 @@ void QmlGraphicsPathQuad::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-   \qmlclass PathCubic QFxPathCubic
+   \qmlclass PathCubic QmlGraphicsPathCubic
    \brief The PathCubic defines a cubic Bezier curve with two control points.
 
     The following QML produces the path shown below:
@@ -777,7 +777,7 @@ void QmlGraphicsPathCubic::addToPath(QPainterPath &path)
 /****************************************************************************/
 
 /*!
-    \qmlclass PathPercent QFxPathPercent
+    \qmlclass PathPercent QmlGraphicsPathPercent
     \brief The PathPercent manipulates the way a path is interpreted.
 
     The examples below show the normal distrubution of items along a path

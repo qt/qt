@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include <QMovie>
-#include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlengine.h>
 #include "qmlgraphicsanimatedimageitem_p.h"
 #include "qmlgraphicsanimatedimageitem_p_p.h"
@@ -179,6 +178,14 @@ int QmlGraphicsAnimatedImageItem::frameCount() const
     return d->_movie->frameCount();
 }
 
+static QString toLocalFileOrQrc(const QUrl& url)
+{
+    QString r = url.toLocalFile();
+    if (r.isEmpty() && url.scheme() == QLatin1String("qrc"))
+        r = QLatin1Char(':') + url.path();
+    return r;
+}
+
 void QmlGraphicsAnimatedImageItem::setSource(const QUrl &url)
 {
     Q_D(QmlGraphicsAnimatedImageItem);
@@ -193,15 +200,46 @@ void QmlGraphicsAnimatedImageItem::setSource(const QUrl &url)
         d->reply = 0;
     }
 
-    d->url = qmlContext(this)->resolvedUrl(url);
+    d->url = url;
 
     if (url.isEmpty()) {
         delete d->_movie;
         d->status = Null;
     } else {
+#ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
+        QString lf = toLocalFileOrQrc(url);
+        if (!lf.isEmpty()) {
+            //### should be unified with movieRequestFinished
+            d->_movie = new QMovie(lf);
+            if (!d->_movie->isValid()){
+                qWarning() << "Error Reading Animated Image File " << d->url;
+                delete d->_movie;
+                d->_movie = 0;
+                return;
+            }
+            connect(d->_movie, SIGNAL(stateChanged(QMovie::MovieState)),
+                    this, SLOT(playingStatusChanged()));
+            connect(d->_movie, SIGNAL(frameChanged(int)),
+                    this, SLOT(movieUpdate()));
+            d->_movie->setCacheMode(QMovie::CacheAll);
+            if(d->playing)
+                d->_movie->start();
+            else
+                d->_movie->jumpToFrame(0);
+            if(d->paused)
+                d->_movie->setPaused(true);
+            d->setPixmap(d->_movie->currentPixmap());
+            d->status = Ready;
+            d->progress = 1.0;
+            emit statusChanged(d->status);
+            emit sourceChanged(d->url);
+            emit progressChanged(d->progress);
+            return;
+        }
+#endif
         d->status = Loading;
         QNetworkRequest req(d->url);
-        d->reply = qmlContext(this)->engine()->networkAccessManager()->get(req);
+        d->reply = qmlEngine(this)->networkAccessManager()->get(req);
         QObject::connect(d->reply, SIGNAL(finished()),
                          this, SLOT(movieRequestFinished()));
     }
@@ -230,13 +268,13 @@ void QmlGraphicsAnimatedImageItem::movieRequestFinished()
         d->_movie->jumpToFrame(0);
     if(d->paused)
         d->_movie->setPaused(true);
-    setPixmap(d->_movie->currentPixmap());
+    d->setPixmap(d->_movie->currentPixmap());
 }
 
 void QmlGraphicsAnimatedImageItem::movieUpdate()
 {
     Q_D(QmlGraphicsAnimatedImageItem);
-    setPixmap(d->_movie->currentPixmap());
+    d->setPixmap(d->_movie->currentPixmap());
     emit frameChanged();
 }
 

@@ -521,6 +521,16 @@ void QmlFontValueType::setBold(bool b)
     font.setBold(b);
 }
 
+QmlFontValueType::FontWeight QmlFontValueType::weight() const
+{
+    return (QmlFontValueType::FontWeight)font.weight();
+}
+
+void QmlFontValueType::setWeight(QmlFontValueType::FontWeight w)
+{
+    font.setWeight((QFont::Weight)w);
+}
+
 bool QmlFontValueType::italic() const
 {
     return font.italic();
@@ -539,6 +549,26 @@ bool QmlFontValueType::underline() const
 void QmlFontValueType::setUnderline(bool b)
 {
     font.setUnderline(b);
+}
+
+bool QmlFontValueType::overline() const
+{
+    return font.overline();
+}
+
+void QmlFontValueType::setOverline(bool b)
+{
+    font.setOverline(b);
+}
+
+bool QmlFontValueType::strikeout() const
+{
+    return font.strikeOut();
+}
+
+void QmlFontValueType::setStrikeout(bool b)
+{
+    font.setStrikeOut(b);
 }
 
 qreal QmlFontValueType::pointSize() const
@@ -564,6 +594,36 @@ void QmlFontValueType::setPixelSize(int size)
 {
     font.setPixelSize(size);
     hasPixelSize = true;
+}
+
+QmlFontValueType::Capitalization QmlFontValueType::capitalization() const
+{
+    return (QmlFontValueType::Capitalization)font.capitalization();
+}
+
+void QmlFontValueType::setCapitalization(QmlFontValueType::Capitalization c)
+{
+    font.setCapitalization((QFont::Capitalization)c);
+}
+
+qreal QmlFontValueType::letterSpacing() const
+{
+    return font.letterSpacing();
+}
+
+void QmlFontValueType::setLetterSpacing(qreal size)
+{
+    font.setLetterSpacing(QFont::PercentageSpacing, size);
+}
+
+qreal QmlFontValueType::wordSpacing() const
+{
+    return font.wordSpacing();
+}
+
+void QmlFontValueType::setWordSpacing(qreal size)
+{
+    font.setWordSpacing(size);
 }
 
 QT_END_NAMESPACE
