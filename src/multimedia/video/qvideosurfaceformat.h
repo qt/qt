@@ -68,13 +68,7 @@ public:
         BottomToTop
     };
 
-    enum ViewportMode
-    {
-        ResetViewport,
-        KeepViewport
-    };
-
-    enum YuvColorSpace
+    enum YCbCrColorSpace
     {
         YCbCr_Undefined,
         YCbCr_BT601,
@@ -106,8 +100,8 @@ public:
     QAbstractVideoBuffer::HandleType handleType() const;
 
     QSize frameSize() const;
-    void setFrameSize(const QSize &size, ViewportMode mode = ResetViewport);
-    void setFrameSize(int width, int height, ViewportMode mode = ResetViewport);
+    void setFrameSize(const QSize &size);
+    void setFrameSize(int width, int height);
 
     int frameWidth() const;
     int frameHeight() const;
@@ -125,8 +119,8 @@ public:
     void setPixelAspectRatio(const QSize &ratio);
     void setPixelAspectRatio(int width, int height);
 
-    YuvColorSpace yuvColorSpace() const;
-    void setYuvColorSpace(YuvColorSpace colorSpace);
+    YCbCrColorSpace yCbCrColorSpace() const;
+    void setYCbCrColorSpace(YCbCrColorSpace colorSpace);
 
     QSize sizeHint() const;
 
@@ -145,7 +139,7 @@ Q_MULTIMEDIA_EXPORT QDebug operator<<(QDebug, const QVideoSurfaceFormat &);
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QVideoSurfaceFormat::Direction)
-Q_DECLARE_METATYPE(QVideoSurfaceFormat::YuvColorSpace)
+Q_DECLARE_METATYPE(QVideoSurfaceFormat::YCbCrColorSpace)
 
 QT_END_HEADER
 
