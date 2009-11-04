@@ -708,7 +708,7 @@ void FrameLoaderClientQt::committedLoad(WebCore::DocumentLoader* loader, const c
 WebCore::ResourceError FrameLoaderClientQt::cancelledError(const WebCore::ResourceRequest& request)
 {
     ResourceError error = ResourceError("QtNetwork", QNetworkReply::OperationCanceledError, request.url().prettyURL(),
-            QCoreApplication::translate("QWebFrame", "Request cancelled", 0, QCoreApplication::UnicodeUTF8));
+            QCoreApplication::translate("QWebFrame", "Request canceled", 0, QCoreApplication::UnicodeUTF8));
     error.setIsCancellation(true);
     return error;
 }
@@ -746,7 +746,7 @@ WebCore::ResourceError FrameLoaderClientQt::interruptForPolicyChangeError(const 
 WebCore::ResourceError FrameLoaderClientQt::cannotShowMIMETypeError(const WebCore::ResourceResponse& response)
 {
     return ResourceError("WebKit", WebKitErrorCannotShowMIMEType, response.url().string(),
-            QCoreApplication::translate("QWebFrame", "Cannot show mimetype", 0, QCoreApplication::UnicodeUTF8));
+            QCoreApplication::translate("QWebFrame", "Cannot show MIME type", 0, QCoreApplication::UnicodeUTF8));
 }
 
 WebCore::ResourceError FrameLoaderClientQt::fileDoesNotExistError(const WebCore::ResourceResponse& response)

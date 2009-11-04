@@ -151,7 +151,7 @@ JSDataGridColumnList::JSDataGridColumnList(NonNullPassRefPtr<Structure> structur
 
 JSDataGridColumnList::~JSDataGridColumnList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDataGridColumnList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

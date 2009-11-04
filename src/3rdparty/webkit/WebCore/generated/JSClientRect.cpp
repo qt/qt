@@ -130,7 +130,7 @@ JSClientRect::JSClientRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSClientRect::~JSClientRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSClientRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

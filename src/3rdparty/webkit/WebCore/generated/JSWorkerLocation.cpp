@@ -156,7 +156,7 @@ JSWorkerLocation::JSWorkerLocation(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSWorkerLocation::~JSWorkerLocation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSWorkerLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

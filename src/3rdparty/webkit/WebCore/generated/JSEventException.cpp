@@ -151,7 +151,7 @@ JSEventException::JSEventException(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSEventException::~JSEventException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSEventException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

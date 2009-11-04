@@ -83,7 +83,7 @@ JSSVGRect::JSSVGRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 JSSVGRect::~JSSVGRect()
 {
     JSSVGDynamicPODTypeWrapperCache<FloatRect, SVGAnimatedRect>::forgetWrapper(m_impl.get());
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
