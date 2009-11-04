@@ -10,7 +10,7 @@ SUBDIRS += anchors \
            numberformatter \
            pathview \
            qfxloader \
-           qfxpixmapcache \
+           qmlpixmapcache \
            qfxtextedit \
            qfxtextinput \
            qfxwebview \
