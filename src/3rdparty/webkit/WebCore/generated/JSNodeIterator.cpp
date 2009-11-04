@@ -85,8 +85,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSNodeIteratorConstructor::s_info = { "NodeIteratorConstructor", 0, &JSNodeIteratorConstructorTable, 0 };
@@ -145,7 +148,7 @@ JSNodeIterator::JSNodeIterator(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSNodeIterator::~JSNodeIterator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNodeIterator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

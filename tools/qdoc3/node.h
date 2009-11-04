@@ -362,6 +362,8 @@ class QmlClassNode : public FakeNode
     const ClassNode* classNode() const { return cnode; }
     virtual QString fileBase() const;
 
+    static bool qmlOnly;
+
  private:
     const ClassNode* cnode;
 };
@@ -374,7 +376,7 @@ class QmlPropGroupNode : public FakeNode
                      bool attached);
     virtual ~QmlPropGroupNode() { }
 
-    const QString& element() const { return name(); }
+    const QString& element() const { return parent()->name(); }
     void setDefault() { isdefault = true; }
     bool isDefault() const { return isdefault; }
     bool isAttached() const { return att; }
@@ -396,14 +398,16 @@ class QmlPropertyNode : public LeafNode
     void setDataType(const QString& dataType) { dt = dataType; }
     void setStored(bool stored) { sto = toTrool(stored); }
     void setDesignable(bool designable) { des = toTrool(designable); }
+    void setWritable(bool writable) { wri = toTrool(writable); }
 
     const QString &dataType() const { return dt; }
     QString qualifiedDataType() const { return dt; }
     bool isStored() const { return fromTrool(sto,true); }
     bool isDesignable() const { return fromTrool(des,false); }
+    bool isWritable() const { return fromTrool(wri,true); }
     bool isAttached() const { return att; }
 
-    const QString& element() const { return parent()->name(); }
+    const QString& element() const { return static_cast<QmlPropGroupNode*>(parent())->element(); }
 
  private:
     enum Trool { Trool_True, Trool_False, Trool_Default };
@@ -414,25 +418,38 @@ class QmlPropertyNode : public LeafNode
     QString dt;
     Trool   sto;
     Trool   des;
+    Trool   wri;
     bool    att;
 };
 
 class QmlSignalNode : public LeafNode
 {
  public:
-    QmlSignalNode(QmlClassNode* parent, const QString& name);
+    QmlSignalNode(QmlClassNode* parent, 
+                  const QString& name,
+                  bool attached);
     virtual ~QmlSignalNode() { }
 
     const QString& element() const { return parent()->name(); }
+    bool isAttached() const { return att; }
+
+ private:
+    bool    att;
 };
 
 class QmlMethodNode : public LeafNode
 {
  public:
-    QmlMethodNode(QmlClassNode* parent, const QString& name);
+    QmlMethodNode(QmlClassNode* parent,
+                  const QString& name,
+                  bool attached);
     virtual ~QmlMethodNode() { }
 
     const QString& element() const { return parent()->name(); }
+    bool isAttached() const { return att; }
+
+ private:
+    bool    att;
 };
 #endif
 
@@ -623,6 +640,7 @@ class PropertyNode : public LeafNode
     void addSignal(FunctionNode *function, FunctionRole role);
     void setStored(bool stored) { sto = toTrool(stored); }
     void setDesignable(bool designable) { des = toTrool(designable); }
+    void setWritable(bool writable) { wri = toTrool(writable); }
     void setOverriddenFrom(const PropertyNode *baseProperty);
 
     const QString &dataType() const { return dt; }
@@ -635,6 +653,7 @@ class PropertyNode : public LeafNode
     NodeList notifiers() const { return functions(Notifier); }
     bool isStored() const { return fromTrool(sto, storedDefault()); }
     bool isDesignable() const { return fromTrool(des, designableDefault()); }
+    bool isWritable() const { return fromTrool(wri, writableDefault()); }
     const PropertyNode *overriddenFrom() const { return overrides; }
 
  private:
@@ -645,11 +664,13 @@ class PropertyNode : public LeafNode
 
     bool storedDefault() const { return true; }
     bool designableDefault() const { return !setters().isEmpty(); }
+    bool writableDefault() const { return !setters().isEmpty(); }
 
     QString dt;
     NodeList funcs[NumFunctionRoles];
     Trool sto;
     Trool des;
+    Trool wri;
     const PropertyNode *overrides;
 };
 

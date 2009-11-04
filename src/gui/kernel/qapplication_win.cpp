@@ -615,6 +615,8 @@ static void qt_set_windows_font_resources()
     if (qt_wince_is_mobile()) {
         smallerFont.setPointSize(systemFont.pointSize()-1);
         QApplication::setFont(smallerFont, "QTabBar");
+        smallerFont.setBold(true);
+        QApplication::setFont(smallerFont, "QAbstractButton");
     }
 #endif// Q_WS_WINCE
 }
@@ -1916,11 +1918,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 #ifndef Q_WS_WINCE
         case WM_ENTERSIZEMOVE:
             autoCaptureWnd = hwnd;
-            QApplicationPrivate::inSizeMove = true;
             break;
         case WM_EXITSIZEMOVE:
             autoCaptureWnd = 0;
-            QApplicationPrivate::inSizeMove = false;
             break;
 #endif
         case WM_MOVE:                                // move window

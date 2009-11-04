@@ -1019,6 +1019,7 @@ void Q3DockArea::lineUp(bool keepNewLines)
         if (!keepNewLines)
             dw->setNewLine(false);
     }
+    layout->invalidate();
     layout->activate();
 }
 

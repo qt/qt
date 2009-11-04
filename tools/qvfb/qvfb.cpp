@@ -669,6 +669,8 @@ void QVFb::configure()
 	    w=320; h=240;
 	} else if ( config->size_640_480->isChecked() ) {
 	    w=640; h=480;
+	} else if ( config->size_800_480->isChecked() ) {
+	    w=800; h=480;
 	} else if ( config->size_800_600->isChecked() ) {
 	    w=800; h=600;
 	} else if ( config->size_1024_768->isChecked() ) {
@@ -748,6 +750,7 @@ void QVFb::chooseSize(const QSize& sz)
     config->size_240_320->setChecked(sz == QSize(240,320));
     config->size_320_240->setChecked(sz == QSize(320,240));
     config->size_640_480->setChecked(sz == QSize(640,480));
+    config->size_800_480->setChecked(sz == QSize(800,480));
     config->size_800_600->setChecked(sz == QSize(800,600));
     config->size_1024_768->setChecked(sz == QSize(1024,768));
 }

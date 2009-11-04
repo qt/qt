@@ -86,8 +86,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSStyleSheetConstructor::s_info = { "StyleSheetConstructor", 0, &JSStyleSheetConstructorTable, 0 };
@@ -133,7 +136,7 @@ JSStyleSheet::JSStyleSheet(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSStyleSheet::~JSStyleSheet()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSStyleSheet::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

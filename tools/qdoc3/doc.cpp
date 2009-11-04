@@ -2841,6 +2841,10 @@ void Doc::initialize(const Config& config)
     DocParser::sourceDirs = config.getStringList(CONFIG_SOURCEDIRS);
     DocParser::quoting = config.getBool(CONFIG_QUOTINGINFORMATION);
 
+#ifdef QDOC_QML
+    QmlClassNode::qmlOnly = config.getBool(CONFIG_QMLONLY);
+#endif
+
     QStringMap reverseAliasMap;
 
     QSet<QString> commands = config.subVars(CONFIG_ALIAS);

@@ -87,23 +87,23 @@ protected:
             if (outside)
                 return;
 
-            const QSizeF offset = pan->offset();
-            const QSizeF totalOffset = pan->totalOffset();
+            const QPointF offset = pan->offset();
+            const QPointF totalOffset = pan->totalOffset();
             QScrollBar *vbar = verticalScrollBar();
             QScrollBar *hbar = horizontalScrollBar();
 
-            if ((vbar->value() == vbar->minimum() && totalOffset.height() > 10) ||
-                (vbar->value() == vbar->maximum() && totalOffset.height() < -10)) {
+            if ((vbar->value() == vbar->minimum() && totalOffset.y() > 10) ||
+                (vbar->value() == vbar->maximum() && totalOffset.y() < -10)) {
                 outside = true;
                 return;
             }
-            if ((hbar->value() == hbar->minimum() && totalOffset.width() > 10) ||
-                (hbar->value() == hbar->maximum() && totalOffset.width() < -10)) {
+            if ((hbar->value() == hbar->minimum() && totalOffset.x() > 10) ||
+                (hbar->value() == hbar->maximum() && totalOffset.x() < -10)) {
                 outside = true;
                 return;
             }
-            vbar->setValue(vbar->value() - offset.height());
-            hbar->setValue(hbar->value() - offset.width());
+            vbar->setValue(vbar->value() - offset.y());
+            hbar->setValue(hbar->value() - offset.x());
             event->accept(pan);
         }
     }
@@ -147,28 +147,28 @@ protected:
             event->ignore(pan);
             if (outside)
                 return;
-            const QSizeF offset = pan->offset();
-            const QSizeF totalOffset = pan->totalOffset();
+            const QPointF offset = pan->offset();
+            const QPointF totalOffset = pan->totalOffset();
             if (orientation() == Qt::Horizontal) {
-                if ((value() == minimum() && totalOffset.width() < -10) ||
-                    (value() == maximum() && totalOffset.width() > 10)) {
+                if ((value() == minimum() && totalOffset.x() < -10) ||
+                    (value() == maximum() && totalOffset.x() > 10)) {
                     outside = true;
                     return;
                 }
-                if (totalOffset.height() < 40 && totalOffset.height() > -40) {
-                    setValue(value() + offset.width());
+                if (totalOffset.y() < 40 && totalOffset.y() > -40) {
+                    setValue(value() + offset.x());
                     event->accept(pan);
                 } else {
                     outside = true;
                 }
             } else if (orientation() == Qt::Vertical) {
-                if ((value() == maximum() && totalOffset.height() < -10) ||
-                    (value() == minimum() && totalOffset.height() > 10)) {
+                if ((value() == maximum() && totalOffset.y() < -10) ||
+                    (value() == minimum() && totalOffset.y() > 10)) {
                     outside = true;
                     return;
                 }
-                if (totalOffset.width() < 40 && totalOffset.width() > -40) {
-                    setValue(value() - offset.height());
+                if (totalOffset.x() < 40 && totalOffset.x() > -40) {
+                    setValue(value() - offset.y());
                     event->accept(pan);
                 } else {
                     outside = true;

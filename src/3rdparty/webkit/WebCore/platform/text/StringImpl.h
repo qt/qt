@@ -47,7 +47,6 @@ typedef const struct __CFString * CFStringRef;
 
 namespace WebCore {
 
-class AtomicString;
 class StringBuffer;
 
 struct CStringTranslator;
@@ -60,26 +59,19 @@ enum TextCaseSensitivity { TextCaseSensitive, TextCaseInsensitive };
 typedef bool (*CharacterMatchFunctionPtr)(UChar);
 
 class StringImpl : public RefCounted<StringImpl> {
-    friend class AtomicString;
     friend struct CStringTranslator;
     friend struct HashAndCharactersTranslator;
     friend struct UCharBufferTranslator;
 private:
     friend class ThreadGlobalData;
     StringImpl();
+    
+    // This adopts the UChar* without copying the buffer.
     StringImpl(const UChar*, unsigned length);
-    StringImpl(const char*, unsigned length);
 
-    struct AdoptBuffer { };
-    StringImpl(UChar*, unsigned length, AdoptBuffer);
-
-    struct WithTerminatingNullCharacter { };
-    StringImpl(const StringImpl&, WithTerminatingNullCharacter);
-
-    // For AtomicString.
-    StringImpl(const UChar*, unsigned length, unsigned hash);
-    StringImpl(const char*, unsigned length, unsigned hash);
-
+    // For use only by AtomicString's XXXTranslator helpers.
+    void setHash(unsigned hash) { ASSERT(!m_hash); m_hash = hash; }
+    
     typedef CrossThreadRefCounted<OwnFastMallocPtr<UChar> > SharedUChar;
 
 public:
@@ -114,15 +106,12 @@ public:
     static unsigned computeHash(const UChar*, unsigned len);
     static unsigned computeHash(const char*);
     
-    // Makes a deep copy. Helpful only if you need to use a String on another thread.
+    // Returns a StringImpl suitable for use on another thread.
+    PassRefPtr<StringImpl> crossThreadString();
+    // Makes a deep copy. Helpful only if you need to use a String on another thread
+    // (use crossThreadString if the method call doesn't need to be threadsafe).
     // Since StringImpl objects are immutable, there's no other reason to make a copy.
-    PassRefPtr<StringImpl> copy();
-
-    // Makes a deep copy like copy() but only for a substring.
-    // (This ensures that you always get something suitable for a thread while subtring
-    // may not.  For example, in the empty string case, substring returns empty() which
-    // is not safe for another thread.)
-    PassRefPtr<StringImpl> substringCopy(unsigned pos, unsigned len  = UINT_MAX);
+    PassRefPtr<StringImpl> threadsafeCopy() const;
 
     PassRefPtr<StringImpl> substring(unsigned pos, unsigned len = UINT_MAX);
 
@@ -146,7 +135,6 @@ public:
     double toDouble(bool* ok = 0);
     float toFloat(bool* ok = 0);
 
-    bool isLower();
     PassRefPtr<StringImpl> lower();
     PassRefPtr<StringImpl> upper();
     PassRefPtr<StringImpl> secure(UChar aChar);
@@ -166,7 +154,7 @@ public:
     int reverseFind(UChar, int index);
     int reverseFind(StringImpl*, int index, bool caseSensitive = true);
     
-    bool startsWith(StringImpl* m_data, bool caseSensitive = true) { return reverseFind(m_data, 0, caseSensitive) == 0; }
+    bool startsWith(StringImpl* str, bool caseSensitive = true) { return reverseFind(str, 0, caseSensitive) == 0; }
     bool endsWith(StringImpl*, bool caseSensitive = true);
 
     PassRefPtr<StringImpl> replace(UChar, UChar);
@@ -196,21 +184,22 @@ private:
     void* operator new(size_t size, void* address);
 
     static PassRefPtr<StringImpl> createStrippingNullCharactersSlowCase(const UChar*, unsigned length);
+    
+    // The StringImpl struct and its data may be allocated within a single heap block.
+    // In this case, the m_data pointer is an "internal buffer", and does not need to be deallocated.
+    bool bufferIsInternal() { return m_data == reinterpret_cast<const UChar*>(this + 1); }
 
     enum StringImplFlags {
         HasTerminatingNullCharacter,
         InTable,
     };
 
-    unsigned m_length;
     const UChar* m_data;
+    unsigned m_length;
     mutable unsigned m_hash;
     PtrAndFlags<SharedUChar, StringImplFlags> m_sharedBufferAndFlags;
-
-    // In some cases, we allocate the StringImpl struct and its data
-    // within a single heap buffer. In this case, the m_data pointer
-    // is an "internal buffer", and does not need to be deallocated.
-    bool m_bufferIsInternal;
+    // There is a fictitious variable-length UChar array at the end, which is used
+    // as the internal buffer by the createUninitialized and create methods.
 };
 
 bool equal(StringImpl*, StringImpl*);

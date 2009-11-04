@@ -43,6 +43,9 @@ public:
     virtual void load(const String& url) = 0;
     virtual void cancelLoad() = 0;
     
+    virtual void prepareToPlay() { }
+    virtual PlatformMedia platformMedia() const { return NoPlatformMedia; }
+
     virtual void play() = 0;
     virtual void pause() = 0;    
 
@@ -93,8 +96,10 @@ public:
 
     virtual void setAutobuffer(bool) { };
 
+    virtual bool canLoadPoster() const { return false; }
+    virtual void setPoster(const String&) { }
+
 #if ENABLE(PLUGIN_PROXY_FOR_VIDEO)
-    virtual void setPoster(const String& url) = 0;
     virtual void deliverNotification(MediaPlayerProxyNotificationType) = 0;
     virtual void setMediaPlayerProxy(WebMediaPlayerProxy*) = 0;
 #endif

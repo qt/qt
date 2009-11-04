@@ -145,8 +145,6 @@ public:
     QList<QGraphicsItem *> estimateItems(const QRectF &, Qt::SortOrder, bool b = false);
 
     static void climbTree(QGraphicsItem *item, int *stackingOrder);
-    static bool closestItemFirst_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
-    static bool closestItemLast_withoutCache(const QGraphicsItem *item1, const QGraphicsItem *item2);
 
     static inline bool closestItemFirst_withCache(const QGraphicsItem *item1, const QGraphicsItem *item2)
     {

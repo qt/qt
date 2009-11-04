@@ -29,6 +29,7 @@
 #include "PlatformString.h"
 
 #include <wtf/Noncopyable.h>
+#include <wtf/PassOwnPtr.h>
 
 #if PLATFORM(MAC)
 #include <OpenGL/OpenGL.h>
@@ -45,6 +46,7 @@ const Platform3DObject NullPlatform3DObject = 0;
 #endif
 
 namespace WebCore {
+    class CanvasActiveInfo;
     class CanvasArray;
     class CanvasBuffer;
     class CanvasUnsignedByteArray;
@@ -61,23 +63,29 @@ namespace WebCore {
     class HTMLVideoElement;
     class ImageData;
     class WebKitCSSMatrix;
-    
+
+    struct ActiveInfo {
+        String name;
+        unsigned type;
+        int size;
+    };
+
     // FIXME: ideally this would be used on all platforms.
-#if PLATFORM(SKIA)
+#if PLATFORM(CHROMIUM)
     class GraphicsContext3DInternal;
 #endif
 
-    class GraphicsContext3D : Noncopyable {
+    class GraphicsContext3D : public Noncopyable {
     public:
         enum ShaderType { FRAGMENT_SHADER, VERTEX_SHADER };
     
-        GraphicsContext3D();
+        static PassOwnPtr<GraphicsContext3D> create();
         virtual ~GraphicsContext3D();
 
 #if PLATFORM(MAC)
         PlatformGraphicsContext3D platformGraphicsContext3D() const { return m_contextObj; }
         Platform3DObject platformTexture() const { return m_texture; }
-#elif PLATFORM(SKIA)
+#elif PLATFORM(CHROMIUM)
         PlatformGraphicsContext3D platformGraphicsContext3D() const;
         Platform3DObject platformTexture() const;
 #else
@@ -85,7 +93,6 @@ namespace WebCore {
         Platform3DObject platformTexture() const { return NullPlatform3DObject; }
 #endif
         void checkError() const;
-        
         void makeContextCurrent();
         
         // Helper to return the size in bytes of OpenGL data types
@@ -140,6 +147,9 @@ namespace WebCore {
         void framebufferTexture2D(unsigned long target, unsigned long attachment, unsigned long textarget, CanvasTexture*, long level);
         void frontFace(unsigned long mode);
         void generateMipmap(unsigned long target);
+
+        bool getActiveAttrib(CanvasProgram* program, unsigned long index, ActiveInfo&);
+        bool getActiveUniform(CanvasProgram* program, unsigned long index, ActiveInfo&);
 
         int  getAttribLocation(CanvasProgram*, const String& name);
 
@@ -204,8 +214,7 @@ namespace WebCore {
         void pixelStorei(unsigned long pname, long param);
         void polygonOffset(double factor, double units);
         
-        // TBD
-        //void readPixels(long x, long y, unsigned long width, unsigned long height, unsigned long format, unsigned long type, void* pixels);
+        PassRefPtr<CanvasArray> readPixels(long x, long y, unsigned long width, unsigned long height, unsigned long format, unsigned long type);
         
         void releaseShaderCompiler();
         void renderbufferStorage(unsigned long target, unsigned long internalformat, unsigned long width, unsigned long height);
@@ -311,6 +320,8 @@ namespace WebCore {
         void deleteTexture(unsigned);        
         
     private:        
+        GraphicsContext3D();
+
         int m_currentWidth, m_currentHeight;
         
 #if PLATFORM(MAC)
@@ -323,7 +334,7 @@ namespace WebCore {
 #endif        
 
         // FIXME: ideally this would be used on all platforms.
-#if PLATFORM(SKIA)
+#if PLATFORM(CHROMIUM)
         friend class GraphicsContext3DInternal;
         OwnPtr<GraphicsContext3DInternal> m_internal;
 #endif

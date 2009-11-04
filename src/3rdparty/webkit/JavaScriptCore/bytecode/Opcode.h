@@ -113,6 +113,7 @@ namespace JSC {
         macro(op_put_by_id_generic, 8) \
         macro(op_del_by_id, 4) \
         macro(op_get_by_val, 4) \
+        macro(op_get_by_pname, 7) \
         macro(op_put_by_val, 4) \
         macro(op_del_by_val, 4) \
         macro(op_put_by_index, 4) \
@@ -152,8 +153,8 @@ namespace JSC {
         macro(op_strcat, 4) \
         macro(op_to_primitive, 3) \
         \
-        macro(op_get_pnames, 3) \
-        macro(op_next_pname, 4) \
+        macro(op_get_pnames, 6) \
+        macro(op_next_pname, 7) \
         \
         macro(op_push_scope, 2) \
         macro(op_pop_scope, 1) \

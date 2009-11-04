@@ -484,6 +484,7 @@ void tst_QHttp::post_data()
     QTest::addColumn<bool>("useProxy");
     QTest::addColumn<QString>("host");
     QTest::addColumn<int>("port");
+    QTest::addColumn<bool>("ssl");
     QTest::addColumn<QString>("path");
     QTest::addColumn<QByteArray>("result");
 
@@ -491,24 +492,47 @@ void tst_QHttp::post_data()
     md5sum = "d41d8cd98f00b204e9800998ecf8427e";
     QTest::newRow("empty-data")
         << QString() << false << false
-        << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+        << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
     QTest::newRow("empty-device")
         << QString() << true << false
-        << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+        << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
     QTest::newRow("proxy-empty-data")
         << QString() << false << true
-        << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+        << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
 
     md5sum = "b3e32ac459b99d3f59318f3ac31e4bee";
     QTest::newRow("data") << "rfc3252.txt" << false << false
-                          << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi"
+                          << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi"
                           << md5sum;
     QTest::newRow("device") << "rfc3252.txt" << true << false
-                          << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi"
+                          << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi"
                           << md5sum;
     QTest::newRow("proxy-data") << "rfc3252.txt" << false << true
-                                << QtNetworkSettings::serverName() << 80 << "/qtest/cgi-bin/md5sum.cgi"
+                                << QtNetworkSettings::serverName() << 80 << false << "/qtest/cgi-bin/md5sum.cgi"
                                 << md5sum;
+
+#ifndef QT_NO_OPENSSL
+    md5sum = "d41d8cd98f00b204e9800998ecf8427e";
+    QTest::newRow("empty-data-ssl")
+        << QString() << false << false
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+    QTest::newRow("empty-device-ssl")
+        << QString() << true << false
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+    QTest::newRow("proxy-empty-data-ssl")
+        << QString() << false << true
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi" << md5sum;
+    md5sum = "b3e32ac459b99d3f59318f3ac31e4bee";
+    QTest::newRow("data-ssl") << "rfc3252.txt" << false << false
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi"
+        << md5sum;
+    QTest::newRow("device-ssl") << "rfc3252.txt" << true << false
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi"
+        << md5sum;
+    QTest::newRow("proxy-data-ssl") << "rfc3252.txt" << false << true
+        << QtNetworkSettings::serverName() << 443 << true << "/qtest/cgi-bin/md5sum.cgi"
+        << md5sum;
+#endif
 
     // the following test won't work. See task 185996
 /*
@@ -525,14 +549,19 @@ void tst_QHttp::post()
     QFETCH(bool, useProxy);
     QFETCH(QString, host);
     QFETCH(int, port);
+    QFETCH(bool, ssl);
     QFETCH(QString, path);
 
     http = newHttp(useProxy);
+#ifndef QT_NO_OPENSSL
+    QObject::connect(http, SIGNAL(sslErrors(const QList<QSslError> &)),
+        http, SLOT(ignoreSslErrors()));
+#endif
     QCOMPARE(http->currentId(), 0);
     QCOMPARE((int)http->state(), (int)QHttp::Unconnected);
     if (useProxy)
         addRequest(QHttpRequestHeader(), http->setProxy(QtNetworkSettings::serverName(), 3129));
-    addRequest(QHttpRequestHeader(), http->setHost(host, port));
+    addRequest(QHttpRequestHeader(), http->setHost(host, (ssl ? QHttp::ConnectionModeHttps : QHttp::ConnectionModeHttp), port));
 
     // add the POST request
     QFile file(SRCDIR + source);

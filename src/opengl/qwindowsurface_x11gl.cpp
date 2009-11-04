@@ -124,6 +124,9 @@ void QX11GLWindowSurface::setGeometry(const QRect &rect)
 
 bool QX11GLWindowSurface::scroll(const QRegion &area, int dx, int dy)
 {
+    Q_UNUSED(area);
+    Q_UNUSED(dx);
+    Q_UNUSED(dy);
     return false;
 }
 

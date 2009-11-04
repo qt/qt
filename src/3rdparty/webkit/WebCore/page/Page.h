@@ -103,6 +103,9 @@ namespace WebCore {
         void setMainFrame(PassRefPtr<Frame>);
         Frame* mainFrame() const { return m_mainFrame.get(); }
 
+        bool openedByDOM() const;
+        void setOpenedByDOM();
+
         BackForwardList* backForwardList();
 
         // FIXME: The following three methods don't fall under the responsibilities of the Page object
@@ -111,7 +114,10 @@ namespace WebCore {
         // makes more sense when that class exists.
         bool goBack();
         bool goForward();
+        bool canGoBackOrForward(int distance) const;
+        void goBackOrForward(int distance);
         void goToItem(HistoryItem*, FrameLoadType);
+        int getHistoryLength();
 
         HistoryItem* globalHistoryItem() const { return m_globalHistoryItem.get(); }
         void setGlobalHistoryItem(HistoryItem*);
@@ -187,7 +193,6 @@ namespace WebCore {
         void didStartPlugin(HaltablePlugin*);
         void didStopPlugin(HaltablePlugin*);
         void pluginAllowedRunTimeChanged();
-        void pluginHalterEnabledStateChanged();
 
         static void setDebuggerForAllPages(JSC::Debugger*);
         void setDebugger(JSC::Debugger*);
@@ -261,6 +266,7 @@ namespace WebCore {
 
         int m_frameCount;
         String m_groupName;
+        bool m_openedByDOM;
 
         bool m_tabKeyCyclesThroughElements;
         bool m_defersLoading;
@@ -293,7 +299,6 @@ namespace WebCore {
         HashSet<PluginView*> m_unstartedPlugins;
 
         OwnPtr<PluginHalter> m_pluginHalter;
-        PluginHalterClient* m_pluginHalterClient;
 
 #if ENABLE(DOM_STORAGE)
         RefPtr<StorageNamespace> m_sessionStorage;

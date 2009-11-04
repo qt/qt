@@ -231,40 +231,94 @@
 #if   defined(arm) \
    || defined(__arm__)
 #define WTF_PLATFORM_ARM 1
+
 #if defined(__ARMEB__)
 #define WTF_PLATFORM_BIG_ENDIAN 1
-#elif !defined(__ARM_EABI__) && !defined(__EABI__) && !defined(__VFP_FP__)
+
+#elif !defined(__ARM_EABI__) \
+   && !defined(__EABI__) \
+   && !defined(__VFP_FP__)
 #define WTF_PLATFORM_MIDDLE_ENDIAN 1
+
 #endif
-#define ARM_ARCH_VERSION 3
-#if defined(__ARM_ARCH_4__) || defined(__ARM_ARCH_4T__) || defined(__MARM_ARMV4__) \
-    || defined(_ARMV4I_)
-#undef ARM_ARCH_VERSION
+
+/* Set ARM_ARCH_VERSION */
+#if   defined(__ARM_ARCH_4__) \
+   || defined(__ARM_ARCH_4T__) \
+   || defined(__MARM_ARMV4__) \
+   || defined(_ARMV4I_)
 #define ARM_ARCH_VERSION 4
-#endif
-#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_5T__) \
-        || defined(__ARM_ARCH_5E__) || defined(__ARM_ARCH_5TE__) \
-        || defined(__ARM_ARCH_5TEJ__) || defined(__MARM_ARMV5__)
-#undef ARM_ARCH_VERSION
+
+#elif defined(__ARM_ARCH_5__) \
+   || defined(__ARM_ARCH_5T__) \
+   || defined(__ARM_ARCH_5E__) \
+   || defined(__ARM_ARCH_5TE__) \
+   || defined(__ARM_ARCH_5TEJ__) \
+   || defined(__MARM_ARMV5__)
 #define ARM_ARCH_VERSION 5
-#endif
-#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) \
-     || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6Z__) \
-     || defined(__ARM_ARCH_6ZK__) || defined(__ARMV6__)
-#undef ARM_ARCH_VERSION
+
+#elif defined(__ARM_ARCH_6__) \
+   || defined(__ARM_ARCH_6J__) \
+   || defined(__ARM_ARCH_6K__) \
+   || defined(__ARM_ARCH_6Z__) \
+   || defined(__ARM_ARCH_6ZK__) \
+   || defined(__ARM_ARCH_6T2__) \
+   || defined(__ARMV6__)
 #define ARM_ARCH_VERSION 6
-#endif
-#if defined(__ARM_ARCH_7A__)
-#undef ARM_ARCH_VERSION
+
+#elif defined(__ARM_ARCH_7A__) \
+   || defined(__ARM_ARCH_7R__)
 #define ARM_ARCH_VERSION 7
+
+/* RVCT sets _TARGET_ARCH_ARM */
+#elif defined(__TARGET_ARCH_ARM)
+#define ARM_ARCH_VERSION __TARGET_ARCH_ARM
+
+#else
+#define ARM_ARCH_VERSION 0
+
 #endif
+
+/* Set THUMB_ARM_VERSION */
+#if   defined(__ARM_ARCH_4T__)
+#define THUMB_ARCH_VERSION 1
+
+#elif defined(__ARM_ARCH_5T__) \
+   || defined(__ARM_ARCH_5TE__) \
+   || defined(__ARM_ARCH_5TEJ__)
+#define THUMB_ARCH_VERSION 2
+
+#elif defined(__ARM_ARCH_6J__) \
+   || defined(__ARM_ARCH_6K__) \
+   || defined(__ARM_ARCH_6Z__) \
+   || defined(__ARM_ARCH_6ZK__) \
+   || defined(__ARM_ARCH_6M__)
+#define THUMB_ARCH_VERSION 3
+
+#elif defined(__ARM_ARCH_6T2__) \
+   || defined(__ARM_ARCH_7__) \
+   || defined(__ARM_ARCH_7A__) \
+   || defined(__ARM_ARCH_7R__) \
+   || defined(__ARM_ARCH_7M__)
+#define THUMB_ARCH_VERSION 4
+
+/* RVCT sets __TARGET_ARCH_THUMB */
+#elif defined(__TARGET_ARCH_THUMB)
+#define THUMB_ARCH_VERSION __TARGET_ARCH_THUMB
+
+#else
+#define THUMB_ARCH_VERSION 0
+#endif
+
 /* On ARMv5 and below the natural alignment is required. */
 #if !defined(ARM_REQUIRE_NATURAL_ALIGNMENT) && ARM_ARCH_VERSION <= 5
 #define ARM_REQUIRE_NATURAL_ALIGNMENT 1
 #endif
+
 /* Defines two pseudo-platforms for ARM and Thumb-2 instruction set. */
 #if !defined(WTF_PLATFORM_ARM_TRADITIONAL) && !defined(WTF_PLATFORM_ARM_THUMB2)
-#  if defined(thumb2) || defined(__thumb2__)
+#  if defined(thumb2) || defined(__thumb2__) \
+  || ((defined(__thumb) || defined(__thumb__)) && THUMB_ARCH_VERSION == 4)
 #    define WTF_PLATFORM_ARM_TRADITIONAL 0
 #    define WTF_PLATFORM_ARM_THUMB2 1
 #  elif PLATFORM_ARM_ARCH(4)
@@ -412,6 +466,7 @@
 #if PLATFORM(MAC) && !PLATFORM(IPHONE)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_TIGER) && defined(__x86_64__)
 #define WTF_USE_PLUGIN_HOST_PROCESS 1
 #endif
@@ -428,6 +483,7 @@
 #if PLATFORM(CHROMIUM) && PLATFORM(DARWIN)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 
 #if PLATFORM(IPHONE)
@@ -444,6 +500,7 @@
 #define HAVE_READLINE 1
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 
 #if PLATFORM(WIN)
@@ -457,6 +514,7 @@
 #if PLATFORM(GTK)
 #if HAVE(PTHREAD_H)
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 #endif
 
@@ -464,6 +522,7 @@
 #define HAVE_POSIX_MEMALIGN 1
 #define WTF_USE_CURL 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #define USE_SYSTEM_MALLOC 1
 #define ENABLE_NETSCAPE_PLUGIN_API 0
 #endif
@@ -644,7 +703,7 @@
 #endif
 
 #if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
-#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX))
+#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX) || PLATFORM(WIN_OS))
 #define WTF_USE_JSVALUE64 1
 #elif PLATFORM(ARM) || PLATFORM(PPC64)
 #define WTF_USE_JSVALUE32 1
@@ -671,8 +730,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
 #elif PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)
-    /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */
-    #define ENABLE_JIT 0
+    #define ENABLE_JIT 1
     #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 0
 /* The JIT is tested & working on x86 Windows */
 #elif PLATFORM(X86) && PLATFORM(WIN)
@@ -738,8 +796,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 /* YARR supports x86 & x86-64, and has been tested on Mac and Windows. */
 #if (PLATFORM(X86) && PLATFORM(MAC)) \
  || (PLATFORM(X86_64) && PLATFORM(MAC)) \
- /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */ \
- || (PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE) && 0) \
+ || (PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)) \
  || (PLATFORM(X86) && PLATFORM(WIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1
@@ -803,6 +860,10 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 #define WARN_UNUSED_RETURN __attribute__ ((warn_unused_result))
 #else
 #define WARN_UNUSED_RETURN
+#endif
+
+#if !ENABLE(NETSCAPE_PLUGIN_API) || (ENABLE(NETSCAPE_PLUGIN_API) && ((PLATFORM(UNIX) && (PLATFORM(QT) || PLATFORM(WX))) || PLATFORM(GTK)))
+#define ENABLE_PLUGIN_PACKAGE_SIMPLE_HASH 1
 #endif
 
 /* Set up a define for a common error that is intended to cause a build error -- thus the space after Error. */

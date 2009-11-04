@@ -213,7 +213,7 @@ qint32 ToInt32(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D32);
@@ -233,7 +233,7 @@ quint32 ToUint32(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D32);
@@ -251,7 +251,7 @@ quint16 ToUint16(qsreal n)
     if (qIsNaN(n) || qIsInf(n) || (n == 0))
         return 0;
 
-    double sign = (n < 0) ? -1.0 : 1.0;
+    qsreal sign = (n < 0) ? -1.0 : 1.0;
     qsreal abs_n = fabs(n);
 
     n = ::fmod(sign * ::floor(abs_n), D16);
@@ -276,41 +276,36 @@ qsreal ToInteger(qsreal n)
 
 } // namespace QScript
 
-QScriptValue QScriptValuePrivate::property(const JSC::Identifier &id, int resolveMode) const
+QScriptValue QScriptValuePrivate::propertyHelper(const JSC::Identifier &id, int resolveMode) const
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
-    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
-    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, id, slot)) {
-        result = slot.getValue(exec, id);
-    } else {
-        if ((resolveMode & QScriptValue::ResolvePrototype)
-          && const_cast<JSC::JSObject*>(object)->getPropertySlot(exec, id, slot)) {
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::ExecState *exec = engine->currentFrame;
+        JSC::JSObject *object = JSC::asObject(jscValue);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, id, slot))
             result = slot.getValue(exec, id);
-        } else if (resolveMode & QScriptValue::ResolveScope) {
-            // ### check if it's a function object and look in the scope chain
-            QScriptValue scope = property(QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
-            if (scope.isObject())
-                result = engine->scriptValueToJSCValue(QScriptValuePrivate::get(scope)->property(id, resolveMode));
-        }
+    }
+    if (!result && (resolveMode & QScriptValue::ResolveScope)) {
+        // ### check if it's a function object and look in the scope chain
+        QScriptValue scope = property(QString::fromLatin1("__qt_scope__"), QScriptValue::ResolveLocal);
+        if (scope.isObject())
+            result = engine->scriptValueToJSCValue(QScriptValuePrivate::get(scope)->property(id, resolveMode));
     }
     return engine->scriptValueFromJSCValue(result);
 }
 
-QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
+QScriptValue QScriptValuePrivate::propertyHelper(quint32 index, int resolveMode) const
 {
-    Q_ASSERT(isObject());
-    JSC::ExecState *exec = engine->currentFrame;
-    JSC::JSObject *object = JSC::asObject(jscValue);
-    JSC::PropertySlot slot(const_cast<JSC::JSObject*>(object));
     JSC::JSValue result;
-    if (const_cast<JSC::JSObject*>(object)->getOwnPropertySlot(exec, index, slot)) {
-        result = slot.getValue(exec, index);
-    } else if ((resolveMode & QScriptValue::ResolvePrototype)
-          && const_cast<JSC::JSObject*>(object)->getPropertySlot(exec, index, slot)) {
-        result = slot.getValue(exec, index);
+    if (!(resolveMode & QScriptValue::ResolvePrototype)) {
+        // Look in the object's own properties
+        JSC::ExecState *exec = engine->currentFrame;
+        JSC::JSObject *object = JSC::asObject(jscValue);
+        JSC::PropertySlot slot(object);
+        if (object->getOwnPropertySlot(exec, index, slot))
+            result = slot.getValue(exec, index);
     }
     return engine->scriptValueFromJSCValue(result);
 }
@@ -318,8 +313,8 @@ QScriptValue QScriptValuePrivate::property(quint32 index, int resolveMode) const
 void QScriptValuePrivate::setProperty(const JSC::Identifier &id, const QScriptValue &value,
                                       const QScriptValue::PropertyFlags &flags)
 {
-    QScriptEngine *valueEngine = value.engine();
-    if (valueEngine && (QScriptEnginePrivate::get(valueEngine) != engine)) {
+    QScriptEnginePrivate *valueEngine = QScriptValuePrivate::getEngine(value);
+    if (valueEngine && (valueEngine != engine)) {
         qWarning("QScriptValue::setProperty(%s) failed: "
                  "cannot set value created in a different engine",
                  qPrintable(QString(id.ustring())));
@@ -441,22 +436,6 @@ void QScriptValuePrivate::setVariantValue(const QVariant &value)
     QScriptObjectDelegate *delegate = static_cast<QScriptObject*>(JSC::asObject(jscValue))->delegate();
     Q_ASSERT(delegate && (delegate->type() == QScriptObjectDelegate::Variant));
     static_cast<QScript::QVariantDelegate*>(delegate)->setValue(value);
-}
-
-void QScriptValuePrivate::saveException(JSC::ExecState *exec, JSC::JSValue *val)
-{
-    if (exec) {
-        *val = exec->exception();
-        exec->clearException();
-    } else {
-        *val = JSC::JSValue();
-    }
-}
-
-void QScriptValuePrivate::restoreException(JSC::ExecState *exec, JSC::JSValue val)
-{
-    if (exec && val)
-        exec->setException(val);
 }
 
 void QScriptValuePrivate::detachFromEngine()
@@ -822,8 +801,8 @@ void QScriptValue::setPrototype(const QScriptValue &prototype)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (prototype.isValid() && prototype.engine()
-        && (prototype.engine() != engine())) {
+    if (prototype.isValid() && QScriptValuePrivate::getEngine(prototype)
+        && (QScriptValuePrivate::getEngine(prototype) != d->engine)) {
         qWarning("QScriptValue::setPrototype() failed: "
                  "cannot set a prototype created in "
                  "a different engine");
@@ -864,8 +843,8 @@ void QScriptValue::setScope(const QScriptValue &scope)
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (scope.isValid() && scope.engine()
-        && (scope.engine() != engine())) {
+    if (scope.isValid() && QScriptValuePrivate::getEngine(scope)
+        && (QScriptValuePrivate::getEngine(scope) != d->engine)) {
         qWarning("QScriptValue::setScope() failed: "
                  "cannot set a scope object created in "
                  "a different engine");
@@ -896,7 +875,7 @@ bool QScriptValue::instanceOf(const QScriptValue &other) const
     Q_D(const QScriptValue);
     if (!d || !d->isObject() || !other.isObject())
         return false;
-    if (other.engine() != engine()) {
+    if (QScriptValuePrivate::getEngine(other) != d->engine) {
         qWarning("QScriptValue::instanceof: "
                  "cannot perform operation on a value created in "
                  "a different engine");
@@ -1083,10 +1062,12 @@ static bool Equals(QScriptValue lhs, QScriptValue rhs)
 */
 bool QScriptValue::lessThan(const QScriptValue &other) const
 {
+    Q_D(const QScriptValue);
     // no equivalent function in JSC? There's a jsLess() in VM/Machine.cpp
     if (!isValid() || !other.isValid())
         return false;
-    if (other.engine() && engine() && (other.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(other) && d->engine
+        && (QScriptValuePrivate::getEngine(other) != d->engine)) {
         qWarning("QScriptValue::lessThan: "
                  "cannot compare to a value created in "
                  "a different engine");
@@ -1124,7 +1105,8 @@ bool QScriptValue::equals(const QScriptValue &other) const
     Q_D(const QScriptValue);
     if (!d || !other.d_ptr)
         return (d_ptr == other.d_ptr);
-    if (other.engine() && engine() && (other.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(other) && d->engine
+        && (QScriptValuePrivate::getEngine(other) != d->engine)) {
         qWarning("QScriptValue::equals: "
                  "cannot compare to a value created in "
                  "a different engine");
@@ -1173,7 +1155,8 @@ bool QScriptValue::strictlyEquals(const QScriptValue &other) const
     Q_D(const QScriptValue);
     if (!d || !other.d_ptr)
         return (d_ptr == other.d_ptr);
-    if (other.engine() && engine() && (other.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(other) && d->engine
+        && (QScriptValuePrivate::getEngine(other) != d->engine)) {
         qWarning("QScriptValue::strictlyEquals: "
                  "cannot compare to a value created in "
                  "a different engine");
@@ -1725,7 +1708,8 @@ void QScriptValue::setProperty(quint32 arrayIndex, const QScriptValue &value,
     Q_D(QScriptValue);
     if (!d || !d->isObject())
         return;
-    if (value.engine() && (value.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(value)
+        && (QScriptValuePrivate::getEngine(value) != d->engine)) {
         qWarning("QScriptValue::setProperty() failed: "
                  "cannot set value created in a different engine");
         return;
@@ -1775,7 +1759,7 @@ QScriptValue QScriptValue::property(const QScriptString &name,
                                     const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return QScriptValue();
     return d->property(name.d_ptr->identifier, mode);
 }
@@ -1798,7 +1782,7 @@ void QScriptValue::setProperty(const QScriptString &name,
                                const PropertyFlags &flags)
 {
     Q_D(QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return;
     d->setProperty(name.d_ptr->identifier, value, flags);
 }
@@ -1832,7 +1816,7 @@ QScriptValue::PropertyFlags QScriptValue::propertyFlags(const QScriptString &nam
                                                         const ResolveFlags &mode) const
 {
     Q_D(const QScriptValue);
-    if (!d || !d->isObject() || !name.isValid())
+    if (!d || !d->isObject() || !QScriptStringPrivate::isValid(name))
         return 0;
     return d->propertyFlags(name.d_ptr->identifier, mode);
 }
@@ -1872,7 +1856,8 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
-    if (thisObject.engine() && (thisObject.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(thisObject)
+        && (QScriptValuePrivate::getEngine(thisObject) != d->engine)) {
         qWarning("QScriptValue::call() failed: "
                  "cannot call function with thisObject created in "
                  "a different engine");
@@ -1890,7 +1875,8 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
         const QScriptValue &arg = args.at(i);
         if (!arg.isValid()) {
             argsVector[i] = JSC::jsUndefined();
-        } else if (arg.engine() && (arg.engine() != engine())) {
+        } else if (QScriptValuePrivate::getEngine(arg)
+                   && (QScriptValuePrivate::getEngine(arg) != d->engine)) {
             qWarning("QScriptValue::call() failed: "
                      "cannot call function with argument created in "
                      "a different engine");
@@ -1947,7 +1933,8 @@ QScriptValue QScriptValue::call(const QScriptValue &thisObject,
     if (callType == JSC::CallTypeNone)
         return QScriptValue();
 
-    if (thisObject.engine() && (thisObject.engine() != engine())) {
+    if (QScriptValuePrivate::getEngine(thisObject)
+        && (QScriptValuePrivate::getEngine(thisObject) != d->engine)) {
         qWarning("QScriptValue::call() failed: "
                  "cannot call function with thisObject created in "
                  "a different engine");

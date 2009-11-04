@@ -44,7 +44,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -58,6 +58,8 @@ public:
     {
         return static_cast<Document*>(Base::impl());
     }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 ALWAYS_INLINE bool JSDocument::getOwnPropertySlot(JSC::ExecState* exec, const JSC::Identifier& propertyName, JSC::PropertySlot& slot)
@@ -83,9 +85,11 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSDocumentPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
@@ -152,6 +156,7 @@ JSC::JSValue jsDocumentCookie(JSC::ExecState*, const JSC::Identifier&, const JSC
 void setJSDocumentCookie(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDocumentBody(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDocumentBody(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDocumentHead(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsDocumentImages(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsDocumentApplets(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 JSC::JSValue jsDocumentLinks(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

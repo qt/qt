@@ -123,6 +123,7 @@ PassRefPtr<Element> Element::cloneElementWithoutChildren()
 void Element::removeAttribute(const QualifiedName& name, ExceptionCode& ec)
 {
     if (namedAttrMap) {
+        ec = 0;
         namedAttrMap->removeNamedItem(name, ec);
         if (ec == NOT_FOUND_ERR)
             ec = 0;
@@ -515,7 +516,7 @@ void Element::setAttribute(const AtomicString& name, const AtomicString& value, 
         return;
     }
 
-    const AtomicString& localName = (shouldIgnoreAttributeCase(this) && !name.string().impl()->isLower()) ? AtomicString(name.string().lower()) : name;
+    const AtomicString& localName = shouldIgnoreAttributeCase(this) ? name.lower() : name;
 
     // allocate attributemap if necessary
     Attribute* old = attributes(false)->getAttributeItem(localName, false);
@@ -1413,7 +1414,7 @@ KURL Element::getURLAttribute(const QualifiedName& name) const
             ASSERT(isURLAttribute(attribute));
     }
 #endif
-    return document()->completeURL(getAttribute(name));
+    return document()->completeURL(deprecatedParseURL(getAttribute(name)));
 }
 
 } // namespace WebCore

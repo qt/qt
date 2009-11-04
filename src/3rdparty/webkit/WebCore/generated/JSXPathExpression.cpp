@@ -80,8 +80,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSXPathExpressionConstructor::s_info = { "XPathExpressionConstructor", 0, &JSXPathExpressionConstructorTable, 0 };
@@ -138,7 +141,7 @@ JSXPathExpression::JSXPathExpression(NonNullPassRefPtr<Structure> structure, JSD
 
 JSXPathExpression::~JSXPathExpression()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

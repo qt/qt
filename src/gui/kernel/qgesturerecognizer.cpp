@@ -100,7 +100,7 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGestureRecognizer::ResultFlags
+    \enum QGestureRecognizer::ResultFlag
 
     This enum describes the result of the current event filtering step in
     a gesture recognizer state machine.
@@ -178,7 +178,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
         QGesturePrivate *d = gesture->d_func();
         d->state = Qt::NoGesture;
         d->hotSpot = QPointF();
-        d->targetObject = 0;
+        d->isHotSpotSet = false;
     }
 }
 
@@ -186,7 +186,7 @@ void QGestureRecognizer::reset(QGesture *gesture)
     \fn QGestureRecognizer::filterEvent(QGesture *gesture, QObject *watched, QEvent *event)
 
     Handles the given \a event for the \a watched object, updating the state of the \a gesture
-    object as required, and returns a suitable Result for the current recognition step.
+    object as required, and returns a suitable result for the current recognition step.
 
     This function is called by the framework to allow the recognizer to filter input events
     dispatched to QWidget or QGraphicsObject instances that it is monitoring.

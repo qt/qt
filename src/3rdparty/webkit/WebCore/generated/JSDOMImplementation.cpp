@@ -83,8 +83,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSDOMImplementationConstructor::s_info = { "DOMImplementationConstructor", 0, &JSDOMImplementationConstructorTable, 0 };
@@ -145,7 +148,7 @@ JSDOMImplementation::JSDOMImplementation(NonNullPassRefPtr<Structure> structure,
 
 JSDOMImplementation::~JSDOMImplementation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDOMImplementation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -66,10 +66,7 @@
 #if ENABLE(JAVASCRIPT_DEBUGGER)
 #include "JavaScriptCallFrame.h"
 #include "JavaScriptDebugServer.h"
-#include "JavaScriptProfile.h"
 #include "JSJavaScriptCallFrame.h"
-#include <profiler/Profile.h>
-#include <profiler/Profiler.h>
 #endif
 
 using namespace JSC;
@@ -122,27 +119,21 @@ JSValue JSInspectorBackend::search(ExecState* exec, const ArgList& args)
 }
 
 #if ENABLE(DATABASE)
-JSValue JSInspectorBackend::databaseTableNames(ExecState* exec, const ArgList& args)
+JSValue JSInspectorBackend::databaseForId(ExecState* exec, const ArgList& args)
 {
     if (args.size() < 1)
         return jsUndefined();
 
-    JSQuarantinedObjectWrapper* wrapper = JSQuarantinedObjectWrapper::asWrapper(args.at(0));
-    if (!wrapper)
+    InspectorController* ic = impl()->inspectorController();
+    if (!ic)
         return jsUndefined();
 
-    Database* database = toDatabase(wrapper->unwrappedObject());
+    Database* database = impl()->databaseForId(args.at(0).toInt32(exec));
     if (!database)
         return jsUndefined();
-
-    MarkedArgumentBuffer result;
-
-    Vector<String> tableNames = database->tableNames();
-    unsigned length = tableNames.size();
-    for (unsigned i = 0; i < length; ++i)
-        result.append(jsString(exec, tableNames[i]));
-
-    return constructArray(exec, result);
+    // Could use currentWorld(exec) ... but which exec!  The following mixed use of exec & inspectedWindow->globalExec() scares me!
+    JSDOMWindow* inspectedWindow = toJSDOMWindow(ic->inspectedPage()->mainFrame(), debuggerWorld());
+    return JSInspectedObjectWrapper::wrap(inspectedWindow->globalExec(), toJS(exec, database));
 }
 #endif
 
@@ -151,7 +142,7 @@ JSValue JSInspectorBackend::inspectedWindow(ExecState*, const ArgList&)
     InspectorController* ic = impl()->inspectorController();
     if (!ic)
         return jsUndefined();
-    JSDOMWindow* inspectedWindow = toJSDOMWindow(ic->inspectedPage()->mainFrame());
+    JSDOMWindow* inspectedWindow = toJSDOMWindow(ic->inspectedPage()->mainFrame(), debuggerWorld());
     return JSInspectedObjectWrapper::wrap(inspectedWindow->globalExec(), inspectedWindow);
 }
 
@@ -260,21 +251,6 @@ JSValue JSInspectorBackend::currentCallFrame(ExecState* exec, const ArgList&)
     return JSInspectedObjectWrapper::wrap(globalExec, toJS(exec, callFrame));
 }
 
-JSValue JSInspectorBackend::profiles(JSC::ExecState* exec, const JSC::ArgList&)
-{
-    JSLock lock(SilenceAssertionsOnly);
-    MarkedArgumentBuffer result;
-    InspectorController* ic = impl()->inspectorController();
-    if (!ic)
-        return jsUndefined();
-    const Vector<RefPtr<Profile> >& profiles = ic->profiles();
-
-    for (size_t i = 0; i < profiles.size(); ++i)
-        result.append(toJS(exec, profiles[i].get()));
-
-    return constructArray(exec, result);
-}
-
 #endif
 
 JSValue JSInspectorBackend::nodeForId(ExecState* exec, const ArgList& args)
@@ -291,16 +267,16 @@ JSValue JSInspectorBackend::nodeForId(ExecState* exec, const ArgList& args)
         return jsUndefined();
 
     JSLock lock(SilenceAssertionsOnly);
-    JSDOMWindow* inspectedWindow = toJSDOMWindow(ic->inspectedPage()->mainFrame());
+    JSDOMWindow* inspectedWindow = toJSDOMWindow(ic->inspectedPage()->mainFrame(), debuggerWorld());
     return JSInspectedObjectWrapper::wrap(inspectedWindow->globalExec(), toJS(exec, deprecatedGlobalObjectForPrototype(inspectedWindow->globalExec()), node));
 }
 
-JSValue JSInspectorBackend::wrapObject(ExecState*, const ArgList& args)
+JSValue JSInspectorBackend::wrapObject(ExecState* exec, const ArgList& args)
 {
-    if (args.size() < 1)
+    if (args.size() < 2)
         return jsUndefined();
 
-    return impl()->wrapObject(ScriptValue(args.at(0))).jsValue();
+    return impl()->wrapObject(ScriptValue(args.at(0)), args.at(1).toString(exec)).jsValue();
 }
 
 JSValue JSInspectorBackend::unwrapObject(ExecState* exec, const ArgList& args)

@@ -99,8 +99,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSXPathResultConstructor::s_info = { "XPathResultConstructor", 0, &JSXPathResultConstructorTable, 0 };
@@ -168,7 +171,7 @@ JSXPathResult::JSXPathResult(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSXPathResult::~JSXPathResult()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathResult::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

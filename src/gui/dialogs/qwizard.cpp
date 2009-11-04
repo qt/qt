@@ -1537,7 +1537,9 @@ void QWizardPrivate::handleAeroStyleChange()
         vistaHelper->backButton()->show();
     } else {
         q->setMouseTracking(true); // ### original value possibly different
+#ifndef QT_NO_CURSOR
         q->unsetCursor(); // ### ditto
+#endif
         antiFlickerWidget->move(0, 0);
         vistaHelper->hideBackButton();
         vistaHelper->setTitleBarIconAndCaptionVisible(true);

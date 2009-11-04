@@ -5959,7 +5959,7 @@ void XsdSchemaParser::validateIdAttribute(const char *elementName)
             attributeContentError("id", elementName, value, BuiltinTypes::xsID);
         } else {
             if (m_idCache->hasId(value)) {
-                error(QtXmlPatterns::tr("Component with id %1 has been defined previously.").arg(formatData(value)));
+                error(QtXmlPatterns::tr("Component with ID %1 has been defined previously.").arg(formatData(value)));
             } else {
                 m_idCache->addId(value);
             }

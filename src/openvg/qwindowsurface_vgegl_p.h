@@ -70,16 +70,6 @@ public:
     QVGEGLWindowSurfacePrivate(QWindowSurface *win);
     virtual ~QVGEGLWindowSurfacePrivate();
 
-    enum SurfaceType
-    {
-        WindowSurface,
-        VGImageSurface,
-        QImageSurface
-    };
-
-    static QVGEGLWindowSurfacePrivate *create
-        (SurfaceType type, QWindowSurface *win);
-
     QVGPaintEngine *paintEngine();
     virtual QEglContext *ensureContext(QWidget *widget) = 0;
     virtual void beginPaint(QWidget *widget) = 0;
@@ -124,15 +114,6 @@ protected:
     EGLSurface windowSurface;
 
     EGLSurface mainSurface() const;
-};
-
-class Q_OPENVG_EXPORT QVGEGLWindowSurfaceQImage : public QVGEGLWindowSurfaceVGImage
-{
-public:
-    QVGEGLWindowSurfaceQImage(QWindowSurface *win);
-    virtual ~QVGEGLWindowSurfaceQImage();
-
-    void endPaint(QWidget *widget, const QRegion& region, QImage *image);
 };
 
 #endif // EGL_OPENVG_IMAGE

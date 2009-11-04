@@ -33,6 +33,7 @@ namespace WebCore {
 
     class Document;
     class Event;
+    class DOMWrapperWorld;
     class JSLazyEventListener;
     class JSEventListener;
     class ScriptExecutionContext;
@@ -73,6 +74,12 @@ namespace WebCore {
             {
             }
 
+            JSDOMGlobalObjectData(Destructor destructor)
+                : JSGlobalObjectData(destructor)
+                , evt(0)
+            {
+            }
+
             JSDOMStructureMap structures;
             JSDOMConstructorMap constructors;
 
@@ -96,8 +103,11 @@ namespace WebCore {
         return constructor;
     }
 
-    JSDOMGlobalObject* toJSDOMGlobalObject(Document*);
-    JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext*);
+    JSDOMGlobalObject* toJSDOMGlobalObject(Document*, JSC::ExecState*);
+    JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext*, JSC::ExecState*);
+
+    JSDOMGlobalObject* toJSDOMGlobalObject(Document*, DOMWrapperWorld*);
+    JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext*, DOMWrapperWorld*);
 
 } // namespace WebCore
 

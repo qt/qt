@@ -258,7 +258,7 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
     uniform   mediump vec2  halfViewportSize; \
     uniform   highp   vec2  invertedTextureSize; \
     uniform   highp   mat3  brushTransform; \
-    varying   highp   vec2  brushTextureCoords; \
+    varying   highp   vec2  textureCoords; \
     void setPosition(void) { \
             gl_Position = pmvMatrix * vertexCoordsArray;\
             gl_Position.xy = gl_Position.xy / gl_Position.w; \
@@ -267,7 +267,7 @@ static const char* const qglslPositionWithTextureBrushVertexShader = "\
             mediump float invertedHTexCoordsZ = 1.0 / hTexCoords.z; \
             gl_Position.xy = gl_Position.xy * invertedHTexCoordsZ; \
             gl_Position.w = invertedHTexCoordsZ; \
-            brushTextureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
+            textureCoords.xy = (hTexCoords.xy * invertedTextureSize) * gl_Position.w; \
     }";
 
 static const char* const qglslAffinePositionWithTextureBrushVertexShader
@@ -278,26 +278,26 @@ static const char* const qglslAffinePositionWithTextureBrushVertexShader
 // we emulate GL_REPEAT by only taking the fractional part of the texture coords.
 // TODO: Special case POT textures which don't need this emulation
 static const char* const qglslTextureBrushSrcFragmentShader = "\
-    varying highp   vec2      brushTextureCoords; \
+    varying highp   vec2      textureCoords; \
     uniform lowp    sampler2D brushTexture; \
     lowp vec4 srcPixel() { \
-        return texture2D(brushTexture, fract(brushTextureCoords)); \
+        return texture2D(brushTexture, fract(textureCoords)); \
     }";
 #else
 static const char* const qglslTextureBrushSrcFragmentShader = "\
-    varying highp   vec2      brushTextureCoords; \
+    varying highp   vec2      textureCoords; \
     uniform lowp    sampler2D brushTexture; \
     lowp vec4 srcPixel() { \
-        return texture2D(brushTexture, brushTextureCoords); \
+        return texture2D(brushTexture, textureCoords); \
     }";
 #endif
 
 static const char* const qglslTextureBrushSrcWithPatternFragmentShader = "\
-    varying highp   vec2      brushTextureCoords; \
+    varying highp   vec2      textureCoords; \
     uniform lowp    vec4      patternColor; \
     uniform lowp    sampler2D brushTexture; \
     lowp vec4 srcPixel() { \
-        return patternColor * (1.0 - texture2D(brushTexture, brushTextureCoords).r); \
+        return patternColor * (1.0 - texture2D(brushTexture, textureCoords).r); \
     }";
 
 // Solid Fill Brush

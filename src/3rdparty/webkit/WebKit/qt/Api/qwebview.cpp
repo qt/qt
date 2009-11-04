@@ -1,6 +1,7 @@
 /*
     Copyright (C) 2008 Nokia Corporation and/or its subsidiary(-ies)
     Copyright (C) 2008 Holger Hans Peter Freyther
+    Copyright (C) 2009 Girish Ramakrishnan <girish@forwardbias.in>
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
@@ -52,11 +53,16 @@ public:
     virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
 #endif
 
+#ifndef QT_NO_CURSOR
     virtual QCursor cursor() const;
     virtual void updateCursor(const QCursor& cursor);
+#endif
 
+    virtual QPalette palette() const;
     virtual int screenNumber() const;
-    virtual WId winId() const;
+    virtual QWidget* ownerWidget() const;
+
+    virtual QObject* pluginParent() const;
 
     void _q_pageDestroyed();
 
@@ -89,7 +95,7 @@ void QWebViewPrivate::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
         view->setInputMethodHints(view->inputMethodHints() & ~hint);
 }
 #endif
-
+#ifndef QT_NO_CURSOR
 QCursor QWebViewPrivate::cursor() const
 {
     return view->cursor();
@@ -98,6 +104,12 @@ QCursor QWebViewPrivate::cursor() const
 void QWebViewPrivate::updateCursor(const QCursor& cursor)
 {
     view->setCursor(cursor);
+}
+#endif
+
+QPalette QWebViewPrivate::palette() const
+{
+    return view->palette();
 }
 
 int QWebViewPrivate::screenNumber() const
@@ -110,12 +122,14 @@ int QWebViewPrivate::screenNumber() const
     return 0;
 }
 
-WId QWebViewPrivate::winId() const
+QWidget* QWebViewPrivate::ownerWidget() const
 {
-    if (view)
-        return view->winId();
+    return view;
+}
 
-    return 0;
+QObject* QWebViewPrivate::pluginParent() const
+{
+    return view;
 }
 
 void QWebViewPrivate::_q_pageDestroyed()
@@ -231,8 +245,14 @@ QWebView::QWebView(QWidget *parent)
 */
 QWebView::~QWebView()
 {
-    if (d->page)
+    if (d->page) {
+#if QT_VERSION >= 0x040600
+        d->page->d->view.clear();
+#else
         d->page->d->view = 0;
+#endif
+        d->page->d->client = 0;
+    }
 
     if (d->page && d->page->parent() == this)
         delete d->page;
@@ -305,79 +325,6 @@ void QWebView::setPage(QWebPage* page)
     }
     setAttribute(Qt::WA_OpaquePaintEvent, d->page);
     update();
-}
-
-/*!
-    Returns a valid URL from a user supplied \a string if one can be deducted.
-    In the case that is not possible, an invalid QUrl() is returned.
-
-    \since 4.6
-
-    Most applications that can browse the web, allow the user to input a URL
-    in the form of a plain string. This string can be manually typed into
-    a location bar, obtained from the clipboard, or passed in via command
-    line arguments.
-
-    When the string is not already a valid URL, a best guess is performed,
-    making various web related assumptions.
-
-    In the case the string corresponds to a valid file path on the system,
-    a file:// URL is constructed, using QUrl::fromLocalFile().
-
-    If that is not the case, an attempt is made to turn the string into a
-    http:// or ftp:// URL. The latter in the case the string starts with
-    'ftp'. The result is then passed through QUrl's tolerant parser, and
-    in the case or success, a valid QUrl is returned, or else a QUrl().
-
-    \section1 Examples:
-
-    \list
-    \o webkit.org becomes http://webkit.org
-    \o ftp.webkit.org becomes ftp://ftp.webkit.org
-    \o localhost becomes http://localhost
-    \o /home/user/test.html becomes file:///home/user/test.html (if exists)
-    \endlist
-
-    \section2 Tips when dealing with URLs and strings:
-
-    \list
-    \o When creating a QString from a QByteArray or a char*, always use
-      QString::fromUtf8().
-    \o Do not use QUrl(string), nor QUrl::toString() anywhere where the URL might
-       be used, such as in the location bar, as those functions loose data.
-       Instead use QUrl::fromEncoded() and QUrl::toEncoded(), respectively.
-    \endlist
- */
-QUrl QWebView::guessUrlFromString(const QString &string)
-{
-    QString trimmedString = string.trimmed();
-
-    // Check the most common case of a valid url with scheme and host first
-    QUrl url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    if (url.isValid() && !url.scheme().isEmpty() && !url.host().isEmpty())
-        return url;
-
-    // Absolute files that exists
-    if (QDir::isAbsolutePath(trimmedString) && QFile::exists(trimmedString))
-        return QUrl::fromLocalFile(trimmedString);
-
-    // If the string is missing the scheme or the scheme is not valid prepend a scheme
-    QString scheme = url.scheme();
-    if (scheme.isEmpty() || scheme.contains(QLatin1Char('.')) || scheme == QLatin1String("localhost")) {
-        // Do not do anything for strings such as "foo", only "foo.com"
-        int dotIndex = trimmedString.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1 || trimmedString.startsWith(QLatin1String("localhost"))) {
-            const QString hostscheme = trimmedString.left(dotIndex).toLower();
-            QByteArray scheme = (hostscheme == QLatin1String("ftp")) ? "ftp" : "http";
-            trimmedString = QLatin1String(scheme) + QLatin1String("://") + trimmedString;
-        }
-        url = QUrl::fromEncoded(trimmedString.toUtf8(), QUrl::TolerantMode);
-    }
-
-    if (url.isValid())
-        return url;
-
-    return QUrl();
 }
 
 /*!
@@ -668,24 +615,38 @@ qreal QWebView::textSizeMultiplier() const
     return page()->mainFrame()->textSizeMultiplier();
 }
 
-#if !defined(Q_OS_SYMBIAN)
 /*!
     \property QWebView::renderHints
     \since 4.6
     \brief the default render hints for the view
 
-    These hints are used to initialize QPainter before painting the web page.
+    These hints are used to initialize QPainter before painting the Web page.
 
     QPainter::TextAntialiasing is enabled by default.
 
+    \note This property is not available on Symbian. However, the getter and
+    setter functions can still be used directly.
+
     \sa QPainter::renderHints()
 */
-#endif
+
+/*!
+    \since 4.6
+    Returns the render hints used by the view to render content.
+
+    \sa QPainter::renderHints()
+*/
 QPainter::RenderHints QWebView::renderHints() const
 {
     return d->renderHints;
 }
 
+/*!
+    \since 4.6
+    Sets the render hints used by the view to the specified \a hints.
+
+    \sa QPainter::setRenderHints()
+*/
 void QWebView::setRenderHints(QPainter::RenderHints hints)
 {
     if (hints == d->renderHints)
@@ -695,11 +656,11 @@ void QWebView::setRenderHints(QPainter::RenderHints hints)
 }
 
 /*!
-    If \a enabled is true, the render hint \a hint is enabled; otherwise it
-    is disabled.
-
     \since 4.6
-    \sa renderHints
+    If \a enabled is true, enables the specified render \a hint; otherwise
+    disables it.
+
+    \sa renderHints, QPainter::renderHints()
 */
 void QWebView::setRenderHint(QPainter::RenderHint hint, bool enabled)
 {
@@ -1094,7 +1055,7 @@ void QWebView::changeEvent(QEvent *e)
 /*!
     \fn void QWebView::statusBarMessage(const QString& text)
 
-    This signal is emitted when the statusbar \a text is changed by the page.
+    This signal is emitted when the status bar \a text is changed by the page.
 */
 
 /*!

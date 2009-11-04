@@ -81,8 +81,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSEventExceptionConstructor::s_info = { "EventExceptionConstructor", 0, &JSEventExceptionConstructorTable, 0 };
@@ -148,7 +151,7 @@ JSEventException::JSEventException(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSEventException::~JSEventException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSEventException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

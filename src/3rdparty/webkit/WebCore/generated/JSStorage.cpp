@@ -82,8 +82,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSStorageConstructor::s_info = { "StorageConstructor", 0, &JSStorageConstructorTable, 0 };
@@ -144,7 +147,7 @@ JSStorage::JSStorage(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 
 JSStorage::~JSStorage()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSStorage::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

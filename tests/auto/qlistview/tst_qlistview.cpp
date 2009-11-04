@@ -117,6 +117,10 @@ private slots:
     void shiftSelectionWithNonUniformItemSizes();
     void clickOnViewportClearsSelection();
     void task262152_setModelColumnNavigate();
+    void taskQTBUG_2233_scrollHiddenItems_data();
+    void taskQTBUG_2233_scrollHiddenItems();
+    void taskQTBUG_633_changeModelData();
+    void taskQTBUG_435_deselectOnViewportClick();
 };
 
 // Testing get/set functions
@@ -1130,6 +1134,7 @@ void tst_QListView::selection()
 #endif
 
     v.show();
+    QTest::qWaitForWindowShown(&v);
     QApplication::processEvents();
 
     v.setSelection(selectionRect, QItemSelectionModel::ClearAndSelect);
@@ -1182,6 +1187,7 @@ void tst_QListView::scrollTo()
     lv.setModel(&model);
     lv.setFixedSize(100, 200);
     lv.show();
+    QTest::qWaitForWindowShown(&lv);
 
     //by default, the list view scrolls per item and has no wrapping
     QModelIndex index = model.index(6,0);
@@ -1780,17 +1786,95 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
-    QTest::qWait(30);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(100);
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(10);
+    QTest::qWait(100);
     QCOMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(10);
+    QTest::qWait(100);
     QCOMPARE(view.currentIndex(), model.index(2,1));
 
 }
 
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems_data()
+{
+    QTest::addColumn<int>("flow");
 
+    QTest::newRow("TopToBottom") << static_cast<int>(QListView::TopToBottom);
+    QTest::newRow("LeftToRight") << static_cast<int>(QListView::LeftToRight);
+}
+
+void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
+{
+    QFETCH(int, flow);
+    const int rowCount = 200;
+
+    QListView view;
+    QStringListModel model(&view);
+    QStringList list;
+    for (int i = 0; i < rowCount; ++i)
+        list << QString::fromAscii("Item %1").arg(i);
+
+    model.setStringList(list);
+    view.setModel(&model);
+    view.setViewMode(QListView::ListMode);
+    for (int i = 0; i < rowCount / 2; ++i)
+        view.setRowHidden(2 * i, true);
+    view.setFlow(static_cast<QListView::Flow>(flow));
+    view.resize(130, 130);
+
+    for (int i = 0; i < 10; ++i) {
+        (view.flow() == QListView::TopToBottom
+            ? view.verticalScrollBar()
+            : view.horizontalScrollBar())->setValue(i);
+        QModelIndex index = view.indexAt(QPoint(0,0));
+        QVERIFY(index.isValid());
+        QCOMPARE(index.row(), 2 * i + 1);
+    }
+}
+
+void tst_QListView::taskQTBUG_633_changeModelData()
+{
+    QListView view;
+    view.setFlow(QListView::LeftToRight);
+    QStandardItemModel model(5,1);
+    for (int i = 0; i < model.rowCount(); ++i) {
+        model.setData( model.index(i, 0), QString::number(i));
+    }
+
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    model.setData( model.index(1, 0), QLatin1String("long long text"));
+    QTest::qWait(100); //leave time for relayouting the items
+    QRect rectLongText = view.visualRect(model.index(1,0));
+    QRect rect2 = view.visualRect(model.index(2,0));
+    QVERIFY( ! rectLongText.intersects(rect2) );
+}
+
+void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
+{
+    QListView view;
+    QStringListModel model( QStringList() << "1" << "2" << "3" << "4");
+    view.setModel(&model);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+    
+
+    QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
+    //first the left button
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+
+    //and now the right button
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+}
 
 QTEST_MAIN(tst_QListView)
 #include "tst_qlistview.moc"

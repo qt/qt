@@ -30,6 +30,8 @@
 #include "JSType.h"
 #include "JSValue.h"
 #include "PropertyMapHashTable.h"
+#include "PropertyNameArray.h"
+#include "Protect.h"
 #include "StructureChain.h"
 #include "StructureTransitionTable.h"
 #include "JSTypeInfo.h"
@@ -76,8 +78,6 @@ namespace JSC {
 
         ~Structure();
 
-        void markAggregate(MarkStack&);
-
         // These should be used with caution.  
         size_t addPropertyWithoutTransition(const Identifier& propertyName, unsigned attributes, JSCell* specificValue);
         size_t removePropertyWithoutTransition(const Identifier& propertyName);
@@ -95,8 +95,8 @@ namespace JSC {
         Structure* previousID() const { return m_previous.get(); }
 
         void growPropertyStorageCapacity();
-        size_t propertyStorageCapacity() const { return m_propertyStorageCapacity; }
-        size_t propertyStorageSize() const { return m_propertyTable ? m_propertyTable->keyCount + m_propertyTable->anonymousSlotCount + (m_propertyTable->deletedOffsets ? m_propertyTable->deletedOffsets->size() : 0) : m_offset + 1; }
+        unsigned propertyStorageCapacity() const { return m_propertyStorageCapacity; }
+        unsigned propertyStorageSize() const { return m_propertyTable ? m_propertyTable->keyCount + m_propertyTable->anonymousSlotCount + (m_propertyTable->deletedOffsets ? m_propertyTable->deletedOffsets->size() : 0) : m_offset + 1; }
         bool isUsingInlineStorage() const;
 
         size_t get(const Identifier& propertyName);
@@ -116,16 +116,21 @@ namespace JSC {
             return hasTransition(propertyName._ustring.rep(), attributes);
         }
 
-        void getEnumerablePropertyNames(ExecState*, PropertyNameArray&, JSObject*);
-        void getOwnEnumerablePropertyNames(ExecState*, PropertyNameArray&, JSObject*);
-
         bool hasGetterSetterProperties() const { return m_hasGetterSetterProperties; }
         void setHasGetterSetterProperties(bool hasGetterSetterProperties) { m_hasGetterSetterProperties = hasGetterSetterProperties; }
 
+        bool hasNonEnumerableProperties() const { return m_hasNonEnumerableProperties; }
+
+        bool hasAnonymousSlots() const { return m_propertyTable && m_propertyTable->anonymousSlotCount; }
+        
         bool isEmpty() const { return m_propertyTable ? !m_propertyTable->keyCount : m_offset == noOffset; }
 
         JSCell* specificValue() { return m_specificValueInPrevious; }
         void despecifyDictionaryFunction(const Identifier& propertyName);
+
+        void setEnumerationCache(JSPropertyNameIterator* enumerationCache); // Defined in JSPropertyNameIterator.h.
+        JSPropertyNameIterator* enumerationCache() { return m_enumerationCache.get(); }
+        void getEnumerablePropertyNames(PropertyNameArray&);
 
     private:
         Structure(JSValue prototype, const TypeInfo&);
@@ -140,8 +145,6 @@ namespace JSC {
         size_t put(const Identifier& propertyName, unsigned attributes, JSCell* specificValue);
         size_t remove(const Identifier& propertyName);
         void addAnonymousSlots(unsigned slotCount);
-        void getEnumerableNamesFromPropertyTable(PropertyNameArray&);
-        void getEnumerableNamesFromClassInfoTable(ExecState*, const ClassInfo*, PropertyNameArray&);
 
         void expandPropertyMapHashTable();
         void rehashPropertyMapHashTable();
@@ -161,8 +164,6 @@ namespace JSC {
                 return;
             materializePropertyMap();
         }
-
-        void clearEnumerationCache();
 
         signed char transitionCount() const
         {
@@ -189,16 +190,17 @@ namespace JSC {
 
         StructureTransitionTable table;
 
-        RefPtr<PropertyNameArrayData> m_cachedPropertyNameArrayData;
+        ProtectedPtr<JSPropertyNameIterator> m_enumerationCache;
 
         PropertyMapHashTable* m_propertyTable;
 
-        size_t m_propertyStorageCapacity;
+        uint32_t m_propertyStorageCapacity;
         signed char m_offset;
 
         unsigned m_dictionaryKind : 2;
         bool m_isPinnedPropertyTable : 1;
         bool m_hasGetterSetterProperties : 1;
+        bool m_hasNonEnumerableProperties : 1;
 #if COMPILER(WINSCW)
         // Workaround for Symbian WINSCW compiler that cannot resolve unsigned type of the declared 
         // bitfield, when used as argument in make_pair() function calls in structure.ccp.

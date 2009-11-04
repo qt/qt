@@ -2479,7 +2479,7 @@ bool qputenv(const char *varName, const QByteArray& value)
 #endif
 }
 
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 
 #  if defined(Q_OS_INTEGRITY) && defined(__GHS_VERSION_NUMBER) && (__GHS_VERSION_NUMBER < 500)
 // older versions of INTEGRITY used a long instead of a uint for the seed.
@@ -2513,10 +2513,19 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 void qsrand(uint seed)
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed)
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-    *pseed = seed;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed)
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+        *pseed = seed;
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to sqrand(seed)
+        srand(seed);
+    }
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
@@ -2535,20 +2544,38 @@ void qsrand(uint seed)
 */
 void qsrand()
 {
-#if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (pseed) {
-        // already seeded
-        return;
-    }
-    randTLS()->setLocalData(pseed = new SeedStorageType);
-    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(0);
-    *pseed = QDateTime::currentDateTime().toTime_t()
-             + quintptr(&pseed)
-             + serial.fetchAndAddRelaxed(1);
-#else
-    // On Windows, we assume that rand() already does the right thing
+#if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (pseed) {
+            // already seeded
+            return;
+        }
+        seedStorage->setLocalData(pseed = new SeedStorageType);
+        // start beyond 1 to avoid the sequence reset
+        static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
+        *pseed = QDateTime::currentDateTime().toTime_t()
+                 + quintptr(&pseed)
+                 + serial.fetchAndAddRelaxed(1);
+#if defined(Q_OS_WIN)
+        // for Windows the srand function must still be called.
+        srand(*pseed);
 #endif
+    }
+
+#elif defined(Q_OS_WIN)
+    static unsigned int seed = 0;
+
+    if (seed)
+        return;
+
+    seed = GetTickCount();
+    srand(seed);
+#else 
+    // Symbian?
+
+#endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
 }
 
 /*!
@@ -2569,12 +2596,21 @@ void qsrand()
 int qrand()
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed) {
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-        *pseed = 1;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed) {
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+            *pseed = 1;
+        }
+        return rand_r(pseed);
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to qrand()
+        return rand();
     }
-    return rand_r(pseed);
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls

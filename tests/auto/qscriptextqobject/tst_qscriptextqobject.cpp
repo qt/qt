@@ -317,6 +317,11 @@ public:
     Q_INVOKABLE QObject* myInvokableReturningMyQObjectAsQObject()
         { m_qtFunctionInvoked = 57; return this; }
 
+    Q_INVOKABLE QObjectList findObjects() const
+    {  return findChildren<QObject *>();  }
+    Q_INVOKABLE QList<int> myInvokableNumbers() const
+    {  return QList<int>() << 1 << 2 << 3; }
+
     void emitMySignal()
         { emit mySignal(); }
     void emitMySignalWithIntArg(int arg)
@@ -493,6 +498,7 @@ protected slots:
     }
 
 private slots:
+    void registeredTypes();
     void getSetStaticProperty();
     void getSetDynamicProperty();
     void getSetChildren();
@@ -542,6 +548,24 @@ void tst_QScriptExtQObject::cleanup()
     delete m_engine;
     delete m_myObject;
 }
+
+// this test has to be first and test that some types are automatically registered
+void tst_QScriptExtQObject::registeredTypes()
+{
+    QScriptEngine e;
+    QObject *t = new MyQObject;
+    QObject *c = new QObject(t);
+    c->setObjectName ("child1");
+
+    e.globalObject().setProperty("MyTest", e.newQObject(t));
+
+    QScriptValue v1 = e.evaluate("MyTest.findObjects()[0].objectName;");
+    QCOMPARE(v1.toString(), c->objectName());
+
+    QScriptValue v2 = e.evaluate("MyTest.myInvokableNumbers()");
+    QCOMPARE(qscriptvalue_cast<QList<int> >(v2), (QList<int>() << 1 << 2 << 3));
+}
+
 
 static QScriptValue getSetProperty(QScriptContext *ctx, QScriptEngine *)
 {

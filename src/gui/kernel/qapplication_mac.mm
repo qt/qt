@@ -1697,15 +1697,14 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
             // (actually two events; one for horizontal and one for vertical).
             // As a results of this, and to make sure we dont't receive duplicate events,
             // we try to detect when this happend by checking the 'compatibilityEvent'. 
-            const int scrollFactor = 4 * 8;
             SInt32 mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothHorizontalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaX = mdelt * scrollFactor;
+            wheel_deltaX = mdelt;
             mdelt = 0;
             GetEventParameter(event, kEventParamMouseWheelSmoothVerticalDelta, typeSInt32, 0,
                               sizeof(mdelt), 0, &mdelt);
-            wheel_deltaY = mdelt * scrollFactor;
+            wheel_deltaY = mdelt;
             GetEventParameter(event, kEventParamEventRef, typeEventRef, 0,
                               sizeof(compatibilityEvent), 0, &compatibilityEvent);
         } else if (ekind == kEventMouseWheelMoved) {
@@ -1718,31 +1717,11 @@ QApplicationPrivate::globalEventProcessor(EventHandlerCallRef er, EventRef event
                 GetEventParameter(event, kEventParamMouseWheelAxis, typeMouseWheelAxis, 0,
                         sizeof(axis), 0, &axis);
 
-                // The 'new' event has acceleration applied by the OS, while the old (on
-                // Carbon only), has not. So we introduce acceleration here to be consistent.
-                // The acceleration is trying to respect both pixel based and line scrolling,
-                // which turns out to be rather difficult.
-                int linesToScroll = mdelt > 0 ? 1 : -1;
-                static QTime t;
-                int elapsed = t.elapsed();
-                t.restart();
-                if (elapsed < 20)
-                    linesToScroll *= 120;
-                else if (elapsed < 30)
-                    linesToScroll *= 60;
-                else if (elapsed < 50)
-                    linesToScroll *= 30;
-                else if (elapsed < 100)
-                    linesToScroll *= 6;
-                else if (elapsed < 200)
-                    linesToScroll *= 3;
-                else if (elapsed < 300)
-                    linesToScroll *= 2;
-
+                // Remove acceleration, and use either -120 or 120 as delta:
                 if (axis == kEventMouseWheelAxisX)
-                    wheel_deltaX = linesToScroll * 120;
+                    wheel_deltaX = qBound(-120, int(mdelt * 10000), 120);
                 else
-                    wheel_deltaY = linesToScroll * 120;
+                    wheel_deltaY = qBound(-120, int(mdelt * 10000), 120);
             }
         }
 
@@ -2695,11 +2674,7 @@ int QApplication::keyboardInputInterval()
 
 void QApplication::setWheelScrollLines(int n)
 {
-    Q_UNUSED(n);
-    // On Mac, acceleration is handled by the OS. Multiplying wheel scroll
-    // deltas with n will not be as cross platform as one might think! So
-    // we choose to go native in this case (and let wheel_scroll_lines == 1).
-    //    QApplicationPrivate::wheel_scroll_lines = n;
+    QApplicationPrivate::wheel_scroll_lines = n;
 }
 
 int QApplication::wheelScrollLines()

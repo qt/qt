@@ -77,8 +77,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
     static JSObject* constructDOMParser(ExecState* exec, JSObject* constructor, const ArgList&)
     {
         return asObject(toJS(exec, static_cast<JSDOMParserConstructor*>(constructor)->globalObject(), DOMParser::create()));
@@ -144,7 +147,7 @@ JSDOMParser::JSDOMParser(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSDOMParser::~JSDOMParser()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDOMParser::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

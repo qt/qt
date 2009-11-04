@@ -21,6 +21,9 @@
 #include "config.h"
 #include "PropertyNameArray.h"
 
+#include "Structure.h"
+#include "StructureChain.h"
+
 namespace JSC {
 
 static const size_t setThreshold = 20;
@@ -44,7 +47,7 @@ void PropertyNameArray::add(UString::Rep* identifier)
             return;
     }
 
-    m_data->propertyNameVector().append(Identifier(m_globalData, identifier));
+    addKnownUnique(identifier);
 }
 
 } // namespace JSC

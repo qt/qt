@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2006, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -47,13 +45,17 @@ namespace WebCore {
         virtual Path toPathData() const;
 
     protected:
-        virtual const SVGElement* contextElement() const { return this; }
         virtual bool hasRelativeValues() const;
 
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::cxAttrString, SVGLength, Cx, cx)
         ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::cyAttrString, SVGLength, Cy, cy)
         ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGNames::circleTagString, SVGNames::rAttrString, SVGLength, R, r)
+
+        // SVGExternalResourcesRequired
+        ANIMATED_PROPERTY_DECLARATIONS(SVGCircleElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

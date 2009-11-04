@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2006 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005, 2006, 2007 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -128,13 +126,11 @@ namespace WebCore {
 
         virtual void svgAttributeChanged(const QualifiedName&);
 
-        virtual TransformationMatrix viewBoxToViewTransform(float viewWidth, float viewHeight) const;
+        TransformationMatrix viewBoxToViewTransform(float viewWidth, float viewHeight) const;
 
         void inheritViewAttributes(SVGViewElement*);
 
     protected:
-        virtual const SVGElement* contextElement() const { return this; }
-
         friend class RenderSVGRoot;
         friend class RenderSVGViewportContainer;
 
@@ -148,6 +144,15 @@ namespace WebCore {
         ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::widthAttrString, SVGLength, Width, width)
         ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGNames::svgTagString, SVGNames::heightAttrString, SVGLength, Height, height)
 
+        // SVGExternalResourcesRequired
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
+
+        // SVGFitToViewBox
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGFitToViewBoxIdentifier, SVGNames::viewBoxAttrString, FloatRect, ViewBox, viewBox)
+        ANIMATED_PROPERTY_DECLARATIONS(SVGSVGElement, SVGFitToViewBoxIdentifier, SVGNames::preserveAspectRatioAttrString, SVGPreserveAspectRatio, PreserveAspectRatio, preserveAspectRatio)
+ 
         virtual void documentWillBecomeInactive();
         virtual void documentDidBecomeActive();
 

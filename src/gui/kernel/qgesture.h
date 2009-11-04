@@ -65,9 +65,9 @@ class Q_GUI_EXPORT QGesture : public QObject
 
     Q_PROPERTY(Qt::GestureState state READ state)
     Q_PROPERTY(Qt::GestureType gestureType READ gestureType)
+    Q_PROPERTY(QGesture::GestureCancelPolicy gestureCancelPolicy READ gestureCancelPolicy WRITE setGestureCancelPolicy)
     Q_PROPERTY(QPointF hotSpot READ hotSpot WRITE setHotSpot RESET unsetHotSpot)
     Q_PROPERTY(bool hasHotSpot READ hasHotSpot)
-    Q_PROPERTY(QObject* targetObject READ targetObject WRITE setTargetObject)
 
 public:
     explicit QGesture(QObject *parent = 0);
@@ -77,13 +77,18 @@ public:
 
     Qt::GestureState state() const;
 
-    QObject *targetObject() const;
-    void setTargetObject(QObject *value);
-
     QPointF hotSpot() const;
     void setHotSpot(const QPointF &value);
     bool hasHotSpot() const;
     void unsetHotSpot();
+
+    enum GestureCancelPolicy {
+        CancelNone = 0,
+        CancelAllInContext
+    };
+
+    void setGestureCancelPolicy(GestureCancelPolicy policy);
+    GestureCancelPolicy gestureCancelPolicy() const;
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
@@ -100,22 +105,22 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPanGesture)
 
-    Q_PROPERTY(QSizeF totalOffset READ totalOffset WRITE setTotalOffset)
-    Q_PROPERTY(QSizeF lastOffset READ lastOffset WRITE setLastOffset)
-    Q_PROPERTY(QSizeF offset READ offset WRITE setOffset)
+    Q_PROPERTY(QPointF totalOffset READ totalOffset WRITE setTotalOffset)
+    Q_PROPERTY(QPointF lastOffset READ lastOffset WRITE setLastOffset)
+    Q_PROPERTY(QPointF offset READ offset WRITE setOffset)
     Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration)
 
 public:
     QPanGesture(QObject *parent = 0);
 
-    QSizeF totalOffset() const;
-    QSizeF lastOffset() const;
-    QSizeF offset() const;
+    QPointF totalOffset() const;
+    QPointF lastOffset() const;
+    QPointF offset() const;
     qreal acceleration() const;
 
-    void setTotalOffset(const QSizeF &value);
-    void setLastOffset(const QSizeF &value);
-    void setOffset(const QSizeF &value);
+    void setTotalOffset(const QPointF &value);
+    void setLastOffset(const QPointF &value);
+    void setOffset(const QPointF &value);
     void setAcceleration(qreal value);
 
     friend class QPanGestureRecognizer;
@@ -212,6 +217,7 @@ public:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
 QT_END_HEADER
 
 #endif // QGESTURE_H

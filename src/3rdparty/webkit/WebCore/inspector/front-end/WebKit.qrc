@@ -1,6 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource prefix="/webkit/inspector">
     <file>inspector.html</file>
+    <file>AbstractTimelinePanel.js</file>
     <file>BottomUpProfileDataGridTree.js</file>
     <file>Breakpoint.js</file>
     <file>BreakpointsSidebarPane.js</file>
@@ -57,14 +58,17 @@
     <file>StoragePanel.js</file>
     <file>StylesSidebarPane.js</file>
     <file>SummaryBar.js</file>
+    <file>TestController.js</file>
     <file>TextPrompt.js</file>
     <file>TimelineAgent.js</file>
+    <file>TimelinePanel.js</file>
     <file>TopDownProfileDataGridTree.js</file>
     <file>treeoutline.js</file>
     <file>utilities.js</file>
     <file>View.js</file>
     <file>WatchExpressionsSidebarPane.js</file>
     <file>inspector.css</file>
+    <file>inspectorSyntaxHighlight.css</file>
     <file>Images/back.png</file>
     <file>Images/checker.png</file>
     <file>Images/clearConsoleButtonGlyph.png</file>

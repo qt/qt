@@ -47,7 +47,7 @@
     <x>0</x>
     <y>0</y>
     <width>600</width>
-    <height>665</height>
+    <height>690</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -114,6 +114,13 @@
          <widget class="QRadioButton" name="size_640_480">
           <property name="text">
            <string>640x480 &quot;VGA&quot;</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="size_800_480">
+          <property name="text">
+           <string>800x480</string>
           </property>
          </widget>
         </item>

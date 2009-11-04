@@ -82,8 +82,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSXMLHttpRequestExceptionConstructor::s_info = { "XMLHttpRequestExceptionConstructor", 0, &JSXMLHttpRequestExceptionConstructorTable, 0 };
@@ -150,7 +153,7 @@ JSXMLHttpRequestException::JSXMLHttpRequestException(NonNullPassRefPtr<Structure
 
 JSXMLHttpRequestException::~JSXMLHttpRequestException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

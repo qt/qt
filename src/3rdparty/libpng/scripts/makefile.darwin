@@ -1,10 +1,13 @@
 # makefile for libpng on Darwin / Mac OS X
-# Copyright (C) 2002, 2004, 2006 Glenn Randers-Pehrson
+# Copyright (C) 2002, 2004, 2006, 2008 Glenn Randers-Pehrson
 # Copyright (C) 2001 Christoph Pfisterer
 # derived from makefile.linux:
 #  Copyright (C) 1998, 1999 Greg Roelofs
 #  Copyright (C) 1996, 1997 Andreas Dilger
-# For conditions of distribution and use, see copyright notice in png.h
+
+# This code is released under the libpng license.
+# For conditions of distribution and use, see the disclaimer
+# and license in png.h
 
 # where "make install" puts libpng.a, libpng12.dylib, png.h and pngconf.h
 prefix=/usr/local
@@ -18,8 +21,8 @@ ZLIBINC=../zlib
 
 # Library name:
 LIBNAME = libpng12
-PNGMAJ = 0
-PNGMIN = 1.2.29
+PNGMAJ = 12
+PNGMIN = 1.2.40
 PNGVER = $(PNGMAJ).$(PNGMIN)
 
 # Shared library names:
@@ -38,8 +41,8 @@ LN_SF=ln -sf
 RANLIB=ranlib
 RM_F=/bin/rm -f
 
-# CFLAGS=-I$(ZLIBINC) -Wall -O3 -funroll-loops -DPNG_NO_MMX_CODE
-CFLAGS=-I$(ZLIBINC) -Wall -O -funroll-loops
+# CFLAGS=-I$(ZLIBINC) -W -Wall -O3 -funroll-loops -DPNG_NO_MMX_CODE
+CFLAGS=-I$(ZLIBINC) -W -Wall -O -funroll-loops
 LDFLAGS=-L. -L$(ZLIBLIB) -lpng12 -lz
 
 INCPATH=$(prefix)/include
@@ -104,7 +107,7 @@ $(LIBSOMAJ): $(LIBSOVER)
 $(LIBSOVER): $(OBJSDLL)
 	$(CC) -dynamiclib \
 	 -install_name $(LIBPATH)/$(LIBSOMAJ) \
-	 -current_version $(PNGVER) -compatibility_version $(PNGVER) \
+	 -current_version 0 -compatibility_version 0 \
 	 -o $(LIBSOVER) \
 	 $(OBJSDLL) -L$(ZLIBLIB) -lz
 

@@ -61,7 +61,10 @@ Settings::Settings(Page* page)
     , m_defaultFontSize(0)
     , m_defaultFixedFontSize(0)
     , m_maximumDecodedImageSize(numeric_limits<size_t>::max())
+    , m_localStorageQuota(5 * 1024 * 1024)  // Suggested by the HTML5 spec.
     , m_pluginAllowedRunTime(numeric_limits<unsigned>::max())
+    , m_printingMinimumShrinkFactor(0.0f)
+    , m_printingMaximumShrinkFactor(0.0f)
     , m_isJavaEnabled(false)
     , m_loadsImagesAutomatically(false)
     , m_privateBrowsingEnabled(false)
@@ -116,11 +119,7 @@ Settings::Settings(Page* page)
     , m_xssAuditorEnabled(false)
     , m_acceleratedCompositingEnabled(true)
     , m_experimentalNotificationsEnabled(false)
-    , m_pluginHalterEnabled(false)
-    , m_experimentalWebGLEnabled(false)
-#if ENABLE(WEB_SOCKETS)
-    , m_experimentalWebSocketsEnabled(false)
-#endif
+    , m_webGLEnabled(false)
 {
     // A Frame may not have been created yet, so we initialize the AtomicString 
     // hash before trying to use it.
@@ -260,6 +259,11 @@ void Settings::setLocalStorageEnabled(bool localStorageEnabled)
 void Settings::setSessionStorageEnabled(bool sessionStorageEnabled)
 {
     m_sessionStorageEnabled = sessionStorageEnabled;
+}
+
+void Settings::setLocalStorageQuota(unsigned localStorageQuota)
+{
+    m_localStorageQuota = localStorageQuota;
 }
 
 void Settings::setPrivateBrowsingEnabled(bool privateBrowsingEnabled)
@@ -509,16 +513,6 @@ void Settings::setExperimentalNotificationsEnabled(bool enabled)
     m_experimentalNotificationsEnabled = enabled;
 }
 
-void Settings::setPluginHalterEnabled(bool enabled)
-{
-    if (m_pluginHalterEnabled == enabled)
-        return;
-
-    m_pluginHalterEnabled = enabled;
-
-    m_page->pluginHalterEnabledStateChanged();
-}
-
 void Settings::setPluginAllowedRunTime(unsigned runTime)
 {
     m_pluginAllowedRunTime = runTime;
@@ -532,16 +526,19 @@ void Settings::setShouldUseHighResolutionTimers(bool shouldUseHighResolutionTime
 }
 #endif
 
-void Settings::setExperimentalWebGLEnabled(bool enabled)
+void Settings::setWebGLEnabled(bool enabled)
 {
-    m_experimentalWebGLEnabled = enabled;
+    m_webGLEnabled = enabled;
 }
 
-#if ENABLE(WEB_SOCKETS)
-void Settings::setExperimentalWebSocketsEnabled(bool enabled)
+void Settings::setPrintingMinimumShrinkFactor(float printingMinimumShrinkFactor)
 {
-    m_experimentalWebSocketsEnabled = enabled;
-}
-#endif
+    m_printingMinimumShrinkFactor = printingMinimumShrinkFactor;
+}    
+
+void Settings::setPrintingMaximumShrinkFactor(float printingMaximumShrinkFactor)
+{
+    m_printingMaximumShrinkFactor = printingMaximumShrinkFactor;
+}    
 
 } // namespace WebCore

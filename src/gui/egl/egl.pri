@@ -6,7 +6,7 @@ SOURCES += \
     egl/qegl.cpp \
     egl/qeglproperties.cpp
 
-contains(QT_CONFIG, wince*): SOURCES += egl/qegl_wince.cpp
+wince*: SOURCES += egl/qegl_wince.cpp
 
 unix {
     embedded {

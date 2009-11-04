@@ -4396,13 +4396,13 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_TitleBarHeight: {
         if (const QStyleOptionTitleBar *tb = qstyleoption_cast<const QStyleOptionTitleBar *>(opt)) {
             if ((tb->titleBarFlags & Qt::WindowType_Mask) == Qt::Tool) {
-                ret = qMax(widget ? widget->fontMetrics().lineSpacing() : opt->fontMetrics.lineSpacing(), 16);
+                ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 16);
 #ifndef QT_NO_DOCKWIDGET
             } else if (qobject_cast<const QDockWidget*>(widget)) {
-                ret = qMax(widget->fontMetrics().lineSpacing(), int(QStyleHelper::dpiScaled(13)));
+                ret = qMax(widget->fontMetrics().height(), int(QStyleHelper::dpiScaled(13)));
 #endif
             } else {
-                ret = qMax(widget ? widget->fontMetrics().lineSpacing() : opt->fontMetrics.lineSpacing(), 18);
+                ret = qMax(widget ? widget->fontMetrics().height() : opt->fontMetrics.height(), 18);
             }
         } else {
             ret = int(QStyleHelper::dpiScaled(18.));
@@ -4661,7 +4661,7 @@ int QCommonStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const QWid
     case PM_ToolBarIconSize:
         ret = qt_guiPlatformPlugin()->platformHint(QGuiPlatformPlugin::PH_ToolBarIconSize);
         if (!ret)
-            ret = proxy()->pixelMetric(PM_SmallIconSize, opt, widget);
+            ret = int(QStyleHelper::dpiScaled(24.));
         break;
 
     case PM_TabBarIconSize:
@@ -5169,13 +5169,12 @@ int QCommonStyle::styleHint(StyleHint sh, const QStyleOption *opt, const QWidget
 QPixmap QCommonStyle::standardPixmap(StandardPixmap sp, const QStyleOption *option,
                                      const QWidget *widget) const
 {
+    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
 #ifdef QT_NO_IMAGEFORMAT_PNG
-    Q_UNUSED(option);
     Q_UNUSED(widget);
     Q_UNUSED(sp);
 #else
     QPixmap pixmap;
-    const bool rtl = (option && option->direction == Qt::RightToLeft) || (!option && QApplication::isRightToLeft());
 
     if (QApplication::desktopSettingsAware() && !QIcon::themeName().isEmpty()) {
         switch (sp) {

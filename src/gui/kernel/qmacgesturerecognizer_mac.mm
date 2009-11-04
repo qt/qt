@@ -218,7 +218,7 @@ QMacPanGestureRecognizer::filterEvent(QGesture *gesture, QObject *target, QEvent
                 const QPointF p = QCursor::pos();
                 const QPointF posOffset = p - _lastPos;
                 g->setLastOffset(g->offset());
-                g->setOffset(QSizeF(posOffset.x(), posOffset.y()));
+                g->setOffset(QPointF(posOffset.x(), posOffset.y()));
                 g->setTotalOffset(g->lastOffset() + g->offset());
                 _lastPos = p;
                 return QGestureRecognizer::GestureTriggered;
@@ -256,9 +256,9 @@ void QMacPanGestureRecognizer::reset(QGesture *gesture)
     _startPos = QPointF();
     _lastPos = QPointF();
     _panCanceled = true;
-    g->setOffset(QSizeF(0, 0));
-    g->setLastOffset(QSizeF(0, 0));
-    g->setTotalOffset(QSizeF(0, 0));
+    g->setOffset(QPointF(0, 0));
+    g->setLastOffset(QPointF(0, 0));
+    g->setTotalOffset(QPointF(0, 0));
     g->setAcceleration(qreal(1));
     QGestureRecognizer::reset(gesture);
 }

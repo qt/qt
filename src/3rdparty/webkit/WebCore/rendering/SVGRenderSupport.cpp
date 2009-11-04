@@ -94,6 +94,9 @@ void SVGRenderBase::prepareToRenderSVGContent(RenderObject* object, RenderObject
         paintInfo.context->beginTransparencyLayer(opacity);
     }
 
+    if (ShadowData* shadow = svgStyle->shadow())
+        paintInfo.context->setShadow(IntSize(shadow->x, shadow->y), shadow->blur, shadow->color); 
+
 #if ENABLE(FILTERS)
     AtomicString filterId(svgStyle->filter());
 #endif
@@ -220,7 +223,7 @@ FloatRect SVGRenderBase::filterBoundingBoxForRenderer(const RenderObject* object
 #if ENABLE(FILTERS)
     SVGResourceFilter* filter = getFilterById(object->document(), object->style()->svgStyle()->filter());
     if (filter)
-        return filter->filterBBoxForItemBBox(object->objectBoundingBox());
+        return filter->filterBoundingBox();
 #else
     UNUSED_PARAM(object);
 #endif

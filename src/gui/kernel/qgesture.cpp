@@ -69,10 +69,9 @@ QT_BEGIN_NAMESPACE
 
     \section1 Lifecycle of a Gesture Object
 
-    A QGesture instance is created when the application calls QWidget::grabGesture()
-    or QGraphicsObject::grabGesture() to configure a widget or graphics object (the
-    target object) for gesture input. One gesture object is created for each target
-    object.
+    A QGesture instance is implicitly created when needed and is owned by Qt.
+    Developers should never destroy them or store them for later use as Qt may
+    destroy particular instances of them and create new ones to replace them.
 
     The registered gesture recognizer monitors the input events for the target
     object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
@@ -129,19 +128,17 @@ QGesture::~QGesture()
 
     \brief The point that is used to find the receiver for the gesture event.
 
-    If the hot-spot is not set, the targetObject is used as the receiver of the
-    gesture event.
+    The hot-spot is a point in the global coordinate system, use
+    QWidget::mapFromGlobal() or QGestureEvent::mapToScene() to get a
+    local hot-spot.
+
+    The hot-spot should be set by the gesture recognizer to allow gesture event
+    delivery to a QGraphicsObject.
 */
 
 /*!
     \property QGesture::hasHotSpot
     \brief whether the gesture has a hot-spot
-*/
-
-/*!
-    \property QGesture::targetObject
-    \brief the target object which will receive the gesture event if the hotSpot is
-    not set
 */
 
 Qt::GestureType QGesture::gestureType() const
@@ -152,16 +149,6 @@ Qt::GestureType QGesture::gestureType() const
 Qt::GestureState QGesture::state() const
 {
     return d_func()->state;
-}
-
-QObject *QGesture::targetObject() const
-{
-    return d_func()->targetObject;
-}
-
-void QGesture::setTargetObject(QObject *value)
-{
-    d_func()->targetObject = value;
 }
 
 QPointF QGesture::hotSpot() const
@@ -187,6 +174,29 @@ void QGesture::unsetHotSpot()
 }
 
 /*!
+    \enum QGesture::GestureCancelPolicy
+
+    This enum describes how accepting a gesture can cancel other gestures
+    automatically.
+
+    \value CancelNone On accepting this gesture no other gestures will be affected.
+    \value CancelAllInContext On accepting this gesture all gestures that are active
+        in the context (Qt::GestureContext) will be cancelled.
+*/
+
+void QGesture::setGestureCancelPolicy(GestureCancelPolicy policy)
+{
+    Q_D(QGesture);
+    d->gestureCancelPolicy = static_cast<uint>(policy);
+}
+
+QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
+{
+    Q_D(const QGesture);
+    return static_cast<GestureCancelPolicy>(d->gestureCancelPolicy);
+}
+
+/*!
     \class QPanGesture
     \since 4.6
     \brief The QPanGesture class describes a panning gesture made by the user.
@@ -204,6 +214,16 @@ void QGesture::unsetHotSpot()
 
     The total offset measures the total change in position of the user's input
     covered by the gesture on the input device.
+*/
+
+/*!
+    \property QGesture::GestureCancelPolicy
+    \brief the policy for deciding what happens on accepting a gesture
+
+    On accepting one gesture Qt can automatically cancel other gestures
+    that belong to other targets. The policy is normally set to not cancel
+    any other gestures and can be set to cancel all active gestures in the
+    context. For example for all child widgets.
 */
 
 /*!
@@ -241,17 +261,17 @@ QPanGesture::QPanGesture(QObject *parent)
     d_func()->gestureType = Qt::PanGesture;
 }
 
-QSizeF QPanGesture::totalOffset() const
+QPointF QPanGesture::totalOffset() const
 {
     return d_func()->totalOffset;
 }
 
-QSizeF QPanGesture::lastOffset() const
+QPointF QPanGesture::lastOffset() const
 {
     return d_func()->lastOffset;
 }
 
-QSizeF QPanGesture::offset() const
+QPointF QPanGesture::offset() const
 {
     return d_func()->offset;
 }
@@ -262,17 +282,17 @@ qreal QPanGesture::acceleration() const
 }
 
 
-void QPanGesture::setTotalOffset(const QSizeF &value)
+void QPanGesture::setTotalOffset(const QPointF &value)
 {
     d_func()->totalOffset = value;
 }
 
-void QPanGesture::setLastOffset(const QSizeF &value)
+void QPanGesture::setLastOffset(const QPointF &value)
 {
     d_func()->lastOffset = value;
 }
 
-void QPanGesture::setOffset(const QSizeF &value)
+void QPanGesture::setOffset(const QPointF &value)
 {
     d_func()->offset = value;
 }

@@ -73,7 +73,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, Q
         result = QGestureRecognizer::MaybeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
         d->lastPosition = p.pos().toPoint();
-        d->lastOffset = d->totalOffset = d->offset = QSize();
+        d->lastOffset = d->totalOffset = d->offset = QPointF();
         break;
     }
     case QEvent::TouchEnd: {
@@ -83,7 +83,7 @@ QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, Q
                 QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
                 d->lastOffset = d->offset;
                 d->offset =
-                        QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                        QPointF(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
                               p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
                 d->totalOffset += d->offset;
             }
@@ -99,11 +99,11 @@ QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, Q
             QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
             d->lastOffset = d->offset;
             d->offset =
-                    QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
+                    QPointF(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
                           p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
             d->totalOffset += d->offset;
-            if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
-                d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
+            if (d->totalOffset.x() > 10  || d->totalOffset.y() > 10 ||
+                d->totalOffset.x() < -10 || d->totalOffset.y() < -10) {
                 result = QGestureRecognizer::GestureTriggered;
             } else {
                 result = QGestureRecognizer::MaybeGesture;
@@ -128,7 +128,7 @@ void QPanGestureRecognizer::reset(QGesture *state)
     QPanGesture *pan = static_cast<QPanGesture*>(state);
     QPanGesturePrivate *d = pan->d_func();
 
-    d->totalOffset = d->lastOffset = d->offset = QSizeF();
+    d->totalOffset = d->lastOffset = d->offset = QPointF();
     d->lastPosition = QPoint();
     d->acceleration = 0;
 
@@ -140,7 +140,6 @@ void QPanGestureRecognizer::reset(QGesture *state)
     QGestureRecognizer::reset(state);
 }
 
-/*! \internal */
 /*
 bool QPanGestureRecognizer::event(QEvent *event)
 {

@@ -50,7 +50,7 @@
 // so that we can keep dynamic and static values inline.
 // Please adjust version data if correcting dynamic PM calculations.
 const TInt KPMMajorVersion = 1;
-const TInt KPMMinorVersion = 14;
+const TInt KPMMinorVersion = 15;
 
 TPixelMetricsVersion PixelMetrics::Version()
     {
@@ -726,6 +726,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
             value = -1; //disable - not in S60
             }
             break;
+        case QStyle::PM_SplitterWidth:
         case QStyle::PM_ScrollBarExtent:
             {
             TAknLayoutRect miscGraphicsRect;
@@ -1000,7 +1001,7 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_ButtonShiftVertical:
             value = 0;
             break;
-        
+
         case QStyle::PM_ToolBarExtensionExtent:
             value = PixelMetricTabValue(QStyle::PM_TabBarScrollButtonWidth, appWindow.Rect(), landscape);
             break;
@@ -1016,7 +1017,6 @@ TInt PixelMetrics::PixelMetricValue(QStyle::PixelMetric metric)
         case QStyle::PM_DockWidgetSeparatorExtent: // not in S60
         case QStyle::PM_MdiSubWindowMinimizedWidth: //no such thing in S60
         case QStyle::PM_HeaderGripMargin: // not in S60
-        case QStyle::PM_SplitterWidth: // not in S60
         case QStyle::PM_ToolBarSeparatorExtent: // not in S60
         case QStyle::PM_ToolBarHandleExtent: // not in s60
         case QStyle::PM_MenuButtonIndicator: // none???

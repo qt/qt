@@ -55,6 +55,8 @@ SVGMaskElement::SVGMaskElement(const QualifiedName& tagName, Document* doc)
     , m_y(this, SVGNames::yAttr, LengthModeHeight, "-10%")
     , m_width(this, SVGNames::widthAttr, LengthModeWidth, "120%")
     , m_height(this, SVGNames::heightAttr, LengthModeHeight, "120%")
+    , m_href(this, XLinkNames::hrefAttr)
+    , m_externalResourcesRequired(this, SVGNames::externalResourcesRequiredAttr, false)
 {
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
@@ -128,45 +130,45 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
 PassOwnPtr<ImageBuffer> SVGMaskElement::drawMaskerContent(const FloatRect& targetRect, FloatRect& maskDestRect) const
 {    
     // Determine specified mask size
-    float xValue;
-    float yValue;
-    float widthValue;
-    float heightValue;
+    if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+        maskDestRect = FloatRect(x().valueAsPercentage() * targetRect.width(),
+                                 y().valueAsPercentage() * targetRect.height(),
+                                 width().valueAsPercentage() * targetRect.width(),
+                                 height().valueAsPercentage() * targetRect.height());
+    else
+        maskDestRect = FloatRect(x().value(this),
+                                 y().value(this),
+                                 width().value(this),
+                                 height().value(this));
 
-    if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
-        xValue = x().valueAsPercentage() * targetRect.width();
-        yValue = y().valueAsPercentage() * targetRect.height();
-        widthValue = width().valueAsPercentage() * targetRect.width();
-        heightValue = height().valueAsPercentage() * targetRect.height();
-    } else {
-        xValue = x().value(this);
-        yValue = y().value(this);
-        widthValue = width().value(this);
-        heightValue = height().value(this);
-    } 
-
-    IntSize imageSize(lroundf(widthValue), lroundf(heightValue));
+    IntSize imageSize(lroundf(maskDestRect.width()), lroundf(maskDestRect.height()));
     clampImageBufferSizeToViewport(document()->view(), imageSize);
 
-    if (imageSize.width() < static_cast<int>(widthValue))
-        widthValue = imageSize.width();
+    if (imageSize.width() < static_cast<int>(maskDestRect.width()))
+        maskDestRect.setWidth(imageSize.width());
 
-    if (imageSize.height() < static_cast<int>(heightValue))
-        heightValue = imageSize.height();
+    if (imageSize.height() < static_cast<int>(maskDestRect.height()))
+        maskDestRect.setHeight(imageSize.height());
 
-    OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(imageSize);
+    // FIXME: This changes color space to linearRGB, the default color space
+    // for masking operations in SVG. We need a switch for the other color-space
+    // attribute values sRGB, inherit and auto.
+    OwnPtr<ImageBuffer> maskImage = ImageBuffer::create(imageSize, LinearRGB);
     if (!maskImage)
         return 0;
 
-    maskDestRect = FloatRect(xValue, yValue, widthValue, heightValue);
+    FloatPoint maskContextLocation = maskDestRect.location();
     if (maskUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
         maskDestRect.move(targetRect.x(), targetRect.y());
+
+    if (maskContentUnits() != SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
+        maskContextLocation.move(targetRect.x(), targetRect.y());
 
     GraphicsContext* maskImageContext = maskImage->context();
     ASSERT(maskImageContext);
 
     maskImageContext->save();
-    maskImageContext->translate(-xValue, -yValue);
+    maskImageContext->translate(-maskContextLocation.x(), -maskContextLocation.y());
 
     if (maskContentUnits() == SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX) {
         maskImageContext->save();

@@ -94,8 +94,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSHTMLBodyElementConstructor::s_info = { "HTMLBodyElementConstructor", 0, &JSHTMLBodyElementConstructorTable, 0 };
@@ -347,7 +350,7 @@ void setJSHTMLBodyElementOnbeforeunload(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
@@ -357,7 +360,7 @@ void setJSHTMLBodyElementOnhashchange(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnhashchange(globalObject->createJSAttributeEventListener(value));
@@ -367,7 +370,7 @@ void setJSHTMLBodyElementOnmessage(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
@@ -377,7 +380,7 @@ void setJSHTMLBodyElementOnoffline(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnoffline(globalObject->createJSAttributeEventListener(value));
@@ -387,7 +390,7 @@ void setJSHTMLBodyElementOnonline(ExecState* exec, JSObject* thisObject, JSValue
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnonline(globalObject->createJSAttributeEventListener(value));
@@ -397,7 +400,7 @@ void setJSHTMLBodyElementOnresize(ExecState* exec, JSObject* thisObject, JSValue
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnresize(globalObject->createJSAttributeEventListener(value));
@@ -407,7 +410,7 @@ void setJSHTMLBodyElementOnstorage(ExecState* exec, JSObject* thisObject, JSValu
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnstorage(globalObject->createJSAttributeEventListener(value));
@@ -417,7 +420,7 @@ void setJSHTMLBodyElementOnunload(ExecState* exec, JSObject* thisObject, JSValue
 {
     UNUSED_PARAM(exec);
     HTMLBodyElement* imp = static_cast<HTMLBodyElement*>(static_cast<JSHTMLBodyElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnunload(globalObject->createJSAttributeEventListener(value));

@@ -51,7 +51,7 @@ void JSDOMGlobalObject::markChildren(MarkStack& markStack)
 
     JSDOMStructureMap::iterator end = structures().end();
     for (JSDOMStructureMap::iterator it = structures().begin(); it != end; ++it)
-        it->second->markAggregate(markStack);
+        markStack.append(it->second->storedPrototype());
 
     JSDOMConstructorMap::iterator end2 = constructors().end();
     for (JSDOMConstructorMap::iterator it2 = constructors().begin(); it2 != end2; ++it2)
@@ -63,7 +63,7 @@ PassRefPtr<JSEventListener> JSDOMGlobalObject::createJSAttributeEventListener(JS
     if (!val.isObject())
         return 0;
 
-    return JSEventListener::create(asObject(val), true).get();
+    return JSEventListener::create(asObject(val), true, currentWorld(globalExec())).get();
 }
 
 void JSDOMGlobalObject::setCurrentEvent(Event* evt)
@@ -81,15 +81,34 @@ void JSDOMGlobalObject::destroyJSDOMGlobalObjectData(void* jsDOMGlobalObjectData
     delete static_cast<JSDOMGlobalObjectData*>(jsDOMGlobalObjectData);
 }
 
-JSDOMGlobalObject* toJSDOMGlobalObject(Document* document)
+JSDOMGlobalObject* toJSDOMGlobalObject(Document* document, JSC::ExecState* exec)
 {
-    return toJSDOMWindow(document->frame());
+    return toJSDOMWindow(document->frame(), currentWorld(exec));
 }
 
-JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext* scriptExecutionContext)
+JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext* scriptExecutionContext, JSC::ExecState* exec)
 {
     if (scriptExecutionContext->isDocument())
-        return toJSDOMGlobalObject(static_cast<Document*>(scriptExecutionContext));
+        return toJSDOMGlobalObject(static_cast<Document*>(scriptExecutionContext), exec);
+
+#if ENABLE(WORKERS)
+    if (scriptExecutionContext->isWorkerContext())
+        return static_cast<WorkerContext*>(scriptExecutionContext)->script()->workerContextWrapper();
+#endif
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+
+JSDOMGlobalObject* toJSDOMGlobalObject(Document* document, DOMWrapperWorld* world)
+{
+    return toJSDOMWindow(document->frame(), world);
+}
+
+JSDOMGlobalObject* toJSDOMGlobalObject(ScriptExecutionContext* scriptExecutionContext, DOMWrapperWorld* world)
+{
+    if (scriptExecutionContext->isDocument())
+        return toJSDOMGlobalObject(static_cast<Document*>(scriptExecutionContext), world);
 
 #if ENABLE(WORKERS)
     if (scriptExecutionContext->isWorkerContext())

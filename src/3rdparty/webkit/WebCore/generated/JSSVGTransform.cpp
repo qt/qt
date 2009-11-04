@@ -89,8 +89,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSSVGTransformConstructor::s_info = { "SVGTransformConstructor", 0, &JSSVGTransformConstructorTable, 0 };
@@ -159,7 +162,7 @@ JSSVGTransform::JSSVGTransform(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSSVGTransform::~JSSVGTransform()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGTransform::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
