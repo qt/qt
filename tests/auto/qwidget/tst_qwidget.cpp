@@ -6319,6 +6319,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
             << qMakePair(&widget, QEvent::Move)
             << qMakePair(&widget, QEvent::Resize)
@@ -6404,6 +6405,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
@@ -6501,6 +6503,7 @@ void tst_QWidget::compatibilityChildInsertedEvents()
         widget.show();
         expected =
             EventRecorder::EventList()
+            << qMakePair(&widget, QEvent::WinIdChange)
             << qMakePair(&widget, QEvent::Polish)
 #ifdef QT_HAS_QT3SUPPORT
             << qMakePair(&widget, QEvent::ChildInserted)
