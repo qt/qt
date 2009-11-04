@@ -76,7 +76,7 @@ JSSQLTransaction::JSSQLTransaction(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSSQLTransaction::~JSSQLTransaction()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSQLTransaction::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

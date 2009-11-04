@@ -69,7 +69,7 @@ public:
 
     QEvent::Type eventType;
     Qt::MouseButton button;
-    Qt::KeyboardModifiers modifiersMask;
+    Qt::KeyboardModifiers modifierMask;
     QPainterPath path;
 };
 
@@ -149,38 +149,38 @@ void QBasicMouseEventTransition::setButton(Qt::MouseButton button)
 }
 
 /*!
-  Returns the keyboard modifiers mask that this mouse event transition checks
+  Returns the keyboard modifier mask that this mouse event transition checks
   for.
 */
-Qt::KeyboardModifiers QBasicMouseEventTransition::modifiersMask() const
+Qt::KeyboardModifiers QBasicMouseEventTransition::modifierMask() const
 {
     Q_D(const QBasicMouseEventTransition);
-    return d->modifiersMask;
+    return d->modifierMask;
 }
 
 /*!
-  Sets the keyboard modifiers mask that this mouse event transition will check
+  Sets the keyboard modifier mask that this mouse event transition will check
   for.
 */
-void QBasicMouseEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+void QBasicMouseEventTransition::setModifierMask(Qt::KeyboardModifiers modifierMask)
 {
     Q_D(QBasicMouseEventTransition);
-    d->modifiersMask = modifiersMask;
+    d->modifierMask = modifierMask;
 }
 
 /*!
-  Returns the path for this mouse event transition.
+  Returns the hit test path for this mouse event transition.
 */
-QPainterPath QBasicMouseEventTransition::path() const
+QPainterPath QBasicMouseEventTransition::hitTestPath() const
 {
     Q_D(const QBasicMouseEventTransition);
     return d->path;
 }
 
 /*!
-  Sets the path for this mouse event transition.
+  Sets the hit test path for this mouse event transition.
 */
-void QBasicMouseEventTransition::setPath(const QPainterPath &path)
+void QBasicMouseEventTransition::setHitTestPath(const QPainterPath &path)
 {
     Q_D(QBasicMouseEventTransition);
     d->path = path;
@@ -195,7 +195,7 @@ bool QBasicMouseEventTransition::eventTest(QEvent *event)
     if (event->type() == d->eventType) {
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
         return (me->button() == d->button)
-            && ((me->modifiers() & d->modifiersMask) == d->modifiersMask)
+            && ((me->modifiers() & d->modifierMask) == d->modifierMask)
             && (d->path.isEmpty() || d->path.contains(me->pos()));
     }
     return false;

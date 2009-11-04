@@ -199,7 +199,7 @@ JSEvent::JSEvent(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* glob
 
 JSEvent::~JSEvent()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSEvent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

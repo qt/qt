@@ -1792,7 +1792,6 @@ void JIT::privateCompileCTIMachineTrampolines(RefPtr<ExecutablePool>* executable
     // Setup arg4: This is a plain hack
     move(stackPointerRegister, ARMRegisters::S0);
 
-    move(ctiReturnRegister, ARMRegisters::lr);
     call(Address(regT1, OBJECT_OFFSETOF(JSFunction, m_data)));
 
     addPtr(Imm32(sizeof(ArgList)), stackPointerRegister);
@@ -2500,7 +2499,13 @@ void JIT::emit_op_next_pname(Instruction* currentInstruction)
     // Grab key @ i
     loadPtr(addressFor(it), regT1);
     loadPtr(Address(regT1, OBJECT_OFFSETOF(JSPropertyNameIterator, m_jsStrings)), regT2);
+
+#if USE(JSVALUE64)
     loadPtr(BaseIndex(regT2, regT0, TimesEight), regT2);
+#else
+    loadPtr(BaseIndex(regT2, regT0, TimesFour), regT2);
+#endif
+
     emitPutVirtualRegister(dst, regT2);
 
     // Increment i

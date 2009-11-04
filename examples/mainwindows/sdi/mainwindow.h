@@ -50,12 +50,14 @@ class QMenu;
 class QTextEdit;
 QT_END_NAMESPACE
 
+//! [class definition with macro]
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
 public:
     MainWindow();
+//! [class definition with macro]
     MainWindow(const QString &fileName);
 
 protected:

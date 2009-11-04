@@ -357,7 +357,7 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
 
     QTest::newRow("log,transparent") << int(Qt::LogicalCoordinates)
                                      << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
-                                     << QSize(12, 12) << QPoint(-1, -1)
+                                     << QSize(14, 14) << QPoint(-2, -2)
                                      << 0x00000000u;
 
     QTest::newRow("log,effectrect") << int(Qt::LogicalCoordinates)
@@ -372,7 +372,7 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
 
     QTest::newRow("dev,transparent") << int(Qt::DeviceCoordinates)
                                      << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
-                                     << QSize(22, 22) << QPoint(39, 39)
+                                     << QSize(24, 24) << QPoint(38, 38)
                                      << 0x00000000u;
 
     QTest::newRow("dev,effectrect") << int(Qt::DeviceCoordinates)

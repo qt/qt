@@ -259,7 +259,7 @@ void tst_QGraphicsTransform::rotation3d()
 
     // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
     // i.e. third row and column are 0 0 1 0.
-    t.setIdentity();
+    t.setToIdentity();
     rotation.applyTo(&t);
     QMatrix4x4 r(expected);
     if (sizeof(qreal) == sizeof(float) && angle == 268) {
@@ -274,7 +274,7 @@ void tst_QGraphicsTransform::rotation3d()
     rotation.setAxis(QVector3D(0, 0, 0));
     rotation.setOrigin(QVector3D(10, 10, 0));
 
-    t.setIdentity();
+    t.setToIdentity();
     rotation.applyTo(&t);
 
     QVERIFY(t.isIdentity());
@@ -337,7 +337,7 @@ void tst_QGraphicsTransform::rotation3dArbitraryAxis()
 
     // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
     // i.e. third row and column are 0 0 1 0.
-    t.setIdentity();
+    t.setToIdentity();
     rotation.applyTo(&t);
     QMatrix4x4 r(expected);
     QVERIFY(qFuzzyCompare(t, r));

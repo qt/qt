@@ -129,7 +129,6 @@ JSWorkerContext::JSWorkerContext(NonNullPassRefPtr<Structure> structure, PassRef
 JSWorkerContext::~JSWorkerContext()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 bool JSWorkerContext::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)

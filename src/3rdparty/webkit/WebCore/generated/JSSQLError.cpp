@@ -83,7 +83,7 @@ JSSQLError::JSSQLError(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSSQLError::~JSSQLError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSQLError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
