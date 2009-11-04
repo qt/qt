@@ -138,7 +138,7 @@ JSMedia::JSMedia(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* glob
 
 JSMedia::~JSMedia()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMedia::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

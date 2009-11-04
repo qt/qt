@@ -215,7 +215,6 @@ sub AddClassForwardIfNeeded
 sub GetImplementationFileName
 {
     my $iface = shift;
-    return "HTMLCollection.h" if $iface eq "HTMLAllCollection";
     return "Event.h" if $iface eq "DOMTimeStamp";
     return "NamedAttrMap.h" if $iface eq "NamedNodeMap";
     return "NameNodeList.h" if $iface eq "NodeList";
@@ -307,7 +306,7 @@ sub GenerateSetDOMException
     my $indent = shift;
     my $result = "";
 
-    $result .= $indent . "if (ec) {\n";
+    $result .= $indent . "if (UNLIKELY(ec)) {\n";
     $result .= $indent . "    V8Proxy::setDOMException(ec);\n";
     $result .= $indent . "    return v8::Handle<v8::Value>();\n";
     $result .= $indent . "}\n";
@@ -622,15 +621,17 @@ END
             push(@implContentDecls, "    if (!imp->document())\n");
             push(@implContentDecls, "      return v8::Undefined();\n");
         }
-        push(@implContentDecls, "    $nativeType v = ");
-
-        push(@implContentDecls, "$getterString;\n");
 
         if ($useExceptions) {
+            push(@implContentDecls, "    $nativeType v = ");
+            push(@implContentDecls, "$getterString;\n");
             push(@implContentDecls, GenerateSetDOMException("    "));
+            $result = "v";
+            $result .= ".release()" if (IsRefPtrType($returnType));
+        } else {
+            # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
+            $result = $getterString;
         }
-
-        $result = "v";
     }
 
     if (IsSVGTypeNeedingContextParameter($attrType) && !$skipContext) {
@@ -646,7 +647,6 @@ END
         my $classIndex = uc($attrType);
         push(@implContentDecls, "    return V8DOMWrapper::convertToV8Object(V8ClassIndex::$classIndex, wrapper.release());\n");
     } else {
-        $result .= ".release()" if (IsRefPtrType($attrType));
         push(@implContentDecls, "    " . ReturnNativeToJSValue($attribute->signature, $result, "    ").";\n");
     }
 
@@ -784,7 +784,8 @@ END
     }
 
     if ($useExceptions) {
-        push(@implContentDecls, "    V8Proxy::setDOMException(ec);\n");
+        push(@implContentDecls, "    if (UNLIKELY(ec))\n");
+        push(@implContentDecls, "        V8Proxy::setDOMException(ec);\n");
     }
 
     if ($isPodType) {
@@ -917,7 +918,7 @@ END
         if (TypeCanFailConversion($parameter)) {
             $implIncludes{"ExceptionCode.h"} = 1;
             push(@implContentDecls,
-"    if (!$parameterName" . (BasicTypeCanFailConversion($parameter) ? "Ok" : "") . ") {\n" .
+"    if (UNLIKELY(!$parameterName" . (BasicTypeCanFailConversion($parameter) ? "Ok" : "") . ")) {\n" .
 "      V8Proxy::setDOMException(TYPE_MISMATCH_ERR);\n" .
 "      return v8::Handle<v8::Value>();\n" .
 "    }\n");
@@ -926,7 +927,7 @@ END
         if ($parameter->extendedAttributes->{"IsIndex"}) {
             $implIncludes{"ExceptionCode.h"} = 1;
             push(@implContentDecls,
-"    if ($parameterName < 0) {\n" .
+"    if (UNLIKELY($parameterName < 0)) {\n" .
 "      V8Proxy::setDOMException(INDEX_SIZE_ERR);\n" .
 "      return v8::Handle<v8::Value>();\n" .
 "    }\n");
@@ -1322,6 +1323,13 @@ END
             $template = "instance";
         }
 
+        my $conditional = "";
+        if ($attrExt->{"EnabledAtRuntime"}) {
+            # Only call Set()/SetAccessor() if this method should be enabled
+            $enable_function = $interfaceName . $codeGenerator->WK_ucfirst($function->signature->name);
+            $conditional = "if (V8Custom::v8${enable_function}Enabled())\n";
+        }
+
         if ($attrExt->{"DoNotCheckDomainSecurity"} &&
             ($dataNode->extendedAttributes->{"CheckDomainSecurity"} || $interfaceName eq "DOMWindow")) {
             # Mark the accessor as ReadOnly and set it on the proto object so
@@ -1342,7 +1350,7 @@ END
             push(@implContent, <<END);
 
   // $commentInfo
-  $template->SetAccessor(
+  $conditional $template->SetAccessor(
       v8::String::New("$name"),
       ${interfaceName}Internal::${name}AttrGetter,
       0,
@@ -1370,7 +1378,7 @@ END
       push(@implContent, <<END);
 
   // $commentInfo
-  ${template}->Set(
+  $conditional ${template}->Set(
       v8::String::New("$name"),
       $templateFunction,
       static_cast<v8::PropertyAttribute>($property_attributes));
@@ -1388,7 +1396,7 @@ END
     }
 
     # Set the class name.  This is used when printing objects.
-    push(@implContent, "  desc->SetClassName(v8::String::New(\"" . GetClassName(${interfaceName}) . "\"));\n");
+    push(@implContent, "  desc->SetClassName(v8::String::New(\"${interfaceName}\"));\n");
 
     if ($has_constants) {
         push(@implContent, <<END);
@@ -1530,6 +1538,9 @@ sub GenerateFunctionCallString()
     }
     $functionString .= ")";
 
+    my $return = "result";
+    my $returnIsRef = IsRefPtrType($returnType);
+
     if ($nodeToReturn) {
         # Special case for insertBefore, replaceChild, removeChild and
         # appendChild functions from Node.
@@ -1550,15 +1561,17 @@ sub GenerateFunctionCallString()
             $indent . "$functionString;\n";
     } elsif ($returnsListItemPodType) {
         $result .= $indent . "RefPtr<SVGPODListItem<$nativeReturnType> > result = $functionString;\n";
-    } else {
+    } elsif (@{$function->raisesExceptions} or $returnsPodType or $isPodType or IsSVGTypeNeedingContextParameter($returnType)) {
         $result .= $indent . $nativeReturnType . " result = $functionString;\n";
+    } else {
+        # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
+        $return = $functionString;
+        $returnIsRef = 0;
     }
 
     if (@{$function->raisesExceptions}) {
         $result .= GenerateSetDOMException($indent);
     }
-
-    my $return = "result";
 
     # If the return type is a POD type, separate out the wrapper generation
     if ($returnsListItemPodType) {
@@ -1602,20 +1615,11 @@ sub GenerateFunctionCallString()
         my $classIndex = uc($returnType);
         $result .= $indent . "return V8DOMWrapper::convertToV8Object(V8ClassIndex::$classIndex, wrapper.release());\n";
     } else {
-        $return .= ".release()" if (IsRefPtrType($returnType));
+        $return .= ".release()" if ($returnIsRef);
         $result .= $indent . ReturnNativeToJSValue($function->signature, $return, $indent) . ";\n";
     }
 
     return $result;
-}
-
-
-# Get the class name used for printing javascript DOM-object wrappers.
-sub GetClassName
-{
-    my $type = shift;
-    return "HTMLCollection" if $type eq "HTMLAllCollection";
-    return $type;
 }
 
 
@@ -1696,6 +1700,7 @@ sub IsRefPtrType
     return 1 if $type eq "EventListener";
     return 1 if $type eq "FileList";
     return 1 if $type eq "HTMLCollection";
+    return 1 if $type eq "HTMLAllCollection";
     return 1 if $type eq "HTMLDocument";
     return 1 if $type eq "HTMLElement";
     return 1 if $type eq "HTMLOptionsCollection";
@@ -2147,7 +2152,11 @@ sub ReturnNativeToJSValue
 
     # special case for non-DOM node interfaces
     if (IsDOMNodeType($type)) {
-        return "return V8DOMWrapper::convertNodeToV8Object($value)";
+        if ($signature->extendedAttributes->{"ReturnsNew"}) {
+            return "return V8DOMWrapper::convertNewNodeToV8Object($value)";
+        } else {
+            return "return V8DOMWrapper::convertNodeToV8Object($value)";
+        }
     }
 
     if ($type eq "EventTarget" or $type eq "SVGElementInstance") {
@@ -2159,7 +2168,7 @@ sub ReturnNativeToJSValue
     }
 
     if ($type eq "EventListener") {
-        return "return V8DOMWrapper::convertEventListenerToV8Object($value)";
+        return "return V8DOMWrapper::convertEventListenerToV8Object(imp->scriptExecutionContext(), $value)";
     }
 
     if ($type eq "SerializedScriptValue") {

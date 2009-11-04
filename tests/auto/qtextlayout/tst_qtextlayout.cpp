@@ -118,6 +118,7 @@ private slots:
     void smallTextLengthWordWrap();
     void smallTextLengthWrapAtWordBoundaryOrAnywhere();
     void testLineBreakingAllSpaces();
+    void lineWidthFromBOM();
 
 
 private:
@@ -1305,6 +1306,18 @@ void tst_QTextLayout::columnWrapWithTabs()
     }
 
 }
+
+void tst_QTextLayout::lineWidthFromBOM()
+{
+    const QString string(QChar(0xfeff)); // BYTE ORDER MARK
+    QTextLayout layout(string);
+    layout.beginLayout();
+    QTextLine line = layout.createLine();
+    line.setLineWidth(INT_MAX / 256);
+    layout.endLayout();
+
+    // Don't spin into an infinite loop
+ }
 
 
 QTEST_MAIN(tst_QTextLayout)

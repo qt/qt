@@ -141,7 +141,7 @@ JSXPathExpression::JSXPathExpression(NonNullPassRefPtr<Structure> structure, JSD
 
 JSXPathExpression::~JSXPathExpression()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathExpression::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

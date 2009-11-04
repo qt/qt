@@ -30,6 +30,10 @@ information about a particular change.
 
     * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
+ - QGraphicsBlurEffect
+    * Since the 4.6 beta Qt::RenderHint has been moved to
+      QGraphicsBlurEffect::BlurHint.
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()
@@ -60,6 +64,86 @@ information about a particular change.
 
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Designer
+
+ - [233683] Promoted Widgets are now stored correctly in scratchpad.
+ - [249823] Added search functionality to the resource browser.
+ - [254282] Enabled the use of promoted widgets in form templates.
+ - [254824] Made it possible to override the createAction()/createWidget()
+            functions of QUiLoader.
+ - [256332] Enabled deleting all pages of a QTabWidget or QStackedWidget.
+ - [259238] Fixed menubar/menu editing in right-to-left mode.
+ - [259918] Fixed setting of object names for container pages not to use
+            localized strings.
+ - [260658] Fixed saving of alpha values set in the palette editor.
+ -          It is now possible to further specify the kind of custom widget
+            string properties using XML tags.
+
+- uic3
+
+ - [128859] Fixed code generation of QLabel's wordWrap property.
+
+****************************************************************************
+*                               DirectFB                                   *
+****************************************************************************
+
+ - When running Qt/DirectFB the DirectFB window id of a top level QWidget can
+   be queried using property("_q_DirectFBWindowID")
+
+ - Allow setting the background color of the primary layer in DirectFB with
+   connect options. QWS_DISPLAY=directfb:bgcolor=red or
+   QWS_DISPLAY=directfb:bgcolor=\#aabbccdd
+
+ - Add support for rendering mouse cursor using a top level window when cursor
+   support is not working in IDirectFBDisplayLayer. Define
+   QT_DIRECTFB_WINDOW_AS_CURSOR to enable.
+
+ - Add experimental support for optimized locking/unlocking of surfaces. Enable
+   by defining QT_DIRECTFB_SUBSURFACE.
+
+ - Fix a bug to conceptually allow using QDirectFBScreen as a subscreen of a
+   proxy screen. Don't make QDirectFBScreen::instance() assume that
+   QScreen::instance() is a QDirectFBScreen.
+
+ - Optimize move/resize operations with DirectFB. With a properly configured
+   DirectFB these operations are handled for us and we don't need to force a
+   repaint of the window.
+
+ - Support top level window opacity in DirectFB
+
+ - Fix a bug when loading RGB32 images that would lead to rendering issues.
+
+ - Fix a bug when painting with invalid pens/brushes.
+
+ - Fix a bug that would show up when QWidget::scroll is called.
+
+ - Implement support for loading pixmaps using IDirectFBImageProvider.
+
+ - Disable color table support by default. This seems to work incorrectly on
+   most boards and loading these images will generally require an image
+   conversion anyway.
+
+ - Fix a bug regarding QGraphicsProxyWidgets
+
+ - Fix a crash when resizing windows
+
+ - Compile with versions < 1.0. We still recommend using newer versions.
+
+ - Considerable code cleanup
+
+ - Various optimizations regarding painting, loading of images and creation of
+   surfaces.
+
+ - Allow forcibly falling back to raster engine for painting operations by
+   exporting QT_DIRECTFB_FORCE_RASTER=1
+
+ - Reenable support for RGB32 primary surface.
+
 
 ****************************************************************************
 * Important Behavior Changes *
@@ -141,11 +225,15 @@ information about a particular change.
    means that code that assigned a float to a variant would create a
    variant with userType QMetaType::Float, instead of QVariant::Double.
 
- - QDataStream will now read and write all floating point numbers with the 
-   same precision, regardless of whether it's streamed into or out from a 
+ - QDataStream will now read and write all floating point numbers with the
+   same precision, regardless of whether it's streamed into or out from a
    float or double. This is to maintain compatibility across platforms with
    a different default precision for qreal. The default is 64-bit precision
-   for all floating point numbers, and this can be changed using the new 
-   function setFloatingPointPrecision(). Set Qt_4_5 as the version of the 
+   for all floating point numbers, and this can be changed using the new
+   function setFloatingPointPrecision(). Set Qt_4_5 as the version of the
    QDataStream to get the behavior of previous versions.
+   
+ - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
+   QCoreApplication::organizationName() and QCoreApplication::applicationName()
+   if those are set. This matches the behavior on the other platforms.
    

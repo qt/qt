@@ -132,10 +132,9 @@ public:
     QPainterPathData() :
         cStart(0),
         fillRule(Qt::OddEvenFill),
-        pathConverter(0),
         dirtyBounds(false),
-        dirtyControlBounds(false)
-
+        dirtyControlBounds(false),
+        pathConverter(0)
     {
         ref = 1;
         require_moveTo = false;
@@ -146,10 +145,10 @@ public:
         QPainterPathPrivate(), cStart(other.cStart), fillRule(other.fillRule),
         bounds(other.bounds),
         controlBounds(other.controlBounds),
-        pathConverter(0),
         dirtyBounds(other.dirtyBounds),
         dirtyControlBounds(other.dirtyControlBounds),
-        convex(other.convex)
+        convex(other.convex),
+        pathConverter(0)
     {
         ref = 1;
         require_moveTo = false;

@@ -1060,8 +1060,17 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
         CEikonEnv* coe = new CEikonEnv;
-        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+        if(err == KErrNone)
+            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
         delete commandLine;
+        if(err != KErrNone) {
+            qWarning() << "qt_init: Eikon application construct failed ("
+                       << err
+                       << "), maybe missing resource file on S60 3.1?";
+            delete coe;
+            qt_symbian_throwIfError(err);
+        }
 
         S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
 
@@ -1254,7 +1263,7 @@ bool QApplicationPrivate::modalState()
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(ETrue);
         // Modal partial screen dialogs (like queries) capture pointer events.
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(ETrue);
@@ -1269,7 +1278,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(EFalse);
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(EFalse);
         widget->effectiveWinId()->SetPointerCapture(EFalse);

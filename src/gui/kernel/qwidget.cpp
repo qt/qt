@@ -197,6 +197,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , picture(0)
 #elif defined(Q_WS_WIN)
       , noPaintOnScreen(0)
+      , nativeGesturePanEnabled(0)
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
       , isGLWidget(0)
@@ -11736,22 +11737,22 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 */
 
 /*!
-    Subscribes the widget to a given \a gesture with a \a context.
+    Subscribes the widget to a given \a gesture with specific \a flags.
 
-    \sa QGestureEvent
+    \sa ungrabGesture(), QGestureEvent
     \since 4.6
 */
-void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 {
     Q_D(QWidget);
-    d->gestureContext.insert(gesture, context);
+    d->gestureContext.insert(gesture, flags);
     (void)QGestureManager::instance(); // create a gesture manager
 }
 
 /*!
-    Unsubscribes the widget to a given \a gesture type
+    Unsubscribes the widget from a given \a gesture type
 
-    \sa QGestureEvent
+    \sa grabGesture(), QGestureEvent
     \since 4.6
 */
 void QWidget::ungrabGesture(Qt::GestureType gesture)

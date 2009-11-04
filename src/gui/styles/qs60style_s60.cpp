@@ -1382,13 +1382,13 @@ QSize QS60StylePrivate::naviPaneSize()
 QSize QS60StyleModeSpecifics::naviPaneSize()
 {
     CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane())
-        naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
-    if (naviContainer)
-        return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    else
-        return QSize(0,0);
+    if (S60->statusPane()) {
+        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
+        if (err==KErrNone)
+            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    }
+    return QSize(0,0);
 }
 
 #endif // Q_WS_S60

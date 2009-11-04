@@ -73,7 +73,7 @@ bool VideoWidgetSurface::isFormatSupported(
 {
     Q_UNUSED(similar);
 
-    const QImage::Format imageFormat = QVideoFrame::equivalentImageFormat(format.pixelFormat());
+    const QImage::Format imageFormat = QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat());
     const QSize size = format.frameSize();
 
     return imageFormat != QImage::Format_Invalid
@@ -85,7 +85,7 @@ bool VideoWidgetSurface::isFormatSupported(
 //! [2]
 bool VideoWidgetSurface::start(const QVideoSurfaceFormat &format)
 {
-    const QImage::Format imageFormat = QVideoFrame::equivalentImageFormat(format.pixelFormat());
+    const QImage::Format imageFormat = QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat());
     const QSize size = format.frameSize();
 
     if (imageFormat != QImage::Format_Invalid && !size.isEmpty()) {

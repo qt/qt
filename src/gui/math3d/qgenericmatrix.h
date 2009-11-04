@@ -44,6 +44,7 @@
 
 #include <QtCore/qmetatype.h>
 #include <QtCore/qdebug.h>
+#include <QtCore/qdatastream.h>
 
 QT_BEGIN_HEADER
 
@@ -63,7 +64,7 @@ public:
     T& operator()(int row, int column);
 
     bool isIdentity() const;
-    void setIdentity();
+    void setToIdentity();
 
     void fill(T value);
 
@@ -76,7 +77,7 @@ public:
     bool operator==(const QGenericMatrix<N, M, T>& other) const;
     bool operator!=(const QGenericMatrix<N, M, T>& other) const;
 
-    void toValueArray(T *values);
+    void copyDataTo(T *values) const;
 
     T *data() { return m[0]; }
     const T *data() const { return m[0]; }
@@ -113,7 +114,7 @@ private:
 template <int N, int M, typename T>
 Q_INLINE_TEMPLATE QGenericMatrix<N, M, T>::QGenericMatrix()
 {
-    setIdentity();
+    setToIdentity();
 }
 
 template <int N, int M, typename T>
@@ -164,7 +165,7 @@ Q_OUTOFLINE_TEMPLATE bool QGenericMatrix<N, M, T>::isIdentity() const
 }
 
 template <int N, int M, typename T>
-Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T>::setIdentity()
+Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T>::setToIdentity()
 {
     for (int col = 0; col < N; ++col) {
         for (int row = 0; row < M; ++row) {
@@ -316,7 +317,7 @@ Q_OUTOFLINE_TEMPLATE QGenericMatrix<N, M, T> operator/(const QGenericMatrix<N, M
 }
 
 template <int N, int M, typename T>
-Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T>::toValueArray(T *values)
+Q_OUTOFLINE_TEMPLATE void QGenericMatrix<N, M, T>::copyDataTo(T *values) const
 {
     for (int col = 0; col < N; ++col)
         for (int row = 0; row < M; ++row)
@@ -348,6 +349,32 @@ QDebug operator<<(QDebug dbg, const QGenericMatrix<N, M, T> &m)
     }
     dbg << qSetFieldWidth(0) << ')';
     return dbg.space();
+}
+
+#endif
+
+#ifndef QT_NO_DATASTREAM
+
+template <int N, int M, typename T>
+QDataStream &operator<<(QDataStream &stream, const QGenericMatrix<N, M, T> &matrix)
+{
+    for (int row = 0; row < M; ++row)
+        for (int col = 0; col < N; ++col)
+            stream << double(matrix(row, col));
+    return stream;
+}
+
+template <int N, int M, typename T>
+QDataStream &operator>>(QDataStream &stream, QGenericMatrix<N, M, T> &matrix)
+{
+    double x;
+    for (int row = 0; row < M; ++row) {
+        for (int col = 0; col < N; ++col) {
+            stream >> x;
+            matrix(row, col) = T(x);
+        }
+    }
+    return stream;
 }
 
 #endif

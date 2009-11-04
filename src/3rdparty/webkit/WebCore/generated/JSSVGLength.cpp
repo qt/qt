@@ -169,7 +169,7 @@ JSSVGLength::JSSVGLength(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 JSSVGLength::~JSSVGLength()
 {
     JSSVGDynamicPODTypeWrapperCache<SVGLength, SVGAnimatedLength>::forgetWrapper(m_impl.get());
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGLength::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

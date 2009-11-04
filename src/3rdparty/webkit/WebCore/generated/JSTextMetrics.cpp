@@ -125,7 +125,7 @@ JSTextMetrics::JSTextMetrics(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSTextMetrics::~JSTextMetrics()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSTextMetrics::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -129,7 +129,7 @@ JSRect::JSRect(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* global
 
 JSRect::~JSRect()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRect::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
