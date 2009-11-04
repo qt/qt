@@ -3379,10 +3379,7 @@ void Configure::buildHostTools()
     QString pwd = QDir::currentPath();
     QStringList hostToolsDirs;
     hostToolsDirs
-        << "src/tools/bootstrap"
-        << "src/tools/moc"
-        << "src/tools/rcc"
-        << "src/tools/uic";
+        << "src/tools";
 
     if(dictionary["XQMAKESPEC"].startsWith("wince"))
         hostToolsDirs << "tools/checksdk";
