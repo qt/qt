@@ -171,7 +171,7 @@ JSXPathResult::JSXPathResult(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSXPathResult::~JSXPathResult()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXPathResult::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

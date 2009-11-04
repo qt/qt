@@ -126,7 +126,7 @@ JSCanvasRenderingContext::JSCanvasRenderingContext(NonNullPassRefPtr<Structure> 
 
 JSCanvasRenderingContext::~JSCanvasRenderingContext()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCanvasRenderingContext::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -92,7 +92,7 @@ JSHistory::JSHistory(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 
 JSHistory::~JSHistory()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSHistory::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

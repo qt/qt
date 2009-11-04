@@ -65,6 +65,7 @@ class Q_GUI_EXPORT QGesture : public QObject
 
     Q_PROPERTY(Qt::GestureState state READ state)
     Q_PROPERTY(Qt::GestureType gestureType READ gestureType)
+    Q_PROPERTY(QGesture::GestureCancelPolicy gestureCancelPolicy READ gestureCancelPolicy WRITE setGestureCancelPolicy)
     Q_PROPERTY(QPointF hotSpot READ hotSpot WRITE setHotSpot RESET unsetHotSpot)
     Q_PROPERTY(bool hasHotSpot READ hasHotSpot)
 
@@ -80,6 +81,14 @@ public:
     void setHotSpot(const QPointF &value);
     bool hasHotSpot() const;
     void unsetHotSpot();
+
+    enum GestureCancelPolicy {
+        CancelNone = 0,
+        CancelAllInContext
+    };
+
+    void setGestureCancelPolicy(GestureCancelPolicy policy);
+    GestureCancelPolicy gestureCancelPolicy() const;
 
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
@@ -208,6 +217,7 @@ public:
 
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
 QT_END_HEADER
 
 #endif // QGESTURE_H

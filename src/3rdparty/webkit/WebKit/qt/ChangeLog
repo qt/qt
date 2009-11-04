@@ -1,3 +1,484 @@
+2009-10-29  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Remove QWebView::guessUrlFromString() and replace its use
+        with the new QUrl::fromUserInput() if using Qt 4.6 or newer.
+
+        * Api/qwebview.cpp:
+        * Api/qwebview.h:
+        * QGVLauncher/main.cpp:
+        (urlFromUserInput):
+        (WebPage::applyProxy):
+        (MainWindow::load):
+        * QtLauncher/main.cpp:
+        (urlFromUserInput):
+        (MainWindow::MainWindow):
+        (MainWindow::changeLocation):
+        * tests/qwebview/tst_qwebview.cpp:
+
+2009-10-28  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Serialize directly to the stream, and not first to an QByteArray,
+        that is later serialized. That is slower and also uses more bytes.
+
+        * Api/qwebhistory.cpp:
+        (operator<<):
+        (operator>>):
+
+2009-10-28  Shinichiro Hamaji  <hamaji@chromium.org>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] WebFrame::counterValueForElementById must not be exposed
+        https://bugs.webkit.org/show_bug.cgi?id=30882
+
+        * Api/qwebframe.cpp:
+        (qt_drt_counterValueForElementById):
+        * Api/qwebframe.h:
+
+2009-10-27  Shinichiro Hamaji  <hamaji@chromium.org>
+
+        Reviewed by Darin Adler.
+
+        Provide a way to get counter values with layoutTestContoller
+        https://bugs.webkit.org/show_bug.cgi?id=30555
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::counterValueForElementById):
+        (QWebHitTestResult::frame):
+        * Api/qwebframe.h:
+
+2009-10-28  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Pushing missing WebKit/qt/tests/qwebframe/resources/ dir from bug 29248.
+
+        [Qt] [API] Make it possible to have 'invisible' loads
+        https://bugs.webkit.org/show_bug.cgi?id=29248
+
+        * tests/qwebframe/resources/image2.png: Copied from WebKit/qt/tests/qwebelement/image.png.
+
+2009-10-28  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] QWebHistory::saveState() is inconsistent with the Qt API
+        https://bugs.webkit.org/show_bug.cgi?id=30710
+
+        Make the versioning internal and enforce it in the WebCore
+        part. Adjust the comments, as well as remove now dead code.
+
+        * Api/qwebhistory.cpp:
+        (operator<<):
+        (operator>>):
+        * Api/qwebhistory.h:
+
+2009-10-28  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] QWebHistory::saveState() is inconsistent with the Qt API
+        https://bugs.webkit.org/show_bug.cgi?id=30710
+
+        Remove the QWebHistory::saveState() and ::restoreState() as
+        they are inconsistent with the Qt API.
+
+        Update unittests to reflect the change.
+
+        * Api/qwebhistory.cpp:
+        (operator<<):
+        (operator>>):
+        * Api/qwebhistory.h:
+        * tests/qwebhistory/tst_qwebhistory.cpp:
+        (saveHistory):
+        (restoreHistory):
+        (tst_QWebHistory::saveAndRestore_crash_1):
+        (tst_QWebHistory::saveAndRestore_crash_2):
+        (tst_QWebHistory::saveAndRestore_crash_3):
+        (tst_QWebHistory::clear):
+
+2009-10-27  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Holger Freyther.
+
+        Complementary fix to bug 30779.
+
+        By mistake I used QWeakPointer's toStrongRef() method which docs
+        explicitly say to not be used in this situation (when the tracked
+        pointer is devired from QObject). Instead QWeakPointer's data()
+        is recommended.
+
+        * Api/qwebpage.cpp:
+        (QWebPage::view):
+
+2009-10-27  Holger Hans Peter Freyther  <zecke@selfish.org>
+
+        Reviewed by Simon Fraser.
+
+        Change HitTestResult methods to use (3d) transformation aware methods
+        https://bugs.webkit.org/show_bug.cgi?id=27347
+
+        The HitTestResult::boundingBox method was removed. The
+        RenderObject must be used directly. In contrast to the
+        old HitTestResult::boundingBox method this code must use
+        a (3d) transformation aware method to not run into an
+        assert in SVGRenderBase::mapLocalToContainer.
+
+        * Api/qwebframe.cpp:
+        (QWebHitTestResultPrivate::QWebHitTestResultPrivate):
+
+2009-10-27  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Rubberstamped by Oliver Hunt.
+
+        Change two methods to be internal for DRT use only.
+
+        Part of [Qt] Review all new API in Qt 4.6
+        https://bugs.webkit.org/show_bug.cgi?id=29843#c11
+
+        * Api/qwebsecurityorigin.cpp:
+        (qt_drt_whiteListAccessFromOrigin):
+        (qt_drt_resetOriginAccessWhiteLists):
+        (QWebSecurityOrigin::localSchemes):
+        * Api/qwebsecurityorigin.h:
+
+2009-10-27  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make sure that initiating a rotation while rotating won't make
+        it end up at rotation positions that are not a multiply of
+        180 degrees.
+
+        * QGVLauncher/main.cpp:
+        (MainView::animatedFlip):
+
+2009-10-27  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Unreviewed Qt build fix.
+
+        Update the tests as well to the new API change.
+
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::clear):
+
+2009-10-27  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Rubberstamped by Tor Arne Vestbø.
+
+        [Qt] QWebElement::removeChildren() should be
+        QWebElement::removeAllChildren()
+        https://bugs.webkit.org/show_bug.cgi?id=30630
+
+        * Api/qwebelement.cpp:
+        (QWebElement::removeAllChildren):
+        * Api/qwebelement.h:
+
+2009-10-27  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Antti Koivisto and Holger Freyther.
+
+        Make QWebPagePrivate's (QWidget) view to be a QWeakPointer.
+        https://bugs.webkit.org/show_bug.cgi?id=30779
+
+        The fact that it was been set from external objects of qwebpage
+        and not being deleted internally can lead to dangling references.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::~QGraphicsWebView):
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+        (QWebPagePrivate::createContextMenu):
+        (QWebPagePrivate::handleSoftwareInputPanel):
+        (QWebPagePrivate::keyPressEvent):
+        (QWebPage::setView):
+        (QWebPage::view):
+        (QWebPage::javaScriptAlert):
+        (QWebPage::javaScriptConfirm):
+        (QWebPage::javaScriptPrompt):
+        (QWebPage::shouldInterruptJavaScript):
+        (QWebPage::createWindow):
+        (QWebPage::extension):
+        (QWebPage::chooseFile):
+        (QWebPage::userAgentForUrl):
+        * Api/qwebpage_p.h:
+        * Api/qwebview.cpp:
+        (QWebView::~QWebView):
+
+2009-10-26  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Unreviewed documentation fix from David Boddie (Qt Doc Team)
+
+        Removes the check around the RenderHints property documentation
+        that was clearly added to synchronize the source and header files
+        when the #if !defined(Q_OS_SYMBIAN) guards was added to the
+        property.
+
+        The documentation has also been updated to ensure that Symbian
+        users know that there is no actual RenderHints property on their
+        platform.
+
+        * Api/qwebview.cpp:
+
+2009-10-26  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Unreviewed documentation fix from David Boddie (Qt Doc Team)
+
+        Ensure that qdoc will always see the RenderHints property.
+
+        The property was only defined in the header file if the Q_OS_SYMBIAN
+        symbol was not defined, resulting in the property not showing up
+        in the Qt documentation just because one platform doesn't support it.
+
+        A follow up commit will improve the documentation for the property
+        and note that it is not supported on the Symbiam platform.
+
+        * Api/qwebview.h:
+
+2009-10-26  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Reintroduce QWebElementCollection
+
+        Revert the patch that has replaced QWebElementCollection 
+        with QList<QWebElement>. Update the tests accordingly.
+
+        Remove the constness of the return type of QWebElement operator[]. 
+
+        https://bugs.webkit.org/show_bug.cgi?id=30767
+
+        * Api/qwebelement.cpp:
+        (QWebElement::findAll):
+        (QWebElementCollectionPrivate::QWebElementCollectionPrivate):
+        (QWebElementCollectionPrivate::create):
+        (QWebElementCollection::QWebElementCollection):
+        (QWebElementCollection::operator=):
+        (QWebElementCollection::~QWebElementCollection):
+        (QWebElementCollection::operator+):
+        (QWebElementCollection::append):
+        (QWebElementCollection::count):
+        (QWebElementCollection::at):
+        (QWebElementCollection::toList):
+        * Api/qwebelement.h:
+        (const_iterator::begin):
+        (const_iterator::end):
+        (const_iterator::operator[]):
+        * Api/qwebframe.cpp:
+        (QWebFrame::findAllElements):
+        * Api/qwebframe.h:
+        * QtLauncher/main.cpp:
+        (MainWindow::selectElements):
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::simpleCollection):
+        (tst_QWebElement::iteration):
+        (tst_QWebElement::emptyCollection):
+        (tst_QWebElement::appendCollection):
+        (tst_QWebElement::nullSelect):
+        (tst_QWebElement::hasSetFocus):
+        (tst_QWebElement::render):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods):
+
+2009-10-24  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        [Qt] [Symbian] Set the capability and memory required to run QtWebKit for Symbian
+        https://bugs.webkit.org/show_bug.cgi?id=30476
+
+        Assign ReadUserData WriteUserData NetworkServices Symbian capabilities
+        to all QtWebkit executables.
+
+        * QGVLauncher/QGVLauncher.pro:
+        * QtLauncher/QtLauncher.pro:
+        * tests/benchmarks/loading/tst_loading.pro:
+        * tests/benchmarks/painting/tst_painting.pro:
+        * tests/qgraphicswebview/qgraphicswebview.pro:
+        * tests/qwebelement/qwebelement.pro:
+        * tests/qwebframe/qwebframe.pro:
+        * tests/qwebhistory/qwebhistory.pro:
+        * tests/qwebhistoryinterface/qwebhistoryinterface.pro:
+        * tests/qwebpage/qwebpage.pro:
+        * tests/qwebplugindatabase/qwebplugindatabase.pro:
+        * tests/qwebview/qwebview.pro:
+
+2009-10-22  Gavin Barraclough  <barraclough@apple.com>
+
+        Reviewed by NOBODY (speculative build fix - qt is currently already broken!)
+        Build fix following bug #30696.
+
+        * Api/qwebelement.cpp:
+        (setupScriptContext):
+        * Api/qwebframe.cpp:
+        (QWebFrame::evaluateJavaScript):
+
+2009-10-22  Shu Chang  <Chang.Shu@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Enable track visited links in QWebPage
+        https://bugs.webkit.org/show_bug.cgi?id=30574
+
+        Test: fast/history/clicked-link-is-visited.html
+
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::QWebPagePrivate):
+
+2009-10-22  Girish Ramakrishnan  <girish@forwardbias.in>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Add Print Shortcut to QtLauncher
+
+        https://bugs.webkit.org/show_bug.cgi?id=30682
+
+        * QtLauncher/main.cpp:
+        (MainWindow::setupUI):
+
+2009-10-22  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Rubberstamped by Tor Arne Vestbø.
+
+        Code standarlization for QGVLauncher.
+
+        1) Made member initilization lists in constructors
+           to be per line.
+        2) Made applyProxy method inline as all other methods in
+           WebPage class.
+
+        * QGVLauncher/main.cpp:
+        (WebPage::WebPage):
+        (WebPage::applyProxy):
+        (MainView::MainView):
+        (MainWindow::MainWindow):
+        (MainWindow::init):
+
+2009-10-22  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Add a Y-Axis rotation to QGVLauncher.
+
+        It uses the QStateMachine API from Qt 4.6.
+
+        * QGVLauncher/main.cpp:
+        (WebView::WebView):
+        (WebView::setYRotation):
+        (WebView::yRotation):
+        (MainView::flip):
+        (MainView::animatedYFlip):
+        (SharedScene::SharedScene):
+        (SharedScene::webView):
+        (MainWindow::init):
+        (MainWindow::animatedYFlip):
+        (MainWindow::buildUI):
+
+2009-10-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed By Adam Barth.
+
+        Add some actions to the menu for cursor debugging.
+
+        GraphicsView based launcher only.
+
+        * QGVLauncher/main.cpp:
+        (MainView::setWaitCursor):
+        (MainView::resetCursor):
+        (MainView::flip):
+        (MainWindow::setWaitCursor):
+        (MainWindow::resetCursor):
+        (MainWindow::buildUI):
+
+2009-10-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Rubberstamped by Adam Barth.
+
+        Remove clipRenderToViewport as agreed upon in
+        https://bugs.webkit.org/show_bug.cgi?id=29843
+
+        * Api/qwebframe.cpp:
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        (QWebFramePrivate::QWebFramePrivate):
+
+2009-10-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Adam Barth.
+
+        Update the tests to test the new render functionality, and take
+        into consideration that render() clips to the frame itself as well
+        as the viewport.
+
+        QWebFrame::render() now always clips, so the old tests were bogus.
+
+        Rendering pure contents (no scrollbars etc) without clipping can now
+        be accomplished using QWebFrame::documentElement()->render(...)
+
+        * Api/qwebframe.cpp:
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+        (QWebFramePrivate::QWebFramePrivate):
+        * tests/qwebframe/tst_qwebframe.cpp:
+
+2009-10-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Rubberstamped by Adam Barth.
+
+        As we do not support rendering a QWebFrame without it being clipped
+        the the frame as well as the viewport, we now set the viewport size
+        to the size of the contents.
+
+        Rendering pure contents (no scrollbars etc) without clipping can be
+        acomplished using QWebFrame::documentElement()->render(...)
+
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::render):
+
+2009-10-20  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Add menu item to dump the plugin list to the console,
+        which can be handy for debugging.
+
+        * QtLauncher/main.cpp:
+        (MainWindow::dumpPlugins):
+        (MainWindow::setupUI):
+
+2009-10-19  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Introduce new render method on QWebFrame, which supports specifying
+        which layers to render (scrollbars, contents, pan-icon).
+
+        * Api/qwebframe.cpp:
+        (QWebFramePrivate::renderPrivate):
+        (QWebFrame::render):
+        * Api/qwebframe.h:
+        * Api/qwebframe_p.h:
+
+2009-10-19  Antonio Gomes  <tonikitoo@webkit.org>
+
+        Reviewed by Ariya Hidayat.
+
+        [Qt] Infinite loop (leading to crash) when setting cursor in QGraphicsWebView
+        https://bugs.webkit.org/show_bug.cgi?id=30549
+
+        Patch reimplements QGraphicsItem's itemChange method, and make
+        CursorChange event to be emitted after cursor has already been
+        set.
+
+        QWidget::setCursor send the event just after it sets the cursor,
+        then patch makes both behaviors compatible.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::itemChange):
+        * Api/qgraphicswebview.h:
+
 2009-10-19  Nate Chapin  <japhet@chromium.org>
 
         Unreviewed, build fix.

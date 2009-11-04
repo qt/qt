@@ -118,7 +118,7 @@ JSDOMApplicationCache::JSDOMApplicationCache(NonNullPassRefPtr<Structure> struct
 JSDOMApplicationCache::~JSDOMApplicationCache()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 void JSDOMApplicationCache::markChildren(MarkStack& markStack)
@@ -255,7 +255,7 @@ void setJSDOMApplicationCacheOnchecking(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnchecking(globalObject->createJSAttributeEventListener(value));
@@ -265,7 +265,7 @@ void setJSDOMApplicationCacheOnerror(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));
@@ -275,7 +275,7 @@ void setJSDOMApplicationCacheOnnoupdate(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnnoupdate(globalObject->createJSAttributeEventListener(value));
@@ -285,7 +285,7 @@ void setJSDOMApplicationCacheOndownloading(ExecState* exec, JSObject* thisObject
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndownloading(globalObject->createJSAttributeEventListener(value));
@@ -295,7 +295,7 @@ void setJSDOMApplicationCacheOnprogress(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnprogress(globalObject->createJSAttributeEventListener(value));
@@ -305,7 +305,7 @@ void setJSDOMApplicationCacheOnupdateready(ExecState* exec, JSObject* thisObject
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnupdateready(globalObject->createJSAttributeEventListener(value));
@@ -315,7 +315,7 @@ void setJSDOMApplicationCacheOncached(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncached(globalObject->createJSAttributeEventListener(value));
@@ -325,7 +325,7 @@ void setJSDOMApplicationCacheOnobsolete(ExecState* exec, JSObject* thisObject, J
 {
     UNUSED_PARAM(exec);
     DOMApplicationCache* imp = static_cast<DOMApplicationCache*>(static_cast<JSDOMApplicationCache*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnobsolete(globalObject->createJSAttributeEventListener(value));

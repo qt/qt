@@ -1,56 +1,54 @@
-<ListModel>
-    <ListElement>
+<Pets>
+    <Pet>
         <name>Polly</name>
         <type>Parrot</type>
         <age>12</age>
         <size>Small</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Penny</name>
         <type>Turtle</type>
         <age>4</age>
         <size>Small</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Warren</name>
         <type>Rabbit</type>
         <age>2</age>
         <size>Small</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Spot</name>
         <type>Dog</type>
         <age>9</age>
         <size>Medium</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Whiskers</name>
         <type>Cat</type>
         <age>2</age>
         <size>Medium</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Joey</name>
         <type>Kangaroo</type>
         <age>1</age>
-        <size>Medium</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Kimba</name>
         <type>Bunny</type>
         <age>65</age>
         <size>Large</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Rover</name>
         <type>Dog</type>
-        <age>5</age>
         <size>Large</size>
-    </ListElement>
-    <ListElement>
+    </Pet>
+    <Pet>
         <name>Tiny</name>
         <type>Elephant</type>
         <age>15</age>
         <size>Large</size>
-    </ListElement>
-</ListModel>
+    </Pet>
+</Pets>

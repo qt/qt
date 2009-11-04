@@ -123,9 +123,6 @@
 #endif
 
 /* Images */
-#ifndef QT_NO_ICON
-#  define QT_NO_ICON
-#endif
 #ifndef QT_NO_IMAGEFORMATPLUGIN
 #  define QT_NO_IMAGEFORMATPLUGIN
 #endif
@@ -257,9 +254,6 @@
 #endif
 #ifndef QT_NO_TEXTHTMLPARSER
 #  define QT_NO_TEXTHTMLPARSER
-#endif
-#ifndef QT_NO_THREAD
-#  define QT_NO_THREAD
 #endif
 #ifndef QT_NO_CONCURRENT
 #  define QT_NO_CONCURRENT

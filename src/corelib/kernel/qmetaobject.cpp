@@ -574,8 +574,8 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject, co
     if (i >= 0 && m && m->d.superdata) {
         int conflict = m->d.superdata->indexOfMethod(signal);
         if (conflict >= 0)
-            qWarning("QMetaObject::indexOfSignal:%s: Conflict with %s::%s",
-                     m->d.stringdata, m->d.superdata->d.stringdata, signal);
+            qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
+                     signal, m->d.superdata->d.stringdata, m->d.stringdata);
     }
 #endif
     return i;

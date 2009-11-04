@@ -174,6 +174,7 @@ private Q_SLOTS:
     void destroyRemoved();
     void createdItem(int index, QmlGraphicsItem *item);
     void destroyingItem(QmlGraphicsItem *item);
+    void animStopped();
 };
 
 QT_END_NAMESPACE

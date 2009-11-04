@@ -117,6 +117,7 @@ private slots:
     void cleanup();
 
     void rootState();
+    void machineWithParent();
     void addAndRemoveState();
     void stateEntryAndExit();
     void assignProperty();
@@ -124,6 +125,7 @@ private slots:
     void postEvent();
     void cancelDelayedEvent();
     void postDelayedEventAndStop();
+    void stopAndPostEvent();
     void stateFinished();
     void parallelStates();
     void parallelRootState();
@@ -205,6 +207,7 @@ private slots:
     void goToState();
 
     void task260403_clonedSignals();
+    void postEventFromOtherThread();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -1043,6 +1046,14 @@ void tst_QStateMachine::rootState()
     QCOMPARE(s2->parentState(), static_cast<QState*>(&machine));
 }
 
+void tst_QStateMachine::machineWithParent()
+{
+    QObject object;
+    QStateMachine *machine = new QStateMachine(&object);
+    QCOMPARE(machine->parent(), &object);
+    QCOMPARE(machine->parentState(), (QObject*)0);
+}
+
 void tst_QStateMachine::addAndRemoveState()
 {
 #ifdef QT_BUILD_INTERNAL
@@ -1679,6 +1690,22 @@ void tst_QStateMachine::postDelayedEventAndStop()
     QTestEventLoop::instance().enterLoop(2);
     QCOMPARE(machine.configuration().size(), 1);
     QVERIFY(machine.configuration().contains(s1));
+}
+
+void tst_QStateMachine::stopAndPostEvent()
+{
+    QStateMachine machine;
+    QState *s1 = new QState(&machine);
+    machine.setInitialState(s1);
+    QSignalSpy startedSpy(&machine, SIGNAL(started()));
+    machine.start();
+    QTRY_COMPARE(startedSpy.count(), 1);
+    QSignalSpy stoppedSpy(&machine, SIGNAL(stopped()));
+    machine.stop();
+    QCOMPARE(stoppedSpy.count(), 0);
+    machine.postEvent(new QEvent(QEvent::User));
+    QTRY_COMPARE(stoppedSpy.count(), 1);
+    QCoreApplication::processEvents();
 }
 
 void tst_QStateMachine::stateFinished()
@@ -4186,6 +4213,53 @@ void tst_QStateMachine::task260403_clonedSignals()
     emitter.emitSignalWithDefaultArg();
     QTest::qWait(1);
     QCOMPARE(t1->eventSignalIndex, emitter.metaObject()->indexOfSignal("signalWithDefaultArg()"));
+}
+
+class EventPosterThread : public QThread
+{
+    Q_OBJECT
+public:
+    EventPosterThread(QStateMachine *machine, QObject *parent = 0)
+        : QThread(parent), m_machine(machine), m_count(0)
+    {
+        moveToThread(this);
+        QObject::connect(m_machine, SIGNAL(started()),
+                         this, SLOT(postEvent()));
+    }
+protected:
+    virtual void run()
+    {
+        exec();
+    }
+private Q_SLOTS:
+    void postEvent()
+    {
+        m_machine->postEvent(new QEvent(QEvent::User));
+        if (++m_count < 10000)
+            QTimer::singleShot(0, this, SLOT(postEvent()));
+        else
+            quit();
+    }
+private:
+    QStateMachine *m_machine;
+    int m_count;
+};
+
+void tst_QStateMachine::postEventFromOtherThread()
+{
+    QStateMachine machine;
+    EventPosterThread poster(&machine);
+    StringEventPoster *s1 = new StringEventPoster("foo", &machine);
+    s1->addTransition(new EventTransition(QEvent::User, s1));
+    QFinalState *f = new QFinalState(&machine);
+    s1->addTransition(&poster, SIGNAL(finished()), f);
+    machine.setInitialState(s1);
+
+    poster.start();
+
+    QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
+    machine.start();
+    QTRY_COMPARE(finishedSpy.count(), 1);
 }
 
 QTEST_MAIN(tst_QStateMachine)

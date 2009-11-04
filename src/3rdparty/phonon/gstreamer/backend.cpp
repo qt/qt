@@ -55,12 +55,13 @@ Backend::Backend(QObject *parent, const QVariantList &)
         g_error_free(err);
 
     qRegisterMetaType<Message>("Message");
-
+#ifndef QT_NO_PROPERTIES
     setProperty("identifier",     QLatin1String("phonon_gstreamer"));
     setProperty("backendName",    QLatin1String("Gstreamer"));
     setProperty("backendComment", QLatin1String("Gstreamer plugin for Phonon"));
     setProperty("backendVersion", QLatin1String("0.2"));
     setProperty("backendWebsite", QLatin1String("http://qt.nokia.com/"));
+#endif //QT_NO_PROPERTIES
 
     //check if we should enable debug output
     QString debugLevelString = qgetenv("PHONON_GST_DEBUG");
@@ -117,13 +118,15 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             m_audioOutputs.append(ao);
             return ao;
         }
+#ifndef QT_NO_PHONON_EFFECT
     case EffectClass:
         return new AudioEffect(this, args[0].toInt(), parent);
-
+#endif //QT_NO_PHONON_EFFECT
     case AudioDataOutputClass:
         logMessage("createObject() : AudioDataOutput not implemented");
         break;
 
+#ifndef QT_NO_PHONON_VIDEO
     case VideoDataOutputClass:
         logMessage("createObject() : VideoDataOutput not implemented");
         break;
@@ -132,9 +135,11 @@ QObject *Backend::createObject(BackendInterface::Class c, QObject *parent, const
             QWidget *widget =  qobject_cast<QWidget*>(parent);
             return new VideoWidget(this, widget);
         }
-
+#endif //QT_NO_PHONON_VIDEO
+#ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
     case VolumeFaderEffectClass:
         return new VolumeFaderEffect(this, parent);
+#endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 
     case VisualizationClass:  //Fall through
     default:

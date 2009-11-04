@@ -745,7 +745,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::LeftButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super mouseDragged:theEvent];
@@ -755,7 +755,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::RightButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super rightMouseDragged:theEvent];
@@ -765,8 +765,7 @@ extern "C" {
 {
     qMacDnDParams()->view = self;
     qMacDnDParams()->theEvent = theEvent;
-    Qt::MouseButton mouseButton = cocoaButton2QtButton([theEvent buttonNumber]);
-    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, mouseButton);
+    bool mouseOK = qt_mac_handleMouseEvent(self, theEvent, QEvent::MouseMove, Qt::NoButton);
 
     if (!mouseOK)
         [super otherMouseDragged:theEvent];

@@ -69,6 +69,8 @@ private slots:
     void qListModelInterface_moved();
     void qAbstractItemModel_moved();
 
+    void enforceRange();
+
 private:
     template <class T> void items();
     template <class T> void changed();
@@ -239,12 +241,13 @@ void tst_QmlGraphicsListView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->root(), "list");
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
+    QCOMPARE(listview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
@@ -255,6 +258,11 @@ void tst_QmlGraphicsListView::items()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
+
+    listview->incrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 1);
+    listview->decrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 0);
 
     delete canvas;
 }
@@ -579,6 +587,47 @@ void tst_QmlGraphicsListView::moved()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsListView::enforceRange()
+{
+    QmlView *canvas = createView(SRCDIR "/data/listview-enforcerange.qml");
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    // view should be positioned at the top of the range.
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", 0);
+    QVERIFY(item);
+    QCOMPARE(listview->viewportY(), -100.0);
+
+    QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 0);
+    QVERIFY(name != 0);
+    QCOMPARE(name->text(), model.name(0));
+    QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", 0);
+    QVERIFY(number != 0);
+    QCOMPARE(number->text(), model.number(0));
+
+    // Check currentIndex is updated when viewport moves
+    listview->setViewportY(20);
+    QTest::qWait(1000);
+
+    QCOMPARE(listview->currentIndex(), 6);
 
     delete canvas;
 }

@@ -200,11 +200,11 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ControlPart e)
         case ListboxPart:
             m_value.ident = CSSValueListbox;
             break;
-#if ENABLE(DATALIST)
         case ListButtonPart:
+#if ENABLE(DATALIST)
             m_value.ident = CSSValueListButton;
-            break;
 #endif
+            break;
         case ListItemPart:
             m_value.ident = CSSValueListitem;
             break;
@@ -378,6 +378,7 @@ template<> inline CSSPrimitiveValue::operator EFillBox() const
         case CSSValueContentBox:
             return ContentFillBox;
         case CSSValueText:
+        case CSSValueWebkitText:
             return TextFillBox;
         default:
             ASSERT_NOT_REACHED();

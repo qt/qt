@@ -278,6 +278,14 @@ backslashed \ stuff.</source>
     </message>
 </context>
 <context>
+    <name>YetAnotherTest</name>
+    <message>
+        <location filename="main.cpp" line="247"/>
+        <source>nothing</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>scope</name>
     <message numerus="yes">
         <location filename="main.cpp" line="187"/>

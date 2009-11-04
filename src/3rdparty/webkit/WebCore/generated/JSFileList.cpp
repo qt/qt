@@ -141,7 +141,7 @@ JSFileList::JSFileList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSFileList::~JSFileList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSFileList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

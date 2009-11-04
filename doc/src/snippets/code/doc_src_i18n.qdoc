@@ -184,7 +184,7 @@ void Clock::setTime(const QTime &time)
 
 
 //! [12]
-void QWidget::changeEvent(QEvent *event)
+void MyWidget::changeEvent(QEvent *event)
 {
     if (e->type() == QEvent::LanguageChange) {
         titleLabel->setText(tr("Document Title"));
