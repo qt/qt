@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlgraphicspixmapcache_p.h"
+#include "qmlpixmapcache_p.h"
 #include <QImageReader>
 #include <QHash>
 #include <QNetworkReply>
@@ -50,6 +50,7 @@
 #include <QtCore/qdebug.h>
 
 QT_BEGIN_NAMESPACE
+
 class QSharedNetworkReply;
 typedef QHash<QString, QSharedNetworkReply *> QmlGraphicsSharedNetworkReplyHash;
 static QmlGraphicsSharedNetworkReplyHash qfxActiveNetworkReplies;
@@ -118,7 +119,7 @@ static bool readImage(QIODevice *dev, QPixmap *pixmap)
 
 /*!
     \internal
-    \class QmlGraphicsPixmapCache
+    \class QmlPixmapCache
     \brief Enacapsultes a pixmap for QmlGraphics items.
 
     This class is NOT reentrant.
@@ -140,7 +141,7 @@ static QString toLocalFileOrQrc(const QUrl& url)
 
     Returns true if the image was loaded without error.
 */
-bool QmlGraphicsPixmapCache::find(const QUrl& url, QPixmap *pixmap)
+bool QmlPixmapCache::find(const QUrl& url, QPixmap *pixmap)
 {
 #ifdef Q_ENABLE_PERFORMANCE_LOG
     QmlPerfTimer<QmlPerf::PixmapLoad> perf;
@@ -169,7 +170,7 @@ bool QmlGraphicsPixmapCache::find(const QUrl& url, QPixmap *pixmap)
             QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
             if (iter == qfxActiveNetworkReplies.end()) {
                 // API usage error
-                qWarning() << "QmlGraphicsPixmapCache: URL not loaded" << url;
+                qWarning() << "QmlPixmapCache: URL not loaded" << url;
                 ok = false;
             } else {
                 if ((*iter)->reply->error()) {
@@ -213,7 +214,7 @@ bool QmlGraphicsPixmapCache::find(const QUrl& url, QPixmap *pixmap)
     The returned QNetworkReply will be deleted when all get() calls are
     matched by a corresponding find() call.
 */
-QNetworkReply *QmlGraphicsPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
+QNetworkReply *QmlPixmapCache::get(QmlEngine *engine, const QUrl& url, QPixmap *pixmap)
 {
 #ifndef QT_NO_LOCALFILE_OPTIMIZED_QML
     QString lf = toLocalFileOrQrc(url);
@@ -259,7 +260,7 @@ QNetworkReply *QmlGraphicsPixmapCache::get(QmlEngine *engine, const QUrl& url, Q
     Any connections from the QNetworkReply returned by get() to \a obj will be
     disconnected.
 */
-void QmlGraphicsPixmapCache::cancelGet(const QUrl& url, QObject* obj)
+void QmlPixmapCache::cancelGet(const QUrl& url, QObject* obj)
 {
     QString key = url.toString();
     QmlGraphicsSharedNetworkReplyHash::Iterator iter = qfxActiveNetworkReplies.find(key);
@@ -274,7 +275,7 @@ void QmlGraphicsPixmapCache::cancelGet(const QUrl& url, QObject* obj)
     This function is mainly for test verification. It returns the number of
     requests that are still unfinished.
 */
-int QmlGraphicsPixmapCache::pendingRequests()
+int QmlPixmapCache::pendingRequests()
 {
     return qfxActiveNetworkReplies.count();
 }

@@ -64,6 +64,7 @@ private slots:
     void lighter();
     void darker();
     void tint();
+    void closestAngle();
     void playSound();
     void openUrlExternally();
 
@@ -245,6 +246,23 @@ void tst_qmlqt::tint()
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor::fromRgbF(1, 0, 0)); 
     QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
+
+    delete object;
+}
+
+void tst_qmlqt::closestAngle()
+{
+    QmlComponent component(&engine, TEST_FILE("closestangle.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(qvariant_cast<qreal>(object->property("testSame")), 1.0);
+    QCOMPARE(qvariant_cast<qreal>(object->property("testLess")), 1.0);
+    QCOMPARE(qvariant_cast<qreal>(object->property("testMore")), 1.0);
+    QCOMPARE(qvariant_cast<qreal>(object->property("testFail")), 0.0);
+    QCOMPARE(qvariant_cast<qreal>(object->property("test5")), 1.0);
+    QCOMPARE(qvariant_cast<qreal>(object->property("test6")), 1.11);
+    QCOMPARE(qvariant_cast<qreal>(object->property("test7")), 1.11);
 
     delete object;
 }

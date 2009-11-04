@@ -946,7 +946,7 @@ void QmlGraphicsTextEditPrivate::init()
 {
     Q_Q(QmlGraphicsTextEdit);
 
-    q->setSmoothTransform(smooth);
+    q->setSmooth(smooth);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);

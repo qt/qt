@@ -80,7 +80,7 @@ QmlGraphicsBorderImage::~QmlGraphicsBorderImage()
     if (d->sciReply)
         d->sciReply->deleteLater();
     if (d->sciPendingPixmapCache)
-        QmlGraphicsPixmapCache::cancelGet(d->sciurl, this);
+        QmlPixmapCache::cancelGet(d->sciurl, this);
 }
 /*!
     \qmlproperty enum BorderImage::status
@@ -160,11 +160,11 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
     }
 
     if (d->pendingPixmapCache) {
-        QmlGraphicsPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancelGet(d->url, this);
         d->pendingPixmapCache = false;
     }
     if (d->sciPendingPixmapCache) {
-        QmlGraphicsPixmapCache::cancelGet(d->sciurl, this);
+        QmlPixmapCache::cancelGet(d->sciurl, this);
         d->sciPendingPixmapCache = false;
     }
 
@@ -203,7 +203,7 @@ void QmlGraphicsBorderImage::setSource(const QUrl &url)
                                  this, SLOT(sciRequestFinished()));
             }
         } else {
-            QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+            QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix);
             if (reply) {
                 d->pendingPixmapCache = true;
                 connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -320,7 +320,7 @@ void QmlGraphicsBorderImage::setGridScaledImage(const QmlGraphicsGridScaledImage
         d->verticalTileMode = sci.verticalTileRule();
 
         d->sciurl = d->url.resolved(QUrl(sci.pixmapUrl()));
-        QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
+        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->sciurl, &d->pix);
         if (reply) {
             d->sciPendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -348,10 +348,10 @@ void QmlGraphicsBorderImage::requestFinished()
 
     if (d->url.path().endsWith(QLatin1String(".sci"))) {
         d->sciPendingPixmapCache = false;
-        QmlGraphicsPixmapCache::find(d->sciurl, &d->pix);
+        QmlPixmapCache::find(d->sciurl, &d->pix);
     } else {
         d->pendingPixmapCache = false;
-        if (!QmlGraphicsPixmapCache::find(d->url, &d->pix))
+        if (!QmlPixmapCache::find(d->url, &d->pix))
             d->status = Error;
     }
     setImplicitWidth(d->pix.width());
