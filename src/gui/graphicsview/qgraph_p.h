@@ -236,7 +236,7 @@ public:
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->from == v;
                 if (forward) {
-                    edges += QString::fromAscii("%1->%2 [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
                         .arg(v->toString())
                         .arg(v1->toString())
                         .arg(data->minSize)
@@ -245,7 +245,7 @@ public:
                         ;
                 }
             }
-            strVertices += QString::fromAscii("%1 [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
+            strVertices += QString::fromAscii("\"%1\" [label=\"%2\"]\n").arg(v->toString()).arg(v->toString());
         }
         return QString::fromAscii("%1\n%2\n").arg(strVertices).arg(edges);
     }
