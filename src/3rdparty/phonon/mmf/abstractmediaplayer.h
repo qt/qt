@@ -73,6 +73,10 @@ protected:
     virtual void close() = 0;
     virtual void changeState(PrivateState newState);
 
+    void updateMetaData();
+    virtual int numberOfMetaDataEntries() const = 0;
+    virtual QPair<QString, QString> metaDataEntry(int index) const = 0;
+
 protected:
     bool tickTimerRunning() const;
     void startTickTimer();
@@ -104,6 +108,8 @@ private:
 
     MediaSource                 m_source;
     MediaSource                 m_nextSource;
+
+    QMultiMap<QString, QString> m_metaData;
 
 };
 }

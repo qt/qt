@@ -97,13 +97,14 @@ public:
                   const QString &errorMessage = QString());
 
     Phonon::State state() const;
+
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
     void tick(qint64 time);
     void stateChanged(Phonon::State oldState,
                       Phonon::State newState);
-
+    void metaDataChanged(const QMultiMap<QString, QString>& metaData);
 
 protected:
     /**

@@ -392,7 +392,28 @@ void MMF::AbstractMediaPlayer::changeState(PrivateState newState)
             play();
         }
     }
+}
 
+void MMF::AbstractMediaPlayer::updateMetaData()
+{
+    TRACE_CONTEXT(AbstractMediaPlayer::updateMetaData, EAudioInternal);
+    TRACE_ENTRY_0();
+
+    m_metaData.clear();
+
+    const int numberOfEntries = numberOfMetaDataEntries();
+    for(int i=0; i<numberOfEntries; ++i) {
+        const QPair<QString, QString> entry = metaDataEntry(i);
+
+        // Note that we capitalize the key, as required by the Ogg Vorbis
+        // metadata standard to which Phonon adheres:
+        // http://xiph.org/vorbis/doc/v-comment.html
+        m_metaData.insert(entry.first.toUpper(), entry.second);
+    }
+
+    emit metaDataChanged(m_metaData);
+
+    TRACE_EXIT_0();
 }
 
 QT_END_NAMESPACE
