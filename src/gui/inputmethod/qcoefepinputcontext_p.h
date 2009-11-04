@@ -97,6 +97,7 @@ private:
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
     void queueInputCapabilitiesChanged();
+    bool needsInputPanel();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();
