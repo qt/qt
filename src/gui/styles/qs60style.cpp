@@ -2292,8 +2292,15 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 {
     QSize sz(csz);
     switch (ct) {
+        case CT_ToolButton:
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            //FIXME properly - style should calculate the location of border frame-part
+            sz += QSize(2*pixelMetric(PM_ButtonMargin), 2*pixelMetric(PM_ButtonMargin));
+            break;
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            //FIXME properly - style should calculate the location of border frame-part
+            sz += QSize(2*pixelMetric(PM_ButtonMargin), 2*pixelMetric(PM_ButtonMargin));
             if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
                 if (buttonWidget->isCheckable())
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
