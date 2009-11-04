@@ -297,7 +297,7 @@ EXPORTS
 	?standardPixmap@QWindowsStyle@@UBE?AVQPixmap@@W4StandardPixmap@QStyle@@PBVQStyleOption@@PBVQWidget@@@Z @ 296 NONAME ; class QPixmap QWindowsStyle::standardPixmap(enum QStyle::StandardPixmap, class QStyleOption const *, class QWidget const *) const
 	?setStyleSheet@QApplication@@QAEXABVQString@@@Z @ 297 NONAME ; void QApplication::setStyleSheet(class QString const &)
 	?minLeftBearing@QFontMetrics@@QBEHXZ @ 298 NONAME ; int QFontMetrics::minLeftBearing(void) const
-	?isComposing@QCoeFepInputContext@@UBE_NXZ @ 299 NONAME ; bool QCoeFepInputContext::isComposing(void) const
+	?isComposing@QCoeFepInputContext@@UBE_NXZ @ 299 NONAME ABSENT ; bool QCoeFepInputContext::isComposing(void) const
 	??8iterator@QTextFrame@@QBE_NABV01@@Z @ 300 NONAME ; bool QTextFrame::iterator::operator==(class QTextFrame::iterator const &) const
 	?toolBarArea@QMainWindow@@QBE?AW4ToolBarArea@Qt@@PAVQToolBar@@@Z @ 301 NONAME ; enum Qt::ToolBarArea QMainWindow::toolBarArea(class QToolBar *) const
 	?mode@QColormap@@QBE?AW4Mode@1@XZ @ 302 NONAME ; enum QColormap::Mode QColormap::mode(void) const
@@ -657,7 +657,7 @@ EXPORTS
 	?stack@QUndoView@@QBEPAVQUndoStack@@XZ @ 656 NONAME ; class QUndoStack * QUndoView::stack(void) const
 	?squareToQuad@QTransform@@SA_NABVQPolygonF@@AAV1@@Z @ 657 NONAME ; bool QTransform::squareToQuad(class QPolygonF const &, class QTransform &)
 	?controlPointRect@QPainterPath@@QBE?AVQRectF@@XZ @ 658 NONAME ; class QRectF QPainterPath::controlPointRect(void) const
-	?language@QCoeFepInputContext@@UAE?AVQString@@XZ @ 659 NONAME ; class QString QCoeFepInputContext::language(void)
+	?language@QCoeFepInputContext@@UAE?AVQString@@XZ @ 659 NONAME ABSENT ; class QString QCoeFepInputContext::language(void)
 	?horizontalScrollbarAction@QTableView@@MAEXH@Z @ 660 NONAME ; void QTableView::horizontalScrollbarAction(int)
 	?qt_metacall@QGraphicsView@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 661 NONAME ; int QGraphicsView::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?itemPrototype@QStandardItemModel@@QBEPBVQStandardItem@@XZ @ 662 NONAME ; class QStandardItem const * QStandardItemModel::itemPrototype(void) const
@@ -1646,7 +1646,7 @@ EXPORTS
 	?anchorClicked@QTextBrowser@@IAEXABVQUrl@@@Z @ 1645 NONAME ; void QTextBrowser::anchorClicked(class QUrl const &)
 	?childEvent@QMdiSubWindow@@MAEXPAVQChildEvent@@@Z @ 1646 NONAME ; void QMdiSubWindow::childEvent(class QChildEvent *)
 	?enterEvent@QMenu@@MAEXPAVQEvent@@@Z @ 1647 NONAME ; void QMenu::enterEvent(class QEvent *)
-	?ensureInputCapabilitiesChanged@QCoeFepInputContext@@AAEXXZ @ 1648 NONAME ; void QCoeFepInputContext::ensureInputCapabilitiesChanged(void)
+	?ensureInputCapabilitiesChanged@QCoeFepInputContext@@AAEXXZ @ 1648 NONAME ABSENT ; void QCoeFepInputContext::ensureInputCapabilitiesChanged(void)
 	?tr@QSwipeGesture@@SA?AVQString@@PBD0@Z @ 1649 NONAME ; class QString QSwipeGesture::tr(char const *, char const *)
 	?d_func@QGraphicsPixelizeEffect@@AAEPAVQGraphicsPixelizeEffectPrivate@@XZ @ 1650 NONAME ABSENT ; class QGraphicsPixelizeEffectPrivate * QGraphicsPixelizeEffect::d_func(void)
 	?completer@QComboBox@@QBEPAVQCompleter@@XZ @ 1651 NONAME ; class QCompleter * QComboBox::completer(void) const
@@ -2165,7 +2165,7 @@ EXPORTS
 	?linkHovered@QLabel@@IAEXABVQString@@@Z @ 2164 NONAME ; void QLabel::linkHovered(class QString const &)
 	?isCornerButtonEnabled@QTableView@@QBE_NXZ @ 2165 NONAME ; bool QTableView::isCornerButtonEnabled(void) const
 	?setFilterRegExp@QSortFilterProxyModel@@QAEXABVQRegExp@@@Z @ 2166 NONAME ; void QSortFilterProxyModel::setFilterRegExp(class QRegExp const &)
-	?qt_metacall@QCoeFepInputContext@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 2167 NONAME ; int QCoeFepInputContext::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QCoeFepInputContext@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 2167 NONAME ABSENT ; int QCoeFepInputContext::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?combinedMatrix@QPainter@@QBE?AVQMatrix@@XZ @ 2168 NONAME ; class QMatrix QPainter::combinedMatrix(void) const
 	?d_func@QTextEdit@@AAEPAVQTextEditPrivate@@XZ @ 2169 NONAME ; class QTextEditPrivate * QTextEdit::d_func(void)
 	?qDrawBorderPixmap@@YAXPAVQPainter@@ABVQRect@@ABVQMargins@@ABVQPixmap@@12ABUQTileRules@@V?$QFlags@W4DrawingHint@QDrawBorderPixmap@@@@@Z @ 2170 NONAME ; void qDrawBorderPixmap(class QPainter *, class QRect const &, class QMargins const &, class QPixmap const &, class QRect const &, class QMargins const &, struct QTileRules const &, class QFlags<enum QDrawBorderPixmap::DrawingHint>)
@@ -2306,7 +2306,7 @@ EXPORTS
 	?setMenuWidget@QMainWindow@@QAEXPAVQWidget@@@Z @ 2305 NONAME ; void QMainWindow::setMenuWidget(class QWidget *)
 	?setCurrentIndex@QItemSelectionModel@@QAEXABVQModelIndex@@V?$QFlags@W4SelectionFlag@QItemSelectionModel@@@@@Z @ 2306 NONAME ; void QItemSelectionModel::setCurrentIndex(class QModelIndex const &, class QFlags<enum QItemSelectionModel::SelectionFlag>)
 	?grabShortcut@QWidget@@QAEHABVQKeySequence@@W4ShortcutContext@Qt@@@Z @ 2307 NONAME ; int QWidget::grabShortcut(class QKeySequence const &, enum Qt::ShortcutContext)
-	?UpdateFepInlineTextL@QCoeFepInputContext@@UAEXABVTDesC16@@H@Z @ 2308 NONAME ; void QCoeFepInputContext::UpdateFepInlineTextL(class TDesC16 const &, int)
+	?UpdateFepInlineTextL@QCoeFepInputContext@@UAEXABVTDesC16@@H@Z @ 2308 NONAME ABSENT ; void QCoeFepInputContext::UpdateFepInlineTextL(class TDesC16 const &, int)
 	?draw@QPixmapDropShadowFilter@@UBEXPAVQPainter@@ABVQPointF@@ABVQPixmap@@ABVQRectF@@@Z @ 2309 NONAME ; void QPixmapDropShadowFilter::draw(class QPainter *, class QPointF const &, class QPixmap const &, class QRectF const &) const
 	?mouseMoveEvent@QMdiSubWindow@@MAEXPAVQMouseEvent@@@Z @ 2310 NONAME ; void QMdiSubWindow::mouseMoveEvent(class QMouseEvent *)
 	?hoverMoveEvent@QGraphicsItem@@MAEXPAVQGraphicsSceneHoverEvent@@@Z @ 2311 NONAME ; void QGraphicsItem::hoverMoveEvent(class QGraphicsSceneHoverEvent *)
@@ -2537,7 +2537,7 @@ EXPORTS
 	?text@QImage@@QBE?AVQString@@ABV2@@Z @ 2536 NONAME ; class QString QImage::text(class QString const &) const
 	?showMessage@QSplashScreen@@QAEXABVQString@@HABVQColor@@@Z @ 2537 NONAME ; void QSplashScreen::showMessage(class QString const &, int, class QColor const &)
 	?setActiveSubWindow@QMdiArea@@QAEXPAVQMdiSubWindow@@@Z @ 2538 NONAME ; void QMdiArea::setActiveSubWindow(class QMdiSubWindow *)
-	?metaObject@QCoeFepInputContext@@UBEPBUQMetaObject@@XZ @ 2539 NONAME ; struct QMetaObject const * QCoeFepInputContext::metaObject(void) const
+	?metaObject@QCoeFepInputContext@@UBEPBUQMetaObject@@XZ @ 2539 NONAME ABSENT ; struct QMetaObject const * QCoeFepInputContext::metaObject(void) const
 	?showEvent@QGraphicsProxyWidget@@MAEXPAVQShowEvent@@@Z @ 2540 NONAME ; void QGraphicsProxyWidget::showEvent(class QShowEvent *)
 	?bitmap@QCursor@@QBEPBVQBitmap@@XZ @ 2541 NONAME ; class QBitmap const * QCursor::bitmap(void) const
 	?trUtf8@QMenuBar@@SA?AVQString@@PBD0H@Z @ 2542 NONAME ; class QString QMenuBar::trUtf8(char const *, char const *, int)
@@ -3288,7 +3288,7 @@ EXPORTS
 	?notation@QDoubleValidator@@QBE?AW4Notation@1@XZ @ 3287 NONAME ; enum QDoubleValidator::Notation QDoubleValidator::notation(void) const
 	?maximumTime@QDateTimeEdit@@QBE?AVQTime@@XZ @ 3288 NONAME ; class QTime QDateTimeEdit::maximumTime(void) const
 	?drawControl@QS60Style@@UBEXW4ControlElement@QStyle@@PBVQStyleOption@@PAVQPainter@@PBVQWidget@@@Z @ 3289 NONAME ; void QS60Style::drawControl(enum QStyle::ControlElement, class QStyleOption const *, class QPainter *, class QWidget const *) const
-	??_EQCoeFepInputContext@@UAE@I@Z @ 3290 NONAME ; QCoeFepInputContext::~QCoeFepInputContext(unsigned int)
+	??_EQCoeFepInputContext@@UAE@I@Z @ 3290 NONAME ABSENT ; QCoeFepInputContext::~QCoeFepInputContext(unsigned int)
 	?setAttribute@QWidget@@QAEXW4WidgetAttribute@Qt@@_N@Z @ 3291 NONAME ; void QWidget::setAttribute(enum Qt::WidgetAttribute, bool)
 	??1QImageIOPlugin@@UAE@XZ @ 3292 NONAME ; QImageIOPlugin::~QImageIOPlugin(void)
 	??1QTessellator@@UAE@XZ @ 3293 NONAME ; QTessellator::~QTessellator(void)
@@ -3433,9 +3433,9 @@ EXPORTS
 	?setVisible@QWidget@@UAEX_N@Z @ 3432 NONAME ; void QWidget::setVisible(bool)
 	?quitOnLastWindowClosed@QApplicationPrivate@@2_NA @ 3433 NONAME ; bool QApplicationPrivate::quitOnLastWindowClosed
 	?rowsInserted@QColumnView@@MAEXABVQModelIndex@@HH@Z @ 3434 NONAME ; void QColumnView::rowsInserted(class QModelIndex const &, int, int)
-	?qt_metacast@QCoeFepInputContext@@UAEPAXPBD@Z @ 3435 NONAME ; void * QCoeFepInputContext::qt_metacast(char const *)
+	?qt_metacast@QCoeFepInputContext@@UAEPAXPBD@Z @ 3435 NONAME ABSENT ; void * QCoeFepInputContext::qt_metacast(char const *)
 	?map@QMatrix@@QBE?AVQPoint@@ABV2@@Z @ 3436 NONAME ; class QPoint QMatrix::map(class QPoint const &) const
-	?MopSupplyObject@QCoeFepInputContext@@UAE?AVPtr@TTypeUid@@V3@@Z @ 3437 NONAME ; class TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(class TTypeUid)
+	?MopSupplyObject@QCoeFepInputContext@@UAE?AVPtr@TTypeUid@@V3@@Z @ 3437 NONAME ABSENT ; class TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(class TTypeUid)
 	?styleName@QGuiPlatformPlugin@@UAE?AVQString@@XZ @ 3438 NONAME ; class QString QGuiPlatformPlugin::styleName(void)
 	?rowsInserted@QAbstractItemView@@MAEXABVQModelIndex@@HH@Z @ 3439 NONAME ; void QAbstractItemView::rowsInserted(class QModelIndex const &, int, int)
 	?setBlurHint@QGraphicsBloomEffect@@QAEXW4RenderHint@Qt@@@Z @ 3440 NONAME ABSENT ; void QGraphicsBloomEffect::setBlurHint(enum Qt::RenderHint)
@@ -3585,7 +3585,7 @@ EXPORTS
 	?setUniformRowHeights@QTreeView@@QAEX_N@Z @ 3584 NONAME ; void QTreeView::setUniformRowHeights(bool)
 	??MQImageTextKeyLang@@QBE_NABV0@@Z @ 3585 NONAME ; bool QImageTextKeyLang::operator<(class QImageTextKeyLang const &) const
 	?paste@QLineEdit@@QAEXXZ @ 3586 NONAME ; void QLineEdit::paste(void)
-	?identifierName@QCoeFepInputContext@@UAE?AVQString@@XZ @ 3587 NONAME ; class QString QCoeFepInputContext::identifierName(void)
+	?identifierName@QCoeFepInputContext@@UAE?AVQString@@XZ @ 3587 NONAME ABSENT ; class QString QCoeFepInputContext::identifierName(void)
 	??_EQMouseEvent@@UAE@I@Z @ 3588 NONAME ; QMouseEvent::~QMouseEvent(unsigned int)
 	?setForegroundBrush@QGraphicsView@@QAEXABVQBrush@@@Z @ 3589 NONAME ; void QGraphicsView::setForegroundBrush(class QBrush const &)
 	?setDocumentMode@QTabWidget@@QAEX_N@Z @ 3590 NONAME ; void QTabWidget::setDocumentMode(bool)
@@ -3809,7 +3809,7 @@ EXPORTS
 	?load@QPixmap@@QAE_NABVQString@@PBDV?$QFlags@W4ImageConversionFlag@Qt@@@@@Z @ 3808 NONAME ; bool QPixmap::load(class QString const &, char const *, class QFlags<enum Qt::ImageConversionFlag>)
 	??0QStyleOptionToolBar@@IAE@H@Z @ 3809 NONAME ; QStyleOptionToolBar::QStyleOptionToolBar(int)
 	?setForegroundRole@QWidget@@QAEXW4ColorRole@QPalette@@@Z @ 3810 NONAME ; void QWidget::setForegroundRole(enum QPalette::ColorRole)
-	?applyHints@QCoeFepInputContext@@AAEXV?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 3811 NONAME ; void QCoeFepInputContext::applyHints(class QFlags<enum Qt::InputMethodHint>)
+	?applyHints@QCoeFepInputContext@@AAEXV?$QFlags@W4InputMethodHint@Qt@@@@@Z @ 3811 NONAME ABSENT ; void QCoeFepInputContext::applyHints(class QFlags<enum Qt::InputMethodHint>)
 	?visualAlignment@QStyle@@SA?AV?$QFlags@W4AlignmentFlag@Qt@@@@W4LayoutDirection@Qt@@V2@@Z @ 3812 NONAME ; class QFlags<enum Qt::AlignmentFlag> QStyle::visualAlignment(enum Qt::LayoutDirection, class QFlags<enum Qt::AlignmentFlag>)
 	?scrollContentsBy@QScrollArea@@MAEXHH@Z @ 3813 NONAME ; void QScrollArea::scrollContentsBy(int, int)
 	?itemsExpandable@QTreeView@@QBE_NXZ @ 3814 NONAME ; bool QTreeView::itemsExpandable(void) const
@@ -4247,7 +4247,7 @@ EXPORTS
 	?qt_metacast@QActionGroup@@UAEPAXPBD@Z @ 4246 NONAME ; void * QActionGroup::qt_metacast(char const *)
 	?inputMethodQuery@QTextEdit@@MBE?AVQVariant@@W4InputMethodQuery@Qt@@@Z @ 4247 NONAME ; class QVariant QTextEdit::inputMethodQuery(enum Qt::InputMethodQuery) const
 	?paint@QGraphicsRectItem@@UAEXPAVQPainter@@PBVQStyleOptionGraphicsItem@@PAVQWidget@@@Z @ 4248 NONAME ; void QGraphicsRectItem::paint(class QPainter *, class QStyleOptionGraphicsItem const *, class QWidget *)
-	?getStaticMetaObject@QCoeFepInputContext@@SAABUQMetaObject@@XZ @ 4249 NONAME ; struct QMetaObject const & QCoeFepInputContext::getStaticMetaObject(void)
+	?getStaticMetaObject@QCoeFepInputContext@@SAABUQMetaObject@@XZ @ 4249 NONAME ABSENT ; struct QMetaObject const & QCoeFepInputContext::getStaticMetaObject(void)
 	?d_func@QStyle@@AAEPAVQStylePrivate@@XZ @ 4250 NONAME ; class QStylePrivate * QStyle::d_func(void)
 	?hasAlphaChannel@QRasterPixmapData@@UBE_NXZ @ 4251 NONAME ; bool QRasterPixmapData::hasAlphaChannel(void) const
 	??1QAbstractScrollArea@@UAE@XZ @ 4252 NONAME ; QAbstractScrollArea::~QAbstractScrollArea(void)
@@ -4298,7 +4298,7 @@ EXPORTS
 	?fontWeight@QTextCharFormat@@QBEHXZ @ 4297 NONAME ; int QTextCharFormat::fontWeight(void) const
 	?staticMetaObject@QTextList@@2UQMetaObject@@B @ 4298 NONAME ; struct QMetaObject const QTextList::staticMetaObject
 	?setBlurRadius@QPixmapDropShadowFilter@@QAEXH@Z @ 4299 NONAME ABSENT ; void QPixmapDropShadowFilter::setBlurRadius(int)
-	?GetEditorContentForFep@QCoeFepInputContext@@UBEXAAVTDes16@@HH@Z @ 4300 NONAME ; void QCoeFepInputContext::GetEditorContentForFep(class TDes16 &, int, int) const
+	?GetEditorContentForFep@QCoeFepInputContext@@UBEXAAVTDes16@@HH@Z @ 4300 NONAME ABSENT ; void QCoeFepInputContext::GetEditorContentForFep(class TDes16 &, int, int) const
 	?trUtf8@QGraphicsWidget@@SA?AVQString@@PBD0H@Z @ 4301 NONAME ; class QString QGraphicsWidget::trUtf8(char const *, char const *, int)
 	?extraItemCache@QGraphicsItemPrivate@@QBEPAVQGraphicsItemCache@@XZ @ 4302 NONAME ; class QGraphicsItemCache * QGraphicsItemPrivate::extraItemCache(void) const
 	?metaObject@QTableWidget@@UBEPBUQMetaObject@@XZ @ 4303 NONAME ; struct QMetaObject const * QTableWidget::metaObject(void) const
@@ -4429,7 +4429,7 @@ EXPORTS
 	?beginNewFrame@QPaintBuffer@@QAEXXZ @ 4428 NONAME ; void QPaintBuffer::beginNewFrame(void)
 	?boundingRect@QPainterPath@@QBE?AVQRectF@@XZ @ 4429 NONAME ; class QRectF QPainterPath::boundingRect(void) const
 	?eventFilter@QCompleter@@MAE_NPAVQObject@@PAVQEvent@@@Z @ 4430 NONAME ; bool QCompleter::eventFilter(class QObject *, class QEvent *)
-	??0QCoeFepInputContext@@QAE@PAVQObject@@@Z @ 4431 NONAME ; QCoeFepInputContext::QCoeFepInputContext(class QObject *)
+	??0QCoeFepInputContext@@QAE@PAVQObject@@@Z @ 4431 NONAME ABSENT ; QCoeFepInputContext::QCoeFepInputContext(class QObject *)
 	?clear@QTextDocument@@UAEXXZ @ 4432 NONAME ; void QTextDocument::clear(void)
 	?tr@QKeyEventTransition@@SA?AVQString@@PBD0@Z @ 4433 NONAME ; class QString QKeyEventTransition::tr(char const *, char const *)
 	?drawPicture@QPainter@@QAEXABVQPoint@@ABVQPicture@@@Z @ 4434 NONAME ; void QPainter::drawPicture(class QPoint const &, class QPicture const &)
@@ -5180,7 +5180,7 @@ EXPORTS
 	?setPoint@QPolygon@@QAEXHHH@Z @ 5179 NONAME ; void QPolygon::setPoint(int, int, int)
 	?getStaticMetaObject@QIconEnginePluginV2@@SAABUQMetaObject@@XZ @ 5180 NONAME ; struct QMetaObject const & QIconEnginePluginV2::getStaticMetaObject(void)
 	?tr@QGraphicsTransform@@SA?AVQString@@PBD0H@Z @ 5181 NONAME ; class QString QGraphicsTransform::tr(char const *, char const *, int)
-	?ReportAknEdStateEvent@QCoeFepInputContext@@AAEXW4EAknEdwinStateEvent@MAknEdStateObserver@@@Z @ 5182 NONAME ; void QCoeFepInputContext::ReportAknEdStateEvent(enum MAknEdStateObserver::EAknEdwinStateEvent)
+	?ReportAknEdStateEvent@QCoeFepInputContext@@AAEXW4EAknEdwinStateEvent@MAknEdStateObserver@@@Z @ 5182 NONAME ABSENT ; void QCoeFepInputContext::ReportAknEdStateEvent(enum MAknEdStateObserver::EAknEdwinStateEvent)
 	?getStaticMetaObject@QUndoStack@@SAABUQMetaObject@@XZ @ 5183 NONAME ; struct QMetaObject const & QUndoStack::getStaticMetaObject(void)
 	?focusInEvent@QDateTimeEdit@@MAEXPAVQFocusEvent@@@Z @ 5184 NONAME ; void QDateTimeEdit::focusInEvent(class QFocusEvent *)
 	?isNull@QIcon@@QBE_NXZ @ 5185 NONAME ; bool QIcon::isNull(void) const
@@ -5505,7 +5505,7 @@ EXPORTS
 	?hasFormats@QTextEngine@@QBE_NXZ @ 5504 NONAME ; bool QTextEngine::hasFormats(void) const
 	?setNumColumns@QTextLine@@QAEXHM@Z @ 5505 NONAME ; void QTextLine::setNumColumns(int, float)
 	?trUtf8@QPixmapConvolutionFilter@@SA?AVQString@@PBD0H@Z @ 5506 NONAME ; class QString QPixmapConvolutionFilter::trUtf8(char const *, char const *, int)
-	?GetScreenCoordinatesForFepL@QCoeFepInputContext@@UBEXAAVTPoint@@AAH1H@Z @ 5507 NONAME ; void QCoeFepInputContext::GetScreenCoordinatesForFepL(class TPoint &, int &, int &, int) const
+	?GetScreenCoordinatesForFepL@QCoeFepInputContext@@UBEXAAVTPoint@@AAH1H@Z @ 5507 NONAME ABSENT ; void QCoeFepInputContext::GetScreenCoordinatesForFepL(class TPoint &, int &, int &, int) const
 	?visualRect@QHeaderView@@MBE?AVQRect@@ABVQModelIndex@@@Z @ 5508 NONAME ; class QRect QHeaderView::visualRect(class QModelIndex const &) const
 	?minimumSize@QStackedLayout@@UBE?AVQSize@@XZ @ 5509 NONAME ; class QSize QStackedLayout::minimumSize(void) const
 	?keyPressEvent@QGraphicsView@@MAEXPAVQKeyEvent@@@Z @ 5510 NONAME ; void QGraphicsView::keyPressEvent(class QKeyEvent *)
@@ -5806,7 +5806,7 @@ EXPORTS
 	?reset@QMatrix@@QAEXXZ @ 5805 NONAME ; void QMatrix::reset(void)
 	?qt_metacast@QTabWidget@@UAEPAXPBD@Z @ 5806 NONAME ; void * QTabWidget::qt_metacast(char const *)
 	?acceptsHoverEvents@QGraphicsItem@@QBE_NXZ @ 5807 NONAME ; bool QGraphicsItem::acceptsHoverEvents(void) const
-	?commitCurrentString@QCoeFepInputContext@@AAEX_N@Z @ 5808 NONAME ; void QCoeFepInputContext::commitCurrentString(bool)
+	?commitCurrentString@QCoeFepInputContext@@AAEX_N@Z @ 5808 NONAME ABSENT ; void QCoeFepInputContext::commitCurrentString(bool)
 	?validate@QIntValidator@@UBE?AW4State@QValidator@@AAVQString@@AAH@Z @ 5809 NONAME ; enum QValidator::State QIntValidator::validate(class QString &, int &) const
 	?itemChange@QGraphicsWidget@@MAE?AVQVariant@@W4GraphicsItemChange@QGraphicsItem@@ABV2@@Z @ 5810 NONAME ; class QVariant QGraphicsWidget::itemChange(enum QGraphicsItem::GraphicsItemChange, class QVariant const &)
 	?windowFrameEvent@QGraphicsWidget@@MAE_NPAVQEvent@@@Z @ 5811 NONAME ; bool QGraphicsWidget::windowFrameEvent(class QEvent *)
@@ -5827,7 +5827,7 @@ EXPORTS
 	??0QStyleOptionSizeGrip@@IAE@H@Z @ 5826 NONAME ; QStyleOptionSizeGrip::QStyleOptionSizeGrip(int)
 	?unsetWindowFrameMargins@QGraphicsWidget@@QAEXXZ @ 5827 NONAME ; void QGraphicsWidget::unsetWindowFrameMargins(void)
 	?inputMask@QLineEdit@@QBE?AVQString@@XZ @ 5828 NONAME ; class QString QLineEdit::inputMask(void) const
-	?inputCapabilities@QCoeFepInputContext@@QAE?AVTCoeInputCapabilities@@XZ @ 5829 NONAME ; class TCoeInputCapabilities QCoeFepInputContext::inputCapabilities(void)
+	?inputCapabilities@QCoeFepInputContext@@QAE?AVTCoeInputCapabilities@@XZ @ 5829 NONAME ABSENT ; class TCoeInputCapabilities QCoeFepInputContext::inputCapabilities(void)
 	?rawValue@QTextLength@@QBEMXZ @ 5830 NONAME ; float QTextLength::rawValue(void) const
 	?horizontalOffset@QListView@@MBEHXZ @ 5831 NONAME ; int QListView::horizontalOffset(void) const
 	?tr@QPixmapBlurFilter@@SA?AVQString@@PBD0H@Z @ 5832 NONAME ; class QString QPixmapBlurFilter::tr(char const *, char const *, int)
@@ -6608,7 +6608,7 @@ EXPORTS
 	?quality@QPictureIO@@QBEHXZ @ 6607 NONAME ; int QPictureIO::quality(void) const
 	?tr@QLineControl@@SA?AVQString@@PBD0@Z @ 6608 NONAME ; class QString QLineControl::tr(char const *, char const *)
 	?selectedFont@QFontDialog@@QBE?AVQFont@@XZ @ 6609 NONAME ; class QFont QFontDialog::selectedFont(void) const
-	??1QCoeFepInputContext@@UAE@XZ @ 6610 NONAME ; QCoeFepInputContext::~QCoeFepInputContext(void)
+	??1QCoeFepInputContext@@UAE@XZ @ 6610 NONAME ABSENT ; QCoeFepInputContext::~QCoeFepInputContext(void)
 	?q_func@QPaintEngineExPrivate@@AAEPAVQPaintEngineEx@@XZ @ 6611 NONAME ; class QPaintEngineEx * QPaintEngineExPrivate::q_func(void)
 	?setMatrixEnabled@QPainter@@QAEX_N@Z @ 6612 NONAME ; void QPainter::setMatrixEnabled(bool)
 	?dateTime@QDateTimeEdit@@QBE?AVQDateTime@@XZ @ 6613 NONAME ; class QDateTime QDateTimeEdit::dateTime(void) const
@@ -6850,7 +6850,7 @@ EXPORTS
 	?changeEvent@QSplitter@@MAEXPAVQEvent@@@Z @ 6849 NONAME ; void QSplitter::changeEvent(class QEvent *)
 	?letterSpacing@QFont@@QBEMXZ @ 6850 NONAME ; float QFont::letterSpacing(void) const
 	?backgroundMode@QPaintEngineState@@QBE?AW4BGMode@Qt@@XZ @ 6851 NONAME ; enum Qt::BGMode QPaintEngineState::backgroundMode(void) const
-	?staticMetaObject@QCoeFepInputContext@@2UQMetaObject@@B @ 6852 NONAME ; struct QMetaObject const QCoeFepInputContext::staticMetaObject
+	?staticMetaObject@QCoeFepInputContext@@2UQMetaObject@@B @ 6852 NONAME ABSENT ; struct QMetaObject const QCoeFepInputContext::staticMetaObject
 	?enterWhatsThisMode@QWhatsThis@@SAXXZ @ 6853 NONAME ; void QWhatsThis::enterWhatsThisMode(void)
 	?textInteractionFlags@QPlainTextEdit@@QBE?AV?$QFlags@W4TextInteractionFlag@Qt@@@@XZ @ 6854 NONAME ; class QFlags<enum Qt::TextInteractionFlag> QPlainTextEdit::textInteractionFlags(void) const
 	?addToolBar@QMainWindow@@QAEXPAVQToolBar@@@Z @ 6855 NONAME ; void QMainWindow::addToolBar(class QToolBar *)
@@ -7402,7 +7402,7 @@ EXPORTS
 	?setAutoRepeat@QShortcut@@QAEX_N@Z @ 7401 NONAME ; void QShortcut::setAutoRepeat(bool)
 	?clearLineData@QTextEngine@@QAEXXZ @ 7402 NONAME ; void QTextEngine::clearLineData(void)
 	?devType@QPixmap@@UBEHXZ @ 7403 NONAME ; int QPixmap::devType(void) const
-	?update@QCoeFepInputContext@@UAEXXZ @ 7404 NONAME ; void QCoeFepInputContext::update(void)
+	?update@QCoeFepInputContext@@UAEXXZ @ 7404 NONAME ABSENT ; void QCoeFepInputContext::update(void)
 	?showSection@QHeaderView@@QAEXH@Z @ 7405 NONAME ; void QHeaderView::showSection(int)
 	?setDirection@QBoxLayout@@QAEXW4Direction@1@@Z @ 7406 NONAME ; void QBoxLayout::setDirection(enum QBoxLayout::Direction)
 	?items@QGraphicsScene@@QBE?AV?$QList@PAVQGraphicsItem@@@@ABVQPolygonF@@W4ItemSelectionMode@Qt@@@Z @ 7407 NONAME ; class QList<class QGraphicsItem *> QGraphicsScene::items(class QPolygonF const &, enum Qt::ItemSelectionMode) const
@@ -7923,8 +7923,8 @@ EXPORTS
 	?resizeContents@QListView@@IAEXHH@Z @ 7922 NONAME ; void QListView::resizeContents(int, int)
 	?setStrength@QPixmapColorizeFilter@@QAEXM@Z @ 7923 NONAME ; void QPixmapColorizeFilter::setStrength(float)
 	??0QStyleOptionTabV3@@QAE@XZ @ 7924 NONAME ; QStyleOptionTabV3::QStyleOptionTabV3(void)
-	?updateHints@QCoeFepInputContext@@AAEX_N@Z @ 7925 NONAME ; void QCoeFepInputContext::updateHints(bool)
-	?StartFepInlineEditL@QCoeFepInputContext@@UAEXABVTDesC16@@HHPBVMFormCustomDraw@@AAVMFepInlineTextFormatRetriever@@AAVMFepPointerEventHandlerDuringInlineEdit@@@Z @ 7926 NONAME ; void QCoeFepInputContext::StartFepInlineEditL(class TDesC16 const &, int, int, class MFormCustomDraw const *, class MFepInlineTextFormatRetriever &, class MFepPointerEventHandlerDuringInlineEdit &)
+	?updateHints@QCoeFepInputContext@@AAEX_N@Z @ 7925 NONAME ABSENT ; void QCoeFepInputContext::updateHints(bool)
+	?StartFepInlineEditL@QCoeFepInputContext@@UAEXABVTDesC16@@HHPBVMFormCustomDraw@@AAVMFepInlineTextFormatRetriever@@AAVMFepPointerEventHandlerDuringInlineEdit@@@Z @ 7926 NONAME ABSENT ; void QCoeFepInputContext::StartFepInlineEditL(class TDesC16 const &, int, int, class MFormCustomDraw const *, class MFepInlineTextFormatRetriever &, class MFepPointerEventHandlerDuringInlineEdit &)
 	?childEvent@QWorkspace@@MAEXPAVQChildEvent@@@Z @ 7927 NONAME ; void QWorkspace::childEvent(class QChildEvent *)
 	?setMovable@QHeaderView@@QAEX_N@Z @ 7928 NONAME ; void QHeaderView::setMovable(bool)
 	?trUtf8@QTextList@@SA?AVQString@@PBD0H@Z @ 7929 NONAME ; class QString QTextList::trUtf8(char const *, char const *, int)
@@ -8218,7 +8218,7 @@ EXPORTS
 	?isRightToLeft@QWidget@@QBE_NXZ @ 8217 NONAME ; bool QWidget::isRightToLeft(void) const
 	?updateNeeded@QLineControl@@IAEXABVQRect@@@Z @ 8218 NONAME ; void QLineControl::updateNeeded(class QRect const &)
 	?trUtf8@QSplitter@@SA?AVQString@@PBD0H@Z @ 8219 NONAME ; class QString QSplitter::trUtf8(char const *, char const *, int)
-	?mouseHandler@QCoeFepInputContext@@UAEXHPAVQMouseEvent@@@Z @ 8220 NONAME ; void QCoeFepInputContext::mouseHandler(int, class QMouseEvent *)
+	?mouseHandler@QCoeFepInputContext@@UAEXHPAVQMouseEvent@@@Z @ 8220 NONAME ABSENT ; void QCoeFepInputContext::mouseHandler(int, class QMouseEvent *)
 	??0QGraphicsPathItem@@QAE@PAVQGraphicsItem@@PAVQGraphicsScene@@@Z @ 8221 NONAME ; QGraphicsPathItem::QGraphicsPathItem(class QGraphicsItem *, class QGraphicsScene *)
 	?d_func@QAbstractSpinBox@@AAEPAVQAbstractSpinBoxPrivate@@XZ @ 8222 NONAME ; class QAbstractSpinBoxPrivate * QAbstractSpinBox::d_func(void)
 	??6@YA?AVQDebug@@V0@PAVQGraphicsObject@@@Z @ 8223 NONAME ; class QDebug operator<<(class QDebug, class QGraphicsObject *)
@@ -8250,7 +8250,7 @@ EXPORTS
 	?stacks@QUndoGroup@@QBE?AV?$QList@PAVQUndoStack@@@@XZ @ 8249 NONAME ; class QList<class QUndoStack *> QUndoGroup::stacks(void) const
 	?naturalTextWidth@QTextLine@@QBEMXZ @ 8250 NONAME ; float QTextLine::naturalTextWidth(void) const
 	?atSpace@QTextEngine@@QBE_NH@Z @ 8251 NONAME ; bool QTextEngine::atSpace(int) const
-	?CancelFepInlineEdit@QCoeFepInputContext@@UAEXXZ @ 8252 NONAME ; void QCoeFepInputContext::CancelFepInlineEdit(void)
+	?CancelFepInlineEdit@QCoeFepInputContext@@UAEXXZ @ 8252 NONAME ABSENT ; void QCoeFepInputContext::CancelFepInlineEdit(void)
 	?syncBackingStore@QWidgetPrivate@@QAEXXZ @ 8253 NONAME ; void QWidgetPrivate::syncBackingStore(void)
 	?setHorizontalPolicy@QSizePolicy@@QAEXW4Policy@1@@Z @ 8254 NONAME ; void QSizePolicy::setHorizontalPolicy(enum QSizePolicy::Policy)
 	?filter@QDirModel@@QBE?AV?$QFlags@W4Filter@QDir@@@@XZ @ 8255 NONAME ; class QFlags<enum QDir::Filter> QDirModel::filter(void) const
@@ -8270,7 +8270,7 @@ EXPORTS
 	?setTransform@QGraphicsItem@@QAEXABVQTransform@@_N@Z @ 8269 NONAME ; void QGraphicsItem::setTransform(class QTransform const &, bool)
 	?expand@QTreeView@@QAEXABVQModelIndex@@@Z @ 8270 NONAME ; void QTreeView::expand(class QModelIndex const &)
 	?setParentItem@QGraphicsItem@@QAEXPAV1@@Z @ 8271 NONAME ; void QGraphicsItem::setParentItem(class QGraphicsItem *)
-	?GetFormatForFep@QCoeFepInputContext@@UBEXAAVTCharFormat@@H@Z @ 8272 NONAME ; void QCoeFepInputContext::GetFormatForFep(class TCharFormat &, int) const
+	?GetFormatForFep@QCoeFepInputContext@@UBEXAAVTCharFormat@@H@Z @ 8272 NONAME ABSENT ; void QCoeFepInputContext::GetFormatForFep(class TCharFormat &, int) const
 	?setSizeConstraint@QLayout@@QAEXW4SizeConstraint@1@@Z @ 8273 NONAME ; void QLayout::setSizeConstraint(enum QLayout::SizeConstraint)
 	??5@YAAAVQDataStream@@AAV0@AAVQPicture@@@Z @ 8274 NONAME ; class QDataStream & operator>>(class QDataStream &, class QPicture &)
 	?atEnd@QTextCursor@@QBE_NXZ @ 8275 NONAME ; bool QTextCursor::atEnd(void) const
@@ -8599,7 +8599,7 @@ EXPORTS
 	?isResize@QWidgetResizeHandler@@ABE_NXZ @ 8598 NONAME ; bool QWidgetResizeHandler::isResize(void) const
 	?setWrapping@QListView@@QAEX_N@Z @ 8599 NONAME ; void QListView::setWrapping(bool)
 	??0QTextTableCellFormat@@IAE@ABVQTextFormat@@@Z @ 8600 NONAME ; QTextTableCellFormat::QTextTableCellFormat(class QTextFormat const &)
-	?queueInputCapabilitiesChanged@QCoeFepInputContext@@AAEXXZ @ 8601 NONAME ; void QCoeFepInputContext::queueInputCapabilitiesChanged(void)
+	?queueInputCapabilitiesChanged@QCoeFepInputContext@@AAEXXZ @ 8601 NONAME ABSENT ; void QCoeFepInputContext::queueInputCapabilitiesChanged(void)
 	??4QPixmap@@QAEAAV0@ABV0@@Z @ 8602 NONAME ; class QPixmap & QPixmap::operator=(class QPixmap const &)
 	??0QTextCursor@@QAE@PAVQTextDocumentPrivate@@H@Z @ 8603 NONAME ; QTextCursor::QTextCursor(class QTextDocumentPrivate *, int)
 	??0QStyleOptionRubberBand@@QAE@XZ @ 8604 NONAME ; QStyleOptionRubberBand::QStyleOptionRubberBand(void)
@@ -9273,7 +9273,7 @@ EXPORTS
 	??1QPixmapFilter@@UAE@XZ @ 9272 NONAME ; QPixmapFilter::~QPixmapFilter(void)
 	?setTabWhatsThis@QTabWidget@@QAEXHABVQString@@@Z @ 9273 NONAME ; void QTabWidget::setTabWhatsThis(int, class QString const &)
 	?setTitleBarWidget@QDockWidget@@QAEXPAVQWidget@@@Z @ 9274 NONAME ; void QDockWidget::setTitleBarWidget(class QWidget *)
-	?DocumentMaximumLengthForFep@QCoeFepInputContext@@UBEHXZ @ 9275 NONAME ; int QCoeFepInputContext::DocumentMaximumLengthForFep(void) const
+	?DocumentMaximumLengthForFep@QCoeFepInputContext@@UBEHXZ @ 9275 NONAME ABSENT ; int QCoeFepInputContext::DocumentMaximumLengthForFep(void) const
 	?decideFormatFromContent@QImageReader@@QBE_NXZ @ 9276 NONAME ; bool QImageReader::decideFormatFromContent(void) const
 	?trUtf8@QPixmapColorizeFilter@@SA?AVQString@@PBD0@Z @ 9277 NONAME ; class QString QPixmapColorizeFilter::trUtf8(char const *, char const *)
 	?removeFromGroup@QGraphicsItemGroup@@QAEXPAVQGraphicsItem@@@Z @ 9278 NONAME ; void QGraphicsItemGroup::removeFromGroup(class QGraphicsItem *)
@@ -9357,7 +9357,7 @@ EXPORTS
 	?toVector2D@QVector3D@@QBE?AVQVector2D@@XZ @ 9356 NONAME ; class QVector2D QVector3D::toVector2D(void) const
 	?stackBefore@QGraphicsItem@@QAEXPBV1@@Z @ 9357 NONAME ; void QGraphicsItem::stackBefore(class QGraphicsItem const *)
 	?sizeHintForColumn@QTreeView@@MBEHH@Z @ 9358 NONAME ; int QTreeView::sizeHintForColumn(int) const
-	?widgetDestroyed@QCoeFepInputContext@@UAEXPAVQWidget@@@Z @ 9359 NONAME ; void QCoeFepInputContext::widgetDestroyed(class QWidget *)
+	?widgetDestroyed@QCoeFepInputContext@@UAEXPAVQWidget@@@Z @ 9359 NONAME ABSENT ; void QCoeFepInputContext::widgetDestroyed(class QWidget *)
 	?staticMetaObject@QPushButton@@2UQMetaObject@@B @ 9360 NONAME ; struct QMetaObject const QPushButton::staticMetaObject
 	?xHeight@QFontEngine@@UBE?AUQFixed@@XZ @ 9361 NONAME ; struct QFixed QFontEngine::xHeight(void) const
 	?setItemIcon@QToolBox@@QAEXHABVQIcon@@@Z @ 9362 NONAME ; void QToolBox::setItemIcon(int, class QIcon const &)
@@ -9606,7 +9606,7 @@ EXPORTS
 	?textDirection@QProgressBar@@QAE?AW4Direction@1@XZ @ 9605 NONAME ; enum QProgressBar::Direction QProgressBar::textDirection(void)
 	?unpolish@QStyle@@UAEXPAVQApplication@@@Z @ 9606 NONAME ; void QStyle::unpolish(class QApplication *)
 	?redo@QPlainTextEdit@@QAEXXZ @ 9607 NONAME ; void QPlainTextEdit::redo(void)
-	?SetInlineEditingCursorVisibilityL@QCoeFepInputContext@@UAEXH@Z @ 9608 NONAME ; void QCoeFepInputContext::SetInlineEditingCursorVisibilityL(int)
+	?SetInlineEditingCursorVisibilityL@QCoeFepInputContext@@UAEXH@Z @ 9608 NONAME ABSENT ; void QCoeFepInputContext::SetInlineEditingCursorVisibilityL(int)
 	??6@YA?AVQDebug@@V0@V?$QFlags@W4StateFlag@QStyle@@@@@Z @ 9609 NONAME ; class QDebug operator<<(class QDebug, class QFlags<enum QStyle::StateFlag>)
 	?test@Parser@QCss@@QAE_NW4TokenType@2@@Z @ 9610 NONAME ; bool QCss::Parser::test(enum QCss::TokenType)
 	?alignment@QTextBlockFormat@@QBE?AV?$QFlags@W4AlignmentFlag@Qt@@@@XZ @ 9611 NONAME ; class QFlags<enum Qt::AlignmentFlag> QTextBlockFormat::alignment(void) const
@@ -9712,7 +9712,7 @@ EXPORTS
 	?d_func@QListWidget@@AAEPAVQListWidgetPrivate@@XZ @ 9711 NONAME ; class QListWidgetPrivate * QListWidget::d_func(void)
 	??1QMessageBox@@UAE@XZ @ 9712 NONAME ; QMessageBox::~QMessageBox(void)
 	?paintOnScreen@QWidgetPrivate@@QBE_NXZ @ 9713 NONAME ; bool QWidgetPrivate::paintOnScreen(void) const
-	?trUtf8@QCoeFepInputContext@@SA?AVQString@@PBD0H@Z @ 9714 NONAME ; class QString QCoeFepInputContext::trUtf8(char const *, char const *, int)
+	?trUtf8@QCoeFepInputContext@@SA?AVQString@@PBD0H@Z @ 9714 NONAME ABSENT ; class QString QCoeFepInputContext::trUtf8(char const *, char const *, int)
 	?setCorrectionMode@QAbstractSpinBox@@QAEXW4CorrectionMode@1@@Z @ 9715 NONAME ; void QAbstractSpinBox::setCorrectionMode(enum QAbstractSpinBox::CorrectionMode)
 	?translate@QPolygon@@QAEXABVQPoint@@@Z @ 9716 NONAME ; void QPolygon::translate(class QPoint const &)
 	??0QTextBrowser@@QAE@PAVQWidget@@@Z @ 9717 NONAME ; QTextBrowser::QTextBrowser(class QWidget *)
@@ -9807,7 +9807,7 @@ EXPORTS
 	?widthF@QPen@@QBEMXZ @ 9806 NONAME ; float QPen::widthF(void) const
 	?mouseMoveEvent@QAbstractItemView@@MAEXPAVQMouseEvent@@@Z @ 9807 NONAME ; void QAbstractItemView::mouseMoveEvent(class QMouseEvent *)
 	?styleHint@QWindowsStyle@@UBEHW4StyleHint@QStyle@@PBVQStyleOption@@PBVQWidget@@PAVQStyleHintReturn@@@Z @ 9808 NONAME ; int QWindowsStyle::styleHint(enum QStyle::StyleHint, class QStyleOption const *, class QWidget const *, class QStyleHintReturn *) const
-	?SetCursorSelectionForFepL@QCoeFepInputContext@@UAEXABVTCursorSelection@@@Z @ 9809 NONAME ; void QCoeFepInputContext::SetCursorSelectionForFepL(class TCursorSelection const &)
+	?SetCursorSelectionForFepL@QCoeFepInputContext@@UAEXABVTCursorSelection@@@Z @ 9809 NONAME ABSENT ; void QCoeFepInputContext::SetCursorSelectionForFepL(class TCursorSelection const &)
 	??1QClipboardEvent@@UAE@XZ @ 9810 NONAME ; QClipboardEvent::~QClipboardEvent(void)
 	?textLanguages@QImage@@QBE?AVQStringList@@XZ @ 9811 NONAME ; class QStringList QImage::textLanguages(void) const
 	?page@QWizard@@QBEPAVQWizardPage@@H@Z @ 9812 NONAME ; class QWizardPage * QWizard::page(int) const
@@ -9958,14 +9958,14 @@ EXPORTS
 	?valuePropertyName@QItemEditorFactory@@UBE?AVQByteArray@@W4Type@QVariant@@@Z @ 9957 NONAME ; class QByteArray QItemEditorFactory::valuePropertyName(enum QVariant::Type) const
 	?focusInEvent@QLabel@@MAEXPAVQFocusEvent@@@Z @ 9958 NONAME ; void QLabel::focusInEvent(class QFocusEvent *)
 	?toString@Value@QCss@@QBE?AVQString@@XZ @ 9959 NONAME ; class QString QCss::Value::toString(void) const
-	?GetCursorSelectionForFep@QCoeFepInputContext@@UBEXAAVTCursorSelection@@@Z @ 9960 NONAME ; void QCoeFepInputContext::GetCursorSelectionForFep(class TCursorSelection &) const
+	?GetCursorSelectionForFep@QCoeFepInputContext@@UBEXAAVTCursorSelection@@@Z @ 9960 NONAME ABSENT ; void QCoeFepInputContext::GetCursorSelectionForFep(class TCursorSelection &) const
 	??0QTransform@@QAE@ABVQMatrix@@@Z @ 9961 NONAME ; QTransform::QTransform(class QMatrix const &)
 	?setViewMode@QFileDialog@@QAEXW4ViewMode@1@@Z @ 9962 NONAME ; void QFileDialog::setViewMode(enum QFileDialog::ViewMode)
 	?setCurrentCharFormat@QTextControl@@QAEXABVQTextCharFormat@@@Z @ 9963 NONAME ; void QTextControl::setCurrentCharFormat(class QTextCharFormat const &)
 	??6@YAAAVQDataStream@@AAV0@ABVQPalette@@@Z @ 9964 NONAME ; class QDataStream & operator<<(class QDataStream &, class QPalette const &)
 	??_EQHelpEvent@@UAE@I@Z @ 9965 NONAME ; QHelpEvent::~QHelpEvent(unsigned int)
 	?verticalScaleAt@QGraphicsItemAnimation@@QBEMM@Z @ 9966 NONAME ; float QGraphicsItemAnimation::verticalScaleAt(float) const
-	?State@QCoeFepInputContext@@UAEPAVCState@MCoeFepAwareTextEditor_Extension1@@VTUid@@@Z @ 9967 NONAME ; class MCoeFepAwareTextEditor_Extension1::CState * QCoeFepInputContext::State(class TUid)
+	?State@QCoeFepInputContext@@UAEPAVCState@MCoeFepAwareTextEditor_Extension1@@VTUid@@@Z @ 9967 NONAME ABSENT ; class MCoeFepAwareTextEditor_Extension1::CState * QCoeFepInputContext::State(class TUid)
 	?q_func@QGraphicsEffectPrivate@@AAEPAVQGraphicsEffect@@XZ @ 9968 NONAME ; class QGraphicsEffect * QGraphicsEffectPrivate::q_func(void)
 	?trUtf8@QRadioButton@@SA?AVQString@@PBD0@Z @ 9969 NONAME ; class QString QRadioButton::trUtf8(char const *, char const *)
 	?setVerticalHeaderFormat@QCalendarWidget@@QAEXW4VerticalHeaderFormat@1@@Z @ 9970 NONAME ; void QCalendarWidget::setVerticalHeaderFormat(enum QCalendarWidget::VerticalHeaderFormat)
@@ -10291,7 +10291,7 @@ EXPORTS
 	?tr@QInputDialog@@SA?AVQString@@PBD0@Z @ 10290 NONAME ; class QString QInputDialog::tr(char const *, char const *)
 	?tabSizeHint@QTabBar@@MBE?AVQSize@@H@Z @ 10291 NONAME ; class QSize QTabBar::tabSizeHint(int) const
 	?tr@QDateEdit@@SA?AVQString@@PBD0@Z @ 10292 NONAME ; class QString QDateEdit::tr(char const *, char const *)
-	?tr@QCoeFepInputContext@@SA?AVQString@@PBD0H@Z @ 10293 NONAME ; class QString QCoeFepInputContext::tr(char const *, char const *, int)
+	?tr@QCoeFepInputContext@@SA?AVQString@@PBD0H@Z @ 10293 NONAME ABSENT ; class QString QCoeFepInputContext::tr(char const *, char const *, int)
 	?origin@QGraphicsScale@@QBE?AVQVector3D@@XZ @ 10294 NONAME ; class QVector3D QGraphicsScale::origin(void) const
 	?subElementRect@QCommonStyle@@UBE?AVQRect@@W4SubElement@QStyle@@PBVQStyleOption@@PBVQWidget@@@Z @ 10295 NONAME ; class QRect QCommonStyle::subElementRect(enum QStyle::SubElement, class QStyleOption const *, class QWidget const *) const
 	?sizeHint@QRadioButton@@UBE?AVQSize@@XZ @ 10296 NONAME ; class QSize QRadioButton::sizeHint(void) const
@@ -10597,7 +10597,7 @@ EXPORTS
 	?menuBar@QLayout@@QBEPAVQWidget@@XZ @ 10596 NONAME ; class QWidget * QLayout::menuBar(void) const
 	?items@QGraphicsScene@@QBE?AV?$QList@PAVQGraphicsItem@@@@ABVQPolygonF@@W4ItemSelectionMode@Qt@@W4SortOrder@5@ABVQTransform@@@Z @ 10597 NONAME ; class QList<class QGraphicsItem *> QGraphicsScene::items(class QPolygonF const &, enum Qt::ItemSelectionMode, enum Qt::SortOrder, class QTransform const &) const
 	?substitutions@QFont@@SA?AVQStringList@@XZ @ 10598 NONAME ; class QStringList QFont::substitutions(void)
-	?DoCommitFepInlineEditL@QCoeFepInputContext@@EAEXXZ @ 10599 NONAME ; void QCoeFepInputContext::DoCommitFepInlineEditL(void)
+	?DoCommitFepInlineEditL@QCoeFepInputContext@@EAEXXZ @ 10599 NONAME ABSENT ; void QCoeFepInputContext::DoCommitFepInlineEditL(void)
 	?rootPath@QFileSystemModel@@QBE?AVQString@@XZ @ 10600 NONAME ; class QString QFileSystemModel::rootPath(void) const
 	?documentSizeChanged@QTextControl@@IAEXABVQSizeF@@@Z @ 10601 NONAME ; void QTextControl::documentSizeChanged(class QSizeF const &)
 	??1QScrollArea@@UAE@XZ @ 10602 NONAME ; QScrollArea::~QScrollArea(void)
@@ -10616,7 +10616,7 @@ EXPORTS
 	?reason@QFocusEvent@@QBE?AW4FocusReason@Qt@@XZ @ 10615 NONAME ; enum Qt::FocusReason QFocusEvent::reason(void) const
 	?undo@QTextControl@@QAEXXZ @ 10616 NONAME ; void QTextControl::undo(void)
 	?fromHsv@QColor@@SA?AV1@HHHH@Z @ 10617 NONAME ; class QColor QColor::fromHsv(int, int, int, int)
-	?reset@QCoeFepInputContext@@UAEXXZ @ 10618 NONAME ; void QCoeFepInputContext::reset(void)
+	?reset@QCoeFepInputContext@@UAEXXZ @ 10618 NONAME ABSENT ; void QCoeFepInputContext::reset(void)
 	?load@QImage@@QAE_NABVQString@@PBD@Z @ 10619 NONAME ; bool QImage::load(class QString const &, char const *)
 	?staticMetaObject@QProxyStyle@@2UQMetaObject@@B @ 10620 NONAME ; struct QMetaObject const QProxyStyle::staticMetaObject
 	?translate@QMatrix4x4@@QAEAAV1@MMM@Z @ 10621 NONAME ; class QMatrix4x4 & QMatrix4x4::translate(float, float, float)
@@ -10690,7 +10690,7 @@ EXPORTS
 	?controlTypes@QLayoutItem@@QBE?AV?$QFlags@W4ControlType@QSizePolicy@@@@XZ @ 10689 NONAME ; class QFlags<enum QSizePolicy::ControlType> QLayoutItem::controlTypes(void) const
 	?options@QWizard@@QBE?AV?$QFlags@W4WizardOption@QWizard@@@@XZ @ 10690 NONAME ; class QFlags<enum QWizard::WizardOption> QWizard::options(void) const
 	?visualRegionForSelection@QTableView@@MBE?AVQRegion@@ABVQItemSelection@@@Z @ 10691 NONAME ; class QRegion QTableView::visualRegionForSelection(class QItemSelection const &) const
-	?applyFormat@QCoeFepInputContext@@AAEXPAV?$QList@VAttribute@QInputMethodEvent@@@@@Z @ 10692 NONAME ; void QCoeFepInputContext::applyFormat(class QList<class QInputMethodEvent::Attribute> *)
+	?applyFormat@QCoeFepInputContext@@AAEXPAV?$QList@VAttribute@QInputMethodEvent@@@@@Z @ 10692 NONAME ABSENT ; void QCoeFepInputContext::applyFormat(class QList<class QInputMethodEvent::Attribute> *)
 	??1QFontMetrics@@QAE@XZ @ 10693 NONAME ; QFontMetrics::~QFontMetrics(void)
 	?setWindowRole@QWidget@@QAEXABVQString@@@Z @ 10694 NONAME ; void QWidget::setWindowRole(class QString const &)
 	??0QTextTable@@QAE@PAVQTextDocument@@@Z @ 10695 NONAME ; QTextTable::QTextTable(class QTextDocument *)
@@ -10867,7 +10867,7 @@ EXPORTS
 	?setNameFilterDisables@QFileSystemModel@@QAEX_N@Z @ 10866 NONAME ; void QFileSystemModel::setNameFilterDisables(bool)
 	?resizeAnchor@QGraphicsView@@QBE?AW4ViewportAnchor@1@XZ @ 10867 NONAME ; enum QGraphicsView::ViewportAnchor QGraphicsView::resizeAnchor(void) const
 	?scale@QMatrix4x4@@QAEAAV1@M@Z @ 10868 NONAME ; class QMatrix4x4 & QMatrix4x4::scale(float)
-	?SetStateTransferingOwnershipL@QCoeFepInputContext@@UAEXPAVCState@MCoeFepAwareTextEditor_Extension1@@VTUid@@@Z @ 10869 NONAME ; void QCoeFepInputContext::SetStateTransferingOwnershipL(class MCoeFepAwareTextEditor_Extension1::CState *, class TUid)
+	?SetStateTransferingOwnershipL@QCoeFepInputContext@@UAEXPAVCState@MCoeFepAwareTextEditor_Extension1@@VTUid@@@Z @ 10869 NONAME ABSENT ; void QCoeFepInputContext::SetStateTransferingOwnershipL(class MCoeFepAwareTextEditor_Extension1::CState *, class TUid)
 	??0QStyle@@QAE@XZ @ 10870 NONAME ; QStyle::QStyle(void)
 	?mouseDoubleClickEvent@QHeaderView@@MAEXPAVQMouseEvent@@@Z @ 10871 NONAME ; void QHeaderView::mouseDoubleClickEvent(class QMouseEvent *)
 	?addPermanentWidget@QStatusBar@@QAEXPAVQWidget@@H@Z @ 10872 NONAME ; void QStatusBar::addPermanentWidget(class QWidget *, int)
@@ -11545,7 +11545,7 @@ EXPORTS
 	?keyReleaseEvent@QWidget@@MAEXPAVQKeyEvent@@@Z @ 11544 NONAME ; void QWidget::keyReleaseEvent(class QKeyEvent *)
 	??0QCursor@@QAE@ABV0@@Z @ 11545 NONAME ; QCursor::QCursor(class QCursor const &)
 	?keyReleaseEvent@QGraphicsScene@@MAEXPAVQKeyEvent@@@Z @ 11546 NONAME ; void QGraphicsScene::keyReleaseEvent(class QKeyEvent *)
-	?tr@QCoeFepInputContext@@SA?AVQString@@PBD0@Z @ 11547 NONAME ; class QString QCoeFepInputContext::tr(char const *, char const *)
+	?tr@QCoeFepInputContext@@SA?AVQString@@PBD0@Z @ 11547 NONAME ABSENT ; class QString QCoeFepInputContext::tr(char const *, char const *)
 	?pos@QContextMenuEvent@@QBEABVQPoint@@XZ @ 11548 NONAME ; class QPoint const & QContextMenuEvent::pos(void) const
 	??5@YAAAVQDataStream@@AAV0@AAVQCursor@@@Z @ 11549 NONAME ; class QDataStream & operator>>(class QDataStream &, class QCursor &)
 	??_EQTextObject@@UAE@I@Z @ 11550 NONAME ; QTextObject::~QTextObject(unsigned int)
@@ -11787,7 +11787,7 @@ EXPORTS
 	?focusOutEvent@QPlainTextEdit@@MAEXPAVQFocusEvent@@@Z @ 11786 NONAME ; void QPlainTextEdit::focusOutEvent(class QFocusEvent *)
 	??_EQItemEditorCreatorBase@@UAE@I@Z @ 11787 NONAME ; QItemEditorCreatorBase::~QItemEditorCreatorBase(unsigned int)
 	?capStyleMode@QStroker@@QBE?AW4LineJoinMode@1@XZ @ 11788 NONAME ; enum QStroker::LineJoinMode QStroker::capStyleMode(void) const
-	?filterEvent@QCoeFepInputContext@@UAE_NPBVQEvent@@@Z @ 11789 NONAME ; bool QCoeFepInputContext::filterEvent(class QEvent const *)
+	?filterEvent@QCoeFepInputContext@@UAE_NPBVQEvent@@@Z @ 11789 NONAME ABSENT ; bool QCoeFepInputContext::filterEvent(class QEvent const *)
 	??HQRegion@@QBE?BV0@ABV0@@Z @ 11790 NONAME ; class QRegion const QRegion::operator+(class QRegion const &) const
 	?revert@QAbstractProxyModel@@UAEXXZ @ 11791 NONAME ; void QAbstractProxyModel::revert(void)
 	??0QPainterState@@QAE@PBV0@@Z @ 11792 NONAME ; QPainterState::QPainterState(class QPainterState const *)
@@ -11880,7 +11880,7 @@ EXPORTS
 	?updateState@QPaintEngineEx@@UAEXABVQPaintEngineState@@@Z @ 11879 NONAME ; void QPaintEngineEx::updateState(class QPaintEngineState const &)
 	?qt_metacall@QTextFrame@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 11880 NONAME ; int QTextFrame::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?getStaticMetaObject@QImageIOPlugin@@SAABUQMetaObject@@XZ @ 11881 NONAME ; struct QMetaObject const & QImageIOPlugin::getStaticMetaObject(void)
-	?trUtf8@QCoeFepInputContext@@SA?AVQString@@PBD0@Z @ 11882 NONAME ; class QString QCoeFepInputContext::trUtf8(char const *, char const *)
+	?trUtf8@QCoeFepInputContext@@SA?AVQString@@PBD0@Z @ 11882 NONAME ABSENT ; class QString QCoeFepInputContext::trUtf8(char const *, char const *)
 	?autoExclusive@QAbstractButton@@QBE_NXZ @ 11883 NONAME ; bool QAbstractButton::autoExclusive(void) const
 	??1QGraphicsEffectSource@@UAE@XZ @ 11884 NONAME ; QGraphicsEffectSource::~QGraphicsEffectSource(void)
 	?mapRectToScene@QGraphicsItem@@QBE?AVQRectF@@MMMM@Z @ 11885 NONAME ; class QRectF QGraphicsItem::mapRectToScene(float, float, float, float) const
@@ -12050,7 +12050,7 @@ EXPORTS
 	?addRoundedRect@QPainterPath@@QAEXMMMMMMW4SizeMode@Qt@@@Z @ 12049 NONAME ; void QPainterPath::addRoundedRect(float, float, float, float, float, float, enum Qt::SizeMode)
 	?lastCursorPosition@QTextTableCell@@QBE?AVQTextCursor@@XZ @ 12050 NONAME ; class QTextCursor QTextTableCell::lastCursorPosition(void) const
 	?toTableCellFormat@QTextFormat@@QBE?AVQTextTableCellFormat@@XZ @ 12051 NONAME ; class QTextTableCellFormat QTextFormat::toTableCellFormat(void) const
-	?setFocusWidget@QCoeFepInputContext@@UAEXPAVQWidget@@@Z @ 12052 NONAME ; void QCoeFepInputContext::setFocusWidget(class QWidget *)
+	?setFocusWidget@QCoeFepInputContext@@UAEXPAVQWidget@@@Z @ 12052 NONAME ABSENT ; void QCoeFepInputContext::setFocusWidget(class QWidget *)
 	?stretch@QBoxLayout@@QBEHH@Z @ 12053 NONAME ; int QBoxLayout::stretch(int) const
 	?setColumnHidden@QTableView@@QAEXH_N@Z @ 12054 NONAME ; void QTableView::setColumnHidden(int, bool)
 	??Eiterator@QTextBlock@@QAE?AV01@H@Z @ 12055 NONAME ; class QTextBlock::iterator QTextBlock::iterator::operator++(int)
@@ -12405,7 +12405,7 @@ EXPORTS
 	??6@YAAAVQDataStream@@AAV0@ABVQTextFormat@@@Z @ 12404 NONAME ; class QDataStream & operator<<(class QDataStream &, class QTextFormat const &)
 	?setBlockCharFormat@QTextCursor@@QAEXABVQTextCharFormat@@@Z @ 12405 NONAME ; void QTextCursor::setBlockCharFormat(class QTextCharFormat const &)
 	??6@YA?AVQDebug@@V0@ABVQRegion@@@Z @ 12406 NONAME ; class QDebug operator<<(class QDebug, class QRegion const &)
-	?Extension1@QCoeFepInputContext@@EAEPAVMCoeFepAwareTextEditor_Extension1@@AAH@Z @ 12407 NONAME ; class MCoeFepAwareTextEditor_Extension1 * QCoeFepInputContext::Extension1(int &)
+	?Extension1@QCoeFepInputContext@@EAEPAVMCoeFepAwareTextEditor_Extension1@@AAH@Z @ 12407 NONAME ABSENT ; class MCoeFepAwareTextEditor_Extension1 * QCoeFepInputContext::Extension1(int &)
 	?tr@QUndoView@@SA?AVQString@@PBD0H@Z @ 12408 NONAME ; class QString QUndoView::tr(char const *, char const *, int)
 	?sortByColumn@QTableView@@QAEXH@Z @ 12409 NONAME ; void QTableView::sortByColumn(int)
 	?supportedDropActions@QStringListModel@@UBE?AV?$QFlags@W4DropAction@Qt@@@@XZ @ 12410 NONAME ; class QFlags<enum Qt::DropAction> QStringListModel::supportedDropActions(void) const
@@ -12540,7 +12540,7 @@ EXPORTS
 	?loadResource@QTextEdit@@UAE?AVQVariant@@HABVQUrl@@@Z @ 12539 NONAME ; class QVariant QTextEdit::loadResource(int, class QUrl const &)
 	??0QStyleOptionDockWidgetV2@@IAE@H@Z @ 12540 NONAME ; QStyleOptionDockWidgetV2::QStyleOptionDockWidgetV2(int)
 	??0QSplitter@@QAE@PAVQWidget@@@Z @ 12541 NONAME ; QSplitter::QSplitter(class QWidget *)
-	?DocumentLengthForFep@QCoeFepInputContext@@UBEHXZ @ 12542 NONAME ; int QCoeFepInputContext::DocumentLengthForFep(void) const
+	?DocumentLengthForFep@QCoeFepInputContext@@UBEHXZ @ 12542 NONAME ABSENT ; int QCoeFepInputContext::DocumentLengthForFep(void) const
 	??0QShowEvent@@QAE@XZ @ 12543 NONAME ; QShowEvent::QShowEvent(void)
 	?fontEngine@QTextEngine@@QBEPAVQFontEngine@@ABUQScriptItem@@PAUQFixed@@11@Z @ 12544 NONAME ; class QFontEngine * QTextEngine::fontEngine(struct QScriptItem const &, struct QFixed *, struct QFixed *, struct QFixed *) const
 	?leading@QTextLine@@QBEMXZ @ 12545 NONAME ; float QTextLine::leading(void) const

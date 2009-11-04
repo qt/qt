@@ -4361,40 +4361,40 @@ EXPORTS
 	_ZN19QApplicationPrivateD0Ev @ 4360 NONAME
 	_ZN19QApplicationPrivateD1Ev @ 4361 NONAME
 	_ZN19QApplicationPrivateD2Ev @ 4362 NONAME
-	_ZN19QCoeFepInputContext10Extension1ERi @ 4363 NONAME
-	_ZN19QCoeFepInputContext10applyHintsE6QFlagsIN2Qt15InputMethodHintEE @ 4364 NONAME
-	_ZN19QCoeFepInputContext11applyFormatEP5QListIN17QInputMethodEvent9AttributeEE @ 4365 NONAME
-	_ZN19QCoeFepInputContext11filterEventEPK6QEvent @ 4366 NONAME
-	_ZN19QCoeFepInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 4367 NONAME
-	_ZN19QCoeFepInputContext11qt_metacastEPKc @ 4368 NONAME
-	_ZN19QCoeFepInputContext11updateHintsEb @ 4369 NONAME
-	_ZN19QCoeFepInputContext12mouseHandlerEiP11QMouseEvent @ 4370 NONAME
-	_ZN19QCoeFepInputContext14setFocusWidgetEP7QWidget @ 4371 NONAME
-	_ZN19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 4372 NONAME
-	_ZN19QCoeFepInputContext15widgetDestroyedEP7QWidget @ 4373 NONAME
-	_ZN19QCoeFepInputContext16staticMetaObjectE @ 4374 NONAME DATA 16
-	_ZN19QCoeFepInputContext17inputCapabilitiesEv @ 4375 NONAME
-	_ZN19QCoeFepInputContext19CancelFepInlineEditEv @ 4376 NONAME
-	_ZN19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 4377 NONAME
-	_ZN19QCoeFepInputContext19commitCurrentStringEb @ 4378 NONAME
-	_ZN19QCoeFepInputContext19getStaticMetaObjectEv @ 4379 NONAME
-	_ZN19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 4380 NONAME
-	_ZN19QCoeFepInputContext21ReportAknEdStateEventEN19MAknEdStateObserver19EAknEdwinStateEventE @ 4381 NONAME
-	_ZN19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 4382 NONAME
-	_ZN19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 4383 NONAME
-	_ZN19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 4384 NONAME
-	_ZN19QCoeFepInputContext29queueInputCapabilitiesChangedEv @ 4385 NONAME
-	_ZN19QCoeFepInputContext30ensureInputCapabilitiesChangedEv @ 4386 NONAME
-	_ZN19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 4387 NONAME
-	_ZN19QCoeFepInputContext5StateE4TUid @ 4388 NONAME
-	_ZN19QCoeFepInputContext5resetEv @ 4389 NONAME
-	_ZN19QCoeFepInputContext6updateEv @ 4390 NONAME
-	_ZN19QCoeFepInputContext8languageEv @ 4391 NONAME
-	_ZN19QCoeFepInputContextC1EP7QObject @ 4392 NONAME
-	_ZN19QCoeFepInputContextC2EP7QObject @ 4393 NONAME
-	_ZN19QCoeFepInputContextD0Ev @ 4394 NONAME
-	_ZN19QCoeFepInputContextD1Ev @ 4395 NONAME
-	_ZN19QCoeFepInputContextD2Ev @ 4396 NONAME
+	_ZN19QCoeFepInputContext10Extension1ERi @ 4363 NONAME ABSENT
+	_ZN19QCoeFepInputContext10applyHintsE6QFlagsIN2Qt15InputMethodHintEE @ 4364 NONAME ABSENT
+	_ZN19QCoeFepInputContext11applyFormatEP5QListIN17QInputMethodEvent9AttributeEE @ 4365 NONAME ABSENT
+	_ZN19QCoeFepInputContext11filterEventEPK6QEvent @ 4366 NONAME ABSENT
+	_ZN19QCoeFepInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 4367 NONAME ABSENT
+	_ZN19QCoeFepInputContext11qt_metacastEPKc @ 4368 NONAME ABSENT
+	_ZN19QCoeFepInputContext11updateHintsEb @ 4369 NONAME ABSENT
+	_ZN19QCoeFepInputContext12mouseHandlerEiP11QMouseEvent @ 4370 NONAME ABSENT
+	_ZN19QCoeFepInputContext14setFocusWidgetEP7QWidget @ 4371 NONAME ABSENT
+	_ZN19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 4372 NONAME ABSENT
+	_ZN19QCoeFepInputContext15widgetDestroyedEP7QWidget @ 4373 NONAME ABSENT
+	_ZN19QCoeFepInputContext16staticMetaObjectE @ 4374 NONAME DATA 16 ABSENT
+	_ZN19QCoeFepInputContext17inputCapabilitiesEv @ 4375 NONAME ABSENT
+	_ZN19QCoeFepInputContext19CancelFepInlineEditEv @ 4376 NONAME ABSENT
+	_ZN19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 4377 NONAME ABSENT
+	_ZN19QCoeFepInputContext19commitCurrentStringEb @ 4378 NONAME ABSENT
+	_ZN19QCoeFepInputContext19getStaticMetaObjectEv @ 4379 NONAME ABSENT
+	_ZN19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 4380 NONAME ABSENT
+	_ZN19QCoeFepInputContext21ReportAknEdStateEventEN19MAknEdStateObserver19EAknEdwinStateEventE @ 4381 NONAME ABSENT
+	_ZN19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 4382 NONAME ABSENT
+	_ZN19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 4383 NONAME ABSENT
+	_ZN19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 4384 NONAME ABSENT
+	_ZN19QCoeFepInputContext29queueInputCapabilitiesChangedEv @ 4385 NONAME ABSENT
+	_ZN19QCoeFepInputContext30ensureInputCapabilitiesChangedEv @ 4386 NONAME ABSENT
+	_ZN19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 4387 NONAME ABSENT
+	_ZN19QCoeFepInputContext5StateE4TUid @ 4388 NONAME ABSENT
+	_ZN19QCoeFepInputContext5resetEv @ 4389 NONAME ABSENT
+	_ZN19QCoeFepInputContext6updateEv @ 4390 NONAME ABSENT
+	_ZN19QCoeFepInputContext8languageEv @ 4391 NONAME ABSENT
+	_ZN19QCoeFepInputContextC1EP7QObject @ 4392 NONAME ABSENT
+	_ZN19QCoeFepInputContextC2EP7QObject @ 4393 NONAME ABSENT
+	_ZN19QCoeFepInputContextD0Ev @ 4394 NONAME ABSENT
+	_ZN19QCoeFepInputContextD1Ev @ 4395 NONAME ABSENT
+	_ZN19QCoeFepInputContextD2Ev @ 4396 NONAME ABSENT
 	_ZN19QEventDispatcherS6011qt_metacallEN11QMetaObject4CallEiPPv @ 4397 NONAME
 	_ZN19QEventDispatcherS6011qt_metacastEPKc @ 4398 NONAME
 	_ZN19QEventDispatcherS6013processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE @ 4399 NONAME
@@ -9263,13 +9263,13 @@ EXPORTS
 	_ZNK19QAbstractScrollArea8viewportEv @ 9262 NONAME
 	_ZNK19QApplicationPrivate11inPopupModeEv @ 9263 NONAME
 	_ZNK19QApplicationPrivate7appNameEv @ 9264 NONAME
-	_ZNK19QCoeFepInputContext10metaObjectEv @ 9265 NONAME
-	_ZNK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 9266 NONAME
-	_ZNK19QCoeFepInputContext20DocumentLengthForFepEv @ 9267 NONAME
-	_ZNK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 9268 NONAME
-	_ZNK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 9269 NONAME
-	_ZNK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 9270 NONAME
-	_ZNK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 9271 NONAME
+	_ZNK19QCoeFepInputContext10metaObjectEv @ 9265 NONAME ABSENT
+	_ZNK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 9266 NONAME ABSENT
+	_ZNK19QCoeFepInputContext20DocumentLengthForFepEv @ 9267 NONAME ABSENT
+	_ZNK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 9268 NONAME ABSENT
+	_ZNK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 9269 NONAME ABSENT
+	_ZNK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 9270 NONAME ABSENT
+	_ZNK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 9271 NONAME ABSENT
 	_ZNK19QEventDispatcherS6010metaObjectEv @ 9272 NONAME
 	_ZNK19QGraphicsBlurEffect10blurRadiusEv @ 9273 NONAME
 	_ZNK19QGraphicsBlurEffect10metaObjectEv @ 9274 NONAME
@@ -10774,7 +10774,7 @@ EXPORTS
 	_ZTI19QAbstractProxyModel @ 10773 NONAME
 	_ZTI19QAbstractScrollArea @ 10774 NONAME
 	_ZTI19QApplicationPrivate @ 10775 NONAME
-	_ZTI19QCoeFepInputContext @ 10776 NONAME
+	_ZTI19QCoeFepInputContext @ 10776 NONAME ABSENT
 	_ZTI19QEventDispatcherS60 @ 10777 NONAME
 	_ZTI19QGraphicsBlurEffect @ 10778 NONAME
 	_ZTI19QGraphicsGridLayout @ 10779 NONAME
@@ -11056,7 +11056,7 @@ EXPORTS
 	_ZTV19QAbstractProxyModel @ 11055 NONAME
 	_ZTV19QAbstractScrollArea @ 11056 NONAME
 	_ZTV19QApplicationPrivate @ 11057 NONAME
-	_ZTV19QCoeFepInputContext @ 11058 NONAME
+	_ZTV19QCoeFepInputContext @ 11058 NONAME ABSENT
 	_ZTV19QEventDispatcherS60 @ 11059 NONAME
 	_ZTV19QGraphicsBlurEffect @ 11060 NONAME
 	_ZTV19QGraphicsGridLayout @ 11061 NONAME
@@ -11164,8 +11164,8 @@ EXPORTS
 	_ZThn12_N14QDragMoveEventD1Ev @ 11163 NONAME
 	_ZThn12_N15QDragEnterEventD0Ev @ 11164 NONAME
 	_ZThn12_N15QDragEnterEventD1Ev @ 11165 NONAME
-	_ZThn12_N19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 11166 NONAME
-	_ZThn12_N19QCoeFepInputContext5StateE4TUid @ 11167 NONAME
+	_ZThn12_N19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 11166 NONAME ABSENT
+	_ZThn12_N19QCoeFepInputContext5StateE4TUid @ 11167 NONAME ABSENT
 	_ZThn12_NK10QDropEvent11encodedDataEPKc @ 11168 NONAME
 	_ZThn12_NK10QDropEvent6formatEi @ 11169 NONAME
 	_ZThn12_NK10QDropEvent8providesEPKc @ 11170 NONAME
@@ -11173,7 +11173,7 @@ EXPORTS
 	_ZThn16_N15QGraphicsWidget14updateGeometryEv @ 11172 NONAME
 	_ZThn16_N15QGraphicsWidgetD0Ev @ 11173 NONAME
 	_ZThn16_N15QGraphicsWidgetD1Ev @ 11174 NONAME
-	_ZThn16_N19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 11175 NONAME
+	_ZThn16_N19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 11175 NONAME ABSENT
 	_ZThn16_N20QGraphicsProxyWidget11setGeometryERK6QRectF @ 11176 NONAME
 	_ZThn16_N20QGraphicsProxyWidgetD0Ev @ 11177 NONAME
 	_ZThn16_N20QGraphicsProxyWidgetD1Ev @ 11178 NONAME
@@ -11323,13 +11323,13 @@ EXPORTS
 	_ZThn8_N17QIconEnginePluginD1Ev @ 11322 NONAME
 	_ZThn8_N19QAbstractScrollAreaD0Ev @ 11323 NONAME
 	_ZThn8_N19QAbstractScrollAreaD1Ev @ 11324 NONAME
-	_ZThn8_N19QCoeFepInputContext10Extension1ERi @ 11325 NONAME
-	_ZThn8_N19QCoeFepInputContext19CancelFepInlineEditEv @ 11326 NONAME
-	_ZThn8_N19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 11327 NONAME
-	_ZThn8_N19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 11328 NONAME
-	_ZThn8_N19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 11329 NONAME
-	_ZThn8_N19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 11330 NONAME
-	_ZThn8_N19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 11331 NONAME
+	_ZThn8_N19QCoeFepInputContext10Extension1ERi @ 11325 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext19CancelFepInlineEditEv @ 11326 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 11327 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 11328 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 11329 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 11330 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 11331 NONAME ABSENT
 	_ZThn8_N19QIconEnginePluginV2D0Ev @ 11332 NONAME
 	_ZThn8_N19QIconEnginePluginV2D1Ev @ 11333 NONAME
 	_ZThn8_N19QInputContextPluginD0Ev @ 11334 NONAME
@@ -11446,12 +11446,12 @@ EXPORTS
 	_ZThn8_NK17QGraphicsTextItem5shapeEv @ 11445 NONAME
 	_ZThn8_NK17QGraphicsTextItem8containsERK7QPointF @ 11446 NONAME
 	_ZThn8_NK17QGraphicsTextItem9extensionERK8QVariant @ 11447 NONAME
-	_ZThn8_NK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 11448 NONAME
-	_ZThn8_NK19QCoeFepInputContext20DocumentLengthForFepEv @ 11449 NONAME
-	_ZThn8_NK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 11450 NONAME
-	_ZThn8_NK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 11451 NONAME
-	_ZThn8_NK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 11452 NONAME
-	_ZThn8_NK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 11453 NONAME
+	_ZThn8_NK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 11448 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext20DocumentLengthForFepEv @ 11449 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 11450 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 11451 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 11452 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 11453 NONAME ABSENT
 	_ZThn8_NK20QGraphicsProxyWidget4typeEv @ 11454 NONAME
 	_ZThn8_NK7QLayout11maximumSizeEv @ 11455 NONAME
 	_ZThn8_NK7QLayout11minimumSizeEv @ 11456 NONAME
