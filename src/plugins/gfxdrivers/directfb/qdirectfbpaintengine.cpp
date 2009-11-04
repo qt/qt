@@ -68,9 +68,10 @@ public:
     };
 
     enum CompositionModeStatus {
-        PorterDuff_None = 0x0,
-        PorterDuff_SupportedBlits = 0x1,
-        PorterDuff_SupportedPrimitives = 0x2
+        PorterDuff_None = 0x00,
+        PorterDuff_SupportedBlits = 0x01,
+        PorterDuff_SupportedPrimitives = 0x02,
+        PorterDuff_Dirty = 0x10
     };
 
     enum ClipType {
@@ -945,6 +946,9 @@ void QDirectFBPaintEnginePrivate::prepareForBlit(bool alpha)
     }
     surface->SetColor(surface, 0xff, 0xff, 0xff, opacity);
     surface->SetBlittingFlags(surface, blittingFlags);
+    if (compositionModeStatus & PorterDuff_Dirty) {
+        setCompositionMode(q->state()->composition_mode);
+    }
 }
 
 static inline uint ALPHA_MUL(uint x, uint a)
@@ -962,6 +966,7 @@ void QDirectFBPaintEnginePrivate::setDFBColor(const QColor &color)
     surface->SetColor(surface, color.red(), color.green(), color.blue(), alpha);
     surface->SetPorterDuff(surface, DSPD_NONE);
     surface->SetDrawingFlags(surface, alpha == 255 ? DSDRAW_NOFX : DSDRAW_BLEND);
+    compositionModeStatus |= PorterDuff_Dirty;
 }
 
 IDirectFBSurface *QDirectFBPaintEnginePrivate::getSurface(const QImage &img, bool *release)
