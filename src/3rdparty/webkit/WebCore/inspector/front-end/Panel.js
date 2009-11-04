@@ -82,6 +82,8 @@ WebInspector.Panel.prototype = {
             this._toolbarItem.addStyleClass("toggled-on");
 
         WebInspector.currentFocusElement = document.getElementById("main-panels");
+
+        this.updateSidebarWidth();
     },
 
     hide: function()
@@ -267,6 +269,103 @@ WebInspector.Panel.prototype = {
             currentView.jumpToLastSearchResult();
         else
             currentView.jumpToPreviousSearchResult();
+    },
+
+    handleKeyEvent: function(event)
+    {
+        this.handleSidebarKeyEvent(event);
+    },
+
+    handleSidebarKeyEvent: function(event)
+    {
+        if (this.hasSidebar && this.sidebarTree)
+            this.sidebarTree.handleKeyEvent(event);
+    },
+
+    createSidebar: function(parentElement, resizerParentElement)
+    {
+        if (this.hasSidebar)
+            return;
+
+        if (!parentElement)
+            parentElement = this.element;
+
+        if (!resizerParentElement)
+            resizerParentElement = parentElement;
+
+        this.hasSidebar = true;
+
+        this.sidebarElement = document.createElement("div");
+        this.sidebarElement.className = "sidebar";
+        parentElement.appendChild(this.sidebarElement);
+
+        this.sidebarResizeElement = document.createElement("div");
+        this.sidebarResizeElement.className = "sidebar-resizer-vertical";
+        this.sidebarResizeElement.addEventListener("mousedown", this._startSidebarDragging.bind(this), false);
+        resizerParentElement.appendChild(this.sidebarResizeElement);
+
+        this.sidebarTreeElement = document.createElement("ol");
+        this.sidebarTreeElement.className = "sidebar-tree";
+        this.sidebarElement.appendChild(this.sidebarTreeElement);
+
+        this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
+    },
+
+    _startSidebarDragging: function(event)
+    {
+        WebInspector.elementDragStart(this.sidebarResizeElement, this._sidebarDragging.bind(this), this._endSidebarDragging.bind(this), event, "col-resize");
+    },
+
+    _sidebarDragging: function(event)
+    {
+        this.updateSidebarWidth(event.pageX);
+
+        event.preventDefault();
+    },
+
+    _endSidebarDragging: function(event)
+    {
+        WebInspector.elementDragEnd(event);
+    },
+
+    updateSidebarWidth: function(width)
+    {
+        if (!this.hasSidebar)
+            return;
+
+        if (this.sidebarElement.offsetWidth <= 0) {
+            // The stylesheet hasn't loaded yet or the window is closed,
+            // so we can't calculate what is need. Return early.
+            return;
+        }
+
+        if (!("_currentSidebarWidth" in this))
+            this._currentSidebarWidth = this.sidebarElement.offsetWidth;
+
+        if (typeof width === "undefined")
+            width = this._currentSidebarWidth;
+
+        width = Number.constrain(width, Preferences.minSidebarWidth, window.innerWidth / 2);
+
+        this._currentSidebarWidth = width;
+        this.setSidebarWidth(width);
+
+        this.updateMainViewWidth(width);
+
+        var visibleView = this.visibleView;
+        if (visibleView && "resize" in visibleView)
+            visibleView.resize();
+    },
+
+    setSidebarWidth: function(width)
+    {
+        this.sidebarElement.style.width = width + "px";
+        this.sidebarResizeElement.style.left = (width - 3) + "px";
+    },
+
+    updateMainViewWidth: function(width)
+    {
+        // Should be implemented by ancestors.
     }
 }
 

@@ -673,6 +673,7 @@ CFG_PHONON=auto
 CFG_PHONON_BACKEND=yes
 CFG_MULTIMEDIA=yes
 CFG_SVG=yes
+CFG_DECLARATIVE=auto
 CFG_WEBKIT=auto # (yes|no|auto)
 CFG_JAVASCRIPTCORE_JIT=auto
 
@@ -913,7 +914,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style yes options
-        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
+        -incremental|-qvfb|-profile|-shared|-static|-sm|-xinerama|-xshape|-xinput|-reduce-exports|-pch|-separate-debug-info|-stl|-freetype|-xcursor|-xfixes|-xrandr|-xrender|-mitshm|-fontconfig|-xkb|-nis|-qdbus|-dbus|-dbus-linked|-glib|-gstreamer|-gtkstyle|-cups|-iconv|-largefile|-h|-help|-v|-verbose|-debug|-release|-fast|-accessibility|-confirm-license|-gnumake|-framework|-qt3support|-debug-and-release|-exceptions|-cocoa|-universal|-prefix-install|-silent|-armfpa|-optimized-qmake|-dwarf2|-reduce-relocations|-sse|-openssl|-openssl-linked|-ptmalloc|-xmlpatterns|-phonon|-phonon-backend|-multimedia|-svg|-declarative|-webkit|-javascript-jit|-script|-scripttools|-rpath|-force-pkg-config)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         VAL=yes
         ;;
@@ -1840,6 +1841,17 @@ while [ "$#" -gt 0 ]; do
         else
             if [ "$VAL" = "no" ]; then
                 CFG_SVG="no"
+            else
+                UNKNOWN_OPT=yes
+            fi
+        fi
+        ;;
+    declarative)
+        if [ "$VAL" = "yes" ]; then
+            CFG_DECLARATIVE="yes"
+        else
+            if [ "$VAL" = "no" ]; then
+                CFG_DECLARATIVE="no"
             else
                 UNKNOWN_OPT=yes
             fi
@@ -3233,7 +3245,7 @@ Usage:  $relconf [-h] [-prefix <dir>] [-prefix-install] [-bindir <dir>] [-libdir
         [-no-multimedia] [-multimedia] [-no-phonon] [-phonon] [-no-phonon-backend] [-phonon-backend]
         [-no-openssl] [-openssl] [-openssl-linked]
         [-no-gtkstyle] [-gtkstyle] [-no-svg] [-svg] [-no-webkit] [-webkit] [-no-javascript-jit] [-javascript-jit]
-        [-no-script] [-script] [-no-scripttools] [-scripttools]
+        [-no-script] [-script] [-no-scripttools] [-scripttools] [-no-declarative] [-declarative]
 
         [additional platform specific options (see below)]
 
@@ -3390,6 +3402,9 @@ fi
 
     -no-scripttools .... Do not build the QtScriptTools module.
  +  -scripttools ....... Build the QtScriptTools module.
+
+ +  -no-declarative .....Do not build the declarative module.
+    -declarative ....... Build the declarative module.
 
     -platform target ... The operating system and compiler you are building
                          on ($PLATFORM).
@@ -5788,6 +5803,19 @@ if [ "$CFG_ALSA" = "auto" ]; then
     fi
 fi
 
+if [ -f "$relpath/src/declarative/declarative.pro" ]; then
+    if [ "$CFG_DECLARATIVE" = "auto" ]; then
+        CFG_DECLARATIVE=yes
+    fi
+else
+    if [ "$CFG_DECLARATIVE" = "auto" ] || [ "$CFG_DECLARATIVE" = "no" ]; then
+        CFG_DECLARATIVE=no
+    else
+        echo "Error: Unable to locate the qt-declarative package. Refer to the documentation on how to build the package."
+        exit 1
+    fi
+fi
+
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "yes" ] || [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then 
     if [ "$CFG_ARCH" = "arm" ] || [ "$CFG_ARCH" = "armv6" ]; then
        "$unixtests/compile.test" "$XQMAKESPEC" "$QMAKE_CONFIG" $OPT_VERBOSE "$relpath" "$outpath" config.tests/unix/javascriptcore-jit "javascriptcore-jit" $L_FLAGS $I_FLAGS $l_FLAGS
@@ -6403,6 +6431,12 @@ if [ "$CFG_SVG" = "yes" ]; then
     QT_CONFIG="$QT_CONFIG svg"
 else
     QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_SVG"
+fi
+
+if [ "$CFG_DECLARATIVE" = "yes" ]; then
+    QT_CONFIG="$QT_CONFIG declarative"
+else
+    QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_DECLARATIVE"
 fi
 
 if [ "$CFG_WEBKIT" = "auto" ]; then
@@ -7321,6 +7355,7 @@ if [ "$CFG_WEBKIT" = "yes" ]; then
         echo "JavaScriptCore JIT .. $CFG_JAVASCRIPTCORE_JIT"
     fi
 fi
+echo "Declarative module .. $CFG_DECLARATIVE"
 echo "STL support ......... $CFG_STL"
 echo "PCH support ......... $CFG_PRECOMPILE"
 echo "MMX/3DNOW/SSE/SSE2..  ${CFG_MMX}/${CFG_3DNOW}/${CFG_SSE}/${CFG_SSE2}"

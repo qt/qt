@@ -61,6 +61,8 @@ private slots:
     void setError();
     void isFormatSupported_data();
     void isFormatSupported();
+    void nearestFormat_data();
+    void nearestFormat();
     void start_data();
     void start();
 };
@@ -232,6 +234,22 @@ void tst_QAbstractVideoSurface::isFormatSupported()
     QCOMPARE(surface.isFormatSupported(format), supported);
 }
 
+void tst_QAbstractVideoSurface::nearestFormat_data()
+{
+    isFormatSupported_data();
+}
+
+void tst_QAbstractVideoSurface::nearestFormat()
+{
+    QFETCH(SupportedFormatMap, supportedFormats);
+    QFETCH(QVideoSurfaceFormat, format);
+    QFETCH(bool, supported);
+
+    QtTestVideoSurface surface(supportedFormats);
+
+    QCOMPARE(surface.nearestFormat(format) == format, supported);
+}
+
 void tst_QAbstractVideoSurface::start_data()
 {
     QTest::addColumn<QVideoSurfaceFormat>("format");
@@ -256,35 +274,35 @@ void tst_QAbstractVideoSurface::start()
     surface.setError(QAbstractVideoSurface::ResourceError);
 
     QSignalSpy formatSpy(&surface, SIGNAL(surfaceFormatChanged(QVideoSurfaceFormat)));
-    QSignalSpy startedSpy(&surface, SIGNAL(startedChanged(bool)));
+    QSignalSpy activeSpy(&surface, SIGNAL(activeChanged(bool)));
 
-    QVERIFY(!surface.isStarted());
+    QVERIFY(!surface.isActive());
     QCOMPARE(surface.surfaceFormat(), QVideoSurfaceFormat());
 
     QVERIFY(surface.start(format));
 
-    QVERIFY(surface.isStarted());
+    QVERIFY(surface.isActive());
     QCOMPARE(surface.surfaceFormat(), format);
 
     QCOMPARE(formatSpy.count(), 1);
-    QCOMPARE(qvariant_cast<QVideoSurfaceFormat>(formatSpy.at(0).at(0)), format);
+    QCOMPARE(qvariant_cast<QVideoSurfaceFormat>(formatSpy.last().at(0)), format);
 
-    QCOMPARE(startedSpy.count(), 1);
-    QCOMPARE(startedSpy.at(0).at(0).toBool(), true);
+    QCOMPARE(activeSpy.count(), 1);
+    QCOMPARE(activeSpy.last().at(0).toBool(), true);
 
     // error() is reset on a successful start.
     QCOMPARE(surface.error(), QAbstractVideoSurface::NoError);
 
     surface.stop();
 
-    QVERIFY(!surface.isStarted());
+    QVERIFY(!surface.isActive());
     QCOMPARE(surface.surfaceFormat(), QVideoSurfaceFormat());
 
     QCOMPARE(formatSpy.count(), 2);
-    QCOMPARE(qvariant_cast<QVideoSurfaceFormat>(formatSpy.at(1).at(0)), QVideoSurfaceFormat());
+    QCOMPARE(qvariant_cast<QVideoSurfaceFormat>(formatSpy.last().at(0)), QVideoSurfaceFormat());
 
-    QCOMPARE(startedSpy.count(), 2);
-    QCOMPARE(startedSpy.at(1).at(0).toBool(), false);
+    QCOMPARE(activeSpy.count(), 2);
+    QCOMPARE(activeSpy.last().at(0).toBool(), false);
 }
 
 QTEST_MAIN(tst_QAbstractVideoSurface)

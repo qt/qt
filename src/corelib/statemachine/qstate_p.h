@@ -94,7 +94,7 @@ public:
     QList<QAbstractTransition*> transitions() const;
 
     void emitFinished();
-    void emitPolished();
+    void emitPropertiesAssigned();
 
     QAbstractState *errorState;
     QAbstractState *initialState;

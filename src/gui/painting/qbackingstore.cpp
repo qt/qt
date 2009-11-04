@@ -879,7 +879,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const QRect parentRect(rect & clipR);
 
     bool accelerateMove = accelEnv && isOpaque
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
 #endif
@@ -1177,7 +1177,7 @@ void QWidgetBackingStore::sync()
                                            : wd->dirty);
         toClean += widgetDirty;
 
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
         if (tlw->d_func()->extra->proxyWidget) {
             resetWidget(w);
             continue;

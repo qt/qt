@@ -146,7 +146,7 @@ JSPositionError::JSPositionError(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSPositionError::~JSPositionError()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSPositionError::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -76,7 +76,7 @@ JSBarInfo::JSBarInfo(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 
 JSBarInfo::~JSBarInfo()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSBarInfo::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

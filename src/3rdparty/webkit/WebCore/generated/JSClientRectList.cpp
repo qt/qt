@@ -141,7 +141,7 @@ JSClientRectList::JSClientRectList(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSClientRectList::~JSClientRectList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSClientRectList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

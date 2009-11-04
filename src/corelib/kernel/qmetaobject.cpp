@@ -574,8 +574,8 @@ int QMetaObjectPrivate::indexOfSignalRelative(const QMetaObject **baseObject, co
     if (i >= 0 && m && m->d.superdata) {
         int conflict = m->d.superdata->indexOfMethod(signal);
         if (conflict >= 0)
-            qWarning("QMetaObject::indexOfSignal:%s: Conflict with %s::%s",
-                     m->d.stringdata, m->d.superdata->d.stringdata, signal);
+            qWarning("QMetaObject::indexOfSignal: signal %s from %s redefined in %s",
+                     signal, m->d.superdata->d.stringdata, m->d.stringdata);
     }
 #endif
     return i;
@@ -2237,7 +2237,10 @@ bool QMetaProperty::write(QObject *object, const QVariant &value) const
     // -1 (unchanged): normal qt_metacall, result stored in argv[0]
     // changed: result stored directly in value, return the value of status
     int status = -1;
-    void *argv[] = { 0, &v, &status };
+    // the flags variable is used by the declarative module to implement
+    // interception of property writes.
+    int flags = 0;
+    void *argv[] = { 0, &v, &status, &flags };
     if (t == QVariant::LastType)
         argv[0] = &v;
     else

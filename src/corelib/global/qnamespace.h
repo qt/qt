@@ -1732,11 +1732,6 @@ public:
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
     };
-
-    enum RenderHint {
-        QualityHint,
-        PerformanceHint
-    };
 }
 #ifdef Q_MOC_RUN
  ;

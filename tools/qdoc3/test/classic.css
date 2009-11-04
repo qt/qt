@@ -268,8 +268,13 @@ span.string,span.char
     border-style: solid;
     border-color: #ddd;
     font-weight: bold;
-    padding: 6px 0px 6px 10px;
+    padding: 6px 10px 6px 10px;
     margin: 42px 0px 0px 0px;
+}
+
+.qmlreadonly {
+    float: right;
+    color: red
 }
 
 .qmldoc {

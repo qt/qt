@@ -859,7 +859,9 @@ public:
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
+#ifndef QT_NO_GRAPHICSVIEW
     QPointF mapToScene(const QPointF &gesturePoint) const;
+#endif
 
 private:
     QGestureEventPrivate *d_func();

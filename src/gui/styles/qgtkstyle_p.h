@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef GTKSYMBOLS_H
-#define GTKSYMBOLS_H
+#ifndef QGTKSTYLE_P_H
+#define QGTKSTYLE_P_H
 
 //
 //  W A R N I N G
@@ -56,19 +56,19 @@
 #include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
+#include <QtGui/QFileDialog>
+
+#include <QtGui/QGtkStyle>
+#include <private/qcleanlooksstyle_p.h>
+
 #undef signals // Collides with GTK stymbols
 #include <gtk/gtk.h>
-#include <QtCore/QLibrary>
-#include <QtGui/QFont>
-#include <QtGui/QFileDialog>
+
 typedef unsigned long XID;
 
 #undef GTK_OBJECT_FLAGS
 #define GTK_OBJECT_FLAGS(obj)(((GtkObject*)(obj))->flags)
-#define Q_GTK_TYPE_WIDGET QGtk::gtk_widget_get_type()
-#define Q_GTK_IS_WIDGET(widget) widget && GTK_CHECK_TYPE ((widget), Q_GTK_TYPE_WIDGET)
-#define Q_GTK_TYPE_WINDOW QGtk::gtk_window_get_type()
-#define Q_GTK_TYPE_CONTAINER QGtk::gtk_container_get_type()
+#define Q_GTK_IS_WIDGET(widget) widget && GTK_CHECK_TYPE ((widget), QGtkStylePrivate::gtk_widget_get_type())
 
 #define QLS(x) QLatin1String(x)
 
@@ -198,6 +198,35 @@ typedef XID  (*Ptr_gdk_x11_drawable_get_xid) (GdkDrawable *);
 typedef Display* (*Ptr_gdk_x11_drawable_get_xdisplay) ( GdkDrawable *);
 
 
+QT_BEGIN_NAMESPACE
+
+typedef QStringList (*_qt_filedialog_open_filenames_hook)(QWidget * parent, const QString &caption, const QString &dir,
+                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
+typedef QString (*_qt_filedialog_open_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
+                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
+typedef QString (*_qt_filedialog_save_filename_hook)     (QWidget * parent, const QString &caption, const QString &dir,
+                                                          const QString &filter, QString *selectedFilter, QFileDialog::Options options);
+typedef QString (*_qt_filedialog_existing_directory_hook)(QWidget *parent, const QString &caption, const QString &dir,
+                                                          QFileDialog::Options options);
+
+extern Q_GUI_EXPORT _qt_filedialog_open_filename_hook qt_filedialog_open_filename_hook;
+extern Q_GUI_EXPORT _qt_filedialog_open_filenames_hook qt_filedialog_open_filenames_hook;
+extern Q_GUI_EXPORT _qt_filedialog_save_filename_hook qt_filedialog_save_filename_hook;
+extern Q_GUI_EXPORT _qt_filedialog_existing_directory_hook qt_filedialog_existing_directory_hook;
+
+class QGtkStylePrivate;
+
+class QGtkStyleFilter : public QObject
+{
+public:
+    QGtkStyleFilter(QGtkStylePrivate* sp)
+        : stylePrivate(sp)
+    {}
+private:
+    QGtkStylePrivate* stylePrivate;
+    bool eventFilter(QObject *obj, QEvent *e);
+};
+
 typedef enum {
   GNOME_ICON_LOOKUP_FLAGS_NONE = 0,
   GNOME_ICON_LOOKUP_FLAGS_EMBEDDING_TEXT = 1<<0,
@@ -220,20 +249,40 @@ typedef char* (*Ptr_gnome_icon_lookup_sync)  (
         GnomeIconLookupFlags flags,
         GnomeIconLookupResultFlags *result);
 
-QT_BEGIN_NAMESPACE
 
-class QGtk
+class QGtkStylePrivate : public QCleanlooksStylePrivate
 {
+    Q_DECLARE_PUBLIC(QGtkStyle)
 public:
+    QGtkStylePrivate();
+
+    QGtkStyleFilter filter;
+
     static GtkWidget* gtkWidget(const QString &path);
     static GtkStyle* gtkStyle(const QString &path = QLatin1String("GtkWindow"));
 
-    static void cleanup_gtk_widgets();
-    static void initGtkWidgets();
+    virtual void resolveGtk();
+    virtual void initGtkMenu();
+    virtual void initGtkTreeview();
+    virtual void initGtkWidgets();
+
+    static void cleanupGtkWidgets();
+
     static bool isKDE4Session();
-    static void applyCustomPaletteHash();
+    void applyCustomPaletteHash();
     static QFont getThemeFont();
     static bool isThemeAvailable() { return gtkStyle() != 0; }
+
+    static bool getGConfBool(const QString &key, bool fallback = 0);
+    static QString getGConfString(const QString &key, const QString &fallback = QString());
+
+    virtual QString getThemeName() const;
+    virtual int getSpinboxArrowSize() const;
+
+    static void setupGtkFileChooser(GtkWidget* gtkFileChooser, QWidget *parent,
+            const QString &dir, const QString &filter, QString *selectedFilter,
+            QFileDialog::Options options, bool isSaveDialog = false,
+            QMap<GtkFileFilter *, QString> *filterMap = 0);
 
     static QString openFilename(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                 QString *selectedFilter, QFileDialog::Options options);
@@ -242,8 +291,6 @@ public:
     static QString openDirectory(QWidget *parent, const QString &caption, const QString &dir, QFileDialog::Options options);
     static QStringList openFilenames(QWidget *parent, const QString &caption, const QString &dir, const QString &filter,
                                     QString *selectedFilter, QFileDialog::Options options);
-    static QString getGConfString(const QString &key, const QString &fallback = QString());
-    static bool getGConfBool(const QString &key, bool fallback = 0);
     static QIcon getFilesystemIcon(const QFileInfo &);
 
     static Ptr_gtk_container_forall gtk_container_forall;
@@ -364,6 +411,29 @@ public:
 
     static Ptr_gnome_icon_lookup_sync gnome_icon_lookup_sync;
     static Ptr_gnome_vfs_init gnome_vfs_init;
+
+    virtual QPalette gtkWidgetPalette(const QString &gtkWidgetName);
+
+protected:
+    typedef QHash<QString, GtkWidget*> WidgetMap;
+
+    static inline WidgetMap *gtkWidgetMap()
+    {
+        static WidgetMap *map = 0;
+        if (!map)
+            map = new WidgetMap();
+        return map;
+    }
+
+    static QStringList extract_filter(const QString &rawFilter);
+
+    virtual GtkWidget* getTextColorWidget() const;
+    static void setupGtkWidget(GtkWidget* widget);
+    static void addWidgetToMap(GtkWidget* widget);
+    static void addAllSubWidgets(GtkWidget *widget, gpointer v = 0);
+    static void addWidget(GtkWidget *widget);
+
+    virtual void init();
 };
 
 // Helper to ensure that we have polished all our gtk widgets
@@ -372,10 +442,10 @@ class QGtkStyleUpdateScheduler : public QObject
 {
     Q_OBJECT
 public slots:
-    void updateTheme();
+    void updateTheme( QGtkStylePrivate* stylePrivate );
 };
 
 QT_END_NAMESPACE
 
 #endif // !QT_NO_STYLE_GTK
-#endif // GTKSYMBOLS_H
+#endif // QGTKSTYLE_P_H

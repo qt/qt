@@ -50,6 +50,7 @@ class QWebHitTestResult;
 class QWebHistoryItem;
 class QWebSecurityOrigin;
 class QWebElement;
+class QWebElementCollection;
 
 namespace WebCore {
     class WidgetPrivate;
@@ -112,7 +113,6 @@ class QWEBKIT_EXPORT QWebFrame : public QObject {
     Q_PROPERTY(QIcon icon READ icon)
     Q_PROPERTY(QSize contentsSize READ contentsSize)
     Q_PROPERTY(QPoint scrollPosition READ scrollPosition WRITE setScrollPosition)
-    Q_PROPERTY(bool clipRenderToViewport READ clipRenderToViewport WRITE setClipRenderToViewport)
     Q_PROPERTY(bool focus READ hasFocus)
 private:
     QWebFrame(QWebPage *parent, QWebFrameData *frameData);
@@ -165,10 +165,17 @@ public:
     QPoint scrollPosition() const;
     void setScrollPosition(const QPoint &pos);
 
-    void render(QPainter *painter, const QRegion &clip);
-    void render(QPainter *painter);
-    bool clipRenderToViewport() const;
-    void setClipRenderToViewport(bool clipRenderToViewport);
+    enum RenderLayer {
+        ContentsLayer = 0x10,
+        ScrollBarLayer = 0x20,
+        PanIconLayer = 0x40,
+
+        AllLayers = 0xff
+    };
+
+    void render(QPainter*);
+    void render(QPainter*, const QRegion& clip);
+    void render(QPainter*, RenderLayer layer, const QRegion& clip = QRegion());
 
     void setTextSizeMultiplier(qreal factor);
     qreal textSizeMultiplier() const;
@@ -184,7 +191,7 @@ public:
     QSize contentsSize() const;
 
     QWebElement documentElement() const;
-    QList<QWebElement> findAllElements(const QString &selectorQuery) const;
+    QWebElementCollection findAllElements(const QString &selectorQuery) const;
     QWebElement findFirstElement(const QString &selectorQuery) const;
 
     QWebHitTestResult hitTestContent(const QPoint &pos) const;

@@ -182,7 +182,7 @@ private:
     unsigned m_lastSendLineNumber;
     String m_lastSendURL;
     ExceptionCode m_exceptionCode;
-    
+
     EventTargetData m_eventTargetData;
 };
 
