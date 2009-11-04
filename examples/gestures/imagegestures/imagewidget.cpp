@@ -76,7 +76,6 @@ bool ImageWidget::event(QEvent *event)
 void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
-    p.fillRect(rect(), Qt::white);
 
     float iw = currentImage.width();
     float ih = currentImage.height();
@@ -95,6 +94,7 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
     rotationAngle = 0;
     scaleFactor = 1;
+    currentStepScaleFactor = 1;
     verticalOffset = 0;
     horizontalOffset = 0;
     update();
