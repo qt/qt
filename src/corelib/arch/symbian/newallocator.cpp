@@ -44,6 +44,7 @@
 **  - A slab allocator, for small allocations
 **  - Doug Lea's allocator, for medium size allocations
 ****************************************************************************/
+#include <qglobal.h>
 #include <e32std.h>
 #include <e32cmn.h>
 #include <hal.h>
@@ -75,7 +76,6 @@ struct SStdEpocThreadCreateInfo : public SThreadCreateInfo
 #include <u32std.h>
 #endif
 #include <e32svr.h>
-#include <qglobal.h>
 
 //Named local chunks require support from the kernel, which depends on Symbian^3
 #define NO_NAMED_LOCAL_CHUNKS
@@ -164,8 +164,8 @@ RNewAllocator::RNewAllocator(TInt aChunkHandle, TInt aOffset, TInt aMinLength, T
 #else
 RNewAllocator::RNewAllocator(TInt aChunkHandle, TInt aOffset, TInt aMinLength, TInt aMaxLength, TInt aGrowBy,
 			TInt aAlign, TBool aSingleThread)
-		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), iNestingLevel(0), iAllocCount(0),
-			iAlign(aAlign),iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength)
+		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), iAlign(aAlign), iNestingLevel(0), iAllocCount(0),
+			iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength)
 #endif
 	{
 	iPageSize = malloc_getpagesize;
@@ -210,7 +210,7 @@ void RNewAllocator::Init(TInt aBitmapSlab, TInt aPagePower, size_t aTrimThreshol
 	{
 	__ASSERT_ALWAYS((TUint32)iAlign>=sizeof(TAny*) && __POWER_OF_2(iAlign), HEAP_PANIC(ETHeapNewBadAlignment));
 
-	/*Moved code which does iunitilization */
+	/*Moved code which does initialization */
 	iTop = (TUint8*)this + iMinLength;
 	iAllocCount = 0;
 	memset(&mparams,0,sizeof(mparams));
@@ -533,7 +533,7 @@ TInt RNewAllocator::Extension_(TUint /* aExtensionId */, TAny*& /* a0 */, TAny* 
 #ifdef DEBUG_REALLOC
 #include <e32debug.h>
 #endif
-inline int RNewAllocator::init_mparams(size_t aTrimThreshold /*= DEFAULT_TRIM_THRESHOLD*/)
+int RNewAllocator::init_mparams(size_t aTrimThreshold /*= DEFAULT_TRIM_THRESHOLD*/)
 {
 	if (mparams.page_size == 0)
 	{
@@ -581,7 +581,7 @@ inline int RNewAllocator::init_mparams(size_t aTrimThreshold /*= DEFAULT_TRIM_TH
 	return 0;
 }
 
-inline void RNewAllocator::init_bins(mstate m) {
+void RNewAllocator::init_bins(mstate m) {
   /* Establish circular links for smallbins */
   bindex_t i;
   for (i = 0; i < NSMALLBINS; ++i) {
@@ -701,7 +701,7 @@ void* RNewAllocator::tmalloc_small(mstate m, size_t nb) {
   return 0;
 }
 
-inline void RNewAllocator::init_top(mstate m, mchunkptr p, size_t psize)
+void RNewAllocator::init_top(mstate m, mchunkptr p, size_t psize)
 {
 	/* Ensure alignment */
 	size_t offset = align_offset(chunk2mem(p));
@@ -802,7 +802,6 @@ mallinfo RNewAllocator::internal_mallinfo(mstate m) {
       size_t mfree = m->topsize + TOP_FOOT_SIZE;
       size_t sum = mfree;
       msegmentptr s = &m->seg;
-      TInt tmp = (TUint8*)m->top - (TUint8*)s->base;
       while (s != 0) {
         mchunkptr q = align_as_chunk(s->base);
         chunkCnt++;
@@ -834,13 +833,12 @@ mallinfo RNewAllocator::internal_mallinfo(mstate m) {
 
 void  RNewAllocator::internal_malloc_stats(mstate m) {
 if (!PREACTION(m)) {
-  size_t maxfp = 0;
   size_t fp = 0;
   size_t used = 0;
   check_malloc_state(m);
   if (is_initialized(m)) {
     msegmentptr s = &m->seg;
-    maxfp = m->max_footprint;
+    size_t maxfp = m->max_footprint;
     fp = m->footprint;
     used = fp - (m->topsize + TOP_FOOT_SIZE);
 
@@ -1782,7 +1780,7 @@ void RNewAllocator::dlfree(void* mem) {
 			if (RTCHECK(ok_address(fm, p) && ok_cinuse(p)))
 			{
 				size_t psize = chunksize(p);
-				iTotalAllocSize -= psize;			// TODO DAN
+				iTotalAllocSize -= psize;
 				mchunkptr next = chunk_plus_offset(p, psize);
 				if (!pinuse(p))
 				{
@@ -2261,7 +2259,7 @@ void RNewAllocator::slab_free(void* p)
 	h &= ~0xFF;
 	h |= (pos>>2);
 	unsigned size = h & 0x3C000;
-	iTotalAllocSize -= size;		// TODO DAN
+	iTotalAllocSize -= size;
 	if (int(h) >= 0)
 	{
 		h -= size<<6;
@@ -2493,7 +2491,7 @@ void RNewAllocator::paged_free(void* p)
 	{	// check pagelist
 		pagecell* c = paged_descriptor(p);
 
-		iTotalAllocSize -= c->size;		// TODO DAN
+		iTotalAllocSize -= c->size;
 
 		unmap(p, c->size);
 		c->page = 0;
@@ -2813,7 +2811,9 @@ public:
 	};
 #endif
 
+#ifndef NO_NAMED_LOCAL_CHUNKS
 _LIT(KLitDollarHeap,"$HEAP");
+#endif
 TInt RNewAllocator::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RNewAllocator*& aHeap, TInt aAlign, TBool aSingleThread)
 /**
 @internalComponent
@@ -2862,7 +2862,7 @@ TInt RNewAllocator::CreateThreadHeap(SStdEpocThreadCreateInfo& aInfo, RNewAlloca
  * Called from the qtmain.lib application wrapper.
  * Create a new heap as requested, but use the new allocator
  */
-Q_CORE_EXPORT qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
+Q_CORE_EXPORT TInt qt_symbian_SetupThreadHeap(TBool aNotFirst, SStdEpocThreadCreateInfo& aInfo)
     {
     TInt r = KErrNone;
     if (!aInfo.iAllocator && aInfo.iHeapInitialSize>0)

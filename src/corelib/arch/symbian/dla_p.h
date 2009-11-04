@@ -974,10 +974,14 @@ struct malloc_params {
 	#endif
 
 	#if CHECKING
-	//#define ASSERT(x) {if (!(x)) abort();}
+    #ifndef ASSERT
+	#define ASSERT(x) {if (!(x)) abort();}
+    #endif
 	#define CHECK(x) x
 	#else
+    #ifndef ASSERT
 	#define ASSERT(x) (void)0
+    #endif
 	#define CHECK(x) (void)0
 	#endif
 

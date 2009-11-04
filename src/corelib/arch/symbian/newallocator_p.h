@@ -154,8 +154,8 @@ protected:
 private:
 	void Init(TInt aBitmapSlab, TInt aPagePower, size_t aTrimThreshold);/*Init internal data structures*/
 	inline int init_mparams(size_t aTrimThreshold /*= DEFAULT_TRIM_THRESHOLD*/);
-	inline void init_bins(mstate m);
-	inline void init_top(mstate m, mchunkptr p, size_t psize);
+	void init_bins(mstate m);
+	void init_top(mstate m, mchunkptr p, size_t psize);
 	void* sys_alloc(mstate m, size_t nb);
 	msegmentptr segment_holding(mstate m, TUint8* addr);
 	void add_segment(mstate m, TUint8* tbase, size_t tsize, flag_t mmapped);
