@@ -162,10 +162,14 @@ Q_DECLARE_METATYPE(AnchorItemSizeHintList)
 class TestWidget : public QGraphicsWidget
 {
 public:
-    inline TestWidget(QGraphicsItem *parent = 0)
+    inline TestWidget(QGraphicsItem *parent = 0, const QString &name = QString())
         : QGraphicsWidget(parent)
         {
             setContentsMargins( 0,0,0,0 );
+            if (name.isEmpty())
+                setData(0, QString::fromAscii("w%1").arg(int(this)));
+            else
+                setData(0, name);
         }
     ~TestWidget()
         {
@@ -1684,7 +1688,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Create dummy widgets
     QList<QGraphicsWidget *> widgets;
     for (int i = 0; i < widgetCount; ++i) {
-        TestWidget *w = new TestWidget;
+        TestWidget *w = new TestWidget(0, QString::fromAscii("W%1").arg(i));
         widgets << w;
     }
 

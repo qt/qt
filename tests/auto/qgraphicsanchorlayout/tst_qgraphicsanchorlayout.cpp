@@ -1951,7 +1951,7 @@ void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
     if (hasSimplification)
         QVERIFY(!usedSimplex(l, Qt::Horizontal));
 
-    // Now we make it valid again
+    // Now we make it valid
     b->setMinimumWidth(100);
 
     l->invalidate();
@@ -1979,9 +1979,9 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
     QSizeF pref(20, 10);
     QSizeF max(50, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max);
-    QGraphicsWidget *b = createItem(min, pref, max);
-    QGraphicsWidget *c = createItem(min, pref, max);
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(min, pref, max, "C");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
 
