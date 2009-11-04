@@ -960,7 +960,7 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Turns the major, minor and patch numbers of a version into an
-    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can 
+    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can
     be compared with another similarly processed version id.
 
     \sa QT_VERSION
@@ -1795,7 +1795,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
     if (err == KErrNone) {
         err = contents->Sort(EDescending|ESortByName);
-        if (err == KErrNone) {
+        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 12) {
             TInt major = (*contents)[0].iName[9] - '0';
             TInt minor = (*contents)[0].iName[11] - '0';
             if (major == 3) {
@@ -1807,6 +1807,12 @@ QSysInfo::S60Version QSysInfo::s60Version()
             } else if (major == 5) {
                 if (minor == 0) {
                     return cachedS60Version = SV_S60_5_0;
+                }
+                else if (minor == 1) {
+                    return cachedS60Version = SV_S60_5_1;
+                }
+                else if (minor == 2) {
+                    return cachedS60Version = SV_S60_5_2;
                 }
             }
         }
@@ -1822,12 +1828,10 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_3_2;
 #   elif defined(__S60_50__)
     return cachedS60Version = SV_S60_5_0;
-#   else
-    return cachedS60Version = SV_S60_Unknown;
 #   endif
-#  else
-    return cachedS60Version = SV_S60_Unknown;
 #  endif
+    //If reaching here, it was not possible to determine the version
+    return cachedS60Version = SV_S60_Unknown;
 }
 QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
@@ -1837,6 +1841,10 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
     case SV_S60_3_2:
         return SV_9_3;
     case SV_S60_5_0:
+        return SV_9_4;
+    case SV_S60_5_1:
+        return SV_9_4;
+    case SV_S60_5_2:
         return SV_9_4;
     default:
         return SV_Unknown;
@@ -2572,7 +2580,7 @@ void qsrand()
 
     seed = GetTickCount();
     srand(seed);
-#else 
+#else
     // Symbian?
 
 #endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)

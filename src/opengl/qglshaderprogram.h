@@ -181,6 +181,17 @@ public:
     int uniformLocation(const QByteArray& name) const;
     int uniformLocation(const QString& name) const;
 
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setUniformValue(int location, QMacCompatGLint value);
+    void setUniformValue(int location, QMacCompatGLuint value);
+    void setUniformValue(const char *name, QMacCompatGLint value);
+    void setUniformValue(const char *name, QMacCompatGLuint value);
+    void setUniformValueArray(int location, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(int location, const QMacCompatGLuint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count);
+#endif
+
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
     void setUniformValue(int location, GLuint value);

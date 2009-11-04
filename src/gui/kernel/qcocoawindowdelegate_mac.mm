@@ -346,5 +346,28 @@ static void cleanupCocoaWindowDelegate()
     m_drawerHash->remove(drawer);
 }
 
+- (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu
+{
+    Q_UNUSED(menu);
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget && !qwidget->windowFilePath().isEmpty()) {
+        return YES;
+    }
+    return NO;
+}
+
+- (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event
+                                                          from:(NSPoint)dragImageLocation
+                                                withPasteboard:(NSPasteboard *)pasteboard
+{
+    Q_UNUSED(event);
+    Q_UNUSED(dragImageLocation);
+    Q_UNUSED(pasteboard);
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget && !qwidget->windowFilePath().isEmpty()) {
+        return YES;
+    }
+    return NO;
+}
 @end
 #endif// QT_MAC_USE_COCOA

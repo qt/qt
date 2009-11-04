@@ -66,6 +66,29 @@ information about a particular change.
    be consistent with win32-msvc200x.
 
 ****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Designer
+
+ - [233683] Promoted Widgets are now stored correctly in scratchpad.
+ - [249823] Added search functionality to the resource browser.
+ - [254282] Enabled the use of promoted widgets in form templates.
+ - [254824] Made it possible to override the createAction()/createWidget()
+            functions of QUiLoader.
+ - [256332] Enabled deleting all pages of a QTabWidget or QStackedWidget.
+ - [259238] Fixed menubar/menu editing in right-to-left mode.
+ - [259918] Fixed setting of object names for container pages not to use
+            localized strings.
+ - [260658] Fixed saving of alpha values set in the palette editor.
+ -          It is now possible to further specify the kind of custom widget
+            string properties using XML tags.
+
+- uic3
+
+ - [128859] Fixed code generation of QLabel's wordWrap property.
+
+****************************************************************************
 *                               DirectFB                                   *
 ****************************************************************************
 
@@ -209,4 +232,8 @@ information about a particular change.
    for all floating point numbers, and this can be changed using the new
    function setFloatingPointPrecision(). Set Qt_4_5 as the version of the
    QDataStream to get the behavior of previous versions.
-
+   
+ - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
+   QCoreApplication::organizationName() and QCoreApplication::applicationName()
+   if those are set. This matches the behavior on the other platforms.
+   
