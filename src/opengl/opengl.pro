@@ -15,14 +15,7 @@ contains(QT_CONFIG, opengl):CONFIG += opengl
 contains(QT_CONFIG, opengles1):CONFIG += opengles1
 contains(QT_CONFIG, opengles1cl):CONFIG += opengles1cl
 contains(QT_CONFIG, opengles2):CONFIG += opengles2
-
-contains(QT_CONFIG, opengles.*) {
-	for(p, QMAKE_LIBDIR_EGL) {
-		exists($$p):LIBS_PRIVATE += -L$$p
-	}
-	!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL
-	!isEmpty(QMAKE_LIBS_EGL): LIBS_PRIVATE += $$QMAKE_LIBS_EGL
-}
+contains(QT_CONFIG, egl):CONFIG += egl
 
 HEADERS += qgl.h \
 	   qgl_p.h \
@@ -163,3 +156,4 @@ contains(QT_CONFIG,opengles1) {
     LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
     LIBS += $$QMAKE_LFLAGS_OPENGL
 }
+
