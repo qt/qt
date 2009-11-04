@@ -218,9 +218,20 @@ bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 
 void ParallelAnchorData::updateChildrenSizes()
 {
-    firstEdge->sizeAtMinimum = secondEdge->sizeAtMinimum = sizeAtMinimum;
-    firstEdge->sizeAtPreferred = secondEdge->sizeAtPreferred = sizeAtPreferred;
-    firstEdge->sizeAtMaximum = secondEdge->sizeAtMaximum = sizeAtMaximum;
+    firstEdge->sizeAtMinimum = sizeAtMinimum;
+    firstEdge->sizeAtPreferred = sizeAtPreferred;
+    firstEdge->sizeAtMaximum = sizeAtMaximum;
+
+    const bool secondFwd = (secondEdge->from == from);
+    if (secondFwd) {
+        secondEdge->sizeAtMinimum = sizeAtMinimum;
+        secondEdge->sizeAtPreferred = sizeAtPreferred;
+        secondEdge->sizeAtMaximum = sizeAtMaximum;
+    } else {
+        secondEdge->sizeAtMinimum = -sizeAtMinimum;
+        secondEdge->sizeAtPreferred = -sizeAtPreferred;
+        secondEdge->sizeAtMaximum = -sizeAtMaximum;
+    }
 
     firstEdge->updateChildrenSizes();
     secondEdge->updateChildrenSizes();
@@ -239,8 +250,16 @@ bool ParallelAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleIn
         return false;
     }
 
-    minSize = qMax(firstEdge->minSize, secondEdge->minSize);
-    maxSize = qMin(firstEdge->maxSize, secondEdge->maxSize);
+    // Account for parallel anchors where the second edge is backwards.
+    // We rely on the fact that a forward anchor of sizes min, pref, max is equivalent
+    // to a backwards anchor of size (-max, -pref, -min)
+    const bool secondFwd = (secondEdge->from == from);
+    const qreal secondMin = secondFwd ? secondEdge->minSize : -secondEdge->maxSize;
+    const qreal secondPref = secondFwd ? secondEdge->prefSize : -secondEdge->prefSize;
+    const qreal secondMax = secondFwd ? secondEdge->maxSize : -secondEdge->minSize;
+
+    minSize = qMax(firstEdge->minSize, secondMin);
+    maxSize = qMin(firstEdge->maxSize, secondMax);
 
     // This condition means that the maximum size of one anchor being simplified is smaller than
     // the minimum size of the other anchor. The consequence is that there won't be a valid size
@@ -249,7 +268,22 @@ bool ParallelAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleIn
         return false;
     }
 
-    prefSize = qMax(firstEdge->prefSize, secondEdge->prefSize);
+    // The equivalent preferred Size of a parallel anchor is calculated as to
+    // reduce the deviation from the original preferred sizes _and_ to avoid shrinking
+    // items below their preferred sizes, unless strictly needed.
+
+    // ### This logic only holds if all anchors in the layout are "well-behaved" in the
+    // following terms:
+    //
+    // - There are no negative-sized anchors
+    // - All sequential anchors are composed of children in the same direction as the
+    //   sequential anchor itself
+    //
+    // With these assumptions we can grow a child knowing that no hidden items will
+    // have to shrink as the result of that.
+    // If any of these does not hold, we have a situation where the ParallelAnchor
+    // does not have enough information to calculate its equivalent prefSize.
+    prefSize = qMax(firstEdge->prefSize, secondPref);
     prefSize = qMin(prefSize, maxSize);
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values

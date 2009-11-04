@@ -256,10 +256,11 @@ struct ParallelAnchorData : public AnchorData
         type = AnchorData::Parallel;
         orientation = first->orientation;
 
-        // ### Those asserts force that both child anchors have the same direction,
-        // but can't we simplify a pair of anchors in opposite directions?
-        Q_ASSERT(first->from == second->from);
-        Q_ASSERT(first->to == second->to);
+        // This assert whether the child anchors share their vertices
+        Q_ASSERT(((first->from == second->from) && (first->to == second->to)) ||
+                 ((first->from == second->to) && (first->to == second->from)));
+
+        // We arbitrarily choose the direction of the first child as "our" direction
         from = first->from;
         to = first->to;
 #ifdef QT_DEBUG
