@@ -69,11 +69,14 @@ QtGui
 
  - QTreeView
     * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
-    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning collumns
+    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
 
  - QTableView
+    * [191545] Selections work more similarly to well-known spreadsheets
     * [234926] Fixed sorting after changing QTableView header
-    * [244651] Speed up table view with many spans
+    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
+      speed-up, support for rows/columns insertion/removal, and better keyboard
+      navigation
 
  - QTabBar
     * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
