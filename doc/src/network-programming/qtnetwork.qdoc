@@ -155,7 +155,7 @@
     commands based on the result of a previous command. It also
     enables you to provide detailed feedback to the user.
 
-    The \l{network/ftp}{FTP} example
+    The \l{network/qftp}{FTP} example
     illustrates how to write an FTP client.
     Writing your own FTP (or HTTP) server is possible using the
     lower-level classes QTcpSocket and QTcpServer.
