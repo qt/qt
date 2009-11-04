@@ -104,8 +104,9 @@ public:
     static QmlAbstractBinding *setBinding(QObject *, const QmlPropertyCache::Data &, QmlAbstractBinding *,
                                           QmlMetaProperty::WriteFlags flags = QmlMetaProperty::DontRemoveBinding);
 
-    static quint32 saveValueType(int, int);
-    static quint32 saveProperty(int);
+    static void Q_AUTOTEST_EXPORT restore(QmlMetaProperty &prop, quint32, QObject *, QmlContext * = 0);
+    static quint32 Q_AUTOTEST_EXPORT saveValueType(int, int);
+    static quint32 Q_AUTOTEST_EXPORT saveProperty(int);
 
     static bool equal(const QMetaObject *, const QMetaObject *);
     static bool canConvert(const QMetaObject *from, const QMetaObject *to);

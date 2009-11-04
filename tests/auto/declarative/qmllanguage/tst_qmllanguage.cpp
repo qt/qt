@@ -45,6 +45,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+#include <private/qmlmetaproperty_p.h>
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
@@ -638,9 +639,9 @@ void tst_qmllanguage::valueTypes()
     p.write(13);
     QCOMPARE(p.read(), QVariant(13));
 
-    quint32 r = p.save();
+    quint32 r = QmlMetaPropertyPrivate::saveValueType(p.coreIndex(), p.valueTypeCoreIndex());
     QmlMetaProperty p2;
-    p2.restore(r, object);
+    QmlMetaPropertyPrivate::restore(p2, r, object);
     QCOMPARE(p2.read(), QVariant(13));
 }
 
