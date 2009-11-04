@@ -1788,13 +1788,13 @@ void tst_QListView::task262152_setModelColumnNavigate()
 
     view.show();
     QTest::qWaitForWindowShown(&view);
-    QTest::qWait(100);
+    QTest::qWait(120);
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(2,1));
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(2,1));
 
 }
 
@@ -1862,7 +1862,7 @@ void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
     view.setSelectionMode(QAbstractItemView::ExtendedSelection);
     view.selectAll();
     QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
-    
+
 
     QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
     //first the left button
