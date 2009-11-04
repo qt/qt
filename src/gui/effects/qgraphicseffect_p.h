@@ -72,7 +72,7 @@ public:
         , m_cachedMode(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
     {}
 
-    virtual ~QGraphicsEffectSourcePrivate() { invalidateCache(); }
+    virtual ~QGraphicsEffectSourcePrivate();
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
     virtual QRect deviceRect() const = 0;
