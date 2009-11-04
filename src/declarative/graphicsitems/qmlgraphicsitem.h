@@ -91,7 +91,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
     Q_PROPERTY(bool wantsFocus READ wantsFocus NOTIFY wantsFocusChanged)
     Q_PROPERTY(QmlList<QGraphicsTransform *>* transform READ transform DESIGNABLE false FINAL)
     Q_PROPERTY(TransformOrigin transformOrigin READ transformOrigin WRITE setTransformOrigin)
-    Q_PROPERTY(bool smooth READ smoothTransform WRITE setSmoothTransform)
+    Q_PROPERTY(bool smooth READ smooth WRITE setSmooth)
     Q_PROPERTY(QGraphicsEffect *effect READ graphicsEffect WRITE setGraphicsEffect)
     Q_ENUMS(TransformOrigin)
     Q_CLASSINFO("DefaultProperty", "data")
@@ -144,8 +144,8 @@ public:
     TransformOrigin transformOrigin() const;
     void setTransformOrigin(TransformOrigin);
 
-    bool smoothTransform() const;
-    void setSmoothTransform(bool);
+    bool smooth() const;
+    void setSmooth(bool);
 
     QRectF boundingRect() const;
     virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);

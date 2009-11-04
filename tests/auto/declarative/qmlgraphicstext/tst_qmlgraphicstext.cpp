@@ -502,13 +502,13 @@ void tst_qmlgraphicstext::smooth()
             QString componentStr = "import Qt 4.6\nText { smooth: true; text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), true);
+            QCOMPARE(textObject->smooth(), true);
         }
         {
             QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), false);
+            QCOMPARE(textObject->smooth(), false);
         }
     }
     for (int i = 0; i < richText.size(); i++)
@@ -517,13 +517,13 @@ void tst_qmlgraphicstext::smooth()
             QString componentStr = "import Qt 4.6\nText { smooth: true; text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), true);
+            QCOMPARE(textObject->smooth(), true);
         }
         {
             QString componentStr = "import Qt 4.6\nText { text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), false);
+            QCOMPARE(textObject->smooth(), false);
         }
     }
 }
