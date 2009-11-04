@@ -533,13 +533,14 @@ inline static qreal checkAdd(qreal a, qreal b)
     Adds \a newAnchor to the graph \a g.
 
     Returns the newAnchor itself if it could be added without further changes to the graph. If a
-    new parallel anchor had to be created, then returns the new parallel anchor. In case the
-    addition is unfeasible -- because a parallel setup is not possible, returns 0.
+    new parallel anchor had to be created, then returns the new parallel anchor. If a parallel anchor
+    had to be created and it results in an unfeasible setup, \a feasible is set to false, otherwise
+    true.
 */
 static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
-                                          AnchorData *newAnchor)
+                                          AnchorData *newAnchor, bool *feasible)
 {
-    bool feasible = true;
+    *feasible = true;
 
     // If already exists one anchor where newAnchor is supposed to be, we create a parallel
     // anchor.
@@ -548,12 +549,12 @@ static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
 
         // At this point we can identify that the parallel anchor is not feasible, e.g. one
         // anchor minimum size is bigger than the other anchor maximum size.
-        feasible = parallel->refreshSizeHints_helper(0, false);
+        *feasible = parallel->refreshSizeHints_helper(0, false);
         newAnchor = parallel;
     }
 
     g->createEdge(newAnchor->from, newAnchor->to, newAnchor);
-    return feasible ? newAnchor : 0;
+    return newAnchor;
 }
 
 
@@ -839,13 +840,21 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // Add the sequence to the graph.
         //
 
+        // ### At this point we assume that if some parallel anchor will be created because
+        // of the new sequence, the other anchor will not be a center anchor (since we
+        // not deal with that case yet). This assumption will break once we start simplifying
+        // vertices.
+        AnchorData *possibleParallel = g.edgeData(beforeSequence, afterSequence);
+        Q_ASSERT(!possibleParallel || !possibleParallel->isCenterAnchor);
+
         AnchorData *sequence = createSequence(&g, beforeSequence, candidates, afterSequence);
 
         // If 'beforeSequence' and 'afterSequence' already had an anchor between them, we'll
         // create a parallel anchor between the new sequence and the old anchor.
-        AnchorData *newAnchor = addAnchorMaybeParallel(&g, sequence);
+        bool newFeasible;
+        AnchorData *newAnchor = addAnchorMaybeParallel(&g, sequence, &newFeasible);
 
-        if (!newAnchor) {
+        if (!newFeasible) {
             *feasible = false;
             return false;
         }
