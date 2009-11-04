@@ -50,7 +50,8 @@ ImageWidget::ImageWidget(QWidget *parent)
     horizontalOffset(0),
     verticalOffset(0),
     rotationAngle(0),
-    scaleFactor(1)
+    scaleFactor(1),
+    currentStepScaleFactor(1)
 
 {
     setMinimumSize(QSize(100,100));
@@ -85,7 +86,7 @@ void ImageWidget::paintEvent(QPaintEvent*)
     p.translate(ww/2, wh/2);
     p.translate(horizontalOffset, verticalOffset);
     p.rotate(rotationAngle);
-    p.scale(scaleFactor, scaleFactor);
+    p.scale(currentStepScaleFactor * scaleFactor, currentStepScaleFactor * scaleFactor);
     p.translate(-iw/2, -ih/2);
     p.drawImage(0, 0, currentImage);
 }
@@ -140,8 +141,12 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
-        qreal lastValue = gesture->property("lastScaleFactor").toReal();
-        scaleFactor += value - lastValue;
+        if (gesture->state() == Qt::GestureFinished) {
+            scaleFactor *= currentStepScaleFactor;
+            currentStepScaleFactor = 1;
+        } else {
+            currentStepScaleFactor = value;
+        }
     }
     update();
 }
