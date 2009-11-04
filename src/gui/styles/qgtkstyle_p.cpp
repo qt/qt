@@ -202,8 +202,12 @@ Ptr_gnome_vfs_init QGtkStylePrivate::gnome_vfs_init = 0;
 
 typedef int (*x11ErrorHandler)(Display*, XErrorEvent*);
 
+Q_DECLARE_METATYPE(QGtkStylePrivate*);
+
 static void gtkStyleSetCallback(GtkWidget*, QGtkStylePrivate* stylePrivate)
 {
+    qRegisterMetaType<QGtkStylePrivate *>();
+
     // We have to let this function return and complete the event
     // loop to ensure that all gtk widgets have been styled before
     // updating
