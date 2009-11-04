@@ -2296,6 +2296,9 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
             //FIXME properly - style should calculate the location of border frame-part
             sz += QSize(2*pixelMetric(PM_ButtonMargin), 2*pixelMetric(PM_ButtonMargin));
+            if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(opt))
+                if (toolBtn->subControls & SC_ToolButtonMenu)
+                    sz += QSize(pixelMetric(PM_MenuButtonIndicator),0);
             break;
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
@@ -2579,8 +2582,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
         break;
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolButton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator, toolButton, widget) +
-                                      2*pixelMetric(PM_ButtonMargin, toolButton, widget);
+            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator) + 2*pixelMetric(PM_ButtonMargin);
+            const int border = pixelMetric(PM_ButtonMargin) + pixelMetric(PM_DefaultFrameWidth);
             ret = toolButton->rect;
             const bool popup = (toolButton->features & 
                     (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
@@ -2592,7 +2595,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 break;
             case SC_ToolButtonMenu:
                 if (popup)
-                    ret.adjust(ret.width() - indicatorRect, ret.height() - indicatorRect, 0, 0);
+                    ret.adjust(ret.width() - indicatorRect, border, -pixelMetric(PM_ButtonMargin), -border);
                 break;
             default:
                 break;
@@ -2614,8 +2617,8 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
     QRect ret;
     switch (element) {
         case SE_LineEditContents: {
-            // in S60 the input text box doesn't start from line Edit's TL, but
-            // a bit indented.
+                // in S60 the input text box doesn't start from line Edit's TL, but
+                // a bit indented.
                 QRect lineEditRect = opt->rect;
                 const int adjustment = opt->rect.height()>>2;
                 lineEditRect.adjust(adjustment,0,0,0);
