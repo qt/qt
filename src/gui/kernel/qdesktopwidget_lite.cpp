@@ -131,7 +131,7 @@ int QDesktopWidget::screenNumber(const QPoint &p) const
         if (screens[i]->geometry().contains(p))
             return i;
 
-    return -1;
+    return primaryScreen(); //even better would be closest screen
 }
 
 void QDesktopWidget::resizeEvent(QResizeEvent *)
