@@ -431,6 +431,7 @@ public:
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
     inline void sendScenePosChange();
+    virtual void siblingOrderChange();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;

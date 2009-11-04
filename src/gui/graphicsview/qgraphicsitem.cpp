@@ -4345,6 +4345,12 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
                 ++index;
         }
         d_ptr->siblingIndex = siblingIndex;
+        for (int i = 0; i < siblings->size(); ++i) {
+            int &index = siblings->at(i)->d_ptr->siblingIndex;
+            if (i != siblingIndex && index >= siblingIndex && index <= myIndex)
+                siblings->at(i)->d_ptr->siblingOrderChange();
+        }
+        d_ptr->siblingOrderChange();
     }
 }
 
@@ -5336,6 +5342,16 @@ void QGraphicsItemPrivate::resetFocusProxy()
     changes.
 */
 void QGraphicsItemPrivate::subFocusItemChange()
+{
+}
+
+/*!
+    \internal
+
+    Subclasses can reimplement this function to be notified when its
+    siblingIndex order is changed.
+*/
+void QGraphicsItemPrivate::siblingOrderChange()
 {
 }
 
