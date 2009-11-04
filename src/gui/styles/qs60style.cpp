@@ -499,7 +499,7 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
-    QApplication::setPalette(applicationPalette);
+    setThemePalette(app);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -743,7 +743,7 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     const QColor mainAreaTextColor =
         s60Color(QS60StyleEnums::CL_QsnTextColors, 6, 0);
 
-    widgetPalette.setColor(QPalette::All, QPalette::WindowText,
+    widgetPalette.setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnLineColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QSlider");
     // return to original palette after each widget
@@ -767,34 +767,34 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     QApplication::setPalette(widgetPalette, "QHeaderView");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::ButtonText,
+    widgetPalette.setColor(QPalette::ButtonText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 8, 0));
     QApplication::setPalette(widgetPalette, "QMenuBar");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::Active, QPalette::WindowText,
+    widgetPalette.setColor(QPalette::WindowText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 4, 0));
     QApplication::setPalette(widgetPalette, "QTabBar");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::Text,
+    widgetPalette.setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 22, 0));
     QApplication::setPalette(widgetPalette, "QTableView");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QLineEdit");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::Text,
+    widgetPalette.setColor(QPalette::Text,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 34, 0));
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QTextEdit");
     widgetPalette = *palette;
 
-    widgetPalette.setColor(QPalette::All, QPalette::HighlightedText,
+    widgetPalette.setColor(QPalette::HighlightedText,
         s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     QApplication::setPalette(widgetPalette, "QComboBox");
     widgetPalette = *palette;
@@ -994,6 +994,10 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
         if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
             const State bflags = toolBtn->state;
             const QRect button(subControlRect(control, toolBtn, SC_ToolButton, widget));
+            QRect menuRect = QRect();
+            if (toolBtn->subControls & SC_ToolButtonMenu)
+                menuRect = subControlRect(control, toolBtn, SC_ToolButtonMenu, widget);
+
             QStyleOptionToolButton toolButton = *toolBtn;
 
             if (sub&SC_ToolButton) {
@@ -1006,7 +1010,7 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                     toolBar = qobject_cast<QToolBar *>(widget->parentWidget());
 
                 if (bflags & (State_Sunken | State_On | State_Raised)) {
-                    tool.rect = button;
+                    tool.rect = button.unite(menuRect);
                     tool.state = bflags;
 
                     // todo: I'd like to move extension button next to where last button is
@@ -1060,6 +1064,12 @@ void QS60Style::drawComplexControl(ComplexControl control, const QStyleOptionCom
                             */
                     } else {
                         drawPrimitive(PE_PanelButtonTool, &tool, painter, widget);
+                    }
+
+                    if (toolButton.subControls & SC_ToolButtonMenu) {
+                        tool.rect = menuRect;
+                        tool.state = bflags;
+                        drawPrimitive(PE_IndicatorArrowDown, &tool, painter, widget);
                     }
                 }
             }
@@ -1752,7 +1762,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
 #endif //QT_NO_MENUBAR
 
     case CE_HeaderSection:
-        if ( const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
+        if (const QStyleOptionHeader *header = qstyleoption_cast<const QStyleOptionHeader *>(option)) {
             painter->save();
             QPen linePen = QPen(QS60StylePrivate::s60Color(QS60StyleEnums::CL_QsnLineColors, 1, header));
             const int penWidth = (header->orientation == Qt::Horizontal) ?
@@ -1770,6 +1780,25 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 }
             }
             painter->restore();
+
+            //Draw corner button as normal pushButton.
+            if (qobject_cast<const QAbstractButton *>(widget)) {
+                //Make cornerButton slightly smaller so that it is not on top of table border graphic.
+                QStyleOptionHeader subopt = *header;
+                const int borderTweak = 
+                    QS60StylePrivate::pixelMetric(PM_Custom_FrameCornerWidth)>>1;
+                if (subopt.direction == Qt::LeftToRight)
+                    subopt.rect.adjust(borderTweak, borderTweak, 0, -borderTweak);
+                else
+                    subopt.rect.adjust(0, borderTweak, -borderTweak, -borderTweak);
+                drawPrimitive(PE_PanelButtonBevel, &subopt, painter, widget);
+            } else if ((header->palette.brush(QPalette::Button) != Qt::transparent)) {
+                //Draw non-themed background. Background for theme is drawn in CE_ShapedFrame
+                //to get continuous theme graphic across all the header cells.
+                qDrawShadePanel(painter, header->rect, header->palette,
+                                header->state & (State_Sunken | State_On), penWidth,
+                                &header->palette.brush(QPalette::Button));
+            }
         }
         break;
     case CE_HeaderEmptyArea: // no need to draw this
@@ -1840,15 +1869,24 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
         } else if (qobject_cast<const QTableView *>(widget)) {
             QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableItem, painter, option->rect, flags);
         } else if (const QHeaderView *header = qobject_cast<const QHeaderView *>(widget)) {
-            if (header->orientation() == Qt::Horizontal) {
-                QRect headerRect = option->rect;
-                const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
-                headerRect.adjust(0,frameWidth,-2*frameWidth,0);
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, headerRect, flags);
-            } else {
+            //QS60style draws header background here instead of in each headersection, to get
+            //continuous graphic from section to section.
+            QS60StylePrivate::SkinElementFlags adjustableFlags = flags;
+            QRect headerRect = option->rect;
+            if (header->orientation() != Qt::Horizontal) {
                 //todo: update to horizontal table graphic
-                QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_TableHeaderItem, painter, option->rect, flags | QS60StylePrivate::SF_PointWest);
+                adjustableFlags = (adjustableFlags | QS60StylePrivate::SF_PointWest);
+            } else {
+                const int frameWidth = QS60StylePrivate::pixelMetric(PM_DefaultFrameWidth);
+                if (option->direction == Qt::LeftToRight) 
+                    headerRect.adjust(-2*frameWidth, 0, 0, 0);
+                else
+                    headerRect.adjust(0, 0, 2*frameWidth, 0);
             }
+            if (option->palette.brush(QPalette::Button).color() == Qt::transparent)
+                QS60StylePrivate::drawSkinElement(
+                        QS60StylePrivate::SE_TableHeaderItem, painter, headerRect, adjustableFlags);
+
         } else if (qobject_cast<const QFrame *>(widget)) {
             QCommonStyle::drawControl(element, option, painter, widget);
         }
@@ -2204,7 +2242,6 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
 
         // todo: items are below with #ifdefs "just in case". in final version, remove all non-required cases
     case PE_FrameLineEdit:
-    case PE_IndicatorButtonDropDown:
     case PE_IndicatorDockWidgetResizeHandle:
     case PE_PanelTipLabel:
     case PE_PanelScrollAreaCorner:
@@ -2266,10 +2303,19 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
                 sz += QSize(2*f->lineWidth, 4*f->lineWidth);
             break;
         case CT_TabBarTab:
-            QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+            {
+                const QSize naviPaneSize = QS60StylePrivate::naviPaneSize();
+                sz = QCommonStyle::sizeFromContents(ct, opt, csz, widget);
+                if (naviPaneSize.height() > sz.height())
+                    sz.setHeight(naviPaneSize.height());
+            }
+            break;
+        case CT_ItemViewItem:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
-            if (naviPaneSize.height() > sz.height())
-                sz.setHeight(naviPaneSize.height());
+            if (QS60StylePrivate::isTouchSupported())
+                //Make itemview easier to use in touch devices
+                //QCommonStyle does not adjust height with horizontal margin, it only adjusts width
+                sz.setHeight(sz.height() + 2*pixelMetric(QStyle::PM_FocusFrameVMargin));
             break;
         default:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
@@ -2522,6 +2568,29 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 default:
                     break;
             }
+        }
+        break;
+    case CC_ToolButton:
+        if (const QStyleOptionToolButton *toolButton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
+            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator, toolButton, widget) +
+                                      2*pixelMetric(PM_ButtonMargin, toolButton, widget);
+            ret = toolButton->rect;
+            const bool popup = (toolButton->features & 
+                    (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
+                    == QStyleOptionToolButton::MenuButtonPopup;
+            switch (scontrol) {
+            case SC_ToolButton:
+                if (popup)
+                    ret.adjust(0, 0, -indicatorRect, 0);
+                break;
+            case SC_ToolButtonMenu:
+                if (popup)
+                    ret.adjust(ret.width() - indicatorRect, ret.height() - indicatorRect, 0, 0);
+                break;
+            default:
+                break;
+            }
+            ret = visualRect(toolButton->direction, toolButton->rect, ret);
         }
         break;
     default:

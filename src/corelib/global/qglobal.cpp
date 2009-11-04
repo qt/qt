@@ -960,7 +960,7 @@ QT_BEGIN_NAMESPACE
     \relates <QtGlobal>
 
     Turns the major, minor and patch numbers of a version into an
-    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can 
+    integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can
     be compared with another similarly processed version id.
 
     \sa QT_VERSION
@@ -1795,7 +1795,7 @@ QSysInfo::S60Version QSysInfo::s60Version()
     TInt err = fileFinder.FindWildByDir(qt_S60Filter, qt_S60SystemInstallDir, contents);
     if (err == KErrNone) {
         err = contents->Sort(EDescending|ESortByName);
-        if (err == KErrNone) {
+        if (err == KErrNone && contents->Count() > 0 && (*contents)[0].iName.Length() >= 12) {
             TInt major = (*contents)[0].iName[9] - '0';
             TInt minor = (*contents)[0].iName[11] - '0';
             if (major == 3) {
@@ -1807,6 +1807,12 @@ QSysInfo::S60Version QSysInfo::s60Version()
             } else if (major == 5) {
                 if (minor == 0) {
                     return cachedS60Version = SV_S60_5_0;
+                }
+                else if (minor == 1) {
+                    return cachedS60Version = SV_S60_5_1;
+                }
+                else if (minor == 2) {
+                    return cachedS60Version = SV_S60_5_2;
                 }
             }
         }
@@ -1822,12 +1828,10 @@ QSysInfo::S60Version QSysInfo::s60Version()
     return cachedS60Version = SV_S60_3_2;
 #   elif defined(__S60_50__)
     return cachedS60Version = SV_S60_5_0;
-#   else
-    return cachedS60Version = SV_S60_Unknown;
 #   endif
-#  else
-    return cachedS60Version = SV_S60_Unknown;
 #  endif
+    //If reaching here, it was not possible to determine the version
+    return cachedS60Version = SV_S60_Unknown;
 }
 QSysInfo::SymbianVersion QSysInfo::symbianVersion()
 {
@@ -1837,6 +1841,10 @@ QSysInfo::SymbianVersion QSysInfo::symbianVersion()
     case SV_S60_3_2:
         return SV_9_3;
     case SV_S60_5_0:
+        return SV_9_4;
+    case SV_S60_5_1:
+        return SV_9_4;
+    case SV_S60_5_2:
         return SV_9_4;
     default:
         return SV_Unknown;
@@ -2513,10 +2521,19 @@ Q_GLOBAL_STATIC(SeedStorage, randTLS)  // Thread Local Storage for seed value
 void qsrand(uint seed)
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed)
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-    *pseed = seed;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed)
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+        *pseed = seed;
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to sqrand(seed)
+        srand(seed);
+    }
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls
@@ -2536,21 +2553,24 @@ void qsrand(uint seed)
 void qsrand()
 {
 #if (defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (pseed) {
-        // already seeded
-        return;
-    }
-    randTLS()->setLocalData(pseed = new SeedStorageType);
-    // start beyond 1 to avoid the sequence reset
-    static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
-    *pseed = QDateTime::currentDateTime().toTime_t()
-             + quintptr(&pseed)
-             + serial.fetchAndAddRelaxed(1);
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (pseed) {
+            // already seeded
+            return;
+        }
+        seedStorage->setLocalData(pseed = new SeedStorageType);
+        // start beyond 1 to avoid the sequence reset
+        static QBasicAtomicInt serial = Q_BASIC_ATOMIC_INITIALIZER(2);
+        *pseed = QDateTime::currentDateTime().toTime_t()
+                 + quintptr(&pseed)
+                 + serial.fetchAndAddRelaxed(1);
 #if defined(Q_OS_WIN)
-    // for Windows the srand function must still be called.
-    srand(*pseed);
+        // for Windows the srand function must still be called.
+        srand(*pseed);
 #endif
+    }
 
 #elif defined(Q_OS_WIN)
     static unsigned int seed = 0;
@@ -2560,7 +2580,7 @@ void qsrand()
 
     seed = GetTickCount();
     srand(seed);
-#else 
+#else
     // Symbian?
 
 #endif // defined(Q_OS_UNIX) || defined(Q_OS_WIN)) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
@@ -2584,12 +2604,21 @@ void qsrand()
 int qrand()
 {
 #if defined(Q_OS_UNIX) && !defined(QT_NO_THREAD) && !defined(Q_OS_SYMBIAN)
-    SeedStorageType *pseed = randTLS()->localData();
-    if (!pseed) {
-        randTLS()->setLocalData(pseed = new SeedStorageType);
-        *pseed = 1;
+    SeedStorage *seedStorage = randTLS();
+    if (seedStorage) {
+        SeedStorageType *pseed = seedStorage->localData();
+        if (!pseed) {
+            seedStorage->setLocalData(pseed = new SeedStorageType);
+            *pseed = 1;
+        }
+        return rand_r(pseed);
+    } else {
+        //golbal static seed storage should always exist,
+        //except after being deleted by QGlobalStaticDeleter.
+        //But since it still can be called from destructor of another
+        //global static object, fallback to qrand()
+        return rand();
     }
-    return rand_r(pseed);
 #else
     // On Windows srand() and rand() already use Thread-Local-Storage
     // to store the seed between calls

@@ -57,7 +57,7 @@ public:
         , handleType(QAbstractVideoBuffer::NoHandle)
         , scanLineDirection(QVideoSurfaceFormat::TopToBottom)
         , pixelAspectRatio(1, 1)
-        , yuvColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
+        , ycbcrColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
         , frameRate(0.0)
     {
     }
@@ -71,7 +71,7 @@ public:
         , scanLineDirection(QVideoSurfaceFormat::TopToBottom)
         , frameSize(size)
         , pixelAspectRatio(1, 1)
-        , yuvColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
+        , ycbcrColorSpace(QVideoSurfaceFormat::YCbCr_Undefined)
         , viewport(QPoint(0, 0), size)
         , frameRate(0.0)
     {
@@ -84,7 +84,7 @@ public:
         , scanLineDirection(other.scanLineDirection)
         , frameSize(other.frameSize)
         , pixelAspectRatio(other.pixelAspectRatio)
-        , yuvColorSpace(other.yuvColorSpace)
+        , ycbcrColorSpace(other.ycbcrColorSpace)
         , viewport(other.viewport)
         , frameRate(other.frameRate)
         , propertyNames(other.propertyNames)
@@ -101,7 +101,7 @@ public:
             && pixelAspectRatio == other.pixelAspectRatio
             && viewport == other.viewport
             && frameRatesEqual(frameRate, other.frameRate)
-            && yuvColorSpace == other.yuvColorSpace
+            && ycbcrColorSpace == other.ycbcrColorSpace
             && propertyNames.count() == other.propertyNames.count()) {
             for (int i = 0; i < propertyNames.count(); ++i) {
                 int j = other.propertyNames.indexOf(propertyNames.at(i));
@@ -125,7 +125,7 @@ public:
     QVideoSurfaceFormat::Direction scanLineDirection;
     QSize frameSize;
     QSize pixelAspectRatio;
-    QVideoSurfaceFormat::YuvColorSpace yuvColorSpace;
+    QVideoSurfaceFormat::YCbCrColorSpace ycbcrColorSpace;
     QRect viewport;
     qreal frameRate;
     QList<QByteArray> propertyNames;
@@ -168,19 +168,10 @@ public:
     \value BottomToTop Scan lines are arranged from the bottom of the frame to the top.
 */
 
-/*!
-    \enum QVideoSurfaceFormat::ViewportMode
-
-    Enumerates the methods for updating the stream viewport when the frame size is changed.
-
-    \value ResetViewport The viewport is reset to cover an entire frame.
-    \value KeepViewport The viewport is kept within the bounds the frame.
-*/
-
 /*! 
-    \enum QVideoSurfaceFormat::YuvColorSpace
+    \enum QVideoSurfaceFormat::YCbCrColorSpace
  
-    Enumerates the YUV color space of video frames.
+    Enumerates the Y'CbCr color space of video frames.
  
     \value YCbCr_Undefined
     No color space is specified.
@@ -340,21 +331,13 @@ int QVideoSurfaceFormat::frameHeight() const
 /*!
     Sets the size of frames in a video stream to \a size.
 
-    The viewport \a mode indicates how the view port should be updated.
+    This will reset the viewport() to fill the entire frame.
 */
 
-void QVideoSurfaceFormat::setFrameSize(const QSize &size, ViewportMode mode)
+void QVideoSurfaceFormat::setFrameSize(const QSize &size)
 {
     d->frameSize = size;
-
-    switch (mode) {
-    case ResetViewport:
-        d->viewport = QRect(QPoint(0, 0), size);
-        break;
-    case KeepViewport:
-        d->viewport = QRect(QPoint(0, 0), size).intersected(d->viewport);
-        break;
-    }
+    d->viewport = QRect(QPoint(0, 0), size);
 }
 
 /*!
@@ -362,12 +345,13 @@ void QVideoSurfaceFormat::setFrameSize(const QSize &size, ViewportMode mode)
 
     Sets the \a width and \a height of frames in a video stream.
 
-    The viewport \a mode indicates how the view port should be updated.
+    This will reset the viewport() to fill the entire frame.
 */
 
-void QVideoSurfaceFormat::setFrameSize(int width, int height, ViewportMode mode)
+void QVideoSurfaceFormat::setFrameSize(int width, int height)
 {
-    setFrameSize(QSize(width, height), mode);
+    d->frameSize = QSize(width, height);
+    d->viewport = QRect(0, 0, width, height);
 }
 
 /*!
@@ -458,22 +442,22 @@ void QVideoSurfaceFormat::setPixelAspectRatio(int horizontal, int vertical)
 }
 
 /*!
-    Returns a YUV color space of a video stream.
+    Returns the Y'CbCr color space of a video stream.
 */
 
-QVideoSurfaceFormat::YuvColorSpace QVideoSurfaceFormat::yuvColorSpace() const
+QVideoSurfaceFormat::YCbCrColorSpace QVideoSurfaceFormat::yCbCrColorSpace() const
 {
-    return d->yuvColorSpace;
+    return d->ycbcrColorSpace;
 }
 
 /*!
-    Sets a YUV color \a space of a video stream.
+    Sets the Y'CbCr color \a space of a video stream.
     It is only used with raw YUV frame types.
 */
 
-void QVideoSurfaceFormat::setYuvColorSpace(QVideoSurfaceFormat::YuvColorSpace space)
+void QVideoSurfaceFormat::setYCbCrColorSpace(QVideoSurfaceFormat::YCbCrColorSpace space)
 {
-    d->yuvColorSpace = space;
+    d->ycbcrColorSpace = space;
 }
 
 /*!
@@ -508,7 +492,7 @@ QList<QByteArray> QVideoSurfaceFormat::propertyNames() const
             << "frameRate"
             << "pixelAspectRatio"
             << "sizeHint"
-            << "yuvColorSpace")
+            << "yCbCrColorSpace")
             + d->propertyNames;
 }
 
@@ -540,8 +524,8 @@ QVariant QVideoSurfaceFormat::property(const char *name) const
         return qVariantFromValue(d->pixelAspectRatio);
     } else if (qstrcmp(name, "sizeHint") == 0) {
         return sizeHint();
-    } else if (qstrcmp(name, "yuvColorSpace") == 0) {
-        return qVariantFromValue(d->yuvColorSpace);
+    } else if (qstrcmp(name, "yCbCrColorSpace") == 0) {
+        return qVariantFromValue(d->ycbcrColorSpace);
     } else {
         int id = 0;
         for (; id < d->propertyNames.count() && d->propertyNames.at(id) != name; ++id) {}
@@ -585,9 +569,9 @@ void QVideoSurfaceFormat::setProperty(const char *name, const QVariant &value)
             d->pixelAspectRatio = qvariant_cast<QSize>(value);
     } else if (qstrcmp(name, "sizeHint") == 0) {
         // read only.
-    } else if (qstrcmp(name, "yuvColorSpace") == 0) {
-          if (qVariantCanConvert<YuvColorSpace>(value))
-              d->yuvColorSpace = qvariant_cast<YuvColorSpace>(value);
+    } else if (qstrcmp(name, "yCbCrColorSpace") == 0) {
+          if (qVariantCanConvert<YCbCrColorSpace>(value))
+              d->ycbcrColorSpace = qvariant_cast<YCbCrColorSpace>(value);
     } else {
         int id = 0;
         for (; id < d->propertyNames.count() && d->propertyNames.at(id) != name; ++id) {}

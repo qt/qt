@@ -89,7 +89,7 @@ namespace QPatternist
      * @see <a href"http://www.inf.uni-konstanz.de/dbis/publications/download/accelerating-locsteps.pdf">Accelerating
      * XPath Evaluation in Any RDBMS, Torsten Grust</a>
      */
-    class AccelTree : public QAbstractXmlNodeModel
+    class Q_AUTOTEST_EXPORT AccelTree : public QAbstractXmlNodeModel
     {
         friend class AccelTreePrivate;
     public:

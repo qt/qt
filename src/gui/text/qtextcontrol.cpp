@@ -1833,7 +1833,8 @@ void QTextControlPrivate::inputMethodEvent(QInputMethodEvent *e)
         e->ignore();
         return;
     }
-    bool isGettingInput = !e->commitString().isEmpty() || !e->preeditString().isEmpty()
+    bool isGettingInput = !e->commitString().isEmpty()
+            || e->preeditString() != cursor.block().layout()->preeditAreaText()
             || e->replacementLength() > 0;
 
     if (isGettingInput) {

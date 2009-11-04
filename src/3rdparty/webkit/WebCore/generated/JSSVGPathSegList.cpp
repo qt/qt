@@ -99,7 +99,7 @@ JSSVGPathSegList::JSSVGPathSegList(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSSVGPathSegList::~JSSVGPathSegList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGPathSegList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

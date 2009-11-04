@@ -870,7 +870,7 @@ void Scene::renderCubemaps()
 
         float angle = 2.0f * PI * i / m_cubemaps.size();
 
-        center = m_trackBalls[1].rotation().rotateVector(QVector3D(cos(angle), sin(angle), 0.0f));
+        center = m_trackBalls[1].rotation().rotatedVector(QVector3D(cos(angle), sin(angle), 0.0f));
 
         for (int face = 0; face < 6; ++face) {
             m_cubemaps[i]->begin(face);

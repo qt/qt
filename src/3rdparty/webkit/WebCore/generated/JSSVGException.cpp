@@ -150,7 +150,7 @@ JSSVGException::JSSVGException(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSSVGException::~JSSVGException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

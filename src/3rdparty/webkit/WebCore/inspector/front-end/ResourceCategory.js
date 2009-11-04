@@ -26,18 +26,13 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceCategory = function(title, name)
+WebInspector.ResourceCategory = function(name, title, color)
 {
-    this.name = name;
-    this.title = title;
+    WebInspector.AbstractTimelineCategory.call(this, name, title, color);
     this.resources = [];
 }
 
 WebInspector.ResourceCategory.prototype = {
-    toString: function()
-    {
-        return this.title;
-    },
 
     addResource: function(resource)
     {
@@ -66,3 +61,5 @@ WebInspector.ResourceCategory.prototype = {
         this.resources = [];
     }
 }
+
+WebInspector.ResourceCategory.prototype.__proto__ = WebInspector.AbstractTimelineCategory.prototype;

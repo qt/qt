@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 #include "qimagepixmapcleanuphooks_p.h"
-#include "qpixmapdata_p.h"
+#include "private/qpixmapdata_p.h"
+#include "private/qimage_p.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -130,6 +131,21 @@ void QImagePixmapCleanupHooks::executeImageHooks(qint64 key)
 
     if (qt_image_cleanup_hook_64)
         qt_image_cleanup_hook_64(key);
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(const QPixmap &pixmap)
+{
+    enableCleanupHooks(const_cast<QPixmap &>(pixmap).data_ptr().data());
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(QPixmapData *pixmapData)
+{
+    pixmapData->is_cached = true;
+}
+
+void QImagePixmapCleanupHooks::enableCleanupHooks(const QImage &image)
+{
+    const_cast<QImage &>(image).data_ptr()->is_cached = true;
 }
 
 QT_END_NAMESPACE

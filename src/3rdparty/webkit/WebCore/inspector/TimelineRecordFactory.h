@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008, 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,14 +27,37 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+ 
+#ifndef TimelineRecordFactory_h
+#define TimelineRecordFactory_h
 
-module html {
+#include "PlatformString.h"
 
-    // This interface is used for undetectable HTMLCollections.
-    // An undetectable HTMLCollection behaves like an HTMLCollection
-    // when used, but the 'typeof' operator returns undefined and
-    // ToBoolean returns false.
-    interface HTMLAllCollection : HTMLCollection {
+namespace WebCore {
+
+    class Event;
+    class InspectorFrontend;
+    class ScriptObject;
+
+    class TimelineRecordFactory {
+    public:
+        static ScriptObject createGenericRecord(InspectorFrontend*, double startTime);
+
+        static ScriptObject createDOMDispatchRecord(InspectorFrontend*, double startTime, const Event&);
+
+        static ScriptObject createGenericTimerRecord(InspectorFrontend*, double startTime, int timerId);
+
+        static ScriptObject createTimerInstallRecord(InspectorFrontend*, double startTime, int timerId, int timeout, bool singleShot);
+
+        static ScriptObject createXHRReadyStateChangeTimelineRecord(InspectorFrontend*, double startTime, const String& url, int readyState);
+        static ScriptObject createXHRLoadTimelineRecord(InspectorFrontend*, double startTime, const String& url);
+        
+        static ScriptObject createEvaluateScriptTagTimelineRecord(InspectorFrontend*, double startTime, const String&, double lineNumber);
+
+    private:
+        TimelineRecordFactory() { }
     };
 
-}
+} // namespace WebCore
+
+#endif // !defined(TimelineRecordFactory_h)

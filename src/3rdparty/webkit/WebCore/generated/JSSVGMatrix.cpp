@@ -107,7 +107,7 @@ JSSVGMatrix::JSSVGMatrix(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSSVGMatrix::~JSSVGMatrix()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGMatrix::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -83,12 +83,10 @@ GLDEF_C TInt QtMainWrapper()
     char **envp = 0;
     // get args & environment
     __crt0(argc, argv, envp);
-    CleanupArrayDelete<char*>::PushL(argv);
-    CleanupArrayDelete<char*>::PushL(envp);
     //Call user(application)'s main
-    int ret = 0;
-    QT_TRYCATCH_LEAVING(ret = CALLMAIN(argc, argv, envp););
-    CleanupStack::PopAndDestroy(2, argv);
+    TRAPD(ret, QT_TRYCATCH_LEAVING(ret = CALLMAIN(argc, argv, envp);));
+    delete[] argv;
+    delete[] envp;
     return ret;
 }
 

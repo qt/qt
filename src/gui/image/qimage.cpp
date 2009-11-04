@@ -4083,7 +4083,8 @@ QImage QImage::createAlphaMask(Qt::ImageConversionFlags flags) const
     }
 
     QImage mask(d->width, d->height, Format_MonoLSB);
-    dither_to_Mono(mask.d, d, flags, true);
+    if (!mask.isNull())
+        dither_to_Mono(mask.d, d, flags, true);
     return mask;
 }
 

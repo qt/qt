@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 /*!
-    \example network/ftp
+    \example network/qftp
     \title FTP Example
 
     The FTP example demonstrates a simple FTP client that can be used

@@ -143,7 +143,7 @@ JSPluginArray::JSPluginArray(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSPluginArray::~JSPluginArray()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSPluginArray::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

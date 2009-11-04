@@ -145,7 +145,7 @@ JSRangeException::JSRangeException(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSRangeException::~JSRangeException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRangeException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

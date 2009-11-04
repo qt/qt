@@ -630,7 +630,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes

@@ -501,3 +501,5 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
+
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

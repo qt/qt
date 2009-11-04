@@ -122,6 +122,8 @@ public:
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif
 
+    static QPixmapData *create(int w, int h, PixelType type);
+
 protected:
     void setSerialNumber(int serNo);
     int w;
@@ -131,12 +133,11 @@ protected:
 
 private:
     friend class QPixmap;
-    friend class QGLContextPrivate;
     friend class QX11PixmapData;
     friend class QS60PixmapData;
+    friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
-    friend bool qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs to set is_cached
 
     QAtomicInt ref;
     int detach_no;

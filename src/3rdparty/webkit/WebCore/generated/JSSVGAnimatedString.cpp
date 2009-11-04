@@ -82,7 +82,7 @@ JSSVGAnimatedString::JSSVGAnimatedString(NonNullPassRefPtr<Structure> structure,
 
 JSSVGAnimatedString::~JSSVGAnimatedString()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedString::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

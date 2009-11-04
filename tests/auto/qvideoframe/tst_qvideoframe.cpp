@@ -524,7 +524,7 @@ void tst_QVideoFrame::assign()
 void tst_QVideoFrame::map_data()
 {
     QTest::addColumn<QSize>("size");
-    QTest::addColumn<int>("numBytes");
+    QTest::addColumn<int>("mappedBytes");
     QTest::addColumn<int>("bytesPerLine");
     QTest::addColumn<QVideoFrame::PixelFormat>("pixelFormat");
     QTest::addColumn<QAbstractVideoBuffer::MapMode>("mode");
@@ -554,29 +554,29 @@ void tst_QVideoFrame::map_data()
 void tst_QVideoFrame::map()
 {
     QFETCH(QSize, size);
-    QFETCH(int, numBytes);
+    QFETCH(int, mappedBytes);
     QFETCH(int, bytesPerLine);
     QFETCH(QVideoFrame::PixelFormat, pixelFormat);
     QFETCH(QAbstractVideoBuffer::MapMode, mode);
 
-    QVideoFrame frame(numBytes, size, bytesPerLine, pixelFormat);
+    QVideoFrame frame(mappedBytes, size, bytesPerLine, pixelFormat);
 
     QVERIFY(!frame.bits());
-    QCOMPARE(frame.numBytes(), 0);
+    QCOMPARE(frame.mappedBytes(), 0);
     QCOMPARE(frame.bytesPerLine(), 0);
     QCOMPARE(frame.mapMode(), QAbstractVideoBuffer::NotMapped);
 
     QVERIFY(frame.map(mode));
 
     QVERIFY(frame.bits());
-    QCOMPARE(frame.numBytes(), numBytes);
+    QCOMPARE(frame.mappedBytes(), mappedBytes);
     QCOMPARE(frame.bytesPerLine(), bytesPerLine);
     QCOMPARE(frame.mapMode(), mode);
 
     frame.unmap();
 
     QVERIFY(!frame.bits());
-    QCOMPARE(frame.numBytes(), 0);
+    QCOMPARE(frame.mappedBytes(), 0);
     QCOMPARE(frame.bytesPerLine(), 0);
     QCOMPARE(frame.mapMode(), QAbstractVideoBuffer::NotMapped);
 }
@@ -614,21 +614,21 @@ void tst_QVideoFrame::mapImage()
     QVideoFrame frame(image);
 
     QVERIFY(!frame.bits());
-    QCOMPARE(frame.numBytes(), 0);
+    QCOMPARE(frame.mappedBytes(), 0);
     QCOMPARE(frame.bytesPerLine(), 0);
     QCOMPARE(frame.mapMode(), QAbstractVideoBuffer::NotMapped);
 
     QVERIFY(frame.map(mode));
 
     QVERIFY(frame.bits());
-    QCOMPARE(frame.numBytes(), image.numBytes());
+    QCOMPARE(frame.mappedBytes(), image.numBytes());
     QCOMPARE(frame.bytesPerLine(), image.bytesPerLine());
     QCOMPARE(frame.mapMode(), mode);
 
     frame.unmap();
 
     QVERIFY(!frame.bits());
-    QCOMPARE(frame.numBytes(), 0);
+    QCOMPARE(frame.mappedBytes(), 0);
     QCOMPARE(frame.bytesPerLine(), 0);
     QCOMPARE(frame.mapMode(), QAbstractVideoBuffer::NotMapped);
 }

@@ -37,6 +37,10 @@
 #include <QPushButton>
 #include <QDir>
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 // Will try to wait for the condition while allowing event processing
 #define QTRY_COMPARE(__expr, __expected) \
     do { \
@@ -1270,7 +1274,7 @@ void tst_QWebPage::inputMethods()
                                             "</body></html>");
     m_view->page()->mainFrame()->setFocus();
 
-    QList<QWebElement> inputs = m_view->page()->mainFrame()->documentElement().findAll("input");
+    QWebElementCollection inputs = m_view->page()->mainFrame()->documentElement().findAll("input");
 
     QMouseEvent evpres(QEvent::MouseButtonPress, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
     m_view->page()->event(&evpres);
