@@ -160,15 +160,15 @@ module window {
         readonly attribute DOMApplicationCache applicationCache;
 #endif    
 #if defined(ENABLE_DATABASE) && ENABLE_DATABASE
-        Database openDatabase(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize)
+        [EnabledAtRuntime] Database openDatabase(in DOMString name, in DOMString version, in DOMString displayName, in unsigned long estimatedSize)
             raises(DOMException);
 #endif
 #if defined(ENABLE_DOM_STORAGE) && ENABLE_DOM_STORAGE
-        readonly attribute Storage sessionStorage;
-        readonly attribute Storage localStorage;
+        readonly attribute [EnabledAtRuntime] Storage sessionStorage;
+        readonly attribute [EnabledAtRuntime] Storage localStorage;
 #endif
 #if defined(ENABLE_NOTIFICATIONS) && ENABLE_NOTIFICATIONS
-        readonly attribute NotificationCenter webkitNotifications;
+        readonly attribute [EnabledAtRuntime] NotificationCenter webkitNotifications;
 #endif
 
 #if defined(ENABLE_ORIENTATION_EVENTS) && ENABLE_ORIENTATION_EVENTS
@@ -426,6 +426,7 @@ module window {
         attribute HTMLUListElementConstructor HTMLUListElement;
 
         attribute HTMLCollectionConstructor HTMLCollection;
+        attribute HTMLAllCollectionConstructor HTMLAllCollection;
 
         attribute [CustomGetter] HTMLImageElementConstructor Image; // Usable with new operator
         attribute [CustomGetter] HTMLOptionElementConstructor Option; // Usable with new operator

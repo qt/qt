@@ -189,8 +189,10 @@ QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
 }
 
 QPixmap QS60StylePrivate::part(QS60StyleEnums::SkinParts part, const QSize &size,
-                               QS60StylePrivate::SkinElementFlags flags)
+                               QPainter *painter, QS60StylePrivate::SkinElementFlags flags)
 {
+    Q_UNUSED(painter);
+
     const QString partKey = QS60Style::partKeys().at(part);
     const QPicture partPicture = QS60StyleModeSpecifics::m_partPictures.value(partKey);
     QSize partSize(partPicture.boundingRect().size());

@@ -10,7 +10,7 @@ SUBDIRS += anchors \
            numberformatter \
            pathview \
            qfxloader \
-           qfxpixmapcache \
+           qmlpixmapcache \
            qfxtextedit \
            qfxtextinput \
            qfxwebview \
@@ -28,6 +28,7 @@ SUBDIRS += anchors \
            qmlmetatype \
            qmlpropertymap \
            qmltimer \
+           qmlxmllistmodel \
            repeater \
            sql \
            states \

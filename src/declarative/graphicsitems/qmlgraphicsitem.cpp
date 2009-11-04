@@ -2667,9 +2667,9 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
 
     The default is false.
     
-    \sa setSmoothTransform()
+    \sa setSmooth()
 */
-bool QmlGraphicsItem::smoothTransform() const
+bool QmlGraphicsItem::smooth() const
 {
     Q_D(const QmlGraphicsItem);
     return d->smooth;
@@ -2679,9 +2679,9 @@ bool QmlGraphicsItem::smoothTransform() const
     Sets whether the item should be drawn with antialiasing and
     smooth pixmap filtering to \a smooth.
 
-    \sa smoothTransform()
+    \sa smooth()
 */
-void QmlGraphicsItem::setSmoothTransform(bool smooth)
+void QmlGraphicsItem::setSmooth(bool smooth)
 {
     Q_D(QmlGraphicsItem);
     if (d->smooth == smooth)

@@ -108,7 +108,7 @@ JSNavigator::JSNavigator(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSNavigator::~JSNavigator()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNavigator::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

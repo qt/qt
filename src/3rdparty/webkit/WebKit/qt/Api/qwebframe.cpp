@@ -185,6 +185,17 @@ void QWEBKIT_EXPORT qt_drt_garbageCollector_collectOnAlternateThread(bool waitUn
     gcController().garbageCollectOnAlternateThreadForDebugging(waitUntilDone);
 }
 
+// Returns the value of counter in the element specified by \a id.
+QString QWEBKIT_EXPORT qt_drt_counterValueForElementById(QWebFrame* qFrame, const QString& id)
+{
+    Frame* frame = QWebFramePrivate::core(qFrame);
+    if (Document* document = frame->document()) {
+        Element* element = document->getElementById(id);
+        return WebCore::counterValueForElement(element);
+    }
+    return QString();
+}
+
 QWebFrameData::QWebFrameData(WebCore::Page* parentPage, WebCore::Frame* parentFrame,
                              WebCore::HTMLFrameOwnerElement* ownerFrameElement,
                              const WebCore::String& frameName)
@@ -232,7 +243,7 @@ WebCore::Scrollbar* QWebFramePrivate::verticalScrollBar() const
     return frame->view()->verticalScrollbar();
 }
 
-void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip)
+void QWebFramePrivate::renderPrivate(QPainter *painter, QWebFrame::RenderLayer layer, const QRegion &clip)
 {
     if (!frame->view() || !frame->contentRenderer())
         return;
@@ -241,24 +252,58 @@ void QWebFramePrivate::renderPrivate(QPainter *painter, const QRegion &clip)
     if (vector.isEmpty())
         return;
 
+    GraphicsContext context(painter);
+    if (context.paintingDisabled() && !context.updatingControlTints())
+        return;
+
     WebCore::FrameView* view = frame->view();
     view->layoutIfNeededRecursive();
 
-    GraphicsContext context(painter);
-
-    if (clipRenderToViewport)
-        view->paint(&context, vector.first());
-    else
-        view->paintContents(&context, vector.first());
-
-    for (int i = 1; i < vector.size(); ++i) {
+    for (int i = 0; i < vector.size(); ++i) {
         const QRect& clipRect = vector.at(i);
+        QRect intersectedRect = clipRect.intersected(view->frameRect());
+
         painter->save();
         painter->setClipRect(clipRect, Qt::IntersectClip);
-        if (clipRenderToViewport)
-            view->paint(&context, clipRect);
-        else
-            view->paintContents(&context, clipRect);
+
+        int x = view->x();
+        int y = view->y();
+
+        if (layer & QWebFrame::ContentsLayer) {
+            context.save();
+
+            int scrollX = view->scrollX();
+            int scrollY = view->scrollY();
+
+            QRect rect = intersectedRect;
+            context.translate(x, y);
+            rect.translate(-x, -y);
+            context.translate(-scrollX, -scrollY);
+            rect.translate(scrollX, scrollY);
+            context.clip(view->visibleContentRect());
+
+            view->paintContents(&context, rect);
+
+            context.restore();
+        }
+
+        if (layer & QWebFrame::ScrollBarLayer
+            && !view->scrollbarsSuppressed()
+            && (view->horizontalScrollbar() || view->verticalScrollbar())) {
+            context.save();
+
+            QRect rect = intersectedRect;
+            context.translate(x, y);
+            rect.translate(-x, -y);
+
+            view->paintScrollbars(&context, rect);
+
+            context.restore();
+        }
+
+        if (layer & QWebFrame::PanIconLayer)
+            view->paintPanScrollIcon(&context);
+
         painter->restore();
     }
 }
@@ -386,7 +431,7 @@ void QWebFrame::addToJavaScriptWindowObject(const QString &name, QObject *object
         return;
 
     JSC::JSLock lock(JSC::SilenceAssertionsOnly);
-    JSDOMWindow* window = toJSDOMWindow(d->frame);
+    JSDOMWindow* window = toJSDOMWindow(d->frame, mainThreadNormalWorld());
     JSC::Bindings::RootObject* root = d->frame->script()->bindingRootObject();
     if (!window) {
         qDebug() << "Warning: couldn't get window object";
@@ -946,13 +991,26 @@ void QWebFrame::setScrollPosition(const QPoint &pos)
 }
 
 /*!
-  Render the frame into \a painter clipping to \a clip.
+  \since 4.6
+  Render the \a layer of the frame using \a painter clipping to \a clip.
 
   \sa print()
 */
+
+void QWebFrame::render(QPainter* painter, RenderLayer layer, const QRegion& clip)
+{
+    if (!clip.isEmpty())
+        d->renderPrivate(painter, layer, clip);
+    else if (d->frame->view())
+        d->renderPrivate(painter, layer, QRegion(d->frame->view()->frameRect()));
+}
+
+/*!
+  Render the frame into \a painter clipping to \a clip.
+*/
 void QWebFrame::render(QPainter *painter, const QRegion &clip)
 {
-    d->renderPrivate(painter, clip);
+    d->renderPrivate(painter, AllLayers, clip);
 }
 
 /*!
@@ -963,27 +1021,7 @@ void QWebFrame::render(QPainter *painter)
     if (!d->frame->view())
         return;
 
-    d->renderPrivate(painter, QRegion(d->frame->view()->frameRect()));
-}
-
-/*!
-    \since 4.6
-    \property QWebFrame::clipRenderToViewport
-
-    Returns true if render will clip content to viewport; otherwise returns false.
-*/
-bool QWebFrame::clipRenderToViewport() const
-{
-    return d->clipRenderToViewport;
-}
-
-/*!
-    \since 4.6
-    Sets whether the content of a frame will be clipped to viewport when rendered.
-*/
-void QWebFrame::setClipRenderToViewport(bool clipRenderToViewport)
-{
-    d->clipRenderToViewport = clipRenderToViewport;
+    d->renderPrivate(painter, AllLayers, QRegion(d->frame->view()->frameRect()));
 }
 
 /*!
@@ -1114,7 +1152,7 @@ QWebElement QWebFrame::documentElement() const
 
     \sa QWebElement::findAll()
 */
-QList<QWebElement> QWebFrame::findAllElements(const QString &selectorQuery) const
+QWebElementCollection QWebFrame::findAllElements(const QString &selectorQuery) const
 {
     return documentElement().findAll(selectorQuery);
 }
@@ -1264,7 +1302,7 @@ QVariant QWebFrame::evaluateJavaScript(const QString& scriptSource)
     if (proxy) {
         JSC::JSValue v = d->frame->script()->executeScript(ScriptSourceCode(scriptSource)).jsValue();
         int distance = 0;
-        rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject()->globalExec(), v, QMetaType::Void, &distance);
+        rc = JSC::Bindings::convertValueToQVariant(proxy->globalObject(mainThreadNormalWorld())->globalExec(), v, QMetaType::Void, &distance);
     }
     return rc;
 }
@@ -1402,7 +1440,6 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
     if (!hitTest.innerNode())
         return;
     pos = hitTest.point();
-    boundingRect = hitTest.boundingBox();
     WebCore::TextDirection dir;
     title = hitTest.title(dir);
     linkText = hitTest.textContent();
@@ -1412,6 +1449,7 @@ QWebHitTestResultPrivate::QWebHitTestResultPrivate(const WebCore::HitTestResult 
     imageUrl = hitTest.absoluteImageURL();
     innerNode = hitTest.innerNode();
     innerNonSharedNode = hitTest.innerNonSharedNode();
+    boundingRect = innerNonSharedNode ? innerNonSharedNode->renderer()->absoluteBoundingBoxRect(true) : IntRect();
     WebCore::Image *img = hitTest.image();
     if (img) {
         QPixmap *pix = img->nativeImageForCurrentFrame();
@@ -1659,4 +1697,3 @@ QWebFrame *QWebHitTestResult::frame() const
         return 0;
     return d->frame;
 }
-

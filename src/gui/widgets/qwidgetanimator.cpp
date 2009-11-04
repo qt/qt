@@ -105,7 +105,9 @@ void QWidgetAnimator::animate(QWidget *widget, const QRect &_final_geometry, boo
 #else
     //we do it in one shot
     widget->setGeometry(final_geometry);
+#ifndef QT_NO_MAINWINDOW
     m_mainWindowLayout->animationFinished(widget);
+#endif //QT_NO_MAINWINDOW
 #endif //QT_NO_ANIMATION
 }
 

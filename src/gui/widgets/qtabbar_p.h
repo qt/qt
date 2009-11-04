@@ -77,7 +77,11 @@ public:
         :currentIndex(-1), pressedIndex(-1), shape(QTabBar::RoundedNorth), layoutDirty(false),
         drawBase(true), scrollOffset(0), expanding(true), closeButtonOnTabs(false),
         selectionBehaviorOnRemove(QTabBar::SelectRightTab), paintWithOffsets(true), movable(false),
-        dragInProgress(false), documentMode(false), movingTab(0) {}
+        dragInProgress(false), documentMode(false), movingTab(0)
+#ifdef Q_WS_MAC
+        , previousPressedIndex(-1)
+#endif
+        {}
 
     int currentIndex;
     int pressedIndex;
@@ -195,7 +199,9 @@ public:
     bool documentMode;
 
     QWidget *movingTab;
-
+#ifdef Q_WS_MAC
+    int previousPressedIndex;
+#endif
     // shared by tabwidget and qtabbar
     static void initStyleBaseOption(QStyleOptionTabBarBaseV2 *optTabBase, QTabBar *tabbar, QSize size)
     {

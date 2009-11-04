@@ -128,7 +128,7 @@ JSCounter::JSCounter(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 
 JSCounter::~JSCounter()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCounter::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

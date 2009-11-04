@@ -1258,6 +1258,14 @@ bool AccessibilityRenderObject::ariaIsHidden() const
 
 bool AccessibilityRenderObject::accessibilityIsIgnored() const
 {
+    // is the platform is interested in this object?
+    AccessibilityObjectPlatformInclusion decision = accessibilityPlatformIncludesObject();
+    if (decision == IncludeObject)
+        return false;
+    if (decision == IgnoreObject)
+        return true;
+    // the decision must, therefore, be DefaultBehavior.
+
     // ignore invisible element
     if (!m_renderer || m_renderer->style()->visibility() != VISIBLE)
         return true;
@@ -1268,6 +1276,9 @@ bool AccessibilityRenderObject::accessibilityIsIgnored() const
     if (isPresentationalChildOfAriaRole())
         return true;
         
+    if (roleValue() == IgnoredRole)
+        return true;
+    
     // ignore popup menu items because AppKit does
     for (RenderObject* parent = m_renderer->parent(); parent; parent = parent->parent()) {
         if (parent->isMenuList())
@@ -2212,6 +2223,21 @@ AccessibilityObject* AccessibilityRenderObject::correspondingControlForLabelElem
     return axObjectCache()->getOrCreate(correspondingControl->renderer());     
 }
 
+AccessibilityObject* AccessibilityRenderObject::correspondingLabelForControlElement() const
+{
+    if (!m_renderer)
+        return 0;
+
+    Node* node = m_renderer->node();
+    if (node && node->isHTMLElement()) {
+        HTMLLabelElement* label = labelForElement(static_cast<Element*>(node));
+        if (label)
+            return axObjectCache()->getOrCreate(label->renderer());
+    }
+
+    return 0;
+}
+
 AccessibilityObject* AccessibilityRenderObject::observableObject() const
 {
     for (RenderObject* renderer = m_renderer; renderer && renderer->node(); renderer = renderer->parent()) {
@@ -2224,13 +2250,13 @@ AccessibilityObject* AccessibilityRenderObject::observableObject() const
     
 typedef HashMap<String, AccessibilityRole, CaseFoldingHash> ARIARoleMap;
 
+struct RoleEntry {
+    String ariaRole;
+    AccessibilityRole webcoreRole;
+};
+
 static const ARIARoleMap& createARIARoleMap()
 {
-    struct RoleEntry {
-        String ariaRole;
-        AccessibilityRole webcoreRole;
-    };
-
     const RoleEntry roles[] = {
         { "application", LandmarkApplicationRole },
         { "article", DocumentArticleRole },
@@ -2263,6 +2289,8 @@ static const ARIARoleMap& createARIARoleMap()
         { "menuitemradio", MenuItemRole },
         { "note", DocumentNoteRole },
         { "navigation", LandmarkNavigationRole },
+        { "option", ListBoxOptionRole },
+        { "presentation", IgnoredRole },
         { "progressbar", ProgressIndicatorRole },
         { "radio", RadioButtonRole },
         { "radiogroup", RadioGroupRole },
@@ -2508,6 +2536,8 @@ bool AccessibilityRenderObject::canHaveChildren() const
         case PopUpButtonRole:
         case CheckBoxRole:
         case RadioButtonRole:
+        case StaticTextRole:
+        case ListBoxOptionRole:
             return false;
         default:
             return true;
@@ -2561,7 +2591,7 @@ void AccessibilityRenderObject::addChildren()
             for (Node* current = map->firstChild(); current; current = current->traverseNextNode(map)) {
 
                 // add an <area> element for this child if it has a link
-                if (current->isLink()) {
+                if (current->hasTagName(areaTag) && current->isLink()) {
                     AccessibilityImageMapLink* areaObject = static_cast<AccessibilityImageMapLink*>(m_renderer->document()->axObjectCache()->getOrCreate(ImageMapLinkRole));
                     areaObject->setHTMLAreaElement(static_cast<HTMLAreaElement*>(current));
                     areaObject->setHTMLMapElement(map);

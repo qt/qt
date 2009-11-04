@@ -368,6 +368,9 @@
 
     The QtSql module is part of the \l{Qt Full Framework Edition} and the
     \l{Open Source Versions of Qt}.
+
+    See the \l{SQL Programming} guide for information about using this
+    module in your applications.
 */
 
 /*!
@@ -577,7 +580,7 @@
     the module under the appropriate version of the GNU LGPL; version 2.1
     for applications and libraries licensed under the GNU GPL version 2,
     or version 3 for applications and libraries licensed under the GNU
-    GPL version 2.
+    GPL version 3.
 
     \legalese
     This file is part of the KDE project

@@ -1967,7 +1967,7 @@ void tst_QTextEdit::fullWidthSelection()
     qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
-    testFont.setPixelSize(12);
+    testFont.setPixelSize(11);
     testFont.setWeight(QFont::Normal);
     QTextCharFormat cf;
     cf.setFont(testFont);
@@ -2015,7 +2015,7 @@ void tst_QTextEdit::fullWidthSelection2()
     qt_setQtEnableTestFont(true);
     QFont testFont;
     testFont.setFamily("__Qt__Box__Engine__");
-    testFont.setPixelSize(12);
+    testFont.setPixelSize(11);
     testFont.setWeight(QFont::Normal);
     QTextCharFormat cf;
     cf.setFont(testFont);

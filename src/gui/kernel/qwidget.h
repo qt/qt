@@ -355,6 +355,7 @@ public:
     void setGraphicsEffect(QGraphicsEffect *effect);
 
     void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
+    void ungrabGesture(Qt::GestureType type);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);

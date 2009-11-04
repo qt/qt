@@ -147,6 +147,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("tint"), scriptEngine.newFunction(QmlEnginePrivate::tint, 2));
 
     //misc methods
+    qtObject.setProperty(QLatin1String("closestAngle"), scriptEngine.newFunction(QmlEnginePrivate::closestAngle, 2));
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
 
@@ -807,6 +808,25 @@ QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngin
     if(ctxt->argumentCount() < 1)
         return e->newVariant(QVariant(false));
     bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
+    return e->newVariant(QVariant(ret));
+}
+
+QScriptValue QmlEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)
+{
+    if(ctxt->argumentCount() < 2)
+        return e->newVariant(QVariant(0.0));
+    qreal a = ctxt->argument(0).toNumber();
+    qreal b = ctxt->argument(1).toNumber();
+    qreal ret = b;
+    qreal diff = b-a;
+    while(diff > 180.0){
+        ret -= 360.0;
+        diff -= 360.0;
+    }
+    while(diff < -180.0){
+        ret += 360.0;
+        diff += 360.0;
+    }
     return e->newVariant(QVariant(ret));
 }
 

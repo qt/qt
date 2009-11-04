@@ -104,7 +104,7 @@ void tst_qmlgraphicsborderimage::smooth()
     QVERIFY(obj != 0);
     QVERIFY(obj->width() == 300);
     QVERIFY(obj->height() == 300);
-    QVERIFY(obj->smoothTransform() == true);
+    QVERIFY(obj->smooth() == true);
     QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Stretch);
     QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Stretch);
 

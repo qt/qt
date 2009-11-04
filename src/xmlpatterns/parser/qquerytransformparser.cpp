@@ -418,7 +418,7 @@ static void registerNamedTemplate(const QXmlName &name,
 
     if(e)
     {
-        parseInfo->staticContext->error(QtXmlPatterns::tr("A template by name %1 "
+        parseInfo->staticContext->error(QtXmlPatterns::tr("A template with name %1 "
                                                           "has already been declared.")
                                         .arg(formatKeyword(parseInfo->staticContext->namePool(),
                                                                          name)),
@@ -882,7 +882,7 @@ static void variableUnavailable(const QXmlName &variableName,
                                 const ParserContext *const parseInfo,
                                 const YYLTYPE &location)
 {
-    parseInfo->staticContext->error(QtXmlPatterns::tr("No variable by name %1 exists")
+    parseInfo->staticContext->error(QtXmlPatterns::tr("No variable with name %1 exists")
                                        .arg(formatKeyword(parseInfo->staticContext->namePool(), variableName)),
                                     ReportContext::XPST0008, fromYYLTYPE(location, parseInfo));
 }
@@ -4028,7 +4028,7 @@ yyreduce:
         const AtomicValue::Ptr val(Decimal::fromLexical((yyvsp[(2) - (2)].sval)));
         if(val->hasError())
         {
-            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must of type %2, which %3 isn't.")
+            parseInfo->staticContext->error(QtXmlPatterns::tr("The value of attribute %1 must be of type %2, which %3 isn't.")
                                                              .arg(formatKeyword(QLatin1String("priority")),
                                                                   formatType(parseInfo->staticContext->namePool(), BuiltinTypes::xsDecimal),
                                                                   formatData((yyvsp[(2) - (2)].sval))),
@@ -4104,7 +4104,7 @@ yyreduce:
         else if ((yyvsp[(5) - (7)].sval) == CommonNamespaces::XML || (yyvsp[(3) - (7)].sval) == QLatin1String("xml"))
         {
              parseInfo->staticContext->error(QtXmlPatterns::tr(
-                                            "The prefix %1 can not be bound. By default, it is already bound "
+                                            "The prefix %1 cannot be bound. By default, it is already bound "
                                             "to the namespace %2.")
                                              .arg(formatKeyword("xml"))
                                              .arg(formatURI(CommonNamespaces::XML)),
@@ -4415,7 +4415,7 @@ yyreduce:
         allowedIn(QXmlQuery::XQuery10, parseInfo, (yyloc), (yyvsp[(3) - (9)].enums.Bool));
         if(variableByName((yyvsp[(5) - (9)].qName), parseInfo))
         {
-            parseInfo->staticContext->error(QtXmlPatterns::tr("A variable by name %1 has already "
+            parseInfo->staticContext->error(QtXmlPatterns::tr("A variable with name %1 has already "
                                                               "been declared.")
                                                .arg(formatKeyword(parseInfo->staticContext->namePool()->toLexical((yyvsp[(5) - (9)].qName)))),
                                             parseInfo->isXSLT() ? ReportContext::XTSE0630 : ReportContext::XQST0049,
@@ -4455,7 +4455,7 @@ yyreduce:
                 else
                 {
                     parseInfo->staticContext->error(QtXmlPatterns::tr("No value is available for the external "
-                                                                      "variable by name %1.")
+                                                                      "variable with name %1.")
                                                        .arg(formatKeyword(parseInfo->staticContext->namePool(), (yyvsp[(5) - (9)].qName))),
                                                     parseInfo->isXSLT() ? ReportContext::XTDE0050 : ReportContext::XPDY0002,
                                                     fromYYLTYPE((yyloc), parseInfo));
@@ -4674,7 +4674,7 @@ yyreduce:
         {
             if((*it)->name() == (yyvsp[(3) - (3)].functionArgument)->name())
             {
-                parseInfo->staticContext->error(QtXmlPatterns::tr("An argument by name %1 has already "
+                parseInfo->staticContext->error(QtXmlPatterns::tr("An argument with name %1 has already "
                                                    "been declared. Every argument name "
                                                    "must be unique.")
                                                    .arg(formatKeyword(parseInfo->staticContext->namePool(), (yyvsp[(3) - (3)].functionArgument)->name())),
@@ -6679,7 +6679,7 @@ yyreduce:
                 (yyval.expr) = create(func, (yyloc), parseInfo);
             else
             {
-                parseInfo->staticContext->error(QtXmlPatterns::tr("No function by name %1 is available.")
+                parseInfo->staticContext->error(QtXmlPatterns::tr("No function with name %1 is available.")
                                                    .arg(formatKeyword(parseInfo->staticContext->namePool(), (yyvsp[(1) - (4)].qName))),
                                                 ReportContext::XPST0017, fromYYLTYPE((yyloc), parseInfo));
             }
@@ -6929,7 +6929,7 @@ yyreduce:
                                                                                             &ryy, true);
                 if(declaredAttributes.contains(att))
                 {
-                    parseInfo->staticContext->error(QtXmlPatterns::tr("An attribute by name %1 has already appeared on this element.")
+                    parseInfo->staticContext->error(QtXmlPatterns::tr("An attribute with name %1 has already appeared on this element.")
                                                       .arg(formatKeyword(parseInfo->staticContext->namePool(), att)),
                                             ReportContext::XQST0040, fromYYLTYPE((yyloc), parseInfo));
 

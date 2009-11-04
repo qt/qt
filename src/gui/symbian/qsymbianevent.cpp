@@ -66,13 +66,13 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn QSymbianEvent::type()
+    \fn QSymbianEvent::type() const
 
     Returns the event type contained in the QSymbianEvent instance.
 */
 
 /*!
-    \fn QSymbianEvent::isValid()
+    \fn QSymbianEvent::isValid() const
 
     Returns whether this QSymbianEvent instance contains a valid event.
 */

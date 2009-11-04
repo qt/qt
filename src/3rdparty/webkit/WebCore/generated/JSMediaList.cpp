@@ -142,7 +142,7 @@ JSMediaList::JSMediaList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSMediaList::~JSMediaList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMediaList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

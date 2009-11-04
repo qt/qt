@@ -81,7 +81,7 @@ JSSVGAnimatedLengthList::JSSVGAnimatedLengthList(NonNullPassRefPtr<Structure> st
 
 JSSVGAnimatedLengthList::~JSSVGAnimatedLengthList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedLengthList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
