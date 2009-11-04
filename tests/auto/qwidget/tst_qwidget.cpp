@@ -3328,9 +3328,10 @@ void tst_QWidget::widgetAt()
     w2->lower();
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
-    QCOMPARE(wr->objectName(), QString("w1"));
-
+    const bool match = (wr->objectName() == QString("w1"));
     w2->raise();
+    QVERIFY(match);
+
     qApp->processEvents();
     QTRY_VERIFY((wr = QApplication::widgetAt(100, 100)));
     QCOMPARE(wr->objectName(), QString("w2"));
