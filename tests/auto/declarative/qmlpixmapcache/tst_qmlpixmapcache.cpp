@@ -40,18 +40,18 @@
 ****************************************************************************/
 #include <qtest.h>
 #include <QtTest/QtTest>
-#include <private/qmlgraphicspixmapcache_p.h>
+#include <private/qmlpixmapcache_p.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QNetworkReply>
 
 // These don't let normal people run tests!
 //#include "../network-settings.h"
 
-class tst_qfxpixmapcache : public QObject
+class tst_qmlpixmapcache : public QObject
 {
     Q_OBJECT
 public:
-    tst_qfxpixmapcache() :
+    tst_qmlpixmapcache() :
         thisfile("file://" __FILE__)
     {
     }
@@ -97,9 +97,9 @@ static const bool localfile_optimized = true;
 static const bool localfile_optimized = false;
 #endif
 
-void tst_qfxpixmapcache::single_data()
+void tst_qmlpixmapcache::single_data()
 {
-    // Note, since QmlGraphicsPixmapCache is shared, tests affect each other!
+    // Note, since QmlPixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
 
     QTest::addColumn<QUrl>("target");
@@ -114,7 +114,7 @@ void tst_qfxpixmapcache::single_data()
     QTest::newRow("remote") << QUrl("http://qt.nokia.com/thereisnologo.png") << false << false << true;
 }
 
-void tst_qfxpixmapcache::single()
+void tst_qmlpixmapcache::single()
 {
     QFETCH(QUrl, target);
     QFETCH(bool, incache);
@@ -130,7 +130,7 @@ void tst_qfxpixmapcache::single()
 
     QPixmap pixmap;
     QVERIFY(pixmap.width() <= 0); // Check Qt assumption
-    QNetworkReply *reply= QmlGraphicsPixmapCache::get(&engine, target, &pixmap);
+    QNetworkReply *reply= QmlPixmapCache::get(&engine, target, &pixmap);
 
     if (incache) {
         QVERIFY(!reply);
@@ -148,20 +148,20 @@ void tst_qfxpixmapcache::single()
         QVERIFY(!QTestEventLoop::instance().timeout());
         QVERIFY(getter.gotslot);
         if (exists) {
-            QVERIFY(QmlGraphicsPixmapCache::find(target, &pixmap));
+            QVERIFY(QmlPixmapCache::find(target, &pixmap));
             QVERIFY(pixmap.width() > 0);
         } else {
-            QVERIFY(!QmlGraphicsPixmapCache::find(target, &pixmap));
+            QVERIFY(!QmlPixmapCache::find(target, &pixmap));
             QVERIFY(pixmap.width() <= 0);
         }
     }
 
-    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), 0);
+    QCOMPARE(QmlPixmapCache::pendingRequests(), 0);
 }
 
-void tst_qfxpixmapcache::parallel_data()
+void tst_qmlpixmapcache::parallel_data()
 {
-    // Note, since QmlGraphicsPixmapCache is shared, tests affect each other!
+    // Note, since QmlPixmapCache is shared, tests affect each other!
     // so use different files fore all test functions.
 
     QTest::addColumn<QUrl>("target1");
@@ -211,7 +211,7 @@ void tst_qfxpixmapcache::parallel_data()
             ;
 }
 
-void tst_qfxpixmapcache::parallel()
+void tst_qmlpixmapcache::parallel()
 {
     QFETCH(QUrl, target1);
     QFETCH(QUrl, target2);
@@ -227,7 +227,7 @@ void tst_qfxpixmapcache::parallel()
     for (int i=0; i<targets.count(); ++i) {
         QUrl target = targets.at(i);
         QPixmap pixmap;
-        QNetworkReply *reply = QmlGraphicsPixmapCache::get(&engine, target, &pixmap);
+        QNetworkReply *reply = QmlPixmapCache::get(&engine, target, &pixmap);
         replies.append(reply);
         if (!reply) {
             QVERIFY(pixmap.width() > 0);
@@ -240,10 +240,10 @@ void tst_qfxpixmapcache::parallel()
     }
 
     QCOMPARE(incache+slotters, targets.count());
-    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), requests);
+    QCOMPARE(QmlPixmapCache::pendingRequests(), requests);
 
     if (cancel >= 0) {
-        QmlGraphicsPixmapCache::cancelGet(targets.at(cancel), getters[cancel]);
+        QmlPixmapCache::cancelGet(targets.at(cancel), getters[cancel]);
         slotters--;
     }
 
@@ -260,16 +260,16 @@ void tst_qfxpixmapcache::parallel()
             } else {
                 QVERIFY(getters[i]->gotslot);
                 QPixmap pixmap;
-                QVERIFY(QmlGraphicsPixmapCache::find(targets[i], &pixmap));
+                QVERIFY(QmlPixmapCache::find(targets[i], &pixmap));
                 QVERIFY(pixmap.width() > 0);
             }
             delete getters[i];
         }
     }
 
-    QCOMPARE(QmlGraphicsPixmapCache::pendingRequests(), 0);
+    QCOMPARE(QmlPixmapCache::pendingRequests(), 0);
 }
 
-QTEST_MAIN(tst_qfxpixmapcache)
+QTEST_MAIN(tst_qmlpixmapcache)
 
-#include "tst_qfxpixmapcache.moc"
+#include "tst_qmlpixmapcache.moc"
