@@ -63,7 +63,7 @@ class QVariant;
 class Q_GUI_EXPORT QMatrix4x4
 {
 public:
-    inline QMatrix4x4() { setIdentity(); }
+    inline QMatrix4x4() { setToIdentity(); }
     explicit QMatrix4x4(const qreal *values);
     inline QMatrix4x4(qreal m11, qreal m12, qreal m13, qreal m14,
                       qreal m21, qreal m22, qreal m23, qreal m24,
@@ -87,7 +87,7 @@ public:
     inline void setRow(int index, const QVector4D& value);
 
     inline bool isIdentity() const;
-    inline void setIdentity();
+    inline void setToIdentity();
 
     inline void fill(qreal value);
 
@@ -141,11 +141,6 @@ public:
     QMatrix4x4& rotate(const QQuaternion& quaternion);
 #endif
 
-#ifndef QT_NO_VECTOR3D
-    void extractAxisRotation(qreal &angle, QVector3D &axis) const;
-    QVector3D extractTranslation() const;
-#endif
-
     QMatrix4x4& ortho(const QRect& rect);
     QMatrix4x4& ortho(const QRectF& rect);
     QMatrix4x4& ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
@@ -156,7 +151,7 @@ public:
 #endif
     QMatrix4x4& flipCoordinates();
 
-    void toValueArray(qreal *values) const;
+    void copyDataTo(qreal *values) const;
 
     QMatrix toAffine() const;
     QTransform toTransform() const;
@@ -183,7 +178,7 @@ public:
     inline const qreal *data() const { return m[0]; }
     inline const qreal *constData() const { return m[0]; }
 
-    void inferSpecialType();
+    void optimize();
 
     operator QVariant() const;
 
@@ -330,7 +325,7 @@ inline bool QMatrix4x4::isIdentity() const
     return (m[3][3] == 1.0f);
 }
 
-inline void QMatrix4x4::setIdentity()
+inline void QMatrix4x4::setToIdentity()
 {
     m[0][0] = 1.0f;
     m[0][1] = 0.0f;

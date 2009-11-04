@@ -151,14 +151,8 @@ private slots:
 
     void convertGeneric();
 
-    void extractAxisRotation_data();
-    void extractAxisRotation();
-
-    void extractTranslation_data();
-    void extractTranslation();
-
-    void inferSpecialType_data();
-    void inferSpecialType();
+    void optimize_data();
+    void optimize();
 
     void columnsAndRows();
 
@@ -515,13 +509,13 @@ void tst_QMatrixNxN::create2x2()
     m5 = m3;
     QVERIFY(isSame(m5, uniqueValues2));
 
-    m5.setIdentity();
+    m5.setToIdentity();
     QVERIFY(isIdentity(m5));
 
     QMatrix2x2 m6(uniqueValues2);
     QVERIFY(isSame(m6, uniqueValues2));
     qreal vals[4];
-    m6.toValueArray(vals);
+    m6.copyDataTo(vals);
     for (int index = 0; index < 4; ++index)
         QCOMPARE(vals[index], uniqueValues2[index]);
 }
@@ -550,13 +544,13 @@ void tst_QMatrixNxN::create3x3()
     m5 = m3;
     QVERIFY(isSame(m5, uniqueValues3));
 
-    m5.setIdentity();
+    m5.setToIdentity();
     QVERIFY(isIdentity(m5));
 
     QMatrix3x3 m6(uniqueValues3);
     QVERIFY(isSame(m6, uniqueValues3));
     qreal vals[9];
-    m6.toValueArray(vals);
+    m6.copyDataTo(vals);
     for (int index = 0; index < 9; ++index)
         QCOMPARE(vals[index], uniqueValues3[index]);
 }
@@ -585,13 +579,13 @@ void tst_QMatrixNxN::create4x4()
     m5 = m3;
     QVERIFY(isSame(m5, uniqueValues4));
 
-    m5.setIdentity();
+    m5.setToIdentity();
     QVERIFY(isIdentity(m5));
 
     QMatrix4x4 m6(uniqueValues4);
     QVERIFY(isSame(m6, uniqueValues4));
     qreal vals[16];
-    m6.toValueArray(vals);
+    m6.copyDataTo(vals);
     for (int index = 0; index < 16; ++index)
         QCOMPARE(vals[index], uniqueValues4[index]);
 
@@ -627,13 +621,13 @@ void tst_QMatrixNxN::create4x3()
     m5 = m3;
     QVERIFY(isSame(m5, uniqueValues4x3));
 
-    m5.setIdentity();
+    m5.setToIdentity();
     QVERIFY(isIdentity(m5));
 
     QMatrix4x3 m6(uniqueValues4x3);
     QVERIFY(isSame(m6, uniqueValues4x3));
     qreal vals[12];
-    m6.toValueArray(vals);
+    m6.copyDataTo(vals);
     for (int index = 0; index < 12; ++index)
         QCOMPARE(vals[index], uniqueValues4x3[index]);
 }
@@ -802,7 +796,7 @@ void tst_QMatrixNxN::transposed4x3()
     QMatrix4x3 m3(uniqueValues4x3);
     QMatrix3x4 m4 = m3.transposed();
     qreal values[12];
-    m4.toValueArray(values);
+    m4.copyDataTo(values);
     for (int index = 0; index < 12; ++index)
         QCOMPARE(values[index], transposedValues3x4[index]);
 }
@@ -1296,7 +1290,7 @@ void tst_QMatrixNxN::multiply4x3()
     QGenericMatrix<3, 3, qreal> m4;
     m4 = m1 * m2;
     qreal values[9];
-    m4.toValueArray(values);
+    m4.copyDataTo(values);
     for (int index = 0; index < 9; ++index)
         QCOMPARE(values[index], ((const qreal *)m3Values)[index]);
 }
@@ -1898,7 +1892,7 @@ void tst_QMatrixNxN::inverted4x4()
     }
 
     // Test again, after inferring the special matrix type.
-    m1.inferSpecialType();
+    m1.optimize();
     m2 = m1.inverted(&inv);
     QVERIFY(isSame(m2, (const qreal *)m2Values));
     QCOMPARE(inv, invertible);
@@ -1913,12 +1907,12 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     m2.rotate(45.0, 1.0, 0.0, 0.0);
     m2.translate(10.0, 0.0, 0.0);
 
-    // Use inferSpecialType() to drop the internal flags that
+    // Use optimize() to drop the internal flags that
     // mark the matrix as orthonormal.  This will force inverted()
     // to compute m3.inverted() the long way.  We can then compare
     // the result to what the faster algorithm produces on m2.
     QMatrix4x4 m3 = m2;
-    m3.inferSpecialType();
+    m3.optimize();
     bool invertible;
     QVERIFY(qFuzzyCompare(m2.inverted(&invertible), m3.inverted()));
     QVERIFY(invertible);
@@ -1926,7 +1920,7 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     QMatrix4x4 m4;
     m4.rotate(45.0, 0.0, 1.0, 0.0);
     QMatrix4x4 m5 = m4;
-    m5.inferSpecialType();
+    m5.optimize();
     QVERIFY(qFuzzyCompare(m4.inverted(), m5.inverted()));
 
     QMatrix4x4 m6;
@@ -1934,7 +1928,7 @@ void tst_QMatrixNxN::orthonormalInverse4x4()
     m1.translate(-20.0, 20.0, 15.0);
     m1.rotate(25, 1.0, 0.0, 0.0);
     QMatrix4x4 m7 = m6;
-    m7.inferSpecialType();
+    m7.optimize();
     QVERIFY(qFuzzyCompare(m6.inverted(), m7.inverted()));
 }
 
@@ -2081,7 +2075,7 @@ void tst_QMatrixNxN::scale4x4()
         m8.scale(x);
         QVERIFY(isSame(m8, (const qreal *)resultValues));
 
-        m8.inferSpecialType();
+        m8.optimize();
         m8.scale(1.0f);
         QVERIFY(isSame(m8, (const qreal *)resultValues));
 
@@ -2412,7 +2406,7 @@ void tst_QMatrixNxN::rotate4x4()
 
     if (x != 0 || y != 0 || z != 0) {
         QQuaternion q = QQuaternion::fromAxisAndAngle(QVector3D(x, y, z), angle);
-        QVector3D vq = q.rotateVector(v1);
+        QVector3D vq = q.rotatedVector(v1);
         QVERIFY(fuzzyCompare(vq.x(), v1x));
         QVERIFY(fuzzyCompare(vq.y(), v1y));
         QVERIFY(fuzzyCompare(vq.z(), v1z));
@@ -2509,7 +2503,7 @@ void tst_QMatrixNxN::normalMatrix()
 
     // Perform the test again, after inferring special matrix types.
     // This tests the optimized paths in the normalMatrix() function.
-    m1.inferSpecialType();
+    m1.optimize();
     n1 = m1.normalMatrix();
 
     if (invertible)
@@ -2850,120 +2844,6 @@ void tst_QMatrixNxN::convertGeneric()
     QVERIFY(isSame(m11, conv4x4));
 }
 
-void tst_QMatrixNxN::extractAxisRotation_data()
-{
-    QTest::addColumn<float>("x");
-    QTest::addColumn<float>("y");
-    QTest::addColumn<float>("z");
-    QTest::addColumn<float>("angle");
-    
-    QTest::newRow("1, 0, 0, 0 deg") << 1.0f << 0.0f << 0.0f << 0.0f;
-    QTest::newRow("1, 0, 0, 90 deg") << 1.0f << 0.0f << 0.0f << 90.0f;
-    QTest::newRow("1, 0, 0, 270 deg") << 1.0f << 0.0f << 0.0f << 270.0f;
-    QTest::newRow("1, 0, 0, 45 deg") << 1.0f << 0.0f << 0.0f << 45.0f;
-    QTest::newRow("1, 0, 0, 120 deg") << 1.0f << 0.0f << 0.0f << 120.0f;
-    QTest::newRow("1, 0, 0, 300 deg") << 1.0f << 0.0f << 0.0f << 300.0f;
-
-    QTest::newRow("0, 1, 0, 90 deg") << 0.0f << 1.0f << 0.0f << 90.0f;
-    QTest::newRow("0, 1, 0, 270 deg") << 0.0f << 1.0f << 0.0f << 270.0f;
-    QTest::newRow("0, 1, 0, 45 deg") << 0.0f << 1.0f << 0.0f << 45.0f;
-    QTest::newRow("0, 1, 0, 120 deg") << 0.0f << 1.0f << 0.0f << 120.0f;
-    QTest::newRow("0, 1, 0, 300 deg") << 0.0f << 1.0f << 0.0f << 300.0f;
-    
-    QTest::newRow("0, 0, 1, 90 deg") << 0.0f << 0.0f << 1.0f << 90.0f;
-    QTest::newRow("0, 0, 1, 270 deg") << 0.0f << 0.0f << 1.0f << 270.0f;
-    QTest::newRow("0, 0, 1, 45 deg") << 0.0f << 0.0f << 1.0f << 45.0f;
-    QTest::newRow("0, 0, 1, 120 deg") << 0.0f << 0.0f << 1.0f << 120.0f;
-    QTest::newRow("0, 0, 1, 300 deg") << 0.0f << 0.0f << 1.0f << 300.0f;
-
-    QTest::newRow("1, 1, 1, 90 deg") << 1.0f << 1.0f << 1.0f << 90.0f;
-    QTest::newRow("1, 1, 1, 270 deg") << 1.0f << 1.0f << 1.0f << 270.0f;
-    QTest::newRow("1, 1, 1, 45 deg") << 1.0f << 1.0f << 1.0f << 45.0f;
-    QTest::newRow("1, 1, 1, 120 deg") << 1.0f << 1.0f << 1.0f << 120.0f;
-    QTest::newRow("1, 1, 1, 300 deg") << 1.0f << 1.0f << 1.0f << 300.0f;
-}
-
-void tst_QMatrixNxN::extractAxisRotation()
-{
-    QFETCH(float, x);
-    QFETCH(float, y);
-    QFETCH(float, z);
-    QFETCH(float, angle);
-
-    QMatrix4x4 m;
-    QVector3D origAxis(x, y, z);
-
-    m.rotate(angle, x, y, z);
-
-    origAxis.normalize();
-    QVector3D extractedAxis;
-    qreal extractedAngle;
-
-    m.extractAxisRotation(extractedAngle, extractedAxis);
- 
-    if (angle > 180) {
-        QVERIFY(fuzzyCompare(360.0f - angle, extractedAngle));
-        QVERIFY(fuzzyCompare(extractedAxis, -origAxis));
-    } else {
-        QVERIFY(fuzzyCompare(angle, extractedAngle));
-        QVERIFY(fuzzyCompare(extractedAxis, origAxis));
-    }
-}
-
-void tst_QMatrixNxN::extractTranslation_data()
-{
-    QTest::addColumn<QMatrix4x4>("rotation");
-    QTest::addColumn<float>("x");
-    QTest::addColumn<float>("y");
-    QTest::addColumn<float>("z");
-
-    static QMatrix4x4 m1;
-
-    QTest::newRow("identity, 100, 50, 25")
-        << m1 << 100.0f << 50.0f << 250.0f;
-
-    m1.rotate(45.0, 1.0, 0.0, 0.0);
-    QTest::newRow("rotX 45 + 100, 50, 25") << m1 << 100.0f << 50.0f << 25.0f;
-
-    m1.setIdentity();
-    m1.rotate(45.0, 0.0, 1.0, 0.0);
-    QTest::newRow("rotY 45 + 100, 50, 25") << m1 << 100.0f << 50.0f << 25.0f;
-
-    m1.setIdentity();
-    m1.rotate(75, 0.0, 0.0, 1.0);
-    m1.rotate(25, 1.0, 0.0, 0.0);
-    m1.rotate(45, 0.0, 1.0, 0.0);
-    QTest::newRow("rotZ 75, rotX 25, rotY 45, 100, 50, 25") << m1 << 100.0f << 50.0f << 25.0f;
-}
-
-void tst_QMatrixNxN::extractTranslation()
-{
-    QFETCH(QMatrix4x4, rotation);
-    QFETCH(float, x);
-    QFETCH(float, y);
-    QFETCH(float, z);
-
-    rotation.translate(x, y, z);
-
-    QVector3D vec = rotation.extractTranslation();
-
-    QVERIFY(fuzzyCompare(vec.x(), x));
-    QVERIFY(fuzzyCompare(vec.y(), y));
-    QVERIFY(fuzzyCompare(vec.z(), z));
-
-    QMatrix4x4 lookAt;
-    QVector3D eye(1.5f, -2.5f, 2.5f);
-    lookAt.lookAt(eye,
-                  QVector3D(10.0f, 10.0f, 10.0f), 
-                  QVector3D(0.0f, 1.0f, 0.0f));
-
-   QVector3D extEye = lookAt.extractTranslation();
-
-   QVERIFY(fuzzyCompare(eye.x(), -extEye.x()));
-   QVERIFY(fuzzyCompare(eye.y(), -extEye.y()));
-   QVERIFY(fuzzyCompare(eye.z(), -extEye.z()));
-}
-
 // Copy of "flagBits" in qmatrix4x4.h.
 enum {
     Identity        = 0x0001,   // Identity matrix
@@ -2981,7 +2861,7 @@ struct Matrix4x4
 };
 
 // Test the inferring of special matrix types.
-void tst_QMatrixNxN::inferSpecialType_data()
+void tst_QMatrixNxN::optimize_data()
 {
     QTest::addColumn<void *>("mValues");
     QTest::addColumn<int>("flagBits");
@@ -3029,13 +2909,13 @@ void tst_QMatrixNxN::inferSpecialType_data()
     QTest::newRow("below")
         << (void *)belowValues << (int)General;
 }
-void tst_QMatrixNxN::inferSpecialType()
+void tst_QMatrixNxN::optimize()
 {
     QFETCH(void *, mValues);
     QFETCH(int, flagBits);
 
     QMatrix4x4 m((const qreal *)mValues);
-    m.inferSpecialType();
+    m.optimize();
 
     QCOMPARE(reinterpret_cast<Matrix4x4 *>(&m)->flagBits, flagBits);
 }
@@ -3362,7 +3242,7 @@ void tst_QMatrixNxN::mapVector()
     QFETCH(void *, mValues);
 
     QMatrix4x4 m1((const qreal *)mValues);
-    m1.inferSpecialType();
+    m1.optimize();
 
     QVector3D v(3.5f, -1.0f, 2.5f);
 
