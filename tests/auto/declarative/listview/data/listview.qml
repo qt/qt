@@ -6,7 +6,7 @@ Rectangle {
     color: "#ffffff"
     resources: [
         Component {
-            id: Delegate
+            id: myDelegate
             Rectangle {
                 id: wrapper
                 objectName: "wrapper"
@@ -41,6 +41,6 @@ Rectangle {
         width: 240
         height: 320
         model: testModel
-        delegate: Delegate
+        delegate: myDelegate
     }
 }

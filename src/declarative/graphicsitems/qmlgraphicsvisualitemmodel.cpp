@@ -617,6 +617,8 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
                             this, SLOT(_q_rowsRemoved(const QModelIndex &,int,int)));
         QObject::disconnect(d->m_abstractItemModel, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
+        QObject::disconnect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
+                            this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
     } else if (d->m_visualItemModel) {
         QObject::disconnect(d->m_visualItemModel, SIGNAL(itemsInserted(int,int)),
                          this, SIGNAL(itemsInserted(int,int)));
@@ -654,6 +656,8 @@ void QmlGraphicsVisualDataModel::setModel(const QVariant &model)
                             this, SLOT(_q_rowsRemoved(const QModelIndex &,int,int)));
         QObject::connect(d->m_abstractItemModel, SIGNAL(dataChanged(const QModelIndex&,const QModelIndex&)),
                             this, SLOT(_q_dataChanged(const QModelIndex&,const QModelIndex&)));
+        QObject::connect(d->m_abstractItemModel, SIGNAL(rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)),
+                            this, SLOT(_q_rowsMoved(const QModelIndex&,int,int,const QModelIndex&,int)));
         return;
     }
     if ((d->m_visualItemModel = qvariant_cast<QmlGraphicsVisualDataModel *>(model))) {
@@ -978,9 +982,10 @@ void QmlGraphicsVisualDataModel::_q_itemsMoved(int from, int to, int count)
     for (QHash<int,QmlGraphicsVisualDataModelPrivate::ObjectRef>::Iterator iter = d->m_cache.begin();
         iter != d->m_cache.end(); ) {
 
+        int diff = from > to ? count : -count;
         if (iter.key() >= qMin(from,to) && iter.key() < qMax(from+count,to+count)) {
             QmlGraphicsVisualDataModelPrivate::ObjectRef objRef = *iter;
-            int index = iter.key() + from - to;
+            int index = iter.key() + diff;
             iter = d->m_cache.erase(iter);
 
             items.insert(index, objRef);
@@ -996,20 +1001,35 @@ void QmlGraphicsVisualDataModel::_q_itemsMoved(int from, int to, int count)
     emit itemsMoved(from, to, count);
 }
 
-void QmlGraphicsVisualDataModel::_q_rowsInserted(const QModelIndex &, int begin, int end)
+void QmlGraphicsVisualDataModel::_q_rowsInserted(const QModelIndex &parent, int begin, int end)
 {
-    _q_itemsInserted(begin, end - begin + 1);
+    if (!parent.isValid())
+        _q_itemsInserted(begin, end - begin + 1);
 }
 
-void QmlGraphicsVisualDataModel::_q_rowsRemoved(const QModelIndex &, int begin, int end)
+void QmlGraphicsVisualDataModel::_q_rowsRemoved(const QModelIndex &parent, int begin, int end)
 {
-    _q_itemsRemoved(begin, end - begin + 1);
+    if (!parent.isValid())
+        _q_itemsRemoved(begin, end - begin + 1);
+}
+
+void QmlGraphicsVisualDataModel::_q_rowsMoved(const QModelIndex &sourceParent, int sourceStart, int sourceEnd, const QModelIndex &destinationParent, int destinationRow)
+{
+    const int count = sourceEnd - sourceStart + 1;
+    if (!destinationParent.isValid() && !sourceParent.isValid()) {
+        _q_itemsMoved(sourceStart, destinationRow, count);
+    } else if (!sourceParent.isValid()) {
+        _q_itemsRemoved(sourceStart, count);
+    } else if (!destinationParent.isValid()) {
+        _q_itemsInserted(destinationRow, count);
+    }
 }
 
 void QmlGraphicsVisualDataModel::_q_dataChanged(const QModelIndex &begin, const QModelIndex &end)
 {
     Q_D(QmlGraphicsVisualDataModel);
-    _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
+    if (!begin.parent().isValid())
+        _q_itemsChanged(begin.row(), end.row() - begin.row() + 1, d->m_roles);
 }
 
 void QmlGraphicsVisualDataModel::_q_createdPackage(int index, QmlPackage *package)
