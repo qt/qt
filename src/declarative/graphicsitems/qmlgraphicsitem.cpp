@@ -2667,9 +2667,9 @@ void QmlGraphicsItem::setTransformOrigin(TransformOrigin origin)
 
     The default is false.
     
-    \sa setSmoothTransform()
+    \sa setSmooth()
 */
-bool QmlGraphicsItem::smoothTransform() const
+bool QmlGraphicsItem::smooth() const
 {
     Q_D(const QmlGraphicsItem);
     return d->smooth;
@@ -2679,9 +2679,9 @@ bool QmlGraphicsItem::smoothTransform() const
     Sets whether the item should be drawn with antialiasing and
     smooth pixmap filtering to \a smooth.
 
-    \sa smoothTransform()
+    \sa smooth()
 */
-void QmlGraphicsItem::setSmoothTransform(bool smooth)
+void QmlGraphicsItem::setSmooth(bool smooth)
 {
     Q_D(QmlGraphicsItem);
     if (d->smooth == smooth)
@@ -2918,5 +2918,5 @@ QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
 QML_DECLARE_TYPEINFO(QmlGraphicsKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QmlGraphicsKeysAttached)
 QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
+QML_DECLARE_TYPEINFO(QmlGraphicsKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QmlGraphicsKeyNavigationAttached)
-

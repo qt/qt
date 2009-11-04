@@ -728,6 +728,10 @@ void QmlAbstractExpression::setContext(QmlContext *context)
     }
 }
 
+void QmlAbstractExpression::refresh()
+{
+}
+
 bool QmlAbstractExpression::isValid() const
 {
     return m_context != 0;

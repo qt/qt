@@ -38,7 +38,7 @@ This is equivalent to writing the two transitions separately.
 The \l ParallelAnimation element makes sure that the two types of animations (number and color) start at the same time.
 We could also run them one after the other by using \l SequentialAnimation instead.
 
-For more details on states and transitions, see \l {states-transitions}{States and Transitions}.
+For more details on states and transitions, see \l {QML States}.
 
 [Previous: \l {Tutorial 2 - QML Component}] [\l {Tutorial}]
 

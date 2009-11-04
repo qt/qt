@@ -53,6 +53,7 @@ private slots:
     void notRepeating();
     void notRepeatingStart();
     void repeat();
+    void noTriggerIfNotRunning();
     void triggeredOnStart();
     void triggeredOnStartRepeat();
 };
@@ -174,6 +175,22 @@ void tst_qmltimer::triggeredOnStartRepeat()
     int oldCount = helper.count;
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+}
+
+void tst_qmltimer::noTriggerIfNotRunning()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QByteArray(
+        "import Qt 4.6\n"
+        "Item { property bool ok: true\n"
+            "Timer { id: t1; interval: 100; repeat: true; running: true; onTriggered: if (!running) ok=false }"
+            "Timer { interval: 10; running: true; onTriggered: t1.running=false }"
+        "}"
+    ), QUrl("file://"));
+    QObject *item = component.create();
+    QVERIFY(item != 0);
+    QTest::qWait(TIMEOUT_TIMEOUT);
+    QCOMPARE(item->property("ok").toBool(), true);
 }
 
 QTEST_MAIN(tst_qmltimer)

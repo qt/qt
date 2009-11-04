@@ -54,7 +54,7 @@ QML_DEFINE_NOCREATE_TYPE(QValidator);
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QIntValidator,QIntValidator);
 
 /*!
-    \qmlclass TextInput QFxTextInput
+    \qmlclass TextInput QmlGraphicsTextInput
     The TextInput item allows you to add an editable line of text to a scene.
 
     TextInput can only display a single line of text, and can only display
@@ -673,7 +673,7 @@ void QmlGraphicsTextInputPrivate::init()
     control->setCursorWidth(1);
     control->setPasswordCharacter(QLatin1Char('*'));
     control->setLayoutDirection(Qt::LeftToRight);
-    q->setSmoothTransform(smooth);
+    q->setSmooth(smooth);
     q->setAcceptedMouseButtons(Qt::LeftButton);
     q->setFlag(QGraphicsItem::ItemHasNoContents, false);
     q->setFlag(QGraphicsItem::ItemAcceptsInputMethod);

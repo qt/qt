@@ -54,7 +54,7 @@ QT_MODULE(Declarative)
 
 class ActionEvent;
 class QmlBinding;
-class Action
+class Q_DECLARATIVE_EXPORT Action
 {
 public:
     Action();

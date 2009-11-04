@@ -20,7 +20,8 @@ SOURCES += \
            util/qmltimeline.cpp \
            util/qmltimer.cpp \
            util/qmlbind.cpp \
-           util/qmlpropertymap.cpp
+           util/qmlpropertymap.cpp \
+           util/qmlpixmapcache.cpp
 
 HEADERS += \
            util/qmlview.h \
@@ -47,4 +48,5 @@ HEADERS += \
            util/qmltimeline_p_p.h \
            util/qmltimer_p.h \
            util/qmlbind_p.h \
-           util/qmlpropertymap_p.h
+           util/qmlpropertymap_p.h \
+           util/qmlpixmapcache_p.h

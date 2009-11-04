@@ -72,8 +72,11 @@ public:
     QmlContext *context() const;
     void setContext(QmlContext *);
 
+    virtual void refresh();
+
 private:
     friend class QmlContext;
+    friend class QmlContextPrivate;
     QmlContext *m_context;
     QmlAbstractExpression **m_prevExpression;
     QmlAbstractExpression  *m_nextExpression;
@@ -151,6 +154,9 @@ public:
 
     static QmlExpressionPrivate *get(QmlExpression *expr) {
         return static_cast<QmlExpressionPrivate *>(QObjectPrivate::get(expr));
+    }
+    static QmlExpression *get(QmlExpressionPrivate *expr) {
+        return expr->q_func();
     }
 
     static void exceptionToError(QScriptEngine *, QmlError &);

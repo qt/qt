@@ -101,10 +101,8 @@ public:
 
     void init();
 
-    void dump();
-    void dump(int depth);
-
     void invalidateEngines();
+    void refreshExpressions();
     QSet<QmlContext *> childContexts;
 
     QmlAbstractExpression *expressions;

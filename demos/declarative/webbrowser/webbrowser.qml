@@ -271,7 +271,7 @@ Item {
                 }
                 onZooming: {
                     if (centerX) {
-                        sc = zoom/zoomFactor;
+                        var sc = zoom/zoomFactor;
                         scaleAnim.to = sc;
                         flickVX.from = flickable.viewportX
                         flickVX.to = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)

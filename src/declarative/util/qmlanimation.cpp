@@ -1597,49 +1597,175 @@ void QmlPropertyAnimation::setTo(const QVariant &t)
 
     Available values are:
 
-    \list
-    \i \e easeNone - Easing equation function for a simple linear tweening, with no easing.
-    \i \e easeInQuad - Easing equation function for a quadratic (t^2) easing in: accelerating from zero velocity.
-    \i \e easeOutQuad - Easing equation function for a quadratic (t^2) easing out: decelerating to zero velocity.
-    \i \e easeInOutQuad - Easing equation function for a quadratic (t^2) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuad - Easing equation function for a quadratic (t^2) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInCubic - Easing equation function for a cubic (t^3) easing in: accelerating from zero velocity.
-    \i \e easeOutCubic - Easing equation function for a cubic (t^3) easing out: decelerating from zero velocity.
-    \i \e easeInOutCubic - Easing equation function for a cubic (t^3) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInCubic - Easing equation function for a cubic (t^3) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInQuart - Easing equation function for a quartic (t^4) easing in: accelerating from zero velocity.
-    \i \e easeOutQuart - Easing equation function for a quartic (t^4) easing out: decelerating from zero velocity.
-    \i \e easeInOutQuart - Easing equation function for a quartic (t^4) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuart - Easing equation function for a quartic (t^4) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInQuint - Easing equation function for a quintic (t^5) easing in: accelerating from zero velocity.
-    \i \e easeOutQuint - Easing equation function for a quintic (t^5) easing out: decelerating from zero velocity.
-    \i \e easeInOutQuint - Easing equation function for a quintic (t^5) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInQuint - Easing equation function for a quintic (t^5) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInSine - Easing equation function for a sinusoidal (sin(t)) easing in: accelerating from zero velocity.
-    \i \e easeOutSine - Easing equation function for a sinusoidal (sin(t)) easing out: decelerating from zero velocity.
-    \i \e easeInOutSine - Easing equation function for a sinusoidal (sin(t)) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInSine - Easing equation function for a sinusoidal (sin(t)) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInExpo - Easing equation function for an exponential (2^t) easing in: accelerating from zero velocity.
-    \i \e easeOutExpo - Easing equation function for an exponential (2^t) easing out: decelerating from zero velocity.
-    \i \e easeInOutExpo - Easing equation function for an exponential (2^t) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInExpo - Easing equation function for an exponential (2^t) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in: accelerating from zero velocity.
-    \i \e easeOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out: decelerating from zero velocity.
-    \i \e easeInOutCirc - Easing equation function for a circular (sqrt(1-t^2)) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInCirc - Easing equation function for a circular (sqrt(1-t^2)) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in: accelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
-    \i \e easeOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out: decelerating from zero velocity.  The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
-    \i \e easeInOutElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInElastic - Easing equation function for an elastic (exponentially decaying sine wave) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
-    \i \e easeOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out: decelerating from zero velocity.
-    \i \e easeInOutBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInBack - Easing equation function for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
-    \i \e easeOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out: decelerating from zero velocity.
-    \i \e easeInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in: accelerating from zero velocity.
-    \i \e easeInOutBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing in/out: acceleration until halfway, then deceleration.
-    \i \e easeOutInBounce - Easing equation function for a bounce (exponentially decaying parabolic bounce) easing out/in: deceleration until halfway, then acceleration.
-    \endlist
+    \table
+    \row
+        \o \c easeNone
+        \o Easing curve for a linear (t) function: velocity is constant.
+        \o \inlineimage qeasingcurve-linear.png
+    \row
+        \o \c easeInQuad
+        \o Easing curve for a quadratic (t^2) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inquad.png
+    \row
+        \o \c easeOutQuad
+        \o Easing curve for a quadratic (t^2) function: decelerating to zero velocity.
+        \o \inlineimage qeasingcurve-outquad.png
+    \row
+        \o \c easeInOutQuad
+        \o Easing curve for a quadratic (t^2) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutquad.png
+    \row
+        \o \c easeOutInQuad
+        \o Easing curve for a quadratic (t^2) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinquad.png
+    \row
+        \o \c easeInCubic
+        \o Easing curve for a cubic (t^3) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-incubic.png
+    \row
+        \o \c easeOutCubic
+        \o Easing curve for a cubic (t^3) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outcubic.png
+    \row
+        \o \c easeInOutCubic
+        \o Easing curve for a cubic (t^3) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutcubic.png
+    \row
+        \o \c easeOutInCubic
+        \o Easing curve for a cubic (t^3) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outincubic.png
+    \row
+        \o \c easeInQuart
+        \o Easing curve for a quartic (t^4) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inquart.png
+    \row
+        \o \c easeOutQuart
+        \o Easing curve for a cubic (t^4) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outquart.png
+    \row
+        \o \c easeInOutQuart
+        \o Easing curve for a cubic (t^4) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutquart.png
+    \row
+        \o \c easeOutInQuart
+        \o Easing curve for a cubic (t^4) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinquart.png
+    \row
+        \o \c easeInQuint
+        \o Easing curve for a quintic (t^5) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inquint.png
+    \row
+        \o \c easeOutQuint
+        \o Easing curve for a cubic (t^5) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outquint.png
+    \row
+        \o \c easeInOutQuint
+        \o Easing curve for a cubic (t^5) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutquint.png
+    \row
+        \o \c easeOutInQuint
+        \o Easing curve for a cubic (t^5) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinquint.png
+    \row
+        \o \c easeInSine
+        \o Easing curve for a sinusoidal (sin(t)) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-insine.png
+    \row
+        \o \c easeOutSine
+        \o Easing curve for a sinusoidal (sin(t)) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outsine.png
+    \row
+        \o \c easeInOutSine
+        \o Easing curve for a sinusoidal (sin(t)) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutsine.png
+    \row
+        \o \c easeOutInSine
+        \o Easing curve for a sinusoidal (sin(t)) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinsine.png
+    \row
+        \o \c easeInExpo
+        \o Easing curve for an exponential (2^t) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inexpo.png
+    \row
+        \o \c easeOutExpo
+        \o Easing curve for an exponential (2^t) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outexpo.png
+    \row
+        \o \c easeInOutExpo
+        \o Easing curve for an exponential (2^t) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutexpo.png
+    \row
+        \o \c easeOutInExpo
+        \o Easing curve for an exponential (2^t) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinexpo.png
+    \row
+        \o \c easeInCirc
+        \o Easing curve for a circular (sqrt(1-t^2)) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-incirc.png
+    \row
+        \o \c easeOutCirc
+        \o Easing curve for a circular (sqrt(1-t^2)) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outcirc.png
+    \row
+        \o \c easeInOutCirc
+        \o Easing curve for a circular (sqrt(1-t^2)) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutcirc.png
+    \row
+        \o \c easeOutInCirc
+        \o Easing curve for a circular (sqrt(1-t^2)) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outincirc.png
+    \row
+        \o \c easeInElastic
+        \o Easing curve for an elastic (exponentially decaying sine wave) function: accelerating from zero velocity.
+        \br The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+        \o \inlineimage qeasingcurve-inelastic.png
+    \row
+        \o \c easeOutElastic
+        \o Easing curve for an elastic (exponentially decaying sine wave) function: decelerating from zero velocity.
+        \br The peak amplitude can be set with the \e amplitude parameter, and the period of decay by the \e period parameter.
+        \o \inlineimage qeasingcurve-outelastic.png
+    \row
+        \o \c easeInOutElastic
+        \o Easing curve for an elastic (exponentially decaying sine wave) function: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutelastic.png
+    \row
+        \o \c easeOutInElastic
+        \o Easing curve for an elastic (exponentially decaying sine wave) function: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinelastic.png
+    \row
+        \o \c easeInBack
+        \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing in: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inback.png
+    \row
+        \o \c easeOutBack
+        \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing out: decelerating to zero velocity.
+        \o \inlineimage qeasingcurve-outback.png
+    \row
+        \o \c easeInOutBack
+        \o Easing curve for a back (overshooting cubic function: (s+1)*t^3 - s*t^2) easing in/out: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutback.png
+    \row
+        \o \c easeOutInBack
+        \o Easing curve for a back (overshooting cubic easing: (s+1)*t^3 - s*t^2) easing out/in: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinback.png
+    \row
+        \o \c easeInBounce
+        \o Easing curve for a bounce (exponentially decaying parabolic bounce) function: accelerating from zero velocity.
+        \o \inlineimage qeasingcurve-inbounce.png
+    \row
+        \o \c easeOutBounce
+        \o Easing curve for a bounce (exponentially decaying parabolic bounce) function: decelerating from zero velocity.
+        \o \inlineimage qeasingcurve-outbounce.png
+    \row
+        \o \c easeInOutBounce
+        \o Easing curve for a bounce (exponentially decaying parabolic bounce) function easing in/out: acceleration until halfway, then deceleration.
+        \o \inlineimage qeasingcurve-inoutbounce.png
+    \row
+        \o \c easeOutInBounce
+        \o Easing curve for a bounce (exponentially decaying parabolic bounce) function easing out/in: deceleration until halfway, then acceleration.
+        \o \inlineimage qeasingcurve-outinbounce.png
+    \endtable
+
 */
 QString QmlPropertyAnimation::easing() const
 {

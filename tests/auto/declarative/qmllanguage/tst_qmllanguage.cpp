@@ -123,6 +123,7 @@ private slots:
 
     // regression tests for crashes
     void crash1();
+    void crash2();
 
 private:
     QmlEngine engine;
@@ -987,11 +988,11 @@ void tst_qmllanguage::importsLocal_data()
     QTest::newRow("local import")
         << "import \"subdir\"\n" // QT-613
            "Test {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
     QTest::newRow("local import as")
         << "import \"subdir\" as T\n"
            "T.Test {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
     QTest::newRow("wrong local import as")
         << "import \"subdir\" as T\n"
            "Test {}"
@@ -1019,7 +1020,7 @@ void tst_qmllanguage::importsRemote_data()
             + QtNetworkSettings::serverName()
             + "/qtest/declarative/qmllanguage";
 
-    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QmlGraphicsRect";
+    QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QmlGraphicsRectangle";
     QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QmlGraphicsText";
     QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QmlGraphicsImage";
 }
@@ -1042,7 +1043,7 @@ void tst_qmllanguage::importsInstalled_data()
     QTest::newRow("installed import 1")
         << "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
     QTest::newRow("installed import 2")
         << "import com.nokia.installedtest 1.4\n"
            "InstalledTest {}"
@@ -1075,7 +1076,7 @@ void tst_qmllanguage::importsOrder_data()
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
     QTest::newRow("installed import re-overrides 1") <<
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
@@ -1088,13 +1089,13 @@ void tst_qmllanguage::importsOrder_data()
            "import com.nokia.installedtest 1.4\n"
            "import com.nokia.installedtest 1.0\n"
            "InstalledTest {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
 
     QTest::newRow("installed import versus builtin 1") <<
            "import com.nokia.installedtest 1.5\n"
            "import Qt 4.6\n"
            "Rectangle {}"
-        << "QmlGraphicsRect";
+        << "QmlGraphicsRectangle";
     QTest::newRow("installed import versus builtin 2") <<
            "import Qt 4.6\n"
            "import com.nokia.installedtest 1.5\n"
@@ -1150,6 +1151,11 @@ void tst_qmllanguage::qmlAttachedPropertiesObjectMethod()
 void tst_qmllanguage::crash1()
 {
     QmlComponent component(&engine, "Component {}");
+}
+
+void tst_qmllanguage::crash2()
+{
+    QmlComponent component(&engine, TEST_FILE("crash2.qml"));
 }
 
 QTEST_MAIN(tst_qmllanguage)

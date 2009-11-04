@@ -69,7 +69,7 @@ public:
     }
 
     QmlGraphicsImage::FillMode fillMode;
-
+    void setPixmap(const QPixmap &pix);
 };
 
 QT_END_NAMESPACE

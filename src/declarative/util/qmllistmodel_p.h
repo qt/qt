@@ -62,7 +62,7 @@ struct ModelNode;
 class QmlListModel : public QListModelInterface
 {
     Q_OBJECT
-    Q_PROPERTY(int count READ count)
+    Q_PROPERTY(int count READ count NOTIFY countChanged)
 
 public:
     QmlListModel(QObject *parent=0);
@@ -80,6 +80,9 @@ public:
     Q_INVOKABLE void set(int index, const QScriptValue&);
     Q_INVOKABLE void set(int index, const QString& property, const QVariant& value);
     Q_INVOKABLE void move(int from, int to, int count);
+
+Q_SIGNALS:
+    void countChanged(int);
 
 private:
     QVariant valueForNode(ModelNode *) const;

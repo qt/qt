@@ -60,9 +60,10 @@ The following table lists the QML elements provided by the Qt Declarative module
 \list
 \o \l State
 \o \l PropertyChanges
-\o \l ParentChange
-\o \l StateChangeScript
-\o \l AnchorChanges
+\o \l StateGroup
+\o \l ParentChange (Item-specific)
+\o \l StateChangeScript (Item-specific)
+\o \l AnchorChanges (Item-specific)
 \endlist
 
 \o

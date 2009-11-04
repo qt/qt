@@ -344,7 +344,7 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QmlGraphicsFlickable)
 
 /*!
-    \qmlclass Flickable QFxFlickable
+    \qmlclass Flickable QmlGraphicsFlickable
     \brief The Flickable item provides a surface that can be "flicked".
     \inherits Item
 

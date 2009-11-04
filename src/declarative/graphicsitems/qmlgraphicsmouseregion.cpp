@@ -120,7 +120,7 @@ void QmlGraphicsDrag::setYmax(qreal m)
 }
 
 /*!
-    \qmlclass MouseRegion QFxMouseRegion
+    \qmlclass MouseRegion QmlGraphicsMouseRegion
     \brief The MouseRegion item enables simple mouse handling.
     \inherits Item
 

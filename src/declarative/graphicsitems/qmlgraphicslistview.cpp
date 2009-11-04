@@ -954,7 +954,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
 //----------------------------------------------------------------------------
 
 /*!
-    \qmlclass ListView QFxListView
+    \qmlclass ListView QmlGraphicsListView
     \inherits Flickable
     \brief The ListView item provides a list view of items provided by a model.
 
@@ -994,7 +994,7 @@ QmlGraphicsListView::~QmlGraphicsListView()
 
 /*!
     \qmlattachedproperty bool ListView::isCurrentItem
-    This attched property is true if this delegate is the current item; otherwise false.
+    This attached property is true if this delegate is the current item; otherwise false.
 
     It is attached to each instance of the delegate.
 

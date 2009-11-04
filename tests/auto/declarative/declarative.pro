@@ -10,19 +10,25 @@ SUBDIRS += anchors \
            numberformatter \
            pathview \
            qfxloader \
-           qfxpixmapcache \
-           qfxtext \
+           qmlpixmapcache \
            qfxtextedit \
            qfxtextinput \
            qfxwebview \
+           qmetaobjectbuilder \
+           qmlcontext \
            qmldom \
            qmlecmascript \
+           qmlgraphicstext \
+           qmlgraphicsborderimage \
+           qmlfontloader \
            qmllanguage \
            qmllist \
            qmllistaccessor \
            qmlmetaproperty \
+           qmlmetatype \
            qmlpropertymap \
            qmltimer \
+           qmlxmllistmodel \
            repeater \
            sql \
            states \

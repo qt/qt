@@ -258,13 +258,34 @@ private:
 class QmlFontValueType : public QmlValueType
 {
     Q_OBJECT
+    Q_ENUMS(FontWeight)
+    Q_ENUMS(Capitalization)
+
     Q_PROPERTY(QString family READ family WRITE setFamily)
     Q_PROPERTY(bool bold READ bold WRITE setBold)
+    Q_PROPERTY(FontWeight weight READ weight WRITE setWeight)
     Q_PROPERTY(bool italic READ italic WRITE setItalic)
     Q_PROPERTY(bool underline READ underline WRITE setUnderline)
+    Q_PROPERTY(bool overline READ overline WRITE setOverline)
+    Q_PROPERTY(bool strikeout READ strikeout WRITE setStrikeout)
     Q_PROPERTY(qreal pointSize READ pointSize WRITE setPointSize)
     Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize)
+    Q_PROPERTY(Capitalization capitalization READ capitalization WRITE setCapitalization)
+    Q_PROPERTY(qreal letterSpacing READ letterSpacing WRITE setLetterSpacing)
+    Q_PROPERTY(qreal wordSpacing READ wordSpacing WRITE setWordSpacing)
+
 public:
+    enum FontWeight { Light = QFont::Light,
+                       Normal = QFont::Normal,
+                       DemiBold = QFont::DemiBold,
+                       Bold = QFont::Bold,
+                       Black = QFont::Black };
+    enum Capitalization { MixedCase = QFont::MixedCase,
+                           AllUppercase = QFont::AllUppercase,
+                           AllLowercase = QFont::AllLowercase,
+                           SmallCaps = QFont::SmallCaps,
+                           Capitalize = QFont::Capitalize };
+
     QmlFontValueType(QObject *parent = 0);
 
     virtual void read(QObject *, int);
@@ -278,17 +299,35 @@ public:
     bool bold() const;
     void setBold(bool b);
 
+    FontWeight weight() const;
+    void setWeight(FontWeight);
+
     bool italic() const;
     void setItalic(bool b);
 
     bool underline() const;
     void setUnderline(bool b);
 
+    bool overline() const;
+    void setOverline(bool b);
+
+    bool strikeout() const;
+    void setStrikeout(bool b);
+
     qreal pointSize() const;
     void setPointSize(qreal size);
 
     int pixelSize() const;
     void setPixelSize(int size);
+
+    Capitalization capitalization() const;
+    void setCapitalization(Capitalization);
+
+    qreal letterSpacing() const;
+    void setLetterSpacing(qreal spacing);
+
+    qreal wordSpacing() const;
+    void setWordSpacing(qreal spacing);
 
 private:
     QFont font;

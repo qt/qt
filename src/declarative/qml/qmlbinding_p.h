@@ -70,6 +70,7 @@ public:
 
     QmlMetaProperty property;
 
+    virtual void refresh();
     void removeError();
     bool addError();
     QmlBindingData  *nextError;
