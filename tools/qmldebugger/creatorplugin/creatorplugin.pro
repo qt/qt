@@ -25,5 +25,6 @@ IDE_BUILD_TREE=$$(CREATOR_BUILD_DIR)
 include($$(CREATOR_SRC_DIR)/src/qtcreatorplugin.pri)
 include($$(CREATOR_SRC_DIR)/src/plugins/projectexplorer/projectexplorer.pri)
 include($$(CREATOR_SRC_DIR)/src/plugins/coreplugin/coreplugin.pri)
+include($$(CREATOR_SRC_DIR)/src/plugins/texteditor/texteditor.pri)
 LIBS += -L$$(CREATOR_BUILD_DIR)/lib/qtcreator
 

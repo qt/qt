@@ -64,6 +64,7 @@ public:
     
 signals:
     void currentObjectChanged(const QmlDebugObjectReference &);
+    void activated(const QmlDebugObjectReference &);
     void expressionWatchRequested(const QmlDebugObjectReference &, const QString &);
 
 public slots:
@@ -76,6 +77,7 @@ protected:
 private slots:
     void objectFetched();
     void currentItemChanged(QTreeWidgetItem *);
+    void activated(QTreeWidgetItem *);
 
 private:
     QTreeWidgetItem *findItemByObjectId(int debugId) const;
