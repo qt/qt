@@ -399,9 +399,13 @@ QT_USE_NAMESPACE
 - (void)panelSelectionDidChange:(id)sender
 {
     Q_UNUSED(sender);
-    *mCurrentSelection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString([mSavePanel filename]));
-    if (mPriv)
-        mPriv->QNSOpenSavePanelDelegate_selectionChanged(*mCurrentSelection);
+    if (mPriv) {
+        QString selection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString([mSavePanel filename]));
+        if (selection != mCurrentSelection) {
+            *mCurrentSelection = selection;
+            mPriv->QNSOpenSavePanelDelegate_selectionChanged(selection);
+        }
+    }
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void *)contextInfo

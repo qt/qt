@@ -49,8 +49,8 @@ class MousePanGestureRecognizer : public QGestureRecognizer
 public:
     MousePanGestureRecognizer();
 
-    QGesture* createGesture(QObject *target);
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    QGesture* create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
 

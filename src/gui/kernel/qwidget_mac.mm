@@ -3017,10 +3017,17 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 #else
         QMacCocoaAutoReleasePool pool;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        if (iconButton == nil) {
+            QCFString string(q->windowTitle());
+            const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        }
         if (icon.isNull()) {
             [iconButton setImage:nil];
         } else {
-            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(*pm));
+            QPixmap scaled = pm->scaled(QSize(16,16), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(scaled));
             [iconButton setImage:image];
             [image release];
         }

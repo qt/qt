@@ -75,22 +75,22 @@ public:
 
     virtual QList<QVideoFrame::PixelFormat> supportedPixelFormats(
             QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const = 0;
-    virtual bool isFormatSupported(
-            const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar = 0) const;
+    virtual bool isFormatSupported(const QVideoSurfaceFormat &format) const;
+    virtual QVideoSurfaceFormat nearestFormat(const QVideoSurfaceFormat &format) const;
 
     QVideoSurfaceFormat surfaceFormat() const;
 
     virtual bool start(const QVideoSurfaceFormat &format);
     virtual void stop();
 
-    bool isStarted() const;
+    bool isActive() const;
 
     virtual bool present(const QVideoFrame &frame) = 0;
 
     Error error() const;
 
 Q_SIGNALS:
-    void startedChanged(bool started);
+    void activeChanged(bool active);
     void surfaceFormatChanged(const QVideoSurfaceFormat &format);
     void supportedFormatsChanged();
 

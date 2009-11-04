@@ -84,7 +84,7 @@ namespace QPatternist
      *
      * @author Frans Englich <frans.englich@nokia.com>
      */
-    class CompressedWhitespace
+    class Q_AUTOTEST_EXPORT CompressedWhitespace
     {
         public:
             /**

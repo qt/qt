@@ -59,7 +59,9 @@ public:
     virtual ~tst_Q3FileDialog();
 
 private slots:
+#ifndef QT_MAC_USE_COCOA
     void getSetCheck();
+#endif
 };
 
 tst_Q3FileDialog::tst_Q3FileDialog()
@@ -70,6 +72,7 @@ tst_Q3FileDialog::~tst_Q3FileDialog()
 {
 }
 
+#ifndef QT_MAC_USE_COCOA
   class Preview : public QLabel, public Q3FilePreview
   {
   public:
@@ -125,6 +128,7 @@ void tst_Q3FileDialog::getSetCheck()
     obj1.setPreviewMode(Q3FileDialog::PreviewMode(Q3FileDialog::Info));
     QCOMPARE(obj1.previewMode(), Q3FileDialog::PreviewMode(Q3FileDialog::Info));
 }
+#endif
 
 QTEST_MAIN(tst_Q3FileDialog)
 #include "tst_q3filedialog.moc"
