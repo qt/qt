@@ -225,11 +225,9 @@ void tst_behaviors::reassignedAnimation()
     QTest::ignoreMessage(QtWarningMsg, "QML QmlBehavior (file://" SRCDIR "/data/reassignedAnimation.qml:9:12) Can't change the animation assigned to a Behavior.");
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
     QVERIFY(rect);
-    
-    rect->setState("moved");
-    QTest::qWait(200 + 100);
-    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-    QCOMPARE(x, qreal(200));  //i.e. the right behavior has been triggered
+    QCOMPARE(qobject_cast<QmlNumberAnimation*>(
+                 qobject_cast<QmlBehavior*>(
+                     rect->findChild<QmlBehavior*>("MyBehavior"))->animation())->duration(), 200);
 }
 
 QTEST_MAIN(tst_behaviors)

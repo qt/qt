@@ -57,6 +57,7 @@ private slots:
     void width();
     void wrap();
     void elide();
+    void textFormat();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -145,6 +146,9 @@ void tst_qmlgraphicstext::text()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->text(), QString(""));
+        QVERIFY(textObject->width() == 0);
+
+        delete textObject;
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -155,6 +159,7 @@ void tst_qmlgraphicstext::text()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->text(), standard.at(i));
+        QVERIFY(textObject->width() > 0);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -166,6 +171,7 @@ void tst_qmlgraphicstext::text()
         QVERIFY(textObject != 0);
         QString expected = richText.at(i);
         QCOMPARE(textObject->text(), expected.replace("\\\"", "\""));
+        QVERIFY(textObject->width() > 0);
     }
 }
 
@@ -176,6 +182,7 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\" }", QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 0.);
     }
 
@@ -189,7 +196,9 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(metricWidth));
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::PlainText);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -204,7 +213,9 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(documentWidth));
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::RichText);
     }
 }
 
@@ -217,6 +228,8 @@ void tst_qmlgraphicstext::wrap()
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
         textHeight = textObject->height();
 
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->wrap() == true);
         QCOMPARE(textObject->width(), 300.);
     }
 
@@ -226,6 +239,7 @@ void tst_qmlgraphicstext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
     }
@@ -236,6 +250,7 @@ void tst_qmlgraphicstext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
     }
@@ -246,35 +261,53 @@ void tst_qmlgraphicstext::elide()
 {
     for (Qt::TextElideMode m = Qt::ElideLeft; m<=Qt::ElideNone; m=Qt::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
-        QString elide = "elide: \""+QString(elidename[int(m)])+"\";";
+        QString elide = "elide: Text." + QString(elidename[int(m)]) + ";";
 
         // XXX Poor coverage.
 
         {
-            QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 300 }").toLatin1(), QUrl("file://"));
+            QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
 
         for (int i = 0; i < standard.size(); i++)
         {
-            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 100; text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
 
         // richtext - does nothing
         for (int i = 0; i < richText.size(); i++)
         {
-            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 100; text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
+    }
+}
+
+void tst_qmlgraphicstext::textFormat()
+{
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"Hello\"; textFormat: Text.RichText }", QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::RichText);
+    }
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::PlainText);
     }
 }
 

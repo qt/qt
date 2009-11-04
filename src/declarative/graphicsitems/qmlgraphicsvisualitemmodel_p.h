@@ -183,6 +183,7 @@ private Q_SLOTS:
     void _q_itemsMoved(int from, int to, int count);
     void _q_rowsInserted(const QModelIndex &,int,int);
     void _q_rowsRemoved(const QModelIndex &,int,int);
+    void _q_rowsMoved(const QModelIndex &, int, int, const QModelIndex &, int);
     void _q_dataChanged(const QModelIndex&,const QModelIndex&);
     void _q_createdPackage(int index, QmlPackage *package);
     void _q_destroyingPackage(QmlPackage *package);

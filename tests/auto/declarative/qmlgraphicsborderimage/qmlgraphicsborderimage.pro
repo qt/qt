@@ -2,7 +2,7 @@ load(qttest_p4)
 contains(QT_CONFIG,declarative): QT += declarative gui
 macx:CONFIG -= app_bundle
 
-SOURCES += tst_qmlfontloader.cpp
+SOURCES += tst_qmlgraphicsborderimage.cpp
 
 # Define SRCDIR equal to test's source directory
 DEFINES += SRCDIR=\\\"$$PWD\\\"
