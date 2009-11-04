@@ -108,6 +108,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -1128,3 +1129,4 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
 
 QT_END_NAMESPACE
 
+#endif //QT_NO_GRAPHICSEFFECT
