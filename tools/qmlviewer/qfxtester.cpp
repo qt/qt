@@ -306,17 +306,15 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
         QObject *event = testscript->event(testscriptidx);
 
         if (QmlGraphicsVisualTestFrame *frame = qobject_cast<QmlGraphicsVisualTestFrame *>(event)) {
-            if ((options & QmlViewer::TestImages) && (options & QmlViewer::Record))
-                break; // recording and playing, no point "testing" results
             if (frame->msec() < msec) {
-                if (options & QmlViewer::TestImages) {
+                if (options & QmlViewer::TestImages && !(options & QmlViewer::Record)) {
                     qWarning() << "QmlGraphicsTester: Extra frame.  Seen:" 
                                << msec << "Expected:" << frame->msec();
                     imagefailure();
                 }
             } else if (frame->msec() == msec) {
                 if (!frame->hash().isEmpty() && frame->hash().toUtf8() != fe.hash.toHex()) {
-                    if (options & QmlViewer::TestImages) {
+                    if (options & QmlViewer::TestImages && !(options & QmlViewer::Record)) {
                         qWarning() << "QmlGraphicsTester: Mismatched frame hash.  Seen:" 
                                    << fe.hash.toHex() << "Expected:" 
                                    << frame->hash().toUtf8();
@@ -327,7 +325,7 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
                 break;
             }
 
-            if (options & QmlViewer::TestImages && !frame->image().isEmpty()) {
+            if (options & QmlViewer::TestImages && !(options & QmlViewer::Record) && !frame->image().isEmpty()) {
                 QImage goodImage(frame->image().toLocalFile());
                 if (goodImage != img) {
                     QString reject(frame->image().toLocalFile() + ".reject.png");
