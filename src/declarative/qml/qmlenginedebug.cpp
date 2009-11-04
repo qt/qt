@@ -271,9 +271,17 @@ QmlEngineDebugServer::objectData(QObject *object)
     }
 
     rv.objectName = object->objectName();
-    rv.objectType = QString::fromUtf8(object->metaObject()->className());
     rv.objectId = QmlDebugService::idForObject(object);
     rv.contextId = QmlDebugService::idForObject(qmlContext(object));
+
+    QmlType *type = QmlMetaType::qmlType(object->metaObject());
+    if (type) {
+        QString typeName = type->qmlTypeName();
+        int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+        rv.objectType = lastSlash < 0 ? typeName : typeName.mid(lastSlash+1);
+    } else {
+        rv.objectType = QString::fromUtf8(object->metaObject()->className());
+    }
 
     return rv;
 }
