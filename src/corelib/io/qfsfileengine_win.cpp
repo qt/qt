@@ -497,11 +497,30 @@ qint64 QFSFileEnginePrivate::nativeSize() const
     // ### Don't flush; for buffered files, we should get away with ftell.
     thatQ->flush();
 
+#if !defined(Q_OS_WINCE)
+    // stdlib/stdio mode.
+    if (fh || fd != -1) {
+        qint64 fileSize = _filelengthi64(fh ? QT_FILENO(fh) : fd);
+        if (fileSize == -1) {
+            fileSize = 0;
+            thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        }
+        return fileSize;
+    }
+#else // Q_OS_WINCE
     // Buffered stdlib mode.
     if (fh) {
-        qint64 fileSize = _filelengthi64(QT_FILENO(fh));
-        return (fileSize == -1) ? 0 : fileSize;
+        QT_OFF_T oldPos = QT_FTELL(fh);
+        QT_FSEEK(fh, 0, SEEK_END);
+        qint64 fileSize = (qint64)QT_FTELL(fh);
+        QT_FSEEK(fh, oldPos, SEEK_SET);
+        if (fileSize == -1) {
+            fileSize = 0;
+            thatQ->setError(QFile::UnspecifiedError, qt_error_string(errno));
+        }
+        return fileSize;
     }
+#endif
 
     // Not-open mode, where the file name is known: We'll check the
     // file system directly.
@@ -541,23 +560,13 @@ qint64 QFSFileEnginePrivate::nativeSize() const
         return 0;
     }
 
-    // Unbuffed stdio mode.
-    if(fd != -1) {
-#if !defined(Q_OS_WINCE)
-        HANDLE handle = (HANDLE)_get_osfhandle(fd);
-        if (handle != INVALID_HANDLE_VALUE) {
-            BY_HANDLE_FILE_INFORMATION fileInfo;
-            if (GetFileInformationByHandle(handle, &fileInfo)) {
-                qint64 size = fileInfo.nFileSizeHigh;
-                size <<= 32;
-                size += fileInfo.nFileSizeLow;
-                return size;
-            }
-        }
-#endif
-        thatQ->setError(QFile::UnspecifiedError, qt_error_string());
+#if defined(Q_OS_WINCE)
+    // Unbuffed stdio mode
+    if (fd != -1) {
+        thatQ->setError(QFile::UnspecifiedError, QLatin1String("Not implemented!"));
         return 0;
     }
+#endif
 
     // Windows native mode.
     if (fileHandle == INVALID_HANDLE_VALUE)
