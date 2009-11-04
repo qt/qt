@@ -47,6 +47,7 @@ Makefile*
 *.prl
 *.app
 *.pro.user
+*.gcov
 bin/Qt*.dll
 bin/assistant*
 bin/designer*
