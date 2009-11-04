@@ -116,7 +116,7 @@ bool AncestorMoveMonitor::eventFilter(QObject *watched, QEvent *event)
 
     if(event->type() == QEvent::Move || event->type() == QEvent::ParentChange) {
 
-        TRACE_ENTRY("watched 0x%08x event.type %d", watched, event->type());
+        //TRACE_ENTRY("watched 0x%08x event.type %d", watched, event->type());
 
         const Hash::const_iterator it = m_hash.find(watched);
         if(it != m_hash.end()) {
@@ -141,7 +141,7 @@ bool AncestorMoveMonitor::eventFilter(QObject *watched, QEvent *event)
             }
         }
 
-        TRACE_EXIT_0();
+        //TRACE_EXIT_0();
     }
 
     // The event is never consumed by this filter
