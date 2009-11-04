@@ -85,8 +85,7 @@ private:
 QVFbGraphicsSystemScreenKeyboardHandler::QVFbGraphicsSystemScreenKeyboardHandler()
 {
     int displayId = 0; //TODO displayId
-    const QString keyboardDev = QString::fromLatin1(QT_VFB_KEYBOARD_PIPE)
-                                .arg(displayId);
+    const QString keyboardDev = QT_VFB_KEYBOARD_PIPE(displayId);
 
 
     kbdFD = -1;
@@ -185,8 +184,7 @@ private:
 QVFbGraphicsSystemScreenMouseHandler::QVFbGraphicsSystemScreenMouseHandler()
 {
     int displayId = 0; //TODO: displayId
-    QString mouseDev = QString::fromLatin1(QT_VFB_MOUSE_PIPE)
-                             .arg(displayId);
+    QString mouseDev = QT_VFB_MOUSE_PIPE(displayId);
 
     mouseFD = QT_OPEN(mouseDev.toLatin1().constData(), O_RDWR | O_NDELAY);
 
@@ -301,7 +299,7 @@ void QVFbGraphicsSystemScreenPrivate::setDirty(const QRect &r)
 bool QVFbGraphicsSystemScreenPrivate::connect(int displayId)
 {
 
-    key_t key = ftok(QByteArray(QT_VFB_MOUSE_PIPE).replace("%1", QByteArray::number(displayId)), 'b');
+    key_t key = ftok(QT_VFB_MOUSE_PIPE(displayId).toLatin1(), 'b');
 
     if (key == -1)
         return false;
