@@ -72,7 +72,7 @@
 #include <private/qgraphicssystem_qws_p.h>
 #endif
 #ifdef Q_OS_SYMBIAN
-#include <w32std.h> 
+#include <w32std.h>
 #endif
 
 QT_BEGIN_NAMESPACE

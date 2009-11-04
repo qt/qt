@@ -1255,7 +1255,7 @@ bool QApplicationPrivate::modalState()
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(ETrue);
         // Modal partial screen dialogs (like queries) capture pointer events.
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(ETrue);
@@ -1270,7 +1270,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(EFalse);
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(EFalse);
         widget->effectiveWinId()->SetPointerCapture(EFalse);
