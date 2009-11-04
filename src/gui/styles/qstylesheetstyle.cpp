@@ -3606,6 +3606,27 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
             } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
+                if (mi.checkType != QStyleOptionMenuItem::NotCheckable && !mi.checked) {
+                    // We have a style defined, but QWindowsStyle won't draw anything if not checked.
+                    // So we mimick what QWindowsStyle would do.
+                    int checkcol = qMax<int>(mi.maxIconWidth, QWindowsStylePrivate::windowsCheckMarkWidth);
+                    QRect vCheckRect = visualRect(opt->direction, mi.rect, QRect(mi.rect.x(), mi.rect.y(), checkcol, mi.rect.height()));
+                    if (mi.state.testFlag(State_Enabled) && mi.state.testFlag(State_Selected)) {
+                        qDrawShadePanel(p, vCheckRect, mi.palette, true, 1, &mi.palette.brush(QPalette::Button));
+                    } else {
+                        QBrush fill(mi.palette.light().color(), Qt::Dense4Pattern);
+                        qDrawShadePanel(p, vCheckRect, mi.palette, true, 1, &fill);
+                    }
+                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    if (subSubRule.hasDrawable()) {
+                        QStyleOptionMenuItem newMi(mi);
+                        newMi.rect = visualRect(opt->direction, mi.rect, QRect(mi.rect.x() + QWindowsStylePrivate::windowsItemFrame,
+                                                                               mi.rect.y() + QWindowsStylePrivate::windowsItemFrame,
+                                                                               checkcol - 2 * QWindowsStylePrivate::windowsItemFrame,
+                                                                               mi.rect.height() - 2 * QWindowsStylePrivate::windowsItemFrame));
+                        drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
+                    }
+                }
             } else {
                 if (rule.hasDrawable() && !subRule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
                     mi.palette.setColor(QPalette::Window, Qt::transparent);
