@@ -45,7 +45,7 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QtDeclarative/qmlengine.h>
-#include <private/qmlgraphicspixmapcache_p.h>
+#include <private/qmlpixmapcache_p.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -65,7 +65,7 @@ QmlGraphicsImageBase::~QmlGraphicsImageBase()
 {
     Q_D(QmlGraphicsImageBase);
     if (d->pendingPixmapCache)
-        QmlGraphicsPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancelGet(d->url, this);
 }
 
 QmlGraphicsImageBase::Status QmlGraphicsImageBase::status() const
@@ -95,7 +95,7 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         return;
 
     if (d->pendingPixmapCache) {
-        QmlGraphicsPixmapCache::cancelGet(d->url, this);
+        QmlPixmapCache::cancelGet(d->url, this);
         d->pendingPixmapCache = false;
     }
 
@@ -117,7 +117,7 @@ void QmlGraphicsImageBase::setSource(const QUrl &url)
         update();
     } else {
         d->status = Loading;
-        QNetworkReply *reply = QmlGraphicsPixmapCache::get(qmlEngine(this), d->url, &d->pix);
+        QNetworkReply *reply = QmlPixmapCache::get(qmlEngine(this), d->url, &d->pix);
         if (reply) {
             d->pendingPixmapCache = true;
             connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
@@ -147,7 +147,7 @@ void QmlGraphicsImageBase::requestFinished()
 
     d->pendingPixmapCache = false;
 
-    if (!QmlGraphicsPixmapCache::find(d->url, &d->pix))
+    if (!QmlPixmapCache::find(d->url, &d->pix))
         d->status = Error;
     setImplicitWidth(d->pix.width());
     setImplicitHeight(d->pix.height());

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSPIXMAPCACHE_H
-#define QMLGRAPHICSPIXMAPCACHE_H
+#ifndef QMLPIXMAPCACHE_H
+#define QMLPIXMAPCACHE_H
 
 #include <QtCore/QString>
 #include <QtGui/QPixmap>
@@ -53,13 +53,13 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 class QmlEngine;
 class QNetworkReply;
-class Q_DECLARATIVE_EXPORT QmlGraphicsPixmapCache
+class Q_DECLARATIVE_EXPORT QmlPixmapCache
 {
 public:
     static QNetworkReply *get(QmlEngine *, const QUrl& url, QPixmap *pixmap);
     static void cancelGet(const QUrl& url, QObject* obj);
 
-    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QmlGraphicsPixmapCache::get, and any returned reply finished.
+    static bool find(const QUrl& url, QPixmap *pixmap); // url must have been passed to QmlPixmapCache::get, and any returned reply finished.
 
     static int pendingRequests(); // mainly for test verification
 };
@@ -68,4 +68,4 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
-#endif // QMLGRAPHICSPIXMAPCACHE_H
+#endif // QMLPIXMAPCACHE_H
