@@ -1916,8 +1916,8 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         free(dptr);
         return bm;
     } else {                                        // color pixmap
-        QPixmap pm;
-        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data.data());
+        QX11PixmapData *x11Data = new QX11PixmapData(QPixmapData::PixmapType);
+        QPixmap pm(x11Data);
         x11Data->flags &= ~QX11PixmapData::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
