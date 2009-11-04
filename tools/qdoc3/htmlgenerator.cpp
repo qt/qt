@@ -4192,13 +4192,15 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         const QmlPropGroupNode* qpgn = static_cast<const QmlPropGroupNode*>(node);
         NodeList::ConstIterator p = qpgn->childNodes().begin();
         out() << "<div class=\"qmlproto\">";
-        out() << "<table class=\"qmlname\">";
+        out() << "<table width=\"100%\" class=\"qmlname\">";
 
         while (p != qpgn->childNodes().end()) {
             if ((*p)->type() == Node::QmlProperty) {
                 qpn = static_cast<const QmlPropertyNode*>(*p);
                 out() << "<tr><td>";
                 out() << "<a name=\"" + refForNode(qpn) + "\"></a>";
+                if (!qpn->isWritable())
+                    out() << "<span class=\"qmlreadonly\">read-only</span>";
                 generateQmlItem(qpn, relative, marker, false);
                 out() << "</td></tr>";
                 if (qpgn->isDefault()) {
@@ -4279,7 +4281,7 @@ void HtmlGenerator::generateQmlInherits(const QmlClassNode* cn,
 }
 
 /*!
-  Output the "[Xxx instantiates the C++ class QFxXxx]"
+  Output the "[Xxx instantiates the C++ class QmlGraphicsXxx]"
   line for the QML element, if there should be one.
 
   If there is no class node, or if the class node status
@@ -4309,7 +4311,7 @@ void HtmlGenerator::generateQmlInstantiates(const QmlClassNode* qcn,
 }
 
 /*!
-  Output the "[QFxXxx is instantiated by QML element Xxx]"
+  Output the "[QmlGraphicsXxx is instantiated by QML element Xxx]"
   line for the class, if there should be one.
 
   If there is no QML element, or if the class node status
