@@ -1720,10 +1720,8 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
-
-//    QTest::qWait(500); // layouting is asynchronous..
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
@@ -2231,8 +2229,8 @@ void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
@@ -3072,8 +3070,8 @@ void tst_QGraphicsAnchorLayout1::testComplexCases()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
 //    QTest::qWait(500); // layouting is asynchronous..
 
