@@ -269,6 +269,7 @@ public:
     static QScriptValue darker(QScriptContext*, QScriptEngine*);
     static QScriptValue tint(QScriptContext*, QScriptEngine*);
 
+    static QScriptValue closestAngle(QScriptContext*, QScriptEngine*);
     static QScriptValue playSound(QScriptContext*, QScriptEngine*);
     static QScriptValue desktopOpenUrl(QScriptContext*, QScriptEngine*);
 
