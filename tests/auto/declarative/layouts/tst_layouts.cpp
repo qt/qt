@@ -53,10 +53,13 @@ public:
 private slots:
     void test_horizontal();
     void test_horizontal_spacing();
+    void test_horizontal_animated();
     void test_vertical();
     void test_vertical_spacing();
+    void test_vertical_animated();
     void test_grid();
     void test_grid_spacing();
+    void test_grid_animated();
 
     void test_repeater();
 private:
@@ -115,6 +118,57 @@ void tst_QmlGraphicsLayouts::test_horizontal_spacing()
     QCOMPARE(three->y(), 0.0);
 }
 
+void tst_QmlGraphicsLayouts::test_horizontal_animated()
+{
+    QmlView *canvas = createView(SRCDIR "/data/horizontal-animated.qml");
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QTest::qWait(0);//Let the animation start
+    //Note that one and three animate in
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QVERIFY(one != 0);
+    QCOMPARE(one->x(), -100.0);
+
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QVERIFY(two != 0);
+    QCOMPARE(two->x(), 0.0);
+
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QVERIFY(three != 0);
+    QCOMPARE(three->x(), -100.0);
+
+    QTest::qWait(300);//Let the animation complete
+
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 0.0);
+
+    //Add 'two'
+    two->setOpacity(1.0);
+    QCOMPARE(two->opacity(), 1.0);
+    QTest::qWait(0);//Let the animation start
+    QCOMPARE(two->x(), -100.0);
+    QCOMPARE(three->x(), 50.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(three->x(), 100.0);
+
+    //Remove 'two'
+    two->setOpacity(0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(three->x(), 100.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(three->x(), 50.0);
+}
+
 void tst_QmlGraphicsLayouts::test_vertical()
 {
     QmlView *canvas = createView(SRCDIR "/data/vertical.qml");
@@ -161,6 +215,57 @@ void tst_QmlGraphicsLayouts::test_vertical_spacing()
     QCOMPARE(two->y(), 60.0);
     QCOMPARE(three->x(), 0.0);
     QCOMPARE(three->y(), 80.0);
+}
+
+void tst_QmlGraphicsLayouts::test_vertical_animated()
+{
+    QmlView *canvas = createView(SRCDIR "/data/vertical-animated.qml");
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QTest::qWait(0);//Let the animation start
+    //Note that one and three animate in
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QVERIFY(one != 0);
+    QCOMPARE(one->y(), -100.0);
+
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QVERIFY(two != 0);
+    QCOMPARE(two->y(), 0.0);
+
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QVERIFY(three != 0);
+    QCOMPARE(three->y(), -100.0);
+
+    QTest::qWait(300);//Let the animation complete
+
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(three->y(), 50.0);
+    QCOMPARE(three->x(), 0.0);
+
+    //Add 'two'
+    two->setOpacity(1.0);
+    QCOMPARE(two->opacity(), 1.0);
+    QTest::qWait(0);//Let the animation start
+    QCOMPARE(two->y(), -100.0);
+    QCOMPARE(three->y(), 50.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->y(), 100.0);
+
+    //Remove 'two'
+    two->setOpacity(0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->y(), 100.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->y(), 50.0);
+    QCOMPARE(three->y(), 50.0);
 }
 
 void tst_QmlGraphicsLayouts::test_grid()
@@ -221,6 +326,105 @@ void tst_QmlGraphicsLayouts::test_grid_spacing()
     QCOMPARE(four->y(), 54.0);
     QCOMPARE(five->x(), 54.0);
     QCOMPARE(five->y(), 54.0);
+}
+
+void tst_QmlGraphicsLayouts::test_grid_animated()
+{
+    QmlView *canvas = createView(SRCDIR "/data/grid-animated.qml");
+    canvas->execute();
+    qApp->processEvents();
+
+    QTest::qWait(0);//Let the animation start
+    //Note that all but two animate in
+    QmlGraphicsRectangle *one = canvas->root()->findChild<QmlGraphicsRectangle*>("one");
+    QVERIFY(one != 0);
+    QCOMPARE(one->x(), -100.0);
+    QCOMPARE(one->y(), -100.0);
+
+    QmlGraphicsRectangle *two = canvas->root()->findChild<QmlGraphicsRectangle*>("two");
+    QVERIFY(two != 0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(two->y(), 0.0);
+
+    QmlGraphicsRectangle *three = canvas->root()->findChild<QmlGraphicsRectangle*>("three");
+    QVERIFY(three != 0);
+    QCOMPARE(three->x(), -100.0);
+    QCOMPARE(three->y(), -100.0);
+
+    QmlGraphicsRectangle *four = canvas->root()->findChild<QmlGraphicsRectangle*>("four");
+    QVERIFY(four != 0);
+    QCOMPARE(four->x(), -100.0);
+    QCOMPARE(four->y(), -100.0);
+
+    QmlGraphicsRectangle *five = canvas->root()->findChild<QmlGraphicsRectangle*>("five");
+    QVERIFY(five != 0);
+    QCOMPARE(five->x(), -100.0);
+    QCOMPARE(five->y(), -100.0);
+
+    QTest::qWait(300);//Let the animation complete
+
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(two->x(), 0.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(four->x(), 100.0);
+    QCOMPARE(five->y(), 50.0);
+    QCOMPARE(five->x(), 0.0);
+
+    //Add 'two'
+    two->setOpacity(1.0);
+    QCOMPARE(two->opacity(), 1.0);
+    QTest::qWait(0);//Let the animation start
+    QCOMPARE(two->x(), -100.0);
+    QCOMPARE(two->y(), -100.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 100.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 0.0);
+    QCOMPARE(five->y(), 50.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 100.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
+
+    //Remove 'two'
+    two->setOpacity(0.0);
+    QCOMPARE(two->opacity(), 0.0);
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 100.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 0.0);
+    QCOMPARE(four->y(), 50.0);
+    QCOMPARE(five->x(), 50.0);
+    QCOMPARE(five->y(), 50.0);
+    QTest::qWait(300);//Let the animation complete
+    QCOMPARE(two->x(), 50.0);
+    QCOMPARE(two->y(), 0.0);
+    QCOMPARE(one->x(), 0.0);
+    QCOMPARE(one->y(), 0.0);
+    QCOMPARE(three->x(), 50.0);
+    QCOMPARE(three->y(), 0.0);
+    QCOMPARE(four->x(), 100.0);
+    QCOMPARE(four->y(), 0.0);
+    QCOMPARE(five->x(), 0.0);
+    QCOMPARE(five->y(), 50.0);
 }
 
 void tst_QmlGraphicsLayouts::test_repeater()
