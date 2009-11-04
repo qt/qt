@@ -24,6 +24,11 @@ information about a particular change.
      now 0.93.
 
 
+Third party components
+----------------------
+
+ - Updated FreeType to version 2.3.9
+
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
@@ -42,9 +47,19 @@ information about a particular change.
  - Qt::escape
     * now escape the double quote (&quot;)
 
+ - QScopedPointer
+    * New pointer class for cleaning up objects when leaving the
+      current scope
+
+ - QFile
+    * Make QFile::resize() more robust when operating on buffered files
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+ - Added community supported Qt ports for QNX and VxWorks. See platform
+   notes in the Qt documentation for details.
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -64,6 +79,10 @@ information about a particular change.
 
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
+
+ - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+   QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+   specific libraries.
 
 ****************************************************************************
 *                          Tools                                           *
