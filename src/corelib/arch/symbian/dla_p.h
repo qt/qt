@@ -1027,7 +1027,7 @@ struct malloc_params {
 		{return unsigned(addr)&(aln-1);}
 	template <class T1, class T2> inline int ptrdiff(const T1* a1, const T2* a2)
 		{return reinterpret_cast<const unsigned char*>(a1) - reinterpret_cast<const unsigned char*>(a2);}
-	template <class T> inline T offset(T addr, unsigned ofs)
+	template <class T> inline T offset(T addr, signed ofs)
 		{return T(unsigned(addr)+ofs);}
 	class slabset
 	{
