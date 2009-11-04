@@ -219,6 +219,7 @@ QScriptValue QmlContextScriptClass::property(Object *object, const Identifier &n
 void QmlContextScriptClass::setProperty(Object *object, const Identifier &name, 
                                         const QScriptValue &value)
 {
+    Q_UNUSED(object);
     Q_ASSERT(lastScopeObject || lastDefaultObject != -1);
 
     QmlContext *bindContext = lastContext;
