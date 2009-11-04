@@ -880,48 +880,40 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     return false;
 }
 
-static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g,
-                                    AnchorData *edge,
-                                    AnchorVertex *before,
-                                    AnchorVertex *after)
+static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g, AnchorData *edge)
 {
-    Q_ASSERT(edge->type != AnchorData::Normal);
 #if 0
     static const char *anchortypes[] = {"Normal",
                                         "Sequential",
                                         "Parallel"};
     qDebug("Restoring %s edge.", anchortypes[int(edge->type)]);
 #endif
-    if (edge->type == AnchorData::Sequential) {
-        SequentialAnchorData* seqEdge = static_cast<SequentialAnchorData*>(edge);
-        // restore the sequential anchor
-        AnchorVertex *prev = before;
-        AnchorVertex *last = after;
-        if (edge->from != prev)
-            qSwap(last, prev);
 
-        for (int i = 0; i < seqEdge->m_edges.count(); ++i) {
-            AnchorVertex *v1 = (i < seqEdge->m_children.count()) ? seqEdge->m_children.at(i) : last;
-            AnchorData *data = seqEdge->m_edges.at(i);
-            if (data->type != AnchorData::Normal) {
-                restoreSimplifiedAnchor(g, data, prev, v1);
-            } else {
-                g.createEdge(prev, v1, data);
-            }
-            prev = v1;
+    if (edge->type == AnchorData::Normal) {
+        g.createEdge(edge->from, edge->to, edge);
+
+    } else if (edge->type == AnchorData::Sequential) {
+        SequentialAnchorData *sequence = static_cast<SequentialAnchorData *>(edge);
+
+        for (int i = 0; i < sequence->m_edges.count(); ++i) {
+            AnchorData *data = sequence->m_edges.at(i);
+            restoreSimplifiedAnchor(g, data);
         }
+
+        delete sequence;
+
     } else if (edge->type == AnchorData::Parallel) {
-        ParallelAnchorData* parallelEdge = static_cast<ParallelAnchorData*>(edge);
-        AnchorData *parallelEdges[2] = {parallelEdge->firstEdge,
-                                        parallelEdge->secondEdge};
-        for (int i = 0; i < 2; ++i) {
-            AnchorData *data = parallelEdges[i];
-            if (data->type == AnchorData::Normal) {
-                g.createEdge(before, after, data);
-            } else {
-                restoreSimplifiedAnchor(g, data, before, after);
-            }
-        }
+        ParallelAnchorData* parallel = static_cast<ParallelAnchorData*>(edge);
+
+        // ### Because of the way parallel anchors are created in the anchor simplification
+        // algorithm, we know that one of these will be a sequence, so it'll be safe if the other
+        // anchor create an edge between the same vertices as the parallel.
+        Q_ASSERT(parallel->firstEdge->type == AnchorData::Sequential
+                 || parallel->secondEdge->type == AnchorData::Sequential);
+        restoreSimplifiedAnchor(g, parallel->firstEdge);
+        restoreSimplifiedAnchor(g, parallel->secondEdge);
+
+        delete parallel;
     }
 }
 
@@ -944,9 +936,8 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
         AnchorVertex *v2 = connections.at(i).second;
         AnchorData *edge = g.edgeData(v1, v2);
         if (edge->type != AnchorData::Normal) {
-            AnchorData *oldEdge = g.takeEdge(v1, v2);
-            restoreSimplifiedAnchor(g, edge, v1, v2);
-            delete oldEdge;
+            g.takeEdge(v1, v2);
+            restoreSimplifiedAnchor(g, edge);
         }
     }
 }
