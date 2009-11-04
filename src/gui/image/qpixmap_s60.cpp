@@ -753,7 +753,7 @@ QPixmap QPixmap::fromSymbianRSgImage(RSgImage *sgImage)
         return QPixmap();
 
     QScopedPointer<QS60PixmapData> data(new QS60PixmapData(QPixmapData::PixmapType));
-    data->fromNativeType(reinterpret_cast<void*>(bitmap), QPixmapData::SgImage);
+    data->fromNativeType(reinterpret_cast<void*>(sgImage), QPixmapData::SgImage);
     QPixmap pixmap(data.take());
     return pixmap;
 }
