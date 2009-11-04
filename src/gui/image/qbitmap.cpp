@@ -86,7 +86,7 @@ QT_BEGIN_NAMESPACE
     object.
 
     Just like the QPixmap class, QBitmap is optimized by the use of
-    implicit data sharing. For more information, see the {Implicit
+    implicit data sharing. For more information, see the \l {Implicit
     Data Sharing} documentation.
 
     \sa  QPixmap, QImage, QImageReader, QImageWriter
