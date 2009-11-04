@@ -1432,8 +1432,10 @@ void tst_QVariant::matrix4x4()
     QVariant variant;
     QMatrix4x4 matrix = qVariantValue<QMatrix4x4>(variant);
     QVERIFY(matrix.isIdentity());
-    qVariantSetValue(variant, QMatrix4x4().scale(2.0));
-    QCOMPARE(QMatrix4x4().scale(2.0), qVariantValue<QMatrix4x4>(variant));
+    QMatrix4x4 m;
+    m.scale(2.0f);
+    qVariantSetValue(variant, m);
+    QCOMPARE(m, qVariantValue<QMatrix4x4>(variant));
 
     void *mmatrix = QMetaType::construct(QVariant::Matrix4x4, 0);
     QVERIFY(mmatrix);

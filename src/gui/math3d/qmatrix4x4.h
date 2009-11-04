@@ -127,29 +127,29 @@ public:
     friend inline bool qFuzzyCompare(const QMatrix4x4& m1, const QMatrix4x4& m2);
 
 #ifndef QT_NO_VECTOR3D
-    QMatrix4x4& scale(const QVector3D& vector);
-    QMatrix4x4& translate(const QVector3D& vector);
-    QMatrix4x4& rotate(qreal angle, const QVector3D& vector);
+    void scale(const QVector3D& vector);
+    void translate(const QVector3D& vector);
+    void rotate(qreal angle, const QVector3D& vector);
 #endif
-    QMatrix4x4& scale(qreal x, qreal y);
-    QMatrix4x4& scale(qreal x, qreal y, qreal z);
-    QMatrix4x4& scale(qreal factor);
-    QMatrix4x4& translate(qreal x, qreal y);
-    QMatrix4x4& translate(qreal x, qreal y, qreal z);
-    QMatrix4x4& rotate(qreal angle, qreal x, qreal y, qreal z = 0.0f);
+    void scale(qreal x, qreal y);
+    void scale(qreal x, qreal y, qreal z);
+    void scale(qreal factor);
+    void translate(qreal x, qreal y);
+    void translate(qreal x, qreal y, qreal z);
+    void rotate(qreal angle, qreal x, qreal y, qreal z = 0.0f);
 #ifndef QT_NO_QUATERNION
-    QMatrix4x4& rotate(const QQuaternion& quaternion);
+    void rotate(const QQuaternion& quaternion);
 #endif
 
-    QMatrix4x4& ortho(const QRect& rect);
-    QMatrix4x4& ortho(const QRectF& rect);
-    QMatrix4x4& ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
-    QMatrix4x4& frustum(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
-    QMatrix4x4& perspective(qreal angle, qreal aspect, qreal nearPlane, qreal farPlane);
+    void ortho(const QRect& rect);
+    void ortho(const QRectF& rect);
+    void ortho(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
+    void frustum(qreal left, qreal right, qreal bottom, qreal top, qreal nearPlane, qreal farPlane);
+    void perspective(qreal angle, qreal aspect, qreal nearPlane, qreal farPlane);
 #ifndef QT_NO_VECTOR3D
-    QMatrix4x4& lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up);
+    void lookAt(const QVector3D& eye, const QVector3D& center, const QVector3D& up);
 #endif
-    QMatrix4x4& flipCoordinates();
+    void flipCoordinates();
 
     void copyDataTo(qreal *values) const;
 
@@ -203,7 +203,7 @@ private:
 
     QMatrix4x4 orthonormalInverse() const;
 
-    QMatrix4x4& projectedRotate(qreal angle, qreal x, qreal y, qreal z);
+    void projectedRotate(qreal angle, qreal x, qreal y, qreal z);
 
     friend class QGraphicsRotation;
 };
