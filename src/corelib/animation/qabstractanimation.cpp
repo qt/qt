@@ -115,7 +115,7 @@
 */
 
 /*!
-    \fn QAbstractAnimation::stateChanged(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
+    \fn QAbstractAnimation::stateChanged(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 
     QAbstractAnimation emits this signal whenever the state of the animation has
     changed from \a oldState to \a newState. This signal is emitted after the virtual
@@ -357,12 +357,12 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         QUnifiedTimer::instance()->unregisterAnimation(q);
     }
 
-    q->updateState(oldState, newState);
+    q->updateState(newState, oldState);
     if (!guard || newState != state) //this is to be safe if updateState changes the state
         return;
 
     // Notify state change
-    emit q->stateChanged(oldState, newState);
+    emit q->stateChanged(newState, oldState);
     if (!guard || newState != state) //this is to be safe if updateState changes the state
         return;
 
@@ -635,6 +635,18 @@ int QAbstractAnimation::totalDuration() const
 }
 
 /*!
+    Returns the current time inside the current loop. It can go from 0 to duration().
+
+    \sa duration(), currentTime
+*/
+
+int QAbstractAnimation::currentLoopTime() const
+{
+    Q_D(const QAbstractAnimation);
+    return d->currentTime;
+}
+
+/*!
     \property QAbstractAnimation::currentTime
     \brief the current time and progress of the animation
 
@@ -643,17 +655,14 @@ int QAbstractAnimation::totalDuration() const
     the animation run, setting the current time automatically as the animation
     progresses.
 
-    The animation's current time starts at 0, and ends at duration(). If the
-    animation's loopCount is larger than 1, the current time will rewind and
-    start at 0 again for the consecutive loops. If the animation has a pause.
-    currentTime will also include the duration of the pause.
+    The animation's current time starts at 0, and ends at totalDuration().
 
-    \sa loopCount
+    \sa loopCount, currentLoopTime
  */
 int QAbstractAnimation::currentTime() const
 {
     Q_D(const QAbstractAnimation);
-    return d->currentTime;
+    return d->totalCurrentTime;
 }
 void QAbstractAnimation::setCurrentTime(int msecs)
 {
@@ -777,6 +786,21 @@ void QAbstractAnimation::resume()
 }
 
 /*!
+    If \a paused is true, the animation is paused.
+    If \a paused is false, the animation is resumed.
+
+    \sa state(), pause(), resume()
+*/
+void QAbstractAnimation::setPaused(bool paused)
+{
+    if (paused)
+        pause();
+    else
+        resume();
+}
+
+
+/*!
     \reimp
 */
 bool QAbstractAnimation::event(QEvent *event)
@@ -799,8 +823,8 @@ bool QAbstractAnimation::event(QEvent *event)
 
     \sa start(), stop(), pause(), resume()
 */
-void QAbstractAnimation::updateState(QAbstractAnimation::State oldState,
-                                     QAbstractAnimation::State newState)
+void QAbstractAnimation::updateState(QAbstractAnimation::State newState,
+                                     QAbstractAnimation::State oldState)
 {
     Q_UNUSED(oldState);
     Q_UNUSED(newState);

@@ -103,7 +103,7 @@ protected:
     bool event(QEvent *event);
 
     void updateCurrentTime(int);
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
 
     virtual void updateCurrentValue(const QVariant &value) = 0;
     virtual QVariant interpolated(const QVariant &from, const QVariant &to, qreal progress) const;
