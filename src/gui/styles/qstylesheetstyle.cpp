@@ -3675,7 +3675,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
                 drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, cb->palette,
-                             cb->state & State_Enabled, cb->currentText);
+                             cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();
             return;
