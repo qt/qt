@@ -269,7 +269,7 @@ void tst_qmlgraphicstext::wrap()
 
 void tst_qmlgraphicstext::elide()
 {
-    for (Qt::TextElideMode m = Qt::ElideLeft; m<=Qt::ElideNone; m=Qt::TextElideMode(int(m)+1)) {
+    for (QmlGraphicsText::TextElideMode m = QmlGraphicsText::ElideLeft; m<=QmlGraphicsText::ElideNone; m=QmlGraphicsText::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
         QString elide = "elide: Text." + QString(elidename[int(m)]) + ";";
 
@@ -279,6 +279,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
 
@@ -288,6 +289,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
 
@@ -298,6 +300,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
     }
