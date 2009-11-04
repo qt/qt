@@ -788,7 +788,7 @@ uint CppParser::getToken()
                         if (yyCh == EOF) {
                             qWarning("%s:%d: Unterminated C++ comment\n",
                                      qPrintable(yyFileName), yyLineNo);
-                            return Tok_Comment;
+                            break;
                         }
                         *ptr++ = yyCh;
 
