@@ -54,7 +54,7 @@ SOURCES	+= qgl.cpp \
                 gl2paintengineex/qpaintengineex_opengl2_p.h \
                 gl2paintengineex/qglengineshadersource_p.h \
                 gl2paintengineex/qglcustomshaderstage_p.h \
-                gl2paintengineex/qtriangulatingstroker_p.h 
+                gl2paintengineex/qtriangulatingstroker_p.h
 
     SOURCES +=  qglshaderprogram.cpp \
                 qglpixmapfilter.cpp \
@@ -142,18 +142,3 @@ embedded {
 }
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
-
-contains(QT_CONFIG,opengles1) {
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES1
-    LIBS += $$QMAKE_LFLAGS_OPENGL_ES1
-} else:contains(QT_CONFIG,opengles1cl) {
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES1CL
-    LIBS += $$QMAKE_LFLAGS_OPENGL_ES1CL
-} else:contains(QT_CONFIG,opengles2) {
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES2
-    LIBS += $$QMAKE_LFLAGS_OPENGL_ES2
-} else {
-    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
-    LIBS += $$QMAKE_LFLAGS_OPENGL
-}
-
