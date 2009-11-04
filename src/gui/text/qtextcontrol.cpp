@@ -1296,7 +1296,9 @@ QVariant QTextControl::loadResource(int type, const QUrl &name)
 void QTextControlPrivate::_q_updateBlock(const QTextBlock &block)
 {
     Q_Q(QTextControl);
-    emit q->updateRequest(q->blockBoundingRect(block));
+    QRectF br = q->blockBoundingRect(block);
+    br.setRight(qreal(INT_MAX)); // the block might have shrunk
+    emit q->updateRequest(br);
 }
 
 QRectF QTextControlPrivate::rectForPosition(int position) const
