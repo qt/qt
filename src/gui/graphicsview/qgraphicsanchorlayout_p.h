@@ -158,9 +158,9 @@ struct AnchorData : public QSimplexVariable {
 
     AnchorData()
         : QSimplexVariable(), item(0), from(0), to(0),
-          minSize(0), prefSize(0), expSize(0), maxSize(0),
+          minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtExpanding(0), sizeAtMaximum(0),
+          sizeAtMaximum(0),
           graphicsAnchor(0), skipInPreferred(0),
           type(Normal), hasSize(true), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
@@ -201,7 +201,6 @@ struct AnchorData : public QSimplexVariable {
     // size.
     qreal minSize;
     qreal prefSize;
-    qreal expSize;
     qreal maxSize;
 
     // These attributes define which sizes should that anchor be in when the
@@ -209,7 +208,6 @@ struct AnchorData : public QSimplexVariable {
     // calculated by the Simplex solver based on the current layout setup.
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
-    qreal sizeAtExpanding;
     qreal sizeAtMaximum;
     QGraphicsAnchor *graphicsAnchor;
 
@@ -345,8 +343,7 @@ public:
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
         MinToPreferred = 0,
-        PreferredToExpanding,
-        ExpandingToMax
+        PreferredToMax
     };
 
     // Several structures internal to the layout are duplicated to handle
@@ -487,8 +484,6 @@ public:
                      GraphPath path, qreal *min, qreal *max);
     bool solvePreferred(const QList<QSimplexConstraint *> &constraints,
                         const QList<AnchorData *> &variables);
-    void solveExpanding(const QList<QSimplexConstraint *> &constraints,
-                        const QList<AnchorData *> &variables);
     bool hasConflicts() const;
 
 #ifdef QT_DEBUG
@@ -499,7 +494,6 @@ public:
     qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
-    qreal sizeAtExpanding[2];
 
     // Items
     QVector<QGraphicsLayoutItem *> items;
