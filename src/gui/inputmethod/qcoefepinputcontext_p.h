@@ -65,10 +65,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QCoeFepInputContext : public QInputContext,
-                                         public MCoeFepAwareTextEditor,
-                                         public MCoeFepAwareTextEditor_Extension1,
-                                         public MObjectProvider
+class QCoeFepInputContext : public QInputContext,
+                            public MCoeFepAwareTextEditor,
+                            public MCoeFepAwareTextEditor_Extension1,
+                            public MObjectProvider
 {
     Q_OBJECT
 
