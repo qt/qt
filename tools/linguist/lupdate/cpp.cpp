@@ -261,11 +261,14 @@ private:
     bool qualifyOneCallbackUsing(const Namespace *ns, void *context) const;
     bool qualifyOne(const NamespaceList &namespaces, int nsCnt, const HashString &segment,
                     NamespaceList *resolved) const;
-    bool fullyQualify(const NamespaceList &namespaces, const QList<HashString> &segments,
-                      bool isDeclaration,
+    bool fullyQualify(const NamespaceList &namespaces, int nsCnt,
+                      const QList<HashString> &segments, bool isDeclaration,
                       NamespaceList *resolved, QStringList *unresolved) const;
-    bool fullyQualify(const NamespaceList &namespaces, const QString &segments,
-                      bool isDeclaration,
+    bool fullyQualify(const NamespaceList &namespaces,
+                      const QList<HashString> &segments, bool isDeclaration,
+                      NamespaceList *resolved, QStringList *unresolved) const;
+    bool fullyQualify(const NamespaceList &namespaces,
+                      const QString &segments, bool isDeclaration,
                       NamespaceList *resolved, QStringList *unresolved) const;
     bool findNamespaceCallback(const Namespace *ns, void *context) const;
     const Namespace *findNamespace(const NamespaceList &namespaces, int nsCount = -1) const;
@@ -1057,7 +1060,18 @@ bool CppParser::qualifyOneCallbackOwn(const Namespace *ns, void *context) const
     }
     QHash<HashString, NamespaceList>::ConstIterator nsai = ns->aliases.constFind(data->segment);
     if (nsai != ns->aliases.constEnd()) {
-        *data->resolved = *nsai;
+        const NamespaceList &nsl = *nsai;
+        if (nsl.last().value().isEmpty()) { // Delayed alias resolution
+            NamespaceList &nslIn = *const_cast<NamespaceList *>(&nsl);
+            nslIn.removeLast();
+            NamespaceList nslOut;
+            if (!fullyQualify(data->namespaces, data->nsCount, nslIn, false, &nslOut, 0)) {
+                const_cast<Namespace *>(ns)->aliases.remove(data->segment);
+                return false;
+            }
+            nslIn = nslOut;
+        }
+        *data->resolved = nsl;
         return true;
     }
     return false;
@@ -1086,8 +1100,8 @@ bool CppParser::qualifyOne(const NamespaceList &namespaces, int nsCnt, const Has
     return visitNamespace(namespaces, nsCnt, &CppParser::qualifyOneCallbackUsing, &data);
 }
 
-bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashString> &segments,
-                             bool isDeclaration,
+bool CppParser::fullyQualify(const NamespaceList &namespaces, int nsCnt,
+                             const QList<HashString> &segments, bool isDeclaration,
                              NamespaceList *resolved, QStringList *unresolved) const
 {
     int nsIdx;
@@ -1104,7 +1118,7 @@ bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashSt
         nsIdx = 0;
     } else {
         initSegIdx = 0;
-        nsIdx = namespaces.count() - 1;
+        nsIdx = nsCnt - 1;
     }
 
     do {
@@ -1127,8 +1141,16 @@ bool CppParser::fullyQualify(const NamespaceList &namespaces, const QList<HashSt
     return false;
 }
 
-bool CppParser::fullyQualify(const NamespaceList &namespaces, const QString &quali,
-                             bool isDeclaration,
+bool CppParser::fullyQualify(const NamespaceList &namespaces,
+                             const QList<HashString> &segments, bool isDeclaration,
+                             NamespaceList *resolved, QStringList *unresolved) const
+{
+    return fullyQualify(namespaces, namespaces.count(),
+                        segments, isDeclaration, resolved, unresolved);
+}
+
+bool CppParser::fullyQualify(const NamespaceList &namespaces,
+                             const QString &quali, bool isDeclaration,
                              NamespaceList *resolved, QStringList *unresolved) const
 {
     static QString strColons(QLatin1String("::"));
@@ -1638,9 +1660,8 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                     }
                     if (fullName.isEmpty())
                         break;
-                    NamespaceList nsl;
-                    if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                        modifyNamespace(&namespaces)->aliases[ns] = nsl;
+                    fullName.append(HashString(QString())); // Mark as unresolved
+                    modifyNamespace(&namespaces)->aliases[ns] = fullName;
                 }
             } else if (yyTok == Tok_LeftBrace) {
                 // Anonymous namespace
@@ -1681,9 +1702,13 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
                 }
                 if (fullName.isEmpty())
                     break;
-                NamespaceList nsl;
-                if (fullyQualify(namespaces, fullName, false, &nsl, 0))
-                    modifyNamespace(&namespaces)->aliases[nsl.last()] = nsl;
+                // using-declarations cannot rename classes, so the last element of
+                // fullName is already the resolved name we actually want.
+                // As we do no resolution here, we'll collect useless usings of data
+                // members and methods as well. This is no big deal.
+                HashString &ns = fullName.last();
+                fullName.append(HashString(QString())); // Mark as unresolved
+                modifyNamespace(&namespaces)->aliases[ns] = fullName;
             }
             break;
         case Tok_tr:

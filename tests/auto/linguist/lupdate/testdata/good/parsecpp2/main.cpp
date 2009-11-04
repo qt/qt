@@ -93,3 +93,22 @@ TopLevel2::Nested::foo()
 {
     TopLevel2::tr("TopLevel2");
 }
+
+
+
+namespace NameSpace {
+class ToBeUsed;
+}
+
+// using statement before class definition
+using NameSpace::ToBeUsed;
+
+class NameSpace::ToBeUsed {
+    Q_OBJECT
+    void caller();
+};
+
+void ToBeUsed::caller()
+{
+    tr("NameSpace::ToBeUsed");
+}

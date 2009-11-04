@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.0">
 <context>
+    <name>NameSpace::ToBeUsed</name>
+    <message>
+        <location filename="main.cpp" line="113"/>
+        <source>NameSpace::ToBeUsed</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TopLevel</name>
     <message>
         <location filename="main.cpp" line="82"/>
