@@ -356,6 +356,26 @@ void tst_QmlGraphicsListView::inserted()
         QVERIFY(item->y() == i*20);
     }
 
+    for (int i = model.count(); i < 30; ++i)
+        model.insertItem(i, "Hello", QString::number(i));
+    QTest::qWait(1000);
+
+    listview->setViewportY(80);
+    QTest::qWait(1000);
+
+    // Insert item outside visible area
+    model.insertItem(1, "Hello", "1324");
+    QTest::qWait(1000);
+
+    QVERIFY(listview->viewportY() == 80);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count() - 1;
+    for (int i = 5; i < 5+itemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        QVERIFY(item->y() == i*20 - 20);
+    }
+
     delete canvas;
 }
 
