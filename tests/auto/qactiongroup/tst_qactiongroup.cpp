@@ -70,6 +70,7 @@ private slots:
 
     void separators();
     void testActionInTwoQActionGroup();
+	void unCheckCurrentAction();
 };
 
 tst_QActionGroup::tst_QActionGroup()
@@ -277,6 +278,26 @@ void tst_QActionGroup::testActionInTwoQActionGroup()
     QCOMPARE(group2.actions().first(), &action1);
     QCOMPARE(group1.actions().isEmpty(), true);
 }
+
+void tst_QActionGroup::unCheckCurrentAction()
+{
+    QActionGroup group(0);
+    QAction action1(&group) ,action2(&group);
+    action1.setCheckable(true);
+    action2.setCheckable(true);
+    QVERIFY(!action1.isChecked());
+    QVERIFY(!action2.isChecked());
+    action1.setChecked(true);
+    QVERIFY(action1.isChecked());
+    QVERIFY(!action2.isChecked());
+    QAction *current = group.checkedAction();
+    QCOMPARE(current, &action1);
+    current->setChecked(false);
+    QVERIFY(!action1.isChecked());
+    QVERIFY(!action2.isChecked());
+    QVERIFY(group.checkedAction() == 0);
+}
+
 
 QTEST_MAIN(tst_QActionGroup)
 #include "tst_qactiongroup.moc"

@@ -276,6 +276,16 @@ qint64 QHttpSocketEngine::pendingDatagramSize() const
 }
 #endif // QT_NO_UDPSOCKET
 
+qint64 QHttpSocketEngine::bytesToWrite() const
+{
+    Q_D(const QHttpSocketEngine);
+    if (d->socket) {
+        return d->socket->bytesToWrite();
+    } else {
+        return 0;
+    }
+}
+
 int QHttpSocketEngine::option(SocketOption option) const
 {
     Q_D(const QHttpSocketEngine);

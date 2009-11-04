@@ -94,49 +94,76 @@ WebInspector.ConsoleView = function(drawer)
     this.warningElement = createFilterElement.call(this, "Warnings");
     this.logElement = createFilterElement.call(this, "Logs");
 
-    this.filter(this.allElement);
+    this.filter(this.allElement, false);
 }
 
 WebInspector.ConsoleView.prototype = {
     
     _updateFilter: function(e)
     {
-        this.filter(e.target);
+        var isMac = InspectorController.platform().indexOf("mac-") === 0;
+        var selectMultiple = false;
+        if (isMac && e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey)
+            selectMultiple = true;
+        if (!isMac && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey)
+            selectMultiple = true;
+
+        this.filter(e.target, selectMultiple);
     },
     
-    filter: function(target)
+    filter: function(target, selectMultiple)
     {
+        function unselectAll()
+        {
+            this.allElement.removeStyleClass("selected");
+            this.errorElement.removeStyleClass("selected");
+            this.warningElement.removeStyleClass("selected");
+            this.logElement.removeStyleClass("selected");
+            
+            this.messagesElement.removeStyleClass("filter-all");
+            this.messagesElement.removeStyleClass("filter-errors");
+            this.messagesElement.removeStyleClass("filter-warnings");
+            this.messagesElement.removeStyleClass("filter-logs");
+        }
+        
+        var targetFilterClass = "filter-" + target.category.toLowerCase();
+
         if (target.category == "All") {
             if (target.hasStyleClass("selected")) {
                 // We can't unselect all, so we break early here
                 return;
             }
-            
-            this.errorElement.removeStyleClass("selected");
-            this.warningElement.removeStyleClass("selected");
-            this.logElement.removeStyleClass("selected");
-            
-            document.getElementById("console-messages").removeStyleClass("filter-errors");
-            document.getElementById("console-messages").removeStyleClass("filter-warnings");
-            document.getElementById("console-messages").removeStyleClass("filter-logs");
+
+            unselectAll.call(this);
         } else {
             // Something other than all is being selected, so we want to unselect all
             if (this.allElement.hasStyleClass("selected")) {
                 this.allElement.removeStyleClass("selected");
-                document.getElementById("console-messages").removeStyleClass("filter-all");
+                this.messagesElement.removeStyleClass("filter-all");
             }
         }
         
-        if (target.hasStyleClass("selected")) {
-            target.removeStyleClass("selected");
-            var newClass = "filter-" + target.category.toLowerCase();
-            var filterElement = document.getElementById("console-messages");
-            filterElement.removeStyleClass(newClass);
-        } else {
+        if (!selectMultiple) {
+            // If multiple selection is off, we want to unselect everything else
+            // and just select ourselves.
+            unselectAll.call(this);
+            
             target.addStyleClass("selected");
-            var newClass = "filter-" + target.category.toLowerCase();
-            var filterElement = document.getElementById("console-messages");
-            filterElement.addStyleClass(newClass);
+            this.messagesElement.addStyleClass(targetFilterClass);
+            
+            return;
+        }
+        
+        if (target.hasStyleClass("selected")) {
+            // If selectMultiple is turned on, and we were selected, we just
+            // want to unselect ourselves.
+            target.removeStyleClass("selected");
+            this.messagesElement.removeStyleClass(targetFilterClass);
+        } else {
+            // If selectMultiple is turned on, and we weren't selected, we just
+            // want to select ourselves.
+            target.addStyleClass("selected");
+            this.messagesElement.addStyleClass(targetFilterClass);
         }
     },
     
@@ -174,40 +201,7 @@ WebInspector.ConsoleView.prototype = {
     addMessage: function(msg)
     {
         if (msg instanceof WebInspector.ConsoleMessage && !(msg instanceof WebInspector.ConsoleCommandResult)) {
-            msg.totalRepeatCount = msg.repeatCount;
-            msg.repeatDelta = msg.repeatCount;
-
-            var messageRepeated = false;
-
-            if (msg.isEqual && msg.isEqual(this.previousMessage)) {
-                // Because sometimes we get a large number of repeated messages and sometimes
-                // we get them one at a time, we need to know the difference between how many
-                // repeats we used to have and how many we have now.
-                msg.repeatDelta -= this.previousMessage.totalRepeatCount;
-
-                if (!isNaN(this.repeatCountBeforeCommand))
-                    msg.repeatCount -= this.repeatCountBeforeCommand;
-
-                if (!this.commandSincePreviousMessage) {
-                    // Recreate the previous message element to reset the repeat count.
-                    var messagesElement = this.currentGroup.messagesElement;
-                    messagesElement.removeChild(messagesElement.lastChild);
-                    messagesElement.appendChild(msg.toMessageElement());
-
-                    messageRepeated = true;
-                }
-            } else
-                delete this.repeatCountBeforeCommand;
-
-            // Increment the error or warning count
-            switch (msg.level) {
-            case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                WebInspector.warnings += msg.repeatDelta;
-                break;
-            case WebInspector.ConsoleMessage.MessageLevel.Error:
-                WebInspector.errors += msg.repeatDelta;
-                break;
-            }
+            this._incrementErrorWarningCount(msg);
 
             // Add message to the resource panel
             if (msg.url in WebInspector.resourceURLMap) {
@@ -218,13 +212,9 @@ WebInspector.ConsoleView.prototype = {
 
             this.commandSincePreviousMessage = false;
             this.previousMessage = msg;
-
-            if (messageRepeated)
-                return;
         } else if (msg instanceof WebInspector.ConsoleCommand) {
             if (this.previousMessage) {
                 this.commandSincePreviousMessage = true;
-                this.repeatCountBeforeCommand = this.previousMessage.totalRepeatCount;
             }
         }
 
@@ -252,6 +242,35 @@ WebInspector.ConsoleView.prototype = {
         this.promptElement.scrollIntoView(false);
     },
 
+    updateMessageRepeatCount: function(count) {
+        var msg = this.previousMessage;
+        var prevRepeatCount = msg.totalRepeatCount;
+        
+        if (!this.commandSincePreviousMessage) {
+            msg.repeatDelta = count - prevRepeatCount;
+            msg.repeatCount = msg.repeatCount + msg.repeatDelta;
+            msg.totalRepeatCount = count;
+            msg._updateRepeatCount();
+            this._incrementErrorWarningCount(msg);
+        } else {
+            msgCopy = new WebInspector.ConsoleMessage(msg.source, msg.type, msg.level, msg.line, msg.url, msg.groupLevel, count - prevRepeatCount);
+            msgCopy.totalRepeatCount = count;
+            msgCopy.setMessageBody(msg.args);
+            this.addMessage(msgCopy);
+        }
+    },
+
+    _incrementErrorWarningCount: function(msg) {
+        switch (msg.level) {
+            case WebInspector.ConsoleMessage.MessageLevel.Warning:
+                WebInspector.warnings += msg.repeatDelta;
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Error:
+                WebInspector.errors += msg.repeatDelta;
+                break;
+        }
+    },
+
     clearMessages: function(clearInspectorController)
     {
         if (clearInspectorController)
@@ -269,7 +288,6 @@ WebInspector.ConsoleView.prototype = {
         WebInspector.warnings = 0;
 
         delete this.commandSincePreviousMessage;
-        delete this.repeatCountBeforeCommand;
         delete this.previousMessage;
     },
 
@@ -373,10 +391,9 @@ WebInspector.ConsoleView.prototype = {
 
     _promptKeyDown: function(event)
     {
-        switch (event.keyIdentifier) {
-            case "Enter":
-                this._enterKeyPressed(event);
-                return;
+        if (isEnterKey(event)) {
+            this._enterKeyPressed(event);
+            return;
         }
 
         this.prompt.handleKeyEvent(event);
@@ -539,6 +556,7 @@ WebInspector.ConsoleView.prototype = {
             if (!nodeId)
                 return;
             var treeOutline = new WebInspector.ElementsTreeOutline();
+            treeOutline.showInElementsPanelEnabled = true;
             treeOutline.rootDOMNode = WebInspector.domAgent.nodeForId(nodeId);
             treeOutline.element.addStyleClass("outline-disclosure");
             if (!treeOutline.children[0].hasChildren)
@@ -590,6 +608,8 @@ WebInspector.ConsoleMessage = function(source, type, level, line, url, groupLeve
     this.url = url;
     this.groupLevel = groupLevel;
     this.repeatCount = repeatCount;
+    this.repeatDelta = repeatCount;
+    this.totalRepeatCount = repeatCount;
     if (arguments.length > 7)
         this.setMessageBody(Array.prototype.slice.call(arguments, 7));
 }
@@ -597,6 +617,7 @@ WebInspector.ConsoleMessage = function(source, type, level, line, url, groupLeve
 WebInspector.ConsoleMessage.prototype = {
     setMessageBody: function(args)
     {
+        this.args = args;
         switch (this.type) {
             case WebInspector.ConsoleMessage.MessageType.Trace:
                 var span = document.createElement("span");
@@ -692,12 +713,14 @@ WebInspector.ConsoleMessage.prototype = {
 
     toMessageElement: function()
     {
-        if (this.propertiesSection)
-            return this.propertiesSection.element;
+        if (this._element)
+            return this._element;
 
         var element = document.createElement("div");
         element.message = this;
         element.className = "console-message";
+
+        this._element = element;
 
         switch (this.source) {
             case WebInspector.ConsoleMessage.MessageSource.HTML:
@@ -738,23 +761,13 @@ WebInspector.ConsoleMessage.prototype = {
                 break;
         }
         
-        if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup) {
+        if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup)
             element.addStyleClass("console-group-title");
-        }
 
         if (this.elementsTreeOutline) {
             element.addStyleClass("outline-disclosure");
             element.appendChild(this.elementsTreeOutline.element);
             return element;
-        }
-
-        if (this.repeatCount > 1) {
-            var messageRepeatCountElement = document.createElement("span");
-            messageRepeatCountElement.className = "bubble";
-            messageRepeatCountElement.textContent = this.repeatCount;
-
-            element.appendChild(messageRepeatCountElement);
-            element.addStyleClass("repeated-message");
         }
 
         if (this.url && this.url !== "undefined") {
@@ -776,10 +789,26 @@ WebInspector.ConsoleMessage.prototype = {
 
         var messageTextElement = document.createElement("span");
         messageTextElement.className = "console-message-text";
+        if (this.type === WebInspector.ConsoleMessage.MessageType.Assert)
+            messageTextElement.appendChild(document.createTextNode(WebInspector.UIString("Assertion failed: ")));
         messageTextElement.appendChild(this.formattedMessage);
         element.appendChild(messageTextElement);
 
+        if (this.repeatCount > 1)
+            this._updateRepeatCount();
+
         return element;
+    },
+
+    _updateRepeatCount: function() {
+        if (!this.repeatCountElement) {
+            this.repeatCountElement = document.createElement("span");
+            this.repeatCountElement.className = "bubble";
+    
+            this._element.insertBefore(this.repeatCountElement, this._element.firstChild);
+            this._element.addStyleClass("repeated-message");
+        }
+        this.repeatCountElement.textContent = this.repeatCount;
     },
 
     toString: function()
@@ -822,6 +851,9 @@ WebInspector.ConsoleMessage.prototype = {
                 break;
             case WebInspector.ConsoleMessage.MessageType.EndGroup:
                 typeString = "End Group";
+                break;
+            case WebInspector.ConsoleMessage.MessageType.Assert:
+                typeString = "Assert";
                 break;
         }
         
@@ -878,7 +910,8 @@ WebInspector.ConsoleMessage.MessageType = {
     Object: 1,
     Trace: 2,
     StartGroup: 3,
-    EndGroup: 4
+    EndGroup: 4,
+    Assert: 5
 }
 
 WebInspector.ConsoleMessage.MessageLevel = {

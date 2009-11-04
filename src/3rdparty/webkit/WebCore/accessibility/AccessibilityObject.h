@@ -160,6 +160,7 @@ enum AccessibilityRole {
     DefinitionListDefinitionRole,
     AnnotationRole,
     SliderThumbRole,
+    IgnoredRole,
     
     // ARIA Grouping roles
     LandmarkApplicationRole,
@@ -188,6 +189,12 @@ enum AccessibilityOrientation {
     AccessibilityOrientationHorizontal,
 };
     
+enum AccessibilityObjectPlatformInclusion {
+    IncludeObject,
+    IgnoreObject,
+    DefaultBehavior,
+};
+
 struct VisiblePositionRange {
 
     VisiblePosition start;
@@ -457,6 +464,13 @@ public:
     bool accessibilityIgnoreAttachment() const;
 #else
     bool accessibilityIgnoreAttachment() const { return true; }
+#endif
+
+    // gives platforms the opportunity to indicate if and how an object should be included
+#if HAVE(ACCESSIBILITY)
+    AccessibilityObjectPlatformInclusion accessibilityPlatformIncludesObject() const;
+#else
+    AccessibilityObjectPlatformInclusion accessibilityPlatformIncludesObject() const { return DefaultBehavior; }
 #endif
 
     // allows for an AccessibilityObject to update its render tree or perform

@@ -54,9 +54,9 @@
 
 #include <windows.h>
 
-#include "qegl_p.h"
-#include "qgl_egl_p.h"
-#include "qgl_cl_p.h"
+#include <private/qegl_p.h>
+#include <private/qgl_egl_p.h>
+#include <private/qgl_cl_p.h>
 
 
 QT_BEGIN_NAMESPACE

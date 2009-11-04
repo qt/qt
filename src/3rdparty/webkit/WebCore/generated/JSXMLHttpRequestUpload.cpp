@@ -158,7 +158,7 @@ JSXMLHttpRequestUpload::JSXMLHttpRequestUpload(NonNullPassRefPtr<Structure> stru
 JSXMLHttpRequestUpload::~JSXMLHttpRequestUpload()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXMLHttpRequestUpload::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -250,7 +250,7 @@ void setJSXMLHttpRequestUploadOnabort(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(static_cast<JSXMLHttpRequestUpload*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnabort(globalObject->createJSAttributeEventListener(value));
@@ -260,7 +260,7 @@ void setJSXMLHttpRequestUploadOnerror(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(static_cast<JSXMLHttpRequestUpload*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));
@@ -270,7 +270,7 @@ void setJSXMLHttpRequestUploadOnload(ExecState* exec, JSObject* thisObject, JSVa
 {
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(static_cast<JSXMLHttpRequestUpload*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnload(globalObject->createJSAttributeEventListener(value));
@@ -280,7 +280,7 @@ void setJSXMLHttpRequestUploadOnloadstart(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(static_cast<JSXMLHttpRequestUpload*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnloadstart(globalObject->createJSAttributeEventListener(value));
@@ -290,7 +290,7 @@ void setJSXMLHttpRequestUploadOnprogress(ExecState* exec, JSObject* thisObject, 
 {
     UNUSED_PARAM(exec);
     XMLHttpRequestUpload* imp = static_cast<XMLHttpRequestUpload*>(static_cast<JSXMLHttpRequestUpload*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnprogress(globalObject->createJSAttributeEventListener(value));

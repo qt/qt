@@ -42,9 +42,6 @@ public:
     QWebHistoryItem &operator=(const QWebHistoryItem &other);
     ~QWebHistoryItem();
 
-    //bool restoreState(QByteArray& buffer);
-    //QByteArray saveState(QWebHistory::HistoryStateVersion version = DefaultHistoryVersion) const;
-
     QUrl originalUrl() const;
     QUrl url() const;
 
@@ -69,22 +66,10 @@ private:
     QExplicitlySharedDataPointer<QWebHistoryItemPrivate> d;
 };
 
-//QWEBKIT_EXPORT QDataStream & operator<<(QDataStream& out,const QWebHistoryItem& hist);
-//QWEBKIT_EXPORT QDataStream & operator>>(QDataStream& in,QWebHistoryItem& hist);
-
 
 class QWebHistoryPrivate;
 class QWEBKIT_EXPORT QWebHistory {
 public:
-    enum HistoryStateVersion {
-        HistoryVersion_1,
-        /*, HistoryVersion_2, */
-        DefaultHistoryVersion = HistoryVersion_1
-    };
-
-    bool restoreState(const QByteArray& buffer);
-    QByteArray saveState(HistoryStateVersion version = DefaultHistoryVersion) const;
-
     void clear();
 
     QList<QWebHistoryItem> items() const;

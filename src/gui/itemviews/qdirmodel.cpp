@@ -1351,7 +1351,7 @@ QString QDirModelPrivate::size(const QModelIndex &index) const
         return QFileSystemModel::tr("%1 MB").arg(QLocale().toString(qreal(bytes) / mb, 'f', 1));
     if (bytes >= kb)
         return QFileSystemModel::tr("%1 KB").arg(QLocale().toString(bytes / kb));
-    return QFileSystemModel::tr("%1 bytes").arg(QLocale().toString(bytes));
+    return QFileSystemModel::tr("%1 byte(s)").arg(QLocale().toString(bytes));
 }
 
 QString QDirModelPrivate::type(const QModelIndex &index) const

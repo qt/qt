@@ -39,61 +39,9 @@
 **
 ****************************************************************************/
 
-// This is included in various .cpp files as a compile test for various scenarios
-// depending on NO_CAST_*  and  QT_USE_FAST_OPERATOR_PLUS and QT_USE_FAST_CONCATENATION
-
-#if SCENARIO == 1
-// this is the "no harm done" version. Only operator% is active,
-// with NO_CAST * defined
-#define P %
-#undef QT_USE_FAST_OPERATOR_PLUS
-#undef QT_USE_FAST_CONCATENATION
-#define QT_NO_CAST_FROM_ASCII
-#define QT_NO_CAST_TO_ASCII
-#endif
-
-
-#if SCENARIO == 2
-// this is the "full" version. Operator+ is replaced by a QStringBuilder
-// based version
-// with NO_CAST * defined
-#define P +
-#define QT_USE_FAST_OPERATOR_PLUS
-#define QT_USE_FAST_CONCATENATION
-#define QT_NO_CAST_FROM_ASCII
-#define QT_NO_CAST_TO_ASCII
-#endif
-
-#if SCENARIO == 3
-// this is the "no harm done" version. Only operator% is active,
-// with NO_CAST * _not_ defined
-#define P %
-#undef QT_USE_FAST_OPERATOR_PLUS
-#undef QT_USE_FAST_CONCATENATION
-#undef QT_NO_CAST_FROM_ASCII
-#undef QT_NO_CAST_TO_ASCII
-#endif
-
-#if SCENARIO == 4
-// this is the "full" version. Operator+ is replaced by a QStringBuilder
-// based version
-// with NO_CAST * _not_ defined
-#define P +
-#define QT_USE_FAST_OPERATOR_PLUS
-#define QT_USE_FAST_CONCATENATION
-#undef QT_NO_CAST_FROM_ASCII
-#undef QT_NO_CAST_TO_ASCII
-#endif
-
-#include <QtTest/QtTest>
-#include "stringbuilder.h"
-
-//TESTED_CLASS=QStringBuilder
-//TESTED_FILES=qstringbuilder.cpp
-
 #define LITERAL "some literal"
 
-void tst_QStringBuilder::scenario()
+void runScenario()
 {
     QLatin1Literal l1literal(LITERAL);
     QLatin1String l1string(LITERAL);
@@ -129,5 +77,3 @@ void tst_QStringBuilder::scenario()
     QCOMPARE(r, r2);
 #endif
 }
-
-QTEST_APPLESS_MAIN(tst_QStringBuilder)

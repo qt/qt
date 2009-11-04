@@ -458,7 +458,7 @@ QVariant convertValueToQVariant(ExecState* exec, JSValue value, QMetaType::Type 
             if (type == Date) {
                 DateInstance* date = static_cast<DateInstance*>(object);
                 WTF::GregorianDateTime gdt;
-                date->getUTCTime(gdt);
+                WTF::msToGregorianDateTime(date->internalNumber(), true, gdt);
                 if (hint == QMetaType::QDateTime) {
                     ret = QDateTime(QDate(gdt.year + 1900, gdt.month + 1, gdt.monthDay), QTime(gdt.hour, gdt.minute, gdt.second), Qt::UTC);
                     dist = 0;
@@ -834,9 +834,7 @@ JSValue convertQVariantToValue(ExecState* exec, PassRefPtr<RootObject> root, con
         dt.isDST = -1;
         double ms = WTF::gregorianDateTimeToMS(dt, time.msec(), /*inputIsUTC*/ false);
 
-        DateInstance* instance = new (exec) DateInstance(exec->lexicalGlobalObject()->dateStructure());
-        instance->setInternalValue(jsNumber(exec, trunc(ms)));
-        return instance;
+        return new (exec) DateInstance(exec, trunc(ms));
     }
 
     if (type == QMetaType::QByteArray) {

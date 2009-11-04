@@ -1152,16 +1152,23 @@ CGFloat qt_mac_get_scalefactor()
 #endif
 }
 
-QString qt_mac_get_pasteboardString()
+QString qt_mac_get_pasteboardString(OSPasteboardRef paste)
 {
     QMacCocoaAutoReleasePool pool;
-    NSPasteboard *pb = [NSPasteboard generalPasteboard];
-    NSString *text = [pb stringForType:NSStringPboardType];
-    if (text) {
-        return qt_mac_NSStringToQString(text);
+    NSPasteboard *pb = nil;
+    CFStringRef pbname;
+    if (PasteboardCopyName (paste, &pbname)) {
+        pb = [NSPasteboard generalPasteboard];
     } else {
-        return QString();
+        pb = [NSPasteboard pasteboardWithName:reinterpret_cast<const NSString *>(pbname)];
+        CFRelease (pbname);
     }
+    if (pb) {
+        NSString *text = [pb stringForType:NSStringPboardType];
+        if (text)
+            return qt_mac_NSStringToQString(text);
+    }
+    return QString();
 }
 
 QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)

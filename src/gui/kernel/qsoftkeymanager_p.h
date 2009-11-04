@@ -58,6 +58,7 @@
 
 QT_BEGIN_HEADER
 
+#ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
 class QSoftKeyManagerPrivate;
@@ -96,10 +97,12 @@ protected:
     Q_DISABLE_COPY(QSoftKeyManager)
 
 private Q_SLOTS:
+    void cleanupHash(QObject* obj);
     void sendKeyEvent();
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_SOFTKEYMANAGER
 
 QT_END_HEADER
 

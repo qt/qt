@@ -185,7 +185,7 @@ JSDOMCoreException::JSDOMCoreException(NonNullPassRefPtr<Structure> structure, J
 
 JSDOMCoreException::~JSDOMCoreException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDOMCoreException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -126,7 +126,7 @@ JSImageData::JSImageData(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSImageData::~JSImageData()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSImageData::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -851,10 +851,17 @@ public:
     void ignore(QGesture *);
     bool isAccepted(QGesture *) const;
 
+    void setAccepted(Qt::GestureType, bool);
+    void accept(Qt::GestureType);
+    void ignore(Qt::GestureType);
+    bool isAccepted(Qt::GestureType) const;
+
     void setWidget(QWidget *widget);
     QWidget *widget() const;
 
+#ifndef QT_NO_GRAPHICSVIEW
     QPointF mapToScene(const QPointF &gesturePoint) const;
+#endif
 
 private:
     QGestureEventPrivate *d_func();

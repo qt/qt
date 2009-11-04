@@ -208,7 +208,7 @@ void QFontEngineWin::getCMap()
         unitsPerEm = otm->otmEMSquare;
         x_height = (int)otm->otmsXHeight;
         loadKerningPairs(designToDevice);
-        _faceId.filename = (char *)otm + (int)otm->otmpFullName;
+        _faceId.filename = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFullName)).toLatin1();
         lineWidth = otm->otmsUnderscoreSize;
         fsType = otm->otmfsType;
         free(otm);
@@ -987,8 +987,8 @@ QFontEngine::Properties QFontEngineWin::properties() const
     Properties p;
     p.emSquare = unitsPerEm;
     p.italicAngle = otm->otmItalicAngle;
-    p.postscriptName = (char *)otm + (int)otm->otmpFamilyName;
-    p.postscriptName += (char *)otm + (int)otm->otmpStyleName;
+    p.postscriptName = QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpFamilyName)).toLatin1();
+    p.postscriptName += QString::fromWCharArray((wchar_t *)((char *)otm + (int)otm->otmpStyleName)).toLatin1();
 #ifndef QT_NO_PRINTER
     p.postscriptName = QPdf::stripSpecialCharacters(p.postscriptName);
 #endif
@@ -1110,7 +1110,7 @@ QNativeImage *QFontEngineWin::drawGDIGlyph(HFONT font, glyph_t glyph, int margin
                                         ih + 2 * margin + 4,
                                         QNativeImage::systemFormat(), !qt_cleartype_enabled);
 
-    /*If cleartype is enabled we use the standard system format even on Windows CE 
+    /*If cleartype is enabled we use the standard system format even on Windows CE
       and not the special textbuffer format we have to use if cleartype is disabled*/
 
     ni->image.fill(0xffffffff);

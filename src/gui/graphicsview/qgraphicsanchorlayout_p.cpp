@@ -49,7 +49,7 @@
 #endif
 
 #include "qgraphicsanchorlayout_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 
@@ -591,18 +591,18 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
 #endif
 
-    SequentialAnchorData *sequence = new SequentialAnchorData;
     AnchorVertex *prev = before;
+    QVector<AnchorData *> edges;
 
     for (int i = 0; i <= orderedVertices.count(); ++i) {
         AnchorVertex *next = (i < orderedVertices.count()) ? orderedVertices.at(i) : after;
         AnchorData *ad = graph->takeEdge(prev, next);
         Q_ASSERT(ad);
-        sequence->m_edges.append(ad);
+        edges.append(ad);
         prev = next;
     }
 
-    sequence->setVertices(orderedVertices);
+    SequentialAnchorData *sequence = new SequentialAnchorData(orderedVertices, edges);
     sequence->from = before;
     sequence->to = after;
 
@@ -2728,3 +2728,4 @@ void QGraphicsAnchorLayoutPrivate::dumpGraph(const QString &name)
 #endif
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

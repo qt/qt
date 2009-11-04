@@ -40,13 +40,8 @@ class Frame;
 class ResourceError;
 class ResourceLoader;
 class ResourceResponse;
-//### tempfix, to be removed
-#ifdef __SYMBIAN32__
-struct ResourceRequest;
-#else
-class ResourceRequest;
-#endif
 class ScriptString;
+struct ResourceRequest;
 
 class ResourceLoadNotifier : public Noncopyable {
 public:
