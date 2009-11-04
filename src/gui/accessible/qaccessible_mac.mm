@@ -504,11 +504,6 @@ QAElement::QAElement(const QAElement &element)
 }
 
 QAElement::QAElement(HIObjectRef object, int child)
-    :elementRef(
-#ifndef QT_MAC_USE_COCOA
-                AXUIElementCreateWithHIObjectAndIdentifier(object, child)
-#endif
-)
 {
 #ifndef QT_MAC_USE_COCOA
     if (object == 0) {
