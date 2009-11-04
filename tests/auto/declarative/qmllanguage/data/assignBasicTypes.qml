@@ -7,6 +7,7 @@ MyTypeObject {
     intProperty: -19
     realProperty: 23.2
     doubleProperty: -19.7
+    floatProperty: 8.5
     colorProperty: "red"
     dateProperty: "1982-11-25"
     timeProperty: "11:11:31"
@@ -21,6 +22,7 @@ MyTypeObject {
     rectFProperty: "1000.1,-10.9,400x90.99"
     boolProperty: true
     variantProperty: "Hello World!"
+    vectorProperty: "10,1,2.2"
 
     objectProperty: MyTypeObject { intProperty: 8 }
 }
