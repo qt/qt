@@ -4121,6 +4121,7 @@ void QWindowsMobileStylePrivate::setupWindowsMobileStyle65()
 
 void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOptionTab *tab)
 {
+#ifndef QT_NO_TABBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesButton(tab->palette.button().color());
@@ -4207,6 +4208,7 @@ void QWindowsMobileStylePrivate::drawTabBarTab(QPainter *painter, const QStyleOp
         }
     }
     painter->restore();
+#endif //QT_NO_TABBAR
 }
 
 void QWindowsMobileStylePrivate::drawPanelItemViewSelected(QPainter *painter, const QStyleOptionViewItemV4 *option, QRect rect)
@@ -4412,7 +4414,7 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleUp(QPainter *p, QStyleOption
 
 void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOptionSlider *opt, bool completeFrame, bool secondScrollBar)
 {
-
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_WS_WINCE_WM
     if (wm65) {
         tintImagesHigh(opt->palette.highlight().color());
@@ -4469,10 +4471,12 @@ void QWindowsMobileStylePrivate::drawScrollbarHandleDown(QPainter *p, QStyleOpti
             arrowOpt.rect.adjust(1, 0, 1, 0);
         q_func()->proxy()->drawPrimitive(QStyle::PE_IndicatorArrowDown, &arrowOpt, p, 0);
     }
+#endif //QT_NO_SCROLLBAR
 }
 
 void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOptionSlider *opt)
 {
+#ifndef QT_NO_SCROLLBAR
 #ifdef Q_OS_WINCE_WM
     if (wm65) {
         p->fillRect(opt->rect, QColor(231, 231, 231));
@@ -4498,6 +4502,7 @@ void QWindowsMobileStylePrivate::drawScrollbarGroove(QPainter *p,const QStyleOpt
               fill = opt->palette.light();
             }
             p->fillRect(opt->rect, fill);
+#endif //QT_NO_SCROLLBAR
 }
 
 QWindowsMobileStyle::QWindowsMobileStyle(QWindowsMobileStylePrivate &dd) : QWindowsStyle(dd) {
