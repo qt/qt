@@ -2275,8 +2275,9 @@ void QPainter::setBrushOrigin(const QPointF &p)
 /*!
     Sets the composition mode to the given \a mode.
 
-    \warning You can only set the composition mode for QPainter
-    objects that operates on a QImage.
+    \warning Only a QPainter operating on a QImage fully supports all
+    composition modes. The RasterOp modes are supported for X11 as
+    described in compositionMode().
 
     \sa compositionMode()
 */
@@ -5163,7 +5164,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pm.isNull())
         return;
 
 #ifndef QT_NO_DEBUG
@@ -7603,7 +7604,7 @@ start_lengthVariant:
             l.setPosition(QPointF(0., height));
             height += l.height();
             width = qMax(width, l.naturalTextWidth());
-            if (!brect && height >= r.height())
+            if (!dontclip && !brect && height >= r.height())
                 break;
         }
         textLayout.endLayout();

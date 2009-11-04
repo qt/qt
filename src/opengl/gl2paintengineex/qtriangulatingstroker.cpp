@@ -114,7 +114,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
         if (m_join_style == Qt::RoundJoin)
             m_join_style = Qt::MiterJoin;
         m_curvyness_add = 0.5;
-        m_curvyness_mul = CURVE_FLATNESS;
+        m_curvyness_mul = CURVE_FLATNESS / m_inv_scale;
         m_roundness = 1;
     } else if (cosmetic) {
         m_curvyness_add = realWidth / 2;

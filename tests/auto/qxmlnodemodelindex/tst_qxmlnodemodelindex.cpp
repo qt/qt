@@ -178,7 +178,7 @@ void tst_QXmlNodeModelIndex::model() const
     /* Check default value. */
     {
         const QXmlNodeModelIndex index;
-        QCOMPARE(index.model(), static_cast<void *>(0));
+        QCOMPARE(index.model(), static_cast<const QAbstractXmlNodeModel *>(0));
     }
 }
 

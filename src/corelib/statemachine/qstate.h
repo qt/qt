@@ -76,7 +76,7 @@ public:
     QAbstractState *errorState() const;
     void setErrorState(QAbstractState *state);
 
-    QAbstractTransition *addTransition(QAbstractTransition *transition);
+    void addTransition(QAbstractTransition *transition);
     QSignalTransition *addTransition(QObject *sender, const char *signal, QAbstractState *target);
     QAbstractTransition *addTransition(QAbstractState *target);
     void removeTransition(QAbstractTransition *transition);
@@ -94,7 +94,7 @@ public:
 
 Q_SIGNALS:
     void finished();
-    void polished();
+    void propertiesAssigned();
 
 protected:
     void onEntry(QEvent *event);

@@ -62,25 +62,6 @@ QT_BEGIN_NAMESPACE
 
 class QStringList;
 
-#ifdef Q_WS_X11
-class QIconTheme
-{
-public:
-    QIconTheme(QHash <int, QString> dirList, QStringList parents) :
-          _dirList(dirList), _parents(parents), _valid(true){ }
-    QIconTheme() : _valid(false){ }
-
-    QHash <int, QString> dirList() {return _dirList;}
-    QStringList parents() {return _parents;}
-    bool isValid() {return _valid;}
-
-private:
-    QHash <int, QString> _dirList;
-    QStringList _parents;
-    bool _valid;
-};
-#endif
-
 // Private class
 class QCommonStylePrivate : public QStylePrivate
 {

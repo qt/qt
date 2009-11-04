@@ -54,7 +54,7 @@ QT_BEGIN_NAMESPACE
 
     Gesture objects are not constructed directly by developers. They are created by
     the QGestureRecognizer object that is registered with the application; see
-    QApplication::registerGestureRecognizer().
+    QGestureRecognizer::registerRecognizer().
 
     \section1 Gesture Properties
 
@@ -74,7 +74,7 @@ QT_BEGIN_NAMESPACE
     destroy particular instances of them and create new ones to replace them.
 
     The registered gesture recognizer monitors the input events for the target
-    object via its \l{QGestureRecognizer::}{filterEvent()} function, updating the
+    object via its \l{QGestureRecognizer::}{recognize()} function, updating the
     properties of the gesture object as required.
 
     The gesture object may be delivered to the target object in a QGestureEvent if
@@ -90,7 +90,7 @@ QT_BEGIN_NAMESPACE
     Constructs a new gesture object with the given \a parent.
 
     QGesture objects are created by gesture recognizers in the
-    QGestureRecognizer::createGesture() function.
+    QGestureRecognizer::create() function.
 */
 QGesture::QGesture(QObject *parent)
     : QObject(*new QGesturePrivate, parent)
@@ -129,7 +129,7 @@ QGesture::~QGesture()
     \brief The point that is used to find the receiver for the gesture event.
 
     The hot-spot is a point in the global coordinate system, use
-    QWidget::mapFromGlobal() or QGestureEvent::mapToScene() to get a
+    QWidget::mapFromGlobal() or QGestureEvent::mapToGraphicsScene() to get a
     local hot-spot.
 
     The hot-spot should be set by the gesture recognizer to allow gesture event
@@ -180,8 +180,10 @@ void QGesture::unsetHotSpot()
     automatically.
 
     \value CancelNone On accepting this gesture no other gestures will be affected.
-    \value CancelAllInContext On accepting this gesture all gestures that are active
-        in the context (Qt::GestureContext) will be cancelled.
+
+    \value CancelAllInContext On accepting this gesture all gestures that are
+    active in the context (respecting the Qt::GestureFlag that were specified
+    when subscribed to the gesture) will be cancelled.
 */
 
 void QGesture::setGestureCancelPolicy(GestureCancelPolicy policy)
@@ -208,16 +210,7 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 */
 
 /*!
-    \property QPanGesture::totalOffset
-    \brief the total offset from the first input position to the current input
-    position
-
-    The total offset measures the total change in position of the user's input
-    covered by the gesture on the input device.
-*/
-
-/*!
-    \property QGesture::GestureCancelPolicy
+    \property QGesture::gestureCancelPolicy
     \brief the policy for deciding what happens on accepting a gesture
 
     On accepting one gesture Qt can automatically cancel other gestures
@@ -241,11 +234,19 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 
 /*!
     \property QPanGesture::offset
-    \brief the offset from the previous input position to the current input
+    \brief the total offset from the first input position to the current input
     position
 
-    The offset measures the change in position of the user's input on the
-    input device.
+    The offset measures the total change in position of the user's input
+    covered by the gesture on the input device.
+*/
+
+/*!
+    \property QPanGesture::delta
+    \brief the offset from the previous input position to the current input
+
+    This is essentially the same as the difference between offset() and
+    lastOffset().
 */
 
 /*!
@@ -261,10 +262,6 @@ QPanGesture::QPanGesture(QObject *parent)
     d_func()->gestureType = Qt::PanGesture;
 }
 
-QPointF QPanGesture::totalOffset() const
-{
-    return d_func()->totalOffset;
-}
 
 QPointF QPanGesture::lastOffset() const
 {
@@ -276,15 +273,15 @@ QPointF QPanGesture::offset() const
     return d_func()->offset;
 }
 
+QPointF QPanGesture::delta() const
+{
+    Q_D(const QPanGesture);
+    return d->offset - d->lastOffset;
+}
+
 qreal QPanGesture::acceleration() const
 {
     return d_func()->acceleration;
-}
-
-
-void QPanGesture::setTotalOffset(const QPointF &value)
-{
-    d_func()->totalOffset = value;
 }
 
 void QPanGesture::setLastOffset(const QPointF &value)
@@ -326,7 +323,7 @@ void QPanGesture::setAcceleration(qreal value)
 */
 
 /*!
-    \enum QPinchGesture::WhatChange
+    \enum QPinchGesture::ChangeFlag
     
     This enum describes the changes that can occur to the properties of
     the gesture object.
@@ -335,19 +332,30 @@ void QPanGesture::setAcceleration(qreal value)
     \value RotationAngleChanged The rotation angle held by rotationAngle changed.
     \value CenterPointChanged The center point held by centerPoint changed.
 
-    \sa whatChanged
+    \sa changeFlags, totalChangeFlags
 */
 
 /*!
-    \property QPinchGesture::whatChanged
-    \brief the property of the gesture that has changed
+    \property QPinchGesture::totalChangeFlags
+    \brief the property of the gesture that has change
+
+    This property indicates which of the other properties has changed since the
+    gesture has started. You can use this information to determine which aspect
+    of your user interface needs to be updated.
+
+    \sa changeFlags, scaleFactor, rotationAngle, centerPoint
+*/
+
+/*!
+    \property QPinchGesture::changeFlags
+    \brief the property of the gesture that has changed in the current step
 
     This property indicates which of the other properties has changed since
     the previous gesture event included information about this gesture. You
     can use this information to determine which aspect of your user interface
     needs to be updated.
 
-    \sa scaleFactor, rotationAngle, centerPoint
+    \sa totalChangeFlags, scaleFactor, rotationAngle, centerPoint
 */
 
 /*!
@@ -441,16 +449,25 @@ QPinchGesture::QPinchGesture(QObject *parent)
     d_func()->gestureType = Qt::PinchGesture;
 }
 
-QPinchGesture::WhatChanged QPinchGesture::whatChanged() const
+QPinchGesture::ChangeFlags QPinchGesture::totalChangeFlags() const
 {
-    return d_func()->whatChanged;
+    return d_func()->totalChangeFlags;
 }
 
-void QPinchGesture::setWhatChanged(QPinchGesture::WhatChanged value)
+void QPinchGesture::setTotalChangeFlags(QPinchGesture::ChangeFlags value)
 {
-    d_func()->whatChanged = value;
+    d_func()->totalChangeFlags = value;
 }
 
+QPinchGesture::ChangeFlags QPinchGesture::changeFlags() const
+{
+    return d_func()->changeFlags;
+}
+
+void QPinchGesture::setChangeFlags(QPinchGesture::ChangeFlags value)
+{
+    d_func()->changeFlags = value;
+}
 
 QPointF QPinchGesture::startCenterPoint() const
 {

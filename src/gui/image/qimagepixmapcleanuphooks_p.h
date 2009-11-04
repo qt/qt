@@ -70,6 +70,10 @@ public:
 
     static QImagePixmapCleanupHooks *instance();
 
+    static void enableCleanupHooks(const QImage &image);
+    static void enableCleanupHooks(const QPixmap &pixmap);
+    static void enableCleanupHooks(QPixmapData *pixmapData);
+
     // Gets called when a pixmap is about to be modified:
     void addPixmapModificationHook(_qt_pixmap_cleanup_hook_pm);
 
