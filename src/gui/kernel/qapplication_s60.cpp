@@ -869,6 +869,11 @@ void QSymbianControl::SizeChanged()
                 tlwExtra->inTopLevelResize = false;
         }
     }
+
+    // CCoeControl::SetExtent calls SizeChanged, but does not call
+    // PositionChanged, so we call it here to ensure that the widget's
+    // position is updated.
+    PositionChanged();
 }
 
 void QSymbianControl::PositionChanged()
