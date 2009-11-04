@@ -80,7 +80,7 @@ JSCanvasArrayBuffer::JSCanvasArrayBuffer(NonNullPassRefPtr<Structure> structure,
 
 JSCanvasArrayBuffer::~JSCanvasArrayBuffer()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCanvasArrayBuffer::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

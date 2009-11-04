@@ -23,6 +23,7 @@
 #include "AtomicString.h"
 #include "HTMLCollection.h"
 #include "HTMLOptionsCollection.h"
+#include "HTMLAllCollection.h"
 #include "JSDOMBinding.h"
 #include "JSHTMLAllCollection.h"
 #include "JSHTMLOptionsCollection.h"
@@ -143,7 +144,6 @@ JSValue toJS(ExecState* exec, JSDOMGlobalObject* globalObject, HTMLCollection* c
             wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, globalObject, HTMLOptionsCollection, collection);
             break;
         case DocAll:
-            typedef HTMLCollection HTMLAllCollection;
             wrapper = CREATE_DOM_OBJECT_WRAPPER(exec, globalObject, HTMLAllCollection, collection);
             break;
         default:

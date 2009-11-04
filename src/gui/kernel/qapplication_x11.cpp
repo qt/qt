@@ -79,7 +79,7 @@
 #include <private/qcolor_p.h>
 #include <private/qcursor_p.h>
 #include <private/qiconloader_p.h>
-#include <private/gtksymbols_p.h>
+#include <qgtkstyle.h>
 #include "qstyle.h"
 #include "qmetaobject.h"
 #include "qtimer.h"
@@ -2299,7 +2299,7 @@ void qt_init(QApplicationPrivate *priv, int,
 
 #if !defined(QT_NO_STYLE_GTK)
         if (X11->desktopEnvironment == DE_GNOME) {
-            static bool menusHaveIcons = QGtk::getGConfBool(QLatin1String("/desktop/gnome/interface/menus_have_icons"), true);
+            static bool menusHaveIcons = QGtkStyle::getGConfBool(QLatin1String("/desktop/gnome/interface/menus_have_icons"), true);
             QApplication::setAttribute(Qt::AA_DontShowIconsInMenus, !menusHaveIcons);
         }
 #endif

@@ -147,7 +147,7 @@ JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(NonNullPassRefPtr<Structure
 
 JSCSSVariablesDeclaration::~JSCSSVariablesDeclaration()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSVariablesDeclaration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

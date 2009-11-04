@@ -24,10 +24,7 @@
 #include "AtomicString.h"
 #include "HTMLCollection.h"
 #include "JSNode.h"
-#include "JSNodeList.h"
-#include "NameNodeList.h"
 #include "Node.h"
-#include "NodeList.h"
 #include <runtime/Error.h>
 #include <runtime/JSNumberCell.h>
 #include <runtime/PropertyNameArray.h>
@@ -104,11 +101,10 @@ bool JSHTMLCollectionConstructor::getOwnPropertyDescriptor(ExecState* exec, cons
 
 /* Hash table for prototype */
 
-static const HashTableValue JSHTMLCollectionPrototypeTableValues[4] =
+static const HashTableValue JSHTMLCollectionPrototypeTableValues[3] =
 {
     { "item", DontDelete|Function, (intptr_t)jsHTMLCollectionPrototypeFunctionItem, (intptr_t)1 },
     { "namedItem", DontDelete|Function, (intptr_t)jsHTMLCollectionPrototypeFunctionNamedItem, (intptr_t)1 },
-    { "tags", DontDelete|Function, (intptr_t)jsHTMLCollectionPrototypeFunctionTags, (intptr_t)1 },
     { 0, 0, 0, 0 }
 };
 
@@ -116,7 +112,7 @@ static JSC_CONST_HASHTABLE HashTable JSHTMLCollectionPrototypeTable =
 #if ENABLE(PERFECT_HASH_SIZE)
     { 7, JSHTMLCollectionPrototypeTableValues, 0 };
 #else
-    { 8, 7, JSHTMLCollectionPrototypeTableValues, 0 };
+    { 5, 3, JSHTMLCollectionPrototypeTableValues, 0 };
 #endif
 
 const ClassInfo JSHTMLCollectionPrototype::s_info = { "HTMLCollectionPrototype", 0, &JSHTMLCollectionPrototypeTable, 0 };
@@ -146,7 +142,7 @@ JSHTMLCollection::JSHTMLCollection(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSHTMLCollection::~JSHTMLCollection()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSHTMLCollection::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -258,20 +254,6 @@ JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(ExecState* exec
         return throwError(exec, TypeError);
     JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
     return castedThisObj->namedItem(exec, args);
-}
-
-JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionTags(ExecState* exec, JSObject*, JSValue thisValue, const ArgList& args)
-{
-    UNUSED_PARAM(args);
-    if (!thisValue.inherits(&JSHTMLCollection::s_info))
-        return throwError(exec, TypeError);
-    JSHTMLCollection* castedThisObj = static_cast<JSHTMLCollection*>(asObject(thisValue));
-    HTMLCollection* imp = static_cast<HTMLCollection*>(castedThisObj->impl());
-    const UString& name = args.at(0).toString(exec);
-
-
-    JSC::JSValue result = toJS(exec, castedThisObj->globalObject(), WTF::getPtr(imp->tags(name)));
-    return result;
 }
 
 

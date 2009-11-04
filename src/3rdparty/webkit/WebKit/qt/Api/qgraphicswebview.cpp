@@ -280,7 +280,11 @@ QGraphicsWebView::QGraphicsWebView(QGraphicsItem* parent)
 QGraphicsWebView::~QGraphicsWebView()
 {
     if (d->page) {
+#if QT_VERSION >= 0x040600
+        d->page->d->view.clear();
+#else
         d->page->d->view = 0;
+#endif
         d->page->d->client = 0; // unset the page client
     }
 
@@ -326,6 +330,28 @@ bool QGraphicsWebView::sceneEvent(QEvent* event)
 {
     // Re-implemented in order to allows fixing event-related bugs in patch releases.
     return QGraphicsWidget::sceneEvent(event);
+}
+
+/*! \reimp
+*/
+QVariant QGraphicsWebView::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+    switch (change) {
+    // Differently from QWebView, it is interesting to QGraphicsWebView to handle
+    // post mouse cursor change notifications. Reason: 'ItemCursorChange' is sent
+    // as the first action in QGraphicsItem::setCursor implementation, and at that
+    // item widget's cursor has not been effectively changed yet.
+    // After cursor is properly set (at 'ItemCursorHasChanged' emission time), we
+    // fire 'CursorChange'.
+    case ItemCursorChange:
+        return value;
+    case ItemCursorHasChanged:
+        QEvent event(QEvent::CursorChange);
+        QApplication::sendEvent(this, &event);
+        return value;
+    }
+
+    return QGraphicsWidget::itemChange(change, value);
 }
 
 /*! \reimp

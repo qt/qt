@@ -158,7 +158,7 @@ JSMessagePort::JSMessagePort(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 JSMessagePort::~JSMessagePort()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMessagePort::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -202,7 +202,7 @@ void setJSMessagePortOnmessage(ExecState* exec, JSObject* thisObject, JSValue va
 {
     UNUSED_PARAM(exec);
     MessagePort* imp = static_cast<MessagePort*>(static_cast<JSMessagePort*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
