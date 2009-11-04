@@ -198,6 +198,8 @@ void tst_qmlgraphicstext::width()
 
     for (int i = 0; i < standard.size(); i++)
     {
+        QVERIFY(!Qt::mightBeRichText(standard.at(i))); // self-test
+
         QFont f;
         QFontMetrics fm(f);
         int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
@@ -208,11 +210,13 @@ void tst_qmlgraphicstext::width()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(metricWidth));
-        QVERIFY(textObject->textFormat() == QmlGraphicsText::PlainText);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 
     for (int i = 0; i < richText.size(); i++)
     {
+        QVERIFY(Qt::mightBeRichText(richText.at(i))); // self-test
+
         QTextDocument document;
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
@@ -225,7 +229,7 @@ void tst_qmlgraphicstext::width()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(documentWidth));
-        QVERIFY(textObject->textFormat() == QmlGraphicsText::RichText);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 }
 
