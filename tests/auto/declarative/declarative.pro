@@ -28,6 +28,7 @@ SUBDIRS += anchors \
            qmlmetatype \
            qmlpropertymap \
            qmltimer \
+           qmlxmllistmodel \
            repeater \
            sql \
            states \
