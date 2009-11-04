@@ -407,4 +407,157 @@ void QSwipeGestureRecognizer::reset(QGesture *state)
     QGestureRecognizer::reset(state);
 }
 
+//
+// QTapGestureRecognizer
+//
+
+QTapGestureRecognizer::QTapGestureRecognizer()
+{
+}
+
+QGesture *QTapGestureRecognizer::create(QObject *target)
+{
+    if (target && target->isWidgetType()) {
+        static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+    }
+    return new QTapGesture;
+}
+
+QGestureRecognizer::Result QTapGestureRecognizer::recognize(QGesture *state,
+                                                            QObject *,
+                                                            QEvent *event)
+{
+    QTapGesture *q = static_cast<QTapGesture *>(state);
+    QTapGesturePrivate *d = q->d_func();
+
+    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+
+    QGestureRecognizer::Result result = QGestureRecognizer::CancelGesture;
+
+    switch (event->type()) {
+    case QEvent::TouchBegin: {
+        d->position = ev->touchPoints().at(0).pos();
+        result = QGestureRecognizer::TriggerGesture;
+        break;
+    }
+    case QEvent::TouchUpdate:
+    case QEvent::TouchEnd: {
+        if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
+            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            enum { TapRadius = 40 };
+            if (delta.manhattanLength() <= TapRadius) {
+                if (event->type() == QEvent::TouchEnd)
+                    result = QGestureRecognizer::FinishGesture;
+                else
+                    result = QGestureRecognizer::TriggerGesture;
+            }
+        }
+        break;
+    }
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+        result = QGestureRecognizer::Ignore;
+        break;
+    default:
+        result = QGestureRecognizer::Ignore;
+        break;
+    }
+    return result;
+}
+
+void QTapGestureRecognizer::reset(QGesture *state)
+{
+    QTapGesture *q = static_cast<QTapGesture *>(state);
+    QTapGesturePrivate *d = q->d_func();
+
+    d->position = QPointF();
+
+    QGestureRecognizer::reset(state);
+}
+
+//
+// QTapAndHoldGestureRecognizer
+//
+
+QTapAndHoldGestureRecognizer::QTapAndHoldGestureRecognizer()
+{
+}
+
+QGesture *QTapAndHoldGestureRecognizer::create(QObject *target)
+{
+    if (target && target->isWidgetType()) {
+        static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+    }
+    return new QTapAndHoldGesture;
+}
+
+QGestureRecognizer::Result
+QTapAndHoldGestureRecognizer::recognize(QGesture *state, QObject *object,
+                                        QEvent *event)
+{
+    QTapAndHoldGesture *q = static_cast<QTapAndHoldGesture *>(state);
+    QTapAndHoldGesturePrivate *d = q->d_func();
+
+    if (object == state && event->type() == QEvent::Timer) {
+        q->killTimer(d->timerId);
+        d->timerId = 0;
+        return QGestureRecognizer::Ignore | QGestureRecognizer::ConsumeEventHint;
+    }
+
+    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+
+    QGestureRecognizer::Result result = QGestureRecognizer::CancelGesture;
+
+    enum { TimerInterval = 2000 };
+    enum { TapRadius = 40 };
+
+    switch (event->type()) {
+    case QEvent::TouchBegin:
+        d->position = ev->touchPoints().at(0).pos();
+        if (d->timerId)
+            q->killTimer(d->timerId);
+        d->timerId = q->startTimer(TimerInterval);
+        result = QGestureRecognizer::TriggerGesture;
+        break;
+    case QEvent::TouchEnd:
+        if (d->timerId)
+            result = QGestureRecognizer::CancelGesture;
+        else
+            result = QGestureRecognizer::FinishGesture;
+        break;
+    case QEvent::TouchUpdate:
+        if (q->state() != Qt::NoGesture && ev->touchPoints().size() == 1) {
+            QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
+            QPoint delta = p.pos().toPoint() - p.startPos().toPoint();
+            if (delta.manhattanLength() <= TapRadius)
+                result = QGestureRecognizer::TriggerGesture;
+        }
+        break;
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+        result = QGestureRecognizer::Ignore;
+        break;
+    default:
+        result = QGestureRecognizer::Ignore;
+        break;
+    }
+    return result;
+}
+
+void QTapAndHoldGestureRecognizer::reset(QGesture *state)
+{
+    QTapAndHoldGesture *q = static_cast<QTapAndHoldGesture *>(state);
+    QTapAndHoldGesturePrivate *d = q->d_func();
+
+    d->position = QPointF();
+    if (d->timerId)
+        q->killTimer(d->timerId);
+    d->timerId = 0;
+
+    QGestureRecognizer::reset(state);
+}
+
 QT_END_NAMESPACE

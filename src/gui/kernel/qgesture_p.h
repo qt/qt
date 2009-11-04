@@ -151,6 +151,32 @@ public:
     QTime time;
 };
 
+class QTapGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapGesture)
+
+public:
+    QTapGesturePrivate()
+    {
+    }
+
+    QPointF position;
+};
+
+class QTapAndHoldGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
+
+public:
+    QTapAndHoldGesturePrivate()
+        : timerId(0)
+    {
+    }
+
+    QPointF position;
+    int timerId;
+};
+
 QT_END_NAMESPACE
 
 #endif // QGESTURE_P_H
