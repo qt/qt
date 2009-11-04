@@ -104,7 +104,7 @@ QList<QVideoFrame::PixelFormat> VideoItem::supportedPixelFormats(
 bool VideoItem::start(const QVideoSurfaceFormat &format)
 {
     if (isFormatSupported(format)) {
-        imageFormat = QVideoFrame::equivalentImageFormat(format.pixelFormat());
+        imageFormat = QVideoFrame::imageFormatFromPixelFormat(format.pixelFormat());
         imageSize = format.frameSize();
         framePainted = true;
 
