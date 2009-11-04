@@ -46,6 +46,7 @@
 #include <QtCore/qdatetime.h>
 #include <QtGui/qmatrix.h>
 #include <QtGui/qcolor.h>
+#include <QtGui/qvector3d.h>
 #include <QtDeclarative/qml.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlparserstatus.h>
@@ -185,6 +186,7 @@ class MyTypeObject : public QObject
     Q_PROPERTY(int intProperty READ intProperty WRITE setIntProperty);
     Q_PROPERTY(qreal realProperty READ realProperty WRITE setRealProperty);
     Q_PROPERTY(double doubleProperty READ doubleProperty WRITE setDoubleProperty);
+    Q_PROPERTY(float floatProperty READ floatProperty WRITE setFloatProperty);
     Q_PROPERTY(QColor colorProperty READ colorProperty WRITE setColorProperty);
     Q_PROPERTY(QDate dateProperty READ dateProperty WRITE setDateProperty);
     Q_PROPERTY(QTime timeProperty READ timeProperty WRITE setTimeProperty);
@@ -198,6 +200,7 @@ class MyTypeObject : public QObject
     Q_PROPERTY(QRectF rectFProperty READ rectFProperty WRITE setRectFProperty);
     Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
     Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
+    Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
 
     Q_PROPERTY(QmlScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
     Q_PROPERTY(MyGroupedObject *grouped READ grouped CONSTANT);
@@ -287,6 +290,14 @@ public:
     }
     void setDoubleProperty(const double &v) {
         doublePropertyValue = v;
+    }
+
+    float floatPropertyValue;
+    float floatProperty() const {
+       return floatPropertyValue;
+    }
+    void setFloatProperty(const float &v) {
+        floatPropertyValue = v;
     }
 
     QColor colorPropertyValue;
@@ -392,6 +403,14 @@ public:
     }
     void setVariantProperty(const QVariant &v) {
         variantPropertyValue = v;
+    }
+
+    QVector3D vectorPropertyValue;
+    QVector3D vectorProperty() const {
+        return vectorPropertyValue;
+    }
+    void setVectorProperty(const QVector3D &v) {
+        vectorPropertyValue = v;
     }
 
     QmlScriptString scriptPropertyValue;
