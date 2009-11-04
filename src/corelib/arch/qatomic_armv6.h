@@ -45,7 +45,6 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
 
 inline bool QBasicAtomicInt::isReferenceCountingNative()
@@ -101,7 +100,7 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return false; }
 
-#ifdef !Q_CC_RVCT
+#ifndef Q_CC_RVCT
 
 inline bool QBasicAtomicInt::ref()
 {
