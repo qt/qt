@@ -202,6 +202,7 @@ private:
 private:
     QString oldText;
     QIcon folderIcon;
+    QIcon bookmarkIcon;
 
     BookmarkModel *treeModel;
     BookmarkModel *listModel;

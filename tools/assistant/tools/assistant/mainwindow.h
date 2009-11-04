@@ -122,6 +122,9 @@ private slots:
     void updateBookmarkMenu();
     void showBookmark(QAction *action);
 
+    void importBookmarks();
+    void exportBookmarks();
+
 private:
     bool initHelpDB();
     void setupActions();
@@ -162,6 +165,8 @@ private:
     QMenu *m_toolBarMenu;
     QMenu *m_bookmarkMenu;
     QAction *m_bookmarkMenuAction;
+    QAction *m_importBookmarkAction;
+    QAction *m_exportBookmarkAction;
 
     CmdLineParser *m_cmdLine;
 

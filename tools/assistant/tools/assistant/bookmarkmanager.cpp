@@ -301,7 +301,7 @@ bool BookmarkDialog::eventFilter(QObject *object, QEvent *e)
 }
 
 
-// #pragma mark -- BookmarkWidget
+// BookmarkWidget
 
 
 BookmarkWidget::BookmarkWidget(BookmarkManager *manager, QWidget *parent,
@@ -587,7 +587,7 @@ bool BookmarkWidget::eventFilter(QObject *object, QEvent *e)
 }
 
 
-// #pragma mark -- BookmarkModel
+// BookmarkModel
 
 
 BookmarkModel::BookmarkModel(int rows, int columns, QObject *parent)
@@ -615,7 +615,7 @@ Qt::ItemFlags BookmarkModel::flags(const QModelIndex &index) const
 }
 
 
-// #pragma mark -- BookmarkManager
+// BookmarkManager
 
 
 BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
@@ -624,6 +624,7 @@ BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
     , helpEngine(_helpEngine)
 {
     folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);
+    bookmarkIcon = QIcon(QLatin1String(":/trolltech/assistant/images/bookmark.png"));
 
     connect(treeModel, SIGNAL(itemChanged(QStandardItem*)), this,
         SLOT(itemChanged(QStandardItem*)));
@@ -733,6 +734,7 @@ void BookmarkManager::addNewBookmark(const QModelIndex &index,
 {
     QStandardItem *item = new QStandardItem(name);
     item->setEditable(false);
+    item->setIcon(bookmarkIcon);
     item->setData(false, Qt::UserRole + 11);
     item->setData(url, Qt::UserRole + 10);
 
@@ -832,10 +834,12 @@ void BookmarkManager::setupBookmarkModels()
             }
         }
 
-        if (type == QLatin1String("Folder"))
-            item->setIcon(folderIcon);
-        else
+        if (type != QLatin1String("Folder")) {
+            item->setIcon(bookmarkIcon);
             listModel->appendRow(item->clone());
+        } else {
+            item->setIcon(folderIcon);
+        }
     }
 }
 

@@ -52,6 +52,7 @@
 #include "aboutdialog.h"
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
+#include "xbelsupport.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
@@ -76,6 +77,7 @@
 #include <QtGui/QProgressBar>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QToolButton>
+#include <QtGui/QFileDialog>
 
 #include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpSearchEngine>
@@ -382,13 +384,17 @@ void MainWindow::checkInitState()
 void MainWindow::updateBookmarkMenu()
 {
     if (m_bookmarkManager) {
+        m_bookmarkMenu->removeAction(m_importBookmarkAction);
+        m_bookmarkMenu->removeAction(m_exportBookmarkAction);
         m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
-        
+
         m_bookmarkMenu->clear();
-        
+
+        m_bookmarkMenu->addAction(m_importBookmarkAction);
+        m_bookmarkMenu->addAction(m_exportBookmarkAction);
         m_bookmarkMenu->addAction(m_bookmarkMenuAction);
         m_bookmarkMenu->addSeparator();
-        
+
         m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
     }
 }
@@ -541,6 +547,10 @@ void MainWindow::setupActions()
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
     m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
+    m_importBookmarkAction = m_bookmarkMenu->addAction(tr("Import..."),
+        this, SLOT(importBookmarks()));
+    m_exportBookmarkAction = m_bookmarkMenu->addAction(tr("Export..."),
+        this, SLOT(exportBookmarks()));
     m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
         this, SLOT(addBookmark()));
     m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
@@ -1043,6 +1053,41 @@ QString MainWindow::defaultHelpCollectionFileName()
     return collectionFileDirectory() + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
+}
+
+void MainWindow::importBookmarks()
+{
+    const QString &fileName = QFileDialog::getOpenFileName(0, tr("Open File"),
+        QDir::currentPath(), tr("Files (*.xbel)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (file.open(QIODevice::ReadOnly)) {
+        XbelReader reader(m_bookmarkManager->treeBookmarkModel(),
+            m_bookmarkManager->listBookmarkModel());
+        reader.readFromFile(&file);
+    }
+}
+
+void MainWindow::exportBookmarks()
+{
+    QString fileName = QFileDialog::getSaveFileName(0, tr("Save File"),
+        "untitled.xbel", tr("Files (*.xbel)"));
+
+    QLatin1String suffix(".xbel");
+    if (!fileName.endsWith(suffix))
+        fileName.append(suffix);
+
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        XbelWriter writer(m_bookmarkManager->treeBookmarkModel());
+        writer.writeToFile(&file);
+    } else {
+        QMessageBox::information(this, tr("Qt Assistant"),
+            tr("Unable to save bookmarks."), tr("OK"));
+    }
 }
 
 QT_END_NAMESPACE
