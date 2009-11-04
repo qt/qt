@@ -81,7 +81,7 @@ JSSVGAnimatedNumberList::JSSVGAnimatedNumberList(NonNullPassRefPtr<Structure> st
 
 JSSVGAnimatedNumberList::~JSSVGAnimatedNumberList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedNumberList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

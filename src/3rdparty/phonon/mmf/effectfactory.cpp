@@ -62,9 +62,9 @@ QHash<QByteArray, QVariant> EffectFactory::audioEffectDescriptions(AbstractAudio
     switch (type)
     {
         case AbstractAudioEffect::EffectAudioEqualizer:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "audio equalizer"), "Audio equalizer.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Audio Equalizer"), "Audio equalizer.");
         case AbstractAudioEffect::EffectBassBoost:
-            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Bass boost"), "Bass boost.");
+            return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Bass Boost"), "Bass boost.");
         case AbstractAudioEffect::EffectDistanceAttenuation:
             return constructEffectDescription(QCoreApplication::translate("Phonon::MMF::EffectFactory", "Distance Attenuation"), "Distance Attenuation.");
         case AbstractAudioEffect::EffectEnvironmentalReverb:

@@ -228,13 +228,9 @@ bool QSQLiteResultPrivate::fetchNext(QSqlCachedResult::ValueCache &values, int i
                         values[i + idx] = sqlite3_column_int64(stmt, i);
                         break;
                     case QSql::LowPrecisionDouble:
-                        values[i + idx] = sqlite3_column_double(stmt, i);
-                        break;
                     case QSql::HighPrecision:
                     default:
-                        values[i + idx] = QString::fromUtf16(static_cast<const ushort *>(
-                                            sqlite3_column_text16(stmt, i)),
-                                            sqlite3_column_bytes16(stmt, i) / sizeof(ushort));
+                        values[i + idx] = sqlite3_column_double(stmt, i);
                         break;
                 };
                 break;

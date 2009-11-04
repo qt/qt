@@ -114,6 +114,9 @@ This function returns a color 50% darker than \c baseColor. See QColor::lighter(
     \image declarative-rect_tint.png
 
     Tint is most useful when a subtle change is intended to be conveyed due to some event; you can then use tinting to more effectively tune the visible color.
+\section3 Qt.closestAngle(number fromAngle, number toAngle)
+This function returns an equivalent angle to toAngle, such that the difference between fromAngle and toAngle is never more than 180 degrees. This is useful when animating angles using a NumberAnimation, which does not know about equivalent angles, when you always want to take the shortest path. 
+
 \section3 Qt.playSound(url soundLocation)
 This function plays the audio file located at \c soundLocation. Only .wav files are supported.
 

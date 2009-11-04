@@ -84,7 +84,7 @@ JSScreen::JSScreen(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* gl
 
 JSScreen::~JSScreen()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSScreen::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -72,6 +72,7 @@ struct Q_CORE_EXPORT QVectorData
 #else
     uint sharable : 1;
     uint capacity : 1;
+    uint reserved : 30;
 #endif
 
     static QVectorData shared_null;
@@ -79,6 +80,9 @@ struct Q_CORE_EXPORT QVectorData
     // some debugges when the QVector is member of a class within an unnamed namespace.
     // ### Qt 5: can be removed completely. (Ralf)
     static QVectorData *malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init);
+    static QVectorData *allocate(int size, int alignment);
+    static QVectorData *reallocate(QVectorData *old, int newsize, int oldsize, int alignment);
+    static void free(QVectorData *data, int alignment);
     static int grow(int sizeofTypedData, int size, int sizeofT, bool excessive);
 };
 
@@ -87,6 +91,8 @@ struct QVectorTypedData : private QVectorData
 { // private inheritance as we must not access QVectorData member thought QVectorTypedData
   // as this would break strict aliasing rules. (in the case of shared_null)
     T array[1];
+
+    static inline void free(QVectorTypedData *x, int alignment) { QVectorData::free(x, alignment); }
 };
 
 class QRegion;
@@ -302,6 +308,14 @@ private:
         // count the padding at the end
         return reinterpret_cast<const char *>(&(reinterpret_cast<const Data *>(this))->array[1]) - reinterpret_cast<const char *>(this);
     }
+    inline int alignOfTypedData() const
+    {
+#ifdef Q_ALIGNOF
+        return qMax<int>(sizeof(void*), Q_ALIGNOF(Data));
+#else
+        return 0;
+#endif
+    }
 };
 
 template <typename T>
@@ -373,7 +387,7 @@ QVector<T> &QVector<T>::operator=(const QVector<T> &v)
 template <typename T>
 inline QVectorData *QVector<T>::malloc(int aalloc)
 {
-    QVectorData *vectordata = static_cast<QVectorData *>(qMalloc(sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+    QVectorData *vectordata = QVectorData::allocate(sizeOfTypedData() + (aalloc - 1) * sizeof(T), alignOfTypedData());
     Q_CHECK_PTR(vectordata);
     return vectordata;
 }
@@ -420,7 +434,7 @@ void QVector<T>::free(Data *x)
         while (i-- != b)
              i->~T();
     }
-    qFree(x);
+    x->free(x, alignOfTypedData());
 }
 
 template <typename T>
@@ -459,7 +473,8 @@ void QVector<T>::realloc(int asize, int aalloc)
             }
         } else {
             QT_TRY {
-                QVectorData *mem = static_cast<QVectorData *>(qRealloc(p, sizeOfTypedData() + (aalloc - 1) * sizeof(T)));
+                QVectorData *mem = QVectorData::reallocate(d, sizeOfTypedData() + (aalloc - 1) * sizeof(T),
+                                                           sizeOfTypedData() + (d->alloc - 1) * sizeof(T), alignOfTypedData());
                 Q_CHECK_PTR(mem);
                 x.d = d = mem;
                 x.d->size = d->size;
@@ -472,6 +487,7 @@ void QVector<T>::realloc(int asize, int aalloc)
         x.d->alloc = aalloc;
         x.d->sharable = true;
         x.d->capacity = d->capacity;
+        x.d->reserved = 0;
     }
 
     if (QTypeInfo<T>::isComplex) {

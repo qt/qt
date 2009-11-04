@@ -300,7 +300,7 @@ void setJSHTMLFrameSetElementOnbeforeunload(ExecState* exec, JSObject* thisObjec
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforeunload(globalObject->createJSAttributeEventListener(value));
@@ -310,7 +310,7 @@ void setJSHTMLFrameSetElementOnhashchange(ExecState* exec, JSObject* thisObject,
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnhashchange(globalObject->createJSAttributeEventListener(value));
@@ -320,7 +320,7 @@ void setJSHTMLFrameSetElementOnmessage(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
@@ -330,7 +330,7 @@ void setJSHTMLFrameSetElementOnoffline(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnoffline(globalObject->createJSAttributeEventListener(value));
@@ -340,7 +340,7 @@ void setJSHTMLFrameSetElementOnonline(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnonline(globalObject->createJSAttributeEventListener(value));
@@ -350,7 +350,7 @@ void setJSHTMLFrameSetElementOnresize(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnresize(globalObject->createJSAttributeEventListener(value));
@@ -360,7 +360,7 @@ void setJSHTMLFrameSetElementOnstorage(ExecState* exec, JSObject* thisObject, JS
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnstorage(globalObject->createJSAttributeEventListener(value));
@@ -370,7 +370,7 @@ void setJSHTMLFrameSetElementOnunload(ExecState* exec, JSObject* thisObject, JSV
 {
     UNUSED_PARAM(exec);
     HTMLFrameSetElement* imp = static_cast<HTMLFrameSetElement*>(static_cast<JSHTMLFrameSetElement*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnunload(globalObject->createJSAttributeEventListener(value));

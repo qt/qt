@@ -215,6 +215,12 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         XCopyArea(X11->display, d_ptr->image->xshmpm, widget->handle(), d_ptr->gc,
                   br.x(), br.y(), br.width(), br.height(), wbr.x(), wbr.y());
         XSync(X11->display, False);
+    } else if (d_ptr->image->xshmimg) {
+        const QImage &src = d->image->image;
+        br = br.intersected(src.rect());
+        XShmPutImage(X11->display, widget->handle(), d_ptr->gc, d_ptr->image->xshmimg,
+                     br.x(), br.y(), wbr.x(), wbr.y(), br.width(), br.height(), False);
+        XSync(X11->display, False);
     } else
 #endif
     {

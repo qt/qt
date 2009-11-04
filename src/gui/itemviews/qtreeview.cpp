@@ -2434,7 +2434,9 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
         return;
     }
 
-    if (parent != d->root && !d->isIndexExpanded(parent) && d->model->rowCount(parent) > (end - start) + 1) {
+    const int parentRowCount = d->model->rowCount(parent);
+    const int delta = end - start + 1;
+    if (parent != d->root && !d->isIndexExpanded(parent) && parentRowCount > delta) {
         QAbstractItemView::rowsInserted(parent, start, end);
         return;
     }
@@ -2449,11 +2451,29 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
                                                     ? d->viewItems.count()
                                                     : d->viewItems.at(parentItem).total) - 1;
 
-        const int delta = end - start + 1;
+        if (parentRowCount == end + 1 && start > 0) {
+            //need to Update hasMoreSiblings
+            int previousRow = start - 1;
+            QModelIndex previousSibilingModelIndex = d->model->index(previousRow, 0, parent);
+            bool isHidden = d->isRowHidden(previousSibilingModelIndex);
+            while (isHidden && previousRow > 0) {
+                previousRow--;
+                previousSibilingModelIndex = d->model->index(previousRow, 0, parent);
+                isHidden = d->isRowHidden(previousSibilingModelIndex);
+            }
+            if (!isHidden) {
+                const int previousSibilling = d->viewIndex(previousSibilingModelIndex);
+                if(previousSibilling != -1)
+                    d->viewItems[previousSibilling].hasMoreSiblings = true;
+            }
+        }
+
         QVector<QTreeViewItem> insertedItems(delta);
         for (int i = 0; i < delta; ++i) {
             insertedItems[i].index = d->model->index(i + start, 0, parent);
             insertedItems[i].level = childLevel;
+            insertedItems[i].hasChildren = d->hasVisibleChildren(insertedItems[i].index);
+            insertedItems[i].hasMoreSiblings = !((i == delta - 1) && (parentRowCount == end +1));
         }
         if (d->viewItems.isEmpty())
             d->defaultItemHeight = indexRowSizeHint(insertedItems[0].index);
@@ -2495,13 +2515,17 @@ void QTreeView::rowsInserted(const QModelIndex &parent, int start, int end)
                   d->viewItems.begin() + insertPos + 1);
         }
 
+        if (parentItem != -1)
+            d->viewItems[parentItem].hasChildren = true;
         d->updateChildCount(parentItem, delta);
+
         updateGeometries();
         viewport()->update();
     } else if ((parentItem != -1) && d->viewItems.at(parentItem).expanded) {
         d->doDelayedItemsLayout();
     } else if (parentItem != -1 && (d->model->rowCount(parent) == end - start + 1)) {
-        // the parent just went from 0 children to having some update to re-paint the decoration
+        // the parent just went from 0 children to more. update to re-paint the decoration
+        d->viewItems[parentItem].hasChildren = true;
         viewport()->update();
     }
     QAbstractItemView::rowsInserted(parent, start, end);
@@ -3706,6 +3730,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
 
         const int delta = end - start + 1;
 
+        int previousSibiling = -1;
         int removedCount = 0;
         for (int item = firstChildItem; item <= lastChildItem; ) {
             Q_ASSERT(viewItems.at(item).level == childLevel);
@@ -3713,6 +3738,7 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
             //Q_ASSERT(modelIndex.parent() == parent);
             const int count = viewItems.at(item).total + 1;
             if (modelIndex.row() < start) {
+                previousSibiling = item;
                 // not affected by the removal
                 item += count;
             } else if (modelIndex.row() <= end) {
@@ -3730,7 +3756,13 @@ void QTreeViewPrivate::rowsRemoved(const QModelIndex &parent,
             }
         }
 
+        if (previousSibiling != -1 && after && model->rowCount(parent) == start)
+            viewItems[previousSibiling].hasMoreSiblings = false;
+
+
         updateChildCount(parentItem, -removedCount);
+        if (parentItem != -1 && viewItems.at(parentItem).total == 0)
+            viewItems[parentItem].hasChildren = false; //every children have been removed;
         if (after) {
             q->updateGeometries();
             viewport->update();

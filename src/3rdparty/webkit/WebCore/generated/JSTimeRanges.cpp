@@ -93,7 +93,7 @@ JSTimeRanges::JSTimeRanges(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSTimeRanges::~JSTimeRanges()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSTimeRanges::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

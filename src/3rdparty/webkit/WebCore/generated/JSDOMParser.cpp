@@ -147,7 +147,7 @@ JSDOMParser::JSDOMParser(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSDOMParser::~JSDOMParser()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDOMParser::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

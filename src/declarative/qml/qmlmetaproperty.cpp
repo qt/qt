@@ -534,6 +534,9 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
 
     Ownership of \a newBinding transfers to QML.  Ownership of the return value
     is assumed by the caller.
+
+    \a flags is passed through to the binding and is used for the initial update (when
+    the binding sets the intial value, it will use these flags for the write).
 */
 QmlAbstractBinding *
 QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding, QmlMetaProperty::WriteFlags flags) const

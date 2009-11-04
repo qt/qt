@@ -38,6 +38,7 @@ WebInspector.ElementsTreeOutline = function() {
 
     this.includeRootDOMNode = true;
     this.selectEnabled = false;
+    this.showInElementsPanelEnabled = false;
     this.rootDOMNode = null;
     this.focusedDOMNode = null;
 }
@@ -327,6 +328,8 @@ WebInspector.ElementsTreeElement.prototype = {
             if (this._addAttributeElement && this._addAttributeElement.parentNode)
                 this._addAttributeElement.parentNode.removeChild(this._addAttributeElement);
             delete this._addAttributeElement;
+
+            this.updateSelection();
         }
 
         if (!this._addAttributeElement && visible && !this._editing) {
@@ -341,7 +344,7 @@ WebInspector.ElementsTreeElement.prototype = {
         } else if (!visible && this._addAttributeElement)
             removeAddAttributeSpan.call(this);
     },
-    
+
     updateSelection: function()
     {
         var listItemElement = this.listItemElement;
@@ -509,6 +512,14 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this._editing)
             return;
 
+        if (this.isEventWithinDisclosureTriangle(event))
+            return;
+
+        if (this.treeOutline.showInElementsPanelEnabled) {    
+            WebInspector.showElementsPanel();
+            WebInspector.panels.elements.focusedDOMNode = this.representedObject;
+        }
+
         // Prevent selecting the nearest word on double click.
         if (event.detail >= 2)
             event.preventDefault();
@@ -521,11 +532,6 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (this._startEditingFromEvent(event, treeElement))
             return;
-
-        if (this.treeOutline.panel) {
-            this.treeOutline.rootDOMNode = this.representedObject.parentNode;
-            this.treeOutline.focusedDOMNode = this.representedObject;
-        }
 
         if (this.hasChildren && !this.expanded)
             this.expand();
@@ -542,6 +548,8 @@ WebInspector.ElementsTreeElement.prototype = {
             tag.appendChild(node);
             tag.appendChild(document.createTextNode('>'));
         }
+
+        this.updateSelection();
     },
 
     _startEditingFromEvent: function(event, treeElement)
@@ -578,7 +586,7 @@ WebInspector.ElementsTreeElement.prototype = {
             this.toggleNewAttributeButton(false);
             var attribute = listItem.getElementsByClassName("webkit-html-attribute")[0];
             if (attribute)
-                return this._startEditingAttribute(attribute, attribute.getElementsByClassName("webkit-html-attribute-name")[0]);
+                return this._startEditingAttribute(attribute, attribute.getElementsByClassName("webkit-html-attribute-value")[0]);
 
             return this._addNewAttribute(listItem);
         }
@@ -830,9 +838,9 @@ WebInspector.ElementsTreeElement.prototype = {
                     if (node.parentNode && node.parentNode.nodeName.toLowerCase() == "script") {
                         var newNode = document.createElement("span");
                         newNode.textContent = node.textContent;
-                        
+
                         var javascriptSyntaxHighlighter = new WebInspector.JavaScriptSourceSyntaxHighlighter(null, null);
-                        javascriptSyntaxHighlighter.syntaxHighlightLine(newNode, null);
+                        javascriptSyntaxHighlighter.syntaxHighlightNode(newNode);
                         
                         info.title = "<span class=\"webkit-html-text-node webkit-html-js-node\">" + newNode.innerHTML.replace(/^[\n\r]*/, "").replace(/\s*$/, "") + "</span>";
                     } else if (node.parentNode && node.parentNode.nodeName.toLowerCase() == "style") {

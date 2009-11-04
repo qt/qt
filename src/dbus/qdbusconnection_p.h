@@ -154,6 +154,7 @@ public:
     typedef QMultiHash<QString, SignalHook> SignalHookHash;
     typedef QHash<QString, QDBusMetaObject* > MetaObjectHash;
     typedef QHash<QByteArray, int> MatchRefCountHash;
+    typedef QHash<QString, int> WatchedServicesHash;
 
 public:
     // public methods are entry points from other objects
@@ -175,8 +176,14 @@ public:
     QDBusPendingCallPrivate *sendWithReplyAsync(const QDBusMessage &message, int timeout = -1);
     int sendWithReplyAsync(const QDBusMessage &message, QObject *receiver,
                            const char *returnMethod, const char *errorMethod, int timeout = -1);
+    bool connectSignal(const QString &service, const QString &owner, const QString &path, const QString& interface,
+                       const QString &name, const QStringList &argumentMatch, const QString &signature,
+                       QObject *receiver, const char *slot);
     void connectSignal(const QString &key, const SignalHook &hook);
     SignalHookHash::Iterator disconnectSignal(SignalHookHash::Iterator &it);
+    bool disconnectSignal(const QString &service, const QString &path, const QString& interface,
+                          const QString &name, const QStringList &argumentMatch, const QString &signature,
+                          QObject *receiver, const char *slot);
     void registerObject(const ObjectTreeNode *node);
     void connectRelay(const QString &service, const QString &currentOwner,
                       const QString &path, const QString &interface,
@@ -264,6 +271,7 @@ public:
     QDBusError lastError;
 
     QStringList serviceNames;
+    WatchedServicesHash watchedServiceNames;
     SignalHookHash signalHooks;
     MatchRefCountHash matchRefCounts;
     ObjectTreeNode rootNode;
@@ -278,6 +286,7 @@ public:
     static bool prepareHook(QDBusConnectionPrivate::SignalHook &hook, QString &key,
                             const QString &service, const QString &owner,
                             const QString &path, const QString &interface, const QString &name,
+                            const QStringList &argMatch,
                             QObject *receiver, const char *signal, int minMIdx,
                             bool buildSignature);
     static DBusHandlerResult messageFilter(DBusConnection *, DBusMessage *, void *);

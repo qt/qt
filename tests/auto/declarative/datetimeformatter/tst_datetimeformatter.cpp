@@ -67,12 +67,16 @@ void tst_datetimeformatter::date()
     QVERIFY(formatter != 0);
 
     QDate date(2008,12,24);
+    QCOMPARE(formatter->date(), date);
+    QCOMPARE(formatter->dateTime().date(), date);
     QCOMPARE(formatter->dateText(),date.toString(Qt::SystemLocaleShortDate));
 
     formatter->setLongStyle(true);
+    QVERIFY(formatter->longStyle());
     QCOMPARE(formatter->dateText(),date.toString(Qt::SystemLocaleLongDate));
 
     formatter->setDateFormat("ddd MMMM d yy");
+    QCOMPARE(formatter->dateFormat(), QLatin1String("ddd MMMM d yy"));
     QCOMPARE(formatter->dateText(),date.toString("ddd MMMM d yy"));
 
     QVERIFY(formatter->timeText().isEmpty());
@@ -91,6 +95,7 @@ void tst_datetimeformatter::time()
     QTime time(14,15,38,200);
 
     QCOMPARE(formatter->time(),time);
+    QCOMPARE(formatter->dateTime().time(),time);
 
     QCOMPARE(formatter->timeText(),time.toString(Qt::SystemLocaleShortDate));
 
@@ -98,6 +103,7 @@ void tst_datetimeformatter::time()
     QCOMPARE(formatter->timeText(),time.toString(Qt::SystemLocaleLongDate));
 
     formatter->setTimeFormat("H:m:s a");
+    QCOMPARE(formatter->timeFormat(), QLatin1String("H:m:s a"));
     QCOMPARE(formatter->timeText(),time.toString("H:m:s a"));
 
     formatter->setTimeFormat("hh:mm:ss.zzz");
@@ -117,12 +123,16 @@ void tst_datetimeformatter::dateTime()
     QVERIFY(formatter != 0);
 
     QDateTime dateTime(QDate(1978,03,04),QTime(9,13,54));
+    QCOMPARE(formatter->dateTime(),dateTime);
+    QCOMPARE(formatter->date(),dateTime.date());
+    QCOMPARE(formatter->time(),dateTime.time());
     QCOMPARE(formatter->dateTimeText(),dateTime.toString(Qt::SystemLocaleShortDate));
 
     formatter->setLongStyle(true);
     QCOMPARE(formatter->dateTimeText(),dateTime.toString(Qt::SystemLocaleLongDate));
 
     formatter->setDateTimeFormat("M/d/yy H:m:s a");
+    QCOMPARE(formatter->dateTimeFormat(), QLatin1String("M/d/yy H:m:s a"));
     QCOMPARE(formatter->dateTimeText(),dateTime.toString("M/d/yy H:m:s a"));
 }
 

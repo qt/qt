@@ -218,6 +218,26 @@ void ResourceRequestBase::setHTTPHeaderField(const AtomicString& name, const Str
         m_platformRequestUpdated = false;
 }
 
+void ResourceRequestBase::clearHTTPReferrer()
+{
+    updateResourceRequest(); 
+
+    m_httpHeaderFields.remove("Referer");
+
+    if (url().protocolInHTTPFamily())
+        m_platformRequestUpdated = false;
+}
+
+void ResourceRequestBase::clearHTTPOrigin()
+{
+    updateResourceRequest(); 
+
+    m_httpHeaderFields.remove("Origin");
+
+    if (url().protocolInHTTPFamily())
+        m_platformRequestUpdated = false;
+}
+
 void ResourceRequestBase::setResponseContentDispositionEncodingFallbackArray(const String& encoding1, const String& encoding2, const String& encoding3)
 {
     updateResourceRequest(); 
@@ -358,7 +378,7 @@ void ResourceRequestBase::updateResourceRequest() const
     m_resourceRequestUpdated = true;
 }
 
-#if !PLATFORM(MAC) && !USE(CFNETWORK) && !USE(SOUP)
+#if !PLATFORM(MAC) && !USE(CFNETWORK) && !USE(SOUP) && !PLATFORM(CHROMIUM)
 unsigned initializeMaximumHTTPConnectionCountPerHost()
 {
     // This is used by the loader to control the number of issued parallel load requests. 

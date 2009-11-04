@@ -2217,14 +2217,15 @@ QRect QWindowsVistaStyle::subControlRect(ComplexControl control, const QStyleOpt
             int xpos = x;
             int margin = cb->frame ? 3 : 0;
             int bmarg = cb->frame ? 2 : 0;
-            xpos += wi - bmarg - 16;
+            int arrowButtonWidth = bmarg + 16;
+            xpos += wi - arrowButtonWidth;
 
             switch (subControl) {
             case SC_ComboBoxFrame:
                 rect = cb->rect;
                 break;
             case SC_ComboBoxArrow:
-                rect.setRect(xpos, y , wi - xpos, he);
+                rect.setRect(xpos, y , arrowButtonWidth, he);
                 break;
             case SC_ComboBoxEditField:
                 rect.setRect(x + margin, y + margin, wi - 2 * margin - 16, he - 2 * margin);

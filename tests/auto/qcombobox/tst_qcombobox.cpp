@@ -153,6 +153,7 @@ private slots:
     void task260974_menuItemRectangleForComboBoxPopup();
     void removeItem();
     void resetModel();
+    void keyBoardNavigationWithMouse();
 
 protected slots:
     void onEditTextChanged( const QString &newString );
@@ -2446,6 +2447,57 @@ void tst_QComboBox::resetModel()
     QCOMPARE(spy.count(), 2);
     QCOMPARE(cb.currentIndex(), -1); //no selection
 
+}
+
+void tst_QComboBox::keyBoardNavigationWithMouse()
+{
+    QComboBox combo;
+    combo.setEditable(false);
+    for (int i = 0; i < 80; i++)
+        combo.addItem( QString::number(i));
+    combo.show();
+    QApplication::setActiveWindow(&combo);
+    QTest::qWaitForWindowShown(&combo);
+    QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&combo));
+
+    QCOMPARE(combo.currentText(), QLatin1String("0"));
+
+    combo.setFocus();
+    QTRY_VERIFY(combo.hasFocus());
+
+    QTest::keyClick(testWidget->lineEdit(), Qt::Key_Space);
+    QTest::qWait(30);
+    QTRY_VERIFY(combo.view());
+    QTRY_VERIFY(combo.view()->isVisible());
+    QTest::qWait(130);
+
+    QCOMPARE(combo.currentText(), QLatin1String("0"));
+
+    QCursor::setPos(combo.view()->mapToGlobal(combo.view()->rect().center()));
+    QTest::qWait(200);
+
+#define GET_SELECTION(SEL) \
+    QCOMPARE(combo.view()->selectionModel()->selection().count(), 1); \
+    QCOMPARE(combo.view()->selectionModel()->selection().indexes().count(), 1); \
+    SEL = combo.view()->selectionModel()->selection().indexes().first().row()
+
+    int selection;
+    GET_SELECTION(selection);
+
+    //since we moved the mouse is in the middle it should even be around 5;
+    QVERIFY(selection > 3);
+
+    static const int final = 40;
+    for (int i = selection + 1;  i <= final; i++)
+    {
+        QTest::keyClick(combo.view(), Qt::Key_Down);
+        QTest::qWait(20);
+        GET_SELECTION(selection);
+        QCOMPARE(selection, i);
+    }
+
+    QTest::keyClick(combo.view(), Qt::Key_Enter);
+    QTRY_COMPARE(combo.currentText(), QString::number(final));
 }
 
 

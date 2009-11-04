@@ -79,15 +79,41 @@ bool XMLTokenizer::isWMLDocument() const
 }
 #endif
 
-void XMLTokenizer::setCurrentNode(Node* n)
+void XMLTokenizer::pushCurrentNode(Node* n)
 {
-    bool nodeNeedsReference = n && n != m_doc;
-    if (nodeNeedsReference)
-        n->ref(); 
-    if (m_currentNodeIsReferenced) 
-        m_currentNode->deref(); 
+    ASSERT(n);
+    ASSERT(m_currentNode);
+    if (n != m_doc)
+        n->ref();
+    m_currentNodeStack.append(m_currentNode);
     m_currentNode = n;
-    m_currentNodeIsReferenced = nodeNeedsReference;
+}
+
+void XMLTokenizer::popCurrentNode()
+{
+    ASSERT(m_currentNode);
+    ASSERT(m_currentNodeStack.size());
+
+    if (m_currentNode != m_doc)
+        m_currentNode->deref();
+
+    m_currentNode = m_currentNodeStack.last();
+    m_currentNodeStack.removeLast();
+}
+
+void XMLTokenizer::clearCurrentNodeStack()
+{
+    if (m_currentNode && m_currentNode != m_doc)
+        m_currentNode->deref();
+    m_currentNode = 0;
+
+    if (m_currentNodeStack.size()) { // Aborted parsing.
+        for (size_t i = m_currentNodeStack.size() - 1; i != 0; --i)
+            m_currentNodeStack[i]->deref();
+        if (m_currentNodeStack[0] && m_currentNodeStack[0] != m_doc)
+            m_currentNodeStack[0]->deref();
+        m_currentNodeStack.clear();
+    }
 }
 
 void XMLTokenizer::write(const SegmentedString& s, bool /*appendData*/)
@@ -143,7 +169,7 @@ bool XMLTokenizer::enterText()
     RefPtr<Node> newNode = Text::create(m_doc, "");
     if (!m_currentNode->addChild(newNode.get()))
         return false;
-    setCurrentNode(newNode.get());
+    pushCurrentNode(newNode.get());
     return true;
 }
 
@@ -173,10 +199,7 @@ void XMLTokenizer::exitText()
     if (m_view && m_currentNode && !m_currentNode->attached())
         m_currentNode->attach();
 
-    // FIXME: What's the right thing to do if the parent is really 0?
-    // Just leaving the current node set to the text node doesn't make much sense.
-    if (Node* par = m_currentNode->parentNode())
-        setCurrentNode(par);
+    popCurrentNode();
 }
 
 void XMLTokenizer::end()
@@ -190,7 +213,7 @@ void XMLTokenizer::end()
         m_doc->updateStyleSelector();
     }
     
-    setCurrentNode(0);
+    clearCurrentNodeStack();
     if (!m_parsingFragment)
         m_doc->finishedParsing();    
 }

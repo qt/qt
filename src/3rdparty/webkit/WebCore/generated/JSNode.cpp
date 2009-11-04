@@ -221,7 +221,7 @@ JSNode::JSNode(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* global
 JSNode::~JSNode()
 {
     impl()->invalidateEventListeners();
-    forgetDOMNode(impl()->document(), impl());
+    forgetDOMNode(this, impl(), impl()->document());
 }
 
 JSObject* JSNode::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

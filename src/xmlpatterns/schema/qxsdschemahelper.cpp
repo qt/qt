@@ -727,7 +727,7 @@ bool XsdSchemaHelper::isValidAttributeUsesRestriction(const XsdAttributeUse::Lis
             }
         } else {
             if (!wildcard) {
-                errorMsg = QtXmlPatterns::tr("Derived attribute %1 does not exists in the base definition.").arg(formatAttribute(derivedAttributeUse->attribute()->displayName(namePool)));
+                errorMsg = QtXmlPatterns::tr("Derived attribute %1 does not exist in the base definition.").arg(formatAttribute(derivedAttributeUse->attribute()->displayName(namePool)));
                 return false;
             }
 
