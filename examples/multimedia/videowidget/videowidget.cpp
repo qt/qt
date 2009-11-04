@@ -84,7 +84,7 @@ void VideoWidget::paintEvent(QPaintEvent *event)
 {
     QPainter painter(this);
 
-    if (surface->isStarted()) {
+    if (surface->isActive()) {
         const QRect videoRect = surface->videoRect();
 
         if (!videoRect.contains(event->rect())) {

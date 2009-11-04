@@ -129,7 +129,7 @@ void VideoItem::stop()
 bool VideoItem::present(const QVideoFrame &frame)
 {
     if (!framePainted) {
-        if (!isStarted())
+        if (!QAbstractVideoSurface::isActive())
             setError(StoppedError);
 
         return false;
