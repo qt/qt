@@ -79,6 +79,9 @@ static void printUsage()
         "    -removeidentical\n"
         "           If the translated text is the same as\n"
         "           the source text, do not include the message\n"
+        "    -markuntranslated <prefix>\n"
+        "           If a message has no real translation, use the source text\n"
+        "           prefixed with the given string instead\n"
         "    -silent\n"
         "           Do not explain what is being done\n"
         "    -version\n"
@@ -183,6 +186,12 @@ int main(int argc, char **argv)
         } else if (args[i] == QLatin1String("-nounfinished")) {
             cd.m_ignoreUnfinished = true;
             continue;
+        } else if (args[i] == QLatin1String("-markuntranslated")) {
+            if (i == argc - 1) {
+                printUsage();
+                return 1;
+            }
+            cd.m_unTrPrefix = args[++i];
         } else if (args[i] == QLatin1String("-silent")) {
             cd.m_verbose = false;
             continue;
