@@ -31,10 +31,7 @@ Item {
     Item {
         width: parent.width; height: 2 * parent.height
         transformOrigin: Item.Center
-        rotation: SequentialAnimation {
-            running: true; repeat: true
-            NumberAnimation { from: 0; to: 360; duration: 10000 }
-        }
+        rotation: NumberAnimation { from: 0; to: 360; duration: 10000; running: true; repeat: true }
         Image {
             source: "images/sun.png"; y: 10; anchors.horizontalCenter: parent.horizontalCenter
             transformOrigin: Item.Center; rotation: -3 * parent.rotation
