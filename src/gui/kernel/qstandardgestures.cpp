@@ -216,7 +216,13 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->totalScaleFactor += d->scaleFactor - d->lastScaleFactor;
             d->changeFlags |= QPinchGesture::ScaleFactorChanged;
 
-            const qreal rotationAngle = -line.angle();
+            qreal angle = QLineF(p1.screenPos(), p2.screenPos()).angle();
+            if (angle > 180)
+                angle -= 360;
+            qreal startAngle = QLineF(p1.startScreenPos(), p2.startScreenPos()).angle();
+            if (startAngle > 180)
+                startAngle -= 360;
+            const qreal rotationAngle = startAngle - angle;
             if (d->isNewSequence)
                 d->lastRotationAngle = rotationAngle;
             else
