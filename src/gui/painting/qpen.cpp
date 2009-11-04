@@ -835,16 +835,19 @@ bool QPen::operator==(const QPen &p) const
 {
     QPenData *dd = static_cast<QPenData *>(d);
     QPenData *pdd = static_cast<QPenData *>(p.d);
-    return (p.d == d) || (p.d->style == d->style
-                          && p.d->capStyle == d->capStyle
-                          && p.d->joinStyle == d->joinStyle
-                          && p.d->width == d->width
-                          && pdd->miterLimit == dd->miterLimit
-                          && (d->style != Qt::CustomDashLine
-                              || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
-                                  pdd->dashPattern == dd->dashPattern))
-                          && p.d->brush == d->brush
-                          && pdd->cosmetic == dd->cosmetic);
+    return (p.d == d)
+        || (p.d->style == d->style
+            && p.d->capStyle == d->capStyle
+            && p.d->joinStyle == d->joinStyle
+            && p.d->width == d->width
+            && pdd->miterLimit == dd->miterLimit
+            && (d->style != Qt::CustomDashLine
+                || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
+                    pdd->dashPattern == dd->dashPattern))
+            && p.d->brush == d->brush
+            && pdd->cosmetic == dd->cosmetic)
+        || ((p.d->style == Qt::NoPen || p.d->brush.style() == Qt::NoBrush)
+            && (d->style == Qt::NoPen || d->brush.style() == Qt::NoBrush));
 }
 
 
