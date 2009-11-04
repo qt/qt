@@ -145,7 +145,7 @@ int main(int argv, char **args)
     connect(s3, SIGNAL(entered()), messageBox, SLOT(exec()));
 
     s1->addTransition(button, SIGNAL(clicked()), s2);
-    s2->addTransition(s2, SIGNAL(polished()), s3);
+    s2->addTransition(s2, SIGNAL(propertiesAssigned()), s3);
 //![6]
 
   }

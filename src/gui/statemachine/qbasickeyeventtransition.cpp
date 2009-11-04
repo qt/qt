@@ -68,14 +68,14 @@ public:
 
     QEvent::Type eventType;
     int key;
-    Qt::KeyboardModifiers modifiersMask;
+    Qt::KeyboardModifiers modifierMask;
 };
 
 QBasicKeyEventTransitionPrivate::QBasicKeyEventTransitionPrivate()
 {
     eventType = QEvent::None;
     key = 0;
-    modifiersMask = Qt::NoModifier;
+    modifierMask = Qt::NoModifier;
 }
 
 QBasicKeyEventTransitionPrivate *QBasicKeyEventTransitionPrivate::get(QBasicKeyEventTransition *q)
@@ -106,17 +106,17 @@ QBasicKeyEventTransition::QBasicKeyEventTransition(QEvent::Type type, int key,
 
 /*!
   Constructs a new event transition for events of the given \a type for the
-  given \a key, with the given \a modifiersMask and \a sourceState.
+  given \a key, with the given \a modifierMask and \a sourceState.
 */
 QBasicKeyEventTransition::QBasicKeyEventTransition(QEvent::Type type, int key,
-                                                   Qt::KeyboardModifiers modifiersMask,
+                                                   Qt::KeyboardModifiers modifierMask,
                                                    QState *sourceState)
     : QAbstractTransition(*new QBasicKeyEventTransitionPrivate, sourceState)
 {
     Q_D(QBasicKeyEventTransition);
     d->eventType = type;
     d->key = key;
-    d->modifiersMask = modifiersMask;
+    d->modifierMask = modifierMask;
 }
 
 /*!
@@ -163,23 +163,23 @@ void QBasicKeyEventTransition::setKey(int key)
 }
 
 /*!
-  Returns the keyboard modifiers mask that this key event transition checks
+  Returns the keyboard modifier mask that this key event transition checks
   for.
 */
-Qt::KeyboardModifiers QBasicKeyEventTransition::modifiersMask() const
+Qt::KeyboardModifiers QBasicKeyEventTransition::modifierMask() const
 {
     Q_D(const QBasicKeyEventTransition);
-    return d->modifiersMask;
+    return d->modifierMask;
 }
 
 /*!
-  Sets the keyboard modifiers mask that this key event transition will check
+  Sets the keyboard modifier mask that this key event transition will check
   for.
 */
-void QBasicKeyEventTransition::setModifiersMask(Qt::KeyboardModifiers modifiersMask)
+void QBasicKeyEventTransition::setModifierMask(Qt::KeyboardModifiers modifierMask)
 {
     Q_D(QBasicKeyEventTransition);
-    d->modifiersMask = modifiersMask;
+    d->modifierMask = modifierMask;
 }
 
 /*!
@@ -191,7 +191,7 @@ bool QBasicKeyEventTransition::eventTest(QEvent *event)
     if (event->type() == d->eventType) {
         QKeyEvent *ke = static_cast<QKeyEvent*>(event);
         return (ke->key() == d->key)
-            && ((ke->modifiers() & d->modifiersMask) == d->modifiersMask);
+            && ((ke->modifiers() & d->modifierMask) == d->modifierMask);
     }
     return false;
 }
