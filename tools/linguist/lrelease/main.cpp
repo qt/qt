@@ -100,15 +100,14 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
 }
 
 static bool releaseTranslator(Translator &tor, const QString &qmFileName,
-    bool verbose, bool ignoreUnfinished,
-    bool removeIdentical, bool idBased, TranslatorSaveMode mode)
+    ConversionData &cd, bool removeIdentical)
 {
-    Translator::reportDuplicates(tor.resolveDuplicates(), qmFileName, verbose);
+    Translator::reportDuplicates(tor.resolveDuplicates(), qmFileName, cd.isVerbose());
 
-    if (verbose)
+    if (cd.isVerbose())
         printOut(QCoreApplication::tr( "Updating '%1'...\n").arg(qmFileName));
     if (removeIdentical) {
-        if ( verbose )
+        if (cd.isVerbose())
             printOut(QCoreApplication::tr( "Removing translations equal to source text in '%1'...\n").arg(qmFileName));
         tor.stripIdenticalSourceTranslations();
     }
@@ -120,12 +119,7 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
         return false;
     }
 
-    ConversionData cd;
     tor.normalizeTranslations(cd);
-    cd.m_verbose = verbose;
-    cd.m_ignoreUnfinished = ignoreUnfinished;
-    cd.m_idBased = idBased;
-    cd.m_saveMode = mode;
     bool ok = tor.release(&file, cd);
     file.close();
 
@@ -139,11 +133,11 @@ static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     return true;
 }
 
-static bool releaseTsFile(const QString& tsFileName, bool verbose,
-    bool ignoreUnfinished, bool removeIdentical, bool idBased, TranslatorSaveMode mode)
+static bool releaseTsFile(const QString& tsFileName,
+    ConversionData &cd, bool removeIdentical)
 {
     Translator tor;
-    if (!loadTsFile(tor, tsFileName, verbose))
+    if (!loadTsFile(tor, tsFileName, cd.isVerbose()))
         return false;
 
     QString qmFileName = tsFileName;
@@ -155,7 +149,7 @@ static bool releaseTsFile(const QString& tsFileName, bool verbose,
     }
     qmFileName += QLatin1String(".qm");
 
-    return releaseTranslator(tor, qmFileName, verbose, ignoreUnfinished, removeIdentical, idBased, mode);
+    return releaseTranslator(tor, qmFileName, cd, removeIdentical);
 }
 
 int main(int argc, char **argv)
@@ -166,11 +160,8 @@ int main(int argc, char **argv)
     if (translator.load(QLatin1String("lrelease_") + QLocale::system().name()))
         app.installTranslator(&translator);
 
-    bool verbose = true; // the default is true starting with Qt 4.2
-    bool ignoreUnfinished = false;
-    bool idBased = false;
-    // the default mode is SaveEverything starting with Qt 4.2
-    TranslatorSaveMode mode = SaveEverything;
+    ConversionData cd;
+    cd.m_verbose = true; // the default is true starting with Qt 4.2
     bool removeIdentical = false;
     Translator tor;
     QString outputFile;
@@ -178,25 +169,25 @@ int main(int argc, char **argv)
 
     for (int i = 1; i < argc; ++i) {
         if (args[i] == QLatin1String("-compress")) {
-            mode = SaveStripped;
+            cd.m_saveMode = SaveStripped;
             continue;
         } else if (args[i] == QLatin1String("-idbased")) {
-            idBased = true;
+            cd.m_idBased = true;
             continue;
         } else if (args[i] == QLatin1String("-nocompress")) {
-            mode = SaveEverything;
+            cd.m_saveMode = SaveEverything;
             continue;
         } else if (args[i] == QLatin1String("-removeidentical")) {
             removeIdentical = true;
             continue;
         } else if (args[i] == QLatin1String("-nounfinished")) {
-            ignoreUnfinished = true;
+            cd.m_ignoreUnfinished = true;
             continue;
         } else if (args[i] == QLatin1String("-silent")) {
-            verbose = false;
+            cd.m_verbose = false;
             continue;
         } else if (args[i] == QLatin1String("-verbose")) {
-            verbose = true;
+            cd.m_verbose = true;
             continue;
         } else if (args[i] == QLatin1String("-version")) {
             printOut(QCoreApplication::tr( "lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)) );
@@ -231,7 +222,7 @@ int main(int argc, char **argv)
         if (args[i].endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
             || args[i].endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             QHash<QByteArray, QStringList> varMap;
-            bool ok = evaluateProFile(args[i], verbose, &varMap );
+            bool ok = evaluateProFile(args[i], cd.isVerbose(), &varMap);
             if (ok) {
                 QStringList translations = varMap.value("TRANSLATIONS");
                 if (translations.isEmpty()) {
@@ -240,7 +231,7 @@ int main(int argc, char **argv)
                              qPrintable(args[i]));
                 } else {
                     foreach (const QString &trans, translations)
-                        if (!releaseTsFile(trans, verbose, ignoreUnfinished, removeIdentical, idBased, mode))
+                        if (!releaseTsFile(trans, cd, removeIdentical))
                             return 1;
                 }
             } else {
@@ -251,18 +242,17 @@ int main(int argc, char **argv)
             }
         } else {
             if (outputFile.isEmpty()) {
-                if (!releaseTsFile(args[i], verbose, ignoreUnfinished, removeIdentical, idBased, mode))
+                if (!releaseTsFile(args[i], cd, removeIdentical))
                     return 1;
             } else {
-                if (!loadTsFile(tor, args[i], verbose))
+                if (!loadTsFile(tor, args[i], cd.isVerbose()))
                     return 1;
             }
         }
     }
 
     if (!outputFile.isEmpty())
-        return releaseTranslator(tor, outputFile, verbose, ignoreUnfinished,
-                                 removeIdentical, idBased, mode) ? 0 : 1;
+        return releaseTranslator(tor, outputFile, cd, removeIdentical) ? 0 : 1;
 
     return 0;
 }
