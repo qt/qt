@@ -158,15 +158,17 @@ int QmlGraphicsAnimatedImageItem::currentFrame() const
 {
     Q_D(const QmlGraphicsAnimatedImageItem);
     if (!d->_movie)
-        return -1;
+        return d->preset_currentframe;
     return d->_movie->currentFrameNumber();
 }
 
 void QmlGraphicsAnimatedImageItem::setCurrentFrame(int frame)
 {
     Q_D(QmlGraphicsAnimatedImageItem);
-    if (!d->_movie)
+    if (!d->_movie) {
+        d->preset_currentframe = frame;
         return;
+    }
     d->_movie->jumpToFrame(frame);
 }
 
@@ -264,8 +266,10 @@ void QmlGraphicsAnimatedImageItem::movieRequestFinished()
     d->_movie->setCacheMode(QMovie::CacheAll);
     if(d->playing)
         d->_movie->start();
-    else
-        d->_movie->jumpToFrame(0);
+    else {
+        d->_movie->jumpToFrame(d->preset_currentframe);
+        d->preset_currentframe = 0;
+    }
     if(d->paused)
         d->_movie->setPaused(true);
     d->setPixmap(d->_movie->currentPixmap());
@@ -289,6 +293,13 @@ void QmlGraphicsAnimatedImageItem::playingStatusChanged()
         d->playing = (d->_movie->state() == QMovie::Paused);
         emit pausedChanged();
     }
+}
+
+void QmlGraphicsAnimatedImageItem::componentComplete()
+{
+    Q_D(QmlGraphicsAnimatedImageItem);
+    setCurrentFrame(d->preset_currentframe);
+    d->preset_currentframe = 0;
 }
 
 QT_END_NAMESPACE
