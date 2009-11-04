@@ -164,8 +164,8 @@ int main(int argc, char **argv)
     cd.m_verbose = true; // the default is true starting with Qt 4.2
     bool removeIdentical = false;
     Translator tor;
+    QStringList inputFiles;
     QString outputFile;
-    int numFiles = 0;
 
     for (int i = 1; i < argc; ++i) {
         if (args[i] == QLatin1String("-compress")) {
@@ -197,38 +197,34 @@ int main(int argc, char **argv)
                 printUsage();
                 return 1;
             }
-            i++;
-            outputFile = args[i];
+            outputFile = args[++i];
         } else if (args[i] == QLatin1String("-help")) {
             printUsage();
             return 0;
-        } else if (args[i][0] == QLatin1Char('-')) {
+        } else if (args[i].startsWith(QLatin1Char('-'))) {
             printUsage();
             return 1;
         } else {
-            numFiles++;
+            inputFiles << args[i];
         }
     }
 
-    if (numFiles == 0) {
+    if (inputFiles.isEmpty()) {
         printUsage();
         return 1;
     }
 
-    for (int i = 1; i < argc; ++i) {
-        if (args[i][0] == QLatin1Char('-') || args[i] == outputFile)
-            continue;
-
-        if (args[i].endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
-            || args[i].endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
+    foreach (const QString &inputFile, inputFiles) {
+        if (inputFile.endsWith(QLatin1String(".pro"), Qt::CaseInsensitive)
+            || inputFile.endsWith(QLatin1String(".pri"), Qt::CaseInsensitive)) {
             QHash<QByteArray, QStringList> varMap;
-            bool ok = evaluateProFile(args[i], cd.isVerbose(), &varMap);
+            bool ok = evaluateProFile(inputFile, cd.isVerbose(), &varMap);
             if (ok) {
                 QStringList translations = varMap.value("TRANSLATIONS");
                 if (translations.isEmpty()) {
                     qWarning("lrelease warning: Met no 'TRANSLATIONS' entry in"
                              " project file '%s'\n",
-                             qPrintable(args[i]));
+                             qPrintable(inputFile));
                 } else {
                     foreach (const QString &trans, translations)
                         if (!releaseTsFile(trans, cd, removeIdentical))
@@ -242,10 +238,10 @@ int main(int argc, char **argv)
             }
         } else {
             if (outputFile.isEmpty()) {
-                if (!releaseTsFile(args[i], cd, removeIdentical))
+                if (!releaseTsFile(inputFile, cd, removeIdentical))
                     return 1;
             } else {
-                if (!loadTsFile(tor, args[i], cd.isVerbose()))
+                if (!loadTsFile(tor, inputFile, cd.isVerbose()))
                     return 1;
             }
         }
