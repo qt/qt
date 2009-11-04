@@ -249,6 +249,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
+    dictionary[ "DECLARATIVE" ]     = "no";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
 
     QString version;
@@ -905,6 +906,10 @@ void Configure::parseCmdLine()
             dictionary[ "WEBKIT" ] = "no";
         } else if( configCmdLine.at(i) == "-webkit" ) {
             dictionary[ "WEBKIT" ] = "yes";
+        } else if( configCmdLine.at(i) == "-no-declarative" ) {
+            dictionary[ "DECLARATIVE" ] = "no";
+        } else if( configCmdLine.at(i) == "-declarative" ) {
+            dictionary[ "DECLARATIVE" ] = "yes";
         } else if( configCmdLine.at(i) == "-no-plugin-manifests" ) {
             dictionary[ "PLUGIN_MANIFESTS" ] = "no";
         } else if( configCmdLine.at(i) == "-plugin-manifests" ) {
@@ -1745,6 +1750,8 @@ bool Configure::displayHelp()
         desc("SCRIPT", "yes",   "-script",              "Build the QtScript module.");
         desc("SCRIPTTOOLS", "no", "-no-scripttools",    "Do not build the QtScriptTools module.");
         desc("SCRIPTTOOLS", "yes", "-scripttools",      "Build the QtScriptTools module.");
+        desc("DECLARATIVE", "no",    "-no-declarative", "Do not build the declarative module");
+        desc("DECLARATIVE", "yes",   "-declarative",    "Build the declarative module");
 
         desc(                   "-arch <arch>",         "Specify an architecture.\n"
                                                         "Available values for <arch>:");
@@ -2507,6 +2514,9 @@ void Configure::generateOutputVars()
     if (dictionary["WEBKIT"] == "yes")
         qtConfig += "webkit";
 
+    if (dictionary["DECLARATIVE"] == "yes")
+        qtConfig += "declarative";
+
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
 
@@ -2875,6 +2885,7 @@ void Configure::generateConfigfiles()
         if(dictionary["DBUS"] == "no")              qconfigList += "QT_NO_DBUS";
         if(dictionary["IPV6"] == "no")              qconfigList += "QT_NO_IPV6";
         if(dictionary["WEBKIT"] == "no")            qconfigList += "QT_NO_WEBKIT";
+        if(dictionary["DECLARATIVE"] == "no")       qconfigList += "QT_NO_DECLARATIVE";
         if(dictionary["PHONON"] == "no")            qconfigList += "QT_NO_PHONON";
         if(dictionary["MULTIMEDIA"] == "no")        qconfigList += "QT_NO_MULTIMEDIA";
         if(dictionary["XMLPATTERNS"] == "no")       qconfigList += "QT_NO_XMLPATTERNS";
@@ -3173,6 +3184,7 @@ void Configure::displayConfig()
     cout << "Phonon support.............." << dictionary[ "PHONON" ] << endl;
     cout << "QtMultimedia support........" << dictionary[ "MULTIMEDIA" ] << endl;
     cout << "WebKit support.............." << dictionary[ "WEBKIT" ] << endl;
+    cout << "Declarative support........." << dictionary[ "DECLARATIVE" ] << endl;
     cout << "QtScript support............" << dictionary[ "SCRIPT" ] << endl;
     cout << "QtScriptTools support......." << dictionary[ "SCRIPTTOOLS" ] << endl;
     cout << "Graphics System............." << dictionary[ "GRAPHICS_SYSTEM" ] << endl;
