@@ -1066,7 +1066,7 @@ static inline QColor colorFromName(const QString &name)
     QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (rx.exactMatch(name)) {
-        Q_ASSERT(rx.numCaptures() == 4);
+        Q_ASSERT(rx.captureCount() == 4);
         int ints[4];
         int i;
         for (i=0; i<4; ++i) {
