@@ -23,6 +23,8 @@ information about a particular change.
    * The minimum required version of the D-Bus reference library is
      now 0.93.
 
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
 
 Third party components
 ----------------------
@@ -165,6 +167,10 @@ QtGui
    when using Synergy.
 
  - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
 
 ****************************************************************************
 *                          Tools                                           *
