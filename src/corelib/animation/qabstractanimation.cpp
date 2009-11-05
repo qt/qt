@@ -156,8 +156,7 @@
 
 #ifndef QT_NO_ANIMATION
 
-//with 15 ms we get more accuracy on windows (it uses the multimedia timer)
-#define DEFAULT_TIMER_INTERVAL 15
+#define DEFAULT_TIMER_INTERVAL 16
 #define STARTSTOP_TIMER_DELAY 0
 
 QT_BEGIN_NAMESPACE
