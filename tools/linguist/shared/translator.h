@@ -115,8 +115,6 @@ public:
 
     bool contains(const QString &context, const QString &sourceText,
         const QString &comment) const;
-    TranslatorMessage find(const QString &context,
-        const QString &sourceText, const QString &comment) const;
 
     TranslatorMessage find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;

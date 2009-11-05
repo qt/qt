@@ -319,14 +319,6 @@ bool Translator::contains(const QString &context,
 }
 
 TranslatorMessage Translator::find(const QString &context,
-    const QString &sourceText, const QString &comment) const
-{
-    TranslatorMessage needle(context, sourceText, comment, QString(), QString(), 0);
-    int index = m_messages.indexOf(needle);
-    return index == -1 ? TranslatorMessage() : m_messages.at(index);
-}
-
-TranslatorMessage Translator::find(const QString &context,
     const QString &comment, const TranslatorMessage::References &refs) const
 {
     if (!refs.isEmpty()) {
