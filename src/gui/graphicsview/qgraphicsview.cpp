@@ -1512,6 +1512,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -1533,6 +1538,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         // enable touch events if any items is interested in them
         if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
             d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2637,6 +2647,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
         if (!d->scene->d_func()->popupWidgets.isEmpty())
             d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
         QApplication::sendEvent(d->scene, event);
+        break;
+    case QEvent::Show:
+        if (d->scene && isActiveWindow()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
+        break;
+    case QEvent::Hide:
+        // spontaneous event will generate a WindowDeactivate.
+        if (!event->spontaneous() && d->scene && isActiveWindow()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
         break;
     case QEvent::Leave:
         // ### This is a temporary fix for until we get proper mouse grab

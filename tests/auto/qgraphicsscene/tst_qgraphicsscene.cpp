@@ -268,6 +268,7 @@ private slots:
     void initialFocus_data();
     void initialFocus();
     void polishItems();
+    void isActive();
 
     // task specific tests below me
     void task139710_bspTreeCrash();
@@ -3159,8 +3160,10 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     widget.activateWindow();
     QTest::qWaitForWindowShown(&widget);
     QTRY_VERIFY(view->hasFocus());
+    QTRY_VERIFY(scene.isActive());
     QVERIFY(view->viewport()->hasFocus());
     QVERIFY(scene.hasFocus());
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
     QVERIFY(item->hasFocus());
 }
 
@@ -3951,6 +3954,181 @@ void tst_QGraphicsScene::polishItems()
     // test that QGraphicsScenePrivate::_q_polishItems() doesn't crash
     QMetaObject::invokeMethod(&scene,"_q_polishItems");
 }
+
+void tst_QGraphicsScene::isActive()
+{
+    QGraphicsScene scene1;
+    QVERIFY(!scene1.isActive());
+    QGraphicsScene scene2;
+    QVERIFY(!scene2.isActive());
+
+    {
+        QWidget toplevel1;
+        QHBoxLayout *layout = new QHBoxLayout;
+        toplevel1.setLayout(layout);
+        QGraphicsView *view1 = new QGraphicsView(&scene1);
+        QGraphicsView *view2 = new QGraphicsView(&scene2);
+        layout->addWidget(view1);
+        layout->addWidget(view2);
+
+        QVERIFY(!scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        view1->setVisible(false);
+
+        toplevel1.show();
+        QApplication::setActiveWindow(&toplevel1);
+        QTest::qWaitForWindowShown(&toplevel1);
+        QTRY_COMPARE(QApplication::activeWindow(), &toplevel1);
+
+        QVERIFY(!scene1.isActive()); //it is hidden;
+        QVERIFY(scene2.isActive());
+
+        view1->show();
+        QVERIFY(scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view2->hide();
+
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        toplevel1.hide();
+        QTest::qWait(12);
+        QTRY_VERIFY(!scene1.isActive());
+        QTRY_VERIFY(!scene2.isActive());
+
+        toplevel1.show();
+        QApplication::setActiveWindow(&toplevel1);
+        QApplication::processEvents();
+        QTRY_COMPARE(QApplication::activeWindow(), &toplevel1);
+
+        QTRY_VERIFY(scene1.isActive());
+        QTRY_VERIFY(!scene2.isActive());
+
+        view2->show();
+        QVERIFY(scene1.isActive());
+        QVERIFY(scene2.isActive());
+    }
+
+    QVERIFY(!scene1.isActive());
+    QVERIFY(!scene2.isActive());
+
+    {
+        QWidget toplevel2;
+        QHBoxLayout *layout = new QHBoxLayout;
+        toplevel2.setLayout(layout);
+        QGraphicsView *view1 = new QGraphicsView(&scene1);
+        QGraphicsView *view2 = new QGraphicsView();
+        layout->addWidget(view1);
+        layout->addWidget(view2);
+
+        QVERIFY(!scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        toplevel2.show();
+        QApplication::setActiveWindow(&toplevel2);
+        QTest::qWaitForWindowShown(&toplevel2);
+        QTRY_COMPARE(QApplication::activeWindow(), &toplevel2);
+
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        view2->setScene(&scene2);
+
+        QVERIFY(scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view1->setScene(&scene2);
+        QVERIFY(!scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view1->hide();
+        QVERIFY(!scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view1->setScene(&scene1);
+        QVERIFY(!scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view1->show();
+
+        view1->show();
+        QVERIFY(scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view2->hide();
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        QGraphicsView topLevelView;
+        topLevelView.show();
+        QApplication::setActiveWindow(&topLevelView);
+        QTest::qWaitForWindowShown(&topLevelView);
+        QTRY_COMPARE(QApplication::activeWindow(), static_cast<QWidget *>(&topLevelView));
+
+        QVERIFY(!scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        topLevelView.setScene(&scene1);
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        view2->show();
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        view1->hide();
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        QApplication::setActiveWindow(&toplevel2);
+        QTRY_COMPARE(QApplication::activeWindow(), &toplevel2);
+
+        QVERIFY(!scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+
+    }
+
+    QVERIFY(!scene1.isActive());
+    QVERIFY(!scene2.isActive());
+
+    {
+        QWidget toplevel3;
+        QHBoxLayout *layout = new QHBoxLayout;
+        toplevel3.setLayout(layout);
+        QGraphicsView *view1 = new QGraphicsView(&scene1);
+        QGraphicsView *view2 = new QGraphicsView(&scene2);
+        layout->addWidget(view1);
+
+        QVERIFY(!scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        toplevel3.show();
+        QApplication::setActiveWindow(&toplevel3);
+        QTest::qWaitForWindowShown(&toplevel3);
+        QTRY_COMPARE(QApplication::activeWindow(), &toplevel3);
+
+        QVERIFY(scene1.isActive());
+        QVERIFY(!scene2.isActive());
+
+        layout->addWidget(view2);
+        QApplication::processEvents();
+        QVERIFY(scene1.isActive());
+        QVERIFY(scene2.isActive());
+
+        view1->setParent(0);
+        QVERIFY(!scene1.isActive());
+        QVERIFY(scene2.isActive());
+        delete view1;
+    }
+
+    QVERIFY(!scene1.isActive());
+    QVERIFY(!scene2.isActive());
+
+}
+
 
 QTEST_MAIN(tst_QGraphicsScene)
 #include "tst_qgraphicsscene.moc"
