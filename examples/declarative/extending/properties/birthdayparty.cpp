@@ -62,4 +62,4 @@ QmlList<Person *> *BirthdayParty::guests()
 }
 // ![0]
 
-QML_DEFINE_TYPE(People, 1, 0, 0, BirthdayParty, BirthdayParty);
+QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);

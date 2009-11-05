@@ -1045,8 +1045,8 @@ void QmlGraphicsVisualDataModel::_q_destroyingPackage(QmlPackage *package)
 }
 
 QML_DEFINE_NOCREATE_TYPE(QmlGraphicsVisualModel);
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualItemModel,QmlGraphicsVisualItemModel)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisualDataModel,QmlGraphicsVisualDataModel)
+QML_DEFINE_TYPE(Qt,4,6,VisualItemModel,QmlGraphicsVisualItemModel)
+QML_DEFINE_TYPE(Qt,4,6,VisualDataModel,QmlGraphicsVisualDataModel)
 
 QT_END_NAMESPACE
 

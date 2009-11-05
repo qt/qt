@@ -331,7 +331,7 @@ void QmlGraphicsBasePositioner::applyRemove(const QList<QPair<QString, QVariant>
     applyTransition(changes,target, d->removeActions);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Column,QmlGraphicsColumn)
+QML_DEFINE_TYPE(Qt,4,6,Column,QmlGraphicsColumn)
 /*!
   \qmlclass Column QmlGraphicsColumn
   \brief The Column item lines up its children vertically.
@@ -522,7 +522,7 @@ void QmlGraphicsColumn::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Row,QmlGraphicsRow)
+QML_DEFINE_TYPE(Qt,4,6,Row,QmlGraphicsRow)
 /*!
   \qmlclass Row QmlGraphicsRow
   \brief The Row item lines up its children horizontally.
@@ -678,7 +678,7 @@ void QmlGraphicsRow::doPositioning()
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grid,QmlGraphicsGrid)
+QML_DEFINE_TYPE(Qt,4,6,Grid,QmlGraphicsGrid)
 
 /*!
   \qmlclass Grid QmlGraphicsGrid

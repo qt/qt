@@ -54,7 +54,7 @@ public:
 };
 
 QML_DECLARE_TYPE(MyQmlObject);
-QML_DEFINE_TYPE(Test,1,0,0,MyQmlObject,MyQmlObject);
+QML_DEFINE_TYPE(Test,1,0,MyQmlObject,MyQmlObject);
 
 class MyContainer : public QObject
 {
@@ -73,7 +73,7 @@ private:
 };
 
 QML_DECLARE_TYPE(MyContainer);
-QML_DEFINE_TYPE(Test,1,0,0,MyContainer,MyContainer);
+QML_DEFINE_TYPE(Test,1,0,MyContainer,MyContainer);
 
 class tst_qmlmetaproperty : public QObject
 {

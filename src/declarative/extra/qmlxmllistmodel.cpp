@@ -58,8 +58,8 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlRole,QmlXmlListModelRole)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,XmlListModel,QmlXmlListModel)
+QML_DEFINE_TYPE(Qt,4,6,XmlRole,QmlXmlListModelRole)
+QML_DEFINE_TYPE(Qt,4,6,XmlListModel,QmlXmlListModel)
 
 /*!
     \qmlclass XmlRole QmlXmlListModelRole

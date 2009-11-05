@@ -151,7 +151,7 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
     for the original and new parent).
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParentChange,QmlParentChange)
+QML_DEFINE_TYPE(Qt,4,6,ParentChange,QmlParentChange)
 QmlParentChange::QmlParentChange(QObject *parent)
     : QmlStateOperation(*(new QmlParentChangePrivate), parent)
 {
@@ -293,7 +293,7 @@ public:
     \qmlclass StateChangeScript QmlStateChangeScript
     \brief The StateChangeScript element allows you to run a script in a state.
 */
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,StateChangeScript,QmlStateChangeScript)
+QML_DEFINE_TYPE(Qt,4,6,StateChangeScript,QmlStateChangeScript)
 QmlStateChangeScript::QmlStateChangeScript(QObject *parent)
 : QmlStateOperation(*(new QmlStateChangeScriptPrivate), parent)
 {
@@ -360,7 +360,7 @@ QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
     For more information on anchors see \l {anchor-layout}{Anchor Layouts}.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnchorChanges,QmlAnchorChanges)
+QML_DEFINE_TYPE(Qt,4,6,AnchorChanges,QmlAnchorChanges)
 
 class QmlAnchorChangesPrivate : public QObjectPrivate
 {

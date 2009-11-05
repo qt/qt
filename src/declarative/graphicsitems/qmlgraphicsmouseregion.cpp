@@ -49,7 +49,7 @@ QT_BEGIN_NAMESPACE
 static const qreal DragThreshold = 5;
 static const int PressAndHoldDelay = 800;
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Drag,QmlGraphicsDrag)
+QML_DEFINE_TYPE(Qt,4,6,Drag,QmlGraphicsDrag)
 QmlGraphicsDrag::QmlGraphicsDrag(QObject *parent)
 : QObject(parent), _target(0), _axis(XandYAxis), _xmin(0), _xmax(0), _ymin(0), _ymax(0)
 {
@@ -225,7 +225,7 @@ void QmlGraphicsDrag::setYmax(qreal m)
     The \e accepted property of the MouseEvent parameter is ignored in this handler.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,MouseRegion,QmlGraphicsMouseRegion)
+QML_DEFINE_TYPE(Qt,4,6,MouseRegion,QmlGraphicsMouseRegion)
 
 /*!
     \internal

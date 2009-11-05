@@ -76,7 +76,7 @@ Item {
     \endqml
     \endtable
 */
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,AnimatedImage,QmlGraphicsAnimatedImageItem)
+QML_DEFINE_TYPE(Qt,4,6,AnimatedImage,QmlGraphicsAnimatedImageItem)
 
 QmlGraphicsAnimatedImageItem::QmlGraphicsAnimatedImageItem(QmlGraphicsItem *parent)
     : QmlGraphicsImage(*(new QmlGraphicsAnimatedImageItemPrivate), parent)
