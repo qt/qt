@@ -45,6 +45,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+#include <private/qmlmetaproperty_p.h>
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
@@ -246,8 +247,29 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
     QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
 
+    QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
+    QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
+    QTest::newRow("Script.3") << "script.3.qml" << "script.3.errors.txt" << false;
+    QTest::newRow("Script.4") << "script.4.qml" << "script.4.errors.txt" << false;
+    QTest::newRow("Script.5") << "script.5.qml" << "script.5.errors.txt" << false;
+    QTest::newRow("Script.6") << "script.6.qml" << "script.6.errors.txt" << false;
+    QTest::newRow("Script.7") << "script.7.qml" << "script.7.errors.txt" << false;
+    QTest::newRow("Script.8") << "script.8.qml" << "script.8.errors.txt" << false;
+    QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
+    QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
+    QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
 
+    QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
+    QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
+    QTest::newRow("Component.3") << "component.3.qml" << "component.3.errors.txt" << false;
+    QTest::newRow("Component.4") << "component.4.qml" << "component.4.errors.txt" << false;
+    QTest::newRow("Component.5") << "component.5.qml" << "component.5.errors.txt" << false;
+    QTest::newRow("Component.6") << "component.6.qml" << "component.6.errors.txt" << false;
 
+    QTest::newRow("nestedErrors") << "nestedErrors.qml" << "nestedErrors.errors.txt" << false;
+    QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
+    QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
+    QTest::newRow("doubleSignal") << "doubleSignal.qml" << "doubleSignal.errors.txt" << false;
 }
 
 void tst_qmllanguage::errors()
@@ -371,6 +393,7 @@ void tst_qmllanguage::assignBasicTypes()
     QCOMPARE(object->intProperty(), -19);
     QCOMPARE((float)object->realProperty(), float(23.2));
     QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE((float)object->floatProperty(), float(8.5));
     QCOMPARE(object->colorProperty(), QColor("red"));
     QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
     QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
@@ -383,6 +406,7 @@ void tst_qmllanguage::assignBasicTypes()
     QCOMPARE(object->rectFProperty(), QRectF((float)1000.1, (float)-10.9, (float)400, (float)90.99));
     QCOMPARE(object->boolProperty(), true);
     QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+    QCOMPARE(object->vectorProperty(), QVector3D(10, 1, 2.2));
     QVERIFY(object->objectProperty() != 0);
     MyTypeObject *child = qobject_cast<MyTypeObject *>(object->objectProperty());
     QVERIFY(child != 0);
@@ -615,9 +639,9 @@ void tst_qmllanguage::valueTypes()
     p.write(13);
     QCOMPARE(p.read(), QVariant(13));
 
-    quint32 r = p.save();
+    quint32 r = QmlMetaPropertyPrivate::saveValueType(p.coreIndex(), p.valueTypeCoreIndex());
     QmlMetaProperty p2;
-    p2.restore(r, object);
+    QmlMetaPropertyPrivate::restore(p2, r, object);
     QCOMPARE(p2.read(), QVariant(13));
 }
 

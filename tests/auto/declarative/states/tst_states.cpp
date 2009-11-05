@@ -54,6 +54,9 @@ private slots:
     void basicExtension();
     void basicBinding();
     void signalOverride();
+    void parentChange();
+    void anchorChanges();
+    void script();
 };
 
 void tst_states::basicChanges()
@@ -350,6 +353,116 @@ void tst_states::signalOverride()
         QCOMPARE(rect->color(),QColor("blue"));
         QCOMPARE(innerRect->color(),QColor("green"));
         QCOMPARE(innerRect->property("extendedColor").value<QColor>(),QColor("green"));
+    }
+}
+
+void tst_states::parentChange()
+{
+    QmlEngine engine;
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/parentChange.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(-133));
+        QCOMPARE(innerRect->y(), qreal(-300));
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/parentChange2.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(15));
+        QCOMPARE(innerRect->scale(), qreal(.5));
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(12.4148145657));
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(10.6470476128));
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/parentChange3.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(-37));
+        QCOMPARE(innerRect->scale(), qreal(.25));
+        QCOMPARE(QString("%1").arg(innerRect->x()), QString("%1").arg(-217.305));
+        QCOMPARE(QString("%1").arg(innerRect->y()), QString("%1").arg(-164.413));
+
+        rect->setState("");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QCOMPARE(innerRect->y(), qreal(0));
+    }
+}
+
+void tst_states::anchorChanges()
+{
+    QmlEngine engine;
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("right");
+        QCOMPARE(innerRect->x(), qreal(150));
+
+        rect->setState("");
+        QCOMPARE(innerRect->x(), qreal(5));
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges2.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("right");
+        QCOMPARE(innerRect->x(), qreal(150));
+
+        rect->setState("");
+        QCOMPARE(innerRect->x(), qreal(5));
+    }
+}
+
+void tst_states::script()
+{
+    QmlEngine engine;
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/script.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QCOMPARE(rect->color(),QColor("red"));
+
+        rect->setState("blue");
+        QCOMPARE(rect->color(),QColor("blue"));
+
+        rect->setState("");
+        QCOMPARE(rect->color(),QColor("blue")); // a script isn't reverted
     }
 }
 

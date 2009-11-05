@@ -1234,6 +1234,7 @@ void tst_QSqlDatabase::recordSQLite()
 
         FieldDef("integer", QVariant::Int,              QVariant(13)),
         FieldDef("int", QVariant::Int,                  QVariant(12)),
+        FieldDef("real", QVariant::String,              QVariant(1.234567890123456)),
 
         FieldDef()
     };

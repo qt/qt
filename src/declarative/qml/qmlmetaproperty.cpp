@@ -111,27 +111,12 @@ void QmlMetaPropertyPrivate::initDefault(QObject *obj)
     if (!obj)
         return;
 
-    object = obj;
     QMetaProperty p = QmlMetaType::defaultProperty(obj);
     core.load(p);
-    if (core.isValid())
+    if (core.isValid()) {
         isDefaultProperty = true;
-}
-
-/*!
-    \internal
-
-    Creates a QmlMetaProperty for the property at index \a idx of \a obj.
- */
-QmlMetaProperty::QmlMetaProperty(QObject *obj, int idx, QmlContext *ctxt)
-: d(new QmlMetaPropertyPrivate)
-{
-    Q_ASSERT(obj);
-
-    d->q = this;
-    d->context = ctxt;
-    d->object = obj;
-    d->core.load(obj->metaObject()->property(idx));
+        object = obj;
+    }
 }
 
 /*!
@@ -142,6 +127,7 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name)
 {
     d->q = this;
     d->initProperty(obj, name);
+    if (!isValid()) d->object = 0;
 }
 
 /*!
@@ -154,6 +140,7 @@ QmlMetaProperty::QmlMetaProperty(QObject *obj, const QString &name, QmlContext *
     d->q = this;
     d->context = ctxt;
     d->initProperty(obj, name);
+    if (!isValid()) { d->object = 0; d->context = 0; }
 }
 
 void QmlMetaPropertyPrivate::initProperty(QObject *obj, const QString &name)
@@ -425,12 +412,14 @@ bool QmlMetaProperty::isWritable() const
 {
     QmlMetaProperty::PropertyCategory category = propertyCategory();
 
+    if (!d->object)
+        return false;
     if (category == List || category == QmlList)
         return true;
     else if (type() & SignalProperty)
-        return true;
+        return false;
     else if (d->core.isValid() && d->object)
-        return d->object->metaObject()->property(d->core.coreIndex).isWritable();
+        return d->core.flags & QmlPropertyCache::Data::IsWritable;
     else
         return false;
 }
@@ -456,25 +445,6 @@ bool QmlMetaProperty::isValid() const
 }
 
 /*!
-    Returns all of \a obj's Qt properties.
-*/
-QStringList QmlMetaProperty::properties(QObject *obj)
-{
-    // ### What is this used for?
-    if (!obj)
-        return QStringList();
-
-    QStringList rv;
-    const QMetaObject *mo = obj->metaObject();
-    for (int ii = 0; ii < mo->propertyCount(); ++ii) {
-        QMetaProperty prop = mo->property(ii);
-        rv << QString::fromUtf8(prop.name());
-    }
-
-    return rv;
-}
-
-/*!
     Return the name of this QML property.
 */
 QString QmlMetaProperty::name() const
@@ -494,7 +464,13 @@ QString QmlMetaProperty::name() const
 
         return rv;
     } else {
-        return d->core.name;
+        if (type() & SignalProperty) {
+            QString name = QLatin1String("on") + d->core.name;
+            name[2] = name.at(2).toUpper();
+            return name;
+        } else {
+            return d->core.name;
+        }
     }
 }
 
@@ -558,12 +534,17 @@ QmlAbstractBinding *QmlMetaProperty::binding() const
 
     Ownership of \a newBinding transfers to QML.  Ownership of the return value
     is assumed by the caller.
+
+    \a flags is passed through to the binding and is used for the initial update (when
+    the binding sets the intial value, it will use these flags for the write).
 */
 QmlAbstractBinding *
 QmlMetaProperty::setBinding(QmlAbstractBinding *newBinding, QmlMetaProperty::WriteFlags flags) const
 {
-    if (!isProperty() || (type() & Attached) || !d->object)
+    if (!isProperty() || (type() & Attached) || !d->object) {
+        delete newBinding;
         return 0;
+    }
 
     return d->setBinding(d->object, d->core, newBinding, flags);
 }
@@ -627,8 +608,10 @@ QmlExpression *QmlMetaProperty::signalExpression() const
 */
 QmlExpression *QmlMetaProperty::setSignalExpression(QmlExpression *expr) const
 {
-    if (!(type() & SignalProperty))
+    if (!(type() & SignalProperty)) {
+        delete expr;
         return 0;
+    }
 
     const QObjectList &children = d->object->children();
     
@@ -683,13 +666,7 @@ QVariant QmlMetaProperty::read() const
 
     if (type() & SignalProperty) {
 
-        const QObjectList &children = object()->children();
-
-        for (int ii = 0; ii < children.count(); ++ii) {
-            QmlBoundSignal *sig = QmlBoundSignal::cast(children.at(ii));
-            if (sig && sig->index() == d->core.coreIndex) 
-                return sig->expression()->expression();
-        }
+        return QVariant();
 
     } else if (type() & Property) {
 
@@ -854,7 +831,7 @@ bool QmlMetaPropertyPrivate::write(QObject *object, const QmlPropertyCache::Data
             return false;
 
         if (context && u.isRelative() && !u.isEmpty())
-            u = context->baseUrl().resolved(u);
+            u = context->resolvedUrl(u);
         int status = -1;
         void *argv[] = { &u, 0, &status, &flags };
         QMetaObject::metacall(object, QMetaObject::WriteProperty, coreIdx, argv);
@@ -987,7 +964,7 @@ bool QmlMetaProperty::write(const QVariant &value) const
 
 bool QmlMetaProperty::write(const QVariant &value, QmlMetaProperty::WriteFlags flags) const
 {
-    if (d->object && type() & Property && d->core.isValid()) 
+    if (d->object && type() & Property && d->core.isValid() && isWritable()) 
         return d->writeValueProperty(value, flags);
     else 
         return false;
@@ -1080,27 +1057,6 @@ Q_GLOBAL_STATIC(QmlValueTypeFactory, qmlValueTypes);
     Returns the property information serialized into a single integer.  
     QmlMetaProperty uses the bottom 24 bits only.
 */
-quint32 QmlMetaProperty::save() const
-{
-    quint32 rv = 0;
-    if (type() & Attached) {
-        rv = d->attachedFunc;
-    } else if (type() != Invalid) {
-        rv = d->core.coreIndex;
-    }
-
-    Q_ASSERT(rv <= 0x7FF);
-    Q_ASSERT(type() <= 0x3F);
-    Q_ASSERT(d->valueTypeCoreIdx <= 0x7F);
-
-    rv |= (type() << 18);
-
-    if (type() & ValueTypeProperty)
-        rv |= (d->valueTypeCoreIdx << 11);
-
-    return rv;
-}
-
 quint32 QmlMetaPropertyPrivate::saveValueType(int core, int valueType)
 {
     Q_ASSERT(core <= 0x7FF);
@@ -1127,8 +1083,11 @@ quint32 QmlMetaPropertyPrivate::saveProperty(int core)
   to QmlMetaProperty::save().  Only the bottom 24-bits are
   used, the high bits can be set to any value.
 */
-void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
+void QmlMetaPropertyPrivate::restore(QmlMetaProperty &prop, quint32 id, 
+                                     QObject *obj, QmlContext *ctxt)
 {
+    QmlMetaPropertyPrivate *d = prop.d;
+
     QmlEnginePrivate *enginePrivate = 0;
     if (ctxt && ctxt->engine())
         enginePrivate = QmlEnginePrivate::get(ctxt->engine());
@@ -1140,9 +1099,9 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
     uint type = id >> 18;
     id &= 0xFFFF;
 
-    if (type & Attached) {
+    if (type & QmlMetaProperty::Attached) {
         d->attachedFunc = id;
-    } else if (type & ValueTypeProperty) {
+    } else if (type & QmlMetaProperty::ValueTypeProperty) {
         int coreIdx = id & 0x7FF;
         int valueTypeIdx = id >> 11;
 
@@ -1156,7 +1115,7 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
         d->core.load(p);
         d->valueTypeCoreIdx = valueTypeIdx;
         d->valueTypePropType = p2.userType();
-    } else if (type & Property) {
+    } else if (type & QmlMetaProperty::Property) {
 
         QmlPropertyCache *cache = enginePrivate?enginePrivate->cache(obj):0;
 
@@ -1168,12 +1127,12 @@ void QmlMetaProperty::restore(quint32 id, QObject *obj, QmlContext *ctxt)
             d->core.load(p);
         }
 
-    } else if (type & SignalProperty) {
+    } else if (type & QmlMetaProperty::SignalProperty) {
 
         QMetaMethod method = obj->metaObject()->method(id);
         d->core.load(method);
     } else {
-        *this = QmlMetaProperty();
+        prop = QmlMetaProperty();
     }
 }
 

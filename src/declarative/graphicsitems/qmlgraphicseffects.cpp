@@ -81,25 +81,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Blur,QGraphicsBlurEffect)
     By default, the blur hint is Qt.PerformanceHint.
 */
 
-QML_DECLARE_TYPE(QGraphicsGrayscaleEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Grayscale,QGraphicsGrayscaleEffect)
-
-/*!
-    \qmlclass Grayscale QGraphicsGrayscaleEffect
-    \brief The Grayscale object provides a grayscale effect.
-
-    A grayscale effect renders the source item in shades of gray.
-
-    \img graphicseffect-grayscale.png
-*/
-
-/*!
-    \qmlproperty real Grayscale::strength
-
-    To what extent the source item is "grayed". A strength of 0.0 is equal to no effect,
-    while 1.0 means full grayscale. By default, the strength is 1.0.
-*/
-
 QML_DECLARE_TYPE(QGraphicsColorizeEffect)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Colorize,QGraphicsColorizeEffect)
 
@@ -127,32 +108,6 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Colorize,QGraphicsColorizeEffect
     To what extent the source item is "colored". A strength of 0.0 is equal to no effect,
     while 1.0 means full colorization. By default, the strength is 1.0.
 */
-
-QML_DECLARE_TYPE(QGraphicsPixelizeEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pixelize,QGraphicsPixelizeEffect)
-
-/*!
-    \qmlclass Pixelize QGraphicsPixelizeEffect
-    \brief The Pixelize object provides a pixelize effect.
-
-    A pixelize effect renders the source item in lower resolution. The resolution
-    can be modified using the pixelSize property.
-
-    By default, the pixel size is 3.
-
-    \img graphicseffect-pixelize.png
-*/
-
-/*!
-    \qmlproperty int Pixelize::pixelSize
-    The size of a pixel in the effect.
-
-    Setting the pixel size to 2 means two pixels in the source item will be used to
-    represent one pixel in the output. Using a bigger size results in lower resolution.
-
-    By default, the pixel size is 3.
-*/
-
 
 QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,DropShadow,QGraphicsDropShadowEffect)
@@ -221,57 +176,5 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Opacity,QGraphicsOpacityEffect)
     fully transparent and 1.0 is fully opaque.
 
     By default, the opacity is 0.7.
-*/
-
-QML_DECLARE_TYPE(QGraphicsBloomEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Bloom,QGraphicsBloomEffect)
-
-/*!
-    \qmlclass Bloom QGraphicsBloomEffect
-    \brief The Bloom object provides a bloom/glow effect.
-
-    A bloom/glow effect adds fringes of light around bright areas in the source item.
-
-    \img graphicseffect-bloom.png
-*/
-
-/*!
-    \qmlproperty real Bloom::blurRadius
-    The blur radius in pixels of the effect.
-
-    Using a smaller radius results in a sharper appearance, whereas a bigger
-    radius results in a more blurred appearance.
-
-    By default, the blur radius is 5 pixels.
-*/
-
-/*!
-    \qmlproperty enumeration Bloom::blurHint
-
-    Use the Qt.PerformanceHint hint to say that you want a faster blur,
-    and the Qt.QualityHint hint to say that you prefer a higher quality blur.
-
-    When animating the blur radius it's recommended to use Qt.PerformanceHint.
-
-    By default, the blur hint is Qt.PerformanceHint.
-*/
-
-/*!
-    \qmlproperty int Bloom::brightness
-    This property specifies how bright the glow should appear.
-
-    The value should be in the range of 0 to 255, where 0 is dark
-    and 255 is bright.
-
-    By default, the brightness is 70.
-*/
-
-/*!
-    \qmlproperty real Bloom::strength
-    The strength of the glow.
-
-    A strength of 0.0 is equal to no effect, while 1.0 means maximum glow.
-
-    By default, the strength is 0.7.
 */
 

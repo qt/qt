@@ -203,6 +203,8 @@ private slots:
 
     void addColumnWhileEditing();
     void task234926_setHeaderSorting();
+
+    void changeHeaderData();
 };
 
 // Testing get/set functions
@@ -3882,6 +3884,25 @@ void tst_QTableView::taskQTBUG_5062_spansInconsistency()
 
     VERIFY_SPANS_CONSISTENCY(&view);
 }
+
+void tst_QTableView::changeHeaderData()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    QString text = "long long long text";
+    const int textWidth = view.fontMetrics().width(text);
+    QVERIFY(view.verticalHeader()->width() < textWidth);
+
+    model.setHeaderData(2, Qt::Vertical, text);
+    QTest::qWait(100); //leave time for layout
+
+    QVERIFY(view.verticalHeader()->width() > textWidth);
+}
+
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"

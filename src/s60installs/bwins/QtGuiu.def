@@ -5488,7 +5488,7 @@ EXPORTS
 	?currentIndex@QDataWidgetMapper@@QBEHXZ @ 5487 NONAME ; int QDataWidgetMapper::currentIndex(void) const
 	?setFont@QApplication@@SAXABVQFont@@PBD@Z @ 5488 NONAME ; void QApplication::setFont(class QFont const &, char const *)
 	?resized@QDesktopWidget@@IAEXH@Z @ 5489 NONAME ; void QDesktopWidget::resized(int)
-	?fontEngine@QTextEngine@@QBEPAVQFontEngine@@ABUQScriptItem@@PAUQFixed@@1@Z @ 5490 NONAME ; class QFontEngine * QTextEngine::fontEngine(struct QScriptItem const &, struct QFixed *, struct QFixed *) const
+	?fontEngine@QTextEngine@@QBEPAVQFontEngine@@ABUQScriptItem@@PAUQFixed@@1@Z @ 5490 NONAME ABSENT ; class QFontEngine * QTextEngine::fontEngine(struct QScriptItem const &, struct QFixed *, struct QFixed *) const
 	??BQVector2D@@QBE?AVQVariant@@XZ @ 5491 NONAME ; QVector2D::operator class QVariant(void) const
 	?qt_metacall@QTreeWidget@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 5492 NONAME ; int QTreeWidget::qt_metacall(enum QMetaObject::Call, int, void * *)
 	?setSelectable@QStandardItem@@QAEX_N@Z @ 5493 NONAME ; void QStandardItem::setSelectable(bool)
@@ -12542,4 +12542,10 @@ EXPORTS
 	??0QSplitter@@QAE@PAVQWidget@@@Z @ 12541 NONAME ; QSplitter::QSplitter(class QWidget *)
 	?DocumentLengthForFep@QCoeFepInputContext@@UBEHXZ @ 12542 NONAME ; int QCoeFepInputContext::DocumentLengthForFep(void) const
 	??0QShowEvent@@QAE@XZ @ 12543 NONAME ; QShowEvent::QShowEvent(void)
+	?fontEngine@QTextEngine@@QBEPAVQFontEngine@@ABUQScriptItem@@PAUQFixed@@11@Z @ 12544 NONAME ; class QFontEngine * QTextEngine::fontEngine(struct QScriptItem const &, struct QFixed *, struct QFixed *, struct QFixed *) const
+	?leading@QTextLine@@QBEMXZ @ 12545 NONAME ; float QTextLine::leading(void) const
+	?leadingIncluded@QTextLine@@QBE_NXZ @ 12546 NONAME ; bool QTextLine::leadingIncluded(void) const
+	?projectedRotate@QMatrix4x4@@AAEAAV1@MMMM@Z @ 12547 NONAME ; class QMatrix4x4 & QMatrix4x4::projectedRotate(float, float, float, float)
+	?setLeadingIncluded@QTextLine@@QAEX_N@Z @ 12548 NONAME ; void QTextLine::setLeadingIncluded(bool)
+	?toTransform@QMatrix4x4@@QBE?AVQTransform@@XZ @ 12549 NONAME ; class QTransform QMatrix4x4::toTransform(void) const
 

@@ -54,6 +54,7 @@ QmlListScriptClass::QmlListScriptClass(QmlEngine *e)
 : QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(e)), engine(e)
 {
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
+    Q_UNUSED(scriptEngine);
 
     m_lengthId = createPersistentIdentifier(QLatin1String("length"));
 }
@@ -81,6 +82,8 @@ QScriptClass::QueryFlags
 QmlListScriptClass::queryProperty(Object *object, const Identifier &name, 
                                   QScriptClass::QueryFlags flags)
 {
+    Q_UNUSED(object);
+    Q_UNUSED(flags);
     if (name == m_lengthId.identifier)
         return QScriptClass::HandlesReadAccess;
 
@@ -115,9 +118,11 @@ QScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
     if (data->type == QListPtr) {
         const QList<QObject *> &qlist = *((QList<QObject *>*)list);
 
-        if (name == m_lengthId.identifier) 
-            return qlist.count();
-        else if (lastIndex < qlist.count())
+        quint32 count = qlist.count();
+
+        if (name == m_lengthId.identifier)
+            return count;
+        else if (lastIndex < count)
             return enginePriv->objectClass->newQObject(qlist.at(lastIndex));
         else
             return scriptEngine->undefinedValue();
@@ -126,9 +131,9 @@ QScriptValue QmlListScriptClass::property(Object *obj, const Identifier &name)
         Q_ASSERT(data->type == QmlListPtr);
         const QmlList<QObject *> &qmllist = *((QmlList<QObject *>*)list);
 
-        int count = qmllist.count();
+        quint32 count = qmllist.count();
 
-        if (name == m_lengthId.identifier) 
+        if (name == m_lengthId.identifier)
             return count;
         else if (lastIndex < count) 
             return enginePriv->objectClass->newQObject(qmllist.at(lastIndex));

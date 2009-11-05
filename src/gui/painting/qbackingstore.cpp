@@ -498,18 +498,6 @@ static inline void sendUpdateRequest(QWidget *widget, bool updateImmediately)
     if (!widget)
         return;
 
-#if defined(Q_WS_WIN) && !defined(Q_OS_WINCE)
-    if (QApplicationPrivate::inSizeMove && widget->internalWinId() && !updateImmediately
-        && !widget->testAttribute(Qt::WA_DontShowOnScreen)) {
-        // Tell Windows to send us a paint event if we're in WM_SIZE/WM_MOVE; posted events
-        // are blocked until the mouse button is released. See task 146849.
-        const QRegion rgn(qt_dirtyRegion(widget));
-        InvalidateRgn(widget->internalWinId(), rgn.handle(), false);
-        qt_widget_private(widget)->dirty = QRegion();
-        return;
-    }
-#endif
-
     if (updateImmediately) {
         QEvent event(QEvent::UpdateRequest);
         QApplication::sendEvent(widget, &event);
@@ -891,7 +879,7 @@ void QWidgetPrivate::moveRect(const QRect &rect, int dx, int dy)
     const QRect parentRect(rect & clipR);
 
     bool accelerateMove = accelEnv && isOpaque
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
                           // No accelerate move for proxy widgets.
                           && !tlw->d_func()->extra->proxyWidget
 #endif
@@ -1189,7 +1177,7 @@ void QWidgetBackingStore::sync()
                                            : wd->dirty);
         toClean += widgetDirty;
 
-#ifndef QT_NO_GRAPHICSCVIEW
+#ifndef QT_NO_GRAPHICSVIEW
         if (tlw->d_func()->extra->proxyWidget) {
             resetWidget(w);
             continue;

@@ -70,10 +70,10 @@ QmlGlobalScriptClass::queryProperty(const QScriptValue &object,
                                     const QScriptString &name,
                                     QueryFlags flags, uint *id)
 {
-    Q_UNUSED(object)
-    Q_UNUSED(name)
-    Q_UNUSED(flags)
-    Q_UNUSED(id)
+    Q_UNUSED(object);
+    Q_UNUSED(name);
+    Q_UNUSED(flags);
+    Q_UNUSED(id);
     return HandlesReadAccess | HandlesWriteAccess;
 }
 
@@ -82,9 +82,9 @@ QmlGlobalScriptClass::property(const QScriptValue &object,
                                const QScriptString &name, 
                                uint id)
 {
-    Q_UNUSED(object)
-    Q_UNUSED(name)
-    Q_UNUSED(id)
+    Q_UNUSED(object);
+    Q_UNUSED(name);
+    Q_UNUSED(id);
     return engine()->undefinedValue();
 }
 
@@ -92,8 +92,9 @@ void QmlGlobalScriptClass::setProperty(QScriptValue &object,
                                        const QScriptString &name,
                                        uint id, const QScriptValue &value)
 {
-    Q_UNUSED(object)
-    Q_UNUSED(value)
+    Q_UNUSED(object);
+    Q_UNUSED(id);
+    Q_UNUSED(value);
     QString error = QLatin1String("Invalid write to global property \"") + 
                     name.toString() + QLatin1String("\"");
     engine()->currentContext()->throwError(error);

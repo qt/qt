@@ -39,7 +39,6 @@ HEADERS += \
            graphicsitems/qmlgraphicstextedit_p_p.h \
            graphicsitems/qmlgraphicstext_p.h \
            graphicsitems/qmlgraphicstext_p_p.h \
-           graphicsitems/qmlgraphicspixmapcache_p.h \
            graphicsitems/qmlgraphicsvisualitemmodel_p.h \
            graphicsitems/qmlgraphicslistview_p.h \
            graphicsitems/qmlgraphicsgraphicsobjectcontainer_p.h \
@@ -70,7 +69,6 @@ SOURCES += \
            graphicsitems/qmlgraphicstextinput.cpp \
            graphicsitems/qmlgraphicstext.cpp \
            graphicsitems/qmlgraphicstextedit.cpp \
-           graphicsitems/qmlgraphicspixmapcache.cpp \
            graphicsitems/qmlgraphicsvisualitemmodel.cpp \
            graphicsitems/qmlgraphicslistview.cpp \
            graphicsitems/qmlgraphicsgraphicsobjectcontainer.cpp \

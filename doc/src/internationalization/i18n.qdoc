@@ -51,6 +51,7 @@
     \page internationalization.html
     \title Internationalization with Qt
     \brief Information about Qt's support for internationalization and multiple languages.
+    \nextpage Writing Source Code for Translation
 
     \keyword internationalization
     \keyword i18n
@@ -59,11 +60,11 @@
     the application usable by people in countries other than one's own.
 
     \tableofcontents
-    
+
     \section1 Relevant Qt Classes and APIs
 
     These classes support internationalizing of Qt applications.
-    
+
     \annotatedlist i18n
 
     \section1 Languages and Writing Systems
@@ -438,9 +439,13 @@
     application language.
 
     The default event handler for QWidget subclasses responds to the
-    QEvent::LanguageChange event, and will call this function when necessary;
-    other application components can also force widgets to update themselves
-    by posting the \l{QEvent::LanguageChange}{LanguageChange} event to them.
+    QEvent::LanguageChange event, and will call this function when necessary.
+
+    \l{QEvent::LanguageChange}{LanguageChange} events are posted when a new
+    translation is installed using the QCoreApplication::installTranslator()
+    function. Additionally, other application components can also force
+    widgets to update themselves by posting LanguageChange events to them.
+
 
     \section1 Translating Non-Qt Classes
 
@@ -515,4 +520,266 @@
 
     For details on Mac-specific translation, refer to the Qt/Mac Specific Issues
     document \l{Qt for Mac OS X - Specific Issues#Translating the Application Menu and Native Dialogs}{here}.
+*/
+
+/*!
+    \page i18n-source-translation.html
+    \title Writing Source Code for Translation
+    \ingroup i18n
+    \previouspage Internationalization with Qt
+    \contentspage Internationalization with Qt
+    \nextpage Translation Rules for Plurals
+    \brief How to write source code in a way that makes it possible for user-visible text to be translated.
+
+    \tableofcontents
+
+    \section1 The Basics
+
+    Developers use the \l{QObject::}{tr()} function to obtain translated text
+    for their classes, typically for display purposes. This function is also
+    used to indicate which text strings in an application are translatable.
+
+    Qt indexes each translatable string by the \e{translation context} it is
+    associated with; this is generally the name of the QObject subclass it is
+    used in.
+
+    Translation contexts are defined for new QObject-based classes by the use
+    of the Q_OBJECT macro in each new class definition.
+
+    When tr() is called, it looks up the translatable string using a QTranslator
+    object. For translation to work, one or more of these must have been
+    installed on the application object in the way described in the
+    \l{#Enabling Translation}{Enabling Translation} section below.
+
+    \section1 Defining a Translation Context
+
+    The translation context for QObject and each QObject subclass is the
+    class name itself. Developers subclassing QObject must use the
+    Q_OBJECT macro in their class definition to override the translation
+    context. This macro sets the context to the name of the subclass.
+
+    For example, the following class definition includes the Q_OBJECT macro,
+    implementing a new tr() that uses the \c MainWindow context:
+
+    \snippet mainwindows/sdi/mainwindow.h class definition with macro
+    \dots
+
+    If Q_OBJECT is not used in a class definition, the context will be
+    inherited from the base class. For example, since all QObject-based
+    classes in Qt provide a context, a new QWidget subclass defined without
+    a Q_OBJECT macro will use the \c QWidget context if its tr() function
+    is invoked.
+
+    \section1 Using tr() to Obtain a Translation
+
+    The following example shows how a translation is obtained for the
+    class shown in the previous section:
+
+    \snippet mainwindows/sdi/mainwindow.cpp implicit tr context
+    \dots
+
+    Here, the translation context is \c MainWindow because it is the
+    \c MainWindow::tr() function that is invoked. The text returned
+    by the tr() function is a translation of "&File" obtained from
+    the \c MainWindow context.
+
+    When Qt's translation tool, \l lupdate, is used to process a set of source
+    files, the text wrapped in tr() calls is stored in a section of the translation
+    file that corresponds to its translation context.
+
+    In some situations, it is useful to give a translation context explicitly
+    by fully qualifying the call to tr(); for example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp explicit tr context
+
+    This call obtains the translated text for "Page up" from the \c QScrollBar
+    context. Developers can also use the QCoreApplication::translate() function
+    to obtain a translation for a particular translation context.
+
+    \section1 Translator Comments
+
+    Developers can include information about each translatable string to
+    help translators with the translation process. These are extracted
+    when \l lupdate is used to process the source files. The recommended
+    way to add comments is to annotate the tr() calls in your code with
+    comments of the form:
+
+    \tt{//: ...}
+
+    or
+
+    \tt{\begincomment: ... \endcomment}
+
+    Examples:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 40
+
+    In these examples, the comments will be associated with the strings
+    passed to tr() in the context of each call.
+
+    \section1 Adding Meta-Data to Strings
+
+    Additional data can be attached to each translatable message. These are
+    extracted when \l lupdate is used to process the source files. The
+    recommended way to add meta-data is to annotate the tr() calls in your code
+    with comments of the form:
+
+    \tt{//= <id>}
+
+    This can be used to give the message a unique identifier to support tools
+    which need it.
+
+    An alternative way to attach meta-data is to use the following syntax:
+
+    \tt{//~ <field name> <field contents>}
+
+    This can be used to attach meta-data to the message. The field name should
+    consist of a domain prefix (possibly the conventional file extension of the
+    file format the field is inspired by), a hyphen and the actual field name
+    in underscore-delimited notation. For storage in TS files, the field name
+    together with the prefix "extra-" will form an XML element name. The field
+    contents will be XML-escaped, but otherwise appear verbatim as the
+    element's contents. Any number of unique fields can be added to each
+    message.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp meta data
+
+    Meta-data appearing right in front of a magic TRANSLATOR comment applies to
+    the whole TS file.
+
+    \section1 Disambiguation
+
+    If the same translatable string is used in different roles within the same
+    translation context, an additional identifying string may be passed in
+    the call to \l{QObject::}{tr()}. This optional disambiguation argument
+    is used to distinguish between otherwise identical strings.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 17
+    \dots
+
+    In Qt 4.4 and earlier, this disambiguation parameter was the preferred
+    way to specify comments to translators.
+
+    \section1 Character Encodings
+
+    You can set the encoding for the source text by calling QTextCodec::setCodecForTr().
+    By default, the source text is assumed to be in Latin-1 encoding.
+
+    \section1 Handling Plurals
+
+    Some translatable strings contain placeholders for integer values and need
+    to be translated differently depending on the values in use.
+
+    To help with this problem, developers pass an additional integer argument
+    to the \l{QObject::}{tr()} function, and typically use a special notation
+    for plurals in each translatable string.
+
+    If this argument is equal or greater than zero, all occurrences of
+    \c %n in the resulting string are replaced with a decimal representation
+    of the value supplied. In addition, the translation used will adapt to the
+    value according to the rules for each language.
+
+    Example:
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 18
+
+    The table below shows what string is returned depending on the
+    active translation:
+
+    \table
+    \header \o      \o{3,1} Active Translation
+    \header \o \a n \o No Translation        \o French                                 \o English
+    \row    \o 0    \o "0 message(s) saved"  \o "0 message sauvegard\unicode{0xE9}"    \o "0 message\bold{s} saved"
+    \row    \o 1    \o "1 message(s) saved"  \o "1 message sauvegard\unicode{0xE9}"    \o "1 message saved"
+    \row    \o 2    \o "2 message(s) saved"  \o "2 message\bold{s} sauvegard\unicode{0xE9}\bold{s}"  \o "2 message\bold{s} saved"
+    \row    \o 37   \o "37 message(s) saved" \o "37 message\bold{s} sauvegard\unicode{0xE9}\bold{s}" \o "37 message\bold{s} saved"
+    \endtable
+
+    This idiom is more flexible than the traditional approach; e.g.,
+
+    \snippet doc/src/snippets/code/src_corelib_kernel_qobject.cpp 19
+
+    because it also works with target languages that have several
+    plural forms (e.g., Irish has a special "dual" form that should
+    be used when \c n is 2), and it handles the \e n == 0 case
+    correctly for languages such as French that require the singular.
+    See the \l{Qt Linguist Manual} for details.
+
+    Instead of \c %n, you can use \c %Ln to produce a localized
+    representation of \a n. The conversion uses the default locale,
+    set using QLocale::setDefault(). (If no default locale was
+    specified, the "C" locale is used.)
+
+    A summary of the rules used to translate strings containing plurals can be
+    found in the \l{Translation Rules for Plurals} document.
+
+    \section1 Enabling Translation
+
+    Typically, your application's \c main() function will look like
+    this:
+
+    \snippet doc/src/snippets/code/doc_src_i18n.qdoc 8
+
+    Note the use of QLibraryInfo::location() to locate the Qt translations.
+    Developers should request the path to the translations at run-time by
+    passing QLibraryInfo::TranslationsPath to this function instead of
+    using the \c QTDIR environment variable in their applications.
+
+    \section1 Further Reading
+
+    \l{Qt Linguist Manual}, \l{Hello tr Example}, \l{Translation Rules for Plurals}
+*/
+
+/*!
+    \page i18n-plural-rules.html
+    \title Translation Rules for Plurals
+    \ingroup i18n
+    \previouspage Writing Source Code for Translation
+    \contentspage Internationalization with Qt
+    \brief A summary of the translation rules for plurals produced by Qt's i18n tools.
+
+    The table below shows the specific rules that are produced by Qt Linguist
+    and \c lrelease for a selection of languages. Cells marked \e otherwise
+    indicate the form used when none of the other rules are appropriate for a
+    specific language.
+
+    \table 80%
+    \header \o Language \o Rule 1 \o Rule 2 \o Rule 3
+    \row \o English \o \c{n == 1} 
+        \o \e{otherwise} \o N/A
+    \row \o French \o \c{n < 2} 
+        \o \e{otherwise} \o N/A
+    \row \o Czech \o \c{n % 100 == 1} 
+        \o \c{n % 100 >= 2 && n % 100 <= 4} 
+        \o \e{otherwise}
+    \row \o Irish \o \c{n == 1} 
+        \o \c{n == 2} \o \e{otherwise}
+    \row \o Latvian \o \c{n % 10 == 1&& n % 100 != 11} 
+        \o \c{n != 0} \o \e{otherwise}
+    \row \o Lithuanian \o \c{n % 10 == 1&& n % 100 != 11} 
+        \o \c{n % 100 != 12 && n % 10 == 2} 
+        \o \e{otherwise}
+    \row \o Macedonian \o \c{n % 10 == 1} 
+        \o \c{n % 10 == 2} \o \e{otherwise}
+    \row \o Polish \o \c{n == 1} 
+        \o \c{n % 10 >= 2 && n % 10 <= 4
+            && (n % 100 < 10 || n % 100 > 20)} 
+        \o \e{otherwise}
+    \row \o Romanian \o \c{n == 1} 
+        \o \c{n == 0|| (n % 100 >= 1 && n % 100 <= 20)} 
+        \o \e{otherwise}
+    \row \o Russian \o \c{n % 10 == 1&& n % 100 != 11} 
+        \o \c{n % 10 >= 2 && n % 10 <= 4
+            && (n % 100 < 10 || n % 100 > 20)} 
+        \o \e{otherwise}
+    \row \o Slovak \o \c{n == 1} \o \c{n >= 2 && n <= 4} 
+        \o \e{otherwise}
+    \row \o Japanese \o \e{otherwise} \o N/A \o N/A
+    \endtable
+
+    The rules themselves are not documented and are internal to Qt Linguist and \c lrelease.
 */

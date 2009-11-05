@@ -79,7 +79,7 @@ JSSVGAnimatedBoolean::JSSVGAnimatedBoolean(NonNullPassRefPtr<Structure> structur
 
 JSSVGAnimatedBoolean::~JSSVGAnimatedBoolean()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedBoolean::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

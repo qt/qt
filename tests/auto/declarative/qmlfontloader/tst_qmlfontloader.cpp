@@ -52,10 +52,12 @@ public:
     tst_qmlfontloader();
 
 private slots:
-    void nofont();
-    void namedfont();
-    void localfont();
-    void webfont();
+    void noFont();
+    void namedFont();
+    void localFont();
+    void failLocalFont();
+    void webFont();
+    void failWebFont();
 
 private slots:
 
@@ -67,7 +69,7 @@ tst_qmlfontloader::tst_qmlfontloader()
 {
 }
 
-void tst_qmlfontloader::nofont()
+void tst_qmlfontloader::noFont()
 {
     QString componentStr = "import Qt 4.6\nFontLoader { }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
@@ -75,9 +77,12 @@ void tst_qmlfontloader::nofont()
 
     QVERIFY(fontObject != 0);
     QCOMPARE(fontObject->name(), QString(""));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Null);
+
+    delete fontObject;
 }
 
-void tst_qmlfontloader::namedfont()
+void tst_qmlfontloader::namedFont()
 {
     QString componentStr = "import Qt 4.6\nFontLoader { name: \"Helvetica\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
@@ -85,19 +90,32 @@ void tst_qmlfontloader::namedfont()
 
     QVERIFY(fontObject != 0);
     QCOMPARE(fontObject->name(), QString("Helvetica"));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
 
-void tst_qmlfontloader::localfont()
+void tst_qmlfontloader::localFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"data/Fontin-Bold.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/Fontin-Bold.ttf\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
-    QCOMPARE(fontObject->name(), QString("Fontin"));
+    QTRY_COMPARE(fontObject->name(), QString("Fontin"));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
 
-void tst_qmlfontloader::webfont()
+void tst_qmlfontloader::failLocalFont()
+{
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/dummy.ttf\" }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+    QTRY_COMPARE(fontObject->name(), QString(""));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Error);
+}
+
+void tst_qmlfontloader::webFont()
 {
     QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://www.princexml.com/fonts/steffmann/Starburst.ttf\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
@@ -105,6 +123,18 @@ void tst_qmlfontloader::webfont()
 
     QVERIFY(fontObject != 0);
     QTRY_COMPARE(fontObject->name(), QString("Starburst"));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
+}
+
+void tst_qmlfontloader::failWebFont()
+{
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://wrong.address.com/Starburst.ttf\" }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
+
+    QVERIFY(fontObject != 0);
+    QTRY_COMPARE(fontObject->name(), QString(""));
+    QTRY_VERIFY(fontObject->status() == QmlFontLoader::Error);
 }
 
 QTEST_MAIN(tst_qmlfontloader)

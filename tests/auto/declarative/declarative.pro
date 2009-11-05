@@ -1,35 +1,41 @@
 TEMPLATE = subdirs
-SUBDIRS += anchors \
-           animatedimage \
-           animations \
-           behaviors \
-           datetimeformatter \
+SUBDIRS += \
+           anchors \                # Cover
+           animatedimage \          # Cover
+           animations \             # Cover
+           behaviors \              # Cover
+           datetimeformatter \      # Cover
            examples \
-           layouts \
-           listview \
-           numberformatter \
-           pathview \
-           qfxloader \
-           qfxpixmapcache \
-           qfxtextedit \
-           qfxtextinput \
-           qfxwebview \
-           qmetaobjectbuilder \
-           qmlcontext \
-           qmldom \
-           qmlecmascript \
-           qmlgraphicstext \
-           qmllanguage \
-           qmllist \
-           qmllistaccessor \
-           qmlmetaproperty \
-           qmlmetatype \
-           qmlpropertymap \
-           qmltimer \
-           repeater \
-           sql \
-           states \
-           visual
+           layouts \                # Cover
+           listview \               # Cover
+           numberformatter \        # Cover
+           pathview \               # Cover
+           qfxloader \              # Cover
+           qfxtextedit \            # Cover
+           qfxtextinput \           # Cover
+           qfxwebview \             # Cover
+           qmetaobjectbuilder \     # Cover
+           qmlcontext \             # Cover
+           qmldom \                 # Cover
+           qmlecmascript \          # Cover
+           qmlfontloader \          # Cover
+           qmlgraphicsborderimage \ # Cover
+           qmlgraphicsparticles \   # Cover
+           qmlgraphicstext \        # Cover
+           qmllanguage \            # Cover
+           qmllist \                # Cover
+           qmllistaccessor \        # Cover
+           qmlmetaproperty \        # Cover
+           qmlmetatype \            # Cover
+           qmlpixmapcache \         # Cover
+           qmlpropertymap \         # Cover
+           qmlqt \                  # Cover
+           qmltimer \               # Cover
+           qmlxmllistmodel \        # Cover
+           repeater \               # Cover
+           sql \                    # Cover
+           states \                 # Cover
+           visual                   # Cover
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

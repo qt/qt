@@ -142,7 +142,7 @@ JSNodeList::JSNodeList(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSNodeList::~JSNodeList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNodeList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

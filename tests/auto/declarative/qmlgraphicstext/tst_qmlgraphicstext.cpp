@@ -43,6 +43,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicstext_p.h>
+#include <private/qmlvaluetype_p.h>
 #include <QFontMetrics>
 
 class tst_qmlgraphicstext : public QObject
@@ -57,6 +58,7 @@ private slots:
     void width();
     void wrap();
     void elide();
+    void textFormat();
 
     // ### these tests may be trivial    
     void horizontalAlignment();
@@ -65,6 +67,15 @@ private slots:
     void style();
     void color();
     void smooth();
+
+    // QmlFontValueType
+    void weight();
+    void underline();
+    void overline();
+    void strikeout();
+    void capitalization();
+    void letterSpacing();
+    void wordSpacing();
 
 private:
     QStringList standard;
@@ -87,54 +98,54 @@ private:
 tst_qmlgraphicstext::tst_qmlgraphicstext()
 {
     standard << "the quick brown fox jumped over the lazy dog"
-             << "the quick brown fox\n jumped over the lazy dog";
+            << "the quick brown fox\n jumped over the lazy dog";
 
     richText << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a> jumped over the <b>lazy</b> dog</i>"
-             << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
+            << "<i>the <b>quick</b> brown <a href=\\\"http://www.google.com\\\">fox</a><br>jumped over the <b>lazy</b> dog</i>";
 
     horizontalAlignmentmentStrings << "AlignLeft"
-                      << "AlignRight"
-                      << "AlignHCenter";
+            << "AlignRight"
+            << "AlignHCenter";
 
     verticalAlignmentmentStrings << "AlignTop"
-                      << "AlignBottom"
-                      << "AlignVCenter";
+            << "AlignBottom"
+            << "AlignVCenter";
 
     horizontalAlignmentments << Qt::AlignLeft
-                << Qt::AlignRight
-                << Qt::AlignHCenter;
+            << Qt::AlignRight
+            << Qt::AlignHCenter;
 
     verticalAlignmentments << Qt::AlignTop
-                << Qt::AlignBottom
-                << Qt::AlignVCenter;
+            << Qt::AlignBottom
+            << Qt::AlignVCenter;
 
     styleStrings << "Normal"
-                 << "Outline"
-                 << "Raised"
-                 << "Sunken";
+            << "Outline"
+            << "Raised"
+            << "Sunken";
 
     styles << QmlGraphicsText::Normal
-           << QmlGraphicsText::Outline
-           << QmlGraphicsText::Raised
-           << QmlGraphicsText::Sunken;
+            << QmlGraphicsText::Outline
+            << QmlGraphicsText::Raised
+            << QmlGraphicsText::Sunken;
 
     colorStrings << "aliceblue"
-                 << "antiquewhite"
-                 << "aqua"
-                 << "darkkhaki"
-                 << "darkolivegreen"
-                 << "dimgray"
-                 << "palevioletred"
-                 << "lightsteelblue"
-                 << "#000000"
-                 << "#AAAAAA"
-                 << "#FFFFFF"
-                 << "#2AC05F";
-                 //
-                 // need a different test to do alpha channel test
-                 // << "#AA0011DD"
-                 // << "#00F16B11";
-                 // 
+            << "antiquewhite"
+            << "aqua"
+            << "darkkhaki"
+            << "darkolivegreen"
+            << "dimgray"
+            << "palevioletred"
+            << "lightsteelblue"
+            << "#000000"
+            << "#AAAAAA"
+            << "#FFFFFF"
+            << "#2AC05F";
+    //
+    // need a different test to do alpha channel test
+    // << "#AA0011DD"
+    // << "#00F16B11";
+    //
 }
 
 void tst_qmlgraphicstext::text()
@@ -145,6 +156,9 @@ void tst_qmlgraphicstext::text()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->text(), QString(""));
+        QVERIFY(textObject->width() == 0);
+
+        delete textObject;
     }
 
     for (int i = 0; i < standard.size(); i++)
@@ -155,6 +169,7 @@ void tst_qmlgraphicstext::text()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->text(), standard.at(i));
+        QVERIFY(textObject->width() > 0);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -166,6 +181,7 @@ void tst_qmlgraphicstext::text()
         QVERIFY(textObject != 0);
         QString expected = richText.at(i);
         QCOMPARE(textObject->text(), expected.replace("\\\"", "\""));
+        QVERIFY(textObject->width() > 0);
     }
 }
 
@@ -176,11 +192,14 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"\" }", QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 0.);
     }
 
     for (int i = 0; i < standard.size(); i++)
     {
+        QVERIFY(!Qt::mightBeRichText(standard.at(i))); // self-test
+
         QFont f;
         QFontMetrics fm(f);
         int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
@@ -189,11 +208,15 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(metricWidth));
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 
     for (int i = 0; i < richText.size(); i++)
     {
+        QVERIFY(Qt::mightBeRichText(richText.at(i))); // self-test
+
         QTextDocument document;
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
@@ -204,7 +227,9 @@ void tst_qmlgraphicstext::width()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(documentWidth));
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 }
 
@@ -217,6 +242,8 @@ void tst_qmlgraphicstext::wrap()
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
         textHeight = textObject->height();
 
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->wrap() == true);
         QCOMPARE(textObject->width(), 300.);
     }
 
@@ -226,6 +253,7 @@ void tst_qmlgraphicstext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
     }
@@ -236,6 +264,7 @@ void tst_qmlgraphicstext::wrap()
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+        QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
     }
@@ -246,35 +275,53 @@ void tst_qmlgraphicstext::elide()
 {
     for (Qt::TextElideMode m = Qt::ElideLeft; m<=Qt::ElideNone; m=Qt::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
-        QString elide = "elide: \""+QString(elidename[int(m)])+"\";";
+        QString elide = "elide: Text." + QString(elidename[int(m)]) + ";";
 
         // XXX Poor coverage.
 
         {
-            QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 300 }").toLatin1(), QUrl("file://"));
+            QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
 
         for (int i = 0; i < standard.size(); i++)
         {
-            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + standard.at(i) + "\" }";
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 100; text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
 
         // richtext - does nothing
         for (int i = 0; i < richText.size(); i++)
         {
-            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 300; text: \"" + richText.at(i) + "\" }";
+            QString componentStr = "import Qt 4.6\nText { "+elide+" width: 100; text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
-            QCOMPARE(textObject->width(), 300.);
+            QCOMPARE(textObject->width(), 100.);
         }
+    }
+}
+
+void tst_qmlgraphicstext::textFormat()
+{
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"Hello\"; textFormat: Text.RichText }", QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::RichText);
+    }
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nText { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::PlainText);
     }
 }
 
@@ -320,6 +367,8 @@ void tst_qmlgraphicstext::verticalAlignment()
             QString componentStr = "import Qt 4.6\nText { verticalAlignment: \"" + verticalAlignmentmentStrings.at(j) + "\"; text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+            QVERIFY(textObject != 0);
             QCOMPARE((int)textObject->vAlign(), (int)verticalAlignmentments.at(j));
         }
     }
@@ -332,6 +381,7 @@ void tst_qmlgraphicstext::verticalAlignment()
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QVERIFY(textObject != 0);
             QCOMPARE((int)textObject->vAlign(), (int)verticalAlignmentments.at(j));
         }
     }
@@ -469,13 +519,13 @@ void tst_qmlgraphicstext::smooth()
             QString componentStr = "import Qt 4.6\nText { smooth: true; text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), true);
+            QCOMPARE(textObject->smooth(), true);
         }
         {
             QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), false);
+            QCOMPARE(textObject->smooth(), false);
         }
     }
     for (int i = 0; i < richText.size(); i++)
@@ -484,14 +534,194 @@ void tst_qmlgraphicstext::smooth()
             QString componentStr = "import Qt 4.6\nText { smooth: true; text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), true);
+            QCOMPARE(textObject->smooth(), true);
         }
         {
             QString componentStr = "import Qt 4.6\nText { text: \"" + richText.at(i) + "\" }";
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
-            QCOMPARE(textObject->smoothTransform(), false);
+            QCOMPARE(textObject->smooth(), false);
         }
+    }
+}
+
+void tst_qmlgraphicstext::weight()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().weight(), (int)QmlFontValueType::Normal);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { font.weight: \"Bold\"; text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().weight(), (int)QmlFontValueType::Bold);
+    }
+}
+
+void tst_qmlgraphicstext::underline()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().underline(), false);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { font.underline: true; text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().underline(), true);
+    }
+}
+
+void tst_qmlgraphicstext::overline()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().overline(), false);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { font.overline: true; text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().overline(), true);
+    }
+}
+
+void tst_qmlgraphicstext::strikeout()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().strikeOut(), false);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { font.strikeout: true; text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().strikeOut(), true);
+    }
+}
+
+void tst_qmlgraphicstext::capitalization()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().capitalization(), (int)QmlFontValueType::MixedCase);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.capitalization: \"AllUppercase\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().capitalization(), (int)QmlFontValueType::AllUppercase);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.capitalization: \"AllLowercase\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().capitalization(), (int)QmlFontValueType::AllLowercase);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.capitalization: \"SmallCaps\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().capitalization(), (int)QmlFontValueType::SmallCaps);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.capitalization: \"Capitalize\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE((int)textObject->font().capitalization(), (int)QmlFontValueType::Capitalize);
+    }
+}
+
+void tst_qmlgraphicstext::letterSpacing()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().letterSpacing(), 0.0);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.letterSpacing: -50 }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().letterSpacing(), -50.);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.letterSpacing: 200 }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().letterSpacing(), 200.);
+    }
+}
+
+void tst_qmlgraphicstext::wordSpacing()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().wordSpacing(), 0.0);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.wordSpacing: -50 }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().wordSpacing(), -50.);
+    }
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"Hello world!\"; font.wordSpacing: 200 }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QCOMPARE(textObject->font().wordSpacing(), 200.);
     }
 }
 

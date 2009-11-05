@@ -103,7 +103,7 @@ x11 {
             LIBS_PRIVATE += -lfreetype
         } else {
             ### Note: how does this compile with a non-system freetype?
-	    # This probably doesn't compile
+	    # This probably does not compile
         }
     } else {
         DEFINES *= QT_NO_FREETYPE
@@ -150,17 +150,15 @@ embedded {
 
 INCLUDEPATH += ../3rdparty/harfbuzz/src
 
-wince*: {
-    contains(QT_CONFIG,opengles1) {
-        QMAKE_LIBS += "libGLES_CM.lib"
-    }
-    contains(QT_CONFIG,opengles1cl) {
-        QMAKE_LIBS += "libGLES_CL.lib"
-    }
-    contains(QT_CONFIG,opengles2) {
-        QMAKE_LIBS += "libGLESv2.lib"
-    }
-
+contains(QT_CONFIG,opengles1) {
+    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES1
+    LIBS += $$QMAKE_LFLAGS_OPENGL_ES1
+} else:contains(QT_CONFIG,opengles1cl) {
+    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES1CL
+    LIBS += $$QMAKE_LFLAGS_OPENGL_ES1CL
+} else:contains(QT_CONFIG,opengles2) {
+    LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL_ES2
+    LIBS += $$QMAKE_LFLAGS_OPENGL_ES2
 } else {
     LIBS_PRIVATE += $$QMAKE_LIBS_OPENGL
     LIBS += $$QMAKE_LFLAGS_OPENGL

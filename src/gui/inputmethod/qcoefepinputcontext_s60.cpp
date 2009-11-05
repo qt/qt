@@ -561,8 +561,28 @@ void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSele
 
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
     int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
-    aCursorSelection.iAnchorPos = anchor;
-    aCursorSelection.iCursorPos = cursor;
+    QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
+    int combinedSize = text.size() + m_preeditString.size();
+    if (combinedSize < anchor || combinedSize < cursor) {
+        // ### TODO! FIXME! QTBUG-5050
+        // This is a hack to prevent crashing in 4.6 with QLineEdits that use input masks.
+        // The root problem is that cursor position is relative to displayed text instead of the
+        // actual text we get.
+        //
+        // To properly fix this we would need to know the displayText of QLineEdits instead
+        // of just the text, which on itself should be a trivial change. The difficulties start
+        // when we need to commit the changes back to the QLineEdit, which would have to be somehow
+        // able to handle displayText, too.
+        //
+        // Until properly fixed, the cursor and anchor positions will not reflect correct positions
+        // for masked QLineEdits, unless all the masked positions are filled in order so that
+        // cursor position relative to the displayed text matches position relative to actual text.
+        aCursorSelection.iAnchorPos = combinedSize;
+        aCursorSelection.iCursorPos = combinedSize;
+    } else {
+        aCursorSelection.iAnchorPos = anchor;
+        aCursorSelection.iCursorPos = cursor;
+    }
 }
 
 void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDocumentPosition,

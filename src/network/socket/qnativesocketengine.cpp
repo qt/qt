@@ -754,6 +754,12 @@ qint64 QNativeSocketEngine::write(const char *data, qint64 size)
     return d->nativeWrite(data, size);
 }
 
+
+qint64 QNativeSocketEngine::bytesToWrite() const
+{
+    return 0;
+}
+
 /*!
     Reads up to \a maxSize bytes into \a data from the socket.
     Returns the number of bytes read, or -1 if an error occurred.

@@ -6103,7 +6103,7 @@ Klasa: %2</translation>
     <message>
         <location line="+1"/>
         <source>Change toolTip...</source>
-        <translation>Zmień tekst chmurki...</translation>
+        <translation>Zmień podpowiedź...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -6909,7 +6909,7 @@ Klasa: %2</translation>
     <message>
         <location line="+263"/>
         <source>Expand all</source>
-        <translation>Rozszerz wszystkie</translation>
+        <translation>Rozwiń wszystkie</translation>
     </message>
     <message>
         <location line="+1"/>

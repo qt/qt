@@ -100,7 +100,7 @@ JSSVGStringList::JSSVGStringList(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSSVGStringList::~JSSVGStringList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGStringList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
