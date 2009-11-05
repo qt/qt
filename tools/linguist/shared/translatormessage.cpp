@@ -156,17 +156,6 @@ bool TranslatorMessage::operator==(const TranslatorMessage& m) const
 }
 
 
-bool TranslatorMessage::operator<(const TranslatorMessage& m) const
-{
-    if (m_context != m.m_context)
-        return m_context < m.m_context;
-    if (m_sourcetext != m.m_sourcetext)
-        return m_sourcetext < m.m_sourcetext;
-    if (m_comment != m.m_comment)
-        return m_comment < m.m_comment;
-    return m_id < m.m_id;
-}
-
 int qHash(const TranslatorMessage &msg)
 {
     return
