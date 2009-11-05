@@ -1676,18 +1676,18 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
                 text_flags |= Qt::TextHideMnemonic;
 
-            QRect iconRect =
-                subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
-
             if ((option->state & State_Selected) && (option->state & State_Enabled))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+
+            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
+            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
             //todo: move the vertical spacing stuff into subElementRect
             const int vSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
             if (checkable){
+                const int hSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
                 QStyleOptionMenuItem optionCheckBox;
-                optionCheckBox.QStyleOption::operator=(*menuItem);
+                optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
                 optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
                 optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
                 const int moveByX = optionCheckBox.rect.width()+vSpacing;
@@ -1696,6 +1696,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     iconRect.translate(moveByX, 0);
                     iconRect.setWidth(iconRect.width()+vSpacing);
                     textRect.setWidth(textRect.width()-moveByX-vSpacing);
+                    optionCheckBox.rect.translate(vSpacing/2, hSpacing/2);
                 } else {
                     textRect.setWidth(textRect.width()-moveByX);
                     iconRect.setWidth(iconRect.width()+vSpacing);
