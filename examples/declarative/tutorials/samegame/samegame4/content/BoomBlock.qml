@@ -31,9 +31,11 @@ Item { id:block
 
     //![3]
     Particles { id: particles
-        width:1; height:1; anchors.centerIn: parent; opacity: 0
-        lifeSpan: 700; lifeSpanDeviation: 600; count:0; streamIn: false
-        angle: 0; angleDeviation: 360; velocity: 100; velocityDeviation:30
+        width:1; height:1; anchors.centerIn: parent;
+        emissionRate: 0;
+        lifeSpan: 700; lifeSpanDeviation: 600;
+        angle: 0; angleDeviation: 360;
+        velocity: 100; velocityDeviation:30;
         source: {
             if(type == 0){
                 "pics/redStar.png";
@@ -52,10 +54,9 @@ Item { id:block
             PropertyChanges { target: img; opacity: 1 }
         },
         State{ name: "DeathState"; when: dying == true
-            PropertyChanges { target: particles; count: 50 }
-            PropertyChanges { target: particles; opacity: 1 }
-            PropertyChanges { target: particles; emitting: false } // i.e. emit only once
+            StateChangeScript { script: particles.burst(50); }
             PropertyChanges { target: img; opacity: 0 }
+            StateChangeScript { script: block.destroy(1000); }
         }
     ]
     //![4]
