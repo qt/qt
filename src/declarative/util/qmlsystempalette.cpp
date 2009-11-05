@@ -52,7 +52,7 @@ public:
     QPalette::ColorGroup group;
 };
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,SystemPalette,QmlSystemPalette)
+QML_DEFINE_TYPE(Qt,4,6,SystemPalette,QmlSystemPalette)
 
 /*!
     \qmlclass SystemPalette QmlSystemPalette

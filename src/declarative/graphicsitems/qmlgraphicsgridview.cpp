@@ -1578,7 +1578,7 @@ QmlGraphicsGridViewAttached *QmlGraphicsGridView::qmlAttachedProperties(QObject 
     return QmlGraphicsGridViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, GridView, QmlGraphicsGridView)
+QML_DEFINE_TYPE(Qt, 4,6, GridView, QmlGraphicsGridView)
 
 QT_END_NAMESPACE
 

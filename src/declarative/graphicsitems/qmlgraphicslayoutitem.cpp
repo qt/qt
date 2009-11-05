@@ -45,7 +45,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,LayoutItem,QmlGraphicsLayoutItem)
+QML_DEFINE_TYPE(Qt,4,6,LayoutItem,QmlGraphicsLayoutItem)
 
 /*!
     \qmlclass LayoutItem QmlGraphicsLayoutItem

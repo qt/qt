@@ -105,7 +105,7 @@ public:
 
 //---------------------------------------------------------------------------
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotion,QmlGraphicsParticleMotion)
+QML_DEFINE_TYPE(Qt,4,6,ParticleMotion,QmlGraphicsParticleMotion)
 
 /*!
     \class QmlGraphicsParticleMotion
@@ -166,7 +166,7 @@ void QmlGraphicsParticleMotion::destroy(QmlGraphicsParticle &particle)
     \brief The QmlGraphicsParticleMotionLinear class moves the particles linearly.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionLinear,QmlGraphicsParticleMotionLinear)
+QML_DEFINE_TYPE(Qt,4,6,ParticleMotionLinear,QmlGraphicsParticleMotionLinear)
 
 void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interval)
 {
@@ -188,7 +188,7 @@ void QmlGraphicsParticleMotionLinear::advance(QmlGraphicsParticle &p, int interv
     \brief The QmlGraphicsParticleMotionGravity class moves the particles towards a point.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionGravity,QmlGraphicsParticleMotionGravity)
+QML_DEFINE_TYPE(Qt,4,6,ParticleMotionGravity,QmlGraphicsParticleMotionGravity)
 
 /*!
     \qmlproperty int ParticleMotionGravity::xattractor
@@ -290,7 +290,7 @@ Rectangle {
     This property holds how quickly the paricles will move from side to side.
 */
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ParticleMotionWander,QmlGraphicsParticleMotionWander)
+QML_DEFINE_TYPE(Qt,4,6,ParticleMotionWander,QmlGraphicsParticleMotionWander)
 
 void QmlGraphicsParticleMotionWander::advance(QmlGraphicsParticle &p, int interval)
 {
@@ -559,7 +559,7 @@ void QmlGraphicsParticlesPrivate::updateOpacity(QmlGraphicsParticle &p, int age)
     }
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Particles,QmlGraphicsParticles)
+QML_DEFINE_TYPE(Qt,4,6,Particles,QmlGraphicsParticles)
 
 /*!
     \qmlclass Particles

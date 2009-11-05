@@ -61,7 +61,7 @@ class QmlCustomParser;
 class Q_DECLARATIVE_EXPORT QmlMetaType
 {
 public:
-    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, int vmaj, int vmin_from, int vmin_to, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
+    static int registerType(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *, int vmaj, int vmin, const char *qmlName, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *);
     static int registerInterface(const QmlPrivate::MetaTypeIds &, QmlPrivate::Func, const char *);
 
     static bool copy(int type, void *data, const void *copy = 0);
@@ -118,8 +118,7 @@ public:
     QByteArray qmlTypeName() const;
 
     int majorVersion() const;
-    int minMinorVersion() const;
-    int maxMinorVersion() const;
+    int minorVersion() const;
     bool availableInVersion(int vmajor, int vminor) const;
 
     QByteArray hash() const;
@@ -156,7 +155,7 @@ private:
     friend class QmlTypePrivate;
     friend class QmlMetaTypeData;
     QmlType(int, int, int, QmlPrivate::Func, const char *, int);
-    QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
+    QmlType(int, int, int, QmlPrivate::Func, const char *, int, int, const QMetaObject *, QmlAttachedPropertiesFunc, const QMetaObject *, int, int, int, QmlPrivate::CreateFunc, const QMetaObject *, int, QmlCustomParser *);
     ~QmlType();
 
     QmlTypePrivate *d;
@@ -172,7 +171,7 @@ int qmlRegisterType(const char *typeName)
         qRegisterMetaType<T *>(QByteArray("QmlList<" + name + "*>*").constData())
     };
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0,
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
@@ -184,7 +183,7 @@ int qmlRegisterType(const char *typeName)
 }
 
 template<typename T>
-int qmlRegisterType(const char *uri, int version_maj, int version_min_from, int version_min_to, const char *qmlName, const char *typeName)
+int qmlRegisterType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -194,7 +193,7 @@ int qmlRegisterType(const char *uri, int version_maj, int version_min_from, int 
     };
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>,
-            uri, version_maj, version_min_from, version_min_to, qmlName, 
+            uri, version_maj, version_min, qmlName, 
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),
@@ -234,7 +233,7 @@ int qmlRegisterExtendedType(const char *typeName)
 }
 
 template<typename T, typename E>
-int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min_from, int version_min_to, const char *qmlName, const char *typeName)
+int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -253,7 +252,7 @@ int qmlRegisterExtendedType(const char *uri, int version_maj, int version_min_fr
     }
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>, 
-            uri, version_maj, version_min_from, version_min_to, qmlName, 
+            uri, version_maj, version_min, qmlName, 
             &T::staticMetaObject,
             attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
@@ -280,7 +279,7 @@ int qmlRegisterInterface(const char *typeName)
 }
 
 template<typename T>
-int qmlRegisterCustomType(const char *uri, int version_maj, int version_min_from, int version_min_to, const char *qmlName, const char *typeName, QmlCustomParser *parser)
+int qmlRegisterCustomType(const char *uri, int version_maj, int version_min, const char *qmlName, const char *typeName, QmlCustomParser *parser)
 {
     QByteArray name(typeName);
     QmlPrivate::MetaTypeIds ids = {
@@ -290,7 +289,7 @@ int qmlRegisterCustomType(const char *uri, int version_maj, int version_min_from
     };
 
     return QmlMetaType::registerType(ids, QmlPrivate::list_op<T>,
-            uri, version_maj, version_min_from, version_min_to, qmlName, 
+            uri, version_maj, version_min, qmlName, 
             &T::staticMetaObject,
             QmlPrivate::attachedPropertiesFunc<T>(),
             QmlPrivate::attachedPropertiesMetaObject<T>(),

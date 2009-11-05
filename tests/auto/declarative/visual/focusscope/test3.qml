@@ -41,7 +41,7 @@ Rectangle {
         delegate: VerticalDelegate
         preferredHighlightBegin: 100
         preferredHighlightEnd: 101
-        strictlyEnforceHighlightRange: true
+        highlightRangeMode: ListView.StrictlyEnforceRange
     }
 
 

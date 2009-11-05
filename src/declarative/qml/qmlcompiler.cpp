@@ -814,8 +814,7 @@ void QmlCompiler::genObject(QmlParser::Object *obj)
     create.create.type = obj->type;
     if (!output->types.at(create.create.type).type && 
         !obj->bindingBitmask.isEmpty()) {
-        while (obj->bindingBitmask.size() % 4)
-            obj->bindingBitmask.append(char(0));
+        Q_ASSERT(obj->bindingBitmask.size() % 4 == 0);
         create.create.bindingBits = 
             output->indexForByteArray(obj->bindingBitmask);
     } else {
@@ -1044,20 +1043,23 @@ bool QmlCompiler::buildComponent(QmlParser::Object *obj,
     // Find, check and set the "id" property (if any)
     Property *idProp = 0;
     if (obj->properties.count() > 1 ||
-       (obj->properties.count() == 1 && obj->properties.begin().key() != "id") ||
-        !obj->scriptBlockObjects.isEmpty())
-        COMPILE_EXCEPTION(obj, qApp->translate("QmlCompiler","Invalid component specification"));
+       (obj->properties.count() == 1 && obj->properties.begin().key() != "id"))
+        COMPILE_EXCEPTION(*obj->properties.begin(), qApp->translate("QmlCompiler","Invalid component specification"));
+       
+    if (!obj->scriptBlockObjects.isEmpty())
+        COMPILE_EXCEPTION(obj->scriptBlockObjects.first(), qApp->translate("QmlCompiler","Invalid component specification"));
 
     if (obj->properties.count())
         idProp = *obj->properties.begin();
+
     if (idProp && (idProp->value || idProp->values.count() > 1 || !isValidId(idProp->values.first()->primitive())))
-        COMPILE_EXCEPTION(obj, qApp->translate("QmlCompiler","Invalid component id specification"));
+        COMPILE_EXCEPTION(idProp, qApp->translate("QmlCompiler","Invalid component id specification"));
 
     if (idProp) {
         QString idVal = idProp->values.first()->primitive();
 
         if (compileState.ids.contains(idVal))
-            COMPILE_EXCEPTION(obj, qApp->translate("QmlCompiler","id is not unique"));
+            COMPILE_EXCEPTION(idProp, qApp->translate("QmlCompiler","id is not unique"));
 
         obj->id = idVal;
         addId(idVal, obj);
@@ -1093,7 +1095,7 @@ bool QmlCompiler::buildScript(QmlParser::Object *obj, QmlParser::Object *script)
 
         Property *source = *script->properties.begin();
         if (script->defaultProperty)
-            COMPILE_EXCEPTION(source, qApp->translate("QmlCompiler","Invalid Script block.  Specify either the source property or inline script."));
+            COMPILE_EXCEPTION(source, qApp->translate("QmlCompiler","Invalid Script block.  Specify either the source property or inline script"));
 
         if (source->value || source->values.count() != 1 ||
             source->values.at(0)->object || !source->values.at(0)->value.isString())
@@ -1180,11 +1182,9 @@ bool QmlCompiler::buildComponentFromRoot(QmlParser::Object *obj,
 bool QmlCompiler::buildSubObject(Object *obj, const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metatype);
+    Q_ASSERT(!obj->defaultProperty);
     Q_ASSERT(ctxt.isSubContext()); // sub-objects must always be in a binding
                                    // sub-context
-
-    if (obj->defaultProperty)
-        COMPILE_CHECK(buildProperty(obj->defaultProperty, obj, ctxt));
 
     foreach(Property *prop, obj->properties) {
         if (isSignalPropertyName(prop->name)) {
@@ -1230,9 +1230,7 @@ bool QmlCompiler::buildSignal(QmlParser::Property *prop, QmlParser::Object *obj,
                               const BindingContext &ctxt)
 {
     Q_ASSERT(obj->metaObject());
-
-    if (prop->isEmpty())
-        COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Empty property assignment"));
+    Q_ASSERT(!prop->isEmpty());
 
     QByteArray name = prop->name;
     Q_ASSERT(name.startsWith("on"));
@@ -1261,6 +1259,10 @@ bool QmlCompiler::buildSignal(QmlParser::Property *prop, QmlParser::Object *obj,
             prop->values.at(0)->type = Value::SignalObject;
         } else {
             prop->values.at(0)->type = Value::SignalExpression;
+
+            QString script = prop->values.at(0)->value.asScript().trimmed();
+            if (script.isEmpty())
+                COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Empty signal assignment"));
         }
     }
 
@@ -1700,6 +1702,9 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
 {
     Q_ASSERT(prop->type != 0);
     Q_ASSERT(prop->index != -1);
+
+    if (prop->values.count())
+        COMPILE_EXCEPTION(prop->values.first(), qApp->translate("QmlCompiler", "Invalid value in grouped property"));
 
     if (prop->type < (int)QVariant::UserType) {
         QmlEnginePrivate *ep =

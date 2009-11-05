@@ -79,10 +79,8 @@ public:
     QmlMetaProperty(QObject *, const QString &, QmlContext *);
     QmlMetaProperty(const QmlMetaProperty &);
     QmlMetaProperty &operator=(const QmlMetaProperty &);
-    QmlMetaProperty(QObject *, int, QmlContext * = 0);
     ~QmlMetaProperty();
 
-    static QStringList properties(QObject *);
     QString name() const;
 
     QVariant read() const;
@@ -95,9 +93,6 @@ public:
     bool needsChangedNotifier() const;
     bool connectNotifier(QObject *dest, const char *slot) const;
     bool connectNotifier(QObject *dest, int method) const;
-
-    quint32 save() const;
-    void restore(quint32, QObject *, QmlContext * = 0);
 
     QMetaMethod method() const;
 
@@ -138,6 +133,7 @@ public:
     int valueTypeCoreIndex() const;
 private:
     friend class QmlEnginePrivate;
+    friend class QmlMetaPropertyPrivate;;
     QmlMetaPropertyPrivate *d;
 };
 typedef QList<QmlMetaProperty> QmlMetaProperties;

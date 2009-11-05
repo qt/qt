@@ -45,6 +45,7 @@
 #include <QtCore/qdebug.h>
 #include <QtCore/qfileinfo.h>
 #include <QtCore/qdir.h>
+#include <private/qmlmetaproperty_p.h>
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
@@ -246,8 +247,29 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
     QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
 
+    QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
+    QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
+    QTest::newRow("Script.3") << "script.3.qml" << "script.3.errors.txt" << false;
+    QTest::newRow("Script.4") << "script.4.qml" << "script.4.errors.txt" << false;
+    QTest::newRow("Script.5") << "script.5.qml" << "script.5.errors.txt" << false;
+    QTest::newRow("Script.6") << "script.6.qml" << "script.6.errors.txt" << false;
+    QTest::newRow("Script.7") << "script.7.qml" << "script.7.errors.txt" << false;
+    QTest::newRow("Script.8") << "script.8.qml" << "script.8.errors.txt" << false;
+    QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
+    QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
+    QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
 
+    QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
+    QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
+    QTest::newRow("Component.3") << "component.3.qml" << "component.3.errors.txt" << false;
+    QTest::newRow("Component.4") << "component.4.qml" << "component.4.errors.txt" << false;
+    QTest::newRow("Component.5") << "component.5.qml" << "component.5.errors.txt" << false;
+    QTest::newRow("Component.6") << "component.6.qml" << "component.6.errors.txt" << false;
 
+    QTest::newRow("nestedErrors") << "nestedErrors.qml" << "nestedErrors.errors.txt" << false;
+    QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
+    QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
+    QTest::newRow("doubleSignal") << "doubleSignal.qml" << "doubleSignal.errors.txt" << false;
 }
 
 void tst_qmllanguage::errors()
@@ -371,6 +393,7 @@ void tst_qmllanguage::assignBasicTypes()
     QCOMPARE(object->intProperty(), -19);
     QCOMPARE((float)object->realProperty(), float(23.2));
     QCOMPARE((float)object->doubleProperty(), float(-19.7));
+    QCOMPARE((float)object->floatProperty(), float(8.5));
     QCOMPARE(object->colorProperty(), QColor("red"));
     QCOMPARE(object->dateProperty(), QDate(1982, 11, 25));
     QCOMPARE(object->timeProperty(), QTime(11, 11, 32));
@@ -383,6 +406,7 @@ void tst_qmllanguage::assignBasicTypes()
     QCOMPARE(object->rectFProperty(), QRectF((float)1000.1, (float)-10.9, (float)400, (float)90.99));
     QCOMPARE(object->boolProperty(), true);
     QCOMPARE(object->variantProperty(), QVariant("Hello World!"));
+    QCOMPARE(object->vectorProperty(), QVector3D(10, 1, 2.2));
     QVERIFY(object->objectProperty() != 0);
     MyTypeObject *child = qobject_cast<MyTypeObject *>(object->objectProperty());
     QVERIFY(child != 0);
@@ -615,9 +639,9 @@ void tst_qmllanguage::valueTypes()
     p.write(13);
     QCOMPARE(p.read(), QVariant(13));
 
-    quint32 r = p.save();
+    quint32 r = QmlMetaPropertyPrivate::saveValueType(p.coreIndex(), p.valueTypeCoreIndex());
     QmlMetaProperty p2;
-    p2.restore(r, object);
+    QmlMetaPropertyPrivate::restore(p2, r, object);
     QCOMPARE(p2.read(), QVariant(13));
 }
 
@@ -866,11 +890,11 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 QML_DECLARE_TYPE(TestType)
 QML_DECLARE_TYPE(TestType2)
 
-QML_DEFINE_TYPE(com.nokia.Test, 1, 0, 3, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 5, 7, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 0, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 5, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 8, Test, TestType2)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 9, OldTest, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 12, Test, TestType2)
 
 // Import tests (QT-558)
 
@@ -913,10 +937,6 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.3\n"
            "Test {}"
         << "TestType";
-    QTest::newRow("not in version 1.4")
-        << "import com.nokia.Test 1.4\n"
-           "Test {}"
-        << "";
     QTest::newRow("in version 1.5")
         << "import com.nokia.Test 1.5\n"
            "Test {}"
@@ -925,11 +945,7 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.8\n"
            "Test {}"
         << "TestType2";
-    QTest::newRow("not in version 1.10")
-        << "import com.nokia.Test 1.10\n"
-           "Test {}"
-        << "";
-    QTest::newRow("back in version 1.12")
+    QTest::newRow("in version 1.12")
         << "import com.nokia.Test 1.12\n"
            "Test {}"
         << "TestType2";
@@ -941,10 +957,6 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.11\n"
            "OldTest {}"
         << "TestType";
-    QTest::newRow("no old in version 1.12")
-        << "import com.nokia.Test 1.12\n"
-           "OldTest {}"
-        << "";
     QTest::newRow("multiversion 1")
         << "import com.nokia.Test 1.11\n"
            "import com.nokia.Test 1.12\n"
@@ -965,11 +977,6 @@ void tst_qmllanguage::importsBuiltin_data()
            "import com.nokia.Test 1.8 as T8\n"
            "T8.Test {}"
         << "TestType2";
-    QTest::newRow("qualified multiversion 5")
-        << "import com.nokia.Test 1.0 as T0\n"
-           "import com.nokia.Test 1.10 as T10\n"
-           "T10.Test {}"
-        << "";
 }
 
 void tst_qmllanguage::importsBuiltin()
@@ -1045,7 +1052,15 @@ void tst_qmllanguage::importsInstalled_data()
            "InstalledTest {}"
         << "QmlGraphicsRectangle";
     QTest::newRow("installed import 2")
+        << "import com.nokia.installedtest 1.3\n"
+           "InstalledTest {}"
+        << "QmlGraphicsRectangle";
+    QTest::newRow("installed import 3")
         << "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QmlGraphicsText";
+    QTest::newRow("installed import 4")
+        << "import com.nokia.installedtest 1.10\n"
            "InstalledTest {}"
         << "QmlGraphicsText";
     QTest::newRow("installed import visibility") // QT-614

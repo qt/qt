@@ -91,11 +91,11 @@ QT_BEGIN_NAMESPACE
 #define QML_DEFINE_INTERFACE(INTERFACE) \
     static int defineInterface##INTERFACE = qmlRegisterInterface<INTERFACE>(#INTERFACE);
 
-#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE, EXTENSION) \
-    static int registerExtended##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE);
+#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERS, NAME, TYPE, EXTENSION) \
+    static int registerExtended##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE);
 
-#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE) \
-    static int defineType##TYPE = qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE);
+#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE) \
+    static int defineType##TYPE = qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE);
 
 #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
     static int registerExtendedNoCreate##TYPE = qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE);
@@ -106,19 +106,19 @@ QT_BEGIN_NAMESPACE
 #else
 
 #define QML_DEFINE_INTERFACE(INTERFACE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *,0,0,0>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<INTERFACE *,0,0>::instance(qmlRegisterInterface<INTERFACE>(#INTERFACE)); 
 
-#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE, EXTENSION) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN_FROM), (VERSION_MIN_TO)>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE));
+#define QML_DEFINE_EXTENDED_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE, EXTENSION) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN)>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE));
 
-#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, NAME, TYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN_FROM), (VERSION_MIN_TO)>::instance(qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN_FROM, VERSION_MIN_TO, #NAME, #TYPE));
+#define QML_DEFINE_TYPE(URI, VERSION_MAJ, VERSION_MIN, NAME, TYPE) \
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,(VERSION_MAJ), (VERSION_MIN)>::instance(qmlRegisterType<TYPE>(#URI, VERSION_MAJ, VERSION_MIN, #NAME, #TYPE));
 
 #define QML_DEFINE_EXTENDED_NOCREATE_TYPE(TYPE, EXTENSION) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0,0>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE));
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0>::instance(qmlRegisterExtendedType<TYPE,EXTENSION>(#TYPE));
 
 #define QML_DEFINE_NOCREATE_TYPE(TYPE) \
-    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0,0>::instance(qmlRegisterType<TYPE>(#TYPE));
+    template<> QmlPrivate::InstanceType QmlPrivate::Define<TYPE *,0,0>::instance(qmlRegisterType<TYPE>(#TYPE));
 
 #endif
 

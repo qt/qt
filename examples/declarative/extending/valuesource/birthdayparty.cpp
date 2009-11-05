@@ -98,4 +98,4 @@ BirthdayPartyAttached *BirthdayParty::qmlAttachedProperties(QObject *object)
     return new BirthdayPartyAttached(object);
 }
 
-QML_DEFINE_TYPE(People, 1, 0, 0, BirthdayParty, BirthdayParty);
+QML_DEFINE_TYPE(People, 1,0, BirthdayParty, BirthdayParty);

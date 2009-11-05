@@ -45,7 +45,7 @@ QML_DECLARE_TYPE(QGraphicsEffect)
 QML_DEFINE_NOCREATE_TYPE(QGraphicsEffect)
 
 QML_DECLARE_TYPE(QGraphicsBlurEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Blur,QGraphicsBlurEffect)
+QML_DEFINE_TYPE(Qt,4,6,Blur,QGraphicsBlurEffect)
 
 /*!
     \qmlclass Blur QGraphicsBlurEffect
@@ -82,7 +82,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Blur,QGraphicsBlurEffect)
 */
 
 QML_DECLARE_TYPE(QGraphicsColorizeEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Colorize,QGraphicsColorizeEffect)
+QML_DEFINE_TYPE(Qt,4,6,Colorize,QGraphicsColorizeEffect)
 
 /*!
     \qmlclass Colorize QGraphicsColorizeEffect
@@ -110,7 +110,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Colorize,QGraphicsColorizeEffect
 */
 
 QML_DECLARE_TYPE(QGraphicsDropShadowEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,DropShadow,QGraphicsDropShadowEffect)
+QML_DEFINE_TYPE(Qt,4,6,DropShadow,QGraphicsDropShadowEffect)
 
 /*!
     \qmlclass DropShadow QGraphicsDropShadowEffect
@@ -153,7 +153,7 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,DropShadow,QGraphicsDropShadowEf
 */
 
 QML_DECLARE_TYPE(QGraphicsOpacityEffect)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Opacity,QGraphicsOpacityEffect)
+QML_DEFINE_TYPE(Qt,4,6,Opacity,QGraphicsOpacityEffect)
 
 /*!
     \qmlclass Opacity QGraphicsOpacityEffect
