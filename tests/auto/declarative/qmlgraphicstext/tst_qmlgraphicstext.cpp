@@ -45,6 +45,7 @@
 #include <private/qmlgraphicstext_p.h>
 #include <private/qmlvaluetype_p.h>
 #include <QFontMetrics>
+#include <math.h>
 
 class tst_qmlgraphicstext : public QObject
 
@@ -201,8 +202,9 @@ void tst_qmlgraphicstext::width()
         QVERIFY(!Qt::mightBeRichText(standard.at(i))); // self-test
 
         QFont f;
-        QFontMetrics fm(f);
-        int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
+        QFontMetricsF fm(f);
+        qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
+        metricWidth = floor(metricWidth);
 
         QString componentStr = "import Qt 4.6\nText { text: \"" + standard.at(i) + "\" }";
         QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
