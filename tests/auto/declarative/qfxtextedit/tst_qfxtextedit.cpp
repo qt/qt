@@ -40,6 +40,7 @@
 ****************************************************************************/
 #include <qtest.h>
 #include "../../../shared/util.h"
+#include <math.h>
 #include <QFile>
 #include <QTextDocument>
 #include <QtDeclarative/qmlengine.h>
@@ -183,8 +184,9 @@ void tst_qfxtextedit::width()
     for (int i = 0; i < standard.size(); i++)
     {
         QFont f;
-        QFontMetrics fm(f);
-        int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
+        QFontMetricsF fm(f);
+        qreal metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
+        metricWidth = floor(metricWidth);
 
         QString componentStr = "import Qt 4.6\nTextEdit { text: \"" + standard.at(i) + "\" }";
         QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
