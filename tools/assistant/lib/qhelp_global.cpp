@@ -86,17 +86,17 @@ QString QHelpGlobal::codecFromData(const QByteArray &data)
 
 QString QHelpGlobal::codecFromHtmlData(const QByteArray &data)
 {
-    QString content = QString::fromUtf8(data.constData(), data.size());
-    int start = content.indexOf(QLatin1String("<meta"), 0, Qt::CaseInsensitive);
+    QString head = QString::fromUtf8(data.constData(), qMin(1000, data.size()));
+    int start = head.indexOf(QLatin1String("<meta"), 0, Qt::CaseInsensitive);
     if (start > 0) {
         int end;
         QRegExp r(QLatin1String("charset=([^\"\\s]+)"));
         while (start != -1) {
-            end = content.indexOf(QLatin1Char('>'), start) + 1;
-            const QString &meta = content.mid(start, end - start).toLower();
+            end = head.indexOf(QLatin1Char('>'), start) + 1;
+            const QString &meta = head.mid(start, end - start).toLower();
             if (r.indexIn(meta) != -1)
                 return r.cap(1);
-            start = content.indexOf(QLatin1String("<meta"), end,
+            start = head.indexOf(QLatin1String("<meta"), end,
                                     Qt::CaseInsensitive);
         }
     }
@@ -105,8 +105,8 @@ QString QHelpGlobal::codecFromHtmlData(const QByteArray &data)
 
 QString QHelpGlobal::codecFromXmlData(const QByteArray &data)
 {
-    QString content = QString::fromUtf8(data.constData(), data.size());
+    QString head = QString::fromUtf8(data.constData(), qMin(1000, data.size()));
     const QRegExp encodingExp(QLatin1String("^\\s*<\\?xml version="
         "\"\\d\\.\\d\" encoding=\"([^\"]+)\"\\?>.*"));
-    return encodingExp.exactMatch(content) ? encodingExp.cap(1) : QString();
+    return encodingExp.exactMatch(head) ? encodingExp.cap(1) : QString();
 }
