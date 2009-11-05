@@ -76,7 +76,6 @@ bool ImageWidget::event(QEvent *event)
 void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
-    p.fillRect(rect(), Qt::white);
 
     float iw = currentImage.width();
     float ih = currentImage.height();
@@ -95,6 +94,7 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
     rotationAngle = 0;
     scaleFactor = 1;
+    currentStepScaleFactor = 1;
     verticalOffset = 0;
     horizontalOffset = 0;
     update();
@@ -103,12 +103,12 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    if (QGesture *pan = event->gesture(Qt::PanGesture))
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    else if (QGesture *pan = event->gesture(Qt::PanGesture))
         panTriggered(static_cast<QPanGesture *>(pan));
     if (QGesture *pinch = event->gesture(Qt::PinchGesture))
         pinchTriggered(static_cast<QPinchGesture *>(pinch));
-    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
-        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
     return true;
 }
 //! [gesture event handler]
@@ -141,12 +141,11 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
-        if (gesture->state() == Qt::GestureFinished) {
-            scaleFactor *= currentStepScaleFactor;
-            currentStepScaleFactor = 1;
-        } else {
-            currentStepScaleFactor = value;
-        }
+        currentStepScaleFactor = value;
+    }
+    if (gesture->state() == Qt::GestureFinished) {
+        scaleFactor *= currentStepScaleFactor;
+        currentStepScaleFactor = 1;
     }
     update();
 }
@@ -154,12 +153,14 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 //! [swipe function]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
-    if (gesture->horizontalDirection() == QSwipeGesture::Left
+    if (gesture->state() == Qt::GestureFinished) {
+        if (gesture->horizontalDirection() == QSwipeGesture::Left
             || gesture->verticalDirection() == QSwipeGesture::Up)
-        goPrevImage();
-    else
-        goNextImage();
-    update();
+            goPrevImage();
+        else
+            goNextImage();
+        update();
+    }
 }
 //! [swipe function]
 
