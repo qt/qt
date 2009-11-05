@@ -205,7 +205,7 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             d->changeFlags |= QPinchGesture::CenterPointChanged;
 
             const qreal scaleFactor =
-                    QLineF(p1.pos(), p2.pos()).length()
+                    QLineF(p1.screenPos(), p2.screenPos()).length()
                     / QLineF(d->startPosition[0],  d->startPosition[1]).length();
             if (d->isNewSequence) {
                 d->lastScaleFactor = scaleFactor;
@@ -236,7 +236,10 @@ QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state,
             result = QGestureRecognizer::TriggerGesture;
         } else {
             d->isNewSequence = true;
-            result = QGestureRecognizer::MayBeGesture;
+            if (q->state() == Qt::NoGesture)
+                result = QGestureRecognizer::Ignore;
+            else
+                result = QGestureRecognizer::FinishGesture;
         }
         break;
     }
@@ -264,6 +267,7 @@ void QPinchGestureRecognizer::reset(QGesture *state)
     d->totalRotationAngle = d->lastRotationAngle = d->rotationAngle = 0;
 
     d->isNewSequence = true;
+    d->startPosition[0] = d->startPosition[1] = QPointF();
 
     QGestureRecognizer::reset(state);
 }

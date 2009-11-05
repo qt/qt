@@ -141,12 +141,11 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
     }
     if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
-        if (gesture->state() == Qt::GestureFinished) {
-            scaleFactor *= currentStepScaleFactor;
-            currentStepScaleFactor = 1;
-        } else {
-            currentStepScaleFactor = value;
-        }
+        currentStepScaleFactor = value;
+    }
+    if (gesture->state() == Qt::GestureFinished) {
+        scaleFactor *= currentStepScaleFactor;
+        currentStepScaleFactor = 1;
     }
     update();
 }
