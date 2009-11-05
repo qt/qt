@@ -30,6 +30,7 @@ SUBDIRS += \
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
            qmlqt \                  # Cover
+           qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
            repeater \               # Cover
