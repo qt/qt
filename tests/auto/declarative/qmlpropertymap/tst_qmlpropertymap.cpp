@@ -95,13 +95,15 @@ void tst_QmlPropertyMap::operatorValue()
     QmlPropertyMap map;
     map.insert(QLatin1String("key1"),100);
     map.insert(QLatin1String("key2"),200);
-    QVERIFY(map.keys().count() == 2);
+    QVERIFY(map.count() == 2);
     QVERIFY(map.contains(QLatin1String("key1")));
 
-    QCOMPARE(map.value(QLatin1String("key1")), QVariant(100));
-    QCOMPARE(map.value(QLatin1String("key2")), QVariant(200));
-    QCOMPARE(map[QLatin1String("key1")], map.value(QLatin1String("key1")));
-    QCOMPARE(map[QLatin1String("key2")], map.value(QLatin1String("key2")));
+    const QmlPropertyMap &constMap = map;
+
+    QCOMPARE(constMap.value(QLatin1String("key1")), QVariant(100));
+    QCOMPARE(constMap.value(QLatin1String("key2")), QVariant(200));
+    QCOMPARE(constMap[QLatin1String("key1")], constMap.value(QLatin1String("key1")));
+    QCOMPARE(constMap[QLatin1String("key2")], constMap.value(QLatin1String("key2")));
 }
 
 void tst_QmlPropertyMap::clear()

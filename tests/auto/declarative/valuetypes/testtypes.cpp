@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,49 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "testtypes.h"
 
-#ifndef QMLGRAPHICSINTMODEL_H
-#define QMLGRAPHICSINTMODEL_H
-
-#include <QtCore/QObject>
-#include <QtDeclarative/qml.h>
-#include <private/qlistmodelinterface_p.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class QmlGraphicsIntegerModelPrivate;
-class Q_DECLARATIVE_EXPORT QmlGraphicsIntegerModel : public QListModelInterface
-{
-    Q_OBJECT
-public:
-    QmlGraphicsIntegerModel(QObject *parent=0);
-    ~QmlGraphicsIntegerModel();
-
-    Q_PROPERTY(int minimum READ minimum WRITE setMinimum)
-    int minimum() const;
-    void setMinimum(int);
-
-    Q_PROPERTY(int maximum READ maximum WRITE setMaximum)
-    int maximum() const;
-    void setMaximum(int);
-
-    int count() const;
-    QHash<int, QVariant> data(int index, const QList<int> &roles) const;
-    QList<int> roles() const;
-    QString toString(int role) const;
-
-private:
-    QmlGraphicsIntegerModelPrivate *d;
-};
-
-QT_END_NAMESPACE
-
-QML_DECLARE_TYPE(QmlGraphicsIntegerModel)
-
-QT_END_HEADER
-
-#endif
+QML_DEFINE_TYPE(Test, 1, 0, 0, MyTypeObject, MyTypeObject);
