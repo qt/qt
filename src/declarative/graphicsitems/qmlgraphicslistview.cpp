@@ -815,8 +815,9 @@ void QmlGraphicsListViewPrivate::fixupY()
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
-            timeline.clear();
+            timeline.reset(_moveY);
             timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            vTime = timeline.time();
         }
     }
 }
@@ -830,8 +831,9 @@ void QmlGraphicsListViewPrivate::fixupX()
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
-            timeline.clear();
+            timeline.reset(_moveX);
             timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            vTime = timeline.time();
         }
     }
 }

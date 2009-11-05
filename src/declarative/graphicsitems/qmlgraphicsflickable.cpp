@@ -185,17 +185,17 @@ void QmlGraphicsFlickablePrivate::flickX(qreal velocity)
 {
     Q_Q(QmlGraphicsFlickable);
     qreal maxDistance = -1;
-    if (qAbs(velocity) < minimumFlickVelocity) // Minimum velocity to avoid annoyingly slow flicks.
-        velocity = velocity < 0 ? -minimumFlickVelocity : minimumFlickVelocity;
     // -ve velocity means list is moving up
     if (velocity > 0) {
-        if (_moveX.value() < q->minXExtent())
-            maxDistance = qAbs(q->minXExtent() -_moveX.value() + (overShoot?30:0));
-        flickTargetX = q->minXExtent();
+        const qreal minX = q->minXExtent();
+        if (_moveX.value() < minX)
+            maxDistance = qAbs(minX -_moveX.value() + (overShoot?30:0));
+        flickTargetX = minX;
     } else {
-        if (_moveX.value() > q->maxXExtent())
-            maxDistance = qAbs(q->maxXExtent() - _moveX.value()) + (overShoot?30:0);
-        flickTargetX = q->maxXExtent();
+        const qreal maxX = q->maxXExtent();
+        if (_moveX.value() > maxX)
+            maxDistance = qAbs(maxX - _moveX.value()) + (overShoot?30:0);
+        flickTargetX = maxX;
     }
     if (maxDistance > 0) {
         qreal v = velocity;
@@ -225,13 +225,15 @@ void QmlGraphicsFlickablePrivate::flickY(qreal velocity)
     qreal maxDistance = -1;
     // -ve velocity means list is moving up
     if (velocity > 0) {
-        if (_moveY.value() < q->minYExtent())
-            maxDistance = qAbs(q->minYExtent() -_moveY.value() + (overShoot?30:0));
-        flickTargetY = q->minYExtent();
+        const qreal minY = q->minYExtent();
+        if (_moveY.value() < minY)
+            maxDistance = qAbs(minY -_moveY.value() + (overShoot?30:0));
+        flickTargetY = minY;
     } else {
-        if (_moveY.value() > q->maxYExtent())
-            maxDistance = qAbs(q->maxYExtent() - _moveY.value()) + (overShoot?30:0);
-        flickTargetY = q->maxYExtent();
+        const qreal maxY = q->maxYExtent();
+        if (_moveY.value() > maxY)
+            maxDistance = qAbs(maxY - _moveY.value()) + (overShoot?30:0);
+        flickTargetY = maxY;
     }
     if (maxDistance > 0) {
         qreal v = velocity;
@@ -261,8 +263,6 @@ void QmlGraphicsFlickablePrivate::fixupX()
     if (!q->xflick() || _moveX.timeLine())
         return;
 
-    vTime = timeline.time();
-
     if (_moveX.value() > q->minXExtent() || (q->maxXExtent() > q->minXExtent())) {
         timeline.reset(_moveX);
         if (_moveX.value() != q->minXExtent())
@@ -275,6 +275,8 @@ void QmlGraphicsFlickablePrivate::fixupX()
     } else {
         flicked = false;
     }
+
+    vTime = timeline.time();
 }
 
 void QmlGraphicsFlickablePrivate::fixupY()
@@ -282,8 +284,6 @@ void QmlGraphicsFlickablePrivate::fixupY()
     Q_Q(QmlGraphicsFlickable);
     if (!q->yflick() || _moveY.timeLine())
         return;
-
-    vTime = timeline.time();
 
     if (_moveY.value() > q->minYExtent() || (q->maxYExtent() > q->minYExtent())) {
         timeline.reset(_moveY);
@@ -297,6 +297,8 @@ void QmlGraphicsFlickablePrivate::fixupY()
     } else {
         flicked = false;
     }
+
+    vTime = timeline.time();
 }
 
 void QmlGraphicsFlickablePrivate::updateBeginningEnd()
@@ -447,6 +449,7 @@ void QmlGraphicsFlickable::setViewportX(qreal pos)
     Q_D(QmlGraphicsFlickable);
     pos = qRound(pos);
     d->timeline.reset(d->_moveX);
+    d->vTime = d->timeline.time();
     if (-pos != d->_moveX.value()) {
         d->_moveX.setValue(-pos);
         viewportMoved();
@@ -464,6 +467,7 @@ void QmlGraphicsFlickable::setViewportY(qreal pos)
     Q_D(QmlGraphicsFlickable);
     pos = qRound(pos);
     d->timeline.reset(d->_moveY);
+    d->vTime = d->timeline.time();
     if (-pos != d->_moveY.value()) {
         d->_moveY.setValue(-pos);
         viewportMoved();
@@ -491,6 +495,7 @@ void QmlGraphicsFlickable::setInteractive(bool interactive)
     d->interactive = interactive;
     if (!interactive && d->flicked) {
         d->timeline.clear();
+        d->vTime = d->timeline.time();
         d->flicked = false;
         emit flickingChanged();
         emit flickEnded();
@@ -837,56 +842,57 @@ void QmlGraphicsFlickable::viewportMoved()
     Q_D(QmlGraphicsFlickable);
 
     int elapsed = QmlGraphicsItemPrivate::elapsed(d->velocityTime);
+    if (!elapsed)
+        return;
 
-    if (elapsed) {
-        qreal prevY = d->lastFlickablePosition.x();
-        qreal prevX = d->lastFlickablePosition.y();
-        d->velocityTimeline.clear();
-        if (d->pressed) {
-            qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / elapsed;
-            qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / elapsed;
-            d->velocityTimeline.move(d->horizontalVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->horizontalVelocity, 0, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->verticalVelocity, verticalVelocity, d->reportedVelocitySmoothing);
-            d->velocityTimeline.move(d->verticalVelocity, 0, d->reportedVelocitySmoothing);
-        } else {
-            if (d->timeline.time() != d->vTime) {
-                qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / (d->timeline.time() - d->vTime);
-                qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / (d->timeline.time() - d->vTime);
-                d->horizontalVelocity.setValue(horizontalVelocity);
-                d->verticalVelocity.setValue(verticalVelocity);
-            }
-            d->vTime = d->timeline.time();
+    qreal prevY = d->lastFlickablePosition.x();
+    qreal prevX = d->lastFlickablePosition.y();
+    d->velocityTimeline.clear();
+    if (d->pressed) {
+        qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / elapsed;
+        qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / elapsed;
+        d->velocityTimeline.move(d->horizontalVelocity, horizontalVelocity, d->reportedVelocitySmoothing);
+        d->velocityTimeline.move(d->horizontalVelocity, 0, d->reportedVelocitySmoothing);
+        d->velocityTimeline.move(d->verticalVelocity, verticalVelocity, d->reportedVelocitySmoothing);
+        d->velocityTimeline.move(d->verticalVelocity, 0, d->reportedVelocitySmoothing);
+    } else {
+        if (d->timeline.time() > d->vTime) {
+            qreal horizontalVelocity = (prevX - d->_moveX.value()) * 1000 / (d->timeline.time() - d->vTime);
+            qreal verticalVelocity = (prevY - d->_moveY.value()) * 1000 / (d->timeline.time() - d->vTime);
+            d->horizontalVelocity.setValue(horizontalVelocity);
+            d->verticalVelocity.setValue(verticalVelocity);
         }
     }
 
-    d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
     QmlGraphicsItemPrivate::restart(d->velocityTime);
-    d->updateBeginningEnd();
+    d->lastFlickablePosition = QPointF(d->_moveY.value(), d->_moveX.value());
 
-    if (d->flicked) {
+    if (d->flicked && d->timeline.time() > d->vTime) {
         // Near an end and it seems that the extent has changed?
         // Recalculate the flick so that we don't end up in an odd position.
         if (d->velocityY > 0) {
             const qreal minY = minYExtent();
-            if (minY - d->_moveY.value() < height()/3 && minY != d->flickTargetY)
+            if (minY - d->_moveY.value() < height()/2 && minY != d->flickTargetY)
                 d->flickY(-d->verticalVelocity.value());
-        } else {
+        } else if (d->velocityY < 0) {
             const qreal maxY = maxYExtent();
-            if (d->_moveY.value() - maxY < height()/3 && maxY != d->flickTargetY)
+            if (d->_moveY.value() - maxY < height()/2 && maxY != d->flickTargetY)
                 d->flickY(-d->verticalVelocity.value());
         }
 
         if (d->velocityX > 0) {
             const qreal minX = minXExtent();
-            if (minX - d->_moveX.value() < height()/3 && minX != d->flickTargetX)
+            if (minX - d->_moveX.value() < height()/2 && minX != d->flickTargetX)
                 d->flickX(-d->horizontalVelocity.value());
-        } else {
+        } else if (d->velocityX < 0) {
             const qreal maxX = maxXExtent();
-            if (d->_moveX.value() - maxX < height()/3 && maxX != d->flickTargetX)
+            if (d->_moveX.value() - maxX < height()/2 && maxX != d->flickTargetX)
                 d->flickX(-d->horizontalVelocity.value());
         }
     }
+
+    d->vTime = d->timeline.time();
+    d->updateBeginningEnd();
 }
 
 void QmlGraphicsFlickable::cancelFlick()
