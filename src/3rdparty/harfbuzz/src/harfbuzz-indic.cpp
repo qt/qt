@@ -1746,6 +1746,10 @@ static int indic_nextSyllableBoundary(HB_Script script, const HB_UChar16 *s, int
                 ++pos;
                 continue;
             }
+            if (script == HB_Script_Malayalam && state == Matra && uc[pos-1] == 0x0d41) {
+                ++pos;
+                continue;
+            }
             goto finish;
         case Nukta:
             if (state == Consonant)
