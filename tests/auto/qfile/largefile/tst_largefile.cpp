@@ -312,10 +312,10 @@ void tst_LargeFile::createSparseFile()
 
     int fd = ::_open_osfhandle((intptr_t)handle, 0);
     QVERIFY( -1 != fd );
-    QVERIFY( largeFile.open(fd, QIODevice::WriteOnly) );
+    QVERIFY( largeFile.open(fd, QIODevice::WriteOnly | QIODevice::Unbuffered) );
 #else // !Q_OS_WIN
     largeFile.setFileName("qt_largefile.tmp");
-    QVERIFY( largeFile.open(QIODevice::WriteOnly) );
+    QVERIFY( largeFile.open(QIODevice::WriteOnly | QIODevice::Unbuffered) );
 #endif
 }
 
