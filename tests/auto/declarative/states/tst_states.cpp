@@ -54,6 +54,7 @@ private slots:
     void basicExtension();
     void basicBinding();
     void signalOverride();
+    void signalOverrideCrash();
     void parentChange();
     void anchorChanges();
     void script();
@@ -354,6 +355,23 @@ void tst_states::signalOverride()
         QCOMPARE(innerRect->color(),QColor("green"));
         QCOMPARE(innerRect->property("extendedColor").value<QColor>(),QColor("green"));
     }
+}
+
+void tst_states::signalOverrideCrash()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/signalOverrideCrash.qml");
+    MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    //QCOMPARE(rect->color(),QColor("red"));
+    //rect->doSomething();
+    //QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("overridden");
+    rect->doSomething();
+    //QCOMPARE(rect->color(),QColor("green"));
 }
 
 void tst_states::parentChange()
