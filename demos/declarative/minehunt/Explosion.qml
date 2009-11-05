@@ -16,13 +16,10 @@ Item {
         velocity: 100
         velocityDeviation: 20
         z: 100
-        opacity: 0
-        streamIn: false
+        opacity: 1
     }
     states: [ State { name: "exploding"; when: explode == true
-            PropertyChanges { target: particles; count: 200 }
-            PropertyChanges { target: particles; opacity: 1 }
-            PropertyChanges { target: particles; emitting: false } // i.e. emit only once
+            StateChangeScript {script: particles.burst(200); }
         }
     ]
 

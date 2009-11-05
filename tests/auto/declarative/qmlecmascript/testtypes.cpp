@@ -72,11 +72,11 @@ private:
     int m_value;
 };
 
-QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyQmlObject,MyQmlObject);
-QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyDeferredObject,MyDeferredObject);
-QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyQmlContainer,MyQmlContainer);
-QML_DEFINE_EXTENDED_TYPE(Qt.test, 1, 0, 0, MyBaseExtendedObject,MyBaseExtendedObject,BaseExtensionObject);
-QML_DEFINE_EXTENDED_TYPE(Qt.test, 1, 0, 0, MyExtendedObject,MyExtendedObject,ExtensionObject);
-QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyTypeObject, MyTypeObject);
+QML_DEFINE_TYPE(Qt.test, 1,0, MyQmlObject,MyQmlObject);
+QML_DEFINE_TYPE(Qt.test, 1,0, MyDeferredObject,MyDeferredObject);
+QML_DEFINE_TYPE(Qt.test, 1,0, MyQmlContainer,MyQmlContainer);
+QML_DEFINE_EXTENDED_TYPE(Qt.test, 1,0, MyBaseExtendedObject,MyBaseExtendedObject,BaseExtensionObject);
+QML_DEFINE_EXTENDED_TYPE(Qt.test, 1,0, MyExtendedObject,MyExtendedObject,ExtensionObject);
+QML_DEFINE_TYPE(Qt.test, 1,0, MyTypeObject, MyTypeObject);
 
 #include "testtypes.moc"

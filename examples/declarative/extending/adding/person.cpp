@@ -66,5 +66,5 @@ void Person::setShoeSize(int s)
     m_shoeSize = s;
 }
 
-QML_DEFINE_TYPE(People, 1, 0, 0, Person, Person);
+QML_DEFINE_TYPE(People, 1,0, Person, Person);
 // ![0]

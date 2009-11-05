@@ -35,6 +35,7 @@ SUBDIRS += \
            repeater \               # Cover
            sql \                    # Cover
            states \                 # Cover
+           valuetypes \             # Cover
            visual                   # Cover
 
 # Tests which should run in Pulse

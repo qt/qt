@@ -66,12 +66,13 @@ class QmlGraphicsAnimatedImageItemPrivate : public QmlGraphicsImagePrivate
 
 public:
     QmlGraphicsAnimatedImageItemPrivate()
-      : playing(true), paused(false), _movie(0), reply(0)
+      : playing(true), paused(false), preset_currentframe(0), _movie(0), reply(0)
     {
     }
 
     bool playing;
     bool paused;
+    int preset_currentframe;
     QMovie *_movie;
     QNetworkReply *reply;
 };

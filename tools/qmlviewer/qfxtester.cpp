@@ -52,10 +52,10 @@
 
 QT_BEGIN_NAMESPACE
 
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, VisualTest, QmlGraphicsVisualTest);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Frame, QmlGraphicsVisualTestFrame);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Mouse, QmlGraphicsVisualTestMouse);
-QML_DEFINE_TYPE(Qt.VisualTest, 4, 6, (QT_VERSION&0x00ff00)>>8, Key, QmlGraphicsVisualTestKey);
+QML_DEFINE_TYPE(Qt.VisualTest, 4,6, VisualTest, QmlGraphicsVisualTest);
+QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Frame, QmlGraphicsVisualTestFrame);
+QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Mouse, QmlGraphicsVisualTestMouse);
+QML_DEFINE_TYPE(Qt.VisualTest, 4,6, Key, QmlGraphicsVisualTestKey);
 
 QmlGraphicsTester::QmlGraphicsTester(const QString &script, QmlViewer::ScriptOptions opts, 
                      QmlView *parent)

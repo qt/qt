@@ -91,7 +91,7 @@ public:
 */
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsObject)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GraphicsObjectContainer,QmlGraphicsGraphicsObjectContainer)
+QML_DEFINE_TYPE(Qt,4,6,GraphicsObjectContainer,QmlGraphicsGraphicsObjectContainer)
 
 QmlGraphicsGraphicsObjectContainer::QmlGraphicsGraphicsObjectContainer(QmlGraphicsItem *parent)
 : QmlGraphicsItem(*new QmlGraphicsGraphicsObjectContainerPrivate, parent)

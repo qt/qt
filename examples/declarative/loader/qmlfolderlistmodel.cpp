@@ -382,7 +382,7 @@ void  QmlFolderListModel::setShowOnlyReadable(bool on)
 }
 
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,FolderListModel,QmlFolderListModel)
+QML_DEFINE_TYPE(Qt,4,6,FolderListModel,QmlFolderListModel)
 
 QT_END_NAMESPACE
 
