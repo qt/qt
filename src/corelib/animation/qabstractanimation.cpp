@@ -50,7 +50,7 @@
     animations that plug into the rest of the animation framework.
 
     The progress of an animation is given by its current time
-    (currentTime()), which is measured in milliseconds from the start
+    (currentLoopTime()), which is measured in milliseconds from the start
     of the animation (0) to its end (duration()). The value is updated
     automatically while the animation is running. It can also be set
     directly with setCurrentTime().
@@ -156,8 +156,7 @@
 
 #ifndef QT_NO_ANIMATION
 
-//with 15 ms we get more accuracy on windows (it uses the multimedia timer)
-#define DEFAULT_TIMER_INTERVAL 15
+#define DEFAULT_TIMER_INTERVAL 16
 #define STARTSTOP_TIMER_DELAY 0
 
 QT_BEGIN_NAMESPACE
@@ -214,6 +213,10 @@ void QUnifiedTimer::restartAnimationTimer()
 {
     if (runningLeafAnimations == 0 && !runningPauseAnimations.isEmpty()) {
         int closestTimeToFinish = closestPauseAnimationTimeToFinish();
+        if (closestTimeToFinish < 0) {
+            qDebug() << runningPauseAnimations;
+            qDebug() << closestPauseAnimationTimeToFinish();
+        }
         animationTimer.start(closestTimeToFinish, this);
         isPauseTimerActive = true;
     } else if (!animationTimer.isActive() || isPauseTimerActive) {
@@ -288,9 +291,11 @@ void QUnifiedTimer::registerRunningAnimation(QAbstractAnimation *animation)
     if (QAbstractAnimationPrivate::get(animation)->isGroup)
         return;
 
-    if (QAbstractAnimationPrivate::get(animation)->isPause)
+    if (QAbstractAnimationPrivate::get(animation)->isPause) {
+        if (animation->duration() == -1)
+            qDebug() << "toto";
         runningPauseAnimations << animation;
-    else
+    } else
         runningLeafAnimations++;
 }
 
@@ -314,9 +319,9 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->duration() - animation->currentTime();
+            timeToFinish = animation->duration() - animation->currentLoopTime();
         else
-            timeToFinish = animation->currentTime();
+            timeToFinish = animation->currentLoopTime();
 
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
@@ -348,13 +353,16 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     state = newState;
     QWeakPointer<QAbstractAnimation> guard(q);
 
-    //unregistration of the animation must always happen before calls to
+    //(un)registration of the animation must always happen before calls to
     //virtual function (updateState) to ensure a correct state of the timer
+    bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
     if (oldState == QAbstractAnimation::Running) {
         if (newState == QAbstractAnimation::Paused && hasRegisteredTimer)
             QUnifiedTimer::instance()->ensureTimerUpdate();
         //the animation, is not running any more
         QUnifiedTimer::instance()->unregisterAnimation(q);
+    } else {
+        QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
     }
 
     q->updateState(newState, oldState);
@@ -371,8 +379,6 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         break;
     case QAbstractAnimation::Running:
         {
-            bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
-            QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
 
             // this ensures that the value is updated now that the animation is running
             if (oldState == QAbstractAnimation::Stopped) {
@@ -736,7 +742,7 @@ void QAbstractAnimation::start(DeletionPolicy policy)
     signal, and state() returns Stopped. The current time is not changed.
 
     If the animation stops by itself after reaching the end (i.e.,
-    currentTime() == duration() and currentLoop() > loopCount() - 1), the
+    currentLoopTime() == duration() and currentLoop() > loopCount() - 1), the
     finished() signal is emitted.
 
     \sa start(), state()
