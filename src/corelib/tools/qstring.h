@@ -631,7 +631,7 @@ private:
     friend class QCharRef;
     friend class QTextCodec;
     friend class QStringRef;
-    friend class QAbstractConcatenable;
+    friend struct QAbstractConcatenable;
     friend inline bool qStringComparisonHelper(const QString &s1, const char *s2);
     friend inline bool qStringComparisonHelper(const QStringRef &s1, const char *s2);
 public:
