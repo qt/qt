@@ -53,6 +53,9 @@ public:
 
 private slots:
     void buildModel();
+    void missingFields();
+    void cdata();
+    void attributes();
 
 private:
     QmlEngine engine;
@@ -74,6 +77,54 @@ void tst_qmlxmllistmodel::buildModel()
     QCOMPARE(data.value(Qt::UserRole+2).toInt(), 9);
     QCOMPARE(data.value(Qt::UserRole+3).toString(), QLatin1String("Medium"));
 }
+
+void tst_qmlxmllistmodel::missingFields()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/model2.qml"));
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 9);
+
+    QList<int> roles;
+    roles << Qt::UserRole << Qt::UserRole + 1 << Qt::UserRole + 2 << Qt::UserRole + 3 << Qt::UserRole + 4;
+    QHash<int, QVariant> data = listModel->data(5, roles);
+    QVERIFY(data.count() == 5);
+    QCOMPARE(data.value(Qt::UserRole+3).toString(), QLatin1String(""));
+    QCOMPARE(data.value(Qt::UserRole+4).toString(), QLatin1String(""));
+
+    data = listModel->data(7, roles);
+    QVERIFY(data.count() == 5);
+    QCOMPARE(data.value(Qt::UserRole+2).toString(), QLatin1String(""));
+}
+
+void tst_qmlxmllistmodel::cdata()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/recipes.qml"));
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 5);
+
+    QList<int> roles;
+    roles << Qt::UserRole + 2;
+    QHash<int, QVariant> data = listModel->data(2, roles);
+    QVERIFY(data.count() == 1);
+    QVERIFY(data.value(Qt::UserRole+2).toString().startsWith(QLatin1String("<html>")));
+}
+
+void tst_qmlxmllistmodel::attributes()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/recipes.qml"));
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 5);
+
+    QList<int> roles;
+    roles << Qt::UserRole;
+    QHash<int, QVariant> data = listModel->data(2, roles);
+    QVERIFY(data.count() == 1);
+    QCOMPARE(data.value(Qt::UserRole).toString(), QLatin1String("Vegetable Soup"));
+}
+
 
 QTEST_MAIN(tst_qmlxmllistmodel)
 

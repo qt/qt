@@ -258,10 +258,39 @@ void usage()
     fprintf(stderr, "\n");
     fprintf(stderr, "QML related options\n");
     fprintf(stderr, " -record file                : record new test data for file\n");
+    fprintf(stderr, " -recordnovisuals file       : record new test data for file, but ignore visuals\n");
     fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
     fprintf(stderr, " -testvisuals file           : playback test data for file, without errors\n");
     fprintf(stderr, " -updatevisuals file         : playback test data for file, accept new visuals for file\n");
     fprintf(stderr, " -updateplatformvisuals file : playback test data for file, accept new visuals for file only on current platform (MacOSX/Win32/X11/QWS/S60)\n");
+    fprintf(stderr, "\n"
+        "Visual tests are recordings of manual interactions with a QML test,\n"
+        "that can then be run automatically. To record a new test, run:\n"
+        "\n"
+        "  tst_visuals -record yourtestdir/yourtest # Note, no .qml extension\n"
+        "\n"
+        "This records everything you do (try to keep it short).\n"
+        "To play back a test, run:\n"
+        "\n"
+        "  tst_visuals -play yourtestdir/yourtest\n"
+        "\n"
+        "Your test may include QML code to test itself, reporting any error to an\n"
+        "'error' property on the root object - the test will fail if this property\n"
+        "gets set to anything non-empty.\n"
+        "\n"
+        "If your test changes slightly but is still correct (check with -play), you\n"
+        "can update the visuals by running:\n"
+        "\n"
+        "  tst_visuals -updatevisuals yourtestdir/yourtest\n"
+        "\n"
+        "If your test includes platform-sensitive visuals (eg. text in system fonts),\n"
+        "you should create platform-specific visuals, using -updateplatformvisuals\n"
+        "instead.\n"
+        "\n"
+        "If you ONLY wish to use the 'error' property, you can record your test with\n"
+        "-recordnovisuals, or discard existing visuals with -removevisuals; the test\n"
+        "will then only fail on a syntax error, crash, or non-empty 'error' property.\n"
+    );
 }
 
 int main(int argc, char **argv)
@@ -303,7 +332,7 @@ int main(int argc, char **argv)
             newArgv[newArgc++] = argv[ii];
         }
         
-        if (arg == "-help") {
+        if (arg == "-help" || arg == "-?") {
             atexit(usage);
             showHelp = true;
         }

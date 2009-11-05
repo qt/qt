@@ -166,29 +166,38 @@ static int countBits(int hint)
 const int MinNumBits = 4;
 
 QHashData QHashData::shared_null = {
-    0, 0, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true
+    0, 0, Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, MinNumBits, 0, 0, true, false, 0
 };
 
 void *QHashData::allocateNode()
 {
-    void *ptr = qMalloc(nodeSize);
+    return allocateNode(0);
+}
+
+void *QHashData::allocateNode(int nodeAlign)
+{
+    void *ptr = strictAlignment ? qMallocAligned(nodeSize, nodeAlign) : qMalloc(nodeSize);
     Q_CHECK_PTR(ptr);
     return ptr;
 }
 
 void QHashData::freeNode(void *node)
 {
-    qFree(node);
+    if (strictAlignment)
+        qFreeAligned(node);
+    else
+        qFree(node);
 }
 
 QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *), int nodeSize)
 {
-    return detach_helper( node_duplicate, 0, nodeSize );
+    return detach_helper2( node_duplicate, 0, nodeSize, 0 );
 }
 
-QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
-        void (*node_delete)(Node *),
-        int nodeSize)
+QHashData *QHashData::detach_helper2(void (*node_duplicate)(Node *, void *),
+                                     void (*node_delete)(Node *),
+                                     int nodeSize,
+                                     int nodeAlign)
 {
     union {
         QHashData *d;
@@ -204,6 +213,8 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
     d->numBits = numBits;
     d->numBuckets = numBuckets;
     d->sharable = true;
+    d->strictAlignment = nodeAlign > 8;
+    d->reserved = 0;
 
     if (numBuckets) {
         QT_TRY {
@@ -222,7 +233,7 @@ QHashData *QHashData::detach_helper(void (*node_duplicate)(Node *, void *),
             Node *oldNode = buckets[i];
             while (oldNode != this_e) {
                 QT_TRY {
-                    Node *dup = static_cast<Node *>(allocateNode());
+                    Node *dup = static_cast<Node *>(allocateNode(nodeAlign));
 
                     QT_TRY {
                         node_duplicate(oldNode, dup);
@@ -262,6 +273,7 @@ void QHashData::free_helper(void (*node_delete)(Node *))
             while (cur != this_e) {
                 Node *next = cur->next;
                 node_delete(cur);
+                freeNode(cur);
                 cur = next;
             }
         }

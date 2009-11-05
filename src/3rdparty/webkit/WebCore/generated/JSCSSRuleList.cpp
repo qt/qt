@@ -140,7 +140,7 @@ JSCSSRuleList::JSCSSRuleList(NonNullPassRefPtr<Structure> structure, JSDOMGlobal
 
 JSCSSRuleList::~JSCSSRuleList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSRuleList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

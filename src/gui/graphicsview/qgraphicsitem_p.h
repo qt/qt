@@ -61,6 +61,7 @@
 #include <private/qgraphicstransform_p.h>
 
 #include <private/qgraphicseffect_p.h>
+#include <qgraphicseffect.h>
 
 #include <QtCore/qpoint.h>
 
@@ -621,7 +622,9 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system,
+                   QPoint *offset,
+                   QGraphicsEffectSource::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

@@ -162,7 +162,7 @@ JSCSSRule::JSCSSRule(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* 
 
 JSCSSRule::~JSCSSRule()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSRule::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

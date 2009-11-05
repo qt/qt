@@ -46,7 +46,9 @@ namespace Phonon
             AdvancedDevicesFromSettings = 2,
             HideUnavailableDevices = 4
         };
+#ifndef QT_NO_PHONON_SETTINGSGROUP
         QList<int> audioOutputDeviceListFor(Phonon::Category category, int override = AdvancedDevicesFromSettings) const;
+#endif //QT_NO_PHONON_SETTINGSGROUP
         int audioOutputDeviceFor(Phonon::Category category, int override = AdvancedDevicesFromSettings) const;
 
 #ifndef QT_NO_PHONON_AUDIOCAPTURE
@@ -55,7 +57,9 @@ namespace Phonon
 #endif //QT_NO_PHONON_AUDIOCAPTURE
 
     protected:
+#ifndef QT_NO_SETTINGS
         QSettings m_config;
+#endif //QT_NO_SETTINGS
     };
 } // namespace Phonon
 

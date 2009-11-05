@@ -366,7 +366,7 @@ QmlViewer::QmlViewer(QWidget *parent, Qt::WindowFlags flags)
 
 void QmlViewer::adjustSizeSlot()
 {
-    adjustSize();
+    resize(sizeHint());
 }
 
 QMenuBar *QmlViewer::menuBar() const
@@ -722,7 +722,7 @@ void QmlViewer::openQml(const QString& file_or_url)
         canvas->updateGeometry();
         if (mb)
             mb->updateGeometry();
-        adjustSize();
+        resize(sizeHint());
     } else {
         if (scaleSkin)
             canvas->resize(canvas->sizeHint());

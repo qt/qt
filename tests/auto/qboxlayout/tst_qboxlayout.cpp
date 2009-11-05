@@ -211,7 +211,6 @@ void tst_QBoxLayout::setGeometry()
 
     QRect newGeom(0, 0, 70, 70);
     lay2->setGeometry(newGeom);
-    QApplication::processEvents();
     QVERIFY2(newGeom.contains(dial->geometry()), "dial->geometry() should be smaller and within newGeom");
 }
 

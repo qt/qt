@@ -157,6 +157,7 @@ static const int computedProperties[] = {
     CSSPropertyWebkitBackgroundClip,
     CSSPropertyWebkitBackgroundComposite,
     CSSPropertyWebkitBackgroundOrigin,
+    CSSPropertyWebkitBackgroundSize,
     CSSPropertyWebkitBorderFit,
     CSSPropertyWebkitBorderHorizontalSpacing,
     CSSPropertyWebkitBorderImage,
@@ -260,29 +261,12 @@ static const int computedProperties[] = {
     CSSPropertyTextAnchor,
     CSSPropertyWritingMode,
     CSSPropertyGlyphOrientationHorizontal,
-    CSSPropertyGlyphOrientationVertical
+    CSSPropertyGlyphOrientationVertical,
+    CSSPropertyWebkitShadow
 #endif
 };
 
 const unsigned numComputedProperties = sizeof(computedProperties) / sizeof(computedProperties[0]);
-
-static PassRefPtr<CSSValue> valueForShadow(const ShadowData* shadow, CSSPropertyID propertyID)
-{
-    if (!shadow)
-        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-
-    RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
-    for (const ShadowData* s = shadow; s; s = s->next) {
-        RefPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(s->x, CSSPrimitiveValue::CSS_PX);
-        RefPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(s->y, CSSPrimitiveValue::CSS_PX);
-        RefPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(s->blur, CSSPrimitiveValue::CSS_PX);
-        RefPtr<CSSPrimitiveValue> spread = propertyID == CSSPropertyTextShadow ? 0 : CSSPrimitiveValue::create(s->spread, CSSPrimitiveValue::CSS_PX);
-        RefPtr<CSSPrimitiveValue> style = propertyID == CSSPropertyTextShadow || s->style == Normal ? 0 : CSSPrimitiveValue::createIdentifier(CSSValueInset);
-        RefPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(s->color.rgb());
-        list->prepend(ShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
-    }
-    return list.release();
-}
 
 static int valueForRepeatRule(int rule)
 {
@@ -571,6 +555,26 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getFontSizeCSSValuePreferringK
     return CSSPrimitiveValue::create(style->fontDescription().computedPixelSize(), CSSPrimitiveValue::CSS_PX);
 }
 
+PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForShadow(const ShadowData* shadow, int id) const
+{
+    if (!shadow)
+        return CSSPrimitiveValue::createIdentifier(CSSValueNone);
+
+    CSSPropertyID propertyID = static_cast<CSSPropertyID>(id);
+
+    RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
+    for (const ShadowData* s = shadow; s; s = s->next) {
+        RefPtr<CSSPrimitiveValue> x = CSSPrimitiveValue::create(s->x, CSSPrimitiveValue::CSS_PX);
+        RefPtr<CSSPrimitiveValue> y = CSSPrimitiveValue::create(s->y, CSSPrimitiveValue::CSS_PX);
+        RefPtr<CSSPrimitiveValue> blur = CSSPrimitiveValue::create(s->blur, CSSPrimitiveValue::CSS_PX);
+        RefPtr<CSSPrimitiveValue> spread = propertyID == CSSPropertyTextShadow ? 0 : CSSPrimitiveValue::create(s->spread, CSSPrimitiveValue::CSS_PX);
+        RefPtr<CSSPrimitiveValue> style = propertyID == CSSPropertyTextShadow || s->style == Normal ? 0 : CSSPrimitiveValue::createIdentifier(CSSValueInset);
+        RefPtr<CSSPrimitiveValue> color = CSSPrimitiveValue::createColor(s->color.rgb());
+        list->prepend(ShadowValue::create(x.release(), y.release(), blur.release(), spread.release(), style.release(), color.release()));
+    }
+    return list.release();
+}
+
 PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int propertyID) const
 {
     return getPropertyCSSValue(propertyID, UpdateLayout);
@@ -676,7 +680,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
             if (style->backgroundImage())
                 return style->backgroundImage()->cssValue();
             return CSSPrimitiveValue::createIdentifier(CSSValueNone);
-        case CSSPropertyBackgroundSize: {
+        case CSSPropertyBackgroundSize:
+        case CSSPropertyWebkitBackgroundSize: {
             EFillSizeType size = style->backgroundSizeType();
             if (size == Contain)
                 return CSSPrimitiveValue::createIdentifier(CSSValueContain);
@@ -777,7 +782,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
         case CSSPropertyWebkitBoxReflect:
             return valueForReflection(style->boxReflect());
         case CSSPropertyWebkitBoxShadow:
-            return valueForShadow(style->boxShadow(), static_cast<CSSPropertyID>(propertyID));
+            return valueForShadow(style->boxShadow(), propertyID);
         case CSSPropertyCaptionSide:
             return CSSPrimitiveValue::create(style->captionSide());
         case CSSPropertyClear:
@@ -1061,7 +1066,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(int proper
         case CSSPropertyTextIndent:
             return CSSPrimitiveValue::create(style->textIndent());
         case CSSPropertyTextShadow:
-            return valueForShadow(style->textShadow(), static_cast<CSSPropertyID>(propertyID));
+            return valueForShadow(style->textShadow(), propertyID);
         case CSSPropertyTextRendering:
             return CSSPrimitiveValue::create(style->fontDescription().textRenderingMode());
         case CSSPropertyTextOverflow:

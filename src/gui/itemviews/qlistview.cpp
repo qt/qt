@@ -2403,6 +2403,12 @@ QVector<QModelIndex> QListModeViewBase::intersectingSet(const QRect &area) const
     return ret;
 }
 
+void QListModeViewBase::dataChanged(const QModelIndex &, const QModelIndex &)
+{
+    dd->doDelayedItemsLayout();
+}
+
+
 QRect QListModeViewBase::mapToViewport(const QRect &rect) const
 {
     if (isWrapping())

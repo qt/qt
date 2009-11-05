@@ -1556,9 +1556,10 @@ void QDockAreaLayoutInfo::apply(bool animate)
             }
         }
     }
-
+#ifndef QT_NO_TABBAR
     if (sep == 1)
         updateSeparatorWidgets();
+#endif //QT_NO_TABBAR
 }
 
 static void paintSep(QPainter *p, QWidget *w, const QRect &r, Qt::Orientation o, bool mouse_over)
@@ -2008,13 +2009,14 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
         updateTabBar();
         setCurrentTabId(tabId(item_list.at(index)));
     }
-#endif
     if (!testing && sep == 1)
         updateSeparatorWidgets();
+#endif
 
     return true;
 }
 
+#ifndef QT_NO_TABBAR
 void QDockAreaLayoutInfo::updateSeparatorWidgets() const
 {
     if (tabbed) {
@@ -2065,6 +2067,7 @@ void QDockAreaLayoutInfo::updateSeparatorWidgets() const
     separatorWidgets.resize(j);
     Q_ASSERT(separatorWidgets.size() == j);
 }
+#endif //QT_NO_TABBAR
 
 #ifndef QT_NO_TABBAR
 void QDockAreaLayoutInfo::updateTabBar() const
@@ -2259,7 +2262,7 @@ QRect QDockAreaLayoutInfo::tabContentRect() const
 ** QDockAreaLayout
 */
 
-QDockAreaLayout::QDockAreaLayout(QMainWindow *win) : have_central(false)
+QDockAreaLayout::QDockAreaLayout(QMainWindow *win) : fallbackToSizeHints(true)
 {
     mainWindow = win;
     sep = win->style()->pixelMetric(QStyle::PM_DockWidgetSeparatorExtent, 0, win);
@@ -2346,6 +2349,9 @@ bool QDockAreaLayout::restoreState(QDataStream &stream, const QList<QDockWidget*
             for (int i = 0; i < 4; ++i)
                 corners[i] = static_cast<Qt::DockWidgetArea>(cornerData[i]);
         }
+
+        if (!testing)
+            fallbackToSizeHints = false;
     }
 
     return ok;
@@ -2582,9 +2588,7 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
 {
     QSize center_hint(0, 0);
     QSize center_min(0, 0);
-    const bool old_have_central = have_central;
-    have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
-    const bool fallbackToSizeHints = !old_have_central && have_central;
+    const bool have_central = centralWidgetItem != 0 && !centralWidgetItem->isEmpty();
     if (have_central) {
         center_hint = centralWidgetRect.size();
         if (!center_hint.isValid())
@@ -2629,6 +2633,8 @@ void QDockAreaLayout::getGrid(QVector<QLayoutStruct> *_ver_struct_list,
     QSize bottom_min = docks[QInternal::BottomDock].minimumSize();
     QSize bottom_max = docks[QInternal::BottomDock].maximumSize();
     bottom_hint = bottom_hint.boundedTo(bottom_max).expandedTo(bottom_min);
+
+    fallbackToSizeHints = !have_central;
 
     if (_ver_struct_list != 0) {
         QVector<QLayoutStruct> &ver_struct_list = *_ver_struct_list;
@@ -3075,9 +3081,10 @@ void QDockAreaLayout::apply(bool animate)
         widgetAnimator.animate(centralWidgetItem->widget(), centralWidgetRect,
                                 animate);
     }
-
+#ifndef QT_NO_TABBAR
     if (sep == 1)
         updateSeparatorWidgets();
+#endif //QT_NO_TABBAR
 }
 
 void QDockAreaLayout::paintSeparators(QPainter *p, QWidget *widget,
@@ -3155,6 +3162,7 @@ int QDockAreaLayout::separatorMove(const QList<int> &separator, const QPoint &or
     return delta;
 }
 
+#ifndef QT_NO_TABBAR
 // Sets the correct positions for the seperator widgets
 // Allocates new sepearator widgets with getSeparatorWidget
 void QDockAreaLayout::updateSeparatorWidgets() const
@@ -3188,6 +3196,7 @@ void QDockAreaLayout::updateSeparatorWidgets() const
 
     separatorWidgets.resize(j);
 }
+#endif //QT_NO_TABBAR
 
 QLayoutItem *QDockAreaLayout::itemAt(int *x, int index) const
 {
@@ -3240,7 +3249,6 @@ QSet<QTabBar*> QDockAreaLayout::usedTabBars() const
     }
     return result;
 }
-#endif
 
 // Returns the set of all used separator widgets
 QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
@@ -3255,6 +3263,7 @@ QSet<QWidget*> QDockAreaLayout::usedSeparatorWidgets() const
     }
     return result;
 }
+#endif
 
 QRect QDockAreaLayout::gapRect(const QList<int> &path) const
 {

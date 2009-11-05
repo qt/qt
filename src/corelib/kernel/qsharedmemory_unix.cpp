@@ -49,8 +49,6 @@
 
 #include <errno.h>
 
-#ifndef QT_NO_SHAREDMEMORY
-
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -61,6 +59,7 @@
 
 #include "private/qcore_unix_p.h"
 
+#ifndef QT_NO_SHAREDMEMORY
 QT_BEGIN_NAMESPACE
 
 QSharedMemoryPrivate::QSharedMemoryPrivate()

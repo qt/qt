@@ -53,7 +53,7 @@ QmlGraphicsLoaderPrivate::~QmlGraphicsLoaderPrivate()
 {
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QmlGraphicsLoader)
+QML_DEFINE_TYPE(Qt,4,6,Loader,QmlGraphicsLoader)
 
 /*!
     \qmlclass Loader QmlGraphicsLoader

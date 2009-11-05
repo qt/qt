@@ -198,6 +198,8 @@ void tst_qmlgraphicstext::width()
 
     for (int i = 0; i < standard.size(); i++)
     {
+        QVERIFY(!Qt::mightBeRichText(standard.at(i))); // self-test
+
         QFont f;
         QFontMetrics fm(f);
         int metricWidth = fm.size(Qt::TextExpandTabs && Qt::TextShowMnemonic, standard.at(i)).width();
@@ -208,11 +210,13 @@ void tst_qmlgraphicstext::width()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(metricWidth));
-        QVERIFY(textObject->textFormat() == QmlGraphicsText::PlainText);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 
     for (int i = 0; i < richText.size(); i++)
     {
+        QVERIFY(Qt::mightBeRichText(richText.at(i))); // self-test
+
         QTextDocument document;
         document.setHtml(richText.at(i));
         document.setDocumentMargin(0);
@@ -225,7 +229,7 @@ void tst_qmlgraphicstext::width()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), qreal(documentWidth));
-        QVERIFY(textObject->textFormat() == QmlGraphicsText::RichText);
+        QVERIFY(textObject->textFormat() == QmlGraphicsText::AutoText); // setting text doesn't change format
     }
 }
 
@@ -269,7 +273,7 @@ void tst_qmlgraphicstext::wrap()
 
 void tst_qmlgraphicstext::elide()
 {
-    for (Qt::TextElideMode m = Qt::ElideLeft; m<=Qt::ElideNone; m=Qt::TextElideMode(int(m)+1)) {
+    for (QmlGraphicsText::TextElideMode m = QmlGraphicsText::ElideLeft; m<=QmlGraphicsText::ElideNone; m=QmlGraphicsText::TextElideMode(int(m)+1)) {
         const char* elidename[]={"ElideLeft", "ElideRight", "ElideMiddle", "ElideNone"};
         QString elide = "elide: Text." + QString(elidename[int(m)]) + ";";
 
@@ -279,6 +283,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, ("import Qt 4.6\nText { text: \"\"; "+elide+" width: 100 }").toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
 
@@ -288,6 +293,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
 
@@ -298,6 +304,7 @@ void tst_qmlgraphicstext::elide()
             QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
             QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
 
+            QCOMPARE(textObject->elideMode(), m);
             QCOMPARE(textObject->width(), 100.);
         }
     }

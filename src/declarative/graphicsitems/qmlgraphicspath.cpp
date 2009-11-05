@@ -47,14 +47,14 @@
 
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Path,QmlGraphicsPath)
+QML_DEFINE_TYPE(Qt,4,6,Path,QmlGraphicsPath)
 QML_DEFINE_NOCREATE_TYPE(QmlGraphicsPathElement)
 QML_DEFINE_NOCREATE_TYPE(QmlGraphicsCurve)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathAttribute,QmlGraphicsPathAttribute)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathPercent,QmlGraphicsPathPercent)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathLine,QmlGraphicsPathLine)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathQuad,QmlGraphicsPathQuad)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,PathCubic,QmlGraphicsPathCubic)
+QML_DEFINE_TYPE(Qt,4,6,PathAttribute,QmlGraphicsPathAttribute)
+QML_DEFINE_TYPE(Qt,4,6,PathPercent,QmlGraphicsPathPercent)
+QML_DEFINE_TYPE(Qt,4,6,PathLine,QmlGraphicsPathLine)
+QML_DEFINE_TYPE(Qt,4,6,PathQuad,QmlGraphicsPathQuad)
+QML_DEFINE_TYPE(Qt,4,6,PathCubic,QmlGraphicsPathCubic)
 
 /*!
     \qmlclass PathElement QmlGraphicsPathElement

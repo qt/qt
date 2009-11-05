@@ -196,9 +196,10 @@ public:
     QRect rect;
     QMainWindow *mainWindow;
     QList<QDockAreaLayoutItem> item_list;
-
+#ifndef QT_NO_TABBAR
     void updateSeparatorWidgets() const;
     QSet<QWidget*> usedSeparatorWidgets() const;
+#endif //QT_NO_TABBAR
 
 #ifndef QT_NO_TABBAR
     quintptr currentTabId() const;
@@ -233,7 +234,7 @@ public:
     QDockAreaLayout(QMainWindow *win);
     QDockAreaLayoutInfo docks[4];
     int sep; // separator extent
-    bool have_central;
+    bool fallbackToSizeHints; //determines if we should use the sizehint for the dock areas (true until the layout is restored or the central widget is set)
     mutable QVector<QWidget*> separatorWidgets;
 
     bool isValid() const;
@@ -279,7 +280,9 @@ public:
                             const QPoint &mouse) const;
     QRegion separatorRegion() const;
     int separatorMove(const QList<int> &separator, const QPoint &origin, const QPoint &dest);
+#ifndef QT_NO_TABBAR
     void updateSeparatorWidgets() const;
+#endif //QT_NO_TABBAR
 
     QLayoutItem *itemAt(int *x, int index) const;
     QLayoutItem *takeAt(int *x, int index);
@@ -293,9 +296,10 @@ public:
     QRect gapRect(const QList<int> &path) const;
 
     void keepSize(QDockWidget *w);
-
+#ifndef QT_NO_TABBAR
     QSet<QTabBar*> usedTabBars() const;
     QSet<QWidget*> usedSeparatorWidgets() const;
+#endif //QT_NO_TABBAR
 };
 
 QT_END_NAMESPACE

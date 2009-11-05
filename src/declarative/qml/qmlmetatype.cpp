@@ -119,8 +119,7 @@ public:
     const char *m_iid;
     QByteArray m_name;
     int m_version_maj;
-    int m_version_min_from;
-    int m_version_min_to;
+    int m_version_min;
     int m_typeId; int m_listId; int m_qmlListId;
     QmlPrivate::Func m_opFunc;
     const QMetaObject *m_baseMetaObject;
@@ -160,13 +159,12 @@ QmlType::QmlType(int type, int listType, int qmlListType,
     d->m_index = index;
     d->m_isSetup = true;
     d->m_version_maj = 0;
-    d->m_version_min_from = 0;
-    d->m_version_min_to = 0;
+    d->m_version_min = 0;
 }
 
 QmlType::QmlType(int type, int listType, int qmlListType,
                  QmlPrivate::Func opFunc, const char *qmlName,
-                 int version_maj, int version_min_from, int version_min_to,
+                 int version_maj, int version_min,
                  const QMetaObject *metaObject,
                  QmlAttachedPropertiesFunc attachedPropertiesFunc,
                  const QMetaObject *attachedType,
@@ -178,8 +176,7 @@ QmlType::QmlType(int type, int listType, int qmlListType,
 {
     d->m_name = qmlName;
     d->m_version_maj = version_maj;
-    d->m_version_min_from = version_min_from;
-    d->m_version_min_to = version_min_to;
+    d->m_version_min = version_min;
     d->m_typeId = type;
     d->m_listId = listType;
     d->m_qmlListId = qmlListType;
@@ -209,19 +206,14 @@ int QmlType::majorVersion() const
     return d->m_version_maj;
 }
 
-int QmlType::minMinorVersion() const
+int QmlType::minorVersion() const
 {
-    return d->m_version_min_from;
-}
-
-int QmlType::maxMinorVersion() const
-{
-    return d->m_version_min_to;
+    return d->m_version_min;
 }
 
 bool QmlType::availableInVersion(int vmajor, int vminor) const
 {
-    return vmajor == d->m_version_maj && vminor >= d->m_version_min_from && vminor <= d->m_version_min_to;
+    return vmajor > d->m_version_maj || (vmajor == d->m_version_maj && vminor >= d->m_version_min);
 }
 
 void QmlTypePrivate::init() const
@@ -473,7 +465,7 @@ int QmlMetaType::registerInterface(const QmlPrivate::MetaTypeIds &id,
 }
 
 int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Func func,
-        const char *uri, int version_maj, int version_min_from, int version_min_to, const char *cname,
+        const char *uri, int version_maj, int version_min, const char *cname,
         const QMetaObject *mo, QmlAttachedPropertiesFunc attach, const QMetaObject *attachMo,
         int pStatus, int object, int valueSource, int valueInterceptor, QmlPrivate::CreateFunc extFunc, const QMetaObject *extmo, QmlCustomParser *parser)
 {
@@ -499,7 +491,7 @@ int QmlMetaType::registerType(const QmlPrivate::MetaTypeIds &id, QmlPrivate::Fun
     name.replace('.','/');
 
     QmlType *type = new QmlType(id.typeId, id.listId, id.qmlListId,
-                                func, name, version_maj, version_min_from, version_min_to, mo, attach, attachMo, pStatus,
+                                func, name, version_maj, version_min, mo, attach, attachMo, pStatus,
                                 valueSource, valueInterceptor, extFunc, extmo, index, parser);
 
     data->types.append(type);

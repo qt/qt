@@ -398,7 +398,7 @@ public:
     QmlComponent *highlightComponent;
     FxListItem *highlight;
     FxListItem *trackedItem;
-    enum MovementReason { Other, Key, Mouse };
+    enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
     QmlEaseFollow *highlightPosAnimator;
@@ -422,6 +422,7 @@ void QmlGraphicsListViewPrivate::init()
     q->setFlag(QGraphicsItem::ItemIsFocusScope);
     QObject::connect(q, SIGNAL(heightChanged()), q, SLOT(refill()));
     QObject::connect(q, SIGNAL(widthChanged()), q, SLOT(refill()));
+    QObject::connect(q, SIGNAL(movementEnded()), q, SLOT(animStopped()));
 }
 
 void QmlGraphicsListViewPrivate::clear()
@@ -1178,8 +1179,8 @@ int QmlGraphicsListView::currentIndex() const
 void QmlGraphicsListView::setCurrentIndex(int index)
 {
     Q_D(QmlGraphicsListView);
-    d->moveReason = QmlGraphicsListViewPrivate::Other;
     if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+        d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
         cancelFlick();
         d->updateCurrent(index);
     } else {
@@ -1516,18 +1517,20 @@ void QmlGraphicsListView::viewportMoved()
     refill();
     if (isFlicking() || d->moving)
         d->moveReason = QmlGraphicsListViewPrivate::Mouse;
-    if (d->moveReason == QmlGraphicsListViewPrivate::Mouse) {
+    if (d->moveReason != QmlGraphicsListViewPrivate::SetIndex) {
         if (d->haveHighlightRange && d->highlightRange == StrictlyEnforceRange && d->highlight) {
-            int idx = d->snapIndex();
-            if (idx >= 0 && idx != d->currentIndex)
-                d->updateCurrent(idx);
-
-            qreal pos = d->currentItem->position();
+            // reposition highlight
+            qreal pos = d->highlight->position();
             if (pos > d->position() + d->highlightRangeEnd - 1 - d->highlight->size())
                 pos = d->position() + d->highlightRangeEnd - 1 - d->highlight->size();
             if (pos < d->position() + d->highlightRangeStart)
                 pos = d->position() + d->highlightRangeStart;
             d->highlight->setPosition(pos);
+
+            // update current index
+            int idx = d->snapIndex();
+            if (idx >= 0 && idx != d->currentIndex)
+                d->updateCurrent(idx);
         }
     }
 }
@@ -1599,7 +1602,6 @@ void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
         if ((d->orient == QmlGraphicsListView::Horizontal && event->key() == Qt::Key_Left)
                     || (d->orient == QmlGraphicsListView::Vertical && event->key() == Qt::Key_Up)) {
             if (currentIndex() > 0 || (d->wrap && !event->isAutoRepeat())) {
-                d->moveReason = QmlGraphicsListViewPrivate::Key;
                 decrementCurrentIndex();
                 event->accept();
                 return;
@@ -1610,7 +1612,6 @@ void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
         } else if ((d->orient == QmlGraphicsListView::Horizontal && event->key() == Qt::Key_Right)
                     || (d->orient == QmlGraphicsListView::Vertical && event->key() == Qt::Key_Down)) {
             if (currentIndex() < d->model->count() - 1 || (d->wrap && !event->isAutoRepeat())) {
-                d->moveReason = QmlGraphicsListViewPrivate::Key;
                 incrementCurrentIndex();
                 event->accept();
                 return;
@@ -1634,6 +1635,7 @@ void QmlGraphicsListView::incrementCurrentIndex()
 {
     Q_D(QmlGraphicsListView);
     if (currentIndex() < d->model->count() - 1 || d->wrap) {
+        d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
         int index = currentIndex()+1;
         cancelFlick();
         d->updateCurrent(index < d->model->count() ? index : 0);
@@ -1650,6 +1652,7 @@ void QmlGraphicsListView::decrementCurrentIndex()
 {
     Q_D(QmlGraphicsListView);
     if (currentIndex() > 0 || d->wrap) {
+        d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
         int index = currentIndex()-1;
         cancelFlick();
         d->updateCurrent(index >= 0 ? index : d->model->count()-1);
@@ -2024,12 +2027,18 @@ void QmlGraphicsListView::destroyingItem(QmlGraphicsItem *item)
     d->unrequestedItems.remove(item);
 }
 
+void QmlGraphicsListView::animStopped()
+{
+    Q_D(QmlGraphicsListView);
+    d->moveReason = QmlGraphicsListViewPrivate::Other;
+}
+
 QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject *obj)
 {
     return QmlGraphicsListViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ListView,QmlGraphicsListView)
+QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
 

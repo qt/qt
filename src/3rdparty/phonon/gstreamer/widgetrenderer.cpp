@@ -32,6 +32,7 @@
 # define GL_TEXTURE2    0x84C2
 #endif
 
+#ifndef QT_NO_PHONON_VIDEO
 QT_BEGIN_NAMESPACE
 
 static void frameRendered()
@@ -148,3 +149,4 @@ bool WidgetRenderer::eventFilter(QEvent * event)
 } //namespace Phonon::Gstreamer
 
 QT_END_NAMESPACE
+#endif //QT_NO_PHONON_VIDEO

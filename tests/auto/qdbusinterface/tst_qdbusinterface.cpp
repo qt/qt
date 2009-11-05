@@ -171,6 +171,13 @@ class tst_QDBusInterface: public QObject
 {
     Q_OBJECT
     MyObject obj;
+public slots:
+    void testServiceOwnerChanged(const QString &service)
+    {
+        if (service == "com.example.Test")
+            QTestEventLoop::instance().exitLoop();
+    }
+
 private slots:
     void initTestCase();
 
@@ -235,32 +242,13 @@ void tst_QDBusInterface::invalidAfterServiceOwnerChanged()
     QDBusInterface invalidInterface("com.example.Test", "/");
     QVERIFY(!invalidInterface.isValid());
 
+    QTestEventLoop::instance().connect(connIface, SIGNAL(serviceOwnerChanged(QString, QString, QString)),
+                                       SLOT(exitLoop()));
     QVERIFY(connIface->registerService("com.example.Test") == QDBusConnectionInterface::ServiceRegistered);
 
-    QSignalSpy serviceOwnerChangedSpy(connIface, SIGNAL(serviceOwnerChanged(QString, QString, QString)));
+    QTestEventLoop::instance().enterLoop(5);
 
-    QEventLoop loop;
-    QObject::connect(connIface, SIGNAL(serviceOwnerChanged(QString, QString, QString)),
-                     &loop, SLOT(quit()));
-    loop.exec();
-
-    // at least once, but other services might have changed while running the test, too.
-    QVERIFY(serviceOwnerChangedSpy.count() >= 1);
-    bool foundOurService = false;
-    for (int i = 0; i < serviceOwnerChangedSpy.count(); ++i) {
-        QList<QVariant> args = serviceOwnerChangedSpy.at(i);
-        QString name = args[0].toString();
-        QString oldOwner = args[1].toString();
-        QString newOwner = args[2].toString();
-        if (name == QLatin1String("com.example.Test")) {
-            if (newOwner == conn.baseService()) {
-                foundOurService = true;
-                break;
-            }
-        }
-    }
-    QVERIFY(foundOurService);
-
+    QVERIFY(!QTestEventLoop::instance().timeout());
     QVERIFY(!invalidInterface.isValid());
 }
 

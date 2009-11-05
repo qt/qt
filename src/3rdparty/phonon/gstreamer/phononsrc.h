@@ -49,7 +49,9 @@ typedef struct _PhononSrcClass PhononSrcClass;
 // PhononSrc:
 struct _PhononSrc {
     GstBaseSrc element;
+#ifndef QT_NO_PHONON_ABSTRACTMEDIASTREAM
     StreamReader *device;
+#endif //QT_NO_PHONON_ABSTRACTMEDIASTREAM
 };
 
 struct _PhononSrcClass {

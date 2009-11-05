@@ -153,7 +153,7 @@ JSXMLHttpRequestException::JSXMLHttpRequestException(NonNullPassRefPtr<Structure
 
 JSXMLHttpRequestException::~JSXMLHttpRequestException()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXMLHttpRequestException::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

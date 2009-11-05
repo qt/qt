@@ -109,10 +109,10 @@ contains( styles, plastique ) {
 contains( styles, gtk ) {
         HEADERS += styles/qgtkstyle.h
         HEADERS += styles/qgtkpainter_p.h
-        HEADERS += styles/gtksymbols_p.h
+        HEADERS += styles/qgtkstyle_p.h
         SOURCES += styles/qgtkstyle.cpp
         SOURCES += styles/qgtkpainter.cpp
-        SOURCES += styles/gtksymbols.cpp
+        SOURCES += styles/qgtkstyle_p.cpp
 	!contains( styles, cleanlooks ) {
 		styles += cleanlooks
 		DEFINES+= QT_STYLE_CLEANLOOKS

@@ -149,7 +149,7 @@ JSAbstractWorker::JSAbstractWorker(NonNullPassRefPtr<Structure> structure, JSDOM
 JSAbstractWorker::~JSAbstractWorker()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 void JSAbstractWorker::markChildren(MarkStack& markStack)
@@ -199,7 +199,7 @@ void setJSAbstractWorkerOnerror(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     AbstractWorker* imp = static_cast<AbstractWorker*>(static_cast<JSAbstractWorker*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));
