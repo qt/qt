@@ -110,7 +110,6 @@ public:
     }
 
     bool operator==(const TranslatorMessage& m) const;
-    bool operator<(const TranslatorMessage& m) const;
 
     QString fileName() const { return m_fileName; }
     void setFileName(const QString &fileName) { m_fileName = fileName; }
