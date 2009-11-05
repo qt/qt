@@ -831,6 +831,11 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
 
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
+            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            break;
+            
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
