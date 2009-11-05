@@ -382,7 +382,7 @@ void QAudioDeviceInfoInternal::updateLists()
     close();
 }
 
-QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
     QList<QByteArray> devices;
     QByteArray filter;
@@ -444,7 +444,7 @@ QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
 
 QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 {
-    QList<QByteArray> devices = deviceList(QAudio::AudioInput);
+    QList<QByteArray> devices = availableDevices(QAudio::AudioInput);
     if(devices.size() == 0)
         return QByteArray();
 
@@ -453,7 +453,7 @@ QByteArray QAudioDeviceInfoInternal::defaultInputDevice()
 
 QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
 {
-    QList<QByteArray> devices = deviceList(QAudio::AudioOutput);
+    QList<QByteArray> devices = availableDevices(QAudio::AudioOutput);
     if(devices.size() == 0)
         return QByteArray();
 
