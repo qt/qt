@@ -846,13 +846,6 @@ bool QGLFramebufferObject::isValid() const
     framebuffer to this framebuffer object.
     Returns true upon success, false otherwise.
 
-    Since 4.6: if another QGLFramebufferObject instance was already bound
-    to the current context, then its handle() will be remembered and
-    automatically restored when release() is called.  This allows multiple
-    framebuffer rendering targets to be stacked up.  It is important that
-    release() is called on the stacked framebuffer objects in the reverse
-    order of the calls to bind().
-
     \sa release()
 */
 bool QGLFramebufferObject::bind()
@@ -864,6 +857,13 @@ bool QGLFramebufferObject::bind()
     if (!ctx)
         return false;   // Context no longer exists.
     const QGLContext *current = QGLContext::currentContext();
+#ifdef QT_DEBUG
+    if (!current ||
+        QGLContextPrivate::contextGroup(current) != QGLContextPrivate::contextGroup(ctx))
+    {
+        qWarning("QGLFramebufferObject::bind() called from incompatible context");
+    }
+#endif
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo());
     d->valid = d->checkFramebufferStatus();
     if (d->valid && current)
@@ -889,6 +889,15 @@ bool QGLFramebufferObject::release()
         return false;   // Context no longer exists.
 
     const QGLContext *current = QGLContext::currentContext();
+
+#ifdef QT_DEBUG
+    if (!current ||
+        QGLContextPrivate::contextGroup(current) != QGLContextPrivate::contextGroup(ctx))
+    {
+        qWarning("QGLFramebufferObject::release() called from incompatible context");
+    }
+#endif
+
     if (current) {
         current->d_ptr->current_fbo = 0;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
