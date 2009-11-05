@@ -24,6 +24,11 @@ information about a particular change.
      now 0.93.
 
 
+Third party components
+----------------------
+
+ - Updated FreeType to version 2.3.9
+
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
@@ -34,17 +39,81 @@ information about a particular change.
     * Since the 4.6 beta Qt::RenderHint has been moved to
       QGraphicsBlurEffect::BlurHint.
 
+QtCore
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()
     * Added QVariant(float) constructor
+    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
+      identify functions
 
  - Qt::escape
     * now escape the double quote (&quot;)
 
+ - QScopedPointer
+    * New pointer class for cleaning up objects when leaving the
+      current scope
+
+ - QFile
+    * Make QFile::resize() more robust when operating on buffered files
+
+ - QObject
+    * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
+    * Fixed race conditions that occured when moving object to threads while connecting
+
+- QTextStream
+    * [221316] Fixed crash on large input.
+
+QtGui
+
+ - QTreeView
+    * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
+    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
+
+ - QTableView
+    * [191545] Selections work more similarly to well-known spreadsheets
+    * [234926] Fixed sorting after changing QTableView header
+    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
+      speed-up, support for rows/columns insertion/removal, and better keyboard
+      navigation
+
+ - QTabBar
+    * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
+      to be slightly clipped.
+    * [241383] Added ability to style the close tab button with style sheet
+
+ - QComboBox
+    * [220195] Fixed keyboard search when current index is -1
+
+ - QSpinBox
+    * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
+
+ - QStandardItemModel
+    * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
+
+ - QGraphicsItem
+    * Added a new set of properties to set a transformation on a item
+
+ - QMenu
+    * [252610] Fixed position of the shortcut text while setting a stylesheet on menu items
+
+ - QSortFilterProxyModel
+    * [251296] Fixed bugs in which filtered items could not be filtered.
+
+ - QSplitter
+    * [206494] Added ability to style pressed slided with stylesheet
+
+ - QWidget
+    * [201649] Added QWidget::previousInFocusChain
+
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+ - Added community supported Qt ports for QNX and VxWorks. See platform
+   notes in the Qt documentation for details.
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -64,6 +133,13 @@ information about a particular change.
 
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
+
+ - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+   QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+   specific libraries.
+
+ - KDE Integration: Improved the integration into KDE desktop (loading of KDE
+   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
 
 ****************************************************************************
 *                          Tools                                           *
@@ -232,8 +308,8 @@ information about a particular change.
    for all floating point numbers, and this can be changed using the new
    function setFloatingPointPrecision(). Set Qt_4_5 as the version of the
    QDataStream to get the behavior of previous versions.
-   
+
  - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
    QCoreApplication::organizationName() and QCoreApplication::applicationName()
    if those are set. This matches the behavior on the other platforms.
-   
+

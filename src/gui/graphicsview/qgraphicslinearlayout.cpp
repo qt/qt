@@ -542,6 +542,9 @@ void QGraphicsLinearLayout::invalidate()
     QGraphicsLayout::invalidate();
 }
 
+/*!
+    \internal
+*/
 void QGraphicsLinearLayout::dump(int indent) const
 {
 #ifdef QT_DEBUG

@@ -1,3 +1,111 @@
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Unreviewed build fix for WebInspector with Qt build.
+
+        Simply re-generate the Qt resource file by running
+        WebKitTools/Scripts/generate-qt-inspector-resource
+
+        * inspector/front-end/WebKit.qrc:
+
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make QWebPluginDatabase private API for now.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30775
+
+        * WebCore.pro:
+
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Extended the conversion of the WebCore ResourceRequest to the
+        QNetworkRequest with a mandatory originating object argument,
+        which is meant to be the QWebFrame the request belongs to.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29975
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::QNetworkReplyHandler):
+        (WebCore::QNetworkReplyHandler::sendResponseIfNeeded):
+        (WebCore::QNetworkReplyHandler::start):
+        * platform/network/qt/ResourceRequest.h:
+        * platform/network/qt/ResourceRequestQt.cpp:
+        (WebCore::ResourceRequest::toNetworkRequest):
+
+2009-11-02  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Adam Barth.
+
+        QWebView crash fix.
+
+        The QWebView should not crash if the stop() method is called from
+        a function triggered by the loadProgress signal.
+
+        A null pointer protection was added in the ProgressTracker::incrementProgress.
+
+        New autotest was created.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29425
+
+        * loader/ProgressTracker.cpp:
+        (WebCore::ProgressTracker::incrementProgress):
+
+2009-11-02  Kai Koehne  <kai.koehne@nokia.com>
+
+        Reviewed by Holger Freyther.
+
+        Remove implementation of ImageDecocerQt::clearFrameBufferCache.
+        The implementation was buggy, and will visually break repeating
+        animations anyway.
+
+        https://bugs.webkit.org/show_bug.cgi?id=31009
+
+        * platform/graphics/qt/ImageDecoderQt.cpp:
+        (WebCore::ImageDecoderQt::clearFrameBufferCache):
+
+2009-11-01  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Darin Adler.
+
+        Don't add '/' to the URL path if the it does not include '/' after the protocol component
+        https://bugs.webkit.org/show_bug.cgi?id=30971
+
+        Match IE8 behaviour, that does not add '/' if there is none after the protocol component.
+
+        * platform/KURL.cpp:
+        (WebCore::KURL::parse):
+
+2009-10-30  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Holger Hans Peter Freyther.
+
+        If the owner widget of the page has a palette set, we
+        should use that one. This was only working when the
+        owner was a QWebView. This patch fixes that.
+
+        * platform/qt/RenderThemeQt.cpp:
+        (WebCore::RenderThemeQt::applyTheme):
+
+2009-10-29  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Implement DELETE HTTP method for XmlHttpRequest
+        https://bugs.webkit.org/show_bug.cgi?id=30894
+
+        No new tests as this functionality is already tested by the 
+        xmlhttprequest LayoutTests. As this patch depends on an unreleased
+        version of the dependent QtNetwork library and the tests will be
+        enabled later once the dependent library is released (and the
+        buildbot is updated).
+
+        * platform/network/qt/QNetworkReplyHandler.cpp:
+        (WebCore::QNetworkReplyHandler::QNetworkReplyHandler):
+        (WebCore::QNetworkReplyHandler::start):
+
 2009-11-02  Tor Arne Vestbø  <tor.arne.vestbo@nokia.com>
 
         Rubber-stamped by Antti Koivisto.
