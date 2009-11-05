@@ -351,8 +351,9 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             if (!mv.isNull())
                 m.setComment(mv.comment());
         } else {
-            TranslatorMessage mv = virginTor.find(m.context(), m.sourceText(), m.comment());
-            if (mv.isNull()) {
+            TranslatorMessage mv;
+            int mvi = virginTor.messages().indexOf(m);
+            if (mvi < 0) {
                 if (!(options & HeuristicSimilarText)) {
                     newType = TranslatorMessage::Obsolete;
                     if (m.type() != TranslatorMessage::Obsolete)
@@ -402,6 +403,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                     }
                 }
             } else {
+                mv = virginTor.message(mvi);
                 switch (m.type()) {
                 case TranslatorMessage::Finished:
                 default:
@@ -446,7 +448,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             if (tor.contains(mv.context()))
                 continue;
         } else {
-            if (tor.contains(mv.context(), mv.sourceText(), mv.comment()))
+            if (tor.messages().contains(mv))
                 continue;
             if (options & HeuristicSimilarText) {
                 TranslatorMessage m = tor.find(mv.context(), mv.comment(), mv.allReferences());
