@@ -98,6 +98,10 @@
 /* regardless of operating environment */
 #if defined(_AIX)
 #define WTF_PLATFORM_AIX 1
+/* 64-bit mode on AIX */
+#ifdef __64BIT__
+#define WTF_PLATFORM_AIX64 1
+#endif
 #endif
 
 /* PLATFORM(HPUX) */
@@ -703,6 +707,8 @@
 #if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX) || PLATFORM(SOLARIS) || PLATFORM(HPUX))
 #define WTF_USE_JSVALUE64 1
 #elif (PLATFORM(IA64) && !PLATFORM(IA64_32)) || PLATFORM(SPARC64)
+#define WTF_USE_JSVALUE64 1
+#elif PLATFORM(AIX64)
 #define WTF_USE_JSVALUE64 1
 #elif PLATFORM(ARM) || PLATFORM(PPC64)
 #define WTF_USE_JSVALUE32 1
