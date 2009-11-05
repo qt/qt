@@ -145,18 +145,19 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsParticles : public QmlGraphicsItem
 {
     Q_OBJECT
 
-    Q_PROPERTY(QUrl source READ source WRITE setSource)
-    Q_PROPERTY(int count READ count WRITE setCount)
-    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan)
-    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation)
-    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration)
-    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration)
-    Q_PROPERTY(qreal angle READ angle WRITE setAngle)
-    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation)
-    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity)
-    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation)
-    Q_PROPERTY(bool streamIn READ streamIn WRITE setStreamIn)
-    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting)
+    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(int count READ count WRITE setCount NOTIFY countChanged)
+    Q_PROPERTY(int emissionRate READ emissionRate WRITE setEmissionRate NOTIFY emissionRateChanged)
+    Q_PROPERTY(qreal emissionVariance READ emissionVariance WRITE setEmissionVariance NOTIFY emissionVarianceChanged)
+    Q_PROPERTY(int lifeSpan READ lifeSpan WRITE setLifeSpan NOTIFY lifeSpanChanged)
+    Q_PROPERTY(int lifeSpanDeviation READ lifeSpanDeviation WRITE setLifeSpanDeviation NOTIFY lifeSpanDeviationChanged)
+    Q_PROPERTY(int fadeInDuration READ fadeInDuration WRITE setFadeInDuration NOTIFY fadeInDurationChanged)
+    Q_PROPERTY(int fadeOutDuration READ fadeOutDuration WRITE setFadeOutDuration NOTIFY fadeOutDurationChanged)
+    Q_PROPERTY(qreal angle READ angle WRITE setAngle NOTIFY angleChanged)
+    Q_PROPERTY(qreal angleDeviation READ angleDeviation WRITE setAngleDeviation NOTIFY angleDeviationChanged)
+    Q_PROPERTY(qreal velocity READ velocity WRITE setVelocity NOTIFY velocityChanged)
+    Q_PROPERTY(qreal velocityDeviation READ velocityDeviation WRITE setVelocityDeviation NOTIFY velocityDeviationChanged)
+    Q_PROPERTY(bool emitting READ emitting WRITE setEmitting NOTIFY emittingChanged)
     Q_PROPERTY(QmlGraphicsParticleMotion *motion READ motion WRITE setMotion)
     Q_CLASSINFO("DefaultProperty", "motion")
 
@@ -169,6 +170,12 @@ public:
 
     int count() const;
     void setCount(int cnt);
+
+    int emissionRate() const;
+    void setEmissionRate(int);
+
+    qreal emissionVariance() const;
+    void setEmissionVariance(qreal);
 
     int lifeSpan() const;
     void setLifeSpan(int);
@@ -194,9 +201,6 @@ public:
     qreal velocityDeviation() const;
     void setVelocityDeviation(qreal);
 
-    bool streamIn() const;
-    void setStreamIn(bool);
-
     bool emitting() const;
     void setEmitting(bool);
 
@@ -205,9 +209,27 @@ public:
 
     void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
 
+public Q_SLOTS:
+    void burst(int count, int emissionRate=-1);
+
 protected:
     virtual void componentComplete();
     QmlGraphicsParticles(QmlGraphicsParticlesPrivate &dd, QmlGraphicsItem *parent);
+
+Q_SIGNALS:
+    void sourceChanged();
+    void countChanged();
+    void emissionRateChanged();
+    void emissionVarianceChanged();
+    void lifeSpanChanged();
+    void lifeSpanDeviationChanged();
+    void fadeInDurationChanged();
+    void fadeOutDurationChanged();
+    void angleChanged();
+    void angleDeviationChanged();
+    void velocityChanged();
+    void velocityDeviationChanged();
+    void emittingChanged();
 
 private Q_SLOTS:
     void imageLoaded();

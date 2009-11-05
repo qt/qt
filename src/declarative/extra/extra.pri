@@ -4,7 +4,6 @@ SOURCES += \
            extra/qmldatetimeformatter.cpp \
            extra/qmlgraphicsintegermodel.cpp \
            extra/qmlgraphicsanimatedimageitem.cpp \
-           extra/qmlgraphicsparticles.cpp \
            extra/qmlbehavior.cpp \
            extra/qmlfontloader.cpp
 
@@ -15,7 +14,6 @@ HEADERS += \
            extra/qmlgraphicsintegermodel_p.h \
            extra/qmlgraphicsanimatedimageitem_p.h \
            extra/qmlgraphicsanimatedimageitem_p_p.h \
-           extra/qmlgraphicsparticles_p.h \
            extra/qmlbehavior_p.h \
            extra/qmlfontloader_p.h
 
