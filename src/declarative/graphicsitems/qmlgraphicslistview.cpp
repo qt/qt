@@ -1461,6 +1461,10 @@ void QmlGraphicsListView::setSectionExpression(const QString &expression)
     }
 }
 
+/*!
+    \qmlproperty string ListView::currentSection
+    This property holds the section that is currently at the beginning of the view.
+*/
 QString QmlGraphicsListView::currentSection() const
 {
     Q_D(const QmlGraphicsListView);

@@ -671,6 +671,7 @@ void tst_QmlGraphicsListView::spacing()
     }
 
     listview->setSpacing(10);
+    QVERIFY(listview->spacing() == 10);
 
     // Confirm items positioned correctly
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -722,6 +723,11 @@ void tst_QmlGraphicsListView::sections()
         QVERIFY(item);
         QCOMPARE(item->y(), qreal(i*20 + ((i+4)/5) * 20));
     }
+
+    QVERIFY(listview->currentSection() == "0");
+
+    listview->setViewportY(140);
+    QVERIFY(listview->currentSection() == "1");
 
     delete canvas;
 }
