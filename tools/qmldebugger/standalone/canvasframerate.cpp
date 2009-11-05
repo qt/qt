@@ -43,6 +43,7 @@
 #include <QtCore/qdatastream.h>
 #include <QtCore/qmargins.h>
 
+#include <QtGui/qapplication.h>
 #include <QtGui/qpainter.h>
 #include <QtGui/qtooltip.h>
 #include <QtGui/qslider.h>
@@ -80,6 +81,7 @@ protected:
     virtual void paintEvent(QPaintEvent *);
     virtual void mouseMoveEvent(QMouseEvent *);
     virtual void leaveEvent(QEvent *);
+    virtual void wheelEvent(QWheelEvent *event);
 
 private slots:
     void sliderChanged(int);
@@ -109,7 +111,7 @@ private:
 
 QLineGraph::QLineGraph(QAbstractSlider *slider, QWidget *parent)
 : QWidget(parent), slider(slider), position(-1), samplesPerWidth(99), resolutionForHeight(50),
-  ignoreScroll(false), graphMargins(65, 10, 71, 40)
+  ignoreScroll(false), graphMargins(65, 10, 71, 35)
 {
     setMouseTracking(true);
 
@@ -129,7 +131,16 @@ void QLineGraph::sliderChanged(int v)
         position = -1;
     else
         position = v;
+    
     update();
+    
+    // update highlightedRect
+    QPoint pos = mapFromGlobal(QCursor::pos());
+    if (geometry().contains(pos)) {
+        QMouseEvent *me = new QMouseEvent(QEvent::MouseMove, pos,
+                Qt::NoButton, Qt::NoButton, Qt::NoModifier);
+        QApplication::postEvent(this, me);
+    }
 }
 
 void QLineGraph::clear()
@@ -153,7 +164,7 @@ void QLineGraph::updateSlider()
         slider->setValue(slider->maximum());
     } else {
         slider->setValue(position);
-    }
+    }    
     ignoreScroll = false;
 }
 
@@ -250,7 +261,7 @@ void QLineGraph::paintEvent(QPaintEvent *)
     p.save();
     p.rotate(-90);
     p.translate(-r.height()/2 - r.width()/2 - graphMargins.right(), -r.height()/2);
-    p.drawText(r, Qt::AlignCenter, tr("Time per frame (ms)"));
+    p.drawText(r, Qt::AlignCenter, tr("Frame rate"));
     p.restore();
 
     p.setBrush(QColor("lightsteelblue"));
@@ -310,9 +321,16 @@ void QLineGraph::mouseMoveEvent(QMouseEvent *event)
 void QLineGraph::leaveEvent(QEvent *)
 {
     if (!highlightedBar.isNull()) {
+        QRect bar = highlightedBar.adjusted(-1, -1, 1, 1);
         highlightedBar = QRect();
-        update(highlightedBar.adjusted(-1, -1, 1, 1));
+        update(bar);
     }
+}
+
+void QLineGraph::wheelEvent(QWheelEvent *event)
+{
+    QWheelEvent we(QPoint(0,0), event->delta(), event->buttons(), event->modifiers(), event->orientation());
+    QApplication::sendEvent(slider, &we);
 }
 
 void QLineGraph::setResolutionForHeight(int resolution)
@@ -337,6 +355,8 @@ class GraphWindow : public QWidget
 public:
     GraphWindow(QWidget *parent = 0);
 
+    virtual QSize sizeHint() const;
+
 public slots:
     void addSample(int, int, int, bool);
     void setResolutionForHeight(int);
@@ -357,13 +377,11 @@ GraphWindow::GraphWindow(QWidget *parent)
     setFocusProxy(scroll);
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 5, 5);
+    layout->setContentsMargins(0, 0, 5, 0);
     layout->setSpacing(0);
     layout->addWidget(m_graph, 2);
     layout->addWidget(new QLabel(tr("Total time elapsed (ms)")), 0, Qt::AlignHCenter);
     layout->addWidget(scroll);
-
-    setMinimumSize(QSize(400, 200));
 }
 
 void GraphWindow::addSample(int a, int b, int d, bool isBreak)
@@ -381,6 +399,11 @@ void GraphWindow::clear()
     m_graph->clear();
 }
 
+QSize GraphWindow::sizeHint() const
+{
+    return QSize(400, 220);
+}
+    
 
 class CanvasFrameRatePlugin : public QmlDebugClient
 {
@@ -454,17 +477,15 @@ CanvasFrameRate::CanvasFrameRate(QWidget *parent)
 
     QVBoxLayout *groupLayout = new QVBoxLayout(m_group);
     groupLayout->setContentsMargins(5, 0, 5, 0);
-    groupLayout->setSpacing(5);
+    groupLayout->setSpacing(2);
     groupLayout->addWidget(m_tabs);
     groupLayout->addLayout(bottom);
     
     QVBoxLayout *layout = new QVBoxLayout;
-    layout->setContentsMargins(0, 15, 0, 0);
+    layout->setContentsMargins(0, 10, 0, 0);
     layout->setSpacing(0);
     layout->addWidget(m_group);
     setLayout(layout);
-
-    setFocusPolicy(Qt::StrongFocus);
 }
 
 void CanvasFrameRate::reset(QmlDebugConnection *conn)
