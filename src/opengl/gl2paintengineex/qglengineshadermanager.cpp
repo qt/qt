@@ -169,14 +169,14 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     source.clear();
     source.append(qShaderSnippets[MainVertexShader]);
     source.append(qShaderSnippets[PositionOnlyVertexShader]);
-    vertexShader = new QGLShader(QGLShader::VertexShader, context, this);
-    vertexShader->compile(source);
+    vertexShader = new QGLShader(QGLShader::Vertex, context, this);
+    vertexShader->compileSourceCode(source);
 
     source.clear();
     source.append(qShaderSnippets[MainFragmentShader]);
     source.append(qShaderSnippets[ShockingPinkSrcFragmentShader]);
-    fragShader = new QGLShader(QGLShader::FragmentShader, context, this);
-    fragShader->compile(source);
+    fragShader = new QGLShader(QGLShader::Fragment, context, this);
+    fragShader->compileSourceCode(source);
 
     simpleShaderProg = new QGLShaderProgram(context, this);
     simpleShaderProg->addShader(vertexShader);
@@ -192,14 +192,14 @@ QGLEngineSharedShaders::QGLEngineSharedShaders(const QGLContext* context)
     source.clear();
     source.append(qShaderSnippets[MainWithTexCoordsVertexShader]);
     source.append(qShaderSnippets[UntransformedPositionVertexShader]);
-    vertexShader = new QGLShader(QGLShader::VertexShader, context, this);
-    vertexShader->compile(source);
+    vertexShader = new QGLShader(QGLShader::Vertex, context, this);
+    vertexShader->compileSourceCode(source);
 
     source.clear();
     source.append(qShaderSnippets[MainFragmentShader]);
     source.append(qShaderSnippets[ImageSrcFragmentShader]);
-    fragShader = new QGLShader(QGLShader::FragmentShader, context, this);
-    fragShader->compile(source);
+    fragShader = new QGLShader(QGLShader::Fragment, context, this);
+    fragShader->compileSourceCode(source);
 
     blitShaderProg = new QGLShaderProgram(context, this);
     blitShaderProg->addShader(vertexShader);
@@ -243,14 +243,14 @@ QGLEngineShaderProg *QGLEngineSharedShaders::findProgramInCache(const QGLEngineS
         source.append(qShaderSnippets[prog.compositionFragShader]);
     if (prog.maskFragShader)
         source.append(qShaderSnippets[prog.maskFragShader]);
-    QGLShader* fragShader = new QGLShader(QGLShader::FragmentShader, ctxGuard.context(), this);
-    fragShader->compile(source);
+    QGLShader* fragShader = new QGLShader(QGLShader::Fragment, ctxGuard.context(), this);
+    fragShader->compileSourceCode(source);
 
     source.clear();
     source.append(qShaderSnippets[prog.mainVertexShader]);
     source.append(qShaderSnippets[prog.positionVertexShader]);
-    QGLShader* vertexShader = new QGLShader(QGLShader::VertexShader, ctxGuard.context(), this);
-    vertexShader->compile(source);
+    QGLShader* vertexShader = new QGLShader(QGLShader::Vertex, ctxGuard.context(), this);
+    vertexShader->compileSourceCode(source);
 
 #if defined(QT_DEBUG)
     // Name the shaders for easier debugging
@@ -673,7 +673,7 @@ bool QGLEngineShaderManager::useCorrectShaderProg()
     currentShaderProg = sharedShaders->findProgramInCache(requiredProgram);
 
     if (currentShaderProg) {
-        currentShaderProg->program->enable();
+        currentShaderProg->program->bind();
         if (useCustomSrc)
             customSrcStage->setUniforms(currentShaderProg->program);
     }
