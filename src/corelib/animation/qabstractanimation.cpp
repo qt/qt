@@ -50,7 +50,7 @@
     animations that plug into the rest of the animation framework.
 
     The progress of an animation is given by its current time
-    (currentTime()), which is measured in milliseconds from the start
+    (currentLoopTime()), which is measured in milliseconds from the start
     of the animation (0) to its end (duration()). The value is updated
     automatically while the animation is running. It can also be set
     directly with setCurrentTime().
@@ -214,6 +214,10 @@ void QUnifiedTimer::restartAnimationTimer()
 {
     if (runningLeafAnimations == 0 && !runningPauseAnimations.isEmpty()) {
         int closestTimeToFinish = closestPauseAnimationTimeToFinish();
+        if (closestTimeToFinish < 0) {
+            qDebug() << runningPauseAnimations;
+            qDebug() << closestPauseAnimationTimeToFinish();
+        }
         animationTimer.start(closestTimeToFinish, this);
         isPauseTimerActive = true;
     } else if (!animationTimer.isActive() || isPauseTimerActive) {
@@ -288,9 +292,11 @@ void QUnifiedTimer::registerRunningAnimation(QAbstractAnimation *animation)
     if (QAbstractAnimationPrivate::get(animation)->isGroup)
         return;
 
-    if (QAbstractAnimationPrivate::get(animation)->isPause)
+    if (QAbstractAnimationPrivate::get(animation)->isPause) {
+        if (animation->duration() == -1)
+            qDebug() << "toto";
         runningPauseAnimations << animation;
-    else
+    } else
         runningLeafAnimations++;
 }
 
@@ -314,9 +320,9 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->duration() - animation->currentTime();
+            timeToFinish = animation->duration() - animation->currentLoopTime();
         else
-            timeToFinish = animation->currentTime();
+            timeToFinish = animation->currentLoopTime();
 
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
@@ -737,7 +743,7 @@ void QAbstractAnimation::start(DeletionPolicy policy)
     signal, and state() returns Stopped. The current time is not changed.
 
     If the animation stops by itself after reaching the end (i.e.,
-    currentTime() == duration() and currentLoop() > loopCount() - 1), the
+    currentLoopTime() == duration() and currentLoop() > loopCount() - 1), the
     finished() signal is emitted.
 
     \sa start(), state()
