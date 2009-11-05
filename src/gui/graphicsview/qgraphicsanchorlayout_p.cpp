@@ -64,7 +64,7 @@ const qreal limit = (sizeof(qreal) == sizeof(double)) ? QWIDGETSIZE_MAX : QWIDGE
 QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
     : QObjectPrivate(version), layoutPrivate(0), data(0),
       sizePolicy(QSizePolicy::Fixed), preferredSize(0),
-      hasSize(true), reversed(false)
+      hasSize(true)
 {
 }
 
@@ -94,27 +94,12 @@ void QGraphicsAnchorPrivate::setSpacing(qreal value)
         return;
     }
 
-    const qreal rawValue = reversed ? -preferredSize : preferredSize;
-    if (hasSize && (rawValue == value))
+    if (hasSize && (preferredSize == value))
         return;
 
     // The anchor has an user-defined size
     hasSize = true;
-
-    // The simplex solver cannot handle negative sizes. To workaround that,
-    // if value is less than zero, we reverse the anchor and set the absolute
-    // value;
-    if (value >= 0) {
-        preferredSize = value;
-        if (reversed)
-            qSwap(data->from, data->to);
-        reversed = false;
-    } else {
-        preferredSize = -value;
-        if (!reversed)
-            qSwap(data->from, data->to);
-        reversed = true;
-    }
+    preferredSize = value;
 
     layoutPrivate->q_func()->invalidate();
 }
@@ -128,9 +113,6 @@ void QGraphicsAnchorPrivate::unsetSpacing()
 
     // Return to standard direction
     hasSize = false;
-    if (reversed)
-        qSwap(data->from, data->to);
-    reversed = false;
 
     layoutPrivate->q_func()->invalidate();
 }
@@ -142,7 +124,7 @@ qreal QGraphicsAnchorPrivate::spacing() const
         return 0;
     }
 
-    return reversed ? -preferredSize : preferredSize;
+    return preferredSize;
 }
 
 

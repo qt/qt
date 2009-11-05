@@ -342,7 +342,6 @@ public:
     qreal preferredSize;
 
     uint hasSize : 1;         // if false, get size from style.
-    uint reversed : 1;        // if true, the anchor was inverted to keep its value positive
 };
 
 
