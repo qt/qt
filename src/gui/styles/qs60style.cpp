@@ -281,7 +281,7 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         drawFrame(SF_ButtonInactive, painter, rect, flags | SF_PointNorth);
         break;
     case SE_Editor:
-        drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
+        drawFrame(SF_FrameLineEdit, painter, rect, flags | SF_PointNorth);
         break;
     default:
         break;
