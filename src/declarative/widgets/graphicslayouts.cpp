@@ -48,9 +48,9 @@ QT_BEGIN_NAMESPACE
 QML_DEFINE_INTERFACE(QGraphicsLayoutItem)
 QML_DEFINE_INTERFACE(QGraphicsLayout)
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsLinearLayout,QGraphicsLinearLayoutObject)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,QGraphicsGridLayout,QGraphicsGridLayoutObject)
+QML_DEFINE_TYPE(Qt,4,6,QGraphicsLinearLayoutStretchItem,QGraphicsLinearLayoutStretchItemObject)
+QML_DEFINE_TYPE(Qt,4,6,QGraphicsLinearLayout,QGraphicsLinearLayoutObject)
+QML_DEFINE_TYPE(Qt,4,6,QGraphicsGridLayout,QGraphicsGridLayoutObject)
 
 class LinearLayoutAttached : public QObject
 {

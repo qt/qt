@@ -42,6 +42,7 @@ HEADERS += \
            graphicsitems/qmlgraphicsvisualitemmodel_p.h \
            graphicsitems/qmlgraphicslistview_p.h \
            graphicsitems/qmlgraphicsgraphicsobjectcontainer_p.h \
+           graphicsitems/qmlgraphicsparticles_p.h \
            graphicsitems/qmlgraphicslayoutitem_p.h \
            graphicsitems/qmlgraphicseffects.cpp
 
@@ -72,6 +73,7 @@ SOURCES += \
            graphicsitems/qmlgraphicsvisualitemmodel.cpp \
            graphicsitems/qmlgraphicslistview.cpp \
            graphicsitems/qmlgraphicsgraphicsobjectcontainer.cpp \
+           graphicsitems/qmlgraphicsparticles.cpp \
            graphicsitems/qmlgraphicslayoutitem.cpp \
 
 contains(QT_CONFIG, webkit) {

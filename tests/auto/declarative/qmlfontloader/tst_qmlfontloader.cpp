@@ -77,6 +77,7 @@ void tst_qmlfontloader::noFont()
 
     QVERIFY(fontObject != 0);
     QCOMPARE(fontObject->name(), QString(""));
+    QCOMPARE(fontObject->source(), QUrl(""));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Null);
 
     delete fontObject;
@@ -89,6 +90,7 @@ void tst_qmlfontloader::namedFont()
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
+    QCOMPARE(fontObject->source(), QUrl(""));
     QCOMPARE(fontObject->name(), QString("Helvetica"));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
@@ -100,6 +102,7 @@ void tst_qmlfontloader::localFont()
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
+    QVERIFY(fontObject->source() != QUrl(""));
     QTRY_COMPARE(fontObject->name(), QString("Fontin"));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
@@ -111,6 +114,7 @@ void tst_qmlfontloader::failLocalFont()
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
+    QVERIFY(fontObject->source() != QUrl(""));
     QTRY_COMPARE(fontObject->name(), QString(""));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Error);
 }
@@ -122,6 +126,7 @@ void tst_qmlfontloader::webFont()
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
+    QVERIFY(fontObject->source() != QUrl(""));
     QTRY_COMPARE(fontObject->name(), QString("Starburst"));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
@@ -133,6 +138,7 @@ void tst_qmlfontloader::failWebFont()
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
+    QVERIFY(fontObject->source() != QUrl(""));
     QTRY_COMPARE(fontObject->name(), QString(""));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Error);
 }

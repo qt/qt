@@ -91,6 +91,7 @@ private Q_SLOTS:
 
 protected:
     QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent);
+    void componentComplete();
 
 private:
     Q_DISABLE_COPY(QmlGraphicsAnimatedImageItem)

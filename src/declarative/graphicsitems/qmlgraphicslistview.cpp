@@ -2040,7 +2040,7 @@ QmlGraphicsListViewAttached *QmlGraphicsListView::qmlAttachedProperties(QObject 
     return QmlGraphicsListViewAttached::properties(obj);
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,ListView,QmlGraphicsListView)
+QML_DEFINE_TYPE(Qt,4,6,ListView,QmlGraphicsListView)
 
 QT_END_NAMESPACE
 

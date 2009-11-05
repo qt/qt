@@ -307,7 +307,7 @@ QmlPropertyChangesPrivate::property(const QByteArray &property)
     if (!prop.isValid()) {
         qmlInfo(QmlPropertyChanges::tr("Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
-    } else if (!prop.isWritable()) {
+    } else if (prop.type() != QmlMetaProperty::SignalProperty && !prop.isWritable()) {
         qmlInfo(QmlPropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
     }
@@ -392,6 +392,6 @@ void QmlPropertyChanges::setIsExplicit(bool e)
     d->isExplicit = e;
 }
 
-QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, (QT_VERSION&0x00ff00)>>8, PropertyChanges, QmlPropertyChanges, QmlPropertyChangesParser)
+QML_DEFINE_CUSTOM_TYPE(Qt, 4,6, PropertyChanges, QmlPropertyChanges, QmlPropertyChangesParser)
 
 QT_END_NAMESPACE
