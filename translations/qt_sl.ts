@@ -12,7 +12,7 @@
 <context>
     <name>FakeReply</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2191"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/tests/qwebframe/tst_qwebframe.cpp" line="+2193"/>
         <source>Fake error !</source>
         <translation>Lažna napaka.</translation>
     </message>
@@ -20,14 +20,6 @@
         <location line="+3"/>
         <source>Invalid URL</source>
         <translation>Neveljaven URL</translation>
-    </message>
-</context>
-<context>
-    <name>InputPrivate</name>
-    <message>
-        <location filename="../src/multimedia/audio/qaudioinput_alsa_p.cpp" line="+653"/>
-        <source>PUSH: read in bytes = %1 (frames=%2)</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -117,10 +109,10 @@ da je nameščen paket libgstreamer-plugins-base.</translation>
         <translation>Manjka potreben kodek. Za predvajanje te vsebine morate namestiti sledeče kodeke: %0</translation>
     </message>
     <message>
-        <location line="+676"/>
+        <location line="+681"/>
         <location line="+8"/>
         <location line="+15"/>
-        <location line="+9"/>
+        <location line="+22"/>
         <location line="+6"/>
         <location line="+19"/>
         <location line="+339"/>
@@ -129,12 +121,12 @@ da je nameščen paket libgstreamer-plugins-base.</translation>
         <translation>Ni moč odpreti večpredstavnostnega vira.</translation>
     </message>
     <message>
-        <location line="-407"/>
+        <location line="-420"/>
         <source>Invalid source type.</source>
         <translation>Neveljavna vrsta vira.</translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+394"/>
         <source>Could not locate media source.</source>
         <translation>Ni moč najti večpredstavnostnega vira.</translation>
     </message>
@@ -150,11 +142,63 @@ da je nameščen paket libgstreamer-plugins-base.</translation>
     </message>
 </context>
 <context>
+    <name>Phonon::MMF</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/audiooutput.cpp" line="+108"/>
+        <source>Audio Output</source>
+        <translation>Predvajanje zvoka</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>The audio output device</source>
+        <translation>Naprava za predvajanje zvoka</translation>
+    </message>
+</context>
+<context>
     <name>Phonon::MMF::AudioEqualizer</name>
     <message>
-        <location filename="../src/3rdparty/phonon/mmf/audioequalizer.cpp" line="+70"/>
+        <location filename="../src/3rdparty/phonon/mmf/audioequalizer.cpp" line="+75"/>
         <source>Frequency band, %1 Hz</source>
-        <translation type="unfinished"></translation>
+        <translation>Frekvenčni pas, %1 Hz</translation>
+    </message>
+</context>
+<context>
+    <name>Phonon::MMF::EffectFactory</name>
+    <message>
+        <location filename="../src/3rdparty/phonon/mmf/effectfactory.cpp" line="+65"/>
+        <source>audio equalizer</source>
+        <translation>izenačevalnik zvoka</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Bass boost</source>
+        <translation>Ojačanje basov</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Distance Attenuation</source>
+        <translation>Utišanje zaradi razdalje</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <location line="+2"/>
+        <source>Environmental Reverb</source>
+        <translation>Okoljsko odmevanje</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Loudness</source>
+        <translation>Glasnost</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Source Orientation</source>
+        <translation>Usmerjenost vira</translation>
+    </message>
+    <message>
+        <location line="+2"/>
+        <source>Stereo Widening</source>
+        <translation>Razširitev sterea</translation>
     </message>
 </context>
 <context>
@@ -888,7 +932,7 @@ v
         <translation>Dejanje na vtičnici ni podprto</translation>
     </message>
     <message>
-        <location line="+187"/>
+        <location line="+200"/>
         <source>Socket operation timed out</source>
         <translation>Čas za dejanje na vtičnici je potekel</translation>
     </message>
@@ -922,6 +966,14 @@ v
     </message>
 </context>
 <context>
+    <name>QAccessibleButton</name>
+    <message>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+250"/>
+        <source>Press</source>
+        <translation>Pritisni</translation>
+    </message>
+</context>
+<context>
     <name>QApplication</name>
     <message>
         <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+376"/>
@@ -939,7 +991,7 @@ v
         <translation>Napaka nezdružljivosti knjižnice Qt</translation>
     </message>
     <message>
-        <location filename="../src/gui/kernel/qapplication.cpp" line="+2306"/>
+        <location filename="../src/gui/kernel/qapplication.cpp" line="+2290"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <comment>Translate this string to the string &apos;LTR&apos; in left-to-right languages or to &apos;RTL&apos; in right-to-left languages (such as Hebrew and Arabic) to get proper widget layout.</comment>
         <translation>LTR</translation>
@@ -948,117 +1000,6 @@ v
         <location filename="../src/gui/accessible/qaccessibleobject.cpp" line="+2"/>
         <source>Activates the program&apos;s main window</source>
         <translation>Aktivira glavno okno programa</translation>
-    </message>
-</context>
-<context>
-    <name>QAudioInputPrivate</name>
-    <message>
-        <location filename="../src/multimedia/audio/qaudioinput_alsa_p.cpp" line="-367"/>
-        <source>QAudioInput: snd_pcm_hw_params_any: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_rate_resample: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_access: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_format: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_channels: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_rate_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_buffer_time_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_period_time_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params_set_periods_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioInput: snd_pcm_hw_params: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+98"/>
-        <source>PULL: read in bytes = %1 (frames=%2)</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QAudioOutputPrivate</name>
-    <message>
-        <location filename="../src/multimedia/audio/qaudiooutput_alsa_p.cpp" line="+307"/>
-        <source>QAudioOutput: snd_pcm_hw_params_any: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_rate_resample: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_access: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_format: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_channels: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_rate_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_buffer_time_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_period_time_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params_set_periods_near: err = %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>QAudioOutput: snd_pcm_hw_params: err = %1</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1087,7 +1028,7 @@ v
 <context>
     <name>QCheckBox</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+114"/>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="-136"/>
         <source>Uncheck</source>
         <translation>Odznači</translation>
     </message>
@@ -1105,7 +1046,7 @@ v
 <context>
     <name>QColorDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1348"/>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1349"/>
         <source>Hu&amp;e:</source>
         <translation>&amp;Odtenek:</translation>
     </message>
@@ -1145,7 +1086,7 @@ v
         <translation>Izberite barvo</translation>
     </message>
     <message>
-        <location line="+178"/>
+        <location line="+180"/>
         <source>&amp;Basic colors</source>
         <translation>&amp;Osnovne barve</translation>
     </message>
@@ -1214,7 +1155,7 @@ v
         <location line="+4"/>
         <source>%1: does not exist</source>
         <comment>QSystemSemaphore</comment>
-        <translation type="unfinished">%1: ne obstaja</translation>
+        <translation>%1: ne obstaja</translation>
     </message>
     <message>
         <location line="+5"/>
@@ -1345,7 +1286,7 @@ v
     <message>
         <location filename="../src/gui/dialogs/qmessagebox.cpp" line="+1872"/>
         <location line="+464"/>
-        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+619"/>
+        <location filename="../src/gui/widgets/qdialogbuttonbox.cpp" line="+606"/>
         <source>OK</source>
         <translation>V redu</translation>
     </message>
@@ -1544,7 +1485,7 @@ v
         <translation>Usodna napaka:</translation>
     </message>
     <message>
-        <location line="+199"/>
+        <location line="+200"/>
         <source>&amp;Show this message again</source>
         <translation>&amp;To sporočilo naslednjič spet prikaži</translation>
     </message>
@@ -1565,7 +1506,7 @@ v
     <message>
         <location line="-140"/>
         <source>Will not rename sequential file using block copy</source>
-        <translation type="unfinished"></translation>
+        <translation>Sekvenčna datoteka ne bo preimenovana z uporabo kopiranja blokov</translation>
     </message>
     <message>
         <location line="+23"/>
@@ -1596,7 +1537,7 @@ v
 <context>
     <name>QFileDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+556"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="+558"/>
         <location line="+450"/>
         <source>All Files (*)</source>
         <translation>Vse datoteke (*)</translation>
@@ -1724,7 +1665,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Ni bilo moč izbrisati mape.</translation>
     </message>
     <message>
-        <location line="+404"/>
+        <location line="+410"/>
         <source>Recent Places</source>
         <translation>Nedavna mesta</translation>
     </message>
@@ -1734,12 +1675,12 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Vse datoteke (*.*)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2540"/>
+        <location filename="../src/gui/dialogs/qfiledialog.cpp" line="-2546"/>
         <source>Save As</source>
         <translation>Shrani kot</translation>
     </message>
     <message>
-        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+441"/>
+        <location filename="../src/gui/itemviews/qfileiconprovider.cpp" line="+461"/>
         <source>Drive</source>
         <translation>Pogon</translation>
     </message>
@@ -1918,50 +1859,50 @@ Ali jo kljub temu želite izbrisati?</translation>
     <name>QFontDatabase</name>
     <message>
         <location filename="../src/gui/text/qfontdatabase.cpp" line="+102"/>
-        <location line="+1330"/>
+        <location line="+1335"/>
         <source>Normal</source>
         <translation>Normalno</translation>
     </message>
     <message>
-        <location line="-1327"/>
+        <location line="-1332"/>
         <location line="+12"/>
-        <location line="+1303"/>
+        <location line="+1308"/>
         <source>Bold</source>
         <translation>Polkrepko</translation>
     </message>
     <message>
-        <location line="-1312"/>
-        <location line="+1314"/>
+        <location line="-1317"/>
+        <location line="+1319"/>
         <source>Demi Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="-1311"/>
+        <location line="-1316"/>
         <location line="+18"/>
-        <location line="+1289"/>
+        <location line="+1294"/>
         <source>Black</source>
         <translation type="unfinished">Črni</translation>
     </message>
     <message>
-        <location line="-1299"/>
+        <location line="-1304"/>
         <source>Demi</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <location line="+1299"/>
+        <location line="+1304"/>
         <source>Light</source>
         <translation>Lahko</translation>
     </message>
     <message>
-        <location line="-1153"/>
-        <location line="+1156"/>
+        <location line="-1158"/>
+        <location line="+1161"/>
         <source>Italic</source>
         <translation>Ležeče</translation>
     </message>
     <message>
-        <location line="-1153"/>
-        <location line="+1155"/>
+        <location line="-1158"/>
+        <location line="+1160"/>
         <source>Oblique</source>
         <translation>Nagnjeno</translation>
     </message>
@@ -2063,32 +2004,32 @@ Ali jo kljub temu želite izbrisati?</translation>
     <message>
         <location line="+3"/>
         <source>Thai</source>
-        <translation type="unfinished">Tajski</translation>
+        <translation>Tajska</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Lao</source>
-        <translation type="unfinished">Laoška</translation>
+        <translation>Laoška</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Tibetan</source>
-        <translation type="unfinished">tibetansko</translation>
+        <translation>Tibetanska</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Myanmar</source>
-        <translation type="unfinished">Mjanmar</translation>
+        <translation>Mjanmarska</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Georgian</source>
-        <translation type="unfinished">gruzijsko</translation>
+        <translation>Gruzijska</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Khmer</source>
-        <translation type="unfinished">Kmersko</translation>
+        <translation>Kmerska</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2118,7 +2059,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     <message>
         <location line="+3"/>
         <source>Symbol</source>
-        <translation type="unfinished">Znak</translation>
+        <translation>Simbol</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -2134,7 +2075,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QFontDialog</name>
     <message>
-        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+774"/>
+        <location filename="../src/gui/dialogs/qfontdialog.cpp" line="+776"/>
         <source>&amp;Font</source>
         <translation>&amp;Pisava</translation>
     </message>
@@ -2174,7 +2115,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>S&amp;istem pisanja</translation>
     </message>
     <message>
-        <location line="-607"/>
+        <location line="-609"/>
         <location line="+257"/>
         <source>Select Font</source>
         <translation>Izberite pisavo</translation>
@@ -2337,13 +2278,9 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QHostInfoAgent</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+178"/>
-        <location line="+9"/>
-        <location line="+80"/>
+        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+257"/>
         <location line="+32"/>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+165"/>
-        <location line="+9"/>
-        <location line="+56"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="+220"/>
         <location line="+27"/>
         <source>Host not found</source>
         <translation>Ni moč najti gostitelja</translation>
@@ -2364,20 +2301,20 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Neznana napaka</translation>
     </message>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-71"/>
+        <location filename="../src/network/kernel/qhostinfo_win.cpp" line="-67"/>
         <source>No host name given</source>
-        <translation type="unfinished">Podano ni bilo nobeno ime gostitelja</translation>
+        <translation>Podano ni bilo nobeno ime gostitelja</translation>
     </message>
     <message>
         <location line="+0"/>
         <source>Invalid hostname</source>
-        <translation type="unfinished">Neveljavno ime gostitelja</translation>
+        <translation>Neveljavno ime gostitelja</translation>
     </message>
 </context>
 <context>
     <name>QHttp</name>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="+1577"/>
+        <location filename="../src/network/access/qhttp.cpp" line="+1582"/>
         <location line="+820"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+1159"/>
         <location line="+567"/>
@@ -2409,7 +2346,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Strežnik je nepričakovano prekinil povezavo</translation>
     </message>
     <message>
-        <location line="+179"/>
+        <location line="+200"/>
         <source>Unknown authentication method</source>
         <translation>Neznan način overjanja</translation>
     </message>
@@ -2419,13 +2356,13 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Napaka pri pisanju odziva na napravo</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+560"/>
+        <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="+569"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+38"/>
         <source>Connection refused</source>
         <translation>Povezava je zavrnjena</translation>
     </message>
     <message>
-        <location filename="../src/network/access/qhttp.cpp" line="-304"/>
+        <location filename="../src/network/access/qhttp.cpp" line="-325"/>
         <location filename="../src/network/access/qhttpnetworkconnection.cpp" line="-4"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+3"/>
         <source>Host %1 not found</source>
@@ -2440,7 +2377,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Zahtevek HTTP ni uspel</translation>
     </message>
     <message>
-        <location line="+73"/>
+        <location line="+94"/>
         <location filename="../src/qt3support/network/q3http.cpp" line="+69"/>
         <source>Invalid HTTP response header</source>
         <translation>Neveljavna glava odgovora HTTP</translation>
@@ -2495,7 +2432,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>Potrebna je overitev</translation>
     </message>
     <message>
-        <location line="-138"/>
+        <location line="-159"/>
         <source>Connection refused (or timed out)</source>
         <translation>Povezava je bila zavrnjena (ali pa je potekel čas)</translation>
     </message>
@@ -2694,7 +2631,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QIODevice</name>
     <message>
-        <location filename="../src/corelib/global/qglobal.cpp" line="+2046"/>
+        <location filename="../src/corelib/global/qglobal.cpp" line="+2058"/>
         <source>Permission denied</source>
         <translation>Nimate dovoljenja</translation>
     </message>
@@ -3174,7 +3111,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QMenuBar</name>
     <message>
-        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+401"/>
+        <location filename="../src/gui/widgets/qmenu_symbian.cpp" line="+410"/>
         <source>Actions</source>
         <translation>Dejanja</translation>
     </message>
@@ -3527,7 +3464,7 @@ Ali jo kljub temu želite izbrisati?</translation>
     <message>
         <location line="+59"/>
         <source>Unable to alloc statement</source>
-        <translation type="unfinished"></translation>
+        <translation>Ni moč dodeliti izjave</translation>
     </message>
     <message>
         <location line="+15"/>
@@ -3553,7 +3490,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QODBCDriver</name>
     <message>
-        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1783"/>
+        <location filename="../src/sql/drivers/odbc/qsql_odbc.cpp" line="+1790"/>
         <source>Unable to connect</source>
         <translation>Ni moč vzpostaviti povezave</translation>
     </message>
@@ -3586,7 +3523,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QODBCResult</name>
     <message>
-        <location line="-926"/>
+        <location line="-932"/>
         <location line="+346"/>
         <source>QODBCResult::reset: Unable to set &apos;SQL_CURSOR_STATIC&apos; as statement attribute. Please check your ODBC driver configuration</source>
         <translation>QODBCResult::reset: ni moč nastaviti &apos;SQL_CURSOR_STATIC&apos; kot lastnosti izjave. Preverite nastavitve gonilnika ODBC</translation>
@@ -3638,7 +3575,7 @@ Ali jo kljub temu želite izbrisati?</translation>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="-101"/>
+        <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="-97"/>
         <source>Invalid hostname</source>
         <translation>Neveljavno ime gostitelja</translation>
     </message>
@@ -3667,42 +3604,6 @@ Ali jo kljub temu želite izbrisati?</translation>
         <location filename="../src/network/kernel/qhostinfo_unix.cpp" line="+0"/>
         <source>No host name given</source>
         <translation>Podano ni bilo nobeno ime gostitelja</translation>
-    </message>
-    <message>
-        <location filename="../src/3rdparty/phonon/mmf/effectfactory.cpp" line="+60"/>
-        <source>audio equalizer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Bass boost</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Distance Attenuation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <location line="+2"/>
-        <source>Environmental Reverb</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Loudness</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Source Orientation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+2"/>
-        <source>Stereo Widening</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -4050,7 +3951,7 @@ Ali jo kljub temu želite izbrisati?</translation>
         <translation>US Common #10 Envelope (105 x 241 mm)</translation>
     </message>
     <message>
-        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+259"/>
+        <location filename="../src/gui/dialogs/qprintdialog_win.cpp" line="+266"/>
         <source>OK</source>
         <translation>V redu</translation>
     </message>
@@ -4610,7 +4511,7 @@ Izberite drugo ime datoteke.</translation>
         <translation>Čas za dejanje procesa je potekel</translation>
     </message>
     <message>
-        <location filename="../src/corelib/io/qprocess.cpp" line="+851"/>
+        <location filename="../src/corelib/io/qprocess.cpp" line="+855"/>
         <location line="+52"/>
         <location filename="../src/corelib/io/qprocess_win.cpp" line="-211"/>
         <location line="+50"/>
@@ -4826,32 +4727,32 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptbreakpointsmodel.cpp" line="+455"/>
         <source>ID</source>
-        <translation type="unfinished"></translation>
+        <translation>ID</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokacija</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Condition</source>
-        <translation type="unfinished"></translation>
+        <translation>Pogoj</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Ignore-count</source>
-        <translation type="unfinished"></translation>
+        <translation>Število prezrtij</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Single-shot</source>
-        <translation type="unfinished"></translation>
+        <translation>Enojen zadetek</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Hit-count</source>
-        <translation type="unfinished"></translation>
+        <translation>Število zadetkov</translation>
     </message>
 </context>
 <context>
@@ -4859,12 +4760,12 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptbreakpointswidget.cpp" line="+298"/>
         <source>New</source>
-        <translation type="unfinished"></translation>
+        <translation>Nova</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Delete</source>
-        <translation type="unfinished">Izbriši</translation>
+        <translation>Izbriši</translation>
     </message>
 </context>
 <context>
@@ -4873,17 +4774,17 @@ Izberite drugo ime datoteke.</translation>
         <location filename="../src/scripttools/debugging/qscriptdebugger.cpp" line="+885"/>
         <location line="+1013"/>
         <source>Go to Line</source>
-        <translation type="unfinished"></translation>
+        <translation>Pojdi v vrstico</translation>
     </message>
     <message>
         <location line="-1012"/>
         <source>Line:</source>
-        <translation type="unfinished"></translation>
+        <translation>Vrstica:</translation>
     </message>
     <message>
         <location line="+791"/>
         <source>Interrupt</source>
-        <translation type="unfinished"></translation>
+        <translation>Prekini</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4893,7 +4794,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+15"/>
         <source>Continue</source>
-        <translation type="unfinished">Nadaljuj</translation>
+        <translation>Nadaljuj</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4903,7 +4804,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+15"/>
         <source>Step Into</source>
-        <translation type="unfinished"></translation>
+        <translation>Vstopi</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4913,7 +4814,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+15"/>
         <source>Step Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Prestopi</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4923,7 +4824,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+15"/>
         <source>Step Out</source>
-        <translation type="unfinished"></translation>
+        <translation>Izstopi</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4933,7 +4834,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+15"/>
         <source>Run to Cursor</source>
-        <translation type="unfinished"></translation>
+        <translation>Zaženi do kazalca</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4943,12 +4844,12 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+16"/>
         <source>Run to New Script</source>
-        <translation type="unfinished"></translation>
+        <translation>Zaženi do novega skripta</translation>
     </message>
     <message>
         <location line="+15"/>
         <source>Toggle Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi prekinitveno točko</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4958,22 +4859,22 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+14"/>
         <source>Clear Debug Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Počisti razhroščevalni izhod</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Clear Error Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Počisti dnevnik napak</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Clear Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Počisti konzolo</translation>
     </message>
     <message>
         <location line="+14"/>
         <source>&amp;Find in Script...</source>
-        <translation type="unfinished"></translation>
+        <translation>Najdi v &amp;skriptu ...</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -4983,7 +4884,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+17"/>
         <source>Find &amp;Next</source>
-        <translation type="unfinished"></translation>
+        <translation>Najdi &amp;naslednje</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -4993,7 +4894,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+13"/>
         <source>Find &amp;Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>Najdi &amp;predhodno</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -5008,7 +4909,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+11"/>
         <source>Debug</source>
-        <translation type="unfinished"></translation>
+        <translation>Razhrošči</translation>
     </message>
 </context>
 <context>
@@ -5016,32 +4917,32 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptdebuggercodefinderwidget.cpp" line="+141"/>
         <source>Close</source>
-        <translation type="unfinished">Zapri</translation>
+        <translation>Zapri</translation>
     </message>
     <message>
         <location line="+13"/>
         <source>Previous</source>
-        <translation type="unfinished"></translation>
+        <translation>Predhodno</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>Next</source>
-        <translation type="unfinished"></translation>
+        <translation>Naslednje</translation>
     </message>
     <message>
         <location line="+5"/>
         <source>Case Sensitive</source>
-        <translation type="unfinished"></translation>
+        <translation>Občutljivo na velikost črk</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>Whole words</source>
-        <translation type="unfinished"></translation>
+        <translation>Cele besede</translation>
     </message>
     <message>
         <location line="+9"/>
         <source>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Search wrapped</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;img src=&quot;:/qt/scripttools/debugging/images/wrap.png&quot;&gt;&amp;nbsp;Iskanje se nadaljuje na drugem koncu</translation>
     </message>
 </context>
 <context>
@@ -5049,12 +4950,12 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptdebuggerlocalsmodel.cpp" line="+872"/>
         <source>Name</source>
-        <translation type="unfinished">Ime</translation>
+        <translation>Ime</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Value</source>
-        <translation type="unfinished">Vrednost</translation>
+        <translation>Vrednost</translation>
     </message>
 </context>
 <context>
@@ -5062,17 +4963,17 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptdebuggerstackmodel.cpp" line="+161"/>
         <source>Level</source>
-        <translation type="unfinished"></translation>
+        <translation>Stopnja</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Name</source>
-        <translation type="unfinished">Ime</translation>
+        <translation>Ime</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Location</source>
-        <translation type="unfinished"></translation>
+        <translation>Lokacija</translation>
     </message>
 </context>
 <context>
@@ -5080,22 +4981,22 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptedit.cpp" line="+411"/>
         <source>Toggle Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Preklopi prekinitveno točko</translation>
     </message>
     <message>
         <location line="+2"/>
         <source>Disable Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Onemogoči prekinitveno točko</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Enable Breakpoint</source>
-        <translation type="unfinished"></translation>
+        <translation>Omogoči prekinitveno točko</translation>
     </message>
     <message>
         <location line="+4"/>
         <source>Breakpoint Condition:</source>
-        <translation type="unfinished"></translation>
+        <translation>Pogoj za prelomno točko:</translation>
     </message>
 </context>
 <context>
@@ -5103,52 +5004,52 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptenginedebugger.cpp" line="+523"/>
         <source>Loaded Scripts</source>
-        <translation type="unfinished"></translation>
+        <translation>Naloženi skripti</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Breakpoints</source>
-        <translation type="unfinished"></translation>
+        <translation>Prelomne točke</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Stack</source>
-        <translation type="unfinished"></translation>
+        <translation>Sklad</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Locals</source>
-        <translation type="unfinished"></translation>
+        <translation>Krajevno</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Console</source>
-        <translation type="unfinished"></translation>
+        <translation>Konzola</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Debug Output</source>
-        <translation type="unfinished"></translation>
+        <translation>Razhroščevalni izhod</translation>
     </message>
     <message>
         <location line="+6"/>
         <source>Error Log</source>
-        <translation type="unfinished"></translation>
+        <translation>Dnevnik napak</translation>
     </message>
     <message>
         <location line="+12"/>
         <source>Search</source>
-        <translation type="unfinished">Išči</translation>
+        <translation>Išči</translation>
     </message>
     <message>
         <location line="+7"/>
         <source>View</source>
-        <translation type="unfinished"></translation>
+        <translation>Videz</translation>
     </message>
     <message>
         <location line="+18"/>
         <source>Qt Script Debugger</source>
-        <translation type="unfinished"></translation>
+        <translation>Razhroščevalnik za Qt Script</translation>
     </message>
 </context>
 <context>
@@ -5156,7 +5057,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location filename="../src/scripttools/debugging/qscriptbreakpointswidget.cpp" line="-223"/>
         <source>Close</source>
-        <translation type="unfinished">Zapri</translation>
+        <translation>Zapri</translation>
     </message>
 </context>
 <context>
@@ -5521,7 +5422,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+1"/>
         <source>Bass Boost</source>
-        <translation type="unfinished"></translation>
+        <translation>Ojačanje basov</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5536,12 +5437,12 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+1"/>
         <source>Treble Up</source>
-        <translation type="unfinished"></translation>
+        <translation>Več visokih tonov</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Treble Down</source>
-        <translation type="unfinished"></translation>
+        <translation>Manj visokih tonov</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5736,7 +5637,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+4"/>
         <source>Select</source>
-        <translation type="unfinished">Izberi</translation>
+        <translation>Izberi</translation>
     </message>
     <message>
         <location line="+1"/>
@@ -5771,17 +5672,17 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+1"/>
         <source>Call</source>
-        <translation type="unfinished">Pokliči</translation>
+        <translation>Pokliči</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Hangup</source>
-        <translation type="unfinished">Odloži</translation>
+        <translation>Odloži</translation>
     </message>
     <message>
         <location line="+1"/>
         <source>Flip</source>
-        <translation type="unfinished">Obrni</translation>
+        <translation>Obrni</translation>
     </message>
     <message>
         <location line="+561"/>
@@ -5954,7 +5855,7 @@ Izberite drugo ime datoteke.</translation>
     <message>
         <location line="+151"/>
         <source>Exit</source>
-        <translation type="unfinished">Končaj</translation>
+        <translation>Končaj</translation>
     </message>
 </context>
 <context>
@@ -6176,7 +6077,7 @@ Izberite drugo ime datoteke.</translation>
 <context>
     <name>QTextControl</name>
     <message>
-        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2001"/>
+        <location filename="../src/gui/text/qtextcontrol.cpp" line="+2007"/>
         <source>&amp;Undo</source>
         <translation>&amp;Razveljavi</translation>
     </message>
@@ -6219,7 +6120,7 @@ Izberite drugo ime datoteke.</translation>
 <context>
     <name>QToolButton</name>
     <message>
-        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+254"/>
+        <location filename="../src/plugins/accessible/widgets/simplewidgets.cpp" line="+310"/>
         <location line="+6"/>
         <source>Press</source>
         <translation>Pritisni</translation>
@@ -6334,12 +6235,12 @@ Izberite drugo ime datoteke.</translation>
 <context>
     <name>QWebFrame</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+706"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/FrameLoaderClientQt.cpp" line="+711"/>
         <source>Request cancelled</source>
         <translation>Zahtevek je bil preklican</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+19"/>
         <source>Request blocked</source>
         <translation>Zahtevek je bil blokiran</translation>
     </message>
@@ -6367,12 +6268,12 @@ Izberite drugo ime datoteke.</translation>
 <context>
     <name>QWebPage</name>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+403"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/network/qt/QNetworkReplyHandler.cpp" line="+406"/>
         <source>Bad HTTP request</source>
         <translation>Napačen zahtevek HTTP</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+41"/>
+        <location filename="../src/3rdparty/webkit/WebCore/platform/qt/Localizations.cpp" line="+42"/>
         <source>Submit</source>
         <comment>default label for Submit buttons in forms on web pages</comment>
         <translation>Pošlji</translation>
@@ -6390,7 +6291,7 @@ Izberite drugo ime datoteke.</translation>
         <translation>Ponastavi</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+11"/>
         <source>This is a searchable index. Enter search keywords: </source>
         <comment>text that appears at the start of nearly-obsolete web pages in the form of a &apos;searchable index&apos;</comment>
         <translation>To je stvarno kazalo z iskanjem. Vnesite iskane besede: </translation>
@@ -6777,7 +6678,7 @@ Izberite drugo ime datoteke.</translation>
         <location line="+2"/>
         <source>Movie time scrubber</source>
         <comment>Media controller element</comment>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location line="+2"/>
@@ -6805,7 +6706,7 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <location line="+2"/>
-        <source>Remaining move time</source>
+        <source>Remaining movie time</source>
         <comment>Media controller element</comment>
         <translation>Preostali čas filma</translation>
     </message>
@@ -6900,7 +6801,7 @@ Izberite drugo ime datoteke.</translation>
         <translation>%1 (%2×%3 pik)</translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+170"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/WebCoreSupport/InspectorClientQt.cpp" line="+167"/>
         <source>Web Inspector - %2</source>
         <translation>Web Inspector - %2</translation>
     </message>
@@ -6974,24 +6875,24 @@ Izberite drugo ime datoteke.</translation>
         <source>%n file(s)</source>
         <comment>number of chosen file</comment>
         <translation>
-            <numerusform>%n datotek</numerusform>
-            <numerusform>%n datotek</numerusform>
-            <numerusform>%n datotek</numerusform>
+            <numerusform>%n datoteka</numerusform>
+            <numerusform>%n datoteki</numerusform>
+            <numerusform>%n datoteke</numerusform>
             <numerusform>%n datotek</numerusform>
         </translation>
     </message>
     <message>
-        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1601"/>
+        <location filename="../src/3rdparty/webkit/WebKit/qt/Api/qwebpage.cpp" line="+1708"/>
         <source>JavaScript Alert - %1</source>
         <translation>Opozorilo JavaScript - %1</translation>
     </message>
     <message>
-        <location line="+15"/>
+        <location line="+16"/>
         <source>JavaScript Confirm - %1</source>
         <translation>Potrditev JavaScript - %1</translation>
     </message>
     <message>
-        <location line="+17"/>
+        <location line="+18"/>
         <source>JavaScript Prompt - %1</source>
         <translation>Poziv JavaScript - %1</translation>
     </message>
@@ -7006,7 +6907,7 @@ Izberite drugo ime datoteke.</translation>
         <translation>Kot kaže ima skript na tej strani težavo. Ali želite ustaviti skript?</translation>
     </message>
     <message>
-        <location line="+381"/>
+        <location line="+383"/>
         <source>Move the cursor to the next character</source>
         <translation>Premakni kazalec na naslednji znak</translation>
     </message>
@@ -7215,6 +7116,12 @@ Izberite drugo ime datoteke.</translation>
         <source>Align Right</source>
         <translation>Poravnaj desno</translation>
     </message>
+    <message>
+        <location filename="Obsolete_PO_entries"/>
+        <source>Remaining move time</source>
+        <comment>Media controller element</comment>
+        <translation type="obsolete">Preostali čas filma</translation>
+    </message>
 </context>
 <context>
     <name>QWhatsThisAction</name>
@@ -7227,7 +7134,7 @@ Izberite drugo ime datoteke.</translation>
 <context>
     <name>QWidget</name>
     <message>
-        <location filename="../src/gui/kernel/qwidget.cpp" line="+5655"/>
+        <location filename="../src/gui/kernel/qwidget.cpp" line="+5672"/>
         <source>*</source>
         <translation>*</translation>
     </message>
@@ -7902,20 +7809,20 @@ Izberite drugo ime datoteke.</translation>
         <location filename="../src/xmlpatterns/functions/qabstractfunctionfactory.cpp" line="+77"/>
         <source>%1 takes at most %n argument(s). %2 is therefore invalid.</source>
         <translation>
+            <numerusform>%1 potrebuje največ %n argument. %2 zato ni veljavno.</numerusform>
+            <numerusform>%1 potrebuje največ %n argumenta. %2 zato ni veljavno.</numerusform>
+            <numerusform>%1 potrebuje največ %n argumente. %2 zato ni veljavno.</numerusform>
             <numerusform>%1 potrebuje največ %n argumentov. %2 zato ni veljavno.</numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location line="+11"/>
         <source>%1 requires at least %n argument(s). %2 is therefore invalid.</source>
         <translation>
+            <numerusform>%1 potrebuje najmanj %n argument. %2 zato ni veljavno.</numerusform>
+            <numerusform>%1 potrebuje najmanj %n argumenta. %2 zato ni veljavno.</numerusform>
+            <numerusform>%1 potrebuje najmanj %n argumente. %2 zato ni veljavno.</numerusform>
             <numerusform>%1 potrebuje najmanj %n argumentov. %2 zato ni veljavno.</numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -8613,277 +8520,207 @@ Izberite drugo ime datoteke.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/schema/qxsdparticlechecker.cpp" line="+165"/>
-        <source>empty particle cannot be derived from non-empty particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+15"/>
-        <source>derived particle is missing element %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>derived element %1 is missing value constraint as defined in base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>derived element %1 has weaker value constraint than base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>fixed value constraint of element %1 differs from value constraint in base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>derived element %1 cannot be nillable as base element is not nillable</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>block constraints of derived element %1 must not be more weaker than in the base element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>simple type of derived element %1 cannot be validly derived from base element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>complex type of derived element %1 cannot be validly derived from base element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>element %1 is missing in derived particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+18"/>
-        <source>element %1 does not match namespace constraint of wildcard in base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+11"/>
-        <source>wildcard in derived particle is not a valid subset of wildcard in base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>processContent of wildcard in derived particle is weaker than wildcard in base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+240"/>
-        <source>derived particle allows content that is not allowed in the base particle</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="../src/xmlpatterns/schema/qxsdschemachecker.cpp" line="+227"/>
-        <source>%1 has inheritance loop in its base type %2</source>
+        <source>%1 has inheritance loop in its base type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
         <location line="+24"/>
-        <source>circular inheritance of base type %1</source>
+        <source>Circular inheritance of base type %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>circular inheritance of union %1</source>
+        <source>Circular inheritance of union %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+25"/>
-        <source>%1 is not allowed to derive from %2 by restriction as the latter defines it as final</source>
+        <source>%1 is not allowed to derive from %2 by restriction as the latter defines it as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>%1 is not allowed to derive from %2 by extension as the latter defines it as final</source>
+        <source>%1 is not allowed to derive from %2 by extension as the latter defines it as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+31"/>
-        <source>base type of simple type %1 cannot be complex type %2</source>
+        <source>Base type of simple type %1 cannot be complex type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>simple type %1 cannot have direct base type %2</source>
+        <source>Simple type %1 cannot have direct base type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+33"/>
         <location line="+9"/>
-        <source>simple type %1 is not allowed to have base type %2</source>
+        <source>Simple type %1 is not allowed to have base type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <source>simple type %1 can only have simple atomic type as base type</source>
+        <source>Simple type %1 can only have simple atomic type as base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>simple type %1 cannot derive from %2 as the latter defines restriction as final</source>
+        <source>Simple type %1 cannot derive from %2 as the latter defines restriction as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+13"/>
         <location line="+484"/>
-        <source>variety of item type of %1 must be either atomic or union</source>
+        <source>Variety of item type of %1 must be either atomic or union.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-474"/>
         <location line="+483"/>
-        <source>variety of member types of %1 must be atomic</source>
+        <source>Variety of member types of %1 must be atomic.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-470"/>
         <location line="+451"/>
-        <source>%1 is not allowed to derive from %2 by list as the latter defines it as final</source>
+        <source>%1 is not allowed to derive from %2 by list as the latter defines it as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-431"/>
-        <source>simple type %1 is only allowed to have %2 facet</source>
+        <source>Simple type %1 is only allowed to have %2 facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>base type of simple type %1 must have variety of type list</source>
+        <source>Base type of simple type %1 must have variety of type list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>base type of simple type %1 has defined derivation by restriction as final</source>
+        <source>Base type of simple type %1 has defined derivation by restriction as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>item type of base type does not match item type of %1</source>
+        <source>Item type of base type does not match item type of %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+26"/>
         <location line="+93"/>
-        <source>simple type %1 contains not allowed facet type %2</source>
+        <source>Simple type %1 contains not allowed facet type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-72"/>
         <location line="+413"/>
-        <source>%1 is not allowed to derive from %2 by union as the latter defines it as final</source>
+        <source>%1 is not allowed to derive from %2 by union as the latter defines it as final.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-404"/>
-        <source>%1 is not allowed to have any facets</source>
+        <source>%1 is not allowed to have any facets.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>base type %1 of simple type %2 must have variety of union</source>
+        <source>Base type %1 of simple type %2 must have variety of union.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>base type %1 of simple type %2 is not allowed to have restriction in %3 attribute</source>
+        <source>Base type %1 of simple type %2 is not allowed to have restriction in %3 attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>member type %1 cannot be derived from member type %2 of %3&apos;s base type %4</source>
+        <source>Member type %1 cannot be derived from member type %2 of %3&apos;s base type %4.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+65"/>
-        <source>derivation method of %1 must be extension because the base type %2 is a simple type</source>
+        <source>Derivation method of %1 must be extension because the base type %2 is a simple type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+30"/>
-        <source>complex type %1 has duplicated element %2 in its content model</source>
+        <source>Complex type %1 has duplicated element %2 in its content model.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>complex type %1 has non-deterministic content</source>
+        <source>Complex type %1 has non-deterministic content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+21"/>
-        <source>attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3</source>
+        <source>Attributes of complex type %1 are not a valid extension of the attributes of base type %2: %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+37"/>
-        <source>content model of complex type %1 is not a valid extension of content model of %2</source>
+        <source>Content model of complex type %1 is not a valid extension of content model of %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>complex type %1 must have simple content</source>
+        <source>Complex type %1 must have simple content.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>complex type %1 must have the same simple type as its base class %2</source>
+        <source>Complex type %1 must have the same simple type as its base class %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+67"/>
-        <source>complex type %1 cannot be derived from base type %2%3</source>
+        <source>Complex type %1 cannot be derived from base type %2%3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
-        <source>attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3</source>
+        <source>Attributes of complex type %1 are not a valid restriction from the attributes of base type %2: %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
-        <source>complex type %1 with simple content cannot be derived from complex base type %2</source>
+        <source>Complex type %1 with simple content cannot be derived from complex base type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+35"/>
-        <source>item type of simple type %1 cannot be a complex type</source>
+        <source>Item type of simple type %1 cannot be a complex type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+44"/>
-        <source>member type of simple type %1 cannot be a complex type</source>
+        <source>Member type of simple type %1 cannot be a complex type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>%1 is not allowed to have a member type with the same name as itself</source>
+        <source>%1 is not allowed to have a member type with the same name as itself.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+83"/>
         <location line="+29"/>
         <location line="+34"/>
-        <source>%1 facet collides with %2 facet</source>
+        <source>%1 facet collides with %2 facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-20"/>
-        <source>%1 facet must have the same value as %2 facet of base type</source>
+        <source>%1 facet must have the same value as %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+37"/>
-        <source>%1 facet must be equal or greater than %2 facet of base type</source>
+        <source>%1 facet must be equal or greater than %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8895,7 +8732,7 @@ Izberite drugo ime datoteke.</translation>
         <location line="+58"/>
         <location line="+34"/>
         <location line="+35"/>
-        <source>%1 facet must be less than or equal to %2 facet of base type</source>
+        <source>%1 facet must be less than or equal to %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -8905,225 +8742,225 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>unknown notation %1 used in %2 facet</source>
+        <source>Unknown notation %1 used in %2 facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>%1 facet contains invalid value %2: %3</source>
+        <source>%1 facet contains invalid value %2: %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+22"/>
-        <source>%1 facet cannot be %2 or %3 if %4 facet of base type is %5</source>
+        <source>%1 facet cannot be %2 or %3 if %4 facet of base type is %5.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>%1 facet cannot be %2 if %3 facet of base type is %4</source>
+        <source>%1 facet cannot be %2 if %3 facet of base type is %4.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+20"/>
         <location line="+55"/>
         <location line="+230"/>
-        <source>%1 facet must be less than or equal to %2 facet</source>
+        <source>%1 facet must be less than or equal to %2 facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-257"/>
         <location line="+134"/>
         <location line="+82"/>
-        <source>%1 facet must be less than %2 facet of base type</source>
+        <source>%1 facet must be less than %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-201"/>
         <location line="+79"/>
-        <source>%1 facet and %2 facet cannot appear together</source>
+        <source>%1 facet and %2 facet cannot appear together.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-27"/>
         <location line="+12"/>
         <location line="+113"/>
-        <source>%1 facet must be greater than %2 facet of base type</source>
+        <source>%1 facet must be greater than %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-86"/>
         <location line="+58"/>
-        <source>%1 facet must be less than %2 facet</source>
+        <source>%1 facet must be less than %2 facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-42"/>
         <location line="+58"/>
-        <source>%1 facet must be greater than or equal to %2 facet of base type</source>
+        <source>%1 facet must be greater than or equal to %2 facet of base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+113"/>
-        <source>simple type contains not allowed facet %1</source>
+        <source>Simple type contains not allowed facet %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+12"/>
-        <source>%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list</source>
+        <source>%1, %2, %3, %4, %5 and %6 facets are not allowed when derived by list.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>only %1 and %2 facets are allowed when derived by union</source>
+        <source>Only %1 and %2 facets are allowed when derived by union.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+23"/>
         <location line="+16"/>
-        <source>%1 contains %2 facet with invalid data: %3</source>
+        <source>%1 contains %2 facet with invalid data: %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+24"/>
-        <source>attribute group %1 contains attribute %2 twice</source>
-        <translation>skupina lastnosti %1 dvakrat vsebuje lastnost %2</translation>
+        <source>Attribute group %1 contains attribute %2 twice.</source>
+        <translation>Skupina lastnosti %1 dvakrat vsebuje lastnost %2.</translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>attribute group %1 contains two different attributes that both have types derived from %2</source>
+        <source>Attribute group %1 contains two different attributes that both have types derived from %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3</source>
+        <source>Attribute group %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>complex type %1 contains attribute %2 twice</source>
-        <translation>kompleksna vrsta %1 dvakrat vsebuje lastnost %2</translation>
+        <source>Complex type %1 contains attribute %2 twice.</source>
+        <translation>Kompleksna vrsta %1 dvakrat vsebuje lastnost %2.</translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>complex type %1 contains two different attributes that both have types derived from %2</source>
+        <source>Complex type %1 contains two different attributes that both have types derived from %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>complex type %1 contains attribute %2 that has value constraint but type that inherits from %3</source>
+        <source>Complex type %1 contains attribute %2 that has value constraint but type that inherits from %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+43"/>
-        <source>element %1 is not allowed to have a value constraint if its base type is complex</source>
+        <source>Element %1 is not allowed to have a value constraint if its base type is complex.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>element %1 is not allowed to have a value constraint if its type is derived from %2</source>
+        <source>Element %1 is not allowed to have a value constraint if its type is derived from %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
         <location line="+11"/>
-        <source>value constraint of element %1 is not of elements type: %2</source>
+        <source>Value constraint of element %1 is not of elements type: %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>element %1 is not allowed to have substitution group affiliation as it is no global element</source>
+        <source>Element %1 is not allowed to have substitution group affiliation as it is no global element.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+28"/>
-        <source>type of element %1 cannot be derived from type of substitution group affiliation</source>
+        <source>Type of element %1 cannot be derived from type of substitution group affiliation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+41"/>
-        <source>value constraint of attribute %1 is not of attributes type: %2</source>
+        <source>Value constraint of attribute %1 is not of attributes type: %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>attribute %1 has value constraint but has type derived from %2</source>
+        <source>Attribute %1 has value constraint but has type derived from %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+56"/>
-        <source>%1 attribute in derived complex type must be %2 like in base type</source>
+        <source>%1 attribute in derived complex type must be %2 like in base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>attribute %1 in derived complex type must have %2 value constraint like in base type</source>
+        <source>Attribute %1 in derived complex type must have %2 value constraint like in base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>attribute %1 in derived complex type must have the same %2 value constraint like in base type</source>
+        <source>Attribute %1 in derived complex type must have the same %2 value constraint like in base type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>attribute %1 in derived complex type must have %2 value constraint</source>
+        <source>Attribute %1 in derived complex type must have %2 value constraint.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>processContent of base wildcard must be weaker than derived wildcard</source>
+        <source>processContent of base wildcard must be weaker than derived wildcard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+39"/>
         <location line="+15"/>
-        <source>element %1 exists twice with different types</source>
-        <translation>element %1 obstaja dvakrat, z različnima vrstama</translation>
+        <source>Element %1 exists twice with different types.</source>
+        <translation>Element %1 obstaja dvakrat, z različnima vrstama.</translation>
     </message>
     <message>
         <location line="+28"/>
-        <source>particle contains non-deterministic wildcards</source>
+        <source>Particle contains non-deterministic wildcards.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/schema/qxsdschemahelper.cpp" line="+691"/>
         <location line="+63"/>
-        <source>base attribute %1 is required but derived attribute is not</source>
+        <source>Base attribute %1 is required but derived attribute is not.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-57"/>
-        <source>type of derived attribute %1 cannot be validly derived from type of base attribute</source>
+        <source>Type of derived attribute %1 cannot be validly derived from type of base attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+28"/>
-        <source>value constraint of derived attribute %1 does not match value constraint of base attribute</source>
+        <source>Value constraint of derived attribute %1 does not match value constraint of base attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>derived attribute %1 does not exists in the base definition</source>
+        <source>Derived attribute %1 does not exists in the base definition.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>derived attribute %1 does not match the wildcard in the base definition</source>
+        <source>Derived attribute %1 does not match the wildcard in the base definition.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>base attribute %1 is required but missing in derived definition</source>
+        <source>Base attribute %1 is required but missing in derived definition.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>derived definition contains an %1 element that does not exists in the base definition</source>
+        <source>Derived definition contains an %1 element that does not exists in the base definition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>derived wildcard is not a subset of the base wildcard</source>
+        <source>Derived wildcard is not a subset of the base wildcard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -9133,82 +8970,304 @@ Izberite drugo ime datoteke.</translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>attribute %1 from base type is missing in derived type</source>
+        <source>Attribute %1 from base type is missing in derived type.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+5"/>
-        <source>type of derived attribute %1 differs from type of base attribute</source>
+        <source>Type of derived attribute %1 differs from type of base attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>base definition contains an %1 element that is missing in the derived definition</source>
+        <source>Base definition contains an %1 element that is missing in the derived definition</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/xmlpatterns/schema/qxsdschemaparser.cpp" line="+169"/>
-        <source>can not process unknown element %1, expected elements are: %2</source>
-        <translation>ni moč obdelati neznanega elementa %1, pričakovani elementi so: %2</translation>
+        <location filename="../src/xmlpatterns/schema/qxsdschemaresolver.cpp" line="+354"/>
+        <source>%1 references unknown %2 or %3 element %4.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+13"/>
-        <source>element %1 is not allowed in this scope, possible elements are: %2</source>
-        <translation>element %1 v tem obsegu ni dovoljen, možni elementi so: %2</translation>
+        <location line="+10"/>
+        <source>%1 references identity constraint %2 that is no %3 or %4 element.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+16"/>
-        <source>child element is missing in that scope, possible child elements are: %1</source>
-        <translation>v tem obsegu manjka podelement, možni podelementi so: %1</translation>
+        <location line="+10"/>
+        <source>%1 has a different number of fields from the identity constraint %2 that it references.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+127"/>
-        <source>document is not a XML schema</source>
-        <translation>dokument ni shema XML</translation>
+        <location line="+23"/>
+        <source>Base type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <location line="+22"/>
-        <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4</source>
-        <translation>lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3} ni vrednost vrste %4</translation>
+        <location line="+84"/>
+        <source>Item type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+31"/>
+        <source>Member type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+28"/>
+        <location line="+408"/>
+        <location line="+30"/>
+        <source>Type %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-416"/>
+        <source>Base type %1 of complex type cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>%1 cannot have complex base type that has a %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+279"/>
+        <source>Content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>%1 attribute of %2 element contains invalid content: {%3}</source>
-        <translation>lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3}</translation>
+        <source>Complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+101"/>
+        <source>Type of %1 element must be a simple type, %2 is not.</source>
+        <translation>Vrsta elementa %1 mora biti preprosta, %2 to ni.</translation>
+    </message>
+    <message>
+        <location line="+62"/>
+        <source>Substitution group %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+9"/>
+        <source>Substitution group %1 has circular definition.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+120"/>
+        <location line="+7"/>
+        <source>Duplicated element names %1 in %2 element.</source>
+        <translation>Podvojeni imeni elementov %1 v elementu %2.</translation>
+    </message>
+    <message>
+        <location line="+29"/>
+        <location line="+52"/>
+        <location line="+71"/>
+        <location line="+28"/>
+        <source>Reference %1 of %2 element cannot be resolved.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="-138"/>
+        <source>Circular group reference for %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>%1 element is not allowed in this scope</source>
+        <translation>Element %1 v tem obsegu ni dovoljen</translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>%1 element cannot have %2 attribute with value other than %3.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+8"/>
+        <source>%1 element cannot have %2 attribute with value other than %3 or %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+91"/>
+        <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+25"/>
+        <source>Attribute group %1 has circular reference.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+131"/>
+        <source>%1 attribute in %2 must have %3 use like in base type %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+52"/>
+        <source>Attribute wildcard of %1 is not a valid restriction of attribute wildcard of base type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>%1 has attribute wildcard but its base type %2 has not.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+26"/>
-        <source>target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema</source>
+        <source>Union of attribute wildcard of type %1 and attribute wildcard of its base type %2 is not expressible.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+48"/>
+        <source>Enumeration facet contains invalid content: {%1} is not a value of type %2.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Namespace prefix of qualified name %1 is not defined.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+51"/>
+        <location line="+18"/>
+        <source>%1 element %2 is not a valid restriction of the %3 element it redefines: %4.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/xmlpatterns/schema/qxsdparticlechecker.cpp" line="+165"/>
+        <source>Empty particle cannot be derived from non-empty particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+15"/>
+        <source>Derived particle is missing element %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Derived element %1 is missing value constraint as defined in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Derived element %1 has weaker value constraint than base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Fixed value constraint of element %1 differs from value constraint in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+7"/>
+        <source>Derived element %1 cannot be nillable as base element is not nillable.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+10"/>
+        <source>Block constraints of derived element %1 must not be more weaker than in the base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Simple type of derived element %1 cannot be validly derived from base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>Complex type of derived element %1 cannot be validly derived from base element.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Element %1 is missing in derived particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+18"/>
+        <source>Element %1 does not match namespace constraint of wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+11"/>
+        <source>Wildcard in derived particle is not a valid subset of wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+5"/>
+        <source>processContent of wildcard in derived particle is weaker than wildcard in base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location line="+240"/>
+        <source>Derived particle allows content that is not allowed in the base particle.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/xmlpatterns/schema/qxsdschemaparser.cpp" line="+170"/>
+        <source>Can not process unknown element %1, expected elements are: %2.</source>
+        <translation>Ni moč obdelati neznanega elementa %1, pričakovani elementi so: %2.</translation>
+    </message>
+    <message>
+        <location line="+13"/>
+        <source>Element %1 is not allowed in this scope, possible elements are: %2.</source>
+        <translation>Element %1 v tem obsegu ni dovoljen, možni elementi so: %2.</translation>
+    </message>
+    <message>
+        <location line="+16"/>
+        <source>Child element is missing in that scope, possible child elements are: %1.</source>
+        <translation>V tem obsegu manjka podelement, možni podelementi so: %1.</translation>
+    </message>
+    <message>
+        <location line="+127"/>
+        <source>Document is not a XML schema.</source>
+        <translation>Dokument ni shema XML.</translation>
+    </message>
+    <message>
+        <location line="+22"/>
+        <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4.</source>
+        <translation>Lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3} ni vrednost vrste %4.</translation>
+    </message>
+    <message>
+        <location line="+6"/>
+        <source>%1 attribute of %2 element contains invalid content: {%3}.</source>
+        <translation>Lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3}.</translation>
+    </message>
+    <message>
+        <location line="+26"/>
+        <source>Target namespace %1 of included schema is different from the target namespace %2 as defined by the including schema.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
         <location line="+11"/>
-        <source>target namespace %1 of imported schema is different from the target namespace %2 as defined by the importing schema</source>
+        <source>Target namespace %1 of imported schema is different from the target namespace %2 as defined by the importing schema.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+237"/>
-        <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3</source>
+        <source>%1 element is not allowed to have the same %2 attribute value as the target namespace %3.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>%1 element without %2 attribute is not allowed inside schema without target namespace</source>
+        <source>%1 element without %2 attribute is not allowed inside schema without target namespace.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+833"/>
         <location line="+158"/>
-        <source>%1 element is not allowed inside %2 element if %3 attribute is present</source>
-        <translation>element %1 znotraj elementa %2 ni dovoljen, če je prisotna lastnost %3</translation>
+        <source>%1 element is not allowed inside %2 element if %3 attribute is present.</source>
+        <translation>Element %1 znotraj elementa %2 ni dovoljen, če je prisotna lastnost %3.</translation>
     </message>
     <message>
         <location line="-97"/>
         <location line="+119"/>
         <location line="+92"/>
-        <source>%1 element has neither %2 attribute nor %3 child element</source>
-        <translation>element %1 nima niti lastnosti %2 niti podelementa %3</translation>
+        <source>%1 element has neither %2 attribute nor %3 child element.</source>
+        <translation>Element %1 nima niti lastnosti %2 niti podelementa %3.</translation>
     </message>
     <message>
         <location line="+835"/>
@@ -9225,24 +9284,24 @@ Izberite drugo ime datoteke.</translation>
         <location line="+11"/>
         <location line="+11"/>
         <location line="+11"/>
-        <source>%1 element with %2 child element must not have a %3 attribute</source>
-        <translation>element %1 s podelementom %2 ne sme imeti lastnosti %3</translation>
+        <source>%1 element with %2 child element must not have a %3 attribute.</source>
+        <translation>Element %1 s podelementom %2 ne sme imeti lastnosti %3.</translation>
     </message>
     <message>
         <location line="-1325"/>
-        <source>%1 attribute of %2 element must be %3 or %4</source>
-        <translation>lastnost %1 elementa %2 mora biti %3 ali %4</translation>
+        <source>%1 attribute of %2 element must be %3 or %4.</source>
+        <translation>Lastnost %1 elementa %2 mora biti %3 ali %4.</translation>
     </message>
     <message>
         <location line="+36"/>
-        <source>%1 attribute of %2 element must have a value of %3</source>
-        <translation>lastnost %1 elementa %2 mora imeti vrednost %3</translation>
+        <source>%1 attribute of %2 element must have a value of %3.</source>
+        <translation>Lastnost %1 elementa %2 mora imeti vrednost %3.</translation>
     </message>
     <message>
         <location line="+7"/>
         <location line="+34"/>
-        <source>%1 attribute of %2 element must have a value of %3 or %4</source>
-        <translation>lastnost %1 elementa %2 mora imeti vrednost %3 ali %4</translation>
+        <source>%1 attribute of %2 element must have a value of %3 or %4.</source>
+        <translation>Lastnost %1 elementa %2 mora imeti vrednost %3 ali %4.</translation>
     </message>
     <message>
         <location line="+319"/>
@@ -9259,779 +9318,907 @@ Izberite drugo ime datoteke.</translation>
         <location line="+6"/>
         <location line="+6"/>
         <location line="+77"/>
-        <source>%1 element must not have %2 and %3 attribute together</source>
-        <translation>element %1 hkrati ne sme imeti lastnosti %2 in %3</translation>
+        <source>%1 element must not have %2 and %3 attribute together.</source>
+        <translation>Element %1 hkrati ne sme imeti lastnosti %2 in %3.</translation>
     </message>
     <message>
         <location line="-768"/>
         <location line="+222"/>
-        <source>content of %1 attribute of %2 element must not be from namespace %3</source>
-        <translation>vsebina lastnosti %1 elementa %2 ne sme biti iz imenskega prostora %3</translation>
+        <source>Content of %1 attribute of %2 element must not be from namespace %3.</source>
+        <translation>Vsebina lastnosti %1 elementa %2 ne sme biti iz imenskega prostora %3.</translation>
     </message>
     <message>
         <location line="-215"/>
         <location line="+222"/>
-        <source>%1 attribute of %2 element must not be %3</source>
-        <translation>lastnost %1 elementa %2 ne sme biti %3</translation>
+        <source>%1 attribute of %2 element must not be %3.</source>
+        <translation>Lastnost %1 elementa %2 ne sme biti %3.</translation>
     </message>
     <message>
         <location line="-64"/>
-        <source>%1 attribute of %2 element must have the value %3 because the %4 attribute is set</source>
+        <source>%1 attribute of %2 element must have the value %3 because the %4 attribute is set.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+187"/>
-        <source>specifying use=&apos;prohibited&apos; inside an attribute group has no effect</source>
+        <source>Specifying use=&apos;prohibited&apos; inside an attribute group has no effect.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+353"/>
-        <source>%1 element must have either %2 or %3 attribute</source>
-        <translation>element %1 mora imeti lastnost %2 ali %3</translation>
+        <source>%1 element must have either %2 or %3 attribute.</source>
+        <translation>Element %1 mora imeti lastnost %2 ali %3.</translation>
     </message>
     <message>
         <location line="+554"/>
-        <source>%1 element must have either %2 attribute or %3 or %4 as child element</source>
+        <source>%1 element must have either %2 attribute or %3 or %4 as child element.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+55"/>
-        <source>%1 element requires either %2 or %3 attribute</source>
-        <translation>element %1 potrebuje vsaj lastnost %2 ali %3</translation>
+        <source>%1 element requires either %2 or %3 attribute.</source>
+        <translation>Element %1 potrebuje vsaj lastnost %2 ali %3.</translation>
     </message>
     <message>
         <location line="+19"/>
-        <source>text or entity references not allowed inside %1 element</source>
+        <source>Text or entity references not allowed inside %1 element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+41"/>
         <location line="+112"/>
-        <source>%1 attribute of %2 element must contain %3, %4 or a list of URIs</source>
+        <source>%1 attribute of %2 element must contain %3, %4 or a list of URIs.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+126"/>
-        <source>%1 element is not allowed in this context</source>
-        <translation>element %1 v tem kontekstu ni dovoljen</translation>
+        <source>%1 element is not allowed in this context.</source>
+        <translation>Element %1 v tem kontekstu ni dovoljen.</translation>
     </message>
     <message>
         <location line="+53"/>
-        <source>%1 attribute of %2 element has larger value than %3 attribute</source>
+        <source>%1 attribute of %2 element has larger value than %3 attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+25"/>
-        <source>prefix of qualified name %1 is not defined</source>
+        <source>Prefix of qualified name %1 is not defined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+65"/>
         <location line="+61"/>
-        <source>%1 attribute of %2 element must either contain %3 or the other values</source>
+        <source>%1 attribute of %2 element must either contain %3 or the other values.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+131"/>
-        <source>component with id %1 has been defined previously</source>
-        <translation>komponenta z ID-jem %1 je že bila definirana</translation>
+        <source>Component with id %1 has been defined previously.</source>
+        <translation>Komponenta z ID-jem %1 je že bila definirana.</translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>element %1 already defined</source>
-        <translation>element %1 je že definiran</translation>
+        <source>Element %1 already defined.</source>
+        <translation>Element %1 je že definiran.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>attribute %1 already defined</source>
-        <translation>lastnost %1 je že definirana</translation>
+        <source>Attribute %1 already defined.</source>
+        <translation>Lastnost %1 je že definirana.</translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>type %1 already defined</source>
-        <translation>vrsta %1 je že definirana</translation>
+        <source>Type %1 already defined.</source>
+        <translation>Vrsta %1 je že definirana.</translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>attribute group %1 already defined</source>
-        <translation>skupina lastnosti %1 je že definirana</translation>
+        <source>Attribute group %1 already defined.</source>
+        <translation>Skupina lastnosti %1 je že definirana.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>element group %1 already defined</source>
-        <translation>skupina elementov %1 je že definirana</translation>
+        <source>Element group %1 already defined.</source>
+        <translation>Skupina elementov %1 je že definirana.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>notation %1 already defined</source>
-        <translation>zapis %1 je že definiran</translation>
+        <source>Notation %1 already defined.</source>
+        <translation>Zapis %1 je že definiran.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>identity constraint %1 already defined</source>
+        <source>Identity constraint %1 already defined.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>duplicated facets in simple type %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/xmlpatterns/schema/qxsdschemaresolver.cpp" line="+354"/>
-        <source>%1 references unknown %2 or %3 element %4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>%1 references identity constraint %2 that is no %3 or %4 element</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>%1 has a different number of fields from the identity constraint %2 that it references</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+23"/>
-        <source>base type %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+84"/>
-        <source>item type %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+31"/>
-        <source>member type %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+28"/>
-        <location line="+408"/>
-        <location line="+30"/>
-        <source>type %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-416"/>
-        <source>base type %1 of complex type cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>%1 cannot have complex base type that has a %2</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location line="+279"/>
-        <source>content model of complex type %1 contains %2 element so it cannot be derived by extension from a non-empty type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+6"/>
-        <source>complex type %1 cannot be derived by extension from %2 as the latter contains %3 element in its content model</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+101"/>
-        <source>type of %1 element must be a simple type, %2 is not</source>
-        <translation>vrsta elementa %1 mora biti preprosta, %2 to ni</translation>
-    </message>
-    <message>
-        <location line="+62"/>
-        <source>substitution group %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+9"/>
-        <source>substitution group %1 has circular definition</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+120"/>
-        <location line="+7"/>
-        <source>duplicated element names %1 in %2 element</source>
-        <translation>podvojeni imeni elementov %1 v elementu %2</translation>
-    </message>
-    <message>
-        <location line="+29"/>
-        <location line="+52"/>
-        <location line="+71"/>
-        <location line="+28"/>
-        <source>reference %1 of %2 element cannot be resolved</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="-138"/>
-        <source>circular group reference for %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+16"/>
-        <source>%1 element is not allowed in this scope</source>
-        <translation>element %1 v tem obsegu ni dovoljen</translation>
-    </message>
-    <message>
-        <location line="+5"/>
-        <source>%1 element cannot have %2 attribute with value other than %3</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+8"/>
-        <source>%1 element cannot have %2 attribute with value other than %3 or %4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+91"/>
-        <source>%1 or %2 attribute of reference %3 does not match with the attribute declaration %4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+25"/>
-        <source>attribute group %1 has circular reference</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+131"/>
-        <source>%1 attribute in %2 must have %3 use like in base type %4</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+52"/>
-        <source>attribute wildcard of %1 is not a valid restriction of attribute wildcard of base type %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+7"/>
-        <source>%1 has attribute wildcard but its base type %2 has not</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+26"/>
-        <source>union of attribute wildcard of type %1 and attribute wildcard of its base type %2 is not expressible</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+48"/>
-        <source>enumeration facet contains invalid content: {%1} is not a value of type %2</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+10"/>
-        <source>namespace prefix of qualified name %1 is not defined</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location line="+51"/>
-        <location line="+18"/>
-        <source>%1 element %2 is not a valid restriction of the %3 element it redefines: %4</source>
+        <source>Duplicated facets in simple type %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/schema/qxsdtypechecker.cpp" line="+233"/>
         <location line="+7"/>
         <location line="+21"/>
-        <source>%1 is not valid according to %2</source>
-        <translation>%1 glede na %2 ni veljaven</translation>
+        <source>%1 is not valid according to %2.</source>
+        <translation>%1 glede na %2 ni veljaven.</translation>
     </message>
     <message>
         <location line="+167"/>
-        <source>string content does not match the length facet</source>
+        <source>String content does not match the length facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>string content does not match the minLength facet</source>
+        <source>String content does not match the minLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>string content does not match the maxLength facet</source>
+        <source>String content does not match the maxLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>string content does not match pattern facet</source>
+        <source>String content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>string content is not listed in the enumeration facet</source>
+        <source>String content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>signed integer content does not match the maxInclusive facet</source>
+        <source>Signed integer content does not match the maxInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>signed integer content does not match the maxExclusive facet</source>
+        <source>Signed integer content does not match the maxExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>signed integer content does not match the minInclusive facet</source>
+        <source>Signed integer content does not match the minInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>signed integer content does not match the minExclusive facet</source>
+        <source>Signed integer content does not match the minExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>signed integer content is not listed in the enumeration facet</source>
+        <source>Signed integer content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>signed integer content does not match pattern facet</source>
+        <source>Signed integer content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>signed integer content does not match in the totalDigits facet</source>
+        <source>Signed integer content does not match in the totalDigits facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>unsigned integer content does not match the maxInclusive facet</source>
+        <source>Unsigned integer content does not match the maxInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>unsigned integer content does not match the maxExclusive facet</source>
+        <source>Unsigned integer content does not match the maxExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>unsigned integer content does not match the minInclusive facet</source>
+        <source>Unsigned integer content does not match the minInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>unsigned integer content does not match the minExclusive facet</source>
+        <source>Unsigned integer content does not match the minExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>unsigned integer content is not listed in the enumeration facet</source>
+        <source>Unsigned integer content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>unsigned integer content does not match pattern facet</source>
+        <source>Unsigned integer content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>unsigned integer content does not match in the totalDigits facet</source>
+        <source>Unsigned integer content does not match in the totalDigits facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>double content does not match the maxInclusive facet</source>
+        <source>Double content does not match the maxInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>double content does not match the maxExclusive facet</source>
+        <source>Double content does not match the maxExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>double content does not match the minInclusive facet</source>
+        <source>Double content does not match the minInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>double content does not match the minExclusive facet</source>
+        <source>Double content does not match the minExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>double content is not listed in the enumeration facet</source>
+        <source>Double content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>double content does not match pattern facet</source>
+        <source>Double content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>decimal content does not match in the fractionDigits facet</source>
+        <source>Decimal content does not match in the fractionDigits facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>decimal content does not match in the totalDigits facet</source>
+        <source>Decimal content does not match in the totalDigits facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+14"/>
-        <source>date time content does not match the maxInclusive facet</source>
+        <source>Date time content does not match the maxInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>date time content does not match the maxExclusive facet</source>
+        <source>Date time content does not match the maxExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>date time content does not match the minInclusive facet</source>
+        <source>Date time content does not match the minInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>date time content does not match the minExclusive facet</source>
+        <source>Date time content does not match the minExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>date time content is not listed in the enumeration facet</source>
+        <source>Date time content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>date time content does not match pattern facet</source>
+        <source>Date time content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>duration content does not match the maxInclusive facet</source>
+        <source>Duration content does not match the maxInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>duration content does not match the maxExclusive facet</source>
+        <source>Duration content does not match the maxExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>duration content does not match the minInclusive facet</source>
+        <source>Duration content does not match the minInclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>duration content does not match the minExclusive facet</source>
+        <source>Duration content does not match the minExclusive facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>duration content is not listed in the enumeration facet</source>
+        <source>Duration content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>duration content does not match pattern facet</source>
+        <source>Duration content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+27"/>
-        <source>boolean content does not match pattern facet</source>
+        <source>Boolean content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>binary content does not match the length facet</source>
+        <source>Binary content does not match the length facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>binary content does not match the minLength facet</source>
+        <source>Binary content does not match the minLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>binary content does not match the maxLength facet</source>
+        <source>Binary content does not match the maxLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>binary content is not listed in the enumeration facet</source>
+        <source>Binary content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+27"/>
-        <source>invalid QName content: %1</source>
-        <translation>neveljavna vsebina QName: %1</translation>
+        <source>Invalid QName content: %1.</source>
+        <translation>Neveljavna vsebina QName: %1.</translation>
     </message>
     <message>
         <location line="+17"/>
-        <source>QName content is not listed in the enumeration facet</source>
+        <source>QName content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>QName content does not match pattern facet</source>
+        <source>QName content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+36"/>
-        <source>notation content is not listed in the enumeration facet</source>
+        <source>Notation content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+19"/>
-        <source>list content does not match length facet</source>
+        <source>List content does not match length facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>list content does not match minLength facet</source>
+        <source>List content does not match minLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>list content does not match maxLength facet</source>
+        <source>List content does not match maxLength facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+90"/>
-        <source>list content is not listed in the enumeration facet</source>
+        <source>List content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>list content does not match pattern facet</source>
+        <source>List content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+39"/>
-        <source>union content is not listed in the enumeration facet</source>
+        <source>Union content is not listed in the enumeration facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>union content does not match pattern facet</source>
+        <source>Union content does not match pattern facet.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+15"/>
-        <source>data of type %1 are not allowed to be empty</source>
-        <translation>podatki vrste %1 ne smejo biti prazni</translation>
+        <source>Data of type %1 are not allowed to be empty.</source>
+        <translation>Podatki vrste %1 ne smejo biti prazni.</translation>
     </message>
     <message>
         <location filename="../src/xmlpatterns/schema/qxsdvalidatinginstancereader.cpp" line="+160"/>
-        <source>element %1 is missing child element</source>
-        <translation>elementu %1 manjka podelement</translation>
+        <source>Element %1 is missing child element.</source>
+        <translation>Elementu %1 manjka podelement.</translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>there is one IDREF value with no corresponding ID: %1</source>
+        <source>There is one IDREF value with no corresponding ID: %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+27"/>
-        <source>loaded schema file is invalid</source>
+        <source>Loaded schema file is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>%1 contains invalid data</source>
-        <translation>%1 vsebuje neveljavne podatke</translation>
+        <source>%1 contains invalid data.</source>
+        <translation>%1 vsebuje neveljavne podatke.</translation>
     </message>
     <message>
         <location line="+13"/>
-        <source>xsi:schemaLocation namespace %1 has already appeared earlier in the instance document</source>
+        <source>xsi:schemaLocation namespace %1 has already appeared earlier in the instance document.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+22"/>
-        <source>xsi:noNamespaceSchemaLocation cannot appear after the first no-namespace element or attribute</source>
+        <source>xsi:noNamespaceSchemaLocation cannot appear after the first no-namespace element or attribute.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>no schema defined for validation</source>
+        <source>No schema defined for validation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+10"/>
-        <source>no definition for element %1 available</source>
-        <translation>definicija za element %1 ni na voljo</translation>
+        <source>No definition for element %1 available.</source>
+        <translation>Definicija za element %1 ni na voljo.</translation>
     </message>
     <message>
         <location line="+18"/>
         <location line="+49"/>
         <location line="+142"/>
-        <source>specified type %1 is not known to the schema</source>
+        <source>Specified type %1 is not known to the schema.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-176"/>
-        <source>element %1 is not defined in this scope</source>
-        <translation>element %1 v tem obsegu ni definiran</translation>
+        <source>Element %1 is not defined in this scope.</source>
+        <translation>Element %1 v tem obsegu ni definiran.</translation>
     </message>
     <message>
         <location line="+43"/>
-        <source>declaration for element %1 does not exist</source>
-        <translation>deklaracija elementa %1 ne obstaja</translation>
+        <source>Declaration for element %1 does not exist.</source>
+        <translation>Deklaracija elementa %1 ne obstaja.</translation>
     </message>
     <message>
         <location line="+12"/>
-        <source>element %1 contains invalid content</source>
-        <translation>element %1 vsebuje neveljavno vsebino</translation>
+        <source>Element %1 contains invalid content.</source>
+        <translation>Element %1 vsebuje neveljavno vsebino.</translation>
     </message>
     <message>
         <location line="+73"/>
-        <source>element %1 is declared as abstract</source>
-        <translation>element %1 je deklariran kot abstrakten</translation>
+        <source>Element %1 is declared as abstract.</source>
+        <translation>Element %1 je deklariran kot abstrakten.</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>element %1 is not nillable</source>
+        <source>Element %1 is not nillable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>attribute %1 contains invalid data: %2</source>
-        <translation type="unfinished"></translation>
+        <source>Attribute %1 contains invalid data: %2</source>
+        <translation>Lastnost %1 vsebuje neveljavne podatke: %2</translation>
     </message>
     <message>
         <location line="+8"/>
-        <source>element contains content although it is nillable</source>
+        <source>Element contains content although it is nillable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>fixed value constrained not allowed if element is nillable</source>
+        <source>Fixed value constrained not allowed if element is nillable.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+32"/>
-        <source>specified type %1 is not validly substitutable with element type %2</source>
+        <source>Specified type %1 is not validly substitutable with element type %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+23"/>
-        <source>complex type %1 is not allowed to be abstract</source>
-        <translation>kompleksna vrsta %1 ne sme biti abstraktna</translation>
+        <source>Complex type %1 is not allowed to be abstract.</source>
+        <translation>Kompleksna vrsta %1 ne sme biti abstraktna.</translation>
     </message>
     <message>
         <location line="+21"/>
-        <source>element %1 contains not allowed attributes</source>
-        <translation>element %1 vsebuje nedovoljene lastnosti</translation>
+        <source>Element %1 contains not allowed attributes.</source>
+        <translation>Element %1 vsebuje nedovoljene lastnosti.</translation>
     </message>
     <message>
         <location line="+6"/>
         <location line="+97"/>
-        <source>element %1 contains not allowed child element</source>
-        <translation>element %1 vsebuje nedovoljen podelement</translation>
+        <source>Element %1 contains not allowed child element.</source>
+        <translation>Element %1 vsebuje nedovoljen podelement.</translation>
     </message>
     <message>
         <location line="-76"/>
         <location line="+93"/>
-        <source>content of element %1 does not match its type definition: %2</source>
-        <translation>vsebina elementa %1 ne ustreza zanj določeni vrsti: %2</translation>
+        <source>Content of element %1 does not match its type definition: %2.</source>
+        <translation>Vsebina elementa %1 ne ustreza zanj določeni vrsti: %2.</translation>
     </message>
     <message>
         <location line="-85"/>
         <location line="+92"/>
         <location line="+41"/>
-        <source>content of element %1 does not match defined value constraint</source>
+        <source>Content of element %1 does not match defined value constraint.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-73"/>
-        <source>element %1 contains not allowed child content</source>
-        <translation>element %1 vsebuje nedovoljeno vsebino v podelementih</translation>
+        <source>Element %1 contains not allowed child content.</source>
+        <translation>Element %1 vsebuje nedovoljeno vsebino v podelementih.</translation>
     </message>
     <message>
         <location line="+41"/>
-        <source>element %1 contains not allowed text content</source>
-        <translation>element %1 vsebuje nedovoljeno besedilno vsebino</translation>
+        <source>Element %1 contains not allowed text content.</source>
+        <translation>Element %1 vsebuje nedovoljeno besedilno vsebino.</translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>element %1 can not contain other elements, as it has a fixed content</source>
-        <translation>element %1 ne more vsebovati drugih elementov, ker ima fiksno vsebino</translation>
+        <source>Element %1 can not contain other elements, as it has a fixed content.</source>
+        <translation>Element %1 ne more vsebovati drugih elementov, ker ima fiksno vsebino.</translation>
     </message>
     <message>
         <location line="+43"/>
-        <source>element %1 is missing required attribute %2</source>
-        <translation>elementu %1 manjka obvezna lastnost %2</translation>
+        <source>Element %1 is missing required attribute %2.</source>
+        <translation>Elementu %1 manjka obvezna lastnost %2.</translation>
     </message>
     <message>
         <location line="+29"/>
-        <source>attribute %1 does not match the attribute wildcard</source>
+        <source>Attribute %1 does not match the attribute wildcard.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+9"/>
-        <source>declaration for attribute %1 does not exist</source>
-        <translation>deklaracija lastnosti %1 ne obstaja</translation>
+        <source>Declaration for attribute %1 does not exist.</source>
+        <translation>Deklaracija lastnosti %1 ne obstaja.</translation>
     </message>
     <message>
         <location line="+6"/>
-        <source>element %1 contains two attributes of type %2</source>
-        <translation>element %1 vsebuje dve lastnosti vrste %2</translation>
+        <source>Element %1 contains two attributes of type %2.</source>
+        <translation>Element %1 vsebuje dve lastnosti vrste %2.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <source>attribute %1 contains invalid content</source>
-        <translation>lastnost %1 vsebuje neveljavno vsebino</translation>
+        <source>Attribute %1 contains invalid content.</source>
+        <translation>Lastnost %1 vsebuje neveljavno vsebino.</translation>
     </message>
     <message>
         <location line="+7"/>
-        <source>element %1 contains unknown attribute %2</source>
-        <translation>element %1 vsebuje neznano lastnost %2</translation>
+        <source>Element %1 contains unknown attribute %2.</source>
+        <translation>Element %1 vsebuje neznano lastnost %2.</translation>
     </message>
     <message>
         <location line="+40"/>
         <location line="+46"/>
-        <source>content of attribute %1 does not match its type definition: %2</source>
+        <source>Content of attribute %1 does not match its type definition: %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="-38"/>
         <location line="+46"/>
-        <source>content of attribute %1 does not match defined value constraint</source>
+        <source>Content of attribute %1 does not match defined value constraint.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+88"/>
-        <source>non-unique value found for constraint %1</source>
+        <source>Non-unique value found for constraint %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>key constraint %1 contains absent fields</source>
+        <source>Key constraint %1 contains absent fields.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+18"/>
-        <source>key constraint %1 contains references nillable element %2</source>
+        <source>Key constraint %1 contains references nillable element %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+40"/>
-        <source>no referenced value found for key reference %1</source>
+        <source>No referenced value found for key reference %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location line="+64"/>
-        <source>more than one value found for field %1</source>
-        <translation>za polje %1 je bila najdena več kot ena vrednost</translation>
+        <source>More than one value found for field %1.</source>
+        <translation>Za polje %1 je bila najdena več kot ena vrednost.</translation>
     </message>
     <message>
         <location line="+20"/>
-        <source>field %1 has no simple type</source>
-        <translation>polje %1 nima preproste vrste</translation>
+        <source>Field %1 has no simple type.</source>
+        <translation>Polje %1 nima preproste vrste.</translation>
     </message>
     <message>
         <location line="+73"/>
-        <source>ID value &apos;%1&apos; is not unique</source>
-        <translation>Vrednost ID »%1« ni edinstvena</translation>
+        <source>ID value &apos;%1&apos; is not unique.</source>
+        <translation>Vrednost ID »%1« ni edinstvena.</translation>
     </message>
     <message>
         <location line="+11"/>
+        <source>&apos;%1&apos; attribute contains invalid QName content: %2.</source>
+        <translation>Lastnost »%1« vsebuje neveljavno vsebino QName: %2.</translation>
+    </message>
+    <message>
+        <location filename="Obsolete_PO_entries"/>
+        <source>attribute group %1 contains attribute %2 twice</source>
+        <translation type="obsolete">skupina lastnosti %1 dvakrat vsebuje lastnost %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>complex type %1 contains attribute %2 twice</source>
+        <translation type="obsolete">kompleksna vrsta %1 dvakrat vsebuje lastnost %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 exists twice with different types</source>
+        <translation type="obsolete">element %1 obstaja dvakrat, z različnima vrstama</translation>
+    </message>
+    <message>
+        <location/>
+        <source>can not process unknown element %1, expected elements are: %2</source>
+        <translation type="obsolete">ni moč obdelati neznanega elementa %1, pričakovani elementi so: %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 is not allowed in this scope, possible elements are: %2</source>
+        <translation type="obsolete">element %1 v tem obsegu ni dovoljen, možni elementi so: %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>child element is missing in that scope, possible child elements are: %1</source>
+        <translation type="obsolete">v tem obsegu manjka podelement, možni podelementi so: %1</translation>
+    </message>
+    <message>
+        <location/>
+        <source>document is not a XML schema</source>
+        <translation type="obsolete">dokument ni shema XML</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element contains invalid content: {%3} is not a value of type %4</source>
+        <translation type="obsolete">lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3} ni vrednost vrste %4</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element contains invalid content: {%3}</source>
+        <translation type="obsolete">lastnost %1 elementa %2 vsebuje neveljavno vsebino: {%3}</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element is not allowed inside %2 element if %3 attribute is present</source>
+        <translation type="obsolete">element %1 znotraj elementa %2 ni dovoljen, če je prisotna lastnost %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element has neither %2 attribute nor %3 child element</source>
+        <translation type="obsolete">element %1 nima niti lastnosti %2 niti podelementa %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element with %2 child element must not have a %3 attribute</source>
+        <translation type="obsolete">element %1 s podelementom %2 ne sme imeti lastnosti %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element must be %3 or %4</source>
+        <translation type="obsolete">lastnost %1 elementa %2 mora biti %3 ali %4</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element must have a value of %3</source>
+        <translation type="obsolete">lastnost %1 elementa %2 mora imeti vrednost %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element must have a value of %3 or %4</source>
+        <translation type="obsolete">lastnost %1 elementa %2 mora imeti vrednost %3 ali %4</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element must not have %2 and %3 attribute together</source>
+        <translation type="obsolete">element %1 hkrati ne sme imeti lastnosti %2 in %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>content of %1 attribute of %2 element must not be from namespace %3</source>
+        <translation type="obsolete">vsebina lastnosti %1 elementa %2 ne sme biti iz imenskega prostora %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 attribute of %2 element must not be %3</source>
+        <translation type="obsolete">lastnost %1 elementa %2 ne sme biti %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element must have either %2 or %3 attribute</source>
+        <translation type="obsolete">element %1 mora imeti lastnost %2 ali %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element requires either %2 or %3 attribute</source>
+        <translation type="obsolete">element %1 potrebuje vsaj lastnost %2 ali %3</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 element is not allowed in this context</source>
+        <translation type="obsolete">element %1 v tem kontekstu ni dovoljen</translation>
+    </message>
+    <message>
+        <location/>
+        <source>component with id %1 has been defined previously</source>
+        <translation type="obsolete">komponenta z ID-jem %1 je že bila definirana</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 already defined</source>
+        <translation type="obsolete">element %1 je že definiran</translation>
+    </message>
+    <message>
+        <location/>
+        <source>attribute %1 already defined</source>
+        <translation type="obsolete">lastnost %1 je že definirana</translation>
+    </message>
+    <message>
+        <location/>
+        <source>type %1 already defined</source>
+        <translation type="obsolete">vrsta %1 je že definirana</translation>
+    </message>
+    <message>
+        <location/>
+        <source>attribute group %1 already defined</source>
+        <translation type="obsolete">skupina lastnosti %1 je že definirana</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element group %1 already defined</source>
+        <translation type="obsolete">skupina elementov %1 je že definirana</translation>
+    </message>
+    <message>
+        <location/>
+        <source>notation %1 already defined</source>
+        <translation type="obsolete">zapis %1 je že definiran</translation>
+    </message>
+    <message>
+        <location/>
+        <source>type of %1 element must be a simple type, %2 is not</source>
+        <translation type="obsolete">vrsta elementa %1 mora biti preprosta, %2 to ni</translation>
+    </message>
+    <message>
+        <location/>
+        <source>duplicated element names %1 in %2 element</source>
+        <translation type="obsolete">podvojeni imeni elementov %1 v elementu %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 is not valid according to %2</source>
+        <translation type="obsolete">%1 glede na %2 ni veljaven</translation>
+    </message>
+    <message>
+        <location/>
+        <source>invalid QName content: %1</source>
+        <translation type="obsolete">neveljavna vsebina QName: %1</translation>
+    </message>
+    <message>
+        <location/>
+        <source>data of type %1 are not allowed to be empty</source>
+        <translation type="obsolete">podatki vrste %1 ne smejo biti prazni</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 is missing child element</source>
+        <translation type="obsolete">elementu %1 manjka podelement</translation>
+    </message>
+    <message>
+        <location/>
+        <source>%1 contains invalid data</source>
+        <translation type="obsolete">%1 vsebuje neveljavne podatke</translation>
+    </message>
+    <message>
+        <location/>
+        <source>no definition for element %1 available</source>
+        <translation type="obsolete">definicija za element %1 ni na voljo</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 is not defined in this scope</source>
+        <translation type="obsolete">element %1 v tem obsegu ni definiran</translation>
+    </message>
+    <message>
+        <location/>
+        <source>declaration for element %1 does not exist</source>
+        <translation type="obsolete">deklaracija elementa %1 ne obstaja</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains invalid content</source>
+        <translation type="obsolete">element %1 vsebuje neveljavno vsebino</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 is declared as abstract</source>
+        <translation type="obsolete">element %1 je deklariran kot abstrakten</translation>
+    </message>
+    <message>
+        <location/>
+        <source>complex type %1 is not allowed to be abstract</source>
+        <translation type="obsolete">kompleksna vrsta %1 ne sme biti abstraktna</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains not allowed attributes</source>
+        <translation type="obsolete">element %1 vsebuje nedovoljene lastnosti</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains not allowed child element</source>
+        <translation type="obsolete">element %1 vsebuje nedovoljen podelement</translation>
+    </message>
+    <message>
+        <location/>
+        <source>content of element %1 does not match its type definition: %2</source>
+        <translation type="obsolete">vsebina elementa %1 ne ustreza zanj določeni vrsti: %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains not allowed child content</source>
+        <translation type="obsolete">element %1 vsebuje nedovoljeno vsebino v podelementih</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains not allowed text content</source>
+        <translation type="obsolete">element %1 vsebuje nedovoljeno besedilno vsebino</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 can not contain other elements, as it has a fixed content</source>
+        <translation type="obsolete">element %1 ne more vsebovati drugih elementov, ker ima fiksno vsebino</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 is missing required attribute %2</source>
+        <translation type="obsolete">elementu %1 manjka obvezna lastnost %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>declaration for attribute %1 does not exist</source>
+        <translation type="obsolete">deklaracija lastnosti %1 ne obstaja</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains two attributes of type %2</source>
+        <translation type="obsolete">element %1 vsebuje dve lastnosti vrste %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>attribute %1 contains invalid content</source>
+        <translation type="obsolete">lastnost %1 vsebuje neveljavno vsebino</translation>
+    </message>
+    <message>
+        <location/>
+        <source>element %1 contains unknown attribute %2</source>
+        <translation type="obsolete">element %1 vsebuje neznano lastnost %2</translation>
+    </message>
+    <message>
+        <location/>
+        <source>more than one value found for field %1</source>
+        <translation type="obsolete">za polje %1 je bila najdena več kot ena vrednost</translation>
+    </message>
+    <message>
+        <location/>
+        <source>field %1 has no simple type</source>
+        <translation type="obsolete">polje %1 nima preproste vrste</translation>
+    </message>
+    <message>
+        <location/>
+        <source>ID value &apos;%1&apos; is not unique</source>
+        <translation type="obsolete">Vrednost ID »%1« ni edinstvena</translation>
+    </message>
+    <message>
+        <location/>
         <source>&apos;%1&apos; attribute contains invalid QName content: %2</source>
-        <translation>Lastnost »%1« vsebuje neveljavno vsebino QName: %2</translation>
+        <translation type="obsolete">Lastnost »%1« vsebuje neveljavno vsebino QName: %2</translation>
     </message>
 </context>
 </TS>

@@ -525,6 +525,14 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
 
     item->d_func()->scene = 0;
 
+    //We need to remove all children first because they might use their parent
+    //attributes (e.g. sceneTransform).
+    if (!item->d_ptr->inDestructor) {
+        // Remove all children recursively
+        for (int i = 0; i < item->d_ptr->children.size(); ++i)
+            q->removeItem(item->d_ptr->children.at(i));
+    }
+
     // Unregister focus proxy.
     item->d_ptr->resetFocusProxy();
 
@@ -569,12 +577,6 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
             iterator = sceneEventFilters.erase(iterator);
         else
             ++iterator;
-    }
-
-    if (!item->d_ptr->inDestructor) {
-        // Remove all children recursively
-        for (int i = 0; i < item->d_ptr->children.size(); ++i)
-            q->removeItem(item->d_ptr->children.at(i));
     }
 
     if (item->isPanel() && item->isVisible() && item->panelModality() != QGraphicsItem::NonModal)
@@ -691,6 +693,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
         focusItem = 0;
         sendEvent(lastFocusItem, &event);
 
+#ifndef QT_NO_IM
         if (lastFocusItem
             && (lastFocusItem->flags() & QGraphicsItem::ItemAcceptsInputMethod)) {
             // Reset any visible preedit text
@@ -706,6 +709,7 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
                     views.at(i)->inputContext()->reset();
             }
         }
+#endif //QT_NO_IM
     }
 
     if (item) {
@@ -4909,7 +4913,7 @@ void QGraphicsScenePrivate::processDirtyItemsRecursive(QGraphicsItem *item, bool
                     continue;
                 }
 
-                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint && !paintedViewBoundingRect.isEmpty()) {
+                if (item->d_ptr->paintedViewBoundingRectsNeedRepaint) {
                     paintedViewBoundingRect.translate(viewPrivate->dirtyScrollOffset);
                     if (!viewPrivate->updateRect(paintedViewBoundingRect))
                         paintedViewBoundingRect = QRect(-1, -1, -1, -1); // Outside viewport.

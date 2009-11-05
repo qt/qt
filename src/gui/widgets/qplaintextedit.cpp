@@ -1622,7 +1622,6 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
             return;
         }
     }
-#endif // QT_NO_SHORTCUT
 
     if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
@@ -1650,6 +1649,7 @@ void QPlainTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
+#endif // QT_NO_SHORTCUT
 
     d->sendControlEvent(e);
 #ifdef QT_KEYPAD_NAVIGATION

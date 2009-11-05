@@ -63,31 +63,49 @@ class XSSAuditor;
 typedef HashMap<void*, RefPtr<JSC::Bindings::RootObject> > RootObjectMap;
 
 class ScriptController {
+    typedef WTF::HashMap<DOMWrapperWorld*, JSC::ProtectedPtr<JSDOMWindowShell> > ShellMap;
+
 public:
     ScriptController(Frame*);
     ~ScriptController();
 
-    bool haveWindowShell() const { return m_windowShell; }
-    JSDOMWindowShell* windowShell()
+    JSDOMWindowShell* windowShell(DOMWrapperWorld* world)
     {
-        initScriptIfNeeded();
-        return m_windowShell;
+        ShellMap::iterator iter = m_windowShells.find(world);
+        return (iter != m_windowShells.end()) ? iter->second.get() : initScript(world);
     }
-
-    JSDOMWindow* globalObject()
+    JSDOMWindowShell* existingWindowShell(DOMWrapperWorld* world) const
     {
-        initScriptIfNeeded();
-        return m_windowShell->window();
+        ShellMap::const_iterator iter = m_windowShells.find(world);
+        return (iter != m_windowShells.end()) ? iter->second.get() : 0;
+    }
+    JSDOMWindow* globalObject(DOMWrapperWorld* world)
+    {
+        return windowShell(world)->window();
+    }
+    JSDOMWindow* globalObject(unsigned worldID);
+
+    void forgetWorld(DOMWrapperWorld* world)
+    {
+        m_windowShells.remove(world);
     }
 
     ScriptValue executeScript(const ScriptSourceCode&);
     ScriptValue executeScript(const String& script, bool forceUserGesture = false);
+    ScriptValue executeScriptInIsolatedWorld(unsigned worldID, const String& script, bool forceUserGesture = false);
+    ScriptValue executeScriptInIsolatedWorld(DOMWrapperWorld* world, const String& script, bool forceUserGesture = false);
 
     // Returns true if argument is a JavaScript URL.
     bool executeIfJavaScriptURL(const KURL&, bool userGesture = false, bool replaceDocument = true);
 
+    // This function must be called from the main thread. It is safe to call it repeatedly.
+    // Darwin is an exception to this rule: it is OK to call this function from any thread, even reentrantly.
+    static void initializeThreading();
+
     ScriptValue evaluate(const ScriptSourceCode&);
-    void evaluateInIsolatedWorld(unsigned worldID, const Vector<ScriptSourceCode>&);
+    ScriptValue evaluateInWorld(const ScriptSourceCode&, DOMWrapperWorld*);
+    ScriptValue evaluateInIsolatedWorld(unsigned /*worldID*/, const ScriptSourceCode&);
+    void evaluateInIsolatedWorld(unsigned /*worldID*/, const Vector<ScriptSourceCode>&);
 
     void setEventHandlerLineNumber(int lineno) { m_handlerLineNumber = lineno; }
     int eventHandlerLineNumber() { return m_handlerLineNumber; }
@@ -144,19 +162,14 @@ public:
     XSSAuditor* xssAuditor() { return m_XSSAuditor.get(); }
 
 private:
-    void initScriptIfNeeded()
-    {
-        if (!m_windowShell)
-            initScript();
-    }
-    void initScript();
+    JSDOMWindowShell* initScript(DOMWrapperWorld* world);
 
     void disconnectPlatformScriptObjects();
 
     bool processingUserGestureEvent() const;
     bool isJavaScriptAnchorNavigation() const;
 
-    JSC::ProtectedPtr<JSDOMWindowShell> m_windowShell;
+    ShellMap m_windowShells;
     Frame* m_frame;
     int m_handlerLineNumber;
     const String* m_sourceURL;

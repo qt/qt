@@ -607,7 +607,7 @@ public:
         return item->type() == QGraphicsPixmapItem::Type
                && !(item->flags() & QGraphicsItem::ItemIsSelectable)
                && item->d_ptr->children.size() == 0;
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const

@@ -59,9 +59,9 @@ extern bool qt_wince_is_pocket_pc();  //qguifunctions_wince.cpp
 
 
 #if defined(Q_WS_X11)
-#include "qkde_p.h"
-#include "qt_x11_p.h"
-#include <private/gtksymbols_p.h>
+#include <private/qkde_p.h>
+#include <private/qgtkstyle_p.h>
+#include <private/qt_x11_p.h>
 #endif
 
 
@@ -206,7 +206,7 @@ QString QGuiPlatformPlugin::systemIconThemeName()
     if (X11->desktopEnvironment == DE_GNOME) {
         result = QString::fromLatin1("gnome");
 #ifndef QT_NO_STYLE_GTK
-        result = QGtk::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"), result);
+        result = QGtkStylePrivate::getGConfString(QLatin1String("/desktop/gnome/interface/icon_theme"), result);
 #endif
     } else if (X11->desktopEnvironment == DE_KDE) {
         result =  X11->desktopVersion >= 4 ? QString::fromLatin1("oxygen") : QString::fromLatin1("crystalsvg");
@@ -287,6 +287,8 @@ int QGuiPlatformPlugin::platformHint(PlatformHint hint)
             }
 #endif
             //by default keep ret = 0 so QCommonStyle will use the style default
+            break;
+        default:
             break;
     }
     return ret;

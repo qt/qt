@@ -66,12 +66,7 @@ public:
     enum ShaderTypeBits
     {
         VertexShader            = 0x0001,
-        FragmentShader          = 0x0002,
-
-        PartialShader           = 0x1000,
-
-        PartialVertexShader     = PartialShader | VertexShader,
-        PartialFragmentShader   = PartialShader | FragmentShader
+        FragmentShader          = 0x0002
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBits)
 
@@ -100,8 +95,6 @@ private:
 
     Q_DISABLE_COPY(QGLShader)
     Q_DECLARE_PRIVATE(QGLShader)
-
-    bool compile(const QList<QGLShader *>& shaders, QGLShader::ShaderType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
@@ -187,6 +180,17 @@ public:
     int uniformLocation(const char *name) const;
     int uniformLocation(const QByteArray& name) const;
     int uniformLocation(const QString& name) const;
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setUniformValue(int location, QMacCompatGLint value);
+    void setUniformValue(int location, QMacCompatGLuint value);
+    void setUniformValue(const char *name, QMacCompatGLint value);
+    void setUniformValue(const char *name, QMacCompatGLuint value);
+    void setUniformValueArray(int location, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(int location, const QMacCompatGLuint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count);
+#endif
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);

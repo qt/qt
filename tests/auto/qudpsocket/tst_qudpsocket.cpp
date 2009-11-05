@@ -719,6 +719,8 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(serverProcess.waitForStarted(3000),
+             qPrintable("Failed to start subprocess: " + serverProcess.errorString()));
 
     // Wait until the server has started and reports success.
     while (!serverProcess.canReadLine())
@@ -732,6 +734,9 @@ void tst_QUdpSocket::outOfProcessConnectedClientServerTest()
     clientProcess.start(QString::fromLatin1("clientserver/clientserver connectedclient %1 %2")
                         .arg(QLatin1String("127.0.0.1")).arg(serverPort),
                         QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(clientProcess.waitForStarted(3000),
+             qPrintable("Failed to start subprocess: " + clientProcess.errorString()));
+
     // Wait until the server has started and reports success.
     while (!clientProcess.canReadLine())
         QVERIFY(clientProcess.waitForReadyRead(3000));
@@ -779,6 +784,8 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     QProcess serverProcess;
     serverProcess.start(QLatin1String("clientserver/clientserver server 1 1"),
                         QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(serverProcess.waitForStarted(3000),
+             qPrintable("Failed to start subprocess: " + serverProcess.errorString()));
 
     // Wait until the server has started and reports success.
     while (!serverProcess.canReadLine())
@@ -792,6 +799,9 @@ void tst_QUdpSocket::outOfProcessUnconnectedClientServerTest()
     clientProcess.start(QString::fromLatin1("clientserver/clientserver unconnectedclient %1 %2")
                         .arg(QLatin1String("127.0.0.1")).arg(serverPort),
                         QIODevice::ReadWrite | QIODevice::Text);
+    QVERIFY2(clientProcess.waitForStarted(3000),
+             qPrintable("Failed to start subprocess: " + clientProcess.errorString()));
+
     // Wait until the server has started and reports success.
     while (!clientProcess.canReadLine())
         QVERIFY(clientProcess.waitForReadyRead(3000));

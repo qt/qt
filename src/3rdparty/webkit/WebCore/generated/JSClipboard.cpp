@@ -145,7 +145,7 @@ JSClipboard::JSClipboard(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 
 JSClipboard::~JSClipboard()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSClipboard::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

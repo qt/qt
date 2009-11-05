@@ -468,7 +468,10 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
 }
 
 /*!
-    \reimp
+    \since 4.6
+    Sets the given \a option to the value described by \a value.
+
+    \sa socketOption()
 */
 void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
@@ -478,7 +481,10 @@ void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVa
 }
 
 /*!
-    \reimp
+    \since 4.6
+    Returns the value of the \a option option.
+
+    \sa setSocketOption()
 */
 QVariant QSslSocket::socketOption(QAbstractSocket::SocketOption option)
 {
@@ -713,6 +719,8 @@ void QSslSocket::close()
     qDebug() << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+    if (d->plainSocket)
+        d->plainSocket->close();
     QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:

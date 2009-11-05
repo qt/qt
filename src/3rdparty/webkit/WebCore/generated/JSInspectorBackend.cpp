@@ -214,7 +214,7 @@ JSInspectorBackend::JSInspectorBackend(NonNullPassRefPtr<Structure> structure, J
 
 JSInspectorBackend::~JSInspectorBackend()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSInspectorBackend::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

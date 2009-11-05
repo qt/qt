@@ -108,7 +108,7 @@ JSLocation::JSLocation(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSLocation::~JSLocation()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSLocation::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

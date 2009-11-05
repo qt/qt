@@ -92,7 +92,7 @@ JSSQLResultSetRowList::JSSQLResultSetRowList(NonNullPassRefPtr<Structure> struct
 
 JSSQLResultSetRowList::~JSSQLResultSetRowList()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSQLResultSetRowList::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -97,6 +97,8 @@
 */
 
 #include "qgraphicseffect_p.h"
+#include "private/qgraphicsitem_p.h"
+
 #include <QtGui/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
@@ -210,7 +212,23 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 */
 void QGraphicsEffectSource::draw(QPainter *painter)
 {
-    d_func()->draw(painter);
+    Q_D(const QGraphicsEffectSource);
+
+    QPixmap pm;
+    if (QPixmapCache::find(d->m_cacheKey, &pm)) {
+        QTransform restoreTransform;
+        if (d->m_cachedSystem == Qt::DeviceCoordinates) {
+            restoreTransform = painter->worldTransform();
+            painter->setWorldTransform(QTransform());
+        }
+
+        painter->drawPixmap(d->m_cachedOffset, pm);
+
+        if (d->m_cachedSystem == Qt::DeviceCoordinates)
+            painter->setWorldTransform(restoreTransform);
+    } else {
+        d_func()->draw(painter);
+    }
 }
 
 /*!
@@ -260,6 +278,12 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
         return ((QGraphicsPixmapItem *) item)->pixmap();
     }
 
+    if (system == Qt::DeviceCoordinates && item
+        && !static_cast<const QGraphicsItemEffectSourcePrivate *>(d_func())->info) {
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
+    }
+
     QPixmap pm;
     if (d->m_cachedSystem == system && d->m_cachedMode == mode)
         QPixmapCache::find(d->m_cacheKey, &pm);
@@ -277,6 +301,13 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
         *offset = d->m_cachedOffset;
 
     return pm;
+}
+
+void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+{
+    if (effectRectChanged && m_cachedMode != QGraphicsEffectSource::ExpandToEffectRectPadMode)
+        return;
+    QPixmapCache::remove(m_cacheKey);
 }
 
 /*!
@@ -418,7 +449,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache();
+        d->source->d_func()->invalidateCache(true);
     }
 }
 
@@ -606,6 +637,26 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 */
 
 /*!
+    \enum QGraphicsBlurEffect::BlurHint
+    \since 4.6
+
+    This enum describes the possible hints that can be used to control how
+    blur effects are applied. The hints might not have an effect in all the
+    paint engines.
+
+    \value QualityHint Indicates that rendering quality is the most important factor,
+    at the potential cost of lower performance.
+
+    \value PerformanceHint Indicates that rendering performance is the most important factor,
+    at the potential cost of lower quality.
+
+    \value AnimationHint Indicates that the blur radius is going to be animated, hinting
+    that the implementation can keep a cache of blurred verisons of the source pixmap.
+    Do not use this hint if the source item is going to be dynamically changing.
+*/
+
+
+/*!
     Constructs a new QGraphicsBlurEffect instance.
     The \a parent parameter is passed to QGraphicsEffect's constructor.
 */
@@ -613,7 +664,7 @@ QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
     Q_D(QGraphicsBlurEffect);
-    d->filter->setBlurHint(Qt::PerformanceHint);
+    d->filter->setBlurHint(QGraphicsBlurEffect::PerformanceHint);
 }
 
 /*!
@@ -660,20 +711,19 @@ void QGraphicsBlurEffect::setBlurRadius(qreal radius)
     \property QGraphicsBlurEffect::blurHint
     \brief the blur hint of the effect.
 
-    Use the Qt::PerformanceHint hint to say that you want a faster blur,
-    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
+    Use the PerformanceHint hint to say that you want a faster blur,
+    the QualityHint hint to say that you prefer a higher quality blur,
+    or the AnimationHint when you want to animate the blur radius.
 
-    When animating the blur radius it's recommended to use Qt::PerformanceHint.
-
-    By default, the blur hint is Qt::PerformanceHint.
+    By default, the blur hint is PerformanceHint.
 */
-Qt::RenderHint QGraphicsBlurEffect::blurHint() const
+QGraphicsBlurEffect::BlurHint QGraphicsBlurEffect::blurHint() const
 {
     Q_D(const QGraphicsBlurEffect);
     return d->filter->blurHint();
 }
 
-void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
+void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 {
     Q_D(QGraphicsBlurEffect);
     if (d->filter->blurHint() == hint)
@@ -684,7 +734,7 @@ void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::RenderHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::BlurHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
@@ -1042,66 +1092,36 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
         return;
     }
 
+
+    QPoint offset;
+    Qt::CoordinateSystem system = source->isPixmap() ? Qt::LogicalCoordinates : Qt::DeviceCoordinates;
+    QPixmap pixmap = source->pixmap(system, &offset, QGraphicsEffectSource::NoExpandPadMode);
+    if (pixmap.isNull())
+        return;
+
+
     painter->save();
     painter->setOpacity(d->opacity);
 
-    QPoint offset;
-    if (source->isPixmap()) {
-        // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset,
-                                                  QGraphicsEffectSource::NoExpandPadMode);
-            painter->drawPixmap(offset, pixmap);
-        } else {
-            QRect srcBrect = source->boundingRect().toAlignedRect();
-            offset = srcBrect.topLeft();
-            QPixmap pixmap(srcBrect.size());
-            pixmap.fill(Qt::transparent);
-
-            QPainter pixmapPainter(&pixmap);
-            pixmapPainter.setRenderHints(painter->renderHints());
-            pixmapPainter.translate(-offset);
-            source->draw(&pixmapPainter);
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-            pixmapPainter.fillRect(srcBrect, d->opacityMask);
-            pixmapPainter.end();
-
-            painter->drawPixmap(offset, pixmap);
-        }
-    } else {
-        // Draw pixmap in device coordinates to avoid pixmap scaling;
-        if (!d->hasOpacityMask) {
-            const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset,
-                                                  QGraphicsEffectSource::NoExpandPadMode);
-            painter->setWorldTransform(QTransform());
-            painter->drawPixmap(offset, pixmap);
-        } else {
+    if (d->hasOpacityMask) {
+        QPainter pixmapPainter(&pixmap);
+        pixmapPainter.setRenderHints(painter->renderHints());
+        pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+        if (system == Qt::DeviceCoordinates) {
             QTransform worldTransform = painter->worldTransform();
-
-            // Calculate source bounding rect in logical and device coordinates.
-            QRectF srcBrect = source->boundingRect();
-            QRect srcDeviceBrect = worldTransform.mapRect(srcBrect).toAlignedRect();
-            srcDeviceBrect &= source->deviceRect();
-
-            offset = srcDeviceBrect.topLeft();
-            worldTransform *= QTransform::fromTranslate(-srcDeviceBrect.x(), -srcDeviceBrect.y());
-
-            QPixmap pixmap(srcDeviceBrect.size());
-            pixmap.fill(Qt::transparent);
-
-            QPainter pixmapPainter(&pixmap);
-            pixmapPainter.setRenderHints(painter->renderHints());
+            worldTransform *= QTransform::fromTranslate(-offset.x(), -offset.y());
             pixmapPainter.setWorldTransform(worldTransform);
-            source->draw(&pixmapPainter);
-            pixmapPainter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
-            pixmapPainter.fillRect(srcBrect, d->opacityMask);
-            pixmapPainter.end();
-
-            painter->setWorldTransform(QTransform());
-            painter->drawPixmap(offset, pixmap);
+            pixmapPainter.fillRect(source->boundingRect(), d->opacityMask);
+        } else {
+            pixmapPainter.translate(-offset);
+            pixmapPainter.fillRect(pixmap.rect(), d->opacityMask);
         }
     }
 
+    if (system == Qt::DeviceCoordinates)
+        painter->setWorldTransform(QTransform());
+
+    painter->drawPixmap(offset, pixmap);
     painter->restore();
 }
 

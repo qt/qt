@@ -140,10 +140,14 @@ QNetworkReplyHandler::QNetworkReplyHandler(ResourceHandle* handle, LoadMode load
         m_method = QNetworkAccessManager::PostOperation;
     else if (r.httpMethod() == "PUT")
         m_method = QNetworkAccessManager::PutOperation;
+#if QT_VERSION >= 0x040600
+    else if (r.httpMethod() == "DELETE")
+        m_method = QNetworkAccessManager::DeleteOperation;
+#endif
     else
         m_method = QNetworkAccessManager::UnknownOperation;
 
-    m_request = r.toNetworkRequest();
+    m_request = r.toNetworkRequest(m_resourceHandle->getInternal()->m_frame);
 
     if (m_loadMode == LoadNormal)
         start();
@@ -175,8 +179,8 @@ void QNetworkReplyHandler::abort()
         QNetworkReply* reply = release();
         reply->abort();
         reply->deleteLater();
-        deleteLater();
     }
+    deleteLater();
 }
 
 QNetworkReply* QNetworkReplyHandler::release()
@@ -188,6 +192,7 @@ QNetworkReply* QNetworkReplyHandler::release()
         // posted meta call events that were the result of a signal emission
         // don't reach the slots in our instance.
         QCoreApplication::removePostedEvents(this, QEvent::MetaCall);
+        m_reply->setParent(0);
         m_reply = 0;
     }
     return reply;
@@ -322,10 +327,7 @@ void QNetworkReplyHandler::sendResponseIfNeeded()
 
         client->willSendRequest(m_resourceHandle, newRequest, response);
         m_redirected = true;
-        m_request = newRequest.toNetworkRequest();
-
-        ResourceHandleInternal* d = m_resourceHandle->getInternal();
-        emit d->m_frame->page()->networkRequestStarted(d->m_frame, &m_request);
+        m_request = newRequest.toNetworkRequest(m_resourceHandle->getInternal()->m_frame);
         return;
     }
 
@@ -367,8 +369,6 @@ void QNetworkReplyHandler::start()
 
     QNetworkAccessManager* manager = d->m_frame->page()->networkAccessManager();
 
-    emit d->m_frame->page()->networkRequestStarted(d->m_frame, &m_request);
-
     const QUrl url = m_request.url();
     const QString scheme = url.scheme();
     // Post requests on files and data don't really make sense, but for
@@ -397,6 +397,12 @@ void QNetworkReplyHandler::start()
             putDevice->setParent(m_reply);
             break;
         }
+#if QT_VERSION >= 0x040600
+        case QNetworkAccessManager::DeleteOperation: {
+            m_reply = manager->deleteResource(m_request);
+            break;
+        }
+#endif
         case QNetworkAccessManager::UnknownOperation: {
             m_reply = 0;
             ResourceHandleClient* client = m_resourceHandle->client();

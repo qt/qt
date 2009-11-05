@@ -5,7 +5,7 @@ die() {
     exit 1
 }
 
-default_tag="qtwebkit-4.6-snapshot-22102009"
+default_tag="qtwebkit-4.6-snapshot-20091003"
 
 if [ $# -eq 0 ]; then
     tag="$default_tag"
@@ -155,7 +155,7 @@ excluded_directories="$excluded_directories WebKit/chromium"
 excluded_directories="$excluded_directories WebKit/English.lproj WebKit/WebKit.xcodeproj"
 excluded_directories="$excluded_directories WebCore/English.lproj"
 
-exclude_with_exceptions_list="WebCore/platform/win/:WebCore/platform/win/SystemTimeWin.cpp"
+exclude_with_exceptions_list="WebCore/platform/win/:WebCore/platform/win/SystemTimeWin.cpp\\|WebCore/platform/win/BitmapInfo.*"
 
 excluded_directories="$excluded_directories WebKit/mac/Carbon"
 excluded_directories="$excluded_directories WebKit/mac/ChangeLog"

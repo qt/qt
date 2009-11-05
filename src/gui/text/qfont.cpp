@@ -2324,22 +2324,22 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 */
 QFontInfo::QFontInfo(const QFont &font)
     : d(font.d.data())
-{ d->ref.ref(); }
+{
+}
 
 /*!
     Constructs a copy of \a fi.
 */
 QFontInfo::QFontInfo(const QFontInfo &fi)
-    : d(fi.d)
-{ d->ref.ref(); }
+    : d(fi.d.data())
+{
+}
 
 /*!
     Destroys the font info object.
 */
 QFontInfo::~QFontInfo()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -2347,7 +2347,7 @@ QFontInfo::~QFontInfo()
 */
 QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 {
-    qAtomicAssign(d, fi.d);
+    d = fi.d.data();
     return *this;
 }
 

@@ -47,24 +47,24 @@
 #include <qdir.h>
 #include <qpixmapcache.h>
 #if defined(Q_WS_WIN)
-#define _WIN32_IE 0x0500
-#include <qt_windows.h>
-#include <commctrl.h>
-#include <objbase.h>
+#  define _WIN32_IE 0x0500
+#  include <qt_windows.h>
+#  include <commctrl.h>
+#  include <objbase.h>
 #elif defined(Q_WS_MAC)
-#include <private/qt_cocoa_helpers_mac_p.h>
-#endif
-
-#if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
-#include <private/qt_x11_p.h>
-#include <private/gtksymbols_p.h>
+#  include <private/qt_cocoa_helpers_mac_p.h>
 #endif
 
 #include <private/qfunctions_p.h>
 #include <private/qguiplatformplugin_p.h>
 
+#if defined(Q_WS_X11) && !defined(Q_NO_STYLE_GTK)
+#  include <private/qgtkstyle_p.h>
+#  include <private/qt_x11_p.h>
+#endif
+
 #ifndef SHGFI_ADDOVERLAYS
-#define SHGFI_ADDOVERLAYS 0x000000020
+#  define SHGFI_ADDOVERLAYS 0x000000020
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -392,7 +392,7 @@ QIcon QFileIconProvider::icon(const QFileInfo &info) const
 
 #if defined(Q_WS_X11) && !defined(QT_NO_STYLE_GTK)
     if (X11->desktopEnvironment == DE_GNOME) {
-        QIcon gtkIcon = QGtk::getFilesystemIcon(info);
+        QIcon gtkIcon = QGtkStylePrivate::getFilesystemIcon(info);
         if (!gtkIcon.isNull())
             return gtkIcon;
     }

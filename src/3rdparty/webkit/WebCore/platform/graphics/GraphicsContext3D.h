@@ -29,6 +29,7 @@
 #include "PlatformString.h"
 
 #include <wtf/Noncopyable.h>
+#include <wtf/PassOwnPtr.h>
 
 #if PLATFORM(MAC)
 #include <OpenGL/OpenGL.h>
@@ -74,11 +75,11 @@ namespace WebCore {
     class GraphicsContext3DInternal;
 #endif
 
-    class GraphicsContext3D : Noncopyable {
+    class GraphicsContext3D : public Noncopyable {
     public:
         enum ShaderType { FRAGMENT_SHADER, VERTEX_SHADER };
     
-        GraphicsContext3D();
+        static PassOwnPtr<GraphicsContext3D> create();
         virtual ~GraphicsContext3D();
 
 #if PLATFORM(MAC)
@@ -92,7 +93,6 @@ namespace WebCore {
         Platform3DObject platformTexture() const { return NullPlatform3DObject; }
 #endif
         void checkError() const;
-        
         void makeContextCurrent();
         
         // Helper to return the size in bytes of OpenGL data types
@@ -320,6 +320,8 @@ namespace WebCore {
         void deleteTexture(unsigned);        
         
     private:        
+        GraphicsContext3D();
+
         int m_currentWidth, m_currentHeight;
         
 #if PLATFORM(MAC)

@@ -92,7 +92,6 @@ protected:
 
 JSC::JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 JSC::JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionNamedItem(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
-JSC::JSValue JSC_HOST_CALL jsHTMLCollectionPrototypeFunctionTags(JSC::ExecState*, JSC::JSObject*, JSC::JSValue, const JSC::ArgList&);
 // Attributes
 
 JSC::JSValue jsHTMLCollectionLength(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

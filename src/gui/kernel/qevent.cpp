@@ -4345,9 +4345,9 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
     Sets the accept flag of the given \a gestureType object to the specified
     \a value.
 
-    Setting the accept flag indicates that the event receiver wants the gesture
-    of type \a gestureType. Unwanted gestures may be propagated to the parent
-    widget.
+    Setting the accept flag indicates that the event receiver wants to receive
+    gestures of the specified type, \a gestureType. Unwanted gestures may be
+    propagated to the parent widget.
 
     By default, gestures in events of type QEvent::Gesture are accepted, and
     gestures in QEvent::GestureOverride events are ignored.
@@ -4402,7 +4402,7 @@ bool QGestureEvent::isAccepted(Qt::GestureType gestureType) const
 /*!
     \internal
 
-    Sets the widget for this event.
+    Sets the widget for this event to the \a widget specified.
 */
 void QGestureEvent::setWidget(QWidget *widget)
 {
@@ -4417,6 +4417,7 @@ QWidget *QGestureEvent::widget() const
     return d_func()->widget;
 }
 
+#ifndef QT_NO_GRAPHICSVIEW
 /*!
     Returns the scene-local coordinates if the \a gesturePoint is inside a
     graphics view.
@@ -4438,6 +4439,7 @@ QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
     }
     return QPointF();
 }
+#endif //QT_NO_GRAPHICSVIEW
 
 /*!
     \internal

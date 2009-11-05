@@ -454,9 +454,6 @@ int QWindowsStyle::pixelMetric(PixelMetric pm, const QStyleOption *opt, const QW
         ret = proxy()->pixelMetric(PM_LargeIconSize, opt, widget);
         break;
 
-    case PM_ToolBarIconSize:
-        ret = int(QStyleHelper::dpiScaled(24.));
-        break;
     case PM_DockWidgetTitleMargin:
         ret = int(QStyleHelper::dpiScaled(2.));
         break;

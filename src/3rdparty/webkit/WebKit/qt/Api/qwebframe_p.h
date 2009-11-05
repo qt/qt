@@ -70,7 +70,6 @@ public:
         , allowsScrolling(true)
         , marginWidth(-1)
         , marginHeight(-1)
-        , clipRenderToViewport(true)
         {}
     void init(QWebFrame* qframe, QWebFrameData* frameData);
 
@@ -82,7 +81,7 @@ public:
     static WebCore::Frame* core(QWebFrame*);
     static QWebFrame* kit(WebCore::Frame*);
 
-    void renderPrivate(QPainter *painter, const QRegion &clip);
+    void renderPrivate(QPainter*, QWebFrame::RenderLayer, const QRegion& clip);
 
     QWebFrame *q;
     Qt::ScrollBarPolicy horizontalScrollBarPolicy;
@@ -94,7 +93,6 @@ public:
     bool allowsScrolling;
     int marginWidth;
     int marginHeight;
-    bool clipRenderToViewport;
 };
 
 class QWebHitTestResultPrivate {
