@@ -12,6 +12,10 @@
         <source>World</source>
         <translation>Welt</translation>
     </message>
+    <message id="qtn_virtual">
+        <location filename="finddialog.cpp" line="79"/>
+        <extracomment>A message without source string</extracomment>
+    </message>
 </context>
 <context>
     <name>FindDialog</name>

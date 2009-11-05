@@ -75,4 +75,8 @@ void FindDialog::reset()
 
     //= new_id
     tr("this is just some text");
+
+
+    //: A message without source string
+    qtTrId("qtn_virtual");
 }
