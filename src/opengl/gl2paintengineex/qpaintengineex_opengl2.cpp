@@ -246,7 +246,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
-    pex->shaderManager->blitProgram()->enable();
+    pex->shaderManager->blitProgram()->bind();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
     pex->shaderManager->setDirty();
 
@@ -395,7 +395,7 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
 
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
-    shaderManager->simpleProgram()->enable();
+    shaderManager->simpleProgram()->bind();
     shaderManager->setDirty();
 
     if (matrixDirty)
