@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,55 +38,6 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include "testtypes.h"
 
-#ifndef QMLGRAPHICSIMAGEBASE_H
-#define QMLGRAPHICSIMAGEBASE_H
-
-#include <QtDeclarative/qmlgraphicsitem.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-class QmlGraphicsImageBasePrivate;
-class Q_DECLARATIVE_EXPORT QmlGraphicsImageBase : public QmlGraphicsItem
-{
-    Q_OBJECT
-    Q_ENUMS(Status)
-
-    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
-    Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
-    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-
-public:
-    QmlGraphicsImageBase(QmlGraphicsItem *parent = 0);
-    ~QmlGraphicsImageBase();
-    enum Status { Null, Ready, Loading, Error };
-    Status status() const;
-    qreal progress() const;
-
-    QUrl source() const;
-    virtual void setSource(const QUrl &url);
-
-Q_SIGNALS:
-    void sourceChanged(const QUrl &);
-    void statusChanged(Status);
-    void progressChanged(qreal progress);
-
-protected:
-    QmlGraphicsImageBase(QmlGraphicsImageBasePrivate &dd, QmlGraphicsItem *parent);
-
-private Q_SLOTS:
-    virtual void requestFinished();
-    void requestProgress(qint64,qint64);
-
-private:
-    Q_DISABLE_COPY(QmlGraphicsImageBase)
-    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsImageBase)
-};
-
-QT_END_NAMESPACE
-
-QT_END_HEADER
-
-#endif // QMLGRAPHICSIMAGEBASE_H
+QML_DEFINE_TYPE(Test, 1, 0, 0, MyTypeObject, MyTypeObject);
