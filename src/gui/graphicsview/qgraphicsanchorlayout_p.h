@@ -275,6 +275,9 @@ struct ParallelAnchorData : public AnchorData
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
+
+    QList<QSimplexConstraint *> m_firstConstraints;
+    QList<QSimplexConstraint *> m_secondConstraints;
 };
 
 /*!
@@ -433,13 +436,19 @@ public:
 
     QLayoutStyleInfo &styleInfo() const;
 
-    // Activation methods
-    bool simplifyGraph(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
-    void restoreSimplifiedGraph(Orientation orientation);
+    AnchorData *addAnchorMaybeParallel(AnchorData *newAnchor, bool *feasible);
 
+    // Activation
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
+
+    // Simplification
+    bool simplifyGraph(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
+
+    void restoreSimplifiedGraph(Orientation orientation);
+    void restoreSimplifiedAnchor(AnchorData *edge);
+    void restoreSimplifiedConstraints(ParallelAnchorData *parallel);
 
     bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
                         const QList<QSimplexConstraint *> &constraints,
@@ -447,6 +456,7 @@ public:
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
+    // Support functions for calculateGraph()
     bool refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);

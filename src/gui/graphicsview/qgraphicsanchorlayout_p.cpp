@@ -536,22 +536,56 @@ inline static qreal checkAdd(qreal a, qreal b)
 /*!
     \internal
 
-    Adds \a newAnchor to the graph \a g.
+    Adds \a newAnchor to the graph.
 
     Returns the newAnchor itself if it could be added without further changes to the graph. If a
     new parallel anchor had to be created, then returns the new parallel anchor. If a parallel anchor
     had to be created and it results in an unfeasible setup, \a feasible is set to false, otherwise
     true.
+
+    Note that in the case a new parallel anchor is created, it might also take over some constraints
+    from its children anchors.
 */
-static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
-                                          AnchorData *newAnchor, bool *feasible)
+AnchorData *QGraphicsAnchorLayoutPrivate::addAnchorMaybeParallel(AnchorData *newAnchor, bool *feasible)
 {
+    Orientation orientation = Orientation(newAnchor->orientation);
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     *feasible = true;
 
     // If already exists one anchor where newAnchor is supposed to be, we create a parallel
     // anchor.
-    if (AnchorData *oldAnchor = g->takeEdge(newAnchor->from, newAnchor->to)) {
+    if (AnchorData *oldAnchor = g.takeEdge(newAnchor->from, newAnchor->to)) {
         ParallelAnchorData *parallel = new ParallelAnchorData(oldAnchor, newAnchor);
+
+        // The parallel anchor will "replace" its children anchors in
+        // every center constraint that they appear.
+
+        // ### If the dependent (center) anchors had reference(s) to their constraints, we
+        // could avoid traversing all the itemCenterConstraints.
+        QList<QSimplexConstraint *> &constraints = itemCenterConstraints[orientation];
+
+        AnchorData *children[2] = { oldAnchor, newAnchor };
+        QList<QSimplexConstraint *> *childrenConstraints[2] = { &parallel->m_firstConstraints,
+                                                                &parallel->m_secondConstraints };
+
+        for (int i = 0; i < 2; ++i) {
+            AnchorData *child = children[i];
+            QList<QSimplexConstraint *> *childConstraints = childrenConstraints[i];
+
+            if (!child->isCenterAnchor)
+                continue;
+
+            parallel->isCenterAnchor = true;
+
+            for (int i = 0; i < constraints.count(); ++i) {
+                QSimplexConstraint *c = constraints[i];
+                if (c->variables.contains(child)) {
+                    childConstraints->append(c);
+                    qreal v = c->variables.take(child);
+                    c->variables.insert(parallel, v);
+                }
+            }
+        }
 
         // At this point we can identify that the parallel anchor is not feasible, e.g. one
         // anchor minimum size is bigger than the other anchor maximum size.
@@ -559,10 +593,9 @@ static AnchorData *addAnchorMaybeParallel(Graph<AnchorVertex, AnchorData> *g,
         newAnchor = parallel;
     }
 
-    g->createEdge(newAnchor->from, newAnchor->to, newAnchor);
+    g.createEdge(newAnchor->from, newAnchor->to, newAnchor);
     return newAnchor;
 }
-
 
 /*!
     \internal
@@ -858,7 +891,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // If 'beforeSequence' and 'afterSequence' already had an anchor between them, we'll
         // create a parallel anchor between the new sequence and the old anchor.
         bool newFeasible;
-        AnchorData *newAnchor = addAnchorMaybeParallel(&g, sequence, &newFeasible);
+        AnchorData *newAnchor = addAnchorMaybeParallel(sequence, &newFeasible);
 
         if (!newFeasible) {
             *feasible = false;
@@ -880,7 +913,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     return false;
 }
 
-static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g, AnchorData *edge)
+void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
 {
 #if 0
     static const char *anchortypes[] = {"Normal",
@@ -888,6 +921,8 @@ static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g, AnchorDa
                                         "Parallel"};
     qDebug("Restoring %s edge.", anchortypes[int(edge->type)]);
 #endif
+
+    Graph<AnchorVertex, AnchorData> &g = graph[edge->orientation];
 
     if (edge->type == AnchorData::Normal) {
         g.createEdge(edge->from, edge->to, edge);
@@ -897,23 +932,44 @@ static void restoreSimplifiedAnchor(Graph<AnchorVertex, AnchorData> &g, AnchorDa
 
         for (int i = 0; i < sequence->m_edges.count(); ++i) {
             AnchorData *data = sequence->m_edges.at(i);
-            restoreSimplifiedAnchor(g, data);
+            restoreSimplifiedAnchor(data);
         }
 
         delete sequence;
 
     } else if (edge->type == AnchorData::Parallel) {
         ParallelAnchorData* parallel = static_cast<ParallelAnchorData*>(edge);
+        restoreSimplifiedConstraints(parallel);
 
         // ### Because of the way parallel anchors are created in the anchor simplification
         // algorithm, we know that one of these will be a sequence, so it'll be safe if the other
         // anchor create an edge between the same vertices as the parallel.
         Q_ASSERT(parallel->firstEdge->type == AnchorData::Sequential
                  || parallel->secondEdge->type == AnchorData::Sequential);
-        restoreSimplifiedAnchor(g, parallel->firstEdge);
-        restoreSimplifiedAnchor(g, parallel->secondEdge);
+        restoreSimplifiedAnchor(parallel->firstEdge);
+        restoreSimplifiedAnchor(parallel->secondEdge);
 
         delete parallel;
+    }
+}
+
+void QGraphicsAnchorLayoutPrivate::restoreSimplifiedConstraints(ParallelAnchorData *parallel)
+{
+    if (!parallel->isCenterAnchor)
+        return;
+
+    for (int i = 0; i < parallel->m_firstConstraints.count(); ++i) {
+        QSimplexConstraint *c = parallel->m_firstConstraints[i];
+        qreal v = c->variables[parallel];
+        c->variables.remove(parallel);
+        c->variables.insert(parallel->firstEdge, v);
+    }
+
+    for (int i = 0; i < parallel->m_secondConstraints.count(); ++i) {
+        QSimplexConstraint *c = parallel->m_secondConstraints[i];
+        qreal v = c->variables[parallel];
+        c->variables.remove(parallel);
+        c->variables.insert(parallel->secondEdge, v);
     }
 }
 
@@ -937,7 +993,7 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
         AnchorData *edge = g.edgeData(v1, v2);
         if (edge->type != AnchorData::Normal) {
             g.takeEdge(v1, v2);
-            restoreSimplifiedAnchor(g, edge);
+            restoreSimplifiedAnchor(edge);
         }
     }
 }
