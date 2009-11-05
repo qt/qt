@@ -209,7 +209,12 @@ void QmlGraphicsBasePositioner::prePositioning()
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
     }
     QSet<QmlGraphicsItem *> allItems;
+    //Need to order children by creation order modified by stacking order
+    //###can we avoid using the QGraphicsItemPrivate?
     QList<QGraphicsItem *> children = childItems();
+    qSort(children.begin(), children.end(), d->insertionOrder);
+    positionedItems = QList<QmlGraphicsItem*>();
+
     for (int ii = 0; ii < children.count(); ++ii) {
         QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
         if (!child)
@@ -234,6 +239,7 @@ void QmlGraphicsBasePositioner::prePositioning()
             d->_newItems+=child;
         }
         allItems += child;
+        positionedItems << child;
     }
     QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
     foreach(QmlGraphicsItem *child, d->_items){
@@ -497,9 +503,9 @@ void QmlGraphicsColumn::doPositioning()
         }
     }
 
-    QList<QGraphicsItem *> children = childItems();
+    QList<QmlGraphicsItem *> children = positionedItems;
     for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
+        QmlGraphicsItem *child = children.at(ii);
         if (!child || isInvisible(child))
             continue;
 
@@ -653,9 +659,9 @@ void QmlGraphicsRow::doPositioning()
             applyRemove(changes, item);
         }
     }
-    QList<QGraphicsItem *> children = childItems();
+    QList<QmlGraphicsItem *> children = positionedItems;
     for (int ii = 0; ii < children.count(); ++ii) {
-        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(ii));
+        QmlGraphicsItem *child = children.at(ii);
         if (!child || isInvisible(child))
             continue;
 
@@ -859,7 +865,7 @@ void QmlGraphicsGrid::doPositioning()
     QList<int> maxColWidth;
     QList<int> maxRowHeight;
     int childIndex =0;
-    QList<QGraphicsItem *> children = childItems();
+    QList<QmlGraphicsItem *> children = positionedItems;
     for (int i=0; i<r; i++){
         for (int j=0; j<c; j++){
             if (j==0)
@@ -869,7 +875,7 @@ void QmlGraphicsGrid::doPositioning()
 
             if (childIndex == children.count())
                 continue;
-            QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(children.at(childIndex++));
+            QmlGraphicsItem *child = children.at(childIndex++);
             if (!child || isInvisible(child))
                 continue;
             if (child->width() > maxColWidth[j])
@@ -889,8 +895,7 @@ void QmlGraphicsGrid::doPositioning()
             applyRemove(changes, item);
         }
     }
-    foreach(QGraphicsItem* schild, children){
-        QmlGraphicsItem *child = qobject_cast<QmlGraphicsItem *>(schild);
+    foreach(QmlGraphicsItem* child, children){
         if (!child || isInvisible(child))
             continue;
         bool needMove = (child->x()!=xoffset)||(child->y()!=yoffset);
