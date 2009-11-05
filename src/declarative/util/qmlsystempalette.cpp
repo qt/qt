@@ -256,39 +256,23 @@ QColor QmlSystemPalette::highlightedText() const
 }
 
 /*!
-    \qmlproperty color SystemPalette::lighter
-*/
-QColor QmlSystemPalette::lighter(const QColor& color) const
-{
-    return color.lighter();
-}
-
-/*!
-    \qmlproperty color SystemPalette::darker
-*/
-QColor QmlSystemPalette::darker(const QColor& color) const
-{
-    return color.darker();
-}
-
-/*!
-    \qmlproperty QPalette::ColorGroup SystemPalette::colorGroup
+    \qmlproperty QmlSystemPalette::ColorGroup SystemPalette::colorGroup
 
     The color group of the palette. It can be Active, Inactive or Disabled.
     Active is the default.
 
     \sa QPalette::ColorGroup
 */
-QPalette::ColorGroup QmlSystemPalette::colorGroup() const
+QmlSystemPalette::ColorGroup QmlSystemPalette::colorGroup() const
 {
     Q_D(const QmlSystemPalette);
-    return d->group;
+    return (QmlSystemPalette::ColorGroup)d->group;
 }
 
-void QmlSystemPalette::setColorGroup(QPalette::ColorGroup colorGroup)
+void QmlSystemPalette::setColorGroup(QmlSystemPalette::ColorGroup colorGroup)
 {
     Q_D(QmlSystemPalette);
-    d->group = colorGroup;
+    d->group = (QPalette::ColorGroup)colorGroup;
     emit paletteChanged();
 }
 

@@ -5,7 +5,7 @@ Rectangle {
     id: screen
     width: 490; height: 720
 
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    SystemPalette { id: activePalette }
 
     Item {
         width: parent.width; anchors.top: parent.top; anchors.bottom: toolBar.top

@@ -6,7 +6,7 @@ Rectangle {
     property var text
     signal clicked
 
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    SystemPalette { id: activePalette }
     height: text.height + 10
     width: text.width + 20
     border.width: 1

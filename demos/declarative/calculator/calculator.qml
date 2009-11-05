@@ -3,7 +3,7 @@ import Qt 4.6
 Rectangle {
     width: 320; height: 270; color: palette.window
 
-    SystemPalette { id: palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette }
     Script { source: "calculator.js" }
 
     Column {
@@ -45,7 +45,7 @@ Rectangle {
         }
 
         Item {
-            width: 320
+            width: 320; height: 160
 
             Item {
                 id: basicButtons
@@ -106,23 +106,19 @@ Rectangle {
         }
     }
 
-    states: [
-        State {
-            name: "Advanced"; when: advancedCheckBox.toggled == true
-            PropertyChanges { target: basicButtons; x: 0 }
-            PropertyChanges { target: simpleOperations; y: 32 }
-            PropertyChanges { target: bksp; opacity: 1 }
-            PropertyChanges { target: c; x: 69; width: 67 }
-            PropertyChanges { target: ac; x: 138; width: 67 }
-            PropertyChanges { target: equals; width: 50 }
-            PropertyChanges { target: advancedButtons; x: 210; opacity: 1 }
-        }
-    ]
+    states: State {
+        name: "Advanced"; when: advancedCheckBox.toggled == true
+        PropertyChanges { target: basicButtons; x: 0 }
+        PropertyChanges { target: simpleOperations; y: 32 }
+        PropertyChanges { target: bksp; opacity: 1 }
+        PropertyChanges { target: c; x: 69; width: 67 }
+        PropertyChanges { target: ac; x: 138; width: 67 }
+        PropertyChanges { target: equals; width: 50 }
+        PropertyChanges { target: advancedButtons; x: 210; opacity: 1 }
+    }
 
-    transitions: [
-        Transition {
-            NumberAnimation { properties: "x,y,width"; easing: "easeOutBounce"; duration: 500 }
-            NumberAnimation { properties: "opacity"; easing: "easeInOutQuad"; duration: 500 }
-        }
-    ]
+    transitions: Transition {
+        NumberAnimation { properties: "x,y,width"; easing: "easeOutBounce"; duration: 500 }
+        NumberAnimation { properties: "opacity"; easing: "easeInOutQuad"; duration: 500 }
+    }
 }

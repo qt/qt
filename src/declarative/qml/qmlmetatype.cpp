@@ -134,7 +134,6 @@ public:
     QmlCustomParser *m_customParser;
     mutable volatile bool m_isSetup:1;
     mutable QList<QmlProxyMetaObject::ProxyData> m_metaObjects;
-    mutable QByteArray m_hash;
 };
 
 QmlTypePrivate::QmlTypePrivate()
@@ -259,27 +258,6 @@ void QmlTypePrivate::init() const
             m_metaObjects.at(ii).metaObject->methodOffset();
     }
 
-    // Calculate hash
-    QByteArray hashData;
-
-    const QMetaObject *myMetaObject = m_metaObjects.isEmpty()?m_baseMetaObject:m_metaObjects.first().metaObject;
-
-    for (int ii = 0; ii < myMetaObject->propertyCount(); ++ii) {
-        QMetaProperty prop = myMetaObject->property(ii);
-        hashData.append(prop.type());
-        hashData.append("|");
-        hashData.append(prop.name());
-        hashData.append("|");
-    }
-
-    for (int ii = 0; ii < myMetaObject->methodCount(); ++ii) {
-        QMetaMethod method = myMetaObject->method(ii);
-        hashData.append(method.signature());
-        hashData.append("|");
-    }
-
-    m_hash = QCryptographicHash::hash(hashData, QCryptographicHash::Md5);
-
     m_isSetup = true;
     lock.unlock();
 }
@@ -295,13 +273,6 @@ QByteArray QmlType::typeName() const
 QByteArray QmlType::qmlTypeName() const
 {
     return d->m_name;
-}
-
-QByteArray QmlType::hash() const
-{
-    d->init();
-
-    return d->m_hash;
 }
 
 QObject *QmlType::create() const
@@ -804,17 +775,6 @@ const char *QmlMetaType::interfaceIId(int userType)
         return 0;
 }
 
-bool QmlMetaType::isObject(const QMetaObject *mo)
-{
-    // ### Huh?
-    while(mo) {
-        if (mo == &QObject::staticMetaObject)
-            return true;
-        mo = mo->superClass();
-    }
-    return false;
-}
-
 bool QmlMetaType::isQmlList(int userType)
 {
     QReadLocker lock(metaTypeDataLock());
@@ -851,6 +811,9 @@ int QmlMetaType::listCount(const QVariant &v)
 
 QVariant QmlMetaType::listAt(const QVariant &v, int idx)
 {
+    if (idx < 0)
+        return QVariant();
+
     int userType = v.userType();
 
     QReadLocker lock(metaTypeDataLock());
@@ -861,7 +824,7 @@ QVariant QmlMetaType::listAt(const QVariant &v, int idx)
     if (type && type->qListTypeId() == userType)
         return type->listAt(v, idx);
     else
-        return 0;
+        return QVariant();
 }
 
 /*!

@@ -91,8 +91,11 @@ void tst_QmlGraphicsParticles::properties()
     particles->setVelocityDeviation(100.0);
     QCOMPARE(particles->velocityDeviation(), 100.0);
 
-    particles->setEmitting(false);
-    QCOMPARE(particles->emitting(), false);
+    particles->setEmissionVariance(0.5);
+    QCOMPARE(particles->emissionVariance(),0.5);
+
+    particles->setEmissionRate(12);
+    QCOMPARE(particles->emissionRate(), 12);
 }
 
 void tst_QmlGraphicsParticles::runs()

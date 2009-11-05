@@ -106,9 +106,9 @@ the block, like so:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 3
 
-To fully understand this you'll want to look at the Particles element documentation, but it's important to note that count is set
-to zero.
-We next extend the 'dying' state, which triggers the particles by setting the count to non-zero. The code for the states now look
+To fully understand this you'll want to look at the Particles element documentation, but it's important to note that emissionRate is set
+to zero, so that no particles are emitted normally.
+We next extend the 'dying' state, which creates a burst of particles by calling the burst method on the particles element. The code for the states now look
 like this:
 
 \snippet declarative/tutorials/samegame/samegame4/content/BoomBlock.qml 4

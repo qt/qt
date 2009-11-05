@@ -283,7 +283,8 @@ int QmlPrivate::list_op(QmlPrivate::ListOp op, int val,
         } 
         break; 
     case QmlPrivate::Value: 
-        *((QVariant *)*out) = QVariant::fromValue(list->at(val)); 
+        if (list->count() <= val) *((QVariant *)*out) = QVariant();
+        else *((QVariant *)*out) = QVariant::fromValue(list->at(val)); 
         break; 
     } 
     return 0; 

@@ -4,7 +4,7 @@ Rectangle {
     id: Screen
     width: 490; height: 720
 
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    SystemPalette { id: activePalette }
 //![2]
     Script { source: "samegame.js" }
 //![2]

@@ -14,7 +14,7 @@ function index(xIdx,yIdx) {
 
 function initBoard()
 {
-    for(i = 0; i<maxIndex; i++){
+    for(var i = 0; i<maxIndex; i++){
         //Delete old blocks
         if(board[i] != null)
             board[i].destroy();
@@ -31,8 +31,8 @@ function initBoard()
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        for(yIdx=0; yIdx<maxY; yIdx++){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        for(var yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
             createBlock(xIdx,yIdx);
         }
@@ -48,7 +48,7 @@ function createBlock(xIdx,yIdx){
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
     if(component.isReady){
-        dynamicObject = component.createObject();
+        var dynamicObject = component.createObject();
         if(dynamicObject == null){
             print("error creating block");
             print(component.errorsString());
@@ -123,7 +123,7 @@ function floodFill(xIdx,yIdx,type)
 function shuffleDown()
 {
     //Fall down
-    for(xIdx=0; xIdx<maxX; xIdx++){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
         fallDist = 0;
         for(yIdx=maxY-1; yIdx>=0; yIdx--){
             if(board[index(xIdx,yIdx)] == null){
