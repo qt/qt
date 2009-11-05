@@ -148,6 +148,8 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
         caller.customValue(QLatin1String("AboutTexts")));
     user.setCustomValue(QLatin1String("AboutImages"),
         caller.customValue(QLatin1String("AboutImages")));
+    user.setCustomValue(QLatin1String("defaultHomepage"),
+        caller.customValue(QLatin1String("defaultHomepage")));
 
     return true;
 }
