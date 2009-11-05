@@ -1221,6 +1221,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     }
 }
 
+extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+
+
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1231,6 +1234,11 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     QOpenGL2PaintEngineState *s = state();
+    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), 0)) {
+        // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
 
     ensureActive();
 
