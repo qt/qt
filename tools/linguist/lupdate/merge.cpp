@@ -341,7 +341,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
     foreach (TranslatorMessage m, tor.messages()) {
         TranslatorMessage::Type newType = TranslatorMessage::Finished;
 
-        if (m.sourceText().isEmpty()) {
+        if (m.sourceText().isEmpty() && m.id().isEmpty()) {
             // context/file comment
             TranslatorMessage mv = virginTor.find(m.context());
             if (!mv.isNull())
@@ -447,7 +447,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
       vernacular translator.
     */
     foreach (const TranslatorMessage &mv, virginTor.messages()) {
-        if (mv.sourceText().isEmpty()) {
+        if (mv.sourceText().isEmpty() && mv.id().isEmpty()) {
             if (tor.contains(mv.context()))
                 continue;
         } else {
@@ -465,7 +465,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             outTor.append(mv);
         else
             outTor.appendSorted(mv);
-        if (!mv.sourceText().isEmpty())
+        if (!mv.sourceText().isEmpty() || !mv.id().isEmpty())
             ++neww;
     }
 

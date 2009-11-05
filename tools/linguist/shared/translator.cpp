@@ -337,7 +337,7 @@ TranslatorMessage Translator::find(const QString &context,
 bool Translator::contains(const QString &context) const
 {
     foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty())
+        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
             return true;
     return false;
 }
@@ -345,7 +345,7 @@ bool Translator::contains(const QString &context) const
 TranslatorMessage Translator::find(const QString &context) const
 {
     foreach (const TranslatorMessage &msg, m_messages)
-        if (msg.context() == context && msg.sourceText().isEmpty())
+        if (msg.context() == context && msg.sourceText().isEmpty() && msg.id().isEmpty())
             return msg;
     return TranslatorMessage();
 }
