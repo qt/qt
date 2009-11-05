@@ -54,11 +54,13 @@ public:
     tst_qmlgraphicsborderimage();
 
 private slots:
+    void noSource();
     void simple();
     void resized();
     void smooth();
     void tileModes();
     void sciFile();
+    void invalidSciFile();
 
 private:
     QmlEngine engine;
@@ -68,16 +70,32 @@ tst_qmlgraphicsborderimage::tst_qmlgraphicsborderimage()
 {
 }
 
+void tst_qmlgraphicsborderimage::noSource()
+{
+    QString componentStr = "import Qt 4.6\nBorderImage { source: \"\" }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->source(), QUrl());
+    QCOMPARE(obj->width(), 0.);
+    QCOMPARE(obj->height(), 0.);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Stretch);
+
+    delete obj;
+}
+
 void tst_qmlgraphicsborderimage::simple()
 {
     QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/colors.png\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    QVERIFY(obj->width() == 120);
-    QVERIFY(obj->height() == 120);
-    QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Stretch);
-    QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->source(), QUrl("file://" SRCDIR "/data/colors.png"));
+    QCOMPARE(obj->width(), 120.);
+    QCOMPARE(obj->height(), 120.);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Stretch);
 
     delete obj;
 }
@@ -88,10 +106,10 @@ void tst_qmlgraphicsborderimage::resized()
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    QVERIFY(obj->width() == 300);
-    QVERIFY(obj->height() == 300);
-    QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Stretch);
-    QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->width(), 300.);
+    QCOMPARE(obj->height(), 300.);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Stretch);
 
     delete obj;
 }
@@ -102,11 +120,11 @@ void tst_qmlgraphicsborderimage::smooth()
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    QVERIFY(obj->width() == 300);
-    QVERIFY(obj->height() == 300);
-    QVERIFY(obj->smooth() == true);
-    QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Stretch);
-    QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->width(), 300.);
+    QCOMPARE(obj->height(), 300.);
+    QCOMPARE(obj->smooth(), true);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Stretch);
 
     delete obj;
 }
@@ -118,10 +136,10 @@ void tst_qmlgraphicsborderimage::tileModes()
         QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
         QVERIFY(obj != 0);
-        QVERIFY(obj->width() == 100);
-        QVERIFY(obj->height() == 300);
-        QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Repeat);
-        QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Repeat);
+        QCOMPARE(obj->width(), 100.);
+        QCOMPARE(obj->height(), 300.);
+        QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Repeat);
+        QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Repeat);
 
         delete obj;
     }
@@ -130,10 +148,10 @@ void tst_qmlgraphicsborderimage::tileModes()
         QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
         QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
         QVERIFY(obj != 0);
-        QVERIFY(obj->width() == 300);
-        QVERIFY(obj->height() == 150);
-        QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Round);
-        QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Round);
+        QCOMPARE(obj->width(), 300.);
+        QCOMPARE(obj->height(), 150.);
+        QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Round);
+        QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Round);
 
         delete obj;
     }
@@ -145,14 +163,29 @@ void tst_qmlgraphicsborderimage::sciFile()
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
     QVERIFY(obj != 0);
-    QVERIFY(obj->width() == 300);
-    QVERIFY(obj->height() == 300);
-    QVERIFY(obj->border()->left() == 10);
-    QVERIFY(obj->border()->top() == 20);
-    QVERIFY(obj->border()->right() == 30);
-    QVERIFY(obj->border()->bottom() == 40);
-    QVERIFY(obj->horizontalTileMode() == QmlGraphicsBorderImage::Round);
-    QVERIFY(obj->verticalTileMode() == QmlGraphicsBorderImage::Repeat);
+    QCOMPARE(obj->width(), 300.);
+    QCOMPARE(obj->height(), 300.);
+    QCOMPARE(obj->border()->left(), 10);
+    QCOMPARE(obj->border()->top(), 20);
+    QCOMPARE(obj->border()->right(), 30);
+    QCOMPARE(obj->border()->bottom(), 40);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Round);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Repeat);
+
+    delete obj;
+}
+
+void tst_qmlgraphicsborderimage::invalidSciFile()
+{
+    QString componentStr = "import Qt 4.6\nBorderImage { source: \"" SRCDIR "/data/invalid.sci\"; width: 300; height: 300 }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlGraphicsBorderImage *obj = qobject_cast<QmlGraphicsBorderImage*>(component.create());
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->width(), 300.);
+    QCOMPARE(obj->height(), 300.);
+    QCOMPARE(obj->status(), QmlGraphicsImageBase::Error);
+    QCOMPARE(obj->horizontalTileMode(), QmlGraphicsBorderImage::Stretch);
+    QCOMPARE(obj->verticalTileMode(), QmlGraphicsBorderImage::Stretch);
 
     delete obj;
 }

@@ -49,7 +49,7 @@ QT_BEGIN_HEADER
 QT_BEGIN_NAMESPACE
 
 class QmlGraphicsImageBasePrivate;
-class QmlGraphicsImageBase : public QmlGraphicsItem
+class Q_DECLARATIVE_EXPORT QmlGraphicsImageBase : public QmlGraphicsItem
 {
     Q_OBJECT
     Q_ENUMS(Status)
