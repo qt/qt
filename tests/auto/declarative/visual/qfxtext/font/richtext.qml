@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: s; width: 800; height: 800; color: "lightsteelblue"
+    id: s; width: 800; height: 1000; color: "lightsteelblue"
     property string text: "<b>The</b> <i>quick</i> <u>brown</u> <o>fox</o> <big>jumps</big> <small>over</small> <tt>the</tt> <s>lazy</s> <em>dog</em>."
 
     Column {
@@ -16,7 +16,7 @@ Rectangle {
             text: s.text; font.pointSize: 25
         }
         Text {
-            text: s.text; color: "red"
+            text: s.text; color: "red"; smooth: true
         }
         Text {
             text: s.text; font.capitalization: "AllUppercase"
@@ -25,7 +25,7 @@ Rectangle {
             text: s.text; font.underline: true
         }
         Text {
-            text: s.text; font.overline: true
+            text: s.text; font.overline: true; smooth: true
         }
         Text {
             text: s.text; font.strikeout: true
@@ -71,6 +71,15 @@ Rectangle {
         }
         Text {
             text: s.text; elide: Text.ElideRight; width: 200
+        }
+        Text {
+            text: s.text; elide: Text.ElideLeft; width: 200; wrap: true
+        }
+        Text {
+            text: s.text; elide: Text.ElideMiddle; width: 200; wrap: true
+        }
+        Text {
+            text: s.text; elide: Text.ElideRight; width: 200; wrap: true
         }
     }
 }
