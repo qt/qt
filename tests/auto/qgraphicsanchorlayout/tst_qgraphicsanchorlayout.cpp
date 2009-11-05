@@ -83,6 +83,7 @@ private slots:
     void infiniteMaxSizes();
     void simplifiableUnfeasible();
     void simplificationVsOrder();
+    void parallelSimplificationOfCenter();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1799,6 +1800,31 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
         QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
         QCOMPARE(usedSimplex(l, Qt::Vertical), false);
     }
+}
+
+void tst_QGraphicsAnchorLayout::parallelSimplificationOfCenter()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 10);
+    QSizeF max(50, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+
+    QGraphicsWidget parent;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&parent);
+    l->setContentsMargins(0, 0, 0, 0);
+
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    l->addAnchor(a, Qt::AnchorHorizontalCenter, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    parent.resize(l->effectiveSizeHint(Qt::PreferredSize));
+
+    QCOMPARE(a->geometry(), QRectF(0, 0, 40, 10));
+    QCOMPARE(b->geometry(), QRectF(20, 0, 20, 10));
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
