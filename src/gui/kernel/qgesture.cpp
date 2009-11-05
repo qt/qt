@@ -220,15 +220,6 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 */
 
 /*!
-    \property QPanGesture::totalOffset
-    \brief the total offset from the first input position to the current input
-    position
-
-    The total offset measures the total change in position of the user's input
-    covered by the gesture on the input device.
-*/
-
-/*!
     \property QPanGesture::lastOffset
     \brief the last offset recorded for this gesture
 

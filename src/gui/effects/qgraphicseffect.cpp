@@ -128,6 +128,19 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
+    \enum QGraphicsEffectSource::PixmapPadMode
+
+    This enum describes how much of the effect will be rendered to a pixmap
+    created using the pixmap() function.
+
+    \value NoExpandPadMode  The pixmap is the size of the widget or graphics item.
+    \value ExpandToTransparentBorderPadMode  The pixmap is expanded to include
+        the widget or graphics item plus a transparent border.
+    \value ExpandToEffectRectPadMode  The pixmap is expanded to include the widget
+        or graphics item and the effect.
+*/
+
+/*!
     \internal
 */
 QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent)
@@ -263,6 +276,9 @@ bool QGraphicsEffectSource::isPixmap() const
     The \a system specifies which coordinate system to be used for the source.
     The optional \a offset parameter returns the offset where the pixmap should
     be painted at using the current painter.
+
+    The \a mode determines how much of the effect the pixmap will contain.
+    By default, the pixmap will contain the whole effect.
 
     The returned pixmap is bound to the current painter's device rectangle when
     \a system is Qt::DeviceCoordinates.
@@ -735,7 +751,7 @@ void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::BlurHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(QGraphicsBlurEffect::BlurHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
