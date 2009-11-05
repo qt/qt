@@ -662,19 +662,16 @@ void QmlGraphicsListViewPrivate::createHighlight()
             if (nobj) {
                 highlightContext->setParent(nobj);
                 item = qobject_cast<QmlGraphicsItem *>(nobj);
-                if (!item) {
+                if (!item)
                     delete nobj;
-                } else {
-                    item->setParent(q->viewport());
-                }
             } else {
                 delete highlightContext;
             }
         } else {
             item = new QmlGraphicsItem;
-            item->setParent(q->viewport());
         }
         if (item) {
+            item->setParent(q->viewport());
             item->setZValue(0);
             highlight = new FxListItem(item, q);
             if (orient == QmlGraphicsListView::Vertical)

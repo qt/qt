@@ -19,7 +19,7 @@ Rectangle {
         folder: "file:///E:/" // Documents on your S60 phone (or Windows E: drive)
     }
 
-    SystemPalette { id: palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette }
 
     Script {
         function down(path) {
@@ -72,7 +72,7 @@ Rectangle {
                 anchors.fill: parent
                 gradient: Gradient {
                     GradientStop { id: t1; position: 0.0; color: palette.highlight }
-                    GradientStop { id: t2; position: 1.0; color: palette.lighter(palette.highlight) }
+                    GradientStop { id: t2; position: 1.0; color: Qt.lighter(palette.highlight) }
                 }
             }
             Item {
