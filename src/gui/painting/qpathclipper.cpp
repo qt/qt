@@ -1650,7 +1650,7 @@ static void clear(QWingedEdge& list, int edge, QPathEdge::Traversal traversal)
 template <typename InputIterator>
 InputIterator qFuzzyFind(InputIterator first, InputIterator last, qreal val)
 {
-    while (first != last && !qFuzzyCompare(qreal(*first), qreal(val)))
+    while (first != last && !QT_PREPEND_NAMESPACE(qFuzzyCompare)(qreal(*first), qreal(val)))
         ++first;
     return first;
 }
