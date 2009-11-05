@@ -70,11 +70,11 @@ QT_BEGIN_NAMESPACE
 #define FLT_MAX 1E+37
 #endif
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Item,QmlGraphicsItem)
+QML_DEFINE_TYPE(Qt,4,6,Item,QmlGraphicsItem)
 
 QML_DEFINE_NOCREATE_TYPE(QGraphicsTransform);
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Scale,QGraphicsScale)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rotation,QGraphicsRotation)
+QML_DEFINE_TYPE(Qt,4,6,Scale,QGraphicsScale)
+QML_DEFINE_TYPE(Qt,4,6,Rotation,QGraphicsRotation)
 
 #include "qmlgraphicseffects.cpp"
 
@@ -2916,7 +2916,7 @@ QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsKeysAttached)
 QML_DECLARE_TYPEINFO(QmlGraphicsKeysAttached, QML_HAS_ATTACHED_PROPERTIES)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Keys,QmlGraphicsKeysAttached)
+QML_DEFINE_TYPE(Qt,4,6,Keys,QmlGraphicsKeysAttached)
 QML_DECLARE_TYPE(QmlGraphicsKeyNavigationAttached)
 QML_DECLARE_TYPEINFO(QmlGraphicsKeyNavigationAttached, QML_HAS_ATTACHED_PROPERTIES)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,KeyNavigation,QmlGraphicsKeyNavigationAttached)
+QML_DEFINE_TYPE(Qt,4,6,KeyNavigation,QmlGraphicsKeyNavigationAttached)

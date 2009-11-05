@@ -103,7 +103,7 @@ QT_BEGIN_NAMESPACE
 DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Object,QObject)
+QML_DEFINE_TYPE(Qt,4,6,Object,QObject)
 
 struct StaticQtMetaObject : public QObject
 {
@@ -993,17 +993,13 @@ struct QmlEnginePrivate::ImportedNamespace {
                         if (line.isEmpty() || line.at(0) == QLatin1Char('#'))
                             continue;
                         if (line.startsWith(typespace)) {
-                            // eg. 1.2-5
                             int space1 = line.indexOf(QLatin1Char(' '));
                             int space2 = space1 >=0 ? line.indexOf(QLatin1Char(' '),space1+1) : -1;
                             QString mapversions = line.mid(space1+1,space2<0?line.length()-space1-1:space2-space1-1);
                             int dot = mapversions.indexOf(QLatin1Char('.'));
-                            int dash = mapversions.indexOf(QLatin1Char('-'));
                             int mapvmaj = mapversions.left(dot).toInt();
-                            if (mapvmaj==vmaj) {
-                                int mapvmin_from = (dash <= 0 ? mapversions.mid(dot+1) : mapversions.mid(dot+1,dash-dot-1)).toInt();
-                                int mapvmin_to = dash <= 0 ? mapvmin_from : mapversions.mid(dash+1).toInt();
-                                if (vmin >= mapvmin_from && vmin <= mapvmin_to) {
+                            if (mapvmaj<=vmaj) {
+                                if (mapvmaj<vmaj || vmin >= mapversions.mid(dot+1).toInt()) {
                                     QStringRef mapfile = space2<0 ? QStringRef() : line.midRef(space2+1,line.length()-space2-1);
                                     if (url_return)
                                         *url_return = url.resolved(mapfile.toString());
@@ -1172,9 +1168,8 @@ static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePri
         foreach (QmlType *type, types) {
             if (type->qmlTypeName().startsWith(base) && 
                 type->qmlTypeName().lastIndexOf('/') == (base.length() - 1) && 
-                type->majorVersion() == major && type->minMinorVersion() <= minor &&
-                type->maxMinorVersion() >= minor) {
-
+                type->availableInVersion(major,minor))
+            {
                 QString name = QString::fromUtf8(type->qmlTypeName().mid(base.length()));
 
                 cache->add(name, type);

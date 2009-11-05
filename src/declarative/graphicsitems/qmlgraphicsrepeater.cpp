@@ -56,7 +56,7 @@ QmlGraphicsRepeaterPrivate::~QmlGraphicsRepeaterPrivate()
 {
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Repeater,QmlGraphicsRepeater)
+QML_DEFINE_TYPE(Qt,4,6,Repeater,QmlGraphicsRepeater)
 
 /*!
     \qmlclass Repeater QmlGraphicsRepeater

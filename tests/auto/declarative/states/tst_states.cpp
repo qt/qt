@@ -317,7 +317,7 @@ Q_SIGNALS:
 };
 
 QML_DECLARE_TYPE(MyRect)
-QML_DEFINE_TYPE(Qt.test, 1, 0, 0, MyRectangle,MyRect);
+QML_DEFINE_TYPE(Qt.test, 1, 0, MyRectangle,MyRect);
 
 void tst_states::signalOverride()
 {

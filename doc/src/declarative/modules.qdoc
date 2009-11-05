@@ -91,14 +91,16 @@ mapping from all type names to versioned QML files. It is a list of lines of the
 
 \code
 # <Comment>
-<TypeName> <VersionRange> <File>
+<TypeName> <InitialVersion> <File>
 \endcode
 
-<TypeName> is the type being made available; <VersionRange> is either a single version
-number like \c 4.0 or a range of minor versions like \c 4.0-2; <File> is the (relative)
+<TypeName> is the type being made available; <InitialVersion> is a version
+number like \c 4.0; <File> is the (relative)
 file name of the QML file defining the type.
-The same type can be provided by different files in different versions.
-If a type is in multiple major versions, it should be listed on a separate line.
+
+The same type can be provided by different files in different versions, in which
+case later earlier versions (eg. 1.2) must precede earlier versions (eg. 1.0),
+since the \e first name-version match is used.
 
 Installed files do not need to import the module of which they are a part, as they can refer
 to the other QML files in the module as relative (local) files.

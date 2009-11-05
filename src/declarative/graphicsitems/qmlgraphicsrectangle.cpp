@@ -46,9 +46,9 @@
 #include <QtCore/qmath.h>
 
 QT_BEGIN_NAMESPACE
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Pen,QmlGraphicsPen)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,GradientStop,QmlGraphicsGradientStop)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Gradient,QmlGraphicsGradient)
+QML_DEFINE_TYPE(Qt,4,6,Pen,QmlGraphicsPen)
+QML_DEFINE_TYPE(Qt,4,6,GradientStop,QmlGraphicsGradientStop)
+QML_DEFINE_TYPE(Qt,4,6,Gradient,QmlGraphicsGradient)
 
 /*!
     \internal
@@ -149,7 +149,7 @@ void QmlGraphicsGradient::doUpdate()
     emit updated();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Rectangle,QmlGraphicsRectangle)
+QML_DEFINE_TYPE(Qt,4,6,Rectangle,QmlGraphicsRectangle)
 
 /*!
     \qmlclass Rectangle QmlGraphicsRectangle

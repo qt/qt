@@ -890,11 +890,11 @@ void tst_qmllanguage::testType(const QString& qml, const QString& type)
 QML_DECLARE_TYPE(TestType)
 QML_DECLARE_TYPE(TestType2)
 
-QML_DEFINE_TYPE(com.nokia.Test, 1, 0, 3, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 5, 7, Test, TestType)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 8, 9, Test, TestType2)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 12, 13, Test, TestType2)
-QML_DEFINE_TYPE(com.nokia.Test, 1, 9, 11, OldTest, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 0, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 5, Test, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 8, Test, TestType2)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 9, OldTest, TestType)
+QML_DEFINE_TYPE(com.nokia.Test, 1, 12, Test, TestType2)
 
 // Import tests (QT-558)
 
@@ -937,10 +937,6 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.3\n"
            "Test {}"
         << "TestType";
-    QTest::newRow("not in version 1.4")
-        << "import com.nokia.Test 1.4\n"
-           "Test {}"
-        << "";
     QTest::newRow("in version 1.5")
         << "import com.nokia.Test 1.5\n"
            "Test {}"
@@ -949,11 +945,7 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.8\n"
            "Test {}"
         << "TestType2";
-    QTest::newRow("not in version 1.10")
-        << "import com.nokia.Test 1.10\n"
-           "Test {}"
-        << "";
-    QTest::newRow("back in version 1.12")
+    QTest::newRow("in version 1.12")
         << "import com.nokia.Test 1.12\n"
            "Test {}"
         << "TestType2";
@@ -965,10 +957,6 @@ void tst_qmllanguage::importsBuiltin_data()
         << "import com.nokia.Test 1.11\n"
            "OldTest {}"
         << "TestType";
-    QTest::newRow("no old in version 1.12")
-        << "import com.nokia.Test 1.12\n"
-           "OldTest {}"
-        << "";
     QTest::newRow("multiversion 1")
         << "import com.nokia.Test 1.11\n"
            "import com.nokia.Test 1.12\n"
@@ -989,11 +977,6 @@ void tst_qmllanguage::importsBuiltin_data()
            "import com.nokia.Test 1.8 as T8\n"
            "T8.Test {}"
         << "TestType2";
-    QTest::newRow("qualified multiversion 5")
-        << "import com.nokia.Test 1.0 as T0\n"
-           "import com.nokia.Test 1.10 as T10\n"
-           "T10.Test {}"
-        << "";
 }
 
 void tst_qmllanguage::importsBuiltin()
@@ -1069,7 +1052,15 @@ void tst_qmllanguage::importsInstalled_data()
            "InstalledTest {}"
         << "QmlGraphicsRectangle";
     QTest::newRow("installed import 2")
+        << "import com.nokia.installedtest 1.3\n"
+           "InstalledTest {}"
+        << "QmlGraphicsRectangle";
+    QTest::newRow("installed import 3")
         << "import com.nokia.installedtest 1.4\n"
+           "InstalledTest {}"
+        << "QmlGraphicsText";
+    QTest::newRow("installed import 4")
+        << "import com.nokia.installedtest 1.10\n"
            "InstalledTest {}"
         << "QmlGraphicsText";
     QTest::newRow("installed import visibility") // QT-614

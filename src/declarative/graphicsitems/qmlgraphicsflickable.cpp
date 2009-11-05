@@ -341,7 +341,7 @@ void QmlGraphicsFlickablePrivate::updateBeginningEnd()
         visibleArea->updateVisible();
 }
 
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Flickable,QmlGraphicsFlickable)
+QML_DEFINE_TYPE(Qt,4,6,Flickable,QmlGraphicsFlickable)
 
 /*!
     \qmlclass Flickable QmlGraphicsFlickable
@@ -1278,6 +1278,6 @@ void QmlGraphicsFlickablePrivate::updateVelocity()
 QT_END_NAMESPACE
 
 QML_DECLARE_TYPE(QmlGraphicsFlickableVisibleArea)
-QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,VisibleArea,QmlGraphicsFlickableVisibleArea)
+QML_DEFINE_TYPE(Qt,4,6,VisibleArea,QmlGraphicsFlickableVisibleArea)
 
 #include "qmlgraphicsflickable.moc"
