@@ -2883,18 +2883,20 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 }
 
 /*!
-    Returns the scene's current focus item, or 0 if no item currently has
-    focus.
+    When the scene is active, this functions returns the scene's current focus
+    item, or 0 if no item currently has focus. When the scene is inactive, this
+    functions returns the item that will gain input focus when the scene becomes
+    active.
 
     The focus item receives keyboard input when the scene receives a
     key event.
 
-    \sa setFocusItem(), QGraphicsItem::hasFocus()
+    \sa setFocusItem(), QGraphicsItem::hasFocus(), isActive()
 */
 QGraphicsItem *QGraphicsScene::focusItem() const
 {
     Q_D(const QGraphicsScene);
-    return d->focusItem;
+    return isActive() ? d->focusItem : d->lastFocusItem;
 }
 
 /*!

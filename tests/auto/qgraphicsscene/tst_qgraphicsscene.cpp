@@ -225,6 +225,7 @@ private slots:
     void focusItem();
     void focusItemLostFocus();
     void setFocusItem();
+    void setFocusItem_inactive();
     void mouseGrabberItem();
     void hoverEvents_siblings();
     void hoverEvents_parentChild();
@@ -1533,6 +1534,26 @@ void tst_QGraphicsScene::setFocusItem()
     QVERIFY(!item->hasFocus());
     QVERIFY(!item2->hasFocus());
 }
+
+void tst_QGraphicsScene::setFocusItem_inactive()
+{
+    QGraphicsScene scene;
+    QGraphicsItem *item = scene.addText("Qt");
+    QVERIFY(!scene.focusItem());
+    QVERIFY(!scene.hasFocus());
+    scene.setFocusItem(item);
+    QVERIFY(!scene.hasFocus());
+    QVERIFY(!scene.focusItem());
+    item->setFlag(QGraphicsItem::ItemIsFocusable);
+
+    for (int i = 0; i < 3; ++i) {
+        scene.setFocusItem(item);
+        QCOMPARE(scene.focusItem(), item);
+        QVERIFY(!item->hasFocus());
+    }
+
+}
+
 
 void tst_QGraphicsScene::mouseGrabberItem()
 {
@@ -3130,6 +3151,7 @@ void tst_QGraphicsScene::tabFocus_sceneWithFocusableItems()
     QVERIFY(!view->viewport()->hasFocus());
     QVERIFY(!scene.hasFocus());
     QVERIFY(!item->hasFocus());
+    QCOMPARE(scene.focusItem(), static_cast<QGraphicsItem *>(item));
 
     // Check that the correct item regains focus.
     widget.show();
