@@ -68,6 +68,7 @@ protected:
     virtual void doSeek(qint64 pos) = 0;
     virtual int setDeviceVolume(int mmfVolume) = 0;
     virtual int openFile(RFile& file) = 0;
+    virtual int openUrl(const QString& url) = 0;
     virtual void close() = 0;
     virtual void changeState(PrivateState newState);
 

@@ -243,11 +243,11 @@ void MMF::AbstractMediaPlayer::setFileSource(const MediaSource &source, RFile& f
         if (url.scheme() == QLatin1String("file")) {
             symbianErr = openFile(file);
             if (KErrNone != symbianErr)
+                errorMessage = tr("Error opening file");
+        } else {
+            symbianErr = openUrl(url.toString());
+            if (KErrNone != symbianErr)
                 errorMessage = tr("Error opening URL");
-        }
-        else {
-            TRACE_0("Error opening URL: protocol not supported");
-            errorMessage = tr("Error opening URL: protocol not supported");
         }
 
         break;

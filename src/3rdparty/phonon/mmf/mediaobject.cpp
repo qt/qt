@@ -253,7 +253,10 @@ void MMF::MediaObject::createPlayer(const MediaSource &source)
                 mediaType = fileMediaType(url.toLocalFile());
             }
             else {
-                errorMessage = QLatin1String("Network streaming not supported yet");
+                // Streaming playback is generally not supported by the implementation
+                // of the audio player API, so we use CVideoPlayerUtility for both
+                // audio and video streaming.
+                mediaType = MediaTypeVideo;
             }
         }
         break;

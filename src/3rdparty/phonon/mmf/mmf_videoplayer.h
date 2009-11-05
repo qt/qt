@@ -54,6 +54,7 @@ public:
     virtual void doSeek(qint64 milliseconds);
     virtual int setDeviceVolume(int mmfVolume);
     virtual int openFile(RFile& file);
+    virtual int openUrl(const QString& url);
     virtual void close();
 
     // MediaObjectInterface

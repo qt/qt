@@ -38,7 +38,8 @@ namespace MMF
 enum PanicCode {
     InvalidStatePanic               = 1,
     InvalidMediaTypePanic           = 2,
-    InvalidBackendInterfaceClass    = 3
+    InvalidBackendInterfaceClass    = 3,
+    AudioUtilityUrlNotSupported     = 4
 };
 
 class Utils
