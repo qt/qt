@@ -566,7 +566,7 @@ static const unsigned char indicPosition[0xe00-0x900] = {
     None, None, None, None,
     None, None, None, None,
 
-    None, None, None, None,
+    Below, None, None, None,
     None, None, None, None,
     None, None, None, None,
     None, None, None, None,
@@ -1252,7 +1252,9 @@ static bool indic_shape_syllable(HB_Bool openType, HB_ShaperItem *item, bool inv
         //   farther than 3 consonants from the end of the syllable.
         // #### replace the HasReph property by testing if the feature exists in the font!
         if (form(*uc) == Consonant || (script == HB_Script_Bengali && form(*uc) == IndependentVowel)) {
-            beginsWithRa = (properties & HasReph) && ((len > 2) && *uc == ra && *(uc+1) == halant);
+            if ((properties & HasReph) && (len > 2) &&
+                (*uc == ra || *uc == 0x9f0) && *(uc+1) == halant)
+                beginsWithRa = true;
 
             if (beginsWithRa && form(*(uc+2)) == Control)
                 beginsWithRa = false;
