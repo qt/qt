@@ -416,12 +416,27 @@ void SequentialAnchorData::updateChildrenSizes()
     const QPair<QGraphicsAnchorLayoutPrivate::Interval, qreal> maxFactor =
         getFactor(sizeAtMaximum, minSize, prefSize, maxSize);
 
+    // XXX This is not safe if Vertex simplification takes place after the sequential
+    // anchor is created. In that case, "prev" will be a group-vertex, different from
+    // "from" or "to", that _contains_ one of them.
+    AnchorVertex *prev = from;
+
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *e = m_edges.at(i);
 
-        e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->prefSize, e->maxSize);
-        e->sizeAtPreferred = interpolate(prefFactor, e->minSize, e->prefSize, e->maxSize);
-        e->sizeAtMaximum = interpolate(maxFactor, e->minSize, e->prefSize, e->maxSize);
+        const bool edgeIsForward = (e->from == prev);
+        if (edgeIsForward) {
+            e->sizeAtMinimum = interpolate(minFactor, e->minSize, e->prefSize, e->maxSize);
+            e->sizeAtPreferred = interpolate(prefFactor, e->minSize, e->prefSize, e->maxSize);
+            e->sizeAtMaximum = interpolate(maxFactor, e->minSize, e->prefSize, e->maxSize);
+            prev = e->to;
+        } else {
+            Q_ASSERT(prev == e->to);
+            e->sizeAtMinimum = interpolate(minFactor, e->maxSize, e->prefSize, e->minSize);
+            e->sizeAtPreferred = interpolate(prefFactor, e->maxSize, e->prefSize, e->minSize);
+            e->sizeAtMaximum = interpolate(maxFactor, e->maxSize, e->prefSize, e->minSize);
+            prev = e->from;
+        }
 
         e->updateChildrenSizes();
     }
@@ -433,11 +448,24 @@ void SequentialAnchorData::calculateSizeHints()
     prefSize = 0;
     maxSize = 0;
 
+    AnchorVertex *prev = from;
+
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *edge = m_edges.at(i);
-        minSize += edge->minSize;
-        prefSize += edge->prefSize;
-        maxSize += edge->maxSize;
+
+        const bool edgeIsForward = (edge->from == prev);
+        if (edgeIsForward) {
+            minSize += edge->minSize;
+            prefSize += edge->prefSize;
+            maxSize += edge->maxSize;
+            prev = edge->to;
+        } else {
+            Q_ASSERT(prev == edge->to);
+            minSize -= edge->maxSize;
+            prefSize -= edge->prefSize;
+            maxSize -= edge->minSize;
+            prev = edge->from;
+        }
     }
 
     // See comment in AnchorData::refreshSizeHints() about sizeAt* values
