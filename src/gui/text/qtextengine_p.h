@@ -345,11 +345,11 @@ struct Q_AUTOTEST_EXPORT QScriptItem
 {
     inline QScriptItem()
         : position(0),
-          num_glyphs(0), descent(-1), ascent(-1), width(-1),
+          num_glyphs(0), descent(-1), ascent(-1), leading(-1), width(-1),
           glyph_data_offset(0) {}
     inline QScriptItem(int p, const QScriptAnalysis &a)
         : position(p), analysis(a),
-          num_glyphs(0), descent(-1), ascent(-1), width(-1),
+          num_glyphs(0), descent(-1), ascent(-1), leading(-1), width(-1),
           glyph_data_offset(0) {}
 
     int position;
@@ -357,6 +357,7 @@ struct Q_AUTOTEST_EXPORT QScriptItem
     unsigned short num_glyphs;
     QFixed descent;
     QFixed ascent;
+    QFixed leading;
     QFixed width;
     int glyph_data_offset;
     QFixed height() const { return ascent + descent + 1; }
@@ -373,9 +374,10 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     QScriptLine()
         : from(0), length(0),
         justified(0), gridfitted(0),
-        hasTrailingSpaces(0) {}
+        hasTrailingSpaces(0), leadingIncluded(0) {}
     QFixed descent;
     QFixed ascent;
+    QFixed leading;
     QFixed x;
     QFixed y;
     QFixed width;
@@ -385,7 +387,11 @@ struct Q_AUTOTEST_EXPORT QScriptLine
     mutable uint justified : 1;
     mutable uint gridfitted : 1;
     uint hasTrailingSpaces : 1;
-    QFixed height() const { return ascent + descent + 1; }
+    uint leadingIncluded : 1;
+    QFixed height() const { return ascent + descent + 1
+                            + (leadingIncluded?  qMax(QFixed(),leading) : QFixed()); }
+    QFixed base() const { return ascent
+                          + (leadingIncluded ? qMax(QFixed(),leading) : QFixed()); }
     void setDefaultHeight(QTextEngine *eng);
     void operator+=(const QScriptLine &other);
 };
@@ -394,6 +400,7 @@ Q_DECLARE_TYPEINFO(QScriptLine, Q_PRIMITIVE_TYPE);
 
 inline void QScriptLine::operator+=(const QScriptLine &other)
 {
+    leading= qMax(leading + ascent, other.leading + other.ascent) - qMax(ascent, other.ascent);
     descent = qMax(descent, other.descent);
     ascent = qMax(ascent, other.ascent);
     textWidth += other.textWidth;
@@ -476,7 +483,7 @@ public:
         return end - si->position;
     }
 
-    QFontEngine *fontEngine(const QScriptItem &si, QFixed *ascent = 0, QFixed *descent = 0) const;
+    QFontEngine *fontEngine(const QScriptItem &si, QFixed *ascent = 0, QFixed *descent = 0, QFixed *leading = 0) const;
     QFont font(const QScriptItem &si) const;
     inline QFont font() const { return fnt; }
 

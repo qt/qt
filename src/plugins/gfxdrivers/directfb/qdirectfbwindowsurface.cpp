@@ -168,6 +168,16 @@ void QDirectFBWindowSurface::createWindow(const QRect &rect)
     if (result != DFB_OK)
         DirectFBErrorFatal("QDirectFBWindowSurface::createWindow", result);
 
+    if (window()) {
+        DFBWindowID winid;
+        result = dfbWindow->GetID(dfbWindow, &winid);
+        if (result != DFB_OK) {
+            DirectFBError("QDirectFBWindowSurface::createWindow. Can't get ID", result);
+        } else {
+            window()->setProperty("_q_DirectFBWindowID", winid);
+        }
+    }
+
     Q_ASSERT(!dfbSurface);
     dfbWindow->GetSurface(dfbWindow, &dfbSurface);
     updateFormat();
@@ -220,6 +230,9 @@ void QDirectFBWindowSurface::setGeometry(const QRect &rect)
     if (rect.isNull()) {
 #ifndef QT_NO_DIRECTFB_WM
         if (dfbWindow) {
+            if (window())
+                window()->setProperty("_q_DirectFBWindowID", QVariant());
+
             dfbWindow->Release(dfbWindow);
             dfbWindow = 0;
         }

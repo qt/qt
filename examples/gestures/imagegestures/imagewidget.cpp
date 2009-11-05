@@ -102,17 +102,13 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    if (QGesture *pan = event->gesture(Qt::PanGesture)) {
-        panTriggered(static_cast<QPanGesture*>(pan));
-        return true;
-    } else if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
-        pinchTriggered(static_cast<QPinchGesture*>(pinch));
-        return true;
-    } else if (QGesture *swipe = event->gesture(Qt::SwipeGesture)) {
-        swipeTriggered(static_cast<QSwipeGesture*>(swipe));
-        return true;
-    }
-    return false;
+    if (QGesture *pan = event->gesture(Qt::PanGesture))
+        panTriggered(static_cast<QPanGesture *>(pan));
+    if (QGesture *pinch = event->gesture(Qt::PinchGesture))
+        pinchTriggered(static_cast<QPinchGesture *>(pinch));
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    return true;
 }
 //! [gesture event handler]
 
@@ -128,21 +124,21 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
             setCursor(Qt::ArrowCursor);
     }
 #endif
-    QSizeF lastOffset = gesture->offset();
-    horizontalOffset += lastOffset.width();
-    verticalOffset += lastOffset.height();
+    QPointF delta = gesture->delta();
+    horizontalOffset += delta.x();
+    verticalOffset += delta.y();
     update();
 }
 
 void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
-    QPinchGesture::WhatChanged whatChanged = gesture->whatChanged();
-    if (whatChanged & QPinchGesture::RotationAngleChanged) {
+    QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
+    if (changeFlags & QPinchGesture::RotationAngleChanged) {
         qreal value = gesture->property("rotationAngle").toReal();
         qreal lastValue = gesture->property("lastRotationAngle").toReal();
         rotationAngle += value - lastValue;
     }
-    if (whatChanged & QPinchGesture::ScaleFactorChanged) {
+    if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
         qreal lastValue = gesture->property("lastScaleFactor").toReal();
         scaleFactor += value - lastValue;

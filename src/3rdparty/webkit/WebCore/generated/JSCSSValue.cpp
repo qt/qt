@@ -81,8 +81,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCSSValueConstructor::s_info = { "CSSValueConstructor", 0, &JSCSSValueConstructorTable, 0 };
@@ -142,7 +145,7 @@ JSCSSValue::JSCSSValue(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSCSSValue::~JSCSSValue()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSValue::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

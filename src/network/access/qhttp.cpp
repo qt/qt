@@ -121,6 +121,9 @@ public:
     void _q_slotError(QAbstractSocket::SocketError);
     void _q_slotClosed();
     void _q_slotBytesWritten(qint64 numBytes);
+#ifndef QT_NO_OPENSSL
+    void _q_slotEncryptedBytesWritten(qint64 numBytes);
+#endif
     void _q_slotDoFinished();
     void _q_slotSendRequest();
     void _q_continuePost();
@@ -134,6 +137,8 @@ public:
     void setState(int);
     void closeConn();
     void setSock(QTcpSocket *sock);
+
+    void postMoreData();
 
     QTcpSocket *socket;
     int reconnectAttempts;
@@ -2659,19 +2664,40 @@ void QHttpPrivate::_q_slotError(QAbstractSocket::SocketError err)
     closeConn();
 }
 
+#ifndef QT_NO_OPENSSL
+void QHttpPrivate::_q_slotEncryptedBytesWritten(qint64 written)
+{
+    Q_UNUSED(written);
+    postMoreData();
+}
+#endif
+
 void QHttpPrivate::_q_slotBytesWritten(qint64 written)
 {
     Q_Q(QHttp);
     bytesDone += written;
     emit q->dataSendProgress(bytesDone, bytesTotal);
+    postMoreData();
+}
 
+// Send the POST data
+void QHttpPrivate::postMoreData()
+{
     if (pendingPost)
         return;
 
     if (!postDevice)
         return;
 
+    // the following is backported code from Qt 4.6 QNetworkAccessManager.
+    // We also have to check the encryptedBytesToWrite() if it is an SSL socket.
+#ifndef QT_NO_OPENSSL
+    QSslSocket *sslSocket = qobject_cast<QSslSocket*>(socket);
+    // if it is really an ssl socket, check more than just bytesToWrite()
+    if ((socket->bytesToWrite() + (sslSocket ? sslSocket->encryptedBytesToWrite() : 0)) == 0) {
+#else
     if (socket->bytesToWrite() == 0) {
+#endif
         int max = qMin<qint64>(4096, postDevice->size() - postDevice->pos());
         QByteArray arr;
         arr.resize(max);
@@ -3097,6 +3123,8 @@ void QHttpPrivate::setSock(QTcpSocket *sock)
     if (qobject_cast<QSslSocket *>(socket)) {
         QObject::connect(socket, SIGNAL(sslErrors(const QList<QSslError> &)),
                          q, SIGNAL(sslErrors(const QList<QSslError> &)));
+        QObject::connect(socket, SIGNAL(encryptedBytesWritten(qint64)),
+                         q, SLOT(_q_slotEncryptedBytesWritten(qint64)));
     }
 #endif
 }

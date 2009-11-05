@@ -63,12 +63,15 @@ namespace WebCore {
         ScriptObject newScriptObject();
 
         void didCommitLoad();
-        void addMessageToConsole(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void addConsoleMessage(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void updateConsoleMessageRepeatCount(const int count);
         void clearConsoleMessages();
 
         bool addResource(long long identifier, const ScriptObject& resourceObj);
         bool updateResource(long long identifier, const ScriptObject& resourceObj);
         void removeResource(long long identifier);
+
+        void addCookieDomain(String);
 
         void updateFocusedNode(long long nodeId);
         void setAttachedWindow(bool attached);
@@ -87,15 +90,18 @@ namespace WebCore {
         void profilerWasDisabled();
         void parsedScriptSource(const JSC::SourceCode&);
         void failedToParseScriptSource(const JSC::SourceCode&, int errorLine, const JSC::UString& errorMessage);
-        void addProfile(const JSC::JSValue& profile);
+        void addProfileHeader(const ScriptValue& profile);
         void setRecordingProfile(bool isProfiling);
+        void didGetProfileHeaders(int callId, const ScriptArray& headers);
+        void didGetProfile(int callId, const ScriptValue& profile);
         void pausedScript(const ScriptValue& callFrames);
         void resumedScript();
 #endif
 
 #if ENABLE(DATABASE)
         bool addDatabase(const ScriptObject& dbObj);
-        void selectDatabase(Database* database);
+        void selectDatabase(int databaseId);
+        void didGetDatabaseTableNames(int callId, const ScriptArray& tableNames);
 #endif
         
 #if ENABLE(DOM_STORAGE)
@@ -117,10 +123,11 @@ namespace WebCore {
         void didGetChildNodes(int callId);
         void didApplyDomChange(int callId, bool success);
         void didGetEventListenersForNode(int callId, int nodeId, ScriptArray& listenersArray);
+        void didRemoveNode(int callId, int nodeId);
 
-        void timelineWasEnabled();
-        void timelineWasDisabled();
-        void addItemToTimeline(const ScriptObject& itemObj);
+        void timelineProfilerWasStarted();
+        void timelineProfilerWasStopped();
+        void addRecordToTimeline(const ScriptObject&);
 
         void didGetCookies(int callId, const ScriptArray& cookies, const String& cookiesString);
         void didDispatchOnInjectedScript(int callId, const String& result, bool isException);
@@ -129,6 +136,7 @@ namespace WebCore {
 
         ScriptState* scriptState() const { return m_scriptState; }
 
+        void evaluateForTestInFrontend(int callId, const String& script);
     private:
         PassOwnPtr<ScriptFunctionCall> newFunctionCall(const String& functionName);
         void callSimpleFunction(const String& functionName);

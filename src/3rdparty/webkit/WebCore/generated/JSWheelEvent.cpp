@@ -89,8 +89,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSWheelEventConstructor::s_info = { "WheelEventConstructor", 0, &JSWheelEventConstructorTable, 0 };

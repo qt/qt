@@ -116,9 +116,6 @@ QTextEditPrivate::QTextEditPrivate()
     preferRichText = false;
     showCursorOnInitialShow = true;
     inDrag = false;
-#ifdef Q_WS_WIN
-    setSingleFingerPanEnabled(true);
-#endif
 }
 
 void QTextEditPrivate::createAutoBulletList()
@@ -185,6 +182,9 @@ void QTextEditPrivate::init(const QString &html)
 
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
+#endif
+#ifdef Q_WS_WIN
+    setSingleFingerPanEnabled(true);
 #endif
 }
 
@@ -1246,7 +1246,6 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
             return;
         }
     }
-#endif // QT_NO_SHORTCUT
 
     if (!(tif & Qt::TextEditable)) {
         switch (e->key()) {
@@ -1274,6 +1273,7 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
         }
         return;
     }
+#endif // QT_NO_SHORTCUT
 
     {
         QTextCursor cursor = d->control->textCursor();
@@ -2079,8 +2079,8 @@ void QTextEdit::setReadOnly(bool ro)
     } else {
         flags = Qt::TextEditorInteraction;
     }
-    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
     d->control->setTextInteractionFlags(flags);
+    setAttribute(Qt::WA_InputMethodEnabled, shouldEnableInputMethod(this));
 }
 
 /*!

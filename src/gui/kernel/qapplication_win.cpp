@@ -615,6 +615,8 @@ static void qt_set_windows_font_resources()
     if (qt_wince_is_mobile()) {
         smallerFont.setPointSize(systemFont.pointSize()-1);
         QApplication::setFont(smallerFont, "QTabBar");
+        smallerFont.setBold(true);
+        QApplication::setFont(smallerFont, "QAbstractButton");
     }
 #endif// Q_WS_WINCE
 }
@@ -1916,11 +1918,9 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
 #ifndef Q_WS_WINCE
         case WM_ENTERSIZEMOVE:
             autoCaptureWnd = hwnd;
-            QApplicationPrivate::inSizeMove = true;
             break;
         case WM_EXITSIZEMOVE:
             autoCaptureWnd = 0;
-            QApplicationPrivate::inSizeMove = false;
             break;
 #endif
         case WM_MOVE:                                // move window
@@ -2499,24 +2499,24 @@ LRESULT CALLBACK QtWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam
             if (qAppPriv->GetGestureInfo)
                 bResult = qAppPriv->GetGestureInfo((HANDLE)msg.lParam, &gi);
             if (bResult) {
-//                if (gi.dwID == GID_BEGIN) {
-//                    // find the alien widget for the gesture position.
-//                    // This might not be accurate as the position is the center
-//                    // point of two fingers for multi-finger gestures.
-//                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
-//                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
-//                    qAppPriv->gestureWidget = w ? w : widget;
-//                }
-//                if (qAppPriv->gestureWidget)
-//                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
-//                if (qAppPriv->CloseGestureInfoHandle)
-//                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
-//                if (gi.dwID == GID_END)
-//                    qAppPriv->gestureWidget = 0;
-//            } else {
-//                DWORD dwErr = GetLastError();
-//                if (dwErr > 0)
-//                    qWarning() << "translateGestureEvent: error = " << dwErr;
+                if (gi.dwID == GID_BEGIN) {
+                    // find the alien widget for the gesture position.
+                    // This might not be accurate as the position is the center
+                    // point of two fingers for multi-finger gestures.
+                    QPoint pt(gi.ptsLocation.x, gi.ptsLocation.y);
+                    QWidget *w = widget->childAt(widget->mapFromGlobal(pt));
+                    qAppPriv->gestureWidget = w ? w : widget;
+                }
+                if (qAppPriv->gestureWidget)
+                    static_cast<QETWidget*>(qAppPriv->gestureWidget)->translateGestureEvent(msg, gi);
+                if (qAppPriv->CloseGestureInfoHandle)
+                    qAppPriv->CloseGestureInfoHandle((HANDLE)msg.lParam);
+                if (gi.dwID == GID_END)
+                    qAppPriv->gestureWidget = 0;
+            } else {
+                DWORD dwErr = GetLastError();
+                if (dwErr > 0)
+                    qWarning() << "translateGestureEvent: error = " << dwErr;
             }
             result = true;
             break;

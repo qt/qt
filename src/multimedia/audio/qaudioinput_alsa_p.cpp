@@ -630,7 +630,7 @@ qint64 QAudioInputPrivate::clock() const
             l = -l;
             l %= 1000000;
         }
-        return ((t1.tv_sec * 1000)+l/1000);
+        return ((t1.tv_sec * 1000000)+l);
     } else
         return 0;
 #else

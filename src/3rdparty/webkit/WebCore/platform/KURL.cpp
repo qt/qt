@@ -529,7 +529,7 @@ void KURL::init(const KURL& base, const String& relative, const TextEncoding& en
 KURL KURL::copy() const
 {
     KURL result = *this;
-    result.m_string = result.m_string.copy();
+    result.m_string = result.m_string.crossThreadString();
     return result;
 }
 
@@ -1269,8 +1269,8 @@ void KURL::parse(const char* url, const String* originalString)
         m_userStart = m_userEnd = m_passwordEnd = m_hostEnd = m_portEnd = p - buffer.data();
 
     // For canonicalization, ensure we have a '/' for no path.
-    // Only do this for http and https.
-    if (m_protocolInHTTPFamily && pathEnd - pathStart == 0)
+    // Do this only for hierarchical URL with protocol http or https.
+    if (m_protocolInHTTPFamily && hierarchical && pathEnd == pathStart)
         *p++ = '/';
 
     // add path, escaping bad characters

@@ -79,7 +79,7 @@ void OriginQuotaManager::addDatabase(SecurityOrigin* origin, const String& datab
     OriginUsageRecord* usageRecord = m_usageMap.get(origin);
     ASSERT(usageRecord);
 
-    usageRecord->addDatabase(databaseIdentifier.copy(), fullPath.copy());
+    usageRecord->addDatabase(databaseIdentifier.threadsafeCopy(), fullPath.threadsafeCopy());
 }
 
 void OriginQuotaManager::removeDatabase(SecurityOrigin* origin, const String& databaseIdentifier)
@@ -104,8 +104,7 @@ void OriginQuotaManager::markDatabase(Database* database)
 {
     ASSERT(database);
     ASSERT(m_usageRecordGuardLocked);
-    RefPtr<SecurityOrigin> origin = database->securityOriginCopy();
-    OriginUsageRecord* usageRecord = m_usageMap.get(origin);
+    OriginUsageRecord* usageRecord = m_usageMap.get(database->securityOrigin());
     ASSERT(usageRecord);
 
     usageRecord->markDatabase(database->stringIdentifier());

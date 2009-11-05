@@ -91,8 +91,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSDataGridColumnConstructor::s_info = { "DataGridColumnConstructor", 0, &JSDataGridColumnConstructorTable, 0 };
@@ -154,7 +157,7 @@ JSDataGridColumn::JSDataGridColumn(NonNullPassRefPtr<Structure> structure, JSDOM
 
 JSDataGridColumn::~JSDataGridColumn()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSDataGridColumn::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

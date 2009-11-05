@@ -68,10 +68,9 @@
     environment and use native features, such as menus, to conform
     to the native style guidelines.
     \o \l{Symbian platform - Introduction to using Qt}{Qt for the Symbian
-platform} is used to create
-    applications running in existing Symbian platform environments.
-    Applications use the appropriate style for the embedded
-    environment and use native features, such as menus, to conform
+    platform} is used to create applications running in existing Symbian
+    platform environments. Applications use the appropriate style for the
+    embedded environment and use native features, such as menus, to conform
     to the native style guidelines.
     \endtable
 */

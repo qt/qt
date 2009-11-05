@@ -281,6 +281,7 @@ static const int QGRAPHICSVIEW_PREALLOC_STYLE_OPTIONS = 503; // largest prime < 
 #include <QtGui/qstyleoption.h>
 #include <QtGui/qinputcontext.h>
 #ifdef Q_WS_X11
+#include <QtGui/qpaintengine.h>
 #include <private/qt_x11_p.h>
 #endif
 
@@ -2701,6 +2702,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
 
         return true;
     }
+    case QEvent::Gesture:
+    case QEvent::GestureOverride:
+    {
+        if (!isEnabled())
+            return false;
+
+        if (d->scene && d->sceneInteractionAllowed) {
+            QGestureEvent *gestureEvent = static_cast<QGestureEvent *>(event);
+            gestureEvent->setWidget(viewport());
+            (void) QApplication::sendEvent(d->scene, gestureEvent);
+        }
+        return true;
+    }
     default:
         break;
     }
@@ -3281,7 +3295,12 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
             backgroundPainter.setClipRegion(d->backgroundPixmapExposed, Qt::ReplaceClip);
             if (viewTransformed)
                 backgroundPainter.setTransform(viewTransform);
-            backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
+#ifdef Q_WS_X11
+#undef X11
+            if (backgroundPainter.paintEngine()->type() != QPaintEngine::X11)
+#define X11 qt_x11Data
+#endif
+                backgroundPainter.setCompositionMode(QPainter::CompositionMode_Source);
             drawBackground(&backgroundPainter, exposedSceneRect);
             d->backgroundPixmapExposed = QRegion();
         }
@@ -3306,6 +3325,14 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
     if (!(d->optimizationFlags & IndirectPainting)) {
         d->scene->d_func()->drawItems(&painter, viewTransformed ? &viewTransform : 0,
                                       &d->exposedRegion, viewport());
+        // Make sure the painter's world transform is restored correctly when
+        // drawing without painter state protection (DontSavePainterState).
+        // We only change the worldTransform() so there's no need to do a full-blown
+        // save() and restore(). Also note that we don't have to do this in case of
+        // IndirectPainting (the else branch), because in that case we always save()
+        // and restore() in QGraphicsScene::drawItems().
+        if (!d->scene->d_func()->painterStateProtection)
+            painter.setWorldTransform(viewTransform);
     } else {
         // Find all exposed items
         bool allItems = false;

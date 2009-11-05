@@ -66,12 +66,7 @@ public:
     enum ShaderTypeBits
     {
         VertexShader            = 0x0001,
-        FragmentShader          = 0x0002,
-
-        PartialShader           = 0x1000,
-
-        PartialVertexShader     = PartialShader | VertexShader,
-        PartialFragmentShader   = PartialShader | FragmentShader
+        FragmentShader          = 0x0002
     };
     Q_DECLARE_FLAGS(ShaderType, ShaderTypeBits)
 
@@ -88,11 +83,6 @@ public:
     bool compile(const QString& source);
     bool compileFile(const QString& fileName);
 
-    bool setShaderBinary(GLenum format, const void *binary, int length);
-    bool setShaderBinary(QGLShader& otherShader, GLenum format, const void *binary, int length);
-
-    static QList<GLenum> shaderBinaryFormats();
-
     QByteArray sourceCode() const;
 
     bool isCompiled() const;
@@ -101,11 +91,10 @@ public:
     GLuint shaderId() const;
 
 private:
-    QGLShaderPrivate *d;
-
     friend class QGLShaderProgram;
 
     Q_DISABLE_COPY(QGLShader)
+    Q_DECLARE_PRIVATE(QGLShader)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
@@ -131,10 +120,6 @@ public:
     bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
-
-    QByteArray programBinary(int *format) const;
-    bool setProgramBinary(int format, const QByteArray& binary);
-    static QList<int> programBinaryFormats();
 
     virtual bool link();
     bool isLinked() const;
@@ -195,6 +180,17 @@ public:
     int uniformLocation(const char *name) const;
     int uniformLocation(const QByteArray& name) const;
     int uniformLocation(const QString& name) const;
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setUniformValue(int location, QMacCompatGLint value);
+    void setUniformValue(int location, QMacCompatGLuint value);
+    void setUniformValue(const char *name, QMacCompatGLint value);
+    void setUniformValue(const char *name, QMacCompatGLuint value);
+    void setUniformValueArray(int location, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(int location, const QMacCompatGLuint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count);
+#endif
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
@@ -286,9 +282,8 @@ private Q_SLOTS:
     void shaderDestroyed();
 
 private:
-    QGLShaderProgramPrivate *d;
-
     Q_DISABLE_COPY(QGLShaderProgram)
+    Q_DECLARE_PRIVATE(QGLShaderProgram)
 
     bool init();
 };

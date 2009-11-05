@@ -1127,6 +1127,8 @@ bool TargetNode::isInnerNode() const
 }
 
 #ifdef QDOC_QML
+bool QmlClassNode::qmlOnly = false;
+
 /*!
   Constructor for the Qml class node.
  */
@@ -1135,7 +1137,7 @@ QmlClassNode::QmlClassNode(InnerNode *parent,
                            const ClassNode* cn)
     : FakeNode(parent, name, QmlClass), cnode(cn)
 {
-    setTitle("QML " + name + " Element Reference");
+    setTitle((qmlOnly ? "" : "QML ") + name + " Element Reference");
 }
 
 /*!
@@ -1210,8 +1212,10 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
 /*!
   Constructor for the QML signal node.
  */
-QmlSignalNode::QmlSignalNode(QmlClassNode *parent, const QString& name)
-    : LeafNode(QmlSignal, parent, name)
+QmlSignalNode::QmlSignalNode(QmlClassNode *parent,
+                             const QString& name,
+                             bool attached)
+    : LeafNode(QmlSignal, parent, name), att(attached)
 {
     // nothing.
 }
@@ -1219,8 +1223,10 @@ QmlSignalNode::QmlSignalNode(QmlClassNode *parent, const QString& name)
 /*!
   Constructor for the QML method node.
  */
-QmlMethodNode::QmlMethodNode(QmlClassNode *parent, const QString& name)
-    : LeafNode(QmlMethod, parent, name)
+QmlMethodNode::QmlMethodNode(QmlClassNode *parent,
+                             const QString& name,
+                             bool attached)
+    : LeafNode(QmlMethod, parent, name), att(attached)
 {
     // nothing.
 }

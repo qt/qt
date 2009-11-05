@@ -49,12 +49,12 @@
 #include <qglpixelbuffer.h>
 #include <qcolormap.h>
 #include <qdesktopwidget.h>
+#include <private/qwidget_p.h>
 #include "qdebug.h"
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
 #include <qx11info_x11.h>
-#include <private/qwidget_p.h>
 
 #ifndef QT_OPENGL_ES
 #include <GL/glx.h>
@@ -195,6 +195,9 @@ public:
         if (!initializing && !widget && !cleanedUp) {
             initializing = true;
             widget = new QGLWidget;
+            // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+            if (QWidgetPrivate::allWidgets)
+                QWidgetPrivate::allWidgets->remove(widget);
             initializing = false;
         }
         return widget;
@@ -364,6 +367,7 @@ void QGLWindowSurface::hijackWindow(QWidget *widget)
     if (ctxpriv->eglSurface == EGL_NO_SURFACE) {
         qWarning() << "hijackWindow() could not create EGL surface";
     }
+    qDebug("QGLWindowSurface - using EGLConfig %d", reinterpret_cast<int>(ctxpriv->eglContext->config()));
 #endif
 
     widgetPrivate->extraData()->glContext = ctx;

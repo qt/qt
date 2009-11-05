@@ -157,19 +157,7 @@
 #ifndef QT_NO_ANIMATION
 
 #define DEFAULT_TIMER_INTERVAL 16
-
-#ifdef Q_WS_WIN
-    /// Fix for Qt 4.7
-    //on windows if you're currently dragging a widget an inner eventloop was started by the system
-    //to make sure that this timer is getting fired, we need to make sure to use the system timers
-    //that will send a WM_TIMER event. We do that by settings the timer interval to 11
-    //It is 16 because QEventDispatcherWin32Private::registerTimer specifically checks if the interval
-    //is greater than 11 to determine if it should use a system timer (or the multimedia timer).
-#define STARTSTOP_TIMER_DELAY 16
-#else
 #define STARTSTOP_TIMER_DELAY 0
-#endif
-
 
 QT_BEGIN_NAMESPACE
 
@@ -194,15 +182,10 @@ QUnifiedTimer *QUnifiedTimer::instance()
     return inst;
 }
 
-void QUnifiedTimer::ensureTimerUpdate(QAbstractAnimation *animation)
+void QUnifiedTimer::ensureTimerUpdate()
 {
-    if (isPauseTimerActive) {
+    if (isPauseTimerActive)
         updateAnimationsTime();
-    } else {
-        // this code is needed when ensureTimerUpdate is called from setState because we update
-        // the currentTime when an animation starts running (otherwise we could remove it)
-        animation->setCurrentTime(animation->currentTime());
-    }
 }
 
 void QUnifiedTimer::updateAnimationsTime()
@@ -272,7 +255,8 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
         animationsToStart << animation;
-        startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        if (!startStopAnimationTimer.isActive())
+            startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     }
 }
 
@@ -290,7 +274,7 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
 
-        if (animations.isEmpty())
+        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
     } else {
         animationsToStart.removeOne(animation);
@@ -318,6 +302,7 @@ void QUnifiedTimer::unregisterRunningAnimation(QAbstractAnimation *animation)
         runningPauseAnimations.removeOne(animation);
     else
         runningLeafAnimations--;
+    Q_ASSERT(runningLeafAnimations >= 0);
 }
 
 int QUnifiedTimer::closestPauseAnimationTimeToFinish()
@@ -328,9 +313,9 @@ int QUnifiedTimer::closestPauseAnimationTimeToFinish()
         int timeToFinish;
 
         if (animation->direction() == QAbstractAnimation::Forward)
-            timeToFinish = animation->totalDuration() - QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->duration() - animation->currentTime();
         else
-            timeToFinish = QAbstractAnimationPrivate::get(animation)->totalCurrentTime;
+            timeToFinish = animation->currentTime();
 
         if (timeToFinish < closestTimeToFinish)
             closestTimeToFinish = timeToFinish;
@@ -379,28 +364,25 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     case QAbstractAnimation::Paused:
         if (hasRegisteredTimer)
             // currentTime needs to be updated if pauseTimer is active
-            QUnifiedTimer::instance()->ensureTimerUpdate(q);
+            QUnifiedTimer::instance()->ensureTimerUpdate();
         if (!guard)
             return;
+        //here we're sure that we were in running state before and that the
+        //animation is currently registered
         QUnifiedTimer::instance()->unregisterAnimation(q);
         break;
     case QAbstractAnimation::Running:
         {
             bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
+            QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
 
             // this ensures that the value is updated now that the animation is running
             if (oldState == QAbstractAnimation::Stopped) {
-                if (isTopLevel)
+                if (isTopLevel) {
                     // currentTime needs to be updated if pauseTimer is active
-                    QUnifiedTimer::instance()->ensureTimerUpdate(q);
-                if (!guard)
-                    return;
-            }
-
-            // test needed in case we stop in the setCurrentTime inside ensureTimerUpdate (zero duration)
-            if (state == QAbstractAnimation::Running) {
-                // register timer if our parent is not running
-                QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
+                    QUnifiedTimer::instance()->ensureTimerUpdate();
+                    q->setCurrentTime(totalCurrentTime);
+                }
             }
         }
         break;
@@ -413,7 +395,8 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         if (deleteWhenStopped)
             q->deleteLater();
 
-        QUnifiedTimer::instance()->unregisterAnimation(q);
+        if (oldState == QAbstractAnimation::Running)
+            QUnifiedTimer::instance()->unregisterAnimation(q);
 
         if (dura == -1 || loopCount < 0
             || (oldDirection == QAbstractAnimation::Forward && (oldCurrentTime * (oldCurrentLoop + 1)) == (dura * loopCount))
@@ -460,7 +443,8 @@ QAbstractAnimation::~QAbstractAnimation()
         QAbstractAnimation::State oldState = d->state;
         d->state = Stopped;
         emit stateChanged(oldState, d->state);
-        QUnifiedTimer::instance()->unregisterAnimation(this);
+        if (oldState == QAbstractAnimation::Running)
+            QUnifiedTimer::instance()->unregisterAnimation(this);
     }
 }
 
@@ -559,7 +543,7 @@ void QAbstractAnimation::setDirection(Direction direction)
     // the commands order below is important: first we need to setCurrentTime with the old direction,
     // then update the direction on this and all children and finally restart the pauseTimer if needed
     if (d->hasRegisteredTimer)
-        QUnifiedTimer::instance()->ensureTimerUpdate(this);
+        QUnifiedTimer::instance()->ensureTimerUpdate();
 
     d->direction = direction;
     updateDirection(direction);
@@ -648,13 +632,13 @@ int QAbstractAnimation::currentLoop() const
 */
 int QAbstractAnimation::totalDuration() const
 {
-    Q_D(const QAbstractAnimation);
-    if (d->loopCount < 0)
-        return -1;
     int dura = duration();
-    if (dura == -1)
+    if (dura <= 0)
+        return dura;
+    int loopcount = loopCount();
+    if (loopcount < 0)
         return -1;
-    return dura * d->loopCount;
+    return dura * loopcount;
 }
 
 /*!
@@ -685,7 +669,7 @@ void QAbstractAnimation::setCurrentTime(int msecs)
 
     // Calculate new time and loop.
     int dura = duration();
-    int totalDura = (d->loopCount < 0 || dura == -1) ? -1 : dura * d->loopCount;
+    int totalDura = dura <= 0 ? dura : ((d->loopCount < 0) ? -1 : dura * d->loopCount);
     if (totalDura != -1)
         msecs = qMin(totalDura, msecs);
     d->totalCurrentTime = msecs;

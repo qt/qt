@@ -544,7 +544,7 @@ qint64 QAudioInputPrivate::clock() const
     if (deviceState == QAudio::StopState)
         return 0;
 
-    return timeStampOpened.elapsed();
+    return timeStampOpened.elapsed()*1000;
 }
 
 void QAudioInputPrivate::reset()

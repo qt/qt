@@ -43,7 +43,7 @@ public:
 
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, JSC::ImplementsHasInstance | JSC::NeedsThisConversion));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
 
     virtual void markChildren(JSC::MarkStack&);
@@ -99,6 +99,8 @@ public:
     {
         return static_cast<DOMWindow*>(Base::impl());
     }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetPropertyNames | JSC::ImplementsHasInstance | JSC::NeedsThisConversion | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 DOMWindow* toDOMWindow(JSC::JSValue);
@@ -113,9 +115,11 @@ public:
     virtual bool getOwnPropertyDescriptor(JSC::ExecState*, const JSC::Identifier&, JSC::PropertyDescriptor&);
     static PassRefPtr<JSC::Structure> createStructure(JSC::JSValue prototype)
     {
-        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType));
+        return JSC::Structure::create(prototype, JSC::TypeInfo(JSC::ObjectType, StructureFlags));
     }
     JSDOMWindowPrototype(NonNullPassRefPtr<JSC::Structure> structure) : JSC::JSObject(structure) { }
+protected:
+    static const unsigned StructureFlags = JSC::OverridesMarkChildren | JSC::OverridesGetOwnPropertySlot | Base::StructureFlags;
 };
 
 // Functions
@@ -573,6 +577,8 @@ JSC::JSValue jsDOMWindowHTMLUListElementConstructor(JSC::ExecState*, const JSC::
 void setJSDOMWindowHTMLUListElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLCollectionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowHTMLAllCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowHTMLAllCollectionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowImageConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowImageConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
@@ -601,6 +607,8 @@ JSC::JSValue jsDOMWindowCanvasFloatArrayConstructor(JSC::ExecState*, const JSC::
 void setJSDOMWindowCanvasFloatArrayConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowBeforeLoadEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowBeforeLoadEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowKeyboardEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowKeyboardEventConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowMouseEventConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

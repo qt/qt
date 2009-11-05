@@ -91,7 +91,9 @@ QT_BEGIN_NAMESPACE
 #define COMMAND_QMLATTACHEDPROPERTY     Doc::alias("qmlattachedproperty")
 #define COMMAND_QMLINHERITS             Doc::alias("inherits")
 #define COMMAND_QMLSIGNAL               Doc::alias("qmlsignal")
+#define COMMAND_QMLATTACHEDSIGNAL       Doc::alias("qmlattachedsignal")
 #define COMMAND_QMLMETHOD               Doc::alias("qmlmethod")
+#define COMMAND_QMLATTACHEDMETHOD       Doc::alias("qmlattachedmethod")
 #define COMMAND_QMLDEFAULT              Doc::alias("default")
 #endif
 
@@ -485,7 +487,9 @@ QSet<QString> CppCodeParser::topicCommands()
                            << COMMAND_QMLPROPERTY
                            << COMMAND_QMLATTACHEDPROPERTY
                            << COMMAND_QMLSIGNAL
-                           << COMMAND_QMLMETHOD;
+                           << COMMAND_QMLATTACHEDSIGNAL
+                           << COMMAND_QMLMETHOD
+                           << COMMAND_QMLATTACHEDMETHOD;
 #else
                            << COMMAND_VARIABLE;
 #endif
@@ -678,7 +682,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
         return new QmlClassNode(tre->root(), names[0], classNode);
     }
     else if ((command == COMMAND_QMLSIGNAL) ||
-             (command == COMMAND_QMLMETHOD)) {
+             (command == COMMAND_QMLMETHOD) ||
+             (command == COMMAND_QMLATTACHEDSIGNAL) ||
+             (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
         QString name;
         QmlClassNode* qmlClass = 0;
@@ -687,9 +693,15 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
                 if (command == COMMAND_QMLSIGNAL)
-                    return new QmlSignalNode(qmlClass,name);
+                    return new QmlSignalNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDSIGNAL)
+                    return new QmlSignalNode(qmlClass,name,true);
+                else if (command == COMMAND_QMLMETHOD)
+                    return new QmlMethodNode(qmlClass,name,false);
+                else if (command == COMMAND_QMLATTACHEDMETHOD)
+                    return new QmlMethodNode(qmlClass,name,true);
                 else
-                    return new QmlMethodNode(qmlClass,name);
+                    return 0; // never get here.
             }
         }
     }
@@ -787,14 +799,26 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             }
         }
         if (qmlPropGroup) {
-            new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            const ClassNode *correspondingClass = static_cast<const QmlClassNode*>(qmlPropGroup->parent())->classNode();
+            PropertyNode *correspondingProperty = 0;
+            if (correspondingClass)
+                correspondingProperty = static_cast<PropertyNode*>((Node*)correspondingClass->findNode(property, Node::Property));
+            QmlPropertyNode *qmlPropNode = new QmlPropertyNode(qmlPropGroup,property,type,attached);
+            if (correspondingProperty) {
+                bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+            }
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    new QmlPropertyNode(qmlPropGroup,
+                    QmlPropertyNode * qmlPropNode = new QmlPropertyNode(qmlPropGroup,
                                         property,
                                         type,
                                         attached);
+                    if (correspondingProperty) {
+                        bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
+                        qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
+                    }
                 }
                 ++arg;
             }
@@ -1739,15 +1763,15 @@ bool CppCodeParser::matchProperty(InnerNode *parent)
 
         if (key == "READ")
             tre->addPropertyFunction(property, value, PropertyNode::Getter);
-        else if (key == "WRITE")
+        else if (key == "WRITE") {
             tre->addPropertyFunction(property, value, PropertyNode::Setter);
-        else if (key == "STORED")
+            property->setWritable(true);
+        } else if (key == "STORED")
             property->setStored(value.toLower() == "true");
         else if (key == "DESIGNABLE")
             property->setDesignable(value.toLower() == "true");
         else if (key == "RESET")
             tre->addPropertyFunction(property, value, PropertyNode::Resetter);
-
         else if (key == "NOTIFY") {
             tre->addPropertyFunction(property, value, PropertyNode::Notifier);
         }

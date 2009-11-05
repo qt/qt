@@ -251,7 +251,9 @@ public:
 protected:
 
     void resizeEvent(QResizeEvent*) {
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_WINCE_WM)
+        touchDevice = true;
+#elif defined(Q_OS_SYMBIAN)
         // FIXME: use HAL
         if (width() > 480 || height() > 480)
             touchDevice = true;
@@ -378,7 +380,7 @@ int main(int argc, char **argv)
 
     Raycasting w;
     w.setWindowTitle("Raycasting");
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
     w.showMaximized();
 #else
     w.resize(640, 480);

@@ -110,7 +110,7 @@ public:
     EGLDisplay display() const { return dpy; }
 
     EGLContext context() const { return ctx; }
-    void setContext(EGLContext context) { ctx = context; }
+    void setContext(EGLContext context) { ctx = context; ownsContext = false;}
 
     EGLConfig config() const { return cfg; }
     void setConfig(EGLConfig config) { cfg = config; }
@@ -131,6 +131,7 @@ private:
     EGLConfig cfg;
     EGLSurface currentSurface;
     bool current;
+    bool ownsContext;
 
     static EGLDisplay getDisplay(QPaintDevice *device);
 

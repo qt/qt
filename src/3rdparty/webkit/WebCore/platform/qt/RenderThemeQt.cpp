@@ -44,6 +44,8 @@
 #include "Page.h"
 #include "RenderBox.h"
 #include "RenderTheme.h"
+#include "UserAgentStyleSheets.h"
+#include "QWebPageClient.h"
 #include "qwebpage.h"
 
 #include <QApplication>
@@ -756,12 +758,13 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
     if (result == RadioPart || result == CheckboxPart)
         option.state |= (isChecked(o) ? QStyle::State_On : QStyle::State_Off);
 
-    // If the webview has a custom palette, use it
+    // If the owner widget has a custom palette, use it
     Page* page = o->document()->page();
     if (page) {
-        QWidget* view = static_cast<ChromeClientQt*>(page->chrome()->client())->m_webPage->view();
-        if (view)
-            option.palette = view->palette();
+        ChromeClient* client = page->chrome()->client();
+        QWebPageClient* pageClient = client->platformPageClient();
+        if (pageClient)
+            option.palette = pageClient->palette();
     }
 
     return result;
@@ -771,13 +774,7 @@ ControlPart RenderThemeQt::applyTheme(QStyleOption& option, RenderObject* o) con
 
 String RenderThemeQt::extraMediaControlsStyleSheet()
 {
-    QFile platformStyleSheet(QLatin1String(":/webcore/css/mediaControls-extras.css"));
-    if (platformStyleSheet.open(QFile::ReadOnly)) {
-        QByteArray sheetData = platformStyleSheet.readAll();
-        return QString::fromUtf8(sheetData.constData(), sheetData.length());
-    }
-
-    return String();
+    return String(mediaControlsQtUserAgentStyleSheet, sizeof(mediaControlsQtUserAgentStyleSheet));
 }
 
 // Helper class to transform the painter's world matrix to the object's content area, scaled to 0,0,100,100

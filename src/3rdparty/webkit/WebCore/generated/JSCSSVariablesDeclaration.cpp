@@ -83,8 +83,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSCSSVariablesDeclarationConstructor::s_info = { "CSSVariablesDeclarationConstructor", 0, &JSCSSVariablesDeclarationConstructorTable, 0 };
@@ -144,7 +147,7 @@ JSCSSVariablesDeclaration::JSCSSVariablesDeclaration(NonNullPassRefPtr<Structure
 
 JSCSSVariablesDeclaration::~JSCSSVariablesDeclaration()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSVariablesDeclaration::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

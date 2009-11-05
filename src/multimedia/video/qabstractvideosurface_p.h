@@ -64,14 +64,13 @@ class QAbstractVideoSurfacePrivate : public QObjectPrivate
 public:
     QAbstractVideoSurfacePrivate()
         : error(QAbstractVideoSurface::NoError)
-        , started(false)
+        , active(false)
     {
     }
 
     mutable QAbstractVideoSurface::Error error;
     QVideoSurfaceFormat format;
-    bool started;
-
+    bool active;
 };
 
 QT_END_NAMESPACE

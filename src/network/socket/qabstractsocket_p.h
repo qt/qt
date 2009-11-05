@@ -93,6 +93,7 @@ public:
     void _q_startConnecting(const QHostInfo &hostInfo);
     void _q_testConnection();
     void _q_abortConnectionAttempt();
+    void _q_forceDisconnect();
 
     bool readSocketNotifierCalled;
     bool readSocketNotifierState;
@@ -148,6 +149,7 @@ public:
     int blockingTimeout;
 
     QTimer *connectTimer;
+    QTimer *disconnectTimer;
     int connectTimeElapsed;
 
     int hostLookupId;

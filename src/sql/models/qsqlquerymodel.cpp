@@ -417,7 +417,7 @@ bool QSqlQueryModel::setHeaderData(int section, Qt::Orientation orientation,
                                    const QVariant &value, int role)
 {
     Q_D(QSqlQueryModel);
-    if (orientation != Qt::Horizontal || section < 0)
+    if (orientation != Qt::Horizontal || section < 0 || columnCount() <= section)
         return false;
 
     if (d->headers.size() <= section)

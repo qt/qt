@@ -1063,6 +1063,7 @@ void QSvgPaintEngine::drawTextItem(const QPointF &pt, const QTextItem &textItem)
                   "fill=\"" << d->attributes.stroke << "\" "
                   "fill-opacity=\"" << d->attributes.strokeOpacity << "\" "
                   "stroke=\"none\" "
+                  "xml:space=\"preserve\" "
                   "x=\"" << pt.x() << "\" y=\"" << pt.y() << "\" ";
     qfontToSvg(textItem.font());
     *d->stream << " >"

@@ -29,6 +29,7 @@
 
 #include "CString.h"
 #include "FrameLoadRequest.h"
+#include "HaltablePlugin.h"
 #include "IntRect.h"
 #include "KURL.h"
 #include "PlatformString.h"
@@ -60,6 +61,7 @@ namespace JSC {
 namespace WebCore {
     class Element;
     class Frame;
+    class Image;
     class KeyboardEvent;
     class MouseEvent;
     class KURL;
@@ -106,7 +108,7 @@ namespace WebCore {
         virtual void didFail(const ResourceError&) = 0;
     };
 
-    class PluginView : public Widget, private PluginStreamClient, public PluginManualLoader {
+    class PluginView : public Widget, private PluginStreamClient, public PluginManualLoader, private HaltablePlugin {
     public:
         static PassRefPtr<PluginView> create(Frame* parentFrame, const IntSize&, Element*, const KURL&, const Vector<String>& paramNames, const Vector<String>& paramValues, const String& mimeType, bool loadManually);
         virtual ~PluginView();
@@ -193,6 +195,14 @@ namespace WebCore {
         void didFinishLoading();
         void didFail(const ResourceError&);
 
+        // HaltablePlugin
+        virtual void halt();
+        virtual void restart();
+        virtual Node* node() const;
+
+        bool isHalted() const { return m_isHalted; }
+        bool hasBeenHalted() const { return m_hasBeenHalted; }
+
         static bool isCallingPlugin();
 
         bool start();
@@ -217,7 +227,7 @@ namespace WebCore {
         void invalidateWindowlessPluginRect(const IntRect&);
 
 #if PLATFORM(WIN_OS) && !PLATFORM(WX) && ENABLE(NETSCAPE_PLUGIN_API)
-        void paintWindowedPluginIntoContext(GraphicsContext*, const IntRect&) const;
+        void paintWindowedPluginIntoContext(GraphicsContext*, const IntRect&);
         static HDC WINAPI hookedBeginPaint(HWND, PAINTSTRUCT*);
         static BOOL WINAPI hookedEndPaint(HWND, const PAINTSTRUCT*);
 #endif
@@ -249,6 +259,15 @@ namespace WebCore {
 
         void handleKeyboardEvent(KeyboardEvent*);
         void handleMouseEvent(MouseEvent*);
+#if defined(Q_WS_X11) && ENABLE(NETSCAPE_PLUGIN_API)
+        void handleFocusInEvent();
+        void handleFocusOutEvent();
+#endif
+
+#if PLATFORM(WIN_OS)
+        void paintIntoTransformedContext(HDC);
+        PassRefPtr<Image> snapshot();
+#endif
 
         int m_mode;
         int m_paramCount;
@@ -295,12 +314,13 @@ public:
         void setPlatformPluginWidget(PlatformPluginWidget widget) { m_window = widget; }
 #else
 public:
+        void setPlatformPluginWidget(PlatformPluginWidget widget) { setPlatformWidget(widget); }
         PlatformPluginWidget platformPluginWidget() const { return platformWidget(); }
 #endif
 
 private:
 
-#if defined(XP_UNIX) || defined(Q_WS_X11)
+#if defined(XP_UNIX) || defined(Q_WS_X11) || PLATFORM(SYMBIAN)
         void setNPWindowIfNeeded();
 #elif defined(XP_MACOSX)
         NP_CGContext m_npCgContext;
@@ -313,8 +333,14 @@ private:
         Point globalMousePosForPlugin() const;
 #endif
 
-#if defined(Q_WS_X11)
+#if defined(Q_WS_X11) && ENABLE(NETSCAPE_PLUGIN_API)
         bool m_hasPendingGeometryChange;
+        Pixmap m_drawable;
+        Visual* m_visual;
+        Colormap m_colormap;
+        Display* m_pluginDisplay;
+
+        void initXEvent(XEvent* event);
 #endif
 
         IntRect m_clipRect; // The clip rect to apply to a windowed plug-in
@@ -324,6 +350,9 @@ private:
         RefPtr<PluginStream> m_manualStream;
 
         bool m_isJavaScriptPaused;
+
+        bool m_isHalted;
+        bool m_hasBeenHalted;
 
         static PluginView* s_currentPluginView;
     };

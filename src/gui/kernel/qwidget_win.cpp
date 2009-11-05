@@ -161,6 +161,9 @@ static void qt_tablet_init()
     qt_tablet_widget = new QWidget(0);
     qt_tablet_widget->createWinId();
     qt_tablet_widget->setObjectName(QLatin1String("Qt internal tablet widget"));
+    // We dont need this internal widget to appear in QApplication::topLevelWidgets()
+    if (QWidgetPrivate::allWidgets)
+        QWidgetPrivate::allWidgets->remove(qt_tablet_widget);
     LOGCONTEXT lcMine;
     qAddPostRoutine(qt_tablet_cleanup);
     struct tagAXIS tpOri[3];
@@ -851,10 +854,13 @@ void QWidget::grabMouse()
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
         SetCapture(effectiveWinId());
         mouseGrb = this;
+#ifndef QT_NO_CURSOR
         mouseGrbCur = new QCursor(mouseGrb->cursor());
+#endif
     }
 }
 
+#ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
     if (!qt_nograb()) {
@@ -868,6 +874,7 @@ void QWidget::grabMouse(const QCursor &cursor)
         mouseGrb = this;
     }
 }
+#endif
 
 void QWidget::releaseMouse()
 {
@@ -2029,7 +2036,7 @@ void QWidgetPrivate::winSetupGestures()
     if (!q || !q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    WId winid = q->effectiveWinId();
+    WId winid = q->internalWinId();
 
     bool needh = false;
     bool needv = false;
@@ -2045,6 +2052,8 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+        if (!winid)
+            winid = q->winId(); // enforces the native winid on the viewport
     }
     if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[1];
@@ -2063,17 +2072,6 @@ void QWidgetPrivate::winSetupGestures()
         } else {
             gc[0].dwBlock = GC_PAN;
         }
-
-//        gc[1].dwID = GID_ZOOM;
-//        if (gestures.pinch)
-//            gc[1].dwWant = GC_ZOOM;
-//        else
-//            gc[1].dwBlock = GC_ZOOM;
-//        gc[2].dwID = GID_ROTATE;
-//        if (gestures.pinch)
-//            gc[2].dwWant = GC_ROTATE;
-//        else
-//            gc[2].dwBlock = GC_ROTATE;
 
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }

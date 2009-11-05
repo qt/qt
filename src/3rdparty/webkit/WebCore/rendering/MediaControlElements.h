@@ -66,6 +66,8 @@ enum MediaControlElementType {
     MediaVolumeSliderThumb
 };
 
+HTMLMediaElement* toParentMediaElement(RenderObject*);
+
 class MediaControlShadowRootElement : public HTMLDivElement {
 public:
     MediaControlShadowRootElement(Document*, HTMLMediaElement*);
@@ -232,6 +234,7 @@ class MediaControlVolumeSliderElement : public MediaControlInputElement {
 public:
     MediaControlVolumeSliderElement(Document*, HTMLMediaElement*);
     virtual void defaultEventHandler(Event*);
+    virtual void update();
 };
 
 // ----------------------------

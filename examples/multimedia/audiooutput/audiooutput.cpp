@@ -200,7 +200,7 @@ void AudioTest::deviceChanged(int idx)
 
 void AudioTest::status()
 {
-    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, clock = "<<audioOutput->clock()<<"ms, totalTime = "<<audioOutput->totalTime()/1000<<"ms";
+    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, clock = "<<audioOutput->clock()/1000<<"ms, totalTime = "<<audioOutput->totalTime()/1000<<"ms";
 }
 
 void AudioTest::writeMore()

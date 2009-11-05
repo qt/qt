@@ -440,9 +440,10 @@ void Releaser::insert(const TranslatorMessage &message, bool forceComment)
 void Releaser::insertIdBased(const TranslatorMessage &message)
 {
     QStringList tlns = message.translations();
-    for (int i = 0; i < tlns.size(); ++i)
-        if (tlns.at(i).isEmpty())
-            tlns[i] = message.sourceText();
+    if (message.type() == TranslatorMessage::Unfinished)
+        for (int i = 0; i < tlns.size(); ++i)
+            if (tlns.at(i).isEmpty())
+                tlns[i] = message.sourceText();
     ByteTranslatorMessage bmsg("", originalBytes(message.id(), false), "", tlns);
     m_messages.insert(bmsg, 0);
 }
@@ -713,7 +714,7 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                 continue;
             }
             if (typ == TranslatorMessage::Unfinished) {
-                if (msg.translation().isEmpty()) {
+                if (!cd.m_idBased && msg.translation().isEmpty()) {
                     ++untranslated;
                     continue;
                 } else {

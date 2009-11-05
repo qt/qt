@@ -43,6 +43,7 @@
 #include <qscreenvnc_qws.h>
 #include <qstringlist.h>
 
+#ifndef QT_NO_LIBRARY
 QT_BEGIN_NAMESPACE
 
 class GfxVncDriver : public QScreenDriverPlugin
@@ -68,9 +69,12 @@ QStringList GfxVncDriver::keys() const
 
 QScreen* GfxVncDriver::create(const QString& driver, int displayId)
 {
+#ifndef QT_NO_QWS_VNC
     if (driver.toLower() == "vnc")
         return new QVNCScreen(displayId);
-
+#else //QT_NO_QWS_VNC
+    printf("QT buildt with QT_NO_QWS_VNC. No screen driver returned\n");
+#endif //QT_NO_QWS_VNC
     return 0;
 }
 
@@ -78,3 +82,5 @@ Q_EXPORT_STATIC_PLUGIN(GfxVncDriver)
 Q_EXPORT_PLUGIN2(qgfxvnc, GfxVncDriver)
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_LIBRARY

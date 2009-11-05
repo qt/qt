@@ -345,8 +345,8 @@ void tst_QXmlQuery::copyConstructor() const
         query1.setInitialTemplateName(name);
 
         const QXmlQuery query2(query1);
-        QCOMPARE(query2.messageHandler(), &silencer);
-        QCOMPARE(query2.uriResolver(), &resolver);
+        QCOMPARE(query2.messageHandler(), static_cast<QAbstractMessageHandler *>(&silencer));
+        QCOMPARE(query2.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
         QCOMPARE(query2.queryLanguage(), QXmlQuery::XSLT20);
         QCOMPARE(query2.initialTemplateName(), name);
         QCOMPARE(query2.networkAccessManager(), &networkManager);
@@ -522,7 +522,7 @@ void tst_QXmlQuery::assignmentOperator() const
 
             QVERIFY(copy.isValid());
             QCOMPARE(copy.uriResolver(), static_cast<const QAbstractUriResolver *>(&returnURI));
-            QCOMPARE(copy.messageHandler(), &silencer);
+            QCOMPARE(copy.messageHandler(), static_cast<QAbstractMessageHandler *>(&silencer));
             QCOMPARE(testName.localName(copy.namePool()), QString::fromLatin1("somethingToCheck"));
 
             QXmlResultItems result;
@@ -559,7 +559,7 @@ void tst_QXmlQuery::assignmentOperator() const
                 /* Check that the copy picked up the new things. */
                 QVERIFY(copy.isValid());
                 QCOMPARE(copy.uriResolver(), static_cast<const QAbstractUriResolver *>(&secondUriResolver));
-                QCOMPARE(copy.messageHandler(), &secondSilencer);
+                QCOMPARE(copy.messageHandler(), static_cast<QAbstractMessageHandler *>(&secondSilencer));
 
                 QXmlResultItems resultCopy;
                 copy.evaluateTo(&resultCopy);
@@ -577,7 +577,7 @@ void tst_QXmlQuery::assignmentOperator() const
                 /* Check that the original is unchanged. */
                 QVERIFY(original.isValid());
                 QCOMPARE(original.uriResolver(), static_cast<const QAbstractUriResolver *>(&returnURI));
-                QCOMPARE(original.messageHandler(), &silencer);
+                QCOMPARE(original.messageHandler(), static_cast<QAbstractMessageHandler *>(&silencer));
 
                 QXmlResultItems resultOriginal;
                 original.evaluateTo(&resultOriginal);
@@ -931,7 +931,7 @@ void tst_QXmlQuery::setMessageHandler() const
     QXmlQuery query;
     MessageSilencer silencer;
     query.setMessageHandler(&silencer);
-    QCOMPARE(&silencer, query.messageHandler());
+    QCOMPARE(static_cast<QAbstractMessageHandler *>(&silencer), query.messageHandler());
 }
 
 void tst_QXmlQuery::evaluateToReceiver()
@@ -1691,7 +1691,7 @@ void tst_QXmlQuery::setUriResolver() const
         TestURIResolver resolver;
         QXmlQuery query;
         query.setUriResolver(&resolver);
-        QCOMPARE(query.uriResolver(), &resolver);
+        QCOMPARE(query.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
     }
 }
 

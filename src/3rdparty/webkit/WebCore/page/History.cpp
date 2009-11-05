@@ -50,28 +50,30 @@ unsigned History::length() const
 {
     if (!m_frame)
         return 0;
-    return m_frame->loader()->getHistoryLength();
+    if (!m_frame->page())
+        return 0;
+    return m_frame->page()->getHistoryLength();
 }
 
 void History::back()
 {
     if (!m_frame)
         return;
-    m_frame->loader()->scheduleHistoryNavigation(-1);
+    m_frame->redirectScheduler()->scheduleHistoryNavigation(-1);
 }
 
 void History::forward()
 {
     if (!m_frame)
         return;
-    m_frame->loader()->scheduleHistoryNavigation(1);
+    m_frame->redirectScheduler()->scheduleHistoryNavigation(1);
 }
 
 void History::go(int distance)
 {
     if (!m_frame)
         return;
-    m_frame->loader()->scheduleHistoryNavigation(distance);
+    m_frame->redirectScheduler()->scheduleHistoryNavigation(distance);
 }
 
 } // namespace WebCore

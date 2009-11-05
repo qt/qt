@@ -555,7 +555,8 @@ public:
     using QObject::children;
 #endif
 
-    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
+    void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
+    void ungrabGesture(Qt::GestureType type);
 
 Q_SIGNALS:
     void parentChanged();
@@ -1120,6 +1121,7 @@ template <class T> inline T qgraphicsitem_cast(const QGraphicsItem *item)
 
 #ifndef QT_NO_DEBUG_STREAM
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem *item);
+Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsObject *item);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag);
 Q_GUI_EXPORT QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlags flags);

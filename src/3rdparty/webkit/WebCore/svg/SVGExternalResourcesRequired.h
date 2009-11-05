@@ -2,8 +2,6 @@
     Copyright (C) 2004, 2005, 2008 Nikolas Zimmermann <zimmermann@kde.org>
                   2004, 2005 Rob Buis <buis@kde.org>
 
-    This file is part of the KDE project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -32,16 +30,11 @@ namespace WebCore {
     extern char SVGExternalResourcesRequiredIdentifier[];
     class MappedAttribute;
 
-    // FIXME: This is wrong for several reasons:
-    // 1. externalResourcesRequired is not animateable according to SVG 1.1 section 5.9
-    // 2. externalResourcesRequired should just be part of SVGElement, and default to "false" for all elements
-    /*
-     SPEC: Note that the SVG DOM 
-     defines the attribute externalResourcesRequired as being of type SVGAnimatedBoolean, whereas the 
-     SVG language definition says that externalResourcesRequired is not animated. Because the SVG 
-     language definition states that externalResourcesRequired cannot be animated, the animVal will 
-     always be the same as the baseVal.
-     */
+    // Notes on a SVG 1.1 spec discrepancy:
+    // The SVG DOM defines the attribute externalResourcesRequired as being of type SVGAnimatedBoolean, whereas the 
+    // SVG language definition says that externalResourcesRequired is not animated. Because the SVG language definition
+    // states that externalResourcesRequired cannot be animated, the animVal will always be the same as the baseVal.
+    // FIXME: When implementing animVal support, make sure that animVal==baseVal for externalResourcesRequired
     class SVGExternalResourcesRequired {
     public:
         SVGExternalResourcesRequired();
@@ -50,12 +43,8 @@ namespace WebCore {
         bool parseMappedAttribute(MappedAttribute*);
         bool isKnownAttribute(const QualifiedName&);
 
-        virtual const SVGElement* contextElement() const = 0;
-
-    private:
-        ANIMATED_PROPERTY_DECLARATIONS(SVGExternalResourcesRequired, SVGExternalResourcesRequiredIdentifier,
-                                       SVGNames::externalResourcesRequiredAttrString, bool,
-                                       ExternalResourcesRequired, externalResourcesRequired)
+    protected:
+        virtual void setExternalResourcesRequiredBaseValue(SVGAnimatedTypeValue<bool>::DecoratedType type) = 0;
     };
 
 } // namespace WebCore

@@ -39,10 +39,12 @@ win32-* {
 contains(JAVASCRIPTCORE_JIT,yes) {
     DEFINES+=ENABLE_JIT=1
     DEFINES+=ENABLE_YARR_JIT=1
+    DEFINES+=ENABLE_YARR=1
 }
 contains(JAVASCRIPTCORE_JIT,no) {
     DEFINES+=ENABLE_JIT=0
     DEFINES+=ENABLE_YARR_JIT=0
+    DEFINES+=ENABLE_YARR=0
 }
 
 # In debug mode JIT disabled until crash fixed
@@ -137,7 +139,8 @@ SOURCES += \
     interpreter/RegisterFile.cpp
 
 symbian {
-    SOURCES += runtime/MarkStackSymbian.cpp
+    SOURCES += jit/ExecutableAllocatorSymbian.cpp \
+              runtime/MarkStackSymbian.cpp
 } else {
     win32-*|wince* {
         SOURCES += jit/ExecutableAllocatorWin.cpp \
@@ -146,6 +149,10 @@ symbian {
         SOURCES += jit/ExecutableAllocatorPosix.cpp \
                   runtime/MarkStackPosix.cpp
     }
+}
+
+!contains(DEFINES, USE_SYSTEM_MALLOC) {
+    SOURCES += wtf/TCSystemAlloc.cpp
 }
 
 # AllInOneFile.cpp helps gcc analize and optimize code

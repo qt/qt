@@ -101,8 +101,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSSVGPathSegConstructor::s_info = { "SVGPathSegConstructor", 0, &JSSVGPathSegConstructorTable, 0 };
@@ -178,7 +181,7 @@ JSSVGPathSeg::JSSVGPathSeg(NonNullPassRefPtr<Structure> structure, JSDOMGlobalOb
 
 JSSVGPathSeg::~JSSVGPathSeg()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGPathSeg::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

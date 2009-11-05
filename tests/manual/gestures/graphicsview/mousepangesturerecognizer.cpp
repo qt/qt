@@ -42,6 +42,8 @@
 #include "mousepangesturerecognizer.h"
 
 #include <QEvent>
+#include <QVariant>
+#include <QGraphicsSceneMouseEvent>
 #include <QMouseEvent>
 #include <QGesture>
 
@@ -49,35 +51,46 @@ MousePanGestureRecognizer::MousePanGestureRecognizer()
 {
 }
 
-QGesture* MousePanGestureRecognizer::createGesture(QObject *)
+QGesture* MousePanGestureRecognizer::create(QObject *)
 {
     return new QPanGesture;
 }
 
-QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result MousePanGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
 {
     QPanGesture *g = static_cast<QPanGesture *>(state);
-    QMouseEvent *me = static_cast<QMouseEvent *>(event);
+    QPoint globalPos;
+    switch (event->type()) {
+    case QEvent::GraphicsSceneMousePress:
+    case QEvent::GraphicsSceneMouseDoubleClick:
+    case QEvent::GraphicsSceneMouseMove:
+    case QEvent::GraphicsSceneMouseRelease:
+        globalPos = static_cast<QGraphicsSceneMouseEvent *>(event)->screenPos();
+        break;
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseMove:
+    case QEvent::MouseButtonRelease:
+        globalPos = static_cast<QMouseEvent *>(event)->globalPos();
+        break;
+    default:
+        break;
+    }
     if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick
         || event->type() == QEvent::GraphicsSceneMousePress || event->type() == QEvent::GraphicsSceneMouseDoubleClick) {
-        g->setHotSpot(me->globalPos());
-        g->setProperty("lastPos", me->globalPos());
+        g->setHotSpot(globalPos);
+        g->setProperty("startPos", globalPos);
         g->setProperty("pressed", QVariant::fromValue<bool>(true));
-        return QGestureRecognizer::GestureTriggered | QGestureRecognizer::ConsumeEventHint;
+        return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
     } else if (event->type() == QEvent::MouseMove || event->type() == QEvent::GraphicsSceneMouseMove) {
         if (g->property("pressed").toBool()) {
-            QPoint pos = me->globalPos();
-            QPoint lastPos = g->property("lastPos").toPoint();
+            QPoint offset = globalPos - g->property("startPos").toPoint();
             g->setLastOffset(g->offset());
-            lastPos = pos - lastPos;
-            g->setOffset(QSizeF(lastPos.x(), lastPos.y()));
-            g->setTotalOffset(g->totalOffset() + QSizeF(lastPos.x(), lastPos.y()));
-            g->setProperty("lastPos", pos);
-            return QGestureRecognizer::GestureTriggered | QGestureRecognizer::ConsumeEventHint;
+            g->setOffset(QPointF(offset.x(), offset.y()));
+            return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
         }
-        return QGestureRecognizer::NotGesture;
+        return QGestureRecognizer::CancelGesture;
     } else if (event->type() == QEvent::MouseButtonRelease || event->type() == QEvent::GraphicsSceneMouseRelease) {
-        return QGestureRecognizer::GestureFinished | QGestureRecognizer::ConsumeEventHint;
+        return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
     }
     return QGestureRecognizer::Ignore;
 }
@@ -85,11 +98,10 @@ QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *stat
 void MousePanGestureRecognizer::reset(QGesture *state)
 {
     QPanGesture *g = static_cast<QPanGesture *>(state);
-    g->setTotalOffset(QSizeF());
-    g->setLastOffset(QSizeF());
-    g->setOffset(QSizeF());
+    g->setLastOffset(QPointF());
+    g->setOffset(QPointF());
     g->setAcceleration(0);
-    g->setProperty("lastPos", QVariant());
+    g->setProperty("startPos", QVariant());
     g->setProperty("pressed", QVariant::fromValue<bool>(false));
     QGestureRecognizer::reset(state);
 }

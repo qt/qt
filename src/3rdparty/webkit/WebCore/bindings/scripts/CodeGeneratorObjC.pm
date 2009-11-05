@@ -311,7 +311,7 @@ sub GetClassName
     my $name = $codeGenerator->StripModule(shift);
 
     # special cases
-    return "NSString" if $codeGenerator->IsStringType($name);
+    return "NSString" if $codeGenerator->IsStringType($name) or $name eq "SerializedScriptValue";
     return "NS$name" if IsNativeObjCType($name);
     return "BOOL" if $name eq "boolean";
     return "unsigned" if $name eq "unsigned long";
@@ -492,6 +492,11 @@ sub GetObjCTypeGetter
     return "WTF::getPtr(nativeEventListener)" if $type eq "EventListener";
     return "WTF::getPtr(nativeNodeFilter)" if $type eq "NodeFilter";
     return "WTF::getPtr(nativeResolver)" if $type eq "XPathNSResolver";
+    
+    if ($type eq "SerializedScriptValue") {
+        $implIncludes{"SerializedScriptValue.h"} = 1;
+        return "WebCore::SerializedScriptValue::create(WebCore::String($argName))";
+    }
     return "core($argName)";
 }
 
@@ -607,6 +612,11 @@ sub AddIncludesForType
         return;
     }
 
+    if ($type eq "SerializedScriptValue") {
+        $implIncludes{"SerializedScriptValue.h"} = 1;
+        return;
+    }
+
     # FIXME: won't compile without these
     $implIncludes{"CSSMutableStyleDeclaration.h"} = 1 if $type eq "CSSStyleDeclaration";
     $implIncludes{"NameNodeList.h"} = 1 if $type eq "NodeList";
@@ -715,6 +725,8 @@ sub GenerateHeader
             my $attributeIsReadonly = ($attribute->type =~ /^readonly/);
 
             my $property = "\@property" . GetPropertyAttributes($attribute->signature->type, $attributeIsReadonly);
+            # Some SVGFE*Element.idl use 'operator' as attribute name, rewrite as '_operator' to avoid clashes with C/C++
+            $attributeName =~ s/operator/_operator/ if ($attributeName =~ /operator/);
             $property .= " " . $attributeType . ($attributeType =~ /\*$/ ? "" : " ") . $attributeName;
 
             my $publicInterfaceKey = $property . ";";
@@ -1139,15 +1151,21 @@ sub GenerateImplementation
 
             # - GETTER
             my $getterSig = "- ($attributeType)$attributeInterfaceName\n";
+
+            # Some SVGFE*Element.idl use 'operator' as attribute name, rewrite as '_operator' to avoid clashes with C/C++
+            $attributeName =~ s/operatorAnimated/_operatorAnimated/ if ($attributeName =~ /operatorAnimated/);
+            $getterSig =~ s/operator/_operator/ if ($getterSig =~ /operator/);
+
             my $hasGetterException = @{$attribute->getterExceptions};
             my $getterContentHead;
             my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
             my $reflectURL = $attribute->signature->extendedAttributes->{"ReflectURL"};
             if ($reflect || $reflectURL) {
-                $implIncludes{"HTMLNames.h"} = 1;
                 my $contentAttributeName = (($reflect || $reflectURL) eq "1") ? $attributeName : ($reflect || $reflectURL);
+                my $namespace = $codeGenerator->NamespaceForAttributeName($interfaceName, $contentAttributeName);
+                $implIncludes{"${namespace}.h"} = 1;
                 my $getAttributeFunctionName = $reflectURL ? "getURLAttribute" : "getAttribute";
-                $getterContentHead = "IMPL->${getAttributeFunctionName}(WebCore::HTMLNames::${contentAttributeName}Attr";
+                $getterContentHead = "IMPL->${getAttributeFunctionName}(WebCore::${namespace}::${contentAttributeName}Attr";
             } else {
                 $getterContentHead = "IMPL->" . $codeGenerator->WK_lcfirst($attributeName) . "(";
             }
@@ -1212,6 +1230,9 @@ sub GenerateImplementation
             } elsif ($idlType eq "Color") {
                 $getterContentHead = "WebCore::nsColor($getterContentHead";
                 $getterContentTail .= ")";
+            } elsif ($attribute->signature->type eq "SerializedScriptValue") {
+                $getterContentHead = "$getterContentHead";
+                $getterContentTail .= "->toString()";                
             } elsif (ConversionNeeded($attribute->signature->type)) {
                 $getterContentHead = "kit(WTF::getPtr($getterContentHead";
                 $getterContentTail .= "))";
@@ -1278,20 +1299,20 @@ sub GenerateImplementation
                     } else {
                         push(@implContent, "    IMPL->$coreSetterName($arg);\n");
                     }
-                } elsif ($hasSetterException) {
-                    push(@implContent, "    $exceptionInit\n");
-                    push(@implContent, "    IMPL->$coreSetterName($arg, ec);\n");
-                    push(@implContent, "    $exceptionRaiseOnError\n");
                 } else {
                     my $reflect = $attribute->signature->extendedAttributes->{"Reflect"};
                     my $reflectURL = $attribute->signature->extendedAttributes->{"ReflectURL"};
+                    push(@implContent, "    $exceptionInit\n") if $hasSetterException;
+                    my $ec = $hasSetterException ? ", ec" : "";
                     if ($reflect || $reflectURL) {
-                        $implIncludes{"HTMLNames.h"} = 1;
                         my $contentAttributeName = (($reflect || $reflectURL) eq "1") ? $attributeName : ($reflect || $reflectURL);
-                        push(@implContent, "    IMPL->setAttribute(WebCore::HTMLNames::${contentAttributeName}Attr, $arg);\n");
+                        my $namespace = $codeGenerator->NamespaceForAttributeName($interfaceName, $contentAttributeName);
+                        $implIncludes{"${namespace}.h"} = 1;
+                        push(@implContent, "    IMPL->setAttribute(WebCore::${namespace}::${contentAttributeName}Attr, $arg$ec);\n");
                     } else {
-                        push(@implContent, "    IMPL->$coreSetterName($arg);\n");
+                        push(@implContent, "    IMPL->$coreSetterName($arg$ec);\n");
                     }
+                    push(@implContent, "    $exceptionRaiseOnError\n") if $hasSetterException;
                 }
 
                 push(@implContent, "}\n\n");
@@ -1446,6 +1467,8 @@ sub GenerateImplementation
                     push(@functionContent, "        return $toReturn;\n");
                     push(@functionContent, "    return nil;\n");
                 }
+            } elsif ($returnType eq "SerializedScriptValue") {
+                $content = "foo";
             } else {
                 if (ConversionNeeded($function->signature->type)) {
                     if ($codeGenerator->IsPodType($function->signature->type)) {

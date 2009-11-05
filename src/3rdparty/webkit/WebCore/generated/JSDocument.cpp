@@ -39,6 +39,7 @@
 #include "Frame.h"
 #include "HTMLCollection.h"
 #include "HTMLElement.h"
+#include "HTMLHeadElement.h"
 #include "JSAttr.h"
 #include "JSCDATASection.h"
 #include "JSCSSStyleDeclaration.h"
@@ -57,6 +58,7 @@
 #include "JSEventListener.h"
 #include "JSHTMLCollection.h"
 #include "JSHTMLElement.h"
+#include "JSHTMLHeadElement.h"
 #include "JSNode.h"
 #include "JSNodeFilter.h"
 #include "JSNodeIterator.h"
@@ -96,7 +98,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDocument);
 
 /* Hash table */
 
-static const HashTableValue JSDocumentTableValues[70] =
+static const HashTableValue JSDocumentTableValues[71] =
 {
     { "doctype", DontDelete|ReadOnly, (intptr_t)jsDocumentDoctype, (intptr_t)0 },
     { "implementation", DontDelete|ReadOnly, (intptr_t)jsDocumentImplementation, (intptr_t)0 },
@@ -114,6 +116,7 @@ static const HashTableValue JSDocumentTableValues[70] =
     { "URL", DontDelete|ReadOnly, (intptr_t)jsDocumentURL, (intptr_t)0 },
     { "cookie", DontDelete, (intptr_t)jsDocumentCookie, (intptr_t)setJSDocumentCookie },
     { "body", DontDelete, (intptr_t)jsDocumentBody, (intptr_t)setJSDocumentBody },
+    { "head", DontDelete|ReadOnly, (intptr_t)jsDocumentHead, (intptr_t)0 },
     { "images", DontDelete|ReadOnly, (intptr_t)jsDocumentImages, (intptr_t)0 },
     { "applets", DontDelete|ReadOnly, (intptr_t)jsDocumentApplets, (intptr_t)0 },
     { "links", DontDelete|ReadOnly, (intptr_t)jsDocumentLinks, (intptr_t)0 },
@@ -205,8 +208,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSDocumentConstructor::s_info = { "DocumentConstructor", 0, &JSDocumentConstructorTable, 0 };
@@ -298,7 +304,7 @@ JSDocument::JSDocument(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSDocument::~JSDocument()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), static_cast<Document*>(impl()));
+    forgetDOMObject(this, static_cast<Document*>(impl()));
 }
 
 JSObject* JSDocument::createPrototype(ExecState* exec, JSGlobalObject* globalObject)
@@ -432,6 +438,14 @@ JSValue jsDocumentBody(ExecState* exec, const Identifier&, const PropertySlot& s
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(castedThis->impl());
     return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->body()));
+}
+
+JSValue jsDocumentHead(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSDocument* castedThis = static_cast<JSDocument*>(asObject(slot.slotBase()));
+    UNUSED_PARAM(exec);
+    Document* imp = static_cast<Document*>(castedThis->impl());
+    return toJS(exec, castedThis->globalObject(), WTF::getPtr(imp->head()));
 }
 
 JSValue jsDocumentImages(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -1085,7 +1099,7 @@ void setJSDocumentOnabort(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnabort(globalObject->createJSAttributeEventListener(value));
@@ -1095,7 +1109,7 @@ void setJSDocumentOnblur(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnblur(globalObject->createJSAttributeEventListener(value));
@@ -1105,7 +1119,7 @@ void setJSDocumentOnchange(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnchange(globalObject->createJSAttributeEventListener(value));
@@ -1115,7 +1129,7 @@ void setJSDocumentOnclick(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnclick(globalObject->createJSAttributeEventListener(value));
@@ -1125,7 +1139,7 @@ void setJSDocumentOncontextmenu(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncontextmenu(globalObject->createJSAttributeEventListener(value));
@@ -1135,7 +1149,7 @@ void setJSDocumentOndblclick(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndblclick(globalObject->createJSAttributeEventListener(value));
@@ -1145,7 +1159,7 @@ void setJSDocumentOndrag(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndrag(globalObject->createJSAttributeEventListener(value));
@@ -1155,7 +1169,7 @@ void setJSDocumentOndragend(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragend(globalObject->createJSAttributeEventListener(value));
@@ -1165,7 +1179,7 @@ void setJSDocumentOndragenter(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragenter(globalObject->createJSAttributeEventListener(value));
@@ -1175,7 +1189,7 @@ void setJSDocumentOndragleave(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragleave(globalObject->createJSAttributeEventListener(value));
@@ -1185,7 +1199,7 @@ void setJSDocumentOndragover(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragover(globalObject->createJSAttributeEventListener(value));
@@ -1195,7 +1209,7 @@ void setJSDocumentOndragstart(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndragstart(globalObject->createJSAttributeEventListener(value));
@@ -1205,7 +1219,7 @@ void setJSDocumentOndrop(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOndrop(globalObject->createJSAttributeEventListener(value));
@@ -1215,7 +1229,7 @@ void setJSDocumentOnerror(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnerror(globalObject->createJSAttributeEventListener(value));
@@ -1225,7 +1239,7 @@ void setJSDocumentOnfocus(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnfocus(globalObject->createJSAttributeEventListener(value));
@@ -1235,7 +1249,7 @@ void setJSDocumentOninput(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOninput(globalObject->createJSAttributeEventListener(value));
@@ -1245,7 +1259,7 @@ void setJSDocumentOninvalid(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOninvalid(globalObject->createJSAttributeEventListener(value));
@@ -1255,7 +1269,7 @@ void setJSDocumentOnkeydown(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeydown(globalObject->createJSAttributeEventListener(value));
@@ -1265,7 +1279,7 @@ void setJSDocumentOnkeypress(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeypress(globalObject->createJSAttributeEventListener(value));
@@ -1275,7 +1289,7 @@ void setJSDocumentOnkeyup(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnkeyup(globalObject->createJSAttributeEventListener(value));
@@ -1285,7 +1299,7 @@ void setJSDocumentOnload(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnload(globalObject->createJSAttributeEventListener(value));
@@ -1295,7 +1309,7 @@ void setJSDocumentOnmousedown(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousedown(globalObject->createJSAttributeEventListener(value));
@@ -1305,7 +1319,7 @@ void setJSDocumentOnmousemove(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousemove(globalObject->createJSAttributeEventListener(value));
@@ -1315,7 +1329,7 @@ void setJSDocumentOnmouseout(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseout(globalObject->createJSAttributeEventListener(value));
@@ -1325,7 +1339,7 @@ void setJSDocumentOnmouseover(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseover(globalObject->createJSAttributeEventListener(value));
@@ -1335,7 +1349,7 @@ void setJSDocumentOnmouseup(ExecState* exec, JSObject* thisObject, JSValue value
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmouseup(globalObject->createJSAttributeEventListener(value));
@@ -1345,7 +1359,7 @@ void setJSDocumentOnmousewheel(ExecState* exec, JSObject* thisObject, JSValue va
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmousewheel(globalObject->createJSAttributeEventListener(value));
@@ -1355,7 +1369,7 @@ void setJSDocumentOnscroll(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnscroll(globalObject->createJSAttributeEventListener(value));
@@ -1365,7 +1379,7 @@ void setJSDocumentOnselect(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnselect(globalObject->createJSAttributeEventListener(value));
@@ -1375,7 +1389,7 @@ void setJSDocumentOnsubmit(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnsubmit(globalObject->createJSAttributeEventListener(value));
@@ -1385,7 +1399,7 @@ void setJSDocumentOnbeforecut(ExecState* exec, JSObject* thisObject, JSValue val
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforecut(globalObject->createJSAttributeEventListener(value));
@@ -1395,7 +1409,7 @@ void setJSDocumentOncut(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncut(globalObject->createJSAttributeEventListener(value));
@@ -1405,7 +1419,7 @@ void setJSDocumentOnbeforecopy(ExecState* exec, JSObject* thisObject, JSValue va
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforecopy(globalObject->createJSAttributeEventListener(value));
@@ -1415,7 +1429,7 @@ void setJSDocumentOncopy(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOncopy(globalObject->createJSAttributeEventListener(value));
@@ -1425,7 +1439,7 @@ void setJSDocumentOnbeforepaste(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnbeforepaste(globalObject->createJSAttributeEventListener(value));
@@ -1435,7 +1449,7 @@ void setJSDocumentOnpaste(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnpaste(globalObject->createJSAttributeEventListener(value));
@@ -1445,7 +1459,7 @@ void setJSDocumentOnreset(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnreset(globalObject->createJSAttributeEventListener(value));
@@ -1455,7 +1469,7 @@ void setJSDocumentOnsearch(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnsearch(globalObject->createJSAttributeEventListener(value));
@@ -1465,7 +1479,7 @@ void setJSDocumentOnselectstart(ExecState* exec, JSObject* thisObject, JSValue v
 {
     UNUSED_PARAM(exec);
     Document* imp = static_cast<Document*>(static_cast<JSDocument*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnselectstart(globalObject->createJSAttributeEventListener(value));

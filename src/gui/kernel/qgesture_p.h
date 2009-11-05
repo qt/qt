@@ -67,17 +67,17 @@ class QGesturePrivate : public QObjectPrivate
 
 public:
     QGesturePrivate()
-        : gestureType(Qt::CustomGesture), state(Qt::NoGesture), isHotSpotSet(false),
-          targetObject(0), accept(true)
+        : gestureType(Qt::CustomGesture), state(Qt::NoGesture),
+          isHotSpotSet(false), gestureCancelPolicy(0)
+
     {
     }
 
     Qt::GestureType gestureType;
     Qt::GestureState state;
     QPointF hotSpot;
-    bool isHotSpotSet;
-    QObject *targetObject;
-    bool accept;
+    uint isHotSpotSet : 1;
+    uint gestureCancelPolicy : 2;
 };
 
 class QPanGesturePrivate : public QGesturePrivate
@@ -90,10 +90,9 @@ public:
     {
     }
 
-    QSizeF totalOffset;
-    QSizeF lastOffset;
-    QSizeF offset;
-    QPoint lastPosition;
+    QPointF lastOffset;
+    QPointF offset;
+    QPoint startPosition;
     qreal acceleration;
 };
 
@@ -103,12 +102,15 @@ class QPinchGesturePrivate : public QGesturePrivate
 
 public:
     QPinchGesturePrivate()
-        : whatChanged(0), totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
-          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0)
+        : totalChangeFlags(0), changeFlags(0),
+          totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0),
+          isNewSequence(true)
     {
     }
 
-    QPinchGesture::WhatChanged whatChanged;
+    QPinchGesture::ChangeFlags totalChangeFlags;
+    QPinchGesture::ChangeFlags changeFlags;
 
     QPointF startCenterPoint;
     QPointF lastCenterPoint;
@@ -121,6 +123,9 @@ public:
     qreal totalRotationAngle;
     qreal lastRotationAngle;
     qreal rotationAngle;
+
+    bool isNewSequence;
+    QPointF startPosition[2];
 };
 
 class QSwipeGesturePrivate : public QGesturePrivate

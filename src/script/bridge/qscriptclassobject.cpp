@@ -70,17 +70,6 @@ ClassObjectDelegate::~ClassObjectDelegate()
 {
 }
 
-QScriptClass *ClassObjectDelegate::scriptClass() const
-{
-    return m_scriptClass;
-}
-
-void ClassObjectDelegate::setScriptClass(QScriptClass *scriptClass)
-{
-    Q_ASSERT(scriptClass != 0);
-    m_scriptClass = scriptClass;
-}
-
 QScriptObjectDelegate::Type ClassObjectDelegate::type() const
 {
     return ClassObject;

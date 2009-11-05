@@ -510,7 +510,7 @@ public:
         connect(nightModeAction, SIGNAL(triggered()), map, SLOT(toggleNightMode()));
         connect(osmAction, SIGNAL(triggered()), SLOT(aboutOsm()));
 
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
         menuBar()->addAction(osloAction);
         menuBar()->addAction(berlinAction);
         menuBar()->addAction(jakartaAction);
@@ -568,7 +568,7 @@ int main(int argc, char **argv)
 
     MapZoom w;
     w.setWindowTitle("OpenStreetMap");
-#if defined(Q_OS_SYMBIAN)
+#if defined(Q_OS_SYMBIAN) || defined(Q_OS_WINCE_WM)
     w.showMaximized();
 #else
     w.resize(600, 450);

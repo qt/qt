@@ -151,22 +151,6 @@ class QGLEngineSelector
 public:
     QGLEngineSelector() : engineType(QPaintEngine::MaxUser)
     {
-#ifdef Q_WS_MAC
-        // The ATI X1600 driver for Mac OS X does not support return
-        // values from functions in GLSL. Since working around this in
-        // the GL2 engine would require a big, ugly rewrite, we're
-        // falling back to the GL 1 engine..
-        QGLWidget *tmp = 0;
-        if (!QGLContext::currentContext()) {
-            tmp = new QGLWidget();
-            tmp->makeCurrent();
-        }
-        if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
-            setPreferredPaintEngine(QPaintEngine::OpenGL);
-        if (tmp)
-            delete tmp;
-#endif
-
     }
 
     void setPreferredPaintEngine(QPaintEngine::Type type) {
@@ -175,6 +159,25 @@ public:
     }
 
     QPaintEngine::Type preferredPaintEngine() {
+#ifdef Q_WS_MAC
+        // The ATI X1600 driver for Mac OS X does not support return
+        // values from functions in GLSL. Since working around this in
+        // the GL2 engine would require a big, ugly rewrite, we're
+        // falling back to the GL 1 engine..
+        static bool mac_x1600_check_done = false;
+        if (!mac_x1600_check_done) {
+            QGLWidget *tmp = 0;
+            if (!QGLContext::currentContext()) {
+                tmp = new QGLWidget();
+                tmp->makeCurrent();
+            }
+            if (strstr((char *) glGetString(GL_RENDERER), "X1600"))
+                engineType = QPaintEngine::OpenGL;
+            if (tmp)
+                delete tmp;
+            mac_x1600_check_done = true;
+        }
+#endif
         if (engineType == QPaintEngine::MaxUser) {
             // No user-set engine - use the defaults
 #if defined(QT_OPENGL_ES_2)
@@ -1584,7 +1587,10 @@ QGLTextureCache::QGLTextureCache()
     Q_ASSERT(qt_gl_texture_cache == 0);
     qt_gl_texture_cache = this;
 
-    QImagePixmapCleanupHooks::instance()->addPixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->addPixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->addPixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->addImageHook(imageCleanupHook);
 }
 
@@ -1592,7 +1598,10 @@ QGLTextureCache::~QGLTextureCache()
 {
     qt_gl_texture_cache = 0;
 
-    QImagePixmapCleanupHooks::instance()->removePixmapHook(pixmapCleanupHook);
+    QImagePixmapCleanupHooks::instance()->removePixmapModificationHook(cleanupTextures);
+#ifdef Q_WS_X11
+    QImagePixmapCleanupHooks::instance()->removePixmapDestructionHook(cleanupPixmapSurfaces);
+#endif
     QImagePixmapCleanupHooks::instance()->removeImageHook(imageCleanupHook);
 }
 
@@ -1660,7 +1669,7 @@ void QGLTextureCache::imageCleanupHook(qint64 cacheKey)
 }
 
 
-void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
+void QGLTextureCache::cleanupTextures(QPixmap* pixmap)
 {
     // ### remove when the GL texture cache becomes thread-safe
     if (qApp->thread() == QThread::currentThread()) {
@@ -1669,14 +1678,21 @@ void QGLTextureCache::pixmapCleanupHook(QPixmap* pixmap)
         if (texture && texture->options & QGLContext::MemoryManagedBindOption)
             instance()->remove(cacheKey);
     }
+}
+
 #if defined(Q_WS_X11)
+void QGLTextureCache::cleanupPixmapSurfaces(QPixmap* pixmap)
+{
+    // Remove any bound textures first:
+    cleanupTextures(pixmap);
+
     QPixmapData *pd = pixmap->data_ptr().data();
     if (pd->classId() == QPixmapData::X11Class) {
         Q_ASSERT(pd->ref == 1); // Make sure reference counting isn't broken
         QGLContextPrivate::destroyGlSurfaceForPixmap(pd);
     }
-#endif
 }
+#endif
 
 void QGLTextureCache::deleteIfEmpty()
 {
@@ -1757,10 +1773,12 @@ Q_OPENGL_EXPORT QGLShareRegister* qgl_share_reg()
 
 /*!
     \enum QGLContext::BindOption
+    \since 4.6
+
     A set of options to decide how to bind a texture using bindTexture().
 
     \value NoBindOption Don't do anything, pass the texture straight
-    thru.
+    through.
 
     \value InvertedYBindOption Specifies that the texture should be flipped
     over the X axis so that the texture coordinate 0,0 corresponds to
@@ -2121,7 +2139,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
     Q_ASSERT(texture);
 
     if (texture->id > 0)
-        const_cast<QImage &>(image).data_ptr()->is_cached = true;
+        QImagePixmapCleanupHooks::enableCleanupHooks(image);
 
     return texture;
 }
@@ -2138,6 +2156,11 @@ QGLTexture* QGLContextPrivate::bindTexture(const QImage &image, GLenum target, G
            image.width(), image.height(), internalFormat, int(options));
     QTime time;
     time.start();
+#endif
+
+#ifndef QT_NO_DEBUG
+    // Reset the gl error stack...git
+    while (glGetError() != GL_NO_ERROR) ;
 #endif
 
     // Scale the pixmap if needed. GL textures needs to have the
@@ -2375,7 +2398,7 @@ QGLTexture *QGLContextPrivate::bindTexture(const QPixmap &pixmap, GLenum target,
     Q_ASSERT(texture);
 
     if (texture->id > 0)
-        const_cast<QPixmap &>(pixmap).data_ptr()->is_cached = true;
+        QImagePixmapCleanupHooks::enableCleanupHooks(pixmap);
 
     return texture;
 }
@@ -2424,6 +2447,9 @@ int QGLContextPrivate::maxTextureSize()
 */
 GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, target, format, false, DefaultBindOption);
     return texture->id;
@@ -2456,6 +2482,9 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format)
 */
 GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format, BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, target, format, false, options);
     return texture->id;
@@ -2465,6 +2494,9 @@ GLuint QGLContext::bindTexture(const QImage &image, GLenum target, GLint format,
 /*! \internal */
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, DefaultBindOption);
     return texture->id;
@@ -2474,6 +2506,9 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
 GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
                                BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(image, GLenum(target), GLint(format), false, options);
     return texture->id;
@@ -2486,6 +2521,9 @@ GLuint QGLContext::bindTexture(const QImage &image, QMacCompatGLenum target, QMa
 */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, target, format, DefaultBindOption);
     return texture->id;
@@ -2500,6 +2538,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint format, BindOptions options)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, target, format, options);
     return texture->id;
@@ -2509,6 +2550,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, GLenum target, GLint forma
 /*! \internal */
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), DefaultBindOption);
     return texture->id;
@@ -2517,6 +2561,9 @@ GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, Q
 GLuint QGLContext::bindTexture(const QPixmap &pixmap, QMacCompatGLenum target, QMacCompatGLint format,
                                BindOptions options)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLContext);
     QGLTexture *texture = d->bindTexture(pixmap, GLenum(target), GLint(format), options);
     return texture->id;
@@ -4574,6 +4621,9 @@ bool QGLWidget::autoBufferSwap() const
 */
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(image, target, format, QGLContext::DefaultBindOption);
 }
@@ -4587,6 +4637,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format)
  */
 GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, QGLContext::BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(image, target, format, options);
 }
@@ -4596,6 +4649,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, GLenum target, GLint format, 
 /*! \internal */
 GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format)
 {
+    if (image.isNull())
+        return 0;
+
    Q_D(QGLWidget);
    return d->glcx->bindTexture(image, GLenum(target), GLint(format), QGLContext::DefaultBindOption);
 }
@@ -4603,6 +4659,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMac
 GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMacCompatGLint format,
                               QGLContext::BindOptions options)
 {
+    if (image.isNull())
+        return 0;
+
    Q_D(QGLWidget);
    return d->glcx->bindTexture(image, GLenum(target), GLint(format), options);
 }
@@ -4616,6 +4675,9 @@ GLuint QGLWidget::bindTexture(const QImage &image, QMacCompatGLenum target, QMac
 */
 GLuint QGLWidget::bindTexture(const QPixmap &pixmap, GLenum target, GLint format)
 {
+    if (pixmap.isNull())
+        return 0;
+
     Q_D(QGLWidget);
     return d->glcx->bindTexture(pixmap, target, format, QGLContext::DefaultBindOption);
 }

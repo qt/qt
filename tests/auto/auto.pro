@@ -127,6 +127,7 @@ SUBDIRS += \
            qexplicitlyshareddatapointer \
            qfile \
            qfiledialog \
+           qfiledialog2 \
            qfileinfo \
            qfilesystemwatcher \
            qfilesystemmodel \
@@ -500,3 +501,5 @@ contains(QT_CONFIG, webkit): SUBDIRS += \
            qwebhistoryinterface \
            qwebelement \
            qwebhistory
+
+contains(QT_CONFIG, declarative): SUBDIRS += declarative

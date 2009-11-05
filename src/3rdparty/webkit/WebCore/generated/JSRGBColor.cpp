@@ -78,8 +78,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSRGBColorConstructor::s_info = { "RGBColorConstructor", 0, &JSRGBColorConstructorTable, 0 };
@@ -125,7 +128,7 @@ JSRGBColor::JSRGBColor(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSRGBColor::~JSRGBColor()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRGBColor::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

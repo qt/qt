@@ -1,8 +1,6 @@
 /*
     Copyright (C) 2006 Apple Computer, Inc.
 
-    This file is part of the WebKit project
-
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Library General Public
     License as published by the Free Software Foundation; either
@@ -48,14 +46,19 @@ namespace WebCore {
         bool childShouldCreateRenderer(Node*) const;
         virtual RenderObject* createRenderer(RenderArena* arena, RenderStyle* style);
 
-    protected:
-        virtual const SVGElement* contextElement() const { return this; }
-
     private:
         ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGNames::foreignObjectTagString, SVGNames::xAttrString, SVGLength, X, x)
         ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGNames::foreignObjectTagString, SVGNames::yAttrString, SVGLength, Y, y)
         ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGNames::foreignObjectTagString, SVGNames::widthAttrString, SVGLength, Width, width)
         ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGNames::foreignObjectTagString, SVGNames::heightAttrString, SVGLength, Height, height)
+
+        // SVGURIReference
+        ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGURIReferenceIdentifier, XLinkNames::hrefAttrString, String, Href, href)
+
+        // SVGExternalResourcesRequired
+        ANIMATED_PROPERTY_DECLARATIONS(SVGForeignObjectElement, SVGExternalResourcesRequiredIdentifier,
+                                       SVGNames::externalResourcesRequiredAttrString, bool,
+                                       ExternalResourcesRequired, externalResourcesRequired)
     };
 
 } // namespace WebCore

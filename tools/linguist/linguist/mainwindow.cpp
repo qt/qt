@@ -269,6 +269,7 @@ MainWindow::MainWindow()
       m_editActiveModel(-1),
       m_statistics(0)
 {
+    setUnifiedTitleAndToolBarOnMac(true);
     m_ui.setupUi(this);
 
 #ifndef Q_WS_MAC

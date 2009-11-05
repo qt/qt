@@ -2096,7 +2096,7 @@ void tst_QTcpSocket::connectToMultiIP()
 
     stopWatch.restart();
     socket->connectToHost("multi.dev.troll.no", 81);
-    QVERIFY(!socket->waitForConnected(1000));
+    QVERIFY(!socket->waitForConnected(2000));
     QVERIFY(stopWatch.elapsed() < 2000);
     QCOMPARE(socket->error(), QAbstractSocket::SocketTimeoutError);
 
@@ -2116,7 +2116,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();;
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
         socket->moveToThread(0);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(2000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2127,7 +2127,7 @@ void tst_QTcpSocket::moveToThread0()
         QTcpSocket *socket = newSocket();
         socket->moveToThread(0);
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(2000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         QVERIFY(socket->waitForDisconnected());
@@ -2137,7 +2137,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 3: Moved after writing, while waiting for bytes to be written.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(2000));
         socket->write("XXX LOGOUT\r\n");
         socket->moveToThread(0);
         QVERIFY(socket->waitForBytesWritten(5000));
@@ -2148,7 +2148,7 @@ void tst_QTcpSocket::moveToThread0()
         // Case 4: Moved after writing, while waiting for response.
         QTcpSocket *socket = newSocket();
         socket->connectToHost(QtNetworkSettings::serverName(), 143);
-        QVERIFY(socket->waitForConnected(1000));
+        QVERIFY(socket->waitForConnected(2000));
         socket->write("XXX LOGOUT\r\n");
         QVERIFY(socket->waitForBytesWritten(5000));
         socket->moveToThread(0);
@@ -2263,7 +2263,7 @@ void tst_QTcpSocket::invalidProxy()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(!socket->waitForConnected(1000));
+        QVERIFY(!socket->waitForConnected(2000));
     }
     QVERIFY(!socket->errorString().isEmpty());
 
@@ -2382,7 +2382,7 @@ void tst_QTcpSocket::proxyFactory()
         QCOMPARE(socket->state(), QAbstractSocket::UnconnectedState);
     } else {
         QCOMPARE(socket->state(), QAbstractSocket::ConnectingState);
-        QVERIFY(socket->waitForConnected(10000));
+        QVERIFY(socket->waitForConnected(2000));
         QCOMPARE(proxyAuthCalled, 1);
     }
     QVERIFY(!socket->errorString().isEmpty());

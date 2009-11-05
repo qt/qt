@@ -81,7 +81,7 @@ JSSVGAnimatedAngle::JSSVGAnimatedAngle(NonNullPassRefPtr<Structure> structure, J
 
 JSSVGAnimatedAngle::~JSSVGAnimatedAngle()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedAngle::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

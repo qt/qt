@@ -129,6 +129,7 @@ private slots:
     void style();
 
     void allWidgets();
+    void topLevelWidgets();
 
     void setAttribute();
 
@@ -136,6 +137,9 @@ private slots:
     void windowsCommandLine();
 
     void touchEventPropagation();
+
+    void symbianNeedForTraps();
+    void symbianLeaveThroughMain();
 };
 
 class EventSpy : public QObject
@@ -1792,6 +1796,27 @@ void tst_QApplication::allWidgets()
     QVERIFY(!app.allWidgets().contains(w)); // removal test
 }
 
+void tst_QApplication::topLevelWidgets()
+{
+    int argc = 1;
+    QApplication app(argc, &argv0, QApplication::GuiServer);
+    QWidget *w = new QWidget;
+    w->show();
+#ifndef QT_NO_CLIPBOARD
+    QClipboard *clipboard = QApplication::clipboard();
+    QString originalText = clipboard->text();
+    clipboard->setText(QString("newText"));
+#endif
+    app.processEvents();
+    QVERIFY(QApplication::topLevelWidgets().contains(w));
+    QCOMPARE(QApplication::topLevelWidgets().count(), 1);
+    delete w;
+    w = 0;
+    app.processEvents();
+    QCOMPARE(QApplication::topLevelWidgets().count(), 0);
+}
+
+
 
 void tst_QApplication::setAttribute()
 {
@@ -2009,6 +2034,66 @@ void tst_QApplication::touchEventPropagation()
         QVERIFY(window.seenTouchEvent);
         QVERIFY(!window.seenMouseEvent);
     }
+}
+
+#ifdef Q_OS_SYMBIAN
+class CBaseDummy : public CBase
+{
+public:
+    CBaseDummy(int *numDestroyed) : numDestroyed(numDestroyed)
+    {
+    }
+    ~CBaseDummy()
+    {
+        (*numDestroyed)++;
+    }
+
+private:
+    int *numDestroyed;
+};
+
+static void fakeMain(int *numDestroyed)
+{
+    // Push a few objects, just so that the cleanup stack has something to clean up.
+    CleanupStack::PushL(new (ELeave) CBaseDummy(numDestroyed));
+    int argc = 0;
+    QApplication app(argc, 0);
+    CleanupStack::PushL(new (ELeave) CBaseDummy(numDestroyed));
+
+    User::Leave(KErrGeneral); // Fake error
+}
+#endif
+
+void tst_QApplication::symbianNeedForTraps()
+{
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian-only test", SkipAll);
+#else
+    int argc = 0;
+    QApplication app(argc, 0);
+    int numDestroyed = 0;
+
+    // This next part should not require a trap. If it does, the test will crash.
+    CleanupStack::PushL(new (ELeave) CBaseDummy(&numDestroyed));
+    CleanupStack::PopAndDestroy();
+
+    QCOMPARE(numDestroyed, 1);
+
+    // No other failure condition. The program will crash if it does not pass.
+#endif
+}
+
+void tst_QApplication::symbianLeaveThroughMain()
+{
+#ifndef Q_OS_SYMBIAN
+    QSKIP("This is a Symbian-only test", SkipAll);
+#else
+    int numDestroyed = 0;
+    TInt err;
+    TRAP(err, fakeMain(&numDestroyed));
+
+    QCOMPARE(numDestroyed, 2);
+#endif
 }
 
 //QTEST_APPLESS_MAIN(tst_QApplication)

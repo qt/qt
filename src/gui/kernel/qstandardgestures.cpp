@@ -44,6 +44,7 @@
 #include "qgesture_p.h"
 #include "qevent.h"
 #include "qwidget.h"
+#include "qabstractscrollarea.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -51,29 +52,34 @@ QPanGestureRecognizer::QPanGestureRecognizer()
 {
 }
 
-QGesture *QPanGestureRecognizer::createGesture(QObject *target)
+QGesture *QPanGestureRecognizer::create(QObject *target)
 {
     if (target && target->isWidgetType()) {
+#if defined(Q_OS_WIN)
+        // for scroll areas on Windows we want to use native gestures instead
+        if (!qobject_cast<QAbstractScrollArea *>(target->parent()))
+            static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+#else
         static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
+#endif
     }
     return new QPanGesture;
 }
 
-QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result QPanGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
 {
-    QPanGesture *q = static_cast<QPanGesture*>(state);
+    QPanGesture *q = static_cast<QPanGesture *>(state);
     QPanGesturePrivate *d = q->d_func();
 
-    const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
+    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
 
     QGestureRecognizer::Result result;
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        result = QGestureRecognizer::MaybeGesture;
+        result = QGestureRecognizer::MayBeGesture;
         QTouchEvent::TouchPoint p = ev->touchPoints().at(0);
-        d->lastPosition = p.pos().toPoint();
-        d->lastOffset = d->totalOffset = d->offset = QSize();
+        d->lastOffset = d->offset = QPointF();
         break;
     }
     case QEvent::TouchEnd: {
@@ -83,13 +89,12 @@ QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, Q
                 QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
                 d->lastOffset = d->offset;
                 d->offset =
-                        QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
-                              p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
-                d->totalOffset += d->offset;
+                        QPointF(p1.pos().x() - p1.startPos().x() + p2.pos().x() - p2.startPos().x(),
+                              p1.pos().y() - p1.startPos().y() + p2.pos().y() - p2.startPos().y()) / 2;
             }
-            result = QGestureRecognizer::GestureFinished;
+            result = QGestureRecognizer::FinishGesture;
         } else {
-            result = QGestureRecognizer::NotGesture;
+            result = QGestureRecognizer::CancelGesture;
         }
         break;
     }
@@ -99,14 +104,13 @@ QGestureRecognizer::Result QPanGestureRecognizer::filterEvent(QGesture *state, Q
             QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
             d->lastOffset = d->offset;
             d->offset =
-                    QSize(p1.pos().x() - p1.lastPos().x() + p2.pos().x() - p2.lastPos().x(),
-                          p1.pos().y() - p1.lastPos().y() + p2.pos().y() - p2.lastPos().y()) / 2;
-            d->totalOffset += d->offset;
-            if (d->totalOffset.width() > 10  || d->totalOffset.height() > 10 ||
-                d->totalOffset.width() < -10 || d->totalOffset.height() < -10) {
-                result = QGestureRecognizer::GestureTriggered;
+                    QPointF(p1.pos().x() - p1.startPos().x() + p2.pos().x() - p2.startPos().x(),
+                          p1.pos().y() - p1.startPos().y() + p2.pos().y() - p2.startPos().y()) / 2;
+            if (d->offset.x() > 10  || d->offset.y() > 10 ||
+                d->offset.x() < -10 || d->offset.y() < -10) {
+                result = QGestureRecognizer::TriggerGesture;
             } else {
-                result = QGestureRecognizer::MaybeGesture;
+                result = QGestureRecognizer::MayBeGesture;
             }
         }
         break;
@@ -128,109 +132,128 @@ void QPanGestureRecognizer::reset(QGesture *state)
     QPanGesture *pan = static_cast<QPanGesture*>(state);
     QPanGesturePrivate *d = pan->d_func();
 
-    d->totalOffset = d->lastOffset = d->offset = QSizeF();
-    d->lastPosition = QPoint();
+    d->lastOffset = d->offset = QPointF();
     d->acceleration = 0;
-
-//#if defined(QT_MAC_USE_COCOA)
-//    d->singleTouchPanTimer.stop();
-//    d->prevMousePos = QPointF(0, 0);
-//#endif
 
     QGestureRecognizer::reset(state);
 }
 
-/*! \internal */
-/*
-bool QPanGestureRecognizer::event(QEvent *event)
+
+//
+// QPinchGestureRecognizer
+//
+
+QPinchGestureRecognizer::QPinchGestureRecognizer()
 {
-#if defined(QT_MAC_USE_COCOA)
-    Q_D(QPanGesture);
-    if (event->type() == QEvent::Timer) {
-        const QTimerEvent *te = static_cast<QTimerEvent *>(event);
-        if (te->timerId() == d->singleTouchPanTimer.timerId()) {
-            d->singleTouchPanTimer.stop();
-            updateState(Qt::GestureStarted);
-        }
+}
+
+QGesture *QPinchGestureRecognizer::create(QObject *target)
+{
+    if (target && target->isWidgetType()) {
+        static_cast<QWidget *>(target)->setAttribute(Qt::WA_AcceptTouchEvents);
     }
-#endif
+    return new QPinchGesture;
+}
 
-    bool consume = false;
+QGestureRecognizer::Result QPinchGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
+{
+    QPinchGesture *q = static_cast<QPinchGesture *>(state);
+    QPinchGesturePrivate *d = q->d_func();
 
-#if defined(Q_WS_WIN)
-#elif defined(QT_MAC_USE_COCOA)
-    // The following implements single touch
-    // panning on Mac:
-    const int panBeginDelay = 300;
-    const int panBeginRadius = 3;
-    const QTouchEvent *ev = static_cast<const QTouchEvent*>(event);
+    const QTouchEvent *ev = static_cast<const QTouchEvent *>(event);
+
+    QGestureRecognizer::Result result;
 
     switch (event->type()) {
     case QEvent::TouchBegin: {
-        if (ev->touchPoints().size() == 1) {
-            d->delayManager->setEnabled(true);
-            consume = d->delayManager->append(d->gestureTarget, *event);
-            d->lastPosition = QCursor::pos();
-            d->singleTouchPanTimer.start(panBeginDelay, this);
-        }
-        break;}
+        result = QGestureRecognizer::MayBeGesture;
+        break;
+    }
     case QEvent::TouchEnd: {
-        d->delayManager->setEnabled(false);
-        if (state() != Qt::NoGesture) {
-            updateState(Qt::GestureFinished);
-            consume = true;
-            d->delayManager->clear();
+        if (q->state() != Qt::NoGesture) {
+            result = QGestureRecognizer::FinishGesture;
         } else {
-            d->delayManager->replay();
+            result = QGestureRecognizer::CancelGesture;
         }
-        reset();
-        break;}
+        break;
+    }
     case QEvent::TouchUpdate: {
-        consume = d->delayManager->append(d->gestureTarget, *event);
-        if (ev->touchPoints().size() == 1) {
-            if (state() == Qt::NoGesture) {
-                // INVARIANT: The singleTouchTimer has still not fired.
-                // Lets check if the user moved his finger so much from
-                // the starting point that it makes sense to cancel:
-                const QPointF startPos = ev->touchPoints().at(0).startPos().toPoint();
-                const QPointF p = ev->touchPoints().at(0).pos().toPoint();
-                if ((startPos - p).manhattanLength() > panBeginRadius) {
-                    d->delayManager->replay();
-                    consume = false;
-                    reset();
-                } else {
-                    d->lastPosition = QCursor::pos();
-                }
-            } else {
-                d->delayManager->clear();
-                QPointF mousePos = QCursor::pos();
-                QPointF dist = mousePos - d->lastPosition;
-                d->lastPosition = mousePos;
-                d->lastOffset = d->offset;
-                d->offset = QSizeF(dist.x(), dist.y());
-                d->totalOffset += d->offset;
-                updateState(Qt::GestureUpdated);
+        d->changeFlags = 0;
+        if (ev->touchPoints().size() == 2) {
+            QTouchEvent::TouchPoint p1 = ev->touchPoints().at(0);
+            QTouchEvent::TouchPoint p2 = ev->touchPoints().at(1);
+
+            d->hotSpot = p1.screenPos();
+            d->isHotSpotSet = true;
+
+            if (d->isNewSequence) {
+                d->startPosition[0] = p1.screenPos();
+                d->startPosition[1] = p2.screenPos();
             }
-        } else if (state() == Qt::NoGesture) {
-            d->delayManager->replay();
-            consume = false;
-            reset();
+            QLineF line(p1.screenPos(), p2.screenPos());
+            QLineF tmp(line);
+            tmp.setLength(line.length() / 2.);
+            QPointF centerPoint = tmp.p2();
+
+            d->lastCenterPoint = d->centerPoint;
+            d->centerPoint = centerPoint;
+            d->changeFlags |= QPinchGesture::CenterPointChanged;
+
+            const qreal scaleFactor = QLineF(p1.pos(), p2.pos()).length()
+                                      / QLineF(d->startPosition[0],  d->startPosition[1]).length();
+            if (d->isNewSequence) {
+                d->lastScaleFactor = scaleFactor;
+            } else {
+                d->lastScaleFactor = d->scaleFactor;
+            }
+            d->scaleFactor = scaleFactor;
+            d->totalScaleFactor += d->scaleFactor - d->lastScaleFactor;
+            d->changeFlags |= QPinchGesture::ScaleFactorChanged;
+
+            const qreal rotationAngle = -line.angle();
+            if (d->isNewSequence)
+                d->lastRotationAngle = rotationAngle;
+            else
+                d->lastRotationAngle = d->rotationAngle;
+            d->rotationAngle = rotationAngle;
+            d->totalRotationAngle += d->rotationAngle - d->lastRotationAngle;
+            d->changeFlags |= QPinchGesture::RotationAngleChanged;
+
+            d->totalChangeFlags |= d->changeFlags;
+            d->isNewSequence = false;
+            result = QGestureRecognizer::TriggerGesture;
+        } else {
+            d->isNewSequence = true;
+            result = QGestureRecognizer::MayBeGesture;
         }
-        break;}
+        break;
+    }
     case QEvent::MouseButtonPress:
     case QEvent::MouseMove:
     case QEvent::MouseButtonRelease:
-        if (d->delayManager->isEnabled())
-            consume = d->delayManager->append(d->gestureTarget, *event);
+        result = QGestureRecognizer::Ignore;
         break;
     default:
-        return false;
+        result = QGestureRecognizer::Ignore;
+        break;
     }
-#else
-    Q_UNUSED(event);
-#endif
-    return QGestureRecognizer::Ignore;
+    return result;
 }
-    */
+
+void QPinchGestureRecognizer::reset(QGesture *state)
+{
+    QPinchGesture *pinch = static_cast<QPinchGesture *>(state);
+    QPinchGesturePrivate *d = pinch->d_func();
+
+    d->totalChangeFlags = d->changeFlags = 0;
+
+    d->startCenterPoint = d->lastCenterPoint = d->centerPoint = QPointF();
+    d->totalScaleFactor = d->lastScaleFactor = d->scaleFactor = 0;
+    d->totalRotationAngle = d->lastRotationAngle = d->rotationAngle = 0;
+
+    d->isNewSequence = true;
+
+    QGestureRecognizer::reset(state);
+}
 
 QT_END_NAMESPACE

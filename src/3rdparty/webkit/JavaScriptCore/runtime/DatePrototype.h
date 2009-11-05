@@ -39,8 +39,12 @@ namespace JSC {
 
         static PassRefPtr<Structure> createStructure(JSValue prototype)
         {
-            return Structure::create(prototype, TypeInfo(ObjectType, HasDefaultGetPropertyNames));
+            return Structure::create(prototype, TypeInfo(ObjectType, StructureFlags));
         }
+
+    protected:
+        static const unsigned StructureFlags = OverridesGetOwnPropertySlot | DateInstance::StructureFlags;
+
     };
 
 } // namespace JSC

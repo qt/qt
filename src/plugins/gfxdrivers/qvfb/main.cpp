@@ -43,6 +43,7 @@
 #include <qscreenvfb_qws.h>
 #include <qstringlist.h>
 
+#ifndef QT_NO_LIBRARY
 QT_BEGIN_NAMESPACE
 
 class ScreenVfbDriver : public QScreenDriverPlugin
@@ -78,3 +79,4 @@ Q_EXPORT_STATIC_PLUGIN(ScreenVfbDriver)
 Q_EXPORT_PLUGIN2(qscreenvfb, ScreenVfbDriver)
 
 QT_END_NAMESPACE
+#endif //QT_NO_LIBRARY

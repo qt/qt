@@ -124,6 +124,8 @@ public:
     static inline CAknTitlePane* titlePane();
     static inline CAknContextPane* contextPane();
     static inline CEikButtonGroupContainer* buttonGroupContainer();
+
+    TTrapHandler *s60InstalledTrapHandler;
 #endif
 };
 

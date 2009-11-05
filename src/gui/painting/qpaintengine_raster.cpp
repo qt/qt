@@ -132,6 +132,10 @@ static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 extern bool qt_cleartype_enabled;
 #endif
 
+#ifdef Q_WS_MAC
+extern bool qt_applefontsmoothing_enabled;
+#endif
+
 
 /********************************************************************************
  * Span functions
@@ -508,7 +512,7 @@ bool QRasterPaintEngine::begin(QPaintDevice *device)
 #if defined(Q_WS_WIN)
     else if (qt_cleartype_enabled)
 #elif defined (Q_WS_MAC)
-    else if (true)
+    else if (qt_applefontsmoothing_enabled)
 #else
     else if (false)
 #endif
@@ -1682,7 +1686,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
     if (!s->penData.blend)
         return;
 
-    if (s->flags.fast_pen && path.shape() <= QVectorPath::NonCurvedShapeHint
+    if (s->flags.fast_pen && !path.isCurved()
         && s->lastPen.brush().isOpaque()) {
         int count = path.elementCount();
         QPointF *points = (QPointF *) path.points();
@@ -1735,8 +1739,7 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
         const QLineF *lines = reinterpret_cast<const QLineF *>(path.points());
 
         for (int i = 0; i < lineCount; ++i) {
-            if (path.shape() == QVectorPath::LinesHint)
-                dashOffset = s->lastPen.dashOffset();
+            dashOffset = s->lastPen.dashOffset();
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
@@ -5116,6 +5119,9 @@ void QSpanData::adjustSpanMethods()
 #else
         unclipped_blend = qBlendTexture;
 #endif
+        if (!texture.imageData)
+            unclipped_blend = 0;
+
         break;
     }
     // setup clipping

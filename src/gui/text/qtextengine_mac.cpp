@@ -557,7 +557,7 @@ void QTextEngine::shapeTextMac(int item) const
 
     si.glyph_data_offset = layoutData->used;
 
-    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent);
+    QFontEngine *font = fontEngine(si, &si.ascent, &si.descent, &si.leading);
     if (font->type() != QFontEngine::Multi) {
         shapeTextWithHarfbuzz(item);
         return;
@@ -594,53 +594,50 @@ void QTextEngine::shapeTextMac(int item) const
         str = reinterpret_cast<const QChar *>(uc);
     }
 
-    while (true) {
+    ensureSpace(num_glyphs);
+    num_glyphs = layoutData->glyphLayout.numGlyphs - layoutData->used;
+
+    QGlyphLayout g = availableGlyphs(&si);
+    g.numGlyphs = num_glyphs;
+    unsigned short *log_clusters = logClusters(&si);
+
+    bool stringToCMapFailed = false;
+    if (!fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters, attributes())) {
         ensureSpace(num_glyphs);
-        num_glyphs = layoutData->glyphLayout.numGlyphs - layoutData->used;
-
-        QGlyphLayout g = availableGlyphs(&si);
-        g.numGlyphs = num_glyphs;
-        unsigned short *log_clusters = logClusters(&si);
-
-        if (fe->stringToCMap(str,
-                             len,
-                             &g,
-                             &num_glyphs,
-                             flags,
-                             log_clusters,
-                             attributes())) {
-
-            heuristicSetGlyphAttributes(str, len, &g, log_clusters, num_glyphs);
-            break;
-        }
+        stringToCMapFailed = fe->stringToCMap(str, len, &g, &num_glyphs, flags, log_clusters,
+                                              attributes());
     }
 
-    si.num_glyphs = num_glyphs;
+    if (!stringToCMapFailed) {
+        heuristicSetGlyphAttributes(str, len, &g, log_clusters, num_glyphs);
 
-    layoutData->used += si.num_glyphs;
+        si.num_glyphs = num_glyphs;
 
-    QGlyphLayout g = shapedGlyphs(&si);
+        layoutData->used += si.num_glyphs;
 
-    if (si.analysis.script == QUnicodeTables::Arabic) {
-        QVarLengthArray<QArabicProperties> props(len + 2);
-        QArabicProperties *properties = props.data();
-        int f = si.position;
-        int l = len;
-        if (f > 0) {
-            --f;
-            ++l;
-            ++properties;
-        }
-        if (f + l < layoutData->string.length()) {
-            ++l;
-        }
-        qt_getArabicProperties((const unsigned short *)(layoutData->string.unicode()+f), l, props.data());
+        QGlyphLayout g = shapedGlyphs(&si);
 
-        unsigned short *log_clusters = logClusters(&si);
+        if (si.analysis.script == QUnicodeTables::Arabic) {
+            QVarLengthArray<QArabicProperties> props(len + 2);
+            QArabicProperties *properties = props.data();
+            int f = si.position;
+            int l = len;
+            if (f > 0) {
+                --f;
+                ++l;
+                ++properties;
+            }
+            if (f + l < layoutData->string.length()) {
+                ++l;
+            }
+            qt_getArabicProperties((const unsigned short *)(layoutData->string.unicode()+f), l, props.data());
 
-        for (int i = 0; i < len; ++i) {
-            int gpos = log_clusters[i];
-            g.attributes[gpos].justification = properties[i].justification;
+            unsigned short *log_clusters = logClusters(&si);
+
+            for (int i = 0; i < len; ++i) {
+                int gpos = log_clusters[i];
+                g.attributes[gpos].justification = properties[i].justification;
+            }
         }
     }
 

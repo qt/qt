@@ -130,6 +130,7 @@ private slots:
     void valueChanged();
     void twoAnimations();
     void deletedInUpdateCurrentTime();
+    void totalDuration();
 };
 
 tst_QPropertyAnimation::tst_QPropertyAnimation()
@@ -494,7 +495,7 @@ void tst_QPropertyAnimation::startWhenAnotherIsRunning()
         anim->setEndValue(100);
         QSignalSpy runningSpy(anim, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         anim->start(QVariantAnimation::DeleteWhenStopped);
-        QTest::qWait(anim->duration() + 50);
+        QTest::qWait(anim->duration() + 100);
         QCOMPARE(runningSpy.count(), 2); //started and then stopped
         QVERIFY(!anim);
     }
@@ -658,7 +659,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.setStartValue(0);
     anim.setEndValue(100);
     anim.start();
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), anim.duration());
 
@@ -666,7 +667,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.setDirection(QVariantAnimation::Backward);
     anim.start();
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 
@@ -675,7 +676,7 @@ void tst_QPropertyAnimation::playForwardBackward()
     anim.start();
     QCOMPARE(anim.state(), QAbstractAnimation::Running);
     QCOMPARE(anim.currentTime(), anim.duration());
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), 0);
 }
@@ -1092,7 +1093,7 @@ void tst_QPropertyAnimation::valueChanged()
     QSignalSpy spy(&anim, SIGNAL(valueChanged(QVariant)));
     anim.start();
 
-    QTest::qWait(anim.duration() + 50);
+    QTest::qWait(anim.duration() + 100);
 
     QCOMPARE(anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(anim.currentTime(), anim.duration());
@@ -1143,7 +1144,7 @@ void tst_QPropertyAnimation::twoAnimations()
     o1.anim.start();
     o2.anim.start();
 
-    QTest::qWait(o1.anim.duration() + 50);
+    QTest::qWait(o1.anim.duration() + 100);
     QCOMPARE(o1.anim.state(), QAbstractAnimation::Stopped);
     QCOMPARE(o2.anim.state(), QAbstractAnimation::Stopped);
 
@@ -1193,11 +1194,24 @@ void tst_QPropertyAnimation::deletedInUpdateCurrentTime()
     MyComposedAnimation composedAnimation(&o, "value", "realValue");
     composedAnimation.start();
     QCOMPARE(composedAnimation.state(), QAbstractAnimation::Running);
-    QTest::qWait(composedAnimation.duration() + 50);
+    QTest::qWait(composedAnimation.duration() + 100);
 
     QCOMPARE(composedAnimation.state(), QAbstractAnimation::Stopped);
     QCOMPARE(o.value(), 1000);
 }
+
+void tst_QPropertyAnimation::totalDuration()
+{
+    QPropertyAnimation anim;
+    QCOMPARE(anim.totalDuration(), 250);
+    anim.setLoopCount(2);
+    QCOMPARE(anim.totalDuration(), 2*250);
+    anim.setLoopCount(-1);
+    QCOMPARE(anim.totalDuration(), -1);
+    anim.setDuration(0);
+    QCOMPARE(anim.totalDuration(), 0);
+}
+
 
 QTEST_MAIN(tst_QPropertyAnimation)
 #include "tst_qpropertyanimation.moc"

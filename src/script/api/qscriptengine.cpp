@@ -51,6 +51,8 @@
 #include "qscriptvalue_p.h"
 #include "qscriptvalueiterator.h"
 #include "qscriptclass.h"
+#include "qscriptprogram.h"
+#include "qscriptprogram_p.h"
 #include "qdebug.h"
 
 #include <QtCore/qstringlist.h>
@@ -343,15 +345,10 @@ public:
 namespace QScript
 {
 
-struct GlobalClientData : public JSC::JSGlobalData::ClientData
+void GlobalClientData::mark(JSC::MarkStack& markStack)
 {
-    GlobalClientData(QScriptEnginePrivate *e)
-        : engine(e) {}
-    virtual ~GlobalClientData() {}
-    virtual void mark(JSC::MarkStack& markStack) { engine->mark(markStack); }
-
-    QScriptEnginePrivate *engine;
-};
+    engine->mark(markStack);
+}
 
 class TimeoutCheckerProxy : public JSC::TimeoutChecker
 {
@@ -450,11 +447,6 @@ qsreal integerFromString(const QString &str, int radix)
 {
     QByteArray ba = str.trimmed().toUtf8();
     return integerFromString(ba.constData(), ba.size(), radix);
-}
-
-QScriptEnginePrivate *scriptEngineFromExec(const JSC::ExecState *exec)
-{
-    return static_cast<GlobalClientData*>(exec->globalData().clientData)->engine;
 }
 
 bool isFunction(JSC::JSValue value)
@@ -797,6 +789,10 @@ QScriptEnginePrivate::QScriptEnginePrivate()
       registeredScriptStrings(0), inEval(false)
 {
     qMetaTypeId<QScriptValue>();
+    qMetaTypeId<QList<int> >();
+#ifndef QT_NO_QOBJECT
+    qMetaTypeId<QObjectList>();
+#endif
 
     JSC::initializeThreading(); // ### hmmm
 
@@ -991,26 +987,6 @@ void QScriptEnginePrivate::setDefaultPrototype(int metaTypeId, JSC::JSValue prot
     info->prototype = prototype;
 }
 
-QScriptContext *QScriptEnginePrivate::contextForFrame(JSC::ExecState *frame)
-{
-    if (frame && frame->callerFrame()->hasHostCallFrameFlag() && !frame->callee()
-        && frame->callerFrame()->removeHostCallFrameFlag() == QScript::scriptEngineFromExec(frame)->globalExec()) {
-        //skip the "fake" context created in Interpreter::execute.
-        frame = frame->callerFrame()->removeHostCallFrameFlag();
-    }
-    return reinterpret_cast<QScriptContext *>(frame);
-}
-
-JSC::ExecState *QScriptEnginePrivate::frameForContext(QScriptContext *context)
-{
-    return reinterpret_cast<JSC::ExecState*>(context);
-}
-
-const JSC::ExecState *QScriptEnginePrivate::frameForContext(const QScriptContext *context)
-{
-    return reinterpret_cast<const JSC::ExecState*>(context);
-}
-
 JSC::JSGlobalObject *QScriptEnginePrivate::originalGlobalObject() const
 {
     return globalData->head;
@@ -1050,11 +1026,6 @@ void QScriptEnginePrivate::setGlobalObject(JSC::JSObject *object)
         Q_ASSERT(object != originalGlobalObject());
         glob->customGlobalObject = object;
     }
-}
-
-JSC::ExecState *QScriptEnginePrivate::globalExec() const
-{
-    return originalGlobalObject()->globalExec();
 }
 
 /*!
@@ -1184,6 +1155,73 @@ void QScriptEnginePrivate::agentDeleted(QScriptEngineAgent *agent)
         QScriptEngineAgentPrivate::get(agent)->detach();
         activeAgent = 0;
     }
+}
+
+JSC::JSValue QScriptEnginePrivate::evaluateHelper(JSC::ExecState *exec, intptr_t sourceId,
+                                                  JSC::EvalExecutable *executable,
+                                                  bool &compile)
+{
+    Q_Q(QScriptEngine);
+    JSC::JSLock lock(false); // ### hmmm
+    QBoolBlocker inEvalBlocker(inEval, true);
+    q->currentContext()->activationObject(); //force the creation of a context for native function;
+
+    JSC::Debugger* debugger = originalGlobalObject()->debugger();
+    if (debugger)
+        debugger->evaluateStart(sourceId);
+
+    q->clearExceptions();
+    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
+
+    if (compile) {
+        JSC::JSObject* error = executable->compile(exec, exec->scopeChain());
+        if (error) {
+            compile = false;
+            exec->setException(error);
+
+            if (debugger) {
+                debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, error), sourceId, false);
+                debugger->evaluateStop(error, sourceId);
+            }
+
+            return error;
+        }
+    }
+
+    JSC::JSValue thisValue = thisForContext(exec);
+    JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull())
+                                ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
+    JSC::JSValue exceptionValue;
+    timeoutChecker()->setShouldAbort(false);
+    if (processEventsInterval > 0)
+        timeoutChecker()->reset();
+
+    JSC::JSValue result = exec->interpreter()->execute(executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
+
+    if (timeoutChecker()->shouldAbort()) {
+        if (abortResult.isError())
+            exec->setException(scriptValueToJSCValue(abortResult));
+
+        if (debugger)
+            debugger->evaluateStop(scriptValueToJSCValue(abortResult), sourceId);
+
+        return scriptValueToJSCValue(abortResult);
+    }
+
+    if (exceptionValue) {
+        exec->setException(exceptionValue);
+
+        if (debugger)
+            debugger->evaluateStop(exceptionValue, sourceId);
+
+        return exceptionValue;
+    }
+
+    if (debugger)
+        debugger->evaluateStop(result, sourceId);
+
+    Q_ASSERT(!exec->hadException());
+    return result;
 }
 
 #ifndef QT_NO_QOBJECT
@@ -2146,74 +2184,40 @@ QScriptSyntaxCheckResult QScriptEnginePrivate::checkSyntax(const QString &progra
 QScriptValue QScriptEngine::evaluate(const QString &program, const QString &fileName, int lineNumber)
 {
     Q_D(QScriptEngine);
-
-    JSC::JSLock lock(false); // ### hmmm
-    QBoolBlocker inEval(d->inEval, true);
-    currentContext()->activationObject(); //force the creation of a context for native function;
-
-    JSC::Debugger* debugger = d->originalGlobalObject()->debugger();
-
-    JSC::UString jscProgram = program;
-    JSC::UString jscFileName = fileName;
-    JSC::ExecState* exec = d->currentFrame;
     WTF::PassRefPtr<QScript::UStringSourceProviderWithFeedback> provider
-            = QScript::UStringSourceProviderWithFeedback::create(jscProgram, jscFileName, lineNumber, d);
+            = QScript::UStringSourceProviderWithFeedback::create(program, fileName, lineNumber, d);
     intptr_t sourceId = provider->asID();
     JSC::SourceCode source(provider, lineNumber); //after construction of SourceCode provider variable will be null.
 
-    if (debugger)
-        debugger->evaluateStart(sourceId);
-
-    clearExceptions();
-    JSC::DynamicGlobalObjectScope dynamicGlobalObjectScope(exec, exec->scopeChain()->globalObject());
-
+    JSC::ExecState* exec = d->currentFrame;
     JSC::EvalExecutable executable(exec, source);
-    JSC::JSObject* error = executable.compile(exec, exec->scopeChain());
-    if (error) {
-        exec->setException(error);
-
-        if (debugger) {
-            debugger->exceptionThrow(JSC::DebuggerCallFrame(exec, error), sourceId, false);
-            debugger->evaluateStop(error, sourceId);
-        }
-
-        return d->scriptValueFromJSCValue(error);
-    }
-
-    JSC::JSValue thisValue = d->thisForContext(exec);
-    JSC::JSObject* thisObject = (!thisValue || thisValue.isUndefinedOrNull()) ? exec->dynamicGlobalObject() : thisValue.toObject(exec);
-    JSC::JSValue exceptionValue;
-    d->timeoutChecker()->setShouldAbort(false);
-    if (d->processEventsInterval > 0)
-        d->timeoutChecker()->reset();
-    JSC::JSValue result = exec->interpreter()->execute(&executable, exec, thisObject, exec->scopeChain(), &exceptionValue);
-
-    if (d->timeoutChecker()->shouldAbort()) {
-        if (d->abortResult.isError())
-            exec->setException(d->scriptValueToJSCValue(d->abortResult));
-
-        if (debugger)
-            debugger->evaluateStop(d->scriptValueToJSCValue(d->abortResult), sourceId);
-
-        return d->abortResult;
-    }
-
-    if (exceptionValue) {
-        exec->setException(exceptionValue);
-
-        if (debugger)
-            debugger->evaluateStop(exceptionValue, sourceId);
-
-        return d->scriptValueFromJSCValue(exceptionValue);
-    }
-
-    if (debugger)
-        debugger->evaluateStop(result, sourceId);
-
-    Q_ASSERT(!exec->hadException());
-    return d->scriptValueFromJSCValue(result);
+    bool compile = true;
+    return d->scriptValueFromJSCValue(d->evaluateHelper(exec, sourceId, &executable, compile));
 }
 
+/*!
+  \internal
+  \since 4.6
+
+  Evaluates the given \a program and returns the result of the
+  evaluation.
+*/
+QScriptValue QScriptEngine::evaluate(const QScriptProgram &program)
+{
+    Q_D(QScriptEngine);
+    QScriptProgramPrivate *program_d = QScriptProgramPrivate::get(program);
+    if (!program_d)
+        return QScriptValue();
+
+    JSC::ExecState* exec = d->currentFrame;
+    JSC::EvalExecutable *executable = program_d->executable(exec, d);
+    bool compile = !program_d->isCompiled;
+    JSC::JSValue result = d->evaluateHelper(exec, program_d->sourceId,
+                                            executable, compile);
+    if (compile)
+        program_d->isCompiled = true;
+    return d->scriptValueFromJSCValue(result);
+}
 
 /*!
   Returns the current context.
@@ -2539,63 +2543,50 @@ QScriptValue QScriptEngine::create(int type, const void *ptr)
 
 QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
 {
+    Q_Q(QScriptEngine);
     Q_ASSERT(ptr != 0);
     QScriptValue result;
     QScriptTypeInfo *info = m_typeInfos.value(type);
     if (info && info->marshal) {
-        result = info->marshal(q_func(), ptr);
+        result = info->marshal(q, ptr);
     } else {
         // check if it's one of the types we know
         switch (QMetaType::Type(type)) {
         case QMetaType::Void:
-            result = QScriptValue(QScriptValue::UndefinedValue);
-            break;
+            return QScriptValue(q, QScriptValue::UndefinedValue);
         case QMetaType::Bool:
-            result = QScriptValue(*reinterpret_cast<const bool*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const bool*>(ptr));
         case QMetaType::Int:
-            result = QScriptValue(*reinterpret_cast<const int*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const int*>(ptr));
         case QMetaType::UInt:
-            result = QScriptValue(*reinterpret_cast<const uint*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const uint*>(ptr));
         case QMetaType::LongLong:
-            result = QScriptValue(qsreal(*reinterpret_cast<const qlonglong*>(ptr)));
-            break;
+            return QScriptValue(q, qsreal(*reinterpret_cast<const qlonglong*>(ptr)));
         case QMetaType::ULongLong:
 #if defined(Q_OS_WIN) && defined(_MSC_FULL_VER) && _MSC_FULL_VER <= 12008804
 #pragma message("** NOTE: You need the Visual Studio Processor Pack to compile support for 64bit unsigned integers.")
-            result = QScriptValue(qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
 #elif defined(Q_CC_MSVC) && !defined(Q_CC_MSVC_NET)
-            result = QScriptValue(qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal((qlonglong)*reinterpret_cast<const qulonglong*>(ptr)));
 #else
-            result = QScriptValue(qsreal(*reinterpret_cast<const qulonglong*>(ptr)));
+            return QScriptValue(q, qsreal(*reinterpret_cast<const qulonglong*>(ptr)));
 #endif
-            break;
         case QMetaType::Double:
-            result = QScriptValue(*reinterpret_cast<const double*>(ptr));
-            break;
+            return QScriptValue(q, qsreal(*reinterpret_cast<const double*>(ptr)));
         case QMetaType::QString:
-            result = QScriptValue(q_func(), *reinterpret_cast<const QString*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const QString*>(ptr));
         case QMetaType::Float:
-            result = QScriptValue(*reinterpret_cast<const float*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const float*>(ptr));
         case QMetaType::Short:
-            result = QScriptValue(*reinterpret_cast<const short*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const short*>(ptr));
         case QMetaType::UShort:
-            result = QScriptValue(*reinterpret_cast<const unsigned short*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const unsigned short*>(ptr));
         case QMetaType::Char:
-            result = QScriptValue(*reinterpret_cast<const char*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const char*>(ptr));
         case QMetaType::UChar:
-            result = QScriptValue(*reinterpret_cast<const unsigned char*>(ptr));
-            break;
+            return QScriptValue(q, *reinterpret_cast<const unsigned char*>(ptr));
         case QMetaType::QChar:
-            result = QScriptValue((*reinterpret_cast<const QChar*>(ptr)).unicode());
-            break;
+            return QScriptValue(q, (*reinterpret_cast<const QChar*>(ptr)).unicode());
         case QMetaType::QStringList:
             result = arrayFromStringList(*reinterpret_cast<const QStringList *>(ptr));
             break;
@@ -2606,38 +2597,38 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
             result = objectFromVariantMap(*reinterpret_cast<const QVariantMap *>(ptr));
             break;
         case QMetaType::QDateTime:
-            result = q_func()->newDate(*reinterpret_cast<const QDateTime *>(ptr));
+            result = q->newDate(*reinterpret_cast<const QDateTime *>(ptr));
             break;
         case QMetaType::QDate:
-            result = q_func()->newDate(QDateTime(*reinterpret_cast<const QDate *>(ptr)));
+            result = q->newDate(QDateTime(*reinterpret_cast<const QDate *>(ptr)));
             break;
 #ifndef QT_NO_REGEXP
         case QMetaType::QRegExp:
-            result = q_func()->newRegExp(*reinterpret_cast<const QRegExp *>(ptr));
+            result = q->newRegExp(*reinterpret_cast<const QRegExp *>(ptr));
             break;
 #endif
 #ifndef QT_NO_QOBJECT
         case QMetaType::QObjectStar:
         case QMetaType::QWidgetStar:
-            result = q_func()->newQObject(*reinterpret_cast<QObject* const *>(ptr));
+            result = q->newQObject(*reinterpret_cast<QObject* const *>(ptr));
             break;
 #endif
         default:
             if (type == qMetaTypeId<QScriptValue>()) {
                 result = *reinterpret_cast<const QScriptValue*>(ptr);
                 if (!result.isValid())
-                    result = QScriptValue(QScriptValue::UndefinedValue);
+                    return QScriptValue(q, QScriptValue::UndefinedValue);
             }
 
 #ifndef QT_NO_QOBJECT
             // lazy registration of some common list types
             else if (type == qMetaTypeId<QObjectList>()) {
-                qScriptRegisterSequenceMetaType<QObjectList>(q_func());
+                qScriptRegisterSequenceMetaType<QObjectList>(q);
                 return create(type, ptr);
             }
 #endif
             else if (type == qMetaTypeId<QList<int> >()) {
-                qScriptRegisterSequenceMetaType<QList<int> >(q_func());
+                qScriptRegisterSequenceMetaType<QList<int> >(q);
                 return create(type, ptr);
             }
 
@@ -2646,9 +2637,9 @@ QScriptValue QScriptEnginePrivate::create(int type, const void *ptr)
                 if (typeName == "QVariant")
                     result = scriptValueFromVariant(*reinterpret_cast<const QVariant*>(ptr));
                 if (typeName.endsWith('*') && !*reinterpret_cast<void* const *>(ptr))
-                    result = QScriptValue(QScriptValue::NullValue);
+                    return QScriptValue(q, QScriptValue::NullValue);
                 else
-                    result = q_func()->newVariant(QVariant(type, ptr));
+                    result = q->newVariant(QVariant(type, ptr));
             }
         }
     }
@@ -2663,8 +2654,8 @@ bool QScriptEnginePrivate::convert(const QScriptValue &value,
                                    int type, void *ptr,
                                    QScriptEnginePrivate *eng)
 {
-    if (!eng && value.engine())
-        eng = QScriptEnginePrivate::get(value.engine());
+    if (!eng)
+        eng = QScriptValuePrivate::getEngine(value);
     if (eng) {
         QScriptTypeInfo *info = eng->m_typeInfos.value(type);
         if (info && info->demarshal) {

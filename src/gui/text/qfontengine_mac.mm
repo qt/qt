@@ -546,7 +546,7 @@ void QCoreTextFontEngine::addGlyphsToPath(glyph_t *glyphs, QFixedPoint *position
     cgMatrix = CGAffineTransformScale(cgMatrix, 1, -1);
 
     if (synthesisFlags & QFontEngine::SynthesizedItalic)
-        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, tanf(14 * acosf(0) / 90), 1, 0, 0));
+        cgMatrix = CGAffineTransformConcat(cgMatrix, CGAffineTransformMake(1, 0, -tanf(14 * acosf(0) / 90), 1, 0, 0));
 
 
     for (int i = 0; i < nGlyphs; ++i) {

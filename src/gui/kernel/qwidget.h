@@ -351,10 +351,13 @@ public:
                 const QRegion &sourceRegion = QRegion(),
                 RenderFlags renderFlags = RenderFlags(DrawWindowBackground | DrawChildren));
 
+#ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
+#endif //QT_NO_GRAPHICSEFFECT
 
-    void grabGesture(Qt::GestureType type, Qt::GestureContext context = Qt::WidgetWithChildrenGesture);
+    void grabGesture(Qt::GestureType type, Qt::GestureFlags flags = Qt::GestureFlags());
+    void ungrabGesture(Qt::GestureType type);
 
 public Q_SLOTS:
     void setWindowTitle(const QString &);

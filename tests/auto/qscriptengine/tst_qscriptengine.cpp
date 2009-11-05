@@ -44,6 +44,7 @@
 
 #include <qscriptengine.h>
 #include <qscriptengineagent.h>
+#include <qscriptprogram.h>
 #include <qscriptvalueiterator.h>
 #include <qgraphicsitem.h>
 #include <qstandarditemmodel.h>
@@ -52,6 +53,7 @@
 
 Q_DECLARE_METATYPE(QList<int>)
 Q_DECLARE_METATYPE(QObjectList)
+Q_DECLARE_METATYPE(QScriptProgram)
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -151,6 +153,7 @@ private slots:
     void installTranslatorFunctions();
     void functionScopes();
     void nativeFunctionScopes();
+    void evaluateProgram();
 
     void qRegExpInport_data();
     void qRegExpInport();
@@ -4286,6 +4289,152 @@ void tst_QScriptEngine::nativeFunctionScopes()
         QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("0"));
         QCOMPARE(eng.evaluate("c2()").toString(), QString::fromLatin1("1"));
         QVERIFY(!eng.hasUncaughtException());
+    }
+}
+
+static QScriptValue createProgram(QScriptContext *ctx, QScriptEngine *eng)
+{
+    QString code = ctx->argument(0).toString();
+    QScriptProgram result(code);
+    return qScriptValueFromValue(eng, result);
+}
+
+void tst_QScriptEngine::evaluateProgram()
+{
+    QScriptEngine eng;
+
+    {
+        QString code("1 + 2");
+        QString fileName("hello.js");
+        int lineNumber(123);
+        QScriptProgram program(code, fileName, lineNumber);
+        QVERIFY(!program.isNull());
+        QCOMPARE(program.sourceCode(), code);
+        QCOMPARE(program.fileName(), fileName);
+        QCOMPARE(program.firstLineNumber(), lineNumber);
+
+        QScriptValue expected = eng.evaluate(code);
+        for (int x = 0; x < 10; ++x) {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.equals(expected));
+        }
+
+        // operator=
+        QScriptProgram sameProgram = program;
+        QVERIFY(sameProgram == program);
+        QVERIFY(eng.evaluate(sameProgram).equals(expected));
+
+        // copy constructor
+        QScriptProgram sameProgram2(program);
+        QVERIFY(sameProgram2 == program);
+        QVERIFY(eng.evaluate(sameProgram2).equals(expected));
+
+        QScriptProgram differentProgram("2 + 3");
+        QVERIFY(differentProgram != program);
+        QVERIFY(!eng.evaluate(differentProgram).equals(expected));
+    }
+
+    // Program that accesses variable in the scope
+    {
+        QScriptProgram program("a");
+        QVERIFY(!program.isNull());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+        }
+
+        QScriptValue obj = eng.newObject();
+        obj.setProperty("a", 123);
+        QScriptContext *ctx = eng.currentContext();
+        ctx->pushScope(obj);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.equals(obj.property("a")));
+        }
+
+        obj.setProperty("a", QScriptValue());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+        }
+
+        QScriptValue obj2 = eng.newObject();
+        obj2.setProperty("a", 456);
+        ctx->pushScope(obj2);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.equals(obj2.property("a")));
+        }
+
+        ctx->popScope();
+    }
+
+    // Program that creates closure
+    {
+        QScriptProgram program("(function() { var count = 0; return function() { return count++; }; })");
+        QVERIFY(!program.isNull());
+        QScriptValue createCounter = eng.evaluate(program);
+        QVERIFY(createCounter.isFunction());
+        QScriptValue counter = createCounter.call();
+        QVERIFY(counter.isFunction());
+        {
+            QScriptValue ret = counter.call();
+            QVERIFY(ret.isNumber());
+        }
+        QScriptValue counter2 = createCounter.call();
+        QVERIFY(counter2.isFunction());
+        QVERIFY(!counter2.equals(counter));
+        {
+            QScriptValue ret = counter2.call();
+            QVERIFY(ret.isNumber());
+        }
+    }
+
+    // Program created in a function call, then executed later
+    {
+        QScriptValue fun = eng.newFunction(createProgram);
+        QScriptProgram program = qscriptvalue_cast<QScriptProgram>(
+            fun.call(QScriptValue(), QScriptValueList() << "a + 1"));
+        QVERIFY(!program.isNull());
+        eng.globalObject().setProperty("a", QScriptValue());
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(ret.isError());
+            QCOMPARE(ret.toString(), QString::fromLatin1("ReferenceError: Can't find variable: a"));
+        }
+        eng.globalObject().setProperty("a", 122);
+        {
+            QScriptValue ret = eng.evaluate(program);
+            QVERIFY(!ret.isError());
+            QVERIFY(ret.isNumber());
+            QCOMPARE(ret.toInt32(), 123);
+        }
+    }
+
+    // Same program run in different engines
+    {
+        QString code("1 + 2");
+        QScriptProgram program(code);
+        QVERIFY(!program.isNull());
+        double expected = eng.evaluate(program).toNumber();
+        for (int x = 0; x < 2; ++x) {
+            QScriptEngine eng2;
+            for (int y = 0; y < 2; ++y) {
+                double ret = eng2.evaluate(program).toNumber();
+                QCOMPARE(ret, expected);
+            }
+        }
+    }
+
+    // No program
+    {
+        QScriptProgram program;
+        QVERIFY(program.isNull());
+        QScriptValue ret = eng.evaluate(program);
+        QVERIFY(!ret.isValid());
     }
 }
 

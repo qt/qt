@@ -836,7 +836,7 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
-	    }
+        }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
@@ -910,9 +910,9 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         CEikStatusPane* statusPane = S60->statusPane();
         CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
         bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+        if (statusPane && (bool)statusPane->IsVisible() == isFullscreen)
             statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+        if (buttonGroup && (bool)buttonGroup->IsVisible() == isFullscreen)
             buttonGroup->MakeVisible(!isFullscreen);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
@@ -925,6 +925,12 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
+        if (qwidget->isFullScreen()) {
+            SetExtentToWholeScreen();
+        } else if (qwidget->isMaximized()) {
+            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            SetExtent(r.iTl, r.Size());
+        }
         qwidget->d_func()->setWindowIcon_sys(true);
         break;
     case KUidValueCoeFontChangeEvent:
@@ -1030,6 +1036,14 @@ QApplication::QApplication(QApplication::QS60MainApplicationFactory factory, int
 void qt_init(QApplicationPrivate * /* priv */, int)
 {
     if (!CCoeEnv::Static()) {
+        // The S60 framework creates a new trap handler which will render any existing traps
+        // invalid as long as it is active. This means that all code in main() that occurs after
+        // the QApplication construction needs to be surrounded by a new trap, despite having
+        // an outer one already. To avoid this, we save the original trap handler here, and set
+        // it back after the S60 framework is constructed. Then we restore it right before the S60
+        // framework destruction.
+        TTrapHandler *origTrapHandler = User::TrapHandler();
+
         // The S60 framework has not been initalized. We need to do it.
         TApaApplicationFactory factory(S60->s60ApplicationFactory ?
                 S60->s60ApplicationFactory : newS60Application);
@@ -1038,8 +1052,19 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
         CEikonEnv* coe = new CEikonEnv;
-        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+        if(err == KErrNone)
+            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
         delete commandLine;
+        if(err != KErrNone) {
+            qWarning() << "qt_init: Eikon application construct failed ("
+                       << err
+                       << "), maybe missing resource file on S60 3.1?";
+            delete coe;
+            qt_symbian_throwIfError(err);
+        }
+
+        S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
 
         S60->qtOwnsS60Environment = true;
     } else {
@@ -1070,9 +1095,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
     // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
     // and for dimming behind modal windows
-	S60->windowGroup().EnableFocusChangeEvents();
+    S60->windowGroup().EnableFocusChangeEvents();
 
-	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
+    //Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
     // HAL::Get(HALData::EPen, TInt& result) may set 'result' to 1 on some 3.1 systems (e.g. N95).
     // But we know that S60 systems below 5.0 did not support touch.
@@ -1092,6 +1117,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
     err = HAL::Get(HALData::EPen, touch);
     if (err != KErrNone || touchIsUnsupportedOnSystem)
         touch = 0;
+#ifdef __WINS__
+    if(QSysInfo::symbianVersion() <= QSysInfo::SV_9_4) {
+        //for symbian SDK emulator, force values to match typical devices.
+        mouse = 0;
+        touch = touchIsUnsupportedOnSystem ? 0 : 1;
+    }
+#endif
     if (mouse || machineUID == KMachineUidSamsungI8510) {
         S60->hasTouchscreen = false;
         S60->virtualMouseRequired = false;
@@ -1188,6 +1220,9 @@ void qt_cleanup()
     S60->wsSession().SetPointerCursorMode(EPointerCursorNone);
 
     if (S60->qtOwnsS60Environment) {
+        // Restore the S60 framework trap handler. See qt_init().
+        User::SetTrapHandler(S60->s60InstalledTrapHandler);
+
         CEikonEnv* coe = CEikonEnv::Static();
         coe->PrepareToExit();
         // The CEikonEnv itself is destroyed in here.
@@ -1540,7 +1575,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         }
 #endif
         break;
-	default:
+    default:
         break;
     }
 

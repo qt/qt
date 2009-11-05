@@ -282,6 +282,14 @@ public:
     bool allItemsIgnoreTouchEvents;
     void enableTouchEventsOnViews();
 
+    QHash<QGesture *, QGraphicsObject *> gestureTargets;
+    void gestureEventHandler(QGestureEvent *event);
+    void getGestureTargets(const QSet<QGesture *> &gestures, QWidget *viewport,
+                           QMap<Qt::GestureType, QGesture *> *conflictedGestures,
+                           QList<QList<QGraphicsObject *> > *conflictedItems,
+                           QHash<QGesture *, QGraphicsObject *> *normalGestures);
+    void cancelGesturesForChildren(QGesture *original, QWidget *viewport);
+
     void updateInputMethodSensitivityInViews();
 
     QList<QGraphicsItem *> modalPanels;

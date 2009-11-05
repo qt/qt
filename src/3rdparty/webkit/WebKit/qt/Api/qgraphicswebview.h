@@ -85,6 +85,7 @@ public:
     virtual void setGeometry(const QRectF& rect);
     virtual void updateGeometry();
     virtual void paint(QPainter*, const QStyleOptionGraphicsItem* options, QWidget* widget = 0);
+    virtual QVariant itemChange(GraphicsItemChange change, const QVariant& value);
     virtual bool event(QEvent*);
 
 public Q_SLOTS:
@@ -95,8 +96,7 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void loadStarted();
-    void loadFinished();
-    void loadFailed();
+    void loadFinished(bool);
 
     void progressChanged(qreal);
     void interactivityChanged();

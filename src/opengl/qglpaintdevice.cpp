@@ -44,6 +44,9 @@
 #include <private/qglpixelbuffer_p.h>
 #include <private/qglframebufferobject_p.h>
 #include <private/qwindowsurface_gl_p.h>
+#ifdef Q_WS_X11
+#include <private/qpixmapdata_x11gl_p.h>
+#endif
 
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
 #include <private/qpixmapdata_gl_p.h>
@@ -81,6 +84,7 @@ void QGLPaintDevice::beginPaint()
     // explicitly unbind.  Otherwise the painting will go into
     // the previous FBO instead of to the window.
     m_previousFBO = ctx->d_func()->current_fbo;
+
     if (m_previousFBO != m_thisFBO) {
         ctx->d_ptr->current_fbo = m_thisFBO;
         glBindFramebuffer(GL_FRAMEBUFFER_EXT, m_thisFBO);
@@ -186,8 +190,14 @@ QGLPaintDevice* QGLPaintDevice::getDevice(QPaintDevice* pd)
         case QInternal::Pixmap: {
 #if !defined(QT_OPENGL_ES_1) && !defined(QT_OPENGL_ES_1_CL)
             QPixmapData* pmd = static_cast<QPixmap*>(pd)->pixmapData();
-            Q_ASSERT(pmd->classId() == QPixmapData::OpenGLClass);
-            glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
+            if (pmd->classId() == QPixmapData::OpenGLClass)
+                glpd = static_cast<QGLPixmapData*>(pmd)->glDevice();
+#ifdef Q_WS_X11
+            else if (pmd->classId() == QPixmapData::X11Class)
+                glpd = static_cast<QX11GLPixmapData*>(pmd);
+#endif
+            else
+                qWarning("Pixmap type not supported for GL rendering");
 #else
             qWarning("Pixmap render targets not supported on OpenGL ES 1.x");
 #endif

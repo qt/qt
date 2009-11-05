@@ -174,8 +174,8 @@ bool PluginView::platformStart()
 
 #if PLATFORM(QT)
     if (QWebPageClient* client = m_parentFrame->view()->hostWindow()->platformPageClient()) {
-        if (QWidget* window = QWidget::find(client->winId())) {
-            setPlatformPluginWidget(window);
+        if (QWidget* widget = client->ownerWidget()) {
+            setPlatformPluginWidget(widget);
         }
     }
 #endif
@@ -690,6 +690,14 @@ NPError PluginView::handlePostReadFile(Vector<char>& buffer, uint32 len, const c
         return NPERR_FILE_NOT_FOUND;
 
     return NPERR_NO_ERROR;
+}
+
+void PluginView::halt()
+{
+}
+
+void PluginView::restart()
+{
 }
 
 } // namespace WebCore

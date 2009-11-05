@@ -216,7 +216,7 @@ InputTest::~InputTest() {}
 
 void InputTest::status()
 {
-    qWarning()<<"bytesReady = "<<audioInput->bytesReady()<<" bytes, clock = "<<audioInput->clock()<<"ms, totalTime = "<<audioInput->totalTime()/1000<<"ms";
+    qWarning()<<"bytesReady = "<<audioInput->bytesReady()<<" bytes, clock = "<<audioInput->clock()/1000<<"ms, totalTime = "<<audioInput->totalTime()/1000<<"ms";
 }
 
 void InputTest::readMore()

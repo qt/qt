@@ -84,9 +84,6 @@ void InspectorClientQt::inspectorDestroyed()
 
 Page* InspectorClientQt::createPage()
 {
-    if (m_inspectorView)
-        return m_inspectorView->page()->d->page;
-
     QWebView* inspectorView = new QWebView;
     InspectorClientWebPage* inspectorPage = new InspectorClientWebPage(inspectorView);
     inspectorView->setPage(inspectorPage);
@@ -169,7 +166,6 @@ void InspectorClientQt::updateWindowTitle()
     if (m_inspectedWebPage->d->inspector) {
         QString caption = QCoreApplication::translate("QWebPage", "Web Inspector - %2").arg(m_inspectedURL);
         m_inspectedWebPage->d->inspector->setWindowTitle(caption);
-        emit m_inspectedWebPage->d->inspector->windowTitleChanged(caption);
     }
 }
 

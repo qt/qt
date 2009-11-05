@@ -49,7 +49,7 @@ static const HashTableValue JSSVGFECompositeElementTableValues[16] =
 {
     { "in1", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementIn1, (intptr_t)0 },
     { "in2", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementIn2, (intptr_t)0 },
-    { "_operator", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElement_operator, (intptr_t)0 },
+    { "operator", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementOperator, (intptr_t)0 },
     { "k1", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementK1, (intptr_t)0 },
     { "k2", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementK2, (intptr_t)0 },
     { "k3", DontDelete|ReadOnly, (intptr_t)jsSVGFECompositeElementK3, (intptr_t)0 },
@@ -107,8 +107,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSSVGFECompositeElementConstructor::s_info = { "SVGFECompositeElementConstructor", 0, &JSSVGFECompositeElementConstructorTable, 0 };
@@ -202,7 +205,7 @@ JSValue jsSVGFECompositeElementIn2(ExecState* exec, const Identifier&, const Pro
     return toJS(exec, castedThis->globalObject(), obj.get(), imp);
 }
 
-JSValue jsSVGFECompositeElement_operator(ExecState* exec, const Identifier&, const PropertySlot& slot)
+JSValue jsSVGFECompositeElementOperator(ExecState* exec, const Identifier&, const PropertySlot& slot)
 {
     JSSVGFECompositeElement* castedThis = static_cast<JSSVGFECompositeElement*>(asObject(slot.slotBase()));
     UNUSED_PARAM(exec);

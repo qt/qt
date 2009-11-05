@@ -106,10 +106,8 @@
                                      \o Compilers
     \row    \o Windows XP, Vista
                                      \o gcc 3.4.2 (MinGW)
-    \omit
     \row    \o Windows 7
                                      \o MSVC 2008
-    \endomit
     \row    \o Apple Mac OS X 10.6 "Snow Leopard"
                                      \o As provided by Apple
     \row    \o Apple Mac OS X 10.4 "Tiger"

@@ -498,7 +498,11 @@ public:
     static QGLTextureCache *instance();
     static void deleteIfEmpty();
     static void imageCleanupHook(qint64 cacheKey);
-    static void pixmapCleanupHook(QPixmap* pixmap);
+    static void cleanupTextures(QPixmap* pixmap);
+#ifdef Q_WS_X11
+    // X11 needs to catch pixmap data destruction to delete EGL/GLX pixmap surfaces
+    static void cleanupPixmapSurfaces(QPixmap* pixmap);
+#endif
 
 private:
     QCache<qint64, QGLTexture> m_cache;

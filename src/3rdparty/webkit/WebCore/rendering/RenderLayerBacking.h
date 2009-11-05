@@ -54,7 +54,7 @@ public:
     RenderLayer* owningLayer() const { return m_owningLayer; }
 
     enum UpdateDepth { CompositingChildren, AllDescendants };
-    void updateAfterLayout(UpdateDepth);
+    void updateAfterLayout(UpdateDepth, bool isUpdateRoot);
     
     // Returns true if layer configuration changed.
     bool updateGraphicsLayerConfiguration();
@@ -140,8 +140,8 @@ private:
     // Result is perspective origin in pixels.
     FloatPoint computePerspectiveOrigin(const IntRect& borderBox) const;
 
-    void updateLayerOpacity();
-    void updateLayerTransform();
+    void updateLayerOpacity(const RenderStyle*);
+    void updateLayerTransform(const RenderStyle*);
 
     // Return the opacity value that this layer should use for compositing.
     float compositingOpacity(float rendererOpacity) const;

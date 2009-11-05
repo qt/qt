@@ -77,8 +77,11 @@ public:
 
     static PassRefPtr<Structure> createStructure(JSValue proto) 
     { 
-        return Structure::create(proto, TypeInfo(ObjectType, ImplementsHasInstance)); 
+        return Structure::create(proto, TypeInfo(ObjectType, StructureFlags)); 
     }
+    
+protected:
+    static const unsigned StructureFlags = OverridesGetOwnPropertySlot | ImplementsHasInstance | DOMConstructorObject::StructureFlags;
 };
 
 const ClassInfo JSMediaConstructor::s_info = { "MediaConstructor", 0, &JSMediaConstructorTable, 0 };
@@ -135,7 +138,7 @@ JSMedia::JSMedia(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* glob
 
 JSMedia::~JSMedia()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSMedia::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

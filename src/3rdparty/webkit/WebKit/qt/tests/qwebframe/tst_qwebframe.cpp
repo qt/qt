@@ -38,6 +38,10 @@
 #endif
 #include "../util.h"
 
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -586,6 +590,7 @@ private slots:
     void javaScriptWindowObjectClearedOnEvaluate();
     void setHtml();
     void setHtmlWithResource();
+    void setHtmlWithBaseURL();
     void ipv6HostEncoding();
     void metaData();
     void popupFocus();
@@ -699,6 +704,7 @@ void tst_QWebFrame::init()
     m_page = m_view->page();
     m_myObject = new MyQObject();
     m_page->mainFrame()->addToJavaScriptWindowObject("myObject", m_myObject);
+    QDir::setCurrent(SRCDIR);
 }
 
 void tst_QWebFrame::cleanup()
@@ -2370,6 +2376,28 @@ void tst_QWebFrame::setHtmlWithResource()
     QCOMPARE(p.styleProperty("color", QWebElement::CascadedStyle), QLatin1String("red"));
 }
 
+void tst_QWebFrame::setHtmlWithBaseURL()
+{
+    QString html("<html><body><p>hello world</p><img src='resources/image2.png'/></body></html>");
+
+    QWebPage page;
+    QWebFrame* frame = page.mainFrame();
+
+    // in few seconds, the image should be completey loaded
+    QSignalSpy spy(&page, SIGNAL(loadFinished(bool)));
+
+    frame->setHtml(html, QUrl::fromLocalFile(QDir::currentPath()));
+    QTest::qWait(200);
+    QCOMPARE(spy.count(), 1);
+
+    QCOMPARE(frame->evaluateJavaScript("document.images.length").toInt(), 1);
+    QCOMPARE(frame->evaluateJavaScript("document.images[0].width").toInt(), 128);
+    QCOMPARE(frame->evaluateJavaScript("document.images[0].height").toInt(), 128);
+
+    // no history item has to be added.
+    QCOMPARE(m_view->page()->history()->count(), 0);
+}
+
 class TestNetworkManager : public QNetworkAccessManager
 {
 public:
@@ -2667,26 +2695,24 @@ void tst_QWebFrame::render()
 
     QPicture picture;
 
-    // render clipping to Viewport
-    frame->setClipRenderToViewport(true);
-    QPainter painter1(&picture);
-    frame->render(&painter1);
-    painter1.end();
-
     QSize size = page.mainFrame()->contentsSize();
     page.setViewportSize(size);
-    QCOMPARE(size.width(), picture.boundingRect().width());   // 100px
-    QCOMPARE(size.height(), picture.boundingRect().height()); // 100px
 
-    // render without clipping to Viewport
-    frame->setClipRenderToViewport(false);
+    // render contents layer only (the iframe is smaller than the image, so it will have scrollbars)
+    QPainter painter1(&picture);
+    frame->render(&painter1, QWebFrame::ContentsLayer);
+    painter1.end();
+
+    QCOMPARE(size.width(), picture.boundingRect().width() + frame->scrollBarGeometry(Qt::Vertical).width());
+    QCOMPARE(size.height(), picture.boundingRect().height() + frame->scrollBarGeometry(Qt::Horizontal).height());
+
+    // render everything, should be the size of the iframe
     QPainter painter2(&picture);
-    frame->render(&painter2);
+    frame->render(&painter2, QWebFrame::AllLayers);
     painter2.end();
 
-    QImage resource(":/image.png");
-    QCOMPARE(resource.width(), picture.boundingRect().width());   // resource width: 128px
-    QCOMPARE(resource.height(), picture.boundingRect().height()); // resource height: 128px
+    QCOMPARE(size.width(), picture.boundingRect().width());   // width: 100px
+    QCOMPARE(size.height(), picture.boundingRect().height()); // height: 100px
 }
 
 void tst_QWebFrame::scrollPosition()

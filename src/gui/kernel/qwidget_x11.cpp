@@ -950,7 +950,7 @@ static void qt_x11_recreateWidget(QWidget *widget)
 
 static void qt_x11_recreateNativeWidgetsRecursive(QWidget *widget)
 {
-    if (widget->testAttribute(Qt::WA_NativeWindow))
+    if (widget->internalWinId())
         qt_x11_recreateWidget(widget);
 
     const QObjectList &children = widget->children();

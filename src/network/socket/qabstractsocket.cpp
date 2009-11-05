@@ -462,6 +462,7 @@ QAbstractSocketPrivate::QAbstractSocketPrivate()
       isBuffered(false),
       blockingTimeout(30000),
       connectTimer(0),
+      disconnectTimer(0),
       connectTimeElapsed(0),
       hostLookupId(-1),
       socketType(QAbstractSocket::UnknownSocketType),
@@ -497,9 +498,10 @@ void QAbstractSocketPrivate::resetSocketLayer()
         socketEngine = 0;
         cachedSocketDescriptor = -1;
     }
-    if (connectTimer) {
+    if (connectTimer)
         connectTimer->stop();
-    }
+    if (disconnectTimer)
+        disconnectTimer->stop();
 }
 
 /*! \internal
@@ -669,11 +671,11 @@ bool QAbstractSocketPrivate::canWriteNotification()
 
     if (socketEngine) {
 #if defined (Q_OS_WIN)
-	if (!writeBuffer.isEmpty())
-	    socketEngine->setWriteNotificationEnabled(true);
+        if (!writeBuffer.isEmpty())
+            socketEngine->setWriteNotificationEnabled(true);
 #else
-	if (writeBuffer.isEmpty())
-	    socketEngine->setWriteNotificationEnabled(false);
+        if (writeBuffer.isEmpty() && socketEngine->bytesToWrite() == 0)
+            socketEngine->setWriteNotificationEnabled(false);
 #endif
     }
 
@@ -710,11 +712,17 @@ void QAbstractSocketPrivate::connectionNotification()
 bool QAbstractSocketPrivate::flush()
 {
     Q_Q(QAbstractSocket);
-    if (!socketEngine || !socketEngine->isValid() || writeBuffer.isEmpty()) {
+    if (!socketEngine || !socketEngine->isValid() || (writeBuffer.isEmpty()
+        && socketEngine->bytesToWrite() == 0)) {
 #if defined (QABSTRACTSOCKET_DEBUG)
     qDebug("QAbstractSocketPrivate::flush() nothing to do: valid ? %s, writeBuffer.isEmpty() ? %s",
            socketEngine->isValid() ? "yes" : "no", writeBuffer.isEmpty() ? "yes" : "no");
 #endif
+
+        // this covers the case when the buffer was empty, but we had to wait for the socket engine to finish
+        if (state == QAbstractSocket::ClosingState)
+            q->disconnectFromHost();
+
         return false;
     }
 
@@ -751,7 +759,8 @@ bool QAbstractSocketPrivate::flush()
         }
     }
 
-    if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled())
+    if (writeBuffer.isEmpty() && socketEngine && socketEngine->isWriteNotificationEnabled()
+        && !socketEngine->bytesToWrite())
         socketEngine->setWriteNotificationEnabled(false);
     if (state == QAbstractSocket::ClosingState)
         q->disconnectFromHost();
@@ -1084,6 +1093,15 @@ void QAbstractSocketPrivate::_q_abortConnectionAttempt()
         emit q->error(socketError);
     } else {
         _q_connectToNextAddress();
+    }
+}
+
+void QAbstractSocketPrivate::_q_forceDisconnect()
+{
+    Q_Q(QAbstractSocket);
+    if (socketEngine && socketEngine->isValid() && state == QAbstractSocket::ClosingState) {
+        socketEngine->close();
+        q->disconnectFromHost();
     }
 }
 
@@ -1571,10 +1589,10 @@ bool QAbstractSocket::setSocketDescriptor(int socketDescriptor, SocketState sock
 }
 
 /*!
-    Sets the option \a option to the value described by \a value.
+    \since 4.6
+    Sets the given \a option to the value described by \a value.
 
     \sa socketOption()
-    \since 4.6
 */
 void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
@@ -1600,10 +1618,10 @@ void QAbstractSocket::setSocketOption(QAbstractSocket::SocketOption option, cons
 }
 
 /*!
+    \since 4.6
     Returns the value of the \a option option.
 
     \sa setSocketOption()
-    \since 4.6
 */
 QVariant QAbstractSocket::socketOption(QAbstractSocket::SocketOption option)
 {
@@ -2347,7 +2365,22 @@ void QAbstractSocket::disconnectFromHostImplementation()
         }
 
         // Wait for pending data to be written.
-        if (d->socketEngine && d->socketEngine->isValid() && d->writeBuffer.size() > 0) {
+        if (d->socketEngine && d->socketEngine->isValid() && (d->writeBuffer.size() > 0
+            || d->socketEngine->bytesToWrite() > 0)) {
+            // hack: when we are waiting for the socket engine to write bytes (only
+            // possible when using Socks5 or HTTP socket engine), then close
+            // anyway after 2 seconds. This is to prevent a timeout on Mac, where we
+            // sometimes just did not get the write notifier from the underlying
+            // CFSocket and no progress was made.
+            if (d->writeBuffer.size() == 0 && d->socketEngine->bytesToWrite() > 0) {
+                if (!d->disconnectTimer) {
+                    d->disconnectTimer = new QTimer(this);
+                    connect(d->disconnectTimer, SIGNAL(timeout()), this,
+                            SLOT(_q_forceDisconnect()), Qt::DirectConnection);
+                }
+                if (!d->disconnectTimer->isActive())
+                    d->disconnectTimer->start(2000);
+            }
             d->socketEngine->setWriteNotificationEnabled(true);
 
 #if defined(QABSTRACTSOCKET_DEBUG)

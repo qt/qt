@@ -69,17 +69,18 @@ int main(int argv, char **args)
 //![1]
 
   QButton *interruptButton = new QPushButton("Interrupt Button");
+  QWidget *mainWindow = new QWidget();
 
 //![3]
     QHistoryState *s1h = new QHistoryState(s1);
 
     QState *s3 = new QState();
     s3->assignProperty(label, "text", "In s3");
-    QMessageBox mbox;
-    mbox.addButton(QMessageBox::Ok);
-    mbox.setText("Interrupted!");
-    mbox.setIcon(QMessageBox::Information);
-    QObject::connect(s3, SIGNAL(entered()), &mbox, SLOT(exec()));
+    QMessageBox *mbox = new QMessageBox(mainWindow);
+    mbox->addButton(QMessageBox::Ok);
+    mbox->setText("Interrupted!");
+    mbox->setIcon(QMessageBox::Information);
+    QObject::connect(s3, SIGNAL(entered()), mbox, SLOT(exec()));
     s3->addTransition(s1h);
     machine.addState(s3);
 

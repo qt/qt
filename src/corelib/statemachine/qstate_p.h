@@ -94,11 +94,15 @@ public:
     QList<QAbstractTransition*> transitions() const;
 
     void emitFinished();
-    void emitPolished();
+    void emitPropertiesAssigned();
 
     QAbstractState *errorState;
     QAbstractState *initialState;
     QState::ChildMode childMode;
+    mutable bool childStatesListNeedsRefresh;
+    mutable QList<QAbstractState*> childStatesList;
+    mutable bool transitionsListNeedsRefresh;
+    mutable QList<QAbstractTransition*> transitionsList;
 
     QList<QPropertyAssignment> propertyAssignments;
 };

@@ -467,6 +467,12 @@ bool QSslSocket::setSocketDescriptor(int socketDescriptor, SocketState state, Op
     return retVal;
 }
 
+/*!
+    \since 4.6
+    Sets the given \a option to the value described by \a value.
+
+    \sa socketOption()
+*/
 void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVariant &value)
 {
     Q_D(QSslSocket);
@@ -474,6 +480,12 @@ void QSslSocket::setSocketOption(QAbstractSocket::SocketOption option, const QVa
         d->plainSocket->setSocketOption(option, value);
 }
 
+/*!
+    \since 4.6
+    Returns the value of the \a option option.
+
+    \sa setSocketOption()
+*/
 QVariant QSslSocket::socketOption(QAbstractSocket::SocketOption option)
 {
     Q_D(QSslSocket);
@@ -707,6 +719,8 @@ void QSslSocket::close()
     qDebug() << "QSslSocket::close()";
 #endif
     Q_D(QSslSocket);
+    if (d->plainSocket)
+        d->plainSocket->close();
     QTcpSocket::close();
 
     // must be cleared, reading/writing not possible on closed socket:
@@ -1740,6 +1754,11 @@ qint64 QSslSocket::readData(char *data, qint64 maxlen)
 #ifdef QSSLSOCKET_DEBUG
     qDebug() << "QSslSocket::readData(" << (void *)data << ',' << maxlen << ") ==" << readBytes;
 #endif
+
+    // possibly trigger another transmit() to decrypt more data from the socket
+    if (d->readBuffer.isEmpty() && d->plainSocket->bytesAvailable())
+        QMetaObject::invokeMethod(this, "_q_flushReadBuffer", Qt::QueuedConnection);
+
     return readBytes;
 }
 
@@ -2132,6 +2151,16 @@ void QSslSocketPrivate::_q_flushWriteBuffer()
     Q_Q(QSslSocket);
     if (!writeBuffer.isEmpty())
         q->flush();
+}
+
+/*!
+    \internal
+*/
+void QSslSocketPrivate::_q_flushReadBuffer()
+{
+    // trigger a read from the plainSocket into SSL
+    if (mode != QSslSocket::UnencryptedMode)
+        transmit();
 }
 
 QT_END_NAMESPACE
