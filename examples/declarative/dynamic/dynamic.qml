@@ -46,7 +46,7 @@ Item {
         ColorAnimation { duration: 3000 }
     }
 
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    SystemPalette { id: activePalette }
 
     // toolbox
     Rectangle {
