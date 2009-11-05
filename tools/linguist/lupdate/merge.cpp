@@ -355,6 +355,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             int mvi = virginTor.messages().indexOf(m);
             if (mvi < 0) {
                 if (!(options & HeuristicSimilarText)) {
+                  makeObsolete:
                     newType = TranslatorMessage::Obsolete;
                     if (m.type() != TranslatorMessage::Obsolete)
                         obsoleted++;
@@ -363,10 +364,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                     mv = virginTor.find(m.context(), m.comment(), m.allReferences());
                     if (mv.isNull()) {
                         // did not find it in the virgin, mark it as obsolete
-                        newType = TranslatorMessage::Obsolete;
-                        if (m.type() != TranslatorMessage::Obsolete)
-                            obsoleted++;
-                        m.clearReferences();
+                        goto makeObsolete;
                     } else {
                         // Do not just accept it if its on the same line number,
                         // but different source text.
@@ -388,17 +386,11 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                                 m.setExtra(QLatin1String("po-old_msgid_plural"), oldpluralsource);
                                 m.unsetExtra(QLatin1String("po-msgid_plural"));
                             }
-                            m.setReferences(mv.allReferences()); // Update secondary references
-                            m.setPlural(mv.isPlural());
-                            m.setUtf8(mv.isUtf8());
-                            m.setExtraComment(mv.extraComment());
+                            goto copyAttribs; // Update secondary references
                         } else {
                             // The virgin and vernacular sourceTexts are so
                             // different that we could not find it.
-                            newType = TranslatorMessage::Obsolete;
-                            if (m.type() != TranslatorMessage::Obsolete)
-                                obsoleted++;
-                            m.clearReferences();
+                            goto makeObsolete;
                         }
                     }
                 }
@@ -428,6 +420,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 // This should also enable us to read a file that does not
                 // have the <location> element.
                 // why not use operator=()? Because it overwrites e.g. userData.
+              copyAttribs:
                 m.setReferences(mv.allReferences());
                 m.setPlural(mv.isPlural());
                 m.setUtf8(mv.isUtf8());
