@@ -1154,14 +1154,14 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                     }
                 }
                 else if ((*c)->type() == Node::QmlSignal) {
-                    const QmlSignalNode* sn = static_cast<const QmlSignalNode*>(*c);
+                    const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                     if (sn->isAttached())
                         insert(qmlattachedsignals,*c,style,Okay);
                     else
                         insert(qmlsignals,*c,style,Okay);
                 }
                 else if ((*c)->type() == Node::QmlMethod) {
-                    const QmlMethodNode* mn = static_cast<const QmlMethodNode*>(*c);
+                    const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                     if (mn->isAttached())
                         insert(qmlattachedmethods,*c,style,Okay);
                     else
@@ -1193,14 +1193,14 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode,
                         insert(qmlproperties,*c,style,Okay);
 	        }
                 else if ((*c)->type() == Node::QmlSignal) {
-                    const QmlSignalNode* sn = static_cast<const QmlSignalNode*>(*c);
+                    const FunctionNode* sn = static_cast<const FunctionNode*>(*c);
                     if (sn->isAttached())
                         insert(qmlattachedsignals,*c,style,Okay);
                     else
                         insert(qmlsignals,*c,style,Okay);
                 }
                 else if ((*c)->type() == Node::QmlMethod) {
-                    const QmlMethodNode* mn = static_cast<const QmlMethodNode*>(*c);
+                    const FunctionNode* mn = static_cast<const FunctionNode*>(*c);
                     if (mn->isAttached())
                         insert(qmlattachedmethods,*c,style,Okay);
                     else

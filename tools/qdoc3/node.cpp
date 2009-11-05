@@ -218,6 +218,7 @@ Node *InnerNode::findNode(const QString& name, Type type)
 }
 
 /*!
+  Find the function node in this node for the function named \a name.
  */
 FunctionNode *InnerNode::findFunctionNode(const QString& name)
 {
@@ -225,6 +226,7 @@ FunctionNode *InnerNode::findFunctionNode(const QString& name)
 }
 
 /*!
+  Find the function node in this node that has the same name as \a clone.
  */
 FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone)
 {
@@ -245,6 +247,34 @@ FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone)
 	}
     }
     return 0;
+}
+
+/*!
+  Returns the list of keys from the primary function map.
+ */
+QStringList InnerNode::primaryKeys()
+{
+    QStringList t;
+    QMap<QString, Node*>::iterator i = primaryFunctionMap.begin();
+    while (i != primaryFunctionMap.end()) {
+        t.append(i.key());
+        ++i;
+    }
+    return t;
+}
+
+/*!
+  Returns the list of keys from the secondary function map.
+ */
+QStringList InnerNode::secondaryKeys()
+{
+    QStringList t;
+    QMap<QString, NodeList>::iterator i = secondaryFunctionMap.begin();
+    while (i != secondaryFunctionMap.end()) {
+        t.append(i.key());
+        ++i;
+    }
+    return t;
 }
 
 /*!
@@ -392,6 +422,7 @@ const Node *InnerNode::findNode(const QString& name, Type type) const
 }
 
 /*!
+  Find the function node in this node that has the given \a name. 
  */
 const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 {
@@ -400,9 +431,9 @@ const FunctionNode *InnerNode::findFunctionNode(const QString& name) const
 }
 
 /*!
+  Find the function node in this node that has the same name as \a clone.
  */
-const FunctionNode *InnerNode::findFunctionNode(
-	const FunctionNode *clone) const
+const FunctionNode *InnerNode::findFunctionNode(const FunctionNode *clone) const
 {
     InnerNode *that = (InnerNode *) this;
     return that->findFunctionNode(clone);
@@ -520,7 +551,7 @@ bool InnerNode::isSameSignature(const FunctionNode *f1, const FunctionNode *f2)
 void InnerNode::addChild(Node *child)
 {
     children.append(child);
-    if (child->type() == Function) {
+    if ((child->type() == Function) || (child->type() == QmlMethod)) {
         FunctionNode *func = (FunctionNode *) child;
         if (!primaryFunctionMap.contains(func->name())) {
             primaryFunctionMap.insert(func->name(), func);
@@ -896,11 +927,40 @@ QString Parameter::reconstruct(bool value) const
  */
 
 /*!
+  Construct a function node for a C++ function. It's parent
+  is \a parent, and it's name is \a name.
  */
 FunctionNode::FunctionNode(InnerNode *parent, const QString& name)
-    : LeafNode(Function, parent, name), met(Plain), vir(NonVirtual),
-      con(false), sta(false), ove(false), rf(0), ap(0)
+    : LeafNode(Function, parent, name),
+      met(Plain),
+      vir(NonVirtual),
+      con(false),
+      sta(false),
+      ove(false),
+      att(false),
+      rf(0),
+      ap(0)
 {
+    // nothing.
+}
+
+/*!
+  Construct a function node for a QML method or signal, specified
+  by \a type. It's parent is \a parent, and it's name is \a name.
+  If \a attached is true, it is an attached method or signal.
+ */
+FunctionNode::FunctionNode(Type type, InnerNode *parent, const QString& name, bool attached)
+    : LeafNode(type, parent, name),
+      met(Plain),
+      vir(NonVirtual),
+      con(false),
+      sta(false),
+      ove(false),
+      att(attached),
+      rf(0),
+      ap(0)
+{
+    // nothing.
 }
 
 /*!
@@ -1207,28 +1267,6 @@ bool QmlPropertyNode::fromTrool(Trool troolean, bool defaultValue)
     default:
         return defaultValue;
     }
-}
-
-/*!
-  Constructor for the QML signal node.
- */
-QmlSignalNode::QmlSignalNode(QmlClassNode *parent,
-                             const QString& name,
-                             bool attached)
-    : LeafNode(QmlSignal, parent, name), att(attached)
-{
-    // nothing.
-}
-
-/*!
-  Constructor for the QML method node.
- */
-QmlMethodNode::QmlMethodNode(QmlClassNode *parent,
-                             const QString& name,
-                             bool attached)
-    : LeafNode(QmlMethod, parent, name), att(attached)
-{
-    // nothing.
 }
 #endif
 
