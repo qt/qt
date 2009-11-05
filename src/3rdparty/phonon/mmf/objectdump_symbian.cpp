@@ -110,14 +110,6 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
 
             stream << "window: ";
 
-            // ClientHandle() is available first in 5.0.
-#if !defined(__SERIES60_31__) && !defined(__S60_32__)
-            if (QSysInfo::s60Version() > QSysInfo::SV_S60_3_2)
-                // Client-side window handle
-                // Cast to a void pointer so that log output is in hexadecimal format.
-                stream << "cli " << reinterpret_cast<const void*>(window->ClientHandle()) << ' ';
-#endif
-
             // Server-side address of CWsWindow object
             // This is useful for correlation with the window tree dumped by the window
             // server (see RWsSession::LogCommand).
