@@ -172,6 +172,8 @@ QtGui
 
  - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
 
+ - Add support for GetURL events on Mac OS X
+
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
