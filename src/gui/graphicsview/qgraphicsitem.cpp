@@ -1336,7 +1336,9 @@ QGraphicsItem::~QGraphicsItem()
         d_ptr->setParentItemHelper(0);
     }
 
+#ifndef QT_NO_GRAPHICSEFFECT
     delete d_ptr->graphicsEffect;
+#endif //QT_NO_GRAPHICSEFFECT
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
             QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
@@ -2506,7 +2508,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     // Update.
     if (d_ptr->scene) {
+#ifndef QT_NO_GRAPHICSEFFECT
         d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath=*/false,
@@ -2523,6 +2527,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     \since 4.6
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 {
     return d_ptr->graphicsEffect;
@@ -2569,6 +2574,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 
     prepareGeometryChange();
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     \internal
@@ -2582,6 +2588,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
 {
+#ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *effect = graphicsEffect;
     QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : q_ptr->boundingRect();
     if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
@@ -2598,6 +2605,10 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
     }
 
     return brect;
+#else //QT_NO_GRAPHICSEFFECT
+    return q_ptr->boundingRect();
+#endif //QT_NO_GRAPHICSEFFECT
+
 }
 
 /*!
@@ -4977,6 +4988,7 @@ int QGraphicsItemPrivate::depth() const
 /*!
     \internal
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
@@ -4989,6 +5001,7 @@ void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     \internal
@@ -5324,7 +5337,9 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
+#ifndef QT_NO_GRAPHICSEFFECT
     d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -10678,6 +10693,7 @@ int QGraphicsItemGroup::type() const
     return Type;
 }
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
@@ -10817,6 +10833,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
 
     return pixmap;
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QGraphicsItem *item)
