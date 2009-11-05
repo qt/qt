@@ -111,9 +111,6 @@ public:
     virtual QSize size() const {return fbo->size();}
     virtual QGLContext* context() const;
     virtual QGLFormat format() const {return fboFormat;}
-    virtual void ensureActiveTarget();
-    virtual void beginPaint();
-    virtual void endPaint();
 
     void setFBO(QGLFramebufferObject* f,
                 QGLFramebufferObject::Attachment attachment);
