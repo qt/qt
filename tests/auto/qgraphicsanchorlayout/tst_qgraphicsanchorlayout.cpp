@@ -79,9 +79,6 @@ private slots:
     void delete_anchor();
     void conflicts();
     void sizePolicy();
-    void expandingSequence();
-    void expandingSequenceFairDistribution();
-    void expandingParallel();
     void floatConflict();
     void infiniteMaxSizes();
     void simplifiableUnfeasible();
@@ -342,8 +339,10 @@ void tst_QGraphicsAnchorLayout::layoutDirection()
 
     QCOMPARE(checkReverseDirection(p), true);
 
-    QVERIFY(usedSimplex(l, Qt::Horizontal));
-    QVERIFY(!usedSimplex(l, Qt::Vertical));
+    if (hasSimplification) {
+        QVERIFY(usedSimplex(l, Qt::Horizontal));
+        QVERIFY(!usedSimplex(l, Qt::Vertical));
+    }
 
     delete p;
     delete view;
@@ -1609,217 +1608,6 @@ void tst_QGraphicsAnchorLayout::conflicts()
     delete p;
 }
 
-void tst_QGraphicsAnchorLayout::expandingSequence()
-{
-    QSizeF min(10, 10);
-    QSizeF pref(50, 10);
-    QSizeF max(100, 10);
-
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-
-    b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-    l->setContentsMargins(0, 0, 0, 0);
-
-    // horizontal
-    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
-    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
-    setAnchor(l, b, Qt::AnchorRight, l, Qt::AnchorRight, 0);
-
-    // vertical
-    l->addAnchors(l, a, Qt::Vertical);
-    l->addAnchors(l, b, Qt::Vertical);
-
-    QCOMPARE(l->count(), 2);
-
-    QGraphicsWidget p;
-    p.setLayout(l);
-
-    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
-    QCOMPARE(layoutMinimumSize.width(), qreal(20));
-
-    QSizeF layoutExpandedSize(pref.width() + max.width(), layoutMinimumSize.height());
-    p.resize(layoutExpandedSize);
-
-    QCOMPARE(a->geometry().size(), pref);
-    QCOMPARE(b->geometry().size(), max);
-
-    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
-    QCOMPARE(layoutMaximumSize.width(), qreal(200));
-
-    if (hasSimplification) {
-        QVERIFY(!usedSimplex(l, Qt::Horizontal));
-        QVERIFY(!usedSimplex(l, Qt::Vertical));
-    }
-}
-
-void tst_QGraphicsAnchorLayout::expandingSequenceFairDistribution()
-{
-    QSizeF min(10, 10);
-    QSizeF pref(50, 10);
-    QSizeF max(100, 10);
-
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max, "c");
-    QGraphicsWidget *d = createItem(min, pref, max, "d");
-
-    b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    d->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-    l->setContentsMargins(0, 0, 0, 0);
-
-    // horizontal
-    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
-    setAnchor(l, a, Qt::AnchorRight, b, Qt::AnchorLeft, 0);
-    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
-    setAnchor(l, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
-    setAnchor(l, d, Qt::AnchorRight, l, Qt::AnchorRight, 0);
-
-    // vertical
-    l->addAnchors(l, a, Qt::Vertical);
-    l->addAnchors(l, b, Qt::Vertical);
-    l->addAnchors(l, c, Qt::Vertical);
-    l->addAnchors(l, d, Qt::Vertical);
-
-    QCOMPARE(l->count(), 4);
-
-    QGraphicsWidget p;
-    p.setLayout(l);
-
-    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
-    QCOMPARE(layoutMinimumSize.width(), qreal(40));
-
-    QSizeF layoutPartialExpandedSize((2 * pref.width()) + (2 * (pref.width() + 10)),
-                                     layoutMinimumSize.height());
-    p.resize(layoutPartialExpandedSize);
-
-    QCOMPARE(a->geometry().size(), pref);
-    QCOMPARE(b->geometry().size(), pref + QSizeF(10, 0));
-    QCOMPARE(c->geometry().size(), pref);
-    QCOMPARE(d->geometry().size(), pref + QSizeF(10, 0));
-
-    QSizeF layoutExpandedSize((2 * pref.width()) + (2 * max.width()),
-                              layoutMinimumSize.height());
-    p.resize(layoutExpandedSize);
-
-    QCOMPARE(a->geometry().size(), pref);
-    QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), pref);
-    QCOMPARE(d->geometry().size(), max);
-
-    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
-    QCOMPARE(layoutMaximumSize.width(), qreal(400));
-
-    if (hasSimplification) {
-        QVERIFY(!usedSimplex(l, Qt::Horizontal));
-        QVERIFY(!usedSimplex(l, Qt::Vertical));
-    }
-
-    // Now we change D to have more "room for growth" from its preferred size
-    // to its maximum size. We expect a proportional fair distribution. Note that
-    // this seems to not conform with what QGraphicsLinearLayout does.
-    d->setMaximumSize(QSizeF(150, 10));
-
-    QSizeF newLayoutExpandedSize((2 * pref.width()) + (max.width() + 150),
-                              layoutMinimumSize.height());
-    p.resize(newLayoutExpandedSize);
-
-    QCOMPARE(a->geometry().size(), pref);
-    QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), pref);
-    QCOMPARE(d->geometry().size(), QSizeF(150, 10));
-
-    QSizeF newLayoutPartialExpandedSize((4 * pref.width()) + 75,
-                                        layoutMinimumSize.height());
-    p.resize(newLayoutPartialExpandedSize);
-
-    QCOMPARE(a->geometry().size(), pref);
-    QCOMPARE(b->geometry().size(), pref + QSizeF(25, 0));
-    QCOMPARE(c->geometry().size(), pref);
-    QCOMPARE(d->geometry().size(), pref + QSizeF(50, 0));
-
-    if (hasSimplification) {
-        QVERIFY(!usedSimplex(l, Qt::Horizontal));
-        QVERIFY(!usedSimplex(l, Qt::Vertical));
-    }
-}
-
-void tst_QGraphicsAnchorLayout::expandingParallel()
-{
-    QSizeF min(10, 10);
-    QSizeF pref(50, 10);
-    QSizeF max(100, 10);
-    QSizeF max2(100, 50);
-
-    QGraphicsWidget *a = createItem(min, pref, max, "a");
-    QGraphicsWidget *b = createItem(min, pref, max, "b");
-    QGraphicsWidget *c = createItem(min, pref, max2, "c");
-
-    b->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
-    l->setContentsMargins(0, 0, 0, 0);
-
-    // horizontal
-    setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
-    setAnchor(l, l, Qt::AnchorLeft, b, Qt::AnchorLeft, 0);
-
-    setAnchor(l, a, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
-    setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
-
-    setAnchor(l, c, Qt::AnchorRight, l, Qt::AnchorRight, 0);
-
-    // vertical
-    l->addAnchors(l, c, Qt::Vertical);
-    setAnchor(l, l, Qt::AnchorTop, a, Qt::AnchorTop, 0);
-    setAnchor(l, a, Qt::AnchorBottom, c, Qt::AnchorVerticalCenter, 0);
-    setAnchor(l, b, Qt::AnchorTop, c, Qt::AnchorVerticalCenter, 0);
-    setAnchor(l, b, Qt::AnchorBottom, l, Qt::AnchorBottom, 0);
-
-    QCOMPARE(l->count(), 3);
-
-    QGraphicsWidget p;
-    p.setLayout(l);
-
-    QSizeF layoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
-    QCOMPARE(layoutMinimumSize.width(), qreal(20));
-
-    QSizeF layoutExpandedSize(pref.width() + max.width(), layoutMinimumSize.height());
-    p.resize(layoutExpandedSize);
-
-    QCOMPARE(a->geometry().size(), max);
-    QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), QSizeF(pref.width(), 20));
-
-    QSizeF layoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
-    QCOMPARE(layoutMaximumSize.width(), qreal(200));
-
-    //
-    // Change the parallel connection to a paralell connection of b with a center...
-    //
-    QGraphicsAnchor *anchor = l->anchor(b, Qt::AnchorRight, c, Qt::AnchorLeft);
-    delete anchor;
-    setAnchor(l, b, Qt::AnchorRight, a, Qt::AnchorHorizontalCenter, 0);
-    a->setMaximumSize(max + QSizeF(100, 0));
-
-    QSizeF newLayoutMinimumSize = l->effectiveSizeHint(Qt::MinimumSize);
-    QCOMPARE(newLayoutMinimumSize.width(), qreal(30));
-
-    QSizeF newLayoutExpandedSize = layoutExpandedSize + QSizeF(100, 0);
-    p.resize(newLayoutExpandedSize);
-
-    QCOMPARE(a->geometry().size(), max + QSizeF(100, 0));
-    QCOMPARE(b->geometry().size(), max);
-    QCOMPARE(c->geometry().size(), QSizeF(pref.width(), 20));
-
-    QSizeF newLayoutMaximumSize = l->effectiveSizeHint(Qt::MaximumSize);
-    QCOMPARE(newLayoutMaximumSize.width(), qreal(300));
-}
-
 void tst_QGraphicsAnchorLayout::floatConflict()
 {
     QGraphicsWidget *a = createItem(QSizeF(80,10), QSizeF(90,10), QSizeF(100,10), "a");
@@ -1882,6 +1670,7 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QGraphicsWidget *b = createItem(min, pref, max, "b");
     QGraphicsWidget *c = createItem(min, pref, max, "c");
     QGraphicsWidget *d = createItem(min, pref, max, "d");
+    QGraphicsWidget *e = createItem(min, pref, max, "e");
 
     //<!-- Trunk -->
     setAnchor(l, l, Qt::AnchorLeft, a, Qt::AnchorLeft, 0);
@@ -1889,12 +1678,14 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     setAnchor(l, b, Qt::AnchorRight, c, Qt::AnchorLeft, 0);
     setAnchor(l, c, Qt::AnchorRight, d, Qt::AnchorLeft, 0);
     setAnchor(l, d, Qt::AnchorRight, l, Qt::AnchorRight, 0);
-
-    a->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    c->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    setAnchor(l, b, Qt::AnchorHorizontalCenter, e, Qt::AnchorLeft, 0);
+    setAnchor(l, e, Qt::AnchorRight, c, Qt::AnchorHorizontalCenter, 0);
 
     QGraphicsWidget p;
     p.setLayout(l);
+
+    QCOMPARE(int(p.effectiveSizeHint(Qt::MaximumSize).width()),
+             QWIDGETSIZE_MAX);
 
     p.resize(200, 10);
     QCOMPARE(a->geometry(), QRectF(0, 0, 50, 10));
@@ -1902,21 +1693,17 @@ void tst_QGraphicsAnchorLayout::infiniteMaxSizes()
     QCOMPARE(c->geometry(), QRectF(100, 0, 50, 10));
     QCOMPARE(d->geometry(), QRectF(150, 0, 50, 10));
 
-    if (!hasSimplification)
-        QEXPECT_FAIL("", "Without simplification there is no fair distribution.", Abort);
-
     p.resize(1000, 10);
-    QCOMPARE(a->geometry(), QRectF(0, 0, 450, 10));
-    QCOMPARE(b->geometry(), QRectF(450, 0, 50, 10));
-    QCOMPARE(c->geometry(), QRectF(500, 0, 450, 10));
-    QCOMPARE(d->geometry(), QRectF(950, 0, 50, 10));
+    QCOMPARE(a->geometry(), QRectF(0, 0, 250, 10));
+    QCOMPARE(b->geometry(), QRectF(250, 0, 250, 10));
+    QCOMPARE(c->geometry(), QRectF(500, 0, 250, 10));
+    QCOMPARE(d->geometry(), QRectF(750, 0, 250, 10));
 
-    qreal expMaxSize = (QWIDGETSIZE_MAX - 100.0) / 2;
-    p.resize(QWIDGETSIZE_MAX, 10);
-    QCOMPARE(a->geometry(), QRectF(0, 0, expMaxSize, 10));
-    QCOMPARE(b->geometry(), QRectF(expMaxSize, 0, 50, 10));
-    QCOMPARE(c->geometry(), QRectF(expMaxSize + 50, 0, expMaxSize, 10));
-    QCOMPARE(d->geometry(), QRectF(QWIDGETSIZE_MAX - 50, 0, 50, 10));
+    p.resize(40000, 10);
+    QCOMPARE(a->geometry(), QRectF(0, 0, 10000, 10));
+    QCOMPARE(b->geometry(), QRectF(10000, 0, 10000, 10));
+    QCOMPARE(c->geometry(), QRectF(20000, 0, 10000, 10));
+    QCOMPARE(d->geometry(), QRectF(30000, 0, 10000, 10));
 }
 
 void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
@@ -1951,7 +1738,7 @@ void tst_QGraphicsAnchorLayout::simplifiableUnfeasible()
     if (hasSimplification)
         QVERIFY(!usedSimplex(l, Qt::Horizontal));
 
-    // Now we make it valid again
+    // Now we make it valid
     b->setMinimumWidth(100);
 
     l->invalidate();
@@ -1979,9 +1766,9 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
     QSizeF pref(20, 10);
     QSizeF max(50, 10);
 
-    QGraphicsWidget *a = createItem(min, pref, max);
-    QGraphicsWidget *b = createItem(min, pref, max);
-    QGraphicsWidget *c = createItem(min, pref, max);
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(min, pref, max, "C");
 
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
 
