@@ -347,13 +347,16 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
     state = newState;
     QWeakPointer<QAbstractAnimation> guard(q);
 
-    //unregistration of the animation must always happen before calls to
+    //(un)registration of the animation must always happen before calls to
     //virtual function (updateState) to ensure a correct state of the timer
+    bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
     if (oldState == QAbstractAnimation::Running) {
         if (newState == QAbstractAnimation::Paused && hasRegisteredTimer)
             QUnifiedTimer::instance()->ensureTimerUpdate();
         //the animation, is not running any more
         QUnifiedTimer::instance()->unregisterAnimation(q);
+    } else {
+        QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
     }
 
     q->updateState(oldState, newState);
@@ -370,8 +373,6 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
         break;
     case QAbstractAnimation::Running:
         {
-            bool isTopLevel = !group || group->state() == QAbstractAnimation::Stopped;
-            QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
 
             // this ensures that the value is updated now that the animation is running
             if (oldState == QAbstractAnimation::Stopped) {
