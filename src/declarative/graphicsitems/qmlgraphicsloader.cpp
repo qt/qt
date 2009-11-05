@@ -45,13 +45,44 @@
 QT_BEGIN_NAMESPACE
 
 QmlGraphicsLoaderPrivate::QmlGraphicsLoaderPrivate()
-: item(0), component(0), ownComponent(false), resizeMode(QmlGraphicsLoader::SizeLoaderToItem)
+    : item(0), component(0), ownComponent(false)
+    , resizeMode(QmlGraphicsLoader::SizeLoaderToItem)
 {
 }
 
 QmlGraphicsLoaderPrivate::~QmlGraphicsLoaderPrivate()
 {
 }
+
+void QmlGraphicsLoaderPrivate::clear()
+{
+    if (ownComponent) {
+        delete component;
+        component = 0;
+        ownComponent = false;
+    }
+    source = QUrl();
+
+    delete item;
+    item = 0;
+}
+
+void QmlGraphicsLoaderPrivate::initResize()
+{
+    Q_Q(QmlGraphicsLoader);
+
+    QmlGraphicsItem *resizeItem = 0;
+    if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem)
+        resizeItem = item;
+    else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader)
+        resizeItem = q;
+    if (resizeItem) {
+        QObject::connect(resizeItem, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
+        QObject::connect(resizeItem, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
+    }
+    _q_updateSize();
+}
+
 
 QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QmlGraphicsLoader)
 
@@ -74,6 +105,17 @@ QML_DEFINE_TYPE(Qt,4,6,(QT_VERSION&0x00ff00)>>8,Loader,QmlGraphicsLoader)
         MouseRegion { anchors.fill: parent; onClicked: pageLoader.source = "Page1.qml" }
     }
     \endcode
+
+    If the Loader source is changed, any previous items instantiated
+    will be destroyed.  Setting \c source to an empty string
+    will destroy the currently instantiated items, freeing resources
+    and leaving the Loader empty.  For example:
+
+    \code
+    pageLoader.source = ""
+    \endcode
+
+    unloads "Page1.qml" and frees resources consumed by it.
 */
 
 /*!
@@ -102,7 +144,7 @@ QmlGraphicsLoader::~QmlGraphicsLoader()
     This property holds the URL of the QML component to
     instantiate.
 
-    \sa status, progress
+    \sa sourceComponent, status, progress
 */
 QUrl QmlGraphicsLoader::source() const
 {
@@ -116,12 +158,7 @@ void QmlGraphicsLoader::setSource(const QUrl &url)
     if (d->source == url)
         return;
 
-    if (d->ownComponent) {
-        delete d->component;
-        d->component = 0;
-    }
-    delete d->item;
-    d->item = 0;
+    d->clear();
 
     d->source = url;
     if (d->source.isEmpty()) {
@@ -164,7 +201,7 @@ void QmlGraphicsLoader::setSource(const QUrl &url)
     }
     \endqml
 
-    \sa source
+    \sa source, progress
 */
 
 QmlComponent *QmlGraphicsLoader::sourceComponent() const
@@ -179,13 +216,7 @@ void QmlGraphicsLoader::setSourceComponent(QmlComponent *comp)
     if (comp == d->component)
         return;
 
-    d->source = QUrl();
-    if (d->ownComponent) {
-        delete d->component;
-        d->component = 0;
-    }
-    delete d->item;
-    d->item = 0;
+    d->clear();
 
     d->component = comp;
     d->ownComponent = false;
@@ -233,16 +264,7 @@ void QmlGraphicsLoaderPrivate::_q_sourceLoaded()
             if (item) {
                 item->setParentItem(q);
 //                item->setFocus(true);
-                QmlGraphicsItem *resizeItem = 0;
-                if (resizeMode == QmlGraphicsLoader::SizeLoaderToItem)
-                    resizeItem = item;
-                else if (resizeMode == QmlGraphicsLoader::SizeItemToLoader)
-                    resizeItem = q;
-                if (resizeItem) {
-                    QObject::connect(resizeItem, SIGNAL(widthChanged()), q, SLOT(_q_updateSize()));
-                    QObject::connect(resizeItem, SIGNAL(heightChanged()), q, SLOT(_q_updateSize()));
-                }
-                _q_updateSize();
+                initResize();
             }
         } else {
             delete obj;
@@ -340,20 +362,7 @@ void QmlGraphicsLoader::setResizeMode(ResizeMode mode)
     }
 
     d->resizeMode = mode;
-
-    if (d->item) {
-        QmlGraphicsItem *resizeItem = 0;
-        if (d->resizeMode == SizeLoaderToItem)
-            resizeItem = d->item;
-        else if (d->resizeMode == SizeItemToLoader)
-            resizeItem = this;
-        if (resizeItem) {
-            connect(resizeItem, SIGNAL(widthChanged()), this, SLOT(_q_updateSize()));
-            connect(resizeItem, SIGNAL(heightChanged()), this, SLOT(_q_updateSize()));
-        }
-
-        d->_q_updateSize();
-    }
+    d->initResize();
 }
 
 void QmlGraphicsLoaderPrivate::_q_updateSize()
