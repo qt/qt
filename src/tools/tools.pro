@@ -2,8 +2,8 @@ TEMPLATE = subdirs
 
 TOOLS_SUBDIRS = src_tools_bootstrap src_tools_moc src_tools_rcc src_tools_uic 
 !cross_compile {
-    contains(QT_CONFIG, qt3support): TOOLS_SUBDIRS += src_tools_uic3
-    win32:!wince*: TOOLS_SUBDIRS += src_tools_idc
+    contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_tools_uic3
+    win32:!wince*: SRC_SUBDIRS += src_tools_idc
 }
 
 # Set subdir and respective target name
@@ -24,8 +24,6 @@ src_tools_idc.target = sub-idc
 src_tools_moc.depends = src_tools_bootstrap
 src_tools_rcc.depends = src_tools_bootstrap
 src_tools_uic.depends = src_tools_bootstrap
-src_tools_idc.depends = src_corelib             # defined in parent pro, in any, if not ignored
-src_tools_uic3.depends = src_qt3support src_xml # defined in parent pro, in any, if not ignored
 
 # Special handling, depending on type of project, if it used debug/release or only has one configuration
 EXTRA_DEBUG_TARGETS =
@@ -68,4 +66,5 @@ EXTRA_RELEASE_TARGETS =
     }
 }
 
-SUBDIRS += $$TOOLS_SUBDIRS
+SUBDIRS = $$TOOLS_SUBDIRS $$SUBDIRS
+isEqual(TARGET,tools): SUBDIRS += $$SRC_SUBDIRS

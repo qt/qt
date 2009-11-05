@@ -8,9 +8,9 @@ wince*:{
 } else:symbian {
   SRC_SUBDIRS += src_s60main src_corelib src_xml src_gui src_network src_sql src_testlib src_s60installs
 } else {
-    include(tools/tools.pro)
     SRC_SUBDIRS += src_corelib src_xml src_network src_gui src_sql src_testlib
     !vxworks:contains(QT_CONFIG, qt3support): SRC_SUBDIRS += src_qt3support
+    include(tools/tools.pro)
     contains(QT_CONFIG, dbus):SRC_SUBDIRS += src_dbus
 }
 win32:SRC_SUBDIRS += src_activeqt
@@ -93,6 +93,8 @@ src_webkit.target = sub-webkit
    src_sql.depends = src_corelib
    src_testlib.depends = src_corelib
    src_qt3support.depends = src_gui src_xml src_network src_sql
+   src_tools_idc.depends = src_corelib             # target defined in tools.pro
+   src_tools_uic3.depends = src_qt3support src_xml # target defined in tools.pro
    src_phonon.depends = src_gui
    src_multimedia.depends = src_gui
    src_tools_activeqt.depends = src_tools_idc src_gui
