@@ -406,7 +406,7 @@ bool QSqlTableModel::select()
     QSqlQuery qu(query, d->db);
     setQuery(qu);
 
-    if (!qu.isActive()) {
+    if (!qu.isActive() || lastError().isValid()) {
         // something went wrong - revert to non-select state
         d->initRecordAndPrimaryIndex();
         return false;
