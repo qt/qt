@@ -342,36 +342,6 @@ QGLContext *QGLFBOGLPaintDevice::context() const
         return fboContext;
 }
 
-void QGLFBOGLPaintDevice::ensureActiveTarget()
-{
-    if (QGLContext::currentContext() != context())
-        context()->makeCurrent();
-
-    QGLContext* ctx = const_cast<QGLContext*>(QGLContext::currentContext());
-    Q_ASSERT(ctx);
-    const GLuint fboId = fbo->d_func()->fbo();
-    if (ctx->d_func()->current_fbo != fboId) {
-        ctx->d_func()->current_fbo = fboId;
-        glBindFramebuffer(GL_FRAMEBUFFER_EXT, fboId);
-    }
-}
-
-void QGLFBOGLPaintDevice::beginPaint()
-{
-    if (QGLContext::currentContext() != context())
-        context()->makeCurrent();
-
-    wasBound = fbo->isBound();
-    if (!wasBound)
-        fbo->bind();
-}
-
-void QGLFBOGLPaintDevice::endPaint()
-{
-    if (!wasBound)
-        fbo->release();
-}
-
 bool QGLFramebufferObjectPrivate::checkFramebufferStatus() const
 {
     QGL_FUNCP_CONTEXT;
