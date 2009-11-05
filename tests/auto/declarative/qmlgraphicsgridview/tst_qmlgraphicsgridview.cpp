@@ -41,44 +41,25 @@
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
 #include <qmlview.h>
-#include <private/qmlgraphicslistview_p.h>
+#include <private/qmlgraphicsgridview_p.h>
 #include <private/qmlgraphicstext_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 
-class tst_QmlGraphicsListView : public QObject
+class tst_QmlGraphicsGridView : public QObject
 {
     Q_OBJECT
 public:
-    tst_QmlGraphicsListView();
+    tst_QmlGraphicsGridView();
 
 private slots:
-    // Test both QListModelInterface and QAbstractItemModel model types
-    void qListModelInterface_items();
-    void qAbstractItemModel_items();
-
-    void qListModelInterface_changed();
-    void qAbstractItemModel_changed();
-
-    void qListModelInterface_inserted();
-    void qAbstractItemModel_inserted();
-
-    void qListModelInterface_removed();
-    void qAbstractItemModel_removed();
-
-    void qListModelInterface_moved();
-    void qAbstractItemModel_moved();
-
-    void enforceRange();
-    void spacing();
-    void sections();
+    void items();
+    void changed();
+    void inserted();
+    void removed();
+    void moved();
 
 private:
-    template <class T> void items();
-    template <class T> void changed();
-    template <class T> void inserted();
-    template <class T> void removed();
-    template <class T> void moved();
     QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QmlGraphicsItem *parent, const QString &id, int index=-1);
@@ -86,89 +67,12 @@ private:
     QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
 };
 
-class TestModel : public QListModelInterface
-{
-    Q_OBJECT
-public:
-    TestModel(QObject *parent = 0) : QListModelInterface(parent) {}
-    ~TestModel() {}
-
-    enum Roles { Name, Number };
-
-    QString name(int index) const { return list.at(index).first; }
-    QString number(int index) const { return list.at(index).second; }
-
-    int count() const { return list.count(); }
-
-    QList<int> roles() const { return QList<int>() << Name << Number; }
-    QString toString(int role) const {
-        switch(role) {
-        case Name:
-            return "name";
-        case Number:
-            return "number";
-        default:
-            return "";
-        }
-    }
-
-    QHash<int, QVariant> data(int index, const QList<int> &roles) const {
-        QHash<int,QVariant> returnHash;
-
-        for (int i = 0; i < roles.size(); ++i) {
-            int role = roles.at(i);
-            QVariant info;
-            switch(role) {
-            case Name:
-                info = list.at(index).first;
-                break;
-            case Number:
-                info = list.at(index).second;
-                break;
-            default:
-                break;
-            }
-            returnHash.insert(role, info);
-        }
-        return returnHash;
-    }
-
-    void addItem(const QString &name, const QString &number) {
-        list.append(QPair<QString,QString>(name, number));
-        emit itemsInserted(list.count()-1, 1);
-    }
-
-    void insertItem(int index, const QString &name, const QString &number) {
-        list.insert(index, QPair<QString,QString>(name, number));
-        emit itemsInserted(index, 1);
-    }
-
-    void removeItem(int index) {
-        list.removeAt(index);
-        emit itemsRemoved(index, 1);
-    }
-
-    void moveItem(int from, int to) {
-        list.move(from, to);
-        emit itemsMoved(from, to, 1);
-    }
-
-    void modifyItem(int index, const QString &name, const QString &number) {
-        list[index] = QPair<QString,QString>(name, number);
-        emit itemsChanged(index, 1, roles());
-    }
-
-private:
-    QList<QPair<QString,QString> > list;
-};
-
-
-class TestModel2 : public QAbstractListModel
+class TestModel : public QAbstractListModel
 {
 public:
     enum Roles { Name = Qt::UserRole+1, Number = Qt::UserRole+2 };
 
-    TestModel2(QObject *parent=0) : QAbstractListModel(parent) {
+    TestModel(QObject *parent=0) : QAbstractListModel(parent) {
         QHash<int, QByteArray> roles;
         roles[Name] = "name";
         roles[Number] = "number";
@@ -223,19 +127,22 @@ private:
     QList<QPair<QString,QString> > list;
 };
 
-tst_QmlGraphicsListView::tst_QmlGraphicsListView()
+tst_QmlGraphicsGridView::tst_QmlGraphicsGridView()
 {
 }
 
-template <class T>
-void tst_QmlGraphicsListView::items()
+void tst_QmlGraphicsGridView::items()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
-    T model;
+    TestModel model;
     model.addItem("Fred", "12345");
     model.addItem("John", "2345");
     model.addItem("Bob", "54321");
+    model.addItem("Billy", "22345");
+    model.addItem("Sam", "2945");
+    model.addItem("Ben", "04321");
+    model.addItem("Jim", "0780");
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
@@ -243,13 +150,13 @@ void tst_QmlGraphicsListView::items()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
 
-    QmlGraphicsItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
-    QCOMPARE(listview->count(), model.count());
+    QCOMPARE(gridview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
     for (int i = 0; i < model.count(); ++i) {
@@ -261,13 +168,17 @@ void tst_QmlGraphicsListView::items()
         QCOMPARE(number->text(), model.number(i));
     }
 
-    listview->incrementCurrentIndex();
-    QCOMPARE(listview->currentIndex(), 1);
-    listview->decrementCurrentIndex();
-    QCOMPARE(listview->currentIndex(), 0);
+    gridview->moveCurrentIndexRight();
+    QCOMPARE(gridview->currentIndex(), 1);
+    gridview->moveCurrentIndexDown();
+    QCOMPARE(gridview->currentIndex(), 4);
+    gridview->moveCurrentIndexUp();
+    QCOMPARE(gridview->currentIndex(), 1);
+    gridview->moveCurrentIndexLeft();
+    QCOMPARE(gridview->currentIndex(), 0);
 
     // set an empty model and confirm that items are destroyed
-    T model2;
+    TestModel model2;
     ctxt->setContextProperty("testModel", &model2);
 
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -276,15 +187,18 @@ void tst_QmlGraphicsListView::items()
     delete canvas;
 }
 
-template <class T>
-void tst_QmlGraphicsListView::changed()
+void tst_QmlGraphicsGridView::changed()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
-    T model;
+    TestModel model;
     model.addItem("Fred", "12345");
     model.addItem("John", "2345");
     model.addItem("Bob", "54321");
+    model.addItem("Billy", "22345");
+    model.addItem("Sam", "2945");
+    model.addItem("Ben", "04321");
+    model.addItem("Jim", "0780");
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
@@ -292,10 +206,10 @@ void tst_QmlGraphicsListView::changed()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsFlickable *listview = findItem<QmlGraphicsFlickable>(canvas->root(), "list");
-    QVERIFY(listview != 0);
+    QmlGraphicsFlickable *gridview = findItem<QmlGraphicsFlickable>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
 
-    QmlGraphicsItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
     model.modifyItem(1, "Will", "9876");
@@ -309,12 +223,11 @@ void tst_QmlGraphicsListView::changed()
     delete canvas;
 }
 
-template <class T>
-void tst_QmlGraphicsListView::inserted()
+void tst_QmlGraphicsGridView::inserted()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
-    T model;
+    TestModel model;
     model.addItem("Fred", "12345");
     model.addItem("John", "2345");
     model.addItem("Bob", "54321");
@@ -325,16 +238,16 @@ void tst_QmlGraphicsListView::inserted()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
 
-    QmlGraphicsItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
     model.insertItem(1, "Will", "9876");
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -348,13 +261,14 @@ void tst_QmlGraphicsListView::inserted()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -365,43 +279,36 @@ void tst_QmlGraphicsListView::inserted()
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(0));
 
-    QCOMPARE(listview->currentIndex(), 1);
+    QCOMPARE(gridview->currentIndex(), 1);
 
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     for (int i = model.count(); i < 30; ++i)
         model.insertItem(i, "Hello", QString::number(i));
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
-    listview->setViewportY(80);
-    QTest::qWait(1000);
+    gridview->setViewportY(120);
+    QTest::qWait(300);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
-    QVERIFY(listview->viewportY() == 80);
-
-    // Confirm items positioned correctly
-    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count() - 1;
-    for (int i = 5; i < 5+itemCount; ++i) {
-        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->y() == i*20 - 20);
-    }
+    QVERIFY(gridview->viewportY() == 120);
 
     delete canvas;
 }
 
-template <class T>
-void tst_QmlGraphicsListView::removed()
+void tst_QmlGraphicsGridView::removed()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
-    T model;
+    TestModel model;
     for (int i = 0; i < 30; i++)
         model.addItem("Item" + QString::number(i), "");
 
@@ -411,16 +318,16 @@ void tst_QmlGraphicsListView::removed()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
 
-    QmlGraphicsItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
     model.removeItem(1);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -435,14 +342,15 @@ void tst_QmlGraphicsListView::removed()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     // Remove first item (which is the current item);
-    model.removeItem(0);  // post: top item starts at 20
+    model.removeItem(0);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     name = findItem<QmlGraphicsText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -457,13 +365,14 @@ void tst_QmlGraphicsListView::removed()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QCOMPARE(item->y(),i*20.0 + 20.0);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     // Remove items not visible
-    model.removeItem(18);
+    model.removeItem(25);
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -471,28 +380,30 @@ void tst_QmlGraphicsListView::removed()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QCOMPARE(item->y(),i*20.0+20.0);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     // Remove items before visible
-    listview->setViewportY(80);
-    listview->setCurrentIndex(10);
+    gridview->setViewportY(120);
+    gridview->setCurrentIndex(10);
 
-    model.removeItem(1); // post: top item will be at 40
+    model.removeItem(1);
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
-    for (int i = 2; i < 18; ++i) {
+    for (int i = 6; i < 18; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QCOMPARE(item->y(),40+i*20.0);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
-    listview->setViewportY(40); // That's the top now
+    gridview->setViewportY(0);
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -500,18 +411,18 @@ void tst_QmlGraphicsListView::removed()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QCOMPARE(item->y(),40+i*20.0);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
     delete canvas;
 }
 
-template <class T>
-void tst_QmlGraphicsListView::moved()
+void tst_QmlGraphicsGridView::moved()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
-    T model;
+    TestModel model;
     for (int i = 0; i < 30; i++)
         model.addItem("Item" + QString::number(i), "");
 
@@ -521,16 +432,16 @@ void tst_QmlGraphicsListView::moved()
     canvas->execute();
     qApp->processEvents();
 
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
 
-    QmlGraphicsItem *viewport = listview->viewport();
+    QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
-    model.moveItem(1, 4);
+    model.moveItem(1, 8);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -539,12 +450,12 @@ void tst_QmlGraphicsListView::moved()
     QVERIFY(number != 0);
     QCOMPARE(number->text(), model.number(1));
 
-    name = findItem<QmlGraphicsText>(viewport, "textName", 4);
+    name = findItem<QmlGraphicsText>(viewport, "textName", 8);
     QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(4));
-    number = findItem<QmlGraphicsText>(viewport, "textNumber", 4);
+    QCOMPARE(name->text(), model.name(8));
+    number = findItem<QmlGraphicsText>(viewport, "textNumber", 8);
     QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(4));
+    QCOMPARE(number->text(), model.number(8));
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -552,23 +463,26 @@ void tst_QmlGraphicsListView::moved()
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60);
     }
 
-    listview->setViewportY(80);
+    gridview->setViewportY(120);
 
     // move outside visible area
-    model.moveItem(1, 18);
+    model.moveItem(1, 25);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly and indexes correct
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 3; i < model.count() && i < itemCount; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20 + 20);
+        QCOMPARE(item->x(), qreal((i%3)*80));
+        QCOMPARE(item->y(), qreal((i/3)*60 + 60));
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
@@ -578,17 +492,18 @@ void tst_QmlGraphicsListView::moved()
     }
 
     // move from outside visible into visible
-    model.moveItem(20, 4);
+    model.moveItem(28, 8);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(300);
 
     // Confirm items positioned correctly and indexes correct
     for (int i = 3; i < model.count() && i < itemCount; ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
         if (!item) qWarning() << "Item" << i << "not found";
         QVERIFY(item);
-        QVERIFY(item->y() == i*20 + 20);
+        QVERIFY(item->x() == (i%3)*80);
+        QVERIFY(item->y() == (i/3)*60 + 60);
         name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
         QCOMPARE(name->text(), model.name(i));
@@ -600,184 +515,7 @@ void tst_QmlGraphicsListView::moved()
     delete canvas;
 }
 
-void tst_QmlGraphicsListView::enforceRange()
-{
-    QmlView *canvas = createView(SRCDIR "/data/listview-enforcerange.qml");
-
-    TestModel model;
-    for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), "");
-
-    QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testModel", &model);
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
-
-    QmlGraphicsItem *viewport = listview->viewport();
-    QVERIFY(viewport != 0);
-
-    // view should be positioned at the top of the range.
-    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", 0);
-    QVERIFY(item);
-    QCOMPARE(listview->viewportY(), -100.0);
-
-    QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 0);
-    QVERIFY(name != 0);
-    QCOMPARE(name->text(), model.name(0));
-    QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", 0);
-    QVERIFY(number != 0);
-    QCOMPARE(number->text(), model.number(0));
-
-    // Check currentIndex is updated when viewport moves
-    listview->setViewportY(20);
-    QTest::qWait(1000);
-
-    QCOMPARE(listview->currentIndex(), 6);
-
-    delete canvas;
-}
-
-void tst_QmlGraphicsListView::spacing()
-{
-    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
-
-    TestModel model;
-    for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), "");
-
-    QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testModel", &model);
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
-
-    QmlGraphicsItem *viewport = listview->viewport();
-    QVERIFY(viewport != 0);
-
-    // Confirm items positioned correctly
-    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->y() == i*20);
-    }
-
-    listview->setSpacing(10);
-
-    // Confirm items positioned correctly
-    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->y() == i*30);
-    }
-
-    listview->setSpacing(0);
-
-    // Confirm items positioned correctly
-    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        if (!item) qWarning() << "Item" << i << "not found";
-        QVERIFY(item);
-        QVERIFY(item->y() == i*20);
-    }
-
-    delete canvas;
-}
-
-void tst_QmlGraphicsListView::sections()
-{
-    QmlView *canvas = createView(SRCDIR "/data/listview-sections.qml");
-
-    TestModel model;
-    for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), "");
-
-    QmlContext *ctxt = canvas->rootContext();
-    ctxt->setContextProperty("testModel", &model);
-
-    canvas->execute();
-    qApp->processEvents();
-
-    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
-    QVERIFY(listview != 0);
-
-    QmlGraphicsItem *viewport = listview->viewport();
-    QVERIFY(viewport != 0);
-
-    // Confirm items positioned correctly
-    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
-    for (int i = 0; i < model.count() && i < itemCount; ++i) {
-        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item);
-        QCOMPARE(item->y(), qreal(i*20 + ((i+4)/5) * 20));
-    }
-
-    delete canvas;
-}
-
-void tst_QmlGraphicsListView::qListModelInterface_items()
-{
-    items<TestModel>();
-}
-
-void tst_QmlGraphicsListView::qAbstractItemModel_items()
-{
-    items<TestModel2>();
-}
-
-void tst_QmlGraphicsListView::qListModelInterface_changed()
-{
-    changed<TestModel>();
-}
-
-void tst_QmlGraphicsListView::qAbstractItemModel_changed()
-{
-    changed<TestModel2>();
-}
-
-void tst_QmlGraphicsListView::qListModelInterface_inserted()
-{
-    inserted<TestModel>();
-}
-
-void tst_QmlGraphicsListView::qAbstractItemModel_inserted()
-{
-    inserted<TestModel2>();
-}
-
-void tst_QmlGraphicsListView::qListModelInterface_removed()
-{
-    removed<TestModel>();
-}
-
-void tst_QmlGraphicsListView::qAbstractItemModel_removed()
-{
-    removed<TestModel2>();
-}
-
-void tst_QmlGraphicsListView::qListModelInterface_moved()
-{
-    moved<TestModel>();
-}
-
-void tst_QmlGraphicsListView::qAbstractItemModel_moved()
-{
-    moved<TestModel2>();
-}
-
-
-QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
+QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
     canvas->setFixedSize(240,320);
@@ -795,7 +533,7 @@ QmlView *tst_QmlGraphicsListView::createView(const QString &filename)
    item must also evaluate the {index} expression equal to index
 */
 template<typename T>
-T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
+T *tst_QmlGraphicsGridView::findItem(QmlGraphicsItem *parent, const QString &objectName, int index)
 {
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
@@ -823,7 +561,7 @@ T *tst_QmlGraphicsListView::findItem(QmlGraphicsItem *parent, const QString &obj
 }
 
 template<typename T>
-QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QString &objectName)
+QList<T*> tst_QmlGraphicsGridView::findItems(QmlGraphicsItem *parent, const QString &objectName)
 {
     QList<T*> items;
     const QMetaObject &mo = T::staticMetaObject;
@@ -842,6 +580,6 @@ QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QStr
 }
 
 
-QTEST_MAIN(tst_QmlGraphicsListView)
+QTEST_MAIN(tst_QmlGraphicsGridView)
 
-#include "tst_listview.moc"
+#include "tst_qmlgraphicsgridview.moc"

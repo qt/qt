@@ -662,19 +662,16 @@ void QmlGraphicsListViewPrivate::createHighlight()
             if (nobj) {
                 highlightContext->setParent(nobj);
                 item = qobject_cast<QmlGraphicsItem *>(nobj);
-                if (!item) {
+                if (!item)
                     delete nobj;
-                } else {
-                    item->setParent(q->viewport());
-                }
             } else {
                 delete highlightContext;
             }
         } else {
             item = new QmlGraphicsItem;
-            item->setParent(q->viewport());
         }
         if (item) {
+            item->setParent(q->viewport());
             item->setZValue(0);
             highlight = new FxListItem(item, q);
             if (orient == QmlGraphicsListView::Vertical)
@@ -815,8 +812,9 @@ void QmlGraphicsListViewPrivate::fixupY()
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
-            timeline.clear();
+            timeline.reset(_moveY);
             timeline.move(_moveY, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            vTime = timeline.time();
         }
     }
 }
@@ -830,8 +828,9 @@ void QmlGraphicsListViewPrivate::fixupX()
     if (haveHighlightRange && highlightRange == QmlGraphicsListView::StrictlyEnforceRange) {
         if (currentItem && highlight && currentItem->position() != highlight->position()) {
             moveReason = Mouse;
-            timeline.clear();
+            timeline.reset(_moveX);
             timeline.move(_moveX, -(currentItem->position() - highlightRangeStart), QEasingCurve(QEasingCurve::InOutQuad), 200);
+            vTime = timeline.time();
         }
     }
 }

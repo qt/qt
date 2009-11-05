@@ -8,6 +8,7 @@ SUBDIRS += \
            examples \
            layouts \                # Cover
            listview \               # Cover
+           qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
            pathview \               # Cover
            qfxloader \              # Cover
@@ -30,6 +31,7 @@ SUBDIRS += \
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
            qmlqt \                  # Cover
+           qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
            repeater \               # Cover

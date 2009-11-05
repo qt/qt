@@ -3,7 +3,7 @@ import Qt 4.6
 Rectangle {
     width: 320; height: 270; color: palette.window
 
-    SystemPalette { id: palette; colorGroup: Qt.Active }
+    SystemPalette { id: palette }
     Script { source: "calculator.js" }
 
     Column {
