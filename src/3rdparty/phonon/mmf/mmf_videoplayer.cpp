@@ -172,6 +172,12 @@ int MMF::VideoPlayer::openFile(RFile& file)
     return err;
 }
 
+int MMF::VideoPlayer::openUrl(const QString& url)
+{
+    TRAPD(err, m_player->OpenUrlL(qt_QString2TPtrC(url)));
+    return err;
+}
+
 void MMF::VideoPlayer::close()
 {
     m_player->Close();
