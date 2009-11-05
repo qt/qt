@@ -8,6 +8,7 @@ SUBDIRS += \
            examples \
            layouts \                # Cover
            listview \               # Cover
+           qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
            pathview \               # Cover
            qfxloader \              # Cover
