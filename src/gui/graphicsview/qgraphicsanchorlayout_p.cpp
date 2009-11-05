@@ -2443,17 +2443,13 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
 
     // Process child anchors
     if (edge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(edge->from,
-                                   static_cast<SequentialAnchorData *>(edge),
-                                   orientation);
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(edge), orientation);
     else if (edge->type == AnchorData::Parallel)
-        interpolateParallelEdges(edge->from,
-                                 static_cast<ParallelAnchorData *>(edge),
-                                 orientation);
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(edge), orientation);
 }
 
 void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(
-    AnchorVertex *base, ParallelAnchorData *data, Orientation orientation)
+    ParallelAnchorData *data, Orientation orientation)
 {
     // In parallels the boundary vertices are already calculate, we
     // just need to look for sequential groups inside, because only
@@ -2461,40 +2457,43 @@ void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(
 
     // First edge
     if (data->firstEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(base,
-                                   static_cast<SequentialAnchorData *>(data->firstEdge),
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->firstEdge),
                                    orientation);
     else if (data->firstEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(base,
-                                 static_cast<ParallelAnchorData *>(data->firstEdge),
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->firstEdge),
                                  orientation);
 
     // Second edge
     if (data->secondEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(base,
-                                   static_cast<SequentialAnchorData *>(data->secondEdge),
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->secondEdge),
                                    orientation);
     else if (data->secondEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(base,
-                                 static_cast<ParallelAnchorData *>(data->secondEdge),
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->secondEdge),
                                  orientation);
 }
 
 void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
-    AnchorVertex *base, SequentialAnchorData *data, Orientation orientation)
+    SequentialAnchorData *data, Orientation orientation)
 {
-    AnchorVertex *prev = base;
+    // This method is supposed to handle any sequential anchor, even out-of-order
+    // ones. However, in the current QGAL implementation we should get only the
+    // well behaved ones.
+    Q_ASSERT(data->m_edges.first()->from == data->from);
+    Q_ASSERT(data->m_edges.last()->to == data->to);
 
-    // ### I'm not sure whether this assumption is safe. If not,
-    // consider that m_edges.last() could be used instead (so
-    // at(0) would be the one to be treated specially).
-    Q_ASSERT(base == data->m_edges.at(0)->to || base == data->m_edges.at(0)->from);
+    // At this point, the two outter vertices already have their distance
+    // calculated.
+    // We use the first as the base to calculate the internal ones
 
-    // Skip the last
+    AnchorVertex *prev = data->from;
+
     for (int i = 0; i < data->m_edges.count() - 1; ++i) {
-        AnchorData *child = data->m_edges.at(i);
-        interpolateEdge(prev, child, orientation);
-        prev = child->to;
+        AnchorData *edge = data->m_edges.at(i);
+        interpolateEdge(prev, edge, orientation);
+
+        // Use the recently calculated vertex as the base for the next one
+        const bool edgeIsForward = (edge->from == prev);
+        prev = edgeIsForward ? edge->to : edge->from;
     }
 
     // Treat the last specially, since we already calculated it's end
