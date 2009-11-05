@@ -19,6 +19,7 @@ SUBDIRS += \
            qmlcontext \             # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
+           qmlerror \               # Cover
            qmlfontloader \          # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
