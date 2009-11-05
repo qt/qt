@@ -7,7 +7,7 @@ Rectangle {
 
     Script { source: "content/samegame.js" }
 
-    SystemPalette { id: activePalette; colorGroup: Qt.Active }
+    SystemPalette { id: activePalette }
 
     Item {
         width: parent.width; anchors.top: parent.top; anchors.bottom: ToolBar.top
