@@ -66,6 +66,8 @@ QT_USE_NAMESPACE
   Q_IMPORT_PLUGIN(qsqlite)
 #endif
 
+namespace {
+
 void
 updateLastPagesOnUnregister(QHelpEngineCore& helpEngine, const QString& nsName)
 {
@@ -178,6 +180,8 @@ QString indexFilesFolder(const QString &collectionFile)
     }
     return indexFilesFolder;
 }
+
+} // Anonymous namespace.
 
 int main(int argc, char *argv[])
 {
