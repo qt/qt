@@ -295,6 +295,7 @@ public:
                            QMap<Qt::GestureType, QGesture *> *conflictedGestures,
                            QList<QList<QGraphicsObject *> > *conflictedItems,
                            QHash<QGesture *, QGraphicsObject *> *normalGestures);
+    void cancelGesturesForChildren(QGesture *original, QWidget *viewport);
 
     void updateInputMethodSensitivityInViews();
 

@@ -60,13 +60,13 @@ class QAuServerS60;
 class QAuBucketS60 : public QAuBucket, public MMdaAudioPlayerCallback
 {
 public:
-    QAuBucketS60( QAuServerS60 *server, QSound *sound);
+    QAuBucketS60(QAuServerS60 *server, QSound *sound);
     ~QAuBucketS60();
 
     void play();
     void stop();
 
-    inline QSound* sound() const { return m_sound; }
+    inline QSound *sound() const { return m_sound; }
 
 public: // from MMdaAudioPlayerCallback
     void MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& aDuration);
@@ -77,88 +77,106 @@ private:
     QAuServerS60 *m_server;
     bool m_prepared;
     bool m_playCalled;
-    CMdaAudioPlayerUtility* m_playUtility;
+    CMdaAudioPlayerUtility *m_playUtility;
 };
 
 
 class QAuServerS60 : public QAuServer
 {
 public:
-    QAuServerS60( QObject* parent );
+    QAuServerS60(QObject *parent);
 
-    void init( QSound* s )
+    void init(QSound *s)
     {
-        QAuBucketS60 *bucket = new QAuBucketS60( this, s );
-        setBucket( s, bucket );
+        QAuBucketS60 *bucket = new QAuBucketS60(this, s);
+        setBucket(s, bucket);
     }
 
-    void play( QSound* s )
+    void play(QSound *s)
     {
-        bucket( s )->play();
+        bucket(s)->play();
     }
 
-    void stop( QSound* s )
+    void stop(QSound *s)
     {
-        bucket( s )->stop();
+        bucket(s)->stop();
     }
 
     bool okay() { return true; }
 
-protected:
-    void playCompleted(QAuBucketS60* bucket, int error)
-    {
-        QSound *sound = bucket->sound();
-        if(!error) {
-            // We need to handle repeats by ourselves, since with Symbian API we don't
-            // know how many loops have been played when user asks it
-            if( decLoop( sound ) ) {
-                play( sound );
-            }
-        } else {
-            // We don't have a way to inform about errors -> just decrement loops
-            // in order that QSound::isFinished will return true;
-            while(decLoop(sound)) {}
-        }
-    }
+    void play(const QString& filename);
 
 protected:
-    QAuBucketS60* bucket( QSound *s )
+    void playCompleted(QAuBucketS60 *bucket, int error);
+
+protected:
+    QAuBucketS60 *bucket(QSound *s)
     {
-        return (QAuBucketS60*)QAuServer::bucket( s );
+        return (QAuBucketS60 *)QAuServer::bucket( s );
     }
 
     friend class QAuBucketS60;
 
+    // static QSound::play(filename) cannot be stopped, meaning that playCompleted
+    // will get always called and QSound gets removed form this list.
+    QList<QSound *> staticPlayingSounds;
 };
 
-QAuServerS60::QAuServerS60(QObject* parent) :
+QAuServerS60::QAuServerS60(QObject *parent) :
     QAuServer(parent)
 {
     setObjectName(QLatin1String("QAuServerS60"));
 }
 
+void QAuServerS60::play(const QString& filename)
+{
+    QSound *s = new QSound(filename);
+    staticPlayingSounds.append(s);
+    play(s);
+}
 
-QAuServer* qt_new_audio_server()
+void QAuServerS60::playCompleted(QAuBucketS60 *bucket, int error)
+{
+    QSound *sound = bucket->sound();
+    if (!error) {
+        // We need to handle repeats by ourselves, since with Symbian API we don't
+        // know how many loops have been played when user asks it
+        if (decLoop(sound)) {
+            play(sound);
+        } else {
+            if (staticPlayingSounds.removeAll(sound))
+                delete sound;
+        }
+    } else {
+        // We don't have a way to inform about errors -> just decrement loops
+        // in order that QSound::isFinished will return true;
+        while (decLoop(sound)) {}
+        if (staticPlayingSounds.removeAll(sound))
+            delete sound;
+    }
+}
+
+QAuServer *qt_new_audio_server()
 {
     return new QAuServerS60(qApp);
 }
 
-QAuBucketS60::QAuBucketS60( QAuServerS60 *server, QSound *sound )
-    : m_sound( sound ), m_server( server ), m_prepared(false), m_playCalled(false)
+QAuBucketS60::QAuBucketS60(QAuServerS60 *server, QSound *sound)
+    : m_sound(sound), m_server(server), m_prepared(false), m_playCalled(false)
 {
-    QString filepath = QFileInfo( m_sound->fileName() ).absoluteFilePath();
+    QString filepath = QFileInfo(m_sound->fileName()).absoluteFilePath();
     filepath = QDir::toNativeSeparators(filepath);
     TPtrC filepathPtr(qt_QString2TPtrC(filepath));
     TRAPD(err, m_playUtility = CMdaAudioPlayerUtility::NewL(*this);
                m_playUtility->OpenFileL(filepathPtr));
-    if(err){
+    if (err) {
         m_server->playCompleted(this, err);
     }
 }
 
 void QAuBucketS60::play()
 {
-    if(m_prepared) {
+    if (m_prepared) {
         // OpenFileL call is completed we can start playing immediately
         m_playUtility->Play();
     } else {
@@ -180,11 +198,11 @@ void QAuBucketS60::MapcPlayComplete(TInt aError)
 
 void QAuBucketS60::MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds& /*aDuration*/)
 {
-    if(aError) {
+    if (aError) {
         m_server->playCompleted(this, aError);
     } else {
         m_prepared = true;
-        if(m_playCalled){
+        if (m_playCalled){
             play();
         }
     }
@@ -192,7 +210,7 @@ void QAuBucketS60::MapcInitComplete(TInt aError, const TTimeIntervalMicroSeconds
 
 QAuBucketS60::~QAuBucketS60()
 {
-    if(m_playUtility){
+    if (m_playUtility){
         m_playUtility->Stop();
         m_playUtility->Close();
     }

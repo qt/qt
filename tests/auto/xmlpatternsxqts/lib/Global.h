@@ -47,7 +47,7 @@
 #include "private/qitem_p.h"
 #include "private/qnamepool_p.h"
 
-#ifdef Q_WS_WIN
+#if defined(Q_WS_WIN) || defined(Q_OS_SYMBIAN)
 #   ifdef Q_PATTERNISTSDK_BUILDING
         #define Q_PATTERNISTSDK_EXPORT __declspec(dllexport)
     #else

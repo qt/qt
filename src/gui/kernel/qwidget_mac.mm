@@ -3017,10 +3017,17 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 #else
         QMacCocoaAutoReleasePool pool;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        if (iconButton == nil) {
+            QCFString string(q->windowTitle());
+            const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        }
         if (icon.isNull()) {
             [iconButton setImage:nil];
         } else {
-            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(*pm));
+            QPixmap scaled = pm->scaled(QSize(16,16), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(scaled));
             [iconButton setImage:image];
             [image release];
         }
@@ -3780,7 +3787,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
 /*
     Modifies the bounds for a widgets backing HIView during moves and resizes. Also updates the
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
-    and QWidgetPrivate::isOpaque flags.
+    flag
 */
 static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
 {
@@ -3797,8 +3804,8 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
 
     // Perform a normal (complete repaint) update in some cases:
     if (
-        // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
+        // always repaint on move.
+        (isMove) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||

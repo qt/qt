@@ -2059,15 +2059,17 @@ static void  Free_BaseArray( HB_BaseArray*  ba,
   HB_BaseRecord  *br;
   HB_Anchor      *bans;
 
-  HB_UNUSED(num_classes);
-
   if ( ba->BaseRecord )
   {
     br    = ba->BaseRecord;
 
     if ( ba->BaseCount )
     {
+      HB_UShort i, count;
+      count = num_classes * ba->BaseCount;
       bans = br[0].BaseAnchor;
+      for (i = 0; i < count; i++)
+        Free_Anchor (&bans[i]);
       FREE( bans );
     }
 

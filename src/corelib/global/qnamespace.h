@@ -1715,14 +1715,12 @@ public:
         LastGestureType   = ~0u
     };
 
-    enum GestureContext
+    enum GestureFlag
     {
-        WidgetGesture             = 0,
-        WidgetWithChildrenGesture = 3,
-
-        ItemGesture                  = WidgetGesture,
-        ItemWithChildrenGesture      = WidgetWithChildrenGesture
+        DontStartGestureOnChildren = 0x01,
+        ReceivePartialGestures     = 0x02
     };
+    Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
 
     enum NavigationMode
     {
@@ -1752,6 +1750,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
 
 typedef bool (*qInternalCallback)(void **);
 
