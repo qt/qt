@@ -53,6 +53,7 @@
 #include "private/qpaintengineex_p.h"
 #include "private/qpaintengine_raster_p.h"
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 class QPixmapFilterPrivate : public QObjectPrivate
@@ -1107,3 +1108,5 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_GRAPHICSEFFECT

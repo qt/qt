@@ -2827,4 +2827,54 @@ void QGLShaderProgram::shaderDestroyed()
 
 #endif
 
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+/*! \internal */
+void QGLShaderProgram::setUniformValue(int location, QMacCompatGLint value)
+{
+    setUniformValue(location, GLint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(int location, QMacCompatGLuint value)
+{
+    setUniformValue(location, GLuint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLint value)
+{
+    setUniformValue(name, GLint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValue(const char *name, QMacCompatGLuint value)
+{
+    setUniformValue(name, GLuint(value));
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLint *values, int count)
+{
+    setUniformValueArray(location, (const GLint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(int location, const QMacCompatGLuint *values, int count)
+{
+    setUniformValueArray(location, (const GLuint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLint *values, int count)
+{
+    setUniformValueArray(name, (const GLint *)values, count);
+}
+
+/*! \internal */
+void QGLShaderProgram::setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count)
+{
+    setUniformValueArray(name, (const GLuint *)values, count);
+}
+#endif
+
 QT_END_NAMESPACE

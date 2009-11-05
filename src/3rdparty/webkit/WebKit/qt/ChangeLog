@@ -1,3 +1,132 @@
+2009-11-04  Yael Aharon  <yael.aharon@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] REGRESSION: Allow applications to use their own QWidget bypassing QWebView.
+        https://bugs.webkit.org/show_bug.cgi?id=30979
+
+        Decouple QWebViewPrivate from QWebPageClient, and automatically create
+        QWebPageWidgetClient whenever the view is QWidget based.
+
+        * Api/qwebpage.cpp:
+        (QWebPageWidgetClient::QWebPageWidgetClient):
+        (QWebPageWidgetClient::scroll):
+        (QWebPageWidgetClient::update):
+        (QWebPageWidgetClient::setInputMethodEnabled):
+        (QWebPageWidgetClient::setInputMethodHint):
+        (QWebPageWidgetClient::cursor):
+        (QWebPageWidgetClient::updateCursor):
+        (QWebPageWidgetClient::palette):
+        (QWebPageWidgetClient::screenNumber):
+        (QWebPageWidgetClient::ownerWidget):
+        (QWebPageWidgetClient::pluginParent):
+        (QWebPage::setView):
+        * Api/qwebview.cpp:
+        (QWebView::~QWebView):
+        (QWebView::setPage):
+        (QWebView::event):
+
+2009-11-03  Andras Becsi  <becsi.andras@stud.u-szeged.hu>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Fix build of unit-test after r50454.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make QWebPluginDatabase private API for now.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30775
+
+        * Api/headers.pri:
+        * Api/qwebplugindatabase.cpp:
+        * Api/qwebplugindatabase_p.h: Renamed from WebKit/qt/Api/qwebplugindatabase.h.
+        * Api/qwebsettings.cpp:
+        * Api/qwebsettings.h:
+        * QtLauncher/main.cpp:
+        (MainWindow::setupUI):
+        * tests/tests.pro:
+
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Rubber-stamped by Tor Arne Vestbø.
+
+        Oops, also remove the API docs of the removed networkRequestStarted() signal.
+
+        * Api/qwebpage.cpp:
+
+2009-11-03  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Replace the QWebPage::networkRequestStarted() signal with the originatingObject
+        property set to the QWebFrame that belongs to the request.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29975
+
+        * Api/qwebpage.h:
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::dispatchDecidePolicyForNewWindowAction):
+        (WebCore::FrameLoaderClientQt::dispatchDecidePolicyForNavigationAction):
+        (WebCore::FrameLoaderClientQt::startDownload):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::loadFinished):
+        (TestNetworkManager::createRequest):
+        (tst_QWebPage::originatingObjectInNetworkRequests):
+
+2009-11-02  Jedrzej Nowacki  <jedrzej.nowacki@nokia.com>
+
+        Reviewed by Adam Barth.
+
+        QWebView crash fix.
+
+        The QWebView should not crash if the stop() method is called from
+        a function triggered by the loadProgress signal.
+
+        A null pointer protection was added in the ProgressTracker::incrementProgress.
+
+        New autotest was created.
+
+        https://bugs.webkit.org/show_bug.cgi?id=29425
+
+        * tests/qwebview/tst_qwebview.cpp:
+        (WebViewCrashTest::WebViewCrashTest):
+        (WebViewCrashTest::loading):
+        (tst_QWebView::crashTests):
+
+2009-10-30  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Remove the QWebInspector::windowTitleChanged signal,
+        QEvent::WindowTitleChange can be used to achieve the same.
+        https://bugs.webkit.org/show_bug.cgi?id=30927
+
+        * Api/qwebinspector.cpp:
+        * Api/qwebinspector.h:
+        * WebCoreSupport/InspectorClientQt.cpp:
+        (WebCore::InspectorClientQt::updateWindowTitle):
+
+2009-10-29  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Implement DELETE HTTP method for XmlHttpRequest
+        https://bugs.webkit.org/show_bug.cgi?id=30894
+
+        No new tests as this functionality is already tested by the
+        xmlhttprequest LayoutTests. As this patch depends on an unreleased
+        version of the dependent QtNetwork library and the tests will be
+        enabled later once the dependent library is released (and the
+        buildbot is updated).
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::load):
+
 2009-10-29  Kenneth Rohde Christiansen  <kenneth@webkit.org>
 
         Reviewed by Tor Arne Vestbø.
