@@ -78,65 +78,29 @@ QT_BEGIN_NAMESPACE
   Represents a vertex (anchorage point) in the internal graph
 */
 struct AnchorVertex {
+    enum Type {
+        Normal = 0,
+        Pair
+    };
+
     AnchorVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
-        : m_item(item), m_edge(edge) {}
+        : m_item(item), m_edge(edge), m_type(Normal) {}
 
     AnchorVertex()
-        : m_item(0), m_edge(Qt::AnchorPoint(0)) {}
+        : m_item(0), m_edge(Qt::AnchorPoint(0)), m_type(Normal) {}
 
 #ifdef QT_DEBUG
     inline QString toString() const;
 #endif
+
     QGraphicsLayoutItem *m_item;
     Qt::AnchorPoint m_edge;
+    uint m_type : 1;
 
     // Current distance from this vertex to the layout edge (Left or Top)
     // Value is calculated from the current anchors sizes.
     qreal distance;
 };
-
-#ifdef QT_DEBUG
-inline QString AnchorVertex::toString() const
-{
-    if (!this || !m_item) {
-        return QLatin1String("NULL");
-    }
-    QString edge;
-    switch (m_edge) {
-    case Qt::AnchorLeft:
-        edge = QLatin1String("Left");
-        break;
-    case Qt::AnchorHorizontalCenter:
-        edge = QLatin1String("HorizontalCenter");
-        break;
-    case Qt::AnchorRight:
-        edge = QLatin1String("Right");
-        break;
-    case Qt::AnchorTop:
-        edge = QLatin1String("Top");
-        break;
-    case Qt::AnchorVerticalCenter:
-        edge = QLatin1String("VerticalCenter");
-        break;
-    case Qt::AnchorBottom:
-        edge = QLatin1String("Bottom");
-        break;
-    default:
-        edge = QLatin1String("None");
-        break;
-    }
-    QString itemName;
-    if (m_item->isLayout()) {
-        itemName = QLatin1String("layout");
-    } else {
-        if (QGraphicsItem *item = m_item->graphicsItem()) {
-            itemName = item->data(0).toString();
-        }
-    }
-    edge.insert(0, QLatin1String("%1_"));
-    return edge.arg(itemName);
-}
-#endif
 
 /*!
   \internal
@@ -279,6 +243,68 @@ struct ParallelAnchorData : public AnchorData
     QList<QSimplexConstraint *> m_firstConstraints;
     QList<QSimplexConstraint *> m_secondConstraints;
 };
+
+struct AnchorVertexPair : public AnchorVertex {
+    AnchorVertexPair(AnchorVertex *v1, AnchorVertex *v2, AnchorData *data)
+        : AnchorVertex(), m_first(v1), m_second(v2), m_removedAnchor(data) {
+        m_type = AnchorVertex::Pair;
+    }
+
+    AnchorVertex *m_first;
+    AnchorVertex *m_second;
+
+    AnchorData *m_removedAnchor;
+    QList<AnchorData *> m_firstAnchors;
+    QList<AnchorData *> m_secondAnchors;
+};
+
+#ifdef QT_DEBUG
+inline QString AnchorVertex::toString() const
+{
+    if (!this) {
+        return QLatin1String("NULL");
+    } else if (m_type == Pair) {
+        const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
+        return QString::fromAscii("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
+    } else if (!m_item) {
+        return QString::fromAscii("NULL_%1").arg(int(this));
+    }
+    QString edge;
+    switch (m_edge) {
+    case Qt::AnchorLeft:
+        edge = QLatin1String("Left");
+        break;
+    case Qt::AnchorHorizontalCenter:
+        edge = QLatin1String("HorizontalCenter");
+        break;
+    case Qt::AnchorRight:
+        edge = QLatin1String("Right");
+        break;
+    case Qt::AnchorTop:
+        edge = QLatin1String("Top");
+        break;
+    case Qt::AnchorVerticalCenter:
+        edge = QLatin1String("VerticalCenter");
+        break;
+    case Qt::AnchorBottom:
+        edge = QLatin1String("Bottom");
+        break;
+    default:
+        edge = QLatin1String("None");
+        break;
+    }
+    QString itemName;
+    if (m_item->isLayout()) {
+        itemName = QLatin1String("layout");
+    } else {
+        if (QGraphicsItem *item = m_item->graphicsItem()) {
+            itemName = item->data(0).toString();
+        }
+    }
+    edge.insert(0, QLatin1String("%1_"));
+    return edge.arg(itemName);
+}
+#endif
 
 /*!
   \internal
@@ -444,11 +470,17 @@ public:
 
     // Simplification
     bool simplifyGraph(Orientation orientation);
+    bool simplifyVertices(Orientation orientation);
     bool simplifyGraphIteration(Orientation orientation, bool *feasible);
+
+    bool replaceVertex(Orientation orientation, AnchorVertex *oldV,
+                       AnchorVertex *newV, const QList<AnchorData *> &edges);
+
 
     void restoreSimplifiedGraph(Orientation orientation);
     void restoreSimplifiedAnchor(AnchorData *edge);
     void restoreSimplifiedConstraints(ParallelAnchorData *parallel);
+    void restoreVertices(Orientation orientation);
 
     bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
                         const QList<QSimplexConstraint *> &constraints,
@@ -475,6 +507,17 @@ public:
     {
         return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
+
+    inline void changeLayoutVertex(Orientation orientation, AnchorVertex *oldV, AnchorVertex *newV)
+    {
+        if (layoutFirstVertex[orientation] == oldV)
+            layoutFirstVertex[orientation] = newV;
+        else if (layoutCentralVertex[orientation] == oldV)
+            layoutCentralVertex[orientation] = newV;
+        else if (layoutLastVertex[orientation] == oldV)
+            layoutLastVertex[orientation] = newV;
+    }
+
 
     AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
     void removeInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
@@ -518,6 +561,10 @@ public:
     AnchorVertex *layoutFirstVertex[2];
     AnchorVertex *layoutCentralVertex[2];
     AnchorVertex *layoutLastVertex[2];
+
+    // Combined anchors in order of creation
+    QList<AnchorVertexPair *> simplifiedVertices[2];
+    QList<AnchorData *> anchorsFromSimplifiedVertices[2];
 
     // Graph paths and constraints, for both orientations
     QMultiHash<AnchorVertex *, GraphPath> graphPaths[2];

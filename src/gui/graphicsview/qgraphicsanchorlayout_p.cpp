@@ -61,6 +61,8 @@ QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
 
 QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
 {
+    // ###
+    layoutPrivate->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Orientation(data->orientation));
     layoutPrivate->removeAnchor(data->from, data->to);
 }
 
@@ -700,26 +702,181 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 
     if (graphSimplified[orientation])
         return true;
-    graphSimplified[orientation] = true;
 
 #if 0
     qDebug("Simplifying Graph for %s",
            orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
-    if (!layoutFirstVertex[orientation])
-        return true;
+    // Vertex simplification
+    if (!simplifyVertices(orientation)) {
+        restoreVertices(orientation);
+        return false;
+    }
 
+    // Anchor simplification
     bool dirty;
     bool feasible = true;
     do {
         dirty = simplifyGraphIteration(orientation, &feasible);
     } while (dirty && feasible);
 
-    if (!feasible)
-        graphSimplified[orientation] = false;
+    // Note that if we are not feasible, we fallback and make sure that the graph is fully restored
+    if (!feasible) {
+        graphSimplified[orientation] = true;
+        restoreSimplifiedGraph(orientation);
+        restoreVertices(orientation);
+        return false;
+    }
+
+    graphSimplified[orientation] = true;
+    return true;
+}
+
+static AnchorVertex *replaceVertex_helper(AnchorData *data, AnchorVertex *oldV, AnchorVertex *newV)
+{
+    AnchorVertex *other;
+    if (data->from == oldV) {
+        data->from = newV;
+        other = data->to;
+    } else {
+        data->to = newV;
+        other = data->from;
+    }
+    return other;
+}
+
+bool QGraphicsAnchorLayoutPrivate::replaceVertex(Orientation orientation, AnchorVertex *oldV,
+                                                 AnchorVertex *newV, const QList<AnchorData *> &edges)
+{
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    bool feasible = true;
+
+    for (int i = 0; i < edges.count(); ++i) {
+        AnchorData *ad = edges[i];
+        AnchorVertex *otherV = replaceVertex_helper(ad, oldV, newV);
+
+#if defined(QT_DEBUG)
+        ad->name = QString::fromAscii("%1 --to--> %2").arg(ad->from->toString()).arg(ad->to->toString());
+#endif
+
+        bool newFeasible;
+        AnchorData *newAnchor = addAnchorMaybeParallel(ad, &newFeasible);
+        feasible &= newFeasible;
+
+        if (newAnchor != ad) {
+            // A parallel was created, we mark that in the list of anchors created by vertex
+            // simplification. This is needed because we want to restore them in a separate step
+            // from the restoration of anchor simplification.
+            anchorsFromSimplifiedVertices[orientation].append(newAnchor);
+        }
+
+        g.takeEdge(oldV, otherV);
+    }
 
     return feasible;
+}
+
+/*!
+    \internal
+*/
+bool QGraphicsAnchorLayoutPrivate::simplifyVertices(Orientation orientation)
+{
+    Q_Q(QGraphicsAnchorLayout);
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+
+    // We'll walk through vertices
+    QStack<AnchorVertex *> stack;
+    stack.push(layoutFirstVertex[orientation]);
+    QSet<AnchorVertex *> visited;
+
+    while (!stack.isEmpty()) {
+        AnchorVertex *v = stack.pop();
+        visited.insert(v);
+
+        // Each adjacent of 'v' is a possible vertex to be merged. So we traverse all of
+        // them. Since once a merge is made, we might add new adjacents, and we don't want to
+        // pass two times through one adjacent. The 'index' is used to track our position.
+        QList<AnchorVertex *> adjacents = g.adjacentVertices(v);
+        int index = 0;
+
+        while (index < adjacents.count()) {
+            AnchorVertex *next = adjacents[index];
+            index++;
+
+            AnchorData *data = g.edgeData(v, next);
+            const bool bothLayoutVertices = v->m_item == q && next->m_item == q;
+            const bool zeroSized = !data->minSize && !data->maxSize;
+
+            if (!bothLayoutVertices && zeroSized) {
+
+                // Create a new vertex pair, note that we keep a list of those vertices so we can
+                // easily process them when restoring the graph.
+                AnchorVertexPair *newV = new AnchorVertexPair(v, next, data);
+                simplifiedVertices[orientation].append(newV);
+
+                // Collect the anchors of both vertices, the new vertex pair will take their place
+                // in those anchors
+                const QList<AnchorVertex *> &vAdjacents = g.adjacentVertices(v);
+                const QList<AnchorVertex *> &nextAdjacents = g.adjacentVertices(next);
+
+                for (int i = 0; i < vAdjacents.count(); ++i) {
+                    AnchorVertex *adjacent = vAdjacents[i];
+                    if (adjacent != next) {
+                        AnchorData *ad = g.edgeData(v, adjacent);
+                        newV->m_firstAnchors.append(ad);
+                    }
+                }
+
+                for (int i = 0; i < nextAdjacents.count(); ++i) {
+                    AnchorVertex *adjacent = nextAdjacents[i];
+                    if (adjacent != v) {
+                        AnchorData *ad = g.edgeData(next, adjacent);
+                        newV->m_secondAnchors.append(ad);
+
+                        // We'll also add new vertices to the adjacent list of the new 'v', to be
+                        // created as a vertex pair and replace the current one.
+                        if (!adjacents.contains(adjacent))
+                            adjacents.append(adjacent);
+                    }
+                }
+
+                // ### merge this loop into the ones that calculated m_firstAnchors/m_secondAnchors?
+                // Make newV take the place of v and next
+                bool feasible = replaceVertex(orientation, v, newV, newV->m_firstAnchors);
+                feasible &= replaceVertex(orientation, next, newV, newV->m_secondAnchors);
+
+                // Update the layout vertex information if one of the vertices is a layout vertex.
+                AnchorVertex *layoutVertex = 0;
+                if (v->m_item == q)
+                    layoutVertex = v;
+                else if (next->m_item == q)
+                    layoutVertex = next;
+
+                if (layoutVertex) {
+                    // Layout vertices always have m_item == q...
+                    newV->m_item = q;
+                    changeLayoutVertex(orientation, layoutVertex, newV);
+                }
+
+                g.takeEdge(v, next);
+
+                // If a non-feasibility is found, we leave early and cancel the simplification
+                if (!feasible)
+                    return false;
+
+                v = newV;
+                visited.insert(newV);
+
+            } else if (!visited.contains(next) && !stack.contains(next)) {
+                // If the adjacent is not fit for merge and it wasn't visited by the outermost
+                // loop, we add it to the stack.
+                stack.push(next);
+            }
+        }
+    }
+
+    return true;
 }
 
 /*!
@@ -763,7 +920,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // (a) it is a layout vertex, we don't simplify away the layout vertices;
         // (b) it does not have exactly 2 adjacents;
         // (c) it will change the direction of the sequence;
-        // (d) its next adjacent is already visited (a cycle in the graph).
+        // (d) its next adjacent is already visited (a cycle in the graph);
+        // (e) the next anchor is a center anchor.
 
         const QList<AnchorVertex *> &adjacents = g.adjacentVertices(v);
         const bool isLayoutVertex = v->m_item == q;
@@ -786,13 +944,14 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
                 candidatesForward = (beforeSequence == data->from);
             }
 
-            // This is a tricky part. We peek at the next vertex to find out
+            // This is a tricky part. We peek at the next vertex to find out whether
             //
-            // - whether the edge from this vertex to the next vertex has the same direction;
-            // - whether we already visited the next vertex.
+            // - the edge from this vertex to the next vertex has the same direction;
+            // - we already visited the next vertex;
+            // - the next anchor is a center.
             //
-            // Those are needed to identify (c) and (d). Note that unlike (a) and (b), we preempt
-            // the end of sequence by looking into the next vertex.
+            // Those are needed to identify the remaining end of sequence cases. Note that unlike
+            // (a) and (b), we preempt the end of sequence by looking into the next vertex.
 
             // Peek at the next vertex
             AnchorVertex *after;
@@ -810,8 +969,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
             const bool willChangeDirection = (candidatesForward != (v == data->from));
             const bool cycleFound = visited.contains(after);
 
-            // Now cases (c) and (d)...
-            endOfSequence = willChangeDirection || cycleFound;
+            // Now cases (c), (d) and (e)...
+            endOfSequence = willChangeDirection || cycleFound || data->isCenterAnchor;
 
             if (endOfSequence) {
                 if (!willChangeDirection) {
@@ -879,13 +1038,6 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // Add the sequence to the graph.
         //
 
-        // ### At this point we assume that if some parallel anchor will be created because
-        // of the new sequence, the other anchor will not be a center anchor (since we
-        // not deal with that case yet). This assumption will break once we start simplifying
-        // vertices.
-        AnchorData *possibleParallel = g.edgeData(beforeSequence, afterSequence);
-        Q_ASSERT(!possibleParallel || !possibleParallel->isCenterAnchor);
-
         AnchorData *sequence = createSequence(&g, beforeSequence, candidates, afterSequence);
 
         // If 'beforeSequence' and 'afterSequence' already had an anchor between them, we'll
@@ -938,6 +1090,13 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedAnchor(AnchorData *edge)
         delete sequence;
 
     } else if (edge->type == AnchorData::Parallel) {
+
+        // Skip parallel anchors that were created by vertex simplification, they will be processed
+        // later, when restoring vertex simplification.
+        // ### we could improve this check bit having a bit inside 'edge'
+        if (anchorsFromSimplifiedVertices[edge->orientation].contains(edge))
+            return;
+
         ParallelAnchorData* parallel = static_cast<ParallelAnchorData*>(edge);
         restoreSimplifiedConstraints(parallel);
 
@@ -984,18 +1143,93 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientatio
            orientation == Horizontal ? "Horizontal" : "Vertical");
 #endif
 
+    // Restore anchor simplification
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
-
     QList<QPair<AnchorVertex*, AnchorVertex*> > connections = g.connections();
     for (int i = 0; i < connections.count(); ++i) {
         AnchorVertex *v1 = connections.at(i).first;
         AnchorVertex *v2 = connections.at(i).second;
         AnchorData *edge = g.edgeData(v1, v2);
-        if (edge->type != AnchorData::Normal) {
+
+        // We restore only sequential anchors and parallels that were not created by
+        // vertex simplification.
+        if (edge->type == AnchorData::Sequential
+            || (edge->type == AnchorData::Parallel &&
+                !anchorsFromSimplifiedVertices[orientation].contains(edge))) {
+
             g.takeEdge(v1, v2);
             restoreSimplifiedAnchor(edge);
         }
     }
+
+    restoreVertices(orientation);
+}
+
+void QGraphicsAnchorLayoutPrivate::restoreVertices(Orientation orientation)
+{
+    Q_Q(QGraphicsAnchorLayout);
+
+    Graph<AnchorVertex, AnchorData> &g = graph[orientation];
+    QList<AnchorVertexPair *> &toRestore = simplifiedVertices[orientation];
+
+    // We will restore the vertices in the inverse order of creation, this way we ensure that
+    // the vertex being restored was not wrapped by another simplification.
+    for (int i = toRestore.count() - 1; i >= 0; --i) {
+        AnchorVertexPair *pair = toRestore[i];
+        QList<AnchorVertex *> adjacents = g.adjacentVertices(pair);
+
+        // Restore the removed edge, this will also restore both vertices 'first' and 'second' to
+        // the graph structure.
+        AnchorVertex *first = pair->m_first;
+        AnchorVertex *second = pair->m_second;
+        g.createEdge(first, second, pair->m_removedAnchor);
+
+        // Restore the anchors for the first child vertex
+        for (int j = 0; j < pair->m_firstAnchors.count(); ++j) {
+            AnchorData *ad = pair->m_firstAnchors[j];
+            Q_ASSERT(ad->from == pair || ad->to == pair);
+
+            replaceVertex_helper(ad, pair, first);
+            g.createEdge(ad->from, ad->to, ad);
+        }
+
+        // Restore the anchors for the second child vertex
+        for (int j = 0; j < pair->m_secondAnchors.count(); ++j) {
+            AnchorData *ad = pair->m_secondAnchors[j];
+            Q_ASSERT(ad->from == pair || ad->to == pair);
+
+            replaceVertex_helper(ad, pair, second);
+            g.createEdge(ad->from, ad->to, ad);
+        }
+
+        for (int j = 0; j < adjacents.count(); ++j) {
+            g.takeEdge(pair, adjacents[j]);
+        }
+
+        // The pair simplified a layout vertex, so place back the correct vertex in the variable
+        // that track layout vertices
+        if (pair->m_item == q) {
+            AnchorVertex *layoutVertex = first->m_item == q ? first : second;
+            Q_ASSERT(layoutVertex->m_item == q);
+            changeLayoutVertex(orientation, pair, layoutVertex);
+        }
+
+        delete pair;
+    }
+    toRestore.clear();
+
+    // The restoration process for vertex simplification also restored the effect of the
+    // parallel anchors created during vertex simplification, so we just need to restore
+    // the constraints in case of parallels that contain center anchors. For the same
+    // reason as above, order matters here.
+    QList<AnchorData *> &parallelAnchors = anchorsFromSimplifiedVertices[orientation];
+
+    for (int i = parallelAnchors.count() - 1; i >= 0; --i) {
+        ParallelAnchorData *parallel = static_cast<ParallelAnchorData *>(parallelAnchors[i]);
+        restoreSimplifiedConstraints(parallel);
+        delete parallel;
+    }
+    parallelAnchors.clear();
 }
 
 QGraphicsAnchorLayoutPrivate::Orientation
@@ -1149,7 +1383,6 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     if (item == q) {
         layoutCentralVertex[orientation] = internalVertex(q, centerEdge);
     }
-
 }
 
 void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
@@ -1811,6 +2044,15 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     lastCalculationUsedSimplex[orientation] = false;
 #endif
 
+    // ### This is necessary because now we do vertex simplification, we still don't know
+    // differentiate between invalidate()s that doesn't need resimplification and those which
+    // need. For example, when size hint of an item changes, this may cause an anchor to reach 0 or to
+    // leave 0 and get a size. In both cases we need resimplify.
+    //
+    // ### one possible solution would be tracking all the 0-sized anchors, if this set change, we need
+    // resimplify.
+    restoreSimplifiedGraph(orientation);
+
     // Reset the nominal sizes of each anchor based on the current item sizes.  This function
     // works with both simplified and non-simplified graphs, so it'll work when the
     // simplification is going to be reused.
@@ -2379,6 +2621,21 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
 }
 
 /*!
+    \internal
+
+    Fill the distance in the vertex and in the sub-vertices if its a combined vertex.
+*/
+static void setVertexDistance(AnchorVertex *v, qreal distance)
+{
+    v->distance = distance;
+    if (v->m_type == AnchorVertex::Pair) {
+        AnchorVertexPair *pair = static_cast<AnchorVertexPair *>(v);
+        setVertexDistance(pair->m_first, distance);
+        setVertexDistance(pair->m_second, distance);
+    }
+}
+
+/*!
   \internal
 
   Calculate the position of each vertex based on the paths to each of
@@ -2393,7 +2650,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     // Get root vertex
     AnchorVertex *root = layoutFirstVertex[orientation];
 
-    root->distance = 0;
+    setVertexDistance(root, 0);
     visited.insert(root);
 
     // Add initial edges to the queue
@@ -2483,10 +2740,12 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
 
     Q_ASSERT(edge->from == base || edge->to == base);
 
-    if (edge->from == base)
-        edge->to->distance = base->distance + edgeDistance;
-    else
-        edge->from->distance = base->distance - edgeDistance;
+    // Calculate the distance for the vertex opposite to the base
+    if (edge->from == base) {
+        setVertexDistance(edge->to, base->distance + edgeDistance);
+    } else {
+        setVertexDistance(edge->from, base->distance - edgeDistance);
+    }
 
     // Process child anchors
     if (edge->type == AnchorData::Sequential)
