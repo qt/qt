@@ -40,7 +40,8 @@ SOURCES += qhelpenginecore.cpp \
     qhelpsearchindex_default.cpp \
     qhelpsearchindexwriter_default.cpp \
     qhelpsearchindexreader_default.cpp \
-    qhelpsearchindexreader.cpp
+    qhelpsearchindexreader.cpp \
+    qhelp_global.cpp
 
 # access to clucene
 SOURCES += qhelpsearchindexwriter_clucene.cpp \
