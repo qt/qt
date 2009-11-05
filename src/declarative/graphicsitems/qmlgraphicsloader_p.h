@@ -63,7 +63,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsLoader : public QmlGraphicsItem
     Q_PROPERTY(QmlGraphicsItem *item READ item NOTIFY itemChanged)
     Q_PROPERTY(Status status READ status NOTIFY statusChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
-    //### sourceItem
 
 public:
     QmlGraphicsLoader(QmlGraphicsItem *parent=0);
