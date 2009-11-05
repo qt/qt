@@ -324,7 +324,7 @@ QByteArray QAudioDeviceInfoInternal::defaultOutputDevice()
     return get_device_info(audioDevice, QAudio::AudioOutput);
 }
 
-QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
     QList<QByteArray>   devices;
 
