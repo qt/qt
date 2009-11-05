@@ -361,9 +361,6 @@ void QGLFBOGLPaintDevice::beginPaint()
     if (QGLContext::currentContext() != context())
         context()->makeCurrent();
 
-    // We let QFBO track the previously bound FBO rather than doing it
-    // ourselves here. This has the advantage that begin/release & bind/end
-    // work as expected.
     wasBound = fbo->isBound();
     if (!wasBound)
         fbo->bind();
@@ -896,17 +893,11 @@ bool QGLFramebufferObject::bind()
     QGL_FUNC_CONTEXT;
     if (!ctx)
         return false;   // Context no longer exists.
+    const QGLContext *current = QGLContext::currentContext();
     glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->fbo());
     d->valid = d->checkFramebufferStatus();
-    const QGLContext *context = QGLContext::currentContext();
-    if (d->valid && context) {
-        Q_ASSERT(QGLContextPrivate::contextGroup(context) == QGLContextPrivate::contextGroup(ctx));
-        // Save the previous setting to automatically restore in release().
-        if (context->d_ptr->current_fbo != d->fbo()) {
-            d->previous_fbo = context->d_ptr->current_fbo;
-            context->d_ptr->current_fbo = d->fbo();
-        }
-    }
+    if (d->valid && current)
+        current->d_ptr->current_fbo = d->fbo();
     return d->valid;
 }
 
@@ -917,30 +908,20 @@ bool QGLFramebufferObject::bind()
     framebuffer.
     Returns true upon success, false otherwise.
 
-    Since 4.6: if another QGLFramebufferObject instance was already bound
-    to the current context when bind() was called, then this function will
-    automatically re-bind it to the current context.
-
     \sa bind()
 */
 bool QGLFramebufferObject::release()
 {
     if (!isValid())
 	return false;
-    Q_D(QGLFramebufferObject);
     QGL_FUNC_CONTEXT;
     if (!ctx)
         return false;   // Context no longer exists.
 
-    const QGLContext *context = QGLContext::currentContext();
-    if (context) {
-        Q_ASSERT(QGLContextPrivate::contextGroup(context) == QGLContextPrivate::contextGroup(ctx));
-        // Restore the previous setting for stacked framebuffer objects.
-        if (d->previous_fbo != context->d_ptr->current_fbo) {
-            context->d_ptr->current_fbo = d->previous_fbo;
-            glBindFramebuffer(GL_FRAMEBUFFER_EXT, d->previous_fbo);
-        }
-        d->previous_fbo = 0;
+    const QGLContext *current = QGLContext::currentContext();
+    if (current) {
+        current->d_ptr->current_fbo = 0;
+        glBindFramebuffer(GL_FRAMEBUFFER_EXT, 0);
     }
 
     return true;
