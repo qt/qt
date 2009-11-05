@@ -193,8 +193,12 @@ private slots:
 
     void sqlServerReturn0_data() { generic_data(); }
     void sqlServerReturn0();
+
     void QTBUG_551_data() { generic_data("QOCI"); }
     void QTBUG_551();
+
+    void QTBUG_5251_data() { generic_data("QPSQL"); }
+    void QTBUG_5251();
 
 private:
     // returns all database connections
@@ -2899,6 +2903,36 @@ void tst_QSqlQuery::QTBUG_551()
     QCOMPARE(res_outLst[0].toString(), QLatin1String("1. Value is 0"));
     QCOMPARE(res_outLst[1].toString(), QLatin1String("2. Value is 1"));
     QCOMPARE(res_outLst[2].toString(), QLatin1String("3. Value is 2"));
+}
+
+void tst_QSqlQuery::QTBUG_5251()
+{
+    QFETCH( QString, dbName );
+    QSqlDatabase db = QSqlDatabase::database( dbName );
+    CHECK_DATABASE( db );
+
+    if (!db.driverName().startsWith( "QPSQL" )) return;
+
+    QSqlQuery q(db);
+    q.exec("DROP TABLE " + qTableName("timetest"));
+    QVERIFY_SQL(q, exec("CREATE TABLE  " + qTableName("timetest") + " (t  TIME)"));
+    QVERIFY_SQL(q, exec("INSERT INTO " + qTableName("timetest") +  " VALUES ('1:2:3.666')"));
+
+    QSqlTableModel timetestModel(0,db);
+    timetestModel.setEditStrategy(QSqlTableModel::OnManualSubmit);
+    timetestModel.setTable(qTableName("timetest"));
+    QVERIFY_SQL(timetestModel, select());
+
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("01:02:03.666"));
+    QVERIFY_SQL(timetestModel,setData(timetestModel.index(0, 0), QTime(0,12,34,500)));
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
+    QVERIFY_SQL(timetestModel, submitAll());
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:12:34.500"));
+
+    QVERIFY_SQL(q, exec("UPDATE " + qTableName("timetest") + " SET t = '0:11:22.33'"));
+    QVERIFY_SQL(timetestModel, select());
+    QCOMPARE(timetestModel.record(0).field(0).value().toTime().toString("HH:mm:ss.zzz"), QString("00:11:22.330"));
+
 }
 
 QTEST_MAIN( tst_QSqlQuery )

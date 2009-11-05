@@ -101,7 +101,7 @@
 
     Each application or library can create one or more instances of
     QNetworkAccessManager to handle network communication.
-    
+
     \section1 Writing FTP Clients with QFtp
 
     FTP (File Transfer Protocol) is a protocol used almost exclusively

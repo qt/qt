@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include <QtTest/QtTest>
+#include <QApplication>
 #include <QTextEdit>
 #include <QLineEdit>
 #include <QVBoxLayout>
@@ -85,7 +85,7 @@ void MyEdit::setText(const QString &str)
         result += "0x" + QString::number(str.at(i).unicode(), 16) + ", ";
     result += "0x0 },\n  { ";
     for (int i = 0; i < e->layoutData->items[0].num_glyphs; ++i)
-	result += "0x" + QString::number(e->layoutData->glyphPtr[i].glyph, 16) + ", ";
+        result += "0x" + QString::number(e->layoutData->glyphLayout.glyphs[i], 16) + ", ";
     result += "0x0 } }";
 
     setPlainText(result);

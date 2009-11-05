@@ -401,7 +401,8 @@ void QLineControl::moveCursor(int pos, bool mark)
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
     int priorState = 0;
-    bool isGettingInput = !event->commitString().isEmpty() || !event->preeditString().isEmpty()
+    bool isGettingInput = !event->commitString().isEmpty()
+            || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
     bool cursorPositionChanged = false;
 

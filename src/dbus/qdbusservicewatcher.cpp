@@ -150,14 +150,14 @@ void QDBusServiceWatcherPrivate::removeService(const QString &service)
     modes:
 
     \list
-      \o watching for service registration only
-      \o watching for service unregistration only
-      \o watching for any kind of service ownership change (the default mode)
+      \o Watching for service registration only.
+      \o Watching for service unregistration only.
+      \o Watching for any kind of service ownership change (the default mode).
     \endlist
 
     Besides being created or deleted, services may change owners without a
-    unregister/register operation happening. So the \ref serviceRegistered()
-    and \ref serviceUnregistered() signals may not be emitted if that
+    unregister/register operation happening. So the serviceRegistered()
+    and serviceUnregistered() signals may not be emitted if that
     happens.
 
     This class is more efficient than using the
