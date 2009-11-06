@@ -270,11 +270,13 @@ void tst_qmlqt::closestAngle()
 void tst_qmlqt::playSound()
 {
     QEXPECT_FAIL("", "How do we test this?", Abort);
+    QVERIFY(false);
 }
 
 void tst_qmlqt::openUrlExternally()
 {
     QEXPECT_FAIL("", "How do we test this?", Abort);
+    QVERIFY(false);
 }
 
 QTEST_MAIN(tst_qmlqt)
