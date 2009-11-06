@@ -62,8 +62,7 @@ engine. And in Qt 4.6 these have been further improved.
 \tableofcontents
 
 \section1 Using DirectFB with Qt
-DirectFB is centered around \l
-{http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBSurface.html}{Surfaces}
+DirectFB is centered around \l{DirectFB - IDirectFBSurface}{Surfaces}
 which is the equivalent of a QPaintDevice. In the Qt/DirectFB plugin,
 DirectFB maps onto either a QPixmap or a QWindowSurface which essentially
 means that drawing onto QPixmap or a QWidget can be accelerated and drawing
@@ -94,11 +93,11 @@ location on your host. The safest option is usually to explicitly populate
 these variables in your qmake.conf like this:
 
 \code
-
 QT_CFLAGS_DIRECTFB =
 /opt/toolchain/gcc4.3_mipsel_linux/usr/include/directfb -D_REENTRANT
 QT_LIBS_DIRECTFB = -L/opt/toolchain/gcc4.3_mipsel_linux/usr/lib/-ldirect
 -ldirectfb -lfusion
+\endcode
 
 \note While DirectFB supports a multi-process setup through a
 kernel-extension called Fusion this setup is not well tested with Qt.
@@ -135,14 +134,13 @@ of DirectFB.
 The Qt DirectFB driver currently supports DirectFB versions >= 0.9. Still,
 there are large differences in what each actual implementation handles
 correctly. It is relatively common not to properly support
-\l{http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBWindow}{DirectFB
-windows}, so Qt needs to handle this case with a different code path. In
-addition, certain drivers do not properly support DirectFB's cursor
-handling. This means Qt has to have a code path for rendering the cursor
-itself when this is the case. Some drivers do not let us create \l
-{http://www.directfb.org/docs/DirectFB_Reference_1_4/types.html#DFBSurfaceDescription}{preallocated
-surfaces} which means we have to have a conditional code path for that
-case. 
+\l{DirectFB - IDirectFBWindow}{DirectFB windows}, so Qt needs to handle
+this case with a different code path. In addition, certain drivers do not
+properly support DirectFB's cursor handling. This means Qt has to have a
+code path for rendering the cursor itself when this is the case.
+Some drivers do not let us create
+\l{DirectFB - DFBSurfaceDescription}{preallocated surfaces} which means we
+have to have a conditional code path for that case. 
 
 \section2 Optimize performance using define options
 
@@ -150,19 +148,17 @@ Qt/DirectFB comes with a number of defines that can be either
 uncommented in directfb.pri or added to the QT_DEFINES_DIRECTFB variable in
 your qmake.conf.
 
-\note The defines have been moved from \i
-{src/plugins/gfxdrivers/directfb/directfb.pro} to \i
-{src/gui/embedded/directfb.pri}
+\note The defines have been moved from
+\e{src/plugins/gfxdrivers/directfb/directfb.pro} to
+\e{src/gui/embedded/directfb.pri}
 
 \code
-
 #DIRECTFB_DRAWINGOPERATIONS=DRAW_RECTS|DRAW_LINES|DRAW_IMAGE|DRAW_PIXMAP|
     DRAW_TILED_PIXMAP|STROKE_PATH|DRAW_PATH|DRAW_POINTS|DRAW_ELLIPSE|DRAW_POLYGON|
     DRAW_TEXT|FILL_PATH|FILL_RECT|DRAW_COLORSPANS|DRAW_ROUNDED_RECT
 
  #DEFINES += \"QT_DIRECTFB_WARN_ON_RASTERFALLBACKS=$$DIRECTFB_DRAWINGOPERATIONS\"
  #DEFINES += \"QT_DIRECTFB_DISABLE_RASTERFALLBACKS=$$DIRECTFB_DRAWINGOPERATIONS\"
- 
 \endcode
 
 As demonstrated above, you need to Qt which drawing operations you want to
@@ -180,8 +176,7 @@ Following is a table showing which options you have.
     \row
         \o QT_DIRECTFB_IMAGECACHE
         \o Defining this means that Qt will cache an IDirectFBSurface per
-QImage you draw based on its \l
-{http://doc.trolltech.com/4.5/qimage.html#cacheKey}{cacheKey}.
+QImage you draw based on its \l{QImage::}{cacheKey()}.
 Use this define if your application draws many QImages that
 remain the same. Note that if you in this situation draw an image and then
 change it, by calling bits() or opening a QPainter on it, the cache will
@@ -192,9 +187,7 @@ connect option.
         \o QT_NO_DIRECTFB_WM
         \o If your DirectFB implementation does not support windows, you
 have to define this to make Qt work properly. You can test this by checking
-if the \l {
-http://www.directfb.org/index.php?path=Main%2FDownloads&page=1}{df_window
-example} runs well.
+if the \l{DirectFB - df_window example}{df_window example} runs well.
 This means that all drawing operations onto a QWidget involves
 an extra blitting step since Qt essentially first has to draw into an
 off-screen buffer and then blit this buffer to the back buffer of the
@@ -218,9 +211,7 @@ cursor rather than letting DirectFB do it.
     \row
         \o QT_NO_DIRECTFB_PALETTE
         \o Define this if your DirectFB driver does not support surfaces
-with \l
-{http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFBPalette.html}{color
-tables}.
+with \l{DirectFB - IDirectFBPalette}{color tables}.
 The effect of defining this is that Qt will have to convert
 images with \l QImage::Format_Indexed8 format to another format before
 rendering them.
@@ -228,16 +219,15 @@ rendering them.
     \row
         \o QT_NO_DIRECTFB_PREALLOCATED
         \o Define this if your DirectFB driver does not support creating a
-surface with preallocated data. This will make a more frequent use of \l
-{http://www.cplusplus.com/reference/clibrary/cstring/memcpy/}{memcpy()}
+surface with preallocated data. This will make a more frequent use of
+\l{C++ Reference - memcpy}{memcpy()}
 when drawing images. If you define this, you might want to consider
 defining QT_DIRECTFB_IMAGECACHE for better image rendering performance.
 
     \row
         \o QT_NO_DIRECTFB_MOUSE and QT_NO_DIRECTFB_KEYBOARD
         \o Define this if your driver does not provide keyboard/mouse
-events through \l
-{http://www.directfb.org/docs/DirectFB_Reference_1_4/IDirectFB_CreateInputEventBuffer.html}{CreateInputEventBuffer}.
+events through \l{DirectFB - CreateInputEventBuffer}{CreateInputEventBuffer}.
 This means that Qt cannot use DirectFB to receive keyboard/mouse events and
 if you want such events in your application, you will have to provide
 another driver. For more info see \l {Qt for Embedded Linux Pointer
@@ -251,8 +241,8 @@ frames per second.
 
     \row
         \o QT_NO_DIRECTFB_OPAQUE_DETECTION
-        \o When blitting a surface Qt has to decide whether to set the \l
-{http://www.directfb.org/docs/DirectFB_Reference_1_4/types.html#DFBSurfaceBlittingFlags}{DSBLIT_BLEND_ALPHACHANNEL}
+        \o When blitting a surface Qt has to decide whether to set the
+\l{DirectFB - DFBSurfaceBlittingFlags}{DSBLIT_BLEND_ALPHACHANNEL}
 flag. If you load an image from file or network data that has a format that
 includes an alpha channel, the image might still be completely opaque.
 Normally Qt runs through every pixel to check if there really is an alpha
@@ -281,8 +271,8 @@ define this.
 
  \row
     \o QT_DIRECTFB_IMAGEPROVIDER_KEEPALIVE
-    \o Define this to make sure Qt always keeps at least one \l
-{http://directfb.org/docs/DirectFB_Reference_1_4/IDirectFBImageProvider.html}{IDirectFBImageProvider}
+    \o Define this to make sure Qt always keeps at least one
+\l{DirectFB - IDirectFBImageProvider}{IDirectFBImageProvider}
 object alive. This is to avoid considerable overhead when the first
 IDirectFBImageProvider is created, the last IDirectFBImageProvider is
 removed.
