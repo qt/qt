@@ -177,7 +177,7 @@ int QmlBoundSignal::qt_metacall(QMetaObject::Call c, int id, void **a)
         if (m_params) m_params->setValues(a);
         if (m_expression) {
             QmlExpressionPrivate::get(m_expression)->value(m_params);
-            if (m_expression->hasError())
+            if (m_expression && m_expression->hasError())
                 qWarning().nospace() << qPrintable(m_expression->error().toString());
         }
         if (m_params) m_params->clearValues();

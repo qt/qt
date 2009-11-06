@@ -97,7 +97,6 @@ public:
     static bool isInterface(int);
     static const char *interfaceIId(int);
     static bool isObject(int);
-    static bool isObject(const QMetaObject *);
     static bool isList(int);
     static bool isList(const QVariant &);
     static bool isQmlList(int);
@@ -120,8 +119,6 @@ public:
     int majorVersion() const;
     int minorVersion() const;
     bool availableInVersion(int vmajor, int vminor) const;
-
-    QByteArray hash() const;
 
     QObject *create() const;
 

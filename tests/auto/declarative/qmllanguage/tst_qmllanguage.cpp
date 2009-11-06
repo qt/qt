@@ -246,6 +246,17 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("importNamespaceConflict") << "importNamespaceConflict.qml" << "importNamespaceConflict.errors.txt" << false;
     QTest::newRow("importVersionMissing (builtin)") << "importVersionMissingBuiltIn.qml" << "importVersionMissingBuiltIn.errors.txt" << false;
     QTest::newRow("importVersionMissing (installed)") << "importVersionMissingInstalled.qml" << "importVersionMissingInstalled.errors.txt" << false;
+    QTest::newRow("invalidImportID") << "invalidImportID.qml" << "invalidImportID.errors.txt" << false;
+
+    QTest::newRow("signal.1") << "signal.1.qml" << "signal.1.errors.txt" << false;
+    QTest::newRow("signal.2") << "signal.2.qml" << "signal.2.errors.txt" << false;
+    QTest::newRow("signal.3") << "signal.3.qml" << "signal.3.errors.txt" << false;
+
+    QTest::newRow("property.1") << "property.1.qml" << "property.1.errors.txt" << false;
+    QTest::newRow("property.2") << "property.2.qml" << "property.2.errors.txt" << false;
+    QTest::newRow("property.3") << "property.3.qml" << "property.3.errors.txt" << false;
+    QTest::newRow("property.4") << "property.4.qml" << "property.4.errors.txt" << false;
+    QTest::newRow("property.5") << "property.5.qml" << "property.5.errors.txt" << false;
 
     QTest::newRow("Script.1") << "script.1.qml" << "script.1.errors.txt" << false;
     QTest::newRow("Script.2") << "script.2.qml" << "script.2.errors.txt" << false;
@@ -258,6 +269,7 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("Script.9") << "script.9.qml" << "script.9.errors.txt" << false;
     QTest::newRow("Script.10") << "script.10.qml" << "script.10.errors.txt" << false;
     QTest::newRow("Script.11") << "script.11.qml" << "script.11.errors.txt" << false;
+    QTest::newRow("Script.12") << "script.12.qml" << "script.12.errors.txt" << false;
 
     QTest::newRow("Component.1") << "component.1.qml" << "component.1.errors.txt" << false;
     QTest::newRow("Component.2") << "component.2.qml" << "component.2.errors.txt" << false;
@@ -270,6 +282,7 @@ void tst_qmllanguage::errors_data()
     QTest::newRow("defaultGrouped") << "defaultGrouped.qml" << "defaultGrouped.errors.txt" << false;
     QTest::newRow("emptySignal") << "emptySignal.qml" << "emptySignal.errors.txt" << false;
     QTest::newRow("doubleSignal") << "doubleSignal.qml" << "doubleSignal.errors.txt" << false;
+    QTest::newRow("invalidRoot") << "invalidRoot.qml" << "invalidRoot.errors.txt" << false;
 }
 
 void tst_qmllanguage::errors()

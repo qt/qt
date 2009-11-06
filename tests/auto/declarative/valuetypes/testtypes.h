@@ -51,6 +51,7 @@
 #include <QVector3D>
 #include <QFont>
 #include <qml.h>
+#include <QmlPropertyValueSource>
 
 class MyTypeObject : public QObject
 {
@@ -90,39 +91,62 @@ public:
 
     QPoint m_point;
     QPoint point() const { return m_point; }
-    void setPoint(const QPoint &v) { m_point = v; }
+    void setPoint(const QPoint &v) { m_point = v; emit changed(); }
 
     QPointF m_pointf;
     QPointF pointf() const { return m_pointf; }
-    void setPointf(const QPointF &v) { m_pointf = v; }
+    void setPointf(const QPointF &v) { m_pointf = v; emit changed(); }
 
     QSize m_size;
     QSize size() const { return m_size; }
-    void setSize(const QSize &v) { m_size = v; }
+    void setSize(const QSize &v) { m_size = v; emit changed(); }
 
     QSizeF m_sizef;
     QSizeF sizef() const { return m_sizef; }
-    void setSizef(const QSizeF &v) { m_sizef = v; }
+    void setSizef(const QSizeF &v) { m_sizef = v; emit changed(); }
 
     QRect m_rect;
     QRect rect() const { return m_rect; }
-    void setRect(const QRect &v) { m_rect = v; }
+    void setRect(const QRect &v) { m_rect = v; emit changed(); }
 
     QRectF m_rectf;
     QRectF rectf() const { return m_rectf; }
-    void setRectf(const QRectF &v) { m_rectf = v; }
+    void setRectf(const QRectF &v) { m_rectf = v; emit changed(); }
 
     QVector3D m_vector;
     QVector3D vector() const { return m_vector; }
-    void setVector(const QVector3D &v) { m_vector = v; }
+    void setVector(const QVector3D &v) { m_vector = v; emit changed(); }
 
     QFont m_font;
     QFont font() const { return m_font; }
-    void setFont(const QFont &v) { m_font = v; }
+    void setFont(const QFont &v) { m_font = v; emit changed(); }
+
+    void emitRunScript() { emit runScript(); }
 
 signals:
     void changed();
+    void runScript();
 };
 QML_DECLARE_TYPE(MyTypeObject);
+
+class MyConstantValueSource : public QObject, public QmlPropertyValueSource
+{
+    Q_OBJECT
+public:
+    virtual void setTarget(const QmlMetaProperty &p) { p.write(3345); }
+};
+QML_DECLARE_TYPE(MyConstantValueSource);
+
+class MyOffsetValueInterceptor : public QObject, public QmlPropertyValueInterceptor
+{
+    Q_OBJECT
+public:
+    virtual void setTarget(const QmlMetaProperty &p) { prop = p; }
+    virtual void write(const QVariant &value) { prop.write(value.toInt() + 13, QmlMetaProperty::BypassInterceptor); }
+
+private:
+    QmlMetaProperty prop;
+};
+QML_DECLARE_TYPE(MyOffsetValueInterceptor);
 
 #endif // TESTTYPES_H

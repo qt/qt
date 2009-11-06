@@ -43,6 +43,7 @@
 #include <QmlEngine>
 #include <QmlComponent>
 #include <QDebug>
+#include <private/qmlvaluetype_p.h>
 #include "testtypes.h"
 
 class tst_valuetypes : public QObject
@@ -61,14 +62,19 @@ private slots:
     void vector3d();
     void font();
 
-    // ###
-    // Test binding assignment
-    // Test static assignment
-    // Test JS assignment
-    // Test "font.x: blah; font: blah2;" conflict
-    // Test constant binding removal
-    // Test value sources
-    // Test behaviours
+    void bindingAssignment();
+    void bindingRead();
+    void staticAssignment();
+    void scriptAccess();
+    void autoBindingRemoval();
+    void valueSources();
+    void valueInterceptors();
+    void bindingConflict();
+    void deletedObject();
+    void bindingVariantCopy();
+    void scriptVariantCopy();
+    void cppClasses();
+
 private:
     QmlEngine engine;
 };
@@ -312,6 +318,8 @@ void tst_valuetypes::font()
         QVERIFY(object != 0);
 
         QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
     }
 
     // Test pixelSize and pointSize
@@ -322,9 +330,243 @@ void tst_valuetypes::font()
         QVERIFY(object != 0);
 
         QCOMPARE(object->font().pixelSize(), 10);
+
+        delete object;
     }
 }
 
+// Test bindings can write to value types
+void tst_valuetypes::bindingAssignment()
+{
+    QmlComponent component(&engine, TEST_FILE("bindingAssignment.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect().x(), 10);
+
+    object->setProperty("value", QVariant(92));
+
+    QCOMPARE(object->rect().x(), 92);
+
+    delete object;
+}
+
+// Test bindings can read from value types
+void tst_valuetypes::bindingRead()
+{
+    QmlComponent component(&engine, TEST_FILE("bindingRead.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("value").toInt(), 2);
+
+    object->setRect(QRect(19, 3, 88, 2));
+
+    QCOMPARE(object->property("value").toInt(), 19);
+
+    delete object;
+}
+
+// Test static values can assign to value types
+void tst_valuetypes::staticAssignment()
+{
+    QmlComponent component(&engine, TEST_FILE("staticAssignment.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect().x(), 9);
+
+    delete object;
+}
+
+// Test scripts can read/write value types
+void tst_valuetypes::scriptAccess()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptAccess.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("valuePre").toInt(), 2);
+    QCOMPARE(object->rect().x(), 19);
+    QCOMPARE(object->property("valuePost").toInt(), 19);
+
+    delete object;
+}
+
+// Test that assigning a constant from script removes any binding
+void tst_valuetypes::autoBindingRemoval()
+{
+    {
+        QmlComponent component(&engine, TEST_FILE("autoBindingRemoval.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->rect().x(), 10);
+
+        object->setProperty("value", QVariant(13));
+
+        QCOMPARE(object->rect().x(), 13);
+
+        object->emitRunScript();
+
+        QCOMPARE(object->rect().x(), 42);
+
+        object->setProperty("value", QVariant(92));
+
+        QCOMPARE(object->rect().x(), 42);
+
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("autoBindingRemoval.2.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        QCOMPARE(object->rect().x(), 10);
+
+        object->setProperty("value", QVariant(13));
+
+        QCOMPARE(object->rect().x(), 13);
+
+        object->emitRunScript();
+
+        QCOMPARE(object->rect(), QRect(10, 10, 10, 10));
+
+        object->setProperty("value", QVariant(92));
+
+        QCOMPARE(object->rect(), QRect(10, 10, 10, 10));
+
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("autoBindingRemoval.3.qml"));
+        MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+        QVERIFY(object != 0);
+
+        object->setProperty("value", QVariant(QRect(9, 22, 33, 44)));
+
+        QCOMPARE(object->rect(), QRect(9, 22, 33, 44));
+
+        object->emitRunScript();
+
+        QCOMPARE(object->rect(), QRect(44, 22, 33, 44));
+
+        object->setProperty("value", QVariant(QRect(19, 3, 4, 8)));
+
+        QCOMPARE(object->rect(), QRect(44, 22, 33, 44));
+
+        delete object;
+    }
+
+}
+
+// Test that property value sources assign to value types
+void tst_valuetypes::valueSources()
+{
+    QmlComponent component(&engine, TEST_FILE("valueSources.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect().x(), 3345);
+
+    delete object;
+}
+
+// Test that property value interceptors can be applied to value types
+void tst_valuetypes::valueInterceptors()
+{
+    QmlComponent component(&engine, TEST_FILE("valueInterceptors.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect().x(), 26);
+
+    object->setProperty("value", 99);
+
+    QCOMPARE(object->rect().x(), 112);
+
+    delete object;
+}
+
+// Test that you can't assign a binding to the "root" value type, and a sub-property
+void tst_valuetypes::bindingConflict()
+{
+    QmlComponent component(&engine, TEST_FILE("bindingConflict.qml"));
+    QCOMPARE(component.isError(), true);
+}
+
+#define CPP_TEST(type, v) \
+{ \
+    type *t = new type; \
+    QVariant value(v); \
+    t->setValue(value); \
+    QCOMPARE(t->value(), value); \
+    delete t; \
+}
+
+// Test that accessing a reference to a valuetype after the owning object is deleted
+// doesn't crash
+void tst_valuetypes::deletedObject()
+{
+    QmlComponent component(&engine, TEST_FILE("deletedObject.qml"));
+    QTest::ignoreMessage(QtDebugMsg, "Test: 2");
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QObject *dObject = qvariant_cast<QObject *>(object->property("object"));
+    QVERIFY(dObject != 0);
+    delete dObject;
+
+    QTest::ignoreMessage(QtDebugMsg, "Test: undefined");
+    object->emitRunScript();
+
+    delete object;
+}
+
+// Test that value types can be assigned to another value type property in a binding
+void tst_valuetypes::bindingVariantCopy()
+{
+    QmlComponent component(&engine, TEST_FILE("bindingVariantCopy.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect(), QRect(19, 33, 5, 99));
+
+    delete object;
+}
+
+// Test that value types can be assigned to another value type property in script
+void tst_valuetypes::scriptVariantCopy()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptVariantCopy.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect(), QRect(2, 3, 109, 102));
+
+    object->emitRunScript();
+
+    QCOMPARE(object->rect(), QRect(19, 33, 5, 99));
+
+    delete object;
+}
+
+
+// Test that the value type classes can be used manually
+void tst_valuetypes::cppClasses()
+{
+    CPP_TEST(QmlPointValueType, QPoint(19, 33));
+    CPP_TEST(QmlPointFValueType, QPointF(33.6, -23));
+    CPP_TEST(QmlSizeValueType, QSize(-100, 18));
+    CPP_TEST(QmlSizeFValueType, QSizeF(-100.7, 18.2));
+    CPP_TEST(QmlRectValueType, QRect(13, 39, 10928, 88));
+    CPP_TEST(QmlRectFValueType, QRectF(88.2, -90.1, 103.2, 118));
+    CPP_TEST(QmlVector3DValueType, QVector3D(18.2, 19.7, 1002));
+    CPP_TEST(QmlFontValueType, QFont("Helvetica"));
+
+}
 QTEST_MAIN(tst_valuetypes)
 
 #include "tst_valuetypes.moc"

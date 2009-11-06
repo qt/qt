@@ -232,7 +232,7 @@ void QmlPropertyChangesPrivate::decode()
         ds >> data;
 
         QmlMetaProperty prop = property(name);      //### better way to check for signal property?
-        if (prop.type() == QmlMetaProperty::SignalProperty) {
+        if (prop.type() & QmlMetaProperty::SignalProperty) {
             QmlExpression *expression = new QmlExpression(qmlContext(q), data.toString(), object);
             expression->setTrackChange(false);
             QmlReplaceSignalHandler *handler = new QmlReplaceSignalHandler;
@@ -307,7 +307,7 @@ QmlPropertyChangesPrivate::property(const QByteArray &property)
     if (!prop.isValid()) {
         qmlInfo(QmlPropertyChanges::tr("Cannot assign to non-existant property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
-    } else if (prop.type() != QmlMetaProperty::SignalProperty && !prop.isWritable()) {
+    } else if (!(prop.type() & QmlMetaProperty::SignalProperty) && !prop.isWritable()) {
         qmlInfo(QmlPropertyChanges::tr("Cannot assign to read-only property \"%1\"").arg(QString::fromUtf8(property)), q);
         return QmlMetaProperty();
     }

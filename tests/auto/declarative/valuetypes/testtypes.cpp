@@ -41,3 +41,5 @@
 #include "testtypes.h"
 
 QML_DEFINE_TYPE(Test, 1, 0, MyTypeObject, MyTypeObject);
+QML_DEFINE_TYPE(Test, 1, 0, MyConstantValueSource, MyConstantValueSource);
+QML_DEFINE_TYPE(Test, 1, 0, MyOffsetValueInterceptor, MyOffsetValueInterceptor);
