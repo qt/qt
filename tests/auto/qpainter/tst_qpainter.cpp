@@ -239,9 +239,12 @@ private slots:
     void taskQT4444_dontOverflowDashOffset();
 
     void painterBegin();
+    void setPenColorOnImage();
+    void setPenColorOnPixmap();
 
 private:
     void fillData();
+    void setPenColor(QPainter& p);
     QColor baseColor( int k, int intensity=255 );
     QImage getResImage( const QString &dir, const QString &addition, const QString &extension );
     QBitmap getBitmap( const QString &dir, const QString &filename, bool mask );
@@ -4352,5 +4355,41 @@ void tst_QPainter::painterBegin()
     QVERIFY(!p.end());
 }
 
+void tst_QPainter::setPenColor(QPainter& p)
+{
+    p.setPen(Qt::NoPen);
+
+    // Setting color, then style
+    // Should work even though the pen is "NoPen with color", temporarily.
+    QPen newPen(p.pen());
+    newPen.setColor(Qt::red);
+    QCOMPARE(p.pen().style(), newPen.style());
+    QCOMPARE(p.pen().style(), Qt::NoPen);
+    p.setPen(newPen);
+
+    QCOMPARE(p.pen().color().name(), QString("#ff0000"));
+
+    QPen newPen2(p.pen());
+    newPen2.setStyle(Qt::SolidLine);
+    p.setPen(newPen2);
+
+    QCOMPARE(p.pen().color().name(), QString("#ff0000"));
+}
+
+void tst_QPainter::setPenColorOnImage()
+{
+    QImage img(QSize(10, 10), QImage::Format_ARGB32_Premultiplied);
+    QPainter p(&img);
+    setPenColor(p);
+}
+
+void tst_QPainter::setPenColorOnPixmap()
+{
+    QPixmap pix(10, 10);
+    QPainter p(&pix);
+    setPenColor(p);
+}
+
 QTEST_MAIN(tst_QPainter)
+
 #include "tst_qpainter.moc"
