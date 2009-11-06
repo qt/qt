@@ -217,6 +217,10 @@ QtGui
 
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
+
+ - The default button size has been reduced in the Windows mobile style.
+
+ - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
    
  - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
    QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
@@ -225,7 +229,6 @@ QtGui
  - KDE Integration: Improved the integration into KDE desktop (loading of KDE
    palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
 
-   
  - Phonon on Windows
    * Now much more reliable when reading a file through a QIODevice.
    * If Video Mixing Renderer 9 is not available, falls back to software 
