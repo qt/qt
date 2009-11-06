@@ -850,4 +850,4 @@ QList<T*> tst_QmlGraphicsListView::findItems(QmlGraphicsItem *parent, const QStr
 
 QTEST_MAIN(tst_QmlGraphicsListView)
 
-#include "tst_listview.moc"
+#include "tst_qmlgraphicslistview.moc"

@@ -114,4 +114,31 @@ Rectangle {
         y: 70; width: 10; height: 10
         anchors.horizontalCenter: parent.left
     }
+    Rectangle {
+        id: Rect22; objectName: "Rect22"
+        width: 10; height: 10
+        anchors.centerIn: MasterRect
+    }
+    Rectangle {
+        id: Rect23; objectName: "Rect23"
+        anchors.left: MasterRect.left
+        anchors.leftMargin: 5
+        anchors.right: MasterRect.right
+        anchors.rightMargin: 5
+        anchors.top: MasterRect.top
+        anchors.topMargin: 5
+        anchors.bottom: MasterRect.bottom
+        anchors.bottomMargin: 5
+    }
+    Text {
+        id: text1; objectName: "text1"
+        y: 200;
+        text: "Hello"
+    }
+    Text {
+        id: text2; objectName: "text2"
+        anchors.baseline: text1.baseline
+        anchors.left: text1.right
+        text: "World"
+    }
 }
