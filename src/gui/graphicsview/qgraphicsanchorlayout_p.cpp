@@ -669,24 +669,10 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
                                   const QVector<AnchorVertex*> &vertices,
                                   AnchorVertex *after)
 {
-    AnchorData *data = graph->edgeData(before, vertices.first());
-    Q_ASSERT(data);
-
-    const bool forward = (before == data->from);
-    QVector<AnchorVertex *> orderedVertices;
-
-    if (forward) {
-        orderedVertices = vertices;
-    } else {
-        qSwap(before, after);
-        for (int i = vertices.count() - 1; i >= 0; --i)
-            orderedVertices.append(vertices.at(i));
-    }
-
 #if defined(QT_DEBUG) && 0
     QString strVertices;
-    for (int i = 0; i < orderedVertices.count(); ++i) {
-        strVertices += QString::fromAscii("%1 - ").arg(orderedVertices.at(i)->toString());
+    for (int i = 0; i < vertices.count(); ++i) {
+        strVertices += QString::fromAscii("%1 - ").arg(vertices.at(i)->toString());
     }
     QString strPath = QString::fromAscii("%1 - %2%3").arg(before->toString(), strVertices, after->toString());
     qDebug("simplifying [%s] to [%s - %s]", qPrintable(strPath), qPrintable(before->toString()), qPrintable(after->toString()));
@@ -695,15 +681,22 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
     AnchorVertex *prev = before;
     QVector<AnchorData *> edges;
 
-    for (int i = 0; i <= orderedVertices.count(); ++i) {
-        AnchorVertex *next = (i < orderedVertices.count()) ? orderedVertices.at(i) : after;
+    // Take from the graph, the edges that will be simplificated
+    for (int i = 0; i < vertices.count(); ++i) {
+        AnchorVertex *next = vertices.at(i);
         AnchorData *ad = graph->takeEdge(prev, next);
         Q_ASSERT(ad);
         edges.append(ad);
         prev = next;
     }
 
-    SequentialAnchorData *sequence = new SequentialAnchorData(orderedVertices, edges);
+    // Take the last edge (not covered in the loop above)
+    AnchorData *ad = graph->takeEdge(vertices.last(), after);
+    Q_ASSERT(ad);
+    edges.append(ad);
+
+    // Create sequence
+    SequentialAnchorData *sequence = new SequentialAnchorData(vertices, edges);
     sequence->from = before;
     sequence->to = after;
 
@@ -963,7 +956,6 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
     stack.push(qMakePair(static_cast<AnchorVertex *>(0), layoutFirstVertex[orientation]));
     QVector<AnchorVertex*> candidates;
-    bool candidatesForward = true;
 
     // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
     // and the vertex to be visited.
@@ -979,9 +971,8 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         // A vertex can trigger an end of sequence if
         // (a) it is a layout vertex, we don't simplify away the layout vertices;
         // (b) it does not have exactly 2 adjacents;
-        // (c) it will change the direction of the sequence;
-        // (d) its next adjacent is already visited (a cycle in the graph);
-        // (e) the next anchor is a center anchor.
+        // (c) its next adjacent is already visited (a cycle in the graph).
+        // (d) the next anchor is a center anchor.
 
         const QList<AnchorVertex *> &adjacents = g.adjacentVertices(v);
         const bool isLayoutVertex = v->m_item == q;
@@ -996,19 +987,10 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
         endOfSequence = isLayoutVertex || adjacents.count() != 2;
 
         if (!endOfSequence) {
-            // If this is the first vertice, determine what is the direction to use for this
-            // sequence.
-            if (candidates.isEmpty()) {
-                const AnchorData *data = g.edgeData(beforeSequence, v);
-                Q_ASSERT(data);
-                candidatesForward = (beforeSequence == data->from);
-            }
-
             // This is a tricky part. We peek at the next vertex to find out whether
             //
-            // - the edge from this vertex to the next vertex has the same direction;
-            // - we already visited the next vertex;
-            // - the next anchor is a center.
+            // - we already visited the next vertex (c);
+            // - the next anchor is a center (d).
             //
             // Those are needed to identify the remaining end of sequence cases. Note that unlike
             // (a) and (b), we preempt the end of sequence by looking into the next vertex.
@@ -1026,22 +1008,17 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
 
             const AnchorData *data = g.edgeData(v, after);
             Q_ASSERT(data);
-            const bool willChangeDirection = (candidatesForward != (v == data->from));
             const bool cycleFound = visited.contains(after);
 
-            // Now cases (c), (d) and (e)...
-            endOfSequence = willChangeDirection || cycleFound || data->isCenterAnchor;
+            // Now cases (c) and (d)...
+            endOfSequence = cycleFound || data->isCenterAnchor;
 
-            if (endOfSequence) {
-                if (!willChangeDirection) {
-                    // If the direction will not change, we can add the current vertex to the
-                    // candidates list and we know that 'after' can be used as afterSequence.
-                    candidates.append(v);
-                    afterSequence = after;
-                }
-            } else {
+            if (!endOfSequence) {
                 // If it's not an end of sequence, then the vertex didn't trigger neither of the
-                // previously four cases, so it can be added to the candidates list.
+                // previously three cases, so it can be added to the candidates list.
+                candidates.append(v);
+            } else if (cycleFound && (beforeSequence != after)) {
+                afterSequence = after;
                 candidates.append(v);
             }
         }

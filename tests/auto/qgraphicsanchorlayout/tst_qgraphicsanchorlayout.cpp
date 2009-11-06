@@ -1806,7 +1806,6 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
 
     l->effectiveSizeHint(Qt::MinimumSize);
     if (hasSimplification) {
-        QEXPECT_FAIL("", "Sequential anchors cannot handle children of opposite directions", Continue);
         QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
         QCOMPARE(usedSimplex(l, Qt::Vertical), false);
     }
