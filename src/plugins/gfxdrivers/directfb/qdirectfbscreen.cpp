@@ -1564,7 +1564,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int)
             primary->SetColor(primary, 0xff, 0xff, 0xff, cmd.windowOpacity);
         }
         const QRegion &region = cmd.source;
-        const int rectCount = region.numRects();
+        const int rectCount = region.rectCount();
         DFBRectangle source;
         if (rectCount == 1) {
             ::initParameters(source, region.boundingRect(), cmd.windowPosition);
@@ -1619,7 +1619,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
-    const int n = region.numRects();
+    const int n = region.rectCount();
     if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
@@ -1680,7 +1680,7 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
     if (!(flipFlags & DSFLIP_BLIT)) {
         surface->Flip(surface, 0, flipFlags);
     } else {
-        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.numRects() > 1) {
+        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
             const QVector<QRect> rects = region.rects();
             const DFBSurfaceFlipFlags nonWaitFlags = flipFlags & ~DSFLIP_WAIT;
             for (int i=0; i<rects.size(); ++i) {

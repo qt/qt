@@ -600,7 +600,7 @@ static void blit_template(QScreen *screen, const QImage &image,
     const int screenStride = screen->linestep();
     const int imageStride = image.bytesPerLine();
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         const QRect r = region.boundingRect();
         const SRC *src = reinterpret_cast<const SRC*>(image.scanLine(r.y()))
                          + r.x();
@@ -2463,7 +2463,7 @@ void QScreen::exposeRegion(QRegion r, int windowIndex)
         delete blendBuffer;
     }
 
-    if (r.numRects() == 1) {
+    if (r.rectCount() == 1) {
         setDirty(r.boundingRect());
     } else {
         const QVector<QRect> rects = r.rects();

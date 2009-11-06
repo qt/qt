@@ -978,7 +978,7 @@ QList<QGraphicsItem *> QGraphicsViewPrivate::findItems(const QRegion &exposedReg
     // Step 2) If the expose region is a simple rect and the view is only
     // translated or scaled, search for items using
     // QGraphicsScene::items(QRectF).
-    bool simpleRectLookup =  exposedRegion.numRects() == 1 && matrix.type() <= QTransform::TxScale;
+    bool simpleRectLookup =  exposedRegion.rectCount() == 1 && matrix.type() <= QTransform::TxScale;
     if (simpleRectLookup) {
         return scene->items(exposedRegionSceneBounds,
                             Qt::IntersectsItemBoundingRect,

@@ -1421,7 +1421,7 @@ QRegion QTransform::map(const QRegion &r) const
         return copy;
     }
 
-    if (t == TxScale && r.numRects() == 1)
+    if (t == TxScale && r.rectCount() == 1)
         return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
