@@ -28,7 +28,7 @@ Rectangle {
     transitions: [
         Transition {
             NumberAnimation {
-                properties: "x"
+                matchProperties: "x"
             }
         }
     ]

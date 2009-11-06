@@ -6,17 +6,17 @@ Item {
     Column {
         add: Transition {
             NumberAnimation {
-                properties: "y"; from: -100
+                matchProperties: "y"; from: -100
             }
         }
         remove: Transition {
             NumberAnimation {
-                properties: "y"; to: -100
+                matchProperties: "y"; to: -100
             }
         }
         move: Transition {
             NumberAnimation {
-                properties: "y";
+                matchProperties: "y";
             }
         }
         Rectangle {

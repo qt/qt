@@ -80,7 +80,7 @@ Item {
             }
             transitions: Transition {
                 NumberAnimation {
-                    properties: "scale,y"
+                    matchProperties: "scale,y"
                 }
              }
         }

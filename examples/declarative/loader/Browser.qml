@@ -132,12 +132,12 @@ Rectangle {
             Transition {
                 to: "current"
                 SequentialAnimation {
-                    NumberAnimation { properties: "x"; duration: 250 }
+                    NumberAnimation { matchProperties: "x"; duration: 250 }
                 }
             },
             Transition {
-                NumberAnimation { properties: "x"; duration: 250 }
-                NumberAnimation { properties: "x"; duration: 250 }
+                NumberAnimation { matchProperties: "x"; duration: 250 }
+                NumberAnimation { matchProperties: "x"; duration: 250 }
             }
         ]
     }
@@ -171,11 +171,11 @@ Rectangle {
             Transition {
                 to: "current"
                 SequentialAnimation {
-                    NumberAnimation { properties: "x"; duration: 250 }
+                    NumberAnimation { matchProperties: "x"; duration: 250 }
                 }
             },
             Transition {
-                NumberAnimation { properties: "x"; duration: 250 }
+                NumberAnimation { matchProperties: "x"; duration: 250 }
             }
         ]
     }

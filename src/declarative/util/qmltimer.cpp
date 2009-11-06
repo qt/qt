@@ -176,6 +176,11 @@ void QmlTimer::setRepeating(bool repeating)
 /*!
     \qmlproperty bool Timer::triggeredOnStart
 
+    When the Timer is started the first trigger is normally after the specified
+    interval has elapsed.  It is sometimes desireable to trigger immediately
+    when the timer is started, for example to establish an initial
+    state.
+
     If \a triggeredOnStart is true, the timer will be triggered immediately
     when started, and subsequently at the specified interval.  Note that for
     a Timer with \e repeat set to false, this will result in the timer being

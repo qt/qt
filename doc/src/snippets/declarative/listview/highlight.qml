@@ -30,7 +30,7 @@ Rectangle {
                 }
             ]
             transitions: [
-                Transition { NumberAnimation { properties: "x"; duration: 200 } }
+                Transition { NumberAnimation { matchProperties: "x"; duration: 200 } }
             ]
         }
     }

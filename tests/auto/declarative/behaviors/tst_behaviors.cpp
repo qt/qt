@@ -208,14 +208,27 @@ void tst_behaviors::emptyBehavior()
 
 void tst_behaviors::nonSelectingBehavior()
 {
-    QmlEngine engine;
-    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting.qml"));
-    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
-    QVERIFY(rect);
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
 
-    rect->setState("moved");
-    qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
-    QCOMPARE(x, qreal(200));    //should change immediately
+        rect->setState("moved");
+        qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+        QCOMPARE(x, qreal(200));    //should change immediately
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/nonSelecting2.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        rect->setState("moved");
+        qreal x = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"))->x();
+        QCOMPARE(x, qreal(200));    //should change immediately
+    }
 }
 
 void tst_behaviors::reassignedAnimation()

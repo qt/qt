@@ -23,6 +23,7 @@ MyTypeObject {
     boolProperty: true
     variantProperty: "Hello World!"
     vectorProperty: "10,1,2.2"
+    urlProperty: "main.qml"
 
     objectProperty: MyTypeObject { intProperty: 8 }
 }

@@ -31,7 +31,7 @@ Rectangle {
             transitions: [
                 Transition {
                     NumberAnimation {
-                        properties: "x"; duration: 200
+                        matchProperties: "x"; duration: 200
                     }
                 }
             ]
