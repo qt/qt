@@ -136,7 +136,7 @@ void Translator::appendSorted(const TranslatorMessage &msg)
     int prevLine = 0;
     int curIdx = 0;
     foreach (const TranslatorMessage &mit, m_messages) {
-        bool sameFile = mit.fileName() == msg.fileName();
+        bool sameFile = mit.fileName() == msg.fileName() && mit.context() == msg.context();
         int curLine;
         if (sameFile && (curLine = mit.lineNumber()) >= prevLine) {
             if (msgLine >= prevLine && msgLine < curLine) {
