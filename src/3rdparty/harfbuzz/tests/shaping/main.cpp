@@ -181,6 +181,7 @@ private slots:
     void sinhala();
 
     void khmer();
+    void nko();
     void linearB();
 };
 
@@ -515,6 +516,12 @@ void tst_QScriptEngine::bengali()
                   { 0x179, 0x151, 0x172, 0x0 } },
                 { { 0x995, 0x9c7, 0x9d7, 0x0 },
                   { 0x179, 0x151, 0x17e, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0x168, 0x276, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x191, 0x17d, 0x168, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -652,6 +659,12 @@ void tst_QScriptEngine::bengali()
                   { 0x01fe, 0x0 } },
 		{ { 0x09b0, 0x09cd, 0x09a8, 0x09cd, 0x200d, 0x0 },
                   { 0x10b, 0x167, 0x0 } },
+                { { 0x9b0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f0, 0x9cd, 0x9ad, 0x0 },
+                  { 0xa1, 0x167, 0x0 } },
+                { { 0x9f1, 0x9cd, 0x9ad, 0x0 },
+                  { 0x11c, 0xa1, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -967,6 +980,8 @@ void tst_QScriptEngine::malayalam()
                   { 0x5e, 0x34, 0x65, 0x0 } },
                 { { 0xd15, 0xd57, 0x0 },
                   { 0x34, 0x65, 0x0 } },
+                { { 0xd1f, 0xd4d, 0xd1f, 0xd41, 0xd4d, 0x0 },
+                  { 0x69, 0x5b, 0x64, 0x0 } },
 
 		{ {0}, {0} }
 	    };
@@ -1060,6 +1075,40 @@ void tst_QScriptEngine::khmer()
 	}
     }
 }
+
+void tst_QScriptEngine::nko()
+{
+    {
+        FT_Face face = loadFace("DejaVuSans.ttf");
+        if (face) {
+	    const ShapeTable shape_table [] = {
+                { { 0x7ca, 0x0 },
+                  { 0x5c1, 0x0 } },
+                { { 0x7ca, 0x7ca, 0x0 },
+                  { 0x14db, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5ec, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x5ec, 0x14d9, 0x0 } },
+                { {0}, {0} }
+	    };
+
+
+	    const ShapeTable *s = shape_table;
+	    while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Nko) );
+		++s;
+	    }
+
+            FT_Done_Face(face);
+	} else {
+	    QSKIP("couln't find DejaVuSans.ttf", SkipAll);
+	}
+    }
+}
+
 
 void tst_QScriptEngine::linearB()
 {

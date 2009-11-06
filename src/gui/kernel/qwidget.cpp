@@ -5171,8 +5171,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground)
-            || !q->palette().brush(q->backgroundRole()).isOpaque())
+        if (!(renderFlags & QWidget::DrawWindowBackground) || !isOpaque)
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 
