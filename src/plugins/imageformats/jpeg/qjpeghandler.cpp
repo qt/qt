@@ -342,6 +342,7 @@ QImage QImageSmoothScaler::scale()
             register int needcol;
 
             nxP = (QRgb *)dst.scanLine(rowswritten++);
+            QRgb *nxPEnd = nxP + d->newcols;
             fraccoltofill = SCALE;
             a = r = g = b = HALFSCALE;
             needcol = 0;
@@ -425,7 +426,7 @@ QImage QImageSmoothScaler::scale()
                     b += fraccoltofill * qBlue(*xP);
                 }
             }
-            if (!needcol) {
+            if (nxP < nxPEnd) {
                 r /= SCALE;
                 if (r > maxval)
                     r = maxval;
@@ -443,6 +444,8 @@ QImage QImageSmoothScaler::scale()
                 } else {
                     *nxP = qRgb((int)r, (int)g, (int)b);
                 }
+                while (++nxP != nxPEnd)
+                    nxP[0] = nxP[-1];
             }
         }
     }
