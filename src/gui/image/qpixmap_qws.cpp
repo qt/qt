@@ -124,6 +124,11 @@ QRgb* QPixmap::clut() const
 
 int QPixmap::numCols() const
 {
+    return colorCount();
+}
+
+int QPixmap::colorCount() const
+{
     if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
         return d->image.colorCount();
