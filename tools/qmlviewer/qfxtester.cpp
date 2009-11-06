@@ -248,6 +248,7 @@ void QmlGraphicsTester::updateCurrentTime(int msec)
     QImage img(m_view->width(), m_view->height(), QImage::Format_RGB32);
 
     if (options & QmlViewer::TestImages) {
+        img.fill(qRgb(255,255,255));
         QPainter p(&img);
         m_view->render(&p);
     }
