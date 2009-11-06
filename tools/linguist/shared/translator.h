@@ -113,6 +113,7 @@ public:
     bool save(const QString &filename, ConversionData &err, const QString &format /*= "auto"*/) const;
     bool release(QFile *iod, ConversionData &cd) const;
 
+    int find(const TranslatorMessage &msg) const;
     TranslatorMessage find(const QString &context,
         const QString &comment, const TranslatorMessage::References &refs) const;
 

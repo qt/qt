@@ -109,8 +109,6 @@ public:
         return false;
     }
 
-    bool operator==(const TranslatorMessage& m) const;
-
     QString fileName() const { return m_fileName; }
     void setFileName(const QString &fileName) { m_fileName = fileName; }
     int lineNumber() const { return m_lineNumber; }
@@ -175,8 +173,6 @@ private:
 };
 
 Q_DECLARE_TYPEINFO(TranslatorMessage, Q_MOVABLE_TYPE);
-
-int qHash(const TranslatorMessage &msg);
 
 QT_END_NAMESPACE
 
