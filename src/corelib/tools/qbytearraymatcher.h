@@ -79,17 +79,21 @@ private:
     QByteArray q_pattern;
 #ifdef Q_CC_RVCT
 // explicitely allow anonymous unions for RVCT to prevent compiler warnings
-#pragma anon_unions
+#  pragma push
+#  pragma anon_unions
 #endif
     struct Data {
         uchar q_skiptable[256];
         const uchar *p;
         int l;
-    }; 
+    };
     union {
         uint dummy[256];
         Data p;
     };
+#ifdef Q_CC_RVCT
+#  pragma pop
+#endif
 };
 
 QT_END_NAMESPACE
