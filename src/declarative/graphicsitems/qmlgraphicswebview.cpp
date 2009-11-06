@@ -464,7 +464,8 @@ void QmlGraphicsWebView::setPreferredWidth(int iw)
 
 /*!
     \qmlproperty int WebView::webPageWidth
-    This property holds the page width suggested to the web engine.
+    This property holds the page width suggested to the web engine. The zoomFactor
+    will be changed to fit this with in preferredWidth.
 */
 int QmlGraphicsWebView::webPageWidth() const
 {
