@@ -84,15 +84,15 @@ Item {
                     from: "*"; to: "Details"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        NumberAnimation { matchProperties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
                     }
                 },
                 Transition {
                     from: "Details"; to: "*"
                     SequentialAnimation {
                         ParentAction { }
-                        NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        PropertyAction { targets: wrapper; properties: "z" }
+                        NumberAnimation { matchProperties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
+                        PropertyAction { matchTargets: wrapper; matchProperties: "z" }
                     }
                 }
             ]
@@ -178,7 +178,7 @@ Item {
         transitions: [
             Transition {
                 from: "*"; to: "*"
-                NumberAnimation { properties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
+                NumberAnimation { matchProperties: "y"; duration: 1000; easing: "easeOutBounce(amplitude:0.5)" }
             }
         ]
     }

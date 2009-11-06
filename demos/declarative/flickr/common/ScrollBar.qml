@@ -32,7 +32,7 @@ Item {
             to: "*"
             NumberAnimation {
                 target: container
-                properties: "opacity"
+                matchProperties: "opacity"
                 duration: 400
             }
         }

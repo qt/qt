@@ -422,21 +422,6 @@ void QmlAbstractAnimation::setGroup(QmlAnimationGroup *g)
         setParent(g);
 }
 
-/*!
-    \qmlproperty Object PropertyAction::target
-    This property holds an explicit target object to animate.
-
-    The exact effect of the \c target property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
-
-/*!
-    \qmlproperty Object PropertyAnimation::target
-    This property holds an explicit target object to animate.
-
-    The exact effect of the \c target property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
 QObject *QmlAbstractAnimation::target() const
 {
     Q_D(const QmlAbstractAnimation);
@@ -459,21 +444,6 @@ void QmlAbstractAnimation::setTarget(QObject *o)
     emit targetChanged(d->target, d->propertyName);
 }
 
-/*!
-    \qmlproperty string PropertyAction::property
-    This property holds an explicit property to animated.
-
-    The exact effect of the \c property property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
-
-/*!
-    \qmlproperty string PropertyAnimation::property
-    This property holds an explicit property to animated.
-
-    The exact effect of the \c property property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
-*/
 QString QmlAbstractAnimation::property() const
 {
     Q_D(const QmlAbstractAnimation);
@@ -880,7 +850,7 @@ QML_DEFINE_TYPE(Qt,4,6,ScriptAction,QmlScriptAction)
 
     Set \c thewebview.url to the value set for the destination state:
     \code
-    PropertyAction { target: thewebview; property: "url" }
+    PropertyAction { matchTargets: thewebview; matchProperties: "url" }
     \endcode
 
     The PropertyAction is immediate -
@@ -909,8 +879,33 @@ void QmlPropertyActionPrivate::init()
 }
 
 /*!
-    \qmlproperty string PropertyAction::properties
-    This property holds the properties to be immediately set, comma-separated.
+    \qmlproperty Object PropertyAction::target
+    This property holds an explicit target object to animate.
+
+    The exact effect of the \c target property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAction::property
+    This property holds an explicit property to animated.
+
+    The exact effect of the \c property property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAction::matchProperties
+    This property holds a comma-separated list of property names this action
+    will match against. These names are used in conjunction with matchTargets
+    to create a list of properties that the action will set, assuming those
+    properties have changed.
+
+    This property is typically used for an action appearing as part of a Transition.
+
+    By default, no property names will be matched.
+
+    \sa matchTargets PropertyAnimation::matchProperties
 */
 QString QmlPropertyAction::properties() const
 {
@@ -928,9 +923,16 @@ void QmlPropertyAction::setProperties(const QString &p)
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAction::targets
-    This property holds the items selected to be affected by this animation (all if not set).
-    \sa exclude
+    \qmlproperty list<Object> PropertyAction::matchTargets
+    This property holds a list of objects this action will match against.
+    These objects are used in conjunction with matchProperties to create a list of properties
+    that the action will set, assuming those properties have changed.
+
+    This property is typically used for an action appearing as part of a Transition.
+
+    By default, all changing targets will be matched.
+
+    \sa exclude matchProperties PropertyAnimation::matchTargets
 */
 QList<QObject *> *QmlPropertyAction::targets()
 {
@@ -939,9 +941,9 @@ QList<QObject *> *QmlPropertyAction::targets()
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAction::exclude
-    This property holds the items not to be affected by this animation.
-    \sa targets
+    \qmlproperty list<Object> PropertyAction::exclude
+    This property holds the objects not to be affected by this animation.
+    \sa matchTargets
 */
 QList<QObject *> *QmlPropertyAction::exclude()
 {
@@ -1019,7 +1021,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     bool hasTarget = !d->propertyName.isEmpty() || d->target;
 
     if (hasSelectors && hasTarget) {
-        qmlInfo(tr("targets/properties/exclude and target/property are mutually exclusive."), this);
+        qmlInfo(tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive."), this);
         return;
     }
 
@@ -1227,7 +1229,7 @@ QML_DEFINE_TYPE(Qt,4,6,ParentAction,QmlParentAction)
     Animate a set of properties over 200ms, from their values in the start state to
     their values in the end state of the transition:
     \code
-    NumberAnimation { properties: "x,y,scale"; duration: 200 }
+    NumberAnimation { matchProperties: "x,y,scale"; duration: 200 }
     \endcode
 */
 
@@ -1790,11 +1792,47 @@ void QmlPropertyAnimation::setEasing(const QString &e)
 }
 
 /*!
-    \qmlproperty string PropertyAnimation::properties
-    This property holds the properties this animation should be applied to.
+    \qmlproperty Object PropertyAnimation::target
+    This property holds an explicit target object to animate.
 
-    This is a comma-separated list of properties that should use
-    this animation when they change.
+    The exact effect of the \c target property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAnimation::property
+    This property holds an explicit property to animated.
+
+    The exact effect of the \c property property depends on how the animation
+    is being used.  Refer to the \l animation documentation for details.
+*/
+
+/*!
+    \qmlproperty string PropertyAnimation::matchProperties
+    This property holds a comma-separated list of property names this animation
+    will match against. These names are used in conjunction with matchTargets
+    to create a list of properties that the animation will animate, assuming those
+    properties have changed.
+
+    In the following example, the change in 'x' will be animated by the transition, while
+    the change in 'y' will not.
+    \qml
+    State {
+        PropertyChanges {
+            target: myItem
+            x: 15; y: 15
+        }
+    }
+    Transition {
+        PropertyAnimation {
+            matchProperties: "x"
+        }
+    }
+    \endqml
+
+    This property is typically used for an animation appearing as part of a Transition.
+
+    By default, no property names will be matched.
 */
 QString QmlPropertyAnimation::properties() const
 {
@@ -1813,9 +1851,37 @@ void QmlPropertyAnimation::setProperties(const QString &prop)
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAnimation::targets
-    This property holds the items selected to be affected by this animation (all if not set).
-    \sa exclude
+    \qmlproperty list<Object> PropertyAnimation::matchTargets
+    This property holds a list of objects this animation will match against.
+    These objects are used in conjunction with matchProperties to create a list of properties
+    that the animation will animate, assuming those properties have changed.
+
+    In the following example, the changes to \c myItem will be animated by the transition, while
+    the changes to \c myOtherItem will not.
+    \qml
+    State {
+        PropertyChanges {
+            target: myItem
+            x: 15; y: 15
+        }
+        PropertyChanges {
+            target: myOtherItem
+            x: 30; y: 30
+        }
+    }
+    Transition {
+        PropertyAnimation {
+            matchTargets: myItem
+            matchProperties: "x,y"
+        }
+    }
+    \endqml
+
+    This property is typically used for an animation appearing as part of a Transition.
+
+    By default, all changing targets will be matched.
+    
+    \sa exclude matchProperties
 */
 QList<QObject *> *QmlPropertyAnimation::targets()
 {
@@ -1824,9 +1890,9 @@ QList<QObject *> *QmlPropertyAnimation::targets()
 }
 
 /*!
-    \qmlproperty list<Item> PropertyAnimation::exclude
+    \qmlproperty list<Object> PropertyAnimation::exclude
     This property holds the items not to be affected by this animation.
-    \sa targets
+    \sa matchTargets
 */
 QList<QObject *> *QmlPropertyAnimation::exclude()
 {
@@ -1943,7 +2009,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     bool hasTarget = !d->propertyName.isEmpty() || d->target;
 
     if (hasSelectors && hasTarget) {
-        qmlInfo(tr("targets/properties/exclude and target/property are mutually exclusive."), this);
+        qmlInfo(tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive."), this);
         return;
     }
 

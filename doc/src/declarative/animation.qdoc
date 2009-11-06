@@ -113,7 +113,7 @@ For example, a transition could describe how an item moves from its initial posi
 transitions: [
     Transition {
         NumberAnimation {
-            properties: "x,y"
+            matchProperties: "x,y"
             easing: "easeOutBounce"
             duration: 200
         }
@@ -123,7 +123,7 @@ transitions: [
 
 As you can see from the above example, transitions make use of the same basic animation classes introduced
 above. However, you generally use a different set of properties when working with transitions. In the example,
-no target or property has been specified. Instead, we have specified properties, which acts as a selector to
+no target or property has been specified. Instead, we have specified matchProperties, which acts as a selector to
 determine which property changes to animate; in this case, we will animate any x,y properties that have
 changed on any objects.
 
@@ -156,13 +156,13 @@ Transition {
             NumberAnimation {
                 duration: 1000
                 easing: "easeOutBounce"
-                target: box1
-                properties: "x,y"
+                matchTargets: box1
+                matchProperties: "x,y"
             }
             NumberAnimation {
                 duration: 1000
-                target: box2
-                properties: "x,y"
+                matchTargets: box2
+                matchProperties: "x,y"
             }
         }
     }

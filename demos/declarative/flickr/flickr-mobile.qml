@@ -38,7 +38,7 @@ Item {
             }
 
             transitions: Transition {
-                NumberAnimation { properties: "x"; duration: 500; easing: "easeInOutQuad" }
+                NumberAnimation { matchProperties: "x"; duration: 500; easing: "easeInOutQuad" }
             }
         }
 
@@ -76,7 +76,7 @@ Item {
         }
 
         transitions: Transition {
-            NumberAnimation { properties: "x"; duration: 500; easing: "easeInOutQuad" }
+            NumberAnimation { matchProperties: "x"; duration: 500; easing: "easeInOutQuad" }
         }
     }
 }

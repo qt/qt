@@ -176,7 +176,7 @@ Rectangle {
                             to: "to"
                             reversible: true
                             NumberAnimation {
-                                properties: "x"
+                                matchProperties: "x"
                                 easing: type
                                 duration: 1000
                             }

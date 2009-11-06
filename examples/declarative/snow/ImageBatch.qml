@@ -23,7 +23,7 @@ GridView {
     transitions: Transition {
         SequentialAnimation {
             PauseAnimation { duration: 150 }
-            PropertyAction { properties: "z" }
+            PropertyAction { matchProperties: "z" }
         }
     }
     model: XmlListModel {
@@ -42,7 +42,7 @@ GridView {
         width: grid.imageWidth; height: grid.imageHeight;
 
         Image { id: flickrImage; source: url; fillMode: Image.PreserveAspectFit; smooth: true; anchors.fill: parent;
-                opacity: (status == Image.Ready)?1:0; opacity: Behavior { NumberAnimation { properties: "opacity" } } }
+                opacity: (status == Image.Ready)?1:0; opacity: Behavior { NumberAnimation { } } }
         Loading { anchors.centerIn: parent; visible: flickrImage.status!=1 }
 
         states: State {
@@ -55,15 +55,15 @@ GridView {
                 to: "selected"
                 SequentialAnimation {
                     PauseAnimation { duration: 150 }
-                    PropertyAction { properties: "z" }
-                    NumberAnimation { properties: "scale"; duration: 150; }
+                    PropertyAction { matchProperties: "z" }
+                    NumberAnimation { matchProperties: "scale"; duration: 150; }
                 }
             },
             Transition {
                 from: "selected"
                 SequentialAnimation {
-                    NumberAnimation { properties: "scale"; duration: 150 }
-                    PropertyAction { properties: "z" }
+                    NumberAnimation { matchProperties: "scale"; duration: 150 }
+                    PropertyAction { matchProperties: "z" }
                 }
             }
         ]

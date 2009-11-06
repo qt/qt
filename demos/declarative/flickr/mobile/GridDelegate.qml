@@ -55,14 +55,14 @@
                  Transition {
                      from: "Show"; to: "Details"
                      ParentAction { }
-                     NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
+                     NumberAnimation { matchProperties: "x,y"; duration: 500; easing: "easeInOutQuad" }
                  },
                  Transition {
                      from: "Details"; to: "Show"
                      SequentialAnimation {
                          ParentAction { }
-                         NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
-                         PropertyAction { targets: wrapper; properties: "z" }
+                         NumberAnimation { matchProperties: "x,y"; duration: 500; easing: "easeInOutQuad" }
+                         PropertyAction { matchTargets: wrapper; matchProperties: "z" }
                      }
                  }
              ]
