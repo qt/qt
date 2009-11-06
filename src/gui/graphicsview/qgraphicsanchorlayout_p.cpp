@@ -966,8 +966,8 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 {
     Q_Q(QGraphicsAnchorLayout);
 
-    Q_ASSERT(internalVertex(q, Qt::AnchorHorizontalCenter) == NULL);
-    Q_ASSERT(internalVertex(q, Qt::AnchorVerticalCenter) == NULL);
+    Q_ASSERT(!internalVertex(q, Qt::AnchorHorizontalCenter));
+    Q_ASSERT(!internalVertex(q, Qt::AnchorVerticalCenter));
 
     removeAnchor_helper(internalVertex(q, Qt::AnchorLeft),
                         internalVertex(q, Qt::AnchorRight));
@@ -2036,7 +2036,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
     // Look for the layout edge. That can be either the first half in case the
     // layout is split in two, or the whole layout anchor.
     Orientation orient = Orientation(anchors.first()->orientation);
-    AnchorData *layoutEdge = NULL;
+    AnchorData *layoutEdge = 0;
     if (layoutCentralVertex[orient]) {
         layoutEdge = graph[orient].edgeData(layoutFirstVertex[orient], layoutCentralVertex[orient]);
     } else {
@@ -2047,7 +2047,7 @@ QList<QSimplexConstraint *> QGraphicsAnchorLayoutPrivate::constraintsFromSizeHin
         // set back the variable to NULL to prevent the continue condition from being
         // satisfied in the loop below.
         if (layoutEdge->maxSize < QWIDGETSIZE_MAX)
-            layoutEdge = NULL;
+            layoutEdge = 0;
     }
 
     // For each variable, create constraints based on size hints
@@ -2111,8 +2111,8 @@ QGraphicsAnchorLayoutPrivate::getGraphParts(Orientation orientation)
 {
     Q_ASSERT(layoutFirstVertex[orientation] && layoutLastVertex[orientation]);
 
-    AnchorData *edgeL1 = NULL;
-    AnchorData *edgeL2 = NULL;
+    AnchorData *edgeL1 = 0;
+    AnchorData *edgeL2 = 0;
 
     // The layout may have a single anchor between Left and Right or two half anchors
     // passing through the center
