@@ -45,6 +45,7 @@
 #include <private/qmlgraphicstext_p.h>
 #include <private/qmlvaluetype_p.h>
 #include <QFontMetrics>
+#include <QGraphicsSceneMouseEvent>
 #include <math.h>
 
 class tst_qmlgraphicstext : public QObject
@@ -77,6 +78,8 @@ private slots:
     void capitalization();
     void letterSpacing();
     void wordSpacing();
+
+    void clickLink();
 
 private:
     QStringList standard;
@@ -258,6 +261,10 @@ void tst_qmlgraphicstext::wrap()
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->width(), 30.);
         QVERIFY(textObject->height() > textHeight);
+
+        int oldHeight = textObject->height();
+        textObject->setWidth(100);
+        QVERIFY(textObject->height() < oldHeight);
     }
 
     for (int i = 0; i < richText.size(); i++)
@@ -727,6 +734,54 @@ void tst_qmlgraphicstext::wordSpacing()
 
         QVERIFY(textObject != 0);
         QCOMPARE(textObject->font().wordSpacing(), 200.);
+    }
+}
+
+class EventSender : public QGraphicsItem
+{
+public:
+    void sendEvent(QEvent *event) { sceneEvent(event); }
+};
+
+class LinkTest : public QObject
+{
+    Q_OBJECT
+public:
+    LinkTest() {}
+
+    QString link;
+
+public slots:
+    void linkClicked(QString l) { link = l; }
+};
+
+void tst_qmlgraphicstext::clickLink()
+{
+    {
+        QString componentStr = "import Qt 4.6\nText { text: \"<a href=\\\"http://qt.nokia.com\\\">Hello world!</a>\" }";
+        QmlComponent textComponent(&engine, componentStr.toLatin1(), QUrl("file://"));
+        QmlGraphicsText *textObject = qobject_cast<QmlGraphicsText*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+
+        LinkTest test;
+        QObject::connect(textObject, SIGNAL(linkActivated(QString)), &test, SLOT(linkClicked(QString)));
+
+        {
+            QGraphicsSceneMouseEvent me(QEvent::GraphicsSceneMousePress);
+            me.setPos(QPointF(textObject->x()/2, textObject->y()/2));
+            me.setButton(Qt::LeftButton);
+            static_cast<EventSender*>(static_cast<QGraphicsItem*>(textObject))->sendEvent(&me);
+        }
+
+        {
+            QGraphicsSceneMouseEvent me(QEvent::GraphicsSceneMouseRelease);
+            me.setPos(QPointF(textObject->x()/2, textObject->y()/2));
+            me.setButton(Qt::LeftButton);
+            static_cast<EventSender*>(static_cast<QGraphicsItem*>(textObject))->sendEvent(&me);
+        }
+
+        QCOMPARE(test.link, QLatin1String("http://qt.nokia.com"));
     }
 }
 
