@@ -70,6 +70,8 @@ private slots:
     void valueSources();
     void valueInterceptors();
     void bindingConflict();
+    void deletedObject();
+    void variantCopy();
     void cppClasses();
 
 private:
@@ -501,6 +503,37 @@ void tst_valuetypes::bindingConflict()
     t->setValue(value); \
     QCOMPARE(t->value(), value); \
     delete t; \
+}
+
+// Test that accessing a reference to a valuetype after the owning object is deleted
+// doesn't crash
+void tst_valuetypes::deletedObject()
+{
+    QmlComponent component(&engine, TEST_FILE("deletedObject.qml"));
+    QTest::ignoreMessage(QtDebugMsg, "Test: 2");
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QObject *dObject = qvariant_cast<QObject *>(object->property("object"));
+    QVERIFY(dObject != 0);
+    delete dObject;
+
+    QTest::ignoreMessage(QtDebugMsg, "Test: undefined");
+    object->emitRunScript();
+
+    delete object;
+}
+
+// Test that value types can be assigned to another value type property
+void tst_valuetypes::variantCopy()
+{
+    QmlComponent component(&engine, TEST_FILE("variantCopy.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect(), QRect(19, 33, 5, 99));
+
+    delete object;
 }
 
 // Test that the value type classes can be used manually
