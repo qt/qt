@@ -25,6 +25,7 @@ SUBDIRS += \
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicstext \        # Cover
+           qmlinfo \                # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
            qmllistaccessor \        # Cover

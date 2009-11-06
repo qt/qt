@@ -73,8 +73,6 @@ public:
     int value(const QString &);
     inline int value(const QScriptDeclarativeClass::Identifier &id) const;
 
-    static QmlIntegerCache *createForEnums(QmlType *, QmlEngine *);
-
 protected:
     virtual void clear();
 
