@@ -39,7 +39,6 @@
 **
 ****************************************************************************/
 #include <QApplication>
-#include <QProcess>
 
 #include <qtest.h>
 
@@ -54,34 +53,19 @@ private slots:
 /*
     Test the performance of the QApplication constructor.
 
-    This test creates a new process and thus includes process creation overhead.
-    Callgrind results are meaningless since the child process is not traced.
+    Note: results from the second start on can be misleading,
+    since all global statics are already initialized.
 */
 void tst_qapplication::ctor()
 {
-    QProcess proc;
-    const QString program       = QCoreApplication::applicationFilePath();
-    const QStringList arguments = QStringList() << QLatin1String("--exit-now");
-
+    // simulate reasonable argc, argv
+    int argc = 1;
+    char *argv[] = { "tst_qapplication" };
     QBENCHMARK {
-        proc.start(program, arguments);
-        QVERIFY(proc.waitForStarted());
-        QVERIFY(proc.waitForFinished());
-        QCOMPARE(proc.exitStatus(), QProcess::NormalExit);
-        QCOMPARE(proc.exitCode(), 0);
+        QApplication app(argc, argv);
     }
 }
 
-int main(int argc, char** argv)
-{
-    QApplication app(argc, argv);
-
-    if (argc == 2 && QLatin1String("--exit-now") == QLatin1String(argv[1])) {
-        return 0;
-    }
-
-    tst_qapplication test;
-    return QTest::qExec(&test, argc, argv);
-}
+QTEST_APPLESS_MAIN(tst_qapplication)
 
 #include "main.moc"
