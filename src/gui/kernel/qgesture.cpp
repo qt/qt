@@ -174,6 +174,16 @@ void QGesture::unsetHotSpot()
 }
 
 /*!
+    \property QGesture::gestureCancelPolicy
+    \brief the policy for deciding what happens on accepting a gesture
+
+    On accepting one gesture Qt can automatically cancel other gestures
+    that belong to other targets. The policy is normally set to not cancel
+    any other gestures and can be set to cancel all active gestures in the
+    context. For example for all child widgets.
+*/
+
+/*!
     \enum QGesture::GestureCancelPolicy
 
     This enum describes how accepting a gesture can cancel other gestures
@@ -207,16 +217,6 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
     \image pangesture.png
 
     \sa {Gestures Programming}, QPinchGesture, QSwipeGesture
-*/
-
-/*!
-    \property QGesture::gestureCancelPolicy
-    \brief the policy for deciding what happens on accepting a gesture
-
-    On accepting one gesture Qt can automatically cancel other gestures
-    that belong to other targets. The policy is normally set to not cancel
-    any other gestures and can be set to cancel all active gestures in the
-    context. For example for all child widgets.
 */
 
 /*!

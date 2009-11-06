@@ -4736,8 +4736,9 @@ QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(const QStyleOptionTab
     QStyleOptionFrame types.
 
     If the \a{other} style option's version is 1, this style option's
-    \l FrameFeature value is set to \l QStyleOptionFrameV2::None. If
-    its version is 2, its \l FrameFeature value is simply copied to
+    QStyleOptionFrameV2::FrameFeature value is set to
+    QStyleOptionFrameV2::None. If its version is 2, its
+    \l{QStyleOptionFrameV2::}{FrameFeature} value is simply copied to
     this style option.
 */
 QStyleOptionTabWidgetFrameV2 &QStyleOptionTabWidgetFrameV2::operator=(const QStyleOptionTabWidgetFrame &other)

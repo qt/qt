@@ -249,7 +249,7 @@ Configure::Configure( int& argc, char** argv )
     dictionary[ "MULTIMEDIA" ]      = "yes";
     dictionary[ "DIRECTSHOW" ]      = "no";
     dictionary[ "WEBKIT" ]          = "auto";
-    dictionary[ "DECLARATIVE" ]     = "no";
+    dictionary[ "DECLARATIVE" ]     = "auto";
     dictionary[ "PLUGIN_MANIFESTS" ] = "yes";
 
     QString version;
@@ -2038,6 +2038,8 @@ bool Configure::checkAvailability(const QString &part)
         available = true;
     } else if (part == "WEBKIT") {
         available = (dictionary.value("QMAKESPEC") == "win32-msvc2005") || (dictionary.value("QMAKESPEC") == "win32-msvc2008") || (dictionary.value("QMAKESPEC") == "win32-g++");
+    } else if (part == "DECLARATIVE") {
+        available = QFile::exists(sourcePath + "/src/declarative/qml/qmlcomponent.h");
     }
 
     return available;
@@ -2124,6 +2126,8 @@ void Configure::autoDetection()
         dictionary["PHONON"] = checkAvailability("PHONON") ? "yes" : "no";
     if (dictionary["WEBKIT"] == "auto")
         dictionary["WEBKIT"] = checkAvailability("WEBKIT") ? "yes" : "no";
+    if (dictionary["DECLARATIVE"] == "auto")
+        dictionary["DECLARATIVE"] = checkAvailability("DECLARATIVE") ? "yes" : "no";
 
     // Qt/WinCE remote test application
     if (dictionary["CETEST"] == "auto")
