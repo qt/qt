@@ -191,9 +191,9 @@ void QUnifiedTimer::ensureTimerUpdate()
 void QUnifiedTimer::updateAnimationsTime()
 {
     // ignore consistentTiming in case the pause timer is active
-    const int delta = (consistentTiming && !isPauseTimerActive) ?
+    int delta = (consistentTiming && !isPauseTimerActive) ?
                         timingInterval : time.elapsed() - lastTick;
-    if slowMode)
+    if (slowMode)
         delta /= 5;
     lastTick = time.elapsed();
 
