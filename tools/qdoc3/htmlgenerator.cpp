@@ -4224,7 +4224,8 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qsn) + "\"></a>";
-        generateQmlItem(qsn,relative,marker,false);
+        generateSynopsis(qsn,relative,marker,CodeMarker::Detailed,false);
+        //generateQmlItem(qsn,relative,marker,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";
@@ -4235,7 +4236,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
         out() << "<a name=\"" + refForNode(qmn) + "\"></a>";
-        generateQmlItem(qmn,relative,marker,false);
+        generateSynopsis(qmn,relative,marker,CodeMarker::Detailed,false);
         out() << "</td></tr>";
         out() << "</table>";
         out() << "</div>";
