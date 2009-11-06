@@ -47,4 +47,5 @@ TRANSLATIONS = \
     $$TR_DIR/qt_help_pl.ts \
     $$TR_DIR/qt_help_ru.ts \
     $$TR_DIR/qt_help_zh_CN.ts \
-    $$TR_DIR/qt_help_zh_TW.ts
+    $$TR_DIR/qt_help_zh_TW.ts \
+    $$TR_DIR/qt_help_fr.ts
