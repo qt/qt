@@ -531,15 +531,16 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             qWinAppInst(),     // application
                             0);                // windows creation data.
 
+    if (!wnd) {
+        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
+    }
+
 #ifdef GWLP_USERDATA
     SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
 #else
     SetWindowLong(wnd, GWL_USERDATA, (LONG)eventDispatcher);
 #endif
 
-    if (!wnd) {
-        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
-    }
     return wnd;
 }
 

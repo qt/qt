@@ -23,6 +23,8 @@ information about a particular change.
    * The minimum required version of the D-Bus reference library is
      now 0.93.
 
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
 
 Third party components
 ----------------------
@@ -38,6 +40,11 @@ Third party components
  - QGraphicsBlurEffect
     * Since the 4.6 beta Qt::RenderHint has been moved to
       QGraphicsBlurEffect::BlurHint.
+
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
 
 QtCore
 
@@ -67,6 +74,8 @@ QtCore
 
 - QTextStream
     * [221316] Fixed crash on large input.
+    * Improved reading utf8/utf16/utf32 data by correctly skipping the
+      ByteOrderMark when reading data by one character at a time.
 
 QtGui
 
@@ -190,7 +199,8 @@ QtGui
 
  - QWidget
     * [201649] Added QWidget::previousInFocusChain
-
+    * [254563] Fixed a crash when setting a focus in a widget tree that
+      contains invisible widgets
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -225,6 +235,43 @@ QtGui
  - KDE Integration: Improved the integration into KDE desktop (loading of KDE
    palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
 
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On Windows when a file cannot be accessed (stat()ed), we are now restoring
+   the error mode to the original value.
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+ - Add support for GetURL events on Mac OS X
+ 
+General changes on Mac OS X:
+ - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
+   10.6(Snow Leopard) has been added.
+ - The Cocoa port now supports static linking.
+ - The Cocoa port now supports the Qt3Support library (with the exception of Q3FileDialog)
+   to ease the transition from Carbon to Cocoa.
+ - The Cocoa binary packages are now Intel only (universal i386 and x86_64).
+ - Snow Leopard notes:
+    - Gcc 4.2 is used by default. Configure with -platform macx-g++40 to select 4.0.
+    - Using the 10.4u SDK requires gcc 4.0.
+    - Configuring for the Cocoa port (-cocoa) produces 64-bit binaries by default.
+      Use the -arch flags to override.
+    - Building for ppc64 is no longer supported by the gcc tool chain.
+    - Building for ppc is still supported.
    
  - Phonon on Windows
    * Now much more reliable when reading a file through a QIODevice.
