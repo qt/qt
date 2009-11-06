@@ -1908,6 +1908,17 @@ void QmlGraphicsItem::setClip(bool c)
  */
 
 /*!
+    \qmlproperty bool Item::visible
+
+    Whether the item is visible. By default this is true.
+
+    \note visible is not linked to actual visibility; if you item
+    goes off screen, or the opacity changes to 0, etc this will
+    not affect the visible property.
+*/
+
+
+/*!
   This function is called to handle this item's changes in
   geometry from \a oldGeometry to \a newGeometry. If the two
   geometries are the same, it doesn't do anything.

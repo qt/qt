@@ -1507,6 +1507,8 @@ void QmlPropertyAnimationPrivate::convertVariant(QVariant &variant, int type)
     \code
     VariantAnimation { property: "size"; to: "20x20"; duration: 200 }
     \endcode
+
+    \a qmlanimation.html
 */
 
 QmlPropertyAnimation::QmlPropertyAnimation(QObject *parent)
@@ -1795,16 +1797,20 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     \qmlproperty Object PropertyAnimation::target
     This property holds an explicit target object to animate.
 
-    The exact effect of the \c target property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
+    target is used in conjunction with property to determine
+    what property should be animated.
+
+    \sa property matchTargets
 */
 
 /*!
     \qmlproperty string PropertyAnimation::property
-    This property holds an explicit property to animated.
+    This property holds an explicit property name to animate.
 
-    The exact effect of the \c property property depends on how the animation
-    is being used.  Refer to the \l animation documentation for details.
+    property is used in conjunction with target to determine
+    what property should be animated.
+
+    \sa target matchProperties
 */
 
 /*!
@@ -1833,6 +1839,8 @@ void QmlPropertyAnimation::setEasing(const QString &e)
     This property is typically used for an animation appearing as part of a Transition.
 
     By default, no property names will be matched.
+
+    \sa matchTargets PropertyAction::matchTargets
 */
 QString QmlPropertyAnimation::properties() const
 {
