@@ -213,6 +213,9 @@ void tst_QmlGraphicsItem::keyNavigation()
 template<typename T>
 T *tst_QmlGraphicsItem::findItem(QmlGraphicsItem *parent, const QString &objectName)
 {
+    if (!parent)
+        return 0;
+
     const QMetaObject &mo = T::staticMetaObject;
     //qDebug() << parent->QGraphicsObject::children().count() << "children";
     for (int i = 0; i < parent->QGraphicsObject::children().count(); ++i) {
