@@ -318,6 +318,12 @@ void QGraphicsWidget::resize(const QSizeF &size)
 */
 
 /*!
+    \property QGraphicsWidget::sizePolicy
+    \brief the size policy for the widget
+    \sa sizePolicy(), setSizePolicy(), QWidget::sizePolicy()
+*/
+
+/*!
     \property QGraphicsWidget::geometry
     \brief the geometry of the widget
 
