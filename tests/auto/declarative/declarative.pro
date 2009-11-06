@@ -20,6 +20,7 @@ SUBDIRS += \
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlfontloader \          # Cover
+           qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicstext \        # Cover
