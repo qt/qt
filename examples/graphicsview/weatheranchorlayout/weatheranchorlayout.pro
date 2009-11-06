@@ -8,9 +8,7 @@ RESOURCES += weatheranchorlayout.qrc
 
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/weatheranchorlayout
-sources.files = $$SOURCES $$HEADERS $$RESOURCES weatheranchorlayout.pro
+sources.files = $$SOURCES $$HEADERS $$RESOURCES weatheranchorlayout.pro images
 sources.path = $$[QT_INSTALL_EXAMPLES]/graphicsview/weatheranchorlayout
 INSTALLS += target sources
 
-TARGET = weatheranchorlayout_example
-CONFIG += console
