@@ -10,6 +10,7 @@ SUBDIRS += \
            qmlgraphicslistview \    # Cover
            qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
+           parserstress \           # Cover
            pathview \               # Cover
            qfxloader \              # Cover
            qfxtextedit \            # Cover
