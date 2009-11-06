@@ -322,6 +322,14 @@ void CollectionConfigReader::readRegister()
     }
 }
 
+namespace {
+    QString absoluteFileName(const QString &basePath, const QString &fileName)
+    {
+        return QFileInfo(fileName).isAbsolute() ?
+            fileName : basePath + QDir::separator() + fileName;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     QString error;
@@ -403,13 +411,13 @@ int main(int argc, char *argv[])
     while (it != config.filesToGenerate().constEnd()) {
         fprintf(stdout, "Generating help for %s...\n", qPrintable(it.key()));
         QHelpProjectData helpData;
-        if (!helpData.readData(basePath + QDir::separator() + it.key())) {
+        if (!helpData.readData(absoluteFileName(basePath, it.key()))) {
             fprintf(stderr, "%s\n", qPrintable(helpData.errorMessage()));
             return -1;
         }
 
         HelpGenerator helpGenerator;
-        if (!helpGenerator.generate(&helpData, basePath + QDir::separator() + it.value())) {
+        if (!helpGenerator.generate(&helpData, absoluteFileName(basePath, it.value()))) {
             fprintf(stderr, "%s\n", qPrintable(helpGenerator.error()));
             return -1;
         }
@@ -433,7 +441,7 @@ int main(int argc, char *argv[])
     }
 
     foreach (const QString &file, config.filesToRegister()) {
-        if (!helpEngine.registerDocumentation(basePath + QDir::separator() + file)) {
+        if (!helpEngine.registerDocumentation(absoluteFileName(basePath, file))) {
             fprintf(stderr, "%s\n", qPrintable(helpEngine.error()));
             return -1;
         }
@@ -470,7 +478,7 @@ int main(int argc, char *argv[])
         QDateTime::currentDateTime().toTime_t());
 
     if (!config.applicationIcon().isEmpty()) {
-        QFile icon(basePath + QDir::separator() + config.applicationIcon());
+        QFile icon(absoluteFileName(basePath, config.applicationIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
@@ -491,7 +499,7 @@ int main(int argc, char *argv[])
     }
 
     if (!config.aboutIcon().isEmpty()) {
-        QFile icon(basePath + QDir::separator() + config.aboutIcon());
+        QFile icon(absoluteFileName(basePath, config.aboutIcon()));
         if (!icon.open(QIODevice::ReadOnly)) {
             fprintf(stderr, "Cannot open %s!\n", qPrintable(icon.fileName()));
             return -1;
@@ -512,7 +520,7 @@ int main(int argc, char *argv[])
 
         while (it != config.aboutTextFiles().constEnd()) {
             s << it.key();
-            QFileInfo fi(basePath + QDir::separator() + it.value());
+            QFileInfo fi(absoluteFileName(basePath, it.value()));
             QFile f(fi.absoluteFilePath());
             if (!f.open(QIODevice::ReadOnly)) {
                 fprintf(stderr, "Cannot open %s!\n", qPrintable(f.fileName()));
