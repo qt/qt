@@ -419,17 +419,31 @@ void QWidgetPrivate::setFocus_sys()
 
 void QWidgetPrivate::raise_sys()
 {
-    // XXX
+    Q_Q(QWidget);
+    if (q->isWindow()) {
+    qWarning() << "raise_sys not implemented for tlw" << q;
+    }
 }
 
 void QWidgetPrivate::lower_sys()
 {
-    // XXX
+    Q_Q(QWidget);
+    if (q->isWindow()) {
+        Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
+        qWarning() << "lower_sys not implemented for tlw" << q;
+    } else if (QWidget *p = q->parentWidget()) {
+        setDirtyOpaqueRegion();
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+    }
 }
 
 void QWidgetPrivate::stackUnder_sys(QWidget*)
 {
-    // XXX
+    Q_Q(QWidget);
+    if (QWidget *p = q->parentWidget()) {
+        setDirtyOpaqueRegion();
+        p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
+    }
 }
 
 void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
