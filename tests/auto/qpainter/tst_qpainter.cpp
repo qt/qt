@@ -2918,7 +2918,7 @@ void tst_QPainter::monoImages()
 
             QImage img(2, 2, format);
 
-            if (img.numColors() > 0) {
+            if (img.colorCount() > 0) {
                 img.setColor(0, QColor(colorPairs[j][0]).rgba());
                 img.setColor(1, QColor(colorPairs[j][1]).rgba());
             }
@@ -2940,7 +2940,7 @@ void tst_QPainter::monoImages()
             // should not change the image
             QCOMPARE(original, img);
 
-            if (img.numColors() == 0)
+            if (img.colorCount() == 0)
                 continue;
 
             for (int k = 0; k < 2; ++k) {

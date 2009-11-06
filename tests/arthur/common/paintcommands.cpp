@@ -587,10 +587,10 @@ void PaintCommands::staticInit()
                       "^image_setColor\\s+([\\w.:\\/]*)\\s+([0-9]*)\\s+#([0-9]*)$",
                       "image_setColor <imageName> <index> <color>",
                       "image_setColor myImage 0 black");
-    DECL_PAINTCOMMAND("image_setNumColors", command_image_setNumColors,
-                      "^image_setNumColors\\s+([\\w.:\\/]*)\\s+([0-9]*)$",
-                      "image_setNumColors <imageName> <nbColors>",
-                      "image_setNumColors myImage 128");
+    DECL_PAINTCOMMAND("image_setColorCount", command_image_setColorCount,
+                      "^image_setColorCount\\s+([\\w.:\\/]*)\\s+([0-9]*)$",
+                      "image_setColorCount <imageName> <nbColors>",
+                      "image_setColorCount myImage 128");
 
     DECL_PAINTCOMMANDSECTION("transformations");
     DECL_PAINTCOMMAND("resetMatrix", command_resetMatrix,
@@ -2245,7 +2245,7 @@ void PaintCommands::command_image_load(QRegExp re)
 }
 
 /***************************************************************************************************/
-void PaintCommands::command_image_setNumColors(QRegExp re)
+void PaintCommands::command_image_setColorCount(QRegExp re)
 {
     QStringList caps = re.capturedTexts();
 
@@ -2253,10 +2253,10 @@ void PaintCommands::command_image_setNumColors(QRegExp re)
     int count = convertToInt(caps.at(2));
 
     if (m_verboseMode)
-        printf(" -(lance) image_setNumColors(%s), %d -> %d\n",
-               qPrintable(name), m_imageMap[name].numColors(), count);
+        printf(" -(lance) image_setColorCount(%s), %d -> %d\n",
+               qPrintable(name), m_imageMap[name].colorCount(), count);
 
-    m_imageMap[name].setNumColors(count);
+    m_imageMap[name].setColorCount(count);
 }
 
 /***************************************************************************************************/

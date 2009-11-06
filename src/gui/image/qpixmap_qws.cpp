@@ -126,7 +126,7 @@ int QPixmap::numCols() const
 {
     if (data && data->classId() == QPixmapData::RasterClass) {
         const QRasterPixmapData *d = static_cast<const QRasterPixmapData*>(data.data());
-        return d->image.numColors();
+        return d->image.colorCount();
     }
 
     return 0;

@@ -214,7 +214,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
             const int height = image.height();
             const int bplQt = image.bytesPerLine();
             if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
-                memcpy(mem, image.bits(), image.numBytes());
+                memcpy(mem, image.bits(), image.byteCount());
             } else {
                 for (int i=0; i<height; ++i) {
                     memcpy(mem, image.scanLine(i), bplQt);
@@ -225,7 +225,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         }
     }
 #ifdef QT_DIRECTFB_PALETTE
-    if (image.numColors() != 0 && surface)
+    if (image.colorCount() != 0 && surface)
         QDirectFBScreen::setSurfaceColorTable(surface, image);
 #endif
     return surface;
@@ -497,7 +497,7 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
     if (!surface)
         return;
 
-    const int numColors = image.numColors();
+    const int numColors = image.colorCount();
     if (numColors == 0)
         return;
 
