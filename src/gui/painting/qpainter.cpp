@@ -3890,14 +3890,6 @@ void QPainter::setBrush(const QBrush &brush)
         return;
     }
 
-    Qt::BrushStyle currentStyle = d->state->brush.style();
-    if (currentStyle == brush.style()) {
-        if (currentStyle == Qt::NoBrush
-            || (currentStyle == Qt::SolidPattern
-                && d->state->brush.color() == brush.color()))
-            return;
-    }
-
     d->state->brush = brush;
     d->state->dirtyFlags |= QPaintEngine::DirtyBrush;
 }
