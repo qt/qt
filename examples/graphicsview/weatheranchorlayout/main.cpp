@@ -124,6 +124,7 @@ public:
         painter->drawPixmap(QPointF(), scaled);
 
         QPixmap tmp(scaled.size());
+        tmp.fill(Qt::transparent);
         QPainter p(&tmp);
 
         // create gradient
