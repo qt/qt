@@ -209,19 +209,20 @@ bool DataModel::load(const QString &fileName, bool *langGuessed, QWidget *parent
         return false;
     }
 
-    QSet<TranslatorMessagePtr> dupes = tor.resolveDuplicates();
-    if (!dupes.isEmpty()) {
+    Translator::Duplicates dupes = tor.resolveDuplicates();
+    if (!dupes.byContents.isEmpty()) {
         QString err = tr("<qt>Duplicate messages found in '%1':").arg(Qt::escape(fileName));
         int numdups = 0;
-        foreach (const TranslatorMessagePtr &msg, dupes) {
+        foreach (int j, dupes.byContents) {
+            const TranslatorMessage &msg = tor.message(j);
             if (++numdups >= 5) {
                 err += tr("<p>[more duplicates omitted]");
                 break;
             }
             err += tr("<p>* Context: %1<br>* Source: %2")
-                    .arg(Qt::escape(msg->context()), Qt::escape(msg->sourceText()));
-            if (!msg->comment().isEmpty())
-                err += tr("<br>* Comment: %3").arg(Qt::escape(msg->comment()));
+                    .arg(Qt::escape(msg.context()), Qt::escape(msg.sourceText()));
+            if (!msg.comment().isEmpty())
+                err += tr("<br>* Comment: %3").arg(Qt::escape(msg.comment()));
         }
         QMessageBox::warning(parent, QObject::tr("Qt Linguist"), err);
     }

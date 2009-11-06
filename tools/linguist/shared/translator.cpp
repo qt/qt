@@ -411,9 +411,35 @@ void Translator::dropUiLines()
     }
 }
 
-QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
+struct TranslatorMessagePtr {
+    TranslatorMessagePtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    inline const TranslatorMessage *operator->() const
+    {
+        return ptr;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
+
+inline int qHash(TranslatorMessagePtr tmp)
 {
-    QSet<TranslatorMessagePtr> dups;
+    return qHash(*tmp.ptr);
+}
+
+inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
+{
+    return *tmp1.ptr == *tmp2.ptr;
+}
+
+Translator::Duplicates Translator::resolveDuplicates()
+{
+    Duplicates dups;
     QHash<TranslatorMessagePtr, int> refs;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
@@ -426,7 +452,7 @@ QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
                 omsg.setNonUtf8(true);
             } else {
                 // Duplicate
-                dups.insert(omsg);
+                dups.byContents.insert(*it);
             }
             if (!omsg.isTranslated() && msg.isTranslated())
                 omsg.setTranslations(msg.translations());
@@ -439,21 +465,22 @@ QSet<TranslatorMessagePtr> Translator::resolveDuplicates()
     return dups;
 }
 
-void Translator::reportDuplicates(const QSet<TranslatorMessagePtr> &dupes,
+void Translator::reportDuplicates(const Duplicates &dupes,
                                   const QString &fileName, bool verbose)
 {
-    if (!dupes.isEmpty()) {
+    if (!dupes.byContents.isEmpty()) {
         if (!verbose) {
             qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
                      qPrintable(fileName));
         } else {
             qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
-            foreach (const TranslatorMessagePtr &msg, dupes) {
+            foreach (int j, dupes.byContents) {
+                const TranslatorMessage &msg = message(j);
                 qWarning("\n* Context: %s\n* Source: %s",
-                        qPrintable(msg->context()),
-                        qPrintable(msg->sourceText()));
-                if (!msg->comment().isEmpty())
-                    qWarning("* Comment: %s", qPrintable(msg->comment()));
+                        qPrintable(msg.context()),
+                        qPrintable(msg.sourceText()));
+                if (!msg.comment().isEmpty())
+                    qWarning("* Comment: %s", qPrintable(msg.comment()));
             }
             qWarning();
         }
