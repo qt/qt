@@ -93,7 +93,6 @@ public slots:
     void playPause();
     void scaleChanged(QAction *);
     void aspectChanged(QAction *);
-    void hasVideoChanged(bool);
 
 private slots:
     void setAspect(int);
@@ -109,6 +108,7 @@ private slots:
     void bufferStatus(int percent);
     void openUrl();
     void configureEffect();
+    void hasVideoChanged(bool);
 
 private:
     QIcon playIcon;
