@@ -293,8 +293,6 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     have desktop concept, DesktopLocation returns same path as DocumentsLocation.
     Rest of the standard locations point to folder on same drive with executable, except
     that if executable is in ROM the folder from C drive is returned.
-
-    \endcode
 */
 
 /*!
