@@ -56,6 +56,8 @@ public:
 
 private slots:
     void basicProperties();
+    void historyNav();
+    void loadError();
     void setHtml();
     void cleanupTestCase();
 
@@ -71,7 +73,21 @@ private:
     }
 };
 
-void removeRecursive(const QString& dirname)
+static QString strippedHtml(QString html)
+{
+    html.replace(QRegExp("\\s+"),"");
+    return html;
+}
+
+static QString fileContents(const QString& filename)
+{
+    QFile file(filename);
+    Q_ASSERT(file.open(QIODevice::ReadOnly));
+    return file.readAll();
+}
+
+
+static void removeRecursive(const QString& dirname)
 {
     QDir dir(dirname);
     QFileInfoList entries(dir.entryInfoList(QDir::Dirs|QDir::Files|QDir::NoDotAndDotDot));
@@ -116,13 +132,7 @@ void tst_qmlgraphicswebview::basicProperties()
     QTRY_COMPARE(wv->icon().width(), 48);
     QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
     QCOMPARE(wv->statusText(),QString(""));
-    QFile htmlfile(SRCDIR "/data/basic.html");
-    QVERIFY(htmlfile.open(QIODevice::ReadOnly));
-    QString actualhtml____ = wv->html(); // "____" is to make errors line up for easier reading
-    QString expectedhtml = htmlfile.readAll();
-    actualhtml____.replace(QRegExp("\\s+"),"");
-    expectedhtml.replace(QRegExp("\\s+"),"");
-    QCOMPARE(actualhtml____,expectedhtml); // same, ignoring whitespace
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->width(), 123.0);
     QCOMPARE(wv->webPageWidth(), 0);
     QCOMPARE(wv->preferredWidth(), 0);
@@ -137,6 +147,90 @@ void tst_qmlgraphicswebview::basicProperties()
     QVERIFY(!wv->forwardAction()->isEnabled());
     QVERIFY(wv->stopAction());
     QVERIFY(!wv->stopAction()->isEnabled());
+}
+
+void tst_qmlgraphicswebview::historyNav()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
+    checkNoErrors(component);
+    QWebSettings::enablePersistentStorage(tmpDir());
+
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    for (int i=1; i<=2; ++i) {
+        QTRY_COMPARE(wv->progress(), 1.0);
+        QCOMPARE(wv->title(),QString("Basic"));
+        QTRY_COMPARE(wv->icon().width(), 48);
+        QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
+        QCOMPARE(wv->statusText(),QString(""));
+        QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
+        QCOMPARE(wv->width(), 123.0);
+        QCOMPARE(wv->webPageWidth(), 0);
+        QCOMPARE(wv->preferredWidth(), 0);
+        QCOMPARE(wv->zoomFactor(), 1.0);
+        QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+        QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
+        QVERIFY(wv->reloadAction());
+        QVERIFY(wv->reloadAction()->isEnabled());
+        QVERIFY(wv->backAction());
+        QVERIFY(!wv->backAction()->isEnabled());
+        QVERIFY(wv->forwardAction());
+        QVERIFY(!wv->forwardAction()->isEnabled());
+        QVERIFY(wv->stopAction());
+        QVERIFY(!wv->stopAction()->isEnabled());
+
+        wv->reloadAction()->trigger();
+    }
+
+    wv->setUrl(QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QCOMPARE(wv->title(),QString("Forward"));
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->html()));
+    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
+    QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
+    QVERIFY(wv->reloadAction());
+    QVERIFY(wv->reloadAction()->isEnabled());
+    QVERIFY(wv->backAction());
+    QVERIFY(wv->backAction()->isEnabled());
+    QVERIFY(wv->forwardAction());
+    QVERIFY(!wv->forwardAction()->isEnabled());
+    QVERIFY(wv->stopAction());
+    QVERIFY(!wv->stopAction()->isEnabled());
+
+    wv->backAction()->trigger();
+
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QCOMPARE(wv->title(),QString("Basic"));
+    QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
+    QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
+    QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
+    QVERIFY(wv->reloadAction());
+    QVERIFY(wv->reloadAction()->isEnabled());
+    QVERIFY(wv->backAction());
+    QVERIFY(!wv->backAction()->isEnabled());
+    QVERIFY(wv->forwardAction());
+    QVERIFY(wv->forwardAction()->isEnabled());
+    QVERIFY(wv->stopAction());
+    QVERIFY(!wv->stopAction()->isEnabled());
+}
+
+void tst_qmlgraphicswebview::loadError()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/loadError.qml"));
+    checkNoErrors(component);
+    QWebSettings::enablePersistentStorage(tmpDir());
+
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    for (int i=1; i<=2; ++i) {
+        QTRY_COMPARE(wv->progress(), 1.0);
+        QCOMPARE(wv->title(),QString(""));
+        QCOMPARE(wv->statusText(),QString("")); // HTML 'status bar' text, not error message
+        QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/does-not-exist.html")); // Unlike QWebPage, which loses url
+        QCOMPARE(wv->status(), QmlGraphicsWebView::Error);
+
+        wv->reloadAction()->trigger();
+    }
 }
 
 void tst_qmlgraphicswebview::setHtml()
