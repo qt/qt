@@ -79,6 +79,18 @@
 # define SRCDIR ""
 #endif
 
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
+
+#ifndef STDERR_FILENO
+#define STDERR_FILENO 2
+#endif
+
 Q_DECLARE_METATYPE(QFile::FileError)
 
 //TESTED_CLASS=
@@ -105,6 +117,7 @@ private slots:
     void openUnbuffered();
     void size_data();
     void size();
+    void sizeNoExist();
     void seek();
     void setSize();
     void setSizeSeek();
@@ -186,6 +199,8 @@ private slots:
     void mapResource();
     void mapOpenMode_data();
     void mapOpenMode();
+
+    void openStandardStreams();
 
     // --- Task related tests below this line
     void task167217();
@@ -438,23 +453,57 @@ void tst_QFile::openUnbuffered()
 void tst_QFile::size_data()
 {
     QTest::addColumn<QString>("filename");
-    QTest::addColumn<int>("size");
+    QTest::addColumn<qint64>("size");
 
-    QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << 245;
-    QTest::newRow( "nonexist01" ) << QString("foo.txt") << 0;
+    QTest::newRow( "exist01" ) << QString(SRCDIR "testfile.txt") << (qint64)245;
 #if defined(Q_OS_WIN) && !defined(Q_OS_WINCE)
     // Only test UNC on Windows./
-    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << 34;
+    QTest::newRow("unc") << "//" + QString(QtNetworkSettings::winServerName() + "/testsharewritable/test.pri") << (qint64)34;
 #endif
 }
 
 void tst_QFile::size()
 {
     QFETCH( QString, filename );
-    QFile f( filename );
-    QTEST( (int)f.size(), "size" );
-    if (f.open(QFile::ReadOnly))
-        QTEST( (int)f.size(), "size" );
+    QFETCH( qint64, size );
+
+    {
+        QFile f( filename );
+        QCOMPARE( f.size(), size );
+
+        QVERIFY( f.open(QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+    }
+
+    {
+        QFile f;
+        int fd = QT_OPEN(filename.toLocal8Bit().constData(), QT_OPEN_RDONLY);
+        QVERIFY( fd != -1 );
+        QVERIFY( f.open(fd, QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+
+        f.close();
+        QT_CLOSE(fd);
+    }
+
+    {
+        QFile f;
+        FILE* stream = QT_FOPEN(filename.toLocal8Bit().constData(), "rb");
+        QVERIFY( stream );
+        QVERIFY( f.open(stream, QIODevice::ReadOnly) );
+        QCOMPARE( f.size(), size );
+
+        f.close();
+        fclose(stream);
+    }
+}
+
+void tst_QFile::sizeNoExist()
+{
+    QFile file("nonexist01");
+    QVERIFY( !file.exists() );
+    QCOMPARE( file.size(), (qint64)0 );
+    QVERIFY( !file.open(QIODevice::ReadOnly) );
 }
 
 void tst_QFile::seek()
@@ -2632,6 +2681,59 @@ void tst_QFile::openDirectory()
     QVERIFY(!f1.open(QIODevice::ReadOnly));
     f1.close();
     QVERIFY(!f1.open(QIODevice::ReadOnly|QIODevice::Unbuffered));
+}
+
+void tst_QFile::openStandardStreams()
+{
+    // Using file descriptors
+    {
+        QFile in;
+        in.open(STDIN_FILENO, QIODevice::ReadOnly);
+        QCOMPARE( in.pos(), (qint64)0 );
+        QCOMPARE( in.size(), (qint64)0 );
+        QVERIFY( in.isSequential() );
+    }
+
+    {
+        QFile out;
+        out.open(STDOUT_FILENO, QIODevice::WriteOnly);
+        QCOMPARE( out.pos(), (qint64)0 );
+        QCOMPARE( out.size(), (qint64)0 );
+        QVERIFY( out.isSequential() );
+    }
+
+    {
+        QFile err;
+        err.open(STDERR_FILENO, QIODevice::WriteOnly);
+        QCOMPARE( err.pos(), (qint64)0 );
+        QCOMPARE( err.size(), (qint64)0 );
+        QVERIFY( err.isSequential() );
+    }
+
+    // Using streams
+    {
+        QFile in;
+        in.open(stdin, QIODevice::ReadOnly);
+        QCOMPARE( in.pos(), (qint64)0 );
+        QCOMPARE( in.size(), (qint64)0 );
+        QVERIFY( in.isSequential() );
+    }
+
+    {
+        QFile out;
+        out.open(stdout, QIODevice::WriteOnly);
+        QCOMPARE( out.pos(), (qint64)0 );
+        QCOMPARE( out.size(), (qint64)0 );
+        QVERIFY( out.isSequential() );
+    }
+
+    {
+        QFile err;
+        err.open(stderr, QIODevice::WriteOnly);
+        QCOMPARE( err.pos(), (qint64)0 );
+        QCOMPARE( err.size(), (qint64)0 );
+        QVERIFY( err.isSequential() );
+    }
 }
 
 QTEST_MAIN(tst_QFile)
