@@ -122,7 +122,6 @@ public:
     bool contains(const QString &context) const;
     TranslatorMessage find(const QString &context) const;
 
-    void replace(const TranslatorMessage &msg);
     void replaceSorted(const TranslatorMessage &msg);
     void extend(const TranslatorMessage &msg); // Only for single-location messages
     void append(const TranslatorMessage &msg);

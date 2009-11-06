@@ -80,15 +80,6 @@ QList<Translator::FileFormat> &Translator::registeredFileFormats()
     return theFormats;
 }
 
-void Translator::replace(const TranslatorMessage &msg)
-{
-    int index = m_messages.indexOf(msg);
-    if (index == -1)
-        m_messages.append(msg);
-    else
-        m_messages[index] = msg;
-}
-
 void Translator::replaceSorted(const TranslatorMessage &msg)
 {
     int index = m_messages.indexOf(msg);

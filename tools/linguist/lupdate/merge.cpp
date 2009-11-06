@@ -247,10 +247,8 @@ int applyNumberHeuristic(Translator &tor)
         t = translated.find(zeroKey((*u).sourceText()));
         if (t != translated.end() && !t.key().isEmpty()
             && t->sourceText() != u->sourceText()) {
-            TranslatorMessage m = *u;
-            m.setTranslation(translationAttempt(t->translation(), t->sourceText(),
-                                                u->sourceText()));
-            tor.replace(m);
+            u->setTranslation(translationAttempt(t->translation(), t->sourceText(),
+                                                 u->sourceText()));
             inserted++;
         }
     }
@@ -305,9 +303,7 @@ int applySameTextHeuristic(Translator &tor)
         QString key = u->sourceText();
         t = translated.find(key);
         if (t != translated.end()) {
-            TranslatorMessage m = *u;
-            m.setTranslations(t->translations());
-            tor.replace(m);
+            u->setTranslations(t->translations());
             ++inserted;
         }
     }
