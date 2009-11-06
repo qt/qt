@@ -48,11 +48,11 @@
 #include <QtCore/qdir.h>
 #include <QtCore/qfile.h>
 
-class tst_qfxwebview : public QObject
+class tst_qmlgraphicswebview : public QObject
 {
     Q_OBJECT
 public:
-    tst_qfxwebview() {}
+    tst_qmlgraphicswebview() {}
 
 private slots:
     void basicProperties();
@@ -65,7 +65,7 @@ private:
     QmlEngine engine;
     QString tmpDir() const
     {
-        static QString tmpd = QDir::tempPath()+"/tst_qfxwebview-"
+        static QString tmpd = QDir::tempPath()+"/tst_qmlgraphicswebview-"
             + QDateTime::currentDateTime().toString(QLatin1String("yyyyMMddhhmmss"));
         return tmpd;
     }
@@ -83,12 +83,12 @@ void removeRecursive(const QString& dirname)
     QDir().rmdir(dirname);
 }
 
-void tst_qfxwebview::cleanupTestCase()
+void tst_qmlgraphicswebview::cleanupTestCase()
 {
     removeRecursive(tmpDir());
 }
 
-void tst_qfxwebview::checkNoErrors(const QmlComponent& component)
+void tst_qmlgraphicswebview::checkNoErrors(const QmlComponent& component)
 {
     if (component.isError()) {
         QList<QmlError> errors = component.errors();
@@ -103,7 +103,7 @@ void tst_qfxwebview::checkNoErrors(const QmlComponent& component)
     QVERIFY(!component.isError());
 }
 
-void tst_qfxwebview::basicProperties()
+void tst_qmlgraphicswebview::basicProperties()
 {
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
@@ -139,7 +139,7 @@ void tst_qfxwebview::basicProperties()
     QVERIFY(!wv->stopAction()->isEnabled());
 }
 
-void tst_qfxwebview::setHtml()
+void tst_qmlgraphicswebview::setHtml()
 {
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/sethtml.qml"));
     checkNoErrors(component);
@@ -148,6 +148,6 @@ void tst_qfxwebview::setHtml()
     QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
 }
 
-QTEST_MAIN(tst_qfxwebview)
+QTEST_MAIN(tst_qmlgraphicswebview)
 
-#include "tst_qfxwebview.moc"
+#include "tst_qmlgraphicswebview.moc"
