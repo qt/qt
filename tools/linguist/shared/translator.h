@@ -134,7 +134,7 @@ public:
     void dropUiLines();
     void makeFileNamesAbsolute(const QDir &originalPath);
 
-    struct Duplicates { QSet<int> byContents; };
+    struct Duplicates { QSet<int> byId, byContents; };
     Duplicates resolveDuplicates();
     void reportDuplicates(const Duplicates &dupes, const QString &fileName, bool verbose);
 

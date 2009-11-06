@@ -375,6 +375,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                             ++similarTextHeuristicCount;
                             neww++;
 
+                          outdateSource:
                             m.setOldSourceText(m.sourceText());
                             m.setSourceText(mv.sourceText());
                             const QString &oldpluralsource = m.extra(QLatin1String("po-msgid_plural"));
@@ -392,23 +393,35 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 }
             } else {
                 mv = virginTor.message(mvi);
-                switch (m.type()) {
-                case TranslatorMessage::Finished:
-                default:
-                    if (m.isPlural() == mv.isPlural()) {
-                        newType = TranslatorMessage::Finished;
-                    } else {
+                if (!mv.id().isEmpty()
+                    && (mv.context() != m.context()
+                        || mv.sourceText() != m.sourceText()
+                        || mv.comment() != m.comment())) {
+                    known++;
+                    newType = TranslatorMessage::Unfinished;
+                    m.setContext(mv.context());
+                    m.setComment(mv.comment());
+                    if (mv.sourceText() != m.sourceText())
+                        goto outdateSource;
+                } else {
+                    switch (m.type()) {
+                    case TranslatorMessage::Finished:
+                    default:
+                        if (m.isPlural() == mv.isPlural()) {
+                            newType = TranslatorMessage::Finished;
+                        } else {
+                            newType = TranslatorMessage::Unfinished;
+                        }
+                        known++;
+                        break;
+                    case TranslatorMessage::Unfinished:
                         newType = TranslatorMessage::Unfinished;
+                        known++;
+                        break;
+                    case TranslatorMessage::Obsolete:
+                        newType = TranslatorMessage::Unfinished;
+                        neww++;
                     }
-                    known++;
-                    break;
-                case TranslatorMessage::Unfinished:
-                    newType = TranslatorMessage::Unfinished;
-                    known++;
-                    break;
-                case TranslatorMessage::Obsolete:
-                    newType = TranslatorMessage::Unfinished;
-                    neww++;
                 }
 
                 // Always get the filename and linenumber info from the
@@ -421,6 +434,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 m.setPlural(mv.isPlural());
                 m.setUtf8(mv.isUtf8());
                 m.setExtraComment(mv.extraComment());
+                m.setId(mv.id());
             }
         }
 

@@ -306,10 +306,15 @@ int Translator::find(const TranslatorMessage &msg) const
 {
     for (int i = 0; i < m_messages.count(); ++i) {
         const TranslatorMessage &tmsg = m_messages.at(i);
-        if (msg.context() == tmsg.context()
-            && msg.sourceText() == tmsg.sourceText()
-            && msg.comment() == tmsg.comment())
-            return i;
+        if (msg.id().isEmpty() || tmsg.id().isEmpty()) {
+            if (msg.context() == tmsg.context()
+                && msg.sourceText() == tmsg.sourceText()
+                && msg.comment() == tmsg.comment())
+                return i;
+        } else {
+            if (msg.id() == tmsg.id())
+                return i;
+        }
     }
     return -1;
 }
@@ -423,8 +428,8 @@ void Translator::dropUiLines()
     }
 }
 
-struct TranslatorMessagePtr {
-    TranslatorMessagePtr(const TranslatorMessage &tm)
+struct TranslatorMessageIdPtr {
+    explicit TranslatorMessageIdPtr(const TranslatorMessage &tm)
     {
         ptr = &tm;
     }
@@ -437,50 +442,107 @@ struct TranslatorMessagePtr {
     const TranslatorMessage *ptr;
 };
 
-Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
+Q_DECLARE_TYPEINFO(TranslatorMessageIdPtr, Q_MOVABLE_TYPE);
 
-inline int qHash(TranslatorMessagePtr tmp)
+inline int qHash(TranslatorMessageIdPtr tmp)
 {
-    return
-        qHash(tmp->context()) ^
-        qHash(tmp->sourceText()) ^
-        qHash(tmp->comment()) ^
-        qHash(tmp->id());
+    return qHash(tmp->id());
 }
 
-inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
+inline bool operator==(TranslatorMessageIdPtr tmp1, TranslatorMessageIdPtr tmp2)
 {
+    return tmp1->id() == tmp2->id();
+}
+
+struct TranslatorMessageContentPtr {
+    explicit TranslatorMessageContentPtr(const TranslatorMessage &tm)
+    {
+        ptr = &tm;
+    }
+
+    inline const TranslatorMessage *operator->() const
+    {
+        return ptr;
+    }
+
+    const TranslatorMessage *ptr;
+};
+
+Q_DECLARE_TYPEINFO(TranslatorMessageContentPtr, Q_MOVABLE_TYPE);
+
+inline int qHash(TranslatorMessageContentPtr tmp)
+{
+    int hash = qHash(tmp->context()) ^ qHash(tmp->sourceText());
+    if (!tmp->sourceText().isEmpty())
+        // Special treatment for context comments (empty source).
+        hash ^= qHash(tmp->comment());
+    return hash;
+}
+
+inline bool operator==(TranslatorMessageContentPtr tmp1, TranslatorMessageContentPtr tmp2)
+{
+    if (tmp1->context() != tmp2->context() || tmp1->sourceText() != tmp2->sourceText())
+        return false;
     // Special treatment for context comments (empty source).
-    return (tmp1->context() == tmp2->context())
-        && tmp1->sourceText() == tmp2->sourceText()
-        && tmp1->id() == tmp2->id()
-        && (tmp1->sourceText().isEmpty() || tmp1->comment() == tmp2->comment());
+    if (tmp1->sourceText().isEmpty())
+        return true;
+    return tmp1->comment() == tmp2->comment();
 }
 
 Translator::Duplicates Translator::resolveDuplicates()
 {
     Duplicates dups;
-    QHash<TranslatorMessagePtr, int> refs;
+    QHash<TranslatorMessageIdPtr, int> idRefs;
+    QHash<TranslatorMessageContentPtr, int> contentRefs;
     for (int i = 0; i < m_messages.count();) {
         const TranslatorMessage &msg = m_messages.at(i);
-        QHash<TranslatorMessagePtr, int>::ConstIterator it = refs.constFind(msg);
-        if (it != refs.constEnd()) {
-            TranslatorMessage &omsg = m_messages[*it];
-            if (omsg.isUtf8() != msg.isUtf8() && !omsg.isNonUtf8()) {
-                // Dual-encoded message
-                omsg.setUtf8(true);
-                omsg.setNonUtf8(true);
-            } else {
-                // Duplicate
-                dups.byContents.insert(*it);
+        TranslatorMessage *omsg;
+        int oi;
+        QSet<int> *pDup;
+        if (!msg.id().isEmpty()) {
+            QHash<TranslatorMessageIdPtr, int>::ConstIterator it =
+                    idRefs.constFind(TranslatorMessageIdPtr(msg));
+            if (it != idRefs.constEnd()) {
+                oi = *it;
+                omsg = &m_messages[oi];
+                pDup = &dups.byId;
+                goto gotDupe;
             }
-            if (!omsg.isTranslated() && msg.isTranslated())
-                omsg.setTranslations(msg.translations());
-            m_messages.removeAt(i);
-        } else {
-            refs[msg] = i;
-            ++i;
         }
+        {
+            QHash<TranslatorMessageContentPtr, int>::ConstIterator it =
+                    contentRefs.constFind(TranslatorMessageContentPtr(msg));
+            if (it != contentRefs.constEnd()) {
+                oi = *it;
+                omsg = &m_messages[oi];
+                if (msg.id().isEmpty() || omsg->id().isEmpty()) {
+                    if (!msg.id().isEmpty() && omsg->id().isEmpty()) {
+                        omsg->setId(msg.id());
+                        idRefs[TranslatorMessageIdPtr(*omsg)] = oi;
+                    }
+                    pDup = &dups.byContents;
+                    goto gotDupe;
+                }
+                // This is really a content dupe, but with two distinct IDs.
+            }
+        }
+        if (!msg.id().isEmpty())
+            idRefs[TranslatorMessageIdPtr(msg)] = i;
+        contentRefs[TranslatorMessageContentPtr(msg)] = i;
+        ++i;
+        continue;
+      gotDupe:
+        if (omsg->isUtf8() != msg.isUtf8() && !omsg->isNonUtf8()) {
+            // Dual-encoded message
+            omsg->setUtf8(true);
+            omsg->setNonUtf8(true);
+        } else {
+            // Duplicate
+            pDup->insert(oi);
+        }
+        if (!omsg->isTranslated() && msg.isTranslated())
+            omsg->setTranslations(msg.translations());
+        m_messages.removeAt(i);
     }
     return dups;
 }
@@ -488,12 +550,14 @@ Translator::Duplicates Translator::resolveDuplicates()
 void Translator::reportDuplicates(const Duplicates &dupes,
                                   const QString &fileName, bool verbose)
 {
-    if (!dupes.byContents.isEmpty()) {
+    if (!dupes.byId.isEmpty() || !dupes.byContents.isEmpty()) {
         if (!verbose) {
             qWarning("Warning: dropping duplicate messages in '%s'\n(try -verbose for more info).",
                      qPrintable(fileName));
         } else {
             qWarning("Warning: dropping duplicate messages in '%s':", qPrintable(fileName));
+            foreach (int i, dupes.byId)
+                qWarning("\n* ID: %s", qPrintable(message(i).id()));
             foreach (int j, dupes.byContents) {
                 const TranslatorMessage &msg = message(j);
                 qWarning("\n* Context: %s\n* Source: %s",

@@ -148,4 +148,7 @@ void FindDialog::doFind(bool forward)
 bool FindDialog::hasFindExpression() const
 {
     // statusMessage(tr( "Should be obsolete" ));
+
+    //% "This is some random text"
+    qtTrId("keep_id")
 }
