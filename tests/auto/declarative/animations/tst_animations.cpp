@@ -59,6 +59,8 @@ private slots:
     void badTypes();
     void badProperties();
     void mixedTypes();
+    void properties();
+    void propertiesTransition();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -242,6 +244,143 @@ void tst_animations::mixedTypes()
         //rather inexact -- is there a better way?
         QVERIFY(myRect->x() > 100 && myRect->x() < 200);
         QVERIFY(myRect->color() != QColor("red") && myRect->color() != QColor("blue"));
+    }
+}
+
+void tst_animations::properties()
+{
+    const int waitDuration = 300;
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties2.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties3.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(300));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties4.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->y(),qreal(200));
+        QTIMED_COMPARE(myRect->x(),qreal(100));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/properties5.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(100));
+        QTIMED_COMPARE(myRect->y(),qreal(100));
+    }
+}
+
+void tst_animations::propertiesTransition()
+{
+    const int waitDuration = 300;
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        rect->setState("moved");
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->x(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition2.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        rect->setState("moved");
+        QCOMPARE(myRect->x(),qreal(200));
+        QCOMPARE(myRect->y(),qreal(100));
+        QTest::qWait(waitDuration);
+        QTIMED_COMPARE(myRect->y(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition3.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition4.qml:22:9) targets/properties/exclude and target/property are mutually exclusive.");
+        rect->setState("moved");
+        QCOMPARE(myRect->x(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition4.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition5.qml:22:9) targets/properties/exclude and target/property are mutually exclusive.");
+        rect->setState("moved");
+        QCOMPARE(myRect->x(),qreal(200));
+    }
+
+    {
+        QmlEngine engine;
+        QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/propertiesTransition5.qml"));
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
+        QVERIFY(rect);
+
+        //### should output warning at some point -- theItem doesn't exist
+        QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
+        QVERIFY(myRect);
+        rect->setState("moved");
+        QCOMPARE(myRect->x(),qreal(200));
     }
 }
 
