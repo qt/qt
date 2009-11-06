@@ -55,7 +55,8 @@ public:
     tst_qfxwebview() {}
 
 private slots:
-    void testBasicProperties();
+    void basicProperties();
+    void setHtml();
     void cleanupTestCase();
 
 
@@ -102,7 +103,7 @@ void tst_qfxwebview::checkNoErrors(const QmlComponent& component)
     QVERIFY(!component.isError());
 }
 
-void tst_qfxwebview::testBasicProperties()
+void tst_qfxwebview::basicProperties()
 {
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
     checkNoErrors(component);
@@ -136,6 +137,15 @@ void tst_qfxwebview::testBasicProperties()
     QVERIFY(!wv->forwardAction()->isEnabled());
     QVERIFY(wv->stopAction());
     QVERIFY(!wv->stopAction()->isEnabled());
+}
+
+void tst_qfxwebview::setHtml()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/sethtml.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
 }
 
 QTEST_MAIN(tst_qfxwebview)
