@@ -136,13 +136,45 @@ public:
     QSwipeGesturePrivate()
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
-          swipeAngle(0)
+          swipeAngle(0),
+          started(false), speed(0)
     {
     }
 
     QSwipeGesture::SwipeDirection horizontalDirection;
     QSwipeGesture::SwipeDirection verticalDirection;
     qreal swipeAngle;
+
+    QPoint lastPositions[3];
+    bool started;
+    qreal speed;
+    QTime time;
+};
+
+class QTapGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapGesture)
+
+public:
+    QTapGesturePrivate()
+    {
+    }
+
+    QPointF position;
+};
+
+class QTapAndHoldGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
+
+public:
+    QTapAndHoldGesturePrivate()
+        : timerId(0)
+    {
+    }
+
+    QPointF position;
+    int timerId;
 };
 
 QT_END_NAMESPACE

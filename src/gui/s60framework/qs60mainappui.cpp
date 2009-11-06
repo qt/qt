@@ -161,8 +161,6 @@ void QS60MainAppUi::HandleResourceChangeL(TInt type)
 }
 
 /*!
- * \fn void QS60MainAppUi::HandleWsEventL(const TWsEvent &event, CCoeControl *destination)
- *
  * \brief Handles raw window server events.
  *
  * The event type and information is passed in \a wsEvent, while the receiving control is passed in

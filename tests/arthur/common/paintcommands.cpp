@@ -974,7 +974,7 @@ void PaintCommands::command_drawPixmap(QRegExp re)
     if (sh == 0) sh = -1;
 
     if (m_verboseMode)
-        printf(" -(lance) drawPixmap('%s' dim=(%d, %d), depth=%d, (%d, %d, %d, %d), (%d, %d, %d, %d)\n",
+        printf(" -(lance) drawPixmap('%s' dim=(%d, %d), depth=%d, (%f, %f, %f, %f), (%f, %f, %f, %f)\n",
                qPrintable(re.cap(1)), pm.width(), pm.height(), pm.depth(),
                tx, ty, tw, th, sx, sy, sw, sh);
 
@@ -1022,7 +1022,7 @@ void PaintCommands::command_drawImage(QRegExp re)
     if (sh == 0) sh = -1;
 
     if (m_verboseMode)
-        printf(" -(lance) drawImage('%s' dim=(%d, %d), (%d, %d, %d, %d), (%d, %d, %d, %d)\n",
+        printf(" -(lance) drawImage('%s' dim=(%d, %d), (%f, %f, %f, %f), (%f, %f, %f, %f)\n",
                qPrintable(re.cap(1)), im.width(), im.height(), tx, ty, tw, th, sx, sy, sw, sh);
 
     m_painter->drawImage(QRectF(tx, ty, tw, th), im, QRectF(sx, sy, sw, sh), Qt::OrderedDither | Qt::OrderedAlphaDither);

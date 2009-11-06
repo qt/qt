@@ -241,6 +241,7 @@ public:
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+#ifndef QT_NO_GRAPHICSEFFECT
         QGraphicsEffect::ChangeFlags flags;
         if (item->d_ptr->notifyBoundingRectChanged) {
             flags |= QGraphicsEffect::SourceBoundingRectChanged;
@@ -250,12 +251,15 @@ public:
             flags |= QGraphicsEffect::SourceInvalidated;
             item->d_ptr->notifyInvalidated = 0;
         }
+#endif //QT_NO_GRAPHICSEFFECT
         if (recursive) {
             for (int i = 0; i < item->d_ptr->children.size(); ++i)
                 resetDirtyItem(item->d_ptr->children.at(i), recursive);
         }
+#ifndef QT_NO_GRAPHICSEFFECT
         if (flags && item->d_ptr->graphicsEffect)
             item->d_ptr->graphicsEffect->sourceChanged(flags);
+#endif //QT_NO_GRAPHICSEFFECT
     }
 
     inline void ensureSortedTopLevelItems()

@@ -4636,6 +4636,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (itemHasChildren && itemClipsChildrenToShape)
         ENSURE_TRANSFORM_PTR;
 
+#ifndef QT_NO_GRAPHICSEFFECT
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
@@ -4658,7 +4659,9 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
         item->d_ptr->graphicsEffect->draw(painter, source);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
-    } else {
+    } else
+#endif //QT_NO_GRAPHICSEFFECT
+    {
         draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
              effectTransform, wasDirtyParentSceneTransform, drawItem);
     }
@@ -4827,10 +4830,12 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     QGraphicsItem *p = item->d_ptr->parent;
     while (p) {
         p->d_ptr->dirtyChildren = 1;
+#ifndef QT_NO_GRAPHICSEFFECT
         if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
             p->d_ptr->dirty = 1;
             p->d_ptr->fullUpdatePending = 1;
         }
+#endif //QT_NO_GRAPHICSEFFECT
         p = p->d_ptr->parent;
     }
 }

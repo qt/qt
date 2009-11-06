@@ -227,9 +227,11 @@ public:
     qreal effectiveOpacity() const;
     void setOpacity(qreal opacity);
 
+#ifndef QT_NO_GRAPHICSEFFECT
     // Effect
     QGraphicsEffect *graphicsEffect() const;
     void setGraphicsEffect(QGraphicsEffect *effect);
+#endif //QT_NO_GRAPHICSEFFECT
 
     Qt::MouseButtons acceptedMouseButtons() const;
     void setAcceptedMouseButtons(Qt::MouseButtons buttons);

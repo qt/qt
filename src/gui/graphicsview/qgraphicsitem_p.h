@@ -224,7 +224,9 @@ public:
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+#ifndef QT_NO_GRAPHICSEFFECT
     void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -581,6 +583,7 @@ struct QGraphicsItemPaintInfo
     quint32 drawItem : 1;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -636,7 +639,7 @@ public:
     QGraphicsItemPaintInfo *info;
     QTransform lastEffectTransform;
 };
-
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     Returns true if \a item1 is on top of \a item2.

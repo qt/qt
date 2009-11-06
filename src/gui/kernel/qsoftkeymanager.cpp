@@ -197,8 +197,7 @@ bool QSoftKeyManager::event(QEvent *e)
         } while (source);
 
         QSoftKeyManagerPrivate::softKeySource = source;
-        if (source)
-            QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
+        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
         return true;
     }
     return false;
@@ -247,7 +246,10 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
         }
     }
 
-    Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource->window()->windowType();
+    const Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource
+        ?   QSoftKeyManagerPrivate::softKeySource->window()->windowType()
+        :   Qt::Widget;
+
     if (needsExitButton && sourceWindowType != Qt::Dialog && sourceWindowType != Qt::Popup)
         QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
 

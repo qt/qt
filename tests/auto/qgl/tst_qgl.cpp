@@ -82,7 +82,6 @@ private slots:
     void glPBufferRendering();
     void glWidgetReparent();
     void glWidgetRenderPixmap();
-    void stackedFBOs();
     void colormap();
     void fboFormat();
     void testDontCrashOnDanglingResources();
@@ -1225,110 +1224,6 @@ void tst_QGL::glWidgetRenderPixmap()
 
     QCOMPARE(fb, reference);
 }
-
-
-// When using multiple FBOs at the same time, unbinding one FBO should re-bind the
-// previous. I.e. It should be possible to have a stack of FBOs where pop'ing there
-// top re-binds the one underneeth.
-void tst_QGL::stackedFBOs()
-{
-    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
-        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
-
-    QGLWidget glw;
-    glw.show();
-
-#ifdef Q_WS_X11
-    qt_x11_wait_for_window_manager(&glw);
-#endif
-    QTest::qWait(200);
-
-    glw.makeCurrent();
-
-    // No multisample with combined depth/stencil attachment:
-    QGLFramebufferObjectFormat fboFormat;
-    fboFormat.setAttachment(QGLFramebufferObject::CombinedDepthStencil);
-
-    // Don't complicate things by using NPOT:
-    QGLFramebufferObject *fbo1 = new QGLFramebufferObject(128, 128, fboFormat);
-    QGLFramebufferObject *fbo2 = new QGLFramebufferObject(128, 128, fboFormat);
-    QGLFramebufferObject *fbo3 = new QGLFramebufferObject(128, 128, fboFormat);
-
-    glClearColor(1.0, 0.0, 1.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    fbo1->bind();
-        glClearColor(1.0, 0.0, 0.0, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        fbo2->bind();
-            glClearColor(0.0, 1.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            fbo3->bind();
-                glClearColor(0.0, 0.0, 1.0, 1.0);
-                glClear(GL_COLOR_BUFFER_BIT);
-                glScissor(32, 32, 64, 64);
-                glEnable(GL_SCISSOR_TEST);
-                glClearColor(0.0, 1.0, 1.0, 1.0);
-                glClear(GL_COLOR_BUFFER_BIT);
-            fbo3->release();
-
-            // Scissor rect & test should be left untouched by the fbo release...
-            glClearColor(0.0, 0.0, 0.0, 1.0);
-            glClear(GL_COLOR_BUFFER_BIT);
-        fbo2->release();
-
-        glClearColor(1.0, 1.0, 1.0, 1.0);
-        glClear(GL_COLOR_BUFFER_BIT);
-    fbo1->release();
-
-    glClearColor(1.0, 1.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glw.swapBuffers();
-
-    QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
-    QImage fb1 = fbo1->toImage().convertToFormat(QImage::Format_RGB32);
-    QImage fb2 = fbo2->toImage().convertToFormat(QImage::Format_RGB32);
-    QImage fb3 = fbo3->toImage().convertToFormat(QImage::Format_RGB32);
-
-    delete fbo1;
-    delete fbo2;
-    delete fbo3;
-
-    QImage widgetReference(widgetFB.size(), widgetFB.format());
-    QImage fb1Reference(fb1.size(), fb1.format());
-    QImage fb2Reference(fb2.size(), fb2.format());
-    QImage fb3Reference(fb3.size(), fb3.format());
-
-    QPainter widgetReferencePainter(&widgetReference);
-    QPainter fb1ReferencePainter(&fb1Reference);
-    QPainter fb2ReferencePainter(&fb2Reference);
-    QPainter fb3ReferencePainter(&fb3Reference);
-
-    widgetReferencePainter.fillRect(0, 0, widgetReference.width(), widgetReference.height(), Qt::magenta);
-    fb1ReferencePainter.fillRect(0, 0, fb1Reference.width(), fb1Reference.height(), Qt::red);
-    fb2ReferencePainter.fillRect(0, 0, fb2Reference.width(), fb2Reference.height(), Qt::green);
-    fb3ReferencePainter.fillRect(0, 0, fb3Reference.width(), fb3Reference.height(), Qt::blue);
-
-    // Flip y-coords to match GL for the widget (which can be any size)
-    widgetReferencePainter.fillRect(32, glw.height() - 96, 64, 64, Qt::yellow);
-    fb1ReferencePainter.fillRect(32, 32, 64, 64, Qt::white);
-    fb2ReferencePainter.fillRect(32, 32, 64, 64, Qt::black);
-    fb3ReferencePainter.fillRect(32, 32, 64, 64, Qt::cyan);
-
-    widgetReferencePainter.end();
-    fb1ReferencePainter.end();
-    fb2ReferencePainter.end();
-    fb3ReferencePainter.end();
-
-    QCOMPARE(widgetFB, widgetReference);
-    QCOMPARE(fb1, fb1Reference);
-    QCOMPARE(fb2, fb2Reference);
-    QCOMPARE(fb3, fb3Reference);
-}
-
 
 class ColormapExtended : public QGLColormap
 {

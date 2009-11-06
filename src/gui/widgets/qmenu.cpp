@@ -1878,9 +1878,11 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
+#ifndef QT_NO_MENUBAR
             //if in a menubar, it should be right-aligned
             if (qobject_cast<QMenuBar*>(d->causedPopup.widget))
                 pos.rx() -= size.width();
+#endif //QT_NO_MENUBAR
 
             if (pos.x() < screen.left()+desktopFrame)
                 pos.setX(qMax(p.x(), screen.left()+desktopFrame));
