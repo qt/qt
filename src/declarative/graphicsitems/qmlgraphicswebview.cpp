@@ -907,20 +907,6 @@ QPixmap QmlGraphicsWebView::icon() const
 
 
 /*!
-    \qmlproperty real WebView::textSizeMultiplier
-    This property holds the multiplier used to scale the text in a Web page
-*/
-void QmlGraphicsWebView::setTextSizeMultiplier(qreal factor)
-{
-    page()->mainFrame()->setTextSizeMultiplier(factor);
-}
-
-qreal QmlGraphicsWebView::textSizeMultiplier() const
-{
-    return page()->mainFrame()->textSizeMultiplier();
-}
-
-/*!
     \qmlproperty real WebView::zoomFactor
     This property holds the multiplier used to scale the contents of a Web page.
 */
