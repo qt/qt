@@ -348,7 +348,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 m.setComment(mv.comment());
         } else {
             TranslatorMessage mv;
-            int mvi = virginTor.messages().indexOf(m);
+            int mvi = virginTor.find(m);
             if (mvi < 0) {
                 if (!(options & HeuristicSimilarText)) {
                   makeObsolete:
@@ -437,7 +437,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             if (tor.contains(mv.context()))
                 continue;
         } else {
-            if (tor.messages().contains(mv))
+            if (tor.find(mv) >= 0)
                 continue;
             if (options & HeuristicSimilarText) {
                 TranslatorMessage m = tor.find(mv.context(), mv.comment(), mv.allReferences());

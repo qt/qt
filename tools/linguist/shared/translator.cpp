@@ -82,7 +82,7 @@ QList<Translator::FileFormat> &Translator::registeredFileFormats()
 
 void Translator::replaceSorted(const TranslatorMessage &msg)
 {
-    int index = m_messages.indexOf(msg);
+    int index = find(msg);
     if (index == -1)
         appendSorted(msg);
     else
@@ -91,7 +91,7 @@ void Translator::replaceSorted(const TranslatorMessage &msg)
 
 void Translator::extend(const TranslatorMessage &msg)
 {
-    int index = m_messages.indexOf(msg);
+    int index = find(msg);
     if (index == -1) {
         m_messages.append(msg);
     } else {
@@ -302,6 +302,18 @@ bool Translator::release(QFile *iod, ConversionData &cd) const
     return false;
 }
 
+int Translator::find(const TranslatorMessage &msg) const
+{
+    for (int i = 0; i < m_messages.count(); ++i) {
+        const TranslatorMessage &tmsg = m_messages.at(i);
+        if (msg.context() == tmsg.context()
+            && msg.sourceText() == tmsg.sourceText()
+            && msg.comment() == tmsg.comment())
+            return i;
+    }
+    return -1;
+}
+
 TranslatorMessage Translator::find(const QString &context,
     const QString &comment, const TranslatorMessage::References &refs) const
 {
@@ -429,12 +441,20 @@ Q_DECLARE_TYPEINFO(TranslatorMessagePtr, Q_MOVABLE_TYPE);
 
 inline int qHash(TranslatorMessagePtr tmp)
 {
-    return qHash(*tmp.ptr);
+    return
+        qHash(tmp->context()) ^
+        qHash(tmp->sourceText()) ^
+        qHash(tmp->comment()) ^
+        qHash(tmp->id());
 }
 
 inline bool operator==(TranslatorMessagePtr tmp1, TranslatorMessagePtr tmp2)
 {
-    return *tmp1.ptr == *tmp2.ptr;
+    // Special treatment for context comments (empty source).
+    return (tmp1->context() == tmp2->context())
+        && tmp1->sourceText() == tmp2->sourceText()
+        && tmp1->id() == tmp2->id()
+        && (tmp1->sourceText().isEmpty() || tmp1->comment() == tmp2->comment());
 }
 
 Translator::Duplicates Translator::resolveDuplicates()

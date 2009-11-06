@@ -143,25 +143,6 @@ bool TranslatorMessage::needs8Bit() const
 }
 
 
-bool TranslatorMessage::operator==(const TranslatorMessage& m) const
-{
-    // Special treatment for context comments (empty source).
-    return (m_context == m.m_context)
-        && m_sourcetext == m.m_sourcetext
-        && m_id == m.m_id
-        && (m_sourcetext.isEmpty() || m_comment == m.m_comment);
-}
-
-
-int qHash(const TranslatorMessage &msg)
-{
-    return
-        qHash(msg.context()) ^
-        qHash(msg.sourceText()) ^
-        qHash(msg.comment()) ^
-        qHash(msg.id());
-}
-
 bool TranslatorMessage::hasExtra(const QString &key) const
 {
     return m_extra.contains(key);
