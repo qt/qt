@@ -61,7 +61,7 @@ Rectangle {
                 SequentialAnimation {
                     NumberAnimation {
                         target: bluerect
-                        properties: "y"
+                        property: "y"
                         from: 0
                         to: 10
                         easing: "easeOutBounce(amplitude:30)"
@@ -69,7 +69,7 @@ Rectangle {
                     }
                     NumberAnimation {
                         target: bluerect
-                        properties: "y"
+                        property: "y"
                         from: 10
                         to: 0
                         easing: "easeOutBounce(amplitude:30)"
@@ -83,14 +83,14 @@ Rectangle {
             SequentialAnimation {
                 NumberAnimation {
                     target: bluerect
-                    properties: "opacity"
+                    property: "opacity"
                     to: 0
                     duration: 150
                 }
                 PropertyAction {}
                 NumberAnimation {
                     target: bluerect
-                    properties: "opacity"
+                    property: "opacity"
                     to: 1
                     duration: 150
                 }

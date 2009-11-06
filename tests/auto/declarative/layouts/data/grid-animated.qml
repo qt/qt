@@ -7,17 +7,17 @@ Item {
         columns: 3
         add: Transition {
             NumberAnimation {
-                properties: "x,y"; from: -100
+                matchProperties: "x,y"; from: -100
             }
         }
         remove: Transition {
             NumberAnimation {
-                properties: "x,y"; to: -100
+                matchProperties: "x,y"; to: -100
             }
         }
         move: Transition {
             NumberAnimation {
-                properties: "x,y";
+                matchProperties: "x,y";
             }
         }
         Rectangle {

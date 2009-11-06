@@ -7,7 +7,7 @@ SUBDIRS += \
            datetimeformatter \      # Cover
            examples \
            layouts \                # Cover
-           listview \               # Cover
+           qmlgraphicslistview \    # Cover
            qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
            pathview \               # Cover
@@ -16,11 +16,13 @@ SUBDIRS += \
            qfxtextinput \           # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
+           qmlconnection \          # Cover
            qmlcontext \             # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover
+           qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicstext \        # Cover

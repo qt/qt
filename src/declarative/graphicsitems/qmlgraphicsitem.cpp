@@ -389,6 +389,76 @@ void QmlGraphicsItemKeyFilter::componentComplete()
     if (m_next) m_next->componentComplete();
 }
 
+
+/*!
+    \qmlclass KeyNavigation
+    \brief The KeyNavigation attached property supports key navigation by arrow keys.
+
+    It is common in key-based UIs to use arrow keys to navigate
+    between focussed items.  The KeyNavigation property provides a
+    convenient way of specifying which item will gain focus
+    when an arrow key is pressed.  The following example provides
+    key navigation for a 2x2 grid of items.
+
+    \code
+    Grid {
+        columns: 2
+        width: 100; height: 100
+        Rectangle {
+            id: item1
+            focus: true
+            width: 50; height: 50
+            color: focus ? "red" : "lightgray"
+            KeyNavigation.right: item2
+            KeyNavigation.down: item3
+        }
+        Rectangle {
+            id: item2
+            width: 50; height: 50
+            color: focus ? "red" : "lightgray"
+            KeyNavigation.left: item1
+            KeyNavigation.down: item4
+        }
+        Rectangle {
+            id: item3
+            width: 50; height: 50
+            color: focus ? "red" : "lightgray"
+            KeyNavigation.right: item4
+            KeyNavigation.up: item1
+        }
+        Rectangle {
+            id: item4
+            width: 50; height: 50
+            color: focus ? "red" : "lightgray"
+            KeyNavigation.left: item3
+            KeyNavigation.up: item2
+        }
+    }
+    \endcode
+
+    KeyNavigation receives key events after the item it is attached to.
+    If the item accepts an arrow key event, the KeyNavigation
+    attached property will not receive an event for that key.
+
+    If an item has been set for a direction and the KeyNavigation
+    attached property receives the corresponding
+    key press and release events, the events will be accepted by
+    KeyNaviagtion and will not propagate any further.
+
+    \sa {Keys}{Keys attached property}
+*/
+
+/*!
+    \qmlproperty Item KeyNavigation::left
+    \qmlproperty Item KeyNavigation::right
+    \qmlproperty Item KeyNavigation::up
+    \qmlproperty Item KeyNavigation::down
+
+    These properties hold the item to assign focus to
+    when Key_Left, Key_Right, Key_Up or Key_Down are
+    pressed.
+*/
+
 class QmlGraphicsKeyNavigationAttachedPrivate : public QObjectPrivate
 {
 public:
@@ -606,7 +676,7 @@ void QmlGraphicsKeyNavigationAttached::keyReleased(QKeyEvent *event)
 
     See \l {Qt::Key}{Qt.Key} for the list of keyboard codes.
 
-    \sa KeyEvent
+    \sa KeyEvent, {KeyNavigation}{KeyNavigation attached property}
 */
 
 /*!
@@ -1119,7 +1189,7 @@ void QmlGraphicsKeysAttached::keyPressed(QKeyEvent *event)
             // If we specifically handle a key then default to accepted
             ke.setAccepted(true);
             int idx = QmlGraphicsKeysAttached::staticMetaObject.indexOfSignal(keySignal);
-            metaObject()->method(idx).invoke(this, Q_ARG(QmlGraphicsKeysAttached, &ke));
+            metaObject()->method(idx).invoke(this, Qt::DirectConnection, Q_ARG(QmlGraphicsKeyEvent*, &ke));
         }
     }
     if (!ke.isAccepted())
