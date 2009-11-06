@@ -4193,9 +4193,9 @@ void tst_QPainter::extendedBlendModes()
 
     QVERIFY(testCompositionMode(255, 255, 255, QPainter::CompositionMode_SoftLight));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode(127, 127, 127, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode( 63,  63,  86, QPainter::CompositionMode_SoftLight));
-    QVERIFY(testCompositionMode(127,  63,  63, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode(127, 127, 126, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode( 63,  63,  39, QPainter::CompositionMode_SoftLight));
+    QVERIFY(testCompositionMode(127,  63,  62, QPainter::CompositionMode_SoftLight));
 
     QVERIFY(testCompositionMode(255, 255,   0, QPainter::CompositionMode_Difference));
     QVERIFY(testCompositionMode(  0,   0,   0, QPainter::CompositionMode_Difference));
