@@ -255,8 +255,10 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::FileOpen:
         return new QFileOpenEvent(*static_cast<QFileOpenEvent*>(e));
 
+#ifndef QT_NO_SHORTCUT
     case QEvent::Shortcut:
         return new QShortcutEvent(*static_cast<QShortcutEvent*>(e));
+#endif //QT_NO_SHORTCUT
     case QEvent::ShortcutOverride:
         return new QKeyEvent(*static_cast<QKeyEvent*>(e));
 

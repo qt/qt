@@ -256,9 +256,9 @@ QString QAccessibleButton::localizedName(int actionIndex)
 QStringList QAccessibleButton::keyBindings(int actionIndex)
 {
     switch (actionIndex) {
-#ifdef QT_NO_SHORTCUT
+#ifndef QT_NO_SHORTCUT
     case 0:
-        return button()->shortcut().toString();
+        return QStringList() << button()->shortcut().toString();
 #endif
     default:
         return QStringList();
