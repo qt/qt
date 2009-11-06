@@ -54,6 +54,6 @@ Rectangle {
         height: 320
         model: testModel
         delegate: myDelegate
-        sectionExpression: "Math.floor(index/5)"
+        sectionExpression: "Math.floor(number/5)"
     }
 }

@@ -702,7 +702,7 @@ void tst_QmlGraphicsListView::sections()
 
     TestModel model;
     for (int i = 0; i < 30; i++)
-        model.addItem("Item" + QString::number(i), "");
+        model.addItem("Item" + QString::number(i), QString::number(i));
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
@@ -723,6 +723,36 @@ void tst_QmlGraphicsListView::sections()
         QVERIFY(item);
         QCOMPARE(item->y(), qreal(i*20 + ((i+4)/5) * 20));
     }
+
+    // Remove section boundary
+    model.removeItem(5);
+
+    // New section header created
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", 5);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 40.0);
+
+    model.insertItem(3, "New Item", "3");
+
+    // Section header moved
+    item = findItem<QmlGraphicsItem>(viewport, "wrapper", 5);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 20.0);
+
+    item = findItem<QmlGraphicsItem>(viewport, "wrapper", 6);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 40.0);
+
+    // insert item which will become a section header
+    model.insertItem(6, "Replace header", "5");
+
+    item = findItem<QmlGraphicsItem>(viewport, "wrapper", 6);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 40.0);
+
+    item = findItem<QmlGraphicsItem>(viewport, "wrapper", 7);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 20.0);
 
     QVERIFY(listview->currentSection() == "0");
 

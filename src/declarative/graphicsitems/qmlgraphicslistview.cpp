@@ -1748,6 +1748,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
     d->updateUnrequestedIndexes();
     if (!d->visibleItems.count() || d->model->count() <= 1) {
         d->layout();
+        d->updateSections();
         d->updateCurrent(qMax(0, qMin(d->currentIndex, d->model->count()-1)));
         emit countChanged();
         return;
@@ -1827,6 +1828,7 @@ void QmlGraphicsListView::itemsInserted(int modelIndex, int count)
         added.at(j)->attached->emitAdd();
     d->updateUnrequestedPositions();
     d->updateViewport();
+    d->updateSections();
     emit countChanged();
 }
 
@@ -2009,6 +2011,7 @@ void QmlGraphicsListView::itemsMoved(int from, int to, int count)
     d->visibleItems.first()->setPosition(firstItemPos);
 
     d->layout();
+    d->updateSections();
 }
 
 void QmlGraphicsListView::createdItem(int index, QmlGraphicsItem *item)
