@@ -1714,7 +1714,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
                                                  prop->value, obj, ctxt.incr()));
             obj->addValueTypeProperty(prop);
         } else {
-            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Invalid property access"));
+            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Invalid grouped property access"));
         }
 
     } else {
@@ -1722,7 +1722,7 @@ bool QmlCompiler::buildGroupedProperty(QmlParser::Property *prop,
         prop->value->metatype = 
             QmlEnginePrivate::get(engine)->metaObjectForType(prop->type);
         if (!prop->value->metatype)
-            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Cannot nest non-QObject property \"%1\"").arg(QString::fromUtf8(prop->name)));
+            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Invalid grouped property access"));
 
         obj->addGroupedProperty(prop);
 
@@ -1749,8 +1749,11 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
         prop->index = idx;
         prop->type = p.userType();
 
-        if (prop->value || prop->values.count() != 1)
-            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Invalid property use"));
+        if (prop->value)
+            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Property assignment expected"));
+
+        if (prop->values.count() != 1)
+            COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Single property assignment expected"));
 
         Value *value = prop->values.at(0);
 
@@ -1758,7 +1761,7 @@ bool QmlCompiler::buildValueTypeProperty(QObject *type,
             bool isPropertyValue = output->types.at(value->object->type).type->propertyValueSourceCast() != -1;
             bool isPropertyInterceptor = output->types.at(value->object->type).type->propertyValueInterceptorCast() != -1;
             if (!isPropertyValue && !isPropertyInterceptor) {
-                COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Invalid property use"));
+                COMPILE_EXCEPTION(prop, qApp->translate("QmlCompiler","Unexpected object assignment"));
             } else {
                 COMPILE_CHECK(buildObject(value->object, ctxt));
 

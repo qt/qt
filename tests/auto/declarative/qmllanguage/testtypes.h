@@ -80,14 +80,19 @@ class MyAttachedObject : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(int value READ value WRITE setValue)
+    Q_PROPERTY(int value2 READ value2 WRITE setValue2)
 public:
-    MyAttachedObject(QObject *parent) : QObject(parent), m_value(0) {}
+    MyAttachedObject(QObject *parent) : QObject(parent), m_value(0), m_value2(0) {}
 
     int value() const { return m_value; }
     void setValue(int v) { m_value = v; }
 
+    int value2() const { return m_value2; }
+    void setValue2(int v) { m_value2 = v; }
+
 private:
     int m_value;
+    int m_value2;
 };
 
 class MyQmlObject : public QObject, public MyInterface, public QmlParserStatus
@@ -201,9 +206,11 @@ class MyTypeObject : public QObject
     Q_PROPERTY(bool boolProperty READ boolProperty WRITE setBoolProperty);
     Q_PROPERTY(QVariant variantProperty READ variantProperty WRITE setVariantProperty);
     Q_PROPERTY(QVector3D vectorProperty READ vectorProperty WRITE setVectorProperty);
+    Q_PROPERTY(QUrl urlProperty READ urlProperty WRITE setUrlProperty);
 
     Q_PROPERTY(QmlScriptString scriptProperty READ scriptProperty WRITE setScriptProperty);
     Q_PROPERTY(MyGroupedObject *grouped READ grouped CONSTANT);
+    Q_PROPERTY(MyGroupedObject *nullGrouped READ nullGrouped CONSTANT);
 
 public:
     MyTypeObject()
@@ -413,6 +420,14 @@ public:
         vectorPropertyValue = v;
     }
 
+    QUrl urlPropertyValue;
+    QUrl urlProperty() const {
+        return urlPropertyValue;
+    }
+    void setUrlProperty(const QUrl &v) {
+        urlPropertyValue = v;
+    }
+
     QmlScriptString scriptPropertyValue;
     QmlScriptString scriptProperty() const {
         return scriptPropertyValue;
@@ -423,6 +438,8 @@ public:
 
     MyGroupedObject groupedValue;
     MyGroupedObject *grouped() { return &groupedValue; }
+
+    MyGroupedObject *nullGrouped() { return 0; }
 
     void doAction() { emit action(); }
 signals:
