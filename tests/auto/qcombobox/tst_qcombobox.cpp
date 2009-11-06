@@ -2529,7 +2529,7 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     QCOMPARE(spy.count(), 0);
     edit.setFocus();
     QTRY_VERIFY(edit.hasFocus());
-    QCOMPARE(spy.count(), 1);
+    QTRY_COMPARE(spy.count(), 1);
 }
 
 QTEST_MAIN(tst_QComboBox)
