@@ -147,6 +147,11 @@ void tst_qmlgraphicswebview::basicProperties()
     QVERIFY(!wv->forwardAction()->isEnabled());
     QVERIFY(wv->stopAction());
     QVERIFY(!wv->stopAction()->isEnabled());
+
+    wv->setPixelCacheSize(0); // mainly testing that it doesn't crash or anything!
+    QCOMPARE(wv->pixelCacheSize(),0);
+    wv->reloadAction()->trigger();
+    QTRY_COMPARE(wv->progress(), 1.0);
 }
 
 void tst_qmlgraphicswebview::historyNav()
