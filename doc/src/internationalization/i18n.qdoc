@@ -93,7 +93,7 @@
     \o Greek
     \o Hebrew
     \o Thai and Lao
-    \o All scripts in Unicode 4.0 that do not require special processing
+    \o All scripts in Unicode 5.1 that do not require special processing
     \endlist
 
     On Windows, Unix/X11 with FontConfig (client side font support)
@@ -112,6 +112,7 @@
     \o Tamil
     \o Telugu
     \o Tibetan
+    \o N'Ko
     \endlist
 
     Many of these writing systems exhibit special features:
@@ -181,7 +182,7 @@
 
     \section2 Use QString for All User-Visible Text
 
-    Since QString uses the Unicode 4.0 encoding internally, every
+    Since QString uses the Unicode 5.1 encoding internally, every
     language in the world can be processed transparently using
     familiar text processing operations. Also, since all Qt functions
     that present text to the user take a QString as a parameter,

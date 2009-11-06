@@ -181,6 +181,7 @@ private slots:
     void sinhala();
 
     void khmer();
+    void nko();
     void linearB();
 };
 
@@ -1074,6 +1075,40 @@ void tst_QScriptEngine::khmer()
 	}
     }
 }
+
+void tst_QScriptEngine::nko()
+{
+    {
+        FT_Face face = loadFace("DejaVuSans.ttf");
+        if (face) {
+	    const ShapeTable shape_table [] = {
+                { { 0x7ca, 0x0 },
+                  { 0x5c1, 0x0 } },
+                { { 0x7ca, 0x7ca, 0x0 },
+                  { 0x14db, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5ec, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x14d9, 0x0 } },
+                { { 0x7ca, 0x7f3, 0x7fa, 0x7ca, 0x0 },
+                  { 0x14db, 0x5e7, 0x5ec, 0x14d9, 0x0 } },
+                { {0}, {0} }
+	    };
+
+
+	    const ShapeTable *s = shape_table;
+	    while (s->unicode[0]) {
+                QVERIFY( shaping(face, s, HB_Script_Nko) );
+		++s;
+	    }
+
+            FT_Done_Face(face);
+	} else {
+	    QSKIP("couln't find DejaVuSans.ttf", SkipAll);
+	}
+    }
+}
+
 
 void tst_QScriptEngine::linearB()
 {
