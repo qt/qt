@@ -1203,7 +1203,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
         ensureActive();
 
     QOpenGL2PaintEngineState *s = state();
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && style == Qt::SolidPattern;
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) &&
+                    (style == Qt::SolidPattern) &&
+                    !d->multisamplingAlwaysEnabled;
 
     if (doOffset) {
         d->temporaryTransform = s->matrix;
@@ -1242,7 +1244,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     ensureActive();
 
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing);
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
     if (doOffset) {
         d->temporaryTransform = s->matrix;
         QTransform tx = QTransform::fromTranslate(0.49, .49);
@@ -1778,6 +1780,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
        ) {
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
     }
+#endif
+
+#if defined(QT_OPENGL_ES_2)
+    // OpenGL ES can't switch MSAA off, so if the gl paint device is
+    // multisampled, it's always multisampled.
+    d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
+#else
+    d->multisamplingAlwaysEnabled = false;
 #endif
 
     return true;
