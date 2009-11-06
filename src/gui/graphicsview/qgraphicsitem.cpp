@@ -2980,7 +2980,7 @@ bool QGraphicsItem::hasFocus() const
 {
     if (d_ptr->focusProxy)
         return d_ptr->focusProxy->hasFocus();
-    return (d_ptr->scene && d_ptr->scene->focusItem() == this);
+    return isActive() && (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
 /*!
