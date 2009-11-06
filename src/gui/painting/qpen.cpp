@@ -845,9 +845,7 @@ bool QPen::operator==(const QPen &p) const
                 || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
                     pdd->dashPattern == dd->dashPattern))
             && p.d->brush == d->brush
-            && pdd->cosmetic == dd->cosmetic)
-        || ((p.d->style == Qt::NoPen || p.d->brush.style() == Qt::NoBrush)
-            && (d->style == Qt::NoPen || d->brush.style() == Qt::NoBrush));
+            && pdd->cosmetic == dd->cosmetic);
 }
 
 
