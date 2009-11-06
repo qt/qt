@@ -62,6 +62,7 @@ private slots:
     void illegalSets();
     void reset();
     void nullItem();
+    void crash1();
 };
 
 /*
@@ -246,6 +247,20 @@ void tst_anchors::nullItem()
     QTest::ignoreMessage(QtWarningMsg, "QML QmlGraphicsItem (unknown location) Can't anchor to a null item.");
     QmlGraphicsItem *item = new QmlGraphicsItem;
     item->anchors()->setBottom(anchor);
+}
+
+void tst_anchors::crash1()
+{
+    QmlView *view = new QmlView;
+
+    view->setUrl(QUrl("file://" SRCDIR "/data/crash1.qml"));
+
+    QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    view->execute();
+    qApp->processEvents();
+
+    delete view;
 }
 
 QTEST_MAIN(tst_anchors)
