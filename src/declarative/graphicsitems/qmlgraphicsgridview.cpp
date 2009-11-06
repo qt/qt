@@ -1154,7 +1154,7 @@ void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexUp
+    \qmlmethod GridView::moveCurrentIndexUp()
 
     Move the currentIndex up one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1177,7 +1177,7 @@ void QmlGraphicsGridView::moveCurrentIndexUp()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexDown
+    \qmlmethod GridView::moveCurrentIndexDown()
 
     Move the currentIndex down one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1200,7 +1200,7 @@ void QmlGraphicsGridView::moveCurrentIndexDown()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexLeft
+    \qmlmethod GridView::moveCurrentIndexLeft()
 
     Move the currentIndex left one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1223,7 +1223,7 @@ void QmlGraphicsGridView::moveCurrentIndexLeft()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexRight
+    \qmlmethod GridView::moveCurrentIndexRight()
 
     Move the currentIndex right one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
