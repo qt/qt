@@ -1488,6 +1488,8 @@ void QmlGraphicsListView::setHighlightMoveSpeed(qreal speed)
     if (d->highlightMoveSpeed != speed)
     {
         d->highlightMoveSpeed = speed;
+        if (d->highlightPosAnimator)
+            d->highlightPosAnimator->setVelocity(d->highlightMoveSpeed);
         emit highlightMoveSpeedChanged();
     }
 }
@@ -1509,6 +1511,8 @@ void QmlGraphicsListView::setHighlightResizeSpeed(qreal speed)
     if (d->highlightResizeSpeed != speed)
     {
         d->highlightResizeSpeed = speed;
+        if (d->highlightSizeAnimator)
+            d->highlightSizeAnimator->setVelocity(d->highlightResizeSpeed);
         emit highlightResizeSpeedChanged();
     }
 }

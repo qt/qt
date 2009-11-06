@@ -72,6 +72,7 @@ private slots:
     void enforceRange();
     void spacing();
     void sections();
+    void currentIndex();
 
 private:
     template <class T> void items();
@@ -252,6 +253,9 @@ void tst_QmlGraphicsListView::items()
     QCOMPARE(listview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
+    // current item should be first item
+    QCOMPARE(listview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 0));
+
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", i);
         QVERIFY(name != 0);
@@ -260,11 +264,6 @@ void tst_QmlGraphicsListView::items()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
-
-    listview->incrementCurrentIndex();
-    QCOMPARE(listview->currentIndex(), 1);
-    listview->decrementCurrentIndex();
-    QCOMPARE(listview->currentIndex(), 0);
 
     // set an empty model and confirm that items are destroyed
     T model2;
@@ -334,7 +333,7 @@ void tst_QmlGraphicsListView::inserted()
     model.insertItem(1, "Will", "9876");
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -354,7 +353,7 @@ void tst_QmlGraphicsListView::inserted()
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -375,14 +374,14 @@ void tst_QmlGraphicsListView::inserted()
 
     for (int i = model.count(); i < 30; ++i)
         model.insertItem(i, "Hello", QString::number(i));
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     listview->setViewportY(80);
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Insert item outside visible area
     model.insertItem(1, "Hello", "1324");
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QVERIFY(listview->viewportY() == 80);
 
@@ -420,7 +419,7 @@ void tst_QmlGraphicsListView::removed()
     model.removeItem(1);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -442,7 +441,7 @@ void tst_QmlGraphicsListView::removed()
     model.removeItem(0);  // post: top item starts at 20
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     name = findItem<QmlGraphicsText>(viewport, "textName", 0);
     QVERIFY(name != 0);
@@ -463,7 +462,7 @@ void tst_QmlGraphicsListView::removed()
     // Remove items not visible
     model.removeItem(18);
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Confirm items positioned correctly
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -480,7 +479,7 @@ void tst_QmlGraphicsListView::removed()
 
     model.removeItem(1); // post: top item will be at 40
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Confirm items positioned correctly
     for (int i = 2; i < 18; ++i) {
@@ -492,7 +491,7 @@ void tst_QmlGraphicsListView::removed()
 
     listview->setViewportY(40); // That's the top now
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Confirm items positioned correctly
     itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -530,7 +529,7 @@ void tst_QmlGraphicsListView::moved()
     model.moveItem(1, 4);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", 1);
     QVERIFY(name != 0);
@@ -561,7 +560,7 @@ void tst_QmlGraphicsListView::moved()
     model.moveItem(1, 18);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Confirm items positioned correctly and indexes correct
     for (int i = 3; i < model.count() && i < itemCount; ++i) {
@@ -581,7 +580,7 @@ void tst_QmlGraphicsListView::moved()
     model.moveItem(20, 4);
 
     // let transitions settle.
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     // Confirm items positioned correctly and indexes correct
     for (int i = 3; i < model.count() && i < itemCount; ++i) {
@@ -617,6 +616,9 @@ void tst_QmlGraphicsListView::enforceRange()
     QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
     QVERIFY(listview != 0);
 
+    QCOMPARE(listview->preferredHighlightBegin(), 100.0);
+    QCOMPARE(listview->preferredHighlightEnd(), 100.0);
+
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
@@ -634,7 +636,7 @@ void tst_QmlGraphicsListView::enforceRange()
 
     // Check currentIndex is updated when viewport moves
     listview->setViewportY(20);
-    QTest::qWait(1000);
+    QTest::qWait(500);
 
     QCOMPARE(listview->currentIndex(), 6);
 
@@ -758,6 +760,78 @@ void tst_QmlGraphicsListView::sections()
 
     listview->setViewportY(140);
     QVERIFY(listview->currentSection() == "1");
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsListView::currentIndex()
+{
+    QmlView *canvas = createView(SRCDIR "/data/listview-initCurrent.qml");
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    // current item should be third item
+    QCOMPARE(listview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 3));
+
+    // no wrap
+    listview->setCurrentIndex(0);
+    QCOMPARE(listview->currentIndex(), 0);
+
+    listview->incrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 1);
+    listview->decrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 0);
+
+    listview->decrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 0);
+
+    // with wrap
+    listview->setWrapEnabled(true);
+
+    listview->decrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), model.count()-1);
+
+    QTest::qWait(1000);
+    QCOMPARE(listview->viewportY(), 279.0);
+
+    listview->incrementCurrentIndex();
+    QCOMPARE(listview->currentIndex(), 0);
+
+    QTest::qWait(1000);
+    QCOMPARE(listview->viewportY(), 0.0);
+
+    // Test keys
+    canvas->show();
+    qApp->processEvents();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QKeyEvent key(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(listview->currentIndex(), 1);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(listview->currentIndex(), 0);
 
     delete canvas;
 }

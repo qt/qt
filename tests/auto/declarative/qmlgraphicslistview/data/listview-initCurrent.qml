@@ -39,6 +39,7 @@ Rectangle {
         id: list
         objectName: "list"
         focus: true
+        currentIndex: 3
         width: 240
         height: 320
         model: testModel
