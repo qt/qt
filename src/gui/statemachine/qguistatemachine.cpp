@@ -106,8 +106,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::HideToParent:
         return new QEvent(*e);
+#ifndef QT_NO_WHEELEVENT
     case QEvent::Wheel:
         return new QWheelEvent(*static_cast<QWheelEvent*>(e));
+#endif //QT_NO_WHEELEVENT
     case QEvent::WindowTitleChange:
         return new QEvent(*e);
     case QEvent::WindowIconChange:
@@ -190,8 +192,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QInputMethodEvent(*static_cast<QInputMethodEvent*>(e));
     case QEvent::AccessibilityPrepare:
         return new QEvent(*e);
+#ifndef QT_NO_TABLETEVENT
     case QEvent::TabletMove:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
+#endif //QT_NO_TABLETEVENT
     case QEvent::LocaleChange:
         return new QEvent(*e);
     case QEvent::LanguageChange:
@@ -200,10 +204,12 @@ static QEvent *cloneEvent(QEvent *e)
         return new QEvent(*e);
     case QEvent::Style:
         return new QEvent(*e);
+#ifndef QT_NO_TABLETEVENT
     case QEvent::TabletPress:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
     case QEvent::TabletRelease:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
+#endif //QT_NO_TABLETEVENT
     case QEvent::OkRequest:
         return new QEvent(*e);
     case QEvent::HelpRequest:
@@ -238,8 +244,10 @@ static QEvent *cloneEvent(QEvent *e)
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
     case QEvent::WhatsThis:
         return new QHelpEvent(*static_cast<QHelpEvent*>(e));
+#ifndef QT_NO_STATUSTIP
     case QEvent::StatusTip:
         return new QStatusTipEvent(*static_cast<QStatusTipEvent*>(e));
+#endif //QT_NO_STATUSTIP
 #ifndef QT_NO_ACTION
     case QEvent::ActionChanged:
     case QEvent::ActionAdded:
@@ -249,8 +257,10 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::FileOpen:
         return new QFileOpenEvent(*static_cast<QFileOpenEvent*>(e));
 
+#ifndef QT_NO_SHORTCUT
     case QEvent::Shortcut:
         return new QShortcutEvent(*static_cast<QShortcutEvent*>(e));
+#endif //QT_NO_SHORTCUT
     case QEvent::ShortcutOverride:
         return new QKeyEvent(*static_cast<QKeyEvent*>(e));
 
@@ -263,11 +273,15 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 #endif
 
+#ifndef QT_NO_WHATSTHIS
     case QEvent::WhatsThisClicked:
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
+#endif //QT_NO_WHATSTHIS
 
+#ifndef QT_NO_TOOLBAR
     case QEvent::ToolBarChange:
         return new QToolBarChangeEvent(*static_cast<QToolBarChangeEvent*>(e));
+#endif //QT_NO_TOOLBAR
 
     case QEvent::ApplicationActivate:
         return new QEvent(*e);
@@ -397,9 +411,11 @@ static QEvent *cloneEvent(QEvent *e)
     case QEvent::DynamicPropertyChange:
         return new QDynamicPropertyChangeEvent(*static_cast<QDynamicPropertyChangeEvent*>(e));
 
+#ifndef QT_NO_TABLETEVENT
     case QEvent::TabletEnterProximity:
     case QEvent::TabletLeaveProximity:
         return new QTabletEvent(*static_cast<QTabletEvent*>(e));
+#endif //QT_NO_TABLETEVENT
 
     case QEvent::NonClientAreaMouseMove:
     case QEvent::NonClientAreaMouseButtonPress:
