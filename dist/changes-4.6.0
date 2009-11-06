@@ -62,10 +62,16 @@ QtCore
     * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
     * Fixed race conditions that occured when moving object to threads while connecting
 
+ - QPluginLoader
+    * Improved performance of plugin loading by reusing the plugin cache instead of loading
+      it every time.
+
 - QTextStream
     * [221316] Fixed crash on large input.
 
 QtGui
+- QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
 
 - QGraphicsItem
     * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
@@ -78,6 +84,9 @@ QtGui
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
+
+- QGraphicsLayout
+    * Introduced QGraphicsLayout::addChildLayoutItem()
 
 - QGraphicsObject
     * New class; inherits QGraphicsItem and adds notification signals and property declarations.
@@ -109,6 +118,7 @@ QtGui
 
 - QGraphicsWidget
     * Now inherits from QGraphicsObject instead
+    * Interactive resizing of top level windows now respects height-for-width constraints.
 
  - QTreeView
     * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
@@ -140,6 +150,9 @@ QtGui
 
  - QStandardItemModel
     * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
+
+ - QToolTip
+    * Fixed a bug where tooltips were not shown in popups. (Windows only).
 
  - QGraphicsItem
     * Added a new set of properties to set a transformation on a item
@@ -212,6 +225,9 @@ QtGui
 - uic3
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
+
+ - lupdate
+  - Fixed a bug in the java source code parser.
 
 ****************************************************************************
 *                               DirectFB                                   *
