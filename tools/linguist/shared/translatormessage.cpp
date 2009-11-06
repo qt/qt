@@ -145,12 +145,9 @@ bool TranslatorMessage::needs8Bit() const
 
 bool TranslatorMessage::operator==(const TranslatorMessage& m) const
 {
-    static QString msgIdPlural = QLatin1String("po-msgid_plural");
-
     // Special treatment for context comments (empty source).
     return (m_context == m.m_context)
         && m_sourcetext == m.m_sourcetext
-        && m_extra[msgIdPlural] == m.m_extra[msgIdPlural]
         && m_id == m.m_id
         && (m_sourcetext.isEmpty() || m_comment == m.m_comment);
 }
@@ -161,7 +158,6 @@ int qHash(const TranslatorMessage &msg)
     return
         qHash(msg.context()) ^
         qHash(msg.sourceText()) ^
-        qHash(msg.extra(QLatin1String("po-msgid_plural"))) ^
         qHash(msg.comment()) ^
         qHash(msg.id());
 }
