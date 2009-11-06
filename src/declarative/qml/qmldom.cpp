@@ -52,8 +52,6 @@
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(compilerDump, QML_COMPILER_DUMP)
-
 QmlDomDocumentPrivate::QmlDomDocumentPrivate()
 : root(0)
 {
@@ -191,11 +189,6 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
     }
 
     if (td->data.tree()) {
-        if (compilerDump()) {
-            qWarning() << "-AST------------------------------------------------------------------------------";
-            td->data.tree()->dump();
-            qWarning() << "----------------------------------------------------------------------------------";
-        }
         d->root = td->data.tree();
         d->root->addref();
     }

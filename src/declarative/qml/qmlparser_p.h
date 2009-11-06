@@ -216,8 +216,6 @@ namespace QmlParser
         QList<DynamicSignal> dynamicSignals;
         // The list of dynamic slots
         QList<DynamicSlot> dynamicSlots;
-
-        void dump(int = 0) const;
     };
 
     class Variant 
@@ -299,8 +297,6 @@ namespace QmlParser
         Object *object;
 
         LocationSpan location;
-
-        void dump(int = 0) const;
     };
 
     class Property : public QmlRefCount
@@ -342,8 +338,6 @@ namespace QmlParser
         LocationSpan location;
         LocationRange listValueRange;
         QList<int> listCommaPositions;
-
-        void dump(int = 0) const;
     };
 }
 
