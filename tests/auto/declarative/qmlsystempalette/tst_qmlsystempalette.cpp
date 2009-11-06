@@ -38,7 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
 #include <qtest.h>
+#include <QDebug>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlsystempalette_p.h>
@@ -56,6 +58,7 @@ private slots:
     void activePalette();
     void inactivePalette();
     void disabledPalette();
+    void paletteChanged();
 
 private:
     QmlEngine engine;
@@ -145,6 +148,30 @@ void tst_qmlsystempalette::disabledPalette()
     QCOMPARE(palette.shadow().color(), object->shadow());
     QCOMPARE(palette.highlight().color(), object->highlight());
     QCOMPARE(palette.highlightedText().color(), object->highlightedText());
+
+    delete object;
+}
+
+void tst_qmlsystempalette::paletteChanged()
+{
+    QString componentStr = "import Qt 4.6\nSystemPalette { }";
+    QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
+    QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
+
+    QVERIFY(object != 0);
+
+    QPalette p;
+    p.setCurrentColorGroup(QPalette::Active);
+    p.setColor(QPalette::Active, QPalette::Text, QColor("red"));
+    p.setColor(QPalette::Active, QPalette::ButtonText, QColor("green"));
+    p.setColor(QPalette::Active, QPalette::WindowText, QColor("blue"));
+
+    qApp->setPalette(p);
+
+    object->setColorGroup(QmlSystemPalette::Active);
+    QTRY_COMPARE(QColor("red"), object->text());
+    QTRY_COMPARE(QColor("green"), object->buttonText());
+    QTRY_COMPARE(QColor("blue"), object->windowText());
 
     delete object;
 }
