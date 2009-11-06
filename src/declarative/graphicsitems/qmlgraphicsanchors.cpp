@@ -152,13 +152,23 @@ void QmlGraphicsAnchorsPrivate::fillChanged()
     if (!fill || !isItemComplete())
         return;
 
-    if (fill == item->parentItem()) {                         //child-parent
-        setItemPos(QPointF(leftMargin, topMargin));
-    } else if (fill->parentItem() == item->parentItem()) {   //siblings
-        setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
+    if (updatingFill < 2) {
+        ++updatingFill;
+
+        if (fill == item->parentItem()) {                         //child-parent
+            setItemPos(QPointF(leftMargin, topMargin));
+        } else if (fill->parentItem() == item->parentItem()) {   //siblings
+            setItemPos(QPointF(fill->x()+leftMargin, fill->y()+topMargin));
+        }
+        setItemWidth(fill->width()-leftMargin-rightMargin);
+        setItemHeight(fill->height()-topMargin-bottomMargin);
+
+        --updatingFill;
+    } else {
+        // ### Make this certain :)
+        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on fill."), item);
     }
-    setItemWidth(fill->width()-leftMargin-rightMargin);
-    setItemHeight(fill->height()-topMargin-bottomMargin);
+
 }
 
 void QmlGraphicsAnchorsPrivate::centerInChanged()
@@ -166,16 +176,25 @@ void QmlGraphicsAnchorsPrivate::centerInChanged()
     if (!centerIn || fill || !isItemComplete())
         return;
 
-    if (centerIn == item->parentItem()) {
-        QPointF p((item->parentItem()->width() - item->width()) / 2.,
-                  (item->parentItem()->height() - item->height()) / 2.);
-        setItemPos(p);
+    if (updatingCenterIn < 2) {
+        ++updatingCenterIn;
 
-    } else if (centerIn->parentItem() == item->parentItem()) {
+        if (centerIn == item->parentItem()) {
+            QPointF p((item->parentItem()->width() - item->width()) / 2.,
+                      (item->parentItem()->height() - item->height()) / 2.);
+            setItemPos(p);
 
-        QPointF p(centerIn->x() + (centerIn->width() - item->width()) / 2.,
-                  centerIn->y() + (centerIn->height() - item->height()) / 2.);
-        setItemPos(p);
+        } else if (centerIn->parentItem() == item->parentItem()) {
+
+            QPointF p(centerIn->x() + (centerIn->width() - item->width()) / 2.,
+                      centerIn->y() + (centerIn->height() - item->height()) / 2.);
+            setItemPos(p);
+        }
+
+        --updatingCenterIn;
+    } else {
+        // ### Make this certain :)
+        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on centerIn."), item);
     }
 }
 
