@@ -55,10 +55,10 @@ Rectangle {
             text: s.text; horizontalAlignment: Text.AlignLeft; width: 800
         }
         Text {
-            text: s.text; horizontalAlignment: Text.AlignHCenter; width: 800
+            text: s.text; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter; width: 800; height: 20
         }
         Text {
-            text: s.text; horizontalAlignment: Text.AlignRight; width: 800
+            text: s.text; horizontalAlignment: Text.AlignRight; verticalAlignment: Text.AlignBottom; width: 800; height: 20
         }
         Text {
             text: s.text; font.pixelSize: 18; style: Text.Outline; styleColor: "white"; wrap: true; width: 200
