@@ -14,7 +14,6 @@ SUBDIRS += \
            qfxloader \              # Cover
            qfxtextedit \            # Cover
            qfxtextinput \           # Cover
-           qfxwebview \             # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
            qmlcontext \             # Cover
@@ -25,6 +24,7 @@ SUBDIRS += \
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicstext \        # Cover
+           qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
