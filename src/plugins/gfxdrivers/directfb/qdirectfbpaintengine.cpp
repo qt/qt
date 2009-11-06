@@ -71,6 +71,7 @@ public:
         PorterDuff_None = 0x00,
         PorterDuff_SupportedBlits = 0x01,
         PorterDuff_SupportedPrimitives = 0x02,
+        PorterDuff_SupportedOpaquePrimitives = 0x04,
         PorterDuff_Dirty = 0x10
     };
 
@@ -96,6 +97,7 @@ public:
     inline void unlock();
     static inline void unlock(QDirectFBPaintDevice *device);
 
+    inline bool testCompositionMode(const QPen *pen, const QBrush *brush, const QColor *color = 0) const;
     inline bool isSimpleBrush(const QBrush &brush) const;
 
     void drawTiledPixmap(const QRectF &dest, const QPixmap &pixmap, const QPointF &pos);
@@ -405,11 +407,11 @@ void QDirectFBPaintEngine::drawRects(const QRect *rects, int rectCount)
     if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-        || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
+    if ((d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
         || !d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-        || !d->isSimpleBrush(brush)) {
+        || !d->isSimpleBrush(brush)
+        || !d->testCompositionMode(&pen, &brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -435,11 +437,11 @@ void QDirectFBPaintEngine::drawRects(const QRectF *rects, int rectCount)
     if (brush.style() == Qt::NoBrush && pen.style() == Qt::NoPen)
         return;
 
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-        || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
+    if ((d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
         || !d->simplePen
         || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
-        || !d->isSimpleBrush(brush)) {
+        || !d->isSimpleBrush(brush)
+        || !d->testCompositionMode(&pen, &brush)) {
         RASTERFALLBACK(DRAW_RECTS, rectCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawRects(rects, rectCount);
@@ -461,16 +463,16 @@ void QDirectFBPaintEngine::drawLines(const QLine *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
 
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-        || !d->simplePen
-        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
+    const QPen &pen = state()->pen;
+    if (!d->simplePen
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+        || !d->testCompositionMode(&pen, 0)) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
     }
 
-    const QPen &pen = state()->pen;
     if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLine>)(lines, lineCount, state()->matrix, d->surface));
@@ -481,16 +483,16 @@ void QDirectFBPaintEngine::drawLines(const QLineF *lines, int lineCount)
 {
     Q_D(QDirectFBPaintEngine);
 
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-        || !d->simplePen
-        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
+    const QPen &pen = state()->pen;
+    if (!d->simplePen
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+        || !d->testCompositionMode(&pen, 0)) {
         RASTERFALLBACK(DRAW_LINES, lineCount, VOID_ARG(), VOID_ARG());
         d->lock();
         QRasterPaintEngine::drawLines(lines, lineCount);
         return;
     }
 
-    const QPen &pen = state()->pen;
     if (pen.style() != Qt::NoPen) {
         d->setDFBColor(pen.color());
         CLIPPED_PAINT(QT_PREPEND_NAMESPACE(drawLines<QLineF>)(lines, lineCount, state()->matrix, d->surface));
@@ -715,8 +717,8 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QBrush &brush)
     if (d->clipType != QDirectFBPaintEnginePrivate::ComplexClip) {
         switch (brush.style()) {
         case Qt::SolidPattern: {
-            if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-                || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)) {
+            if (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported
+                || !d->testCompositionMode(0, &brush)) {
                 break;
             }
             const QColor color = brush.color();
@@ -754,9 +756,9 @@ void QDirectFBPaintEngine::fillRect(const QRectF &rect, const QColor &color)
     if (!color.isValid())
         return;
     Q_D(QDirectFBPaintEngine);
-    if (!(d->compositionModeStatus & QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)
-        || (d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
-        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip) {
+    if ((d->transformationType & QDirectFBPaintEnginePrivate::Matrix_RectsUnsupported)
+        || d->clipType == QDirectFBPaintEnginePrivate::ComplexClip
+        || !d->testCompositionMode(0, 0, &color)) {
         RASTERFALLBACK(FILL_RECT, rect, color, VOID_ARG());
         d->lock();
         QRasterPaintEngine::fillRect(rect, color);
@@ -815,6 +817,36 @@ bool QDirectFBPaintEnginePrivate::isSimpleBrush(const QBrush &brush) const
 {
     return (brush.style() == Qt::NoBrush) || (brush.style() == Qt::SolidPattern && !antialiased);
 }
+
+bool QDirectFBPaintEnginePrivate::testCompositionMode(const QPen *pen, const QBrush *brush, const QColor *color) const
+{
+    Q_ASSERT(!pen || pen->style() == Qt::NoPen || pen->style() == Qt::SolidLine);
+    Q_ASSERT(!brush || brush->style() == Qt::NoBrush || brush->style() == Qt::SolidPattern);
+    switch (compositionModeStatus & (QDirectFBPaintEnginePrivate::PorterDuff_SupportedOpaquePrimitives
+                                     |QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives)) {
+    case QDirectFBPaintEnginePrivate::PorterDuff_SupportedPrimitives:
+        return true;
+    case QDirectFBPaintEnginePrivate::PorterDuff_SupportedOpaquePrimitives:
+        if (pen && pen->style() == Qt::SolidLine && pen->color().alpha() != 255)
+            return false;
+        if (brush) {
+            if (brush->style() == Qt::SolidPattern && brush->color().alpha() != 255) {
+                return false;
+            }
+        } else if (color && color->alpha() != 255) {
+            return false;
+        }
+        return true;
+    case QDirectFBPaintEnginePrivate::PorterDuff_None:
+        return false;
+    default:
+        // ### PorterDuff_SupportedOpaquePrimitives|PorterDuff_SupportedPrimitives can't be combined
+        break;
+    }
+    Q_ASSERT(0);
+    return false;
+}
+
 
 void QDirectFBPaintEnginePrivate::lock()
 {
@@ -889,6 +921,7 @@ void QDirectFBPaintEnginePrivate::setCompositionMode(QPainter::CompositionMode m
         break;
     case QPainter::CompositionMode_Source:
         surface->SetPorterDuff(surface, DSPD_SRC);
+        compositionModeStatus |= PorterDuff_SupportedOpaquePrimitives;
         break;
     case QPainter::CompositionMode_SourceOver:
         compositionModeStatus |= PorterDuff_SupportedPrimitives;
