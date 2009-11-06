@@ -51,6 +51,7 @@
 #include <QVector3D>
 #include <QVector4D>
 #include <QQuaternion>
+#include <qml.h>
 
 class tst_qmlmetatype : public QObject
 {
@@ -60,7 +61,61 @@ public:
 
 private slots:
     void copy();
+
+    void qmlParserStatusCast();
+    void qmlPropertyValueSourceCast();
+    void qmlPropertyValueInterceptorCast();
+
+    void isList();
+    void isQmlList();
+
+    void listCount();
+    void listAt();
+
+    void defaultObject();
 };
+
+class TestType : public QObject
+{
+    Q_OBJECT
+    Q_PROPERTY(int foo READ foo);
+
+    Q_CLASSINFO("DefaultProperty", "foo");
+public:
+    int foo() { return 0; }
+};
+QML_DECLARE_TYPE(TestType);
+QML_DEFINE_TYPE(Test, 1, 0, TestType, TestType);
+
+class ParserStatusTestType : public QObject, public QmlParserStatus
+{
+    Q_OBJECT
+    Q_CLASSINFO("DefaultProperty", "foo"); // Missing default property
+};
+QML_DECLARE_TYPE(ParserStatusTestType);
+QML_DEFINE_TYPE(Test, 1, 0, ParserStatusTestType, ParserStatusTestType);
+
+class ValueSourceTestType : public QObject, public QmlPropertyValueSource
+{
+    Q_OBJECT
+    Q_INTERFACES(QmlPropertyValueSource)
+public:
+    virtual void setTarget(const QmlMetaProperty &) {}
+};
+QML_DECLARE_TYPE(ValueSourceTestType);
+QML_DEFINE_TYPE(Test, 1, 0, ValueSourceTestType, ValueSourceTestType);
+
+class ValueInterceptorTestType : public QObject, public QmlPropertyValueInterceptor
+{
+    Q_OBJECT
+    Q_INTERFACES(QmlPropertyValueInterceptor)
+public:
+    virtual void setTarget(const QmlMetaProperty &) {}
+    virtual void write(const QVariant &) {}
+};
+QML_DECLARE_TYPE(ValueInterceptorTestType);
+QML_DEFINE_TYPE(Test, 1, 0, ValueInterceptorTestType, ValueInterceptorTestType);
+
 
 #define COPY_TEST(cpptype, metatype, value, defaultvalue) \
 { \
@@ -181,6 +236,7 @@ void tst_qmlmetatype::copy()
     QT_COPY_TEST(QKeySequence, QKeySequence("Ctrl+O"));
     QT_COPY_TEST(QPen, QPen(Qt::red));
     QT_COPY_TEST(QTextLength, QTextLength(QTextLength::FixedLength, 10.2));
+    QT_COPY_TEST(QTextFormat, QTextFormat(QTextFormat::ListFormat));
     QT_COPY_TEST(QMatrix, QMatrix().translate(10, 10));
     QT_COPY_TEST(QTransform, QTransform().translate(10, 10));
     QT_COPY_TEST(QMatrix4x4, QMatrix4x4().translate(10, 10));
@@ -204,6 +260,175 @@ void tst_qmlmetatype::copy()
     COPY_TEST(QObject *, QObjectStar, &objectValue, 0);
     COPY_TEST(QWidget *, QWidgetStar, &widgetValue, 0);
     COPY_TEST(qreal, QReal, 10.2, 0);
+
+    {
+        QVariant tv = QVariant::fromValue(QVariant(10));
+        QVariant v(tv); QVariant v2(tv);
+        QVERIFY(QmlMetaType::copy(qMetaTypeId<QVariant>(), &v, 0)); 
+        QVERIFY(v == QVariant());
+        QVERIFY(QmlMetaType::copy(qMetaTypeId<QVariant>(), &v, &v2)); 
+        QVERIFY(v == tv);
+    }
+
+    {
+        TestType t;  QVariant tv = QVariant::fromValue(&t);
+
+        QVariant v(tv); QVariant v2(tv);
+        QVERIFY(QmlMetaType::copy(qMetaTypeId<TestType *>(), &v, 0)); 
+        QVERIFY(v == QVariant::fromValue((TestType *)0));
+        QVERIFY(QmlMetaType::copy(qMetaTypeId<TestType *>(), &v, &v2)); 
+        QVERIFY(v == tv);
+    }
+}
+
+void tst_qmlmetatype::qmlParserStatusCast()
+{
+    QCOMPARE(QmlMetaType::qmlParserStatusCast(QVariant::Int), -1);
+    QCOMPARE(QmlMetaType::qmlParserStatusCast(qMetaTypeId<TestType *>()), -1);
+    QCOMPARE(QmlMetaType::qmlParserStatusCast(qMetaTypeId<ValueSourceTestType *>()), -1);
+
+    int cast = QmlMetaType::qmlParserStatusCast(qMetaTypeId<ParserStatusTestType *>());
+    QVERIFY(cast != -1);
+    QVERIFY(cast != 0);
+
+    ParserStatusTestType t;
+    QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QmlParserStatus *)&t));
+
+    QmlParserStatus *status = reinterpret_cast<QmlParserStatus *>(reinterpret_cast<char *>((QObject *)&t) + cast);
+    QCOMPARE(status, &t);
+}
+
+void tst_qmlmetatype::qmlPropertyValueSourceCast()
+{
+    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(QVariant::Int), -1);
+    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<TestType *>()), -1);
+    QCOMPARE(QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<ParserStatusTestType *>()), -1);
+
+    int cast = QmlMetaType::qmlPropertyValueSourceCast(qMetaTypeId<ValueSourceTestType *>());
+    QVERIFY(cast != -1);
+    QVERIFY(cast != 0);
+
+    ValueSourceTestType t;
+    QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QmlPropertyValueSource *)&t));
+
+    QmlPropertyValueSource *source = reinterpret_cast<QmlPropertyValueSource *>(reinterpret_cast<char *>((QObject *)&t) + cast);
+    QCOMPARE(source, &t);
+}
+
+void tst_qmlmetatype::qmlPropertyValueInterceptorCast()
+{
+    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(QVariant::Int), -1);
+    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<TestType *>()), -1);
+    QCOMPARE(QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<ParserStatusTestType *>()), -1);
+
+    int cast = QmlMetaType::qmlPropertyValueInterceptorCast(qMetaTypeId<ValueInterceptorTestType *>());
+    QVERIFY(cast != -1);
+    QVERIFY(cast != 0);
+
+    ValueInterceptorTestType t;
+    QVERIFY(reinterpret_cast<char *>((QObject *)&t) != reinterpret_cast<char *>((QmlPropertyValueInterceptor *)&t));
+
+    QmlPropertyValueInterceptor *interceptor = reinterpret_cast<QmlPropertyValueInterceptor *>(reinterpret_cast<char *>((QObject *)&t) + cast);
+    QCOMPARE(interceptor, &t);
+}
+
+void tst_qmlmetatype::isList()
+{
+    QCOMPARE(QmlMetaType::isList(QVariant()), false);
+    QCOMPARE(QmlMetaType::isList(QVariant::Invalid), false);
+    QCOMPARE(QmlMetaType::isList(QVariant::Int), false);
+    QCOMPARE(QmlMetaType::isList(QVariant(10)), false);
+
+    QList<TestType *> list;
+    QmlConcreteList<TestType *> qmllist;
+
+    QCOMPARE(QmlMetaType::isList(qMetaTypeId<QList<TestType *>*>()), true);
+    QCOMPARE(QmlMetaType::isList(QVariant::fromValue(&list)), true);
+    QCOMPARE(QmlMetaType::isList(qMetaTypeId<QmlList<TestType *>*>()), false);
+    QCOMPARE(QmlMetaType::isList(QVariant::fromValue((QmlList<TestType *>*)&qmllist)), false);
+}
+
+void tst_qmlmetatype::isQmlList()
+{
+    QCOMPARE(QmlMetaType::isQmlList(QVariant::Invalid), false);
+    QCOMPARE(QmlMetaType::isQmlList(QVariant::Int), false);
+
+    QCOMPARE(QmlMetaType::isQmlList(qMetaTypeId<QList<TestType *>*>()), false);
+    QCOMPARE(QmlMetaType::isQmlList(qMetaTypeId<QmlList<TestType *>*>()), true);
+}
+
+void tst_qmlmetatype::listCount()
+{
+    QCOMPARE(QmlMetaType::listCount(QVariant()), 0);
+    QCOMPARE(QmlMetaType::listCount(QVariant(10)), 0);
+
+    QList<TestType *> list; 
+    QVariant listVar = QVariant::fromValue(&list);
+    QmlConcreteList<TestType *> qmllist;
+    QVariant qmllistVar = QVariant::fromValue((QmlList<TestType *>*)&qmllist);
+
+    QCOMPARE(QmlMetaType::listCount(listVar), 0);
+    QCOMPARE(QmlMetaType::listCount(qmllistVar), 0);
+
+    list.append(0); list.append(0); list.append(0);
+    qmllist.append(0); qmllist.append(0); qmllist.append(0);
+
+    QCOMPARE(QmlMetaType::listCount(listVar), 3);
+    QCOMPARE(QmlMetaType::listCount(qmllistVar), 0);
+}
+
+void tst_qmlmetatype::listAt()
+{
+    QCOMPARE(QmlMetaType::listAt(QVariant(), 0), QVariant());
+    QCOMPARE(QmlMetaType::listAt(QVariant(10), 0), QVariant());
+    QCOMPARE(QmlMetaType::listAt(QVariant(), 10), QVariant());
+    QCOMPARE(QmlMetaType::listAt(QVariant(10), 10), QVariant());
+    QCOMPARE(QmlMetaType::listAt(QVariant(), -10), QVariant());
+    QCOMPARE(QmlMetaType::listAt(QVariant(10), -10), QVariant());
+
+    QList<TestType *> list; 
+    QVariant listVar = QVariant::fromValue(&list);
+    QmlConcreteList<TestType *> qmllist;
+    QVariant qmllistVar = QVariant::fromValue((QmlList<TestType *>*)&qmllist);
+
+    QCOMPARE(QmlMetaType::listAt(listVar, 0), QVariant());
+    QCOMPARE(QmlMetaType::listAt(listVar, 2), QVariant());
+    QCOMPARE(QmlMetaType::listAt(listVar, -1), QVariant());
+
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, 0), QVariant());
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, 2), QVariant());
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, -1), QVariant());
+
+    TestType ttype;
+    QVariant ttypeVar = QVariant::fromValue(&ttype);
+    QVariant nullttypeVar = QVariant::fromValue((TestType *)0);
+
+    list.append(0); list.append(&ttype); list.append(0);
+    qmllist.append(0); qmllist.append(&ttype); qmllist.append(0);
+
+    QCOMPARE(QmlMetaType::listAt(listVar, 0), nullttypeVar);
+    QCOMPARE(QmlMetaType::listAt(listVar, 1), ttypeVar);
+    QCOMPARE(QmlMetaType::listAt(listVar, -1), QVariant());
+
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, 0), QVariant());
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, 2), QVariant());
+    QCOMPARE(QmlMetaType::listAt(qmllistVar, -1), QVariant());
+}
+
+void tst_qmlmetatype::defaultObject()
+{
+    QVERIFY(QmlMetaType::defaultProperty(&QObject::staticMetaObject).name() == 0);
+    QVERIFY(QmlMetaType::defaultProperty(&ParserStatusTestType::staticMetaObject).name() == 0);
+    QCOMPARE(QString(QmlMetaType::defaultProperty(&TestType::staticMetaObject).name()), QString("foo"));
+
+    QObject o;
+    TestType t;
+    ParserStatusTestType p;
+
+    QVERIFY(QmlMetaType::defaultProperty((QObject *)0).name() == 0);
+    QVERIFY(QmlMetaType::defaultProperty(&o).name() == 0);
+    QVERIFY(QmlMetaType::defaultProperty(&p).name() == 0);
+    QCOMPARE(QString(QmlMetaType::defaultProperty(&t).name()), QString("foo"));
 }
 
 QTEST_MAIN(tst_qmlmetatype)

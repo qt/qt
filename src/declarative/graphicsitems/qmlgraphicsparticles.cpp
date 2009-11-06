@@ -302,7 +302,7 @@ void QmlGraphicsParticleMotionWander::advance(QmlGraphicsParticle &p, int interv
             qreal xdiff = p.x_velocity - d->x_targetV;
             if ((xdiff > d->x_peak && d->x_var > 0.0) || (xdiff < -d->x_peak && d->x_var < 0.0)) {
                 d->x_var = -d->x_var;
-                d->x_peak = _xvariance + _xvariance * qreal(rand()) / RAND_MAX;
+                d->x_peak = _xvariance + _xvariance * qreal(qrand()) / RAND_MAX;
             }
             p.x_velocity += d->x_var * interval;
         }
@@ -312,7 +312,7 @@ void QmlGraphicsParticleMotionWander::advance(QmlGraphicsParticle &p, int interv
             qreal ydiff = p.y_velocity - d->y_targetV;
             if ((ydiff > d->y_peak && d->y_var > 0.0) || (ydiff < -d->y_peak && d->y_var < 0.0)) {
                 d->y_var = -d->y_var;
-                d->y_peak = _yvariance + _yvariance * qreal(rand()) / RAND_MAX;
+                d->y_peak = _yvariance + _yvariance * qreal(qrand()) / RAND_MAX;
             }
             p.y_velocity += d->y_var * interval;
         }
@@ -329,8 +329,8 @@ void QmlGraphicsParticleMotionWander::created(QmlGraphicsParticle &p)
         d->y_targetV = p.y_velocity;
         d->x_peak = _xvariance;
         d->y_peak = _yvariance;
-        d->x_var = _pace * qreal(rand()) / RAND_MAX / 1000.0;
-        d->y_var = _pace * qreal(rand()) / RAND_MAX / 1000.0;
+        d->x_var = _pace * qreal(qrand()) / RAND_MAX / 1000.0;
+        d->y_var = _pace * qreal(qrand()) / RAND_MAX / 1000.0;
     }
 }
 
@@ -368,9 +368,10 @@ class QmlGraphicsParticlesPrivate : public QmlGraphicsItemPrivate
     Q_DECLARE_PUBLIC(QmlGraphicsParticles)
 public:
     QmlGraphicsParticlesPrivate()
-        : count(1), lifeSpan(1000), lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
-        , angle(0), angleDev(0), velocity(0), velocityDev(0)
-        , addParticleTime(0), addParticleCount(0), lastAdvTime(0), stream(false), streamDelay(0)
+        : count(1), emissionRate(-1), emissionVariance(0.5), lifeSpan(1000)
+        , lifeSpanDev(1000), fadeInDur(200), fadeOutDur(300)
+        , angle(0), angleDev(0), velocity(0), velocityDev(0), emissionCarry(0.)
+        , addParticleTime(0), addParticleCount(0), lastAdvTime(0)
         , emitting(true), motion(0), pendingPixmapCache(false), clock(this)
     {
     }
@@ -392,6 +393,8 @@ public:
     QUrl url;
     QPixmap image;
     int count;
+    int emissionRate;
+    qreal emissionVariance;
     int lifeSpan;
     int lifeSpanDev;
     int fadeInDur;
@@ -400,17 +403,17 @@ public:
     qreal angleDev;
     qreal velocity;
     qreal velocityDev;
+    qreal emissionCarry;
     int addParticleTime;
     int addParticleCount;
     int lastAdvTime;
-    bool stream;
-    int streamDelay;
     bool emitting;
     QmlGraphicsParticleMotion *motion;
     QmlGraphicsParticlesPainter *paintItem;
 
     bool pendingPixmapCache;
 
+    QList<QPair<int, int> > bursts;//countLeft, emissionRate pairs
     QList<QmlGraphicsParticle> particles;
     QTickAnimationProxy<QmlGraphicsParticlesPrivate, &QmlGraphicsParticlesPrivate::tick> clock;
 
@@ -439,40 +442,62 @@ void QmlGraphicsParticlesPrivate::tick(int time)
         }
     }
 
-    while(removed-- && particles.count() < count && emitting)
-        createParticle(time);
+    if(emissionRate == -1)//Otherwise leave emission to the emission rate
+        while(removed-- && ((count == -1) || particles.count() < count) && emitting)
+            createParticle(time);
 
     if (!addParticleTime)
         addParticleTime = time;
 
-    if (particles.count() < count && emitting) {
-        qreal perc = (lifeSpanDev <= 0)?(1.):(qreal(time - addParticleTime) / qreal(lifeSpanDev));
-        int percCount = addParticleCount + (int)perc * (count - addParticleCount);
-        int streamWidth = -1;
-        if (stream){
-            if (streamDelay > time){
-                streamWidth = 0;
-            }else{
-                int missed = time - streamDelay;
-                qreal streamWidthReal = qreal(count)/qreal(lifeSpan);
-                if (streamWidthReal < 1){
-                    streamDelay = time + (int)(1.0/streamWidthReal);
-                    streamWidth = 1;
-                    streamWidth += missed/streamDelay;
-                }else{
-                    streamWidth = qRound(streamWidthReal * (time-lastAdvTime));
-               }
+    //Possibly emit new particles
+    if (((count == -1) || particles.count() < count) && emitting
+            && !(count==-1 && emissionRate==-1)) {
+        int emissionCount = -1;
+        if (emissionRate != -1){
+            qreal variance = 1.;
+            if (emissionVariance > 0.){
+                variance += (qreal(qrand())/RAND_MAX) * emissionVariance * (qrand()%2?-1.:1.);
             }
+            qreal emission = emissionRate * (qreal(interval)/1000.);
+            emission = emission * variance + emissionCarry;
+            double tmpDbl;
+            emissionCarry = modf(emission, &tmpDbl);
+            emissionCount = (int)tmpDbl;
+            emissionCount = qMax(0,emissionCount);
         }
-        while(particles.count() < count &&
-                (!stream || (particles.count() < percCount && streamWidth--)))
+        while(((count == -1) || particles.count() < count) &&
+                (emissionRate==-1 || emissionCount--))
             createParticle(time);
     }
+
+    //Deal with emissions from requested bursts
+    for(int i=0; i<bursts.size(); i++){
+        int emission = 0;
+        if(bursts[i].second == -1){
+            emission = bursts[i].first;
+        }else{
+            qreal variance = 1.;
+            if (emissionVariance > 0.){
+                variance += (qreal(qrand())/RAND_MAX) * emissionVariance * (qrand()%2?-1.:1.);
+            }
+            qreal workingEmission = bursts[i].second * (qreal(interval)/1000.);
+            workingEmission *= variance;
+            emission = (int)workingEmission;
+            emission = qMax(emission, 0);
+        }
+        emission = qMin(emission, bursts[i].first);
+        bursts[i].first -= emission;
+        while(emission--)
+            createParticle(time);
+    }
+    for(int i=bursts.size()-1; i>=0; i--)
+        if(bursts[i].first <= 0)
+            bursts.removeAt(i);
 
     lastAdvTime = time;
     paintItem->updateSize();
     paintItem->update();
-    if (!(oldCount || particles.count()) && (!count || !emitting)) {
+    if (!(oldCount || particles.count()) && (!count || !emitting) && bursts.isEmpty()) {
         lastAdvTime = 0;
         clock.stop();
     }
@@ -485,11 +510,11 @@ void QmlGraphicsParticlesPrivate::createParticle(int time)
 #endif
     Q_Q(QmlGraphicsParticles);
     QmlGraphicsParticle p(time);
-    p.x = q->x() + q->width() * qreal(rand()) / RAND_MAX - image.width()/2.0;
-    p.y = q->y() + q->height() * qreal(rand()) / RAND_MAX - image.height()/2.0;
+    p.x = q->x() + q->width() * qreal(qrand()) / RAND_MAX - image.width()/2.0;
+    p.y = q->y() + q->height() * qreal(qrand()) / RAND_MAX - image.height()/2.0;
     p.lifeSpan = lifeSpan;
     if (lifeSpanDev)
-        p.lifeSpan += int(lifeSpanDev/2 - lifeSpanDev * qreal(rand()) / RAND_MAX);
+        p.lifeSpan += int(lifeSpanDev/2 - lifeSpanDev * qreal(qrand()) / RAND_MAX);
     p.fadeOutAge = p.lifeSpan - fadeOutDur;
     if (fadeInDur == 0.) {
         p.state= QmlGraphicsParticle::Solid;
@@ -497,12 +522,12 @@ void QmlGraphicsParticlesPrivate::createParticle(int time)
     }
     qreal a = angle;
     if (angleDev)
-        a += angleDev/2 - angleDev * qreal(rand()) / RAND_MAX;
+        a += angleDev/2 - angleDev * qreal(qrand()) / RAND_MAX;
     if (a > M_PI)
         a = a - 2 * M_PI;
     qreal v = velocity;
     if (velocityDev)
-        v += velocityDev/2 - velocityDev * qreal(rand()) / RAND_MAX;
+        v += velocityDev/2 - velocityDev * qreal(qrand()) / RAND_MAX;
     p.x_velocity = v * fastCos(a);
     p.y_velocity = v * fastSin(a);
     particles.append(p);
@@ -540,6 +565,8 @@ QML_DEFINE_TYPE(Qt,4,6,Particles,QmlGraphicsParticles)
     \qmlclass Particles
     \brief The Particles object generates and moves particles.
     \inherits Item
+
+    This element provides preliminary support for particles in QML, and may be heavily changed or removed in later versions.
 
     The particles created by this object cannot be dealt with directly, they can only be controlled through the parameters of the Particles object. The particles are all the same pixmap, specified by the user.
 
@@ -675,16 +702,27 @@ void QmlGraphicsParticles::setSource(const QUrl &name)
             d->paintItem->update();
         }
     }
+    emit sourceChanged();
 }
 
 /*!
     \qmlproperty int Particles::count
-    This property holds the target number of particles
+    This property holds the maximum number of particles
+
+    The particles element emits particles until it has count active
+    particles. When this number is reached, new particles are not emitted until
+    some of the current particles reach theend of their lifespan.
+
+    If count is -1 then there is no maximum number of active particles, and
+    particles will be constantly emitted at the rate specified by emissionRate.
+
+    If both count and emissionRate are set to -1, nothing will be emitted.
+
 */
 
 /*!
     \property QmlGraphicsParticles::count
-    \brief the target number of particles
+    \brief the maximum number of particles
 */
 int QmlGraphicsParticles::count() const
 {
@@ -702,11 +740,93 @@ void QmlGraphicsParticles::setCount(int cnt)
     d->count = cnt;
     d->addParticleTime = 0;
     d->addParticleCount = d->particles.count();
-    if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count) {
+    if (!oldCount && d->clock.state() != QAbstractAnimation::Running && d->count && d->emitting) {
         d->clock.start();
     }
     d->paintItem->updateSize();
     d->paintItem->update();
+    emit countChanged();
+}
+
+
+/*!
+    \qmlproperty int Particles::emissionRate
+    This property holds the target number of particles to emit every second.
+
+    The particles element will emit up to emissionRate particles every
+    second. Fewer particles may be emitted per second if the maximum number of
+    particles has been reached.
+
+    If emissionRate is set to -1 there is no limit to the number of
+    particles emitted per second, and particles will be instantly emitted to
+    reach the maximum number of particles specified by count.
+
+    The default value for emissionRate is -1.
+
+    If both count and emissionRate are set to -1, nothing will be emitted.
+*/
+
+/*!
+    \property QmlGraphicsParticles::emissionRate
+    \brief the emission rate of particles
+*/
+int QmlGraphicsParticles::emissionRate() const
+{
+    Q_D(const QmlGraphicsParticles);
+    return d->emissionRate;
+}
+void QmlGraphicsParticles::setEmissionRate(int er)
+{
+    Q_D(QmlGraphicsParticles);
+    if(er == d->emissionRate)
+        return;
+    d->emissionRate = er;
+    emit emissionRateChanged();
+}
+
+/*!
+    \qmlproperty qreal Particles::emissionVariance
+    This property holds how inconsistent the rate of particle emissions are.
+    It is a number between 0 (no variance) and 1 (some variance).
+
+    The expected number of particles emitted per second is emissionRate. If
+    emissionVariance is 0 then particles will be emitted consistently throughout
+    each second to reach that number. If emissionVariance is greater than 0 the
+    rate of particle emission will vary randomly throughout the second, with the
+    consequence that the actual number of particles emitted in one second will
+    vary randomly as well.
+
+    emissionVariance is the maximum deviation from emitting
+    emissionRate particles per second. An emissionVariance of 0 means you should
+    get exactly emissionRate particles emitted per second,
+    and an emissionVariance of 1 means you will get between zero and two times
+    emissionRate particles per second, but you should get emissionRate particles
+    per second on average.
+
+    Note that even with an emissionVariance of 0 there may be some variance due
+    to performance and hardware constraints.
+
+    The default value of emissionVariance is 0.5
+*/
+
+/*!
+    \property QmlGraphicsParticles::emissionVariance
+    \brief how much the particle emission amounts vary per tick
+*/
+
+qreal QmlGraphicsParticles::emissionVariance() const
+{
+    Q_D(const QmlGraphicsParticles);
+    return d->emissionVariance;
+}
+
+void QmlGraphicsParticles::setEmissionVariance(qreal ev)
+{
+    Q_D(QmlGraphicsParticles);
+    if(d->emissionVariance == ev)
+        return;
+    d->emissionVariance = ev;
+    emit emissionVarianceChanged();
 }
 
 /*!
@@ -747,7 +867,10 @@ int QmlGraphicsParticles::lifeSpan() const
 void QmlGraphicsParticles::setLifeSpan(int ls)
 {
     Q_D(QmlGraphicsParticles);
+    if(d->lifeSpan == ls)
+        return;
     d->lifeSpan = ls;
+    emit lifeSpanChanged();
 }
 
 /*!
@@ -777,7 +900,10 @@ int QmlGraphicsParticles::lifeSpanDeviation() const
 void QmlGraphicsParticles::setLifeSpanDeviation(int dev)
 {
     Q_D(QmlGraphicsParticles);
+    if(d->lifeSpanDev == dev)
+        return;
     d->lifeSpanDev = dev;
+    emit lifeSpanDeviationChanged();
 }
 
 /*!
@@ -803,8 +929,10 @@ int QmlGraphicsParticles::fadeInDuration() const
 void QmlGraphicsParticles::setFadeInDuration(int dur)
 {
     Q_D(QmlGraphicsParticles);
-    if (dur >= 0.0)
-        d->fadeInDur = dur;
+    if (dur < 0.0 || dur == d->fadeInDur)
+        return;
+    d->fadeInDur = dur;
+    emit fadeInDurationChanged();
 }
 
 /*!
@@ -822,8 +950,10 @@ int QmlGraphicsParticles::fadeOutDuration() const
 void QmlGraphicsParticles::setFadeOutDuration(int dur)
 {
     Q_D(QmlGraphicsParticles);
-    if (dur >= 0.0)
-        d->fadeOutDur = dur;
+    if (dur < 0.0 || d->fadeOutDur == dur)
+        return;
+    d->fadeOutDur = dur;
+    emit fadeOutDurationChanged();
 }
 
 /*!
@@ -860,7 +990,11 @@ qreal QmlGraphicsParticles::angle() const
 void QmlGraphicsParticles::setAngle(qreal angle)
 {
     Q_D(QmlGraphicsParticles);
-    d->angle = angle * M_PI / 180.0;
+    qreal radAngle = angle * M_PI / 180.0;
+    if(radAngle == d->angle)
+        return;
+    d->angle = radAngle;
+    emit angleChanged();
 }
 
 /*!
@@ -890,7 +1024,11 @@ qreal QmlGraphicsParticles::angleDeviation() const
 void QmlGraphicsParticles::setAngleDeviation(qreal dev)
 {
     Q_D(QmlGraphicsParticles);
-    d->angleDev = dev * M_PI / 180.0;;
+    qreal radDev = dev * M_PI / 180.0;
+    if(radDev == d->angleDev)
+        return;
+    d->angleDev = radDev;
+    emit angleDeviationChanged();
 }
 
 /*!
@@ -927,7 +1065,11 @@ qreal QmlGraphicsParticles::velocity() const
 void QmlGraphicsParticles::setVelocity(qreal velocity)
 {
     Q_D(QmlGraphicsParticles);
-    d->velocity = velocity / 1000.0;
+    qreal realVel = velocity / 1000.0;
+    if(realVel == d->velocity)
+        return;
+    d->velocity = realVel;
+    emit velocityChanged();
 }
 
 /*!
@@ -957,38 +1099,11 @@ qreal QmlGraphicsParticles::velocityDeviation() const
 void QmlGraphicsParticles::setVelocityDeviation(qreal velocity)
 {
     Q_D(QmlGraphicsParticles);
-    d->velocityDev = velocity / 1000.0;
-}
-
-/*!
-  \qmlproperty bool Particles::streamIn
-  This property determines whether the particles stream in at a constant rate
-
-  When stream is set to true the particles will stream in at a constant rate.
-  Otherwise the particles will appear as a clump. Note that this only affects the
-  start of the particle effect, variables such as lifespan deviation can cause the
-  particles to unclump over time.
-*/
-/*!
-  \property QmlGraphicsParticles::streamIn
-  \brief determines whether the particles stream in at a constant rate
-
-  When stream is set to true the particles will stream in at a constant rate.
-  Otherwise the particles will appear as a clump. Note that this only affects the
-  start of the particle effect, variables such as lifespan deviation can cause the
-
-*/
-//The name may need a rethink
-bool QmlGraphicsParticles::streamIn() const
-{
-    Q_D(const QmlGraphicsParticles);
-    return d->stream;
-}
-
-void QmlGraphicsParticles::setStreamIn(bool b)
-{
-    Q_D(QmlGraphicsParticles);
-    d->stream = b;
+    qreal realDev = velocity / 1000.0;
+    if(realDev == d->velocityDev)
+        return;
+    d->velocityDev = realDev;
+    emit velocityDeviationChanged();
 }
 
 /*!
@@ -1020,9 +1135,12 @@ bool QmlGraphicsParticles::emitting() const
 void QmlGraphicsParticles::setEmitting(bool r)
 {
     Q_D(QmlGraphicsParticles);
+    if(d->emitting == r)
+        return;
     d->emitting = r;
     if (d->count && r)
         d->clock.start();
+    emit emittingChanged();
 }
 /*!
     \qmlproperty ParticleMotion Particles::motion
@@ -1055,6 +1173,31 @@ void QmlGraphicsParticles::setMotion(QmlGraphicsParticleMotion *motion)
 {
     Q_D(QmlGraphicsParticles);
     d->motion = motion;
+}
+
+/*!
+    \qmlmethod Particles::burst
+
+    Initiates a burst of particles.
+
+    This method takes two arguments. The first argument is the number
+    of particles to emit and the second argument is the emissionRate for the
+    burst. If the second argument is omitted, it is treated as -1. The burst
+    of particles has a separate emissionRate and count to the normal emission of
+    particles. The burst uses the same values as normal emission for all other
+    properties, including emissionVariance and emitting.
+
+    The normal emission of particles will continue during the burst, however
+    the particles created by the burst count towards the maximum number used by
+    normal emission. To avoid this behavior, use two Particles elements.
+
+*/
+void QmlGraphicsParticles::burst(int count, int emissionRate)
+{
+    Q_D(QmlGraphicsParticles);
+    d->bursts << qMakePair(count, emissionRate);
+    if (d->clock.state() != QAbstractAnimation::Running && d->emitting)
+        d->clock.start();
 }
 
 void QmlGraphicsParticlesPainter::updateSize()
@@ -1100,14 +1243,15 @@ void QmlGraphicsParticlesPainter::paint(QPainter *p, const QStyleOptionGraphicsI
     const int myX = x() + parentItem()->x();
     const int myY = y() + parentItem()->y();
 
-    static QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
-    if (pixmapData.count() < d->particles.count())
-        pixmapData.resize(d->particles.count());
+    QVarLengthArray<QDrawPixmaps::Data, 256> pixmapData;
+    pixmapData.resize(d->particles.count());
 
     const QRectF sourceRect = d->image.rect();
+    qreal halfPWidth = sourceRect.width()/2.;
+    qreal halfPHeight = sourceRect.height()/2.;
     for (int i = 0; i < d->particles.count(); ++i) {
         const QmlGraphicsParticle &particle = d->particles.at(i);
-        pixmapData[i].point = QPointF(particle.x - myX, particle.y - myY);
+        pixmapData[i].point = QPointF(particle.x - myX + halfPWidth, particle.y - myY + halfPHeight);
         pixmapData[i].opacity = particle.opacity;
 
         //these never change

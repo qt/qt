@@ -1,14 +1,14 @@
 /* This script file handles the game logic */
 //Note that X/Y referred to here are in game coordinates
-var maxX = 10;//Nums are for tileSize 40
+var maxX = 10;//Nums are for gameCanvas.tileSize 40
 var maxY = 15;
-var tileSize = 40;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
 var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
+var scoresURL = "";
 var timer;
-var component;
+var component = createComponent(tileSrc);
 
 //Index function used instead of a 2D array
 function index(xIdx,yIdx) {
@@ -22,33 +22,41 @@ function timeStr(msecs) {
     return ret;
 }
 
+function getTileSize()
+{
+    return tileSize;
+}
+
 function initBoard()
 {
-    for(i = 0; i<maxIndex; i++){
+    for(var i = 0; i<maxIndex; i++){
         //Delete old blocks
         if(board[i] != null)
             board[i].destroy();
     }
 
     //Calculate board size
-    maxX = Math.floor(gameCanvas.width/tileSize);
-    maxY = Math.floor(gameCanvas.height/tileSize);
+    maxX = Math.floor(gameCanvas.width/gameCanvas.tileSize);
+    maxY = Math.floor(gameCanvas.height/gameCanvas.tileSize);
     maxIndex = maxY*maxX;
 
     //Close dialogs
     scoreName.forceClose();
     dialog.forceClose();
 
+    var a = new Date();
     //Initialize Board
     board = new Array(maxIndex);
     gameCanvas.score = 0;
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        for(yIdx=0; yIdx<maxY; yIdx++){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        for(var yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
             createBlock(xIdx,yIdx);
         }
     }
     timer = new Date();
+
+    print(timer.valueOf() - a.valueOf());
 }
 
 var fillFound;//Set after a floodFill call to the number of tiles found
@@ -56,8 +64,8 @@ var floodBoard;//Set to 1 if the floodFill reaches off that node
 //NOTE: Be careful with vars named x,y, as the calling object's x,y are still in scope
 function handleClick(x,y)
 {
-    xIdx = Math.floor(x/tileSize);
-    yIdx = Math.floor(y/tileSize);
+    var xIdx = Math.floor(x/gameCanvas.tileSize);
+    var yIdx = Math.floor(y/gameCanvas.tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
@@ -103,15 +111,15 @@ function floodFill(xIdx,yIdx,type)
 function shuffleDown()
 {
     //Fall down
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        fallDist = 0;
-        for(yIdx=maxY-1; yIdx>=0; yIdx--){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        var fallDist = 0;
+        for(var yIdx=maxY-1; yIdx>=0; yIdx--){
             if(board[index(xIdx,yIdx)] == null){
                 fallDist += 1;
             }else{
                 if(fallDist > 0){
-                    obj = board[index(xIdx,yIdx)];
-                    obj.targetY += fallDist * tileSize;
+                    var obj = board[index(xIdx,yIdx)];
+                    obj.targetY += fallDist * gameCanvas.tileSize;
                     board[index(xIdx,yIdx+fallDist)] = obj;
                     board[index(xIdx,yIdx)] = null;
                 }
@@ -129,7 +137,7 @@ function shuffleDown()
                     obj = board[index(xIdx,yIdx)];
                     if(obj == null)
                         continue;
-                    obj.targetX -= fallDist * tileSize;
+                    obj.targetX -= fallDist * gameCanvas.tileSize;
                     board[index(xIdx-fallDist,yIdx)] = obj;
                     board[index(xIdx,yIdx)] = null;
                 }
@@ -141,8 +149,8 @@ function shuffleDown()
 function victoryCheck()
 {
     //awards bonuses for no tiles left
-    deservesBonus = true;
-    for(xIdx=maxX-1; xIdx>=0; xIdx--)
+    var deservesBonus = true;
+    for(var xIdx=maxX-1; xIdx>=0; xIdx--)
         if(board[index(xIdx, maxY - 1)] != null)
             deservesBonus = false;
     if(deservesBonus)
@@ -150,10 +158,8 @@ function victoryCheck()
     //Checks for game over
     if(deservesBonus || !(floodMoveCheck(0,maxY-1, -1))){
         timer = new Date() - timer;
-        if(scoresURL != "")
-            scoreName.show("You've won! Please enter your name:                ");
-        else
-            dialog.show("Game Over. Your score is " + gameCanvas.score);
+        scoreName.show("You won! Please enter your name:                 ");
+        //dialog.show("Game Over. Your score is " + gameCanvas.score);
     }
 }
 
@@ -164,7 +170,7 @@ function floodMoveCheck(xIdx, yIdx, type)
         return false;
     if(board[index(xIdx, yIdx)] == null)
         return false;
-    myType = board[index(xIdx, yIdx)].type;
+    var myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
     return floodMoveCheck(xIdx + 1, yIdx, myType) ||
@@ -172,15 +178,12 @@ function floodMoveCheck(xIdx, yIdx, type)
 }
 
 function createBlock(xIdx,yIdx){
-    if(component==null)
-        component = createComponent(tileSrc);
-
     // Note that we don't wait for the component to become ready. This will
     // only work if the block QML is a local file. Otherwise the component will
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
     if(component.isReady){
-        dynamicObject = component.createObject();
+        var dynamicObject = component.createObject();
         if(dynamicObject == null){
             print("error creating block");
             print(component.errorsString());
@@ -188,11 +191,11 @@ function createBlock(xIdx,yIdx){
         }
         dynamicObject.type = Math.floor(Math.random() * 3);
         dynamicObject.parent = gameCanvas;
-        dynamicObject.x = xIdx*tileSize;
-        dynamicObject.targetX = xIdx*tileSize;
-        dynamicObject.targetY = yIdx*tileSize;
-        dynamicObject.width = tileSize;
-        dynamicObject.height = tileSize;
+        dynamicObject.x = xIdx*gameCanvas.tileSize;
+        dynamicObject.targetX = xIdx*gameCanvas.tileSize;
+        dynamicObject.targetY = yIdx*gameCanvas.tileSize;
+        dynamicObject.width = gameCanvas.tileSize;
+        dynamicObject.height = gameCanvas.tileSize;
         dynamicObject.spawned = true;
         board[index(xIdx,yIdx)] = dynamicObject;
     }else{//isError or isLoading
@@ -201,6 +204,42 @@ function createBlock(xIdx,yIdx){
         return false;
     }
     return true;
+}
+
+function saveHighScore(name) {
+    if(scoresURL!="")
+        sendHighScore(name);
+    //OfflineStorage
+    var db = openDatabase("SameGameScores", "1.0", "Local SameGame High Scores",100);
+    var dataStr = "INSERT INTO Scores VALUES(?, ?, ?, ?)";
+    var data = [name, gameCanvas.score, maxX+"x"+maxY ,Math.floor(timer/1000)];
+    db.transaction(
+        function(tx) {
+            tx.executeSql('CREATE TABLE IF NOT EXISTS Scores(name TEXT, score NUMBER, gridSize TEXT, time NUMBER)',[]);
+            tx.executeSql(dataStr, data);
+
+            tx.executeSql('SELECT * FROM Scores WHERE gridSize = "12x17" ORDER BY score desc LIMIT 10',[],
+                function(tx, rs) {
+                    var r = "\nHIGH SCORES for a standard sized grid\n\n"
+                    for(var i = 0; i < rs.rows.length; i++){
+                        r += (i+1)+". " + rs.rows.item(i).name +' got '
+                            + rs.rows.item(i).score + ' points in '
+                            + rs.rows.item(i).time + ' seconds.\n';
+                    }
+                    dialog.show(r);
+                },
+                function(tx, error) {
+                    print("ERROR:", error.message);
+                }
+            );
+        },
+        function() {
+            print("ERROR in transaction");
+        },
+        function() {
+            //print("Transaction successful");
+        }
+    );
 }
 
 //![1]

@@ -22,8 +22,8 @@ function initBoard()
 
     //Initialize Board
     board = new Array(maxIndex);
-    for(xIdx=0; xIdx<maxX; xIdx++){
-        for(yIdx=0; yIdx<maxY; yIdx++){
+    for(var xIdx=0; xIdx<maxX; xIdx++){
+        for(var yIdx=0; yIdx<maxY; yIdx++){
             board[index(xIdx,yIdx)] = null;
             createBlock(xIdx,yIdx);
         }
@@ -39,7 +39,7 @@ function createBlock(xIdx,yIdx){
     // not be ready immediately. There is a statusChanged signal on the
     // component you could use if you want to wait to load remote files.
     if(component.isReady){
-        dynamicObject = component.createObject();
+        var dynamicObject = component.createObject();
         if(dynamicObject == null){
             print("error creating block");
             print(component.errorsString());

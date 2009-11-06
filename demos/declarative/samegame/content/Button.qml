@@ -8,7 +8,7 @@ Rectangle {
 
     color: activePalette.button; smooth: true
     width: txtItem.width + 20; height: txtItem.height + 6
-    border.width: 1; border.color: activePalette.darker(activePalette.button); radius: 8;
+    border.width: 1; border.color: Qt.darker(activePalette.button); radius: 8;
 
     gradient: Gradient {
         GradientStop {

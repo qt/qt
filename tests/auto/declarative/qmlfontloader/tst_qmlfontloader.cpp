@@ -97,13 +97,13 @@ void tst_qmlfontloader::namedFont()
 
 void tst_qmlfontloader::localFont()
 {
-    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/Fontin-Bold.ttf\" }";
+    QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/FreeMono.ttf\" }";
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
     QVERIFY(fontObject != 0);
     QVERIFY(fontObject->source() != QUrl(""));
-    QTRY_COMPARE(fontObject->name(), QString("Fontin"));
+    QTRY_COMPARE(fontObject->name(), QString("FreeMono"));
     QTRY_VERIFY(fontObject->status() == QmlFontLoader::Ready);
 }
 

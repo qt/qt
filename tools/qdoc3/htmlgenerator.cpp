@@ -4219,7 +4219,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</div>";
     }
     else if (node->type() == Node::QmlSignal) {
-        const QmlSignalNode* qsn = static_cast<const QmlSignalNode*>(node);
+        const FunctionNode* qsn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";
@@ -4230,7 +4230,7 @@ void HtmlGenerator::generateDetailedQmlMember(const Node *node,
         out() << "</div>";
     }
     else if (node->type() == Node::QmlMethod) {
-        const QmlMethodNode* qmn = static_cast<const QmlMethodNode*>(node);
+        const FunctionNode* qmn = static_cast<const FunctionNode*>(node);
         out() << "<div class=\"qmlproto\">";
         out() << "<table class=\"qmlname\">";
         out() << "<tr><td>";

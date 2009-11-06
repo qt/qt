@@ -132,8 +132,8 @@ void tst_qfxtextinput::width()
     for (int i = 0; i < standard.size(); i++)
     {
         QFont f;
-        QFontMetrics fm(f);
-        int metricWidth = fm.width(standard.at(i));
+        QFontMetricsF fm(f);
+        qreal metricWidth = fm.width(standard.at(i));
 
         QString componentStr = "import Qt 4.6\nTextInput { text: \"" + standard.at(i) + "\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());

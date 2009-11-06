@@ -626,6 +626,11 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
         url = QUrl(ctxt->argument(2).toString());
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
+    if(!parentArg || !qmlCtxt){
+        //TODO: Could use a qmlInfo() like function for script functions
+        qWarning() << "createQmlObject called with invalid parent object";
+        return engine->nullValue();
+    }
     if (url.isEmpty()) {
         url = qmlCtxt->resolvedUrl(QUrl(QLatin1String("<Unknown File>")));
     } else {

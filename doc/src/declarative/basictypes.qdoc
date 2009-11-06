@@ -233,4 +233,25 @@
     \endqml
     \c Child1, \c Child2 and \c Child3 will all be added to the children list
     in the order in which they appear.
+
+    \target basicqmlvector3d
+    \section1 vector3d
+
+    A \c vector3d is specified in \c "x,y,z" format:
+
+    \qml
+    Rotation { angle: 60; axis: "0,1,0" }
+    \endqml
+
+    or with the \c{Qt.vector3d()} helper function:
+
+    \qml
+    Rotation { angle: 60; axis: Qt.vector3d(0, 1, 0) }
+    \endqml
+
+    or as separate \c x, \c y, and \c z components:
+
+    \qml
+    Rotation { angle: 60; axis.x: 0; axis.y: 1; axis.z: 0 }
+    \endqml
 */

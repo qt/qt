@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class QmlValueType : public QObject
+class Q_AUTOTEST_EXPORT QmlValueType : public QObject
 {
     Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
     virtual void setValue(QVariant) = 0;
 };
 
-class QmlValueTypeFactory
+class Q_AUTOTEST_EXPORT QmlValueTypeFactory
 {
 public:
     QmlValueTypeFactory();
@@ -84,7 +84,7 @@ public:
     QmlValueType *operator[](int idx) const { return valueTypes[idx]; }
 };
 
-class QmlPointFValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlPointFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX)
     Q_PROPERTY(qreal y READ y WRITE setY)
@@ -106,7 +106,7 @@ private:
     QPointF point;
 };
 
-class QmlPointValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlPointValueType : public QmlValueType
 {
     Q_PROPERTY(int x READ x WRITE setX)
     Q_PROPERTY(int y READ y WRITE setY)
@@ -128,7 +128,7 @@ private:
     QPoint point;
 };
 
-class QmlSizeFValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlSizeFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal width READ width WRITE setWidth)
     Q_PROPERTY(qreal height READ height WRITE setHeight)
@@ -150,7 +150,7 @@ private:
     QSizeF size;
 };
 
-class QmlSizeValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlSizeValueType : public QmlValueType
 {
     Q_PROPERTY(int width READ width WRITE setWidth)
     Q_PROPERTY(int height READ height WRITE setHeight)
@@ -172,7 +172,7 @@ private:
     QSize size;
 };
 
-class QmlRectFValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlRectFValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX)
     Q_PROPERTY(qreal y READ y WRITE setY)
@@ -201,7 +201,7 @@ private:
     QRectF rect;
 };
 
-class QmlRectValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlRectValueType : public QmlValueType
 {
     Q_PROPERTY(int x READ x WRITE setX)
     Q_PROPERTY(int y READ y WRITE setY)
@@ -230,7 +230,7 @@ private:
     QRect rect;
 };
 
-class QmlVector3DValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlVector3DValueType : public QmlValueType
 {
     Q_PROPERTY(qreal x READ x WRITE setX)
     Q_PROPERTY(qreal y READ y WRITE setY)
@@ -255,7 +255,7 @@ private:
     QVector3D vector;
 };
 
-class QmlFontValueType : public QmlValueType
+class Q_AUTOTEST_EXPORT QmlFontValueType : public QmlValueType
 {
     Q_OBJECT
     Q_ENUMS(FontWeight)
