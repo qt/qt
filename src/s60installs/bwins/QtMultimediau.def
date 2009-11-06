@@ -9,10 +9,10 @@ EXPORTS
 	?tr@QAudioOutput@@SA?AVQString@@PBD0@Z @ 8 NONAME ; class QString QAudioOutput::tr(char const *, char const *)
 	?tr@QAbstractVideoSurface@@SA?AVQString@@PBD0@Z @ 9 NONAME ; class QString QAbstractVideoSurface::tr(char const *, char const *)
 	?width@QVideoFrame@@QBEHXZ @ 10 NONAME ; int QVideoFrame::width(void) const
-	?setFrameSize@QVideoSurfaceFormat@@QAEXABVQSize@@W4ViewportMode@1@@Z @ 11 NONAME ; void QVideoSurfaceFormat::setFrameSize(class QSize const &, enum QVideoSurfaceFormat::ViewportMode)
+	?setFrameSize@QVideoSurfaceFormat@@QAEXABVQSize@@W4ViewportMode@1@@Z @ 11 NONAME ABSENT ; void QVideoSurfaceFormat::setFrameSize(class QSize const &, enum QVideoSurfaceFormat::ViewportMode)
 	?trUtf8@QAbstractAudioInput@@SA?AVQString@@PBD0H@Z @ 12 NONAME ; class QString QAbstractAudioInput::trUtf8(char const *, char const *, int)
 	?metaObject@QAbstractAudioDeviceInfo@@UBEPBUQMetaObject@@XZ @ 13 NONAME ; struct QMetaObject const * QAbstractAudioDeviceInfo::metaObject(void) const
-	?isFormatSupported@QAbstractVideoSurface@@UBE_NABVQVideoSurfaceFormat@@PAV2@@Z @ 14 NONAME ; bool QAbstractVideoSurface::isFormatSupported(class QVideoSurfaceFormat const &, class QVideoSurfaceFormat *) const
+	?isFormatSupported@QAbstractVideoSurface@@UBE_NABVQVideoSurfaceFormat@@PAV2@@Z @ 14 NONAME ABSENT ; bool QAbstractVideoSurface::isFormatSupported(class QVideoSurfaceFormat const &, class QVideoSurfaceFormat *) const
 	?setFieldType@QVideoFrame@@QAEXW4FieldType@1@@Z @ 15 NONAME ; void QVideoFrame::setFieldType(enum QVideoFrame::FieldType)
 	?trUtf8@QAbstractAudioDeviceInfo@@SA?AVQString@@PBD0@Z @ 16 NONAME ; class QString QAbstractAudioDeviceInfo::trUtf8(char const *, char const *)
 	?tr@QAbstractAudioOutput@@SA?AVQString@@PBD0@Z @ 17 NONAME ; class QString QAbstractAudioOutput::tr(char const *, char const *)
@@ -31,7 +31,7 @@ EXPORTS
 	??4QVideoSurfaceFormat@@QAEAAV0@ABV0@@Z @ 30 NONAME ; class QVideoSurfaceFormat & QVideoSurfaceFormat::operator=(class QVideoSurfaceFormat const &)
 	??1QAbstractVideoBuffer@@UAE@XZ @ 31 NONAME ; QAbstractVideoBuffer::~QAbstractVideoBuffer(void)
 	?stop@QAudioOutput@@QAEXXZ @ 32 NONAME ; void QAudioOutput::stop(void)
-	?setYuvColorSpace@QVideoSurfaceFormat@@QAEXW4YuvColorSpace@1@@Z @ 33 NONAME ; void QVideoSurfaceFormat::setYuvColorSpace(enum QVideoSurfaceFormat::YuvColorSpace)
+	?setYuvColorSpace@QVideoSurfaceFormat@@QAEXW4YuvColorSpace@1@@Z @ 33 NONAME ABSENT ; void QVideoSurfaceFormat::setYuvColorSpace(enum QVideoSurfaceFormat::YuvColorSpace)
 	?bytesFree@QAudioOutput@@QBEHXZ @ 34 NONAME ; int QAudioOutput::bytesFree(void) const
 	?trUtf8@QAbstractAudioOutput@@SA?AVQString@@PBD0H@Z @ 35 NONAME ; class QString QAbstractAudioOutput::trUtf8(char const *, char const *, int)
 	??9QVideoSurfaceFormat@@QBE_NABV0@@Z @ 36 NONAME ; bool QVideoSurfaceFormat::operator!=(class QVideoSurfaceFormat const &) const
@@ -50,7 +50,7 @@ EXPORTS
 	?property@QVideoSurfaceFormat@@QBE?AVQVariant@@PBD@Z @ 49 NONAME ; class QVariant QVideoSurfaceFormat::property(char const *) const
 	?qt_metacast@QAudioOutput@@UAEPAXPBD@Z @ 50 NONAME ; void * QAudioOutput::qt_metacast(char const *)
 	??_EQAudioOutput@@UAE@I@Z @ 51 NONAME ; QAudioOutput::~QAudioOutput(unsigned int)
-	?yuvColorSpace@QVideoSurfaceFormat@@QBE?AW4YuvColorSpace@1@XZ @ 52 NONAME ; enum QVideoSurfaceFormat::YuvColorSpace QVideoSurfaceFormat::yuvColorSpace(void) const
+	?yuvColorSpace@QVideoSurfaceFormat@@QBE?AW4YuvColorSpace@1@XZ @ 52 NONAME ABSENT ; enum QVideoSurfaceFormat::YuvColorSpace QVideoSurfaceFormat::yuvColorSpace(void) const
 	?supportedSampleTypes@QAudioDeviceInfo@@QBE?AV?$QList@W4SampleType@QAudioFormat@@@@XZ @ 53 NONAME ; class QList<enum QAudioFormat::SampleType> QAudioDeviceInfo::supportedSampleTypes(void) const
 	?sizeHint@QVideoSurfaceFormat@@QBE?AVQSize@@XZ @ 54 NONAME ; class QSize QVideoSurfaceFormat::sizeHint(void) const
 	?setError@QAbstractVideoSurface@@IAEXW4Error@1@@Z @ 55 NONAME ; void QAbstractVideoSurface::setError(enum QAbstractVideoSurface::Error)
@@ -91,7 +91,7 @@ EXPORTS
 	?nearestFormat@QAudioDeviceInfo@@QBE?AVQAudioFormat@@ABV2@@Z @ 90 NONAME ; class QAudioFormat QAudioDeviceInfo::nearestFormat(class QAudioFormat const &) const
 	??0QVideoSurfaceFormat@@QAE@XZ @ 91 NONAME ; QVideoSurfaceFormat::QVideoSurfaceFormat(void)
 	?trUtf8@QAudioOutput@@SA?AVQString@@PBD0H@Z @ 92 NONAME ; class QString QAudioOutput::trUtf8(char const *, char const *, int)
-	?numBytes@QVideoFrame@@QBEHXZ @ 93 NONAME ; int QVideoFrame::numBytes(void) const
+	?numBytes@QVideoFrame@@QBEHXZ @ 93 NONAME ABSENT ; int QVideoFrame::numBytes(void) const
 	?isFormatSupported@QAudioDeviceInfo@@QBE_NABVQAudioFormat@@@Z @ 94 NONAME ; bool QAudioDeviceInfo::isFormatSupported(class QAudioFormat const &) const
 	?isNull@QAudioDeviceInfo@@QBE_NXZ @ 95 NONAME ; bool QAudioDeviceInfo::isNull(void) const
 	?supportedByteOrders@QAudioDeviceInfo@@QBE?AV?$QList@W4Endian@QAudioFormat@@@@XZ @ 96 NONAME ; class QList<enum QAudioFormat::Endian> QAudioDeviceInfo::supportedByteOrders(void) const
@@ -105,7 +105,7 @@ EXPORTS
 	?getStaticMetaObject@QAbstractAudioDeviceInfo@@SAABUQMetaObject@@XZ @ 104 NONAME ; struct QMetaObject const & QAbstractAudioDeviceInfo::getStaticMetaObject(void)
 	?notify@QAbstractAudioOutput@@IAEXXZ @ 105 NONAME ; void QAbstractAudioOutput::notify(void)
 	?handle@QVideoFrame@@QBE?AVQVariant@@XZ @ 106 NONAME ; class QVariant QVideoFrame::handle(void) const
-	?equivalentPixelFormat@QVideoFrame@@SA?AW4PixelFormat@1@W4Format@QImage@@@Z @ 107 NONAME ; enum QVideoFrame::PixelFormat QVideoFrame::equivalentPixelFormat(enum QImage::Format)
+	?equivalentPixelFormat@QVideoFrame@@SA?AW4PixelFormat@1@W4Format@QImage@@@Z @ 107 NONAME ABSENT ; enum QVideoFrame::PixelFormat QVideoFrame::equivalentPixelFormat(enum QImage::Format)
 	?setNotifyInterval@QAudioInput@@QAEXH@Z @ 108 NONAME ; void QAudioInput::setNotifyInterval(int)
 	?getStaticMetaObject@QAudioEnginePlugin@@SAABUQMetaObject@@XZ @ 109 NONAME ; struct QMetaObject const & QAudioEnginePlugin::getStaticMetaObject(void)
 	??0QVideoFrame@@QAE@PAVQAbstractVideoBuffer@@ABVQSize@@W4PixelFormat@0@@Z @ 110 NONAME ; QVideoFrame::QVideoFrame(class QAbstractVideoBuffer *, class QSize const &, enum QVideoFrame::PixelFormat)
@@ -171,7 +171,7 @@ EXPORTS
 	?frameHeight@QVideoSurfaceFormat@@QBEHXZ @ 170 NONAME ; int QVideoSurfaceFormat::frameHeight(void) const
 	?unmap@QImageVideoBuffer@@UAEXXZ @ 171 NONAME ; void QImageVideoBuffer::unmap(void)
 	?tr@QAbstractAudioOutput@@SA?AVQString@@PBD0H@Z @ 172 NONAME ; class QString QAbstractAudioOutput::tr(char const *, char const *, int)
-	?setFrameSize@QVideoSurfaceFormat@@QAEXHHW4ViewportMode@1@@Z @ 173 NONAME ; void QVideoSurfaceFormat::setFrameSize(int, int, enum QVideoSurfaceFormat::ViewportMode)
+	?setFrameSize@QVideoSurfaceFormat@@QAEXHHW4ViewportMode@1@@Z @ 173 NONAME ABSENT ; void QVideoSurfaceFormat::setFrameSize(int, int, enum QVideoSurfaceFormat::ViewportMode)
 	??1QAbstractAudioInput@@UAE@XZ @ 174 NONAME ; QAbstractAudioInput::~QAbstractAudioInput(void)
 	?setViewport@QVideoSurfaceFormat@@QAEXABVQRect@@@Z @ 175 NONAME ; void QVideoSurfaceFormat::setViewport(class QRect const &)
 	?tr@QAbstractAudioDeviceInfo@@SA?AVQString@@PBD0H@Z @ 176 NONAME ; class QString QAbstractAudioDeviceInfo::tr(char const *, char const *, int)
@@ -192,9 +192,9 @@ EXPORTS
 	?tr@QAbstractVideoSurface@@SA?AVQString@@PBD0H@Z @ 191 NONAME ; class QString QAbstractVideoSurface::tr(char const *, char const *, int)
 	?periodSize@QAudioInput@@QBEHXZ @ 192 NONAME ; int QAudioInput::periodSize(void) const
 	?setFrameRate@QVideoSurfaceFormat@@QAEXM@Z @ 193 NONAME ; void QVideoSurfaceFormat::setFrameRate(float)
-	?equivalentImageFormat@QVideoFrame@@SA?AW4Format@QImage@@W4PixelFormat@1@@Z @ 194 NONAME ; enum QImage::Format QVideoFrame::equivalentImageFormat(enum QVideoFrame::PixelFormat)
+	?equivalentImageFormat@QVideoFrame@@SA?AW4Format@QImage@@W4PixelFormat@1@@Z @ 194 NONAME ABSENT ; enum QImage::Format QVideoFrame::equivalentImageFormat(enum QVideoFrame::PixelFormat)
 	?handle@QAudioDeviceInfo@@ABE?AVQByteArray@@XZ @ 195 NONAME ; class QByteArray QAudioDeviceInfo::handle(void) const
-	?startedChanged@QAbstractVideoSurface@@IAEX_N@Z @ 196 NONAME ; void QAbstractVideoSurface::startedChanged(bool)
+	?startedChanged@QAbstractVideoSurface@@IAEX_N@Z @ 196 NONAME ABSENT ; void QAbstractVideoSurface::startedChanged(bool)
 	??0QVideoFrame@@QAE@HABVQSize@@HW4PixelFormat@0@@Z @ 197 NONAME ; QVideoFrame::QVideoFrame(int, class QSize const &, int, enum QVideoFrame::PixelFormat)
 	?handle@QAbstractVideoBuffer@@UBE?AVQVariant@@XZ @ 198 NONAME ; class QVariant QAbstractVideoBuffer::handle(void) const
 	?handleType@QAbstractVideoBuffer@@QBE?AW4HandleType@1@XZ @ 199 NONAME ; enum QAbstractVideoBuffer::HandleType QAbstractVideoBuffer::handleType(void) const
@@ -232,7 +232,7 @@ EXPORTS
 	??1QAudioEngineFactoryInterface@@UAE@XZ @ 231 NONAME ; QAudioEngineFactoryInterface::~QAudioEngineFactoryInterface(void)
 	?notify@QAudioOutput@@IAEXXZ @ 232 NONAME ; void QAudioOutput::notify(void)
 	?stateChanged@QAudioOutput@@IAEXW4State@QAudio@@@Z @ 233 NONAME ; void QAudioOutput::stateChanged(enum QAudio::State)
-	?isStarted@QAbstractVideoSurface@@QBE_NXZ @ 234 NONAME ; bool QAbstractVideoSurface::isStarted(void) const
+	?isStarted@QAbstractVideoSurface@@QBE_NXZ @ 234 NONAME ABSENT ; bool QAbstractVideoSurface::isStarted(void) const
 	??0QAudioDeviceInfo@@QAE@ABV0@@Z @ 235 NONAME ; QAudioDeviceInfo::QAudioDeviceInfo(class QAudioDeviceInfo const &)
 	??1QAudioOutput@@UAE@XZ @ 236 NONAME ; QAudioOutput::~QAudioOutput(void)
 	?tr@QAudioInput@@SA?AVQString@@PBD0@Z @ 237 NONAME ; class QString QAudioInput::tr(char const *, char const *)
@@ -270,4 +270,15 @@ EXPORTS
 	?qt_metacast@QAbstractAudioOutput@@UAEPAXPBD@Z @ 269 NONAME ; void * QAbstractAudioOutput::qt_metacast(char const *)
 	??1QVideoSurfaceFormat@@QAE@XZ @ 270 NONAME ; QVideoSurfaceFormat::~QVideoSurfaceFormat(void)
 	??_EQAudioDeviceInfo@@QAE@I@Z @ 271 NONAME ABSENT ; QAudioDeviceInfo::~QAudioDeviceInfo(unsigned int)
+	?activeChanged@QAbstractVideoSurface@@IAEX_N@Z @ 272 NONAME ; void QAbstractVideoSurface::activeChanged(bool)
+	?imageFormatFromPixelFormat@QVideoFrame@@SA?AW4Format@QImage@@W4PixelFormat@1@@Z @ 273 NONAME ; enum QImage::Format QVideoFrame::imageFormatFromPixelFormat(enum QVideoFrame::PixelFormat)
+	?isActive@QAbstractVideoSurface@@QBE_NXZ @ 274 NONAME ; bool QAbstractVideoSurface::isActive(void) const
+	?isFormatSupported@QAbstractVideoSurface@@UBE_NABVQVideoSurfaceFormat@@@Z @ 275 NONAME ; bool QAbstractVideoSurface::isFormatSupported(class QVideoSurfaceFormat const &) const
+	?mappedBytes@QVideoFrame@@QBEHXZ @ 276 NONAME ; int QVideoFrame::mappedBytes(void) const
+	?nearestFormat@QAbstractVideoSurface@@UBE?AVQVideoSurfaceFormat@@ABV2@@Z @ 277 NONAME ; class QVideoSurfaceFormat QAbstractVideoSurface::nearestFormat(class QVideoSurfaceFormat const &) const
+	?pixelFormatFromImageFormat@QVideoFrame@@SA?AW4PixelFormat@1@W4Format@QImage@@@Z @ 278 NONAME ; enum QVideoFrame::PixelFormat QVideoFrame::pixelFormatFromImageFormat(enum QImage::Format)
+	?setFrameSize@QVideoSurfaceFormat@@QAEXABVQSize@@@Z @ 279 NONAME ; void QVideoSurfaceFormat::setFrameSize(class QSize const &)
+	?setFrameSize@QVideoSurfaceFormat@@QAEXHH@Z @ 280 NONAME ; void QVideoSurfaceFormat::setFrameSize(int, int)
+	?setYCbCrColorSpace@QVideoSurfaceFormat@@QAEXW4YCbCrColorSpace@1@@Z @ 281 NONAME ; void QVideoSurfaceFormat::setYCbCrColorSpace(enum QVideoSurfaceFormat::YCbCrColorSpace)
+	?yCbCrColorSpace@QVideoSurfaceFormat@@QBE?AW4YCbCrColorSpace@1@XZ @ 282 NONAME ; enum QVideoSurfaceFormat::YCbCrColorSpace QVideoSurfaceFormat::yCbCrColorSpace(void) const
 

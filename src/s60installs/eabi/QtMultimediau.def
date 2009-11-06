@@ -22,8 +22,8 @@ EXPORTS
 	_ZN11QVideoFrame10setEndTimeEx @ 21 NONAME
 	_ZN11QVideoFrame12setFieldTypeENS_9FieldTypeE @ 22 NONAME
 	_ZN11QVideoFrame12setStartTimeEx @ 23 NONAME
-	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 24 NONAME
-	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 25 NONAME
+	_ZN11QVideoFrame21equivalentImageFormatENS_11PixelFormatE @ 24 NONAME ABSENT
+	_ZN11QVideoFrame21equivalentPixelFormatEN6QImage6FormatE @ 25 NONAME ABSENT
 	_ZN11QVideoFrame3mapEN20QAbstractVideoBuffer7MapModeE @ 26 NONAME
 	_ZN11QVideoFrame4bitsEv @ 27 NONAME
 	_ZN11QVideoFrame5unmapEv @ 28 NONAME
@@ -117,9 +117,9 @@ EXPORTS
 	_ZN19QVideoSurfaceFormat11setViewportERK5QRect @ 116 NONAME
 	_ZN19QVideoSurfaceFormat12setFrameRateERK5QPairIiiE @ 117 NONAME ABSENT
 	_ZN19QVideoSurfaceFormat12setFrameRateEii @ 118 NONAME ABSENT
-	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 119 NONAME
-	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 120 NONAME
-	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 121 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSizeNS_12ViewportModeE @ 119 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat12setFrameSizeEiiNS_12ViewportModeE @ 120 NONAME ABSENT
+	_ZN19QVideoSurfaceFormat16setYuvColorSpaceENS_13YuvColorSpaceE @ 121 NONAME ABSENT
 	_ZN19QVideoSurfaceFormat19setPixelAspectRatioERK5QSize @ 122 NONAME
 	_ZN19QVideoSurfaceFormat19setPixelAspectRatioEii @ 123 NONAME
 	_ZN19QVideoSurfaceFormat20setScanLineDirectionENS_9DirectionE @ 124 NONAME
@@ -145,7 +145,7 @@ EXPORTS
 	_ZN20QAbstractVideoBufferD2Ev @ 144 NONAME
 	_ZN21QAbstractVideoSurface11qt_metacallEN11QMetaObject4CallEiPPv @ 145 NONAME
 	_ZN21QAbstractVideoSurface11qt_metacastEPKc @ 146 NONAME
-	_ZN21QAbstractVideoSurface14startedChangedEb @ 147 NONAME
+	_ZN21QAbstractVideoSurface14startedChangedEb @ 147 NONAME ABSENT
 	_ZN21QAbstractVideoSurface16staticMetaObjectE @ 148 NONAME DATA 16
 	_ZN21QAbstractVideoSurface19getStaticMetaObjectEv @ 149 NONAME
 	_ZN21QAbstractVideoSurface20surfaceFormatChangedERK19QVideoSurfaceFormat @ 150 NONAME
@@ -186,7 +186,7 @@ EXPORTS
 	_ZNK11QVideoFrame7isValidEv @ 185 NONAME
 	_ZNK11QVideoFrame7mapModeEv @ 186 NONAME
 	_ZNK11QVideoFrame8isMappedEv @ 187 NONAME
-	_ZNK11QVideoFrame8numBytesEv @ 188 NONAME
+	_ZNK11QVideoFrame8numBytesEv @ 188 NONAME ABSENT
 	_ZNK11QVideoFrame9fieldTypeEv @ 189 NONAME
 	_ZNK11QVideoFrame9startTimeEv @ 190 NONAME
 	_ZNK12QAudioFormat10sampleSizeEv @ 191 NONAME
@@ -231,7 +231,7 @@ EXPORTS
 	_ZNK19QVideoSurfaceFormat11frameHeightEv @ 230 NONAME
 	_ZNK19QVideoSurfaceFormat11pixelFormatEv @ 231 NONAME
 	_ZNK19QVideoSurfaceFormat13propertyNamesEv @ 232 NONAME
-	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 233 NONAME
+	_ZNK19QVideoSurfaceFormat13yuvColorSpaceEv @ 233 NONAME ABSENT
 	_ZNK19QVideoSurfaceFormat16pixelAspectRatioEv @ 234 NONAME
 	_ZNK19QVideoSurfaceFormat17scanLineDirectionEv @ 235 NONAME
 	_ZNK19QVideoSurfaceFormat7isValidEv @ 236 NONAME
@@ -247,9 +247,9 @@ EXPORTS
 	_ZNK20QAbstractVideoBuffer6handleEv @ 246 NONAME
 	_ZNK21QAbstractVideoSurface10metaObjectEv @ 247 NONAME
 	_ZNK21QAbstractVideoSurface13surfaceFormatEv @ 248 NONAME
-	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 249 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormatPS0_ @ 249 NONAME ABSENT
 	_ZNK21QAbstractVideoSurface5errorEv @ 250 NONAME
-	_ZNK21QAbstractVideoSurface9isStartedEv @ 251 NONAME
+	_ZNK21QAbstractVideoSurface9isStartedEv @ 251 NONAME ABSENT
 	_ZNK24QAbstractAudioDeviceInfo10metaObjectEv @ 252 NONAME
 	_ZTI11QAudioInput @ 253 NONAME
 	_ZTI12QAudioOutput @ 254 NONAME
@@ -277,4 +277,15 @@ EXPORTS
 	_Zls6QDebugRK19QVideoSurfaceFormat @ 276 NONAME
 	_ZTV28QAudioEngineFactoryInterface @ 277 NONAME ABSENT
 	_ZN19QVideoSurfaceFormat12setFrameRateEf @ 278 NONAME
+	_ZN11QVideoFrame26imageFormatFromPixelFormatENS_11PixelFormatE @ 279 NONAME
+	_ZN11QVideoFrame26pixelFormatFromImageFormatEN6QImage6FormatE @ 280 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeERK5QSize @ 281 NONAME
+	_ZN19QVideoSurfaceFormat12setFrameSizeEii @ 282 NONAME
+	_ZN19QVideoSurfaceFormat18setYCbCrColorSpaceENS_15YCbCrColorSpaceE @ 283 NONAME
+	_ZN21QAbstractVideoSurface13activeChangedEb @ 284 NONAME
+	_ZNK11QVideoFrame11mappedBytesEv @ 285 NONAME
+	_ZNK19QVideoSurfaceFormat15yCbCrColorSpaceEv @ 286 NONAME
+	_ZNK21QAbstractVideoSurface13nearestFormatERK19QVideoSurfaceFormat @ 287 NONAME
+	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormat @ 288 NONAME
+	_ZNK21QAbstractVideoSurface8isActiveEv @ 289 NONAME
 

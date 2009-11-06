@@ -174,7 +174,7 @@ EXPORTS
 	_ZN10QLCDNumberD2Ev @ 173 NONAME
 	_ZN10QMatrix4x411perspectiveEffff @ 174 NONAME
 	_ZN10QMatrix4x415flipCoordinatesEv @ 175 NONAME
-	_ZN10QMatrix4x416inferSpecialTypeEv @ 176 NONAME
+	_ZN10QMatrix4x416inferSpecialTypeEv @ 176 NONAME ABSENT
 	_ZN10QMatrix4x45orthoERK5QRect @ 177 NONAME
 	_ZN10QMatrix4x45orthoERK6QRectF @ 178 NONAME
 	_ZN10QMatrix4x45orthoEffffff @ 179 NONAME
@@ -1556,10 +1556,10 @@ EXPORTS
 	_ZN12QApplication23keypadNavigationEnabledEv @ 1555 NONAME
 	_ZN12QApplication23setDesktopSettingsAwareEb @ 1556 NONAME
 	_ZN12QApplication24setKeyboardInputIntervalEi @ 1557 NONAME
-	_ZN12QApplication25registerGestureRecognizerEP18QGestureRecognizer @ 1558 NONAME
+	_ZN12QApplication25registerGestureRecognizerEP18QGestureRecognizer @ 1558 NONAME ABSENT
 	_ZN12QApplication25setQuitOnLastWindowClosedEb @ 1559 NONAME
 	_ZN12QApplication26setKeypadNavigationEnabledEb @ 1560 NONAME
-	_ZN12QApplication27unregisterGestureRecognizerEN2Qt11GestureTypeE @ 1561 NONAME
+	_ZN12QApplication27unregisterGestureRecognizerEN2Qt11GestureTypeE @ 1561 NONAME ABSENT
 	_ZN12QApplication4beepEv @ 1562 NONAME
 	_ZN12QApplication4execEv @ 1563 NONAME
 	_ZN12QApplication4fontEPK7QWidget @ 1564 NONAME
@@ -2547,7 +2547,7 @@ EXPORTS
 	_ZN13QPinchGesture11qt_metacastEPKc @ 2546 NONAME
 	_ZN13QPinchGesture14setCenterPointERK7QPointF @ 2547 NONAME
 	_ZN13QPinchGesture14setScaleFactorEf @ 2548 NONAME
-	_ZN13QPinchGesture14setWhatChangedE6QFlagsINS_10WhatChangeEE @ 2549 NONAME
+	_ZN13QPinchGesture14setWhatChangedE6QFlagsINS_10WhatChangeEE @ 2549 NONAME ABSENT
 	_ZN13QPinchGesture16setRotationAngleEf @ 2550 NONAME
 	_ZN13QPinchGesture16staticMetaObjectE @ 2551 NONAME DATA 16
 	_ZN13QPinchGesture18setLastCenterPointERK7QPointF @ 2552 NONAME
@@ -3342,7 +3342,7 @@ EXPORTS
 	_ZN15QGraphicsLayoutD0Ev @ 3341 NONAME
 	_ZN15QGraphicsLayoutD1Ev @ 3342 NONAME
 	_ZN15QGraphicsLayoutD2Ev @ 3343 NONAME
-	_ZN15QGraphicsObject11grabGestureEN2Qt11GestureTypeENS0_14GestureContextE @ 3344 NONAME
+	_ZN15QGraphicsObject11grabGestureEN2Qt11GestureTypeENS0_14GestureContextE @ 3344 NONAME ABSENT
 	_ZN15QGraphicsObject11qt_metacallEN11QMetaObject4CallEiPPv @ 3345 NONAME
 	_ZN15QGraphicsObject11qt_metacastEPKc @ 3346 NONAME
 	_ZN15QGraphicsObject12scaleChangedEv @ 3347 NONAME
@@ -4057,7 +4057,7 @@ EXPORTS
 	_ZN17QInputMethodEventC2Ev @ 4056 NONAME
 	_ZN17QPixmapBlurFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 4057 NONAME
 	_ZN17QPixmapBlurFilter11qt_metacastEPKc @ 4058 NONAME
-	_ZN17QPixmapBlurFilter11setBlurHintEN2Qt10RenderHintE @ 4059 NONAME
+	_ZN17QPixmapBlurFilter11setBlurHintEN2Qt10RenderHintE @ 4059 NONAME ABSENT
 	_ZN17QPixmapBlurFilter16staticMetaObjectE @ 4060 NONAME DATA 16
 	_ZN17QPixmapBlurFilter19getStaticMetaObjectEv @ 4061 NONAME
 	_ZN17QPixmapBlurFilter9setRadiusEi @ 4062 NONAME ABSENT
@@ -4118,7 +4118,7 @@ EXPORTS
 	_ZN18QDragResponseEventD0Ev @ 4117 NONAME
 	_ZN18QDragResponseEventD1Ev @ 4118 NONAME
 	_ZN18QDragResponseEventD2Ev @ 4119 NONAME
-	_ZN18QGestureRecognizer13createGestureEP7QObject @ 4120 NONAME
+	_ZN18QGestureRecognizer13createGestureEP7QObject @ 4120 NONAME ABSENT
 	_ZN18QGestureRecognizer5resetEP8QGesture @ 4121 NONAME
 	_ZN18QGestureRecognizerC2Ev @ 4122 NONAME
 	_ZN18QGestureRecognizerD0Ev @ 4123 NONAME
@@ -4411,9 +4411,9 @@ EXPORTS
 	_ZN19QEventDispatcherS60D2Ev @ 4410 NONAME
 	_ZN19QGraphicsBlurEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 4411 NONAME
 	_ZN19QGraphicsBlurEffect11qt_metacastEPKc @ 4412 NONAME
-	_ZN19QGraphicsBlurEffect11setBlurHintEN2Qt10RenderHintE @ 4413 NONAME
+	_ZN19QGraphicsBlurEffect11setBlurHintEN2Qt10RenderHintE @ 4413 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect13setBlurRadiusEi @ 4414 NONAME ABSENT
-	_ZN19QGraphicsBlurEffect15blurHintChangedEN2Qt10RenderHintE @ 4415 NONAME
+	_ZN19QGraphicsBlurEffect15blurHintChangedEN2Qt10RenderHintE @ 4415 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect16staticMetaObjectE @ 4416 NONAME DATA 16
 	_ZN19QGraphicsBlurEffect17blurRadiusChangedEi @ 4417 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect19getStaticMetaObjectEv @ 4418 NONAME
@@ -4535,7 +4535,7 @@ EXPORTS
 	_ZN19QKeyEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 4534 NONAME
 	_ZN19QKeyEventTransition11qt_metacastEPKc @ 4535 NONAME
 	_ZN19QKeyEventTransition12onTransitionEP6QEvent @ 4536 NONAME
-	_ZN19QKeyEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 4537 NONAME
+	_ZN19QKeyEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 4537 NONAME ABSENT
 	_ZN19QKeyEventTransition16staticMetaObjectE @ 4538 NONAME DATA 16
 	_ZN19QKeyEventTransition19getStaticMetaObjectEv @ 4539 NONAME
 	_ZN19QKeyEventTransition6setKeyEi @ 4540 NONAME
@@ -4890,10 +4890,10 @@ EXPORTS
 	_ZN21QMouseEventTransition11qt_metacallEN11QMetaObject4CallEiPPv @ 4889 NONAME
 	_ZN21QMouseEventTransition11qt_metacastEPKc @ 4890 NONAME
 	_ZN21QMouseEventTransition12onTransitionEP6QEvent @ 4891 NONAME
-	_ZN21QMouseEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 4892 NONAME
+	_ZN21QMouseEventTransition16setModifiersMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 4892 NONAME ABSENT
 	_ZN21QMouseEventTransition16staticMetaObjectE @ 4893 NONAME DATA 16
 	_ZN21QMouseEventTransition19getStaticMetaObjectEv @ 4894 NONAME
-	_ZN21QMouseEventTransition7setPathERK12QPainterPath @ 4895 NONAME
+	_ZN21QMouseEventTransition7setPathERK12QPainterPath @ 4895 NONAME ABSENT
 	_ZN21QMouseEventTransition9eventTestEP6QEvent @ 4896 NONAME
 	_ZN21QMouseEventTransition9setButtonEN2Qt11MouseButtonE @ 4897 NONAME
 	_ZN21QMouseEventTransitionC1EP6QState @ 4898 NONAME
@@ -6180,7 +6180,7 @@ EXPORTS
 	_ZN7QWidget11actionEventEP12QActionEvent @ 6179 NONAME
 	_ZN7QWidget11changeEventEP6QEvent @ 6180 NONAME
 	_ZN7QWidget11createWinIdEv @ 6181 NONAME
-	_ZN7QWidget11grabGestureEN2Qt11GestureTypeENS0_14GestureContextE @ 6182 NONAME
+	_ZN7QWidget11grabGestureEN2Qt11GestureTypeENS0_14GestureContextE @ 6182 NONAME ABSENT
 	_ZN7QWidget11qt_metacallEN11QMetaObject4CallEiPPv @ 6183 NONAME
 	_ZN7QWidget11qt_metacastEPKc @ 6184 NONAME
 	_ZN7QWidget11resizeEventEP12QResizeEvent @ 6185 NONAME
@@ -7386,10 +7386,10 @@ EXPORTS
 	_ZNK10QMatrix4x411determinantEv @ 7385 NONAME
 	_ZNK10QMatrix4x411toTransformEf @ 7386 NONAME
 	_ZNK10QMatrix4x412normalMatrixEv @ 7387 NONAME
-	_ZNK10QMatrix4x412toValueArrayEPf @ 7388 NONAME
-	_ZNK10QMatrix4x418extractTranslationEv @ 7389 NONAME
+	_ZNK10QMatrix4x412toValueArrayEPf @ 7388 NONAME ABSENT
+	_ZNK10QMatrix4x418extractTranslationEv @ 7389 NONAME ABSENT
 	_ZNK10QMatrix4x418orthonormalInverseEv @ 7390 NONAME
-	_ZNK10QMatrix4x419extractAxisRotationERfR9QVector3D @ 7391 NONAME
+	_ZNK10QMatrix4x419extractAxisRotationERfR9QVector3D @ 7391 NONAME ABSENT
 	_ZNK10QMatrix4x47mapRectERK5QRect @ 7392 NONAME
 	_ZNK10QMatrix4x47mapRectERK6QRectF @ 7393 NONAME
 	_ZNK10QMatrix4x48invertedEPb @ 7394 NONAME
@@ -7780,7 +7780,7 @@ EXPORTS
 	_ZNK11QMouseEvent4posFEv @ 7779 NONAME
 	_ZNK11QPanGesture10lastOffsetEv @ 7780 NONAME
 	_ZNK11QPanGesture10metaObjectEv @ 7781 NONAME
-	_ZNK11QPanGesture11totalOffsetEv @ 7782 NONAME
+	_ZNK11QPanGesture11totalOffsetEv @ 7782 NONAME ABSENT
 	_ZNK11QPanGesture12accelerationEv @ 7783 NONAME
 	_ZNK11QPanGesture6offsetEv @ 7784 NONAME
 	_ZNK11QPixmapData11transformedERK10QTransformN2Qt18TransformationModeE @ 7785 NONAME
@@ -7834,7 +7834,7 @@ EXPORTS
 	_ZNK11QPushButton8sizeHintEv @ 7833 NONAME
 	_ZNK11QPushButton9isDefaultEv @ 7834 NONAME
 	_ZNK11QQuaternion10normalizedEv @ 7835 NONAME
-	_ZNK11QQuaternion12rotateVectorERK9QVector3D @ 7836 NONAME
+	_ZNK11QQuaternion12rotateVectorERK9QVector3D @ 7836 NONAME ABSENT
 	_ZNK11QQuaternion13lengthSquaredEv @ 7837 NONAME
 	_ZNK11QQuaternion6lengthEv @ 7838 NONAME
 	_ZNK11QQuaternioncv8QVariantEv @ 7839 NONAME
@@ -8394,7 +8394,7 @@ EXPORTS
 	_ZNK13QFontMetricsF9lineWidthEv @ 8393 NONAME
 	_ZNK13QFontMetricsFeqERKS_ @ 8394 NONAME
 	_ZNK13QGestureEvent10isAcceptedEP8QGesture @ 8395 NONAME
-	_ZNK13QGestureEvent11allGesturesEv @ 8396 NONAME
+	_ZNK13QGestureEvent11allGesturesEv @ 8396 NONAME ABSENT
 	_ZNK13QGestureEvent14activeGesturesEv @ 8397 NONAME
 	_ZNK13QGestureEvent16canceledGesturesEv @ 8398 NONAME
 	_ZNK13QGraphicsItem10childItemsEv @ 8399 NONAME
@@ -8585,7 +8585,7 @@ EXPORTS
 	_ZNK13QPinchGesture10metaObjectEv @ 8584 NONAME
 	_ZNK13QPinchGesture11centerPointEv @ 8585 NONAME
 	_ZNK13QPinchGesture11scaleFactorEv @ 8586 NONAME
-	_ZNK13QPinchGesture11whatChangedEv @ 8587 NONAME
+	_ZNK13QPinchGesture11whatChangedEv @ 8587 NONAME ABSENT
 	_ZNK13QPinchGesture13rotationAngleEv @ 8588 NONAME
 	_ZNK13QPinchGesture15lastCenterPointEv @ 8589 NONAME
 	_ZNK13QPinchGesture15lastScaleFactorEv @ 8590 NONAME
@@ -9340,7 +9340,7 @@ EXPORTS
 	_ZNK19QItemSelectionRange7indexesEv @ 9339 NONAME
 	_ZNK19QItemSelectionRange9intersectERKS_ @ 9340 NONAME
 	_ZNK19QKeyEventTransition10metaObjectEv @ 9341 NONAME
-	_ZNK19QKeyEventTransition13modifiersMaskEv @ 9342 NONAME
+	_ZNK19QKeyEventTransition13modifiersMaskEv @ 9342 NONAME ABSENT
 	_ZNK19QKeyEventTransition3keyEv @ 9343 NONAME
 	_ZNK19QPainterPathStroker10dashOffsetEv @ 9344 NONAME
 	_ZNK19QPainterPathStroker10miterLimitEv @ 9345 NONAME
@@ -9442,8 +9442,8 @@ EXPORTS
 	_ZNK21QGraphicsLinearLayout9alignmentEP19QGraphicsLayoutItem @ 9441 NONAME
 	_ZNK21QGraphicsSystemPlugin10metaObjectEv @ 9442 NONAME
 	_ZNK21QMouseEventTransition10metaObjectEv @ 9443 NONAME
-	_ZNK21QMouseEventTransition13modifiersMaskEv @ 9444 NONAME
-	_ZNK21QMouseEventTransition4pathEv @ 9445 NONAME
+	_ZNK21QMouseEventTransition13modifiersMaskEv @ 9444 NONAME ABSENT
+	_ZNK21QMouseEventTransition4pathEv @ 9445 NONAME ABSENT
 	_ZNK21QMouseEventTransition6buttonEv @ 9446 NONAME
 	_ZNK21QPaintEngineExPrivate17hasClipOperationsEv @ 9447 NONAME
 	_ZNK21QPixmapColorizeFilter10metaObjectEv @ 9448 NONAME
@@ -11616,7 +11616,7 @@ EXPORTS
 	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
 	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
 	_ZN11QPanGesture13setLastOffsetERK7QPointF @ 11617 NONAME
-	_ZN11QPanGesture14setTotalOffsetERK7QPointF @ 11618 NONAME
+	_ZN11QPanGesture14setTotalOffsetERK7QPointF @ 11618 NONAME ABSENT
 	_ZN11QPanGesture9setOffsetERK7QPointF @ 11619 NONAME
 	_ZN13QGestureEvent6d_funcEv @ 11620 NONAME
 	_ZN13QGestureEvent9setWidgetEP7QWidget @ 11621 NONAME
@@ -11625,7 +11625,7 @@ EXPORTS
 	_ZN13QGestureEventD2Ev @ 11624 NONAME
 	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11625 NONAME
 	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11626 NONAME
-	_ZNK13QGestureEvent10mapToSceneERK7QPointF @ 11627 NONAME
+	_ZNK13QGestureEvent10mapToSceneERK7QPointF @ 11627 NONAME ABSENT
 	_ZNK13QGestureEvent6d_funcEv @ 11628 NONAME
 	_ZNK13QGestureEvent6widgetEv @ 11629 NONAME
 	_Zls6QDebugP15QGraphicsObject @ 11630 NONAME
@@ -11660,4 +11660,33 @@ EXPORTS
 	_ZNK13QTextDocument18availableUndoStepsEv @ 11659 NONAME
 	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPointNS_13PixmapPadModeE @ 11660 NONAME
 	_ZNK8QGesture19gestureCancelPolicyEv @ 11661 NONAME
+	_ZN10QMatrix4x48optimizeEv @ 11662 NONAME
+	_ZN11QPixmapData6createEiiNS_9PixelTypeE @ 11663 NONAME
+	_ZN13QPinchGesture14setChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11664 NONAME
+	_ZN13QPinchGesture19setTotalChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11665 NONAME
+	_ZN15QGraphicsObject11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11666 NONAME
+	_ZN15QGraphicsObject13ungrabGestureEN2Qt11GestureTypeE @ 11667 NONAME
+	_ZN17QPixmapBlurFilter11setBlurHintEN19QGraphicsBlurEffect8BlurHintE @ 11668 NONAME
+	_ZN18QGestureRecognizer18registerRecognizerEPS_ @ 11669 NONAME
+	_ZN18QGestureRecognizer20unregisterRecognizerEN2Qt11GestureTypeE @ 11670 NONAME
+	_ZN18QGestureRecognizer6createEP7QObject @ 11671 NONAME
+	_ZN19QGraphicsBlurEffect11setBlurHintENS_8BlurHintE @ 11672 NONAME
+	_ZN19QGraphicsBlurEffect15blurHintChangedENS_8BlurHintE @ 11673 NONAME
+	_ZN19QKeyEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11674 NONAME
+	_ZN21QMouseEventTransition14setHitTestPathERK12QPainterPath @ 11675 NONAME
+	_ZN21QMouseEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11676 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksEP11QPixmapData @ 11677 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK6QImage @ 11678 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK7QPixmap @ 11679 NONAME
+	_ZN7QWidget11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11680 NONAME
+	_ZNK10QMatrix4x410copyDataToEPf @ 11681 NONAME
+	_ZNK11QPanGesture5deltaEv @ 11682 NONAME
+	_ZNK11QQuaternion13rotatedVectorERK9QVector3D @ 11683 NONAME
+	_ZNK13QGestureEvent18mapToGraphicsSceneERK7QPointF @ 11684 NONAME
+	_ZNK13QGestureEvent8gesturesEv @ 11685 NONAME
+	_ZNK13QPinchGesture11changeFlagsEv @ 11686 NONAME
+	_ZNK13QPinchGesture16totalChangeFlagsEv @ 11687 NONAME
+	_ZNK19QKeyEventTransition12modifierMaskEv @ 11688 NONAME
+	_ZNK21QMouseEventTransition11hitTestPathEv @ 11689 NONAME
+	_ZNK21QMouseEventTransition12modifierMaskEv @ 11690 NONAME
 
