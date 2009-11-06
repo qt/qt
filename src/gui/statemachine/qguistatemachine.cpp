@@ -271,8 +271,10 @@ static QEvent *cloneEvent(QEvent *e)
         break;
 #endif
 
+#ifndef QT_NO_WHATSTHIS
     case QEvent::WhatsThisClicked:
         return new QWhatsThisClickedEvent(*static_cast<QWhatsThisClickedEvent*>(e));
+#endif //QT_NO_WHATSTHIS
 
 #ifndef QT_NO_TOOLBAR
     case QEvent::ToolBarChange:
