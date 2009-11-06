@@ -43,6 +43,7 @@
 #define QEVENT_P_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qurl.h>
 #include <QtGui/qevent.h>
 
 QT_BEGIN_NAMESPACE
@@ -162,6 +163,18 @@ public:
     QWidget *widget;
     QMap<Qt::GestureType, bool> accepted;
     QMap<Qt::GestureType, QWidget *> targetWidgets;
+};
+
+
+class QFileOpenEventPrivate
+{
+public:
+    inline QFileOpenEventPrivate(const QUrl &url)
+        : url(url)
+    {
+    }
+
+    QUrl url;
 };
 
 QT_END_NAMESPACE

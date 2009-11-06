@@ -23,6 +23,8 @@ information about a particular change.
    * The minimum required version of the D-Bus reference library is
      now 0.93.
 
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
 
 Third party components
 ----------------------
@@ -38,6 +40,11 @@ Third party components
  - QGraphicsBlurEffect
     * Since the 4.6 beta Qt::RenderHint has been moved to
       QGraphicsBlurEffect::BlurHint.
+
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
 
 QtCore
 
@@ -64,6 +71,8 @@ QtCore
 
 - QTextStream
     * [221316] Fixed crash on large input.
+    * Improved reading utf8/utf16/utf32 data by correctly skipping the
+      ByteOrderMark when reading data by one character at a time.
 
 QtGui
 
@@ -155,7 +164,8 @@ QtGui
 
  - QWidget
     * [201649] Added QWidget::previousInFocusChain
-
+    * [254563] Fixed a crash when setting a focus in a widget tree that
+      contains invisible widgets
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -189,6 +199,29 @@ QtGui
 
  - KDE Integration: Improved the integration into KDE desktop (loading of KDE
    palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
+
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On Windows when a file cannot be accessed (stat()ed), we are now restoring
+   the error mode to the original value.
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+ - Add support for GetURL events on Mac OS X
 
 ****************************************************************************
 *                          Tools                                           *
