@@ -939,8 +939,8 @@ public:
 
         // This test only ensures it's possible to paint onto a QGLWidget. Full
         // paint engine feature testing is way out of scope!
+        p.fillRect(-1, -1, width()+2, height()+2, Qt::red);
 
-        p.fillRect(0, 0, width(), height(), Qt::red);
         // No p.end() or swap buffers, should be done automatically
     }
 
@@ -1159,11 +1159,11 @@ protected:
 
         QPainter fboPainter;
         fboPainterBeginOk = fboPainter.begin(fbo);
-        fboPainter.fillRect(0, 0, 128, 128, Qt::red);
+        fboPainter.fillRect(-1, -1, 130, 130, Qt::red);
         fboPainter.end();
         fboImage = fbo->toImage();
 
-        widgetPainter.fillRect(rect(), Qt::blue);
+        widgetPainter.fillRect(-1, -1, width()+2, width()+2, Qt::blue);
 
         delete fbo;
     }
@@ -1577,7 +1577,13 @@ void tst_QGL::replaceClipping()
 
     const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
 
-    QCOMPARE(widgetFB, reference);
+    // Sample pixels in a grid pattern which avoids false failures due to
+    // off-by-one pixel errors on some buggy GL implementations
+    for (int x = 25; x < reference.width(); x += 50) {
+        for (int y = 25; y < reference.width(); y += 50) {
+            QFUZZY_COMPARE_PIXELS(widgetFB.pixel(x, y), reference.pixel(x, y));
+        }
+    }
 }
 
 class ClipTestGLWidget : public QGLWidget
@@ -1585,7 +1591,7 @@ class ClipTestGLWidget : public QGLWidget
 public:
     void paint(QPainter *painter)
     {
-        painter->fillRect(rect(), Qt::white);
+        painter->fillRect(-1, -1, width()+2, height()+2, Qt::white);
         painter->setClipRect(10, 10, width()-20, height()-20);
         painter->fillRect(rect(), Qt::cyan);
 
@@ -1702,7 +1708,13 @@ void tst_QGL::clipTest()
 
     const QImage widgetFB = glw.grabFrameBuffer(false).convertToFormat(QImage::Format_RGB32);
 
-    QCOMPARE(widgetFB, reference);
+    // Sample pixels in a grid pattern which avoids false failures due to
+    // off-by-one pixel errors on some buggy GL implementations
+    for (int x = 2; x < reference.width(); x += 5) {
+        for (int y = 2; y < reference.width(); y += 5) {
+            QFUZZY_COMPARE_PIXELS(widgetFB.pixel(x, y), reference.pixel(x, y));
+        }
+    }
 }
 
 void tst_QGL::destroyFBOAfterContext()
