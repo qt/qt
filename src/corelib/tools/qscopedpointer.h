@@ -113,16 +113,6 @@ public:
         return d;
     }
 
-    inline bool operator==(const QScopedPointer<T, Cleanup> &other) const
-    {
-        return d == other.d;
-    }
-
-    inline bool operator!=(const QScopedPointer<T, Cleanup> &other) const
-    {
-        return d != other.d;
-    }
-
     inline bool operator!() const
     {
         return !d;
@@ -181,6 +171,18 @@ private:
 };
 
 template <class T, class Cleanup>
+inline bool operator==(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
+{
+    return lhs.data() == rhs.data();
+}
+
+template <class T, class Cleanup>
+inline bool operator!=(const QScopedPointer<T, Cleanup> &lhs, const QScopedPointer<T, Cleanup> &rhs)
+{
+    return lhs.data() != rhs.data();
+}
+
+template <class T, class Cleanup>
 Q_INLINE_TEMPLATE void qSwap(QScopedPointer<T, Cleanup> &p1, QScopedPointer<T, Cleanup> &p2)
 { p1.swap(p2); }
 
@@ -203,16 +205,6 @@ public:
         return this->d[i];
     }
 
-    inline bool operator==(const QScopedArrayPointer<T, Cleanup> &other) const
-    {
-        return this->d == other.d;
-    }
-
-    inline bool operator!=(const QScopedArrayPointer<T, Cleanup> &other) const
-    {
-        return this->d != other.d;
-    }
-
 private:
     Q_DISABLE_COPY(QScopedArrayPointer)
 };
@@ -231,16 +223,6 @@ public:
     inline T *&data_ptr()
     {
         return this->d;
-    }
-
-    inline bool operator==(const QCustomScopedPointer<T, Cleanup> &other) const
-    {
-        return this->d == other.d;
-    }
-
-    inline bool operator!=(const QCustomScopedPointer<T, Cleanup> &other) const
-    {
-        return this->d != other.d;
     }
 
 private:
@@ -285,16 +267,6 @@ public:
         T *oldD = this->d;
         this->d = other;
         QScopedPointerSharedDeleter<T>::cleanup(oldD);
-    }
-
-    inline bool operator==(const QScopedSharedPointer<T> &other) const
-    {
-        return this->d == other.d;
-    }
-
-    inline bool operator!=(const QScopedSharedPointer<T> &other) const
-    {
-        return this->d != other.d;
     }
 
 private:
