@@ -77,6 +77,69 @@ struct QSymbianPrintExitInfo
     TInt initThreadHandleCount;
 } symbian_printExitInfo;
 
+Q_CORE_EXPORT bool QBasicAtomicInt::isReferenceCountingNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicInt::isTestAndSetNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicInt::isFetchAndStoreNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicInt::isFetchAndAddNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isTestAndSetNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndStoreNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndAddNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
 //For ARMv6, the generic atomics are machine coded
 #ifndef QT_HAVE_ARMV6
 

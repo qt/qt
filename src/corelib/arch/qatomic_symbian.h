@@ -51,57 +51,52 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Core)
 
-#define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_SOMETIMES_NATIVE
 
-inline bool QBasicAtomicInt::isReferenceCountingNative()
-{ return false; }
 inline bool QBasicAtomicInt::isReferenceCountingWaitFree()
 { return false; }
 
-#define Q_ATOMIC_INT_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_TEST_AND_SET_IS_SOMETIMES_NATIVE
 
-inline bool QBasicAtomicInt::isTestAndSetNative()
-{ return false; }
 inline bool QBasicAtomicInt::isTestAndSetWaitFree()
 { return false; }
 
-#define Q_ATOMIC_INT_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 
-inline bool QBasicAtomicInt::isFetchAndStoreNative()
-{ return false; }
 inline bool QBasicAtomicInt::isFetchAndStoreWaitFree()
 { return false; }
 
-#define Q_ATOMIC_INT_FETCH_AND_ADD_IS_NOT_NATIVE
+#define Q_ATOMIC_INT_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
-inline bool QBasicAtomicInt::isFetchAndAddNative()
-{ return false; }
 inline bool QBasicAtomicInt::isFetchAndAddWaitFree()
 { return false; }
 
-#define Q_ATOMIC_POINTER_TEST_AND_SET_IS_NOT_NATIVE
+#define Q_ATOMIC_POINTER_TEST_AND_SET_IS_SOMETIMES_NATIVE
 
+Q_CORE_EXPORT bool QBasicAtomicPointer_isTestAndSetNative();
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetNative()
-{ return false; }
+{ return QBasicAtomicPointer_isTestAndSetNative(); }
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isTestAndSetWaitFree()
 { return false; }
 
-#define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_NOT_NATIVE
+#define Q_ATOMIC_POINTER_FETCH_AND_STORE_IS_SOMETIMES_NATIVE
 
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndStoreNative();
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreNative()
-{ return false; }
+{ return QBasicAtomicPointer_isFetchAndStoreNative(); }
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndStoreWaitFree()
 { return false; }
 
-#define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_NOT_NATIVE
+#define Q_ATOMIC_POINTER_FETCH_AND_ADD_IS_SOMETIMES_NATIVE
 
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndAddNative();
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddNative()
-{ return false; }
+{ return QBasicAtomicPointer_isFetchAndAddNative(); }
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return false; }
