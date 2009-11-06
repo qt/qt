@@ -11,17 +11,17 @@ Rectangle {
         y: 0
         move: Transition {
             NumberAnimation {
-                properties: "y"; easing: "easeOutBounce"
+                matchProperties: "y"; easing: "easeOutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                properties: "y"; from: 500; duration:500; easing: "easeOutQuad"
+                matchProperties: "y"; from: 500; duration:500; easing: "easeOutQuad"
             }
         }
         remove: Transition {
             NumberAnimation {
-                properties:"y"; to: 500; duration:500; easing: "easeInQuad"
+                matchProperties:"y"; to: 500; duration:500; easing: "easeInQuad"
             }
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
@@ -36,23 +36,23 @@ Rectangle {
         y: 300 
         move: Transition {
             NumberAnimation {
-                properties: "x"; easing: "easeOutBounce"
+                matchProperties: "x"; easing: "easeOutBounce"
             }
         }
         add: Transition {
             NumberAnimation {
-                properties: "x"; from: 500; duration:500; easing: "easeOutQuad"
+                matchProperties: "x"; from: 500; duration:500; easing: "easeOutQuad"
             }
             NumberAnimation {
-                properties: "opacity"; from: 0;  duration: 500;
+                matchProperties: "opacity"; from: 0;  duration: 500;
             }
         }
         remove: Transition {
             NumberAnimation {
-                properties: "x"; to: 500; duration:500; easing: "easeInQuad"
+                matchProperties: "x"; to: 500; duration:500; easing: "easeInQuad"
             }
             NumberAnimation {
-                properties: "opacity"; from: 1; duration: 500
+                matchProperties: "opacity"; from: 1; duration: 500
             }
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
@@ -103,25 +103,25 @@ Rectangle {
 
         remove: Transition {
             NumberAnimation {
-                properties: "opacity"; from: 1; to: 0; duration: 500
+                matchProperties: "opacity"; from: 1; to: 0; duration: 500
             }
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                matchProperties: "x,y"; easing: "easeOutBounce"
             }
         }
 
         move: Transition {
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                matchProperties: "x,y"; easing: "easeOutBounce"
             }
         }
 
         add: Transition {
             NumberAnimation {
-                properties: "opacity"; from: 0; to: 1; duration: 500
+                matchProperties: "opacity"; from: 0; to: 1; duration: 500
             }
             NumberAnimation {
-                properties: "x,y"; easing: "easeOutBounce"
+                matchProperties: "x,y"; easing: "easeOutBounce"
             }
         }
 

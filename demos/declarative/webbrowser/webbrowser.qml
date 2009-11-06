@@ -149,8 +149,8 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            target: header
-                            properties: "progressOff"
+                            matchTargets: header
+                            matchProperties: "progressOff"
                             easing: "easeInOutQuad"
                             duration: 300
                         }
@@ -341,7 +341,7 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            properties: "opacity"
+                            matchProperties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 300
                         }
@@ -397,7 +397,7 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            properties: "opacity"
+                            matchProperties: "opacity"
                             easing: "easeInOutQuad"
                             duration: 320
                         }

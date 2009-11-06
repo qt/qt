@@ -1,7 +1,7 @@
 import Qt 4.6
 
 // The WebView size is determined by the width, height,
-// preferredWidth, and preferredHeight properties.
+// preferredWidth, and preferredHeight matchProperties.
 Rectangle {
     id: rect
     color: "white"
