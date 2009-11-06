@@ -4183,6 +4183,7 @@ elif echo "$D_FLAGS" | grep QT_EVAL >/dev/null 2>&1; then
 fi
 
 if [ -n "$EVALKEY" ]; then
+    rm -f "$outpath/src/corelib/global/qconfig_eval.cpp"
     cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
 /* Evaluation license key */
 static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
