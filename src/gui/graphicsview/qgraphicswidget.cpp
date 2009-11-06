@@ -410,6 +410,27 @@ void QGraphicsWidget::setGeometry(const QRectF &rect)
 */
 
 /*!
+    \property QGraphicsWidget::minimumSize
+    \brief the minimum size of the widget
+
+    \sa setMinimumSize(), minimumSize(), preferredSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::preferredSize
+    \brief the preferred size of the widget
+
+    \sa setPreferredSize(), preferredSize(), minimumSize, maximumSize
+*/
+
+/*!
+    \property QGraphicsWidget::maximumSize
+    \brief the maximum size of the widget
+
+    \sa setMaximumSize(), maximumSize(), minimumSize, preferredSize
+*/
+
+/*!
     Sets the widget's contents margins to \a left, \a top, \a right and \a
     bottom.
 
