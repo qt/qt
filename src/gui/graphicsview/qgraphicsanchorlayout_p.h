@@ -527,9 +527,9 @@ public:
 
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);
-    void interpolateEdge(AnchorVertex *base, AnchorData *edge, Orientation orientation);
-    void interpolateSequentialEdges(SequentialAnchorData *edge, Orientation orientation);
-    void interpolateParallelEdges(ParallelAnchorData *edge, Orientation orientation);
+    void interpolateEdge(AnchorVertex *base, AnchorData *edge);
+    void interpolateSequentialEdges(SequentialAnchorData *edge);
+    void interpolateParallelEdges(ParallelAnchorData *edge);
 
     // Linear Programming solver methods
     bool solveMinMax(const QList<QSimplexConstraint *> &constraints,

@@ -2674,7 +2674,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
             continue;
 
         visited.insert(pair.second);
-        interpolateEdge(pair.first, edge, orientation);
+        interpolateEdge(pair.first, edge);
 
         QList<AnchorVertex *> adjacents = graph[orientation].adjacentVertices(pair.second);
         for (int i = 0; i < adjacents.count(); ++i) {
@@ -2728,10 +2728,9 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
    vertices to be initalized, so it calls specialized functions that
    will recurse back to interpolateEdge().
  */
-void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
-                                                   AnchorData *edge,
-                                                   Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorData *edge)
 {
+    const Orientation orientation = Orientation(edge->orientation);
     const QPair<Interval, qreal> factor(interpolationInterval[orientation],
                                         interpolationProgress[orientation]);
 
@@ -2749,13 +2748,12 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base,
 
     // Process child anchors
     if (edge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(edge), orientation);
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(edge));
     else if (edge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(edge), orientation);
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(edge));
 }
 
-void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(
-    ParallelAnchorData *data, Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(ParallelAnchorData *data)
 {
     // In parallels the boundary vertices are already calculate, we
     // just need to look for sequential groups inside, because only
@@ -2763,23 +2761,18 @@ void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(
 
     // First edge
     if (data->firstEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->firstEdge),
-                                   orientation);
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->firstEdge));
     else if (data->firstEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->firstEdge),
-                                 orientation);
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->firstEdge));
 
     // Second edge
     if (data->secondEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->secondEdge),
-                                   orientation);
+        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->secondEdge));
     else if (data->secondEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->secondEdge),
-                                 orientation);
+        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->secondEdge));
 }
 
-void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
-    SequentialAnchorData *data, Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(SequentialAnchorData *data)
 {
     // This method is supposed to handle any sequential anchor, even out-of-order
     // ones. However, in the current QGAL implementation we should get only the
@@ -2795,7 +2788,7 @@ void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
 
     for (int i = 0; i < data->m_edges.count() - 1; ++i) {
         AnchorData *edge = data->m_edges.at(i);
-        interpolateEdge(prev, edge, orientation);
+        interpolateEdge(prev, edge);
 
         // Use the recently calculated vertex as the base for the next one
         const bool edgeIsForward = (edge->from == prev);
@@ -2805,7 +2798,7 @@ void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(
     // Treat the last specially, since we already calculated it's end
     // vertex, so it's only interesting if it's a complex one
     if (data->m_edges.last()->type != AnchorData::Normal)
-        interpolateEdge(prev, data->m_edges.last(), orientation);
+        interpolateEdge(prev, data->m_edges.last());
 }
 
 bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *> &constraints,
