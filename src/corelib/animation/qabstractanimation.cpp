@@ -361,7 +361,7 @@ void QAbstractAnimationPrivate::setState(QAbstractAnimation::State newState)
             QUnifiedTimer::instance()->ensureTimerUpdate();
         //the animation, is not running any more
         QUnifiedTimer::instance()->unregisterAnimation(q);
-    } else {
+    } else if (newState == QAbstractAnimation::Running) {
         QUnifiedTimer::instance()->registerAnimation(q, isTopLevel);
     }
 
