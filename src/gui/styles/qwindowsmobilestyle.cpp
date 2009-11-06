@@ -6330,16 +6330,20 @@ QSize QWindowsMobileStyle::sizeFromContents(ContentsType type, const QStyleOptio
     switch (type) {
     case CT_PushButton:
        if (const QStyleOptionButton *button = qstyleoption_cast<const QStyleOptionButton *>(option)) {
-            newSize = QWindowsStyle::sizeFromContents(type, option, size, widget);
+            newSize = QCommonStyle::sizeFromContents(type, option, size, widget);
             int w = newSize.width(),
                 h = newSize.height();
             int defwidth = 0;
             if (button->features & QStyleOptionButton::AutoDefaultButton)
                 defwidth = 2 * proxy()->pixelMetric(PM_ButtonDefaultIndicator, button, widget);
-            if (w < 75 + defwidth && button->icon.isNull())
-                w = 75 + defwidth;
-            if (h < 23 + defwidth)
-                h = 23 + defwidth;
+
+            int minwidth = int(QStyleHelper::dpiScaled(55.0f));
+            int minheight = int(QStyleHelper::dpiScaled(19.0f));
+
+            if (w < minwidth + defwidth && button->icon.isNull())
+                w = minwidth + defwidth;
+            if (h < minheight + defwidth)
+                h = minheight + defwidth;
             newSize = QSize(w + 4, h + 4);
         }
         break;
