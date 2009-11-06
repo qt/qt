@@ -533,7 +533,7 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Vietnamese,
     { 0, 127 }, // same as latin1
         // Other,
-    { 126, 127 }
+    { 126, 127 },
         // Ogham,
     { 78, 127 },
         // Runic,
