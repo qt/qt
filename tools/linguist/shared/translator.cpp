@@ -302,13 +302,6 @@ bool Translator::release(QFile *iod, ConversionData &cd) const
     return false;
 }
 
-bool Translator::contains(const QString &context,
-    const QString &sourceText, const QString &comment) const
-{
-    return m_messages.contains(TranslatorMessage(context, sourceText, comment,
-        QString(), QString(), 0));
-}
-
 TranslatorMessage Translator::find(const QString &context,
     const QString &comment, const TranslatorMessage::References &refs) const
 {
