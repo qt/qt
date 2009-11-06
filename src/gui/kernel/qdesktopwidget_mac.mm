@@ -136,16 +136,20 @@ void QDesktopWidgetImplementation::onResize()
     screenRects.clear(); 
     availableRects.clear(); 
     NSRect primaryRect = [[displays objectAtIndex:0] frame]; 
-    for (int i = 0; i<screenCount; i++) { 
-        NSRect r = [[displays objectAtIndex:i] frame]; 
+    for (int i = 0; i<screenCount; i++) {
+        const NSRect r = [[displays objectAtIndex:i] frame]; 
         const int flippedY = - r.origin.y +            // account for position offset and 
               primaryRect.size.height - r.size.height; // height difference. 
         screenRects.append(QRectF(r.origin.x, flippedY, 
             r.size.width, r.size.height)); 
-        r = [[displays objectAtIndex:i] visibleFrame]; 
+    }
+    for (int i = 0; i<screenCount; i++) {
+        const NSRect r = [[displays objectAtIndex:i] visibleFrame]; 
+        const int flippedY = - r.origin.y +            // account for position offset and 
+              primaryRect.size.height - r.size.height; // height difference. 
         availableRects.append(QRectF(r.origin.x, flippedY, 
                 r.size.width, r.size.height)); 
-    } 
+    }
 }
 
 
