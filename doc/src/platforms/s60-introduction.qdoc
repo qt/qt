@@ -42,7 +42,7 @@
 /*!
     \page symbian-with-qt-introduction.html
 
-    \title Symbian platform - Introduction to using Qt
+    \title Symbian Platform - Introduction to Qt
     \brief An introduction to Qt for Symbian platform developers.
     \ingroup howto
     \ingroup qts60
@@ -51,15 +51,15 @@
 
     \section1 Required tools
 
-    See \l{Qt for Symbian platform Requirements} to see what tools are
+    See \l{Qt for Symbian Platform Requirements} to see what tools are
     required to use Qt for Symbian platform.
 
     \section1 Installing Qt and running demos
 
-    Follow the instructions found in \l{Installing Qt on the Symbian platform using binary package} to learn how
-    to install Qt using binary package and how to build and run Qt demos.
+    Follow the instructions found in \l{Installing Qt on the Symbian platform from a Binary Package}
+    to learn how to install Qt using a binary package and how to build and run Qt demos.
 
-    Follow the instructions found in \l{Installing Qt on the Symbian platform} to learn how to install Qt using
+    Follow the instructions found in \l{Installing Qt on the Symbian Platform} to learn how to install Qt using
     using source package and how to build and run the Qt demos.
 
     \section1 Building your own applications

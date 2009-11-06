@@ -3791,7 +3791,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
 /*
     Modifies the bounds for a widgets backing HIView during moves and resizes. Also updates the
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
-    and QWidgetPrivate::isOpaque flags.
+    flag
 */
 static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
 {
@@ -3808,8 +3808,8 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
 
     // Perform a normal (complete repaint) update in some cases:
     if (
-        // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
+        // always repaint on move.
+        (isMove) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||

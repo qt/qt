@@ -67,6 +67,49 @@ QtCore
 
 QtGui
 
+- QGraphicsItem
+    * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
+    * Many optimizations.
+    * Introduced QGraphicsItem::ItemHasNoContents
+    * Introduced QGraphicsItem::ItemSendsGeometryChanges (see Behavioral Changes)
+    * Introduced QGraphicsItem::focusProxy(), focus proxy support
+    * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
+    * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced activation support.
+    * Introduced QGraphicsItem::stackBefore()
+    * Cached items are now always invalidated when update() is called.
+
+- QGraphicsObject
+    * New class; inherits QGraphicsItem and adds notification signals and property declarations.
+
+- QGraphicsProxyWidget
+    * [251407] Fixed window flag handling. Now QGraphicsProxyWidget's flags win.
+    * Fix Qt::ClickFocus policy
+
+ - QGraphicsScene
+    * [245317] Fixes to mouse grabbing behavior.
+    * Fixed delivery of double-click events after explicit grab and then ungrab.
+    * Rewrote the internal rendering to use a recursive instead of an iterative approach.
+    * Many optimizations.
+    * Ensure hover enter events are delivered when an item is pressed.
+    * Introduced activation support.
+    * Fixed bugs in initial focus support.
+
+- QGraphicsTextItem
+    * Now inherits from QGraphicsObject instead
+
+ - QGraphicsTransform
+    * New class; eases animation of transformations for QGraphicsItem.
+
+- QGraphicsView
+    * Fix mapToScene(QRect) to avoid extra unnecessary adjustments.
+    * Many optimizations.
+    * Introduced QGraphicsView::isTransformed()
+    * [QTBUG-4151] Items with parent that sets ItemClipsChildrenToShape were sometimes invisible.
+
+- QGraphicsWidget
+    * Now inherits from QGraphicsObject instead
+
  - QTreeView
     * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
     * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
@@ -85,6 +128,12 @@ QtGui
 
  - QComboBox
     * [220195] Fixed keyboard search when current index is -1
+
+- QPixmap
+    * Optimized width(), height(), isNull() and depth().
+
+- QRegion
+    * Minor optimizations.
 
  - QSpinBox
     * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
