@@ -359,11 +359,6 @@ void MMF::MediaObject::setTransitionTime(qint32 time)
     m_player->setTransitionTime(time);
 }
 
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::MediaObject::volumeChanged(qreal volume)
 {
     m_player->volumeChanged(volume);

@@ -289,10 +289,6 @@ void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
 }
 
 
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
     TRACE_CONTEXT(AbstractMediaPlayer::volumeChanged, EAudioInternal);

@@ -43,9 +43,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/objecttree.h             \
            $$PHONON_MMF_DIR/utils.h                  \
            $$PHONON_MMF_DIR/videooutput.h            \
-           $$PHONON_MMF_DIR/videooutputobserver.h    \
-           $$PHONON_MMF_DIR/videowidget.h            \
-           $$PHONON_MMF_DIR/volumeobserver.h
+           $$PHONON_MMF_DIR/videowidget.h
 
 SOURCES +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.cpp  \

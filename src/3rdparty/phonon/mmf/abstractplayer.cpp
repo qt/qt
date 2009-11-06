@@ -92,11 +92,6 @@ void MMF::AbstractPlayer::setTransitionTime(qint32 time)
     m_transitionTime = time;
 }
 
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
-
 void MMF::AbstractPlayer::volumeChanged(qreal volume)
 {
     m_volume = volume;
