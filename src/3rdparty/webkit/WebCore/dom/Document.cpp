@@ -58,6 +58,7 @@
 #include "FrameLoader.h"
 #include "FrameTree.h"
 #include "FrameView.h"
+#include "HTMLAllCollection.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBodyElement.h"
 #include "HTMLCanvasElement.h"
@@ -511,6 +512,16 @@ Document::~Document()
         m_styleSheets->documentDestroyed();
 }
 
+Document::JSWrapperCache* Document::createWrapperCache(DOMWrapperWorld* world)
+{
+    JSWrapperCache* wrapperCache = new JSWrapperCache();
+    m_wrapperCacheMap.set(world, wrapperCache);
+#if USE(JSC)
+    world->rememberDocument(this);
+#endif
+    return wrapperCache;
+}
+
 void Document::resetLinkColor()
 {
     m_linkColor = Color(0, 0, 238);
@@ -943,7 +954,7 @@ Element* Document::elementFromPoint(int x, int y) const
         return 0;
 
     float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint((x + view()->scrollX()) * zoomFactor, (y + view()->scrollY()) * zoomFactor));
+    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor  + view()->scrollX(), y * zoomFactor + view()->scrollY()));
 
     if (!frameView->visibleContentRect().contains(point))
         return 0;
@@ -973,7 +984,7 @@ PassRefPtr<Range> Document::caretRangeFromPoint(int x, int y)
         return 0;
 
     float zoomFactor = frame->pageZoomFactor();
-    IntPoint point = roundedIntPoint(FloatPoint((x + view()->scrollX()) * zoomFactor, (y + view()->scrollY()) * zoomFactor));
+    IntPoint point = roundedIntPoint(FloatPoint(x * zoomFactor + view()->scrollX(), y * zoomFactor + view()->scrollY()));
 
     if (!frameView->visibleContentRect().contains(point))
         return 0;
@@ -3988,9 +3999,9 @@ PassRefPtr<HTMLCollection> Document::anchors()
     return HTMLCollection::create(this, DocAnchors);
 }
 
-PassRefPtr<HTMLCollection> Document::all()
+PassRefPtr<HTMLAllCollection> Document::all()
 {
-    return HTMLCollection::create(this, DocAll);
+    return HTMLAllCollection::create(this);
 }
 
 PassRefPtr<HTMLCollection> Document::windowNamedItems(const String &name)

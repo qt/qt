@@ -87,6 +87,7 @@
 #define QT_FTELL                ::ftello64
 #define QT_FGETPOS              ::fgetpos64
 #define QT_FSETPOS              ::fsetpos64
+#define QT_MMAP                 ::mmap64
 #define QT_FPOS_T               fpos64_t
 #define QT_OFF_T                off64_t
 #else
@@ -95,6 +96,7 @@
 #define QT_FTELL                ::ftello
 #define QT_FGETPOS              ::fgetpos
 #define QT_FSETPOS              ::fsetpos
+#define QT_MMAP                 ::mmap
 #define QT_FPOS_T               fpos_t
 #define QT_OFF_T                off_t
 #endif
@@ -167,6 +169,6 @@ inline float strtof(const char *b, char **e)
     return float(strtod(b, e));
 }
 
-#define QT_QWS_TEMP_DIR qgetenv("TMP");
+#define QT_QWS_TEMP_DIR QString::fromLatin1(qgetenv("TMP"))
 
 #endif // QPLATFORMDEFS_H

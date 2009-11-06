@@ -61,6 +61,7 @@
 #include <private/qgraphicstransform_p.h>
 
 #include <private/qgraphicseffect_p.h>
+#include <qgraphicseffect.h>
 
 #include <QtCore/qpoint.h>
 
@@ -452,7 +453,7 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
@@ -542,7 +543,7 @@ struct QGraphicsItemPrivate::TransformData
             QMatrix4x4 m;
             for (int i = 0; i < graphicsTransforms.size(); ++i)
                 graphicsTransforms.at(i)->applyTo(&m);
-            x *= m.toTransform(0);
+            x *= m.toTransform();
         }
         x.translate(xOrigin, yOrigin);
         x.rotate(rotation);
@@ -603,8 +604,10 @@ public:
 
     inline bool isPixmap() const
     {
-        return (item->type() == QGraphicsPixmapItem::Type);
-            //|| (item->d_ptr->isObject && qobject_cast<QFxImage *>(q_func()));
+        return item->type() == QGraphicsPixmapItem::Type
+               && !(item->flags() & QGraphicsItem::ItemIsSelectable)
+               && item->d_ptr->children.size() == 0;
+            //|| (item->d_ptr->isObject && qobject_cast<QmlGraphicsImage *>(q_func()));
     }
 
     inline const QStyleOption *styleOption() const
@@ -621,7 +624,9 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system,
+                   QPoint *offset,
+                   QGraphicsEffectSource::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

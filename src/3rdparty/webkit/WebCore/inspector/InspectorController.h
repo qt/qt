@@ -223,7 +223,7 @@ public:
     void resourceRetrievedByXMLHttpRequest(unsigned long identifier, const ScriptString& sourceString);
     void scriptImported(unsigned long identifier, const String& sourceString);
 
-    void enableResourceTracking(bool always = false);
+    void enableResourceTracking(bool always = false, bool reload = true);
     void disableResourceTracking(bool always = false);
     bool resourceTrackingEnabled() const { return m_resourceTrackingEnabled; }
     void ensureResourceTrackingSettingsLoaded();
@@ -300,6 +300,7 @@ private:
     void storeLastActivePanel(const String& panelName);
     void closeWindow();
     InspectorDOMAgent* domAgent() { return m_domAgent.get(); }
+    void releaseDOMAgent();
 
     friend class InspectorFrontend;
     // Following are used from InspectorFrontend only. We don't want to expose them to the

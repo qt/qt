@@ -659,7 +659,10 @@ bool QLibraryPrivate::isPlugin(QSettings *settings)
 #endif
             if (!pHnd) {
 #ifdef Q_OS_WIN
+                //avoid 'Bad Image' message box
+                UINT oldmode = SetErrorMode(SEM_FAILCRITICALERRORS|SEM_NOOPENFILEERRORBOX);
                 hTempModule = ::LoadLibraryEx((wchar_t*)QDir::toNativeSeparators(fileName).utf16(), 0, DONT_RESOLVE_DLL_REFERENCES);
+                SetErrorMode(oldmode);
 #else
 #  if defined(Q_OS_SYMBIAN)
                 //Guard against accidentally trying to load non-plugin libraries by making sure the stub exists

@@ -466,7 +466,7 @@ namespace QT_NAMESPACE {}
 #    define Q_NO_USING_KEYWORD
 #    define QT_NO_STL_WCHAR
 #  endif
-#  if __GNUC__ >= 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
+#  if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)
 #    define Q_ALIGNOF(type)   __alignof__(type)
 #    define Q_TYPEOF(expr)    __typeof__(expr)
 #    define Q_DECL_ALIGN(n)   __attribute__((__aligned__(n)))
@@ -1207,6 +1207,11 @@ class QDataStream;
 #    else
 #      define Q_SVG_EXPORT Q_DECL_IMPORT
 #    endif
+#    if defined(QT_BUILD_DECLARATIVE_LIB)
+#      define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
+#    else
+#      define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
+#    endif
 #    if defined(QT_BUILD_OPENGL_LIB)
 #      define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    else
@@ -1259,6 +1264,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_IMPORT
 #    define Q_NETWORK_EXPORT Q_DECL_IMPORT
 #    define Q_SVG_EXPORT Q_DECL_IMPORT
+#    define Q_DECLARATIVE_EXPORT Q_DECL_IMPORT
 #    define Q_CANVAS_EXPORT Q_DECL_IMPORT
 #    define Q_OPENGL_EXPORT Q_DECL_IMPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_IMPORT
@@ -1287,6 +1293,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT Q_DECL_EXPORT
 #    define Q_NETWORK_EXPORT Q_DECL_EXPORT
 #    define Q_SVG_EXPORT Q_DECL_EXPORT
+#    define Q_DECLARATIVE_EXPORT Q_DECL_EXPORT
 #    define Q_OPENGL_EXPORT Q_DECL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT Q_DECL_EXPORT
 #    define Q_OPENVG_EXPORT Q_DECL_EXPORT
@@ -1301,6 +1308,7 @@ class QDataStream;
 #    define Q_SQL_EXPORT
 #    define Q_NETWORK_EXPORT
 #    define Q_SVG_EXPORT
+#    define Q_DECLARATIVE_EXPORT
 #    define Q_OPENGL_EXPORT
 #    define Q_MULTIMEDIA_EXPORT
 #    define Q_XML_EXPORT
@@ -1478,17 +1486,26 @@ public:
 #ifdef Q_OS_SYMBIAN
     enum SymbianVersion {
         SV_Unknown = 0x0000,
+        //These are the Symbian Ltd versions 9.2-9.4
         SV_9_2 = 10,
         SV_9_3 = 20,
-        SV_9_4 = 30
+        SV_9_4 = 30,
+        //Following values are the symbian foundation versions, i.e. Symbian^1 == SV_SF_1
+        SV_SF_1 = SV_9_4,
+        SV_SF_2 = 40,
+        SV_SF_3 = 50,
+        SV_SF_4 = 60
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0,
         SV_S60_Unknown = 1,
-        SV_S60_3_1 = 10,
-        SV_S60_3_2 = 20,
-        SV_S60_5_0 = 30
+        SV_S60_3_1 = SV_9_2,
+        SV_S60_3_2 = SV_9_3,
+        SV_S60_5_0 = SV_9_4,
+        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
+        SV_S60_5_1 = SV_SF_2,
+        SV_S60_5_2 = SV_SF_3
     };
     static S60Version s60Version();
 #endif
@@ -2065,6 +2082,9 @@ Q_DECLARE_TYPEINFO(long double, Q_PRIMITIVE_TYPE);
 Q_CORE_EXPORT void *qMalloc(size_t size);
 Q_CORE_EXPORT void qFree(void *ptr);
 Q_CORE_EXPORT void *qRealloc(void *ptr, size_t size);
+Q_CORE_EXPORT void *qMallocAligned(size_t size, size_t alignment);
+Q_CORE_EXPORT void *qReallocAligned(void *ptr, size_t size, size_t oldsize, size_t alignment);
+Q_CORE_EXPORT void qFreeAligned(void *ptr);
 Q_CORE_EXPORT void *qMemCopy(void *dest, const void *src, size_t n);
 Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 
@@ -2459,6 +2479,7 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
 #define QT_MODULE_SCRIPTTOOLS          0x10000
 #define QT_MODULE_OPENVG               0x20000
 #define QT_MODULE_MULTIMEDIA           0x40000
+#define QT_MODULE_DECLARATIVE          0x80000
 
 /* Qt editions */
 #define QT_EDITION_CONSOLE      (QT_MODULE_CORE \
@@ -2489,6 +2510,7 @@ Q_CORE_EXPORT int qt_symbian_exception2Error(const std::exception& ex);
                                  | QT_MODULE_QT3SUPPORTLIGHT \
                                  | QT_MODULE_QT3SUPPORT \
                                  | QT_MODULE_SVG \
+                                 | QT_MODULE_DECLARATIVE \
                                  | QT_MODULE_GRAPHICSVIEW \
                                  | QT_MODULE_HELP \
                                  | QT_MODULE_TEST \
@@ -2559,6 +2581,9 @@ QT_LICENSED_MODULE(Qt3Support)
 #endif
 #if (QT_EDITION & QT_MODULE_SVG)
 QT_LICENSED_MODULE(Svg)
+#endif
+#if (QT_EDITION & QT_MODULE_DECLARATIVE)
+QT_LICENSED_MODULE(Declarative)
 #endif
 #if (QT_EDITION & QT_MODULE_ACTIVEQT)
 QT_LICENSED_MODULE(ActiveQt)

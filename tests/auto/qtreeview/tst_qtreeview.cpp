@@ -235,6 +235,7 @@ private slots:
     void task254234_proxySort();
     void task248022_changeSelection();
     void task245654_changeModelAndExpandAll();
+    void doubleClickedWithSpans();
 };
 
 class QtTestModel: public QAbstractItemModel
@@ -2891,7 +2892,10 @@ void tst_QTreeView::styleOptionViewItem()
 
                 QVERIFY(!opt.text.isEmpty());
                 QCOMPARE(opt.index, index);
-                QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
+                //qDebug() << index << opt.text;
+
+                if (allCollapsed)
+                    QCOMPARE(!(opt.features & QStyleOptionViewItemV2::Alternate), !(index.row() % 2));
                 QCOMPARE(!(opt.features & QStyleOptionViewItemV2::HasCheckIndicator), !opt.text.contains("Checkable"));
 
                 if (opt.text.contains("Beginning"))
@@ -2911,12 +2915,16 @@ void tst_QTreeView::styleOptionViewItem()
                 else
                     QCOMPARE(opt.checkState, Qt::Unchecked);
 
+                QCOMPARE(!(opt.state & QStyle::State_Children) , !opt.text.contains("HasChildren"));
+                QCOMPARE(!!(opt.state & QStyle::State_Sibling) , !opt.text.contains("Last"));
+
                 QVERIFY(!opt.text.contains("Assert"));
 
                 QStyledItemDelegate::paint(painter, option, index);
                 count++;
             }
             mutable int count;
+            bool allCollapsed;
     };
 
     QTreeView view;
@@ -2926,8 +2934,9 @@ void tst_QTreeView::styleOptionViewItem()
     view.setItemDelegate(&delegate);
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    QStandardItem *par1 = new QStandardItem("Beginning HasChildren");
     model.appendRow(QList<QStandardItem*>()
-        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+        << par1 <<  new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("OnlyOne") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Assert") );
     QStandardItem *checkable = new QStandardItem("Checkable");
@@ -2937,13 +2946,143 @@ void tst_QTreeView::styleOptionViewItem()
     checked->setCheckState(Qt::Checked);
     model.appendRow(QList<QStandardItem*>()
         << new QStandardItem("Beginning") <<  checkable << checked << new QStandardItem("End") );
+    model.appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning Last") <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
+
+    par1->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning") <<  new QStandardItem("Middle") << new QStandardItem("Middle") << new QStandardItem("End") );
+    QStandardItem *par2 = new QStandardItem("Beginning HasChildren");
+    par1->appendRow(QList<QStandardItem*>()
+        << par2 <<  new QStandardItem("Middle HasChildren") << new QStandardItem("Middle HasChildren") << new QStandardItem("End HasChildren") );
+    par2->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Beginning Last") <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
+
+    QStandardItem *par3 = new QStandardItem("Beginning Last");
+    par1->appendRow(QList<QStandardItem*>()
+        << par3 <<  new QStandardItem("Middle Last") << new QStandardItem("Middle Last") << new QStandardItem("End Last") );
+    par3->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Assert") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
+    view.setRowHidden(0, par3->index(), true);
+    par1->appendRow(QList<QStandardItem*>()
+        << new QStandardItem("Assert") <<  new QStandardItem("Assert") << new QStandardItem("Assert") << new QStandardItem("Asser") );
+    view.setRowHidden(3, par1->index(), true);
+
 
     view.setFirstColumnSpanned(2, QModelIndex(), true);
     view.setAlternatingRowColors(true);
 
     delegate.count = 0;
+    delegate.allCollapsed = true;
     view.showMaximized();
+    QApplication::processEvents();
     QTRY_VERIFY(delegate.count >= 13);
+    delegate.count = 0;
+    delegate.allCollapsed = false;
+    view.expandAll();
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.count >= 13);
+    delegate.count = 0;
+    view.collapse(par2->index());
+    QApplication::processEvents();
+    QTRY_VERIFY(delegate.count >= 4);
+
+
+    //test dynamic models
+    {
+        delegate.count = 0;
+        QStandardItemModel model2;
+        QStandardItem *item0 = new QStandardItem("OnlyOne Last");
+        model2.appendRow(QList<QStandardItem*>() << item0);
+        view.setModel(&model2);
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 1);
+        QApplication::processEvents();
+
+        QStandardItem *item00 = new QStandardItem("OnlyOne Last");
+        item0->appendRow(QList<QStandardItem*>() << item00);
+        item0->setText("OnlyOne Last HasChildren");
+        QApplication::processEvents();
+        delegate.count = 0;
+        view.expandAll();
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 2);
+        QApplication::processEvents();
+
+        QStandardItem *item1 = new QStandardItem("OnlyOne Last");
+        delegate.count = 0;
+        item0->setText("OnlyOne HasChildren");
+        model2.appendRow(QList<QStandardItem*>() << item1);
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 3);
+        QApplication::processEvents();
+
+        QStandardItem *item01 = new QStandardItem("OnlyOne Last");
+        delegate.count = 0;
+        item00->setText("OnlyOne");
+        item0->appendRow(QList<QStandardItem*>() << item01);
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 4);
+        QApplication::processEvents();
+
+        QStandardItem *item000 = new QStandardItem("OnlyOne Last");
+        delegate.count = 0;
+        item00->setText("OnlyOne HasChildren");
+        item00->appendRow(QList<QStandardItem*>() << item000);
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 5);
+        QApplication::processEvents();
+
+        delegate.count = 0;
+        item0->removeRow(0);
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 3);
+        QApplication::processEvents();
+
+        item00 = new QStandardItem("OnlyOne");
+        item0->insertRow(0, QList<QStandardItem*>() << item00);
+        QApplication::processEvents();
+        delegate.count = 0;
+        view.expandAll();
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 4);
+        QApplication::processEvents();
+
+        delegate.count = 0;
+        item0->removeRow(1);
+        item00->setText("OnlyOne Last");
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 3);
+        QApplication::processEvents();
+
+        delegate.count = 0;
+        item0->removeRow(0);
+        item0->setText("OnlyOne");
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 2);
+        QApplication::processEvents();
+
+        //with hidden items
+        item0->setText("OnlyOne HasChildren");
+        item00 = new QStandardItem("OnlyOne");
+        item0->appendRow(QList<QStandardItem*>() << item00);
+        item01 = new QStandardItem("Assert");
+        item0->appendRow(QList<QStandardItem*>() << item01);
+        view.setRowHidden(1, item0->index(), true);
+        view.expandAll();
+        QStandardItem *item02 = new QStandardItem("OnlyOne Last");
+        item0->appendRow(QList<QStandardItem*>() << item02);
+        delegate.count = 0;
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 4);
+        QApplication::processEvents();
+
+        item0->removeRow(2);
+        item00->setText("OnlyOne Last");
+        delegate.count = 0;
+        QApplication::processEvents();
+        QTRY_VERIFY(delegate.count >= 3);
+        QApplication::processEvents();
+    }
 }
 
 class task174627_TreeView : public QTreeView
@@ -3507,7 +3646,35 @@ void tst_QTreeView::task245654_changeModelAndExpandAll()
 
 }
 
+void tst_QTreeView::doubleClickedWithSpans()
+{
+    QTreeView view;
+    QStandardItemModel model(1, 2);
+    view.setModel(&model);
+    view.setFirstColumnSpanned(0, QModelIndex(), true);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
 
+    QPoint p(10, 10);
+    QCOMPARE(view.indexAt(p), model.index(0, 0));
+    QSignalSpy spy(&view, SIGNAL(doubleClicked(QModelIndex)));
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(spy.count(), 1);
+
+    //let's click on the 2nd column
+    p.setX(p.x() + view.header()->sectionSize(0));
+    QCOMPARE(view.indexAt(p), model.index(0, 0));
+
+    //end the previous edition
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::qWait(100);
+    QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
+    QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
+    QCOMPARE(spy.count(), 2);
+}
 
 QTEST_MAIN(tst_QTreeView)
 #include "tst_qtreeview.moc"

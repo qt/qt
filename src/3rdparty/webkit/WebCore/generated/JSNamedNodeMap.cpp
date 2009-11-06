@@ -147,7 +147,7 @@ JSNamedNodeMap::JSNamedNodeMap(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSNamedNodeMap::~JSNamedNodeMap()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSNamedNodeMap::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -292,7 +292,7 @@ sub GenerateGetOwnPropertySlotBody
 
     my @getOwnPropertySlotImpl = ();
 
-    if ($interfaceName eq "NamedNodeMap" or $interfaceName eq "HTMLCollection") {
+    if ($interfaceName eq "NamedNodeMap" or $interfaceName eq "HTMLCollection" or $interfaceName eq "HTMLAllCollection") {
         push(@getOwnPropertySlotImpl, "    ${namespaceMaybe}JSValue proto = prototype();\n");
         push(@getOwnPropertySlotImpl, "    if (proto.isObject() && static_cast<${namespaceMaybe}JSObject*>(asObject(proto))->hasProperty(exec, propertyName))\n");
         push(@getOwnPropertySlotImpl, "        return false;\n\n");
@@ -369,7 +369,7 @@ sub GenerateGetOwnPropertyDescriptorBody
     
     my @getOwnPropertyDescriptorImpl = ();
     
-    if ($interfaceName eq "NamedNodeMap" or $interfaceName eq "HTMLCollection") {
+    if ($interfaceName eq "NamedNodeMap" or $interfaceName eq "HTMLCollection" or $interfaceName eq "HTMLAllCollection") {
         push(@getOwnPropertyDescriptorImpl, "    ${namespaceMaybe}JSValue proto = prototype();\n");
         push(@getOwnPropertyDescriptorImpl, "    if (proto.isObject() && static_cast<${namespaceMaybe}JSObject*>(asObject(proto))->hasProperty(exec, propertyName))\n");
         push(@getOwnPropertyDescriptorImpl, "        return false;\n\n");
@@ -657,6 +657,12 @@ sub GenerateHeader
 
     # Custom lookupSetter function
     push(@headerContent, "    virtual JSC::JSValue lookupSetter(JSC::ExecState*, const JSC::Identifier& propertyName);\n") if $dataNode->extendedAttributes->{"CustomLookupSetter"};
+
+    # Override toBoolean to return false for objects that want to 'MasqueradesAsUndefined'.
+    if ($dataNode->extendedAttributes->{"MasqueradesAsUndefined"}) {
+        push(@headerContent, "    virtual bool toBoolean(JSC::ExecState*) const { return false; };\n");
+        $structureFlags{"JSC::MasqueradesAsUndefined"} = 1;
+    }
 
     # Constructor object getter
     push(@headerContent, "    static JSC::JSValue getConstructor(JSC::ExecState*, JSC::JSGlobalObject*);\n") if $dataNode->extendedAttributes->{"GenerateConstructor"};
@@ -1188,19 +1194,21 @@ sub GenerateImplementation
             push(@implContent, "    impl()->invalidateEventListeners();\n");
         }
 
-        if ($interfaceName eq "Node") {
-             push(@implContent, "    forgetDOMNode(impl()->document(), impl());\n");
-        } else {
-            if ($podType) {
-                my $animatedType = $implClassName;
-                $animatedType =~ s/SVG/SVGAnimated/;
+        if (!$dataNode->extendedAttributes->{"ExtendsDOMGlobalObject"}) {
+            if ($interfaceName eq "Node") {
+                 push(@implContent, "    forgetDOMNode(this, impl(), impl()->document());\n");
+            } else {
+                if ($podType) {
+                    my $animatedType = $implClassName;
+                    $animatedType =~ s/SVG/SVGAnimated/;
 
-                # Special case for JSSVGNumber
-                if ($codeGenerator->IsSVGAnimatedType($animatedType) and $podType ne "float") {
-                    push(@implContent, "    JSSVGDynamicPODTypeWrapperCache<$podType, $animatedType>::forgetWrapper(m_impl.get());\n");
+                    # Special case for JSSVGNumber
+                    if ($codeGenerator->IsSVGAnimatedType($animatedType) and $podType ne "float") {
+                        push(@implContent, "    JSSVGDynamicPODTypeWrapperCache<$podType, $animatedType>::forgetWrapper(m_impl.get());\n");
+                    }
                 }
+                push(@implContent, "    forgetDOMObject(this, impl());\n");
             }
-            push(@implContent, "    forgetDOMObject(*Heap::heap(this)->globalData(), impl());\n");
         }
 
         push(@implContent, "}\n\n");
@@ -1210,7 +1218,7 @@ sub GenerateImplementation
     # its own special handling rather than relying on the caching that Node normally does.
     if ($interfaceName eq "Document") {
         push(@implContent, "${className}::~$className()\n");
-        push(@implContent, "{\n    forgetDOMObject(*Heap::heap(this)->globalData(), static_cast<${implClassName}*>(impl()));\n}\n\n");
+        push(@implContent, "{\n    forgetDOMObject(this, static_cast<${implClassName}*>(impl()));\n}\n\n");
     }
 
     if ($needsMarkChildren && !$dataNode->extendedAttributes->{"CustomMarkFunction"}) {
@@ -1476,7 +1484,7 @@ sub GenerateImplementation
                             } else {
                                 $implIncludes{"Frame.h"} = 1;
                                 $implIncludes{"JSDOMGlobalObject.h"} = 1;
-                                push(@implContent, "    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());\n");
+                                push(@implContent, "    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);\n");
                                 push(@implContent, "    if (!globalObject)\n");
                                 push(@implContent, "        return;\n");
                             }
@@ -1700,7 +1708,7 @@ sub GenerateImplementation
             push(@implContent, "    return toJS(exec, thisObj->globalObject(), static_cast<$implClassName*>(thisObj->impl())->item(slot.index()));\n");
         }
         push(@implContent, "}\n");
-        if ($interfaceName eq "HTMLCollection") {
+        if ($interfaceName eq "HTMLCollection" or $interfaceName eq "HTMLAllCollection") {
             $implIncludes{"JSNode.h"} = 1;
             $implIncludes{"Node.h"} = 1;
         }
@@ -1711,7 +1719,7 @@ sub GenerateImplementation
         push(@implContent, "{\n");
         push(@implContent, "    return jsNumber(exec, static_cast<$implClassName*>(impl())->item(index));\n");
         push(@implContent, "}\n");
-        if ($interfaceName eq "HTMLCollection") {
+        if ($interfaceName eq "HTMLCollection" or $interfaceName eq "HTMLAllCollection") {
             $implIncludes{"JSNode.h"} = 1;
             $implIncludes{"Node.h"} = 1;
         }

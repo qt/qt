@@ -2136,7 +2136,7 @@ EXPORTS
 	_ZN9QHashData11shared_nullE @ 2135 NONAME DATA 32
 	_ZN9QHashData12allocateNodeEv @ 2136 NONAME
 	_ZN9QHashData12previousNodeEPNS_4NodeE @ 2137 NONAME
-	_ZN9QHashData13detach_helperEPFvPNS_4NodeEPvEPFvS1_Ei @ 2138 NONAME
+	_ZN9QHashData13detach_helperEPFvPNS_4NodeEPvEPFvS1_Ei @ 2138 NONAME ABSENT
 	_ZN9QHashData13detach_helperEPFvPNS_4NodeEPvEi @ 2139 NONAME
 	_ZN9QHashData14destroyAndFreeEv @ 2140 NONAME
 	_ZN9QHashData6rehashEi @ 2141 NONAME
@@ -3577,4 +3577,27 @@ EXPORTS
 	uncompress @ 3576 NONAME
 	zError @ 3577 NONAME
 	zlibVersion @ 3578 NONAME
+	_Z12qFreeAlignedPv @ 3579 NONAME
+	_Z14qMallocAlignedjj @ 3580 NONAME
+	_Z15qReallocAlignedPvjjj @ 3581 NONAME
+	_ZN11QVectorData10reallocateEPS_iii @ 3582 NONAME
+	_ZN11QVectorData4freeEPS_i @ 3583 NONAME
+	_ZN11QVectorData8allocateEii @ 3584 NONAME
+	_ZN12QLibraryInfo9buildDateEv @ 3585 NONAME
+	_ZN20QContiguousCacheData4freeEPS_ @ 3586 NONAME
+	_ZN20QContiguousCacheData8allocateEii @ 3587 NONAME
+	_ZN20QStateMachinePrivate12toFinalStateEP14QAbstractState @ 3588 NONAME
+	_ZN20QStateMachinePrivate14toHistoryStateEP14QAbstractState @ 3589 NONAME
+	_ZN20QStateMachinePrivate15toStandardStateEP14QAbstractState @ 3590 NONAME
+	_ZN20QStateMachinePrivate15toStandardStateEPK14QAbstractState @ 3591 NONAME
+	_ZN20QStateMachinePrivate17postExternalEventEP6QEvent @ 3592 NONAME
+	_ZN20QStateMachinePrivate17postInternalEventEP6QEvent @ 3593 NONAME
+	_ZN20QStateMachinePrivate20dequeueExternalEventEv @ 3594 NONAME
+	_ZN20QStateMachinePrivate20dequeueInternalEventEv @ 3595 NONAME
+	_ZN20QStateMachinePrivate25isExternalEventQueueEmptyEv @ 3596 NONAME
+	_ZN20QStateMachinePrivate25isInternalEventQueueEmptyEv @ 3597 NONAME
+	_ZN8QMapData10createDataEi @ 3598 NONAME
+	_ZN8QMapData11node_createEPPNS_4NodeEii @ 3599 NONAME
+	_ZN9QHashData12allocateNodeEi @ 3600 NONAME
+	_ZN9QHashData14detach_helper2EPFvPNS_4NodeEPvEPFvS1_Eii @ 3601 NONAME
 

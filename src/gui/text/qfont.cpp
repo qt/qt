@@ -2324,22 +2324,22 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 */
 QFontInfo::QFontInfo(const QFont &font)
     : d(font.d.data())
-{ d->ref.ref(); }
+{
+}
 
 /*!
     Constructs a copy of \a fi.
 */
 QFontInfo::QFontInfo(const QFontInfo &fi)
-    : d(fi.d)
-{ d->ref.ref(); }
+    : d(fi.d.data())
+{
+}
 
 /*!
     Destroys the font info object.
 */
 QFontInfo::~QFontInfo()
 {
-    if (!d->ref.deref())
-        delete d;
 }
 
 /*!
@@ -2347,7 +2347,7 @@ QFontInfo::~QFontInfo()
 */
 QFontInfo &QFontInfo::operator=(const QFontInfo &fi)
 {
-    qAtomicAssign(d, fi.d);
+    d = fi.d.data();
     return *this;
 }
 
@@ -2632,7 +2632,7 @@ QFontCache::~QFontCache()
     while (it != end) {
         if (--it.value().data->cache_count == 0) {
             if (it.value().data->ref == 0) {
-                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %d %d %d %d)",
+                FC_DEBUG("QFontCache::~QFontCache: deleting engine %p key=(%d / %g %g %d %d %d)",
                          it.value().data, it.key().script, it.key().def.pointSize,
                          it.key().def.pixelSize, it.key().def.weight, it.key().def.style,
                          it.key().def.fixedPitch);

@@ -86,7 +86,7 @@ struct QFontDef
 #endif // Q_WS_X11
 
     qreal pointSize;
-    int pixelSize;
+    qreal pixelSize;
 
     uint styleStrategy : 16;
     uint styleHint     : 8;

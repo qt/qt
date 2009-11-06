@@ -63,35 +63,23 @@ class Q_OPENGL_EXPORT QGLShader : public QObject
 {
     Q_OBJECT
 public:
-    enum ShaderTypeBits
+    enum ShaderTypeBit
     {
-        VertexShader            = 0x0001,
-        FragmentShader          = 0x0002,
-
-        PartialShader           = 0x1000,
-
-        PartialVertexShader     = PartialShader | VertexShader,
-        PartialFragmentShader   = PartialShader | FragmentShader
+        Vertex          = 0x0001,
+        Fragment        = 0x0002
     };
-    Q_DECLARE_FLAGS(ShaderType, ShaderTypeBits)
+    Q_DECLARE_FLAGS(ShaderType, ShaderTypeBit)
 
     explicit QGLShader(QGLShader::ShaderType type, QObject *parent = 0);
-    QGLShader(const QString& fileName, QGLShader::ShaderType type, QObject *parent = 0);
     QGLShader(QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
-    QGLShader(const QString& fileName, QGLShader::ShaderType type, const QGLContext *context, QObject *parent = 0);
     virtual ~QGLShader();
 
     QGLShader::ShaderType shaderType() const;
 
-    bool compile(const char *source);
-    bool compile(const QByteArray& source);
-    bool compile(const QString& source);
-    bool compileFile(const QString& fileName);
-
-    bool setShaderBinary(GLenum format, const void *binary, int length);
-    bool setShaderBinary(QGLShader& otherShader, GLenum format, const void *binary, int length);
-
-    static QList<GLenum> shaderBinaryFormats();
+    bool compileSourceCode(const char *source);
+    bool compileSourceCode(const QByteArray& source);
+    bool compileSourceCode(const QString& source);
+    bool compileSourceFile(const QString& fileName);
 
     QByteArray sourceCode() const;
 
@@ -101,11 +89,10 @@ public:
     GLuint shaderId() const;
 
 private:
-    QGLShaderPrivate *d;
-
     friend class QGLShaderProgram;
 
     Q_DISABLE_COPY(QGLShader)
+    Q_DECLARE_PRIVATE(QGLShader)
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGLShader::ShaderType)
@@ -125,23 +112,19 @@ public:
     void removeShader(QGLShader *shader);
     QList<QGLShader *> shaders() const;
 
-    bool addShader(QGLShader::ShaderType type, const char *source);
-    bool addShader(QGLShader::ShaderType type, const QByteArray& source);
-    bool addShader(QGLShader::ShaderType type, const QString& source);
-    bool addShaderFromFile(QGLShader::ShaderType type, const QString& fileName);
+    bool addShaderFromSourceCode(QGLShader::ShaderType type, const char *source);
+    bool addShaderFromSourceCode(QGLShader::ShaderType type, const QByteArray& source);
+    bool addShaderFromSourceCode(QGLShader::ShaderType type, const QString& source);
+    bool addShaderFromSourceFile(QGLShader::ShaderType type, const QString& fileName);
 
     void removeAllShaders();
-
-    QByteArray programBinary(int *format) const;
-    bool setProgramBinary(int format, const QByteArray& binary);
-    static QList<int> programBinaryFormats();
 
     virtual bool link();
     bool isLinked() const;
     QString log() const;
 
-    bool enable();
-    static void disable();
+    bool bind();
+    void release();
 
     GLuint programId() const;
 
@@ -174,7 +157,7 @@ public:
     void setAttributeValue(const char *name, const GLfloat *values, int columns, int rows);
 
     void setAttributeArray
-        (int location, const GLfloat *values, int size, int stride = 0);
+        (int location, const GLfloat *values, int tupleSize, int stride = 0);
     void setAttributeArray
         (int location, const QVector2D *values, int stride = 0);
     void setAttributeArray
@@ -182,19 +165,33 @@ public:
     void setAttributeArray
         (int location, const QVector4D *values, int stride = 0);
     void setAttributeArray
-        (const char *name, const GLfloat *values, int size, int stride = 0);
+        (const char *name, const GLfloat *values, int tupleSize, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector2D *values, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector3D *values, int stride = 0);
     void setAttributeArray
         (const char *name, const QVector4D *values, int stride = 0);
+
+    void enableAttributeArray(int location);
+    void enableAttributeArray(const char *name);
     void disableAttributeArray(int location);
     void disableAttributeArray(const char *name);
 
     int uniformLocation(const char *name) const;
     int uniformLocation(const QByteArray& name) const;
     int uniformLocation(const QString& name) const;
+
+#ifdef Q_MAC_COMPAT_GL_FUNCTIONS
+    void setUniformValue(int location, QMacCompatGLint value);
+    void setUniformValue(int location, QMacCompatGLuint value);
+    void setUniformValue(const char *name, QMacCompatGLint value);
+    void setUniformValue(const char *name, QMacCompatGLuint value);
+    void setUniformValueArray(int location, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(int location, const QMacCompatGLuint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLint *values, int count);
+    void setUniformValueArray(const char *name, const QMacCompatGLuint *values, int count);
+#endif
 
     void setUniformValue(int location, GLfloat value);
     void setUniformValue(int location, GLint value);
@@ -248,7 +245,7 @@ public:
     void setUniformValue(const char *name, const GLfloat value[4][4]);
     void setUniformValue(const char *name, const QTransform& value);
 
-    void setUniformValueArray(int location, const GLfloat *values, int count, int size);
+    void setUniformValueArray(int location, const GLfloat *values, int count, int tupleSize);
     void setUniformValueArray(int location, const GLint *values, int count);
     void setUniformValueArray(int location, const GLuint *values, int count);
     void setUniformValueArray(int location, const QVector2D *values, int count);
@@ -264,7 +261,7 @@ public:
     void setUniformValueArray(int location, const QMatrix4x3 *values, int count);
     void setUniformValueArray(int location, const QMatrix4x4 *values, int count);
 
-    void setUniformValueArray(const char *name, const GLfloat *values, int count, int size);
+    void setUniformValueArray(const char *name, const GLfloat *values, int count, int tupleSize);
     void setUniformValueArray(const char *name, const GLint *values, int count);
     void setUniformValueArray(const char *name, const GLuint *values, int count);
     void setUniformValueArray(const char *name, const QVector2D *values, int count);
@@ -280,15 +277,14 @@ public:
     void setUniformValueArray(const char *name, const QMatrix4x3 *values, int count);
     void setUniformValueArray(const char *name, const QMatrix4x4 *values, int count);
 
-    static bool hasShaderPrograms(const QGLContext *context = 0);
+    static bool hasOpenGLShaderPrograms(const QGLContext *context = 0);
 
 private Q_SLOTS:
     void shaderDestroyed();
 
 private:
-    QGLShaderProgramPrivate *d;
-
     Q_DISABLE_COPY(QGLShaderProgram)
+    Q_DECLARE_PRIVATE(QGLShaderProgram)
 
     bool init();
 };

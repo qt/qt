@@ -97,9 +97,7 @@ public:
     Q5SizePolicy::ControlTypes controlTypes(LayoutSide side) const;
 #endif
 
-#ifdef QT_DEBUG
     void dump(int indent = 0) const;
-#endif
 
 protected:
 #if 0

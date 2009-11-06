@@ -1419,7 +1419,7 @@ int QHeaderView::minimumSectionSize() const
         int margin = style()->pixelMetric(QStyle::PM_HeaderMargin, 0, this);
         if (d->orientation == Qt::Horizontal)
             return qMax(strut.width(), (fontMetrics().maxWidth() + margin));
-        return qMax(strut.height(), (fontMetrics().lineSpacing() + margin));
+        return qMax(strut.height(), (fontMetrics().height() + margin));
     }
     return d->minimumSectionSize;
 }
@@ -2515,6 +2515,8 @@ QSize QHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     Q_D(const QHeaderView);
     Q_ASSERT(logicalIndex >= 0);
+
+    ensurePolished();
 
     // use SizeHintRole
     QVariant variant = d->model->headerData(logicalIndex, d->orientation, Qt::SizeHintRole);

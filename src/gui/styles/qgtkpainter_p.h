@@ -56,11 +56,11 @@
 #include <QtCore/qglobal.h>
 #if !defined(QT_NO_STYLE_GTK)
 
-#include "gtksymbols_p.h"
 #include <QtGui/QCleanlooksStyle>
 #include <QtGui/QPainter>
 #include <QtGui/QPalette>
 #include <QtGui/QFont>
+#include <private/qgtkstyle_p.h>
 
 QT_BEGIN_NAMESPACE
 

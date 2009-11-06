@@ -100,8 +100,17 @@ public:
         return QScriptValue(d);
     }
 
-    QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
-    QScriptValue property(quint32 index, int resolveMode) const;
+    static inline QScriptEnginePrivate *getEngine(const QScriptValue &q)
+    {
+        if (!q.d_ptr)
+            return 0;
+        return q.d_ptr->engine;
+    }
+
+    inline QScriptValue property(const JSC::Identifier &id, int resolveMode) const;
+    QScriptValue propertyHelper(const JSC::Identifier &id, int resolveMode) const;
+    inline QScriptValue property(quint32 index, int resolveMode) const;
+    QScriptValue propertyHelper(quint32, int resolveMode) const;
     inline QScriptValue property(const QString &, int resolveMode) const;
     void setProperty(const JSC::Identifier &id, const QScriptValue &value,
                      const QScriptValue::PropertyFlags &flags);
@@ -118,8 +127,8 @@ public:
             return -1;
     }
 
-    static void saveException(JSC::ExecState*, JSC::JSValue*);
-    static void restoreException(JSC::ExecState*, JSC::JSValue);
+    static inline void saveException(JSC::ExecState*, JSC::JSValue*);
+    static inline void restoreException(JSC::ExecState*, JSC::JSValue);
 
     QScriptEnginePrivate *engine;
     Type type;

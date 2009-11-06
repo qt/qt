@@ -246,7 +246,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
-    pex->shaderManager->blitProgram()->enable();
+    pex->shaderManager->blitProgram()->bind();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
     pex->shaderManager->setDirty();
 
@@ -395,7 +395,7 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
 
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
-    shaderManager->simpleProgram()->enable();
+    shaderManager->simpleProgram()->bind();
     shaderManager->setDirty();
 
     if (matrixDirty)
@@ -535,7 +535,7 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
                 shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::PatternColor), col);
             }
 
-            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 * textureInvertedY / texPixmap.height());
+            QSizeF invertedTextureSize(1.0 / texPixmap.width(), 1.0 / texPixmap.height());
             shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::InvertedTextureSize), invertedTextureSize);
 
             QVector2D halfViewportSize(width*0.5, height*0.5);
@@ -550,7 +550,11 @@ void QGL2PaintEngineExPrivate::updateBrushUniforms()
 
         QTransform translate(1, 0, 0, 1, -translationPoint.x(), -translationPoint.y());
         QTransform gl_to_qt(1, 0, 0, -1, 0, height);
-        QTransform inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
+        QTransform inv_matrix;
+        if (style == Qt::TexturePattern && textureInvertedY == -1)
+            inv_matrix = gl_to_qt * (QTransform(1, 0, 0, -1, 0, currentBrush->texture().height()) * brushQTransform * matrix).inverted() * translate;
+        else
+            inv_matrix = gl_to_qt * (brushQTransform * matrix).inverted() * translate;
 
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTransform), inv_matrix);
         shaderManager->currentProgram()->setUniformValue(location(QGLEngineShaderManager::BrushTexture), QT_BRUSH_TEXTURE_UNIT);
@@ -858,9 +862,7 @@ void QGL2PaintEngineExPrivate::fill(const QVectorPath& path)
         QGLRect rect(points[0].x(), points[0].y(), points[2].x(), points[2].y());
         prepareForDraw(currentBrush->isOpaque());
         composite(rect);
-    } else if (path.shape() == QVectorPath::EllipseHint
-             || path.shape() == QVectorPath::ConvexPolygonHint)
-    {
+    } else if (path.isConvex()) {
         vertexCoordinateArray.clear();
         vertexCoordinateArray.addPath(path, inverseScale, false);
         prepareForDraw(currentBrush->isOpaque());
@@ -1201,7 +1203,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
         ensureActive();
 
     QOpenGL2PaintEngineState *s = state();
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && style == Qt::SolidPattern;
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) &&
+                    (style == Qt::SolidPattern) &&
+                    !d->multisamplingAlwaysEnabled;
 
     if (doOffset) {
         d->temporaryTransform = s->matrix;
@@ -1219,6 +1223,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     }
 }
 
+extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+
+
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1229,10 +1236,15 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     QOpenGL2PaintEngineState *s = state();
+    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), 0)) {
+        // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
 
     ensureActive();
 
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing);
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
     if (doOffset) {
         d->temporaryTransform = s->matrix;
         QTransform tx = QTransform::fromTranslate(0.49, .49);
@@ -1263,6 +1275,7 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
 
     QGLContext *ctx = d->ctx;
+    Q_UNUSED(ctx);
 
     if (opaque) {
         d->prepareForDraw(opaque);
@@ -1767,6 +1780,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
        ) {
         d->glyphCacheType = QFontEngineGlyphCache::Raster_RGBMask;
     }
+#endif
+
+#if defined(QT_OPENGL_ES_2)
+    // OpenGL ES can't switch MSAA off, so if the gl paint device is
+    // multisampled, it's always multisampled.
+    d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
+#else
+    d->multisamplingAlwaysEnabled = false;
 #endif
 
     return true;

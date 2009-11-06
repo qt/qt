@@ -1235,6 +1235,9 @@ void QSocks5SocketEnginePrivate::_q_controlSocketError(QAbstractSocket::SocketEr
         if (!readNotificationPending)
             connectData->readBuffer.clear();
         emitReadNotification();
+        data->controlSocket->close();
+        // cause a disconnect in the outer socket
+        emitWriteNotification();
     } else if (socks5State == Uninitialized
                || socks5State == AuthenticationMethodsSent
                || socks5State == Authenticating
@@ -1245,6 +1248,7 @@ void QSocks5SocketEnginePrivate::_q_controlSocketError(QAbstractSocket::SocketEr
     } else {
         q_func()->setError(data->controlSocket->error(), data->controlSocket->errorString());
         emitReadNotification();
+        emitWriteNotification();
     }
 }
 
@@ -1622,6 +1626,16 @@ qint64 QSocks5SocketEngine::pendingDatagramSize() const
     return 0;
 }
 #endif // QT_NO_UDPSOCKET
+
+qint64 QSocks5SocketEngine::bytesToWrite() const
+{
+    Q_D(const QSocks5SocketEngine);
+    if (d->data && d->data->controlSocket) {
+        return d->data->controlSocket->bytesToWrite();
+    } else {
+        return 0;
+    }
+}
 
 int QSocks5SocketEngine::option(SocketOption option) const
 {

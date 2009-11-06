@@ -69,6 +69,9 @@
     objects are applied to a QGraphicsItem, all of the transformations
     are computed in true 3D space, with the projection back to 2D
     only occurring after the last QGraphicsTransform is applied.
+    The exception to this is QGraphicsRotation, which projects back to
+    2D after each rotation to preserve the perspective effect around
+    the X and Y axes.
 
     If you want to create your own configurable transformation, you can create
     a subclass of QGraphicsTransform (or any or the existing subclasses), and
@@ -90,8 +93,8 @@
 #include <QDebug>
 #include <QtCore/qmath.h>
 
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
-
 void QGraphicsTransformPrivate::setItem(QGraphicsItem *i)
 {
     if (item == i)
@@ -547,9 +550,7 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
         return;
 
     matrix->translate(d->origin);
-    QMatrix4x4 m;
-    m.rotate(d->angle, d->axis.x(), d->axis.y(), d->axis.z());
-    *matrix *= m.toTransform();
+    matrix->projectedRotate(d->angle, d->axis.x(), d->axis.y(), d->axis.z());
     matrix->translate(-d->origin);
 }
 
@@ -564,3 +565,4 @@ void QGraphicsRotation::applyTo(QMatrix4x4 *matrix) const
 #include "moc_qgraphicstransform.cpp"
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

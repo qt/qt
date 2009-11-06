@@ -26,6 +26,7 @@ HEADERS +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.h    \
            $$PHONON_MMF_DIR/abstractmediaplayer.h    \
            $$PHONON_MMF_DIR/abstractplayer.h         \
+           $$PHONON_MMF_DIR/ancestormovemonitor.h    \
            $$PHONON_MMF_DIR/audiooutput.h            \
            $$PHONON_MMF_DIR/audioequalizer.h         \
            $$PHONON_MMF_DIR/audioplayer.h            \
@@ -47,6 +48,7 @@ SOURCES +=                                           \
            $$PHONON_MMF_DIR/abstractaudioeffect.cpp  \
            $$PHONON_MMF_DIR/abstractmediaplayer.cpp  \
            $$PHONON_MMF_DIR/abstractplayer.cpp       \
+           $$PHONON_MMF_DIR/ancestormovemonitor.cpp  \
            $$PHONON_MMF_DIR/audiooutput.cpp          \
            $$PHONON_MMF_DIR/audioequalizer.cpp       \
            $$PHONON_MMF_DIR/audioplayer.cpp          \
@@ -67,11 +69,12 @@ debug {
     LIBS += -lhal
 }
 
-LIBS += -lmediaclientvideo  # For CVideoPlayerUtility
-LIBS += -lcone              # For CCoeEnv
-LIBS += -lws32              # For RWindow
-LIBS += -lefsrv             # For file server
-LIBS += -lapgrfx -lapmime   # For recognizer
+LIBS += -lmediaclientvideo        # For CVideoPlayerUtility
+LIBS += -lcone                    # For CCoeEnv
+LIBS += -lws32                    # For RWindow
+LIBS += -lefsrv                   # For file server
+LIBS += -lapgrfx -lapmime         # For recognizer
+LIBS += -lmmfcontrollerframework  # For CMMFMetaDataEntry
 
 # These are for effects.
 LIBS += -lAudioEqualizerEffect -lBassBoostEffect -lDistanceAttenuationEffect -lDopplerBase -lEffectBase -lEnvironmentalReverbEffect -lListenerDopplerEffect -lListenerLocationEffect -lListenerOrientationEffect -lLocationBase -lLoudnessEffect -lOrientationBase -lSourceDopplerEffect -lSourceLocationEffect -lSourceOrientationEffect -lStereoWideningEffect

@@ -48,6 +48,7 @@
 #include "private/qsoftkeymanager_p.h"
 #include "private/qobject_p.h"
 
+#ifndef QT_NO_SOFTKEYMANAGER
 QT_BEGIN_NAMESPACE
 
 #ifdef Q_WS_S60
@@ -139,9 +140,16 @@ QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key
     QScopedPointer<QAction> action(createAction(standardKey, actionWidget));
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
-
+    connect(action.data(), SIGNAL(destroyed(QObject*)), QSoftKeyManager::instance(), SLOT(cleanupHash(QObject*)));
     QSoftKeyManager::instance()->d_func()->keyedActions.insert(action.data(), key);
     return action.take();
+}
+
+void QSoftKeyManager::cleanupHash(QObject* obj)
+{
+    Q_D(QSoftKeyManager);
+    QAction *action = qobject_cast<QAction*>(obj);
+    d->keyedActions.remove(action);
 }
 
 void QSoftKeyManager::sendKeyEvent()
@@ -199,6 +207,7 @@ bool QSoftKeyManager::event(QEvent *e)
 void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
 {
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
+    nativeContainer->DrawableWindow()->SetOrdinalPosition(0);
     nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
     QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
 
@@ -237,7 +246,11 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
         }
     }
 
-    if (needsExitButton)
+    const Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource
+        ?   QSoftKeyManagerPrivate::softKeySource->window()->windowType()
+        :   Qt::Widget;
+
+    if (needsExitButton && sourceWindowType != Qt::Dialog && sourceWindowType != Qt::Popup)
         QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
@@ -275,4 +288,4 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &)
 #endif
 
 QT_END_NAMESPACE
-
+#endif //QT_NO_SOFTKEYMANAGER

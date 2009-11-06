@@ -16,6 +16,7 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#include "ancestormovemonitor.h"
 #include "utils.h"
 #include "videooutput.h"
 #include "videooutputobserver.h"
@@ -44,8 +45,10 @@ using namespace Phonon::MMF;
 // Constructor / destructor
 //-----------------------------------------------------------------------------
 
-MMF::VideoOutput::VideoOutput(QWidget* parent)
+MMF::VideoOutput::VideoOutput
+    (AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent)
         :   QWidget(parent)
+        ,   m_ancestorMoveMonitor(ancestorMoveMonitor)
         ,   m_observer(0)
 {
     TRACE_CONTEXT(VideoOutput::VideoOutput, EVideoInternal);
@@ -63,6 +66,8 @@ MMF::VideoOutput::VideoOutput(QWidget* parent)
     // to be invisible when running on the target device.
     qt_widget_private(this)->extraData()->disableBlit = true;
 
+    registerForAncestorMoved();
+
     dump();
 
     TRACE_EXIT_0();
@@ -72,6 +77,8 @@ MMF::VideoOutput::~VideoOutput()
 {
     TRACE_CONTEXT(VideoOutput::~VideoOutput, EVideoInternal);
     TRACE_ENTRY_0();
+
+    m_ancestorMoveMonitor->unRegisterTarget(this);
 
     TRACE_EXIT_0();
 }
@@ -97,6 +104,15 @@ void MMF::VideoOutput::setObserver(VideoOutputObserver* observer)
     m_observer = observer;
 }
 
+void MMF::VideoOutput::ancestorMoved()
+{
+    TRACE_CONTEXT(VideoOutput::ancestorMoved, EVideoInternal);
+    TRACE_ENTRY_0();
+
+    videoOutputRegionChanged();
+
+    TRACE_EXIT_0();
+}
 
 //-----------------------------------------------------------------------------
 // QWidget
@@ -154,8 +170,11 @@ bool MMF::VideoOutput::event(QEvent* event)
         TRACE_0("WinIdChange");
         videoOutputRegionChanged();
         return true;
-    }
-    else
+    } else if (event->type() == QEvent::ParentChange) {
+        // Tell ancestor move monitor to update ancestor list for this widget
+        registerForAncestorMoved();
+        return true;
+    } else
         return QWidget::event(event);
 }
 
@@ -169,6 +188,11 @@ void MMF::VideoOutput::videoOutputRegionChanged()
     dump();
     if (m_observer)
         m_observer->videoOutputRegionChanged();
+}
+
+void MMF::VideoOutput::registerForAncestorMoved()
+{
+    m_ancestorMoveMonitor->registerTarget(this);
 }
 
 void MMF::VideoOutput::dump() const

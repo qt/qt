@@ -55,20 +55,32 @@ public:
     tst_QSound( QObject* parent=0) : QObject(parent) {}
 
 private slots:
-        void checkFinished();
+    void checkFinished();
+
+    // Manual tests
+    void staticPlay();
 };
 
 void tst_QSound::checkFinished()
 {
-            QSound sound(SRCDIR"4.wav");
-            sound.setLoops(3);
-            sound.play();
-            QTest::qWait(5000);
+    QSound sound(SRCDIR"4.wav");
+    sound.setLoops(3);
+    sound.play();
+    QTest::qWait(5000);
 
 #if defined(Q_WS_QWS)
-            QEXPECT_FAIL("", "QSound buggy on embedded (task 122221)", Abort);
+    QEXPECT_FAIL("", "QSound buggy on embedded (task QTBUG-157)", Abort);
 #endif
-            QVERIFY(sound.isFinished() );
+    QVERIFY(sound.isFinished() );
+}
+
+void tst_QSound::staticPlay()
+{
+    QSKIP("Test disabled -- only for manual purposes", SkipAll);
+
+    // Check that you hear sound with static play also.
+    QSound::play(SRCDIR"4.wav");
+    QTest::qWait(2000);
 }
 
 QTEST_MAIN(tst_QSound);

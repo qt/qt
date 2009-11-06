@@ -166,6 +166,7 @@ private slots:
     void fromImage_crash();
 
     void fromData();
+    void loadFromDataNullValues();
 
     void preserveDepth();
 };
@@ -1133,6 +1134,8 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
     QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
+    QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);
@@ -1434,6 +1437,26 @@ void tst_QPixmap::fromData()
 
     QCOMPARE(img.pixel(0, 0), QRgb(0xffffffff));
     QCOMPARE(img.pixel(0, 1), QRgb(0xff000000));
+}
+
+void tst_QPixmap::loadFromDataNullValues()
+{
+    {
+    QPixmap pixmap;
+    pixmap.loadFromData(QByteArray());
+    QVERIFY(pixmap.isNull());
+    }
+    {
+    QPixmap pixmap;
+    pixmap.loadFromData(0, 123);
+    QVERIFY(pixmap.isNull());
+    }
+    {
+    QPixmap pixmap;
+    const uchar bla[] = "bla";
+    pixmap.loadFromData(bla, 0);
+    QVERIFY(pixmap.isNull());
+    }
 }
 
 void tst_QPixmap::task_246446()

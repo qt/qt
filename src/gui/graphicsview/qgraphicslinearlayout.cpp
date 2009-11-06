@@ -59,7 +59,7 @@
 
     You can add widgets, layouts, stretches (addStretch(), insertStretch() or
     setStretchFactor()), and spacings (setItemSpacing()) to a linear
-    layout. The layout takes ownership of the items. In some cases when the layout 
+    layout. The layout takes ownership of the items. In some cases when the layout
     item also inherits from QGraphicsItem (such as QGraphicsWidget) there will be a
     ambiguity in ownership because the layout item belongs to two ownership hierarchies.
 	See the documentation of QGraphicsLayoutItem::setOwnedByLayout() how to handle
@@ -208,7 +208,7 @@ QGraphicsLinearLayout::~QGraphicsLinearLayout()
     for (int i = count() - 1; i >= 0; --i) {
         QGraphicsLayoutItem *item = itemAt(i);
         // The following lines can be removed, but this removes the item
-        // from the layout more efficiently than the implementation of 
+        // from the layout more efficiently than the implementation of
         // ~QGraphicsLayoutItem.
         removeAt(i);
         if (item) {
@@ -542,18 +542,21 @@ void QGraphicsLinearLayout::invalidate()
     QGraphicsLayout::invalidate();
 }
 
-#ifdef QT_DEBUG
+/*!
+    \internal
+*/
 void QGraphicsLinearLayout::dump(int indent) const
 {
+#ifdef QT_DEBUG
     if (qt_graphicsLayoutDebug()) {
         Q_D(const QGraphicsLinearLayout);
         qDebug("%*s%s layout", indent, "",
                d->orientation == Qt::Horizontal ? "Horizontal" : "Vertical");
         d->engine.dump(indent + 1);
     }
-}
 #endif
+}
 
 QT_END_NAMESPACE
-        
+
 #endif //QT_NO_GRAPHICSVIEW

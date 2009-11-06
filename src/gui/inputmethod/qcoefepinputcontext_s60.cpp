@@ -47,6 +47,7 @@
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
+#include <hal.h>
 
 #include <limits.h>
 // You only find these enumerations on SDK 5 onwards, so we need to provide our own
@@ -153,6 +154,44 @@ QString QCoeFepInputContext::language()
     }
 }
 
+bool QCoeFepInputContext::needsInputPanel()
+{
+    switch (QSysInfo::s60Version()) {
+    case QSysInfo::SV_S60_3_1:
+    case QSysInfo::SV_S60_3_2:
+        // There are no touch phones for pre-5.0 SDKs.
+        return false;
+#ifdef Q_CC_NOKIAX86
+    default:
+        // For emulator we assume that we need an input panel, since we can't
+        // separate between phone types.
+        return true;
+#else
+    case QSysInfo::SV_S60_5_0: {
+        // For SDK == 5.0, we need phone specific detection, since the HAL API
+        // is no good on most phones. However, all phones at the time of writing use the
+        // input panel, except N97 in landscape mode, but in this mode it refuses to bring
+        // up the panel anyway, so we don't have to care.
+        return true;
+    }
+    default:
+        // For unknown/newer types, we try to use the HAL API.
+        int keyboardEnabled;
+        int keyboardType;
+        int err[2];
+        err[0] = HAL::Get(HAL::EKeyboard, keyboardType);
+        err[1] = HAL::Get(HAL::EKeyboardState, keyboardEnabled);
+        if (err[0] == KErrNone && err[1] == KErrNone
+                && keyboardType != 0 && keyboardEnabled)
+            // Means that we have some sort of keyboard.
+            return false;
+
+        // Fall back to using the input panel.
+        return true;
+#endif // !Q_CC_NOKIAX86
+    }
+}
+
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
     // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
@@ -174,10 +213,8 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
     }
 
-    // For pre-5.0 SDKs, we don't launch the keyboard.
-    if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
+    if (!needsInputPanel())
         return false;
-    }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Notify S60 that we want the virtual keyboard to show up.
@@ -561,8 +598,28 @@ void QCoeFepInputContext::GetCursorSelectionForFep(TCursorSelection& aCursorSele
 
     int cursor = w->inputMethodQuery(Qt::ImCursorPosition).toInt() + m_preeditString.size();
     int anchor = w->inputMethodQuery(Qt::ImAnchorPosition).toInt() + m_preeditString.size();
-    aCursorSelection.iAnchorPos = anchor;
-    aCursorSelection.iCursorPos = cursor;
+    QString text = w->inputMethodQuery(Qt::ImSurroundingText).value<QString>();
+    int combinedSize = text.size() + m_preeditString.size();
+    if (combinedSize < anchor || combinedSize < cursor) {
+        // ### TODO! FIXME! QTBUG-5050
+        // This is a hack to prevent crashing in 4.6 with QLineEdits that use input masks.
+        // The root problem is that cursor position is relative to displayed text instead of the
+        // actual text we get.
+        //
+        // To properly fix this we would need to know the displayText of QLineEdits instead
+        // of just the text, which on itself should be a trivial change. The difficulties start
+        // when we need to commit the changes back to the QLineEdit, which would have to be somehow
+        // able to handle displayText, too.
+        //
+        // Until properly fixed, the cursor and anchor positions will not reflect correct positions
+        // for masked QLineEdits, unless all the masked positions are filled in order so that
+        // cursor position relative to the displayed text matches position relative to actual text.
+        aCursorSelection.iAnchorPos = combinedSize;
+        aCursorSelection.iCursorPos = combinedSize;
+    } else {
+        aCursorSelection.iAnchorPos = anchor;
+        aCursorSelection.iCursorPos = cursor;
+    }
 }
 
 void QCoeFepInputContext::GetEditorContentForFep(TDes& aEditorContent, TInt aDocumentPosition,

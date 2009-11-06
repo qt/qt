@@ -49,34 +49,39 @@ MousePanGestureRecognizer::MousePanGestureRecognizer()
 {
 }
 
-QGesture* MousePanGestureRecognizer::createGesture(QObject *) const
+QGesture *MousePanGestureRecognizer::create(QObject *)
 {
     return new QPanGesture;
 }
 
-QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result MousePanGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
 {
     QPanGesture *g = static_cast<QPanGesture *>(state);
+    if (event->type() == QEvent::TouchBegin) {
+        // ignore the following mousepress event
+        g->setProperty("ignoreMousePress", QVariant::fromValue<bool>(true));
+    } else if (event->type() == QEvent::TouchEnd) {
+        g->setProperty("ignoreMousePress", QVariant::fromValue<bool>(false));
+    }
     QMouseEvent *me = static_cast<QMouseEvent *>(event);
-    if (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick) {
+    if (event->type() == QEvent::MouseButtonPress) {
+        if (g->property("ignoreMousePress").toBool())
+            return QGestureRecognizer::Ignore;
         g->setHotSpot(me->globalPos());
-        g->setProperty("lastPos", me->globalPos());
+        g->setProperty("startPos", me->globalPos());
         g->setProperty("pressed", QVariant::fromValue<bool>(true));
-        return QGestureRecognizer::GestureTriggered | QGestureRecognizer::ConsumeEventHint;
+        return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
     } else if (event->type() == QEvent::MouseMove) {
         if (g->property("pressed").toBool()) {
-            QPoint pos = me->globalPos();
-            QPoint lastPos = g->property("lastPos").toPoint();
+            QPoint offset = me->globalPos() - g->property("startPos").toPoint();
             g->setLastOffset(g->offset());
-            lastPos = pos - lastPos;
-            g->setOffset(QPointF(lastPos.x(), lastPos.y()));
-            g->setTotalOffset(g->totalOffset() + QPointF(lastPos.x(), lastPos.y()));
-            g->setProperty("lastPos", pos);
-            return QGestureRecognizer::GestureTriggered | QGestureRecognizer::ConsumeEventHint;
+            g->setOffset(QPointF(offset.x(), offset.y()));
+            return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;
         }
-        return QGestureRecognizer::NotGesture;
+        return QGestureRecognizer::CancelGesture;
     } else if (event->type() == QEvent::MouseButtonRelease) {
-        return QGestureRecognizer::GestureFinished | QGestureRecognizer::ConsumeEventHint;
+        if (g->property("pressed").toBool())
+            return QGestureRecognizer::FinishGesture | QGestureRecognizer::ConsumeEventHint;
     }
     return QGestureRecognizer::Ignore;
 }
@@ -84,11 +89,11 @@ QGestureRecognizer::Result MousePanGestureRecognizer::filterEvent(QGesture *stat
 void MousePanGestureRecognizer::reset(QGesture *state)
 {
     QPanGesture *g = static_cast<QPanGesture *>(state);
-    g->setTotalOffset(QPointF());
     g->setLastOffset(QPointF());
     g->setOffset(QPointF());
     g->setAcceleration(0);
-    g->setProperty("lastPos", QVariant());
+    g->setProperty("startPos", QVariant());
     g->setProperty("pressed", QVariant::fromValue<bool>(false));
+    g->setProperty("ignoreMousePress", QVariant::fromValue<bool>(false));
     QGestureRecognizer::reset(state);
 }

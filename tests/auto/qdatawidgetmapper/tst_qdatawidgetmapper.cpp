@@ -379,7 +379,7 @@ void tst_QDataWidgetMapper::comboBox()
     model->setData(model->index(0, 1), QString("read write item z"), Qt::EditRole);
 
     QCOMPARE(readOnlyBox.currentIndex(), 2);
-    QEXPECT_FAIL("", "See tasks 125493 and 147153", Abort);
+    QEXPECT_FAIL("", "See task 125493 and QTBUG-428", Abort);
     QCOMPARE(readWriteBox.currentText(), QString("read write item z"));
 }
 

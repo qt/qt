@@ -387,10 +387,12 @@ bool QVistaHelper::winEvent(MSG* msg, long* result)
 
 void QVistaHelper::setMouseCursor(QPoint pos)
 {
+#ifndef QT_NO_CURSOR
     if (rtTop.contains(pos))
         wizard->setCursor(Qt::SizeVerCursor);
     else
         wizard->setCursor(Qt::ArrowCursor);
+#endif
 }
 
 void QVistaHelper::mouseEvent(QEvent *event)

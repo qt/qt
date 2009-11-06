@@ -59,6 +59,8 @@ private slots:
     void rotation();
     void rotation3d_data();
     void rotation3d();
+    void rotation3dArbitraryAxis_data();
+    void rotation3dArbitraryAxis();
 };
 
 
@@ -88,7 +90,7 @@ static QTransform transform2D(const QGraphicsTransform& t)
 {
     QMatrix4x4 m;
     t.applyTo(&m);
-    return m.toTransform(0);
+    return m.toTransform();
 }
 
 void tst_QGraphicsTransform::scale()
@@ -255,11 +257,24 @@ void tst_QGraphicsTransform::rotation3d()
 
     QVERIFY(fuzzyCompare(transform2D(rotation), expected));
 
+    // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
+    // i.e. third row and column are 0 0 1 0.
+    t.setToIdentity();
+    rotation.applyTo(&t);
+    QMatrix4x4 r(expected);
+    if (sizeof(qreal) == sizeof(float) && angle == 268) {
+        // This test fails, on only this angle, when qreal == float
+        // because the deg2rad value in QTransform is not accurate
+        // enough to match what QMatrix4x4 is doing.
+    } else {
+        QVERIFY(qFuzzyCompare(t, r));
+    }
+
     //now let's check that a null vector will not change the transform
     rotation.setAxis(QVector3D(0, 0, 0));
     rotation.setOrigin(QVector3D(10, 10, 0));
 
-    t.setIdentity();
+    t.setToIdentity();
     rotation.applyTo(&t);
 
     QVERIFY(t.isIdentity());
@@ -274,6 +289,58 @@ void tst_QGraphicsTransform::rotation3d()
 
     QVERIFY(t.isIdentity());
     QVERIFY(transform2D(rotation).isIdentity());
+}
+
+void tst_QGraphicsTransform::rotation3dArbitraryAxis_data()
+{
+    QTest::addColumn<QVector3D>("axis");
+    QTest::addColumn<qreal>("angle");
+
+    QVector3D axis1 = QVector3D(1.0f, 1.0f, 1.0f);
+    QVector3D axis2 = QVector3D(2.0f, -3.0f, 0.5f);
+    QVector3D axis3 = QVector3D(-2.0f, 0.0f, -0.5f);
+    QVector3D axis4 = QVector3D(0.0001f, 0.0001f, 0.0001f);
+    QVector3D axis5 = QVector3D(0.01f, 0.01f, 0.01f);
+
+    for (int angle = 0; angle <= 360; angle++) {
+        QTest::newRow("test rotation on (1, 1, 1)") << axis1 << qreal(angle);
+        QTest::newRow("test rotation on (2, -3, .5)") << axis2 << qreal(angle);
+        QTest::newRow("test rotation on (-2, 0, -.5)") << axis3 << qreal(angle);
+        QTest::newRow("test rotation on (.0001, .0001, .0001)") << axis4 << qreal(angle);
+        QTest::newRow("test rotation on (.01, .01, .01)") << axis5 << qreal(angle);
+    }
+}
+
+void tst_QGraphicsTransform::rotation3dArbitraryAxis()
+{
+    QFETCH(QVector3D, axis);
+    QFETCH(qreal, angle);
+
+    QGraphicsRotation rotation;
+    rotation.setAxis(axis);
+
+    QMatrix4x4 t;
+    rotation.applyTo(&t);
+
+    QVERIFY(t.isIdentity());
+    QVERIFY(transform2D(rotation).isIdentity());
+
+    rotation.setAngle(angle);
+
+    // Compute the expected answer using QMatrix4x4 and a projection.
+    // These two steps are performed in one hit by QGraphicsRotation.
+    QMatrix4x4 exp;
+    exp.rotate(angle, axis);
+    QTransform expected = exp.toTransform(1024.0f);
+
+    QVERIFY(fuzzyCompare(transform2D(rotation), expected));
+
+    // Check that "rotation" produces the 4x4 form of the 3x3 matrix.
+    // i.e. third row and column are 0 0 1 0.
+    t.setToIdentity();
+    rotation.applyTo(&t);
+    QMatrix4x4 r(expected);
+    QVERIFY(qFuzzyCompare(t, r));
 }
 
 

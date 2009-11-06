@@ -27,3 +27,6 @@ HEADERS = main.h                            \
           qapplicationargumentparser.cpp    \
           qcoloringmessagehandler_p.h       \
           qcoloroutput_p.h
+
+symbian: TARGET.UID3 = 0xA000D7C9
+

@@ -84,7 +84,7 @@ JSValidityState::JSValidityState(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSValidityState::~JSValidityState()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSValidityState::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -135,6 +135,8 @@ public:
     bool hasPendingDatagrams() const;
     qint64 pendingDatagramSize() const;
 
+    qint64 bytesToWrite() const;
+
     qint64 receiveBufferSize() const;
     void setReceiveBufferSize(qint64 bufferSize);
 

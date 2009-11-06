@@ -182,8 +182,8 @@ void MMF::AudioPlayer::MapcInitComplete(TInt aError,
 
     if (KErrNone == aError) {
         maxVolumeChanged(m_player->MaxVolume());
-
         emit totalTimeChanged(totalTime());
+        updateMetaData();
         changeState(StoppedState);
     } else {
         // TODO: set different error states according to value of aError?
@@ -249,6 +249,25 @@ void MMF::AudioPlayer::MaloLoadingComplete()
 
 }
 #endif // QT_PHONON_MMF_AUDIO_DRM
+
+
+//-----------------------------------------------------------------------------
+// Private functions
+//-----------------------------------------------------------------------------
+
+int MMF::AudioPlayer::numberOfMetaDataEntries() const
+{
+    int numberOfEntries = 0;
+    m_player->GetNumberOfMetaDataEntries(numberOfEntries); // ignoring return code
+    return numberOfEntries;
+}
+
+QPair<QString, QString> MMF::AudioPlayer::metaDataEntry(int index) const
+{
+    CMMFMetaDataEntry *entry = 0;
+    QT_TRAP_THROWING(entry = m_player->GetMetaDataEntryL(index));
+    return QPair<QString, QString>(qt_TDesC2QString(entry->Name()), qt_TDesC2QString(entry->Value()));
+}
 
 
 QT_END_NAMESPACE

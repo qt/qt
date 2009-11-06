@@ -130,6 +130,7 @@ public:
     virtual void clear() = 0;
     virtual void setRowCount(int) = 0;
     virtual QVector<QModelIndex> intersectingSet(const QRect &area) const = 0;
+    virtual void dataChanged(const QModelIndex &, const QModelIndex &) = 0;
 
     virtual int horizontalScrollToValue(int index, QListView::ScrollHint hint,
         bool leftOf, bool rightOf, const QRect &area, const QRect &rect) const;
@@ -141,7 +142,6 @@ public:
     virtual int verticalOffset() const { return verticalScrollBar()->value(); }
     virtual void updateHorizontalScrollBar(const QSize &step);
     virtual void updateVerticalScrollBar(const QSize &step);
-    virtual void dataChanged(const QModelIndex &, const QModelIndex &) { }
     virtual void appendHiddenRow(int row);
     virtual void removeHiddenRow(int row);
     virtual void setPositionForIndex(const QPoint &, const QModelIndex &) { }
@@ -217,6 +217,7 @@ public:
     void clear();
     void setRowCount(int rowCount) { flowPositions.resize(rowCount); }
     QVector<QModelIndex> intersectingSet(const QRect &area) const;
+    void dataChanged(const QModelIndex &, const QModelIndex &);
 
     int horizontalScrollToValue(int index, QListView::ScrollHint hint,
         bool leftOf, bool rightOf,const QRect &area, const QRect &rect) const;
@@ -231,6 +232,11 @@ public:
 
 #ifndef QT_NO_DRAGANDDROP
     void paintDragDrop(QPainter *painter);
+
+    // The next two methods are to be used on LefToRight flow only.
+    // WARNING: Plenty of duplicated code from QAbstractItemView{,Private}.
+    QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+    void dragMoveEvent(QDragMoveEvent *e);
 #endif
 
 private:
@@ -355,6 +361,10 @@ public:
 
     QItemSelection selection(const QRect &rect) const;
     void selectAll(QItemSelectionModel::SelectionFlags command);
+
+#ifndef QT_NO_DRAGANDDROP
+    virtual QAbstractItemView::DropIndicatorPosition position(const QPoint &pos, const QRect &rect, const QModelIndex &idx) const;
+#endif
 
     inline void setGridSize(const QSize &size) { grid = size; }
     inline QSize gridSize() const { return grid; }

@@ -194,14 +194,14 @@ QState *LifeCycle::makeState(QState *parentState, const QString &animationFileNa
             topLevel->setInitialState(frameState);
         else
 //! [2]
-            previousState->addTransition(previousState, SIGNAL(polished()), frameState);
+            previousState->addTransition(previousState, SIGNAL(propertiesAssigned()), frameState);
 //! [2]
         
         previousState = frameState;
     }
 
     // Loop
-    previousState->addTransition(previousState, SIGNAL(polished()), topLevel->initialState());
+    previousState->addTransition(previousState, SIGNAL(propertiesAssigned()), topLevel->initialState());
 
     return topLevel;
 

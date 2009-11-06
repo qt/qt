@@ -147,7 +147,7 @@ JSPlugin::JSPlugin(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* gl
 
 JSPlugin::~JSPlugin()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSPlugin::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

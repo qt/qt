@@ -577,6 +577,8 @@ JSC::JSValue jsDOMWindowHTMLUListElementConstructor(JSC::ExecState*, const JSC::
 void setJSDOMWindowHTMLUListElementConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowHTMLCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowHTMLCollectionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
+JSC::JSValue jsDOMWindowHTMLAllCollectionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
+void setJSDOMWindowHTMLAllCollectionConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowImageConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);
 void setJSDOMWindowImageConstructor(JSC::ExecState*, JSC::JSObject*, JSC::JSValue);
 JSC::JSValue jsDOMWindowOptionConstructor(JSC::ExecState*, const JSC::Identifier&, const JSC::PropertySlot&);

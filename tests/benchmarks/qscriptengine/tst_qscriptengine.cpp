@@ -60,6 +60,8 @@ private slots:
     void constructor();
     void evaluate_data();
     void evaluate();
+    void evaluateProgram_data();
+    void evaluateProgram();
     void connectAndDisconnect();
     void newObject();
     void newQObject();
@@ -153,6 +155,22 @@ void tst_QScriptEngine::connectAndDisconnect()
     }
 }
 
+void tst_QScriptEngine::evaluateProgram_data()
+{
+    evaluate_data();
+}
+
+void tst_QScriptEngine::evaluateProgram()
+{
+    QFETCH(QString, code);
+    QScriptEngine engine;
+    QScriptProgram program(code);
+
+    QBENCHMARK {
+        (void)engine.evaluate(program);
+    }
+}
+
 void tst_QScriptEngine::newObject()
 {
     QScriptEngine engine;
@@ -240,7 +258,6 @@ void tst_QScriptEngine::nativeCall()
                      "  w += fun() + fun(); w -= fun(); fun(); w -= fun(); }");
     }
 }
-
 
 QTEST_MAIN(tst_QScriptEngine)
 #include "tst_qscriptengine.moc"

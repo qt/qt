@@ -65,6 +65,9 @@ void QVGPixmapConvolutionFilter::draw
         (QPainter *painter, const QPointF &dest,
          const QPixmap &src, const QRectF &srcRect) const
 {
+    if (src.isNull())
+        return;
+
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
         // back to the default convolution filter implementation.
@@ -135,6 +138,9 @@ QVGPixmapColorizeFilter::~QVGPixmapColorizeFilter()
 
 void QVGPixmapColorizeFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
 {
+    if (src.isNull())
+        return;
+
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
         // back to the default colorize filter implementation.
@@ -225,6 +231,9 @@ QVGPixmapDropShadowFilter::~QVGPixmapDropShadowFilter()
 
 void QVGPixmapDropShadowFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
 {
+    if (src.isNull())
+        return;
+
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
         // back to the default drop shadow filter implementation.
@@ -290,6 +299,9 @@ QVGPixmapBlurFilter::~QVGPixmapBlurFilter()
 
 void QVGPixmapBlurFilter::draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect) const
 {
+    if (src.isNull())
+        return;
+
     if (src.pixmapData()->classId() != QPixmapData::OpenVGClass) {
         // The pixmap data is not an instance of QVGPixmapData, so fall
         // back to the default blur filter implementation.

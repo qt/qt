@@ -142,7 +142,7 @@ public:
         this is used for updating the currentTime of all animations in case the pause
         timer is active or, otherwise, only of the animation passed as parameter.
     */
-    void ensureTimerUpdate(QAbstractAnimation *animation);
+    void ensureTimerUpdate();
 
     /*
         this will evaluate the need of restarting the pause timer in case there is still

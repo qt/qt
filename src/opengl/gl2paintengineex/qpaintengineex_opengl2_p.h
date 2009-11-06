@@ -277,6 +277,7 @@ public:
 
     bool needsSync;
     bool inRenderText;
+    bool multisamplingAlwaysEnabled;
 
     GLfloat depthRange[2];
 
@@ -289,6 +290,7 @@ public:
     QScopedPointer<QPixmapFilter> convolutionFilter;
     QScopedPointer<QPixmapFilter> colorizeFilter;
     QScopedPointer<QPixmapFilter> blurFilter;
+    QScopedPointer<QPixmapFilter> animationBlurFilter;
     QScopedPointer<QPixmapFilter> fastBlurFilter;
     QScopedPointer<QPixmapFilter> dropShadowFilter;
     QScopedPointer<QPixmapFilter> fastDropShadowFilter;

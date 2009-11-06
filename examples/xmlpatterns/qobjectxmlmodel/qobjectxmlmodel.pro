@@ -11,3 +11,8 @@ target.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/qobjectxmlmodel
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS *.pro *.xq *.html
 sources.path = $$[QT_INSTALL_EXAMPLES]/xmlpatterns/qobjectxmlmodel
 INSTALLS += target sources
+
+symbian {
+    TARGET.UID3 = 0xA000D7C8
+    include($$QT_SOURCE_TREE/examples/symbianpkgrules.pri)
+}

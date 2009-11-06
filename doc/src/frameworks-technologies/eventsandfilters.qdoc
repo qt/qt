@@ -215,7 +215,7 @@
     \l{QCoreApplication::}{postEvent()} posts the event on a queue for
     later dispatch. The next time Qt's main event loop runs, it dispatches
     all posted events, with some optimization. For example, if there are
-    several resize events, they are are compressed into one. The same
+    several resize events, they are compressed into one. The same
     applies to paint events: QWidget::update() calls
     \l{QCoreApplication::}{postEvent()}, which eliminates flickering and
     increases speed by avoiding multiple repaints.
