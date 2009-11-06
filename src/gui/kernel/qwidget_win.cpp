@@ -1339,8 +1339,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
     if (isResize && !q->testAttribute(Qt::WA_StaticContents) && q->internalWinId())
         ValidateRgn(q->internalWinId(), 0);
 
+#ifdef Q_WS_WINCE
+    // On Windows CE we can't just fiddle around with the window state.
+    // Too much magic in setWindowState.
+    if (isResize && q->isMaximized())
+        q->setWindowState(q->windowState() & ~Qt::WindowMaximized);
+#else
     if (isResize)
         data.window_state &= ~Qt::WindowMaximized;
+#endif
 
     if (data.window_state & Qt::WindowFullScreen) {
         QTLWExtra *top = topData();
