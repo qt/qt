@@ -131,7 +131,7 @@ void tst_qmlgraphicswebview::basicProperties()
     QCOMPARE(wv->title(),QString("Basic"));
     QTRY_COMPARE(wv->icon().width(), 48);
     QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-    QCOMPARE(wv->statusText(),QString(""));
+    QCOMPARE(wv->statusText(),QString("status here"));
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->width(), 123.0);
     QCOMPARE(wv->webPageWidth(), 0);
@@ -167,7 +167,7 @@ void tst_qmlgraphicswebview::historyNav()
         QCOMPARE(wv->title(),QString("Basic"));
         QTRY_COMPARE(wv->icon().width(), 48);
         QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-        QCOMPARE(wv->statusText(),QString(""));
+        QCOMPARE(wv->statusText(),QString("status here"));
         QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
         QCOMPARE(wv->width(), 123.0);
         QCOMPARE(wv->webPageWidth(), 0);
@@ -193,6 +193,7 @@ void tst_qmlgraphicswebview::historyNav()
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
     QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
+    QCOMPARE(wv->statusText(),QString(""));
     QVERIFY(wv->reloadAction());
     QVERIFY(wv->reloadAction()->isEnabled());
     QVERIFY(wv->backAction());
