@@ -984,7 +984,7 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
 QDebug operator<<(QDebug dbg, const QPen &p)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    char *PEN_STYLES[] = {
+    const char *PEN_STYLES[] = {
         "NoPen",
         "SolidLine",
         "DashLine",
