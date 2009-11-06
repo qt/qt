@@ -71,7 +71,8 @@ private slots:
     void valueInterceptors();
     void bindingConflict();
     void deletedObject();
-    void variantCopy();
+    void bindingVariantCopy();
+    void scriptVariantCopy();
     void cppClasses();
 
 private:
@@ -524,10 +525,10 @@ void tst_valuetypes::deletedObject()
     delete object;
 }
 
-// Test that value types can be assigned to another value type property
-void tst_valuetypes::variantCopy()
+// Test that value types can be assigned to another value type property in a binding
+void tst_valuetypes::bindingVariantCopy()
 {
-    QmlComponent component(&engine, TEST_FILE("variantCopy.qml"));
+    QmlComponent component(&engine, TEST_FILE("bindingVariantCopy.qml"));
     MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
     QVERIFY(object != 0);
 
@@ -535,6 +536,23 @@ void tst_valuetypes::variantCopy()
 
     delete object;
 }
+
+// Test that value types can be assigned to another value type property in script
+void tst_valuetypes::scriptVariantCopy()
+{
+    QmlComponent component(&engine, TEST_FILE("scriptVariantCopy.qml"));
+    MyTypeObject *object = qobject_cast<MyTypeObject *>(component.create());
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->rect(), QRect(2, 3, 109, 102));
+
+    object->emitRunScript();
+
+    QCOMPARE(object->rect(), QRect(19, 33, 5, 99));
+
+    delete object;
+}
+
 
 // Test that the value type classes can be used manually
 void tst_valuetypes::cppClasses()
