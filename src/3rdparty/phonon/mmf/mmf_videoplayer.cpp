@@ -110,6 +110,9 @@ MMF::VideoPlayer::~VideoPlayer()
     TRACE_CONTEXT(VideoPlayer::~VideoPlayer, EVideoApi);
     TRACE_ENTRY_0();
 
+    if (m_videoOutput)
+        m_videoOutput->setObserver(0);
+
     TRACE_EXIT_0();
 }
 
@@ -487,6 +490,19 @@ bool MMF::VideoPlayer::getNativeWindowSystemHandles()
     TRACE_RETURN("changed %d", changed);
 }
 
+int MMF::VideoPlayer::numberOfMetaDataEntries() const
+{
+    int numberOfEntries = 0;
+    TRAP_IGNORE(numberOfEntries = m_player->NumberOfMetaDataEntriesL());
+    return numberOfEntries;
+}
+
+QPair<QString, QString> MMF::VideoPlayer::metaDataEntry(int index) const
+{
+    CMMFMetaDataEntry *entry = 0;
+    QT_TRAP_THROWING(entry = m_player->MetaDataEntryL(index));
+    return QPair<QString, QString>(qt_TDesC2QString(entry->Name()), qt_TDesC2QString(entry->Value()));
+}
 
 QT_END_NAMESPACE
 

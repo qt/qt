@@ -256,9 +256,9 @@ QString QAccessibleButton::localizedName(int actionIndex)
 QStringList QAccessibleButton::keyBindings(int actionIndex)
 {
     switch (actionIndex) {
-#ifdef QT_NO_SHORTCUT
+#ifndef QT_NO_SHORTCUT
     case 0:
-        return button()->shortcut().toString();
+        return QStringList() << button()->shortcut().toString();
 #endif
     default:
         return QStringList();
@@ -600,6 +600,44 @@ int QAccessibleDisplay::navigate(RelationFlag rel, int entry, QAccessibleInterfa
             return 0;
     }
     return QAccessibleWidgetEx::navigate(rel, entry, target);
+}
+
+/*! \reimp */
+QString QAccessibleDisplay::imageDescription()
+{
+    return widget()->toolTip();
+}
+
+/*! \reimp */
+QSize QAccessibleDisplay::imageSize()
+{
+    QLabel *label = qobject_cast<QLabel *>(widget());
+    if (!label)
+        return QSize();
+    const QPixmap *pixmap = label->pixmap();
+    if (!pixmap)
+        return QSize();
+    return pixmap->size();
+}
+
+/*! \reimp */
+QRect QAccessibleDisplay::imagePosition(QAccessible2::CoordinateType coordType)
+{
+    QLabel *label = qobject_cast<QLabel *>(widget());
+    if (!label)
+        return QRect();
+    const QPixmap *pixmap = label->pixmap();
+    if (!pixmap)
+        return QRect();
+
+    switch (coordType) {
+    case QAccessible2::RelativeToScreen:
+        return QRect(label->mapToGlobal(label->pos()), label->size());
+    case QAccessible2::RelativeToParent:
+        return label->geometry();
+    }
+
+    return QRect();
 }
 
 #ifndef QT_NO_LINEEDIT

@@ -260,6 +260,7 @@ private slots:
     void task233101_cursorPosAfterInputMethod();
     void task241436_passwordEchoOnEditRestoreEchoMode();
     void task248948_redoRemovedSelection();
+    void taskQTBUG_4401_enterKeyClearsPassword();
 
 protected slots:
 #ifdef QT3_SUPPORT
@@ -3530,6 +3531,21 @@ void tst_QLineEdit::task248948_redoRemovedSelection()
     QTest::keyPress(testWidget, 'a');
     QTest::keyPress(testWidget, 'b');
     QCOMPARE(testWidget->text(), QLatin1String("ab"));
+}
+
+void tst_QLineEdit::taskQTBUG_4401_enterKeyClearsPassword()
+{
+    QString password("Wanna guess?");
+
+    testWidget->setText(password);
+    testWidget->setEchoMode(QLineEdit::PasswordEchoOnEdit);
+    testWidget->setFocus();
+    testWidget->selectAll();
+    QApplication::setActiveWindow(testWidget);
+    QTRY_VERIFY(testWidget->hasFocus());
+
+    QTest::keyPress(testWidget, Qt::Key_Enter);
+    QTRY_COMPARE(testWidget->text(), password);
 }
 
 QTEST_MAIN(tst_QLineEdit)

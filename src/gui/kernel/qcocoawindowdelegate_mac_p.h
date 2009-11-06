@@ -78,6 +78,7 @@ QT_FORWARD_DECLARE_CLASS(QWidgetData)
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (BOOL)window:(NSWindow *)window shouldPopUpDocumentPathMenu:(NSMenu *)menu;
 - (BOOL)window:(NSWindow *)window shouldDragDocumentWithEvent:(NSEvent *)event from:(NSPoint)dragImageLocation withPasteboard:(NSPasteboard *)pasteboard;
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame;
 @end
 
 @protocol NSDrawerDelegate <NSObject>

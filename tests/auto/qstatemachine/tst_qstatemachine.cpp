@@ -208,6 +208,7 @@ private slots:
 
     void task260403_clonedSignals();
     void postEventFromOtherThread();
+    void eventFilterForApplication();
 };
 
 tst_QStateMachine::tst_QStateMachine()
@@ -4274,6 +4275,36 @@ void tst_QStateMachine::postEventFromOtherThread()
     QSignalSpy finishedSpy(&machine, SIGNAL(finished()));
     machine.start();
     QTRY_COMPARE(finishedSpy.count(), 1);
+}
+
+void tst_QStateMachine::eventFilterForApplication()
+{
+    QStateMachine machine;
+
+    QState *s1 = new QState(&machine);
+    {
+        machine.setInitialState(s1);
+    }
+
+    QState *s2 = new QState(&machine);
+
+    QEventTransition *transition = new QEventTransition(QCoreApplication::instance(),
+                                                        QEvent::ApplicationActivate);
+    transition->setTargetState(s2);
+    s1->addTransition(transition);
+
+    machine.start();
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s1));
+
+    QCoreApplication::postEvent(QCoreApplication::instance(),
+                                new QEvent(QEvent::ApplicationActivate));
+    QCoreApplication::processEvents();
+
+    QCOMPARE(machine.configuration().size(), 1);
+    QVERIFY(machine.configuration().contains(s2));
 }
 
 QTEST_MAIN(tst_QStateMachine)

@@ -99,7 +99,7 @@ void GLWidget::initializeGL()
 #define PROGRAM_VERTEX_ATTRIBUTE 0
 #define PROGRAM_TEXCOORD_ATTRIBUTE 1
 
-    QGLShader *vshader = new QGLShader(QGLShader::VertexShader, this);
+    QGLShader *vshader = new QGLShader(QGLShader::Vertex, this);
     const char *vsrc =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec4 texCoord;\n"
@@ -110,9 +110,9 @@ void GLWidget::initializeGL()
         "    gl_Position = matrix * vertex;\n"
         "    texc = texCoord;\n"
         "}\n";
-    vshader->compile(vsrc);
+    vshader->compileSourceCode(vsrc);
 
-    QGLShader *fshader = new QGLShader(QGLShader::FragmentShader, this);
+    QGLShader *fshader = new QGLShader(QGLShader::Fragment, this);
     const char *fsrc =
         "uniform sampler2D texture;\n"
         "varying mediump vec4 texc;\n"
@@ -120,7 +120,7 @@ void GLWidget::initializeGL()
         "{\n"
         "    gl_FragColor = texture2D(texture, texc.st);\n"
         "}\n";
-    fshader->compile(fsrc);
+    fshader->compileSourceCode(fsrc);
 
     program = new QGLShaderProgram(this);
     program->addShader(vshader);
@@ -129,7 +129,7 @@ void GLWidget::initializeGL()
     program->bindAttributeLocation("texCoord", PROGRAM_TEXCOORD_ATTRIBUTE);
     program->link();
 
-    program->enable();
+    program->bind();
     program->setUniformValue("texture", 0);
 
 #endif
@@ -163,6 +163,8 @@ void GLWidget::paintGL()
     m.rotate(zRot / 16.0f, 0.0f, 0.0f, 1.0f);
 
     program->setUniformValue("matrix", m);
+    program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
+    program->enableAttributeArray(PROGRAM_TEXCOORD_ATTRIBUTE);
     program->setAttributeArray
         (PROGRAM_VERTEX_ATTRIBUTE, vertices.constData());
     program->setAttributeArray

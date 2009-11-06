@@ -108,6 +108,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -124,6 +125,19 @@ QT_BEGIN_NAMESPACE
     pixmap with the source painted into it.
 
     \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect().
+*/
+
+/*!
+    \enum QGraphicsEffectSource::PixmapPadMode
+
+    This enum describes how much of the effect will be rendered to a pixmap
+    created using the pixmap() function.
+
+    \value NoExpandPadMode  The pixmap is the size of the widget or graphics item.
+    \value ExpandToTransparentBorderPadMode  The pixmap is expanded to include
+        the widget or graphics item plus a transparent border.
+    \value ExpandToEffectRectPadMode  The pixmap is expanded to include the widget
+        or graphics item and the effect.
 */
 
 /*!
@@ -263,6 +277,9 @@ bool QGraphicsEffectSource::isPixmap() const
     The optional \a offset parameter returns the offset where the pixmap should
     be painted at using the current painter.
 
+    The \a mode determines how much of the effect the pixmap will contain.
+    By default, the pixmap will contain the whole effect.
+
     The returned pixmap is bound to the current painter's device rectangle when
     \a system is Qt::DeviceCoordinates.
 
@@ -301,6 +318,11 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
         *offset = d->m_cachedOffset;
 
     return pm;
+}
+
+QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
+{
+    invalidateCache();
 }
 
 void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
@@ -734,7 +756,7 @@ void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::BlurHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(QGraphicsBlurEffect::BlurHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
@@ -1128,3 +1150,4 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
 
 QT_END_NAMESPACE
 
+#endif //QT_NO_GRAPHICSEFFECT

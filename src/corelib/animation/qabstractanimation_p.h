@@ -138,6 +138,9 @@ public:
     */
     void setConsistentTiming(bool consistent) { consistentTiming = consistent; }
 
+    //this facilitates fine-tuning of complex animations
+    void setSlowModeEnabled(bool enabled) { slowMode = enabled; }
+
     /*
         this is used for updating the currentTime of all animations in case the pause
         timer is active or, otherwise, only of the animation passed as parameter.
@@ -164,6 +167,7 @@ private:
     int timingInterval;
     int currentAnimationIdx;
     bool consistentTiming;
+    bool slowMode;
     // bool to indicate that only pause animations are active
     bool isPauseTimerActive;
 

@@ -162,10 +162,14 @@ Q_DECLARE_METATYPE(AnchorItemSizeHintList)
 class TestWidget : public QGraphicsWidget
 {
 public:
-    inline TestWidget(QGraphicsItem *parent = 0)
+    inline TestWidget(QGraphicsItem *parent = 0, const QString &name = QString())
         : QGraphicsWidget(parent)
         {
             setContentsMargins( 0,0,0,0 );
+            if (name.isEmpty())
+                setData(0, QString::fromAscii("w%1").arg(int(this)));
+            else
+                setData(0, name);
         }
     ~TestWidget()
         {
@@ -1664,6 +1668,18 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
+static QRectF truncate(QRectF original)
+{
+    QRectF result;
+
+    result.setX(qRound(original.x() * 1000000) / 1000000.0);
+    result.setY(qRound(original.y() * 1000000) / 1000000.0);
+    result.setWidth(qRound(original.width() * 1000000) / 1000000.0);
+    result.setHeight(qRound(original.height() * 1000000) / 1000000.0);
+
+    return result;
+}
+
 void tst_QGraphicsAnchorLayout1::testBasicLayout()
 {
     QFETCH(QSizeF, size);
@@ -1684,7 +1700,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Create dummy widgets
     QList<QGraphicsWidget *> widgets;
     for (int i = 0; i < widgetCount; ++i) {
-        TestWidget *w = new TestWidget;
+        TestWidget *w = new TestWidget(0, QString::fromAscii("W%1").arg(i));
         widgets << w;
     }
 
@@ -1704,19 +1720,18 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
-
-//    QTest::qWait(500); // layouting is asynchronous..
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];
-        QCOMPARE(widgets[item.index]->geometry(), item.rect);
+        QRectF expected = truncate(item.rect);
+        QRectF actual = truncate(widgets[item.index]->geometry());
+
+        QCOMPARE(expected, actual);
     }
 
-    // ###: not supported yet
-/*
     // Test mirrored mode
     widget->setLayoutDirection(Qt::RightToLeft);
     layout->activate();
@@ -1731,7 +1746,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QCOMPARE(widgets[item.index]->geometry(), mirroredRect);
         delete widgets[item.index];
     }
-*/
+
     delete widget;
 }
 
@@ -2212,8 +2227,8 @@ void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
@@ -3053,8 +3068,8 @@ void tst_QGraphicsAnchorLayout1::testComplexCases()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
 //    QTest::qWait(500); // layouting is asynchronous..
 

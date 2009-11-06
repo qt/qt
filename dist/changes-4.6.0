@@ -23,6 +23,13 @@ information about a particular change.
    * The minimum required version of the D-Bus reference library is
      now 0.93.
 
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
+
+Third party components
+----------------------
+
+ - Updated FreeType to version 2.3.9
 
 ****************************************************************************
 *                          Library                                         *
@@ -34,17 +41,186 @@ information about a particular change.
     * Since the 4.6 beta Qt::RenderHint has been moved to
       QGraphicsBlurEffect::BlurHint.
 
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
+
+QtCore
+
+ - QObject
+    * [259514] fixed a possible dead-lock in the destructor
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()
     * Added QVariant(float) constructor
+    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
+      identify functions
 
  - Qt::escape
     * now escape the double quote (&quot;)
 
+ - QScopedPointer
+    * New pointer class for cleaning up objects when leaving the
+      current scope
+
+ - QFile
+    * Make QFile::resize() more robust when operating on buffered files
+
+ - QObject
+    * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
+    * Fixed race conditions that occured when moving object to threads while connecting
+
+ - QPluginLoader
+    * Improved performance of plugin loading by reusing the plugin cache instead of loading
+      it every time.
+
+- QTextStream
+    * [221316] Fixed crash on large input.
+    * Improved reading utf8/utf16/utf32 data by correctly skipping the
+      ByteOrderMark when reading data by one character at a time.
+
+QtGui
+- QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - QCompleter
+    * [246056] Fixed a possible assertion when setting the completer prefix
+
+ - QFontDialog
+    * [256466] fixed the dialog not always returning the selected style.
+
+ - QGraphicsItem
+    * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
+    * Many optimizations.
+    * Introduced QGraphicsItem::ItemHasNoContents
+    * Introduced QGraphicsItem::ItemSendsGeometryChanges (see Behavioral Changes)
+    * Introduced QGraphicsItem::focusProxy(), focus proxy support
+    * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
+    * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced activation support.
+    * Introduced QGraphicsItem::stackBefore()
+    * Cached items are now always invalidated when update() is called.
+
+- QGraphicsLayout
+    * Introduced QGraphicsLayout::addChildLayoutItem()
+
+ - QGraphicsObject
+    * New class; inherits QGraphicsItem and adds notification signals and property declarations.
+
+ - QGraphicsProxyWidget
+    * [251407] Fixed window flag handling. Now QGraphicsProxyWidget's flags win.
+    * Fix Qt::ClickFocus policy
+
+ - QGraphicsScene
+    * [245317] Fixes to mouse grabbing behavior.
+    * Fixed delivery of double-click events after explicit grab and then ungrab.
+    * Rewrote the internal rendering to use a recursive instead of an iterative approach.
+    * Many optimizations.
+    * Ensure hover enter events are delivered when an item is pressed.
+    * Introduced activation support.
+    * Fixed bugs in initial focus support.
+
+ - QGraphicsTextItem
+    * Now inherits from QGraphicsObject instead
+
+ - QGraphicsTransform
+    * New class; eases animation of transformations for QGraphicsItem.
+
+ - QGraphicsView
+    * Fix mapToScene(QRect) to avoid extra unnecessary adjustments.
+    * Many optimizations.
+    * Introduced QGraphicsView::isTransformed()
+    * [QTBUG-4151] Items with parent that sets ItemClipsChildrenToShape were sometimes invisible.
+
+ - QGraphicsWidget
+    * Now inherits from QGraphicsObject instead
+    * Interactive resizing of top level windows now respects height-for-width constraints.
+
+ - QHeaderView
+    * [208320] Make sure the sort indicator s taken into account for the size hint
+    * [255574] Make sure the sizehint for the section depend on visible sections
+
+ - QMainWindow
+    * [226060] Adding actions to a toolbar would always make the next toolbar move
+
+ - QMenuBar
+    * [260873] Fix mouse interaction while undocking a widget from the main window
+	* dock areas don't get a splitter if their dock widgets are not resizable
+
+ - QColumnView
+    * [246999] Fixed view not updating when the model is changed dynamically
+
+ - QListView
+    * [243335] Fixed the visualRect to return correct values when the widget is not yet show
+
+ - QTreeView
+    * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
+    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
+	* [245654] Fixed expandAll when deleting and recreating a mode for the tree
+	* [239271] Fixed missing update when adding a row when the first column is hidden
+	* [258225] Fixed scrollTo with center and bottom
+
+ - QTreeWidget
+    * [253109] Shows the widget when calling setItemWidget
+
+ - QTableView
+    * [191545] Selections work more similarly to well-known spreadsheets
+    * [234926] Fixed sorting after changing QTableView header
+    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
+      speed-up, support for rows/columns insertion/removal, and better keyboard
+      navigation
+
+ - QTableWidget
+    * [234641] Fixed takeItem to cause the view to be updated.
+
+ - QTabBar
+    * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
+      to be slightly clipped.
+    * [241383] Added ability to style the close tab button with style sheet
+
+ - QComboBox
+    * [220195] Fixed keyboard search when current index is -1
+
+ - QPixmap
+    * Optimized width(), height(), isNull() and depth().
+
+ - QRegion
+    * Minor optimizations.
+
+ - QSpinBox
+    * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
+
+ - QStandardItemModel
+    * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
+
+ - QToolTip
+    * Fixed a bug where tooltips were not shown in popups. (Windows only).
+
+ - QGraphicsItem
+    * Added a new set of properties to set a transformation on a item
+
+ - QMenu
+    * [252610] Fixed position of the shortcut text while setting a stylesheet on menu items
+
+ - QSortFilterProxyModel
+    * [251296] Fixed bugs in which filtered items could not be filtered.
+
+ - QSplitter
+    * [206494] Added ability to style pressed slided with stylesheet
+
+ - QWidget
+    * [201649] Added QWidget::previousInFocusChain
+    * [254563] Fixed a crash when setting a focus in a widget tree that
+      contains invisible widgets
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+ - Added community supported Qt ports for QNX and VxWorks. See platform
+   notes in the Qt documentation for details.
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -64,6 +240,57 @@ information about a particular change.
 
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
+
+ - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+   QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+   specific libraries.
+
+ - KDE Integration: Improved the integration into KDE desktop (loading of KDE
+   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
+
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On Windows when a file cannot be accessed (stat()ed), we are now restoring
+   the error mode to the original value.
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+ - Add support for GetURL events on Mac OS X
+
+General changes on Mac OS X:
+ - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
+   10.6(Snow Leopard) has been added.
+ - The Cocoa port now supports static linking.
+ - The Cocoa port now supports the Qt3Support library (with the exception of Q3FileDialog)
+   to ease the transition from Carbon to Cocoa.
+ - The Cocoa binary packages are now Intel only (universal i386 and x86_64).
+ - Snow Leopard notes:
+    - Gcc 4.2 is used by default. Configure with -platform macx-g++40 to select 4.0.
+    - Using the 10.4u SDK requires gcc 4.0.
+    - Configuring for the Cocoa port (-cocoa) produces 64-bit binaries by default.
+      Use the -arch flags to override.
+    - Building for ppc64 is no longer supported by the gcc tool chain.
+    - Building for ppc is still supported.
+
+ - Phonon on Windows
+   * Now much more reliable when reading a file through a QIODevice.
+   * If Video Mixing Renderer 9 is not available, falls back to software
+     rendering.
+   * Fixed a flicker issue when switching source with a transition time of 0
 
 ****************************************************************************
 *                          Tools                                           *
@@ -87,6 +314,9 @@ information about a particular change.
 - uic3
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
+
+ - lupdate
+  - Fixed a bug in the java source code parser.
 
 ****************************************************************************
 *                               DirectFB                                   *
@@ -232,8 +462,18 @@ information about a particular change.
    for all floating point numbers, and this can be changed using the new
    function setFloatingPointPrecision(). Set Qt_4_5 as the version of the
    QDataStream to get the behavior of previous versions.
-   
+
  - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
    QCoreApplication::organizationName() and QCoreApplication::applicationName()
    if those are set. This matches the behavior on the other platforms.
-   
+
+ - The Animation Framework
+   * currentTime() now returns the complete current time including previous loops
+   * currentLoopTime() returns the time inside the current loop
+   * stateChanged signal sends the new state as first parameter and old state as
+     the second
+   * QAnimationGroup::clearAnimations() has been renames to clear()
+   * QAnimationGroup::insertAnimationAt() has been renames to insertAnimation()
+   * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
+   * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
+

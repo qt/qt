@@ -638,9 +638,11 @@ class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
 public:
     QFileOpenEvent(const QString &file);
+    QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
+    QUrl url() const;
 private:
     QString f;
 };

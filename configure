@@ -3022,6 +3022,18 @@ else
     CFG_FRAMEWORK=no
 fi
 
+# Print a warning if configure was called with the 10.4u SDK option on Snow Leopard
+# with the default mkspec. The 10.4u SDK does not support gcc 4.2.
+if [ "$PLATFORM_MAC" = "yes" ] && [ '!' -z "$CFG_SDK" ]; then
+    # get the darwin version. 10.0.0 and up means snow leopard.
+    VERSION=`uname -r | tr '.' ' ' | awk '{print $1}'`
+    if [ "$VERSION" -gt 9 ] && [ "$CFG_SDK" == "/Developer/SDKs/MacOSX10.4u.sdk/" ] && [ "$PLATFORM" == "macx-g++" ]; then
+        echo
+        echo "WARNING: The 10.4u SDK does not support gcc 4.2. Configure with -platform macx-g++40. "
+        echo
+    fi
+fi
+
 # x11 tests are done after qmake is built
 
 
@@ -4183,9 +4195,10 @@ elif echo "$D_FLAGS" | grep QT_EVAL >/dev/null 2>&1; then
 fi
 
 if [ -n "$EVALKEY" ]; then
+    rm -f "$outpath/src/corelib/global/qconfig_eval.cpp"
     cat > "$outpath/src/corelib/global/qconfig_eval.cpp" <<EOF
 /* Evaluation license key */
-static const char qt_eval_key_data                   [512 + 12] = "qt_qevalkey=$EVALKEY";
+static const char qt_eval_key_data                   [512 + 12] = "$EVALKEY";
 EOF
     chmod -w "$outpath/src/corelib/global/qconfig_eval.cpp"
 fi

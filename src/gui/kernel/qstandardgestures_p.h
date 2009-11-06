@@ -74,7 +74,36 @@ public:
     QPinchGestureRecognizer();
 
     QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
 
+class QSwipeGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QSwipeGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
+class QTapGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QTapGestureRecognizer();
+
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
+    void reset(QGesture *state);
+};
+
+class QTapAndHoldGestureRecognizer : public QGestureRecognizer
+{
+public:
+    QTapAndHoldGestureRecognizer();
+
+    QGesture *create(QObject *target);
     QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
