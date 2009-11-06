@@ -115,7 +115,7 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
     const uint userCollectionCreationTime = user.
         customValue(QLatin1String("CreationTime"), 1).toUInt();
 
-    if (callerCollectionCreationTime == userCollectionCreationTime)
+    if (callerCollectionCreationTime <= userCollectionCreationTime)
         return false;
 
     user.setCustomValue(QLatin1String("CreationTime"),
@@ -124,6 +124,12 @@ updateUserCollection(QHelpEngineCore& user, const QHelpEngineCore& caller)
         caller.customValue(QLatin1String("WindowTitle")));
     user.setCustomValue(QLatin1String("LastShownPages"),
         caller.customValue(QLatin1String("LastShownPages")));
+#if !defined(QT_NO_WEBKIT)
+    const QLatin1String zoomKey("LastPagesZoomWebView");
+#else
+    const QLatin1String zoomKey("LastPagesZoomTextBrowser");
+#endif
+    user.setCustomValue(zoomKey, caller.customValue(zoomKey));
     user.setCustomValue(QLatin1String("CurrentFilter"),
         caller.customValue(QLatin1String("CurrentFilter")));
     user.setCustomValue(QLatin1String("CacheDirectory"),
