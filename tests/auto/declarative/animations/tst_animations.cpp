@@ -198,11 +198,12 @@ void tst_animations::badProperties()
     {
         QmlEngine engine;
         QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/badproperty1.qml"));
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
         QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(c.create());
         QVERIFY(rect);
 
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlColorAnimation (file://" SRCDIR "/data/badproperty1.qml:22:9) Cannot animate non-existant property \"pen.colr\"");
-        rect->setState("state1");
+        //### should we warn here are well?
+        //rect->setState("state1");
     }
 }
 

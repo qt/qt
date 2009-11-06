@@ -19,6 +19,6 @@ Rectangle {
         PropertyChanges { target: MyRect; border.color: "blue" }
     }
     transitions: Transition {
-        ColorAnimation { target: MyRect; to: "red"; properties: "pen.colr"; duration: 1000 }
+        ColorAnimation { target: MyRect; to: "red"; property: "pen.colr"; duration: 1000 }
     }
 }

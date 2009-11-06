@@ -149,7 +149,7 @@ Item {
                 transitions: [
                     Transition {
                         NumberAnimation {
-                            target: header
+                            targets: header
                             properties: "progressOff"
                             easing: "easeInOutQuad"
                             duration: 300

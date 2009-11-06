@@ -92,7 +92,7 @@ Item {
                     SequentialAnimation {
                         ParentAction { }
                         NumberAnimation { properties: "x,y,scale,opacity,angle"; duration: 500; easing: "easeInOutQuad" }
-                        PropertyAction { target: wrapper; properties: "z" }
+                        PropertyAction { targets: wrapper; properties: "z" }
                     }
                 }
             ]

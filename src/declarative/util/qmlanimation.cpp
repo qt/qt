@@ -1014,19 +1014,26 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
-    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
-        props.append(d->propertyName);
 
-    bool targetNeedsReset = false;
-    if (d->userProperty.isValid() && props.isEmpty() && !target()) {
-        props.append(d->userProperty.value.name());
-        d->target = d->userProperty.value.object();
-        targetNeedsReset = true;
-   }
+    bool hasSelectors = !props.isEmpty() || !d->targets.isEmpty() || !d->exclude.isEmpty();
+    bool hasTarget = !d->propertyName.isEmpty() || d->target;
+
+    if (hasSelectors && hasTarget) {
+        qmlInfo(tr("targets/properties/exclude and target/property are mutually exclusive."), this);
+        return;
+    }
 
     QmlSetPropertyAnimationAction *data = new QmlSetPropertyAnimationAction;
 
-    QSet<QObject *> objs;
+    if (hasTarget && d->value.isValid()) {
+        Action myAction;
+        myAction.property = d->createProperty(target(), d->propertyName);
+        if (myAction.property.isValid()) {
+            myAction.toValue = d->value;
+            data->actions << myAction;
+        }
+    }
+
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
@@ -1038,9 +1045,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
         if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
-           (props.contains(propertyName) || (!same && props.contains(sPropertyName))) &&
-           (!target() || target() == obj || (!same && target() == sObj))) {
-            objs.insert(obj);
+           (props.contains(propertyName) || (!same && props.contains(sPropertyName)))) {
             Action myAction = action;
 
             if (d->value.isValid())
@@ -1049,18 +1054,20 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
             modified << action.property;
             data->actions << myAction;
             action.fromValue = myAction.toValue;
-        }
-    }
+        } else if (d->userProperty.isValid() &&
+            !hasSelectors && !hasTarget) {
+            if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
+               (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
+                //### same as above. merge
+                Action myAction = action;
 
-    if (d->value.isValid() && target() && !objs.contains(target())) {
-        QObject *obj = target();
-        for (int jj = 0; jj < props.count(); ++jj) {
-            Action myAction;
-            myAction.property = d->createProperty(obj, props.at(jj));
-            if (!myAction.property.isValid())
-                continue;
-            myAction.toValue = d->value;
-            data->actions << myAction;
+                if (d->value.isValid())
+                    myAction.toValue = d->value;
+
+                modified << action.property;
+                data->actions << myAction;
+                action.fromValue = myAction.toValue;
+            }
         }
     }
 
@@ -1069,8 +1076,6 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     } else {
         delete data;
     }
-    if (targetNeedsReset)
-        d->target = 0;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,PropertyAction,QmlPropertyAction)
@@ -1933,24 +1938,37 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     QStringList props = d->properties.isEmpty() ? QStringList() : d->properties.split(QLatin1Char(','));
     for (int ii = 0; ii < props.count(); ++ii)
         props[ii] = props.at(ii).trimmed();
-    if (!d->propertyName.isEmpty() && !props.contains(d->propertyName))
-        props.append(d->propertyName);
 
-    bool useType = (props.isEmpty() && d->defaultToInterpolatorType) ? true : false;
+    bool hasSelectors = !props.isEmpty() || !d->targets.isEmpty() || !d->exclude.isEmpty();
+    bool hasTarget = !d->propertyName.isEmpty() || d->target;
 
-    bool targetNeedsReset = false;
-    if (d->userProperty.isValid() && props.isEmpty() && !target()) {
-        props.append(d->userProperty.value.name());
-        d->target = d->userProperty.value.object();
-        targetNeedsReset = true;
+    if (hasSelectors && hasTarget) {
+        qmlInfo(tr("targets/properties/exclude and target/property are mutually exclusive."), this);
+        return;
     }
+
+    bool useType = (props.isEmpty() && d->propertyName.isEmpty() && d->defaultToInterpolatorType) ? true : false;
 
     PropertyUpdater *data = new PropertyUpdater;
     data->interpolatorType = d->interpolatorType;
     data->interpolator = d->interpolator;
     data->reverse = direction == Backward ? true : false;
 
-    QSet<QObject *> objs;
+    //an explicit animation has been specified
+    if (hasTarget && d->toIsDefined) {
+        Action myAction;
+        myAction.property = d->createProperty(target(), d->propertyName);
+        if (myAction.property.isValid()) {
+            if (d->fromIsDefined) {
+                d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+                myAction.fromValue = d->from;
+            }
+            d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+            myAction.toValue = d->to;
+            data->actions << myAction;
+        }
+    }
+
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
@@ -1963,16 +1981,13 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
         if ((d->targets.isEmpty() || d->targets.contains(obj) || (!same && d->targets.contains(sObj))) &&
            (!d->exclude.contains(obj)) && (same || (!d->exclude.contains(sObj))) &&
            (props.contains(propertyName) || (!same && props.contains(sPropertyName))
-               || (useType && action.property.propertyType() == d->interpolatorType)) &&
-           (!target() || target() == obj || (!same && target() == sObj))) {
-            objs.insert(obj);
+               || (useType && action.property.propertyType() == d->interpolatorType))) {
             Action myAction = action;
 
-            if (d->fromIsDefined) {
+            if (d->fromIsDefined)
                 myAction.fromValue = d->from;
-            } else {
+            else
                 myAction.fromValue = QVariant();
-            }
             if (d->toIsDefined)
                 myAction.toValue = d->to;
 
@@ -1983,25 +1998,29 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
 
             data->actions << myAction;
             action.fromValue = myAction.toValue;
-        }
-    }
+        } else if (d->userProperty.isValid() &&
+                   !hasSelectors && !hasTarget) {
+           if ((d->userProperty.value.object() == obj || (!same && d->userProperty.value.object() == sObj)) &&
+              (d->userProperty.value.name() == propertyName || (!same && d->userProperty.value.name() == sPropertyName))) {
+               //### same as above. merge
+               Action myAction = action;
 
-    if (d->toIsDefined && target() && !objs.contains(target())) {
-        QObject *obj = target();
-        for (int jj = 0; jj < props.count(); ++jj) {
-            Action myAction;
-            myAction.property = d->createProperty(obj, props.at(jj));
-            if (!myAction.property.isValid())
-                continue;
+               if (d->fromIsDefined)
+                   myAction.fromValue = d->from;
+               else
+                   myAction.fromValue = QVariant();
+               if (d->toIsDefined)
+                   myAction.toValue = d->to;
 
-            if (d->fromIsDefined) {
-                d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-                myAction.fromValue = d->from;
-            }
-            d->convertVariant(d->to, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
-            myAction.toValue = d->to;
-            data->actions << myAction;
-        }
+               d->convertVariant(myAction.fromValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+               d->convertVariant(myAction.toValue, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());
+
+               modified << action.property;
+
+               data->actions << myAction;
+               action.fromValue = myAction.toValue;
+           }
+       }
     }
 
     if (data->actions.count()) {
@@ -2009,8 +2028,6 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     } else {
         delete data;
     }
-    if (targetNeedsReset)
-        d->target = 0;
 }
 
 QML_DEFINE_TYPE(Qt,4,6,PropertyAnimation,QmlPropertyAnimation)

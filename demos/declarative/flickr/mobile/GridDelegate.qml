@@ -62,7 +62,7 @@
                      SequentialAnimation {
                          ParentAction { }
                          NumberAnimation { properties: "x,y"; duration: 500; easing: "easeInOutQuad" }
-                         PropertyAction { target: wrapper; properties: "z" }
+                         PropertyAction { targets: wrapper; properties: "z" }
                      }
                  }
              ]
