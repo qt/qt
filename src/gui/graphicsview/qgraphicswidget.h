@@ -77,7 +77,7 @@ class Q_GUI_EXPORT QGraphicsWidget : public QGraphicsObject, public QGraphicsLay
     Q_PROPERTY(QSizeF minimumSize READ minimumSize WRITE setMinimumSize)
     Q_PROPERTY(QSizeF preferredSize READ preferredSize WRITE setPreferredSize)
     Q_PROPERTY(QSizeF maximumSize READ maximumSize WRITE setMaximumSize)
-    Q_PROPERTY(QSizePolicy::Policy sizePolicy READ sizePolicy WRITE setSizePolicy)
+    Q_PROPERTY(QSizePolicy sizePolicy READ sizePolicy WRITE setSizePolicy)
     Q_PROPERTY(Qt::FocusPolicy focusPolicy READ focusPolicy WRITE setFocusPolicy)
     Q_PROPERTY(Qt::WindowFlags windowFlags READ windowFlags WRITE setWindowFlags)
     Q_PROPERTY(QString windowTitle READ windowTitle WRITE setWindowTitle)
