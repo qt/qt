@@ -83,6 +83,8 @@ private slots:
     void infiniteMaxSizes();
     void simplifiableUnfeasible();
     void simplificationVsOrder();
+    void parallelSimplificationOfCenter();
+    void simplificationVsRedundance();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1799,6 +1801,69 @@ void tst_QGraphicsAnchorLayout::simplificationVsOrder()
         QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
         QCOMPARE(usedSimplex(l, Qt::Vertical), false);
     }
+}
+
+void tst_QGraphicsAnchorLayout::parallelSimplificationOfCenter()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 10);
+    QSizeF max(50, 10);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+
+    QGraphicsWidget parent;
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&parent);
+    l->setContentsMargins(0, 0, 0, 0);
+
+    l->addAnchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+    l->addAnchor(l, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    l->addAnchor(a, Qt::AnchorHorizontalCenter, b, Qt::AnchorLeft);
+    l->addAnchor(b, Qt::AnchorRight, a, Qt::AnchorRight);
+
+    parent.resize(l->effectiveSizeHint(Qt::PreferredSize));
+
+    QCOMPARE(a->geometry(), QRectF(0, 0, 40, 10));
+    QCOMPARE(b->geometry(), QRectF(20, 0, 20, 10));
+}
+
+/*
+    Test whether redundance of anchors (in this case by using addCornerAnchors), will
+    prevent simplification to take place when it should.
+*/
+void tst_QGraphicsAnchorLayout::simplificationVsRedundance()
+{
+    QSizeF min(10, 10);
+    QSizeF pref(20, 10);
+    QSizeF max(50, 30);
+
+    QGraphicsWidget *a = createItem(min, pref, max, "A");
+    QGraphicsWidget *b = createItem(min, pref, max, "B");
+    QGraphicsWidget *c = createItem(min, pref, max, "C");
+
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
+
+    l->addCornerAnchors(a, Qt::TopLeftCorner, l, Qt::TopLeftCorner);
+    l->addCornerAnchors(a, Qt::BottomLeftCorner, l, Qt::BottomLeftCorner);
+
+    l->addCornerAnchors(b, Qt::TopLeftCorner, a, Qt::TopRightCorner);
+    l->addCornerAnchors(b, Qt::TopRightCorner, l, Qt::TopRightCorner);
+
+    l->addCornerAnchors(c, Qt::TopLeftCorner, b, Qt::BottomLeftCorner);
+    l->addCornerAnchors(c, Qt::BottomLeftCorner, a, Qt::BottomRightCorner);
+    l->addCornerAnchors(c, Qt::TopRightCorner, b, Qt::BottomRightCorner);
+    l->addCornerAnchors(c, Qt::BottomRightCorner, l, Qt::BottomRightCorner);
+
+    l->effectiveSizeHint(Qt::MinimumSize);
+
+    QCOMPARE(layoutHasConflict(l), false);
+
+    if (!hasSimplification)
+        QEXPECT_FAIL("", "Test depends on simplification.", Abort);
+
+    QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
+    QCOMPARE(usedSimplex(l, Qt::Vertical), false);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)
