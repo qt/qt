@@ -69,6 +69,7 @@ public:
 
     void decode(QDataStream &, QmlDebugContextReference &);
     void decode(QDataStream &, QmlDebugObjectReference &, bool simple);
+
     static void remove(QmlEngineDebug *, QmlDebugEnginesQuery *);
     static void remove(QmlEngineDebug *, QmlDebugRootContextQuery *);
     static void remove(QmlEngineDebug *, QmlDebugObjectQuery *);
@@ -132,6 +133,7 @@ void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugExpressionQuery *q
     if (p && q)
         p->expressionQuery.remove(q->m_queryId);
 }
+
 
 Q_DECLARE_METATYPE(QmlDebugObjectReference);
 void QmlEngineDebugPrivate::decode(QDataStream &ds, QmlDebugObjectReference &o,
@@ -345,6 +347,7 @@ QmlDebugPropertyWatch *QmlEngineDebug::addWatch(const QmlDebugPropertyReference 
     if (d->client->isConnected()) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
+        watch->m_client = this;
         watch->m_objectDebugId = property.objectDebugId();
         watch->m_name = property.name();
         d->watched.insert(queryId, watch);
@@ -373,6 +376,7 @@ QmlDebugObjectExpressionWatch *QmlEngineDebug::addWatch(const QmlDebugObjectRefe
     if (d->client->isConnected()) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
+        watch->m_client = this;
         watch->m_objectDebugId = object.debugId();
         watch->m_expr = expr;
         d->watched.insert(queryId, watch);
@@ -395,6 +399,7 @@ QmlDebugWatch *QmlEngineDebug::addWatch(const QmlDebugObjectReference &object, Q
     if (d->client->isConnected()) {
         int queryId = d->getId();
         watch->m_queryId = queryId;
+        watch->m_client = this;
         watch->m_objectDebugId = object.debugId();
         d->watched.insert(queryId, watch);
 
@@ -544,8 +549,13 @@ QmlDebugExpressionQuery *QmlEngineDebug::queryExpressionResult(int objectDebugId
 }
 
 QmlDebugWatch::QmlDebugWatch(QObject *parent)
-: QObject(parent), m_state(Waiting), m_queryId(-1), m_objectDebugId(-1)
+: QObject(parent), m_state(Waiting), m_queryId(-1), m_client(0), m_objectDebugId(-1)
 {
+}
+
+QmlDebugWatch::~QmlDebugWatch()
+{
+    m_client->removeWatch(this);
 }
 
 int QmlDebugWatch::queryId() const
