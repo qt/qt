@@ -934,7 +934,8 @@ QDBusConnectionPrivate::QDBusConnectionPrivate(QObject *p)
       rootNode(QString(QLatin1Char('/')))
 {
     static const bool threads = q_dbus_threads_init_default();
-    static const int debugging = ::isDebugging = qgetenv("QDBUS_DEBUG").toInt();
+    static const int debugging = qgetenv("QDBUS_DEBUG").toInt();
+    ::isDebugging = debugging;
     Q_UNUSED(threads)
     Q_UNUSED(debugging)
 
