@@ -59,13 +59,13 @@ public:
     static QString toTestScript(const QString &, Mode=Test);
     static QString viewer();
 
+    static QStringList findQmlFiles(const QDir &d);
 private slots:
     void visual_data();
     void visual();
 
 private:
     QString qmlviewer;
-    QStringList findQmlFiles(const QDir &d);
 };
 
 
@@ -257,6 +257,7 @@ void usage()
 {
     fprintf(stderr, "\n");
     fprintf(stderr, "QML related options\n");
+    fprintf(stderr, " -listtests                  : list all the tests seen by tst_visual, and then exit immediately\n");
     fprintf(stderr, " -record file                : record new test data for file\n");
     fprintf(stderr, " -recordnovisuals file       : record new test data for file, but ignore visuals\n");
     fprintf(stderr, " -play file                  : playback test data for file, printing errors\n");
@@ -267,12 +268,12 @@ void usage()
         "Visual tests are recordings of manual interactions with a QML test,\n"
         "that can then be run automatically. To record a new test, run:\n"
         "\n"
-        "  tst_visuals -record yourtestdir/yourtest # Note, no .qml extension\n"
+        "  tst_visual -record yourtestdir/yourtest.qml\n"
         "\n"
         "This records everything you do (try to keep it short).\n"
         "To play back a test, run:\n"
         "\n"
-        "  tst_visuals -play yourtestdir/yourtest\n"
+        "  tst_visual -play yourtestdir/yourtest.qml\n"
         "\n"
         "Your test may include QML code to test itself, reporting any error to an\n"
         "'error' property on the root object - the test will fail if this property\n"
@@ -281,7 +282,7 @@ void usage()
         "If your test changes slightly but is still correct (check with -play), you\n"
         "can update the visuals by running:\n"
         "\n"
-        "  tst_visuals -updatevisuals yourtestdir/yourtest\n"
+        "  tst_visual -updatevisuals yourtestdir/yourtest.qml\n"
         "\n"
         "If your test includes platform-sensitive visuals (eg. text in system fonts),\n"
         "you should create platform-specific visuals, using -updateplatformvisuals\n"
@@ -332,9 +333,17 @@ int main(int argc, char **argv)
             newArgv[newArgc++] = argv[ii];
         }
         
-        if (arg == "-help" || arg == "-?") {
+        if (arg == "-help" || arg == "-?" || arg == "--help") {
             atexit(usage);
             showHelp = true;
+        }
+
+        if (arg == "-listtests") {
+            QStringList list = tst_visual::findQmlFiles(QDir(QT_TEST_SOURCE_DIR));
+            foreach (QString test, list) {
+                qWarning() << qPrintable(test);
+            }
+            return 0;
         }
     }
 
