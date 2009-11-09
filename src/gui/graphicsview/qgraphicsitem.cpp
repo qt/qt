@@ -3398,7 +3398,6 @@ QPointF QGraphicsItem::scenePos() const
 void QGraphicsItemPrivate::setPosHelper(const QPointF &pos)
 {
     Q_Q(QGraphicsItem);
-
     inSetPosHelper = 1;
     updateCachedClipPathFromSetPosHelper(pos);
     if (scene)
