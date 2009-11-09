@@ -661,7 +661,10 @@ namespace Phonon
 
 
 #ifndef QT_NO_OPENGL
-            if (painter.paintEngine() && painter.paintEngine()->type() == QPaintEngine::OpenGL && checkGLPrograms()) {
+            if (painter.paintEngine() && 
+                (painter.paintEngine()->type() == QPaintEngine::OpenGL || painter.paintEngine()->type() == QPaintEngine::OpenGL2)
+                && checkGLPrograms()) {
+
                 //for now we only support YUV (both YV12 and YUY2)
                 updateTexture();
 
@@ -673,6 +676,7 @@ namespace Phonon
                 }
 
                 //let's draw the texture
+                painter.beginNativePainting();
 
                 //Let's pass the other arguments
                 const Program prog = (m_inputPin->connectedType().subtype == MEDIASUBTYPE_YV12) ? YV12toRGB : YUY2toRGB;
@@ -722,6 +726,7 @@ namespace Phonon
                 glDisableClientState(GL_VERTEX_ARRAY);
 
                 glDisable(GL_FRAGMENT_PROGRAM_ARB);
+                painter.endNativePainting();
                 return;
             } else
 #endif

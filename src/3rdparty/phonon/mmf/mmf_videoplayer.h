@@ -86,6 +86,10 @@ private:
 
     void updateMmfOutput();
 
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
+
 private:
     QScopedPointer<CVideoPlayerUtility> m_player;
 

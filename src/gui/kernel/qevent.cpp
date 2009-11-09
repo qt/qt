@@ -2976,13 +2976,13 @@ QShowEvent::~QShowEvent()
 /*!
     \class QFileOpenEvent
     \brief The QFileOpenEvent class provides an event that will be
-    sent when there is a request to open a file.
+    sent when there is a request to open a file or a URL.
 
     \ingroup events
 
     File open events will be sent to the QApplication::instance()
-    when the operating system requests that a file be opened. This is
-    a high-level event that can be caused by different user actions
+    when the operating system requests that a file or URL should be opened.
+    This is a high-level event that can be caused by different user actions
     depending on the user's desktop environment; for example, double
     clicking on an file icon in the Finder on Mac OS X.
 
@@ -2999,12 +2999,27 @@ QShowEvent::~QShowEvent()
 */
 QFileOpenEvent::QFileOpenEvent(const QString &file)
     : QEvent(FileOpen), f(file)
-{}
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
+}
+
+/*!
+    \internal
+
+    Constructs a file open event for the given \a url.
+*/
+QFileOpenEvent::QFileOpenEvent(const QUrl &url)
+    : QEvent(FileOpen)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(url));
+    f = url.toLocalFile();
+}
 
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
+    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
 }
 
 /*!
@@ -3012,6 +3027,16 @@ QFileOpenEvent::~QFileOpenEvent()
 
     Returns the file that is being opened.
 */
+
+/*!
+    \fn QUrl QFileOpenEvent::url() const
+
+    Returns the url that is being opened.
+*/
+QUrl QFileOpenEvent::url() const
+{
+    return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
+}
 
 #ifndef QT_NO_TOOLBAR
 /*!
@@ -4202,7 +4227,7 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     \brief The QGestureEvent class provides the description of triggered gestures.
 
     The QGestureEvent class contains a list of gestures, which can be obtained using the
-    allGestures() function.
+    gestures() function.
 
     The gestures are either active or canceled. A list of those that are currently being
     executed can be obtained using the activeGestures() function. A list of those which
@@ -4211,10 +4236,11 @@ QTouchEvent::TouchPoint &QTouchEvent::TouchPoint::operator=(const QTouchEvent::T
     focus, for example, or because of a timeout, or for other reasons.
 
     If the event handler does not accept the event by calling the generic
-    QEvent::accept() function, all individual QGesture object that were not accepted
-    will be propagated up the parent widget chain until a widget accepts them
-    individually, by calling QGestureEvent::accept() for each of them, or an event
-    filter consumes the event.
+    QEvent::accept() function, all individual QGesture object that were not
+    accepted and in the Qt::GestureStarted state will be propagated up the
+    parent widget chain until a widget accepts them individually, by calling
+    QGestureEvent::accept() for each of them, or an event filter consumes the
+    event.
 
     \sa QGesture, QGestureRecognizer,
         QWidget::grabGesture(), QGraphicsObject::grabGesture()
@@ -4240,7 +4266,7 @@ QGestureEvent::~QGestureEvent()
 /*!
     Returns all gestures that are delivered in the event.
 */
-QList<QGesture *> QGestureEvent::allGestures() const
+QList<QGesture *> QGestureEvent::gestures() const
 {
     return d_func()->gestures;
 }
@@ -4344,8 +4370,9 @@ bool QGestureEvent::isAccepted(QGesture *gesture) const
     Sets the accept flag of the given \a gestureType object to the specified
     \a value.
 
-    Setting the accept flag indicates that the event receiver wants the \a gesture.
-    Unwanted gestures may be propagated to the parent widget.
+    Setting the accept flag indicates that the event receiver wants to receive
+    gestures of the specified type, \a gestureType. Unwanted gestures may be
+    propagated to the parent widget.
 
     By default, gestures in events of type QEvent::Gesture are accepted, and
     gestures in QEvent::GestureOverride events are ignored.
@@ -4417,11 +4444,16 @@ QWidget *QGestureEvent::widget() const
 
 #ifndef QT_NO_GRAPHICSVIEW
 /*!
-    Returns the scene-local coordinates if the \a gesturePoint is inside a graphics view.
+    Returns the scene-local coordinates if the \a gesturePoint is inside a
+    graphics view.
+
+    This functional might be useful when the gesture event is delivered to a
+    QGraphicsObject to translate a point in screen coordinates to scene-local
+    coordinates.
 
     \sa QPointF::isNull().
 */
-QPointF QGestureEvent::mapToScene(const QPointF &gesturePoint) const
+QPointF QGestureEvent::mapToGraphicsScene(const QPointF &gesturePoint) const
 {
     QWidget *w = widget();
     if (w) // we get the viewport as widget, not the graphics view

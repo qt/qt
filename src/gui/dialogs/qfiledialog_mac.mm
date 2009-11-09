@@ -399,9 +399,13 @@ QT_USE_NAMESPACE
 - (void)panelSelectionDidChange:(id)sender
 {
     Q_UNUSED(sender);
-    *mCurrentSelection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString([mSavePanel filename]));
-    if (mPriv)
-        mPriv->QNSOpenSavePanelDelegate_selectionChanged(*mCurrentSelection);
+    if (mPriv) {
+        QString selection = QT_PREPEND_NAMESPACE(qt_mac_NSStringToQString([mSavePanel filename]));
+        if (selection != mCurrentSelection) {
+            *mCurrentSelection = selection;
+            mPriv->QNSOpenSavePanelDelegate_selectionChanged(selection);
+        }
+    }
 }
 
 - (void)openPanelDidEnd:(NSOpenPanel *)panel returnCode:(int)returnCode  contextInfo:(void *)contextInfo
@@ -826,8 +830,8 @@ void QFileDialogPrivate::qt_mac_filedialog_event_proc(const NavEventCallbackMess
                     || mode == QFileDialog::ExistingFiles){
                 // When changing directory, the current selection is cleared if
                 // we are supposed to be selecting files only:
-                fileDialogPrivate->mCurrentSelectionList.clear();
                 if (!fileDialogPrivate->mCurrentSelection.isEmpty()){
+                    fileDialogPrivate->mCurrentSelectionList.clear();
                     fileDialogPrivate->mCurrentSelection.clear();
                     emit fileDialogPrivate->q_func()->currentChanged(fileDialogPrivate->mCurrentSelection);
                 }

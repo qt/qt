@@ -729,7 +729,7 @@
     \o  \l{network/network-chat}{Network Chat}
     \o  \l{network/fortuneclient}{Fortune Client}\raisedaster
     \o  \l{network/fortuneserver}{Fortune Server}\raisedaster
-    \o  \l{network/ftp}{FTP}\raisedaster
+    \o  \l{network/qftp}{FTP}\raisedaster
     \o  \l{network/http}{HTTP}
     \o  \l{network/loopback}{Loopback}
     \o  \l{network/threadedfortuneserver}{Threaded Fortune Server}\raisedaster

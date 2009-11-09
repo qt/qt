@@ -319,16 +319,6 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},
 
-    /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBl */        {KAknsIIDQsnFrNotepadCornerBl,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBr */        {KAknsIIDQsnFrNotepadCornerBr,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadContSideT,        ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideB */           {KAknsIIDQsnFrNotepadSideB,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideL */           {KAknsIIDQsnFrNotepadSideL,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideR */           {KAknsIIDQsnFrNotepadSideR,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1},
-
 };
 
 QPixmap QS60StyleModeSpecifics::skinnedGraphics(
@@ -851,10 +841,6 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             // remove center piece for panel graphics, so that only border is drawn
             centerId.Set(KAknsIIDNone);
             frameId.Set(KAknsIIDQsnFrSetOpt);
-            break;
-        case QS60StylePrivate::SF_Editor:
-            centerId.Set(KAknsIIDQsnFrNotepadCenter);
-            frameId.Set(KAknsIIDQsnFrNotepadCont);
             break;
         default:
             // center should be correct here
@@ -1382,13 +1368,13 @@ QSize QS60StylePrivate::naviPaneSize()
 QSize QS60StyleModeSpecifics::naviPaneSize()
 {
     CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane())
-        naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
-    if (naviContainer)
-        return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    else
-        return QSize(0,0);
+    if (S60->statusPane()) {
+        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
+        if (err==KErrNone)
+            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    }
+    return QSize(0,0);
 }
 
 #endif // Q_WS_S60

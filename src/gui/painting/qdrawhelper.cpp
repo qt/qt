@@ -2386,12 +2386,12 @@ static void QT_FASTCALL comp_func_HardLight(uint *dest, const uint *src, int len
 }
 
 /*
-   if 2.Sca < Sa
-       Dca' = Dca.(Sa - (1 - Dca/Da).(2.Sca - Sa)) + Sca.(1 - Da) + Dca.(1 - Sa)
-   otherwise if 8.Dca <= Da
-       Dca' = Dca.(Sa - (1 - Dca/Da).(2.Sca - Sa).(3 - 8.Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
-   otherwise
-       Dca' = (Dca.Sa + ((Dca/Da)^(0.5).Da - Dca).(2.Sca - Sa)) + Sca.(1 - Da) + Dca.(1 - Sa)
+    if 2.Sca <= Sa
+        Dca' = Dca.(Sa + (2.Sca - Sa).(1 - Dca/Da)) + Sca.(1 - Da) + Dca.(1 - Sa)
+    otherwise if 2.Sca > Sa and 4.Dca <= Da
+        Dca' = Dca.Sa + Da.(2.Sca - Sa).(4.Dca/Da.(4.Dca/Da + 1).(Dca/Da - 1) + 7.Dca/Da) + Sca.(1 - Da) + Dca.(1 - Sa)
+    otherwise if 2.Sca > Sa and 4.Dca > Da
+        Dca' = Dca.Sa + Da.(2.Sca - Sa).((Dca/Da)^0.5 - Dca/Da) + Sca.(1 - Da) + Dca.(1 - Sa)
 */
 static inline int soft_light_op(int dst, int src, int da, int sa)
 {
@@ -2400,13 +2400,11 @@ static inline int soft_light_op(int dst, int src, int da, int sa)
     const int temp = (src * (255 - da) + dst * (255 - sa)) * 255;
 
     if (src2 < sa)
-        return (dst * ((sa * 255) - (255 - dst_np) * (src2 - sa)) + temp) / 65025;
-    else if (8 * dst <= da)
-        return (dst * ((sa * 255) - ((255 - dst_np) * (src2 - sa) * ((3 * 255) - 8 * dst_np)) / 255) + temp) / 65025;
+        return (dst * (sa * 255 + (src2 - sa) * (255 - dst_np)) + temp) / 65025;
+    else if (4 * dst <= da)
+        return (dst * sa * 255 + da * (src2 - sa) * ((((16 * dst_np - 12 * 255) * dst_np + 3 * 65025) * dst_np) / 65025) + temp) / 65025;
     else {
-        // sqrt is too expensive to do three times per pixel, so skipping it for now
-        // a future possibility is to use a LUT
-        return ((dst * sa * 255) + (int(dst_np) * da - (dst * 255)) * (src2 - sa) + temp) / 65025;
+        return (dst * sa * 255 + da * (src2 - sa) * (int(sqrt(qreal(dst_np * 255))) - dst_np) + temp) / 65025;
     }
 }
 
@@ -7424,6 +7422,14 @@ QT_RECTFILL(qrgb444)
 QT_RECTFILL(qargb4444)
 #undef QT_RECTFILL
 
+inline static void qt_rectfill_nonpremul_quint32(QRasterBuffer *rasterBuffer,
+                                                 int x, int y, int width, int height,
+                                                 quint32 color)
+{
+    qt_rectfill<quint32>(reinterpret_cast<quint32 *>(rasterBuffer->buffer()),
+                         INV_PREMUL(color), x, y, width, height, rasterBuffer->bytesPerLine());
+}
+
 
 // Map table for destination image format. Contains function pointers
 // for blends of various types unto the destination
@@ -7466,7 +7472,7 @@ DrawHelper qDrawHelper[QImage::NImageFormats] =
         qt_bitmapblit_quint32,
         qt_alphamapblit_quint32,
         qt_alphargbblit_quint32,
-        qt_rectfill_quint32
+        qt_rectfill_nonpremul_quint32
     },
     // Format_ARGB32_Premultiplied
     {

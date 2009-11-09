@@ -107,7 +107,7 @@ struct QSimplexConstraint
 
         Q_ASSERT(constant > 0 || qFuzzyCompare(1, 1 + constant));
 
-        if ((leftHandSide == constant) || qFuzzyCompare(1000 + leftHandSide, 1000 + constant))
+        if ((leftHandSide == constant) || qAbs(leftHandSide - constant) < 0.00000001)
             return true;
 
         switch (ratio) {

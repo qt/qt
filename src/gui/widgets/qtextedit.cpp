@@ -116,9 +116,6 @@ QTextEditPrivate::QTextEditPrivate()
     preferRichText = false;
     showCursorOnInitialShow = true;
     inDrag = false;
-#ifdef Q_WS_WIN
-    setSingleFingerPanEnabled(true);
-#endif
 }
 
 void QTextEditPrivate::createAutoBulletList()
@@ -185,6 +182,9 @@ void QTextEditPrivate::init(const QString &html)
 
 #ifndef QT_NO_CURSOR
     viewport->setCursor(Qt::IBeamCursor);
+#endif
+#ifdef Q_WS_WIN
+    setSingleFingerPanEnabled(true);
 #endif
 }
 

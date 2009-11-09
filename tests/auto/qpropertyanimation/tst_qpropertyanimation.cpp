@@ -225,7 +225,7 @@ void tst_QPropertyAnimation::setCurrentTime()
     animation.setLoopCount(loopCount);
     animation.setCurrentTime(currentTime);
 
-    QCOMPARE(animation.currentTime(), testCurrentTime);
+    QCOMPARE(animation.currentLoopTime(), testCurrentTime);
     QCOMPARE(animation.currentLoop(), testCurrentLoop);
 }
 
@@ -280,7 +280,7 @@ void tst_QPropertyAnimation::statesAndSignals()
     QCOMPARE(anim->state(), QAnimationGroup::Stopped);
     QCOMPARE(runningSpy.count(), 1); //anim must have stopped
     QCOMPARE(finishedSpy.count(), 0);
-    QCOMPARE(anim->currentTime(), 0);
+    QCOMPARE(anim->currentLoopTime(), 0);
     QCOMPARE(anim->currentLoop(), 0);
     QCOMPARE(currentLoopSpy.count(), 2);
     runningSpy.clear();
@@ -291,7 +291,7 @@ void tst_QPropertyAnimation::statesAndSignals()
     QCOMPARE(runningSpy.count(), 2); //started and stopped again
     runningSpy.clear();
     QCOMPARE(finishedSpy.count(), 1);
-    QCOMPARE(anim->currentTime(), 100);
+    QCOMPARE(anim->currentLoopTime(), 100);
     QCOMPARE(anim->currentLoop(), 2);
     QCOMPARE(currentLoopSpy.count(), 4);
 
@@ -312,7 +312,7 @@ void tst_QPropertyAnimation::statesAndSignals()
     QCOMPARE(anim->currentLoop(), 2);
     QCOMPARE(runningSpy.count(), 1); // anim has stopped
     QCOMPARE(finishedSpy.count(), 2);
-    QCOMPARE(anim->currentTime(), 100);
+    QCOMPARE(anim->currentLoopTime(), 100);
 
     delete anim;
 }
@@ -864,16 +864,16 @@ void tst_QPropertyAnimation::zeroDurationStart()
     //let's check the first state change
     const QVariantList firstChange = spy.first();
     //old state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.first()), QAbstractAnimation::Stopped);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.last()), QAbstractAnimation::Stopped);
     //new state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.last()), QAbstractAnimation::Running);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(firstChange.first()), QAbstractAnimation::Running);
 
     //let's check the first state change
     const QVariantList secondChange = spy.last();
     //old state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.first()), QAbstractAnimation::Running);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.last()), QAbstractAnimation::Running);
     //new state
-    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.last()), QAbstractAnimation::Stopped);
+    QCOMPARE(qVariantValue<QAbstractAnimation::State>(secondChange.first()), QAbstractAnimation::Stopped);
 }
 
 #define Pause 1
@@ -1171,9 +1171,9 @@ public:
         innerAnim->start();
     }
 
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
     {
-        QPropertyAnimation::updateState(oldState, newState);
+        QPropertyAnimation::updateState(newState, oldState);
         if (newState == QAbstractAnimation::Stopped)
             delete innerAnim;
     }

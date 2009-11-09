@@ -120,6 +120,18 @@ QT_BEGIN_NAMESPACE
     \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
 */
 
+/*!
+    \class QAccessibleImageInterface
+    \ingroup accessibility
+    \internal
+    \preliminary
+
+    \brief The QAccessibleImageInterface class implements support for
+    the IAccessibleImage interface.
+
+    \link http://www.linux-foundation.org/en/Accessibility/IAccessible2 IAccessible2 Specification \endlink
+*/
+
 QAccessibleSimpleEditableTextInterface::QAccessibleSimpleEditableTextInterface(
                 QAccessibleInterface *accessibleInterface)
     : iface(accessibleInterface)

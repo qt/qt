@@ -70,7 +70,7 @@
     QAnimationGroup provides methods for adding and retrieving
     animations. Besides that, you can remove animations by calling
     remove(), and clear the animation group by calling
-    clearAnimations(). You may keep track of changes in the group's
+    clear(). You may keep track of changes in the group's
     animations by listening to QEvent::ChildAdded and
     QEvent::ChildRemoved events.
 
@@ -151,7 +151,7 @@ int QAnimationGroup::animationCount() const
     Returns the index of \a animation. The returned index can be passed
     to the other functions that take an index as an argument.
 
-    \sa insertAnimationAt(), animationAt(), takeAnimationAt()
+    \sa insertAnimation(), animationAt(), takeAnimation()
 */
 int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 {
@@ -160,7 +160,7 @@ int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 }
 
 /*!
-    Adds \a animation to this group. This will call insertAnimationAt with
+    Adds \a animation to this group. This will call insertAnimation with
     index equals to animationCount().
 
     \note The group takes ownership of the animation.
@@ -170,7 +170,7 @@ int QAnimationGroup::indexOfAnimation(QAbstractAnimation *animation) const
 void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
 {
     Q_D(QAnimationGroup);
-    insertAnimationAt(d->animations.count(), animation);
+    insertAnimation(d->animations.count(), animation);
 }
 
 /*!
@@ -180,14 +180,14 @@ void QAnimationGroup::addAnimation(QAbstractAnimation *animation)
 
     \note The group takes ownership of the animation.
 
-    \sa takeAnimationAt(), addAnimation(), indexOfAnimation(), removeAnimation()
+    \sa takeAnimation(), addAnimation(), indexOfAnimation(), removeAnimation()
 */
-void QAnimationGroup::insertAnimationAt(int index, QAbstractAnimation *animation)
+void QAnimationGroup::insertAnimation(int index, QAbstractAnimation *animation)
 {
     Q_D(QAnimationGroup);
 
     if (index < 0 || index > d->animations.size()) {
-        qWarning("QAnimationGroup::insertAnimationAt: index is out of bounds");
+        qWarning("QAnimationGroup::insertAnimation: index is out of bounds");
         return;
     }
 
@@ -205,7 +205,7 @@ void QAnimationGroup::insertAnimationAt(int index, QAbstractAnimation *animation
     Removes \a animation from this group. The ownership of \a animation is
     transferred to the caller.
 
-    \sa takeAnimationAt(), insertAnimationAt(), addAnimation()
+    \sa takeAnimation(), insertAnimation(), addAnimation()
 */
 void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
 {
@@ -221,7 +221,7 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
         return;
     }
 
-    takeAnimationAt(index);
+    takeAnimation(index);
 }
 
 /*!
@@ -229,13 +229,13 @@ void QAnimationGroup::removeAnimation(QAbstractAnimation *animation)
 
     \note The ownership of the animation is transferred to the caller.
 
-    \sa removeAnimation(), addAnimation(), insertAnimationAt(), indexOfAnimation()
+    \sa removeAnimation(), addAnimation(), insertAnimation(), indexOfAnimation()
 */
-QAbstractAnimation *QAnimationGroup::takeAnimationAt(int index)
+QAbstractAnimation *QAnimationGroup::takeAnimation(int index)
 {
     Q_D(QAnimationGroup);
     if (index < 0 || index >= d->animations.size()) {
-        qWarning("QAnimationGroup::takeAnimationAt: no animation at index %d", index);
+        qWarning("QAnimationGroup::takeAnimation: no animation at index %d", index);
         return 0;
     }
     QAbstractAnimation *animation = d->animations.at(index);
@@ -254,7 +254,7 @@ QAbstractAnimation *QAnimationGroup::takeAnimationAt(int index)
 
     \sa addAnimation(), removeAnimation()
 */
-void QAnimationGroup::clearAnimations()
+void QAnimationGroup::clear()
 {
     Q_D(QAnimationGroup);
     qDeleteAll(d->animations);
@@ -279,7 +279,7 @@ bool QAnimationGroup::event(QEvent *event)
         // case it might be called from the destructor.
         int index = d->animations.indexOf(a);
         if (index != -1)
-            takeAnimationAt(index);
+            takeAnimation(index);
     }
     return QAbstractAnimation::event(event);
 }

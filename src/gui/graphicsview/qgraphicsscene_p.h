@@ -122,6 +122,13 @@ public:
 
     void _q_processDirtyItems();
 
+    QSet<QGraphicsItem *> scenePosItems;
+    bool scenePosDescendantsUpdatePending;
+    void setScenePosItemEnabled(QGraphicsItem *item, bool enabled);
+    void registerScenePosItem(QGraphicsItem *item);
+    void unregisterScenePosItem(QGraphicsItem *item);
+    void _q_updateScenePosDescendants();
+
     void removeItemHelper(QGraphicsItem *item);
 
     QBrush backgroundBrush;
@@ -234,6 +241,7 @@ public:
         item->d_ptr->fullUpdatePending = 0;
         item->d_ptr->ignoreVisible = 0;
         item->d_ptr->ignoreOpacity = 0;
+#ifndef QT_NO_GRAPHICSEFFECT
         QGraphicsEffect::ChangeFlags flags;
         if (item->d_ptr->notifyBoundingRectChanged) {
             flags |= QGraphicsEffect::SourceBoundingRectChanged;
@@ -243,12 +251,15 @@ public:
             flags |= QGraphicsEffect::SourceInvalidated;
             item->d_ptr->notifyInvalidated = 0;
         }
+#endif //QT_NO_GRAPHICSEFFECT
         if (recursive) {
             for (int i = 0; i < item->d_ptr->children.size(); ++i)
                 resetDirtyItem(item->d_ptr->children.at(i), recursive);
         }
+#ifndef QT_NO_GRAPHICSEFFECT
         if (flags && item->d_ptr->graphicsEffect)
             item->d_ptr->graphicsEffect->sourceChanged(flags);
+#endif //QT_NO_GRAPHICSEFFECT
     }
 
     inline void ensureSortedTopLevelItems()
@@ -288,6 +299,7 @@ public:
                            QMap<Qt::GestureType, QGesture *> *conflictedGestures,
                            QList<QList<QGraphicsObject *> > *conflictedItems,
                            QHash<QGesture *, QGraphicsObject *> *normalGestures);
+    void cancelGesturesForChildren(QGesture *original, QWidget *viewport);
 
     void updateInputMethodSensitivityInViews();
 

@@ -197,6 +197,7 @@ QWidgetPrivate::QWidgetPrivate(int version)
       , picture(0)
 #elif defined(Q_WS_WIN)
       , noPaintOnScreen(0)
+      , nativeGesturePanEnabled(0)
 #elif defined(Q_WS_MAC)
       , needWindowChange(0)
       , isGLWidget(0)
@@ -229,7 +230,9 @@ QWidgetPrivate::~QWidgetPrivate()
     if (extra)
         deleteExtra();
 
+#ifndef QT_NO_GRAPHICSEFFECT
     delete graphicsEffect;
+#endif //QT_NO_GRAPHICSEFFECT
 }
 
 QWindowSurface *QWidgetPrivate::createDefaultWindowSurface()
@@ -1792,6 +1795,7 @@ QRegion QWidgetPrivate::clipRegion() const
     return r;
 }
 
+#ifndef QT_NO_GRAPHICSEFFECT
 void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
 {
     Q_Q(QWidget);
@@ -1806,6 +1810,7 @@ void QWidgetPrivate::invalidateGraphicsEffectsRecursively()
         w = w->parentWidget();
     } while (w);
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 void QWidgetPrivate::setDirtyOpaqueRegion()
 {
@@ -1813,7 +1818,9 @@ void QWidgetPrivate::setDirtyOpaqueRegion()
 
     dirtyOpaqueChildren = true;
 
+#ifndef QT_NO_GRAPHICSEFFECT
     invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (q->isWindow())
         return;
@@ -1962,10 +1969,12 @@ void QWidgetPrivate::clipToEffectiveMask(QRegion &region) const
     const QWidget *w = q;
     QPoint offset;
 
+#ifndef QT_NO_GRAPHICSEFFECT
     if (graphicsEffect) {
         w = q->parentWidget();
         offset -= data.crect.topLeft();
     }
+#endif //QT_NO_GRAPHICSEFFECT
 
     while (w) {
         const QWidgetPrivate *wd = w->d_func();
@@ -2000,11 +2009,13 @@ void QWidgetPrivate::updateIsOpaque()
     // hw: todo: only needed if opacity actually changed
     setDirtyOpaqueRegion();
 
+#ifndef QT_NO_GRAPHICSEFFECT
     if (graphicsEffect) {
         // ### We should probably add QGraphicsEffect::isOpaque at some point.
         setOpaque(false);
         return;
     }
+#endif //QT_NO_GRAPHICSEFFECT
 
     Q_Q(QWidget);
 #ifdef Q_WS_X11
@@ -5012,11 +5023,13 @@ void QWidget::render(QPainter *painter, const QPoint &targetOffset,
 
     \sa setGraphicsEffect()
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 QGraphicsEffect *QWidget::graphicsEffect() const
 {
     Q_D(const QWidget);
     return d->graphicsEffect;
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
 
@@ -5035,6 +5048,7 @@ QGraphicsEffect *QWidget::graphicsEffect() const
 
     \sa graphicsEffect()
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
 {
     Q_D(QWidget);
@@ -5064,6 +5078,7 @@ void QWidget::setGraphicsEffect(QGraphicsEffect *effect)
     d->updateIsOpaque();
     update();
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 bool QWidgetPrivate::isAboutToShow() const
 {
@@ -5156,8 +5171,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground)
-            || !q->palette().brush(q->backgroundRole()).isOpaque())
+        if (!(renderFlags & QWidget::DrawWindowBackground) || !isOpaque)
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 
@@ -5210,6 +5224,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
         return;
 
     Q_Q(QWidget);
+#ifndef QT_NO_GRAPHICSEFFECT
     if (graphicsEffect && graphicsEffect->isEnabled()) {
         QGraphicsEffectSource *source = graphicsEffect->d_func()->source;
         QWidgetEffectSourcePrivate *sourced = static_cast<QWidgetEffectSourcePrivate *>
@@ -5240,6 +5255,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
             return;
         }
     }
+#endif //QT_NO_GRAFFICSEFFECT
 
     const bool asRoot = flags & DrawAsRoot;
     const bool alsoOnScreen = flags & DrawPaintOnScreen;
@@ -5394,7 +5410,6 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     QWidgetPrivate *wd = w->d_func();
     const QPoint widgetPos(w->data->crect.topLeft());
     const bool hasMask = wd->extra && wd->extra->hasMask && !wd->graphicsEffect;
-
     if (index > 0) {
         QRegion wr(rgn);
         if (wd->isOpaque)
@@ -5420,6 +5435,7 @@ void QWidgetPrivate::paintSiblingsRecursive(QPaintDevice *pdev, const QObjectLis
     }
 }
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QRectF QWidgetEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     if (system != Qt::DeviceCoordinates)
@@ -5520,6 +5536,7 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
     m_widget->render(&pixmap, pixmapOffset);
     return pixmap;
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 #ifndef QT_NO_GRAPHICSVIEW
 /*!
@@ -11736,22 +11753,22 @@ QGraphicsProxyWidget *QWidget::graphicsProxyWidget() const
 */
 
 /*!
-    Subscribes the widget to a given \a gesture with a \a context.
+    Subscribes the widget to a given \a gesture with specific \a flags.
 
-    \sa QGestureEvent
+    \sa ungrabGesture(), QGestureEvent
     \since 4.6
 */
-void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureContext context)
+void QWidget::grabGesture(Qt::GestureType gesture, Qt::GestureFlags flags)
 {
     Q_D(QWidget);
-    d->gestureContext.insert(gesture, context);
+    d->gestureContext.insert(gesture, flags);
     (void)QGestureManager::instance(); // create a gesture manager
 }
 
 /*!
-    Unsubscribes the widget to a given \a gesture type
+    Unsubscribes the widget from a given \a gesture type
 
-    \sa QGestureEvent
+    \sa grabGesture(), QGestureEvent
     \since 4.6
 */
 void QWidget::ungrabGesture(Qt::GestureType gesture)

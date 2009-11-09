@@ -62,6 +62,7 @@ typedef enum {
         HB_Script_Ogham,
         HB_Script_Runic,
         HB_Script_Khmer,
+        HB_Script_Nko,
         HB_Script_Inherited,
         HB_ScriptCount = HB_Script_Inherited
         /*
@@ -102,7 +103,6 @@ typedef enum {
         HB_Script_Cuneiform = Common,
         HB_Script_Phoenician = Common,
         HB_Script_PhagsPa = Common,
-        HB_Script_Nko = Common
         */
 } HB_Script;
 
@@ -242,27 +242,30 @@ typedef struct HB_Font_ {
     void *userData;
 } HB_FontRec;
 
-typedef struct {
-    const HB_UChar16 *string;
-    hb_uint32 stringLength;
-    HB_ScriptItem item;
-    HB_Font font;
-    HB_Face face;
-    int shaperFlags; /* HB_ShaperFlags */
+typedef struct HB_ShaperItem_ HB_ShaperItem;
 
-    HB_Bool glyphIndicesPresent; /* set to true if the glyph indicies are already setup in the glyphs array */
-    hb_uint32 initialGlyphCount;
+struct HB_ShaperItem_ {
+    const HB_UChar16 *string;               /* input: the Unicode UTF16 text to be shaped */
+    hb_uint32 stringLength;                 /* input: the length of the input in 16-bit words */
+    HB_ScriptItem item;                     /* input: the current run to be shaped: a run of text all in the same script that is a substring of <string> */
+    HB_Font font;                           /* input: the font: scale, units and function pointers supplying glyph indices and metrics */
+    HB_Face face;                           /* input: the shaper state; current script, access to the OpenType tables , etc. */
+    int shaperFlags;                        /* input (unused) should be set to 0; intended to support flags defined in HB_ShaperFlag */
+    HB_Bool glyphIndicesPresent;            /* input: true if the <glyphs> array contains glyph indices ready to be shaped */
+    hb_uint32 initialGlyphCount;            /* input: if glyphIndicesPresent is true, the number of glyph indices in the <glyphs> array */
 
-    hb_uint32 num_glyphs; /* in: available glyphs out: glyphs used/needed */
-    HB_Glyph *glyphs; /* out parameter */
-    HB_GlyphAttributes *attributes; /* out */
-    HB_Fixed *advances; /* out */
-    HB_FixedPoint *offsets; /* out */
-    unsigned short *log_clusters; /* out */
+    hb_uint32 num_glyphs;                   /* input: capacity of output arrays <glyphs>, <attributes>, <advances>, <offsets>, and <log_clusters>; */
+                                            /* output: required capacity (may be larger than actual capacity) */
+
+    HB_Glyph *glyphs;                       /* output: <num_glyphs> indices of shaped glyphs */
+    HB_GlyphAttributes *attributes;         /* output: <num_glyphs> glyph attributes */
+    HB_Fixed *advances;                     /* output: <num_glyphs> advances */
+    HB_FixedPoint *offsets;                 /* output: <num_glyphs> offsets */
+    unsigned short *log_clusters;           /* output: for each output glyph, the index in the input of the start of its logical cluster */
 
     /* internal */
-    HB_Bool kerning_applied; /* out: kerning applied by shaper */
-} HB_ShaperItem;
+    HB_Bool kerning_applied;                /* output: true if kerning was applied by the shaper */
+};
 
 HB_Bool HB_ShapeItem(HB_ShaperItem *item);
 

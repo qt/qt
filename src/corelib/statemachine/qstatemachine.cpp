@@ -159,12 +159,12 @@ QT_BEGIN_NAMESPACE
     \brief the restore policy for states of this state machine.
 
     The default value of this property is
-    QStateMachine::DoNotRestoreProperties.
+    QStateMachine::DontRestoreProperties.
 */
 
 #ifndef QT_NO_ANIMATION
 /*!
-    \property QStateMachine::animationsEnabled
+    \property QStateMachine::animated
 
     \brief whether animations are enabled
 
@@ -187,10 +187,10 @@ QStateMachinePrivate::QStateMachinePrivate()
     stop = false;
     stopProcessingReason = EventQueueEmpty;
     error = QStateMachine::NoError;
-    globalRestorePolicy = QStateMachine::DoNotRestoreProperties;
+    globalRestorePolicy = QStateMachine::DontRestoreProperties;
     signalEventGenerator = 0;
 #ifndef QT_NO_ANIMATION
-    animationsEnabled = true;
+    animated = true;
 #endif
 }
 
@@ -744,7 +744,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
 
     // Find the animations to use for the state change.
     QList<QAbstractAnimation*> selectedAnimations;
-    if (animationsEnabled) {
+    if (animated) {
         for (int i = 0; i < transitionList.size(); ++i) {
             QAbstractTransition *transition = transitionList.at(i);
 
@@ -809,7 +809,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             if (anim->state() == QAbstractAnimation::Running) {
                 // The animation is still running. This can happen if the
                 // animation is a group, and one of its children just finished,
-                // and that caused a state to emit its polished() signal, and
+                // and that caused a state to emit its propertiesAssigned() signal, and
                 // that triggered a transition in the machine.
                 // Just stop the animation so it is correctly restarted again.
                 anim->stop();
@@ -831,7 +831,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
         }
     }
 
-    // Emit polished signal for entered states that have no animated properties.
+    // Emit propertiesAssigned signal for entered states that have no animated properties.
     for (int i = 0; i < enteredStates.size(); ++i) {
         QState *s = toStandardState(enteredStates.at(i));
         if (s 
@@ -839,7 +839,7 @@ void QStateMachinePrivate::applyProperties(const QList<QAbstractTransition*> &tr
             && !animationsForState.contains(s)
 #endif
             )
-            QStatePrivate::get(s)->emitPolished();
+            QStatePrivate::get(s)->emitPropertiesAssigned();
     }
 }
 
@@ -1130,7 +1130,7 @@ void QStateMachinePrivate::_q_animationFinished()
     animations.removeOne(anim);
     if (animations.isEmpty()) {
         animationsForState.erase(it);
-        QStatePrivate::get(toStandardState(state))->emitPolished();
+        QStatePrivate::get(toStandardState(state))->emitPropertiesAssigned();
     }
 }
 
@@ -1616,9 +1616,8 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 
 void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
-{
-    Q_ASSERT(qobjectEvents.contains(watched));
-    if (qobjectEvents[watched].contains(event->type())) {
+{    
+    if (qobjectEvents.value(watched).contains(event->type())) {
         postInternalEvent(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
         processEvents(DirectProcessing);
     }
@@ -1726,7 +1725,7 @@ QStateMachine::~QStateMachine()
    already been saved by the state machine, it will not be overwritten until the property has been
    successfully restored. 
 
-   \value DoNotRestoreProperties The state machine should not save the initial values of properties 
+   \value DontRestoreProperties The state machine should not save the initial values of properties
           and restore them later.
    \value RestoreProperties The state machine should save the initial values of properties 
           and restore them later.
@@ -1776,7 +1775,7 @@ QStateMachine::RestorePolicy QStateMachine::globalRestorePolicy() const
 
 /*!
    Sets the restore policy of the state machine to \a restorePolicy. The default 
-   restore policy is QAbstractState::DoNotRestoreProperties.
+   restore policy is QAbstractState::DontRestoreProperties.
    
    \sa globalRestorePolicy()
 */
@@ -2146,19 +2145,19 @@ void QStateMachine::onExit(QEvent *event)
 /*!
   Returns whether animations are enabled for this state machine.
 */
-bool QStateMachine::animationsEnabled() const
+bool QStateMachine::isAnimated() const
 {
     Q_D(const QStateMachine);
-    return d->animationsEnabled;
+    return d->animated;
 }
 
 /*!
   Sets whether animations are \a enabled for this state machine.
 */
-void QStateMachine::setAnimationsEnabled(bool enabled)
+void QStateMachine::setAnimated(bool enabled)
 {
     Q_D(QStateMachine);
-    d->animationsEnabled = enabled;
+    d->animated = enabled;
 }
 
 /*!

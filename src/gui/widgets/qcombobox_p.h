@@ -342,6 +342,8 @@ public:
     void init();
     QComboBoxPrivateContainer* viewContainer();
     void updateLineEditGeometry();
+    Qt::MatchFlags matchFlags() const;
+    void _q_editingFinished();
     void _q_returnPressed();
     void _q_complete();
     void _q_itemSelected(const QModelIndex &item);

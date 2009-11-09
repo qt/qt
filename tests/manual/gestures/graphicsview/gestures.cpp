@@ -45,41 +45,41 @@
 
 Qt::GestureType ThreeFingerSlideGesture::Type = Qt::CustomGesture;
 
-QGesture *ThreeFingerSlideGestureRecognizer::createGesture(QObject *)
+QGesture *ThreeFingerSlideGestureRecognizer::create(QObject *)
 {
     return new ThreeFingerSlideGesture;
 }
 
-QGestureRecognizer::Result ThreeFingerSlideGestureRecognizer::filterEvent(QGesture *state, QObject *, QEvent *event)
+QGestureRecognizer::Result ThreeFingerSlideGestureRecognizer::recognize(QGesture *state, QObject *, QEvent *event)
 {
     ThreeFingerSlideGesture *d = static_cast<ThreeFingerSlideGesture *>(state);
     QGestureRecognizer::Result result;
     switch (event->type()) {
     case QEvent::TouchBegin:
-        result = QGestureRecognizer::MaybeGesture;
+        result = QGestureRecognizer::MayBeGesture;
     case QEvent::TouchEnd:
         if (d->gestureFired)
-            result = QGestureRecognizer::GestureFinished;
+            result = QGestureRecognizer::FinishGesture;
         else
-            result = QGestureRecognizer::NotGesture;
+            result = QGestureRecognizer::CancelGesture;
     case QEvent::TouchUpdate:
         if (d->state() != Qt::NoGesture) {
             QTouchEvent *ev = static_cast<QTouchEvent*>(event);
             if (ev->touchPoints().size() == 3) {
                 d->gestureFired = true;
-                result = QGestureRecognizer::GestureTriggered;
+                result = QGestureRecognizer::TriggerGesture;
             } else {
-                result = QGestureRecognizer::MaybeGesture;
+                result = QGestureRecognizer::MayBeGesture;
                 for (int i = 0; i < ev->touchPoints().size(); ++i) {
                     const QTouchEvent::TouchPoint &pt = ev->touchPoints().at(i);
                     const int distance = (pt.pos().toPoint() - pt.startPos().toPoint()).manhattanLength();
                     if (distance > 20) {
-                        result = QGestureRecognizer::NotGesture;
+                        result = QGestureRecognizer::CancelGesture;
                     }
                 }
             }
         } else {
-            result = QGestureRecognizer::NotGesture;
+            result = QGestureRecognizer::CancelGesture;
         }
 
         break;
@@ -89,7 +89,7 @@ QGestureRecognizer::Result ThreeFingerSlideGestureRecognizer::filterEvent(QGestu
         if (d->state() != Qt::NoGesture)
             result = QGestureRecognizer::Ignore;
         else
-            result = QGestureRecognizer::NotGesture;
+            result = QGestureRecognizer::CancelGesture;
         break;
     default:
         result = QGestureRecognizer::Ignore;
@@ -105,12 +105,12 @@ void ThreeFingerSlideGestureRecognizer::reset(QGesture *state)
 }
 
 
-QGesture *RotateGestureRecognizer::createGesture(QObject *)
+QGesture *RotateGestureRecognizer::create(QObject *)
 {
     return new QGesture;
 }
 
-QGestureRecognizer::Result RotateGestureRecognizer::filterEvent(QGesture *, QObject *, QEvent *event)
+QGestureRecognizer::Result RotateGestureRecognizer::recognize(QGesture *, QObject *, QEvent *event)
 {
     switch (event->type()) {
     case QEvent::TouchBegin:

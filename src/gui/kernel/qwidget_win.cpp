@@ -2036,7 +2036,7 @@ void QWidgetPrivate::winSetupGestures()
     if (!q || !q->isVisible())
         return;
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
-    WId winid = q->effectiveWinId();
+    WId winid = q->internalWinId();
 
     bool needh = false;
     bool needv = false;
@@ -2052,6 +2052,8 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
+        if (!winid)
+            winid = q->winId(); // enforces the native winid on the viewport
     }
     if (winid && qAppPriv->SetGestureConfig) {
         GESTURECONFIG gc[1];
@@ -2070,17 +2072,6 @@ void QWidgetPrivate::winSetupGestures()
         } else {
             gc[0].dwBlock = GC_PAN;
         }
-
-//        gc[1].dwID = GID_ZOOM;
-//        if (gestures.pinch)
-//            gc[1].dwWant = GC_ZOOM;
-//        else
-//            gc[1].dwBlock = GC_ZOOM;
-//        gc[2].dwID = GID_ROTATE;
-//        if (gestures.pinch)
-//            gc[2].dwWant = GC_ROTATE;
-//        else
-//            gc[2].dwBlock = GC_ROTATE;
 
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
