@@ -134,7 +134,7 @@ void MMF::AbstractPlayer::setError(Phonon::ErrorType error,
 Phonon::ErrorType MMF::AbstractPlayer::errorType() const
 {
     const Phonon::ErrorType result = (ErrorState == m_state)
-                                     ? errorType() : NoError;
+                                     ? m_error : NoError;
     return result;
 }
 
