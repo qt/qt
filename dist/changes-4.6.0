@@ -61,6 +61,9 @@ Third party components
 
 QtCore
 
+ - QByteArray
+    * New overloads for QByteArray::insert() and QByteArray::prepend()
+
  - QObject
     * [259514] fixed a possible dead-lock in the destructor
 
@@ -255,24 +258,39 @@ QtGui
 
 QtNetwork
 
-- QAbstractSocket
+ - QAbstractSocket
     * only disconnect from host when all bytes have been written
+    * New setSocketOption method.
 
-- QLocalServer
+ - QHttp
+    * Do not buffer the complete POST data anymore when HTTPS is used.
+    * QHttp is now obsolete and replaced by QNetworkAccessManager.
+
+ - QLocalServer
     * fix timeout when waiting for a connection on Unix
 
-- QNetworkAcessManager
+ - QNativeSocketEngine
+    * Do not set the OS socket send and receive buffer size. The OS
+      should auto tune these values for us.
+
+ - QNetworkAcessManager
     * [242916] add possibility to send HTTP DELETE requests
+    * Connection count per HTTP server increased to 6 on Desktop, 3 on Symbian.
+    * Optional HTTP pipelining support.
+    * General HTTP performance improvements.
 
-- QNetworkReply
+ - QNetworkReply
     * [257322] add possibility to ignore specific SSL errors
+    * New isFinished() method.
 
-- QSslCertificate
+ - QSslCertificate
     * [251830] fix version() and serialNumber() methods
 
-- QSslSocket
+ - QSslSocket
     * [257322] add possibility to ignore specific SSL errors
     * Fix build with openssl 1.0.0 betas
+    * Trigger a SSL transmission when reading from the socket. In certain
+      cases the connection stalled when a buffer limit was used.
 
 QtOpenGL
 
