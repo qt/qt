@@ -17,6 +17,7 @@ HEADERS += \
 		painting/qpaintengine_p.h \
         painting/qpaintengine_alpha_p.h \
         painting/qpaintengine_preview_p.h \
+        painting/qpaintengine_blitter_p.h \
         painting/qpaintengineex_p.h \
         painting/qpainter.h \
         painting/qpainter_p.h \
@@ -63,6 +64,7 @@ SOURCES += \
         painting/qpaintengine.cpp \
         painting/qpaintengine_alpha.cpp \
         painting/qpaintengine_preview.cpp \
+        painting/qpaintengine_blitter.cpp \
         painting/qpaintengineex.cpp \
         painting/qpainter.cpp \
         painting/qpainterpath.cpp \
