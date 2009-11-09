@@ -43,6 +43,7 @@
 #include <qmlview.h>
 #include <private/qmlgraphicslistview_p.h>
 #include <private/qmlgraphicstext_p.h>
+#include <private/qmlgraphicsvisualitemmodel_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 
@@ -69,6 +70,7 @@ private slots:
     void qListModelInterface_moved();
     void qAbstractItemModel_moved();
 
+    void itemList();
     void currentIndex();
     void enforceRange();
     void spacing();
@@ -78,7 +80,7 @@ private:
     template <class T> void items();
     template <class T> void changed();
     template <class T> void inserted();
-    template <class T> void removed();
+    template <class T> void removed(bool animated);
     template <class T> void moved();
     QmlView *createView(const QString &filename);
     template<typename T>
@@ -396,7 +398,7 @@ void tst_QmlGraphicsListView::inserted()
 }
 
 template <class T>
-void tst_QmlGraphicsListView::removed()
+void tst_QmlGraphicsListView::removed(bool animated)
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -406,6 +408,7 @@ void tst_QmlGraphicsListView::removed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("animate", QVariant(animated));
 
     canvas->execute();
     qApp->processEvents();
@@ -844,6 +847,39 @@ void tst_QmlGraphicsListView::currentIndex()
     delete canvas;
 }
 
+void tst_QmlGraphicsListView::itemList()
+{
+    QmlView *canvas = createView(SRCDIR "/data/itemlist.qml");
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "view");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    QmlGraphicsVisualItemModel *model = canvas->root()->findChild<QmlGraphicsVisualItemModel*>("itemModel");
+    QVERIFY(model != 0);
+
+    QVERIFY(model->count() == 3);
+    QCOMPARE(listview->currentIndex(), 0);
+
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "item1");
+    QVERIFY(item);
+    QCOMPARE(item->x(), 0.0);
+
+    listview->setCurrentIndex(2);
+    QTest::qWait(1000);
+
+    item = findItem<QmlGraphicsItem>(viewport, "item3");
+    QVERIFY(item);
+    QCOMPARE(item->x(), 480.0);
+
+    delete canvas;
+}
+
 void tst_QmlGraphicsListView::qListModelInterface_items()
 {
     items<TestModel>();
@@ -876,12 +912,14 @@ void tst_QmlGraphicsListView::qAbstractItemModel_inserted()
 
 void tst_QmlGraphicsListView::qListModelInterface_removed()
 {
-    removed<TestModel>();
+    removed<TestModel>(false);
+    removed<TestModel>(true);
 }
 
 void tst_QmlGraphicsListView::qAbstractItemModel_removed()
 {
-    removed<TestModel2>();
+    removed<TestModel2>(false);
+    removed<TestModel2>(true);
 }
 
 void tst_QmlGraphicsListView::qListModelInterface_moved()

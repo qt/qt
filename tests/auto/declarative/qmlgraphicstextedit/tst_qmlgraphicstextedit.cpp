@@ -62,6 +62,7 @@ private slots:
     void text();
     void width();
     void wrap();
+    void textFormat();
 
     // ### these tests may be trivial    
     void hAlign();
@@ -72,6 +73,7 @@ private slots:
 
     void cursorDelegate();
     void navigation();
+    void readOnly();
 
 private:
     void simulateKey(QmlView *, int key);
@@ -246,6 +248,24 @@ void tst_qmlgraphicstextedit::wrap()
 
 }
 
+void tst_qmlgraphicstextedit::textFormat()
+{
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nTextEdit { text: \"Hello\"; textFormat: Text.RichText }", QUrl("file://"));
+        QmlGraphicsTextEdit *textObject = qobject_cast<QmlGraphicsTextEdit*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsTextEdit::RichText);
+    }
+    {
+        QmlComponent textComponent(&engine, "import Qt 4.6\nTextEdit { text: \"<b>Hello</b>\"; textFormat: Text.PlainText }", QUrl("file://"));
+        QmlGraphicsTextEdit *textObject = qobject_cast<QmlGraphicsTextEdit*>(textComponent.create());
+
+        QVERIFY(textObject != 0);
+        QVERIFY(textObject->textFormat() == QmlGraphicsTextEdit::PlainText);
+    }
+}
+
 //the alignment tests may be trivial o.oa
 void tst_qmlgraphicstextedit::hAlign()
 {
@@ -368,7 +388,7 @@ void tst_qmlgraphicstextedit::font()
 
 void tst_qmlgraphicstextedit::color()
 {
-    //test style
+    //test normal
     for (int i = 0; i < colorStrings.size(); i++)
     { 
         QString componentStr = "import Qt 4.6\nTextEdit {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
@@ -377,6 +397,26 @@ void tst_qmlgraphicstextedit::color()
         //qDebug() << "textEditObject: " << textEditObject->color() << "vs. " << QColor(colorStrings.at(i));
         QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->color(), QColor(colorStrings.at(i)));
+    }
+
+    //test selection
+    for (int i = 0; i < colorStrings.size(); i++)
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->selectionColor(), QColor(colorStrings.at(i)));
+    }
+
+    //test selected text
+    for (int i = 0; i < colorStrings.size(); i++)
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->selectedTextColor(), QColor(colorStrings.at(i)));
     }
 
     {
@@ -526,6 +566,29 @@ void tst_qmlgraphicstextedit::navigation()
     QVERIFY(input->hasFocus() == false);
     simulateKey(canvas, Qt::Key_Left);
     QVERIFY(input->hasFocus() == true);
+}
+
+void tst_qmlgraphicstextedit::readOnly()
+{
+    QmlView *canvas = createView(SRCDIR "/data/readOnly.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->root() != 0);
+
+    QmlGraphicsTextEdit *edit = qobject_cast<QmlGraphicsTextEdit *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+
+    QVERIFY(edit != 0);
+    QTRY_VERIFY(edit->hasFocus() == true);
+    QVERIFY(edit->isReadOnly() == true);
+    QString initial = edit->text();
+    for(int k=Qt::Key_0; k<=Qt::Key_Z; k++)
+        simulateKey(canvas, k);
+    simulateKey(canvas, Qt::Key_Return);
+    simulateKey(canvas, Qt::Key_Space);
+    simulateKey(canvas, Qt::Key_Escape);
+    QCOMPARE(edit->text(), initial);
 }
 
 void tst_qmlgraphicstextedit::simulateKey(QmlView *view, int key)
