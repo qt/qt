@@ -158,7 +158,6 @@ static bool releaseTsFile(const QString& tsFileName,
 int main(int argc, char **argv)
 {
     QCoreApplication app(argc, argv);
-    QStringList args = app.arguments();
     QTranslator translator;
     if (translator.load(QLatin1String("lrelease_") + QLocale::system().name()))
         app.installTranslator(&translator);
@@ -171,50 +170,50 @@ int main(int argc, char **argv)
     QString outputFile;
 
     for (int i = 1; i < argc; ++i) {
-        if (args[i] == QLatin1String("-compress")) {
+        if (!strcmp(argv[i], "-compress")) {
             cd.m_saveMode = SaveStripped;
             continue;
-        } else if (args[i] == QLatin1String("-idbased")) {
+        } else if (!strcmp(argv[i], "-idbased")) {
             cd.m_idBased = true;
             continue;
-        } else if (args[i] == QLatin1String("-nocompress")) {
+        } else if (!strcmp(argv[i], "-nocompress")) {
             cd.m_saveMode = SaveEverything;
             continue;
-        } else if (args[i] == QLatin1String("-removeidentical")) {
+        } else if (!strcmp(argv[i], "-removeidentical")) {
             removeIdentical = true;
             continue;
-        } else if (args[i] == QLatin1String("-nounfinished")) {
+        } else if (!strcmp(argv[i], "-nounfinished")) {
             cd.m_ignoreUnfinished = true;
             continue;
-        } else if (args[i] == QLatin1String("-markuntranslated")) {
+        } else if (!strcmp(argv[i], "-markuntranslated")) {
             if (i == argc - 1) {
                 printUsage();
                 return 1;
             }
-            cd.m_unTrPrefix = args[++i];
-        } else if (args[i] == QLatin1String("-silent")) {
+            cd.m_unTrPrefix = QString::fromLocal8Bit(argv[++i]);
+        } else if (!strcmp(argv[i], "-silent")) {
             cd.m_verbose = false;
             continue;
-        } else if (args[i] == QLatin1String("-verbose")) {
+        } else if (!strcmp(argv[i], "-verbose")) {
             cd.m_verbose = true;
             continue;
-        } else if (args[i] == QLatin1String("-version")) {
+        } else if (!strcmp(argv[i], "-version")) {
             printOut(QCoreApplication::tr( "lrelease version %1\n").arg(QLatin1String(QT_VERSION_STR)) );
             return 0;
-        } else if (args[i] == QLatin1String("-qm")) {
+        } else if (!strcmp(argv[i], "-qm")) {
             if (i == argc - 1) {
                 printUsage();
                 return 1;
             }
-            outputFile = args[++i];
-        } else if (args[i] == QLatin1String("-help")) {
+            outputFile = QString::fromLocal8Bit(argv[++i]);
+        } else if (!strcmp(argv[i], "-help")) {
             printUsage();
             return 0;
-        } else if (args[i].startsWith(QLatin1Char('-'))) {
+        } else if (argv[i][0] == '-') {
             printUsage();
             return 1;
         } else {
-            inputFiles << args[i];
+            inputFiles << QString::fromLocal8Bit(argv[i]);
         }
     }
 
