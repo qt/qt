@@ -54,8 +54,10 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
         DirectFBError("QDirectFbGraphicsSystemScreen::connect: "
                       "Unable to get primary display layer!", result);
     }
+    m_layer->SetCooperativeLevel(m_layer,DLSCL_SHARED);
 
     IDirectFBSurface *topLevelSurface;
+    //This line gives a warning
     m_layer->GetSurface(m_layer, &topLevelSurface);
     m_format = QDirectFbGraphicsSystem::imageFormatFromSurface(topLevelSurface);
 
@@ -65,7 +67,11 @@ QDirectFbGraphicsSystemScreen::QDirectFbGraphicsSystemScreen(IDirectFB *dfb, int
     }
 
     int w(0),h(0);
-    m_screen->GetSize(m_screen,&w,&h);
+    //Asking the screen for its size gives the desktop geometry on X11
+    //Thats not something we want, so as the topLevelSorface instead
+//    m_screen->GetSize(m_screen,&w,&h);
+    topLevelSurface->GetSize(topLevelSurface,&w,&h);
+
     m_geometry = QRect(0,0,w,h);
     const int dpi = 72;
     const qreal inch = 25.4;

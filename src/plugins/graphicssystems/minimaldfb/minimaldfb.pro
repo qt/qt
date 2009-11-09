@@ -1,4 +1,4 @@
-TARGET = qdirectfbgraphicssystem
+TARGET = qminimaldfb
 include(../../qpluginbase.pri)
 
 QTDIR_build:DESTDIR = $$QT_BUILD_TREE/plugins/graphicssystems

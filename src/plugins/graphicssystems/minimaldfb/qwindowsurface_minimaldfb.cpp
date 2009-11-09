@@ -55,9 +55,6 @@ QDirectFbWindowSurface::QDirectFbWindowSurface
     if (result != DFB_OK) {
         DirectFBError("QDirectFbWindowSurface::QDirectFbWindowSurface: unable to get windows surface",result);
     }
-
-
-
 }
 
 QDirectFbWindowSurface::~QDirectFbWindowSurface()
