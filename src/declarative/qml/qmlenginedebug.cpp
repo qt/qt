@@ -99,6 +99,7 @@ QmlEngineDebugServer::QmlObjectProperty
 QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 {
     QmlObjectProperty rv;
+;
 
     QMetaProperty prop = obj->metaObject()->property(propIdx);
 
@@ -165,7 +166,7 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
     
     int childrenCount = children.count();
     for (int ii = 0; ii < children.count(); ++ii) {
-        if (QmlBoundSignal::cast(children[ii]))
+        if (qobject_cast<QmlContext*>(children[ii]) || QmlBoundSignal::cast(children[ii]))
             --childrenCount;
     }
 
@@ -175,6 +176,8 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
 
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
+        if (qobject_cast<QmlContext*>(child))
+            continue;
         QmlBoundSignal *signal = QmlBoundSignal::cast(child);
         if (signal) {
             QmlObjectProperty prop;
