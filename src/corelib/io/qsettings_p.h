@@ -62,6 +62,7 @@
 #ifndef QT_NO_QOBJECT
 #include "private/qobject_p.h"
 #endif
+#include "private/qscopedpointer_p.h"
 
 #ifdef Q_OS_WIN
 #include "QtCore/qt_windows.h"
