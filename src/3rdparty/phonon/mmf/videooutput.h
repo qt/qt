@@ -30,6 +30,7 @@ namespace Phonon
 {
 namespace MMF
 {
+class AncestorMoveMonitor;
 class VideoOutputObserver;
 
 class VideoOutput       :   public QWidget
@@ -37,11 +38,13 @@ class VideoOutput       :   public QWidget
     Q_OBJECT
 
 public:
-    explicit VideoOutput(QWidget* parent);
+    VideoOutput(AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent);
     ~VideoOutput();
 
     void setFrameSize(const QSize& size);
     void setObserver(VideoOutputObserver* observer);
+
+    void ancestorMoved();
 
 protected:
     // Override QWidget functions
@@ -55,11 +58,17 @@ private:
     void dump() const;
     void videoOutputRegionChanged();
 
+    void registerForAncestorMoved();
+
 private:
-    QSize m_frameSize;
+    // Not owned
+    AncestorMoveMonitor*    m_ancestorMoveMonitor;
 
     // Not owned
-    VideoOutputObserver* m_observer;
+    VideoOutputObserver*    m_observer;
+
+    QSize                   m_frameSize;
+
 };
 }
 }

@@ -70,7 +70,6 @@ public:
     QWidgetAnimator(QMainWindowLayout *layout);
     void animate(QWidget *widget, const QRect &final_geometry, bool animate);
     bool animating() const;
-    bool animating(QWidget *widget) const;
 
     void abort(QWidget *widget);
 

@@ -73,7 +73,7 @@ public:
 protected:
     bool event(QEvent *event);
     void updateCurrentValue(const QVariant &value);
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
 
 private:
     Q_DISABLE_COPY(QPropertyAnimation)

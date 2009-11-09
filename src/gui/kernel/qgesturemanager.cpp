@@ -181,8 +181,10 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
             return 0;
     } else if (QGesture *g = qobject_cast<QGesture *>(object)) {
         return g;
+#ifndef QT_NO_GRAPHICSVIEW
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
+#endif
     }
 
     QList<QGesture *> states =

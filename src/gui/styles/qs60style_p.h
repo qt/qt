@@ -361,7 +361,6 @@ public:
         SF_ToolBarButtonPressed,
         SF_PanelBackground,
         SF_ButtonInactive,
-        SF_Editor,
     };
 
     enum SkinElementFlag {

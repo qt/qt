@@ -621,8 +621,8 @@ bool QVariantAnimation::event(QEvent *event)
 /*!
     \reimp
 */
-void QVariantAnimation::updateState(QAbstractAnimation::State oldState,
-                                    QAbstractAnimation::State newState)
+void QVariantAnimation::updateState(QAbstractAnimation::State newState,
+                                    QAbstractAnimation::State oldState)
 {
     Q_UNUSED(oldState);
     Q_UNUSED(newState);

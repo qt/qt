@@ -93,16 +93,18 @@ public:
     /**
      * Records error and changes state to ErrorState
      */
-    void setError(Phonon::ErrorType error);
+    void setError(Phonon::ErrorType error,
+                  const QString &errorMessage = QString());
 
     Phonon::State state() const;
+
 Q_SIGNALS:
     void totalTimeChanged(qint64 length);
     void finished();
     void tick(qint64 time);
     void stateChanged(Phonon::State oldState,
                       Phonon::State newState);
-
+    void metaDataChanged(const QMultiMap<QString, QString>& metaData);
 
 protected:
     /**
@@ -132,7 +134,10 @@ protected:
 
     PrivateState privateState() const;
 
-    virtual void changeState(PrivateState newState) = 0;
+    /**
+     * Changes state and emits stateChanged()
+     */
+    virtual void changeState(PrivateState newState);
 
     /**
      * Modifies m_state directly. Typically you want to call changeState(),
@@ -152,6 +157,7 @@ protected:
 private:
     PrivateState                m_state;
     Phonon::ErrorType           m_error;
+    QString                     m_errorString;
     qint32                      m_tickInterval;
     qint32                      m_transitionTime;
     qint32                      m_prefinishMark;

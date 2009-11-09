@@ -339,12 +339,47 @@ void tst_LargeFile::fillFileSparsely()
     QFETCH( QByteArray, block );
     QCOMPARE( block.size(), blockSize );
 
+    static int lastKnownGoodIndex = 0;
+    struct ScopeGuard {
+        ScopeGuard(tst_LargeFile* test)
+            : this_(test)
+            , failed(true)
+        {
+            QFETCH( int, index );
+            index_ = index;
+        }
+
+        ~ScopeGuard()
+        {
+            if (failed) {
+                this_->maxSizeBits = lastKnownGoodIndex;
+                QWARN( qPrintable(
+                    QString("QFile::error %1: '%2'. Maximum size bits reset to %3.")
+                        .arg(this_->largeFile.error())
+                        .arg(this_->largeFile.errorString())
+                        .arg(this_->maxSizeBits)) );
+            } else
+                lastKnownGoodIndex = qMax<int>(index_, lastKnownGoodIndex);
+        }
+
+    private:
+        tst_LargeFile * const this_;
+        int index_;
+
+    public:
+        bool failed;
+    };
+
+    ScopeGuard resetMaxSizeBitsOnFailure(this);
+
     QVERIFY( largeFile.seek(position) );
     QCOMPARE( largeFile.pos(), position );
 
     QCOMPARE( largeFile.write(block), (qint64)blockSize );
     QCOMPARE( largeFile.pos(), position + blockSize );
     QVERIFY( largeFile.flush() );
+
+    resetMaxSizeBitsOnFailure.failed = false;
 }
 
 void tst_LargeFile::fileCreated()

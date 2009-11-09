@@ -430,8 +430,8 @@ private:
     QString readData(const QByteArray &data)
     {
         QTextStream textStream(data);
-        QByteArray charSet = QHelpGlobal::charsetFromData(data).toLatin1();
-        textStream.setCodec(QTextCodec::codecForName(charSet.constData()));
+        const QByteArray &codec = QHelpGlobal::codecFromData(data).toLatin1();
+        textStream.setCodec(QTextCodec::codecForName(codec.constData()));
 
         QString stream = textStream.readAll();
         if (stream.isNull() || stream.isEmpty())

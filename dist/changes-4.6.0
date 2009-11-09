@@ -25,6 +25,19 @@ information about a particular change.
 
  - [MR#1742] Added new multimedia keys to the Qt::Key enum.
 
+ - QMatrix4x4, QGenericMatrix, QVector2D, QVector3D, QVector4D, QQuaternion
+    * New classes to support 3D applications.
+
+ - QGLShaderProgram, QGLShader
+    * New classes for using shader programs written in the GL Shading Language.
+
+ - Boxes demo ported to use new 3D math and shader program classes.
+
+ - OpenVG graphics system added.
+
+ - Add 800x480 screen mode to qvfb configuration dialog.
+
+ - Improved support for input methods in graphics view.
 
 Third party components
 ----------------------
@@ -50,13 +63,14 @@ QtCore
 
  - QObject
     * [259514] fixed a possible dead-lock in the destructor
-	
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()
     * Added QVariant(float) constructor
     * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
       identify functions
+    * Added support for math3d types.
 
  - Qt::escape
     * now escape the double quote (&quot;)
@@ -72,19 +86,25 @@ QtCore
     * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
     * Fixed race conditions that occured when moving object to threads while connecting
 
+ - QPluginLoader
+    * Improved performance of plugin loading by reusing the plugin cache instead of loading
+      it every time.
+
 - QTextStream
     * [221316] Fixed crash on large input.
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
 QtGui
+- QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
 
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix
-	
+
  - QFontDialog
     * [256466] fixed the dialog not always returning the selected style.
-	
+
  - QGraphicsItem
     * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
     * Many optimizations.
@@ -96,6 +116,10 @@ QtGui
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
+    * Added input hints.
+
+- QGraphicsLayout
+    * Introduced QGraphicsLayout::addChildLayoutItem()
 
  - QGraphicsObject
     * New class; inherits QGraphicsItem and adds notification signals and property declarations.
@@ -127,6 +151,8 @@ QtGui
 
  - QGraphicsWidget
     * Now inherits from QGraphicsObject instead
+    * Interactive resizing of top level windows now respects height-for-width constraints.
+    * Reduced memory footprint.
 
  - QHeaderView
     * [208320] Make sure the sort indicator s taken into account for the size hint
@@ -138,13 +164,16 @@ QtGui
  - QMenuBar
     * [260873] Fix mouse interaction while undocking a widget from the main window
 	* dock areas don't get a splitter if their dock widgets are not resizable
-	
+
  - QColumnView
     * [246999] Fixed view not updating when the model is changed dynamically
-	
+
+ - QLineEdit
+    * [248948] Clear selection when redoing a delete operation.
+
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is not yet show
-	
+
  - QTreeView
     * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
     * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
@@ -164,7 +193,7 @@ QtGui
 
  - QTableWidget
     * [234641] Fixed takeItem to cause the view to be updated.
-	
+
  - QTabBar
     * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
       to be slightly clipped.
@@ -181,9 +210,13 @@ QtGui
 
  - QSpinBox
     * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
+    * [255051] Fixed sizeHint update bug.
 
  - QStandardItemModel
     * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
+
+ - QToolTip
+    * Fixed a bug where tooltips were not shown in popups. (Windows only).
 
  - QGraphicsItem
     * Added a new set of properties to set a transformation on a item
@@ -202,12 +235,80 @@ QtGui
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
 
+ - QFontEngineQPF
+    * Make alphaMapForGlyph() generate the correct color table for
+      Indexed8 and Mono glyph images.  Fixed the "all glyphs are white
+      boxes" problem in OpenGL1 paint engine.
+
+ - QPaintDevice
+    * New qt_paint_device_metric() function to replace the friend
+      declarations for window surface classes that need to access metric().
+
+ - QPushButton
+    * [255581] Fixed sizeHint recalculation bug.
+
+ - QApplication
+   * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+
+QtOpenGL
+
+ - QGLFormat
+    * Increase unit test coverage and fix some long-standing issues.
+    * Improve performance of code that tests QGLFormat options.
+    * operator==() now tests for equality on all fields.
+
+ - QGLColormap
+    * setEntry() was inserting entries instead of replacing them.
+    * Clarified documentation for isEmpty().
+
+ - QGLFramebufferObject
+    * Add support for the ARB_framebuffer_object, OES_framebuffer_object,
+      and OES_packed_depth_stencil extensions.
+    * Unbind the texture after it is initialized.
+    * Don't destroy the texture target on cleanup if one wasn't created.
+
+ - QGLFramebufferObjectFormat
+    * New class for controlling fbo options.
+
+ - Improvements to context sharing and object cleanup logic.
+
+ - QGLContext
+    * Fix RGB565 mode in bindTexture().
+    * Map mipmaps work on OpenGL/ES 2.0 systems in bindTexture().
+    * Improve performance of QGLContext::currentContext().
+
+ - QGLGradientCache
+   * [249919] Clean up the gradient cache in the right context.
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
  - Added community supported Qt ports for QNX and VxWorks. See platform
    notes in the Qt documentation for details.
+
+Qt for Linux/X11
+----------------
+
+ - KDE Integration: Improved the integration into KDE desktop (loading of KDE
+   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
+
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+Qt for Windows
+--------------
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -219,45 +320,40 @@ QtGui
    QRegion. The native handle is for reading out only. Any GDI calls
    made on the HRGN handle will not affect the QRegion.
 
- - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
-   thanks to Konstantin Ritt (merge request 1217).
-
  - The reading code of QLocalSocket on Windows has been rewritten to improve
    reading performance.
-
- - On Windows CE the link time code geration has been disabled by default to
-   be consistent with win32-msvc200x.
-   
- - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
-   QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
-   specific libraries.
-
- - KDE Integration: Improved the integration into KDE desktop (loading of KDE
-   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
-
- - Fixed pasting the clipboard content to non-Qt application on X11 when the
-   requested format is image/ppm. Patch by Ritt.K
 
  - On Windows when a file cannot be accessed (stat()ed), we are now restoring
    the error mode to the original value.
 
- - On X11 Qt now supports the _NET_WM_SYNC protocol.
+ - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
+   thanks to Konstantin Ritt (merge request 1217).
+ - [251554] Fixed openUrl("mailto:") with Thunderbird on Windows.
+ - [254501] QDestopServices now supports cyrillic file names.
+ - Fixed an issue which prevents moving fixed size windows using titlebar.
+ - [258087] Fixed an issue on Vista which returns incorrect file paths when using
+   QFileDialog::getOpenFileNames()
+ - [253763] Fixed a focus issue when using out-of-process ActiveQt controls.
+ - [255912] Mouse move events will not be delivered to a blocked widget.
+ - [225588] Enabled IME reconversion support.
 
- - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
-   clipboard contents if the application that owns the clipboards exits
+ - Phonon on Windows
+   * Now much more reliable when reading a file through a QIODevice.
+   * If Video Mixing Renderer 9 is not available, falls back to software
+     rendering.
+   * Fixed a flicker issue when switching source with a transition time of 0
 
- - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
-   application asks the unsupported target. This fixes copying and pasting data
-   when using Synergy.
-
- - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
-
- - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
-
- - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+Qt for Mac OS X
+---------------
 
  - Add support for GetURL events on Mac OS X
- 
+ - [123740] Fixed an issue with dead keys on Mac (cocoa) on French keyboard layout.
+ - [252088] Drag Leave events will be delivered correctly on Cocoa.
+ - [257661] Cocoa now uses the correct line ending for clipboard plain text.
+ - [258438] Enabled Emacs style keyboard shortcuts.
+ - [258173] Fixed an issue which caused "whatsthis" pointer to flicked on Cocoa.
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
 General changes on Mac OS X:
  - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
    10.6(Snow Leopard) has been added.
@@ -272,12 +368,50 @@ General changes on Mac OS X:
       Use the -arch flags to override.
     - Building for ppc64 is no longer supported by the gcc tool chain.
     - Building for ppc is still supported.
-   
- - Phonon on Windows
-   * Now much more reliable when reading a file through a QIODevice.
-   * If Video Mixing Renderer 9 is not available, falls back to software 
-     rendering.
-   * Fixed a flicker issue when switching source with a transition time of 0
+
+Qt for Embedded Linux
+---------------------
+
+- Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+  QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+  specific libraries.
+
+- Compilation fixes for OpenGL/ES 1.0 and OpenGL/ES 1.1 Common Lite.
+
+- EGL and OpenGL/ES
+   * Protect the use of version-specific EGL symbols with #ifdef's.
+   * Make sure an EGL context is current when resolving GL extensions.
+   * Introduce "lazyDoneCurrent" for optimizing context switching in
+     paint engines.
+   * Separate EGLSurface from QEglContext so that the same context can
+     be used with multiple surfaces.
+   * Move common functions from system-specific files to qgl_egl.cpp.
+   * Fix a memory leak of EGLSurface's in QGLContext.
+   * Fix detection of pbuffers on OpenGL/ES systems.
+   * EGL_SAMPLES was being set to the wrong value for multisampled surfaces.
+
+- PowerVR
+   * Make the code better at detecting MBX vs SGX header files.
+   * Fix 32-bit screen support - some code was still assuming 16-bit.
+   * Stop GL window surfaces double-flushing their contents.
+   * Remove surface holder, which never worked all that well.
+   * Implement screen rotations.
+
+- Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
+
+Qt for Windows CE
+-----------------
+ - On Windows CE the link time code generation has been disabled by default to
+   be consistent with win32-msvc200x.
+ - The default button size has been reduced in the Windows mobile style.
+ - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
+ - [254673] Restoring minimized widgets fixed for Windows mobile and
+   Windows CE.
+ - [255242] Seeking within large files (bigger than 0x80000000 bytes) fixed
+   on Windows CE.
+ - [257352] When configuring Qt for Windows CE, configure points the user to
+   setcepaths, when its done.
+ - [259850] Added a makespec template for Windows CE 6.
 
 ****************************************************************************
 *                          Tools                                           *
@@ -301,6 +435,9 @@ General changes on Mac OS X:
 - uic3
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
+
+ - lupdate
+  - Fixed a bug in the java source code parser.
 
 ****************************************************************************
 *                               DirectFB                                   *
@@ -450,7 +587,7 @@ General changes on Mac OS X:
  - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
    QCoreApplication::organizationName() and QCoreApplication::applicationName()
    if those are set. This matches the behavior on the other platforms.
-   
+
  - The Animation Framework
    * currentTime() now returns the complete current time including previous loops
    * currentLoopTime() returns the time inside the current loop
@@ -461,3 +598,6 @@ General changes on Mac OS X:
    * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
    * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
 
+- Refactoring in OpenGL examples to improve portability and utilize the
+  Animation framework for animation.  The hellogl and overpainting examples
+  now compile on OpenGL/ES 1.1.  Also common code is factored.

@@ -900,7 +900,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     passing a \c QAction with a softkey role set on it. When the widget
     containing the softkey actions has focus, its softkeys should appear in
     the user interface. Softkeys are discovered by traversing the widget
-    heirarchy so it is possible to define a single set of softkeys that are
+    hierarchy so it is possible to define a single set of softkeys that are
     present at all times by calling addAction() for a given top level widget.
 
     On some platforms, this concept overlaps with \c QMenuBar such that if no

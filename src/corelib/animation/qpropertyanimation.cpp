@@ -250,8 +250,8 @@ void QPropertyAnimation::updateCurrentValue(const QVariant &value)
     If the startValue is not defined when the state of the animation changes from Stopped to Running,
     the current property value is used as the initial value for the animation.
 */
-void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
-                                     QAbstractAnimation::State newState)
+void QPropertyAnimation::updateState(QAbstractAnimation::State newState,
+                                     QAbstractAnimation::State oldState)
 {
     Q_D(QPropertyAnimation);
 
@@ -260,7 +260,7 @@ void QPropertyAnimation::updateState(QAbstractAnimation::State oldState,
         return;
     }
 
-    QVariantAnimation::updateState(oldState, newState);
+    QVariantAnimation::updateState(newState, oldState);
 
     QPropertyAnimation *animToStop = 0;
     {

@@ -56,7 +56,7 @@
     It is not necessary to construct a QPauseAnimation yourself.
     QSequentialAnimationGroup provides the convenience functions
     \l{QSequentialAnimationGroup::}{addPause()} and
-    \l{QSequentialAnimationGroup::}{insertPauseAt()}. These functions
+    \l{QSequentialAnimationGroup::}{insertPause()}. These functions
     simply take the number of milliseconds the pause should last.
 
     \sa QSequentialAnimationGroup

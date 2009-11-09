@@ -395,7 +395,9 @@ void tst_QWidgetAction::releaseWidgetCrash()
     QMainWindow *w = new QMainWindow;
     QAction *a = new CrashedAction(w);
     QMenu *menu = w->menuBar()->addMenu("Test");
+    menu->addAction("foo");
     menu->addAction(a);
+    menu->addAction("bar");
     delete w;
 }
 

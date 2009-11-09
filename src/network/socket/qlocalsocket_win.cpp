@@ -363,7 +363,8 @@ bool QLocalSocket::canReadLine() const
     Q_D(const QLocalSocket);
     if (state() != ConnectedState)
         return false;
-    return (d->readBuffer.indexOf('\n') != -1 || QIODevice::canReadLine());
+    return (QIODevice::canReadLine()
+            || d->readBuffer.indexOf('\n', d->actualReadBufferSize) != -1);
 }
 
 void QLocalSocket::close()

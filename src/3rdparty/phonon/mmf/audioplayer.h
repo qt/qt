@@ -94,6 +94,10 @@ public:
 private:
     void construct();
 
+    // AbstractMediaPlayer
+    virtual int numberOfMetaDataEntries() const;
+    virtual QPair<QString, QString> metaDataEntry(int index) const;
+
 private:
     /**
      * Using CPlayerType typedef in order to be able to easily switch between
