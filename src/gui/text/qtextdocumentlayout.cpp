@@ -1448,13 +1448,13 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         painter->fillRect(r, brush);
         break;
     case QTextListFormat::ListCircle:
+        painter->setPen(QPen(brush));
         painter->drawEllipse(r);
         break;
     case QTextListFormat::ListDisc:
         painter->setBrush(brush);
         painter->setPen(Qt::NoPen);
         painter->drawEllipse(r);
-        painter->setBrush(Qt::NoBrush);
         break;
     case QTextListFormat::ListStyleUndefined:
         break;
