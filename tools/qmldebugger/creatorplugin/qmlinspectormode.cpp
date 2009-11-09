@@ -65,6 +65,8 @@
 #include <coreplugin/editormanager/editormanager.h>
 #include <coreplugin/actionmanager/actionmanager.h>
 
+#include <texteditor/itexteditor.h>
+
 #include <projectexplorer/runconfiguration.h>
 #include <projectexplorer/projectexplorer.h>
 #include <projectexplorer/projectexplorerconstants.h>
@@ -435,8 +437,12 @@ void QmlInspectorMode::initWidgets()
     WatchTableHeaderView *header = new WatchTableHeaderView(m_watchTableModel);
     m_watchTableView->setHorizontalHeader(header);
 
+    connect(m_objectTreeWidget, SIGNAL(activated(QmlDebugObjectReference)),
+            this, SLOT(treeObjectActivated(QmlDebugObjectReference)));
+
     connect(m_objectTreeWidget, SIGNAL(currentObjectChanged(QmlDebugObjectReference)),
             m_propertiesWidget, SLOT(reload(QmlDebugObjectReference)));
+
     connect(m_objectTreeWidget, SIGNAL(expressionWatchRequested(QmlDebugObjectReference,QString)),
             m_watchTableModel, SLOT(expressionWatchRequested(QmlDebugObjectReference,QString)));
 
@@ -534,6 +540,24 @@ void QmlInspectorMode::contextChanged()
         m_objectTreeWidget->reload(object.debugId());
 
     delete m_contextQuery; m_contextQuery = 0;
+}
+
+void QmlInspectorMode::treeObjectActivated(const QmlDebugObjectReference &obj)
+{
+    QmlDebugFileReference source = obj.source();
+    QString fileName = source.url().toLocalFile();
+
+    if (source.lineNumber() < 0 || !QFile::exists(fileName))
+        return;
+
+    Core::EditorManager *editorManager = Core::EditorManager::instance();
+    TextEditor::ITextEditor *editor = qobject_cast<TextEditor::ITextEditor*>(editorManager->openEditor(fileName));
+    if (editor) {
+        editorManager->ensureEditorManagerVisible();
+        editorManager->addCurrentPositionToNavigationHistory();
+        editor->gotoLine(source.lineNumber());
+        editor->widget()->setFocus();
+    }
 }
 
 QT_END_NAMESPACE

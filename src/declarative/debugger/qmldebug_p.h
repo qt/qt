@@ -106,6 +106,7 @@ public:
     enum State { Waiting, Active, Inactive, Dead };
 
     QmlDebugWatch(QObject *);
+    ~QmlDebugWatch();
 
     int queryId() const;
     int objectDebugId() const;
@@ -125,6 +126,7 @@ private:
     void setState(State);
     State m_state;
     int m_queryId;
+    QmlEngineDebug *m_client;
     int m_objectDebugId;
 };
 

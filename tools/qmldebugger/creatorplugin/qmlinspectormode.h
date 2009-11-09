@@ -57,6 +57,7 @@ class QmlEngineDebug;
 class QmlDebugConnection;
 class QmlDebugEnginesQuery;
 class QmlDebugRootContextQuery;
+class QmlDebugObjectReference;
 class ObjectTree;
 class WatchTableModel;
 class WatchTableView;
@@ -92,6 +93,7 @@ private slots:
     void enginesChanged();
     void queryEngineContext(int);
     void contextChanged();
+    void treeObjectActivated(const QmlDebugObjectReference &obj);
 
 private:
     struct Actions {

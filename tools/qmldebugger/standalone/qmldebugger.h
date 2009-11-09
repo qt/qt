@@ -67,6 +67,9 @@ public slots:
     void connectToHost();
     void disconnectFromHost();
 
+protected:
+    void closeEvent(QCloseEvent *);
+    
 private slots:
     void connectionStateChanged();
     void connectionError(QAbstractSocket::SocketError socketError);

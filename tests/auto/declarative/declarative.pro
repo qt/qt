@@ -17,6 +17,7 @@ SUBDIRS += \
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
+           qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover
@@ -24,6 +25,7 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
+           qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
            qmlgraphicstextedit \    # Cover
            qmlgraphicstextinput \   # Cover
