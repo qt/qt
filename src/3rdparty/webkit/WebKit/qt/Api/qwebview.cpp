@@ -70,7 +70,7 @@ void QWebViewPrivate::_q_pageDestroyed()
     It can be used in various applications to display web content live from the
     Internet.
 
-    The image below shows QWebView previewed in \QD with a Nokia website.
+    The image below shows QWebView previewed in \QD with the Trolltech website.
 
     \image qwebview-url.png
 
@@ -974,7 +974,7 @@ void QWebView::changeEvent(QEvent *e)
 /*!
     \fn void QWebView::statusBarMessage(const QString& text)
 
-    This signal is emitted when the status bar \a text is changed by the page.
+    This signal is emitted when the statusbar \a text is changed by the page.
 */
 
 /*!
