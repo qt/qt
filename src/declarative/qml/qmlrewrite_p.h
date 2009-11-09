@@ -69,7 +69,7 @@ class RewriteBinding: protected AST::Visitor
     TextWriter *_writer;
 
 public:
-    QString operator()(const QString &code);
+    QString operator()(const QString &code, bool *ok = 0);
 
 protected:
     using AST::Visitor::visit;

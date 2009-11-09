@@ -49,7 +49,7 @@ DEFINE_BOOL_CONFIG_OPTION(rewriteDump, QML_REWRITE_DUMP);
 
 namespace QmlRewrite {
 
-QString RewriteBinding::operator()(const QString &code)
+QString RewriteBinding::operator()(const QString &code, bool *ok)
 {
     Engine engine;
     NodePool pool(QString(), &engine);
@@ -57,6 +57,12 @@ QString RewriteBinding::operator()(const QString &code)
     Parser parser(&engine);
     lexer.setCode(code, 0);
     parser.parseStatement();
+    if (!parser.statement()) {
+        if (ok) *ok = false;
+        return QString();
+    } else {
+        if (ok) *ok = true;
+    }
     return rewrite(code, 0, parser.statement());
 }
 

@@ -315,7 +315,12 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
         } else {
             QmlRewrite::RewriteBinding rewriteBinding;
 
-            const QString code = rewriteBinding(data->expression);
+            bool ok = true;
+            const QString code = rewriteBinding(data->expression, &ok);
+            if (!ok) {
+                scriptEngine->popContext();
+                return QVariant();
+            }
             data->expressionFunction = scriptEngine->evaluate(code, data->url.toString(), data->line);
         }
 
