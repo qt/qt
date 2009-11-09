@@ -192,7 +192,7 @@ int qt_wince__rmdir(const char *dirname);
 int qt_wince__access( const char *path, int pmode );
 int qt_wince__rename( const char *oldname, const char *newname );
 int qt_wince__remove( const char *name );
-int qt_wince_open( const char *filename, int oflag, int pmode );
+int qt_wince_open( const char *filename, int oflag, int pmode = 0 );
 int qt_wince_stat( const char *path, struct stat *buffer );
 int qt_wince__fstat( int handle, struct stat *buffer);
 
