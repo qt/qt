@@ -82,7 +82,6 @@ private:
 protected:
     virtual void componentComplete();
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
-    QmlGraphicsRepeater(QmlGraphicsRepeaterPrivate &dd, QmlGraphicsItem *parent);
 
 private Q_SLOTS:
     void itemsInserted(int,int);

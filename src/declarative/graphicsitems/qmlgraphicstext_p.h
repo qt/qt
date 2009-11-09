@@ -131,7 +131,6 @@ Q_SIGNALS:
     void linkActivated(const QString &link);
 
 protected:
-    QmlGraphicsText(QmlGraphicsTextPrivate &dd, QmlGraphicsItem *parent);
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
     virtual void geometryChanged(const QRectF &newGeometry,

@@ -186,14 +186,6 @@ QmlGraphicsRectangle::QmlGraphicsRectangle(QmlGraphicsItem *parent)
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QmlGraphicsRectangle::QmlGraphicsRectangle(QmlGraphicsRectanglePrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsItem(dd, parent)
-{
-    Q_D(QmlGraphicsRectangle);
-    d->init();
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
-}
-
 void QmlGraphicsRectangle::doUpdate()
 {
     Q_D(QmlGraphicsRectangle);
