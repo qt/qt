@@ -37,6 +37,8 @@ information about a particular change.
 
  - Add 800x480 screen mode to qvfb configuration dialog.
 
+ - Improved support for input methods in graphics view.
+
 Third party components
 ----------------------
 
@@ -114,6 +116,7 @@ QtGui
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
+    * Added input hints.
 
 - QGraphicsLayout
     * Introduced QGraphicsLayout::addChildLayoutItem()
@@ -149,6 +152,7 @@ QtGui
  - QGraphicsWidget
     * Now inherits from QGraphicsObject instead
     * Interactive resizing of top level windows now respects height-for-width constraints.
+    * Reduced memory footprint.
 
  - QHeaderView
     * [208320] Make sure the sort indicator s taken into account for the size hint
@@ -163,6 +167,9 @@ QtGui
 
  - QColumnView
     * [246999] Fixed view not updating when the model is changed dynamically
+
+ - QLineEdit
+    * [248948] Clear selection when redoing a delete operation.
 
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is not yet show
@@ -203,6 +210,7 @@ QtGui
 
  - QSpinBox
     * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
+    * [255051] Fixed sizeHint update bug.
 
  - QStandardItemModel
     * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
@@ -235,6 +243,10 @@ QtGui
  - QPaintDevice
     * New qt_paint_device_metric() function to replace the friend
       declarations for window surface classes that need to access metric().
+
+ - QPushButton
+    * [255581] Fixed sizeHint recalculation bug.
+
 
 QtOpenGL
 
