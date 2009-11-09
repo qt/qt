@@ -480,7 +480,7 @@ void QToolBarAreaLayoutInfo::moveToolBar(QToolBar *toolbar, int pos)
 }
 
 
-QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos) const
+QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos, int *minDistance) const
 {
     int p = pick(o, pos);
 
@@ -509,12 +509,19 @@ QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos) const
 
             QList<int> result;
             result << j << k;
+            *minDistance = 0; //we found a perfect match
             return result;
         }
-    } else if (appendLineDropRect().contains(pos)) {
-        QList<int> result;
-        result << lines.count() << 0;
-        return result;
+    } else {
+        const int dist = distance(pos);
+        //it will only return a path if the minDistance is higher than the current distance
+        if (*minDistance > dist) {
+            *minDistance = dist;
+
+            QList<int> result;
+            result << lines.count() << 0;
+            return result;
+        }
     }
 
     return QList<int>();
@@ -587,32 +594,20 @@ QRect QToolBarAreaLayoutInfo::itemRect(const QList<int> &path) const
     return result;
 }
 
-QRect QToolBarAreaLayoutInfo::appendLineDropRect() const
+int QToolBarAreaLayoutInfo::distance(const QPoint &pos) const
 {
-    QRect result;
-
     switch (dockPos) {
         case QInternal::LeftDock:
-            result = QRect(rect.right(), rect.top(),
-                            EmptyDockAreaSize, rect.height());
-            break;
+            return pos.x() - rect.right();
         case QInternal::RightDock:
-            result = QRect(rect.left() - EmptyDockAreaSize, rect.top(),
-                            EmptyDockAreaSize, rect.height());
-            break;
+            return rect.left() - pos.x();
         case QInternal::TopDock:
-            result = QRect(rect.left(), rect.bottom() + 1,
-                            rect.width(), EmptyDockAreaSize);
-            break;
+            return pos.y() - rect.bottom();
         case QInternal::BottomDock:
-            result = QRect(rect.left(), rect.top() - EmptyDockAreaSize,
-                            rect.width(), EmptyDockAreaSize);
-            break;
+            return rect.top() - pos.y();
         default:
-            break;
+            return -1;
     }
-
-    return result;
 }
 
 /******************************************************************************
@@ -1022,21 +1017,24 @@ QList<int> QToolBarAreaLayout::indexOf(QWidget *toolBar) const
     return result;
 }
 
+//this functions returns the path to the possible gapindex for the position pos
 QList<int> QToolBarAreaLayout::gapIndex(const QPoint &pos) const
 {
     Qt::LayoutDirection dir = mainWindow->layoutDirection();
+    int minDistance = 80; // when a dock area is empty, how "wide" is it?
+    QList<int> ret; //return value
     for (int i = 0; i < QInternal::DockCount; ++i) {
         QPoint p = pos;
         if (docks[i].o == Qt::Horizontal)
             p = QStyle::visualPos(dir, docks[i].rect, p);
-        QList<int> result = docks[i].gapIndex(p);
+        QList<int> result = docks[i].gapIndex(p, &minDistance);
         if (!result.isEmpty()) {
             result.prepend(i);
-            return result;
+            ret = result;
         }
     }
 
-    return QList<int>();
+    return ret;
 }
 
 QList<int> QToolBarAreaLayout::currentGapIndex() const
