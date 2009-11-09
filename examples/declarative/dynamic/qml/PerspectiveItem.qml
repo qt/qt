@@ -3,10 +3,13 @@ import Qt 4.6
 Image {
     id: tree
     property bool created: false
-    opacity: y+height > window.height/2 ? 1 : 0.25
-    onCreatedChanged: if (created && y+height<=window.height/2) { tree.destroy() }
-    scale: y+height > window.height/2 ? (y+height-250)*0.01 : 1
+    property double scaleFactor: Math.max((y+height-250)*0.01, 0.3)
+    property double scaledBottom: y + (height+height*scaleFactor)/2 
+    property bool onLand: scaledBottom > window.height/2
+    opacity: onLand ? 1 : 0.25
+    onCreatedChanged: if (created && !onLand) { tree.destroy() } else { z = scaledBottom }
+    scale: scaleFactor
     transformOrigin: "Center"
     source: image; smooth: true
-    z: y
+    onYChanged: z = scaledBottom
 }
