@@ -91,6 +91,9 @@ void tst_qmltimer::notRepeating()
     QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; running: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
+    QVERIFY(timer->isRunning());
+    QVERIFY(!timer->isRepeating());
+    QCOMPARE(timer->interval(), 100);
 
     TimerHelper helper;
     connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
@@ -107,6 +110,7 @@ void tst_qmltimer::notRepeatingStart()
     QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100 }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
+    QVERIFY(!timer->isRunning());
 
     TimerHelper helper;
     connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));
@@ -138,6 +142,11 @@ void tst_qmltimer::repeat()
 
     QTest::qWait(TIMEOUT_TIMEOUT);
     QVERIFY(helper.count > oldCount);
+
+    oldCount = helper.count;
+    timer->stop();
+    QTest::qWait(TIMEOUT_TIMEOUT);
+    QVERIFY(helper.count == oldCount);
 }
 
 void tst_qmltimer::triggeredOnStart()
@@ -146,6 +155,7 @@ void tst_qmltimer::triggeredOnStart()
     QmlComponent component(&engine, QByteArray("import Qt 4.6\nTimer { interval: 100; running: true; triggeredOnStart: true }"), QUrl("file://"));
     QmlTimer *timer = qobject_cast<QmlTimer*>(component.create());
     QVERIFY(timer != 0);
+    QVERIFY(timer->triggeredOnStart());
 
     TimerHelper helper;
     connect(timer, SIGNAL(triggered()), &helper, SLOT(timeout()));

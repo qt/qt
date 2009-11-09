@@ -43,6 +43,7 @@
 #include <QtDeclarative/qmlcomponent.h>
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
+#include <private/qmlgraphicstext_p.h>
 #include <QtDeclarative/private/qmlgraphicsanchors_p_p.h>
 
 
@@ -61,6 +62,7 @@ private slots:
     void illegalSets();
     void reset();
     void nullItem();
+    void crash1();
 };
 
 /*
@@ -130,6 +132,21 @@ void tst_anchors::basicAnchors()
     QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect19"))->x(), 115.0);
     QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect20"))->x(), 235.0);
     QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect21"))->x(), -5.0);
+
+    //centerIn
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect22"))->x(), 69.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect22"))->y(), 5.0);
+
+    //margins
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->x(), 31.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->y(), 5.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->width(), 86.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->height(), 10.0);
+
+    //baseline
+    QmlGraphicsText *text1 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text1"));
+    QmlGraphicsText *text2 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text2"));
+    QCOMPARE(text1->y(), text2->y());
 
     delete view;
 }
@@ -230,6 +247,20 @@ void tst_anchors::nullItem()
     QTest::ignoreMessage(QtWarningMsg, "QML QmlGraphicsItem (unknown location) Can't anchor to a null item.");
     QmlGraphicsItem *item = new QmlGraphicsItem;
     item->anchors()->setBottom(anchor);
+}
+
+void tst_anchors::crash1()
+{
+    QmlView *view = new QmlView;
+
+    view->setUrl(QUrl("file://" SRCDIR "/data/crash1.qml"));
+
+    QString expect = "QML QmlGraphicsText (" + view->url().toString() + ":4:5" + ") Possible anchor loop detected on fill.";
+    QTest::ignoreMessage(QtWarningMsg, expect.toLatin1());
+    view->execute();
+    qApp->processEvents();
+
+    delete view;
 }
 
 QTEST_MAIN(tst_anchors)

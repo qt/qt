@@ -70,6 +70,8 @@ ListView: wrap         -> keyNavigationWraps
 ListView: autoHighlight -> highlightFollowsCurrentItem
 GridView: wrap         -> keyNavigationWraps
 GridView: autoHighlight -> highlightFollowsCurrentItem
+Animation: targets -> matchTargets
+Animation: properties -> matchProperties
 
 Additions:
 MouseRegion: add "acceptedButtons" property

@@ -194,6 +194,8 @@ QString CppCodeMarker::markedUpSynopsis(const Node *node,
 	synopsis = "class " + name;
 	break;
     case Node::Function:
+    case Node::QmlSignal:
+    case Node::QmlMethod:
 	func = (const FunctionNode *) node;
 	if (style != SeparateList && !func->returnType().isEmpty())
 	    synopsis = typified(func->returnType()) + " ";

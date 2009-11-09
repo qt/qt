@@ -2926,10 +2926,10 @@ void QWindowsXPStyle::drawComplexControl(ComplexControl cc, const QStyleOptionCo
                     }
                     // Draw arrow
                     p->save();
-                    p->setPen(option->palette.dark());
+                    p->setPen(option->palette.dark().color());
                     p->drawLine(menuarea.left(), menuarea.top() + 3,
                                 menuarea.left(), menuarea.bottom() - 3);
-                    p->setPen(option->palette.light());
+                    p->setPen(option->palette.light().color());
                     p->drawLine(menuarea.left() - 1, menuarea.top() + 3,
                                 menuarea.left() - 1, menuarea.bottom() - 3);
 

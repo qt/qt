@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 
 class QmlEngine;
 class QmlValueType;
-class QmlValueTypeScriptClass : public QScriptClass
+class QmlValueTypeScriptClass : public QScriptDeclarativeClass
 {
 public:
     QmlValueTypeScriptClass(QmlEngine *);
@@ -67,20 +67,16 @@ public:
 
     QScriptValue newObject(QObject *object, int coreIndex, QmlValueType *);
 
-    virtual QueryFlags queryProperty(const QScriptValue &object,
-                                     const QScriptString &name,
-                                     QueryFlags flags, uint *id);
-    virtual QScriptValue property(const QScriptValue &object,
-                                  const QScriptString &name, 
-                                  uint id);
-    virtual void setProperty(QScriptValue &object,
-                             const QScriptString &name,
-                             uint id,
-                             const QScriptValue &value);
+    virtual QScriptClass::QueryFlags queryProperty(Object *, const Identifier &, 
+                                                   QScriptClass::QueryFlags flags);
+    virtual QScriptValue property(Object *, const Identifier &);
+    virtual void setProperty(Object *, const Identifier &name, const QScriptValue &);
 
+    virtual QVariant toVariant(Object *, bool *ok = 0);
     QVariant toVariant(const QScriptValue &);
 private:
     QmlEngine *engine;
+    int m_lastIndex;
 };
 
 QT_END_NAMESPACE

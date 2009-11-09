@@ -74,7 +74,7 @@ class QmlExpressionPrivate;
 class QmlAbstractExpression;
 class QmlBinding_Id;
 
-class QmlContextPrivate : public QObjectPrivate
+class Q_DECLARATIVE_EXPORT QmlContextPrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QmlContext)
 public:

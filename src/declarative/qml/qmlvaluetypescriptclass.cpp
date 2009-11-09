@@ -44,15 +44,14 @@
 
 QT_BEGIN_NAMESPACE
 
-struct QmlValueTypeReference {
+struct QmlValueTypeReference : public QScriptDeclarativeClass::Object {
     QmlValueType *type;
     QGuard<QObject> object;
     int property;
 };
-Q_DECLARE_METATYPE(QmlValueTypeReference);
 
 QmlValueTypeScriptClass::QmlValueTypeScriptClass(QmlEngine *bindEngine)
-: QScriptClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
+: QScriptDeclarativeClass(QmlEnginePrivate::getScriptEngine(bindEngine)), engine(bindEngine)
 {
 }
 
@@ -62,89 +61,83 @@ QmlValueTypeScriptClass::~QmlValueTypeScriptClass()
 
 QScriptValue QmlValueTypeScriptClass::newObject(QObject *object, int coreIndex, QmlValueType *type)
 {
-    QmlValueTypeReference ref = { type, object, coreIndex };
-    QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
-    return scriptEngine->newObject(this, scriptEngine->newVariant(qVariantFromValue(ref)));
+    QmlValueTypeReference *ref = new QmlValueTypeReference;
+    ref->type = type;
+    ref->object = object;
+    ref->property = coreIndex;
+    return QScriptDeclarativeClass::newObject(QmlEnginePrivate::getScriptEngine(engine), this, ref);
 }
 
-QmlValueTypeScriptClass::QueryFlags
-QmlValueTypeScriptClass::queryProperty(const QScriptValue &object,
-                                       const QScriptString &name,
-                                       QueryFlags flags, uint *id)
+QScriptClass::QueryFlags 
+QmlValueTypeScriptClass::queryProperty(Object *obj, const Identifier &name, 
+                                       QScriptClass::QueryFlags)
 {
-    Q_UNUSED(flags);
-    QmlValueTypeReference ref =
-        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
+    QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
-    if (!ref.object)
+    m_lastIndex = -1;
+
+    if (!ref->object)
         return 0;
 
-    QByteArray propName = name.toString().toUtf8();
+    QByteArray propName = toString(name).toUtf8();
 
-    int idx = ref.type->metaObject()->indexOfProperty(propName.constData());
-    if (idx == -1)
+    m_lastIndex = ref->type->metaObject()->indexOfProperty(propName.constData());
+    if (m_lastIndex == -1)
         return 0;
-    *id = idx;
 
-    QMetaProperty prop = ref.object->metaObject()->property(idx);
+    QMetaProperty prop = ref->object->metaObject()->property(m_lastIndex);
 
-    QmlValueTypeScriptClass::QueryFlags rv =
-        QmlValueTypeScriptClass::HandlesReadAccess;
+    QScriptClass::QueryFlags rv =
+        QScriptClass::HandlesReadAccess;
     if (prop.isWritable())
-        rv |= QmlValueTypeScriptClass::HandlesWriteAccess;
+        rv |= QScriptClass::HandlesWriteAccess;
 
     return rv;
 }
 
-QScriptValue QmlValueTypeScriptClass::property(const QScriptValue &object,
-                                               const QScriptString &name,
-                                               uint id)
+QScriptValue QmlValueTypeScriptClass::property(Object *obj, const Identifier &)
 {
-    Q_UNUSED(name);
-    QmlValueTypeReference ref =
-        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
+    QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
-    if (!ref.object)
-        return QScriptValue();
-
-    ref.type->read(ref.object, ref.property);
-
-    QMetaProperty p = ref.type->metaObject()->property(id);
-    QVariant rv = p.read(ref.type);
+    QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+    ref->type->read(ref->object, ref->property);
+    QVariant rv = p.read(ref->type);
 
     return static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine))->scriptValueFromVariant(rv);
 }
 
-void QmlValueTypeScriptClass::setProperty(QScriptValue &object,
-                                          const QScriptString &name,
-                                          uint id,
+void QmlValueTypeScriptClass::setProperty(Object *obj, const Identifier &, 
                                           const QScriptValue &value)
 {
-    Q_UNUSED(name);
-    QmlValueTypeReference ref =
-        qvariant_cast<QmlValueTypeReference>(object.data().toVariant());
-
-    if (!ref.object)
-        return;
+    QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
     QVariant v = QmlScriptClass::toVariant(engine, value);
 
-    ref.type->read(ref.object, ref.property);
-    QMetaProperty p = ref.type->metaObject()->property(id);
-    p.write(ref.type, v);
-    ref.type->write(ref.object, ref.property, 0);
+    ref->type->read(ref->object, ref->property);
+    QMetaProperty p = ref->type->metaObject()->property(m_lastIndex);
+    p.write(ref->type, v);
+    ref->type->write(ref->object, ref->property, 0);
 }
 
-QVariant QmlValueTypeScriptClass::toVariant(const QScriptValue &val)
+QVariant QmlValueTypeScriptClass::toVariant(Object *obj, bool *ok)
 {
-    QmlValueTypeReference ref =
-        qvariant_cast<QmlValueTypeReference>(val.data().toVariant());
+    QmlValueTypeReference *ref = static_cast<QmlValueTypeReference *>(obj);
 
-    if (!ref.object)
+    if (ok) *ok = true;
+
+    if (ref->object) {
+        ref->type->read(ref->object, ref->property);
+        return ref->type->value();
+    } else {
         return QVariant();
+    }
+}
 
-    QMetaProperty p = ref.object->metaObject()->property(ref.property);
-    return p.read(ref.object);
+QVariant QmlValueTypeScriptClass::toVariant(const QScriptValue &value)
+{
+    Q_ASSERT(scriptClass(value) == this);
+
+    return toVariant(object(value), 0);
 }
 
 QT_END_NAMESPACE
