@@ -49,8 +49,11 @@
 QT_BEGIN_NAMESPACE
 
 class QTabWidget;
+class QSlider;
+class QGroupBox;
+class QLabel;
 class QSpinBox;
-class QCheckBox;
+class QPushButton;
 
 class CanvasFrameRatePlugin;
 
@@ -66,18 +69,20 @@ public:
     virtual QSize sizeHint() const;
 
 private slots:
+    void clearGraph();
     void newTab();
-    void enabledStateChanged(int);
+    void enabledToggled(bool);
     void connectionStateChanged(QAbstractSocket::SocketState state);
 
 private:
     void handleConnected(QmlDebugConnection *conn);
 
+    QGroupBox *m_group;
     QTabWidget *m_tabs;
-    QSpinBox *m_spin;
+    QSpinBox *m_res;
+    QPushButton *m_clearButton;
     CanvasFrameRatePlugin *m_plugin;
     QSize m_sizeHint;
-    QCheckBox *m_enabledCheckBox;
 };
 
 QT_END_NAMESPACE

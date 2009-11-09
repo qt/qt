@@ -51,12 +51,12 @@
 #include <QFontMetrics>
 #include <QmlView>
 
-class tst_qfxtextedit : public QObject
+class tst_qmlgraphicstextedit : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qfxtextedit();
+    tst_qmlgraphicstextedit();
 
 private slots:
     void text();
@@ -91,7 +91,7 @@ private:
     QmlEngine engine;
 };
 
-tst_qfxtextedit::tst_qfxtextedit()
+tst_qmlgraphicstextedit::tst_qmlgraphicstextedit()
 {
     standard << "the quick brown fox jumped over the lazy dog"
              << "the quick brown fox\n jumped over the lazy dog";
@@ -134,7 +134,7 @@ tst_qfxtextedit::tst_qfxtextedit()
                  // 
 }
 
-void tst_qfxtextedit::text()
+void tst_qmlgraphicstextedit::text()
 {
     {
         QmlComponent texteditComponent(&engine, "import Qt 4.6\nTextEdit {  text: \"\"  }", QUrl());
@@ -170,7 +170,7 @@ void tst_qfxtextedit::text()
     }
 }
 
-void tst_qfxtextedit::width()
+void tst_qmlgraphicstextedit::width()
 {
     // uses Font metrics to find the width for standard and document to find the width for rich
     {
@@ -213,7 +213,7 @@ void tst_qfxtextedit::width()
     }
 }
 
-void tst_qfxtextedit::wrap()
+void tst_qmlgraphicstextedit::wrap()
 {
     // for specified width and wrap set true
     {
@@ -247,7 +247,7 @@ void tst_qfxtextedit::wrap()
 }
 
 //the alignment tests may be trivial o.oa
-void tst_qfxtextedit::hAlign()
+void tst_qmlgraphicstextedit::hAlign()
 {
     //test one align each, and then test if two align fails.
 
@@ -279,7 +279,7 @@ void tst_qfxtextedit::hAlign()
 
 }
 
-void tst_qfxtextedit::vAlign()
+void tst_qmlgraphicstextedit::vAlign()
 {
     //test one align each, and then test if two align fails.
 
@@ -311,7 +311,7 @@ void tst_qfxtextedit::vAlign()
 
 }
 
-void tst_qfxtextedit::font()
+void tst_qmlgraphicstextedit::font()
 {
     //test size, then bold, then italic, then family
     { 
@@ -366,7 +366,7 @@ void tst_qfxtextedit::font()
     }
 }
 
-void tst_qfxtextedit::color()
+void tst_qmlgraphicstextedit::color()
 {
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
@@ -393,7 +393,7 @@ void tst_qfxtextedit::color()
     }
 }
 
-void tst_qfxtextedit::selection()
+void tst_qmlgraphicstextedit::selection()
 {
     QString testStr = standard[0];//TODO: What should happen for multiline/rich text?
     QString componentStr = "import Qt 4.6\nTextEdit {  text: \""+ testStr +"\"; }";
@@ -473,7 +473,7 @@ void tst_qfxtextedit::selection()
     QVERIFY(textEditObject->selectedText().size() == 10);
 }
 
-void tst_qfxtextedit::cursorDelegate()
+void tst_qmlgraphicstextedit::cursorDelegate()
 {
     QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->execute();
@@ -504,7 +504,7 @@ void tst_qfxtextedit::cursorDelegate()
 TextEdit element should only handle left/right keys until the cursor reaches
 the extent of the text, then they should ignore the keys.
 */
-void tst_qfxtextedit::navigation()
+void tst_qmlgraphicstextedit::navigation()
 {
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
@@ -528,7 +528,7 @@ void tst_qfxtextedit::navigation()
     QVERIFY(input->hasFocus() == true);
 }
 
-void tst_qfxtextedit::simulateKey(QmlView *view, int key)
+void tst_qmlgraphicstextedit::simulateKey(QmlView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
     QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
@@ -537,7 +537,7 @@ void tst_qfxtextedit::simulateKey(QmlView *view, int key)
     QApplication::sendEvent(view, &release);
 }
 
-QmlView *tst_qfxtextedit::createView(const QString &filename)
+QmlView *tst_qmlgraphicstextedit::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
@@ -550,6 +550,6 @@ QmlView *tst_qfxtextedit::createView(const QString &filename)
 }
 
 
-QTEST_MAIN(tst_qfxtextedit)
+QTEST_MAIN(tst_qmlgraphicstextedit)
 
-#include "tst_qfxtextedit.moc"
+#include "tst_qmlgraphicstextedit.moc"

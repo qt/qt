@@ -40,12 +40,14 @@
 ****************************************************************************/
 #include <QtCore/qtimer.h>
 #include <QtCore/qdebug.h>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QTabWidget>
-#include <QSpinBox>
-#include <QLabel>
+#include <QtCore/qsettings.h>
+
+#include <QtGui/qlayout.h>
+#include <QtGui/qpushbutton.h>
+#include <QtGui/qlineedit.h>
+#include <QtGui/qtabwidget.h>
+#include <QtGui/qspinbox.h>
+#include <QtGui/qlabel.h>
 
 #include "canvasframerate.h"
 #include "engine.h"
@@ -64,12 +66,10 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     m_connectionState = new QLabel(this);
     connectLayout->addWidget(m_connectionState);
     m_host = new QLineEdit(this);
-    m_host->setText("127.0.0.1");
     connectLayout->addWidget(m_host);
     m_port = new QSpinBox(this);
     m_port->setMinimum(1024);
     m_port->setMaximum(20000);
-    m_port->setValue(3768);
     connectLayout->addWidget(m_port);
     m_connectButton = new QPushButton(tr("Connect"), this);
     QObject::connect(m_connectButton, SIGNAL(clicked()), 
@@ -99,7 +99,9 @@ QmlDebugger::QmlDebugger(QWidget *parent)
     QObject::connect(&client, SIGNAL(error(QAbstractSocket::SocketError)),
                      this, SLOT(connectionError(QAbstractSocket::SocketError)));
 
-    m_tabs->setCurrentIndex(1);
+    QSettings settings;
+    m_host->setText(settings.value("Host", "127.0.0.1").toString());
+    m_port->setValue(settings.value("Port", 3768).toInt());
     
     connectToHost();
 }
@@ -117,6 +119,15 @@ void QmlDebugger::setPort(quint16 port)
 void QmlDebugger::showEngineTab()
 {
     m_tabs->setCurrentWidget(m_enginePane);
+}
+
+void QmlDebugger::closeEvent(QCloseEvent *event)
+{
+    QSettings settings;
+    settings.setValue("Host", m_host->text());
+    settings.setValue("Port", m_port->value());
+
+    QWidget::closeEvent(event);
 }
 
 void QmlDebugger::connectionStateChanged()
