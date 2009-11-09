@@ -17,6 +17,7 @@ SUBDIRS += \
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
+           qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover

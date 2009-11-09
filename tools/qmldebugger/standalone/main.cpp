@@ -45,6 +45,9 @@
 int main(int argc, char ** argv)
 {
     QApplication app(argc, argv);
+    app.setApplicationName("QtQmlDebugger");
+    app.setOrganizationName("Nokia");
+    app.setOrganizationDomain("nokia.com");    
 
     QStringList args = app.arguments();
 
