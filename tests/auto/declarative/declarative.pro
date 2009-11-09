@@ -16,6 +16,7 @@ SUBDIRS += \
            qfxwebview \             # Cover
            qmetaobjectbuilder \     # Cover
            qmlcontext \             # Cover
+           qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlfontloader \          # Cover
