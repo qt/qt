@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QListModelInterface;
 class QmlGraphicsPathViewPrivate;
 class Q_DECLARATIVE_EXPORT QmlGraphicsPathView : public QmlGraphicsItem
 {
