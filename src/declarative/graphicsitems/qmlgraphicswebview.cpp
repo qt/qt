@@ -356,7 +356,7 @@ void QmlGraphicsWebView::pageUrlChanged()
     expandToWebPage();
 
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
-        || d->url != page()->mainFrame()->url() && !page()->mainFrame()->url().isEmpty())
+        || (d->url != page()->mainFrame()->url() && !page()->mainFrame()->url().isEmpty()))
     {
         d->url = page()->mainFrame()->url();
         if (d->url == QUrl(QLatin1String("about:blank")))
