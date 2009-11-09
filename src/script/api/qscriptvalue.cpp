@@ -71,6 +71,7 @@
 #include "bridge/qscriptclassobject_p.h"
 #include "bridge/qscriptvariant_p.h"
 #include "bridge/qscriptqobject_p.h"
+#include "bridge/qscriptdeclarativeclass_p.h"
 
 /*!
   \since 4.3
@@ -1496,6 +1497,8 @@ QVariant QScriptValue::toVariant() const
 #endif
             else if (isArray())
                 return QScriptEnginePrivate::variantListFromArray(*this);
+            else if (QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(*this))
+                return dc->toVariant(QScriptDeclarativeClass::object(*this));
             // try to convert to primitive
             JSC::ExecState *exec = d->engine->currentFrame;
             JSC::JSValue savedException;
@@ -1586,6 +1589,8 @@ QObject *QScriptValue::toQObject() const
     if (isQObject()) {
         QScriptObject *object = static_cast<QScriptObject*>(JSC::asObject(d->jscValue));
         return static_cast<QScript::QObjectDelegate*>(object->delegate())->value();
+    } else if (QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(*this)) {
+        return dc->toQObject(QScriptDeclarativeClass::object(*this));
     } else if (isVariant()) {
         QVariant var = toVariant();
         int type = var.userType();
