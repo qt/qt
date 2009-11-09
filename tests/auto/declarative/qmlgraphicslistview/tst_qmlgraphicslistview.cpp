@@ -54,7 +54,6 @@ public:
     tst_QmlGraphicsListView();
 
 private slots:
-    void itemList();
     // Test both QListModelInterface and QAbstractItemModel model types
     void qListModelInterface_items();
     void qAbstractItemModel_items();
@@ -71,6 +70,7 @@ private slots:
     void qListModelInterface_moved();
     void qAbstractItemModel_moved();
 
+    void itemList();
     void currentIndex();
     void enforceRange();
     void spacing();
@@ -80,7 +80,7 @@ private:
     template <class T> void items();
     template <class T> void changed();
     template <class T> void inserted();
-    template <class T> void removed();
+    template <class T> void removed(bool animated);
     template <class T> void moved();
     QmlView *createView(const QString &filename);
     template<typename T>
@@ -398,7 +398,7 @@ void tst_QmlGraphicsListView::inserted()
 }
 
 template <class T>
-void tst_QmlGraphicsListView::removed()
+void tst_QmlGraphicsListView::removed(bool animated)
 {
     QmlView *canvas = createView(SRCDIR "/data/listview.qml");
 
@@ -408,6 +408,7 @@ void tst_QmlGraphicsListView::removed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("animate", QVariant(animated));
 
     canvas->execute();
     qApp->processEvents();
@@ -911,12 +912,14 @@ void tst_QmlGraphicsListView::qAbstractItemModel_inserted()
 
 void tst_QmlGraphicsListView::qListModelInterface_removed()
 {
-    removed<TestModel>();
+    removed<TestModel>(false);
+    removed<TestModel>(true);
 }
 
 void tst_QmlGraphicsListView::qAbstractItemModel_removed()
 {
-    removed<TestModel2>();
+    removed<TestModel2>(false);
+    removed<TestModel2>(true);
 }
 
 void tst_QmlGraphicsListView::qListModelInterface_moved()
