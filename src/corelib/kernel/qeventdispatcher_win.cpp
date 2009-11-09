@@ -70,7 +70,8 @@ extern uint qGlobalPostedEventsCount();
 
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
-    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1
+    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1,
+    SendPostedEventsTimerId = ~1u
 };
 
 #if defined(Q_OS_WINCE)
@@ -470,7 +471,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         }
         return 0;
     } else if (message == WM_TIMER) {    
-        if (wp == ~1u) {
+        if (wp == SendPostedEventsTimerId) {
             KillTimer(d->internalHwnd, wp);
             int localSerialNumber = d->serialNumber;
             (void) d->wakeUps.fetchAndStoreRelease(0);
@@ -488,7 +489,14 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
             // delay the next pass of sendPostedEvents() until we get the special
             // WM_TIMER, which allows all pending Windows messages to be processed
-            SetTimer(d->internalHwnd, ~1u, 0, 0);
+            if (SetTimer(d->internalHwnd, SendPostedEventsTimerId, 0, 0) == 0) {
+                // failed to start the timer, oops, clear wakeUps in an attempt to keep things running
+                qErrnoWarning("Qt: INTERNAL ERROR: failed to start sendPostedEvents() timer");
+                d->wakeUps.fetchAndStoreRelease(0);
+            } else {
+                // SetTimer() succeeded, nothing to do now
+                ;
+            }
         } else {
             // nothing pending in the queue, let sendPostedEvents go through
             d->wakeUps.fetchAndStoreRelease(0);
