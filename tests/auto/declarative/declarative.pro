@@ -46,7 +46,9 @@ SUBDIRS += \
            sql \                    # Cover
            states \                 # Cover
            valuetypes \             # Cover
-           visual                   # Cover
+           visual \                 # Cover
+           xmlhttprequest           # Cover
+
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

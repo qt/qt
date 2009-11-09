@@ -54,8 +54,37 @@
 
 #include <QtCore/qdebug.h>
 
-// ### Find real values
-#define INVALID_STATE_ERR ((QScriptContext::Error)15)
+// From DOM-Level-3-Core spec
+// http://www.w3.org/TR/DOM-Level-3-Core/core.html
+#define INDEX_SIZE_ERR 1
+#define DOMSTRING_SIZE_ERR 2
+#define HIERARCHY_REQUEST_ERR 3
+#define WRONG_DOCUMENT_ERR 4
+#define INVALID_CHARACTER_ERR 5
+#define NO_DATA_ALLOWED_ERR 6
+#define NO_MODIFICATION_ALLOWED_ERR 7
+#define NOT_FOUND_ERR 8
+#define NOT_SUPPORTED_ERR 9
+#define INUSE_ATTRIBUTE_ERR 10
+#define INVALID_STATE_ERR 11
+#define SYNTAX_ERR 12
+#define INVALID_MODIFICATION_ERR 13
+#define NAMESPACE_ERR 14
+#define INVALID_ACCESS_ERR 15
+#define VALIDATION_ERR 16
+#define TYPE_MISMATCH_ERR 17
+
+#define THROW_DOM(error, desc) \
+{ \
+    QScriptValue errorValue = context->throwError(QLatin1String(desc)); \
+    errorValue.setProperty(QLatin1String("code"), error); \
+    return errorValue; \
+} 
+
+#define THROW_SYNTAX(desc) \
+    return context->throwError(QScriptContext::SyntaxError, QLatin1String(desc));
+#define THROW_REFERENCE(desc) \
+    return context->throwError(QScriptContext::ReferenceError, QLatin1String(desc));
 
 #define D(arg) (arg)->release()
 #define A(arg) (arg)->addref()
@@ -1189,10 +1218,11 @@ void QmlXMLHttpRequest::destroyNetwork()
 static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngine *engine)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() < 2 || context->argumentCount() > 5)
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
     // Argument 0 - Method
     QString method = context->argument(0).toString().toUpper();
@@ -1200,23 +1230,21 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
         method != QLatin1String("PUT") &&
         method != QLatin1String("HEAD") &&
         method != QLatin1String("POST"))
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Unsupported method"));
+        THROW_DOM(SYNTAX_ERR, "Unsupported HTTP method type");
 
 
     // Argument 1 - URL
-    QUrl url(context->argument(1).toString()); // ### Need to resolve correctly
+    QUrl url(context->argument(1).toString());
 
     if (url.isRelative()) {
-        QmlContext *ctxt = QmlEnginePrivate::get(engine)->currentExpression?QmlEnginePrivate::get(engine)->currentExpression->context():0;
-        if (ctxt)
-            url = ctxt->resolvedUrl(url);
-        else
-            return context->throwError(QScriptContext::SyntaxError, QLatin1String("Relative URLs not supported"));
+        QmlContext *ctxt = QmlEnginePrivate::get(engine)->getContext(context);
+        Q_ASSERT(ctxt);
+        url = ctxt->resolvedUrl(url);
     }
 
     // Argument 2 - async (optional)
     if (context->argumentCount() > 2 && !context->argument(2).toBoolean())
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Synchronous call not supported"));
+        THROW_DOM(NOT_SUPPORTED_ERR, "Synchronous XMLHttpRequest calls are not supported");
 
 
     // Argument 3/4 - user/pass (optional)
@@ -1241,15 +1269,16 @@ static QScriptValue qmlxmlhttprequest_open(QScriptContext *context, QScriptEngin
 static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, QScriptEngine *engine)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 2)
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+        THROW_SYNTAX("Incorrect argument count");
 
 
     if (request->readyState() != QmlXMLHttpRequest::Opened ||
         request->sendFlag())
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
 
     QString name = context->argument(0).toString();
@@ -1288,13 +1317,14 @@ static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, 
 static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngine *engine)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (request->readyState() != QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     if (request->sendFlag())
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     QByteArray data;
     if (context->argumentCount() > 0)
@@ -1308,7 +1338,8 @@ static QScriptValue qmlxmlhttprequest_send(QScriptContext *context, QScriptEngin
 static QScriptValue qmlxmlhttprequest_abort(QScriptContext *context, QScriptEngine *engine)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     request->abort();
 
@@ -1319,15 +1350,16 @@ static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context,
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 1)
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+        THROW_SYNTAX("Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
         request->readyState() != QmlXMLHttpRequest::HeadersReceived)
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     QString headerName = context->argument(0).toString();
 
@@ -1338,15 +1370,16 @@ static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *cont
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 0)
-        return context->throwError(QScriptContext::SyntaxError, QLatin1String("Incorrect argument count"));
+        THROW_SYNTAX("Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
         request->readyState() != QmlXMLHttpRequest::HeadersReceived)
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     return QScriptValue(request->headers());
 }
@@ -1356,7 +1389,8 @@ static QScriptValue qmlxmlhttprequest_readyState(QScriptContext *context, QScrip
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     return QScriptValue(request->readyState());
 }
@@ -1365,11 +1399,12 @@ static QScriptValue qmlxmlhttprequest_status(QScriptContext *context, QScriptEng
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (request->readyState() == QmlXMLHttpRequest::Unsent ||
         request->readyState() == QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     if (request->errorFlag())
         return QScriptValue(0);
@@ -1381,11 +1416,12 @@ static QScriptValue qmlxmlhttprequest_statusText(QScriptContext *context, QScrip
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (request->readyState() == QmlXMLHttpRequest::Unsent ||
         request->readyState() == QmlXMLHttpRequest::Opened)
-        return context->throwError(INVALID_STATE_ERR, QLatin1String("Invalid state"));
+        THROW_DOM(INVALID_STATE_ERR, "Invalid state");
 
     if (request->errorFlag())
         return QScriptValue(0);
@@ -1397,19 +1433,21 @@ static QScriptValue qmlxmlhttprequest_responseText(QScriptContext *context, QScr
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done)
         return QScriptValue(QString());
-    else
+    else 
         return QScriptValue(request->responseBody());
 }
 
 static QScriptValue qmlxmlhttprequest_responseXML(QScriptContext *context, QScriptEngine *engine)
 {
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done)
@@ -1422,7 +1460,8 @@ static QScriptValue qmlxmlhttprequest_onreadystatechange(QScriptContext *context
 {
     Q_UNUSED(engine)
     QmlXMLHttpRequest *request = qobject_cast<QmlXMLHttpRequest *>(context->thisObject().data().toQObject());
-    if (!request) return context->throwError(QScriptContext::ReferenceError, QLatin1String("Not an XMLHttpRequest object"));
+    if (!request) 
+        THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount())
         request->setCallback(context->argument(0));
@@ -1459,6 +1498,13 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
     prototype.setProperty(QLatin1String("responseXML"), engine->newFunction(qmlxmlhttprequest_responseXML), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
     prototype.setProperty(QLatin1String("onreadystatechange"), engine->newFunction(qmlxmlhttprequest_onreadystatechange), QScriptValue::PropertyGetter | QScriptValue::PropertySetter);
 
+    // State values
+    prototype.setProperty(QLatin1String("UNSENT"), 0, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    prototype.setProperty(QLatin1String("OPENED"), 1, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    prototype.setProperty(QLatin1String("HEADERS_RECEIVED"), 2, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    prototype.setProperty(QLatin1String("LOADING"), 3, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    prototype.setProperty(QLatin1String("DONE"), 4, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+
     // Constructor
     QScriptValue constructor = engine->newFunction(qmlxmlhttprequest_new, prototype);
     constructor.setProperty(QLatin1String("UNSENT"), 0, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
@@ -1467,6 +1513,28 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
     constructor.setProperty(QLatin1String("LOADING"), 3, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     constructor.setProperty(QLatin1String("DONE"), 4, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
     engine->globalObject().setProperty(QLatin1String("XMLHttpRequest"), constructor);
+
+    // DOM Exception
+    QScriptValue domExceptionPrototype = engine->newObject();
+    domExceptionPrototype.setProperty("INDEX_SIZE_ERR", INDEX_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("DOMSTRING_SIZE_ERR", DOMSTRING_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("HIERARCHY_REQUEST_ERR", HIERARCHY_REQUEST_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("WRONG_DOCUMENT_ERR", WRONG_DOCUMENT_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("INVALID_CHARACTER_ERR", INVALID_CHARACTER_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("NO_DATA_ALLOWED_ERR", NO_DATA_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("NO_MODIFICATION_ALLOWED_ERR", NO_MODIFICATION_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("NOT_FOUND_ERR", NOT_FOUND_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("NOT_SUPPORTED_ERR", NOT_SUPPORTED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("INUSE_ATTRIBUTE_ERR", INUSE_ATTRIBUTE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("INVALID_STATE_ERR", INVALID_STATE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("SYNTAX_ERR", SYNTAX_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("INVALID_MODIFICATION_ERR", INVALID_MODIFICATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("NAMESPACE_ERR", NAMESPACE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("INVALID_ACCESS_ERR", INVALID_ACCESS_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("VALIDATION_ERR", VALIDATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty("TYPE_MISMATCH_ERR", TYPE_MISMATCH_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+
+    engine->globalObject().setProperty(QLatin1String("DOMException"), domExceptionPrototype);
 }
 
 #include "qmlxmlhttprequest.moc"
