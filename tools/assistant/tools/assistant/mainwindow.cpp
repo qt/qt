@@ -227,16 +227,8 @@ MainWindow::MainWindow(CmdLineParser *cmdLine, QWidget *parent)
 
         if (!m_cmdLine->currentFilter().isEmpty()) {
             const QString &curFilter = m_cmdLine->currentFilter();
-            m_helpEngine->setCurrentFilter(curFilter);
-            if (m_filterCombo) {
-                int idx = m_filterCombo->findText(curFilter);
-                if (idx >= 0) {
-                    bool blocked = m_filterCombo->signalsBlocked();
-                    m_filterCombo->blockSignals(true);
-                    m_filterCombo->setCurrentIndex(idx);
-                    m_filterCombo->blockSignals(blocked);
-                }
-            }
+            if (m_helpEngine->customFilters().contains(curFilter))
+                m_helpEngine->setCurrentFilter(curFilter);
         }
 
         if (usesDefaultCollection())
@@ -664,6 +656,8 @@ void MainWindow::setupFilterToolbar()
         SLOT(setupFilterCombo()));
     connect(m_filterCombo, SIGNAL(activated(QString)), this,
         SLOT(filterDocumentation(QString)));
+    connect(m_helpEngine, SIGNAL(currentFilterChanged(QString)), this,
+        SLOT(currentFilterChanged(QString)));
 
     setupFilterCombo();
 }
@@ -1039,6 +1033,13 @@ QString MainWindow::defaultHelpCollectionFileName()
     return collectionFileDirectory() + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
+}
+
+void MainWindow::currentFilterChanged(const QString &filter)
+{
+    const int index = m_filterCombo->findText(filter);
+    Q_ASSERT(index != -1);
+    m_filterCombo->setCurrentIndex(index);
 }
 
 QT_END_NAMESPACE
