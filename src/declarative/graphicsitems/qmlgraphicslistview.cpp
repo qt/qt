@@ -1260,7 +1260,7 @@ void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
     is scrolled.  This is because the view moves to maintain the
     highlight within the preferred highlight range (or visible viewport).
 
-    \sa highlight
+    \sa highlight, highlightMoveSpeed
 */
 bool QmlGraphicsListView::highlightFollowsCurrentItem() const
 {
@@ -1479,8 +1479,13 @@ QString QmlGraphicsListView::currentSection() const
 
 /*!
     \qmlproperty real ListView::highlightMoveSpeed
+    \qmlproperty real ListView::highlightResizeSpeed
+    These properties hold the move and resize animation speed of the highlight delegate.
 
-    This property holds the moving animation speed of the highlight delegate.
+    highlightFollowsCurrentItem must be true for these properties
+    to have effect.
+
+    \sa highlightFollowsCurrentItem
 */
 qreal QmlGraphicsListView::highlightMoveSpeed() const
 {
@@ -1500,11 +1505,6 @@ void QmlGraphicsListView::setHighlightMoveSpeed(qreal speed)
     }
 }
 
-/*!
-    \qmlproperty real ListView::highlightResizeSpeed
-
-    This property holds the resizing animation speed of the highlight delegate.
-*/
 qreal QmlGraphicsListView::highlightResizeSpeed() const
 {
     Q_D(const QmlGraphicsListView);\
