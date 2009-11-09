@@ -109,12 +109,12 @@ void MMF::AbstractMediaPlayer::pause()
     case GroundState:
     case LoadingState:
     case PausedState:
-    case ErrorState:
         // Do nothing
         break;
 
     case StoppedState:
     case PlayingState:
+    case ErrorState:
     case BufferingState:
         doPause();
         stopTickTimer();
