@@ -32,6 +32,11 @@ Rectangle {
                     text: wrapper.y
                 }
                 color: ListView.isCurrentItem ? "lightsteelblue" : "white"
+                ListView.onRemove: SequentialAnimation {
+                    PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: true }
+                    NumberAnimation { target: wrapper; property: "scale"; to: 0; duration: 250; easing: "easeInOutQuad" }
+                    PropertyAction { target: wrapper.ListView; property: "delayRemove"; value: false }
+                }
             }
         }
     ]

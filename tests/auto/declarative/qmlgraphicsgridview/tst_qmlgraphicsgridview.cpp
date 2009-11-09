@@ -53,6 +53,7 @@ public:
     tst_QmlGraphicsGridView();
 
 private slots:
+    void currentIndex();
     void items();
     void changed();
     void inserted();
@@ -167,15 +168,6 @@ void tst_QmlGraphicsGridView::items()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
-
-    gridview->moveCurrentIndexRight();
-    QCOMPARE(gridview->currentIndex(), 1);
-    gridview->moveCurrentIndexDown();
-    QCOMPARE(gridview->currentIndex(), 4);
-    gridview->moveCurrentIndexUp();
-    QCOMPARE(gridview->currentIndex(), 1);
-    gridview->moveCurrentIndexLeft();
-    QCOMPARE(gridview->currentIndex(), 0);
 
     // set an empty model and confirm that items are destroyed
     TestModel model2;
@@ -511,6 +503,107 @@ void tst_QmlGraphicsGridView::moved()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsGridView::currentIndex()
+{
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QmlView *canvas = new QmlView(0);
+    canvas->setFixedSize(240,320);
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+
+    QString filename(SRCDIR "/data/gridview-initCurrent.qml");
+    QFile file(filename);
+    file.open(QFile::ReadOnly);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
+
+    QmlGraphicsItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    // current item should be third item
+    QCOMPARE(gridview->currentIndex(), 5);
+    QCOMPARE(gridview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 5));
+
+    gridview->moveCurrentIndexRight();
+    QCOMPARE(gridview->currentIndex(), 6);
+    gridview->moveCurrentIndexDown();
+    QCOMPARE(gridview->currentIndex(), 9);
+    gridview->moveCurrentIndexUp();
+    QCOMPARE(gridview->currentIndex(), 6);
+    gridview->moveCurrentIndexLeft();
+    QCOMPARE(gridview->currentIndex(), 5);
+
+    // no wrap
+    gridview->setCurrentIndex(0);
+    QCOMPARE(gridview->currentIndex(), 0);
+
+    gridview->moveCurrentIndexUp();
+    QCOMPARE(gridview->currentIndex(), 0);
+
+    gridview->moveCurrentIndexLeft();
+    QCOMPARE(gridview->currentIndex(), 0);
+
+    gridview->setCurrentIndex(model.count()-1);
+    QTest::qWait(500);
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
+
+    gridview->moveCurrentIndexRight();
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
+
+    gridview->moveCurrentIndexDown();
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
+
+    // with wrap
+    gridview->setWrapEnabled(true);
+
+    gridview->setCurrentIndex(0);
+    QCOMPARE(gridview->currentIndex(), 0);
+    QTest::qWait(500);
+
+    gridview->moveCurrentIndexLeft();
+    QCOMPARE(gridview->currentIndex(), model.count()-1);
+
+    QTest::qWait(500);
+    QCOMPARE(gridview->viewportY(), 279.0);
+
+    gridview->moveCurrentIndexRight();
+    QCOMPARE(gridview->currentIndex(), 0);
+
+    QTest::qWait(500);
+    QCOMPARE(gridview->viewportY(), 0.0);
+
+    // Test keys
+    canvas->show();
+    qApp->processEvents();
+
+    QEvent wa(QEvent::WindowActivate);
+    QApplication::sendEvent(canvas, &wa);
+    QFocusEvent fe(QEvent::FocusIn);
+    QApplication::sendEvent(canvas, &fe);
+
+    QKeyEvent key(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 3);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 0);
 
     delete canvas;
 }

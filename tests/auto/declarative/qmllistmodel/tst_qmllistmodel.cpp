@@ -110,7 +110,9 @@ void tst_QmlListModel::dynamic_data()
 
     // Structured model
 
-    // XXX todo
+    QTest::newRow("listprop1a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});count}" << 1 << "";
+    QTest::newRow("listprop1b") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.get(1).a}" << 2 << "";
+    QTest::newRow("listprop2a") << "{append({'foo':123,'bars':[{'a':1},{'a':2},{'a':3}]});get(0).bars.append({'a':4});get(0).bars.get(3).a}" << 4 << "";
 }
 
 void tst_QmlListModel::dynamic()
