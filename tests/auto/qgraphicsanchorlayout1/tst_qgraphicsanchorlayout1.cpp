@@ -162,10 +162,14 @@ Q_DECLARE_METATYPE(AnchorItemSizeHintList)
 class TestWidget : public QGraphicsWidget
 {
 public:
-    inline TestWidget(QGraphicsItem *parent = 0)
+    inline TestWidget(QGraphicsItem *parent = 0, const QString &name = QString())
         : QGraphicsWidget(parent)
         {
             setContentsMargins( 0,0,0,0 );
+            if (name.isEmpty())
+                setData(0, QString::fromAscii("w%1").arg(int(this)));
+            else
+                setData(0, name);
         }
     ~TestWidget()
         {
@@ -419,7 +423,6 @@ void tst_QGraphicsAnchorLayout1::testAddAndRemoveAnchor()
     layout->setAnchor(layout, Qt::AnchorLeft, widget5, Qt::AnchorTop, 10);
     QCOMPARE( layout->count(), 4 );
 
-    // ###: NOT SUPPORTED
     // anchor two edges of a widget (to define width / height)
     QTest::ignoreMessage(QtWarningMsg, "QGraphicsAnchorLayout::addAnchor(): Cannot anchor the item to itself");
     layout->setAnchor(widget5, Qt::AnchorLeft, widget5, Qt::AnchorRight, 10);
@@ -516,8 +519,6 @@ void tst_QGraphicsAnchorLayout1::testIsValid()
     widget->setLayout(layout);
 
     widget->setGeometry(QRectF(0,0,100,100));
-    // ###: this shall change once isValid() is ready
-    // QCOMPARE(layout->isValid(), false);
     QCOMPARE(layout->isValid(), true);
     delete widget;
     }
@@ -694,9 +695,8 @@ void tst_QGraphicsAnchorLayout1::testSpecialCases()
     layout2->setAnchor(widget1, Qt::AnchorRight, layout2, Qt::AnchorRight, 1);
     layout2->setAnchor(widget1, Qt::AnchorBottom, layout2, Qt::AnchorBottom, 1);
 
-    // ###: uncomment when simplification bug is solved
-    //widget->setGeometry(QRectF(0,0,100,100));
-    //QCOMPARE(widget1->geometry(), QRectF(51,2,47,96));
+    widget->setGeometry(QRectF(0,0,100,100));
+    QCOMPARE(widget1->geometry(), QRectF(51,2,47,96));
     delete widget;
     }
 
@@ -895,9 +895,6 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout_data()
             << BasicData(-1, Qt::AnchorLeft, 1, Qt::AnchorLeft, 10)
             << BasicData(-1, Qt::AnchorLeft, 1, Qt::AnchorRight, 20)
             ;
-
-        // ### SIMPLIFICATION BUG FOR ITEM 1
-        // ### remove this when bug is solved
 
         theResult
             << BasicResult(0, QRectF(10, 10, 180, 80) )
@@ -1664,6 +1661,18 @@ inline QGraphicsLayoutItem *getItem(
     return widgets[index];
 }
 
+static QRectF truncate(QRectF original)
+{
+    QRectF result;
+
+    result.setX(qRound(original.x() * 1000000) / 1000000.0);
+    result.setY(qRound(original.y() * 1000000) / 1000000.0);
+    result.setWidth(qRound(original.width() * 1000000) / 1000000.0);
+    result.setHeight(qRound(original.height() * 1000000) / 1000000.0);
+
+    return result;
+}
+
 void tst_QGraphicsAnchorLayout1::testBasicLayout()
 {
     QFETCH(QSizeF, size);
@@ -1684,7 +1693,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     // Create dummy widgets
     QList<QGraphicsWidget *> widgets;
     for (int i = 0; i < widgetCount; ++i) {
-        TestWidget *w = new TestWidget;
+        TestWidget *w = new TestWidget(0, QString::fromAscii("W%1").arg(i));
         widgets << w;
     }
 
@@ -1704,19 +1713,18 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
-
-//    QTest::qWait(500); // layouting is asynchronous..
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
         const BasicLayoutTestResult item = result[i];
-        QCOMPARE(widgets[item.index]->geometry(), item.rect);
+        QRectF expected = truncate(item.rect);
+        QRectF actual = truncate(widgets[item.index]->geometry());
+
+        QCOMPARE(expected, actual);
     }
 
-    // ###: not supported yet
-/*
     // Test mirrored mode
     widget->setLayoutDirection(Qt::RightToLeft);
     layout->activate();
@@ -1728,10 +1736,13 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         if (mirroredRect.isValid()){
             mirroredRect.moveLeft(size.width()-item.rect.width()-item.rect.left());
         }
-        QCOMPARE(widgets[item.index]->geometry(), mirroredRect);
+        QRectF expected = truncate(mirroredRect);
+        QRectF actual = truncate(widgets[item.index]->geometry());
+
+        QCOMPARE(expected, actual);
         delete widgets[item.index];
     }
-*/
+
     delete widget;
 }
 
@@ -2212,8 +2223,8 @@ void tst_QGraphicsAnchorLayout1::testRemoveCenterAnchor()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
     // Validate
     for (int i = 0; i < result.count(); ++i) {
@@ -2430,6 +2441,8 @@ void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy_data()
         QTest::newRow("double size policy: expanding-preferred") << sizePolicy1 << sizePolicy2 << width1 << width2;
     }
 
+    // QGAL handling of ignored flag is different
+    if (0)
     {
         QSizePolicy sizePolicy1( QSizePolicy::Ignored, QSizePolicy::Ignored );
         QSizePolicy sizePolicy2( QSizePolicy::Preferred, QSizePolicy::Preferred );
@@ -2497,9 +2510,6 @@ void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy_data()
 
 void tst_QGraphicsAnchorLayout1::testDoubleSizePolicy()
 {
-    // ### Size policy is not yet supported
-    return;
-
     QFETCH(QSizePolicy, policy1);
     QFETCH(QSizePolicy, policy2);
     QFETCH(qreal, width1);
@@ -3053,8 +3063,8 @@ void tst_QGraphicsAnchorLayout1::testComplexCases()
     widget->setLayout(layout);
     widget->setContentsMargins(0,0,0,0);
 
-    widget->setMinimumSize(size);
-    widget->setMaximumSize(size);
+    widget->resize(size);
+    QCOMPARE(widget->size(), size);
 
 //    QTest::qWait(500); // layouting is asynchronous..
 

@@ -431,6 +431,10 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     // Some engines might decide to optimize for the non-shape hint later on...
     uint flags = QVectorPath::WindingFill;
+
+    if (path.elementCount() > 2)
+        flags |= QVectorPath::NonConvexShapeMask;
+
     if (d->stroker.capStyle() == Qt::RoundCap || d->stroker.joinStyle() == Qt::RoundJoin)
         flags |= QVectorPath::CurvedShapeMask;
 

@@ -1139,7 +1139,7 @@ void Q3DockArea::setAcceptDockWindow(Q3DockWindow *dw, bool accept)
 {
     if (accept)
         forbiddenWidgets.removeAll(dw);
-    else if (forbiddenWidgets.contains(dw))
+    else if (!forbiddenWidgets.contains(dw))
         forbiddenWidgets.append(dw);
 }
 

@@ -470,7 +470,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         }
         return 0;
     } else if (message == WM_TIMER) {    
-        if (wp == ~0u) {
+        if (wp == ~1u) {
             KillTimer(d->internalHwnd, wp);
             int localSerialNumber = d->serialNumber;
             (void) d->wakeUps.fetchAndStoreRelease(0);
@@ -488,7 +488,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
             // delay the next pass of sendPostedEvents() until we get the special
             // WM_TIMER, which allows all pending Windows messages to be processed
-            SetTimer(d->internalHwnd, ~0u, 0, 0);
+            SetTimer(d->internalHwnd, ~1u, 0, 0);
         } else {
             // nothing pending in the queue, let sendPostedEvents go through
             d->wakeUps.fetchAndStoreRelease(0);
@@ -531,15 +531,16 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             qWinAppInst(),     // application
                             0);                // windows creation data.
 
+    if (!wnd) {
+        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
+    }
+
 #ifdef GWLP_USERDATA
     SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
 #else
     SetWindowLong(wnd, GWL_USERDATA, (LONG)eventDispatcher);
 #endif
 
-    if (!wnd) {
-        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
-    }
     return wnd;
 }
 
@@ -550,7 +551,7 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     int ok = 0;
-    if (t->interval > 15 || !t->interval || !qtimeSetEvent) {
+    if (t->interval > 20 || !t->interval || !qtimeSetEvent) {
         ok = 1;
         if (!t->interval)  // optimization for single-shot-zero-timer
             QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));

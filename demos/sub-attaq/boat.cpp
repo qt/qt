@@ -68,7 +68,7 @@ static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
         QPropertyAnimation *anim = new QPropertyAnimation(step, "opacity");
         anim->setEndValue(1);
         anim->setDuration(100);
-        group->insertAnimationAt(i-1, anim);
+        group->insertAnimation(i-1, anim);
 
         //and then fade-out
         QPropertyAnimation *anim2 = new QPropertyAnimation(step, "opacity");

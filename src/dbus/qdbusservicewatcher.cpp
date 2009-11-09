@@ -47,6 +47,8 @@
 
 #include <private/qobject_p.h>
 
+QT_BEGIN_NAMESPACE
+
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busService, (QLatin1String(DBUS_SERVICE_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busPath, (QLatin1String(DBUS_PATH_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busInterface, (QLatin1String(DBUS_INTERFACE_DBUS)))
@@ -370,5 +372,7 @@ void QDBusServiceWatcher::setConnection(const QDBusConnection &connection)
         return;
     d->setConnection(d->servicesWatched, connection, d->watchMode);
 }
+
+QT_END_NAMESPACE
 
 #include "moc_qdbusservicewatcher.cpp"

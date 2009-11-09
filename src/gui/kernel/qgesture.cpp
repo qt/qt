@@ -220,15 +220,6 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
 */
 
 /*!
-    \property QPanGesture::totalOffset
-    \brief the total offset from the first input position to the current input
-    position
-
-    The total offset measures the total change in position of the user's input
-    covered by the gesture on the input device.
-*/
-
-/*!
     \property QPanGesture::lastOffset
     \brief the last offset recorded for this gesture
 
@@ -665,6 +656,72 @@ qreal QSwipeGesture::swipeAngle() const
 void QSwipeGesture::setSwipeAngle(qreal value)
 {
     d_func()->swipeAngle = value;
+}
+
+/*!
+    \class QTapGesture
+    \since 4.6
+    \brief The QTapGesture class describes a tap gesture made by the user.
+    \ingroup gestures
+
+    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+*/
+
+/*!
+    \property QTapGesture::position
+    \brief the position of the tap
+*/
+
+/*!
+    \internal
+*/
+QTapGesture::QTapGesture(QObject *parent)
+    : QGesture(*new QTapGesturePrivate, parent)
+{
+    d_func()->gestureType = Qt::TapGesture;
+}
+
+QPointF QTapGesture::position() const
+{
+    return d_func()->position;
+}
+
+void QTapGesture::setPosition(const QPointF &value)
+{
+    d_func()->position = value;
+}
+/*!
+    \class QTapAndHoldGesture
+    \since 4.6
+    \brief The QTapAndHoldGesture class describes a tap-and-hold (aka LongTap)
+    gesture made by the user.
+    \ingroup gestures
+
+    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+*/
+
+/*!
+    \property QTapAndHoldGesture::position
+    \brief the position of the tap
+*/
+
+/*!
+    \internal
+*/
+QTapAndHoldGesture::QTapAndHoldGesture(QObject *parent)
+    : QGesture(*new QTapAndHoldGesturePrivate, parent)
+{
+    d_func()->gestureType = Qt::TapAndHoldGesture;
+}
+
+QPointF QTapAndHoldGesture::position() const
+{
+    return d_func()->position;
+}
+
+void QTapAndHoldGesture::setPosition(const QPointF &value)
+{
+    d_func()->position = value;
 }
 
 QT_END_NAMESPACE

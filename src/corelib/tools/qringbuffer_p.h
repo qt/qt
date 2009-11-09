@@ -287,6 +287,33 @@ public:
         return -1;
     }
 
+    inline int indexOf(char c, int maxLength) const {
+        int index = 0;
+        int remain = qMin(size(), maxLength);
+        for (int i = 0; remain && i < buffers.size(); ++i) {
+            int start = 0;
+            int end = buffers.at(i).size();
+
+            if (i == 0)
+                start = head;
+            if (i == tailBuffer)
+                end = tail;
+            if (remain < end - start) {
+                end = start + remain;
+                remain = 0;
+            } else {
+                remain -= end - start;
+            }
+            const char *ptr = buffers.at(i).data() + start;
+            for (int j = start; j < end; ++j) {
+                if (*ptr++ == c)
+                    return index;
+                ++index;
+            }
+        }
+        return -1;
+    }
+
     inline int read(char *data, int maxLength) {
         int bytesToRead = qMin(size(), maxLength);
         int readSoFar = 0;

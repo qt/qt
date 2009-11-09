@@ -86,6 +86,7 @@ public:
     QString m_defaultContext;
     QByteArray m_codecForSource; // CPP, PO & QM specific
     QByteArray m_outputCodec; // PO specific
+    QString m_unTrPrefix; // QM specific
     QString m_sourceFileName;
     QString m_targetFileName;
     QDir m_sourceDir;

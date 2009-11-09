@@ -2976,13 +2976,13 @@ QShowEvent::~QShowEvent()
 /*!
     \class QFileOpenEvent
     \brief The QFileOpenEvent class provides an event that will be
-    sent when there is a request to open a file.
+    sent when there is a request to open a file or a URL.
 
     \ingroup events
 
     File open events will be sent to the QApplication::instance()
-    when the operating system requests that a file be opened. This is
-    a high-level event that can be caused by different user actions
+    when the operating system requests that a file or URL should be opened.
+    This is a high-level event that can be caused by different user actions
     depending on the user's desktop environment; for example, double
     clicking on an file icon in the Finder on Mac OS X.
 
@@ -2999,12 +2999,27 @@ QShowEvent::~QShowEvent()
 */
 QFileOpenEvent::QFileOpenEvent(const QString &file)
     : QEvent(FileOpen), f(file)
-{}
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
+}
+
+/*!
+    \internal
+
+    Constructs a file open event for the given \a url.
+*/
+QFileOpenEvent::QFileOpenEvent(const QUrl &url)
+    : QEvent(FileOpen)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(url));
+    f = url.toLocalFile();
+}
 
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
+    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
 }
 
 /*!
@@ -3012,6 +3027,16 @@ QFileOpenEvent::~QFileOpenEvent()
 
     Returns the file that is being opened.
 */
+
+/*!
+    \fn QUrl QFileOpenEvent::url() const
+
+    Returns the url that is being opened.
+*/
+QUrl QFileOpenEvent::url() const
+{
+    return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
+}
 
 #ifndef QT_NO_TOOLBAR
 /*!

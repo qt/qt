@@ -3787,27 +3787,14 @@ void QPainter::setPen(const QPen &pen)
     if (d->state->pen == pen)
         return;
 
+    d->state->pen = pen;
+
     if (d->extended) {
-        d->state->pen = pen;
         d->checkEmulation();
         d->extended->penChanged();
         return;
     }
 
-    // Do some checks to see if we are the same pen.
-    Qt::PenStyle currentStyle = d->state->pen.style();
-    if (currentStyle == pen.style() && currentStyle != Qt::CustomDashLine) {
-        if (currentStyle == Qt::NoPen ||
-            (d->state->pen.isSolid() && pen.isSolid()
-             && d->state->pen.color() == pen.color()
-             && d->state->pen.widthF() == pen.widthF()
-             && d->state->pen.capStyle() == pen.capStyle()
-             && d->state->pen.joinStyle() == pen.joinStyle()
-             && d->state->pen.isCosmetic() == pen.isCosmetic()))
-            return;
-    }
-
-    d->state->pen = pen;
     d->state->dirtyFlags |= QPaintEngine::DirtyPen;
 }
 
@@ -3888,14 +3875,6 @@ void QPainter::setBrush(const QBrush &brush)
         d->checkEmulation();
         d->extended->brushChanged();
         return;
-    }
-
-    Qt::BrushStyle currentStyle = d->state->brush.style();
-    if (currentStyle == brush.style()) {
-        if (currentStyle == Qt::NoBrush
-            || (currentStyle == Qt::SolidPattern
-                && d->state->brush.color() == brush.color()))
-            return;
     }
 
     d->state->brush = brush;

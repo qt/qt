@@ -386,6 +386,12 @@
     introduced in Qt 4.6.
 
     \omitvalue ItemIsFocusScope Internal only (for now).
+
+    \value ItemSendsScenePositionChanges The item enables itemChange()
+    notifications for ItemScenePositionHasChanged. For performance reasons,
+    these notifications are disabled by default. You must enable this flag
+    to receive notifications for scene position changes. This flag was
+    introduced in Qt 4.6.
 */
 
 /*!
@@ -562,6 +568,14 @@
     \value ItemOpacityHasChanged The item's opacity has changed. The value
     argument is the new opacity (i.e., a double). Do not call setOpacity() as
     this notification is delivered. The return value is ignored.
+
+    \value ItemScenePositionHasChanged The item's scene position has changed.
+    This notification is sent if the ItemSendsScenePositionChanges flag is
+    enabled, and after the item's scene position has changed (i.e., the
+    position or transformation of the item itself or the position or
+    transformation of any ancestor has changed). The value argument is the
+    new scene position (the same as scenePos()), and QGraphicsItem ignores
+    the return value for this notification (i.e., a read-only notification).
 */
 
 /*!
@@ -990,6 +1004,10 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
     if (scene) {
         // Deliver the change to the index
         scene->d_func()->index->itemChange(q, QGraphicsItem::ItemParentChange, newParentVariant);
+
+        // Disable scene pos notifications for old ancestors
+        if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
+            scene->d_func()->setScenePosItemEnabled(q, false);
     }
 
     if (subFocusItem && parent) {
@@ -1084,10 +1102,15 @@ void QGraphicsItemPrivate::setParentItemHelper(QGraphicsItem *newParent)
 
         parent->d_ptr->addChild(q);
         parent->itemChange(QGraphicsItem::ItemChildAddedChange, thisPointerVariant);
-        if (!implicitUpdate && scene) {
-            scene->d_func()->markDirty(q_ptr, QRect(),
-                                       /*invalidateChildren=*/false,
-                                       /*maybeDirtyClipPath=*/true);
+        if (scene) {
+            if (!implicitUpdate)
+                scene->d_func()->markDirty(q_ptr, QRect(),
+                                           /*invalidateChildren=*/false,
+                                           /*maybeDirtyClipPath=*/true);
+
+            // Re-enable scene pos notifications for new ancestors
+            if (scenePosDescendants || (flags & QGraphicsItem::ItemSendsScenePositionChanges))
+                scene->d_func()->setScenePosItemEnabled(q, true);
         }
 
         // Inherit ancestor flags from the new parent.
@@ -1336,7 +1359,9 @@ QGraphicsItem::~QGraphicsItem()
         d_ptr->setParentItemHelper(0);
     }
 
+#ifndef QT_NO_GRAPHICSEFFECT
     delete d_ptr->graphicsEffect;
+#endif //QT_NO_GRAPHICSEFFECT
     if (d_ptr->transformData) {
         for(int i = 0; i < d_ptr->transformData->graphicsTransforms.size(); ++i) {
             QGraphicsTransform *t = d_ptr->transformData->graphicsTransforms.at(i);
@@ -1746,6 +1771,12 @@ void QGraphicsItem::setFlags(GraphicsItemFlags flags)
     }
 
     if (d_ptr->scene) {
+        if ((flags & ItemSendsScenePositionChanges) != (oldFlags & ItemSendsScenePositionChanges)) {
+            if (flags & ItemSendsScenePositionChanges)
+                d_ptr->scene->d_func()->registerScenePosItem(this);
+            else
+                d_ptr->scene->d_func()->unregisterScenePosItem(this);
+        }
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath*/true);
@@ -2506,7 +2537,9 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     // Update.
     if (d_ptr->scene) {
+#ifndef QT_NO_GRAPHICSEFFECT
         d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
         d_ptr->scene->d_func()->markDirty(this, QRectF(),
                                           /*invalidateChildren=*/true,
                                           /*maybeDirtyClipPath=*/false,
@@ -2523,6 +2556,7 @@ void QGraphicsItem::setOpacity(qreal opacity)
 
     \since 4.6
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 QGraphicsEffect *QGraphicsItem::graphicsEffect() const
 {
     return d_ptr->graphicsEffect;
@@ -2569,6 +2603,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 
     prepareGeometryChange();
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     \internal
@@ -2582,6 +2617,7 @@ void QGraphicsItem::setGraphicsEffect(QGraphicsEffect *effect)
 */
 QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
 {
+#ifndef QT_NO_GRAPHICSEFFECT
     QGraphicsEffect *effect = graphicsEffect;
     QRectF brect = effect && effect->isEnabled() ? effect->boundingRect() : q_ptr->boundingRect();
     if (ancestorFlags & QGraphicsItemPrivate::AncestorClipsChildren)
@@ -2598,6 +2634,10 @@ QRectF QGraphicsItemPrivate::effectiveBoundingRect() const
     }
 
     return brect;
+#else //QT_NO_GRAPHICSEFFECT
+    return q_ptr->boundingRect();
+#endif //QT_NO_GRAPHICSEFFECT
+
 }
 
 /*!
@@ -2951,7 +2991,7 @@ bool QGraphicsItem::hasFocus() const
 {
     if (d_ptr->focusProxy)
         return d_ptr->focusProxy->hasFocus();
-    return (d_ptr->scene && d_ptr->scene->focusItem() == this);
+    return isActive() && (d_ptr->scene && d_ptr->scene->focusItem() == this);
 }
 
 /*!
@@ -3412,6 +3452,7 @@ void QGraphicsItem::setPos(const QPointF &pos)
 
     // Send post-notification.
     itemChange(QGraphicsItem::ItemPositionHasChanged, newPosVariant);
+    d_ptr->sendScenePosChange();
 }
 
 /*!
@@ -4022,6 +4063,7 @@ void QGraphicsItem::setTransform(const QTransform &matrix, bool combine)
 
     // Send post-notification.
     itemChange(ItemTransformHasChanged, newTransformVariant);
+    d_ptr->sendScenePosChange();
 }
 
 /*!
@@ -4246,6 +4288,24 @@ void QGraphicsItemPrivate::ensureSequentialSiblingIndex()
 }
 
 /*!
+    \internal
+*/
+inline void QGraphicsItemPrivate::sendScenePosChange()
+{
+    Q_Q(QGraphicsItem);
+    if (scene) {
+        if (flags & QGraphicsItem::ItemSendsScenePositionChanges)
+            q->itemChange(QGraphicsItem::ItemScenePositionHasChanged, q->scenePos());
+        if (scenePosDescendants) {
+            foreach (QGraphicsItem *item, scene->d_func()->scenePosItems) {
+                if (q->isAncestorOf(item))
+                    item->itemChange(QGraphicsItem::ItemScenePositionHasChanged, item->scenePos());
+            }
+        }
+    }
+}
+
+/*!
     \since 4.6
 
     Stacks this item before \a sibling, which must be a sibling item (i.e., the
@@ -4296,6 +4356,12 @@ void QGraphicsItem::stackBefore(const QGraphicsItem *sibling)
                 ++index;
         }
         d_ptr->siblingIndex = siblingIndex;
+        for (int i = 0; i < siblings->size(); ++i) {
+            int &index = siblings->at(i)->d_ptr->siblingIndex;
+            if (i != siblingIndex && index >= siblingIndex && index <= myIndex)
+                siblings->at(i)->d_ptr->siblingOrderChange();
+        }
+        d_ptr->siblingOrderChange();
     }
 }
 
@@ -4977,6 +5043,7 @@ int QGraphicsItemPrivate::depth() const
 /*!
     \internal
 */
+#ifndef QT_NO_GRAPHICSEFFECT
 void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
 {
     QGraphicsItemPrivate *itemPrivate = this;
@@ -4989,6 +5056,7 @@ void QGraphicsItemPrivate::invalidateGraphicsEffectsRecursively()
         }
     } while ((itemPrivate = itemPrivate->parent ? itemPrivate->parent->d_ptr.data() : 0));
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     \internal
@@ -5293,6 +5361,16 @@ void QGraphicsItemPrivate::subFocusItemChange()
 /*!
     \internal
 
+    Subclasses can reimplement this function to be notified when its
+    siblingIndex order is changed.
+*/
+void QGraphicsItemPrivate::siblingOrderChange()
+{
+}
+
+/*!
+    \internal
+
     Tells us if it is a proxy widget
 */
 bool QGraphicsItemPrivate::isProxyWidget() const
@@ -5324,7 +5402,9 @@ void QGraphicsItem::update(const QRectF &rect)
         return;
 
     // Make sure we notify effects about invalidated source.
+#ifndef QT_NO_GRAPHICSEFFECT
     d_ptr->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (CacheMode(d_ptr->cacheMode) != NoCache) {
         // Invalidate cache.
@@ -10679,6 +10759,7 @@ int QGraphicsItemGroup::type() const
     return Type;
 }
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QRectF QGraphicsItemEffectSourcePrivate::boundingRect(Qt::CoordinateSystem system) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
@@ -10818,6 +10899,7 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
 
     return pixmap;
 }
+#endif //QT_NO_GRAPHICSEFFECT
 
 #ifndef QT_NO_DEBUG_STREAM
 QDebug operator<<(QDebug debug, QGraphicsItem *item)
@@ -10941,6 +11023,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemChange change)
     case QGraphicsItem::ItemOpacityHasChanged:
         str = "ItemOpacityHasChanged";
         break;
+    case QGraphicsItem::ItemScenePositionHasChanged:
+        str = "ItemScenePositionHasChanged";
+        break;
     }
     debug << str;
     return debug;
@@ -10997,6 +11082,9 @@ QDebug operator<<(QDebug debug, QGraphicsItem::GraphicsItemFlag flag)
         break;
     case QGraphicsItem::ItemIsFocusScope:
         str = "ItemIsFocusScope";
+        break;
+    case QGraphicsItem::ItemSendsScenePositionChanges:
+        str = "ItemSendsScenePositionChanges";
         break;
     }
     debug << str;

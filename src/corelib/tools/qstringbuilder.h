@@ -66,7 +66,7 @@ public:
     const char *data() const { return m_data; }
 
     template <int N>
-    QLatin1Literal(const char (&str)[N]) 
+    QLatin1Literal(const char (&str)[N])
         : m_size(N - 1), m_data(str) {}
 
 private:
@@ -74,6 +74,21 @@ private:
     const char *m_data;
 };
 
+struct Q_CORE_EXPORT QAbstractConcatenable
+{
+protected:
+    static void convertFromAscii(const char *a, int len, QChar *&out);
+
+    static inline void convertFromAscii(char a, QChar *&out)
+    {
+#ifndef QT_NO_TEXTCODEC
+        if (QString::codecForCStrings)
+            *out++ = QChar::fromAscii(a);
+        else
+#endif
+            *out++ = QLatin1Char(a);
+    }
+};
 
 template <typename T> struct QConcatenable {};
 
@@ -87,9 +102,12 @@ public:
     {
         QString s(QConcatenable< QStringBuilder<A, B> >::size(*this),
             Qt::Uninitialized);
-        
+
         QChar *d = s.data();
         QConcatenable< QStringBuilder<A, B> >::appendTo(*this, d);
+        // this resize is necessary since we allocate a bit too much
+        // when dealing with variable sized 8-bit encodings
+        s.resize(d - s.data());
         return s;
     }
     QByteArray toLatin1() const { return QString(*this).toLatin1(); }
@@ -99,13 +117,13 @@ public:
 };
 
 
-template <> struct QConcatenable<char>
+template <> struct QConcatenable<char> : private QAbstractConcatenable
 {
     typedef char type;
     static int size(const char) { return 1; }
     static inline void appendTo(const char c, QChar *&out)
     {
-        *out++ = QLatin1Char(c);
+        QAbstractConcatenable::convertFromAscii(c, out);
     }
 };
 
@@ -170,7 +188,7 @@ template <> struct QConcatenable<QString>
     {
         const int n = a.size();
         memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
-        out += n; 
+        out += n;
     }
 };
 
@@ -182,53 +200,51 @@ template <> struct QConcatenable<QStringRef>
     {
         const int n = a.size();
         memcpy(out, reinterpret_cast<const char*>(a.constData()), sizeof(QChar) * n);
-        out += n; 
+        out += n;
     }
 };
 
 #ifndef QT_NO_CAST_FROM_ASCII
-template <int N> struct QConcatenable<char[N]>
+template <int N> struct QConcatenable<char[N]> : private QAbstractConcatenable
 {
     typedef char type[N];
-    static int size(const char[N]) { return N - 1; }
+    static int size(const char[N])
+    {
+        return N - 1;
+    }
     static inline void appendTo(const char a[N], QChar *&out)
     {
-        for (int i = 0; i < N - 1; ++i)
-            *out++ = QLatin1Char(a[i]);
+        QAbstractConcatenable::convertFromAscii(a, N, out);
     }
 };
 
-template <int N> struct QConcatenable<const char[N]>
+template <int N> struct QConcatenable<const char[N]> : private QAbstractConcatenable
 {
     typedef const char type[N];
     static int size(const char[N]) { return N - 1; }
     static inline void appendTo(const char a[N], QChar *&out)
     {
-        for (int i = 0; i < N - 1; ++i)
-            *out++ = QLatin1Char(a[i]);
+        QAbstractConcatenable::convertFromAscii(a, N, out);
     }
 };
 
-template <> struct QConcatenable<const char *>
+template <> struct QConcatenable<const char *> : private QAbstractConcatenable
 {
     typedef char const *type;
     static int size(const char *a) { return qstrlen(a); }
     static inline void appendTo(const char *a, QChar *&out)
     {
-        while (*a)
-            *out++ = QLatin1Char(*a++);
+        QAbstractConcatenable::convertFromAscii(a, -1, out);
     }
 };
 
-template <> struct QConcatenable<QByteArray>
+template <> struct QConcatenable<QByteArray> : private QAbstractConcatenable
 {
     typedef QByteArray type;
     static int size(const QByteArray &ba) { return qstrnlen(ba.constData(), ba.size()); }
     static inline void appendTo(const QByteArray &ba, QChar *&out)
     {
-        const char *data = ba.constData();
-        while (*data)
-            *out++ = QLatin1Char(*data++);
+        QAbstractConcatenable::convertFromAscii(ba.constData(), -1, out);
     }
 };
 #endif
@@ -237,7 +253,7 @@ template <typename A, typename B>
 struct QConcatenable< QStringBuilder<A, B> >
 {
     typedef QStringBuilder<A, B> type;
-    static int size(const type &p) 
+    static int size(const type &p)
     {
         return QConcatenable<A>::size(p.a) + QConcatenable<B>::size(p.b);
     }
