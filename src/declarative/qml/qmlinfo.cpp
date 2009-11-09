@@ -80,18 +80,18 @@ void qmlInfo(const QString& msg, QObject* object)
         pos += QLatin1Char(' ');
         pos += QLatin1String(object->metaObject()->className());
     }
-    QmlDeclarativeData *ddata = QmlDeclarativeData::get(object);
+    QmlDeclarativeData *ddata = object?QmlDeclarativeData::get(object):0;
     pos += QLatin1String(" (");
     if (ddata) {
         if (ddata->outerContext) {
             pos += ddata->outerContext->baseUrl().toString();
+            pos += QLatin1String(":");
+            pos += QString::number(ddata->lineNumber);
+            pos += QLatin1String(":");
+            pos += QString::number(ddata->columnNumber);
         } else {
-            pos += qApp->translate("QmlInfo","unknown");
+            pos += qApp->translate("QmlInfo","unknown location");
         }
-        pos += QLatin1String(":");
-        pos += QString::number(ddata->lineNumber);
-        pos += QLatin1String(":");
-        pos += QString::number(ddata->columnNumber);
     } else {
         pos += qApp->translate("QmlInfo","unknown location");
     }

@@ -70,6 +70,8 @@ ListView: wrap         -> keyNavigationWraps
 ListView: autoHighlight -> highlightFollowsCurrentItem
 GridView: wrap         -> keyNavigationWraps
 GridView: autoHighlight -> highlightFollowsCurrentItem
+Animation: targets -> matchTargets
+Animation: properties -> matchProperties
 
 Additions:
 MouseRegion: add "acceptedButtons" property
@@ -82,6 +84,7 @@ Loader: add sourceComponent property
 Loader: add resizeMode property
 ListView: preferredHighlightBegin, preferredHighlightEnd
 ListView: strictlyEnforceHighlightRange
+Particles: Added emissionRate, emissionVariance and burst()
 
 Deletions:
 Column/VerticalPositioner: lost "margins" property
@@ -92,6 +95,7 @@ Flickable: removed "dragMode" property
 ComponentInstance: removed.  Replaced by Loader.sourceComponent
 ListView: removed currentItemMode.  Replaced by highligh range.
 ListView: removed snapPos.
+Particles: removed streamIn. Replaced by emissionRate
 
 Other Changes:
 ids must be lowercase: Text { id: foo }, not Text { id: Foo }

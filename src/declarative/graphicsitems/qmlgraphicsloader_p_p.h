@@ -67,10 +67,13 @@ public:
     QmlGraphicsLoaderPrivate();
     ~QmlGraphicsLoaderPrivate();
 
+    void clear();
+    void initResize();
+
     QUrl source;
     QmlGraphicsItem *item;
     QmlComponent *component;
-    bool ownComponent;
+    bool ownComponent : 1;
     QmlGraphicsLoader::ResizeMode resizeMode;
 
     void _q_sourceLoaded();

@@ -75,6 +75,8 @@ Item {
 
 \endlist
 
+See also the \l {Keys}{Keys attached property} and {KeyNavigation}{KeyNavigation attached property}.
+
 \section1 Querying the Active Focus Item
 
 Whether or not an \l Item has \e {active focus} can be queried through the

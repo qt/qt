@@ -82,33 +82,4 @@ int QmlIntegerCache::value(const QString &id)
     return d?d->value:-1;
 }
 
-QmlIntegerCache *QmlIntegerCache::createForEnums(QmlType *type, QmlEngine *engine)
-{
-    Q_ASSERT(type);
-    Q_ASSERT(engine);
-
-    QmlIntegerCache *cache = new QmlIntegerCache(engine);
-
-    const QMetaObject *mo = type->metaObject();
-
-    for (int ii = mo->enumeratorCount() - 1; ii >= 0; --ii) {
-        QMetaEnum enumerator = mo->enumerator(ii);
-
-        for (int jj = 0; jj < enumerator.keyCount(); ++jj) {
-            QString name = QString::fromUtf8(enumerator.key(jj));
-            int value = enumerator.value(jj);
-
-            if (!name.at(0).isUpper())
-                continue;
-
-            if (cache->stringCache.contains(name))
-                continue;
-
-            cache->add(name, value);
-        }
-    }
-
-    return cache;
-}
-
 QT_END_NAMESPACE

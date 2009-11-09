@@ -7,22 +7,29 @@ SUBDIRS += \
            datetimeformatter \      # Cover
            examples \
            layouts \                # Cover
-           listview \               # Cover
+           qmlgraphicslistview \    # Cover
+           qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
+           parserstress \           # Cover
            pathview \               # Cover
            qfxloader \              # Cover
-           qfxtextedit \            # Cover
-           qfxtextinput \           # Cover
-           qfxwebview \             # Cover
            qmetaobjectbuilder \     # Cover
+           qmlbinding \             # Cover
+           qmlconnection \          # Cover
            qmlcontext \             # Cover
            qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
+           qmlerror \               # Cover
            qmlfontloader \          # Cover
+           qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicstext \        # Cover
+           qmlgraphicstextedit \    # Cover
+           qmlgraphicstextinput \   # Cover
+           qmlgraphicswebview \     # Cover
+           qmlinfo \                # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
            qmllistaccessor \        # Cover
@@ -31,6 +38,7 @@ SUBDIRS += \
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
            qmlqt \                  # Cover
+           qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
            repeater \               # Cover

@@ -191,8 +191,8 @@ class QmlPropertyAction : public QmlAbstractAnimation
 
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* targets READ targets)
+    Q_PROPERTY(QString matchProperties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* matchTargets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
     Q_PROPERTY(QVariant value READ value WRITE setValue NOTIFY valueChanged)
 
@@ -260,8 +260,8 @@ class Q_AUTOTEST_EXPORT QmlPropertyAnimation : public QmlAbstractAnimation
     Q_PROPERTY(QString easing READ easing WRITE setEasing NOTIFY easingChanged)
     Q_PROPERTY(QObject *target READ target WRITE setTarget NOTIFY targetChanged)
     Q_PROPERTY(QString property READ property WRITE setProperty NOTIFY targetChanged)
-    Q_PROPERTY(QString properties READ properties WRITE setProperties NOTIFY propertiesChanged)
-    Q_PROPERTY(QList<QObject *>* targets READ targets)
+    Q_PROPERTY(QString matchProperties READ properties WRITE setProperties NOTIFY propertiesChanged)
+    Q_PROPERTY(QList<QObject *>* matchTargets READ targets)
     Q_PROPERTY(QList<QObject *>* exclude READ exclude)
 
 public:

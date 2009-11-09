@@ -578,29 +578,35 @@ void QmlGraphicsGridViewPrivate::createHighlight()
         highlightYAnimator = 0;
     }
 
-    if (!highlightComponent)
-        return;
-
     if (currentItem) {
-        QmlContext *highlightContext = new QmlContext(qmlContext(q));
-        QObject *nobj = highlightComponent->create(highlightContext);
-        if (nobj) {
-            highlightContext->setParent(nobj);
-            QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(nobj);
-            if (item) {
-                item->setParent(q->viewport());
-                highlight = new FxGridItem(item, q);
-                highlightXAnimator = new QmlEaseFollow(q);
-                highlightXAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("x")));
-                highlightXAnimator->setDuration(150);
-                highlightXAnimator->setEnabled(autoHighlight);
-                highlightYAnimator = new QmlEaseFollow(q);
-                highlightYAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("y")));
-                highlightYAnimator->setDuration(150);
-                highlightYAnimator->setEnabled(autoHighlight);
+        QmlGraphicsItem *item = 0;
+        if (highlightComponent) {
+            QmlContext *highlightContext = new QmlContext(qmlContext(q));
+            QObject *nobj = highlightComponent->create(highlightContext);
+            if (nobj) {
+                highlightContext->setParent(nobj);
+                item = qobject_cast<QmlGraphicsItem *>(nobj);
+                if (!item)
+                    delete nobj;
             } else {
                 delete highlightContext;
             }
+        } else {
+            item = new QmlGraphicsItem;
+            item->setParent(q->viewport());
+        }
+        if (item) {
+            item->setZValue(0);
+            item->setParent(q->viewport());
+            highlight = new FxGridItem(item, q);
+            highlightXAnimator = new QmlEaseFollow(q);
+            highlightXAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("x")));
+            highlightXAnimator->setDuration(150);
+            highlightXAnimator->setEnabled(autoHighlight);
+            highlightYAnimator = new QmlEaseFollow(q);
+            highlightYAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("y")));
+            highlightYAnimator->setDuration(150);
+            highlightYAnimator->setEnabled(autoHighlight);
         }
     }
 }
@@ -1148,7 +1154,7 @@ void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexUp
+    \qmlmethod GridView::moveCurrentIndexUp()
 
     Move the currentIndex up one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1171,7 +1177,7 @@ void QmlGraphicsGridView::moveCurrentIndexUp()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexDown
+    \qmlmethod GridView::moveCurrentIndexDown()
 
     Move the currentIndex down one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1194,7 +1200,7 @@ void QmlGraphicsGridView::moveCurrentIndexDown()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexLeft
+    \qmlmethod GridView::moveCurrentIndexLeft()
 
     Move the currentIndex left one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1217,7 +1223,7 @@ void QmlGraphicsGridView::moveCurrentIndexLeft()
 }
 
 /*!
-    \qmlmethod GridView::moveCurrentIndexRight
+    \qmlmethod GridView::moveCurrentIndexRight()
 
     Move the currentIndex right one item in the view.
     The current index will wrap if keyNavigationWraps is true and it
@@ -1500,6 +1506,8 @@ void QmlGraphicsGridView::itemsMoved(int from, int to, int count)
             if (item->index > from && item->index != -1) {
                 // move everything after the moved items.
                 item->index -= count;
+                if (item->index < d->visibleIndex)
+                    d->visibleIndex = item->index;
             }
             ++it;
         }

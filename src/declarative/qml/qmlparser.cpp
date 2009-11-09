@@ -200,28 +200,6 @@ QmlParser::Object::DynamicSlot::DynamicSlot(const DynamicSlot &o)
 {
 }
 
-void QmlParser::Object::dump(int indent) const
-{
-    QByteArray ba(indent * 4, ' ');
-    if (type != -1) {
-        qWarning() << ba.constData() << "Object:" << typeName;
-    } else {
-        qWarning() << ba.constData() << "Object: fetched";
-    }
-
-    for (QHash<QByteArray, Property *>::ConstIterator iter = properties.begin();
-            iter != properties.end();
-            ++iter) {
-        qWarning() << ba.constData() << " Property" << iter.key();
-        (*iter)->dump(indent + 1);
-    }
-
-    if (defaultProperty) {
-        qWarning() << ba.constData() << " Default property";
-        defaultProperty->dump(indent + 1);
-    }
-}
-
 QmlParser::Property::Property()
 : parent(0), type(0), index(-1), value(0), isDefault(true), isDeferred(false)
 {
@@ -256,15 +234,6 @@ bool QmlParser::Property::isEmpty() const
     return !value && values.isEmpty();
 }
 
-void QmlParser::Property::dump(int indent) const
-{
-    QByteArray ba(indent * 4, ' ');
-    for (int ii = 0; ii < values.count(); ++ii)
-        values.at(ii)->dump(indent);
-    if (value)
-        value->dump(indent);
-}
-
 QmlParser::Value::Value()
 : type(Unknown), object(0)
 {
@@ -273,69 +242,6 @@ QmlParser::Value::Value()
 QmlParser::Value::~Value() 
 { 
     if (object) object->release();
-}
-
-void QmlParser::Value::dump(int indent) const
-{
-    QByteArray type;
-    switch(this->type) {
-    default:
-    case Value::Unknown:
-        type = "Unknown";
-        break;
-    case Value::Literal:
-        type = "Literal";
-        break;
-    case Value::PropertyBinding:
-        type = "PropertyBinding";
-        break;
-    case Value::ValueSource:
-        type = "ValueSource";
-        break;
-    case Value::ValueInterceptor:
-        type = "ValueInterceptor";
-        break;
-    case Value::CreatedObject:
-        type = "CreatedObject";
-        break;
-    case Value::SignalObject:
-        type = "SignalObject";
-        break;
-    case Value::SignalExpression:
-        type = "SignalExpression";
-        break;
-    case Value::Id:
-        type = "Id";
-        break;
-    }
-
-    QByteArray primType;
-    switch(this->value.type()) {
-    default:
-    case Variant::Invalid:
-        primType = "Invalid";
-        break;
-    case Variant::Boolean:
-        primType = "Boolean";
-        break;
-    case Variant::Number:
-        primType = "Number";
-        break;
-    case Variant::String:
-        primType = "String";
-        break;
-    case Variant::Script:
-        primType = "Script";
-        break;
-    }
-
-    QByteArray ba(indent * 4, ' ');
-    if (object) {
-        qWarning() << ba.constData() << "Value (" << type << "):";
-        object->dump(indent + 1);
-    } else {
-        qWarning() << ba.constData() << "Value (" << type << "):" << primType.constData() << primitive();
-    }
 }
 
 QmlParser::Variant::Variant()

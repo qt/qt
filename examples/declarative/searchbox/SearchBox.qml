@@ -50,11 +50,11 @@ FocusScope {
     transitions: [
         Transition {
             from: ""; to: "hasText"
-            NumberAnimation { exclude: typeSomething; properties: "opacity" }
+            NumberAnimation { exclude: typeSomething; matchProperties: "opacity" }
         },
         Transition {
             from: "hasText"; to: ""
-            NumberAnimation { properties: "opacity" }
+            NumberAnimation { matchProperties: "opacity" }
         }
     ]
 }

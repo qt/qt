@@ -626,6 +626,11 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
         url = QUrl(ctxt->argument(2).toString());
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
     QmlContext *qmlCtxt = qmlContext(parentArg);
+    if(!parentArg || !qmlCtxt){
+        //TODO: Could use a qmlInfo() like function for script functions
+        qWarning() << "createQmlObject called with invalid parent object";
+        return engine->nullValue();
+    }
     if (url.isEmpty()) {
         url = qmlCtxt->resolvedUrl(QUrl(QLatin1String("<Unknown File>")));
     } else {
@@ -903,7 +908,7 @@ QVariant QmlEnginePrivate::scriptValueToVariant(const QScriptValue &val)
     else if (dc == contextClass)
         return QVariant();
 
-    QScriptClass *sc = val.scriptClass();
+    QScriptDeclarativeClass *sc = QScriptDeclarativeClass::scriptClass(val);
     if (!sc) {
         return val.toVariant();
     } else if (sc == valueTypeClass) {
@@ -924,20 +929,7 @@ QVariant QmlScriptClass::toVariant(QmlEngine *engine, const QScriptValue &val)
     QmlEnginePrivate *ep =
         static_cast<QmlEnginePrivate *>(QObjectPrivate::get(engine));
 
-    QScriptDeclarativeClass *dc = QScriptDeclarativeClass::scriptClass(val);
-    if (dc == ep->objectClass)
-        return QVariant::fromValue(ep->objectClass->toQObject(val));
-    else if (dc == ep->contextClass)
-        return QVariant();
-
-    QScriptClass *sc = val.scriptClass();
-    if (!sc) {
-        return val.toVariant();
-    } else if (sc == ep->valueTypeClass) {
-        return ep->valueTypeClass->toVariant(val);
-    }
-
-    return QVariant();
+    return ep->scriptValueToVariant(val);
 }
 
 // XXX this beyonds in QUrl::toLocalFile()
