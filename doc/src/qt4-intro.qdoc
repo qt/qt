@@ -581,11 +581,7 @@
     DOM, helps reuse CSS selector knowledge, and gives little
     maintenance or footprint overhead.
 
-    \code
-        QWebElement document = frame->documentElement();
-        QList<QWebElement> allSpans = document.findAll("span");
-        QList<QWebElement> introSpans = document.findAll("p.intro span");
-    \endcode
+    \snippet webkitsnippets/webelement/main.cpp FindAll intro
 
     See the QWebElement class documentation for more information.
 
