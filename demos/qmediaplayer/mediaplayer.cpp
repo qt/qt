@@ -355,13 +355,13 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             if (m_MediaObject.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             } else {
                 m_MediaObject.pause();
             }
+            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
         case Phonon::PausedState:
         case Phonon::StoppedState:
