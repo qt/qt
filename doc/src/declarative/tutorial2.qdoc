@@ -11,6 +11,7 @@ To avoid writing the same code multiple times, we first create a new \c Cell com
 A component provides a way of defining a new type that we can re-use in other QML files.
 A QML component is like a black-box and interacts with the outside world through properties, signals and slots and is generally
 defined in its own QML file (for more details, see \l components).
+The component's filename must always start with a capital letter.
 
 Here is the QML code for \c Cell.qml:
 
