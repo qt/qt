@@ -68,10 +68,10 @@ void tst_QmlGraphicsLayouts::test_qml()
 
     canvas->execute();
     qApp->processEvents();
-    QmlGraphicsLayoutItem *left = qobject_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("left"));
+    QmlGraphicsLayoutItem *left = static_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("left"));
     QVERIFY(left != 0);
 
-    QmlGraphicsLayoutItem *right = qobject_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("right"));
+    QmlGraphicsLayoutItem *right = static_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("right"));
     QVERIFY(right != 0);
 
     qreal gvMargin = 9.0;
@@ -101,17 +101,21 @@ void tst_QmlGraphicsLayouts::test_qml()
     QCOMPARE(right->width(), 100.0);
     QCOMPARE(right->height(), 100.0);
 
-    //Maximum Size
-    canvas->root()->setWidth(1000 + 2*gvMargin);
-    canvas->root()->setHeight(1000 + 2*gvMargin);
+    //Between preferred and Maximum Size
+    /*Note that if set to maximum size (or above) GraphicsLinearLayout behavior
+      is to shrink them down to preferred size. So the exact maximum size can't
+      be used*/
+    canvas->root()->setWidth(670 + 2*gvMargin);
+    canvas->root()->setHeight(300 + 2*gvMargin);
 
     QCOMPARE(left->x(), gvMargin);
-    QCOMPARE(left->width(), 300.0);
+    QCOMPARE(left->width(), 270.0);
     QCOMPARE(left->height(), 300.0);
 
-    QCOMPARE(right->x(), 300.0 + gvMargin);
+    QCOMPARE(right->x(), 270.0 + gvMargin);
     QCOMPARE(right->width(), 400.0);
-    QCOMPARE(right->height(), 400.0);
+    QCOMPARE(right->height(), 300.0);
+
 }
 
 void tst_QmlGraphicsLayouts::test_cpp()
