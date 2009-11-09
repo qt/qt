@@ -276,8 +276,6 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         QScriptValue v = it.value();
         if (v.isArray()) {
             value->setListValue(v);
-        } else if (v.isObject()) {
-            value->setObjectValue(v);
         } else {
             value->values << v.toVariant();
         }
