@@ -1729,6 +1729,7 @@ void tst_QGL::shareRegister()
         delete glw1;
         QSKIP("Context sharing is not supported", SkipSingle);
     }
+    QVERIFY(glw1->isSharing());
     QVERIFY(glw1->context() != glw2->context());
 
     // Check that the first context's resource is also on the second.
