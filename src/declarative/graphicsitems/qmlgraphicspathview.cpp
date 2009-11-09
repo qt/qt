@@ -83,19 +83,6 @@ private:
     QmlOpenMetaObject *mo;
 };
 
-
-/*!
-    \internal
-    \class QmlGraphicsPathView
-    \brief The QmlGraphicsPathView class lays out items provided by a model on a path.
-
-    \ingroup group_views
-
-    The model must be a \l QListModelInterface subclass.
-
-    \sa QmlGraphicsPath
-*/
-
 /*!
     \qmlclass PathView QmlGraphicsPathView
     \brief The PathView element lays out model-provided items on a path.

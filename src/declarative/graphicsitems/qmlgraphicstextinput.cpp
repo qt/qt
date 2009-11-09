@@ -252,10 +252,29 @@ void QmlGraphicsTextInput::setMaxLength(int ml)
 
 /*!
     \qmlproperty bool TextInput::cursorVisible
-    If true the text edit shows a cursor.
+    Set to true when the TextInput shows a cursor.
 
-    This property is set and unset when the line edit gets focus, but it can also
-    be set directly (useful, for example, if a KeyProxy might forward keys to it).
+    This property is set and unset when the TextInput gets focus, so that other
+    properties can be bound to whether the cursor is currently showing. As it
+    gets set and unset automatically, when you set the value yourself you must
+    keep in mind that your value may be overwritten.
+
+    It can be set directly in script, for example if a KeyProxy might
+    forward keys to it and you desire it to look active when this happens
+    (but without actually giving it the focus).
+
+    It should not be set directly on the element, like in the below QML,
+    as the specified value will be overridden an lost on focus changes.
+
+    \code
+    TextInput {
+        text: "Text"
+        cursorVisible: false
+    }
+    \endcode
+
+    In the above snippet the cursor will still become visible when the
+    TextInput gains focus.
 */
 bool QmlGraphicsTextInput::isCursorVisible() const
 {
