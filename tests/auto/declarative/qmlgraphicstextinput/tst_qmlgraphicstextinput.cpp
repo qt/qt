@@ -46,12 +46,12 @@
 #include <private/qmlgraphicstextinput_p.h>
 #include <QDebug>
 
-class tst_qfxtextinput : public QObject
+class tst_qmlgraphicstextinput : public QObject
 
 {
     Q_OBJECT
 public:
-    tst_qfxtextinput();
+    tst_qmlgraphicstextinput();
 
 private slots:
     void text();
@@ -76,7 +76,7 @@ private:
     QStringList colorStrings;
 };
 
-tst_qfxtextinput::tst_qfxtextinput()
+tst_qmlgraphicstextinput::tst_qmlgraphicstextinput()
 {
     standard << "the quick brown fox jumped over the lazy dog"
         << "It's supercalifragisiticexpialidocious!"
@@ -96,7 +96,7 @@ tst_qfxtextinput::tst_qfxtextinput()
                  << "#2AC05F";
 }
 
-void tst_qfxtextinput::text()
+void tst_qmlgraphicstextinput::text()
 {
     {
         QmlComponent textinputComponent(&engine, "import Qt 4.6\nTextInput {  text: \"\"  }", QUrl());
@@ -118,7 +118,7 @@ void tst_qfxtextinput::text()
 
 }
 
-void tst_qfxtextinput::width()
+void tst_qmlgraphicstextinput::width()
 {
     // uses Font metrics to find the width for standard
     {
@@ -144,7 +144,7 @@ void tst_qfxtextinput::width()
     }
 }
 
-void tst_qfxtextinput::font()
+void tst_qmlgraphicstextinput::font()
 {
     //test size, then bold, then italic, then family
     { 
@@ -199,7 +199,7 @@ void tst_qfxtextinput::font()
     }
 }
 
-void tst_qfxtextinput::color()
+void tst_qmlgraphicstextinput::color()
 {
     //test style
     for (int i = 0; i < colorStrings.size(); i++)
@@ -226,7 +226,7 @@ void tst_qfxtextinput::color()
     }
 }
 
-void tst_qfxtextinput::selection()
+void tst_qmlgraphicstextinput::selection()
 {
     QString testStr = standard[0];
     QString componentStr = "import Qt 4.6\nTextInput {  text: \""+ testStr +"\"; }";
@@ -306,7 +306,7 @@ void tst_qfxtextinput::selection()
     QVERIFY(textinputObject->selectedText().size() == 10);
 }
 
-void tst_qfxtextinput::maxLength()
+void tst_qmlgraphicstextinput::maxLength()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
@@ -321,7 +321,7 @@ void tst_qfxtextinput::maxLength()
     //TODO: Simulated keypress input adding 11 chars at a time
 }
 
-void tst_qfxtextinput::masks()
+void tst_qmlgraphicstextinput::masks()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
@@ -331,7 +331,7 @@ void tst_qfxtextinput::masks()
     //TODO: Me
 }
 
-void tst_qfxtextinput::validators()
+void tst_qmlgraphicstextinput::validators()
 {
     QString componentStr = "import Qt 4.6\nTextInput {  maximumLength: 10; }";
     QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
@@ -345,7 +345,7 @@ void tst_qfxtextinput::validators()
 TextInput element should only handle left/right keys until the cursor reaches
 the extent of the text, then they should ignore the keys.
 */
-void tst_qfxtextinput::navigation()
+void tst_qmlgraphicstextinput::navigation()
 {
     QmlView *canvas = createView(SRCDIR "/data/navigation.qml");
     canvas->execute();
@@ -368,7 +368,7 @@ void tst_qfxtextinput::navigation()
     QVERIFY(input->hasFocus() == true);
 }
 
-void tst_qfxtextinput::cursorDelegate()
+void tst_qmlgraphicstextinput::cursorDelegate()
 {
     QmlView* view = createView(SRCDIR "/data/cursorTest.qml");
     view->execute();
@@ -396,7 +396,7 @@ void tst_qfxtextinput::cursorDelegate()
     QVERIFY(!textInputObject->findChild<QmlGraphicsItem*>("cursorInstance"));
 }
 
-void tst_qfxtextinput::simulateKey(QmlView *view, int key)
+void tst_qmlgraphicstextinput::simulateKey(QmlView *view, int key)
 {
     QKeyEvent press(QKeyEvent::KeyPress, key, 0);
     QKeyEvent release(QKeyEvent::KeyRelease, key, 0);
@@ -405,7 +405,7 @@ void tst_qfxtextinput::simulateKey(QmlView *view, int key)
     QApplication::sendEvent(view, &release);
 }
 
-QmlView *tst_qfxtextinput::createView(const QString &filename)
+QmlView *tst_qmlgraphicstextinput::createView(const QString &filename)
 {
     QmlView *canvas = new QmlView(0);
 
@@ -417,6 +417,6 @@ QmlView *tst_qfxtextinput::createView(const QString &filename)
     return canvas;
 }
 
-QTEST_MAIN(tst_qfxtextinput)
+QTEST_MAIN(tst_qmlgraphicstextinput)
 
-#include "tst_qfxtextinput.moc"
+#include "tst_qmlgraphicstextinput.moc"
