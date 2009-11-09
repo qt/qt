@@ -293,7 +293,7 @@ void tst_QPixmap::setAlphaChannel()
     QRgb expected = alpha == 0 ? 0 : qRgba(red, green, blue, alpha);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {
-            if (result.numColors() > 0) {
+            if (result.colorCount() > 0) {
                 ok &= result.pixelIndex(x, y) == expected;
             } else {
                 ok &= result.pixel(x, y) == expected;
@@ -330,7 +330,7 @@ void tst_QPixmap::fromImage()
 
     QImage image(37, 16, format);
 
-    if (image.numColors() == 2) {
+    if (image.colorCount() == 2) {
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
     }
@@ -731,7 +731,7 @@ void tst_QPixmap::testMetrics()
 void tst_QPixmap::createMaskFromColor()
 {
     QImage image(3, 3, QImage::Format_Indexed8);
-    image.setNumColors(10);
+    image.setColorCount(10);
     image.setColor(0, 0xffffffff);
     image.setColor(1, 0xff000000);
     image.setColor(2, 0xffff0000);
@@ -1134,6 +1134,8 @@ void tst_QPixmap::fromSymbianCFbsBitmap_data()
     QTest::newRow("EColor4K big") << EColor4K << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor64K small") << EColor64K << smallWidth << smallHeight << QColor(Qt::green);
     QTest::newRow("EColor64K big") << EColor64K << largeWidth << largeHeight << QColor(Qt::green);
+    QTest::newRow("EColor16M small") << EColor16M << smallWidth << smallHeight << QColor(Qt::yellow);
+    QTest::newRow("EColor16M big") << EColor16M << largeWidth << largeHeight << QColor(Qt::yellow);
     QTest::newRow("EColor16MU small") << EColor16MU << smallWidth << smallHeight << QColor(Qt::red);
     QTest::newRow("EColor16MU big") << EColor16MU << largeWidth << largeHeight << QColor(Qt::red);
     QTest::newRow("EColor16MA small opaque") << EColor16MA << smallWidth << smallHeight << QColor(255, 255, 0);

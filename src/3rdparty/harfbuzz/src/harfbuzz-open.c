@@ -1114,6 +1114,8 @@ _HB_OPEN_Load_EmptyClassDefinition( HB_ClassDefinition*  cd )
   if ( ALLOC_ARRAY( cd->cd.cd1.ClassValueArray, 1, HB_UShort ) )
     return error;
 
+  cd->loaded = TRUE;
+
   return HB_Err_Ok;
 }
 

@@ -212,12 +212,13 @@ QLibraryInfo::buildKey()
     Returns the installation date for this build of Qt. The install date will
     usually be the last time that Qt sources were configured.
 */
+#ifndef QT_NO_DATESTRING
 QDate
 QLibraryInfo::buildDate()
 {
-    return QDate();
-    //return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
+    return QDate::fromString(QString::fromLatin1(qt_configure_installation + 12), Qt::ISODate);
 }
+#endif //QT_NO_DATESTRING
 
 /*!
   Returns the location specified by \a loc.

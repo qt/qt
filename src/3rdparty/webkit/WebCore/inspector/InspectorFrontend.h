@@ -63,7 +63,8 @@ namespace WebCore {
         ScriptObject newScriptObject();
 
         void didCommitLoad();
-        void addMessageToConsole(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void addConsoleMessage(const ScriptObject& messageObj, const Vector<ScriptString>& frames, const Vector<ScriptValue> wrappedArguments, const String& message);
+        void updateConsoleMessageRepeatCount(const int count);
         void clearConsoleMessages();
 
         bool addResource(long long identifier, const ScriptObject& resourceObj);
@@ -126,7 +127,7 @@ namespace WebCore {
 
         void timelineProfilerWasStarted();
         void timelineProfilerWasStopped();
-        void addItemToTimeline(const ScriptObject& itemObj);
+        void addRecordToTimeline(const ScriptObject&);
 
         void didGetCookies(int callId, const ScriptArray& cookies, const String& cookiesString);
         void didDispatchOnInjectedScript(int callId, const String& result, bool isException);

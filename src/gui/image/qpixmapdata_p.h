@@ -113,7 +113,8 @@ public:
 
     inline int width() const { return w; }
     inline int height() const { return h; }
-    inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    QT_DEPRECATED inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    inline int colorCount() const { return metric(QPaintDevice::PdmNumColors); }
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
 
@@ -121,6 +122,8 @@ public:
     virtual void* toNativeType(NativeType type);
     virtual void fromNativeType(void* pixmap, NativeType type);
 #endif
+
+    static QPixmapData *create(int w, int h, PixelType type);
 
 protected:
     void setSerialNumber(int serNo);
@@ -131,12 +134,11 @@ protected:
 
 private:
     friend class QPixmap;
-    friend class QGLContextPrivate;
     friend class QX11PixmapData;
     friend class QS60PixmapData;
+    friend class QImagePixmapCleanupHooks; // Needs to set is_cached
     friend class QGLTextureCache; //Needs to check the reference count
     friend class QExplicitlySharedDataPointer<QPixmapData>;
-    friend bool qt_createEGLSurfaceForPixmap(QPixmapData*, bool); // Needs to set is_cached
 
     QAtomicInt ref;
     int detach_no;

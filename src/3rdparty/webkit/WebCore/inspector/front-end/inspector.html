@@ -34,6 +34,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="utilities.js"></script>
     <script type="text/javascript" src="treeoutline.js"></script>
     <script type="text/javascript" src="inspector.js"></script>
+    <script type="text/javascript" src="InspectorControllerStub.js"></script>
     <script type="text/javascript" src="Object.js"></script>
     <script type="text/javascript" src="KeyboardShortcut.js"></script>
     <script type="text/javascript" src="TextPrompt.js"></script>
@@ -44,6 +45,8 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="Drawer.js"></script>
     <script type="text/javascript" src="ChangesView.js"></script>
     <script type="text/javascript" src="ConsoleView.js"></script>
+    <script type="text/javascript" src="Panel.js"></script>
+    <script type="text/javascript" src="AbstractTimelinePanel.js"></script>
     <script type="text/javascript" src="Resource.js"></script>
     <script type="text/javascript" src="ResourceCategory.js"></script>
     <script type="text/javascript" src="Database.js"></script>
@@ -69,7 +72,6 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="EventListenersSidebarPane.js"></script>
     <script type="text/javascript" src="Color.js"></script>
     <script type="text/javascript" src="StylesSidebarPane.js"></script>
-    <script type="text/javascript" src="Panel.js"></script>
     <script type="text/javascript" src="PanelEnablerView.js"></script>
     <script type="text/javascript" src="StatusBarButton.js"></script>
     <script type="text/javascript" src="SummaryBar.js"></script>
@@ -94,6 +96,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="InjectedScript.js"></script>
     <script type="text/javascript" src="InjectedScriptAccess.js"></script>
     <script type="text/javascript" src="TimelineAgent.js"></script>
+    <script type="text/javascript" src="TimelinePanel.js"></script>
     <script type="text/javascript" src="TestController.js"></script>
 </head>
 <body class="detached">
@@ -110,7 +113,7 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     </div>
     <div id="drawer">
         <div id="console-view"><div id="console-messages"><div id="console-prompt" spellcheck="false"><br></div></div></div>
-        <div id="drawer-status-bar" class="status-bar"><div id="other-drawer-status-bar-items"><button id="clear-console-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><div id="console-filter" class="status-bar-item"></div></div></div>
+        <div id="drawer-status-bar" class="status-bar"><div id="other-drawer-status-bar-items"><button id="clear-console-status-bar-item" class="status-bar-item"><div class="glyph"></div><div class="glyph shadow"></div></button><div id="console-filter" class="scope-bar status-bar-item"></div></div></div>
     </div>
 </body>
 </html>

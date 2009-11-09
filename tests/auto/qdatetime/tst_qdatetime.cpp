@@ -447,7 +447,15 @@ void tst_QDateTime::toString_enumformat()
     QCOMPARE(str2, QString("1995-05-20T12:34:56"));
 
     QString str3 = dt1.toString(Qt::LocalDate);
+    qDebug() << str3;
     QVERIFY(!str3.isEmpty());
+    //check for date/time components in any order
+    //year may be 2 or 4 digits
+    QVERIFY(str3.contains("95"));
+    //day and month may be in numeric or word form
+    QVERIFY(str3.contains("12"));
+    QVERIFY(str3.contains("34"));
+    //seconds may be absent
 }
 
 void tst_QDateTime::addDays()

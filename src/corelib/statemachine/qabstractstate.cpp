@@ -78,12 +78,17 @@ QT_BEGIN_NAMESPACE
   function to perform custom processing when the state is exited.
 */
 
-QAbstractStatePrivate::QAbstractStatePrivate()
-    : parentState(0)
+QAbstractStatePrivate::QAbstractStatePrivate(StateType type)
+    : stateType(type), isMachine(false), parentState(0)
 {
 }
 
 QAbstractStatePrivate *QAbstractStatePrivate::get(QAbstractState *q)
+{
+    return q->d_func();
+}
+
+const QAbstractStatePrivate *QAbstractStatePrivate::get(const QAbstractState *q)
 {
     return q->d_func();
 }
@@ -127,7 +132,7 @@ void QAbstractStatePrivate::emitExited()
   Constructs a new state with the given \a parent state.
 */
 QAbstractState::QAbstractState(QState *parent)
-    : QObject(*new QAbstractStatePrivate, parent)
+    : QObject(*new QAbstractStatePrivate(QAbstractStatePrivate::AbstractState), parent)
 {
 }
 

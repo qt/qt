@@ -36,6 +36,10 @@
 #include <wtf/MainThread.h>
 #include <wtf/PassRefPtr.h>
 
+#if USE(JSC)
+#include "JSDOMWindow.h"
+#endif
+
 namespace WebCore {
 
 class ProcessMessagesSoonTask : public ScriptExecutionContext::Task {
@@ -194,5 +198,21 @@ DOMTimer* ScriptExecutionContext::findTimeout(int timeoutId)
 ScriptExecutionContext::Task::~Task()
 {
 }
+
+#if USE(JSC)
+JSC::JSGlobalData* ScriptExecutionContext::globalData()
+{
+     if (isDocument())
+        return JSDOMWindow::commonJSGlobalData();
+
+#if ENABLE(WORKERS)
+    if (isWorkerContext())
+        return static_cast<WorkerContext*>(this)->script()->globalData();
+#endif
+
+    ASSERT_NOT_REACHED();
+    return 0;
+}
+#endif
 
 } // namespace WebCore

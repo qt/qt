@@ -42,8 +42,9 @@
 #ifndef GOOGLESUGGEST_H
 #define GOOGLESUGGEST_H
 
+#include <QtGui>
+#include <QtNetwork>
 #include <QObject>
-#include <QNetworkAccessManager>
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -52,6 +53,7 @@ class QTimer;
 class QTreeWidget;
 QT_END_NAMESPACE
 
+//! [1]
 class GSuggestCompletion : public QObject
 {
     Q_OBJECT
@@ -75,6 +77,6 @@ private:
     QTimer *timer;
     QNetworkAccessManager networkManager;
 };
-
+//! [1]
 #endif // GOOGLESUGGEST_H
 

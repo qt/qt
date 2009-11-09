@@ -5514,9 +5514,6 @@ int QPlastiqueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option,
     case PM_MenuHMargin:
         ret = 0;
         break;
-    case PM_ToolBarIconSize:
-        ret = 24;
-        break;
     case PM_ButtonShiftHorizontal:
     case PM_ButtonShiftVertical:
         ret = 1;

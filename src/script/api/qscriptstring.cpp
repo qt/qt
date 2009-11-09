@@ -68,6 +68,10 @@ QT_BEGIN_NAMESPACE
 
   Call the toString() function to obtain the string that a
   QScriptString represents.
+
+  Call the toArrayIndex() function to convert a QScriptString to an
+  array index. This is useful when using QScriptClass to implement
+  array-like objects.
 */
 
 /*!
@@ -161,6 +165,31 @@ bool QScriptString::operator==(const QScriptString &other) const
 bool QScriptString::operator!=(const QScriptString &other) const
 {
     return !operator==(other);
+}
+
+/*!
+  \since 4.6
+
+  Attempts to convert this QScriptString to a QtScript array index,
+  and returns the result.
+
+  If a conversion error occurs, *\a{ok} is set to false; otherwise
+  *\a{ok} is set to true.
+*/
+quint32 QScriptString::toArrayIndex(bool *ok) const
+{
+    Q_D(const QScriptString);
+    if (!d) {
+        if (ok)
+            *ok = false;
+        return -1;
+    }
+    bool tmp;
+    bool *okok = ok ? ok : &tmp;
+    quint32 result = d->identifier.toArrayIndex(okok);
+    if (!*okok)
+        result = -1;
+    return result;
 }
 
 /*!

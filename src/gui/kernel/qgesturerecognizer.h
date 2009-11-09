@@ -43,6 +43,7 @@
 #define QGESTURERECOGNIZER_H
 
 #include <QtCore/qglobal.h>
+#include <QtCore/qnamespace.h>
 
 QT_BEGIN_HEADER
 
@@ -56,32 +57,36 @@ class QGesture;
 class Q_GUI_EXPORT QGestureRecognizer
 {
 public:
-    enum ResultFlags
+    enum ResultFlag
     {
-        Ignore            = 0x0001,
-        NotGesture        = 0x0002,
-        MaybeGesture      = 0x0004,
-        GestureTriggered  = 0x0008, // Gesture started or updated
-        GestureFinished   = 0x0010,
+        Ignore           = 0x0001,
 
-        ResultState_Mask  = 0x00ff,
+        MayBeGesture     = 0x0002,
+        TriggerGesture   = 0x0004,
+        FinishGesture    = 0x0008,
+        CancelGesture    = 0x0010,
+
+        ResultState_Mask = 0x00ff,
 
         ConsumeEventHint        = 0x0100,
         // StoreEventHint          = 0x0200,
         // ReplayStoredEventsHint  = 0x0400,
         // DiscardStoredEventsHint = 0x0800,
 
-        ResultHint_Mask   = 0xff00
+        ResultHint_Mask = 0xff00
     };
-    Q_DECLARE_FLAGS(Result, ResultFlags)
+    Q_DECLARE_FLAGS(Result, ResultFlag)
 
     QGestureRecognizer();
     virtual ~QGestureRecognizer();
 
-    virtual QGesture *createGesture(QObject *target);
-    virtual QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event) = 0;
-
+    virtual QGesture *create(QObject *target);
+    virtual Result recognize(QGesture *state, QObject *watched,
+                             QEvent *event) = 0;
     virtual void reset(QGesture *state);
+
+    static Qt::GestureType registerRecognizer(QGestureRecognizer *recognizer);
+    static void unregisterRecognizer(Qt::GestureType type);
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGestureRecognizer::Result)

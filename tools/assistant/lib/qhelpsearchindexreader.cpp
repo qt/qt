@@ -83,7 +83,7 @@ void QHelpSearchIndexReader::search(const QString &collectionFile, const QString
     start(QThread::NormalPriority);
 }
 
-int QHelpSearchIndexReader::hitsCount() const
+int QHelpSearchIndexReader::hitCount() const
 {
     QMutexLocker lock(&mutex);
     return hitList.count();

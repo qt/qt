@@ -86,7 +86,6 @@ class QSymbianEvent;
 
 class QApplication;
 class QApplicationPrivate;
-class QGestureRecognizer;
 #if defined(qApp)
 #undef qApp
 #endif
@@ -287,9 +286,6 @@ public:
     static void setNavigationMode(Qt::NavigationMode mode);
     static Qt::NavigationMode navigationMode();
 #endif
-
-    Qt::GestureType registerGestureRecognizer(QGestureRecognizer *recognizer);
-    void unregisterGestureRecognizer(Qt::GestureType type);
 
 Q_SIGNALS:
     void lastWindowClosed();

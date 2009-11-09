@@ -214,7 +214,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
             const int height = image.height();
             const int bplQt = image.bytesPerLine();
             if (bplQt == bplDFB && bplQt == (image.width() * image.depth() / 8)) {
-                memcpy(mem, image.bits(), image.numBytes());
+                memcpy(mem, image.bits(), image.byteCount());
             } else {
                 for (int i=0; i<height; ++i) {
                     memcpy(mem, image.scanLine(i), bplQt);
@@ -225,7 +225,7 @@ IDirectFBSurface *QDirectFBScreen::createDFBSurface(const QImage &image, QImage:
         }
     }
 #ifdef QT_DIRECTFB_PALETTE
-    if (image.numColors() != 0 && surface)
+    if (image.colorCount() != 0 && surface)
         QDirectFBScreen::setSurfaceColorTable(surface, image);
 #endif
     return surface;
@@ -497,7 +497,7 @@ void QDirectFBScreen::setSurfaceColorTable(IDirectFBSurface *surface,
     if (!surface)
         return;
 
-    const int numColors = image.numColors();
+    const int numColors = image.colorCount();
     if (numColors == 0)
         return;
 
@@ -1066,7 +1066,7 @@ static inline QColor colorFromName(const QString &name)
     QRegExp rx("#([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])([0-9a-f][0-9a-f])");
     rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (rx.exactMatch(name)) {
-        Q_ASSERT(rx.numCaptures() == 4);
+        Q_ASSERT(rx.captureCount() == 4);
         int ints[4];
         int i;
         for (i=0; i<4; ++i) {
@@ -1564,7 +1564,7 @@ void QDirectFBScreen::exposeRegion(QRegion r, int)
             primary->SetColor(primary, 0xff, 0xff, 0xff, cmd.windowOpacity);
         }
         const QRegion &region = cmd.source;
-        const int rectCount = region.numRects();
+        const int rectCount = region.rectCount();
         DFBRectangle source;
         if (rectCount == 1) {
             ::initParameters(source, region.boundingRect(), cmd.windowPosition);
@@ -1619,7 +1619,7 @@ void QDirectFBScreen::solidFill(const QColor &color, const QRegion &region)
     d_ptr->primarySurface->SetColor(d_ptr->primarySurface,
                                     color.red(), color.green(), color.blue(),
                                     color.alpha());
-    const int n = region.numRects();
+    const int n = region.rectCount();
     if (n == 1) {
         const QRect r = region.boundingRect();
         d_ptr->primarySurface->FillRectangle(d_ptr->primarySurface, r.x(), r.y(), r.width(), r.height());
@@ -1680,7 +1680,7 @@ void QDirectFBScreen::flipSurface(IDirectFBSurface *surface, DFBSurfaceFlipFlags
     if (!(flipFlags & DSFLIP_BLIT)) {
         surface->Flip(surface, 0, flipFlags);
     } else {
-        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.numRects() > 1) {
+        if (!(d_ptr->directFBFlags & BoundingRectFlip) && region.rectCount() > 1) {
             const QVector<QRect> rects = region.rects();
             const DFBSurfaceFlipFlags nonWaitFlags = flipFlags & ~DSFLIP_WAIT;
             for (int i=0; i<rects.size(); ++i) {

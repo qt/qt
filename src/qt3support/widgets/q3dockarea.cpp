@@ -1019,6 +1019,7 @@ void Q3DockArea::lineUp(bool keepNewLines)
         if (!keepNewLines)
             dw->setNewLine(false);
     }
+    layout->invalidate();
     layout->activate();
 }
 
@@ -1138,7 +1139,7 @@ void Q3DockArea::setAcceptDockWindow(Q3DockWindow *dw, bool accept)
 {
     if (accept)
         forbiddenWidgets.removeAll(dw);
-    else if (forbiddenWidgets.contains(dw))
+    else if (!forbiddenWidgets.contains(dw))
         forbiddenWidgets.append(dw);
 }
 

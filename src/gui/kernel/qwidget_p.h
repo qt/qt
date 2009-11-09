@@ -384,9 +384,10 @@ public:
     void setOpaque(bool opaque);
     void updateIsTranslucent();
     bool paintOnScreen() const;
+#ifndef QT_NO_GRAPHICSEFFECT
     void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
-    QRegion getOpaqueRegion() const;
     const QRegion &getOpaqueChildren() const;
     void setDirtyOpaqueRegion();
 
@@ -531,8 +532,10 @@ public:
 
     inline QRect effectiveRectFor(const QRect &rect) const
     {
+#ifndef QT_NO_GRAPHICSEFFECT
         if (graphicsEffect && graphicsEffect->isEnabled())
             return graphicsEffect->boundingRectFor(rect).toAlignedRect();
+#endif //QT_NO_GRAPHICSEFFECT
         return rect;
     }
 
@@ -631,7 +634,7 @@ public:
 #ifndef QT_NO_ACTION
     QList<QAction*> actions;
 #endif
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Bit fields.
     uint high_attributes[3]; // the low ones are in QWidget::widget_attributes
@@ -775,6 +778,7 @@ struct QWidgetPaintContext
     QPainter *painter;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QWidgetEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -819,13 +823,15 @@ public:
 
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
-    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset) const;
+    QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
+                   QGraphicsEffectSource::PixmapPadMode mode) const;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;
     QTransform lastEffectTransform;
     bool updateDueToGraphicsEffect;
 };
+#endif //QT_NO_GRAPHICSEFFECT
 
 inline QWExtra *QWidgetPrivate::extraData() const
 {

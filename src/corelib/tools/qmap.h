@@ -151,7 +151,7 @@ class QMap
     static inline int payload() { return sizeof(PayloadNode) - sizeof(QMapData::Node *); }
     static inline int alignment() {
 #ifdef Q_ALIGNOF
-        return qMax(sizeof(void*), Q_ALIGNOF(Node));
+        return int(qMax(sizeof(void*), Q_ALIGNOF(Node)));
 #else
         return 0;
 #endif

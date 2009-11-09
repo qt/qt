@@ -125,7 +125,16 @@ inline void QTriangulatingStroker::normalVector(float x1, float y1, float x2, fl
 {
     float dx = x2 - x1;
     float dy = y2 - y1;
-    float pw = m_width / sqrt(dx*dx + dy*dy);
+
+    float pw;
+
+    if (dx == 0)
+        pw = m_width / qAbs(dy);
+    else if (dy == 0)
+        pw = m_width / qAbs(dx);
+    else
+        pw = m_width / sqrt(dx*dx + dy*dy);
+
     *nx = -dy * pw;
     *ny = dx * pw;
 }
@@ -247,8 +256,6 @@ void QTriangulatingStroker::lineTo(const qreal *pts)
     m_cx = pts[0];
     m_cy = pts[1];
 }
-
-
 
 
 

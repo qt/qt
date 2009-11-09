@@ -122,7 +122,7 @@ JSWebSocket::JSWebSocket(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObje
 JSWebSocket::~JSWebSocket()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 void JSWebSocket::markChildren(MarkStack& markStack)
@@ -215,7 +215,7 @@ void setJSWebSocketOnopen(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnopen(globalObject->createJSAttributeEventListener(value));
@@ -225,7 +225,7 @@ void setJSWebSocketOnmessage(ExecState* exec, JSObject* thisObject, JSValue valu
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnmessage(globalObject->createJSAttributeEventListener(value));
@@ -235,7 +235,7 @@ void setJSWebSocketOnclose(ExecState* exec, JSObject* thisObject, JSValue value)
 {
     UNUSED_PARAM(exec);
     WebSocket* imp = static_cast<WebSocket*>(static_cast<JSWebSocket*>(thisObject)->impl());
-    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext());
+    JSDOMGlobalObject* globalObject = toJSDOMGlobalObject(imp->scriptExecutionContext(), exec);
     if (!globalObject)
         return;
     imp->setOnclose(globalObject->createJSAttributeEventListener(value));

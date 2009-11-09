@@ -161,7 +161,7 @@ typedef enum {
 /*
  * Buffer for output 
  */
-typedef struct _HB_GlyphBufer HB_GlyphBuffer;
+typedef struct _HB_GlyphBuffer HB_GlyphBuffer;
 struct _HB_GlyphBuffer {
     int glyph_item_size;
     int total_glyphs;

@@ -469,7 +469,7 @@ bool XsdValidatingInstanceReader::validateElement(const XsdElement::Ptr &declara
 
                 // 3.2.3.2
                 if (declaration->valueConstraint() && declaration->valueConstraint()->variety() == XsdElement::ValueConstraint::Fixed) {
-                    error(QtXmlPatterns::tr("Fixed value constrained not allowed if element is nillable."));
+                    error(QtXmlPatterns::tr("Fixed value constraint not allowed if element is nillable."));
                     return false;
                 }
             }
@@ -699,7 +699,7 @@ bool XsdValidatingInstanceReader::validateElementComplexType(const XsdElement::P
                 if (complexType->contentType()->variety() == XsdComplexType::ContentType::Mixed) {
                     if (declaration->valueConstraint() && declaration->valueConstraint()->variety() == XsdElement::ValueConstraint::Fixed) {
                         if (hasChildElement()) {
-                            error(QtXmlPatterns::tr("Element %1 can not contain other elements, as it has a fixed content.").arg(formatKeyword(declaration->displayName(m_namePool))));
+                            error(QtXmlPatterns::tr("Element %1 cannot contain other elements, as it has a fixed content.").arg(formatKeyword(declaration->displayName(m_namePool))));
                             return false;
                         }
 

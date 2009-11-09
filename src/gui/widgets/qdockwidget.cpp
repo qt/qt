@@ -685,8 +685,6 @@ void QDockWidgetPrivate::_q_toggleTopLevel()
 
 void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
 {
-    Q_Q(QDockWidget);
-
     if (state != 0)
         return;
 
@@ -694,8 +692,6 @@ void QDockWidgetPrivate::initDrag(const QPoint &pos, bool nca)
     Q_ASSERT(win != 0);
     QMainWindowLayout *layout = qobject_cast<QMainWindowLayout*>(win->layout());
     Q_ASSERT(layout != 0);
-    if (layout->layoutState.indexOf(q).isEmpty()) //The dock widget has not been added into the main window
-        return;
     if (layout->pluggingWidget != 0) // the main window is animating a docking operation
         return;
 
@@ -1011,6 +1007,12 @@ void QDockWidgetPrivate::plug(const QRect &rect)
 void QDockWidgetPrivate::setWindowState(bool floating, bool unplug, const QRect &rect)
 {
     Q_Q(QDockWidget);
+
+    if (!floating && parent) {
+        QMainWindowLayout *mwlayout = qobject_cast<QMainWindowLayout *>(q->parentWidget()->layout());
+        if (!mwlayout || mwlayout->dockWidgetArea(q) == Qt::NoDockWidgetArea)
+            return; // this dockwidget can't be redocked
+    }
 
     bool wasFloating = q->isFloating();
     bool hidden = q->isHidden();

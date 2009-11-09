@@ -92,6 +92,7 @@
 #include "JSEventSource.h"
 #include "JSFile.h"
 #include "JSFileList.h"
+#include "JSHTMLAllCollection.h"
 #include "JSHTMLAnchorElement.h"
 #include "JSHTMLAppletElement.h"
 #include "JSHTMLAreaElement.h"
@@ -246,7 +247,7 @@ ASSERT_CLASS_FITS_IN_CELL(JSDOMWindow);
 
 /* Hash table */
 
-static const HashTableValue JSDOMWindowTableValues[296] =
+static const HashTableValue JSDOMWindowTableValues[297] =
 {
     { "screen", DontDelete|ReadOnly, (intptr_t)jsDOMWindowScreen, (intptr_t)0 },
     { "history", DontDelete|ReadOnly, (intptr_t)jsDOMWindowHistory, (intptr_t)0 },
@@ -468,6 +469,7 @@ static const HashTableValue JSDOMWindowTableValues[296] =
     { "HTMLTitleElement", DontDelete, (intptr_t)jsDOMWindowHTMLTitleElementConstructor, (intptr_t)setJSDOMWindowHTMLTitleElementConstructor },
     { "HTMLUListElement", DontDelete, (intptr_t)jsDOMWindowHTMLUListElementConstructor, (intptr_t)setJSDOMWindowHTMLUListElementConstructor },
     { "HTMLCollection", DontDelete, (intptr_t)jsDOMWindowHTMLCollectionConstructor, (intptr_t)setJSDOMWindowHTMLCollectionConstructor },
+    { "HTMLAllCollection", DontDelete, (intptr_t)jsDOMWindowHTMLAllCollectionConstructor, (intptr_t)setJSDOMWindowHTMLAllCollectionConstructor },
     { "Image", DontDelete, (intptr_t)jsDOMWindowImageConstructor, (intptr_t)setJSDOMWindowImageConstructor },
     { "Option", DontDelete, (intptr_t)jsDOMWindowOptionConstructor, (intptr_t)setJSDOMWindowOptionConstructor },
     { "CanvasRenderingContext2D", DontDelete, (intptr_t)jsDOMWindowCanvasRenderingContext2DConstructor, (intptr_t)setJSDOMWindowCanvasRenderingContext2DConstructor },
@@ -666,7 +668,6 @@ JSDOMWindow::JSDOMWindow(NonNullPassRefPtr<Structure> structure, PassRefPtr<DOMW
 JSDOMWindow::~JSDOMWindow()
 {
     impl()->invalidateEventListeners();
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
 }
 
 JSValue jsDOMWindowScreen(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -2844,6 +2845,14 @@ JSValue jsDOMWindowHTMLCollectionConstructor(ExecState* exec, const Identifier&,
     if (!castedThis->allowsAccessFrom(exec))
         return jsUndefined();
     return JSHTMLCollection::getConstructor(exec, castedThis);
+}
+
+JSValue jsDOMWindowHTMLAllCollectionConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
+{
+    JSDOMWindow* castedThis = static_cast<JSDOMWindow*>(asObject(slot.slotBase()));
+    if (!castedThis->allowsAccessFrom(exec))
+        return jsUndefined();
+    return JSHTMLAllCollection::getConstructor(exec, castedThis);
 }
 
 JSValue jsDOMWindowImageConstructor(ExecState* exec, const Identifier&, const PropertySlot& slot)
@@ -5259,6 +5268,14 @@ void setJSDOMWindowHTMLCollectionConstructor(ExecState* exec, JSObject* thisObje
         return;
     // Shadowing a built-in constructor
     static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLCollection"), value);
+}
+
+void setJSDOMWindowHTMLAllCollectionConstructor(ExecState* exec, JSObject* thisObject, JSValue value)
+{
+    if (!static_cast<JSDOMWindow*>(thisObject)->allowsAccessFrom(exec))
+        return;
+    // Shadowing a built-in constructor
+    static_cast<JSDOMWindow*>(thisObject)->putDirect(Identifier(exec, "HTMLAllCollection"), value);
 }
 
 void setJSDOMWindowImageConstructor(ExecState* exec, JSObject* thisObject, JSValue value)

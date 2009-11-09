@@ -76,12 +76,34 @@ static inline int areaDiff(const QSize &size, const QGLFramebufferObject *fbo)
     return qAbs(size.width() * size.height() - fbo->width() * fbo->height());
 }
 
-QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat)
+extern int qt_next_power_of_two(int v);
+
+static inline QSize maybeRoundToNextPowerOfTwo(const QSize &sz)
+{
+#ifdef QT_OPENGL_ES_2
+    QSize rounded(qt_next_power_of_two(sz.width()), qt_next_power_of_two(sz.height()));
+    if (rounded.width() * rounded.height() < 1.20 * sz.width() * sz.height())
+        return rounded;
+#endif
+    return sz;
+}
+
+
+QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize, const QGLFramebufferObjectFormat &requestFormat, bool strictSize)
 {
     QGLFramebufferObject *chosen = 0;
     QGLFramebufferObject *candidate = 0;
     for (int i = 0; !chosen && i < m_fbos.size(); ++i) {
         QGLFramebufferObject *fbo = m_fbos.at(i);
+
+        if (strictSize) {
+            if (fbo->size() == requestSize && fbo->format() == requestFormat) {
+                chosen = fbo;
+                break;
+            } else {
+                continue;
+            }
+        }
 
         if (fbo->format() == requestFormat) {
             // choose the fbo with a matching format and the closest size
@@ -106,7 +128,7 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
             if (sz != fboSize) {
                 delete candidate;
-                candidate = new QGLFramebufferObject(sz, requestFormat);
+                candidate = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(sz), requestFormat);
             }
 
             chosen = candidate;
@@ -114,7 +136,10 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
     }
 
     if (!chosen) {
-        chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        if (strictSize)
+            chosen = new QGLFramebufferObject(requestSize, requestFormat);
+        else
+            chosen = new QGLFramebufferObject(maybeRoundToNextPowerOfTwo(requestSize), requestFormat);
     }
 
     if (!chosen->isValid()) {
@@ -127,7 +152,8 @@ QGLFramebufferObject *QGLFramebufferObjectPool::acquire(const QSize &requestSize
 
 void QGLFramebufferObjectPool::release(QGLFramebufferObject *fbo)
 {
-    m_fbos << fbo;
+    if (fbo)
+        m_fbos << fbo;
 }
 
 
@@ -426,7 +452,7 @@ QImage QGLPixmapData::fillImage(const QColor &color) const
     if (pixelType() == BitmapType) {
         img = QImage(w, h, QImage::Format_MonoLSB);
 
-        img.setNumColors(2);
+        img.setColorCount(2);
         img.setColor(0, QColor(Qt::color0).rgba());
         img.setColor(1, QColor(Qt::color1).rgba());
 

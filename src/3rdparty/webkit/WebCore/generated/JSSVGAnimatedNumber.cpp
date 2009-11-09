@@ -80,7 +80,7 @@ JSSVGAnimatedNumber::JSSVGAnimatedNumber(NonNullPassRefPtr<Structure> structure,
 
 JSSVGAnimatedNumber::~JSSVGAnimatedNumber()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGAnimatedNumber::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

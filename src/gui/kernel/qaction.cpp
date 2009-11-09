@@ -286,7 +286,7 @@ void QActionPrivate::setShortcutEnabled(bool enable, QShortcutMap &map)
 
     Actions with a softkey role defined are only visible in the softkey bar when the widget containing
     the action has focus. If no widget currently has focus, the softkey framework will traverse up the
-    widget parent heirarchy looking for a widget containing softkey actions.
+    widget parent hierarchy looking for a widget containing softkey actions.
  */
 
 /*!

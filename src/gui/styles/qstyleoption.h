@@ -192,7 +192,27 @@ public:
 protected:
     QStyleOptionTabWidgetFrame(int version);
 };
+
+class Q_GUI_EXPORT QStyleOptionTabWidgetFrameV2 : public QStyleOptionTabWidgetFrame
+{
+public:
+    enum StyleOptionVersion { Version = 2 };
+
+    QRect tabBarRect;
+    QRect selectedTabRect;
+
+    QStyleOptionTabWidgetFrameV2();
+    QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrameV2 &other) :
+            QStyleOptionTabWidgetFrame(Version) { *this = other; }
+    QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrame &other);
+    QStyleOptionTabWidgetFrameV2 &operator=(const QStyleOptionTabWidgetFrame &other);
+
+protected:
+    QStyleOptionTabWidgetFrameV2(int version);
+};
+
 #endif
+
 
 #ifndef QT_NO_TABBAR
 class Q_GUI_EXPORT QStyleOptionTabBarBase : public QStyleOption

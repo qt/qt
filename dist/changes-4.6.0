@@ -23,6 +23,26 @@ information about a particular change.
    * The minimum required version of the D-Bus reference library is
      now 0.93.
 
+ - [MR#1742] Added new multimedia keys to the Qt::Key enum.
+
+ - QMatrix4x4, QGenericMatrix, QVector2D, QVector3D, QVector4D, QQuaternion
+    * New classes to support 3D applications.
+
+ - QGLShaderProgram, QGLShader
+    * New classes for using shader programs written in the GL Shading Language.
+
+ - Boxes demo ported to use new 3D math and shader program classes.
+
+ - OpenVG graphics system added.
+
+ - Add 800x480 screen mode to qvfb configuration dialog.
+
+ - Improved support for input methods in graphics view.
+
+Third party components
+----------------------
+
+ - Updated FreeType to version 2.3.9
 
 ****************************************************************************
 *                          Library                                         *
@@ -30,14 +50,312 @@ information about a particular change.
 
     * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
+ - QGraphicsBlurEffect
+    * Since the 4.6 beta Qt::RenderHint has been moved to
+      QGraphicsBlurEffect::BlurHint.
+
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
+
+QtCore
+
+ - QByteArray
+    * New overloads for QByteArray::insert() and QByteArray::prepend()
+
+ - QObject
+    * [259514] fixed a possible dead-lock in the destructor
+
  - QVariant
     * Many optimisations
     * Added QVariant::toFloat() and QVariant::toReal()
     * Added QVariant(float) constructor
+    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
+      identify functions
+    * Added support for math3d types.
+
+ - Qt::escape
+    * now escape the double quote (&quot;)
+
+ - QScopedPointer
+    * New pointer class for cleaning up objects when leaving the
+      current scope
+
+ - QFile
+    * Make QFile::resize() more robust when operating on buffered files
+
+ - QObject
+    * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
+    * Fixed race conditions that occured when moving object to threads while connecting
+
+ - QPluginLoader
+    * Improved performance of plugin loading by reusing the plugin cache instead of loading
+      it every time.
+
+- QTextStream
+    * [221316] Fixed crash on large input.
+    * Improved reading utf8/utf16/utf32 data by correctly skipping the
+      ByteOrderMark when reading data by one character at a time.
+
+- QXmlStreamWriter
+    * [256468] fix comment indentation
+
+QtGui
+- QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - QCompleter
+    * [246056] Fixed a possible assertion when setting the completer prefix
+
+ - QFontDialog
+    * [256466] fixed the dialog not always returning the selected style.
+
+ - QGraphicsItem
+    * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
+    * Many optimizations.
+    * Introduced QGraphicsItem::ItemHasNoContents
+    * Introduced QGraphicsItem::ItemSendsGeometryChanges (see Behavioral Changes)
+    * Introduced QGraphicsItem::focusProxy(), focus proxy support
+    * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
+    * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced activation support.
+    * Introduced QGraphicsItem::stackBefore()
+    * Cached items are now always invalidated when update() is called.
+    * Added input hints.
+
+- QGraphicsLayout
+    * Introduced QGraphicsLayout::addChildLayoutItem()
+
+ - QGraphicsObject
+    * New class; inherits QGraphicsItem and adds notification signals and property declarations.
+
+ - QGraphicsProxyWidget
+    * [251407] Fixed window flag handling. Now QGraphicsProxyWidget's flags win.
+    * Fix Qt::ClickFocus policy
+
+ - QGraphicsScene
+    * [245317] Fixes to mouse grabbing behavior.
+    * Fixed delivery of double-click events after explicit grab and then ungrab.
+    * Rewrote the internal rendering to use a recursive instead of an iterative approach.
+    * Many optimizations.
+    * Ensure hover enter events are delivered when an item is pressed.
+    * Introduced activation support.
+    * Fixed bugs in initial focus support.
+
+ - QGraphicsTextItem
+    * Now inherits from QGraphicsObject instead
+
+ - QGraphicsTransform
+    * New class; eases animation of transformations for QGraphicsItem.
+
+ - QGraphicsView
+    * Fix mapToScene(QRect) to avoid extra unnecessary adjustments.
+    * Many optimizations.
+    * Introduced QGraphicsView::isTransformed()
+    * [QTBUG-4151] Items with parent that sets ItemClipsChildrenToShape were sometimes invisible.
+
+ - QGraphicsWidget
+    * Now inherits from QGraphicsObject instead
+    * Interactive resizing of top level windows now respects height-for-width constraints.
+    * Reduced memory footprint.
+
+ - QHeaderView
+    * [208320] Make sure the sort indicator s taken into account for the size hint
+    * [255574] Make sure the sizehint for the section depend on visible sections
+
+ - QMainWindow
+    * [226060] Adding actions to a toolbar would always make the next toolbar move
+
+ - QMenuBar
+    * [260873] Fix mouse interaction while undocking a widget from the main window
+	* dock areas don't get a splitter if their dock widgets are not resizable
+
+ - QColumnView
+    * [246999] Fixed view not updating when the model is changed dynamically
+
+ - QLineEdit
+    * [248948] Clear selection when redoing a delete operation.
+
+ - QListView
+    * [243335] Fixed the visualRect to return correct values when the widget is not yet show
+
+ - QTreeView
+    * [234930] Be able to use :has-children and :has-sibillings in a stylesheet
+    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning columns
+	* [245654] Fixed expandAll when deleting and recreating a mode for the tree
+	* [239271] Fixed missing update when adding a row when the first column is hidden
+	* [258225] Fixed scrollTo with center and bottom
+
+ - QTreeWidget
+    * [253109] Shows the widget when calling setItemWidget
+
+ - QTableView
+    * [191545] Selections work more similarly to well-known spreadsheets
+    * [234926] Fixed sorting after changing QTableView header
+    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
+      speed-up, support for rows/columns insertion/removal, and better keyboard
+      navigation
+
+ - QTableWidget
+    * [234641] Fixed takeItem to cause the view to be updated.
+
+ - QTabBar
+    * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
+      to be slightly clipped.
+    * [241383] Added ability to style the close tab button with style sheet
+
+ - QComboBox
+    * [220195] Fixed keyboard search when current index is -1
+
+ - QPixmap
+    * Optimized width(), height(), isNull() and depth().
+
+ - QRegion
+    * Minor optimizations.
+
+ - QSpinBox
+    * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow possition
+    * [255051] Fixed sizeHint update bug.
+
+ - QStandardItemModel
+    * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel
+
+ - QToolTip
+    * Fixed a bug where tooltips were not shown in popups. (Windows only).
+
+ - QGraphicsItem
+    * Added a new set of properties to set a transformation on a item
+
+ - QMenu
+    * [252610] Fixed position of the shortcut text while setting a stylesheet on menu items
+
+ - QSortFilterProxyModel
+    * [251296] Fixed bugs in which filtered items could not be filtered.
+
+ - QSplitter
+    * [206494] Added ability to style pressed slided with stylesheet
+
+ - QWidget
+    * [201649] Added QWidget::previousInFocusChain
+    * [254563] Fixed a crash when setting a focus in a widget tree that
+      contains invisible widgets
+
+ - QFontEngineQPF
+    * Make alphaMapForGlyph() generate the correct color table for
+      Indexed8 and Mono glyph images.  Fixed the "all glyphs are white
+      boxes" problem in OpenGL1 paint engine.
+
+ - QPaintDevice
+    * New qt_paint_device_metric() function to replace the friend
+      declarations for window surface classes that need to access metric().
+
+ - QPushButton
+    * [255581] Fixed sizeHint recalculation bug.
+
+ - QApplication
+   * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+
+QtNetwork
+
+ - QAbstractSocket
+    * only disconnect from host when all bytes have been written
+    * New setSocketOption method.
+
+ - QHttp
+    * Do not buffer the complete POST data anymore when HTTPS is used.
+    * QHttp is now obsolete and replaced by QNetworkAccessManager.
+
+ - QLocalServer
+    * fix timeout when waiting for a connection on Unix
+
+ - QNativeSocketEngine
+    * Do not set the OS socket send and receive buffer size. The OS
+      should auto tune these values for us.
+
+ - QNetworkAcessManager
+    * [242916] add possibility to send HTTP DELETE requests
+    * Connection count per HTTP server increased to 6 on Desktop, 3 on Symbian.
+    * Optional HTTP pipelining support.
+    * General HTTP performance improvements.
+
+ - QNetworkReply
+    * [257322] add possibility to ignore specific SSL errors
+    * New isFinished() method.
+
+ - QSslCertificate
+    * [251830] fix version() and serialNumber() methods
+
+ - QSslSocket
+    * [257322] add possibility to ignore specific SSL errors
+    * Fix build with openssl 1.0.0 betas
+    * Trigger a SSL transmission when reading from the socket. In certain
+      cases the connection stalled when a buffer limit was used.
+
+QtOpenGL
+
+ - QGLFormat
+    * Increase unit test coverage and fix some long-standing issues.
+    * Improve performance of code that tests QGLFormat options.
+    * operator==() now tests for equality on all fields.
+
+ - QGLColormap
+    * setEntry() was inserting entries instead of replacing them.
+    * Clarified documentation for isEmpty().
+
+ - QGLFramebufferObject
+    * Add support for the ARB_framebuffer_object, OES_framebuffer_object,
+      and OES_packed_depth_stencil extensions.
+    * Unbind the texture after it is initialized.
+    * Don't destroy the texture target on cleanup if one wasn't created.
+
+ - QGLFramebufferObjectFormat
+    * New class for controlling fbo options.
+
+ - Improvements to context sharing and object cleanup logic.
+
+ - QGLContext
+    * Fix RGB565 mode in bindTexture().
+    * Map mipmaps work on OpenGL/ES 2.0 systems in bindTexture().
+    * Improve performance of QGLContext::currentContext().
+
+ - QGLGradientCache
+   * [249919] Clean up the gradient cache in the right context.
+
+QtXml
+
+- QDomDocument
+    * set the codec to UTF-8 if codec not present or unknown
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
+
+ - Added community supported Qt ports for QNX and VxWorks. See platform
+   notes in the Qt documentation for details.
+
+Qt for Linux/X11
+----------------
+
+ - KDE Integration: Improved the integration into KDE desktop (loading of KDE
+   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
+
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+Qt for Windows
+--------------
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -49,11 +367,181 @@ information about a particular change.
    QRegion. The native handle is for reading out only. Any GDI calls
    made on the HRGN handle will not affect the QRegion.
 
- - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
-   thanks to Konstantin Ritt (merge request 1217).
-
  - The reading code of QLocalSocket on Windows has been rewritten to improve
    reading performance.
+
+ - On Windows when a file cannot be accessed (stat()ed), we are now restoring
+   the error mode to the original value.
+
+ - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
+   thanks to Konstantin Ritt (merge request 1217).
+ - [251554] Fixed openUrl("mailto:") with Thunderbird on Windows.
+ - [254501] QDestopServices now supports cyrillic file names.
+ - Fixed an issue which prevents moving fixed size windows using titlebar.
+ - [258087] Fixed an issue on Vista which returns incorrect file paths when using
+   QFileDialog::getOpenFileNames()
+ - [253763] Fixed a focus issue when using out-of-process ActiveQt controls.
+ - [255912] Mouse move events will not be delivered to a blocked widget.
+ - [225588] Enabled IME reconversion support.
+
+ - Phonon on Windows
+   * Now much more reliable when reading a file through a QIODevice.
+   * If Video Mixing Renderer 9 is not available, falls back to software
+     rendering.
+   * Fixed a flicker issue when switching source with a transition time of 0
+
+Qt for Mac OS X
+---------------
+
+ - Add support for GetURL events on Mac OS X
+ - [123740] Fixed an issue with dead keys on Mac (cocoa) on French keyboard layout.
+ - [252088] Drag Leave events will be delivered correctly on Cocoa.
+ - [257661] Cocoa now uses the correct line ending for clipboard plain text.
+ - [258438] Enabled Emacs style keyboard shortcuts.
+ - [258173] Fixed an issue which caused "whatsthis" pointer to flicked on Cocoa.
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+
+General changes on Mac OS X:
+ - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
+   10.6(Snow Leopard) has been added.
+ - The Cocoa port now supports static linking.
+ - The Cocoa port now supports the Qt3Support library (with the exception of Q3FileDialog)
+   to ease the transition from Carbon to Cocoa.
+ - The Cocoa binary packages are now Intel only (universal i386 and x86_64).
+ - Snow Leopard notes:
+    - Gcc 4.2 is used by default. Configure with -platform macx-g++40 to select 4.0.
+    - Using the 10.4u SDK requires gcc 4.0.
+    - Configuring for the Cocoa port (-cocoa) produces 64-bit binaries by default.
+      Use the -arch flags to override.
+    - Building for ppc64 is no longer supported by the gcc tool chain.
+    - Building for ppc is still supported.
+
+Qt for Embedded Linux
+---------------------
+
+- Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+  QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+  specific libraries.
+
+- Compilation fixes for OpenGL/ES 1.0 and OpenGL/ES 1.1 Common Lite.
+
+- EGL and OpenGL/ES
+   * Protect the use of version-specific EGL symbols with #ifdef's.
+   * Make sure an EGL context is current when resolving GL extensions.
+   * Introduce "lazyDoneCurrent" for optimizing context switching in
+     paint engines.
+   * Separate EGLSurface from QEglContext so that the same context can
+     be used with multiple surfaces.
+   * Move common functions from system-specific files to qgl_egl.cpp.
+   * Fix a memory leak of EGLSurface's in QGLContext.
+   * Fix detection of pbuffers on OpenGL/ES systems.
+   * EGL_SAMPLES was being set to the wrong value for multisampled surfaces.
+
+- PowerVR
+   * Make the code better at detecting MBX vs SGX header files.
+   * Fix 32-bit screen support - some code was still assuming 16-bit.
+   * Stop GL window surfaces double-flushing their contents.
+   * Remove surface holder, which never worked all that well.
+   * Implement screen rotations.
+
+- Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
+
+Qt for Windows CE
+-----------------
+ - On Windows CE the link time code generation has been disabled by default to
+   be consistent with win32-msvc200x.
+ - The default button size has been reduced in the Windows mobile style.
+ - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
+ - [254673] Restoring minimized widgets fixed for Windows mobile and
+   Windows CE.
+ - [255242] Seeking within large files (bigger than 0x80000000 bytes) fixed
+   on Windows CE.
+ - [257352] When configuring Qt for Windows CE, configure points the user to
+   setcepaths, when its done.
+ - [259850] Added a makespec template for Windows CE 6.
+
+****************************************************************************
+*                          Tools                                           *
+****************************************************************************
+
+- Designer
+
+ - [233683] Promoted Widgets are now stored correctly in scratchpad.
+ - [249823] Added search functionality to the resource browser.
+ - [254282] Enabled the use of promoted widgets in form templates.
+ - [254824] Made it possible to override the createAction()/createWidget()
+            functions of QUiLoader.
+ - [256332] Enabled deleting all pages of a QTabWidget or QStackedWidget.
+ - [259238] Fixed menubar/menu editing in right-to-left mode.
+ - [259918] Fixed setting of object names for container pages not to use
+            localized strings.
+ - [260658] Fixed saving of alpha values set in the palette editor.
+ -          It is now possible to further specify the kind of custom widget
+            string properties using XML tags.
+
+- uic3
+
+ - [128859] Fixed code generation of QLabel's wordWrap property.
+
+ - lupdate
+  - Fixed a bug in the java source code parser.
+
+****************************************************************************
+*                               DirectFB                                   *
+****************************************************************************
+
+ - When running Qt/DirectFB the DirectFB window id of a top level QWidget can
+   be queried using property("_q_DirectFBWindowID")
+
+ - Allow setting the background color of the primary layer in DirectFB with
+   connect options. QWS_DISPLAY=directfb:bgcolor=red or
+   QWS_DISPLAY=directfb:bgcolor=\#aabbccdd
+
+ - Add support for rendering mouse cursor using a top level window when cursor
+   support is not working in IDirectFBDisplayLayer. Define
+   QT_DIRECTFB_WINDOW_AS_CURSOR to enable.
+
+ - Add experimental support for optimized locking/unlocking of surfaces. Enable
+   by defining QT_DIRECTFB_SUBSURFACE.
+
+ - Fix a bug to conceptually allow using QDirectFBScreen as a subscreen of a
+   proxy screen. Don't make QDirectFBScreen::instance() assume that
+   QScreen::instance() is a QDirectFBScreen.
+
+ - Optimize move/resize operations with DirectFB. With a properly configured
+   DirectFB these operations are handled for us and we don't need to force a
+   repaint of the window.
+
+ - Support top level window opacity in DirectFB
+
+ - Fix a bug when loading RGB32 images that would lead to rendering issues.
+
+ - Fix a bug when painting with invalid pens/brushes.
+
+ - Fix a bug that would show up when QWidget::scroll is called.
+
+ - Implement support for loading pixmaps using IDirectFBImageProvider.
+
+ - Disable color table support by default. This seems to work incorrectly on
+   most boards and loading these images will generally require an image
+   conversion anyway.
+
+ - Fix a bug regarding QGraphicsProxyWidgets
+
+ - Fix a crash when resizing windows
+
+ - Compile with versions < 1.0. We still recommend using newer versions.
+
+ - Considerable code cleanup
+
+ - Various optimizations regarding painting, loading of images and creation of
+   surfaces.
+
+ - Allow forcibly falling back to raster engine for painting operations by
+   exporting QT_DIRECTFB_FORCE_RASTER=1
+
+ - Reenable support for RGB32 primary surface.
+
 
 ****************************************************************************
 * Important Behavior Changes *
@@ -135,11 +623,28 @@ information about a particular change.
    means that code that assigned a float to a variant would create a
    variant with userType QMetaType::Float, instead of QVariant::Double.
 
- - QDataStream will now read and write all floating point numbers with the 
-   same precision, regardless of whether it's streamed into or out from a 
+ - QDataStream will now read and write all floating point numbers with the
+   same precision, regardless of whether it's streamed into or out from a
    float or double. This is to maintain compatibility across platforms with
    a different default precision for qreal. The default is 64-bit precision
-   for all floating point numbers, and this can be changed using the new 
-   function setFloatingPointPrecision(). Set Qt_4_5 as the version of the 
+   for all floating point numbers, and this can be changed using the new
+   function setFloatingPointPrecision(). Set Qt_4_5 as the version of the
    QDataStream to get the behavior of previous versions.
-   
+
+ - On Mac OS X, QDesktopServices::storageLocation(DataLocation) now includes
+   QCoreApplication::organizationName() and QCoreApplication::applicationName()
+   if those are set. This matches the behavior on the other platforms.
+
+ - The Animation Framework
+   * currentTime() now returns the complete current time including previous loops
+   * currentLoopTime() returns the time inside the current loop
+   * stateChanged signal sends the new state as first parameter and old state as
+     the second
+   * QAnimationGroup::clearAnimations() has been renames to clear()
+   * QAnimationGroup::insertAnimationAt() has been renames to insertAnimation()
+   * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
+   * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
+
+- Refactoring in OpenGL examples to improve portability and utilize the
+  Animation framework for animation.  The hellogl and overpainting examples
+  now compile on OpenGL/ES 1.1.  Also common code is factored.

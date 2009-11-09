@@ -194,7 +194,7 @@ JSRange::JSRange(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject* glob
 
 JSRange::~JSRange()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSRange::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

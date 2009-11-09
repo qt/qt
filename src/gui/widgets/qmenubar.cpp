@@ -336,30 +336,25 @@ void QMenuBarPrivate::popupAction(QAction *action, bool activateFirst)
 
         const bool fitUp = (q->mapToGlobal(adjustedActionRect.topLeft()).y() >= popup_size.height());
         const bool fitDown = (pos.y() + popup_size.height() <= screenRect.bottom());
+        const bool rtl = q->isRightToLeft();
         const int actionWidth = adjustedActionRect.width();
 
         if (!fitUp && !fitDown) { //we should shift the menu
-            bool shouldShiftToRight = !q->isRightToLeft();
-            if (q->isRightToLeft() && popup_size.width() > pos.x())
+            bool shouldShiftToRight = !rtl;
+            if (rtl && popup_size.width() > pos.x())
                 shouldShiftToRight = true;
             else if (actionWidth + popup_size.width() + pos.x() > screenRect.right())
                 shouldShiftToRight = false;
 
-            if (shouldShiftToRight)
-                pos.rx() += actionWidth;
-            else
-                pos.rx() -= popup_size.width();
-        } else if (q->isRightToLeft()) {
-            pos.setX(pos.x()-(popup_size.width() - actionWidth));
-        }
-
-        if(pos.x() < screenRect.x()) {
-            pos.setX(screenRect.x());
-        } else {
-            const int off = pos.x()+popup_size.width() - screenRect.right();
-            if(off > 0)
-                pos.setX(qMax(screenRect.x(), pos.x()-off));
-
+            if (shouldShiftToRight) {
+                pos.rx() += actionWidth + (rtl ? popup_size.width() : 0);
+            } else {
+                //shift to left
+                if (!rtl)
+                    pos.rx() -= popup_size.width();
+            }
+        } else if (rtl) {
+            pos.rx() += actionWidth;
         }
 
         if(!defaultPopDown || (fitUp && !fitDown))

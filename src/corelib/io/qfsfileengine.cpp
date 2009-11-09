@@ -76,7 +76,6 @@ QT_BEGIN_NAMESPACE
 #  endif
 #endif
 
-
 /*! \class QFSFileEngine
     \brief The QFSFileEngine class implements Qt's default file engine.
     \since 4.1
@@ -122,10 +121,8 @@ void QFSFileEnginePrivate::init()
 #ifdef Q_OS_WIN
     fileAttrib = INVALID_FILE_ATTRIBUTES;
     fileHandle = INVALID_HANDLE_VALUE;
+    mapHandle = INVALID_HANDLE_VALUE;
     cachedFd = -1;
-#endif
-#ifdef Q_USE_DEPRECATED_MAP_API
-    fileMapHandle = INVALID_HANDLE_VALUE;
 #endif
 }
 
@@ -160,11 +157,11 @@ QString QFSFileEnginePrivate::canonicalized(const QString &path)
         if (
 #ifdef Q_OS_SYMBIAN
             // Symbian doesn't support directory symlinks, so do not check for link unless we
-            // are handling the last path element. This not only slightly improves performance, 
+            // are handling the last path element. This not only slightly improves performance,
             // but also saves us from lot of unnecessary platform security check failures
             // when dealing with files under *:/private directories.
             separatorPos == -1 &&
-#endif            
+#endif
             !nonSymlinks.contains(prefix)) {
             fi.setFile(prefix);
             if (fi.isSymLink()) {
@@ -319,9 +316,9 @@ bool QFSFileEnginePrivate::openFh(QIODevice::OpenMode openMode, FILE *fh)
         int ret;
         do {
             ret = QT_FSEEK(fh, 0, SEEK_END);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(errno == EMFILE ? QFile::ResourceError : QFile::OpenError,
                         qt_error_string(int(errno)));
 
@@ -566,20 +563,23 @@ bool QFSFileEnginePrivate::seekFdFh(qint64 pos)
     if (lastIOCommand != QFSFileEnginePrivate::IOFlushCommand && !q->flush())
         return false;
 
+    if (pos < 0 || pos != qint64(QT_OFF_T(pos)))
+        return false;
+
     if (fh) {
         // Buffered stdlib mode.
         int ret;
         do {
             ret = QT_FSEEK(fh, QT_OFF_T(pos), SEEK_SET);
-        } while (ret == -1 && errno == EINTR);
+        } while (ret != 0 && errno == EINTR);
 
-        if (ret == -1) {
+        if (ret != 0) {
             q->setError(QFile::ReadError, qt_error_string(int(errno)));
             return false;
         }
     } else {
         // Unbuffered stdio mode.
-        if (QT_LSEEK(fd, pos, SEEK_SET) == -1) {
+        if (QT_LSEEK(fd, QT_OFF_T(pos), SEEK_SET) == -1) {
             qWarning() << "QFile::at: Cannot set file position" << pos;
             q->setError(QFile::PositionError, qt_error_string(errno));
             return false;
@@ -896,7 +896,7 @@ bool QFSFileEngine::supportsExtension(Extension extension) const
 /*! \fn QString QFSFileEngine::currentPath(const QString &fileName)
   For Unix, returns the current working directory for the file
   engine.
-  
+
   For Windows, returns the canonicalized form of the current path used
   by the file engine for the drive specified by \a fileName.  On
   Windows, each drive has its own current directory, so a different

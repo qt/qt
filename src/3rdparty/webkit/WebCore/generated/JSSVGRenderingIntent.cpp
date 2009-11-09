@@ -148,7 +148,7 @@ JSSVGRenderingIntent::JSSVGRenderingIntent(NonNullPassRefPtr<Structure> structur
 
 JSSVGRenderingIntent::~JSSVGRenderingIntent()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGRenderingIntent::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -66,11 +66,11 @@ protected:
                 default: qDebug("view: Pan: <unknown state>"); break;
                 }
 
-                const QPointF offset = pan->offset();
+                const QPointF delta = pan->delta();
                 QScrollBar *vbar = verticalScrollBar();
                 QScrollBar *hbar = horizontalScrollBar();
-                vbar->setValue(vbar->value() - offset.y());
-                hbar->setValue(hbar->value() - offset.x());
+                vbar->setValue(vbar->value() - delta.y());
+                hbar->setValue(hbar->value() - delta.x());
                 ge->accept(pan);
                 return true;
             }
@@ -152,8 +152,8 @@ private:
 
 MainWindow::MainWindow()
 {
-    (void)qApp->registerGestureRecognizer(new MousePanGestureRecognizer);
-    ThreeFingerSlideGesture::Type = qApp->registerGestureRecognizer(new ThreeFingerSlideGestureRecognizer);
+    (void)QGestureRecognizer::registerRecognizer(new MousePanGestureRecognizer);
+    ThreeFingerSlideGesture::Type = QGestureRecognizer::registerRecognizer(new ThreeFingerSlideGestureRecognizer);
 
     tabWidget = new QTabWidget;
 

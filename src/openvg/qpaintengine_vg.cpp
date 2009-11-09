@@ -1178,6 +1178,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
     case Qt::TexturePattern: {
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
+        if (!pd)
+            break;  // null QPixmap
         VGImage vgImg;
         bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
@@ -1751,13 +1753,13 @@ void QVGPaintEngine::clip(const QRect &rect, Qt::ClipOperation op)
                 // QRegion copy on the heap for the test if we can.
                 QRegion clip = d->systemClip; // Reference-counted, no alloc.
                 QRect clipRect;
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     clipRect = clip.boundingRect().intersected(r);
                 } else if (clip.isEmpty()) {
                     clipRect = r;
                 } else {
                     clip = clip.intersect(r);
-                    if (clip.numRects() != 1) {
+                    if (clip.rectCount() != 1) {
                         d->maskValid = false;
                         d->maskIsSet = false;
                         d->maskRect = QRect();
@@ -1808,7 +1810,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
     Q_D(QVGPaintEngine);
 
     // Use the QRect case if the region consists of a single rectangle.
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1851,7 +1853,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
                     clip = r;
                 else
                     clip = clip.intersect(r);
-                if (clip.numRects() == 1) {
+                if (clip.rectCount() == 1) {
                     d->maskValid = false;
                     d->maskIsSet = false;
                     d->maskRect = clip.boundingRect();
@@ -1869,7 +1871,7 @@ void QVGPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
         case Qt::IntersectClip:
         {
-            if (region.numRects() != 1) {
+            if (region.rectCount() != 1) {
                 // If there is more than one rectangle, then intersecting
                 // the rectangles one by one in modifyMask() will not give
                 // the desired result.  So fall back to path-based clipping.
@@ -2146,7 +2148,7 @@ QRegion QVGPaintEngine::defaultClipRegion()
 
 bool QVGPaintEngine::isDefaultClipRegion(const QRegion& region)
 {
-    if (region.numRects() != 1)
+    if (region.rectCount() != 1)
         return false;
 
     QPaintDevice *pdev = paintDevice();
@@ -2893,6 +2895,8 @@ void qt_vg_drawVGImageStencil
 void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2910,6 +2914,8 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2985,6 +2991,8 @@ void QVGPaintEngine::drawPixmaps
     // If the pixmap is not VG, or the transformation is projective,
     // then fall back to the default implementation.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
         QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
         return;
@@ -3536,7 +3544,7 @@ void QVGCompositionHelper::fillBackground
             d->clearColor = color;
             d->clearOpacity = 1.0f;
         }
-        if (region.numRects() == 1) {
+        if (region.rectCount() == 1) {
             QRect r = region.boundingRect();
             vgClear(r.x(), screenSize.height() - r.y() - r.height(),
                     r.width(), r.height());
@@ -3561,7 +3569,7 @@ void QVGCompositionHelper::fillBackground
         d->ensureBrush(brush);
         d->setFillRule(VG_EVEN_ODD);
 
-        if (region.numRects() == 1) {
+        if (region.rectCount() == 1) {
             fillBackgroundRect(region.boundingRect(), d);
         } else {
             const QVector<QRect> rects = region.rects();
@@ -3574,51 +3582,50 @@ void QVGCompositionHelper::fillBackground
     }
 }
 
-void QVGCompositionHelper::drawCursorImage
-    (const QImage& image, const QPoint& offset)
-{
-    QImage img = image.convertToFormat(QImage::Format_ARGB32_Premultiplied);
-
-    VGImage vgImg = vgCreateImage
-        (VG_sARGB_8888_PRE, img.width(), img.height(),
-         VG_IMAGE_QUALITY_FASTER);
-    vgImageSubData
-        (vgImg, img.bits() + img.bytesPerLine() * (img.height() - 1),
-         -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
-         img.width(), img.height());
-
-    QTransform transform;
-    int y = screenSize.height() - (offset.y() + img.height());
-    transform.translate(offset.x() + 0.5f, y + 0.5f);
-    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-    vgDrawImage(vgImg);
-
-    vgDestroyImage(vgImg);
-}
-
 void QVGCompositionHelper::drawCursorPixmap
     (const QPixmap& pixmap, const QPoint& offset)
 {
+    VGImage vgImage = VG_INVALID_HANDLE;
+
+    // Fetch the VGImage from the pixmap if possible.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
-        if (vgpd->isValid()) {
-            VGfloat devh = screenSize.height() - 1;
-            QTransform transform(1.0f, 0.0f, 0.0f,
-                                 0.0f, -1.0f, 0.0f,
-                                 -0.5f, devh + 0.5f, 1.0f);
-            transform.translate(offset.x(), offset.y());
-            d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
-
-            d->setImageMode(VG_DRAW_IMAGE_NORMAL);
-            vgDrawImage(vgpd->toVGImage());
-            return;
-        }
+        if (vgpd->isValid())
+            vgImage = vgpd->toVGImage();
     }
 
-    drawCursorImage(pixmap.toImage(), offset);
+    // Set the image transformation and modes.
+    VGfloat devh = screenSize.height() - 1;
+    QTransform transform(1.0f, 0.0f, 0.0f,
+                         0.0f, -1.0f, 0.0f,
+                         -0.5f, devh + 0.5f, 1.0f);
+    transform.translate(offset.x(), offset.y());
+    d->setTransform(VG_MATRIX_IMAGE_USER_TO_SURFACE, transform);
+    d->setImageMode(VG_DRAW_IMAGE_NORMAL);
+
+    // Draw the VGImage.
+    if (vgImage != VG_INVALID_HANDLE) {
+        vgDrawImage(vgImage);
+    } else {
+        QImage img = pixmap.toImage().convertToFormat
+            (QImage::Format_ARGB32_Premultiplied);
+
+        vgImage = vgCreateImage
+            (VG_sARGB_8888_PRE, img.width(), img.height(),
+             VG_IMAGE_QUALITY_FASTER);
+        if (vgImage == VG_INVALID_HANDLE)
+            return;
+        vgImageSubData
+            (vgImage, img.bits() + img.bytesPerLine() * (img.height() - 1),
+             -(img.bytesPerLine()), VG_sARGB_8888_PRE, 0, 0,
+             img.width(), img.height());
+
+        vgDrawImage(vgImage);
+        vgDestroyImage(vgImage);
+    }
 }
 
 void QVGCompositionHelper::setScissor(const QRegion& region)
