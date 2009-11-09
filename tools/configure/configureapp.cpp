@@ -3394,7 +3394,8 @@ void Configure::buildHostTools()
         << "src/tools/bootstrap"
         << "src/tools/moc"
         << "src/tools/rcc"
-        << "src/tools/uic";
+        << "src/tools/uic"
+        << "tools/linguist/lrelease";
 
     if(dictionary["XQMAKESPEC"].startsWith("wince"))
         hostToolsDirs << "tools/checksdk";

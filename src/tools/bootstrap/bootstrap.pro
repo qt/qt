@@ -48,10 +48,12 @@ SOURCES += \
            ../../corelib/codecs/qtsciicodec.cpp \
            ../../corelib/codecs/qutfcodec.cpp \
            ../../corelib/global/qglobal.cpp \
+           ../../corelib/global/qlibraryinfo.cpp \
            ../../corelib/global/qmalloc.cpp \
            ../../corelib/global/qnumeric.cpp \
            ../../corelib/io/qabstractfileengine.cpp \
            ../../corelib/io/qbuffer.cpp \
+           ../../corelib/io/qdatastream.cpp \
            ../../corelib/io/qdir.cpp \
            ../../corelib/io/qdiriterator.cpp \
            ../../corelib/io/qfile.cpp \
@@ -62,6 +64,7 @@ SOURCES += \
            ../../corelib/io/qtemporaryfile.cpp \
            ../../corelib/io/qtextstream.cpp \
            ../../corelib/io/qurl.cpp \
+           ../../corelib/io/qsettings.cpp \
            ../../corelib/kernel/qmetatype.cpp \
            ../../corelib/kernel/qvariant.cpp \
            ../../corelib/tools/qbitarray.cpp \
@@ -86,11 +89,12 @@ unix:SOURCES += ../../corelib/io/qfsfileengine_unix.cpp \
                 ../../corelib/io/qfsfileengine_iterator_unix.cpp
 
 win32:SOURCES += ../../corelib/io/qfsfileengine_win.cpp \
-                 ../../corelib/io/qfsfileengine_iterator_win.cpp
+                 ../../corelib/io/qfsfileengine_iterator_win.cpp \
+                 ../../corelib/io/qsettings_win.cpp
 
 macx: {
    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.4 #enables weak linking for 10.4 (exported)
-   SOURCES += ../../corelib/kernel/qcore_mac.cpp
+   SOURCES += ../../corelib/kernel/qcore_mac.cpp ../../corelib/io/qsettings_mac.cpp
    LIBS += -framework CoreServices
 }
 

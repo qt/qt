@@ -7688,7 +7688,7 @@ for file in .projects .projects.3; do
         *s60main/s60main.pro) continue ;;
         *examples/activeqt/*) continue ;;
         */qmake/qmake.pro) continue ;;
-        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*) SPEC=$QMAKESPEC ;;
+        *tools/bootstrap*|*tools/moc*|*tools/rcc*|*tools/uic*|*linguist/lrelease*) SPEC=$QMAKESPEC ;;
         *) SPEC=$XQMAKESPEC ;;
         esac
         dir=`dirname "$a" | sed -e "s;$sepath;.;g"`
