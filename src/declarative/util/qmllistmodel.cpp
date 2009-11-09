@@ -221,21 +221,22 @@ struct ModelNode
     QList<QVariant> values;
     QHash<QString, ModelNode *> properties;
 
-    QmlListModel *model() {
+    QmlListModel *model(const QmlListModel *parent) {
         if (!modelCache) { 
             modelCache = new QmlListModel;
+            QmlEngine::setContextForObject(modelCache,QmlEngine::contextForObject(parent));
+
             modelCache->_root = this; 
         }
         return modelCache;
     }
 
-    ModelObject *object() {
+    ModelObject *object(const QmlListModel *parent) {
         if (!objectCache) {
             objectCache = new ModelObject();
             QHash<QString, ModelNode *>::iterator it;
             for (it = properties.begin(); it != properties.end(); ++it) {
-                if (!(*it)->values.isEmpty())
-                    objectCache->setValue(it.key().toUtf8(), (*it)->values.first());
+                objectCache->setValue(it.key().toUtf8(), parent->valueForNode(*it));
             }
         }
         return objectCache;
@@ -275,8 +276,6 @@ void ModelNode::setObjectValue(const QScriptValue& valuemap) {
         QScriptValue v = it.value();
         if (v.isArray()) {
             value->setListValue(v);
-        } else if (v.isObject()) {
-            value->setObjectValue(v);
         } else {
             value->values << v.toVariant();
         }
@@ -365,7 +364,7 @@ QVariant QmlListModel::valueForNode(ModelNode *node) const
 
     if (!node->properties.isEmpty()) {
         // Object
-        rv = node->object();
+        rv = node->object(this);
     } else if (node->values.count() == 0) {
         // Invalid
         return QVariant();
@@ -375,15 +374,15 @@ QVariant QmlListModel::valueForNode(ModelNode *node) const
         ModelNode *valueNode = qvariant_cast<ModelNode *>(var);
         if (valueNode) {
             if (!valueNode->properties.isEmpty())
-                rv = valueNode->object();
+                rv = valueNode->object(this);
             else
-                rv = valueNode->model();
+                rv = valueNode->model(this);
         } else {
             return var;
         }
     } else if (node->values.count() > 1) {
         // List
-        rv = node->model();
+        rv = node->model(this);
     }
 
     if (rv)
@@ -579,16 +578,26 @@ void QmlListModel::append(const QScriptValue& valuemap)
 }
 
 /*!
-    \qmlmethod dict ListModel::get(index)
+    \qmlmethod object ListModel::get(index)
 
     Returns the item at \a index in the list model.
 
     \code
-        FruitModel.append({"cost": 5.95, "name":"Pizza"})
+        FruitModel.append({"cost": 5.95, "name":"Jackfruit"})
         FruitModel.get(0).cost
     \endcode
 
     The \a index must be an element in the list.
+
+    Note that properties of the returned object that are themselves objects
+    will also be models, and this get() method is used to access elements:
+
+    \code
+        FruitModel.append(..., "attributes":
+            [{"name":"spikes","value":"7mm"},
+             {"name":"color","value":"green"}]);
+        FruitModel.get(0).attributes.get(1).value; // == "green"
+    \endcode
 
     \sa append()
 */
@@ -607,7 +616,7 @@ QScriptValue QmlListModel::get(int index) const
         qWarning("Cannot call QmlListModel::get() without a QmlEngine");
         return 0;
     }
-    return QmlEnginePrivate::qmlScriptObject(node->object(), eng);
+    return QmlEnginePrivate::qmlScriptObject(node->object(this), eng);
 }
 
 /*!
