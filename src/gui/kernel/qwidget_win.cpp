@@ -2073,7 +2073,6 @@ void QWidgetPrivate::winSetupGestures()
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
         if (!winid) {
-            q->setAttribute(Qt::WA_DontCreateNativeAncestors);
             winid = q->winId(); // enforces the native winid on the viewport
         }
     }
