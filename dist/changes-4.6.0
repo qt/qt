@@ -292,6 +292,21 @@ QtOpenGL
  - On Windows CE the link time code geration has been disabled by default to
    be consistent with win32-msvc200x.
 
+ - The default button size has been reduced in the Windows mobile style.
+
+ - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
+
+ - [254673] Restoring minimzed widgets fixed for Windows mobile and
+   Windows CE.
+
+ - [255242] Seeking within large files (bigger than 0x80000000 bytes) fixed
+   on Windows CE.
+
+ - [257352] When configuring Qt for Windows CE, configure points the user to
+   setcepaths, when its done.
+
+ - [259850] Added a makespec template for Windows CE 6.
+   
  - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
    QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
    specific libraries.
