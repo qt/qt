@@ -22,7 +22,7 @@ import Qt 4.6
     width: 400
     height: 200
     color: "white"
-    TextEdit { id: mainText
+    TextInput { id: mainText
         text: "Hello World"
         cursorDelegate: cursorA
         focus: true
