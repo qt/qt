@@ -1966,7 +1966,8 @@ void QPlainTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->ensureCursorVisible();
     }
 
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
