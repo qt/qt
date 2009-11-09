@@ -1471,8 +1471,6 @@ QWebInspector* QWebPagePrivate::getOrCreateInspector()
     if (!inspector) {
         QWebInspector* insp = new QWebInspector;
         insp->setPage(q);
-        insp->connect(q, SIGNAL(webInspectorTriggered(const QWebElement&)), SLOT(show()));
-        insp->show(); // The inspector is expected to be shown on inspection
         inspectorIsInternalOnly = true;
 
         Q_ASSERT(inspector); // Associated through QWebInspector::setPage(q)
@@ -2018,11 +2016,9 @@ void QWebPage::triggerAction(WebAction action, bool)
             editor->setBaseWritingDirection(RightToLeftWritingDirection);
             break;
         case InspectElement: {
-            QWebElement inspectedElement(QWebElement::enclosingElement(d->hitTestResult.d->innerNonSharedNode.get()));
-            emit webInspectorTriggered(inspectedElement);
-
             if (!d->hitTestResult.isNull()) {
                 d->getOrCreateInspector(); // Make sure the inspector is created
+                d->inspector->show(); // The inspector is expected to be shown on inspection
                 d->page->inspectorController()->inspect(d->hitTestResult.d->innerNonSharedNode.get());
             }
             break;
@@ -2763,17 +2759,6 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     as a result of the user clicking on a "file upload" button in a HTML form where multiple
     file selection is allowed.
 
-    \omitvalue ErrorPageExtension (introduced in Qt 4.6)
-*/
-
-/*!
-    \enum QWebPage::ErrorDomain
-    \since 4.6
-    \internal
-
-    \value QtNetwork
-    \value Http
-    \value WebKit
 */
 
 /*!
@@ -2821,12 +2806,6 @@ void QWebPage::updatePositionDependentActions(const QPoint &pos)
     \a baseUrl.
 
     \sa QWebPage::ErrorPageExtensionOption, QString::toUtf8()
-*/
-
-/*!
-    \fn QWebPage::ErrorPageExtensionReturn::ErrorPageExtensionReturn()
-
-    Constructs a new error page object.
 */
 
 /*!
@@ -3437,24 +3416,6 @@ quint64 QWebPage::bytesReceived() const
     By default no links are delegated and are handled by QWebPage instead.
 
     \sa linkHovered()
-*/
-
-/*!
-    \fn void QWebPage::webInspectorTriggered(const QWebElement& inspectedElement);
-    \since 4.6
-
-    This signal is emitted when the user triggered an inspection through the
-    context menu. If a QWebInspector is associated to this page, it should be
-    visible to the user after this signal has been emitted.
-
-    If still no QWebInspector is associated to this QWebPage after the emission
-    of this signal, a privately owned inspector will be shown to the user.
-
-    \note \a inspectedElement contains the QWebElement under the context menu.
-    It is not garanteed to be the same as the focused element in the web
-    inspector.
-
-    \sa QWebInspector
 */
 
 /*!
