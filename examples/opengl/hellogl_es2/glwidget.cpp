@@ -92,6 +92,8 @@ void GLWidget::showBubbles(bool bubbles)
 
 void GLWidget::paintQtLogo()
 {
+    program1.enableAttributeArray(normalAttr1);
+    program1.enableAttributeArray(vertexAttr1);
     program1.setAttributeArray(vertexAttr1, vertices.constData());
     program1.setAttributeArray(normalAttr1, normals.constData());
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
@@ -159,6 +161,10 @@ void GLWidget::paintTexturedCube()
 
     program2.setUniformValue(textureUniform2, 0);    // use texture unit 0
 
+    program2.enableAttributeArray(vertexAttr2);
+    program2.enableAttributeArray(normalAttr2);
+    program2.enableAttributeArray(texCoordAttr2);
+
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     program2.disableAttributeArray(vertexAttr2);
@@ -173,7 +179,7 @@ void GLWidget::initializeGL ()
     glGenTextures(1, &m_uiTexture);
     m_uiTexture = bindTexture(QImage(":/qt.png"));
 
-    QGLShader *vshader1 = new QGLShader(QGLShader::VertexShader, this);
+    QGLShader *vshader1 = new QGLShader(QGLShader::Vertex, this);
     const char *vsrc1 =
         "attribute highp vec4 vertex;\n"
         "attribute mediump vec3 normal;\n"
@@ -188,16 +194,16 @@ void GLWidget::initializeGL ()
         "    color = clamp(color, 0.0, 1.0);\n"
         "    gl_Position = matrix * vertex;\n"
         "}\n";
-    vshader1->compile(vsrc1);
+    vshader1->compileSourceCode(vsrc1);
 
-    QGLShader *fshader1 = new QGLShader(QGLShader::FragmentShader, this);
+    QGLShader *fshader1 = new QGLShader(QGLShader::Fragment, this);
     const char *fsrc1 =
         "varying mediump vec4 color;\n"
         "void main(void)\n"
         "{\n"
         "    gl_FragColor = color;\n"
         "}\n";
-    fshader1->compile(fsrc1);
+    fshader1->compileSourceCode(fsrc1);
 
     program1.addShader(vshader1);
     program1.addShader(fshader1);
@@ -207,7 +213,7 @@ void GLWidget::initializeGL ()
     normalAttr1 = program1.attributeLocation("normal");
     matrixUniform1 = program1.uniformLocation("matrix");
 
-    QGLShader *vshader2 = new QGLShader(QGLShader::VertexShader);
+    QGLShader *vshader2 = new QGLShader(QGLShader::Vertex);
     const char *vsrc2 =
         "attribute highp vec4 vertex;\n"
         "attribute highp vec4 texCoord;\n"
@@ -222,9 +228,9 @@ void GLWidget::initializeGL ()
         "    gl_Position = matrix * vertex;\n"
         "    texc = texCoord;\n"
         "}\n";
-    vshader2->compile(vsrc2);
+    vshader2->compileSourceCode(vsrc2);
 
-    QGLShader *fshader2 = new QGLShader(QGLShader::FragmentShader);
+    QGLShader *fshader2 = new QGLShader(QGLShader::Fragment);
     const char *fsrc2 =
         "varying highp vec4 texc;\n"
         "uniform sampler2D tex;\n"
@@ -235,7 +241,7 @@ void GLWidget::initializeGL ()
         "    color = color * 0.2 + color * 0.8 * angle;\n"
         "    gl_FragColor = vec4(clamp(color, 0.0, 1.0), 1.0);\n"
         "}\n";
-    fshader2->compile(fsrc2);
+    fshader2->compileSourceCode(fsrc2);
 
     program2.addShader(vshader2);
     program2.addShader(fshader2);
@@ -284,15 +290,15 @@ void GLWidget::paintGL()
     modelview.translate(0.0f, -0.2f, 0.0f);
 
     if (qtLogo) {
-        program1.enable();
+        program1.bind();
         program1.setUniformValue(matrixUniform1, modelview);
         paintQtLogo();
-        program1.disable();
+        program1.release();
     } else {
-        program2.enable();
+        program2.bind();
         program1.setUniformValue(matrixUniform2, modelview);
         paintTexturedCube();
-        program2.disable();
+        program2.release();
     }
 
     glDisable(GL_DEPTH_TEST);

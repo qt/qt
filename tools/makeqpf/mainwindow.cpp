@@ -269,7 +269,7 @@ void MainWindow::populateCharacterRanges()
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))
             continue;
 
-        if (!rangeExpr.exactMatch(line) || rangeExpr.numCaptures() != 3)
+        if (!rangeExpr.exactMatch(line) || rangeExpr.captureCount() != 3)
             continue;
 
         QPF::CharacterRange range;

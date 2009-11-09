@@ -431,6 +431,10 @@ void QPaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 
     // Some engines might decide to optimize for the non-shape hint later on...
     uint flags = QVectorPath::WindingFill;
+
+    if (path.elementCount() > 2)
+        flags |= QVectorPath::NonConvexShapeMask;
+
     if (d->stroker.capStyle() == Qt::RoundCap || d->stroker.joinStyle() == Qt::RoundJoin)
         flags |= QVectorPath::CurvedShapeMask;
 
@@ -598,7 +602,7 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 
 void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    if (region.numRects() == 1)
+    if (region.rectCount() == 1)
         clip(region.boundingRect(), op);
 
     QVector<QRect> rects = region.rects();

@@ -82,6 +82,7 @@ inline QAccessible2Interface *qAccessibleTextCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleEditableTextCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleTableCastHelper() { return 0; }
 inline QAccessible2Interface *qAccessibleActionCastHelper() { return 0; }
+inline QAccessible2Interface *qAccessibleImageCastHelper() { return 0; }
 
 #define Q_ACCESSIBLE_OBJECT \
     public: \
@@ -98,6 +99,8 @@ inline QAccessible2Interface *qAccessibleActionCastHelper() { return 0; }
             return qAccessibleTableCastHelper(); \
         case QAccessible2::ActionInterface: \
             return qAccessibleActionCastHelper(); \
+        case QAccessible2::ImageInterface: \
+            return qAccessibleImageCastHelper(); \
         } \
         return 0; \
     } \
@@ -222,6 +225,16 @@ public:
     virtual QString name(int actionIndex) = 0;
     virtual QString localizedName(int actionIndex) = 0;
     virtual QStringList keyBindings(int actionIndex) = 0;
+};
+
+class Q_GUI_EXPORT QAccessibleImageInterface : public QAccessible2Interface
+{
+public:
+    inline QAccessible2Interface *qAccessibleImageCastHelper() { return this; }
+
+    virtual QString imageDescription() = 0;
+    virtual QSize imageSize() = 0;
+    virtual QRect imagePosition(QAccessible2::CoordinateType coordType) = 0;
 };
 
 #endif // QT_NO_ACCESSIBILITY

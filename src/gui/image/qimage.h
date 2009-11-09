@@ -165,18 +165,21 @@ public:
     QRect rect() const;
 
     int depth() const;
-    int numColors() const;
+    QT_DEPRECATED int numColors() const;
+    int colorCount() const;
 
     QRgb color(int i) const;
     void setColor(int i, QRgb c);
-    void setNumColors(int);
+    QT_DEPRECATED void setNumColors(int);
+    void setColorCount(int);
 
     bool allGray() const;
     bool isGrayscale() const;
 
     uchar *bits();
     const uchar *bits() const;
-    int numBytes() const;
+    QT_DEPRECATED int numBytes() const;
+    int byteCount() const;
 
     uchar *scanLine(int);
     const uchar *scanLine(int) const;

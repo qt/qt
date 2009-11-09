@@ -132,6 +132,7 @@ static inline int qt_socket_bind(int s, struct sockaddr *addr, QT_SOCKLEN_T addr
 #define QT_FTELL                ::ftello64
 #define QT_FGETPOS              ::fgetpos64
 #define QT_FSETPOS              ::fsetpos64
+#define QT_MMAP                 ::mmap64
 #define QT_FPOS_T               fpos64_t
 #define QT_OFF_T                off64_t
 #else
@@ -140,6 +141,7 @@ static inline int qt_socket_bind(int s, struct sockaddr *addr, QT_SOCKLEN_T addr
 #define QT_FTELL                ::ftell
 #define QT_FGETPOS              ::fgetpos
 #define QT_FSETPOS              ::fsetpos
+#define QT_MMAP                 ::mmap
 #define QT_FPOS_T               fpos_t
 #define QT_OFF_T                long
 #endif

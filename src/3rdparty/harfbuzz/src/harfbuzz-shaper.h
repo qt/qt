@@ -62,6 +62,7 @@ typedef enum {
         HB_Script_Ogham,
         HB_Script_Runic,
         HB_Script_Khmer,
+        HB_Script_Nko,
         HB_Script_Inherited,
         HB_ScriptCount = HB_Script_Inherited
         /*
@@ -102,7 +103,6 @@ typedef enum {
         HB_Script_Cuneiform = Common,
         HB_Script_Phoenician = Common,
         HB_Script_PhagsPa = Common,
-        HB_Script_Nko = Common
         */
 } HB_Script;
 

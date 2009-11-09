@@ -68,7 +68,7 @@ protected:
     bool event(QEvent *event);
 
     void updateCurrentTime(int currentTime);
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
     void updateDirection(QAbstractAnimation::Direction direction);
 
 private:

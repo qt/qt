@@ -320,6 +320,11 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     return pm;
 }
 
+QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
+{
+    invalidateCache();
+}
+
 void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
 {
     if (effectRectChanged && m_cachedMode != QGraphicsEffectSource::ExpandToEffectRectPadMode)

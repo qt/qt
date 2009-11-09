@@ -900,7 +900,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     passing a \c QAction with a softkey role set on it. When the widget
     containing the softkey actions has focus, its softkeys should appear in
     the user interface. Softkeys are discovered by traversing the widget
-    heirarchy so it is possible to define a single set of softkeys that are
+    hierarchy so it is possible to define a single set of softkeys that are
     present at all times by calling addAction() for a given top level widget.
 
     On some platforms, this concept overlaps with \c QMenuBar such that if no
@@ -5171,8 +5171,7 @@ void QWidgetPrivate::render_helper(QPainter *painter, const QPoint &targetOffset
             return;
 
         QPixmap pixmap(size);
-        if (!(renderFlags & QWidget::DrawWindowBackground)
-            || !q->palette().brush(q->backgroundRole()).isOpaque())
+        if (!(renderFlags & QWidget::DrawWindowBackground) || !isOpaque)
             pixmap.fill(Qt::transparent);
         q->render(&pixmap, QPoint(), toBePainted, renderFlags);
 

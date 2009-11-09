@@ -92,7 +92,7 @@ struct QVectorTypedData : private QVectorData
   // as this would break strict aliasing rules. (in the case of shared_null)
     T array[1];
 
-    static inline void free(QVectorTypedData *x, int alignment) { QVectorData::free(x, alignment); }
+    static inline void free(QVectorTypedData<T> *x, int alignment) { QVectorData::free(static_cast<QVectorData *>(x), alignment); }
 };
 
 class QRegion;

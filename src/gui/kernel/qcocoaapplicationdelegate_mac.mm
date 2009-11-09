@@ -83,6 +83,7 @@
 #include <private/qt_cocoa_helpers_mac_p.h>
 #include <private/qdesktopwidget_mac_p.h>
 #include <qevent.h>
+#include <qurl.h>
 #include <qapplication.h>
 
 QT_BEGIN_NAMESPACE
@@ -301,6 +302,16 @@ static void cleanupCocoaApplicationDelegate()
         [invocation invokeWithTarget:reflectionDelegate];
     else
         [self doesNotRecognizeSelector:invocationSelector];
+}
+
+- (void)getUrl:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent
+{
+    Q_UNUSED(replyEvent);
+
+    NSString *urlString = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
+    QUrl url(qt_mac_NSStringToQString(urlString));
+    QFileOpenEvent qtEvent(url);
+    qt_sendSpontaneousEvent(qAppInstance(), &qtEvent);
 }
 
 @end

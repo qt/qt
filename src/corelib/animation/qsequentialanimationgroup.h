@@ -65,7 +65,7 @@ public:
     ~QSequentialAnimationGroup();
 
     QPauseAnimation *addPause(int msecs);
-    QPauseAnimation *insertPauseAt(int index, int msecs);
+    QPauseAnimation *insertPause(int index, int msecs);
 
     QAbstractAnimation *currentAnimation() const;
     int duration() const;
@@ -78,7 +78,7 @@ protected:
     bool event(QEvent *event);
 
     void updateCurrentTime(int);
-    void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
     void updateDirection(QAbstractAnimation::Direction direction);
 
 private:

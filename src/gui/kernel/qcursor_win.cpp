@@ -153,8 +153,8 @@ static HCURSOR create32BitCursor(const QPixmap &pixmap, int hx, int hy)
     bool invb, invm;
     bbits = pixmap.toImage().convertToFormat(QImage::Format_Mono);
     mbits = pixmap.toImage().convertToFormat(QImage::Format_Mono);
-    invb = bbits.numColors() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
-    invm = mbits.numColors() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
+    invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
+    invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
 
     int sysW = GetSystemMetrics(SM_CXCURSOR);
     int sysH = GetSystemMetrics(SM_CYCURSOR);
@@ -396,8 +396,8 @@ void QCursorData::update()
         } else {
             bbits = bm->toImage().convertToFormat(QImage::Format_Mono);
             mbits = bmm->toImage().convertToFormat(QImage::Format_Mono);
-            invb = bbits.numColors() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
-            invm = mbits.numColors() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
+            invb = bbits.colorCount() > 1 && qGray(bbits.color(0)) < qGray(bbits.color(1));
+            invm = mbits.colorCount() > 1 && qGray(mbits.color(0)) < qGray(mbits.color(1));
         }
         int n = qMax(1, bbits.width() / 8);
         int h = bbits.height();

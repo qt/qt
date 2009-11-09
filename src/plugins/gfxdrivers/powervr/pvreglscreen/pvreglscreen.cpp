@@ -271,67 +271,6 @@ int PvrEglScreen::transformation() const
 
 #endif
 
-#ifndef QT_NO_QWS_TRANSFORMED
-
-static const QScreen *parentScreen
-    (const QScreen *current, const QScreen *lookingFor)
-{
-    if (!current)
-        return 0;
-    switch (current->classId()) {
-    case QScreen::ProxyClass:
-    case QScreen::TransformedClass: {
-        const QScreen *child =
-            static_cast<const QProxyScreen *>(current)->screen();
-        if (child == lookingFor)
-            return current;
-        else
-            return parentScreen(child, lookingFor);
-    }
-    // Not reached.
-
-    case QScreen::MultiClass: {
-        QList<QScreen *> screens = current->subScreens();
-        foreach (QScreen *screen, screens) {
-            if (screen == lookingFor)
-                return current;
-            const QScreen *parent = parentScreen(screen, lookingFor);
-            if (parent)
-                return parent;
-        }
-    }
-    break;
-
-    default: break;
-    }
-    return 0;
-}
-
-int PvrEglScreen::transformation() const
-{
-    // We need to search for our parent screen, which is assumed to be
-    // "Transformed".  If it isn't, then there is no transformation.
-    // There is no direct method to get the parent screen so we need
-    // to search every screen until we find ourselves.
-    if (!parent && qt_screen != this)
-        parent = parentScreen(qt_screen, this);
-    if (!parent)
-        return 0;
-    if (parent->classId() != QScreen::TransformedClass)
-        return 0;
-    return 90 * static_cast<const QTransformedScreen *>(parent)
-                    ->transformation();
-}
-
-#else
-
-int PvrEglScreen::transformation() const
-{
-    return 0;
-}
-
-#endif
-
 void PvrEglScreen::sync()
 {
     // Put code here to synchronize 2D and 3D operations if necessary.

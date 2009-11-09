@@ -85,7 +85,8 @@ SearchWidget::SearchWidget(QHelpSearchEngine *engine, QWidget *parent)
         SLOT(searchingFinished(int)));
 
     QTextBrowser* browser = qFindChild<QTextBrowser*>(resultWidget);
-    browser->viewport()->installEventFilter(this);
+    if (browser) // Will be null if lib was configured not to use CLucene.
+        browser->viewport()->installEventFilter(this);
 }
 
 SearchWidget::~SearchWidget()

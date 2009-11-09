@@ -24,5 +24,3 @@ win32 {
     else: DESTDIR = ../release
 }
 TARGET = tst_xmlpatternsxqts
-
-include (../../xmlpatterns.pri)
