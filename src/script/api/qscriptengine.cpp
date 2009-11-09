@@ -2288,35 +2288,6 @@ QScriptContext *QScriptEngine::pushContext()
     return d->contextForFrame(newFrame);
 }
 
-/*!
-  Enters a new execution context and returns the associated
-  QScriptContext object.
-
-  Once you are done with the context, you should call popContext() to
-  restore the old context.
-
-  By default, the `this' object of the new context is the Global Object.
-  The context's \l{QScriptContext::callee()}{callee}() will be invalid.
-
-  Unlike pushContext(), the default scope chain is reset to include
-  only the global object and the QScriptContext's activation object.
-
-  \sa popContext()
-*/
-QScriptContext *QScriptEngine::pushCleanContext()
-{
-    Q_D(QScriptEngine);
-
-    JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, d->currentFrame->globalData().dynamicGlobalObject,
-                                              JSC::ArgList(), /*callee = */0, false, true);
-
-    if (agent())
-        agent()->contextPush();
-
-    return d->contextForFrame(newFrame);
-}
-
-
 /*! \internal
    push a context for a native function.
    JSC native function doesn't have different stackframe or context. so we need to create one.

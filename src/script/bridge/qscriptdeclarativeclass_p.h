@@ -77,6 +77,7 @@ public:
     static QScriptValue property(const QScriptValue &, const Identifier &);
 
     static QScriptValue scopeChainValue(QScriptContext *, int index);
+    static QScriptContext *pushCleanContext(QScriptEngine *);
 
     class Q_SCRIPT_EXPORT PersistentIdentifier 
     {

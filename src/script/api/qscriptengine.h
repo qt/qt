@@ -160,7 +160,6 @@ public:
 
     QScriptContext *currentContext() const;
     QScriptContext *pushContext();
-    QScriptContext *pushCleanContext();
     void popContext();
 
     bool canEvaluate(const QString &program) const;
