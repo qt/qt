@@ -441,10 +441,10 @@ QLCDNumber::~QLCDNumber()
 
 
 /*!
-    \obsolete
+    \deprecated
     \property QLCDNumber::numDigits
     \brief the current number of digits displayed
-    \sa setDigitCount
+    \sa digitCount
 */
 
 void QLCDNumber::setNumDigits(int numDigits)
