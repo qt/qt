@@ -79,7 +79,7 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
     m_fepState->SetPermittedInputModes( EAknEditorAllInputModes );
     m_fepState->SetDefaultCase( EAknEditorLowerCase );
     m_fepState->SetPermittedCases( EAknEditorLowerCase|EAknEditorUpperCase );
-    m_fepState->SetSpecialCharacterTableResourceId( 0 );
+    m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
     m_fepState->SetNumericKeymap( EAknEditorStandardNumberModeKeymap );
 }
 
@@ -406,6 +406,14 @@ void QCoeFepInputContext::applyHints(Qt::InputMethodHints hints)
         flags = EAknEditorStandardNumberModeKeymap;
     }
     m_fepState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(flags));
+
+    if (hints & ImhEmailCharactersOnly) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_EMAIL_ADDR_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else if (hints & ImhUrlCharactersOnly) {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_URL_SPECIAL_CHARACTER_TABLE_DIALOG);
+    } else {
+        m_fepState->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG);
+    }
 
     if (hints & ImhHiddenText) {
         m_textCapabilities = TCoeInputCapabilities::EAllText | TCoeInputCapabilities::ESecretText;

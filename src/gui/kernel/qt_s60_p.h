@@ -175,7 +175,7 @@ public:
 
 protected: // from MAknFadedComponent
     TInt CountFadedComponents() {return 1;}
-    CCoeControl* FadedComponent(TInt aIndex) {return this;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
 #else
     #warning No fallback implementation for QSymbianControl::FadeBehindPopup
     void FadeBehindPopup(bool /*fade*/){ }
