@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-Q_DECLARATIVE_EXPORT void qmlInfo(const QString& msg, QObject *me=0);
+Q_DECLARATIVE_EXPORT void qmlInfo(const QString& msg, const QObject *me=0);
 
 QT_END_NAMESPACE
 
