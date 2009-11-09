@@ -1064,9 +1064,7 @@ void QPixmapDropShadowFilter::setOffset(const QPointF &offset)
 QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
-    qreal delta = d->radius + 1;
-    return rect.adjusted(-2, -2, 2, 2).united(
-            rect.translated(d->offset).adjusted(-delta, -delta, delta, delta));
+    return rect.united(rect.translated(d->offset).adjusted(-d->radius, -d->radius, d->radius, d->radius));
 }
 
 /*!
