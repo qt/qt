@@ -1177,7 +1177,7 @@ void QmlGraphicsFlickable::setMaximumFlickVelocity(qreal v)
 }
 
 /*!
-    \qmlproperty real Flickable::maximumFlickVelocity
+    \qmlproperty real Flickable::flickDeceleration
     This property holds the rate at which a flick will decelerate.
 
     The default is 500.

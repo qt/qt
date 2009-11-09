@@ -64,8 +64,11 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QmlGraphicsItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+    Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
+    Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
 
     Q_PROPERTY(qreal preferredHighlightBegin READ preferredHighlightBegin WRITE setPreferredHighlightBegin)
     Q_PROPERTY(qreal preferredHighlightEnd READ preferredHighlightEnd WRITE setPreferredHighlightEnd)
@@ -78,8 +81,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
     Q_PROPERTY(QString sectionExpression READ sectionExpression WRITE setSectionExpression NOTIFY sectionExpressionChanged)
     Q_PROPERTY(QString currentSection READ currentSection NOTIFY currentSectionChanged)
 
-    Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
-    Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
     Q_ENUMS(HighlightRangeMode)
     Q_ENUMS(Orientation)
     Q_CLASSINFO("DefaultProperty", "data")
