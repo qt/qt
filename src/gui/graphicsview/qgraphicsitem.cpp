@@ -3349,6 +3349,9 @@ QPointF QGraphicsItem::pos() const
 */
 void QGraphicsItem::setX(qreal x)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3370,6 +3373,9 @@ void QGraphicsItem::setX(qreal x)
 */
 void QGraphicsItem::setY(qreal y)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
 }
 
@@ -3433,6 +3439,9 @@ void QGraphicsItemPrivate::setTransformHelper(const QTransform &transform)
 void QGraphicsItem::setPos(const QPointF &pos)
 {
     if (d_ptr->pos == pos)
+        return;
+
+    if (d_ptr->inDestructor)
         return;
 
     // Update and repositition.
