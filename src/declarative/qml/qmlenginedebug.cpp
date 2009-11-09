@@ -99,6 +99,7 @@ QmlEngineDebugServer::QmlObjectProperty
 QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 {
     QmlObjectProperty rv;
+;
 
     QMetaProperty prop = obj->metaObject()->property(propIdx);
 
@@ -165,7 +166,7 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
     
     int childrenCount = children.count();
     for (int ii = 0; ii < children.count(); ++ii) {
-        if (QmlBoundSignal::cast(children[ii]))
+        if (qobject_cast<QmlContext*>(children[ii]) || QmlBoundSignal::cast(children[ii]))
             --childrenCount;
     }
 
@@ -175,6 +176,8 @@ void QmlEngineDebugServer::buildObjectDump(QDataStream &message,
 
     for (int ii = 0; ii < children.count(); ++ii) {
         QObject *child = children.at(ii);
+        if (qobject_cast<QmlContext*>(child))
+            continue;
         QmlBoundSignal *signal = QmlBoundSignal::cast(child);
         if (signal) {
             QmlObjectProperty prop;
@@ -271,9 +274,17 @@ QmlEngineDebugServer::objectData(QObject *object)
     }
 
     rv.objectName = object->objectName();
-    rv.objectType = QString::fromUtf8(object->metaObject()->className());
     rv.objectId = QmlDebugService::idForObject(object);
     rv.contextId = QmlDebugService::idForObject(qmlContext(object));
+
+    QmlType *type = QmlMetaType::qmlType(object->metaObject());
+    if (type) {
+        QString typeName = type->qmlTypeName();
+        int lastSlash = typeName.lastIndexOf(QLatin1Char('/'));
+        rv.objectType = lastSlash < 0 ? typeName : typeName.mid(lastSlash+1);
+    } else {
+        rv.objectType = QString::fromUtf8(object->metaObject()->className());
+    }
 
     return rv;
 }

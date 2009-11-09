@@ -43,6 +43,7 @@
 #include <qmlview.h>
 #include <private/qmlgraphicslistview_p.h>
 #include <private/qmlgraphicstext_p.h>
+#include <private/qmlgraphicsvisualitemmodel_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 
@@ -53,6 +54,7 @@ public:
     tst_QmlGraphicsListView();
 
 private slots:
+    void itemList();
     // Test both QListModelInterface and QAbstractItemModel model types
     void qListModelInterface_items();
     void qAbstractItemModel_items();
@@ -69,10 +71,10 @@ private slots:
     void qListModelInterface_moved();
     void qAbstractItemModel_moved();
 
+    void currentIndex();
     void enforceRange();
     void spacing();
     void sections();
-    void currentIndex();
 
 private:
     template <class T> void items();
@@ -766,14 +768,21 @@ void tst_QmlGraphicsListView::sections()
 
 void tst_QmlGraphicsListView::currentIndex()
 {
-    QmlView *canvas = createView(SRCDIR "/data/listview-initCurrent.qml");
-
     TestModel model;
     for (int i = 0; i < 30; i++)
         model.addItem("Item" + QString::number(i), QString::number(i));
 
+    QmlView *canvas = new QmlView(0);
+    canvas->setFixedSize(240,320);
+
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+
+    QString filename(SRCDIR "/data/listview-initCurrent.qml");
+    QFile file(filename);
+    file.open(QFile::ReadOnly);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
 
     canvas->execute();
     qApp->processEvents();
@@ -785,6 +794,7 @@ void tst_QmlGraphicsListView::currentIndex()
     QVERIFY(viewport != 0);
 
     // current item should be third item
+    QCOMPARE(listview->currentIndex(), 3);
     QCOMPARE(listview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 3));
 
     // no wrap
@@ -832,6 +842,39 @@ void tst_QmlGraphicsListView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(listview->currentIndex(), 0);
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsListView::itemList()
+{
+    QmlView *canvas = createView(SRCDIR "/data/itemlist.qml");
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "view");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    QmlGraphicsVisualItemModel *model = canvas->root()->findChild<QmlGraphicsVisualItemModel*>("itemModel");
+    QVERIFY(model != 0);
+
+    QVERIFY(model->count() == 3);
+    QCOMPARE(listview->currentIndex(), 0);
+
+    QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "item1");
+    QVERIFY(item);
+    QCOMPARE(item->x(), 0.0);
+
+    listview->setCurrentIndex(2);
+    QTest::qWait(1000);
+
+    item = findItem<QmlGraphicsItem>(viewport, "item3");
+    QVERIFY(item);
+    QCOMPARE(item->x(), 480.0);
 
     delete canvas;
 }

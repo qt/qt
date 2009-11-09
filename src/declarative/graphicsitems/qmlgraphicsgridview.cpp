@@ -309,7 +309,7 @@ public:
     QmlComponent *highlightComponent;
     FxGridItem *highlight;
     FxGridItem *trackedItem;
-    enum MovementReason { Other, Key, Mouse };
+    enum MovementReason { Other, SetIndex, Mouse };
     MovementReason moveReason;
     int buffer;
     QmlEaseFollow *highlightXAnimator;
@@ -338,7 +338,6 @@ void QmlGraphicsGridViewPrivate::clear()
     visibleIndex = 0;
     releaseItem(currentItem);
     currentItem = 0;
-    currentIndex = -1;
     createHighlight();
     trackedItem = 0;
 }
@@ -508,7 +507,6 @@ void QmlGraphicsGridViewPrivate::layout(bool removed)
         }
     }
     q->refill();
-    q->trackedPositionChanged();
     updateHighlight();
     if (flow == QmlGraphicsGridView::LeftToRight) {
         q->setViewportHeight(endPosition() - startPosition());
@@ -547,6 +545,8 @@ void QmlGraphicsGridViewPrivate::updateTrackedItem()
     if (highlight)
         item = highlight;
 
+    FxGridItem *oldTracked = trackedItem;
+
     if (trackedItem && item != trackedItem) {
         QObject::disconnect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::disconnect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
@@ -557,9 +557,8 @@ void QmlGraphicsGridViewPrivate::updateTrackedItem()
         trackedItem = item;
         QObject::connect(trackedItem->item, SIGNAL(yChanged()), q, SLOT(trackedPositionChanged()));
         QObject::connect(trackedItem->item, SIGNAL(xChanged()), q, SLOT(trackedPositionChanged()));
-        q->trackedPositionChanged();
     }
-    if (trackedItem)
+    if (trackedItem && trackedItem != oldTracked)
         q->trackedPositionChanged();
 }
 
@@ -615,20 +614,20 @@ void QmlGraphicsGridViewPrivate::updateHighlight()
 {
     if ((!currentItem && highlight) || (currentItem && !highlight))
         createHighlight();
-    updateTrackedItem();
-    if (currentItem && autoHighlight && highlight) {
+    if (currentItem && autoHighlight && highlight && !moving) {
         // auto-update highlight
         highlightXAnimator->setSourceValue(currentItem->item->x());
         highlightYAnimator->setSourceValue(currentItem->item->y());
         highlight->item->setWidth(currentItem->item->width());
         highlight->item->setHeight(currentItem->item->height());
     }
+    updateTrackedItem();
 }
 
 void QmlGraphicsGridViewPrivate::updateCurrent(int modelIndex)
 {
     Q_Q(QmlGraphicsGridView);
-    if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
+    if (!q->isComponentComplete() || !isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
             currentItem->attached->setIsCurrentItem(false);
             releaseItem(currentItem);
@@ -799,16 +798,20 @@ void QmlGraphicsGridView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
-        if (d->currentIndex >= d->model->count() || d->currentIndex < 0)
-            setCurrentIndex(0);
-        else
-            d->updateCurrent(d->currentIndex);
+        if (isComponentComplete()) {
+            refill();
+            if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
+                setCurrentIndex(0);
+            } else {
+                d->moveReason = QmlGraphicsGridViewPrivate::SetIndex;
+                d->updateCurrent(d->currentIndex);
+            }
+        }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
         connect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
-        refill();
         emit countChanged();
     }
 }
@@ -841,8 +844,11 @@ void QmlGraphicsGridView::setDelegate(QmlComponent *delegate)
     }
     if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
-        d->updateCurrent(d->currentIndex);
-        refill();
+        if (isComponentComplete()) {
+            refill();
+            d->moveReason = QmlGraphicsGridViewPrivate::SetIndex;
+            d->updateCurrent(d->currentIndex);
+        }
     }
 }
 
@@ -863,7 +869,8 @@ int QmlGraphicsGridView::currentIndex() const
 void QmlGraphicsGridView::setCurrentIndex(int index)
 {
     Q_D(QmlGraphicsGridView);
-    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+    if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+        d->moveReason = QmlGraphicsGridViewPrivate::SetIndex;
         cancelFlick();
         d->updateCurrent(index);
     } else {
@@ -1126,7 +1133,7 @@ void QmlGraphicsGridView::keyPressEvent(QKeyEvent *event)
         return;
 
     if (d->model && d->model->count() && d->interactive) {
-        d->moveReason = QmlGraphicsGridViewPrivate::Key;
+        d->moveReason = QmlGraphicsGridViewPrivate::SetIndex;
         int oldCurrent = currentIndex();
         switch (event->key()) {
         case Qt::Key_Up:
@@ -1250,9 +1257,11 @@ void QmlGraphicsGridView::componentComplete()
     Q_D(QmlGraphicsGridView);
     QmlGraphicsFlickable::componentComplete();
     d->updateGrid();
+    refill();
     if (d->currentIndex < 0)
         d->updateCurrent(0);
-    refill();
+    else
+        d->updateCurrent(d->currentIndex);
 }
 
 void QmlGraphicsGridView::trackedPositionChanged()
@@ -1260,7 +1269,7 @@ void QmlGraphicsGridView::trackedPositionChanged()
     Q_D(QmlGraphicsGridView);
     if (!d->trackedItem)
         return;
-    if (!isFlicking() && !d->pressed && d->moveReason == QmlGraphicsGridViewPrivate::Key) {
+    if (!isFlicking() && !d->moving && d->moveReason != QmlGraphicsGridViewPrivate::Mouse) {
         if (d->trackedItem->rowPos() < d->position()) {
             d->setPosition(d->trackedItem->rowPos());
         } else if (d->trackedItem->endRowPos() > d->position() + d->size()) {

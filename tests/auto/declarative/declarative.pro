@@ -13,12 +13,11 @@ SUBDIRS += \
            parserstress \           # Cover
            pathview \               # Cover
            qfxloader \              # Cover
-           qfxtextedit \            # Cover
-           qfxtextinput \           # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
+           qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover
@@ -26,7 +25,10 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
+           qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
+           qmlgraphicstextedit \    # Cover
+           qmlgraphicstextinput \   # Cover
            qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
            qmllanguage \            # Cover

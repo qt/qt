@@ -59,9 +59,12 @@ ObjectTree::ObjectTree(QmlEngineDebug *client, QWidget *parent)
 {
     setHeaderHidden(true);
     setMinimumWidth(250);
+    setExpandsOnDoubleClick(false);
 
     connect(this, SIGNAL(currentItemChanged(QTreeWidgetItem *, QTreeWidgetItem *)),
-            this, SLOT(currentItemChanged(QTreeWidgetItem *)));
+            SLOT(currentItemChanged(QTreeWidgetItem *)));
+    connect(this, SIGNAL(itemActivated(QTreeWidgetItem *, int)),
+            SLOT(activated(QTreeWidgetItem *)));            
 }
 
 void ObjectTree::setEngineDebug(QmlEngineDebug *client)
@@ -113,11 +116,18 @@ void ObjectTree::currentItemChanged(QTreeWidgetItem *item)
         return;
 
     QmlDebugObjectReference obj = item->data(0, Qt::UserRole).value<QmlDebugObjectReference>();
-    if (obj.debugId() < 0) {
-        qWarning("QML Object Tree: bad object id");
+    if (obj.debugId() >= 0)
+        emit currentObjectChanged(obj);
+}
+
+void ObjectTree::activated(QTreeWidgetItem *item)
+{
+    if (!item)
         return;
-    }
-    emit currentObjectChanged(obj);
+
+    QmlDebugObjectReference obj = item->data(0, Qt::UserRole).value<QmlDebugObjectReference>();
+    if (obj.debugId() >= 0)
+        emit activated(obj);
 }
 
 void ObjectTree::buildTree(const QmlDebugObjectReference &obj, QTreeWidgetItem *parent)

@@ -434,7 +434,6 @@ void QmlGraphicsListViewPrivate::clear()
     visibleIndex = 0;
     releaseItem(currentItem);
     currentItem = 0;
-    currentIndex = -1;
     createHighlight();
     trackedItem = 0;
 }
@@ -746,7 +745,7 @@ void QmlGraphicsListViewPrivate::updateCurrentSection()
 void QmlGraphicsListViewPrivate::updateCurrent(int modelIndex)
 {
     Q_Q(QmlGraphicsListView);
-    if (!isValid() || modelIndex < 0 || modelIndex >= model->count()) {
+    if (!q->isComponentComplete() || !isValid() || modelIndex < 0 || modelIndex >= model->count()) {
         if (currentItem) {
             currentItem->attached->setIsCurrentItem(false);
             releaseItem(currentItem);
@@ -1114,16 +1113,20 @@ void QmlGraphicsListView::setModel(const QVariant &model)
             dataModel->setModel(model);
     }
     if (d->model) {
-        if (d->currentIndex >= d->model->count() || d->currentIndex < 0)
-            setCurrentIndex(0);
-        else
-            d->updateCurrent(d->currentIndex);
+        if (isComponentComplete()) {
+            refill();
+            if (d->currentIndex >= d->model->count() || d->currentIndex < 0) {
+                setCurrentIndex(0);
+            } else {
+                d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
+                d->updateCurrent(d->currentIndex);
+            }
+        }
         connect(d->model, SIGNAL(itemsInserted(int,int)), this, SLOT(itemsInserted(int,int)));
         connect(d->model, SIGNAL(itemsRemoved(int,int)), this, SLOT(itemsRemoved(int,int)));
         connect(d->model, SIGNAL(itemsMoved(int,int,int)), this, SLOT(itemsMoved(int,int,int)));
         connect(d->model, SIGNAL(createdItem(int, QmlGraphicsItem*)), this, SLOT(createdItem(int,QmlGraphicsItem*)));
         connect(d->model, SIGNAL(destroyingItem(QmlGraphicsItem*)), this, SLOT(destroyingItem(QmlGraphicsItem*)));
-        refill();
         emit countChanged();
     }
 }
@@ -1156,8 +1159,11 @@ void QmlGraphicsListView::setDelegate(QmlComponent *delegate)
     }
     if (QmlGraphicsVisualDataModel *dataModel = qobject_cast<QmlGraphicsVisualDataModel*>(d->model)) {
         dataModel->setDelegate(delegate);
-        d->updateCurrent(d->currentIndex);
-        refill();
+        if (isComponentComplete()) {
+            refill();
+            d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
+            d->updateCurrent(d->currentIndex);
+        }
     }
 }
 
@@ -1178,7 +1184,7 @@ int QmlGraphicsListView::currentIndex() const
 void QmlGraphicsListView::setCurrentIndex(int index)
 {
     Q_D(QmlGraphicsListView);
-    if (d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
+    if (isComponentComplete() && d->isValid() && index != d->currentIndex && index < d->model->count() && index >= 0) {
         d->moveReason = QmlGraphicsListViewPrivate::SetIndex;
         cancelFlick();
         d->updateCurrent(index);
@@ -1254,7 +1260,7 @@ void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
     is scrolled.  This is because the view moves to maintain the
     highlight within the preferred highlight range (or visible viewport).
 
-    \sa highlight
+    \sa highlight, highlightMoveSpeed
 */
 bool QmlGraphicsListView::highlightFollowsCurrentItem() const
 {
@@ -1473,8 +1479,13 @@ QString QmlGraphicsListView::currentSection() const
 
 /*!
     \qmlproperty real ListView::highlightMoveSpeed
+    \qmlproperty real ListView::highlightResizeSpeed
+    These properties hold the move and resize animation speed of the highlight delegate.
 
-    This property holds the moving animation speed of the highlight delegate.
+    highlightFollowsCurrentItem must be true for these properties
+    to have effect.
+
+    \sa highlightFollowsCurrentItem
 */
 qreal QmlGraphicsListView::highlightMoveSpeed() const
 {
@@ -1494,11 +1505,6 @@ void QmlGraphicsListView::setHighlightMoveSpeed(qreal speed)
     }
 }
 
-/*!
-    \qmlproperty real ListView::highlightResizeSpeed
-
-    This property holds the resizing animation speed of the highlight delegate.
-*/
 qreal QmlGraphicsListView::highlightResizeSpeed() const
 {
     Q_D(const QmlGraphicsListView);\
@@ -1670,9 +1676,11 @@ void QmlGraphicsListView::componentComplete()
 {
     Q_D(QmlGraphicsListView);
     QmlGraphicsFlickable::componentComplete();
+    refill();
     if (d->currentIndex < 0)
         d->updateCurrent(0);
-    refill();
+    else
+        d->updateCurrent(d->currentIndex);
     d->fixupPosition();
 }
 
