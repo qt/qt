@@ -81,6 +81,7 @@ public:
 
     bool isValid() const;
     bool isCurrent() const;
+    bool isSharing() const { return sharing; }
 
     QEgl::API api() const { return apiType; }
     void setApi(QEgl::API api) { apiType = api; }
@@ -132,6 +133,7 @@ private:
     EGLSurface currentSurface;
     bool current;
     bool ownsContext;
+    bool sharing;
 
     static EGLDisplay getDisplay(QPaintDevice *device);
 

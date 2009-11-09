@@ -166,6 +166,7 @@ bool QGLContext::chooseContext(const QGLContext* shareContext)
         d->eglContext = 0;
         return false;
     }
+    d->sharing = d->eglContext->isSharing();
 
 #if defined(EGL_VERSION_1_1)
     if (d->glFormat.swapInterval() != -1 && devType == QInternal::Widget)
