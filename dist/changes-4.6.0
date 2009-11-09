@@ -95,6 +95,9 @@ QtCore
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
+- QXmlStreamWriter
+    * [256468] fix comment indentation
+
 QtGui
 - QGraphicsAnchorLayout
     * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
@@ -250,6 +253,27 @@ QtGui
  - QApplication
    * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
 
+QtNetwork
+
+- QAbstractSocket
+    * only disconnect from host when all bytes have been written
+
+- QLocalServer
+    * fix timeout when waiting for a connection on Unix
+
+- QNetworkAcessManager
+    * [242916] add possibility to send HTTP DELETE requests
+
+- QNetworkReply
+    * [257322] add possibility to ignore specific SSL errors
+
+- QSslCertificate
+    * [251830] fix version() and serialNumber() methods
+
+- QSslSocket
+    * [257322] add possibility to ignore specific SSL errors
+    * Fix build with openssl 1.0.0 betas
+
 QtOpenGL
 
  - QGLFormat
@@ -279,6 +303,11 @@ QtOpenGL
 
  - QGLGradientCache
    * [249919] Clean up the gradient cache in the right context.
+
+QtXml
+
+- QDomDocument
+    * set the codec to UTF-8 if codec not present or unknown
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
