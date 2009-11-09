@@ -1916,8 +1916,8 @@ QPixmap QX11PixmapData::transformed(const QTransform &transform,
         free(dptr);
         return bm;
     } else {                                        // color pixmap
-        QPixmap pm;
-        QX11PixmapData *x11Data = static_cast<QX11PixmapData*>(pm.data.data());
+        QX11PixmapData *x11Data = new QX11PixmapData(QPixmapData::PixmapType);
+        QPixmap pm(x11Data);
         x11Data->flags &= ~QX11PixmapData::Uninitialized;
         x11Data->xinfo = xinfo;
         x11Data->d = d;
@@ -1975,6 +1975,9 @@ void QPixmap::x11SetScreen(int screen)
         qWarning("QPixmap::x11SetScreen(): Cannot change screens during painting");
         return;
     }
+
+    if (isNull())
+        return;
 
     if (data->classId() != QPixmapData::X11Class)
         return;
@@ -2078,7 +2081,7 @@ bool QX11PixmapData::hasAlphaChannel() const
 
 const QX11Info &QPixmap::x11Info() const
 {
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<QX11PixmapData*>(data.data())->xinfo;
     else {
         static QX11Info nullX11Info;
@@ -2135,7 +2138,7 @@ QPaintEngine* QX11PixmapData::paintEngine() const
 Qt::HANDLE QPixmap::x11PictureHandle() const
 {
 #ifndef QT_NO_XRENDER
-    if (data->classId() == QPixmapData::X11Class)
+    if (data && data->classId() == QPixmapData::X11Class)
         return static_cast<const QX11PixmapData*>(data.data())->picture;
     else
         return 0;

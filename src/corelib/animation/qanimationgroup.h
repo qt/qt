@@ -65,10 +65,10 @@ public:
     int animationCount() const;
     int indexOfAnimation(QAbstractAnimation *animation) const;
     void addAnimation(QAbstractAnimation *animation);
-    void insertAnimationAt(int index, QAbstractAnimation *animation);
+    void insertAnimation(int index, QAbstractAnimation *animation);
     void removeAnimation(QAbstractAnimation *animation);
-    QAbstractAnimation *takeAnimationAt(int index);
-    void clearAnimations();
+    QAbstractAnimation *takeAnimation(int index);
+    void clear();
 
 protected:
     QAnimationGroup(QAnimationGroupPrivate &dd, QObject *parent);

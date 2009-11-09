@@ -69,7 +69,7 @@ class QGLPixmapData;
 class QGLFramebufferObjectPool
 {
 public:
-    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format);
+    QGLFramebufferObject *acquire(const QSize &size, const QGLFramebufferObjectFormat &format, bool strictSize = false);
     void release(QGLFramebufferObject *fbo);
 
 private:

@@ -95,7 +95,7 @@ public:
 
     QQuaternion conjugate() const;
 
-    QVector3D rotateVector(const QVector3D& vector) const;
+    QVector3D rotatedVector(const QVector3D& vector) const;
 
     QQuaternion &operator+=(const QQuaternion &quaternion);
     QQuaternion &operator-=(const QQuaternion &quaternion);

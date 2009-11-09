@@ -1,3 +1,5 @@
+CONFIG += egl
+
 HEADERS += \
     egl/qegl_p.h \
     egl/qeglproperties_p.h
@@ -19,11 +21,3 @@ unix {
         }
     }
 }
-
-for(p, QMAKE_LIBDIR_EGL) {
-    exists($$p):LIBS_PRIVATE += -L$$p
-}
-
-!isEmpty(QMAKE_INCDIR_EGL): INCLUDEPATH += $$QMAKE_INCDIR_EGL
-!isEmpty(QMAKE_LIBS_EGL): LIBS_PRIVATE += $$QMAKE_LIBS_EGL
-!isEmpty(QMAKE_LFLAGS_EGL): LIBS += $$QMAKE_LFLAGS_EGL

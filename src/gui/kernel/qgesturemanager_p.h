@@ -78,10 +78,11 @@ public:
     bool filterEvent(QGraphicsObject *receiver, QEvent *event);
 #endif //QT_NO_GRAPHICSVIEW
 
-    // declared in qapplication.cpp
     static QGestureManager* instance();
 
     void cleanupCachedGestures(QObject *target, Qt::GestureType type);
+
+    void recycle(QGesture *gesture);
 
 protected:
     void timerEvent(QTimerEvent *event);
@@ -140,6 +141,8 @@ private:
 
     void cancelGesturesForChildren(QGesture *originatingGesture);
 };
+
+extern QGestureManager *qt_gestureManager;
 
 QT_END_NAMESPACE
 

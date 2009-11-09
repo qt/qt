@@ -207,7 +207,7 @@ public:
     QSet<QAbstractState *> pendingErrorStatesForDefaultEntry;
 
 #ifndef QT_NO_ANIMATION
-    bool animationsEnabled;
+    bool animated;
 
     QPair<QList<QAbstractAnimation*>, QList<QAbstractAnimation*> >
         initializeAnimation(QAbstractAnimation *abstractAnimation, 

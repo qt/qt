@@ -234,7 +234,7 @@ ba.indexOf("X");            // returns -1
 
 //! [23]
 QByteArray x("crazy azimuths");
-QByteArray y("azy");
+QByteArray y("az");
 x.lastIndexOf(y);           // returns 6
 x.lastIndexOf(y, 6);        // returns 6
 x.lastIndexOf(y, 5);        // returns 2

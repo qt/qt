@@ -59,7 +59,7 @@ public:
         : startTime(-1)
         , endTime(-1)
         , data(0)
-        , numBytes(0)
+        , mappedBytes(0)
         , bytesPerLine(0)
         , pixelFormat(QVideoFrame::Format_Invalid)
         , fieldType(QVideoFrame::ProgressiveFrame)
@@ -72,7 +72,7 @@ public:
         , startTime(-1)
         , endTime(-1)
         , data(0)
-        , numBytes(0)
+        , mappedBytes(0)
         , bytesPerLine(0)
         , pixelFormat(format)
         , fieldType(QVideoFrame::ProgressiveFrame)
@@ -89,7 +89,7 @@ public:
     qint64 startTime;
     qint64 endTime;
     uchar *data;
-    int numBytes;
+    int mappedBytes;
     int bytesPerLine;
     QVideoFrame::PixelFormat pixelFormat;
     QVideoFrame::FieldType fieldType;
@@ -109,7 +109,7 @@ private:
 
     The contents of a video frame can be mapped to memory using the map() function.  While
     mapped the video data can accessed using the bits() function which returns a pointer to a
-    buffer, the total size of which is given by the numBytes(), and the size of each line is given
+    buffer, the total size of which is given by the mappedBytes(), and the size of each line is given
     by bytesPerLine().  The return value of the handle() function may be used to access frame data
     using the internal buffer's native APIs.
 
@@ -304,12 +304,12 @@ QVideoFrame::QVideoFrame(int bytes, const QSize &size, int bytesPerLine, PixelFo
     \note This will construct an invalid video frame if there is no frame type equivalent to the
     image format.
 
-    \sa equivalentPixelFormat()
+    \sa pixelFormatFromImageFormat()
 */
 
 QVideoFrame::QVideoFrame(const QImage &image)
     : d(new QVideoFramePrivate(
-            image.size(), equivalentPixelFormat(image.format())))
+            image.size(), pixelFormatFromImageFormat(image.format())))
 {
     if (d->pixelFormat != Format_Invalid)
         d->buffer = new QImageVideoBuffer(image);
@@ -510,9 +510,9 @@ bool QVideoFrame::map(QAbstractVideoBuffer::MapMode mode)
 {
     if (d->buffer != 0 && d->data == 0) {
         Q_ASSERT(d->bytesPerLine == 0);
-        Q_ASSERT(d->numBytes == 0);
+        Q_ASSERT(d->mappedBytes == 0);
 
-        d->data = d->buffer->map(mode, &d->numBytes, &d->bytesPerLine);
+        d->data = d->buffer->map(mode, &d->mappedBytes, &d->bytesPerLine);
 
         return d->data != 0;
     }
@@ -532,7 +532,7 @@ bool QVideoFrame::map(QAbstractVideoBuffer::MapMode mode)
 void QVideoFrame::unmap()
 {
     if (d->data != 0) {
-        d->numBytes = 0;
+        d->mappedBytes = 0;
         d->bytesPerLine = 0;
         d->data = 0;
 
@@ -548,7 +548,7 @@ void QVideoFrame::unmap()
 
     This value is only valid while the frame data is \l {map()}{mapped}.
 
-    \sa bits(), map(), numBytes()
+    \sa bits(), map(), mappedBytes()
 */
 
 int QVideoFrame::bytesPerLine() const
@@ -561,7 +561,7 @@ int QVideoFrame::bytesPerLine() const
 
     This value is only valid while the frame data is \l {map()}{mapped}.
 
-    \sa map(), numBytes(), bytesPerLine()
+    \sa map(), mappedBytes(), bytesPerLine()
 */
 
 uchar *QVideoFrame::bits()
@@ -574,7 +574,7 @@ uchar *QVideoFrame::bits()
 
     This value is only valid while the frame data is \l {map()}{mapped}.
 
-    \sa map(), numBytes(), bytesPerLine()
+    \sa map(), mappedBytes(), bytesPerLine()
 */
 
 const uchar *QVideoFrame::bits() const
@@ -583,16 +583,16 @@ const uchar *QVideoFrame::bits() const
 }
 
 /*!
-    Returns the number of bytes occupied by the frame data.
+    Returns the number of bytes occupied by the mapped frame data.
 
     This value is only valid while the frame data is \l {map()}{mapped}.
 
     \sa map()
 */
 
-int QVideoFrame::numBytes() const
+int QVideoFrame::mappedBytes() const
 {
-    return d->numBytes;
+    return d->mappedBytes;
 }
 
 /*!
@@ -649,7 +649,7 @@ void QVideoFrame::setEndTime(qint64 time)
     format QVideoFrame::InvalidType is returned instead.
 */
 
-QVideoFrame::PixelFormat QVideoFrame::equivalentPixelFormat(QImage::Format format)
+QVideoFrame::PixelFormat QVideoFrame::pixelFormatFromImageFormat(QImage::Format format)
 {
     switch (format) {
     case QImage::Format_Invalid:
@@ -689,7 +689,7 @@ QVideoFrame::PixelFormat QVideoFrame::equivalentPixelFormat(QImage::Format forma
     format QImage::Format_Invalid is returned instead.
 */
 
-QImage::Format QVideoFrame::equivalentImageFormat(PixelFormat format)
+QImage::Format QVideoFrame::imageFormatFromPixelFormat(PixelFormat format)
 {
     switch (format) {
     case Format_Invalid:

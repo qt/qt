@@ -2275,8 +2275,9 @@ void QPainter::setBrushOrigin(const QPointF &p)
 /*!
     Sets the composition mode to the given \a mode.
 
-    \warning You can only set the composition mode for QPainter
-    objects that operates on a QImage.
+    \warning Only a QPainter operating on a QImage fully supports all
+    composition modes. The RasterOp modes are supported for X11 as
+    described in compositionMode().
 
     \sa compositionMode()
 */
@@ -3786,27 +3787,14 @@ void QPainter::setPen(const QPen &pen)
     if (d->state->pen == pen)
         return;
 
+    d->state->pen = pen;
+
     if (d->extended) {
-        d->state->pen = pen;
         d->checkEmulation();
         d->extended->penChanged();
         return;
     }
 
-    // Do some checks to see if we are the same pen.
-    Qt::PenStyle currentStyle = d->state->pen.style();
-    if (currentStyle == pen.style() && currentStyle != Qt::CustomDashLine) {
-        if (currentStyle == Qt::NoPen ||
-            (d->state->pen.isSolid() && pen.isSolid()
-             && d->state->pen.color() == pen.color()
-             && d->state->pen.widthF() == pen.widthF()
-             && d->state->pen.capStyle() == pen.capStyle()
-             && d->state->pen.joinStyle() == pen.joinStyle()
-             && d->state->pen.isCosmetic() == pen.isCosmetic()))
-            return;
-    }
-
-    d->state->pen = pen;
     d->state->dirtyFlags |= QPaintEngine::DirtyPen;
 }
 
@@ -3887,14 +3875,6 @@ void QPainter::setBrush(const QBrush &brush)
         d->checkEmulation();
         d->extended->brushChanged();
         return;
-    }
-
-    Qt::BrushStyle currentStyle = d->state->brush.style();
-    if (currentStyle == brush.style()) {
-        if (currentStyle == Qt::NoBrush
-            || (currentStyle == Qt::SolidPattern
-                && d->state->brush.color() == brush.color()))
-            return;
     }
 
     d->state->brush = brush;
@@ -5163,7 +5143,7 @@ void QPainter::drawPixmap(const QPointF &p, const QPixmap &pm)
 
     Q_D(QPainter);
 
-    if (!d->engine)
+    if (!d->engine || pm.isNull())
         return;
 
 #ifndef QT_NO_DEBUG
@@ -7603,7 +7583,7 @@ start_lengthVariant:
             l.setPosition(QPointF(0., height));
             height += l.height();
             width = qMax(width, l.naturalTextWidth());
-            if (!brect && height >= r.height())
+            if (!dontclip && !brect && height >= r.height())
                 break;
         }
         textLayout.endLayout();

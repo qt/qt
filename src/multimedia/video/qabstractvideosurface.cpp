@@ -57,8 +57,8 @@ QT_BEGIN_NAMESPACE
     of each frame is compatible with a stream format supplied when starting a presentation.
 
     A list of pixel formats a surface can present is given by the supportedPixelFormats() function,
-    and the isFormatSupported() function will test if a complete video format is supported.  In
-    some cases when a format is not supported; isFormatSupported() may suggest a similar format.
+    and the isFormatSupported() function will test if a video surface format is supported.  If a
+    format is not supported the nearestFormat() function may be able to suggest a similar format.
     For example if a surface supports fixed set of resolutions it may suggest the smallest
     supported resolution that contains the proposed resolution.
 
@@ -118,18 +118,34 @@ QAbstractVideoSurface::~QAbstractVideoSurface()
 */
 
 /*!
-    Tests a video \a format to determine if a surface can accept it.  If the format isn't supported
-    the surface may suggest a \a similar format that is supported.
+    Tests a video surface \a format to determine if a surface can accept it.
 
     Returns true if the format is supported by the surface, and false otherwise.
 */
 
-bool QAbstractVideoSurface::isFormatSupported(
-        const QVideoSurfaceFormat &format, QVideoSurfaceFormat *similar) const
+bool QAbstractVideoSurface::isFormatSupported(const QVideoSurfaceFormat &format) const
 {
-    Q_UNUSED(similar);
-
     return supportedPixelFormats(format.handleType()).contains(format.pixelFormat());
+}
+
+/*!
+    Returns a supported video surface format that is similar to \a format.
+
+    A similar surface format is one that has the same \l {QVideoSurfaceFormat::pixelFormat()}{pixel
+    format} and \l {QVideoSurfaceFormat::handleType()}{handle type} but differs in some of the other
+    properties.  For example if there are restrictions on the \l {QVideoSurfaceFormat::frameSize()}
+    {frame sizes} a video surface can accept it may suggest a format with a larger frame size and
+    a \l {QVideoSurfaceFormat::viewport()}{viewport} the size of the original frame size.
+
+    If the format is already supported it will be returned unchanged, or if there is no similar
+    supported format an invalid format will be returned.
+*/
+
+QVideoSurfaceFormat QAbstractVideoSurface::nearestFormat(const QVideoSurfaceFormat &format) const
+{
+    return isFormatSupported(format)
+            ? format
+            : QVideoSurfaceFormat();
 }
 
 /*!
@@ -162,23 +178,23 @@ QVideoSurfaceFormat QAbstractVideoSurface::surfaceFormat() const
 
     Returns true if the surface was started, and false if an error occurred.
 
-    \sa isStarted(), stop()
+    \sa isActive(), stop()
 */
 
 bool QAbstractVideoSurface::start(const QVideoSurfaceFormat &format)
 {
     Q_D(QAbstractVideoSurface);
 
-    bool wasStarted  = d->started;
+    bool wasActive  = d->active;
 
-    d->started = true;
+    d->active = true;
     d->format = format;
     d->error = NoError;
 
     emit surfaceFormatChanged(d->format);
 
-    if (!wasStarted)
-        emit startedChanged(true);
+    if (!wasActive)
+        emit activeChanged(true);
 
     return true;
 }
@@ -186,18 +202,18 @@ bool QAbstractVideoSurface::start(const QVideoSurfaceFormat &format)
 /*!
     Stops a video surface presenting frames and releases any resources acquired in start().
 
-    \sa isStarted(), start()
+    \sa isActive(), start()
 */
 
 void QAbstractVideoSurface::stop()
 {
     Q_D(QAbstractVideoSurface);
 
-    if (d->started) {
+    if (d->active) {
         d->format = QVideoSurfaceFormat();
-        d->started = false;
+        d->active = false;
 
-        emit startedChanged(false);
+        emit activeChanged(false);
         emit surfaceFormatChanged(d->format);
     }
 }
@@ -208,17 +224,17 @@ void QAbstractVideoSurface::stop()
     Returns true if the surface has been started, and false otherwise.
 */
 
-bool QAbstractVideoSurface::isStarted() const
+bool QAbstractVideoSurface::isActive() const
 {
-    return d_func()->started;
+    return d_func()->active;
 }
 
 /*!
-    \fn QAbstractVideoSurface::startedChanged(bool started)
+    \fn QAbstractVideoSurface::activeChanged(bool active)
 
-    Signals that the \a started state of a video surface has changed.
+    Signals that the \a active state of a video surface has changed.
 
-    \sa isStarted(), start(), stop()
+    \sa isActive(), start(), stop()
 */
 
 /*!

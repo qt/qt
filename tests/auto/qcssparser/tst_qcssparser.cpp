@@ -1556,7 +1556,10 @@ void tst_QCssParser::extractFontFamily_data()
     QTest::newRow("shorthand") << "font: 12pt Times New Roman" << QString("Times New Roman");
     QTest::newRow("shorthand multiple quote") << "font: 12pt invalid, \"Times New Roman\" " << QString("Times New Roman");
     QTest::newRow("shorthand multiple") << "font: 12pt invalid, Times New Roman " << QString("Times New Roman");
+    QTest::newRow("invalid spaces") << "font-family: invalid spaces, Times New Roman " << QString("Times New Roman");
+    QTest::newRow("invalid spaces quotes") << "font-family: 'invalid spaces', 'Times New Roman' " << QString("Times New Roman");
 }
+
 
 void tst_QCssParser::extractFontFamily()
 {

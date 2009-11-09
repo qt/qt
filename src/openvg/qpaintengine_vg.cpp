@@ -1178,6 +1178,8 @@ VGPaintType QVGPaintEnginePrivate::setBrush
     case Qt::TexturePattern: {
         // The brush is a texture specified by a QPixmap/QImage.
         QPixmapData *pd = brush.texture().pixmapData();
+        if (!pd)
+            break;  // null QPixmap
         VGImage vgImg;
         bool deref = false;
         if (pd->pixelType() == QPixmapData::BitmapType) {
@@ -2893,6 +2895,8 @@ void qt_vg_drawVGImageStencil
 void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF &sr)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2910,6 +2914,8 @@ void QVGPaintEngine::drawPixmap(const QRectF &r, const QPixmap &pm, const QRectF
 void QVGPaintEngine::drawPixmap(const QPointF &pos, const QPixmap &pm)
 {
     QPixmapData *pd = pm.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         Q_D(QVGPaintEngine);
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
@@ -2985,6 +2991,8 @@ void QVGPaintEngine::drawPixmaps
     // If the pixmap is not VG, or the transformation is projective,
     // then fall back to the default implementation.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() != QPixmapData::OpenVGClass || !d->simpleTransform) {
         QPaintEngineEx::drawPixmaps(drawingData, dataCount, pixmap, hints);
         return;
@@ -3581,6 +3589,8 @@ void QVGCompositionHelper::drawCursorPixmap
 
     // Fetch the VGImage from the pixmap if possible.
     QPixmapData *pd = pixmap.pixmapData();
+    if (!pd)
+        return; // null QPixmap
     if (pd->classId() == QPixmapData::OpenVGClass) {
         QVGPixmapData *vgpd = static_cast<QVGPixmapData *>(pd);
         if (vgpd->isValid())
