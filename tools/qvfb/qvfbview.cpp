@@ -596,7 +596,7 @@ QImage QVFbView::getBuffer(const QRect &r, int &leading) const
                    r.width(), r.height(), mView->linestep(),
                    QImage::Format_Indexed8);
         img.setColorTable(mView->clut());
-        if (img.numColors() <= 0)
+        if (img.colorCount() <= 0)
             img = QImage();
         break;
     }
@@ -613,10 +613,10 @@ QImage QVFbView::getBuffer(const QRect &r, int &leading) const
             if ( img.format() != QImage::Format_ARGB32_Premultiplied )
                 img = img.convertToFormat(QImage::Format_RGB32);
 
-            // NOTE: calling bits() may change numBytes(), so do not
+            // NOTE: calling bits() may change byteCount(), so do not
             // pass them as parameters (which are evaluated right-to-left).
             QRgb *b = (QRgb*)img.bits();
-            int n = img.numBytes()/4;
+            int n = img.byteCount()/4;
             dim(b,n,brightness);
         }
     }

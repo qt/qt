@@ -82,7 +82,7 @@ Item ReplaceFN::evaluateSingleton(const DynamicContext::Ptr &context) const
     if(arg)
         input = arg.stringValue();
 
-    const QString replacement(m_replacementString.isNull() ? parseReplacement(regexp.numCaptures(), context)
+    const QString replacement(m_replacementString.isNull() ? parseReplacement(regexp.captureCount(), context)
                                                            : m_replacementString);
 
 

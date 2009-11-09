@@ -171,7 +171,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
                 if (image.isNull())
                     return;
             }
-            image.setNumColors(2);
+            image.setColorCount(2);
             image.setColor(1, qRgb(0,0,0));
             image.setColor(0, qRgb(255,255,255));
         } else if (bit_depth == 16 && png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
@@ -199,7 +199,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
                 if (image.isNull())
                     return;
             }
-            image.setNumColors(ncols);
+            image.setColorCount(ncols);
             for (int i=0; i<ncols; i++) {
                 int c = i*255/(ncols-1);
                 image.setColor(i, qRgba(c,c,c,0xff));
@@ -230,7 +230,7 @@ void setup_qt(QImage& image, png_structp png_ptr, png_infop info_ptr, float scre
             if (image.isNull())
                 return;
         }
-        image.setNumColors(info_ptr->num_palette);
+        image.setColorCount(info_ptr->num_palette);
         int i = 0;
         if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
             while (i < info_ptr->num_trans) {
@@ -508,7 +508,7 @@ bool Q_INTERNAL_WIN_NO_THROW QPngHandlerPrivate::readPngImage(QImage *outImage)
     // sanity check palette entries
     if (color_type == PNG_COLOR_TYPE_PALETTE
         && outImage->format() == QImage::Format_Indexed8) {
-        int color_table_size = outImage->numColors();
+        int color_table_size = outImage->colorCount();
         for (int y=0; y<(int)height; ++y) {
             uchar *p = outImage->scanLine(y);
             uchar *end = p + width;
@@ -762,9 +762,9 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
 
     png_colorp palette = 0;
     png_bytep copy_trans = 0;
-    if (image.numColors()) {
+    if (image.colorCount()) {
         // Paletted
-        int num_palette = image.numColors();
+        int num_palette = image.colorCount();
         palette = new png_color[num_palette];
         png_set_PLTE(png_ptr, info_ptr, palette, num_palette);
         int* trans = new int[num_palette];

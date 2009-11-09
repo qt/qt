@@ -104,7 +104,7 @@ private slots:
     void setPixel_data();
     void setPixel();
 
-    void setNumColors();
+    void setColorCount();
     void setColor();
 
     void rasterClipping();
@@ -155,7 +155,7 @@ void tst_QImage::create()
 #endif
 	//QImage image(7000000, 7000000, 8, 256, QImage::IgnoreEndian);
     QImage image(7000000, 7000000, QImage::Format_Indexed8);
-    image.setNumColors(256);
+    image.setColorCount(256);
         cr = !image.isNull();
 #if !defined(Q_WS_QWS) && !defined(Q_OS_WINCE)
     } catch (...) {
@@ -242,7 +242,7 @@ void tst_QImage::convertBitOrder()
     QSKIP("Qt compiled without Qt3Support", SkipAll);
 #else
     QImage i(9,5,1,2,QImage::LittleEndian);
-    qMemSet(i.bits(), 0, i.numBytes());
+    qMemSet(i.bits(), 0, i.byteCount());
 
     i.setDotsPerMeterX(9);
     i.setDotsPerMeterY(5);
@@ -258,7 +258,7 @@ void tst_QImage::convertBitOrder()
     QVERIFY(i.dotsPerMeterY() == ni.dotsPerMeterY());
     QVERIFY(i.depth() == ni.depth());
     QVERIFY(i.size() == ni.size());
-    QVERIFY(i.numColors() == ni.numColors());
+    QVERIFY(i.colorCount() == ni.colorCount());
 #endif
 }
 
@@ -365,7 +365,7 @@ void tst_QImage::setAlphaChannel()
     QImage alphaChannel;
     if (gray) {
         alphaChannel = QImage(width, height, QImage::Format_Indexed8);
-        alphaChannel.setNumColors(256);
+        alphaChannel.setColorCount(256);
         for (int i=0; i<256; ++i)
             alphaChannel.setColor(i, qRgb(i, i, i));
         alphaChannel.fill(alpha);
@@ -927,7 +927,7 @@ void tst_QImage::rotate()
     original.fill(qRgb(255,255,255));
 
     if (format == QImage::Format_Indexed8) {
-        original.setNumColors(256);
+        original.setColorCount(256);
         for (int i = 0; i < 255; ++i)
             original.setColor(i, qRgb(0, i, i));
     }
@@ -1196,23 +1196,23 @@ void tst_QImage::convertToFormatPreserveText()
 }
 #endif // QT_NO_IMAGE_TEXT
 
-void tst_QImage::setNumColors()
+void tst_QImage::setColorCount()
 {
     QImage img(0, 0, QImage::Format_Indexed8);
-    QTest::ignoreMessage(QtWarningMsg, "QImage::setNumColors: null image");
-    img.setNumColors(256);
-    QCOMPARE(img.numColors(), 0);
+    QTest::ignoreMessage(QtWarningMsg, "QImage::setColorCount: null image");
+    img.setColorCount(256);
+    QCOMPARE(img.colorCount(), 0);
 }
 
 void tst_QImage::setColor()
 {
     QImage img(0, 0, QImage::Format_Indexed8);
     img.setColor(0, qRgba(18, 219, 108, 128));
-    QCOMPARE(img.numColors(), 0);
+    QCOMPARE(img.colorCount(), 0);
 
     QImage img2(1, 1, QImage::Format_Indexed8);
     img2.setColor(0, qRgba(18, 219, 108, 128));
-    QCOMPARE(img2.numColors(), 1);
+    QCOMPARE(img2.colorCount(), 1);
 }
 
 /* Just some sanity checking that we don't draw outside the buffer of
