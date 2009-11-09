@@ -95,6 +95,9 @@ QtCore
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
+- QXmlStreamWriter
+    * [256468] fix comment indentation
+
 QtGui
 - QGraphicsAnchorLayout
     * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
@@ -247,6 +250,29 @@ QtGui
  - QPushButton
     * [255581] Fixed sizeHint recalculation bug.
 
+ - QApplication
+   * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+
+QtNetwork
+
+- QAbstractSocket
+    * only disconnect from host when all bytes have been written
+
+- QLocalServer
+    * fix timeout when waiting for a connection on Unix
+
+- QNetworkAcessManager
+    * [242916] add possibility to send HTTP DELETE requests
+
+- QNetworkReply
+    * [257322] add possibility to ignore specific SSL errors
+
+- QSslCertificate
+    * [251830] fix version() and serialNumber() methods
+
+- QSslSocket
+    * [257322] add possibility to ignore specific SSL errors
+    * Fix build with openssl 1.0.0 betas
 
 QtOpenGL
 
@@ -278,12 +304,40 @@ QtOpenGL
  - QGLGradientCache
    * [249919] Clean up the gradient cache in the right context.
 
+QtXml
+
+- QDomDocument
+    * set the codec to UTF-8 if codec not present or unknown
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
 
  - Added community supported Qt ports for QNX and VxWorks. See platform
    notes in the Qt documentation for details.
+
+Qt for Linux/X11
+----------------
+
+ - KDE Integration: Improved the integration into KDE desktop (loading of KDE
+   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
+
+ - Fixed pasting the clipboard content to non-Qt application on X11 when the
+   requested format is image/ppm. Patch by Ritt.K
+
+ - On X11 Qt now supports the _NET_WM_SYNC protocol.
+
+ - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
+   clipboard contents if the application that owns the clipboards exits
+
+ - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
+   application asks the unsupported target. This fixes copying and pasting data
+   when using Synergy.
+ - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
+ - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+Qt for Windows
+--------------
 
  - Significant external contribution from Milan Burda for planned removal
    of (non-unicode) Windows 9x/ME support.
@@ -295,82 +349,39 @@ QtOpenGL
    QRegion. The native handle is for reading out only. Any GDI calls
    made on the HRGN handle will not affect the QRegion.
 
- - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
-   thanks to Konstantin Ritt (merge request 1217).
-
  - The reading code of QLocalSocket on Windows has been rewritten to improve
    reading performance.
-
- - On Windows CE the link time code geration has been disabled by default to
-   be consistent with win32-msvc200x.
-
- - The default button size has been reduced in the Windows mobile style.
-
- - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
-
- - [254673] Restoring minimzed widgets fixed for Windows mobile and
-   Windows CE.
-
- - [255242] Seeking within large files (bigger than 0x80000000 bytes) fixed
-   on Windows CE.
-
- - [257352] When configuring Qt for Windows CE, configure points the user to
-   setcepaths, when its done.
-
- - [259850] Added a makespec template for Windows CE 6.
-   
- - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
-   QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
-   specific libraries.
-
- - Compilation fixes for OpenGL/ES 1.0 and OpenGL/ES 1.1 Common Lite.
-
- - EGL and OpenGL/ES
-    * Protect the use of version-specific EGL symbols with #ifdef's.
-    * Make sure an EGL context is current when resolving GL extensions.
-    * Introduce "lazyDoneCurrent" for optimizing context switching in
-      paint engines.
-    * Separate EGLSurface from QEglContext so that the same context can
-      be used with multiple surfaces.
-    * Move common functions from system-specific files to qgl_egl.cpp.
-    * Fix a memory leak of EGLSurface's in QGLContext.
-    * Fix detection of pbuffers on OpenGL/ES systems.
-    * EGL_SAMPLES was being set to the wrong value for multisampled surfaces.
-
- - PowerVR
-    * Make the code better at detecting MBX vs SGX header files.
-    * Fix 32-bit screen support - some code was still assuming 16-bit.
-    * Stop GL window surfaces double-flushing their contents.
-    * Remove surface holder, which never worked all that well.
-    * Implement screen rotations.
-
- - Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
-
- - KDE Integration: Improved the integration into KDE desktop (loading of KDE
-   palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
-
- - Fixed pasting the clipboard content to non-Qt application on X11 when the
-   requested format is image/ppm. Patch by Ritt.K
 
  - On Windows when a file cannot be accessed (stat()ed), we are now restoring
    the error mode to the original value.
 
- - On X11 Qt now supports the _NET_WM_SYNC protocol.
+ - [259221] QFileInfo::symLinkTarget() now supports NTFS symbolic links
+   thanks to Konstantin Ritt (merge request 1217).
+ - [251554] Fixed openUrl("mailto:") with Thunderbird on Windows.
+ - [254501] QDestopServices now supports cyrillic file names.
+ - Fixed an issue which prevents moving fixed size windows using titlebar.
+ - [258087] Fixed an issue on Vista which returns incorrect file paths when using
+   QFileDialog::getOpenFileNames()
+ - [253763] Fixed a focus issue when using out-of-process ActiveQt controls.
+ - [255912] Mouse move events will not be delivered to a blocked widget.
+ - [225588] Enabled IME reconversion support.
 
- - On X11 Qt now supports the SAVE_TARGET protocol that allows to keep
-   clipboard contents if the application that owns the clipboards exits
+ - Phonon on Windows
+   * Now much more reliable when reading a file through a QIODevice.
+   * If Video Mixing Renderer 9 is not available, falls back to software
+     rendering.
+   * Fixed a flicker issue when switching source with a transition time of 0
 
- - [QTBUG-4652] On X11 clipboard content can be properly retrieved even when an
-   application asks the unsupported target. This fixes copying and pasting data
-   when using Synergy.
-
- - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
-
- - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
-
- - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+Qt for Mac OS X
+---------------
 
  - Add support for GetURL events on Mac OS X
+ - [123740] Fixed an issue with dead keys on Mac (cocoa) on French keyboard layout.
+ - [252088] Drag Leave events will be delivered correctly on Cocoa.
+ - [257661] Cocoa now uses the correct line ending for clipboard plain text.
+ - [258438] Enabled Emacs style keyboard shortcuts.
+ - [258173] Fixed an issue which caused "whatsthis" pointer to flicked on Cocoa.
+ - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
 
 General changes on Mac OS X:
  - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
@@ -387,11 +398,49 @@ General changes on Mac OS X:
     - Building for ppc64 is no longer supported by the gcc tool chain.
     - Building for ppc is still supported.
 
- - Phonon on Windows
-   * Now much more reliable when reading a file through a QIODevice.
-   * If Video Mixing Renderer 9 is not available, falls back to software
-     rendering.
-   * Fixed a flicker issue when switching source with a transition time of 0
+Qt for Embedded Linux
+---------------------
+
+- Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
+  QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
+  specific libraries.
+
+- Compilation fixes for OpenGL/ES 1.0 and OpenGL/ES 1.1 Common Lite.
+
+- EGL and OpenGL/ES
+   * Protect the use of version-specific EGL symbols with #ifdef's.
+   * Make sure an EGL context is current when resolving GL extensions.
+   * Introduce "lazyDoneCurrent" for optimizing context switching in
+     paint engines.
+   * Separate EGLSurface from QEglContext so that the same context can
+     be used with multiple surfaces.
+   * Move common functions from system-specific files to qgl_egl.cpp.
+   * Fix a memory leak of EGLSurface's in QGLContext.
+   * Fix detection of pbuffers on OpenGL/ES systems.
+   * EGL_SAMPLES was being set to the wrong value for multisampled surfaces.
+
+- PowerVR
+   * Make the code better at detecting MBX vs SGX header files.
+   * Fix 32-bit screen support - some code was still assuming 16-bit.
+   * Stop GL window surfaces double-flushing their contents.
+   * Remove surface holder, which never worked all that well.
+   * Implement screen rotations.
+
+- Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
+
+Qt for Windows CE
+-----------------
+ - On Windows CE the link time code generation has been disabled by default to
+   be consistent with win32-msvc200x.
+ - The default button size has been reduced in the Windows mobile style.
+ - [QTBUG-3613] QWizard issues have been fixed on Windows mobile.
+ - [254673] Restoring minimized widgets fixed for Windows mobile and
+   Windows CE.
+ - [255242] Seeking within large files (bigger than 0x80000000 bytes) fixed
+   on Windows CE.
+ - [257352] When configuring Qt for Windows CE, configure points the user to
+   setcepaths, when its done.
+ - [259850] Added a makespec template for Windows CE 6.
 
 ****************************************************************************
 *                          Tools                                           *

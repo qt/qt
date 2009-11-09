@@ -161,9 +161,11 @@ public Q_SLOTS:
             cond.wakeOne();
         }
 #ifndef QT_NO_THREAD
-        if (!wait(QHOSTINFO_THREAD_WAIT))
+        if (!wait(QHOSTINFO_THREAD_WAIT)) {
             terminate();
-        wait();
+            // Don't wait forever; see QTBUG-5296.
+            wait(QHOSTINFO_THREAD_WAIT);
+        }
 #endif
     }
 

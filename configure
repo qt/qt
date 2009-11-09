@@ -362,7 +362,7 @@ elif [ -f "$relpath"/LICENSE.PREVIEW.COMMERCIAL ] && [ $COMMERCIAL_USER = "yes" 
 elif [ $COMMERCIAL_USER = "yes" ]; then
     # one of commercial editions
     [ "$PLATFORM_MAC" = "maybe" ] && PLATFORM_MAC=yes
-    [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=yes
+    [ "$PLATFORM_QWS" = "maybe" ] && PLATFORM_QWS=no
 
     # read in the license file
     if [ -f "$LICENSE_FILE" ]; then

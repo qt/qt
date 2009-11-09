@@ -628,7 +628,7 @@ void tst_QRegExp::capturedTexts()
     QRegExp rx7("([A-Za-z_])([A-Za-z_0-9]*)");
     rx7.setCaseSensitivity(Qt::CaseSensitive);
     rx7.setPatternSyntax(QRegExp::RegExp);
-    QCOMPARE(rx7.numCaptures(), 2);
+    QCOMPARE(rx7.captureCount(), 2);
 
     int pos = rx7.indexIn("(10 + delta4) * 32");
     QCOMPARE(pos, 6);
@@ -1177,36 +1177,36 @@ void tst_QRegExp::prepareEngineOptimization()
     QCOMPARE(rx1.capturedTexts(), QStringList() << "" << "" << "" << "");
     QCOMPARE(rx1.matchedLength(), -1);
     QCOMPARE(rx1.matchedLength(), -1);
-    QCOMPARE(rx1.numCaptures(), 3);
+    QCOMPARE(rx1.captureCount(), 3);
 
     QCOMPARE(rx1.exactMatch("foo"), true);
     QCOMPARE(rx1.matchedLength(), 3);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "foo" << "f" << "o" << "o");
-    QCOMPARE(rx1.numCaptures(), 3);
+    QCOMPARE(rx1.captureCount(), 3);
     QCOMPARE(rx1.matchedLength(), 3);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "foo" << "f" << "o" << "o");
     QCOMPARE(rx1.pos(3), 2);
 
     QCOMPARE(rx1.exactMatch("foo"), true);
-    QCOMPARE(rx1.numCaptures(), 3);
+    QCOMPARE(rx1.captureCount(), 3);
     QCOMPARE(rx1.matchedLength(), 3);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "foo" << "f" << "o" << "o");
     QCOMPARE(rx1.pos(3), 2);
 
     QRegExp rx2 = rx1;
 
-    QCOMPARE(rx1.numCaptures(), 3);
+    QCOMPARE(rx1.captureCount(), 3);
     QCOMPARE(rx1.matchedLength(), 3);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "foo" << "f" << "o" << "o");
     QCOMPARE(rx1.pos(3), 2);
 
-    QCOMPARE(rx2.numCaptures(), 3);
+    QCOMPARE(rx2.captureCount(), 3);
     QCOMPARE(rx2.matchedLength(), 3);
     QCOMPARE(rx2.capturedTexts(), QStringList() << "foo" << "f" << "o" << "o");
     QCOMPARE(rx2.pos(3), 2);
 
     QCOMPARE(rx1.exactMatch("fo"), true);
-    QCOMPARE(rx1.numCaptures(), 3);
+    QCOMPARE(rx1.captureCount(), 3);
     QCOMPARE(rx1.matchedLength(), 2);
     QCOMPARE(rx1.capturedTexts(), QStringList() << "fo" << "f" << "o" << "");
     QCOMPARE(rx1.pos(2), 1);
@@ -1245,25 +1245,25 @@ void tst_QRegExp::prepareEngineOptimization()
 
     rx11.setPatternSyntax(QRegExp::Wildcard);
     QVERIFY(!rx11.isValid());
-    QCOMPARE(rx11.numCaptures(), 0);
+    QCOMPARE(rx11.captureCount(), 0);
     QCOMPARE(rx11.matchedLength(), -1);
 
     rx11.setPatternSyntax(QRegExp::RegExp);
     QVERIFY(!rx11.isValid());
-    QCOMPARE(rx11.numCaptures(), 0);
+    QCOMPARE(rx11.captureCount(), 0);
     QCOMPARE(rx11.matchedLength(), -1);
 
     rx11.setPattern("(foo)");
     QVERIFY(rx11.isValid());
-    QCOMPARE(rx11.numCaptures(), 1);
+    QCOMPARE(rx11.captureCount(), 1);
     QCOMPARE(rx11.matchedLength(), -1);
 
     QCOMPARE(rx11.indexIn("ofoo"), 1);
-    QCOMPARE(rx11.numCaptures(), 1);
+    QCOMPARE(rx11.captureCount(), 1);
     QCOMPARE(rx11.matchedLength(), 3);
 
     rx11.setPatternSyntax(QRegExp::RegExp);
-    QCOMPARE(rx11.numCaptures(), 1);
+    QCOMPARE(rx11.captureCount(), 1);
     QCOMPARE(rx11.matchedLength(), 3);
 
     /*
@@ -1278,11 +1278,11 @@ void tst_QRegExp::prepareEngineOptimization()
     QCOMPARE(rx11.matchedLength(), 3);
 
     rx11.setPatternSyntax(QRegExp::Wildcard);
-    QCOMPARE(rx11.numCaptures(), 0);
+    QCOMPARE(rx11.captureCount(), 0);
     QCOMPARE(rx11.matchedLength(), -1);
 
     rx11.setPatternSyntax(QRegExp::RegExp);
-    QCOMPARE(rx11.numCaptures(), 1);
+    QCOMPARE(rx11.captureCount(), 1);
     QCOMPARE(rx11.matchedLength(), -1);
 }
 
