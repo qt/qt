@@ -9606,6 +9606,7 @@ void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
     QPalette pal = c->palette();
     pal.setColor(QPalette::Text, col);
     c->setPalette(pal);
+    update();
 }
 
 /*!
