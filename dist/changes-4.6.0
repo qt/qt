@@ -25,6 +25,17 @@ information about a particular change.
 
  - [MR#1742] Added new multimedia keys to the Qt::Key enum.
 
+ - QMatrix4x4, QGenericMatrix, QVector2D, QVector3D, QVector4D, QQuaternion
+    * New classes to support 3D applications.
+
+ - QGLShaderProgram, QGLShader
+    * New classes for using shader programs written in the GL Shading Language.
+
+ - Boxes demo ported to use new 3D math and shader program classes.
+
+ - OpenVG graphics system added.
+
+ - Add 800x480 screen mode to qvfb configuration dialog.
 
 Third party components
 ----------------------
@@ -57,6 +68,7 @@ QtCore
     * Added QVariant(float) constructor
     * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
       identify functions
+    * Added support for math3d types.
 
  - Qt::escape
     * now escape the double quote (&quot;)
@@ -215,6 +227,45 @@ QtGui
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
 
+ - QFontEngineQPF
+    * Make alphaMapForGlyph() generate the correct color table for
+      Indexed8 and Mono glyph images.  Fixed the "all glyphs are white
+      boxes" problem in OpenGL1 paint engine.
+
+ - QPaintDevice
+    * New qt_paint_device_metric() function to replace the friend
+      declarations for window surface classes that need to access metric().
+
+QtOpenGL
+
+ - QGLFormat
+    * Increase unit test coverage and fix some long-standing issues.
+    * Improve performance of code that tests QGLFormat options.
+    * operator==() now tests for equality on all fields.
+
+ - QGLColormap
+    * setEntry() was inserting entries instead of replacing them.
+    * Clarified documentation for isEmpty().
+
+ - QGLFramebufferObject
+    * Add support for the ARB_framebuffer_object, OES_framebuffer_object,
+      and OES_packed_depth_stencil extensions.
+    * Unbind the texture after it is initialized.
+    * Don't destroy the texture target on cleanup if one wasn't created.
+
+ - QGLFramebufferObjectFormat
+    * New class for controlling fbo options.
+
+ - Improvements to context sharing and object cleanup logic.
+
+ - QGLContext
+    * Fix RGB565 mode in bindTexture().
+    * Map mipmaps work on OpenGL/ES 2.0 systems in bindTexture().
+    * Improve performance of QGLContext::currentContext().
+
+ - QGLGradientCache
+   * [249919] Clean up the gradient cache in the right context.
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
@@ -244,6 +295,29 @@ QtGui
  - Added QMAKE_LIBS_OPENGL_ES1, QMAKE_LIBS_OPENGL_ES1CL and
    QMAKE_LIBS_OPENGL_ES2 qmake variables for specifying OpenGL ES
    specific libraries.
+
+ - Compilation fixes for OpenGL/ES 1.0 and OpenGL/ES 1.1 Common Lite.
+
+ - EGL and OpenGL/ES
+    * Protect the use of version-specific EGL symbols with #ifdef's.
+    * Make sure an EGL context is current when resolving GL extensions.
+    * Introduce "lazyDoneCurrent" for optimizing context switching in
+      paint engines.
+    * Separate EGLSurface from QEglContext so that the same context can
+      be used with multiple surfaces.
+    * Move common functions from system-specific files to qgl_egl.cpp.
+    * Fix a memory leak of EGLSurface's in QGLContext.
+    * Fix detection of pbuffers on OpenGL/ES systems.
+    * EGL_SAMPLES was being set to the wrong value for multisampled surfaces.
+
+ - PowerVR
+    * Make the code better at detecting MBX vs SGX header files.
+    * Fix 32-bit screen support - some code was still assuming 16-bit.
+    * Stop GL window surfaces double-flushing their contents.
+    * Remove surface holder, which never worked all that well.
+    * Implement screen rotations.
+
+ - Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
 
  - KDE Integration: Improved the integration into KDE desktop (loading of KDE
    palette, usage of KColorDialog and KFileDialog) using the GuiPlatformPlugin
