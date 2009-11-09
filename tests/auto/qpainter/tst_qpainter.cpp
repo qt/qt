@@ -101,6 +101,8 @@ private slots:
     void saveAndRestore_data();
     void saveAndRestore();
 
+    void drawBorderPixmap();
+
     void drawLine_data();
     void drawLine();
     void drawLine_clipped();
@@ -971,6 +973,18 @@ void tst_QPainter::initFrom()
     QCOMPARE(p.background(), pal.background());
 
     delete widget;
+}
+
+void tst_QPainter::drawBorderPixmap()
+{
+    QPixmap src(79,79);
+    src.fill(Qt::transparent);
+
+    QImage pm(200,200,QImage::Format_RGB32);
+    QPainter p(&pm);
+    p.setTransform(QTransform(-1,0,0,-1,173.5,153.5));
+    qDrawBorderPixmap(&p, QRect(0,0,75,105), QMargins(39,39,39,39), src, QRect(0,0,79,79), QMargins(39,39,39,39),
+                       QTileRules(Qt::StretchTile,Qt::StretchTile), 0);
 }
 
 void tst_QPainter::drawLine_data()
