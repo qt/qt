@@ -83,9 +83,6 @@ Q_SIGNALS:
     void horizontalTileModeChanged();
     void verticalTileModeChanged();
 
-protected:
-    QmlGraphicsBorderImage(QmlGraphicsBorderImagePrivate &dd, QmlGraphicsItem *parent);
-
 private:
     void setGridScaledImage(const QmlGraphicsGridScaledImage& sci);
 

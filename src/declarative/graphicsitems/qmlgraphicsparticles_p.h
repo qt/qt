@@ -214,7 +214,6 @@ public Q_SLOTS:
 
 protected:
     virtual void componentComplete();
-    QmlGraphicsParticles(QmlGraphicsParticlesPrivate &dd, QmlGraphicsItem *parent);
 
 Q_SIGNALS:
     void sourceChanged();

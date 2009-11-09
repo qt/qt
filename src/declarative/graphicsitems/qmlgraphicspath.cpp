@@ -100,11 +100,6 @@ QmlGraphicsPath::QmlGraphicsPath(QObject *parent)
 {
 }
 
-QmlGraphicsPath::QmlGraphicsPath(QmlGraphicsPathPrivate &dd, QObject *parent)
- : QObject(dd, parent)
-{
-}
-
 QmlGraphicsPath::~QmlGraphicsPath()
 {
 }

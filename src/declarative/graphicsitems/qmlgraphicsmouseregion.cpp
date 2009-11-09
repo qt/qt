@@ -246,13 +246,6 @@ QmlGraphicsMouseRegion::QmlGraphicsMouseRegion(QmlGraphicsItem *parent)
     d->init();
 }
 
-QmlGraphicsMouseRegion::QmlGraphicsMouseRegion(QmlGraphicsMouseRegionPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsItem(dd, parent)
-{
-    Q_D(QmlGraphicsMouseRegion);
-    d->init();
-}
-
 QmlGraphicsMouseRegion::~QmlGraphicsMouseRegion()
 {
 }

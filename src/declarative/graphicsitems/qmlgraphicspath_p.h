@@ -215,7 +215,6 @@ Q_SIGNALS:
 
 protected:
     virtual void componentComplete();
-    QmlGraphicsPath(QmlGraphicsPathPrivate &dd, QObject *parent);
 
 private Q_SLOTS:
     void processPath();

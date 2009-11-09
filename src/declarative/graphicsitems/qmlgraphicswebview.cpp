@@ -260,12 +260,6 @@ QmlGraphicsWebView::QmlGraphicsWebView(QmlGraphicsItem *parent)
     init();
 }
 
-QmlGraphicsWebView::QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsPaintedItem(dd, parent)
-{
-    init();
-}
-
 QmlGraphicsWebView::~QmlGraphicsWebView()
 {
     Q_D(QmlGraphicsWebView);

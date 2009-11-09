@@ -209,8 +209,6 @@ private Q_SLOTS:
     void contentsSizeChanged(const QSize&);
 
 protected:
-    QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent);
-
     void drawContents(QPainter *, const QRect &);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
