@@ -946,7 +946,7 @@ bool QAbstractScrollArea::event(QEvent *e)
         if (g) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            QPointF delta = g->lastOffset();
+            QPointF delta = g->delta();
             if (!delta.isNull()) {
                 if (QApplication::isRightToLeft())
                     delta.rx() *= -1;
