@@ -74,7 +74,7 @@ public:
     ParallelAnimationWrapper(QObject *parent) : QParallelAnimationGroup(parent) {}
     QmlTransitionPrivate *trans;
 protected:
-    virtual void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
 };
 
 class QmlTransitionPrivate : public QObjectPrivate
@@ -124,13 +124,13 @@ void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
     parent->group->addAnimation(a->qtAnimation());
 }
 
-void ParallelAnimationWrapper::updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState)
+void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 {
-    QParallelAnimationGroup::updateState(oldState, newState);
+    QParallelAnimationGroup::updateState(newState, oldState);
     //XXX not 100% guaranteed to be at end (if there are many zero duration animations at the end)?
     if (newState == Stopped &&
-        ((direction() == QAbstractAnimation::Forward && currentTime() == duration()) ||
-         (direction() == QAbstractAnimation::Backward && currentTime() == 0)))
+        ((direction() == QAbstractAnimation::Forward && currentLoopTime() == duration()) ||
+         (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))
     {
         trans->complete();
     }
