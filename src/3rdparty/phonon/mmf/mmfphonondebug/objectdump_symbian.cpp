@@ -99,38 +99,39 @@ QList<QByteArray> QAnnotatorWindow::annotation(const QObject& object)
     if (widget) {
 
         const CCoeControl* control = widget->effectiveWinId();
-        RDrawableWindow *window = 0;
 
-        if (control && (window = control->DrawableWindow())) {
+        if (control) {
+            RDrawableWindow *const window = control->DrawableWindow();
+            if(window) {
+                QByteArray array;
+                QTextStream stream(&array);
 
-            QByteArray array;
-            QTextStream stream(&array);
+                stream << "window: ";
 
-            stream << "window: ";
+                // Server-side address of CWsWindow object
+                // This is useful for correlation with the window tree dumped by the window
+                // server (see RWsSession::LogCommand).
+                // Cast to a void pointer so that log output is in hexadecimal format.
+                stream << "srv " << reinterpret_cast<const void*>(window->WsHandle()) << ' ';
 
-            // Server-side address of CWsWindow object
-            // This is useful for correlation with the window tree dumped by the window
-            // server (see RWsSession::LogCommand).
-            // Cast to a void pointer so that log output is in hexadecimal format.
-            stream << "srv " << reinterpret_cast<const void*>(window->WsHandle()) << ' ';
+                stream << "group " << window->WindowGroupId() << ' ';
 
-            stream << "group " << window->WindowGroupId() << ' ';
+                // Client-side handle to the parent window.
+                // Cast to a void pointer so that log output is in hexadecimal format.
+                stream << "parent " << reinterpret_cast<const void*>(window->Parent()) << ' ';
 
-            // Client-side handle to the parent window.
-            // Cast to a void pointer so that log output is in hexadecimal format.
-            stream << "parent " << reinterpret_cast<const void*>(window->Parent()) << ' ';
+                stream << window->Position().iX << ',' << window->Position().iY << ' ';
+                stream << '(' << window->AbsPosition().iX << ',' << window->AbsPosition().iY << ") ";
+                stream << window->Size().iWidth << 'x' << window->Size().iHeight << ' ';
 
-            stream << window->Position().iX << ',' << window->Position().iY << ' ';
-            stream << '(' << window->AbsPosition().iX << ',' << window->AbsPosition().iY << ") ";
-            stream << window->Size().iWidth << 'x' << window->Size().iHeight << ' ';
+                const TDisplayMode displayMode = window->DisplayMode();
+                stream << "mode " << displayMode << ' ';
 
-            const TDisplayMode displayMode = window->DisplayMode();
-            stream << "mode " << displayMode << ' ';
+                stream << "ord " << window->OrdinalPosition();
 
-            stream << "ord " << window->OrdinalPosition();
-
-            stream.flush();
-            result.append(array);
+                stream.flush();
+                result.append(array);
+            }
         }
     }
 
