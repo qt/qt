@@ -805,6 +805,9 @@ void tst_QGL::graphicsViewClipping()
     scene.addWidget(widget)->setPos(0, 0);
 
     QGraphicsView view(&scene);
+#ifdef Q_WS_QWS
+    view.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     view.resize(2*size, 2*size);
 
     QGLWidget *viewport = new QGLWidget;
@@ -949,6 +952,9 @@ public:
 void tst_QGL::glWidgetRendering()
 {
     GLWidget w;
+#ifdef Q_WS_QWS
+    w.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     w.setGeometry(100, 100, 200, 200);
     w.show();
 
@@ -1176,6 +1182,9 @@ void tst_QGL::glFBOUseInGLWidget()
         QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
 
     FBOUseInGLWidget w;
+#ifdef Q_WS_QWS
+    w.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     w.resize(128, 128);
     w.show();
 
@@ -1562,6 +1571,9 @@ protected:
 void tst_QGL::replaceClipping()
 {
     ReplaceClippingGLWidget glw;
+#ifdef Q_WS_QWS
+    glw.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     glw.resize(300, 300);
     glw.show();
 
@@ -1693,6 +1705,9 @@ protected:
 void tst_QGL::clipTest()
 {
     ClipTestGLWidget glw;
+#ifdef Q_WS_QWS
+    glw.setWindowFlags(Qt::FramelessWindowHint);
+#endif
     glw.resize(220, 220);
     glw.show();
 
