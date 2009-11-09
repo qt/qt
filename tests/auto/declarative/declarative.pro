@@ -26,6 +26,7 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
+           qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
            qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
