@@ -11781,10 +11781,6 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 }
 
 
-QT_END_NAMESPACE
-
-#include "moc_qwidget.cpp"
-
 /*!
     \typedef WId
     \relates QWidget
@@ -12101,3 +12097,8 @@ void QWidgetPrivate::_q_delayedDestroy(WId winId)
     delete winId;
 }
 #endif
+
+QT_END_NAMESPACE
+
+#include "moc_qwidget.cpp"
+
