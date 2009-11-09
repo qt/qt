@@ -1137,7 +1137,7 @@ void QScriptEnginePrivate::mark(JSC::MarkStack& markStack)
         QScriptContext *context = q->currentContext();
 
         while (context) {
-            JSC::ScopeChainNode *node = ((JSC::ExecState *)context)->scopeChain();
+            JSC::ScopeChainNode *node = frameForContext(context)->scopeChain();
             JSC::ScopeChainIterator it(node);
             for (it = node->begin(); it != node->end(); ++it) {
                 JSC::JSObject *object = *it;
