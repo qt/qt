@@ -635,13 +635,6 @@ QmlGraphicsParticles::QmlGraphicsParticles(QmlGraphicsItem *parent)
     d->init();
 }
 
-QmlGraphicsParticles::QmlGraphicsParticles(QmlGraphicsParticlesPrivate &dd, QmlGraphicsItem *parent)
-    : QmlGraphicsItem(dd, parent)
-{
-    Q_D(QmlGraphicsParticles);
-    d->init();
-}
-
 QmlGraphicsParticles::~QmlGraphicsParticles()
 {
     Q_D(QmlGraphicsParticles);

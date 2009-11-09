@@ -172,7 +172,6 @@ Q_SIGNALS:
     void acceptableInputChanged();
 
 protected:
-    QmlGraphicsTextInput(QmlGraphicsTextInputPrivate &dd, QmlGraphicsItem *parent);
     virtual void geometryChanged(const QRectF &newGeometry,
                                  const QRectF &oldGeometry);
 

@@ -66,6 +66,7 @@ private slots:
 
     void cursorDelegate();
     void navigation();
+    void readOnly();
 
 private:
     void simulateKey(QmlView *, int key);
@@ -201,15 +202,34 @@ void tst_qmlgraphicstextinput::font()
 
 void tst_qmlgraphicstextinput::color()
 {
-    //test style
+    //test color
     for (int i = 0; i < colorStrings.size(); i++)
     { 
         QString componentStr = "import Qt 4.6\nTextInput {  color: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
         QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
         QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
-        //qDebug() << "textinputObject: " << textinputObject->color() << "vs. " << QColor(colorStrings.at(i));
         QVERIFY(textinputObject != 0);
         QCOMPARE(textinputObject->color(), QColor(colorStrings.at(i)));
+    }
+
+    //test selection color
+    for (int i = 0; i < colorStrings.size(); i++)
+    {
+        QString componentStr = "import Qt 4.6\nTextInput {  selectionColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
+        QVERIFY(textinputObject != 0);
+        QCOMPARE(textinputObject->selectionColor(), QColor(colorStrings.at(i)));
+    }
+
+    //test selected text color
+    for (int i = 0; i < colorStrings.size(); i++)
+    { 
+        QString componentStr = "import Qt 4.6\nTextInput {  selectedTextColor: \"" + colorStrings.at(i) + "\"; text: \"Hello World\" }";
+        QmlComponent textinputComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextInput *textinputObject = qobject_cast<QmlGraphicsTextInput*>(textinputComponent.create());
+        QVERIFY(textinputObject != 0);
+        QCOMPARE(textinputObject->selectedTextColor(), QColor(colorStrings.at(i)));
     }
 
     {
@@ -394,6 +414,29 @@ void tst_qmlgraphicstextinput::cursorDelegate()
     //Test Delegate gets deleted
     textInputObject->setCursorDelegate(0);
     QVERIFY(!textInputObject->findChild<QmlGraphicsItem*>("cursorInstance"));
+}
+
+void tst_qmlgraphicstextinput::readOnly()
+{
+    QmlView *canvas = createView(SRCDIR "/data/readOnly.qml");
+    canvas->execute();
+    canvas->show();
+    canvas->setFocus();
+
+    QVERIFY(canvas->root() != 0);
+
+    QmlGraphicsTextInput *input = qobject_cast<QmlGraphicsTextInput *>(qvariant_cast<QObject *>(canvas->root()->property("myInput")));
+
+    QVERIFY(input != 0);
+    QTRY_VERIFY(input->hasFocus() == true);
+    QVERIFY(input->isReadOnly() == true);
+    QString initial = input->text();
+    for(int k=Qt::Key_0; k<=Qt::Key_Z; k++)
+        simulateKey(canvas, k);
+    simulateKey(canvas, Qt::Key_Return);
+    simulateKey(canvas, Qt::Key_Space);
+    simulateKey(canvas, Qt::Key_Escape);
+    QCOMPARE(input->text(), initial);
 }
 
 void tst_qmlgraphicstextinput::simulateKey(QmlView *view, int key)
