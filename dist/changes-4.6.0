@@ -477,3 +477,6 @@ General changes on Mac OS X:
    * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
    * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
 
+- Refactoring in OpenGL examples to improve portability and utilize the
+  Animation framework for animation.  The hellogl and overpainting examples
+  now compile on OpenGL/ES 1.1.  Also common code is factored.
