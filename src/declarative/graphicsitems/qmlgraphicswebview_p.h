@@ -88,7 +88,6 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
 
     Q_PROPERTY(QString title READ title NOTIFY titleChanged)
     Q_PROPERTY(QPixmap icon READ icon NOTIFY iconChanged)
-    Q_PROPERTY(qreal textSizeMultiplier READ textSizeMultiplier WRITE setTextSizeMultiplier DESIGNABLE false)
     Q_PROPERTY(qreal zoomFactor READ zoomFactor WRITE setZoomFactor NOTIFY zoomFactorChanged)
     Q_PROPERTY(QString statusText READ statusText NOTIFY statusTextChanged)
 
@@ -125,9 +124,6 @@ public:
     QString title() const;
 
     QPixmap icon() const;
-
-    qreal textSizeMultiplier() const;
-    void setTextSizeMultiplier(qreal);
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal);
@@ -213,8 +209,6 @@ private Q_SLOTS:
     void contentsSizeChanged(const QSize&);
 
 protected:
-    QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent);
-
     void drawContents(QPainter *, const QRect &);
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

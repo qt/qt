@@ -111,13 +111,6 @@ QmlGraphicsText::QmlGraphicsText(QmlGraphicsItem *parent)
     setFlag(QGraphicsItem::ItemHasNoContents, false);
 }
 
-QmlGraphicsText::QmlGraphicsText(QmlGraphicsTextPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsItem(dd, parent)
-{
-    setAcceptedMouseButtons(Qt::LeftButton);
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
-}
-
 QmlGraphicsText::~QmlGraphicsText()
 {
 }

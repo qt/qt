@@ -260,12 +260,6 @@ QmlGraphicsWebView::QmlGraphicsWebView(QmlGraphicsItem *parent)
     init();
 }
 
-QmlGraphicsWebView::QmlGraphicsWebView(QmlGraphicsWebViewPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsPaintedItem(dd, parent)
-{
-    init();
-}
-
 QmlGraphicsWebView::~QmlGraphicsWebView()
 {
     Q_D(QmlGraphicsWebView);
@@ -464,7 +458,8 @@ void QmlGraphicsWebView::setPreferredWidth(int iw)
 
 /*!
     \qmlproperty int WebView::webPageWidth
-    This property holds the page width suggested to the web engine.
+    This property holds the page width suggested to the web engine. The zoomFactor
+    will be changed to fit this with in preferredWidth.
 */
 int QmlGraphicsWebView::webPageWidth() const
 {
@@ -904,20 +899,6 @@ QPixmap QmlGraphicsWebView::icon() const
     return page()->mainFrame()->icon().pixmap(QSize(256,256));
 }
 
-
-/*!
-    \qmlproperty real WebView::textSizeMultiplier
-    This property holds the multiplier used to scale the text in a Web page
-*/
-void QmlGraphicsWebView::setTextSizeMultiplier(qreal factor)
-{
-    page()->mainFrame()->setTextSizeMultiplier(factor);
-}
-
-qreal QmlGraphicsWebView::textSizeMultiplier() const
-{
-    return page()->mainFrame()->textSizeMultiplier();
-}
 
 /*!
     \qmlproperty real WebView::zoomFactor

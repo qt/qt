@@ -119,14 +119,6 @@ QmlGraphicsRepeater::QmlGraphicsRepeater(QmlGraphicsItem *parent)
 }
 
 /*!
-    \internal
- */
-QmlGraphicsRepeater::QmlGraphicsRepeater(QmlGraphicsRepeaterPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsItem(dd, parent)
-{
-}
-
-/*!
     Destroy the repeater instance.  All items it instantiated are also
     destroyed.
  */

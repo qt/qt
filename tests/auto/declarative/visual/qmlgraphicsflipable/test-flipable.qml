@@ -16,12 +16,10 @@ Rectangle {
         id: flipable
         width: 200; height: 200
 
-        property int angle: 0
-
         transform: Rotation {
+            id: rotation; angle: 0
             origin.x: 100; origin.y: 100
             axis.x: 0; axis.y: 1; axis.z: 0
-            angle: flipable.angle
         }
 
         front: Rectangle {
@@ -34,7 +32,7 @@ Rectangle {
 
         states: State {
             name: "back"
-            PropertyChanges { target: flipable; angle: 180 }
+            PropertyChanges { target: rotation; angle: 180 }
         }
 
         transitions: Transition {
@@ -46,12 +44,10 @@ Rectangle {
         id: flipable2
         x: 200; width: 200; height: 200
 
-        property int angle: 0
-
         transform: Rotation {
+            id: rotation2; angle: 0
             origin.x: 100; origin.y: 100
             axis.x: 1; axis.z: 0
-            angle: flipable2.angle
         }
 
         front: Rectangle {
@@ -64,7 +60,7 @@ Rectangle {
 
         states: State {
             name: "back"
-            PropertyChanges { target: flipable2; angle: 180 }
+            PropertyChanges { target: rotation2; angle: 180 }
         }
 
         transitions: Transition {

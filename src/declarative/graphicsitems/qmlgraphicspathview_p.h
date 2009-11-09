@@ -51,7 +51,6 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-class QListModelInterface;
 class QmlGraphicsPathViewPrivate;
 class Q_DECLARATIVE_EXPORT QmlGraphicsPathView : public QmlGraphicsItem
 {
@@ -118,9 +117,6 @@ private Q_SLOTS:
     void itemsRemoved(int index, int count);
     void createdItem(int index, QmlGraphicsItem *item);
     void destroyingItem(QmlGraphicsItem *item);
-
-protected:
-    QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent);
 
 private:
     friend class QmlGraphicsPathViewAttached;

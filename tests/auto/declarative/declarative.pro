@@ -25,6 +25,7 @@ SUBDIRS += \
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsparticles \   # Cover
+           qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
            qmlgraphicstextedit \    # Cover
            qmlgraphicstextinput \   # Cover

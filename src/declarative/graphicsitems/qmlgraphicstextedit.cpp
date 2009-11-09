@@ -103,16 +103,6 @@ QmlGraphicsTextEdit::QmlGraphicsTextEdit(QmlGraphicsItem *parent)
     d->init();
 }
 
-/*!
-\internal
-*/
-QmlGraphicsTextEdit::QmlGraphicsTextEdit(QmlGraphicsTextEditPrivate &dd, QmlGraphicsItem *parent)
-    : QmlGraphicsPaintedItem(dd, parent)
-{
-    Q_D(QmlGraphicsTextEdit);
-    d->init();
-}
-
 QString QmlGraphicsTextEdit::text() const
 {
     Q_D(const QmlGraphicsTextEdit);
