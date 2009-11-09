@@ -209,13 +209,7 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
 
     ++inpaint;
 
-    QRectF clipf = p->clipRegion().boundingRect();
-    if (clipf.isEmpty())
-        clipf = mapToScene(content).boundingRect(); // ### Inefficient: Maps toScene and then fromScene
-    else
-        clipf = mapToScene(clipf).boundingRect();
-
-    const QRect clip = mapFromScene(clipf).boundingRect().toRect();
+    const QRect clip = p->clipRegion().boundingRect();
 
     QRegion topaint(clip);
     topaint &= content;
