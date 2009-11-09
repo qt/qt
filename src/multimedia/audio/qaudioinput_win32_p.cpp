@@ -333,6 +333,9 @@ void QAudioInputPrivate::close()
 
 int QAudioInputPrivate::bytesReady() const
 {
+    if(period_size == 0 || buffer_size == 0)
+        return 0;
+
     int buf = ((buffer_size/period_size)-waveFreeBlockCount)*period_size;
     if(buf < 0)
         buf = 0;
