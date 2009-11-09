@@ -59,8 +59,8 @@ private slots:
     void historyNav();
     void loadError();
     void setHtml();
+    void javaScript();
     void cleanupTestCase();
-
 
 private:
     void checkNoErrors(const QmlComponent& component);
@@ -131,7 +131,7 @@ void tst_qmlgraphicswebview::basicProperties()
     QCOMPARE(wv->title(),QString("Basic"));
     QTRY_COMPARE(wv->icon().width(), 48);
     QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-    QCOMPARE(wv->statusText(),QString(""));
+    QCOMPARE(wv->statusText(),QString("status here"));
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->width(), 123.0);
     QCOMPARE(wv->webPageWidth(), 0);
@@ -147,6 +147,11 @@ void tst_qmlgraphicswebview::basicProperties()
     QVERIFY(!wv->forwardAction()->isEnabled());
     QVERIFY(wv->stopAction());
     QVERIFY(!wv->stopAction()->isEnabled());
+
+    wv->setPixelCacheSize(0); // mainly testing that it doesn't crash or anything!
+    QCOMPARE(wv->pixelCacheSize(),0);
+    wv->reloadAction()->trigger();
+    QTRY_COMPARE(wv->progress(), 1.0);
 }
 
 void tst_qmlgraphicswebview::historyNav()
@@ -162,7 +167,7 @@ void tst_qmlgraphicswebview::historyNav()
         QCOMPARE(wv->title(),QString("Basic"));
         QTRY_COMPARE(wv->icon().width(), 48);
         QCOMPARE(wv->icon(),QPixmap(SRCDIR "/data/basic.png"));
-        QCOMPARE(wv->statusText(),QString(""));
+        QCOMPARE(wv->statusText(),QString("status here"));
         QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
         QCOMPARE(wv->width(), 123.0);
         QCOMPARE(wv->webPageWidth(), 0);
@@ -188,6 +193,7 @@ void tst_qmlgraphicswebview::historyNav()
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/forward.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/forward.html"));
     QCOMPARE(wv->status(), QmlGraphicsWebView::Ready);
+    QCOMPARE(wv->statusText(),QString(""));
     QVERIFY(wv->reloadAction());
     QVERIFY(wv->reloadAction()->isEnabled());
     QVERIFY(wv->backAction());
@@ -240,6 +246,18 @@ void tst_qmlgraphicswebview::setHtml()
     QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
     QVERIFY(wv != 0);
     QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
+}
+
+void tst_qmlgraphicswebview::javaScript()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/javaScript.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+    QCOMPARE(wv->evaluateJavaScript("123").toInt(), 123);
+    QCOMPARE(wv->evaluateJavaScript("window.status").toString(), QString("status here"));
+    QCOMPARE(wv->evaluateJavaScript("window.myjsname.qmlprop").toString(), QString("qmlvalue"));
 }
 
 QTEST_MAIN(tst_qmlgraphicswebview)

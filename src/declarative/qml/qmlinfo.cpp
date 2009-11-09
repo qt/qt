@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \fn void qmlInfo(const QString& message, QObject *object)
+    \fn void qmlInfo(const QString& message, const QObject *object)
 
     \brief Prints warnings messages that include the file and line number for QML types.
 
@@ -73,7 +73,7 @@ QT_BEGIN_NAMESPACE
     \endcode
 */
 
-void qmlInfo(const QString& msg, QObject* object)
+void qmlInfo(const QString& msg, const QObject* object)
 {
     QString pos = QLatin1String("QML");
     if (object) {

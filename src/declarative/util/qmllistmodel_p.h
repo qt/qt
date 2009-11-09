@@ -59,7 +59,7 @@ QT_BEGIN_NAMESPACE
 QT_MODULE(Declarative)
 
 struct ModelNode;
-class QmlListModel : public QListModelInterface
+class Q_DECLARATIVE_EXPORT QmlListModel : public QListModelInterface
 {
     Q_OBJECT
     Q_PROPERTY(int count READ count NOTIFY countChanged)
@@ -77,6 +77,7 @@ public:
     Q_INVOKABLE void remove(int index);
     Q_INVOKABLE void append(const QScriptValue&);
     Q_INVOKABLE void insert(int index, const QScriptValue&);
+    Q_INVOKABLE QScriptValue get(int index) const;
     Q_INVOKABLE void set(int index, const QScriptValue&);
     Q_INVOKABLE void set(int index, const QString& property, const QVariant& value);
     Q_INVOKABLE void move(int from, int to, int count);
