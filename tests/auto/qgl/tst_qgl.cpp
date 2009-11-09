@@ -76,6 +76,7 @@ private slots:
     void partialGLWidgetUpdates_data();
     void partialGLWidgetUpdates();
     void glWidgetRendering();
+    void glFBOSimpleRendering();
     void glFBORendering();
     void multipleFBOInterleavedRendering();
     void glFBOUseInGLWidget();
@@ -971,6 +972,36 @@ void tst_QGL::glWidgetRendering()
     reference.fill(0xffff0000);
 
     QFUZZY_COMPARE_IMAGES(fb, reference);
+}
+
+void tst_QGL::glFBOSimpleRendering()
+{
+    if (!QGLFramebufferObject::hasOpenGLFramebufferObjects())
+        QSKIP("QGLFramebufferObject not supported on this platform", SkipSingle);
+
+    QGLWidget glw;
+    glw.makeCurrent();
+
+    // No multisample with combined depth/stencil attachment:
+    QGLFramebufferObjectFormat fboFormat;
+    fboFormat.setAttachment(QGLFramebufferObject::NoAttachment);
+
+    // Don't complicate things by using NPOT:
+    QGLFramebufferObject *fbo = new QGLFramebufferObject(256, 128, fboFormat);
+
+    fbo->bind();
+
+    glClearColor(1.0, 0.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glFinish();
+
+    QImage fb = fbo->toImage().convertToFormat(QImage::Format_RGB32);
+    QImage reference(fb.size(), QImage::Format_RGB32);
+    reference.fill(0xffff0000);
+
+    QFUZZY_COMPARE_IMAGES(fb, reference);
+
+    delete fbo;
 }
 
 // NOTE: This tests that CombinedDepthStencil attachment works by assuming the
