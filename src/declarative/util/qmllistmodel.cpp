@@ -45,9 +45,11 @@
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
 #include "qmlopenmetaobject_p.h"
+#include <private/qmlengine_p.h>
 #include <qmlcontext.h>
 #include "qmllistmodel_p.h"
 #include <QtScript/qscriptvalueiterator.h>
+#include "qmlinfo.h"
 
 Q_DECLARE_METATYPE(QListModelInterface *)
 
@@ -264,6 +266,7 @@ QT_END_NAMESPACE
 Q_DECLARE_METATYPE(ModelNode *)
 
 QT_BEGIN_NAMESPACE
+
 void ModelNode::setObjectValue(const QScriptValue& valuemap) {
     QScriptValueIterator it(valuemap);
     while (it.hasNext()) {
@@ -451,14 +454,17 @@ void QmlListModel::clear()
 */
 void QmlListModel::remove(int index)
 {
-    if (_root) {
-        ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
-        _root->values.removeAt(index);
-        if (node)
-            delete node;
-        emit itemsRemoved(index,1);
-        emit countChanged(_root->values.count());
+    if (!_root || index < 0 || index >= _root->values.count()) {
+        qmlInfo(tr("remove: index %1 out of range").arg(index),this);
+        return;
     }
+
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    _root->values.removeAt(index);
+    if (node)
+        delete node;
+    emit itemsRemoved(index,1);
+    emit countChanged(_root->values.count());
 }
 
 /*!
@@ -480,9 +486,11 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
-    if (index >= _root->values.count()) {
+    if (index >= _root->values.count() || index<0) {
         if (index == _root->values.count())
             append(valuemap);
+        else
+            qmlInfo(tr("insert: index %1 out of range").arg(index),this);
         return;
     }
     ModelNode *mn = new ModelNode;
@@ -508,8 +516,10 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
 */
 void QmlListModel::move(int from, int to, int n)
 {
-    if (from+n > count() || to+n > count() || n==0 || from==to || from < 0 || to < 0)
+    if (n==0 || from==to)
         return;
+    if (from+n > count() || to+n > count() || from < 0 || to < 0)
+        qmlInfo(tr("move: out of range"),this);
     int origfrom=from; // preserve actual move, so any animations are correct
     int origto=to;
     int orign=n;
@@ -556,7 +566,7 @@ void QmlListModel::move(int from, int to, int n)
 void QmlListModel::append(const QScriptValue& valuemap)
 {
     if (!valuemap.isObject()) {
-        qWarning("ListModel::append: value is not an object");
+        qmlInfo(tr("append: value is not an object"),this);
         return;
     }
     if (!_root)
@@ -569,10 +579,43 @@ void QmlListModel::append(const QScriptValue& valuemap)
 }
 
 /*!
+    \qmlmethod dict ListModel::get(index)
+
+    Returns the item at \a index in the list model.
+
+    \code
+        FruitModel.append({"cost": 5.95, "name":"Pizza"})
+        FruitModel.get(0).cost
+    \endcode
+
+    The \a index must be an element in the list.
+
+    \sa append()
+*/
+QScriptValue QmlListModel::get(int index) const
+{
+    if (index >= count()) {
+        qmlInfo(tr("get: index %1 out of range").arg(index),this);
+        return 0;
+    }
+
+    ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
+    if (!node) 
+        return 0;
+    QmlEngine *eng = qmlEngine(this);
+    if (!eng) {
+        qWarning("Cannot call QmlListModel::get() without a QmlEngine");
+        return 0;
+    }
+    return QmlEnginePrivate::qmlScriptObject(node->object(), eng);
+}
+
+/*!
     \qmlmethod ListModel::set(index,dict)
 
-    Changes the item at \a index in the list model to the
-    values in \a dict.
+    Changes the item at \a index in the list model with the
+    values in \a dict. Properties not appearing in \a valuemap
+    are left unchanged.
 
     \code
         FruitModel.set(3, {"cost": 5.95, "name":"Pizza"})
@@ -586,8 +629,8 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 {
     if (!_root)
         _root = new ModelNode;
-    if ( index >= _root->values.count()) {
-        qWarning() << "ListModel::set index out of range:" << index;
+    if ( index > _root->values.count()) {
+        qmlInfo(tr("set: index %1 out of range").arg(index),this);
         return;
     }
     if (index == _root->values.count())
@@ -628,7 +671,7 @@ void QmlListModel::set(int index, const QString& property, const QVariant& value
     if (!_root)
         _root = new ModelNode;
     if ( index >= _root->values.count()) {
-        qWarning() << "ListModel::set index out of range:" << index;
+        qmlInfo(tr("set: index %1 out of range").arg(index),this);
         return;
     }
     ModelNode *node = qvariant_cast<ModelNode *>(_root->values.at(index));
