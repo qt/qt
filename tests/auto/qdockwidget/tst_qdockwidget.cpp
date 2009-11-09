@@ -93,6 +93,7 @@ private slots:
     void task237438_setFloatingCrash();
     void task248604_infiniteResize();
     void task258459_visibilityChanged();
+    void taskQTBUG_1665_closableChanged();
 };
 
 // Testing get/set functions
@@ -833,6 +834,23 @@ void tst_QDockWidget::task258459_visibilityChanged()
     QCOMPARE(spy2.count(), 1);
     QCOMPARE(spy2.first().first().toBool(), true); //dock1 is visible
 }
+
+void tst_QDockWidget::taskQTBUG_1665_closableChanged()
+{
+    QDockWidget dock;
+    dock.show();
+    QTest::qWaitForWindowShown(&dock);
+
+    if (dock.windowFlags() & Qt::FramelessWindowHint)
+        QSKIP("this machine doesn't support native dock widget", SkipAll);
+
+    QVERIFY(dock.windowFlags() & Qt::WindowCloseButtonHint);
+
+    //now let's remove the closable attribute
+    dock.setFeatures(dock.features() ^ QDockWidget::DockWidgetClosable);
+    QVERIFY(!(dock.windowFlags() & Qt::WindowCloseButtonHint));
+}
+
 
 QTEST_MAIN(tst_QDockWidget)
 #include "tst_qdockwidget.moc"
