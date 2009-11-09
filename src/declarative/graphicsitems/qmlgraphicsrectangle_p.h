@@ -169,9 +169,6 @@ private:
     void generateBorderedRect();
     void drawRect(QPainter &painter);
 
-protected:
-    QmlGraphicsRectangle(QmlGraphicsRectanglePrivate &dd, QmlGraphicsItem *parent);
-
 private:
     Q_DISABLE_COPY(QmlGraphicsRectangle)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsRectangle)

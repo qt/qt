@@ -402,10 +402,4 @@ void QmlGraphicsBorderImage::paint(QPainter *p, const QStyleOptionGraphicsItem *
     }
 }
 
-QmlGraphicsBorderImage::QmlGraphicsBorderImage(QmlGraphicsBorderImagePrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsImageBase(dd, parent)
-{
-    setFlag(QGraphicsItem::ItemHasNoContents, false);
-}
-
 QT_END_NAMESPACE

@@ -70,16 +70,6 @@ QmlGraphicsTextInput::QmlGraphicsTextInput(QmlGraphicsItem* parent)
     d->init();
 }
 
-/*
-   \internal
-*/
-QmlGraphicsTextInput::QmlGraphicsTextInput(QmlGraphicsTextInputPrivate &dd, QmlGraphicsItem* parent)
-    : QmlGraphicsPaintedItem(dd, parent)
-{
-    Q_D(QmlGraphicsTextInput);
-    d->init();
-}
-
 QmlGraphicsTextInput::~QmlGraphicsTextInput()
 {
 }

@@ -119,9 +119,6 @@ private Q_SLOTS:
     void createdItem(int index, QmlGraphicsItem *item);
     void destroyingItem(QmlGraphicsItem *item);
 
-protected:
-    QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent);
-
 private:
     friend class QmlGraphicsPathViewAttached;
     static QHash<QObject*, QObject*> attachedProperties;

@@ -119,13 +119,6 @@ QmlGraphicsPathView::QmlGraphicsPathView(QmlGraphicsItem *parent)
     d->init();
 }
 
-QmlGraphicsPathView::QmlGraphicsPathView(QmlGraphicsPathViewPrivate &dd, QmlGraphicsItem *parent)
-  : QmlGraphicsItem(dd, parent)
-{
-    Q_D(QmlGraphicsPathView);
-    d->init();
-}
-
 QmlGraphicsPathView::~QmlGraphicsPathView()
 {
     Q_D(QmlGraphicsPathView);

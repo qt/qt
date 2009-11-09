@@ -201,7 +201,6 @@ private:
     void updateSize();
 
 protected:
-    QmlGraphicsTextEdit(QmlGraphicsTextEditPrivate &dd, QmlGraphicsItem *parent);
     virtual void geometryChanged(const QRectF &newGeometry, 
                                  const QRectF &oldGeometry);
 

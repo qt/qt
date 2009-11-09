@@ -162,9 +162,6 @@ private:
     void handlePress();
     void handleRelease();
 
-protected:
-    QmlGraphicsMouseRegion(QmlGraphicsMouseRegionPrivate &dd, QmlGraphicsItem *parent);
-
 private:
     Q_DISABLE_COPY(QmlGraphicsMouseRegion)
     Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsMouseRegion)
