@@ -99,6 +99,9 @@ QtCore
     * Improved performance of plugin loading by reusing the plugin cache instead of loading
       it every time.
 
+ - QRegExp
+    * New pattern syntax "QRegExp::WildcardUnix" with wildcard characters escaping
+
 - QTextStream
     * [221316] Fixed crash on large input.
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
@@ -110,6 +113,9 @@ QtCore
 QtGui
 - QGraphicsAnchorLayout
     * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - QCalendarWidget
+    * [252943] QCalendarWidget::setDateTextFormat() reset the format if the date is invalid.
 
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix
@@ -376,6 +382,12 @@ QtXml
 - QDomDocument
     * set the codec to UTF-8 if codec not present or unknown
 
+Qt Plugins
+
+ - Tiff plugin
+    * [258526] Rotate the image if the tiff file contains an orientation tag
+    * [254317] Add support for mono and indexed format
+
 ****************************************************************************
 *                      Platform Specific Changes                           *
 ****************************************************************************
@@ -419,6 +431,9 @@ Qt for Linux/X11
  - Add new experimental QX11GLPixmapData backend for QPixmap. This pixmap
    backend uses regular X11 pixmaps to store the image data, however it uses
    OpenGL to render into them.
+
+ - Tablet: Disable event compression of events of type QTabletEvent when the
+   current event is accepted by the receiver.
 
 Qt for Windows
 --------------
