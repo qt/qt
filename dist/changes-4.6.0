@@ -39,6 +39,12 @@ information about a particular change.
 
  - Improved support for input methods in graphics view.
 
+ - QAudioInput, QAudioOutput
+    * New audio input and output classes.
+
+ - QAbstractVideoSurface, QVideoFrame
+    * New abstract video output classes.
+
 Third party components
 ----------------------
 
