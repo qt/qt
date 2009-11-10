@@ -44,8 +44,6 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QThread>
-#include <QProcessEnvironment>
-#include <QProcess>
 
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
@@ -53,7 +51,6 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlmetaproperty.h>
-#include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlbinding.h>
 
 #include <private/qmldebug_p.h>
@@ -61,8 +58,6 @@
 #include <private/qmldebugclient_p.h>
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
-#include <private/qmlgraphicstext_p.h>
-#include <private/qmldeclarativedata_p.h>
 
 
 class tst_QmlDebug : public QObject
