@@ -121,15 +121,15 @@ QT_BEGIN_NAMESPACE
     when the state changes (stateChanged()).
 
     QAudioInput provides several ways of measuring the time that has
-    passed since the start() of the recording. The \c processedUSecs()
+    passed since the start() of the recording. The \c totalTime()
     function returns the length of the stream in microseconds written,
     i.e., it leaves out the times the audio input was suspended or idle.
-    The elapsedUSecs() function returns the time elapsed since start() was called regardless of
+    The clock() function returns the time elapsed since start() was called regardless of
     which states the QAudioInput has been in.
 
     If an error should occur, you can fetch its reason with error().
     The possible error reasons are described by the QAudio::Error
-    enum. The QAudioInput will enter the \l{QAudio::}{StoppedState} when
+    enum. The QAudioInput will enter the \l{QAudio::}{StopState} when
     an error is encountered.  Connect to the stateChanged() signal to
     handle the error:
 
@@ -176,44 +176,37 @@ QAudioInput::~QAudioInput()
 }
 
 /*!
-     Uses the \a device as the QIODevice to transfer data.
-     Passing a QIODevice allows the data to be transfered without any extra code.
-     All that is required is to open the QIODevice.
-
-     \sa QIODevice
-*/
-
-void QAudioInput::start(QIODevice* device)
-{
-    /*
-       -If currently not StoppedState, stop
-       -If previous start was push mode, delete internal QIODevice.
-       -open audio input.
-       If ok, NoError and ActiveState, else OpenError and StoppedState.
-       -emit stateChanged()
-    */
-    d->start(device);
-}
-
-/*!
+    Uses the \a device as the QIODevice to transfer data.
+    If \a device is null then the class creates an internal QIODevice.
     Returns a pointer to the QIODevice being used to handle the data
     transfer. This QIODevice can be used to read() audio data
     directly.
+    Passing a QIODevice allows the data to be transfered without any extra code.
+    All that is required is to open the QIODevice.
 
     \sa QIODevice
 */
 
-QIODevice* QAudioInput::start()
+QIODevice* QAudioInput::start(QIODevice* device)
 {
     /*
-    -If currently not StoppedState, stop
+    PULL MODE (valid QIODevice)
+    -If currently not StopState, stop
+    -If previous start was push mode, delete internal QIODevice.
+    -open audio input.
+    If ok, NoError and ActiveState, else OpenError and StopState.
+    -emit stateChanged()
+    -return device
+
+    PUSH MODE (device = 0)
+    -If currently not StopState, stop
     -If no internal QIODevice, create one.
     -open audio input.
-    -If ok, NoError and IdleState, else OpenError and StoppedState
+    -If ok, NoError and IdleState, else OpenError and StopState
     -emit stateChanged()
     -return internal QIODevice
     */
-    return d->start(0);
+    return d->start(device);
 }
 
 /*!
@@ -232,8 +225,8 @@ QAudioFormat QAudioInput::format() const
 void QAudioInput::stop()
 {
     /*
-    -If StoppedState, return
-    -set to StoppedState
+    -If StopState, return
+    -set to StopState
     -detach from audio device
     -emit stateChanged()
     */
@@ -262,7 +255,7 @@ void QAudioInput::suspend()
     /*
     -If not ActiveState|IdleState, return
     -stop processing audio, saving all buffered audio data
-    -set NoError and SuspendedState
+    -set NoError and SuspendState
     -emit stateChanged()
     */
     d->suspend();
@@ -275,7 +268,7 @@ void QAudioInput::suspend()
 void QAudioInput::resume()
 {
     /*
-    -If SuspendedState, return
+    -If SuspendState, return
     -resume audio
     -(PULL MODE): set ActiveState, NoError
     -(PUSH MODE): set IdleState, NoError
@@ -364,9 +357,9 @@ int QAudioInput::notifyInterval() const
     was called in microseconds.
 */
 
-qint64 QAudioInput::processedUSecs() const
+qint64 QAudioInput::totalTime() const
 {
-    return d->processedUSecs();
+    return d->totalTime();
 }
 
 /*!
@@ -374,9 +367,9 @@ qint64 QAudioInput::processedUSecs() const
     Suspend states.
 */
 
-qint64 QAudioInput::elapsedUSecs() const
+qint64 QAudioInput::clock() const
 {
-    return d->elapsedUSecs();
+    return d->clock();
 }
 
 /*!

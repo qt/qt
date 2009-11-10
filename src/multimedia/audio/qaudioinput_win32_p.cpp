@@ -71,7 +71,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
     totalTimeValue = 0;
     intervalTime = 1000;
     errorState = QAudio::NoError;
-    deviceState = QAudio::StoppedState;
+    deviceState = QAudio::StopState;
     audioSource = 0;
     pullMode = true;
     resuming = false;
@@ -173,7 +173,7 @@ QAudioFormat QAudioInputPrivate::format() const
 
 QIODevice* QAudioInputPrivate::start(QIODevice* device)
 {
-    if(deviceState != QAudio::StoppedState)
+    if(deviceState != QAudio::StopState)
         close();
 
     if(!pullMode && audioSource) {
@@ -201,7 +201,7 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
 
 void QAudioInputPrivate::stop()
 {
-    if(deviceState == QAudio::StoppedState)
+    if(deviceState == QAudio::StopState)
         return;
 
     close();
@@ -260,7 +260,7 @@ bool QAudioInputPrivate::open()
                 (DWORD_PTR) this,
                 CALLBACK_FUNCTION) != MMSYSERR_NOERROR) {
         errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
+        deviceState = QAudio::StopState;
         emit stateChanged(deviceState);
         qWarning("QAudioInput: failed to open audio device");
         return false;
@@ -269,7 +269,7 @@ bool QAudioInputPrivate::open()
 
     if(waveBlocks == 0) {
         errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
+        deviceState = QAudio::StopState;
         emit stateChanged(deviceState);
         qWarning("QAudioInput: failed to allocate blocks. open failed");
         return false;
@@ -286,7 +286,7 @@ bool QAudioInputPrivate::open()
         if(result != MMSYSERR_NOERROR) {
             qWarning("QAudioInput: failed to setup block %d,err=%d",i,result);
             errorState = QAudio::OpenError;
-            deviceState = QAudio::StoppedState;
+            deviceState = QAudio::StopState;
             emit stateChanged(deviceState);
             return false;
         }
@@ -295,7 +295,7 @@ bool QAudioInputPrivate::open()
     if(result) {
         qWarning("QAudioInput: failed to start audio input");
         errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
+        deviceState = QAudio::StopState;
         emit stateChanged(deviceState);
         return false;
     }
@@ -309,12 +309,12 @@ bool QAudioInputPrivate::open()
 
 void QAudioInputPrivate::close()
 {
-    if(deviceState == QAudio::StoppedState)
+    if(deviceState == QAudio::StopState)
         return;
 
     waveInReset(hWaveIn);
     waveInClose(hWaveIn);
-    deviceState = QAudio::StoppedState;
+    deviceState = QAudio::StopState;
 
     int count = 0;
     while(!finished && count < 100) {
@@ -333,9 +333,6 @@ void QAudioInputPrivate::close()
 
 int QAudioInputPrivate::bytesReady() const
 {
-    if(period_size == 0 || buffer_size == 0)
-        return 0;
-
     int buf = ((buffer_size/period_size)-waveFreeBlockCount)*period_size;
     if(buf < 0)
         buf = 0;
@@ -403,14 +400,14 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
         if(result != MMSYSERR_NOERROR) {
             qWarning("QAudioInput: failed to prepare block %d,err=%d",header,result);
             errorState = QAudio::OpenError;
-            deviceState = QAudio::StoppedState;
+            deviceState = QAudio::StopState;
             emit stateChanged(deviceState);
         }
         result = waveInAddBuffer(hWaveIn, &waveBlocks[header], sizeof(WAVEHDR));
         if(result != MMSYSERR_NOERROR) {
             qWarning("QAudioInput: failed to setup block %d,err=%d",header,result);
             errorState = QAudio::OpenError;
-            deviceState = QAudio::StoppedState;
+            deviceState = QAudio::StopState;
             emit stateChanged(deviceState);
         }
         header++;
@@ -438,14 +435,14 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 
 void QAudioInputPrivate::resume()
 {
-    if(deviceState == QAudio::SuspendedState) {
+    if(deviceState == QAudio::SuspendState) {
         deviceState = QAudio::ActiveState;
         for(int i=0; i<buffer_size/period_size; i++) {
             result = waveInAddBuffer(hWaveIn, &waveBlocks[i], sizeof(WAVEHDR));
             if(result != MMSYSERR_NOERROR) {
                 qWarning("QAudioInput: failed to setup block %d,err=%d",i,result);
                 errorState = QAudio::OpenError;
-                deviceState = QAudio::StoppedState;
+                deviceState = QAudio::StopState;
                 emit stateChanged(deviceState);
                 return;
             }
@@ -491,7 +488,7 @@ int QAudioInputPrivate::notifyInterval() const
     return intervalTime;
 }
 
-qint64 QAudioInputPrivate::processedUSecs() const
+qint64 QAudioInputPrivate::totalTime() const
 {
     return totalTimeValue;
 }
@@ -500,7 +497,7 @@ void QAudioInputPrivate::suspend()
 {
     if(deviceState == QAudio::ActiveState) {
         waveInReset(hWaveIn);
-        deviceState = QAudio::SuspendedState;
+        deviceState = QAudio::SuspendState;
         emit stateChanged(deviceState);
     }
 }
@@ -513,7 +510,7 @@ void QAudioInputPrivate::feedback()
 #endif
     bytesAvailable = bytesReady();
 
-    if(!(deviceState==QAudio::StoppedState||deviceState==QAudio::SuspendedState))
+    if(!(deviceState==QAudio::StopState||deviceState==QAudio::SuspendState))
         emit processMore();
 }
 
@@ -542,9 +539,9 @@ bool QAudioInputPrivate::deviceReady()
     return true;
 }
 
-qint64 QAudioInputPrivate::elapsedUSecs() const
+qint64 QAudioInputPrivate::clock() const
 {
-    if (deviceState == QAudio::StoppedState)
+    if (deviceState == QAudio::StopState)
         return 0;
 
     return timeStampOpened.elapsed()*1000;

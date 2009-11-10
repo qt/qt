@@ -71,9 +71,7 @@ public:
 
     QAudioFormat format() const;
 
-    void start(QIODevice *device);
-    QIODevice* start();
-
+    QIODevice* start(QIODevice *device = 0);
     void stop();
     void reset();
     void suspend();
@@ -88,8 +86,8 @@ public:
     void setNotifyInterval(int milliSeconds);
     int notifyInterval() const;
 
-    qint64 processedUSecs() const;
-    qint64 elapsedUSecs() const;
+    qint64 totalTime() const;
+    qint64 clock() const;
 
     QAudio::Error error() const;
     QAudio::State state() const;

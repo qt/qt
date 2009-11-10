@@ -189,12 +189,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn virtual qint64 QAbstractAudioOutput::processedUSecs() const
+    \fn virtual qint64 QAbstractAudioOutput::totalTime() const
     Returns the amount of audio data processed since start() was called in milliseconds.
 */
 
 /*!
-    \fn virtual qint64 QAbstractAudioOutput::elapsedUSecs() const
+    \fn virtual qint64 QAbstractAudioOutput::clock() const
     Returns the milliseconds since start() was called, including time in Idle and suspend states.
 */
 
@@ -304,12 +304,12 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn virtual qint64 QAbstractAudioInput::processedUSecs() const
+    \fn virtual qint64 QAbstractAudioInput::totalTime() const
     Returns the amount of audio data processed since start() was called in milliseconds.
 */
 
 /*!
-    \fn virtual qint64 QAbstractAudioInput::elapsedUSecs() const
+    \fn virtual qint64 QAbstractAudioInput::clock() const
     Returns the milliseconds since start() was called, including time in Idle and suspend states.
 */
 

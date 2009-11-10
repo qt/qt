@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QDebug>
+
 #include <QtMultimedia/qaudioformat.h>
 
 
@@ -214,13 +214,16 @@ bool QAudioFormat::operator!=(const QAudioFormat& other) const
 }
 
 /*!
-    Returns true if all of the parameters are valid.
+    Returns true if any of the parameters are invalid.
 */
 
-bool QAudioFormat::isValid() const
+bool QAudioFormat::isNull() const
 {
-    return d->frequency != -1 && d->channels != -1 && d->sampleSize != -1 &&
-            d->sampleType != QAudioFormat::Unknown && !d->codec.isEmpty();
+    return d->frequency == -1 && d->channels == -1 &&
+            d->sampleSize == -1 &&
+            d->byteOrder == QAudioFormat::Endian(QSysInfo::ByteOrder) &&
+            d->sampleType == QAudioFormat::Unknown &&
+            d->codec.isNull();
 }
 
 /*!
