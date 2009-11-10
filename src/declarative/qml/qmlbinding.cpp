@@ -205,7 +205,7 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
 
         data->updating = false;
     } else {
-        qmlInfo(tr("Binding loop detected for property \"%1\"").arg(data->property.name()), data->property.object());
+        qmlInfo(data->property.object()) << tr("Binding loop detected for property \"%1\"").arg(data->property.name());
     }
 
     data->release();

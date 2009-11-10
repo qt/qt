@@ -133,7 +133,7 @@ void QmlGraphicsFlipable::setFront(QmlGraphicsItem *front)
 {
     Q_D(QmlGraphicsFlipable);
     if (d->front) {
-        qmlInfo(tr("front is a write-once property"),this);
+        qmlInfo(this) << tr("front is a write-once property");
         return;
     }
     d->front = front;
@@ -152,7 +152,7 @@ void QmlGraphicsFlipable::setBack(QmlGraphicsItem *back)
 {
     Q_D(QmlGraphicsFlipable);
     if (d->back) {
-        qmlInfo(tr("back is a write-once property"),this);
+        qmlInfo(this) << tr("back is a write-once property");
         return;
     }
     d->back = back;

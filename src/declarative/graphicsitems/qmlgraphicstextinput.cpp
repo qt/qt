@@ -531,7 +531,7 @@ void QmlGraphicsTextInputPrivate::startCreatingCursor()
         q->connect(cursorComponent, SIGNAL(statusChanged(int)),
                 q, SLOT(createCursor()));
     }else{//isError
-        qmlInfo(QmlGraphicsTextInput::tr("Could not load cursor delegate"), q);
+        qmlInfo(q) << QmlGraphicsTextInput::tr("Could not load cursor delegate");
         qWarning() << cursorComponent->errors();
     }
 }
@@ -540,7 +540,7 @@ void QmlGraphicsTextInput::createCursor()
 {
     Q_D(QmlGraphicsTextInput);
     if(d->cursorComponent->isError()){
-        qmlInfo(tr("Could not load cursor delegate"),this);
+        qmlInfo(this) << tr("Could not load cursor delegate");
         qWarning() << d->cursorComponent->errors();
         return;
     }
@@ -552,7 +552,7 @@ void QmlGraphicsTextInput::createCursor()
         delete d->cursorItem;
     d->cursorItem = qobject_cast<QmlGraphicsItem*>(d->cursorComponent->create());
     if(!d->cursorItem){
-        qmlInfo(tr("Could not instantiate cursor delegate"),this);
+        qmlInfo(this) << tr("Could not instantiate cursor delegate");
         //The failed instantiation should print its own error messages
         return;
     }

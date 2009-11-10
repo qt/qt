@@ -50,7 +50,40 @@ QT_BEGIN_NAMESPACE
 
 QT_MODULE(Declarative)
 
-Q_DECLARATIVE_EXPORT void qmlInfo(const QString& msg, const QObject *me=0);
+class Q_DECLARATIVE_EXPORT QmlInfo : public QDebug
+{
+public:
+    QmlInfo(const QObject *);
+    ~QmlInfo();
+
+    inline QmlInfo &operator<<(QChar t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(QBool t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(bool t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(char t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(signed short t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(unsigned short t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(signed int t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(unsigned int t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(signed long t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(unsigned long t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(qint64 t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(quint64 t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(float t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(double t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(const char* t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(const QString & t) { QDebug::operator<<(t.toLocal8Bit().constData()); return *this; }
+    inline QmlInfo &operator<<(const QStringRef & t) { return operator<<(t.toString()); }
+    inline QmlInfo &operator<<(const QLatin1String &t) { QDebug::operator<<(t.latin1()); return *this; }
+    inline QmlInfo &operator<<(const QByteArray & t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(const void * t) { QDebug::operator<<(t); return *this; }
+    inline QmlInfo &operator<<(QTextStreamFunction f) { QDebug::operator<<(f); return *this; }
+    inline QmlInfo &operator<<(QTextStreamManipulator m) { QDebug::operator<<(m); return *this; }
+};
+
+Q_DECLARATIVE_EXPORT inline QmlInfo qmlInfo(const QObject *me)
+{
+    return QmlInfo(me);
+}
 
 QT_END_NAMESPACE
 

@@ -354,7 +354,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file://" SRCDIR "/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -367,7 +367,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file://" SRCDIR "/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }

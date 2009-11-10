@@ -225,10 +225,10 @@ QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const 
     Q_Q(QmlAbstractAnimation);
     QmlMetaProperty prop = QmlMetaProperty::createProperty(obj, str);
     if (!prop.isValid()) {
-        qmlInfo(QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str), q);
+        qmlInfo(q) << QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str);
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str), q);
+        qmlInfo(q) << QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str);
         return QmlMetaProperty();
     }
     return prop;
@@ -1021,7 +1021,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
     bool hasTarget = !d->propertyName.isEmpty() || d->target;
 
     if (hasSelectors && hasTarget) {
-        qmlInfo(tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive."), this);
+        qmlInfo(this) << tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         return;
     }
 
@@ -2017,7 +2017,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     bool hasTarget = !d->propertyName.isEmpty() || d->target;
 
     if (hasSelectors && hasTarget) {
-        qmlInfo(tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive."), this);
+        qmlInfo(this) << tr("matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         return;
     }
 

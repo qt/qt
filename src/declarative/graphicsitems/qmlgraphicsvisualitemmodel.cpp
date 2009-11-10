@@ -813,7 +813,7 @@ QmlGraphicsItem *QmlGraphicsVisualDataModel::item(int index, const QByteArray &v
     }
     if (!item) {
         d->m_cache.releaseItem(nobj);
-        qmlInfo(QmlGraphicsVisualDataModel::tr("Delegate component must be Item type."), d->m_delegate);
+        qmlInfo(d->m_delegate) << QmlGraphicsVisualDataModel::tr("Delegate component must be Item type.");
     }
 
     return item;

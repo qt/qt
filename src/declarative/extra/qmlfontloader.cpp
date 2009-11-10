@@ -211,7 +211,7 @@ void QmlFontLoaderPrivate::addFontToDatabase(const QByteArray &ba)
         status = QmlFontLoader::Ready;
     } else {
         status = QmlFontLoader::Error;
-        qWarning() << "Cannot load font: " << name << url;
+        qWarning() << "Cannot load font:" << url;
     }
     emit q->statusChanged();
 }

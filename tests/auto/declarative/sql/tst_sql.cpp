@@ -176,6 +176,7 @@ void tst_sql::validateAgainstWebkit()
     webpage.mainFrame()->evaluateJavaScript(js);
     QTest::qWait(200); // WebKit db access is asynchronous
     QTRY_COMPARE(webpage.mainFrame()->evaluateJavaScript("test()").toString(),result);
+    QTest::qWait(200); // WebKit crashes if you quit it too fast
 
     QWebSecurityOrigin origin = webpage.mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();

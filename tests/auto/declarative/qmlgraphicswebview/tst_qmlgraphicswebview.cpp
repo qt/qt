@@ -134,7 +134,6 @@ void tst_qmlgraphicswebview::basicProperties()
     QCOMPARE(wv->statusText(),QString("status here"));
     QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
     QCOMPARE(wv->width(), 123.0);
-    QCOMPARE(wv->webPageWidth(), 0);
     QCOMPARE(wv->preferredWidth(), 0);
     QCOMPARE(wv->zoomFactor(), 1.0);
     QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
@@ -170,7 +169,6 @@ void tst_qmlgraphicswebview::historyNav()
         QCOMPARE(wv->statusText(),QString("status here"));
         QCOMPARE(strippedHtml(fileContents(SRCDIR "/data/basic.html")), strippedHtml(wv->html()));
         QCOMPARE(wv->width(), 123.0);
-        QCOMPARE(wv->webPageWidth(), 0);
         QCOMPARE(wv->preferredWidth(), 0);
         QCOMPARE(wv->zoomFactor(), 1.0);
         QCOMPARE(wv->url(), QUrl::fromLocalFile(SRCDIR "/data/basic.html"));
