@@ -1883,22 +1883,18 @@ void CppParser::parseInternal(ConversionData &cd, QSet<QString> &inclusions)
         case Tok_trid:
             if (!tor)
                 goto case_default;
-            if (sourcetext.isEmpty()) {
-                yyTok = getToken();
-            } else {
-                if (!msgid.isEmpty())
-                    qWarning("%s:%d: //= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring\n",
-                             qPrintable(yyFileName), yyLineNo);
-                //utf8 = false; // Maybe use //%% or something like that
-                line = yyLineNo;
-                yyTok = getToken();
-                if (match(Tok_LeftParen) && matchString(&msgid) && !msgid.isEmpty()) {
-                    bool plural = match(Tok_Comma);
-                    recordMessage(line, QString(), sourcetext, QString(), extracomment,
-                                  msgid, extra, false, plural);
-                }
-                sourcetext.clear();
+            if (!msgid.isEmpty())
+                qWarning("%s:%d: //= cannot be used with qtTrId() / QT_TRID_NOOP(). Ignoring\n",
+                         qPrintable(yyFileName), yyLineNo);
+            //utf8 = false; // Maybe use //%% or something like that
+            line = yyLineNo;
+            yyTok = getToken();
+            if (match(Tok_LeftParen) && matchString(&msgid) && !msgid.isEmpty()) {
+                bool plural = match(Tok_Comma);
+                recordMessage(line, QString(), sourcetext, QString(), extracomment,
+                              msgid, extra, false, plural);
             }
+            sourcetext.clear();
             extracomment.clear();
             msgid.clear();
             extra.clear();
