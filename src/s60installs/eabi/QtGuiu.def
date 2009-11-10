@@ -11689,4 +11689,30 @@ EXPORTS
 	_ZNK19QKeyEventTransition12modifierMaskEv @ 11688 NONAME
 	_ZNK21QMouseEventTransition11hitTestPathEv @ 11689 NONAME
 	_ZNK21QMouseEventTransition12modifierMaskEv @ 11690 NONAME
+	_ZN11QTapGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11691 NONAME
+	_ZN11QTapGesture11qt_metacastEPKc @ 11692 NONAME
+	_ZN11QTapGesture11setPositionERK7QPointF @ 11693 NONAME
+	_ZN11QTapGesture16staticMetaObjectE @ 11694 NONAME DATA 16
+	_ZN11QTapGesture19getStaticMetaObjectEv @ 11695 NONAME
+	_ZN11QTapGestureC1EP7QObject @ 11696 NONAME
+	_ZN11QTapGestureC2EP7QObject @ 11697 NONAME
+	_ZN14QFileOpenEventC1ERK4QUrl @ 11698 NONAME
+	_ZN14QFileOpenEventC2ERK4QUrl @ 11699 NONAME
+	_ZN18QTapAndHoldGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11700 NONAME
+	_ZN18QTapAndHoldGesture11qt_metacastEPKc @ 11701 NONAME
+	_ZN18QTapAndHoldGesture11setPositionERK7QPointF @ 11702 NONAME
+	_ZN18QTapAndHoldGesture16staticMetaObjectE @ 11703 NONAME DATA 16
+	_ZN18QTapAndHoldGesture19getStaticMetaObjectEv @ 11704 NONAME
+	_ZN18QTapAndHoldGestureC1EP7QObject @ 11705 NONAME
+	_ZN18QTapAndHoldGestureC2EP7QObject @ 11706 NONAME
+	_ZN20QGraphicsItemPrivate18siblingOrderChangeEv @ 11707 NONAME
+	_ZNK11QTapGesture10metaObjectEv @ 11708 NONAME
+	_ZNK11QTapGesture8positionEv @ 11709 NONAME
+	_ZNK14QFileOpenEvent3urlEv @ 11710 NONAME
+	_ZNK18QTapAndHoldGesture10metaObjectEv @ 11711 NONAME
+	_ZNK18QTapAndHoldGesture8positionEv @ 11712 NONAME
+	_ZTI11QTapGesture @ 11713 NONAME
+	_ZTI18QTapAndHoldGesture @ 11714 NONAME
+	_ZTV11QTapGesture @ 11715 NONAME
+	_ZTV18QTapAndHoldGesture @ 11716 NONAME
 

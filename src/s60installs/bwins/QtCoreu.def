@@ -417,7 +417,7 @@ EXPORTS
 	?setReadChannelMode@QProcess@@QAEXW4ProcessChannelMode@1@@Z @ 416 NONAME ; void QProcess::setReadChannelMode(enum QProcess::ProcessChannelMode)
 	?d_func@QFactoryLoader@@ABEPBVQFactoryLoaderPrivate@@XZ @ 417 NONAME ; class QFactoryLoaderPrivate const * QFactoryLoader::d_func(void) const
 	?setEncodedUrl@QUrl@@QAEXABVQByteArray@@W4ParsingMode@1@@Z @ 418 NONAME ; void QUrl::setEncodedUrl(class QByteArray const &, enum QUrl::ParsingMode)
-	?insertPauseAt@QSequentialAnimationGroup@@QAEPAVQPauseAnimation@@HH@Z @ 419 NONAME ; class QPauseAnimation * QSequentialAnimationGroup::insertPauseAt(int, int)
+	?insertPauseAt@QSequentialAnimationGroup@@QAEPAVQPauseAnimation@@HH@Z @ 419 NONAME ABSENT ; class QPauseAnimation * QSequentialAnimationGroup::insertPauseAt(int, int)
 	?qt_metacast@QVariantAnimation@@UAEPAXPBD@Z @ 420 NONAME ; void * QVariantAnimation::qt_metacast(char const *)
 	?insert@QString@@QAEAAV1@HVQChar@@@Z @ 421 NONAME ; class QString & QString::insert(int, class QChar)
 	??0QTextStreamManipulator@@QAE@P8QTextStream@@AEXH@ZH@Z @ 422 NONAME ; QTextStreamManipulator::QTextStreamManipulator(void (*)(int), int)
@@ -1055,7 +1055,7 @@ EXPORTS
 	?isValid@QRegExp@@QBE_NXZ @ 1054 NONAME ; bool QRegExp::isValid(void) const
 	?d_func@QState@@ABEPBVQStatePrivate@@XZ @ 1055 NONAME ; class QStatePrivate const * QState::d_func(void) const
 	??5@YAAAVQDataStream@@AAV0@AAVQLocale@@@Z @ 1056 NONAME ; class QDataStream & operator>>(class QDataStream &, class QLocale &)
-	?clearAnimations@QAnimationGroup@@QAEXXZ @ 1057 NONAME ; void QAnimationGroup::clearAnimations(void)
+	?clearAnimations@QAnimationGroup@@QAEXXZ @ 1057 NONAME ABSENT ; void QAnimationGroup::clearAnimations(void)
 	?toFloat@QString@@QBEMPA_N@Z @ 1058 NONAME ; float QString::toFloat(bool *) const
 	?kill@QProcess@@QAEXXZ @ 1059 NONAME ; void QProcess::kill(void)
 	?d_func@QResource@@ABEPBVQResourcePrivate@@XZ @ 1060 NONAME ; class QResourcePrivate const * QResource::d_func(void) const
@@ -1841,7 +1841,7 @@ EXPORTS
 	??0QLibrary@@QAE@PAVQObject@@@Z @ 1840 NONAME ; QLibrary::QLibrary(class QObject *)
 	??0QRect@@QAE@XZ @ 1841 NONAME ; QRect::QRect(void)
 	?begin@QListData@@QBEPAPAXXZ @ 1842 NONAME ; void * * QListData::begin(void) const
-	?takeAnimationAt@QAnimationGroup@@QAEPAVQAbstractAnimation@@H@Z @ 1843 NONAME ; class QAbstractAnimation * QAnimationGroup::takeAnimationAt(int)
+	?takeAnimationAt@QAnimationGroup@@QAEPAVQAbstractAnimation@@H@Z @ 1843 NONAME ABSENT ; class QAbstractAnimation * QAnimationGroup::takeAnimationAt(int)
 	?machine@QAbstractTransitionPrivate@@QBEPAVQStateMachine@@XZ @ 1844 NONAME ; class QStateMachine * QAbstractTransitionPrivate::machine(void) const
 	?sendPostedEvents@QEventDispatcherSymbian@@AAE_NXZ @ 1845 NONAME ; bool QEventDispatcherSymbian::sendPostedEvents(void)
 	?eventType@QEventTransition@@QBE?AW4Type@QEvent@@XZ @ 1846 NONAME ; enum QEvent::Type QEventTransition::eventType(void) const
@@ -2509,7 +2509,7 @@ EXPORTS
 	?q_func@QCoreApplicationPrivate@@AAEPAVQCoreApplication@@XZ @ 2508 NONAME ; class QCoreApplication * QCoreApplicationPrivate::q_func(void)
 	?readyReadStandardError@QProcess@@IAEXXZ @ 2509 NONAME ; void QProcess::readyReadStandardError(void)
 	?isDetached@QUrl@@QBE_NXZ @ 2510 NONAME ; bool QUrl::isDetached(void) const
-	?insertAnimationAt@QAnimationGroup@@QAEXHPAVQAbstractAnimation@@@Z @ 2511 NONAME ; void QAnimationGroup::insertAnimationAt(int, class QAbstractAnimation *)
+	?insertAnimationAt@QAnimationGroup@@QAEXHPAVQAbstractAnimation@@@Z @ 2511 NONAME ABSENT ; void QAnimationGroup::insertAnimationAt(int, class QAbstractAnimation *)
 	??0QFile@@QAE@ABVQString@@PAVQObject@@@Z @ 2512 NONAME ; QFile::QFile(class QString const &, class QObject *)
 	??6QDebug@@QAEAAV0@ABVQStringRef@@@Z @ 2513 NONAME ; class QDebug & QDebug::operator<<(class QStringRef const &)
 	?setLoadHints@QLibrary@@QAEXV?$QFlags@W4LoadHint@QLibrary@@@@@Z @ 2514 NONAME ; void QLibrary::setLoadHints(class QFlags<enum QLibrary::LoadHint>)
@@ -4388,4 +4388,12 @@ EXPORTS
 	?propertiesAssigned@QState@@IAEXXZ @ 4387 NONAME ; void QState::propertiesAssigned(void)
 	?qShapeItem@@YAEPAUHB_ShaperItem_@@@Z @ 4388 NONAME ; unsigned char qShapeItem(struct HB_ShaperItem_ *)
 	?setAnimated@QStateMachine@@QAEX_N@Z @ 4389 NONAME ; void QStateMachine::setAnimated(bool)
+	?clear@QAnimationGroup@@QAEXXZ @ 4390 NONAME ; void QAnimationGroup::clear(void)
+	?convertFromAscii@QAbstractConcatenable@@KAXDAAPAVQChar@@@Z @ 4391 NONAME ; void QAbstractConcatenable::convertFromAscii(char, class QChar * &)
+	?convertFromAscii@QAbstractConcatenable@@KAXPBDHAAPAVQChar@@@Z @ 4392 NONAME ; void QAbstractConcatenable::convertFromAscii(char const *, int, class QChar * &)
+	?currentLoopTime@QAbstractAnimation@@QBEHXZ @ 4393 NONAME ; int QAbstractAnimation::currentLoopTime(void) const
+	?insertAnimation@QAnimationGroup@@QAEXHPAVQAbstractAnimation@@@Z @ 4394 NONAME ; void QAnimationGroup::insertAnimation(int, class QAbstractAnimation *)
+	?insertPause@QSequentialAnimationGroup@@QAEPAVQPauseAnimation@@HH@Z @ 4395 NONAME ; class QPauseAnimation * QSequentialAnimationGroup::insertPause(int, int)
+	?setPaused@QAbstractAnimation@@QAEX_N@Z @ 4396 NONAME ; void QAbstractAnimation::setPaused(bool)
+	?takeAnimation@QAnimationGroup@@QAEPAVQAbstractAnimation@@H@Z @ 4397 NONAME ; class QAbstractAnimation * QAnimationGroup::takeAnimation(int)
 

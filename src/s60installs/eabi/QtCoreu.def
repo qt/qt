@@ -694,11 +694,11 @@ EXPORTS
 	_ZN15QAnimationGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 693 NONAME
 	_ZN15QAnimationGroup11qt_metacastEPKc @ 694 NONAME
 	_ZN15QAnimationGroup12addAnimationEP18QAbstractAnimation @ 695 NONAME
-	_ZN15QAnimationGroup15clearAnimationsEv @ 696 NONAME
+	_ZN15QAnimationGroup15clearAnimationsEv @ 696 NONAME ABSENT
 	_ZN15QAnimationGroup15removeAnimationEP18QAbstractAnimation @ 697 NONAME
-	_ZN15QAnimationGroup15takeAnimationAtEi @ 698 NONAME
+	_ZN15QAnimationGroup15takeAnimationAtEi @ 698 NONAME ABSENT
 	_ZN15QAnimationGroup16staticMetaObjectE @ 699 NONAME DATA 16
-	_ZN15QAnimationGroup17insertAnimationAtEiP18QAbstractAnimation @ 700 NONAME
+	_ZN15QAnimationGroup17insertAnimationAtEiP18QAbstractAnimation @ 700 NONAME ABSENT
 	_ZN15QAnimationGroup19getStaticMetaObjectEv @ 701 NONAME
 	_ZN15QAnimationGroup5eventEP6QEvent @ 702 NONAME
 	_ZN15QAnimationGroupC2EP7QObject @ 703 NONAME
@@ -1376,7 +1376,7 @@ EXPORTS
 	_ZN25QSequentialAnimationGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 1375 NONAME
 	_ZN25QSequentialAnimationGroup11qt_metacastEPKc @ 1376 NONAME
 	_ZN25QSequentialAnimationGroup11updateStateEN18QAbstractAnimation5StateES1_ @ 1377 NONAME
-	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 1378 NONAME
+	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 1378 NONAME ABSENT
 	_ZN25QSequentialAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 1379 NONAME
 	_ZN25QSequentialAnimationGroup16staticMetaObjectE @ 1380 NONAME DATA 16
 	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 1381 NONAME
@@ -3611,4 +3611,11 @@ EXPORTS
 	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3610 NONAME
 	_ZN6QState18propertiesAssignedEv @ 3611 NONAME
 	_ZNK13QStateMachine10isAnimatedEv @ 3612 NONAME
+	_ZN15QAnimationGroup13takeAnimationEi @ 3613 NONAME
+	_ZN15QAnimationGroup15insertAnimationEiP18QAbstractAnimation @ 3614 NONAME
+	_ZN15QAnimationGroup5clearEv @ 3615 NONAME
+	_ZN18QAbstractAnimation9setPausedEb @ 3616 NONAME
+	_ZN21QAbstractConcatenable16convertFromAsciiEPKciRP5QChar @ 3617 NONAME
+	_ZN25QSequentialAnimationGroup11insertPauseEii @ 3618 NONAME
+	_ZNK18QAbstractAnimation15currentLoopTimeEv @ 3619 NONAME
 

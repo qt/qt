@@ -11870,7 +11870,7 @@ EXPORTS
 	?setCornerWidget@QMenuBar@@QAEXPAVQWidget@@W4Corner@Qt@@@Z @ 11869 NONAME ; void QMenuBar::setCornerWidget(class QWidget *, enum Qt::Corner)
 	?background@QTreeWidgetItem@@QBE?AVQBrush@@H@Z @ 11870 NONAME ; class QBrush QTreeWidgetItem::background(int) const
 	?getStaticMetaObject@QLabel@@SAABUQMetaObject@@XZ @ 11871 NONAME ; struct QMetaObject const & QLabel::getStaticMetaObject(void)
-	?process@QPaintEngineExReplayer@@QAEXABUQPaintBufferCommand@@@Z @ 11872 NONAME ; void QPaintEngineExReplayer::process(struct QPaintBufferCommand const &)
+	?process@QPaintEngineExReplayer@@QAEXABUQPaintBufferCommand@@@Z @ 11872 NONAME ABSENT ; void QPaintEngineExReplayer::process(struct QPaintBufferCommand const &)
 	?trUtf8@QWizard@@SA?AVQString@@PBD0H@Z @ 11873 NONAME ; class QString QWizard::trUtf8(char const *, char const *, int)
 	?mousePressEvent@QMenuBar@@MAEXPAVQMouseEvent@@@Z @ 11874 NONAME ; void QMenuBar::mousePressEvent(class QMouseEvent *)
 	?resolveSymlinks@QFileSystemModel@@QBE_NXZ @ 11875 NONAME ; bool QFileSystemModel::resolveSymlinks(void) const
@@ -12231,7 +12231,7 @@ EXPORTS
 	?setPicture@QPictureIO@@QAEXABVQPicture@@@Z @ 12230 NONAME ; void QPictureIO::setPicture(class QPicture const &)
 	?metaObject@QAbstractProxyModel@@UBEPBUQMetaObject@@XZ @ 12231 NONAME ; struct QMetaObject const * QAbstractProxyModel::metaObject(void) const
 	?brush@QPainter@@QBEABVQBrush@@XZ @ 12232 NONAME ; class QBrush const & QPainter::brush(void) const
-	?process@QPainterReplayer@@QAEXABUQPaintBufferCommand@@@Z @ 12233 NONAME ; void QPainterReplayer::process(struct QPaintBufferCommand const &)
+	?process@QPainterReplayer@@QAEXABUQPaintBufferCommand@@@Z @ 12233 NONAME ABSENT ; void QPainterReplayer::process(struct QPaintBufferCommand const &)
 	?staticMetaObject@QAbstractItemView@@2UQMetaObject@@B @ 12234 NONAME ; struct QMetaObject const QAbstractItemView::staticMetaObject
 	?createRecursively@QWidgetPrivate@@QAEXXZ @ 12235 NONAME ; void QWidgetPrivate::createRecursively(void)
 	?drawLines@QPaintEngineEx@@UAEXPBVQLine@@H@Z @ 12236 NONAME ; void QPaintEngineEx::drawLines(class QLine const *, int)
@@ -12631,4 +12631,44 @@ EXPORTS
 	?translate@QMatrix4x4@@QAEXMMM@Z @ 12630 NONAME ; void QMatrix4x4::translate(float, float, float)
 	?ungrabGesture@QGraphicsObject@@QAEXW4GestureType@Qt@@@Z @ 12631 NONAME ; void QGraphicsObject::ungrabGesture(enum Qt::GestureType)
 	?unregisterRecognizer@QGestureRecognizer@@SAXW4GestureType@Qt@@@Z @ 12632 NONAME ; void QGestureRecognizer::unregisterRecognizer(enum Qt::GestureType)
+	??0QFileOpenEvent@@QAE@ABVQUrl@@@Z @ 12633 NONAME ; QFileOpenEvent::QFileOpenEvent(class QUrl const &)
+	??0QTapAndHoldGesture@@QAE@PAVQObject@@@Z @ 12634 NONAME ; QTapAndHoldGesture::QTapAndHoldGesture(class QObject *)
+	??0QTapGesture@@QAE@PAVQObject@@@Z @ 12635 NONAME ; QTapGesture::QTapGesture(class QObject *)
+	??1QTapAndHoldGesture@@UAE@XZ @ 12636 NONAME ; QTapAndHoldGesture::~QTapAndHoldGesture(void)
+	??1QTapGesture@@UAE@XZ @ 12637 NONAME ; QTapGesture::~QTapGesture(void)
+	??_EQTapAndHoldGesture@@UAE@I@Z @ 12638 NONAME ; QTapAndHoldGesture::~QTapAndHoldGesture(unsigned int)
+	??_EQTapGesture@@UAE@I@Z @ 12639 NONAME ; QTapGesture::~QTapGesture(unsigned int)
+	?d_func@QPaintBuffer@@AAEPAVQPaintBufferPrivate@@XZ @ 12640 NONAME ; class QPaintBufferPrivate * QPaintBuffer::d_func(void)
+	?d_func@QPaintBuffer@@ABEPBVQPaintBufferPrivate@@XZ @ 12641 NONAME ; class QPaintBufferPrivate const * QPaintBuffer::d_func(void) const
+	?d_func@QTapAndHoldGesture@@AAEPAVQTapAndHoldGesturePrivate@@XZ @ 12642 NONAME ; class QTapAndHoldGesturePrivate * QTapAndHoldGesture::d_func(void)
+	?d_func@QTapAndHoldGesture@@ABEPBVQTapAndHoldGesturePrivate@@XZ @ 12643 NONAME ; class QTapAndHoldGesturePrivate const * QTapAndHoldGesture::d_func(void) const
+	?d_func@QTapGesture@@AAEPAVQTapGesturePrivate@@XZ @ 12644 NONAME ; class QTapGesturePrivate * QTapGesture::d_func(void)
+	?d_func@QTapGesture@@ABEPBVQTapGesturePrivate@@XZ @ 12645 NONAME ; class QTapGesturePrivate const * QTapGesture::d_func(void) const
+	?getStaticMetaObject@QTapAndHoldGesture@@SAABUQMetaObject@@XZ @ 12646 NONAME ; struct QMetaObject const & QTapAndHoldGesture::getStaticMetaObject(void)
+	?getStaticMetaObject@QTapGesture@@SAABUQMetaObject@@XZ @ 12647 NONAME ; struct QMetaObject const & QTapGesture::getStaticMetaObject(void)
+	?metaObject@QTapAndHoldGesture@@UBEPBUQMetaObject@@XZ @ 12648 NONAME ; struct QMetaObject const * QTapAndHoldGesture::metaObject(void) const
+	?metaObject@QTapGesture@@UBEPBUQMetaObject@@XZ @ 12649 NONAME ; struct QMetaObject const * QTapGesture::metaObject(void) const
+	?position@QTapAndHoldGesture@@QBE?AVQPointF@@XZ @ 12650 NONAME ; class QPointF QTapAndHoldGesture::position(void) const
+	?position@QTapGesture@@QBE?AVQPointF@@XZ @ 12651 NONAME ; class QPointF QTapGesture::position(void) const
+	?process@QPaintEngineExReplayer@@UAEXABUQPaintBufferCommand@@@Z @ 12652 NONAME ; void QPaintEngineExReplayer::process(struct QPaintBufferCommand const &)
+	?process@QPainterReplayer@@UAEXABUQPaintBufferCommand@@@Z @ 12653 NONAME ; void QPainterReplayer::process(struct QPaintBufferCommand const &)
+	?qt_metacall@QTapAndHoldGesture@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 12654 NONAME ; int QTapAndHoldGesture::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacall@QTapGesture@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 12655 NONAME ; int QTapGesture::qt_metacall(enum QMetaObject::Call, int, void * *)
+	?qt_metacast@QTapAndHoldGesture@@UAEPAXPBD@Z @ 12656 NONAME ; void * QTapAndHoldGesture::qt_metacast(char const *)
+	?qt_metacast@QTapGesture@@UAEPAXPBD@Z @ 12657 NONAME ; void * QTapGesture::qt_metacast(char const *)
+	?sendScenePosChange@QGraphicsItemPrivate@@QAEXXZ @ 12658 NONAME ; void QGraphicsItemPrivate::sendScenePosChange(void)
+	?setPosition@QTapAndHoldGesture@@QAEXABVQPointF@@@Z @ 12659 NONAME ; void QTapAndHoldGesture::setPosition(class QPointF const &)
+	?setPosition@QTapGesture@@QAEXABVQPointF@@@Z @ 12660 NONAME ; void QTapGesture::setPosition(class QPointF const &)
+	?siblingOrderChange@QGraphicsItemPrivate@@UAEXXZ @ 12661 NONAME ; void QGraphicsItemPrivate::siblingOrderChange(void)
+	?tr@QTapAndHoldGesture@@SA?AVQString@@PBD0@Z @ 12662 NONAME ; class QString QTapAndHoldGesture::tr(char const *, char const *)
+	?tr@QTapAndHoldGesture@@SA?AVQString@@PBD0H@Z @ 12663 NONAME ; class QString QTapAndHoldGesture::tr(char const *, char const *, int)
+	?tr@QTapGesture@@SA?AVQString@@PBD0@Z @ 12664 NONAME ; class QString QTapGesture::tr(char const *, char const *)
+	?tr@QTapGesture@@SA?AVQString@@PBD0H@Z @ 12665 NONAME ; class QString QTapGesture::tr(char const *, char const *, int)
+	?trUtf8@QTapAndHoldGesture@@SA?AVQString@@PBD0@Z @ 12666 NONAME ; class QString QTapAndHoldGesture::trUtf8(char const *, char const *)
+	?trUtf8@QTapAndHoldGesture@@SA?AVQString@@PBD0H@Z @ 12667 NONAME ; class QString QTapAndHoldGesture::trUtf8(char const *, char const *, int)
+	?trUtf8@QTapGesture@@SA?AVQString@@PBD0@Z @ 12668 NONAME ; class QString QTapGesture::trUtf8(char const *, char const *)
+	?trUtf8@QTapGesture@@SA?AVQString@@PBD0H@Z @ 12669 NONAME ; class QString QTapGesture::trUtf8(char const *, char const *, int)
+	?url@QFileOpenEvent@@QBE?AVQUrl@@XZ @ 12670 NONAME ; class QUrl QFileOpenEvent::url(void) const
+	?staticMetaObject@QTapGesture@@2UQMetaObject@@B @ 12671 NONAME ; struct QMetaObject const QTapGesture::staticMetaObject
+	?staticMetaObject@QTapAndHoldGesture@@2UQMetaObject@@B @ 12672 NONAME ; struct QMetaObject const QTapAndHoldGesture::staticMetaObject
 
