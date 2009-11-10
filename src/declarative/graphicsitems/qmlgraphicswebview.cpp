@@ -166,7 +166,7 @@ class QmlGraphicsWebViewPrivate : public QmlGraphicsPaintedItemPrivate
 
 public:
     QmlGraphicsWebViewPrivate()
-      : QmlGraphicsPaintedItemPrivate(), page(0), preferredwidth(0), pagewidth(0),
+      : QmlGraphicsPaintedItemPrivate(), page(0), preferredwidth(0), preferredheight(0),
             progress(1.0), status(QmlGraphicsWebView::Null), pending(PendingNone),
             newWindowComponent(0), newWindowParent(0),
             windowObjects(this),
@@ -177,8 +177,7 @@ public:
     QUrl url; // page url might be different if it has not loaded yet
     QWebPage *page;
 
-    int preferredwidth;
-    int pagewidth;
+    int preferredwidth, preferredheight;
     qreal progress;
     QmlGraphicsWebView::Status status;
     QString statusText;
@@ -227,7 +226,8 @@ public:
         width: 490
         height: 400
         scale: 0.5
-        smooth: true
+        smooth: false
+        smoothCache: true
     }
     \endqml
 
@@ -341,22 +341,15 @@ void QmlGraphicsWebView::pageUrlChanged()
 {
     Q_D(QmlGraphicsWebView);
 
-    // Reset zooming to full
-    qreal zf = 1.0;
     if (d->preferredwidth) {
-        if (d->pagewidth)
-            zf = qreal(d->preferredwidth)/d->pagewidth;
-        page()->mainFrame()->setZoomFactor(zf);
         page()->setViewportSize(QSize(d->preferredwidth,-1));
     } else {
-        page()->mainFrame()->setZoomFactor(zf);
         page()->setViewportSize(QSize(-1,-1));
     }
-    emit zooming(zf,0,0);
     expandToWebPage();
 
     if ((d->url.isEmpty() && page()->mainFrame()->url() != QUrl(QLatin1String("about:blank")))
-        || d->url != page()->mainFrame()->url() && !page()->mainFrame()->url().isEmpty())
+        || (d->url != page()->mainFrame()->url() && !page()->mainFrame()->url().isEmpty()))
     {
         d->url = page()->mainFrame()->url();
         if (d->url == QUrl(QLatin1String("about:blank")))
@@ -406,15 +399,11 @@ void QmlGraphicsWebView::setUrl(const QUrl &url)
 
     if (isComponentComplete()) {
         d->url = url;
-        qreal zf = 1.0;
         if (d->preferredwidth) {
-            if (d->pagewidth)
-                zf = qreal(d->preferredwidth)/d->pagewidth;
             page()->setViewportSize(QSize(d->preferredwidth,-1));
         } else {
             page()->setViewportSize(QSize(-1,-1));
         }
-        page()->mainFrame()->setZoomFactor(zf);
         QUrl seturl = url;
         if (seturl.isEmpty())
             seturl = QUrl(QLatin1String("about:blank"));
@@ -444,35 +433,27 @@ void QmlGraphicsWebView::setPreferredWidth(int iw)
 {
     Q_D(QmlGraphicsWebView);
     if (d->preferredwidth == iw) return;
-    if (d->pagewidth) {
-        if (d->preferredwidth) {
-            setZoomFactor(zoomFactor()*iw/d->preferredwidth);
-        } else {
-            setZoomFactor(qreal(iw)/d->pagewidth);
-        }
-    }
     d->preferredwidth = iw;
     expandToWebPage();
     emit preferredWidthChanged();
 }
 
 /*!
-    \qmlproperty int WebView::webPageWidth
-    This property holds the page width suggested to the web engine. The zoomFactor
-    will be changed to fit this with in preferredWidth.
+    \qmlproperty int WebView::preferredHeight
+    This property holds the ideal height for displaying the current URL.
+    This only affects the area zoomed by heuristicZoom().
 */
-int QmlGraphicsWebView::webPageWidth() const
+int QmlGraphicsWebView::preferredHeight() const
 {
     Q_D(const QmlGraphicsWebView);
-    return d->pagewidth;
+    return d->preferredheight;
 }
-
-void QmlGraphicsWebView::setWebPageWidth(int pw)
+void QmlGraphicsWebView::setPreferredHeight(int ih)
 {
     Q_D(QmlGraphicsWebView);
-    if (d->pagewidth == pw) return;
-    d->pagewidth = pw;
-    expandToWebPage();
+    if (d->preferredheight == ih) return;
+    d->preferredheight = ih;
+    emit preferredHeightChanged();
 }
 
 /*!
@@ -715,18 +696,38 @@ void QmlGraphicsWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     delete me;
 }
 
-void QmlGraphicsWebView::heuristicZoom(int clickX, int clickY)
+/*!
+    \qmlmethod bool WebView::heuristicZoom(clickX,clickY,maxzoom)
+
+    Finds a zoom that:
+    \list
+    \i shows a whole item
+    \i includes (\a clickX, \a clickY)
+    \i fits into the preferredWidth and preferredHeight
+    \i zooms by no more than \a maxzoom
+    \i is more than 20% above the current zoom
+    \endlist
+
+    If such a zoom exists, emits zoomTo(zoom,centerX,centerY) and returns true; otherwise,
+    no signal is emitted and returns false.
+*/
+bool QmlGraphicsWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
 {
     Q_D(QmlGraphicsWebView);
     qreal ozf = zoomFactor();
-    QRect showarea = elementAreaAt(clickX, clickY, 1, 1);
-    qreal z = qreal(preferredWidth())*ozf/showarea.width()*.95;
-    if ((z/ozf > 0.99 && z/ozf <1.01) || z < qreal(d->preferredwidth)/d->pagewidth) {
-        // zoom out
-        z = qreal(d->preferredwidth)/d->pagewidth;
+    if (ozf >= maxzoom)
+        return false;
+    QRect showarea = elementAreaAt(clickX, clickY, d->preferredwidth/maxzoom, d->preferredheight/maxzoom);
+    qreal z = qMin(qreal(d->preferredwidth)*ozf/showarea.width(),qreal(d->preferredheight)*ozf/showarea.height());
+    if (z > maxzoom)
+        z = maxzoom;
+    if (z/ozf > 1.2) {
+        QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
+        emit zoomTo(z,r.x()+r.width()/2, r.y()+r.height()/2);
+        return true;
+    } else {
+        return false;
     }
-    QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
-    emit zooming(z,r.x()+r.width()/2, r.y()+r.height()/2);
 }
 
 void QmlGraphicsWebView::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -911,7 +912,7 @@ void QmlGraphicsWebView::setZoomFactor(qreal factor)
         return;
 
     page()->mainFrame()->setZoomFactor(factor);
-    page()->setViewportSize(QSize(d->pagewidth*factor,-1));
+    page()->setViewportSize(QSize(d->preferredwidth ? d->preferredwidth : -1,-1));
     expandToWebPage();
 
     emit zoomFactorChanged();
@@ -1239,15 +1240,15 @@ void QmlGraphicsWebView::setNewWindowParent(QmlGraphicsItem *parent)
 QRect QmlGraphicsWebView::elementAreaAt(int x, int y, int maxwidth, int maxheight) const
 {
     QWebHitTestResult hit = page()->mainFrame()->hitTestContent(QPoint(x,y));
+    QRect rv = hit.boundingRect();
     QWebElement element = hit.enclosingBlockElement();
-    QWebElement parent = element.parent();
     if (maxwidth<=0) maxwidth = INT_MAX;
     if (maxheight<=0) maxheight = INT_MAX;
-    while (!parent.isNull() && parent.geometry().width() <= maxwidth && parent.geometry().height() <= maxheight) {
-        element = parent;
-        parent = element.parent();
+    while (!element.parent().isNull() && element.geometry().width() <= maxwidth && element.geometry().height() <= maxheight) {
+        rv = element.geometry();
+        element = element.parent();
     }
-    return element.geometry();
+    return rv;
 }
 
 /*!

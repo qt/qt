@@ -191,15 +191,37 @@ Item {
                 }
 
                 url: fixUrl(webBrowser.urlString)
-                smooth: true
+                smooth: false // We don't want smooth scaling, since we only scale during (fast) transitions
+                smoothCache: true // We do want smooth rendering
                 fillColor: "white"
                 focus: true
 
+                function doZoom(zoom,centerX,centerY)
+                {
+                    if (centerX) {
+                        var sc = zoom/zoomFactor;
+                        scaleAnim.to = sc;
+                        flickVX.from = flickable.viewportX
+                        flickVX.to = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
+                        finalX.value = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
+                        flickVY.from = flickable.viewportY
+                        flickVY.to = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
+                        finalY.value = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
+                        finalZoom.value = zoom
+                        quickZoom.start()
+                    }
+                }
+
                 preferredWidth: flickable.width
-                webPageWidth: 980
+                preferredHeight: flickable.height
+                zoomFactor: flickable.width > 980 ? flickable.width : flickable.width/980
 
                 onUrlChanged: { if (url != null) { webBrowser.urlString = url.toString(); } }
-                onDoubleClick: { heuristicZoom(clickX,clickY) }
+                onDoubleClick: { if (!heuristicZoom(clickX,clickY,2.5)) {
+                                    var zf = flickable.width > 980 ? flickable.width : flickable.width/980;
+                                    doZoom(zf,clickX/zoomFactor*zf,clickY/zoomFactor*zf)
+                                 }
+                               }
 
                 SequentialAnimation {
                     id: quickZoom
@@ -269,20 +291,7 @@ Item {
                         value: true
                     }
                 }
-                onZooming: {
-                    if (centerX) {
-                        var sc = zoom/zoomFactor;
-                        scaleAnim.to = sc;
-                        flickVX.from = flickable.viewportX
-                        flickVX.to = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
-                        finalX.value = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
-                        flickVY.from = flickable.viewportY
-                        flickVY.to = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
-                        finalY.value = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
-                        finalZoom.value = zoom
-                        quickZoom.start()
-                    }
-                }
+                onZoomTo: doZoom(zoom,centerX,centerY)
             }
             Rectangle {
                 id: webViewTint

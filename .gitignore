@@ -78,6 +78,12 @@ bin/cetest*
 bin/collectiongenerator
 bin/helpconverter
 bin/helpgenerator
+bin/kmap2qmap*
+bin/qlalr*
+bin/qmlconv*
+bin/qmldebugger*
+bin/qmlviewer*
+bin/qttracereplay*
 configure.cache
 config.status
 mkspecs/default

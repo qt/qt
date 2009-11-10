@@ -1238,7 +1238,8 @@ PassRefPtr<Widget> FrameLoaderClientQt::createPlugin(const IntSize& pluginSize, 
                     parentWidget = qobject_cast<QWidget*>(m_webFrame->page()->d->client->pluginParent());
                 else
                     parentWidget = 0;  // The plug-in won't be fully functional because the QWebView doesn't exist.
-                widget->setParent(parentWidget);
+                if (parentWidget) // don't reparent to nothing (i.e. keep whatever parent createPlugin() chose.
+                    widget->setParent(parentWidget);
                 RefPtr<QtPluginWidget> w = adoptRef(new QtPluginWidget());
                 w->setPlatformWidget(widget);
                 // Make sure it's invisible until properly placed into the layout
