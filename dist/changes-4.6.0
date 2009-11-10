@@ -751,6 +751,10 @@ Qt for Embedded Linux
 
 - [255495] Fix blend function crash on AVR32
 
+- Fix qconfig configurations
+
+- Add powerpc mkspec and remove "empty" ppc mkspec 
+
 Qt for Windows CE
 -----------------
  - On Windows CE the link time code generation has been disabled by default to
