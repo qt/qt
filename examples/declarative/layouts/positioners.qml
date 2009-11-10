@@ -25,9 +25,13 @@ Rectangle {
             }
         }
         Rectangle { color: "red"; width: 100; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueV1; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 }
+        Rectangle { id: blueV1; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "green"; width: 100; height: 50; border.color: "black"; radius: 15 }
-        Rectangle { id: blueV2; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 }
+        Rectangle { id: blueV2; color: "lightsteelblue"; width: 100; height: 50; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "orange"; width: 100; height: 50; border.color: "black"; radius: 15 }
     }
 
@@ -43,22 +47,20 @@ Rectangle {
             NumberAnimation {
                 matchProperties: "x"; from: 500; duration:500; easing: "easeOutQuad"
             }
-            NumberAnimation {
-                matchProperties: "opacity"; from: 0;  duration: 500;
-            }
         }
         remove: Transition {
             NumberAnimation {
                 matchProperties: "x"; to: 500; duration:500; easing: "easeInQuad"
             }
-            NumberAnimation {
-                matchProperties: "opacity"; from: 1; duration: 500
-            }
         }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueH1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 }
+        Rectangle { id: blueH1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "green"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueH2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 }
+        Rectangle { id: blueH2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "orange"; width: 50; height: 100; border.color: "black"; radius: 15 }
     }
 
@@ -103,9 +105,6 @@ Rectangle {
 
         remove: Transition {
             NumberAnimation {
-                matchProperties: "opacity"; from: 1; to: 0; duration: 500
-            }
-            NumberAnimation {
                 matchProperties: "x,y"; easing: "easeOutBounce"
             }
         }
@@ -118,19 +117,22 @@ Rectangle {
 
         add: Transition {
             NumberAnimation {
-                matchProperties: "opacity"; from: 0; to: 1; duration: 500
-            }
-            NumberAnimation {
                 matchProperties: "x,y"; easing: "easeOutBounce"
             }
         }
 
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 }
+        Rectangle { id: blueG1; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "green"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 }
+        Rectangle { id: blueG2; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "orange"; width: 50; height: 100; border.color: "black"; radius: 15 }
-        Rectangle { id: blueG3; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 }
+        Rectangle { id: blueG3; color: "lightsteelblue"; width: 50; height: 100; border.color: "black"; radius: 15 
+            opacity: Behavior{NumberAnimation{}}
+        }
         Rectangle { color: "red"; width: 50; height: 100; border.color: "black"; radius: 15 }
         Rectangle { color: "green"; width: 50; height: 100; border.color: "black"; radius: 15 }
         Rectangle { color: "orange"; width: 50; height: 100; border.color: "black"; radius: 15 }

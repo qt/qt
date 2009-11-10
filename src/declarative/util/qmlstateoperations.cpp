@@ -319,6 +319,13 @@ void QmlStateChangeScript::setScript(const QmlScriptString &s)
     d->script = s;
 }
 
+/*!
+    \qmlproperty script StateChangeScript::script
+    This property holds the name of the script. This name can be used by a
+    ScriptAction to target a specific script.
+
+    \sa ScriptAction::stateChangeScriptName
+*/
 QString QmlStateChangeScript::name() const
 {
     Q_D(const QmlStateChangeScript);
@@ -349,6 +356,11 @@ QmlStateChangeScript::ActionList QmlStateChangeScript::actions()
     a.event = this;
     rv << a;
     return rv;
+}
+
+QString QmlStateChangeScript::typeName() const
+{
+    return QLatin1String("StateChangeScript");
 }
 
 /*!

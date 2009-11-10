@@ -96,6 +96,8 @@ public:
 
     virtual ActionList actions();
 
+    virtual QString typeName() const;
+
     QmlScriptString script() const;
     void setScript(const QmlScriptString &);
     
