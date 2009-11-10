@@ -4485,7 +4485,7 @@ void tst_QScriptEngine::qRegExpInport()
     QScriptValue result = func.call(QScriptValue(),  QScriptValueList() << string << rexp);
 
     rx.indexIn(string);
-    for (int i = 0; i <= rx.numCaptures(); i++)  {
+    for (int i = 0; i <= rx.captureCount(); i++)  {
         QCOMPARE(result.property(i).toString(), rx.cap(i));
     }
 }

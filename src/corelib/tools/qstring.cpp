@@ -2681,7 +2681,7 @@ QString& QString::replace(const QRegExp &rx, const QString &after)
     realloc();
 
     int index = 0;
-    int numCaptures = rx2.numCaptures();
+    int numCaptures = rx2.captureCount();
     int al = after.length();
     QRegExp::CaretMode caretMode = QRegExp::CaretAtZero;
 

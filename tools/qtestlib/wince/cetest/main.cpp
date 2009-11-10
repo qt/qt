@@ -129,6 +129,7 @@ void usage()
         " -conf             : Specify location of qt.conf file\n"
         " -f <file>         : Specify project file\n"
         " -cache <file>     : Specify .qmake.cache file to use\n"
+        " -d                : Increase qmake debugging \n"
         " -timeout <value>  : Specify a timeout value after which the test will be terminated\n"
         "                     -1 specifies waiting forever (default)\n"
         "                      0 specifies starting the process detached\n"
@@ -216,6 +217,8 @@ int main(int argc, char **argv)
                 return -1;
             }
             cacheFile = arguments.at(i);
+        } else if (arguments.at(i).toLower() == QLatin1String("-d")) {
+            Option::debug_level++;
         } else if (arguments.at(i).toLower() == QLatin1String("-timeout")) {
             if (++i == arguments.size()) {
                 cout << "Error: No timeout value specified!" << endl;
@@ -235,13 +238,22 @@ int main(int argc, char **argv)
             return -1;
         }
         debugOutput(QString::fromLatin1("Using Project File:").append(proFile),1);
+    }else {
+        if (!QFileInfo(proFile).exists()) {
+            cout << "Error: Project file does not exist " << qPrintable(proFile) << endl;
+            return -1;
+        }
     }
 
     Option::before_user_vars.append("CONFIG+=build_pass");
 
-    // read target and deployment rules
-    int qmakeArgc = 1;
-    char* qmakeArgv[] = { "qmake.exe" };
+    // read target and deployment rules passing the .pro to use instead of
+    //      relying on qmake guessing the .pro to use
+    int qmakeArgc = 2;
+    QByteArray ba(QFile::encodeName(proFile));
+    char* proFileEncodedName =  ba.data();
+    char* qmakeArgv[2] = { "qmake.exe", proFileEncodedName };
+
     Option::qmake_mode = Option::QMAKE_GENERATE_NOTHING;
     Option::output_dir = qmake_getpwd();
     if (!cacheFile.isEmpty())
@@ -266,6 +278,24 @@ int main(int argc, char **argv)
         TestConfiguration::testDebug = true;
     else
         TestConfiguration::testDebug = false;
+
+    // determine what is the real mkspec to use if the default mkspec is being used
+    if (Option::mkfile::qmakespec.endsWith("/default"))
+        project.values("QMAKESPEC") = project.values("QMAKESPEC_ORIGINAL");
+    else
+        project.values("QMAKESPEC") = QStringList() << Option::mkfile::qmakespec;
+
+   // ensure that QMAKESPEC is non-empty .. to meet requirements of QList::at()
+   if (project.values("QMAKESPEC").isEmpty()){
+       cout << "Error: QMAKESPEC not set after parsing " << qPrintable(proFile) << endl;
+       return -1;
+   }
+
+   // ensure that QT_CE_C_RUNTIME is non-empty .. to meet requirements of QList::at()
+   if (project.values("QT_CE_C_RUNTIME").isEmpty()){
+       cout << "Error: QT_CE_C_RUNTIME not defined in mkspec/qconfig.pri " << qPrintable(project.values("QMAKESPEC").join(" "));
+       return -1;
+   }
 
     QString destDir = project.values("DESTDIR").join(" ");
     if (!destDir.isEmpty()) {

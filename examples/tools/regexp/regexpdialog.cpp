@@ -180,8 +180,8 @@ void RegExpDialog::refresh()
     indexEdit->setText(QString::number(rx.indexIn(text)));
     matchedLengthEdit->setText(QString::number(rx.matchedLength()));
     for (int i = 0; i < MaxCaptures; ++i) {
-        captureLabels[i]->setEnabled(i <= rx.numCaptures());
-        captureEdits[i]->setEnabled(i <= rx.numCaptures());
+        captureLabels[i]->setEnabled(i <= rx.captureCount());
+        captureEdits[i]->setEnabled(i <= rx.captureCount());
         captureEdits[i]->setText(rx.cap(i));
     }
 

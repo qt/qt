@@ -335,7 +335,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                 QImage::Format format = trans_index >= 0 ? QImage::Format_ARGB32 : QImage::Format_RGB32;
                 if (image->isNull()) {
                     (*image) = QImage(swidth, sheight, format);
-                    memset(image->bits(), 0, image->numBytes());
+                    memset(image->bits(), 0, image->byteCount());
 
                     // ### size of the upcoming frame, should rather
                     // be known before decoding it.
@@ -393,7 +393,7 @@ int QGIFFormat::decode(QImage *image, const uchar *buffer, int length,
                         backingstore = QImage(qMax(backingstore.width(), w),
                                               qMax(backingstore.height(), h),
                                               QImage::Format_RGB32);
-                        memset(image->bits(), 0, image->numBytes());
+                        memset(image->bits(), 0, image->byteCount());
                     }
                     for (int ln=0; ln<h; ln++) {
                         memcpy(backingstore.scanLine(ln),

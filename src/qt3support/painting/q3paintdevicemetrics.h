@@ -63,7 +63,7 @@ public:
     int logicalDpiY() const { return pdev->logicalDpiY(); }
     int physicalDpiX() const { return pdev->physicalDpiX(); }
     int physicalDpiY() const { return pdev->physicalDpiY(); }
-    int numColors() const { return pdev->numColors(); }
+    int numColors() const { return pdev->colorCount(); }
     int depth() const { return pdev->depth(); }
 
 private:

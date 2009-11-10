@@ -44,6 +44,7 @@
 
 #include <QtGui/qframe.h>
 #include <QtCore/qstring.h>
+#include <QtCore/qmargins.h>
 
 QT_BEGIN_HEADER
 
@@ -158,7 +159,9 @@ public:
     bool hasAcceptableInput() const;
 
     void setTextMargins(int left, int top, int right, int bottom);
+    void setTextMargins(const QMargins &margins);
     void getTextMargins(int *left, int *top, int *right, int *bottom) const;
+    QMargins textMargins() const;
 
 public Q_SLOTS:
     void setText(const QString &);

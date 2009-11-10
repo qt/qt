@@ -242,11 +242,11 @@ static bool read_pbm_body(QIODevice *device, char type, int w, int h, int mcc, Q
     }
 
     if (nbits == 1) {                                // bitmap
-        outImage->setNumColors(2);
+        outImage->setColorCount(2);
         outImage->setColor(0, qRgb(255,255,255)); // white
         outImage->setColor(1, qRgb(0,0,0));        // black
     } else if (nbits == 8) {                        // graymap
-        outImage->setNumColors(maxc+1);
+        outImage->setColorCount(maxc+1);
         for (int i=0; i<=maxc; i++)
             outImage->setColor(i, qRgb(i*255/maxc,i*255/maxc,i*255/maxc));
     }
@@ -287,7 +287,7 @@ static bool write_pbm_image(QIODevice *out, const QImage &sourceImage, const QBy
         }
     }
 
-    if (image.depth() == 1 && image.numColors() == 2) {
+    if (image.depth() == 1 && image.colorCount() == 2) {
         if (qGray(image.color(0)) < qGray(image.color(1))) {
             // 0=dark/black, 1=light/white - invert
             image.detach();

@@ -42,6 +42,7 @@
 #ifndef SEARCHBOX_H
 #define SEARCHBOX_H
 
+//! [1]
 #include <QLineEdit>
 
 class GSuggestCompletion;
@@ -58,6 +59,7 @@ protected slots:
 
 private:
     GSuggestCompletion *completer;
+//! [1]
 };
 
 

@@ -895,7 +895,7 @@ static bool read_xpm_body(
             if (image.isNull())
                 return false;
         }
-        image.setNumColors(ncols);
+        image.setColorCount(ncols);
     }
 
     QMap<quint64, int> colorMap;

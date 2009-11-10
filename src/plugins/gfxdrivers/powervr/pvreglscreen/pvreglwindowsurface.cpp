@@ -199,7 +199,7 @@ void PvrEglWindowSurface::setDirectRegion(const QRegion &r, int id)
 
     if (region.isEmpty()) {
         pvrQwsClearVisibleRegion(drawable);
-    } else if (region.numRects() == 1) {
+    } else if (region.rectCount() == 1) {
         QRect rect = region.boundingRect();
         PvrQwsRect pvrRect;
         pvrRect.x = rect.x();

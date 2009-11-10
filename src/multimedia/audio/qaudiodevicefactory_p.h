@@ -72,7 +72,7 @@ class QAbstractAudioDeviceInfo;
 class QAudioDeviceFactory
 {
 public:
-    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> availableDevices(QAudio::Mode mode);
 
     static QAudioDeviceInfo defaultInputDevice();
     static QAudioDeviceInfo defaultOutputDevice();
