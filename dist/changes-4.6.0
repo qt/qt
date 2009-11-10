@@ -129,6 +129,9 @@ QtGui
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix
 
+ - QEvent
+    * Introduced RequestSoftwareInputPanel and CloseSoftwareInputPanel events.
+
  - QFontDialog
     * [256466] fixed the dialog not always returning the selected style.
 
@@ -206,6 +209,7 @@ QtGui
 
  - QLineEdit
     * [248948] Clear selection when redoing a delete operation.
+    * [QTBUG-5261] Fixed: Erasing characters from textedits does not update the text
 
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is not yet show
@@ -272,6 +276,7 @@ QtGui
       cause holes in the stroke.
 
  - QWidget
+    * Added inputMethodHints property.
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
