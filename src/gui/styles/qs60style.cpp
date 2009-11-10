@@ -1723,7 +1723,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 optionMenuItem.palette.setColor(QPalette::Disabled, QPalette::Text, QS60StylePrivate::lighterColor(
                         optionMenuItem.palette.color(QPalette::Disabled, QPalette::Text)));
                 painter->save();
-                painter->setOpacity(qreal(0.75));
+                painter->setOpacity(0.5);
             }
             QCommonStyle::drawItemText(painter, textRect, text_flags,
                     optionMenuItem.palette, enabled,
@@ -1829,7 +1829,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                         painter->save();
                         if (widget)
                             painter->setBrush(widget->palette().button());
-                        painter->setOpacity(qreal(0.3));
+                        painter->setOpacity(0.3);
                         painter->fillRect(toolBar->rect, painter->brush());
                         painter->restore();
                 }
