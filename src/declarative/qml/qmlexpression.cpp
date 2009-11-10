@@ -47,6 +47,7 @@
 #include "QtCore/qdebug.h"
 #include "qmlcompiler_p.h"
 #include <QtScript/qscriptprogram.h>
+#include <private/qscriptdeclarativeclass_p.h>
 
 Q_DECLARE_METATYPE(QList<QObject *>);
 
@@ -117,7 +118,7 @@ void QmlExpressionPrivate::init(QmlContext *ctxt, void *expr, QmlRefCount *rc,
         }
 #endif
 
-        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
         scriptContext->pushScope(ep->contextClass->newContext(ctxt, me));
 
 #if !defined(Q_OS_SYMBIAN) 
@@ -305,7 +306,7 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
 
     if (!data->expressionFunctionValid) {
 
-        QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+        QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
         scriptContext->pushScope(ep->contextClass->newContext(data->context(), data->me));
 
         if (data->expressionRewritten) {
@@ -314,7 +315,12 @@ QVariant QmlExpressionPrivate::evalQtScript(QObject *secondaryScope, bool *isUnd
         } else {
             QmlRewrite::RewriteBinding rewriteBinding;
 
-            const QString code = rewriteBinding(data->expression);
+            bool ok = true;
+            const QString code = rewriteBinding(data->expression, &ok);
+            if (!ok) {
+                scriptEngine->popContext();
+                return QVariant();
+            }
             data->expressionFunction = scriptEngine->evaluate(code, data->url.toString(), data->line);
         }
 

@@ -48,6 +48,7 @@
 #include <QtCore/qvarlengtharray.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlbindingoptimizations_p.h>
+#include <private/qscriptdeclarativeclass_p.h>
 #include <QtDeclarative/qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
@@ -69,7 +70,7 @@ void QmlContextPrivate::addScript(const QString &script, QObject *scopeObject,
     QmlEnginePrivate *enginePriv = QmlEnginePrivate::get(engine);
     QScriptEngine *scriptEngine = QmlEnginePrivate::getScriptEngine(engine);
 
-    QScriptContext *scriptContext = scriptEngine->pushCleanContext();
+    QScriptContext *scriptContext = QScriptDeclarativeClass::pushCleanContext(scriptEngine);
     scriptContext->pushScope(enginePriv->contextClass->newContext(q, scopeObject));
     
     QScriptValue scope = scriptEngine->newObject();
