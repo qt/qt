@@ -8,7 +8,8 @@ make install 2>&1 |
     while read line
     do
         case "$line" in
-        [a-z]*) ;;
+        make*) ;;
+        cd*) ;;
         PASS*) ;;
         QDEBUG*) ;;
         Makefile*) ;;
