@@ -308,16 +308,6 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
     return result;
 }
 
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    setStyleProperty(name, value);
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    return styleProperty(name);
-}
-
 QPixmap QS60StylePrivate::backgroundTexture()
 {
     if (!m_background) {

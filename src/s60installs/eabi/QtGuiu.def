@@ -7006,7 +7006,7 @@ EXPORTS
 	_ZN9QPolygonFC2ERK8QPolygon @ 7005 NONAME
 	_ZN9QS60Style11qt_metacallEN11QMetaObject4CallEiPPv @ 7006 NONAME
 	_ZN9QS60Style11qt_metacastEPKc @ 7007 NONAME
-	_ZN9QS60Style16setStylePropertyEPKcRK8QVariant @ 7008 NONAME
+	_ZN9QS60Style16setStylePropertyEPKcRK8QVariant @ 7008 NONAME ABSENT
 	_ZN9QS60Style16staticMetaObjectE @ 7009 NONAME DATA 16
 	_ZN9QS60Style19getStaticMetaObjectEv @ 7010 NONAME
 	_ZN9QS60Style5eventEP6QEvent @ 7011 NONAME
@@ -10445,7 +10445,7 @@ EXPORTS
 	_ZNK9QS60Style11drawControlEN6QStyle14ControlElementEPK12QStyleOptionP8QPainterPK7QWidget @ 10444 NONAME
 	_ZNK9QS60Style11pixelMetricEN6QStyle11PixelMetricEPK12QStyleOptionPK7QWidget @ 10445 NONAME
 	_ZNK9QS60Style13drawPrimitiveEN6QStyle16PrimitiveElementEPK12QStyleOptionP8QPainterPK7QWidget @ 10446 NONAME
-	_ZNK9QS60Style13stylePropertyEPKc @ 10447 NONAME
+	_ZNK9QS60Style13stylePropertyEPKc @ 10447 NONAME ABSENT
 	_ZNK9QS60Style14subControlRectEN6QStyle14ComplexControlEPK19QStyleOptionComplexNS0_10SubControlEPK7QWidget @ 10448 NONAME
 	_ZNK9QS60Style14subElementRectEN6QStyle10SubElementEPK12QStyleOptionPK7QWidget @ 10449 NONAME
 	_ZNK9QS60Style16sizeFromContentsEN6QStyle12ContentsTypeEPK12QStyleOptionRK5QSizePK7QWidget @ 10450 NONAME

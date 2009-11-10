@@ -388,14 +388,6 @@ public:
     // draws a specific skin part
     static void drawSkinPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
-    // sets style property
-    void setStyleProperty(const char *name, const QVariant &value);
-    // sets specific style property
-    void setStyleProperty_specific(const char *name, const QVariant &value);
-    // gets style property
-    QVariant styleProperty(const char *name) const;
-    // gets specific style property
-    QVariant styleProperty_specific(const char *name) const;
     // gets pixel metrics value
     static short pixelMetric(int metric);
     // gets color. 'index' is NOT 0-based.
