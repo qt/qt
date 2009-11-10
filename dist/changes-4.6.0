@@ -51,6 +51,8 @@ information about a particular change.
  - QAbstractVideoSurface, QVideoFrame
     * New abstract video output classes.
 
+ - New state machine framework added to QtCore
+ 
 Third party components
 ----------------------
 
@@ -197,7 +199,7 @@ QtGui
     * Cached items are now always invalidated when update() is called.
     * Added input hints.
 
-- QGraphicsLayout
+ - QGraphicsLayout
     * Introduced QGraphicsLayout::addChildLayoutItem()
 
  - QGraphicsObject
@@ -497,6 +499,11 @@ QtOpenGL
 
  - Added lots of OpenGL autotests.
 
+QtScript
+   * A lot of internal changes and optimizations.
+   * Improved ECMA script compliance.
+   * New method, QScriptString::toArrayIndex(), for converting QScriptString to a QtScript array index.
+
 QtSql
    * [QTBUG-3162] Views for Sql table models should not reset state on failed queries.
    * [QTBUG-5251] Fix retrieval of SQL  'TIME' information for PostgreSQL.
@@ -535,6 +542,35 @@ QtSvg
 
  - QSvgPaintEngine
    * [257052] Changed drawImage() to ignore aspect ratio.
+
+QtWebKit
+ - Many bug fixes.
+
+ - QWebElement
+   * New class; introduced to implement DOM like operations on a web page.
+ 
+ - QWebFrame
+   * New properties for an URL and a focus management.
+   * New signals delivering current loading status.
+
+ - QWebInspector
+   * New class for embedding the WebInspector as a QWidget
+
+ - QWebHistory
+   * Streaming operators for saving and restoring QWebHistory's state.
+
+ - QWebPage
+   * New property; preferredContentsSize for setting layout of the page in the viewport.
+   * New slot; shouldInterruptJavaScript, called when JavaScript program is running too long.
+
+ - QWebSecurityOrigin:
+   * New functions for defining local URL schemes.
+
+ - QWebSettings
+   * New options for text encoding, printing shrink factor and off-line web application cache (HTML5).
+
+ - QWebView
+   * Support for render hints.
 
 QtXml
 
@@ -1011,6 +1047,9 @@ Qt for Windows CE
 - Refactoring in OpenGL examples to improve portability and utilize the
   Animation framework for animation.  The hellogl and overpainting examples
   now compile on OpenGL/ES 1.1.  Also common code is factored.
+
+- Changed QWebFrame::setHtml() and setContent() to not affect the back/forward
+  and the session history.
 
 - qmake no longer adds Qt internal dependencies to the linker when Qt
   is built in shared mode (not static). This means that applications
