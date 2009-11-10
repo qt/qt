@@ -695,12 +695,12 @@ void QCoeFepInputContext::DoCommitFepInlineEditL()
 void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
 {
     if (m_preeditString.size() == 0) {
-		QWidget *w = focusWidget();
-		if(triggeredBySymbian && w){
-			// We must replace the last character only if the input box has already accepted one 
-			if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
-				m_longPress = 1;
-		}
+        QWidget *w = focusWidget();
+        if (triggeredBySymbian && w) {
+            // We must replace the last character only if the input box has already accepted one 
+            if (w->inputMethodQuery(Qt::ImCursorPosition).toInt() != m_cursorPos)
+                m_longPress = 1;
+        }
         return;
     }
 
