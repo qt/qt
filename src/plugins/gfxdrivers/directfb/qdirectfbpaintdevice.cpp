@@ -176,7 +176,7 @@ int QDirectFBPaintDevice::metric(QPaintDevice::PaintDeviceMetric metric) const
         return QDirectFBScreen::depth(imageFormat);
     case QPaintDevice::PdmNumColors: {
         if (!lockedImage.isNull())
-            return lockedImage.numColors();
+            return lockedImage.colorCount();
 
         DFBResult result;
         IDirectFBPalette *palette = 0;

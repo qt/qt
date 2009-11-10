@@ -2150,6 +2150,13 @@ QPixmapData* QPixmap::pixmapData() const
 */
 
 /*! \fn int QPixmap::numCols() const
+    \obsolete
+    \internal
+    \sa colorCount()
+*/
+
+/*! \fn int QPixmap::colorCount() const
+    \since 4.6
     \internal
 */
 

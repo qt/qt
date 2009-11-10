@@ -87,7 +87,7 @@ public:
     static QByteArray defaultInputDevice();
     static QByteArray defaultOutputDevice();
 
-    static QList<QByteArray> deviceList(QAudio::Mode mode);
+    static QList<QByteArray> availableDevices(QAudio::Mode mode);
 };
 
 QT_END_NAMESPACE

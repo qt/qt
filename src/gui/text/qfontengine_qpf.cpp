@@ -938,7 +938,7 @@ void QFontEngineQPF::loadGlyph(glyph_t glyph)
     g.advance = qRound(metrics.xoff);
 
     QT_WRITE(fd, &g, sizeof(g));
-    QT_WRITE(fd, img.bits(), img.numBytes());
+    QT_WRITE(fd, img.bits(), img.byteCount());
 
     glyphPos = oldSize - glyphDataOffset;
 #if 0 && defined(DEBUG_FONTENGINE)
@@ -948,7 +948,7 @@ void QFontEngineQPF::loadGlyph(glyph_t glyph)
     quint32 *gmap = (quint32 *)(fontData + glyphMapOffset);
     gmap[glyph] = qToBigEndian(glyphPos);
 
-    glyphDataSize = glyphPos + sizeof(g) + img.numBytes();
+    glyphDataSize = glyphPos + sizeof(g) + img.byteCount();
     quint32 *blockSizePtr = (quint32 *)(fontData + glyphDataOffset - 4);
     *blockSizePtr = qToBigEndian(glyphDataSize);
 }

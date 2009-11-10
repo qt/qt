@@ -741,7 +741,7 @@ static bool ensureValidImage(QImage *dest, struct jpeg_decompress_struct *info,
             *dest = QImage(size, format);
 
         if (format == QImage::Format_Indexed8) {
-            dest->setNumColors(256);
+            dest->setColorCount(256);
             for (int i = 0; i < 256; i++)
                 dest->setColor(i, qRgb(i,i,i));
         }
@@ -851,7 +851,7 @@ static bool read_jpeg_image(QIODevice *device, QImage *outImage,
             } else if (cinfo.output_components == 1) {
                 if (outImage->size() != QSize(sWidth, sHeight) || outImage->format() != QImage::Format_Indexed8)
                     *outImage = QImage(sWidth, sHeight, QImage::Format_Indexed8);
-                outImage->setNumColors(256);
+                outImage->setColorCount(256);
                 for (int i = 0; i < 256; ++i)
                     outImage->setColor(i, qRgb(i,i,i));
             } else {
@@ -1054,7 +1054,7 @@ static bool write_jpeg_image(const QImage &sourceImage, QIODevice *device, int s
         case QImage::Format_MonoLSB:
         case QImage::Format_Indexed8:
             gray = true;
-            for (int i = image.numColors(); gray && i--;) {
+            for (int i = image.colorCount(); gray && i--;) {
                 gray = gray & (qRed(cmap[i]) == qGreen(cmap[i]) &&
                                qRed(cmap[i]) == qBlue(cmap[i]));
             }

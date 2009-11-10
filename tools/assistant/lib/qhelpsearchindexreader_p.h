@@ -81,7 +81,7 @@ public:
     void search(const QString &collectionFile,
         const QString &indexFilesFolder,
         const QList<QHelpSearchQuery> &queryList);
-    int hitsCount() const;
+    int hitCount() const;
     QList<QHelpSearchEngine::SearchHit> hits(int start, int end) const;
 
 signals:

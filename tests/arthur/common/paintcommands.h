@@ -239,7 +239,7 @@ private:
     void command_image_convertToFormat(QRegExp re);
     void command_image_load(QRegExp re);
     void command_image_setColor(QRegExp re);
-    void command_image_setNumColors(QRegExp re);
+    void command_image_setColorCount(QRegExp re);
 
     // commands: transformation
     void command_resetMatrix(QRegExp re);
