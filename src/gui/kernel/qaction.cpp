@@ -100,6 +100,21 @@ QActionPrivate::~QActionPrivate()
 {
 }
 
+bool QActionPrivate::showStatusText(QWidget *widget, const QString &str)
+{
+#ifdef QT_NO_STATUSTIP
+    Q_UNUSED(widget);
+    Q_UNUSED(str);
+#else
+    if(QObject *object = widget ? widget : parent) {
+        QStatusTipEvent tip(str);
+        QApplication::sendEvent(object, &tip);
+        return true;
+    }
+#endif
+    return false;
+}
+
 void QActionPrivate::sendDataChanged()
 {
     Q_Q(QAction);
@@ -1206,16 +1221,7 @@ QAction::setData(const QVariant &data)
 bool
 QAction::showStatusText(QWidget *widget)
 {
-#ifdef QT_NO_STATUSTIP
-    Q_UNUSED(widget);
-#else
-    if(QObject *object = widget ? widget : parent()) {
-        QStatusTipEvent tip(statusTip());
-        QApplication::sendEvent(object, &tip);
-        return true;
-    }
-#endif
-    return false;
+    return d_func()->showStatusText(widget, statusTip());
 }
 
 /*!

@@ -515,7 +515,7 @@ QList<int> QToolBarAreaLayoutInfo::gapIndex(const QPoint &pos, int *minDistance)
     } else {
         const int dist = distance(pos);
         //it will only return a path if the minDistance is higher than the current distance
-        if (*minDistance > dist) {
+        if (dist >= 0 && *minDistance > dist) {
             *minDistance = dist;
 
             QList<int> result;
