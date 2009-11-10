@@ -242,6 +242,7 @@ void tst_QmlGraphicsListView::items()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -289,6 +290,7 @@ void tst_QmlGraphicsListView::changed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -322,6 +324,7 @@ void tst_QmlGraphicsListView::inserted()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -408,7 +411,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("animate", QVariant(animated));
+    ctxt->setContextProperty("testAnimate", QVariant(animated));
 
     canvas->execute();
     qApp->processEvents();
@@ -519,6 +522,7 @@ void tst_QmlGraphicsListView::moved()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -656,6 +660,7 @@ void tst_QmlGraphicsListView::spacing()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -778,6 +783,7 @@ void tst_QmlGraphicsListView::currentIndex()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testWrap", QVariant(false));
 
     QString filename(SRCDIR "/data/listview-initCurrent.qml");
     QFile file(filename);
@@ -811,7 +817,8 @@ void tst_QmlGraphicsListView::currentIndex()
     QCOMPARE(listview->currentIndex(), 0);
 
     // with wrap
-    listview->setWrapEnabled(true);
+    ctxt->setContextProperty("testWrap", QVariant(true));
+    QVERIFY(listview->isWrapEnabled());
 
     listview->decrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), model.count()-1);
