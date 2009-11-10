@@ -22,6 +22,9 @@ information about a particular change.
  - QtDBus
    * The minimum required version of the D-Bus reference library is
      now 0.93.
+   * Support for reading and writing of custom property types added.
+   * Support for getting return arguments in remote method invocation
+     via QMetaMethod::invokeMethod.
 
  - [MR#1742] Added new multimedia keys to the Qt::Key enum.
 
@@ -53,17 +56,6 @@ Third party components
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
-
-    * [245219] Added QXmlQuery::setFocus(const QString &focus);
-
- - QGraphicsBlurEffect
-    * Since the 4.6 beta Qt::RenderHint has been moved to
-      QGraphicsBlurEffect::BlurHint.
-
-    * Input contexts are not activated for disabled widgets anymore.
-
-    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
-      a Qt application.
 
 QtCore
 
@@ -102,13 +94,30 @@ QtCore
  - QRegExp
     * New pattern syntax "QRegExp::WildcardUnix" with wildcard characters escaping
 
-- QTextStream
+ - QSharedPointer
+    * Added support for creating the object along the internal private
+      data in one single memory allocation. (QSharedPointer::create)
+    * Fixed a bug where, in a race condition, QSharedPointer could
+      track a pointer that was being deleted.
+
+ - QTextStream
     * [221316] Fixed crash on large input.
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
-- QXmlStreamWriter
+ - QUrl
+    * Made QUrl hostname parser a lot stricter, requiring compliance
+      to STD3 to validate, thus preventing invalid hostnames from
+      being accepted. See below in "Important Behavior Changes".
+
+ - QXmlStreamWriter
     * [256468] fix comment indentation
+
+ - QWeakPointer
+    * Added support for tracking QObject-derived classes that aren't
+      attached to a QSharedPointer.
+    * Added QWeakPointer::data which allows you to obtain the pointer
+      being tracked (without protection).
 
 QtGui
 - QGraphicsAnchorLayout
@@ -122,6 +131,15 @@ QtGui
 
  - QFontDialog
     * [256466] fixed the dialog not always returning the selected style.
+
+ - QGraphicsBlurEffect
+    * Since the 4.6 beta Qt::RenderHint has been moved to
+      QGraphicsBlurEffect::BlurHint.
+
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
 
  - QGraphicsItem
     * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
@@ -266,7 +284,13 @@ QtGui
     * [255581] Fixed sizeHint recalculation bug.
 
  - QApplication
-   * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+    * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+
+QtDBus
+
+ - QDBusConnection
+    * Made sending of invalid/incomplete messages consistently fail
+      with error (no more assertions).
 
 QtNetwork
 
@@ -379,8 +403,13 @@ QtSql
 
 QtXml
 
-- QDomDocument
+ - QDomDocument
     * set the codec to UTF-8 if codec not present or unknown
+
+QtXmlPatterns
+
+ - QXmlQuery
+    * [245219] Added QXmlQuery::setFocus(const QString &focus);
 
 Qt Plugins
 
@@ -394,6 +423,20 @@ Qt Plugins
 
  - Added community supported Qt ports for QNX and VxWorks. See platform
    notes in the Qt documentation for details.
+
+ - Improved support for AIX using IBM's Visual Age C/C++ compiler
+   version 7 (xlC).
+
+ - Improved support for Solaris using Sun Studio 12 (CC 5.9).
+
+Qt for Unix (X11 and Mac OS X)
+------------------------------
+
+ - Added support for thread-safe FD_CLOEXEC file-descriptor creation
+   where supported by the operating system (currently only Linux).
+
+ - Ensured that system calls where EINTR is a possible result are
+   properly restarted.
 
 Qt for Linux/X11
 ----------------
