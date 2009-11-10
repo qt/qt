@@ -549,18 +549,17 @@ void CentralWidget::print()
 
     initPrinter();
 
-    QPrintDialog *dlg = new QPrintDialog(printer, this);
+    QPrintDialog dlg(printer, this);
 #if defined(QT_NO_WEBKIT)
     if (viewer->textCursor().hasSelection())
-        dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+        dlg.addEnabledOption(QAbstractPrintDialog::PrintSelection);
 #endif
-    dlg->addEnabledOption(QAbstractPrintDialog::PrintPageRange);
-    dlg->addEnabledOption(QAbstractPrintDialog::PrintCollateCopies);
-    dlg->setWindowTitle(tr("Print Document"));
-    if (dlg->exec() == QDialog::Accepted) {
+    dlg.addEnabledOption(QAbstractPrintDialog::PrintPageRange);
+    dlg.addEnabledOption(QAbstractPrintDialog::PrintCollateCopies);
+    dlg.setWindowTitle(tr("Print Document"));
+    if (dlg.exec() == QDialog::Accepted) {
         viewer->print(printer);
     }
-    delete dlg;
 #endif
 }
 
