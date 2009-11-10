@@ -44,6 +44,7 @@
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlanimation_p.h>
+#include <QVariantAnimation>
 
 class tst_animations : public QObject
 {
@@ -61,6 +62,7 @@ private slots:
     void mixedTypes();
     void properties();
     void propertiesTransition();
+    void easingStringConversion();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -134,7 +136,7 @@ void tst_animations::dotProperty()
     animation.setProperty("border.width");
     animation.setTo(10);
     animation.start();
-    QTest::qWait(animation.duration());
+    QTest::qWait(animation.duration()+50);
     QTIMED_COMPARE(rect.border()->width(), 10);
 
     rect.border()->setWidth(0);
@@ -352,7 +354,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition4.qml:22:9) targets/properties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition4.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -365,7 +367,7 @@ void tst_animations::propertiesTransition()
 
         QmlGraphicsRectangle *myRect = rect->findChild<QmlGraphicsRectangle*>("TheRect");
         QVERIFY(myRect);
-        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition5.qml:22:9) targets/properties/exclude and target/property are mutually exclusive.");
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (file:///home/brasser/depot/kinetic-declarativeui/qt/tests/auto/declarative/animations/data/propertiesTransition5.qml:22:9) matchTargets/matchProperties/exclude and target/property are mutually exclusive.");
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
@@ -382,6 +384,22 @@ void tst_animations::propertiesTransition()
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
+}
+
+void tst_animations::easingStringConversion()
+{
+    QmlNumberAnimation *animation = new QmlNumberAnimation;
+    animation->setEasing("easeInOutQuad");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::InOutQuad));
+
+    animation->setEasing("OutQuad");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::OutQuad));
+
+    animation->setEasing("easeOutBounce(amplitude: 5)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutBounce);
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
+
+    delete animation;
 }
 
 QTEST_MAIN(tst_animations)
