@@ -51,6 +51,7 @@
 #include "qdebug.h"
 #include "qboxlayout.h"
 #include "qpainter.h"
+#include "qmargins.h"
 
 #include "qabstractscrollarea_p.h"
 #include <qwidget.h>
@@ -868,6 +869,22 @@ void QAbstractScrollArea::setViewportMargins(int left, int top, int right, int b
 }
 
 /*!
+    \since 4.6
+    Sets \a margins around the scrolling area. This is useful for
+    applications such as spreadsheets with "locked" rows and columns.
+    The marginal space is is left blank; put widgets in the unused
+    area.
+
+    By default all margins are zero.
+
+*/
+void QAbstractScrollArea::setViewportMargins(const QMargins &margins)
+{
+    setViewportMargins(margins.left(), margins.top(),
+                       margins.right(), margins.bottom());
+}
+
+/*!
     \fn bool QAbstractScrollArea::event(QEvent *event)
 
     \reimp
@@ -946,7 +963,7 @@ bool QAbstractScrollArea::event(QEvent *e)
         if (g) {
             QScrollBar *hBar = horizontalScrollBar();
             QScrollBar *vBar = verticalScrollBar();
-            QPointF delta = g->lastOffset();
+            QPointF delta = g->delta();
             if (!delta.isNull()) {
                 if (QApplication::isRightToLeft())
                     delta.rx() *= -1;

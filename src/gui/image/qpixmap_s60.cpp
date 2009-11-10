@@ -443,7 +443,7 @@ void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap)
 
 	// Create default palette if needed
 	if (cfbsBitmap->DisplayMode() == EGray2) {
-		image.setNumColors(2);
+		image.setColorCount(2);
 		image.setColor(0, QColor(Qt::color0).rgba());
 		image.setColor(1, QColor(Qt::color1).rgba());
 
@@ -526,13 +526,13 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
     const uchar *sptr = const_cast<const QImage &>(sourceImage).bits();
     symbianBitmapDataAccess->beginDataAccess(cfbsBitmap);
     uchar *dptr = (uchar*)cfbsBitmap->DataAddress();
-    Mem::Copy(dptr, sptr, sourceImage.numBytes());
+    Mem::Copy(dptr, sptr, sourceImage.byteCount());
     symbianBitmapDataAccess->endDataAccess(cfbsBitmap);
 
     UPDATE_BUFFER();
 
     if (destFormat == QImage::Format_MonoLSB) {
-		image.setNumColors(2);
+		image.setColorCount(2);
 		image.setColor(0, QColor(Qt::color0).rgba());
 		image.setColor(1, QColor(Qt::color1).rgba());
 	} else {
@@ -836,7 +836,7 @@ void* QS60PixmapData::toNativeType(NativeType type)
             symbianBitmapDataAccess->beginDataAccess(newBitmap);
 
             uchar *dptr = (uchar*)newBitmap->DataAddress();
-            Mem::Copy(dptr, sptr, source.numBytes());
+            Mem::Copy(dptr, sptr, source.byteCount());
 
             symbianBitmapDataAccess->endDataAccess(newBitmap);
 

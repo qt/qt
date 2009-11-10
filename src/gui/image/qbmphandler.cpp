@@ -52,9 +52,9 @@ QT_BEGIN_NAMESPACE
 static void swapPixel01(QImage *image)        // 1-bpp: swap 0 and 1 pixels
 {
     int i;
-    if (image->depth() == 1 && image->numColors() == 2) {
+    if (image->depth() == 1 && image->colorCount() == 2) {
         register uint *p = (uint *)image->bits();
-        int nbytes = image->numBytes();
+        int nbytes = image->byteCount();
         for (i=0; i<nbytes/4; i++) {
             *p = ~*p;
             p++;
@@ -246,7 +246,7 @@ static bool read_dib_body(QDataStream &s, const BMP_INFOHDR &bi, int offset, int
 
     if (depth != 32) {
         ncols = bi.biClrUsed ? bi.biClrUsed : 1 << nbits;
-        image.setNumColors(ncols);
+        image.setColorCount(ncols);
     }
 
     image.setDotsPerMeterX(bi.biXPelsPerMeter);
@@ -526,7 +526,7 @@ bool qt_write_dib(QDataStream &s, QImage image)
     if (!d->isWritable())
         return false;
 
-    if (image.depth() == 8 && image.numColors() <= 16) {
+    if (image.depth() == 8 && image.colorCount() <= 16) {
         bpl_bmp = (((bpl+1)/2+3)/4)*4;
         nbits = 4;
     } else if (image.depth() == 32) {
@@ -554,23 +554,23 @@ bool qt_write_dib(QDataStream &s, QImage image)
     bi.biXPelsPerMeter = image.dotsPerMeterX() ? image.dotsPerMeterX()
                                                 : 2834; // 72 dpi default
     bi.biYPelsPerMeter = image.dotsPerMeterY() ? image.dotsPerMeterY() : 2834;
-    bi.biClrUsed       = image.numColors();
-    bi.biClrImportant  = image.numColors();
+    bi.biClrUsed       = image.colorCount();
+    bi.biClrImportant  = image.colorCount();
     s << bi;                                        // write info header
     if (s.status() != QDataStream::Ok)
         return false;
 
     if (image.depth() != 32) {                // write color table
-        uchar *color_table = new uchar[4*image.numColors()];
+        uchar *color_table = new uchar[4*image.colorCount()];
         uchar *rgb = color_table;
         QVector<QRgb> c = image.colorTable();
-        for (int i=0; i<image.numColors(); i++) {
+        for (int i=0; i<image.colorCount(); i++) {
             *rgb++ = qBlue (c[i]);
             *rgb++ = qGreen(c[i]);
             *rgb++ = qRed  (c[i]);
             *rgb++ = 0;
         }
-        if (d->write((char *)color_table, 4*image.numColors()) == -1) {
+        if (d->write((char *)color_table, 4*image.colorCount()) == -1) {
             delete [] color_table;
             return false;
         }
@@ -754,7 +754,7 @@ bool QBmpHandler::write(const QImage &img)
     int bpl = image.bytesPerLine();
 
     // Code partially repeated in qt_write_dib
-    if (image.depth() == 8 && image.numColors() <= 16) {
+    if (image.depth() == 8 && image.colorCount() <= 16) {
         bpl_bmp = (((bpl+1)/2+3)/4)*4;
     } else if (image.depth() == 32) {
         bpl_bmp = ((image.width()*24+31)/32)*4;
@@ -771,7 +771,7 @@ bool QBmpHandler::write(const QImage &img)
     // write file header
     bf.bfReserved1 = 0;
     bf.bfReserved2 = 0;
-    bf.bfOffBits = BMP_FILEHDR_SIZE + BMP_WIN + image.numColors() * 4;
+    bf.bfOffBits = BMP_FILEHDR_SIZE + BMP_WIN + image.colorCount() * 4;
     bf.bfSize = bf.bfOffBits + bpl_bmp*image.height();
     s << bf;
 

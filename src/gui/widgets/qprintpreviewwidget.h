@@ -82,7 +82,8 @@ public:
     ViewMode viewMode() const;
     ZoomMode zoomMode() const;
     int currentPage() const;
-    int numPages() const;
+    QT_DEPRECATED int numPages() const;
+    int pageCount() const;
     void setVisible(bool visible);
 
 public Q_SLOTS:

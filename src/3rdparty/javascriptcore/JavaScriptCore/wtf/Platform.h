@@ -367,6 +367,10 @@
 #   endif
 #endif
 
+#if PLATFORM(WINCE) && PLATFORM(QT)
+#   include <ce_time.h>
+#endif
+
 /* Compiler */
 
 /* COMPILER(MSVC) */

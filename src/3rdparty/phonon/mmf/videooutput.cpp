@@ -136,7 +136,7 @@ void MMF::VideoOutput::paintEvent(QPaintEvent* event)
     TRACE("rect %d %d - %d %d",
           event->rect().left(), event->rect().top(),
           event->rect().right(), event->rect().bottom());
-    TRACE("regions %d", event->region().numRects());
+    TRACE("regions %d", event->region().rectCount());
     TRACE("type %d", event->type());
 
     // Do nothing

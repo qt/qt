@@ -48,5 +48,7 @@ int main(int, char **)
     XSyncValue value;
     (void*)&XSyncIntToValue;
     (void*)&XSyncCreateCounter;
-    return 0;
+    int a, b;
+    Status ret = XSyncInitialize(NULL, &a, &b);
+    return ret;
 }

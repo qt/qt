@@ -113,7 +113,8 @@ public:
 
     inline int width() const { return w; }
     inline int height() const { return h; }
-    inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    QT_DEPRECATED inline int numColors() const { return metric(QPaintDevice::PdmNumColors); }
+    inline int colorCount() const { return metric(QPaintDevice::PdmNumColors); }
     inline int depth() const { return d; }
     inline bool isNull() const { return is_null; }
 

@@ -984,14 +984,14 @@ QList<QNetworkCookie> QNetworkCookiePrivate::parseSetCookieHeaderLine(const QByt
                     cookie.setExpirationDate(dt);
                 } else if (field.first == "domain") {
                     QByteArray rawDomain = field.second;
+                    QString maybeLeadingDot;
                     if (rawDomain.startsWith('.')) {
+                        maybeLeadingDot = QLatin1Char('.');
                         rawDomain = rawDomain.mid(1);
                     }
+
                     QString normalizedDomain = QUrl::fromAce(QUrl::toAce(QString::fromUtf8(rawDomain)));
-                    // always add the dot, there are some servers that forget the
-                    // leading dot. This is actually forbidden according to RFC 2109,
-                    // but all browsers accept it anyway so we do that as well
-                    cookie.setDomain(QLatin1Char('.') + normalizedDomain);
+                    cookie.setDomain(maybeLeadingDot + normalizedDomain);
                 } else if (field.first == "max-age") {
                     bool ok = false;
                     int secs = field.second.toInt(&ok);

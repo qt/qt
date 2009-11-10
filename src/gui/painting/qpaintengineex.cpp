@@ -602,7 +602,7 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 
 void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    if (region.numRects() == 1)
+    if (region.rectCount() == 1)
         clip(region.boundingRect(), op);
 
     QVector<QRect> rects = region.rects();
