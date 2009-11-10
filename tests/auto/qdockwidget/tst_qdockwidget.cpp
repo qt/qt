@@ -614,6 +614,7 @@ void tst_QDockWidget::dockLocationChanged()
 
     QMainWindow mw;
     QDockWidget dw;
+    dw.setObjectName("dock1");
     QSignalSpy spy(&dw, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)));
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
@@ -638,6 +639,7 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(spy.count(), 0);
 
     QDockWidget dw2;
+    dw2.setObjectName("dock2");
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
     QCOMPARE(spy.count(), 1);
@@ -659,6 +661,12 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
     spy.clear();
+
+    QByteArray ba = mw.saveState();
+    mw.restoreState(ba);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
+             Qt::TopDockWidgetArea);
 }
 
 void tst_QDockWidget::featuresChanged()

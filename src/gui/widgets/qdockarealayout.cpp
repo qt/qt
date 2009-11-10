@@ -1841,7 +1841,6 @@ void QDockAreaLayoutInfo::saveState(QDataStream &stream) const
     }
 }
 
-#ifdef Q_WS_MAC
 static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
 {
     switch (pos) {
@@ -1853,7 +1852,6 @@ static Qt::DockWidgetArea toDockWidgetArea(QInternal::DockPosition pos)
     }
     return Qt::NoDockWidgetArea;
 }
-#endif
 
 static QRect constrainedRect(QRect rect, const QRect &desktop)
 {
@@ -1980,6 +1978,7 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     if (!testing) {
                         widget->setFloating(false);
                         widget->setVisible(flags & StateFlagVisible);
+                        emit widget->dockLocationChanged(toDockWidgetArea(dockPos));
                     }
                 }
 
