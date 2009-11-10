@@ -113,6 +113,8 @@ void tst_QmlGraphicsItem::keys()
     KeysTestObject *testObject = new KeysTestObject;
     canvas->rootContext()->setContextProperty("keysTestObject", testObject);
 
+    canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(true));
+
     canvas->execute();
     canvas->show();
     qApp->processEvents();
@@ -149,6 +151,35 @@ void tst_QmlGraphicsItem::keys()
     QCOMPARE(testObject->mText, QLatin1String("Return"));
     QVERIFY(testObject->mModifiers == Qt::NoModifier);
     QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_0, Qt::NoModifier, "0", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_0));
+    QCOMPARE(testObject->mForwardedKey, int(Qt::Key_0));
+    QCOMPARE(testObject->mText, QLatin1String("0"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(key.isAccepted());
+
+    testObject->reset();
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_9, Qt::NoModifier, "9", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, int(Qt::Key_9));
+    QCOMPARE(testObject->mForwardedKey, int(Qt::Key_9));
+    QCOMPARE(testObject->mText, QLatin1String("9"));
+    QVERIFY(testObject->mModifiers == Qt::NoModifier);
+    QVERIFY(!key.isAccepted());
+
+    testObject->reset();
+
+    canvas->rootContext()->setContextProperty("enableKeyHanding", QVariant(false));
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Return, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QCOMPARE(testObject->mKey, 0);
+    QVERIFY(!key.isAccepted());
 
     delete canvas;
     delete testObject;
