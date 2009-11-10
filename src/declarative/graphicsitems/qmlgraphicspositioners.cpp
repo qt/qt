@@ -52,6 +52,36 @@
 
 QT_BEGIN_NAMESPACE
 
+void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
+{
+    Q_Q(QmlGraphicsBasePositioner);
+    QObject::connect(other, SIGNAL(visibleChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::connect(other, SIGNAL(opacityChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::connect(other, SIGNAL(heightChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::connect(other, SIGNAL(widthChanged()),
+                     q, SLOT(prePositioning()));
+    static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))->registerSiblingOrderNotification(this);
+    watched << other;
+}
+
+void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
+{
+    Q_Q(QmlGraphicsBasePositioner);
+    QObject::disconnect(other, SIGNAL(visibleChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::disconnect(other, SIGNAL(opacityChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::disconnect(other, SIGNAL(heightChanged()),
+                     q, SLOT(prePositioning()));
+    QObject::disconnect(other, SIGNAL(widthChanged()),
+                     q, SLOT(prePositioning()));
+    static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))->unregisterSiblingOrderNotification(this);
+    watched.removeAll(other);
+}
+
 /*!
     \internal
     \class QmlGraphicsBasePositioner
@@ -204,6 +234,7 @@ void QmlGraphicsBasePositioner::prePositioning()
     if (!isComponentComplete() || d->_movingItem)
         return;
 
+    d->queuedPositioning = false;
     if (!d->_ep) {
         d->_ep = true;
         QCoreApplication::postEvent(this, new QEvent(QEvent::User));
@@ -220,14 +251,7 @@ void QmlGraphicsBasePositioner::prePositioning()
         if (!child)
             continue;
         if (!d->_items.contains(child)){
-            QObject::connect(child, SIGNAL(visibleChanged()),
-                             this, SLOT(prePositioning()));
-            QObject::connect(child, SIGNAL(opacityChanged()),
-                             this, SLOT(prePositioning()));
-            QObject::connect(child, SIGNAL(heightChanged()),
-                             this, SLOT(prePositioning()));
-            QObject::connect(child, SIGNAL(widthChanged()),
-                             this, SLOT(prePositioning()));
+            d->watchChanges(child);
             d->_items += child;
         }
         if (child->opacity() == 0.0){
