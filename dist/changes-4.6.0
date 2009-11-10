@@ -789,7 +789,7 @@ Qt for Windows CE
  -          It is now possible to further specify the kind of custom widget
             string properties using XML tags.
 
--uic
+- uic
 
  - [260784] Generated code for retranslateUi doesn't cause compiler warnings anymore
 
@@ -798,7 +798,12 @@ Qt for Windows CE
  - [128859] Fixed code generation of QLabel's wordWrap property.
 
  - lupdate
+
   - Fixed a bug in the java source code parser.
+
+- qdoc3
+
+  - Changed qdoc3 binary to be in bin/ instead of a platform specific location.
 
 ****************************************************************************
 *                               DirectFB                                   *
