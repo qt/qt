@@ -110,6 +110,7 @@ void tst_qmlfontloader::localFont()
 void tst_qmlfontloader::failLocalFont()
 {
     QString componentStr = "import Qt 4.6\nFontLoader { source: \"" SRCDIR  "/data/dummy.ttf\" }";
+    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"file://" SRCDIR "/data/dummy.ttf\" )  ");
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
@@ -134,6 +135,7 @@ void tst_qmlfontloader::webFont()
 void tst_qmlfontloader::failWebFont()
 {
     QString componentStr = "import Qt 4.6\nFontLoader { source: \"http://wrong.address.com/Starburst.ttf\" }";
+    QTest::ignoreMessage(QtWarningMsg, "Cannot load font:  QUrl( \"http://wrong.address.com/Starburst.ttf\" )  ");
     QmlComponent component(&engine, componentStr.toLatin1(), QUrl("file://"));
     QmlFontLoader *fontObject = qobject_cast<QmlFontLoader*>(component.create());
 
