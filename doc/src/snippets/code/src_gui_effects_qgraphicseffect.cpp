@@ -40,11 +40,11 @@
 ****************************************************************************/
 
 //! [0]
-MyGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+MyGraphicsOpacityEffect::draw(QPainter *painter)
 {
     // Fully opaque; draw directly without going through a pixmap.
     if (qFuzzyCompare(m_opacity, 1)) {
-        source->draw(painter);
+        drawSource(painter);
         return;
     }
     ...
@@ -52,18 +52,18 @@ MyGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
 //! [0]
 
 //! [1]
-MyGraphicsEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+MyGraphicsEffect::draw(QPainter *painter)
 {
     ...
     QPoint offset;
-    if (source->isPixmap()) {
+    if (sourceIsPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        const QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
         ...
         painter->drawPixmap(offset, pixmap);
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling;
-        const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+        const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
         painter->setWorldTransform(QTransform());
         ...
         painter->drawPixmap(offset, pixmap);
