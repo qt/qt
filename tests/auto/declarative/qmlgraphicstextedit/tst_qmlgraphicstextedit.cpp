@@ -69,6 +69,9 @@ private slots:
     void vAlign();
     void font();
     void color();
+    void textMargin();
+    void persistentSelection();
+    void focusOnPress();
     void selection();
 
     void cursorDelegate();
@@ -430,6 +433,55 @@ void tst_qmlgraphicstextedit::color()
 
         QVERIFY(textEditObject != 0);
         QCOMPARE(textEditObject->color(), testColor);
+    }
+}
+
+void tst_qmlgraphicstextedit::textMargin()
+{
+    for(qreal i=0; i<=10; i+=0.3){
+        QString componentStr = "import Qt 4.6\nTextEdit {  textMargin: " + QString::number(i) + "; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->textMargin(), i);
+    }
+}
+
+void tst_qmlgraphicstextedit::persistentSelection()
+{
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  persistentSelection: true; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->persistentSelection(), true);
+    }
+
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  persistentSelection: false; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->persistentSelection(), false);
+    }
+}
+
+void tst_qmlgraphicstextedit::focusOnPress()
+{
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  focusOnPress: true; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->focusOnPress(), true);
+    }
+
+    {
+        QString componentStr = "import Qt 4.6\nTextEdit {  focusOnPress: false; text: \"Hello World\" }";
+        QmlComponent texteditComponent(&engine, componentStr.toLatin1(), QUrl());
+        QmlGraphicsTextEdit *textEditObject = qobject_cast<QmlGraphicsTextEdit*>(texteditComponent.create());
+        QVERIFY(textEditObject != 0);
+        QCOMPARE(textEditObject->focusOnPress(), false);
     }
 }
 

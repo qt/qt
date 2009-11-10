@@ -99,7 +99,6 @@ QmlEngineDebugServer::QmlObjectProperty
 QmlEngineDebugServer::propertyData(QObject *obj, int propIdx)
 {
     QmlObjectProperty rv;
-;
 
     QMetaProperty prop = obj->metaObject()->property(propIdx);
 

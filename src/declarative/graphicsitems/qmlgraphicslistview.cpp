@@ -641,6 +641,7 @@ void QmlGraphicsListViewPrivate::updateTrackedItem()
 void QmlGraphicsListViewPrivate::createHighlight()
 {
     Q_Q(QmlGraphicsListView);
+    bool changed = false;
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
@@ -651,6 +652,7 @@ void QmlGraphicsListViewPrivate::createHighlight()
         delete highlightSizeAnimator;
         highlightPosAnimator = 0;
         highlightSizeAnimator = 0;
+        changed = true;
     }
 
     if (currentItem) {
@@ -687,8 +689,11 @@ void QmlGraphicsListViewPrivate::createHighlight()
             highlightSizeAnimator->setVelocity(highlightResizeSpeed);
             highlightSizeAnimator->setTarget(QmlMetaProperty(highlight->item, sizeProp));
             highlightSizeAnimator->setEnabled(autoHighlight);
+            changed = true;
         }
     }
+    if (changed)
+        emit q->highlightChanged();
 }
 
 void QmlGraphicsListViewPrivate::updateHighlight()
@@ -871,7 +876,7 @@ void QmlGraphicsListViewPrivate::flickX(qreal velocity)
             if (v > 0)
                 dist = -dist;
             dist = -_moveX.value() - snapPosAt(-(_moveX.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
+            if ((v < 0 && dist >= 0) || (v > 0 && dist <= 0)) {
                 timeline.reset(_moveX);
                 fixupX();
                 return;
@@ -929,7 +934,7 @@ void QmlGraphicsListViewPrivate::flickY(qreal velocity)
             if (v > 0)
                 dist = -dist;
             dist = -_moveY.value() - snapPosAt(-(_moveY.value() - highlightRangeStart) + dist) + highlightRangeStart;
-            if (v < 0 && dist >= 0 || v > 0 && dist <= 0) {
+            if ((v < 0 && dist >= 0) || (v > 0 && dist <= 0)) {
                 timeline.reset(_moveY);
                 fixupY();
                 return;
@@ -1202,6 +1207,25 @@ QmlGraphicsItem *QmlGraphicsListView::currentItem()
 }
 
 /*!
+  \qmlproperty Item ListView::highlightItem
+
+  \c highlightItem holds the highlight item, which was created
+  from the \l highlight component.
+
+  The highlightItem is managed by the view unless
+  \l highlightFollowsCurrentItem is set to false.
+
+  \sa highlight, highlightFollowsCurrentItem
+*/
+QmlGraphicsItem *QmlGraphicsListView::highlightItem()
+{
+    Q_D(QmlGraphicsListView);
+    if (!d->highlight)
+        return 0;
+    return d->highlight->item;
+}
+
+/*!
   \qmlproperty int ListView::count
   This property holds the number of items in the view.
 */
@@ -1228,7 +1252,7 @@ int QmlGraphicsListView::count() const
     \snippet doc/src/snippets/declarative/listview/listview.qml 1
     \image trivialListView.png
 
-    \sa highlightFollowsCurrentItem
+    \sa highlightItem, highlightFollowsCurrentItem
 */
 QmlComponent *QmlGraphicsListView::highlight() const
 {

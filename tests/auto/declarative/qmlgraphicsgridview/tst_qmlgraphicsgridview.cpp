@@ -53,12 +53,13 @@ public:
     tst_QmlGraphicsGridView();
 
 private slots:
-    void currentIndex();
     void items();
     void changed();
     void inserted();
     void removed();
     void moved();
+    void currentIndex();
+    void changeFlow();
 
 private:
     QmlView *createView(const QString &filename);
@@ -147,6 +148,7 @@ void tst_QmlGraphicsGridView::items()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -194,6 +196,7 @@ void tst_QmlGraphicsGridView::changed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -226,6 +229,7 @@ void tst_QmlGraphicsGridView::inserted()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -253,8 +257,8 @@ void tst_QmlGraphicsGridView::inserted()
     // Confirm items positioned correctly
     for (int i = 0; i < model.count(); ++i) {
         QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
-        QVERIFY(item->x() == (i%3)*80);
-        QVERIFY(item->y() == (i/3)*60);
+        QCOMPARE(item->x(), (i%3)*80.0);
+        QCOMPARE(item->y(), (i/3)*60.0);
     }
 
     model.insertItem(0, "Foo", "1111"); // zero index, and current item
@@ -306,6 +310,7 @@ void tst_QmlGraphicsGridView::removed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -420,6 +425,7 @@ void tst_QmlGraphicsGridView::moved()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -534,9 +540,12 @@ void tst_QmlGraphicsGridView::currentIndex()
     QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
+    QTest::qWait(500);
+
     // current item should be third item
     QCOMPARE(gridview->currentIndex(), 5);
     QCOMPARE(gridview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 5));
+    QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 6);
@@ -604,6 +613,79 @@ void tst_QmlGraphicsGridView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(gridview->currentIndex(), 0);
+
+    // turn off auto highlight
+    gridview->setHighlightFollowsCurrentItem(false);
+    QVERIFY(gridview->highlightFollowsCurrentItem() == false);
+
+    QTest::qWait(500);
+    QVERIFY(gridview->highlightItem());
+    qreal hlPosX = gridview->highlightItem()->x();
+    qreal hlPosY = gridview->highlightItem()->y();
+
+    gridview->setCurrentIndex(5);
+    QTest::qWait(500);
+    QCOMPARE(gridview->highlightItem()->x(), hlPosX);
+    QCOMPARE(gridview->highlightItem()->y(), hlPosY);
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsGridView::changeFlow()
+{
+    QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), QString::number(i));
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testTopToBottom", QVariant(false));
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsGridView *gridview = findItem<QmlGraphicsGridView>(canvas->root(), "grid");
+    QVERIFY(gridview != 0);
+
+    QmlGraphicsItem *viewport = gridview->viewport();
+    QVERIFY(viewport != 0);
+
+    // Confirm items positioned correctly and indexes correct
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), qreal((i%3)*80));
+        QCOMPARE(item->y(), qreal((i/3)*60));
+        QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", i);
+        QVERIFY(name != 0);
+        QCOMPARE(name->text(), model.name(i));
+        QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", i);
+        QVERIFY(number != 0);
+        QCOMPARE(number->text(), model.number(i));
+    }
+
+    ctxt->setContextProperty("testTopToBottom", QVariant(true));
+    QTest::qWait(500);
+
+    // Confirm items positioned correctly and indexes correct
+    itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 3; i < model.count() && i < itemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QCOMPARE(item->x(), qreal((i/5)*80));
+        QCOMPARE(item->y(), qreal((i%5)*60));
+        QmlGraphicsText *name = findItem<QmlGraphicsText>(viewport, "textName", i);
+        QVERIFY(name != 0);
+        QCOMPARE(name->text(), model.name(i));
+        QmlGraphicsText *number = findItem<QmlGraphicsText>(viewport, "textNumber", i);
+        QVERIFY(number != 0);
+        QCOMPARE(number->text(), model.number(i));
+    }
 
     delete canvas;
 }
