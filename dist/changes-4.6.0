@@ -482,6 +482,23 @@ General changes on Mac OS X:
     - Building for ppc64 is no longer supported by the gcc tool chain.
     - Building for ppc is still supported.
 
+Cocoa:
+- Fixed stacking order of modal dialogs so that they never rearrange level, or
+  hide in the background.
+- Fixed problem with plugins written with Qt that closes down the native application
+  when hiding a modal dialog.
+- Fixed problem that native applications cannot quit when using plugins written with
+  Qt from a native application.
+- Fixed problem that the menubar is not restored correctly when using plugins written
+  with Qt from a native application.
+- The event dispatcher now integrates better with native applications that spins the
+  event loop them selves.
+- Using Qt::AA_MacPluginApplication will now disable the use of native menubars on mac.
+- Sliders and scroll views in Qt now uses pixel scrolling for mouse devices
+  that supports this.
+- Wheel events can now contain a delta with a value as low as 1 for mouse devices that
+  uses pixel scrolling.
+
 Qt for Embedded Linux
 ---------------------
 
