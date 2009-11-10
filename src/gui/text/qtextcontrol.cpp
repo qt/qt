@@ -911,7 +911,7 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
             break;
         case QEvent::MouseButtonPress: {
             QMouseEvent *ev = static_cast<QMouseEvent *>(e);
-            d->mousePressEvent(ev->button(), matrix.map(ev->pos()), ev->modifiers(),
+            d->mousePressEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(),
                                ev->buttons(), ev->globalPos());
             break; }
         case QEvent::MouseMove: {
@@ -979,7 +979,7 @@ void QTextControl::processEvent(QEvent *e, const QMatrix &matrix, QWidget *conte
 #ifndef QT_NO_GRAPHICSVIEW
         case QEvent::GraphicsSceneMousePress: {
             QGraphicsSceneMouseEvent *ev = static_cast<QGraphicsSceneMouseEvent *>(e);
-            d->mousePressEvent(ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
+            d->mousePressEvent(ev, ev->button(), matrix.map(ev->pos()), ev->modifiers(), ev->buttons(),
                                ev->screenPos());
             break; }
         case QEvent::GraphicsSceneMouseMove: {
@@ -1296,7 +1296,9 @@ QVariant QTextControl::loadResource(int type, const QUrl &name)
 void QTextControlPrivate::_q_updateBlock(const QTextBlock &block)
 {
     Q_Q(QTextControl);
-    emit q->updateRequest(q->blockBoundingRect(block));
+    QRectF br = q->blockBoundingRect(block);
+    br.setRight(qreal(INT_MAX)); // the block might have shrunk
+    emit q->updateRequest(br);
 }
 
 QRectF QTextControlPrivate::rectForPosition(int position) const
@@ -1465,7 +1467,7 @@ QRectF QTextControl::selectionRect() const
     return selectionRect(d->cursor);
 }
 
-void QTextControlPrivate::mousePressEvent(Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
+void QTextControlPrivate::mousePressEvent(QEvent *e, Qt::MouseButton button, const QPointF &pos, Qt::KeyboardModifiers modifiers,
                                           Qt::MouseButtons buttons, const QPoint &globalPos)
 {
     Q_Q(QTextControl);
@@ -1479,11 +1481,11 @@ void QTextControlPrivate::mousePressEvent(Qt::MouseButton button, const QPointF 
             cursor.clearSelection();
         }
     }
-    if (!(button & Qt::LeftButton))
-        return;
-
-    if (!((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable)))
-        return;
+    if (!(button & Qt::LeftButton) ||
+        !((interactionFlags & Qt::TextSelectableByMouse) || (interactionFlags & Qt::TextEditable))) {
+            e->ignore();
+            return;
+    }
 
     cursorIsFocusIndicator = false;
     const QTextCursor oldSelection = cursor;
@@ -1507,8 +1509,10 @@ void QTextControlPrivate::mousePressEvent(Qt::MouseButton button, const QPointF 
         trippleClickTimer.stop();
     } else {
         int cursorPos = q->hitTest(pos, Qt::FuzzyHit);
-        if (cursorPos == -1)
+        if (cursorPos == -1) {
+            e->ignore();
             return;
+        }
 
 #if !defined(QT_NO_IM)
         QTextLayout *layout = cursor.block().layout();
@@ -1519,8 +1523,10 @@ void QTextControlPrivate::mousePressEvent(Qt::MouseButton button, const QPointF 
                                button, buttons, modifiers);
                 ctx->mouseHandler(cursorPos - cursor.position(), &ev);
             }
-            if (!layout->preeditAreaText().isEmpty())
+            if (!layout->preeditAreaText().isEmpty()) {
+                e->ignore();
                 return;
+            }
         }
 #endif
         if (modifiers == Qt::ShiftModifier) {

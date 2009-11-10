@@ -639,13 +639,13 @@ void QPixmap::resize_helper(const QSize &s)
     QPixmap pm(QSize(w, h), data ? data->type : QPixmapData::PixmapType);
     bool uninit = false;
 #if defined(Q_WS_X11)
-    QX11PixmapData *x11Data = data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
+    QX11PixmapData *x11Data = data && data->classId() == QPixmapData::X11Class ? static_cast<QX11PixmapData*>(data.data()) : 0;
     if (x11Data) {
         pm.x11SetScreen(x11Data->xinfo.screen());
         uninit = x11Data->flags & QX11PixmapData::Uninitialized;
     }
 #elif defined(Q_WS_MAC)
-    QMacPixmapData *macData = data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
+    QMacPixmapData *macData = data && data->classId() == QPixmapData::MacClass ? static_cast<QMacPixmapData*>(data.data()) : 0;
     if (macData)
         uninit = macData->uninit;
 #endif
@@ -2150,6 +2150,13 @@ QPixmapData* QPixmap::pixmapData() const
 */
 
 /*! \fn int QPixmap::numCols() const
+    \obsolete
+    \internal
+    \sa colorCount()
+*/
+
+/*! \fn int QPixmap::colorCount() const
+    \since 4.6
     \internal
 */
 

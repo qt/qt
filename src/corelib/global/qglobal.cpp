@@ -1191,6 +1191,10 @@ bool qSharedBuild()
     \value SV_9_2 Symbian OS v9.2
     \value SV_9_3 Symbian OS v9.3
     \value SV_9_4 Symbian OS v9.4
+    \value SV_SF_1 Symbian^1
+    \value SV_SF_2 Symbian^2
+    \value SV_SF_3 Symbian^3
+    \value SV_SF_4 Symbian^4
     \value SV_Unknown An unknown and currently unsupported platform
 
     \sa S60Version, WinVersion, MacVersion
@@ -1207,6 +1211,8 @@ bool qSharedBuild()
     \value SV_S60_3_1 S60 3rd Edition Feature Pack 1
     \value SV_S60_3_2 S60 3rd Edition Feature Pack 2
     \value SV_S60_5_0 S60 5th Edition
+    \value SV_S60_5_1 S60 5th Edition Feature Pack 1
+    \value SV_S60_5_2 S60 5th Edition Feature Pack 2
     \value SV_S60_Unknown An unknown and currently unsupported platform
     \omitvalue SV_S60_None
 

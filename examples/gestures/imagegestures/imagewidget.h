@@ -93,6 +93,7 @@ private:
     float verticalOffset;
     float rotationAngle;
     float scaleFactor;
+    float currentStepScaleFactor;
 //! [class definition end]
 };
 //! [class definition end]

@@ -277,6 +277,7 @@ public:
 
     bool needsSync;
     bool inRenderText;
+    bool multisamplingAlwaysEnabled;
 
     GLfloat depthRange[2];
 

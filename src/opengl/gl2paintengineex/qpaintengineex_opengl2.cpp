@@ -246,7 +246,7 @@ void QGLTextureGlyphCache::resizeTextureData(int width, int height)
     glVertexAttribPointer(QT_VERTEX_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, vertexCoordinateArray);
     glVertexAttribPointer(QT_TEXTURE_COORDS_ATTR, 2, GL_FLOAT, GL_FALSE, 0, textureCoordinateArray);
 
-    pex->shaderManager->blitProgram()->enable();
+    pex->shaderManager->blitProgram()->bind();
     pex->shaderManager->blitProgram()->setUniformValue("imageTexture", QT_IMAGE_TEXTURE_UNIT);
     pex->shaderManager->setDirty();
 
@@ -395,7 +395,7 @@ void QGL2PaintEngineExPrivate::setBrush(const QBrush* brush)
 
 void QGL2PaintEngineExPrivate::useSimpleShader()
 {
-    shaderManager->simpleProgram()->enable();
+    shaderManager->simpleProgram()->bind();
     shaderManager->setDirty();
 
     if (matrixDirty)
@@ -1203,7 +1203,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
         ensureActive();
 
     QOpenGL2PaintEngineState *s = state();
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && style == Qt::SolidPattern;
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) &&
+                    (style == Qt::SolidPattern) &&
+                    !d->multisamplingAlwaysEnabled;
 
     if (doOffset) {
         d->temporaryTransform = s->matrix;
@@ -1221,6 +1223,9 @@ void QGL2PaintEngineEx::fill(const QVectorPath &path, const QBrush &brush)
     }
 }
 
+extern bool qt_scaleForTransform(const QTransform &transform, qreal *scale); // qtransform.cpp
+
+
 void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
 {
     Q_D(QGL2PaintEngineEx);
@@ -1231,10 +1236,15 @@ void QGL2PaintEngineEx::stroke(const QVectorPath &path, const QPen &pen)
         return;
 
     QOpenGL2PaintEngineState *s = state();
+    if (pen.isCosmetic() && !qt_scaleForTransform(s->transform(), 0)) {
+        // QTriangulatingStroker class is not meant to support cosmetically sheared strokes.
+        QPaintEngineEx::stroke(path, pen);
+        return;
+    }
 
     ensureActive();
 
-    bool doOffset = !(s->renderHints & QPainter::Antialiasing);
+    bool doOffset = !(s->renderHints & QPainter::Antialiasing) && !d->multisamplingAlwaysEnabled;
     if (doOffset) {
         d->temporaryTransform = s->matrix;
         QTransform tx = QTransform::fromTranslate(0.49, .49);
@@ -1772,6 +1782,14 @@ bool QGL2PaintEngineEx::begin(QPaintDevice *pdev)
     }
 #endif
 
+#if defined(QT_OPENGL_ES_2)
+    // OpenGL ES can't switch MSAA off, so if the gl paint device is
+    // multisampled, it's always multisampled.
+    d->multisamplingAlwaysEnabled = d->device->format().sampleBuffers();
+#else
+    d->multisamplingAlwaysEnabled = false;
+#endif
+
     return true;
 }
 
@@ -2089,7 +2107,7 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
     q->state()->rectangleClip = use_system_clip ? systemClip.boundingRect() : QRect(0, 0, width, height);
     updateClipScissorTest();
 
-    if (systemClip.numRects() == 1) {
+    if (systemClip.rectCount() == 1) {
         if (systemClip.boundingRect() == QRect(0, 0, width, height))
             use_system_clip = false;
 #ifndef QT_GL_NO_SCISSOR_TEST

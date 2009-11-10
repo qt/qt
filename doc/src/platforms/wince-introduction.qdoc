@@ -65,7 +65,7 @@
     \endlist
     \o
     \list
-        \o \l {Windows CE OpenGL ES}{OpenGL ES}
+        \o \l {Qt for Windows CE Hardware Accelerated Graphics}{Hardware Accelerated Graphics}
         \o \l {Qt Performance Tuning}
         \o \l {Fine-Tuning Features in Qt}
     \endlist

@@ -434,8 +434,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
 
-        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
             activateSymbianWindow(control.data());
+            control->MakeVisible(true);
+        }
 
         // We wait until the control is fully constructed before calling setWinId, because
         // this generates a WinIdChanged event.

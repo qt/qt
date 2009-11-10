@@ -60,6 +60,7 @@
 #include <private/qobject_p.h>
 #include <private/qpixmapfilter_p.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 class QGraphicsEffectSourcePrivate : public QObjectPrivate
@@ -72,7 +73,7 @@ public:
         , m_cachedMode(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
     {}
 
-    virtual ~QGraphicsEffectSourcePrivate() { invalidateCache(); }
+    virtual ~QGraphicsEffectSourcePrivate();
     virtual void detach() = 0;
     virtual QRectF boundingRect(Qt::CoordinateSystem system) const = 0;
     virtual QRect deviceRect() const = 0;
@@ -179,5 +180,6 @@ public:
 
 QT_END_NAMESPACE
 
+#endif //QT_NO_GRAPHICSEFFECT
 #endif // QGRAPHICSEFFECT_P_H
 

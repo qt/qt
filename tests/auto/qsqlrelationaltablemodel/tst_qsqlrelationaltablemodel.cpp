@@ -184,8 +184,8 @@ void tst_QSqlRelationalTableModel::dropTestTables( QSqlDatabase db )
             << qTableName("casetest1" );
     tst_Databases::safeDropTables( db, tableNames );
 
-    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373"));
-    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373_s2"));
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373")+" CASCADE");
+    db.exec("DROP SCHEMA "+qTableName("QTBUG_5373_s2")+" CASCADE");
 }
 
 void tst_QSqlRelationalTableModel::init()

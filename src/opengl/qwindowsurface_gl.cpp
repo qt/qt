@@ -625,7 +625,7 @@ void QGLWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoint &
 
         QGLShaderProgram *blitProgram =
             QGLEngineSharedShaders::shadersForContext(ctx)->blitProgram();
-        blitProgram->enable();
+        blitProgram->bind();
         blitProgram->setUniformValue("imageTexture", 0 /*QT_IMAGE_TEXTURE_UNIT*/);
 
         // The shader manager's blit program does not multiply the

@@ -1461,7 +1461,7 @@ void tst_QDataStream::readQImage(QDataStream *s)
     QVERIFY(d12.width() == ref.width());
     QVERIFY(d12.height() == ref.height());
     QVERIFY(d12.depth() == ref.depth());
-    QVERIFY(d12.numColors() == ref.numColors());
+    QVERIFY(d12.colorCount() == ref.colorCount());
 #ifdef QT3_SUPPORT
     QVERIFY(d12.hasAlphaBuffer() == ref.hasAlphaBuffer());
 #else

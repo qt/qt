@@ -219,6 +219,40 @@ public:
     friend class QSwipeGestureRecognizer;
 };
 
+class QTapGesturePrivate;
+class Q_GUI_EXPORT QTapGesture : public QGesture
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QTapGesture)
+
+    Q_PROPERTY(QPointF position READ position WRITE setPosition)
+
+public:
+    QTapGesture(QObject *parent = 0);
+
+    QPointF position() const;
+    void setPosition(const QPointF &pos);
+
+    friend class QTapGestureRecognizer;
+};
+
+class QTapAndHoldGesturePrivate;
+class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QTapAndHoldGesture)
+
+    Q_PROPERTY(QPointF position READ position WRITE setPosition)
+
+public:
+    QTapAndHoldGesture(QObject *parent = 0);
+
+    QPointF position() const;
+    void setPosition(const QPointF &pos);
+
+    friend class QTapAndHoldGestureRecognizer;
+};
+
 QT_END_NAMESPACE
 
 Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
