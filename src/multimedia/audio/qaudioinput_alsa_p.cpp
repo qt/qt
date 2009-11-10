@@ -75,7 +75,7 @@ QAudioInputPrivate::QAudioInputPrivate(const QByteArray &device, const QAudioFor
     intervalTime = 1000;
     audioBuffer = 0;
     errorState = QAudio::NoError;
-    deviceState = QAudio::StoppedState;
+    deviceState = QAudio::StopState;
     audioSource = 0;
     pullMode = true;
     resuming = false;
@@ -206,7 +206,7 @@ int QAudioInputPrivate::setFormat()
 
 QIODevice* QAudioInputPrivate::start(QIODevice* device)
 {
-    if(deviceState != QAudio::StoppedState)
+    if(deviceState != QAudio::StopState)
         close();
 
     if(!pullMode && audioSource) {
@@ -234,10 +234,10 @@ QIODevice* QAudioInputPrivate::start(QIODevice* device)
 
 void QAudioInputPrivate::stop()
 {
-    if(deviceState == QAudio::StoppedState)
+    if(deviceState == QAudio::StopState)
         return;
 
-    deviceState = QAudio::StoppedState;
+    deviceState = QAudio::StopState;
 
     close();
     emit stateChanged(deviceState);
@@ -283,7 +283,7 @@ bool QAudioInputPrivate::open()
     }
     if (( err < 0)||(handle == 0)) {
         errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
+        deviceState = QAudio::StopState;
         emit stateChanged(deviceState);
         return false;
     }
@@ -367,7 +367,7 @@ bool QAudioInputPrivate::open()
     if( err < 0) {
         qWarning()<<errMessage;
         errorState = QAudio::OpenError;
-        deviceState = QAudio::StoppedState;
+        deviceState = QAudio::StopState;
         emit stateChanged(deviceState);
         return false;
     }
@@ -413,7 +413,7 @@ bool QAudioInputPrivate::open()
 
 void QAudioInputPrivate::close()
 {
-    deviceState = QAudio::StoppedState;
+    deviceState = QAudio::StopState;
     timer->stop();
 
     if ( handle ) {
@@ -490,7 +490,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
         if(l < 0) {
             close();
             errorState = QAudio::IOError;
-            deviceState = QAudio::StoppedState;
+            deviceState = QAudio::StopState;
             emit stateChanged(deviceState);
         } else if(l == 0) {
             errorState = QAudio::NoError;
@@ -508,7 +508,7 @@ qint64 QAudioInputPrivate::read(char* data, qint64 len)
 
 void QAudioInputPrivate::resume()
 {
-    if(deviceState == QAudio::SuspendedState) {
+    if(deviceState == QAudio::SuspendState) {
         int err = 0;
 
         if(handle) {
@@ -558,7 +558,7 @@ int QAudioInputPrivate::notifyInterval() const
     return intervalTime;
 }
 
-qint64 QAudioInputPrivate::processedUSecs() const
+qint64 QAudioInputPrivate::totalTime() const
 {
     return totalTimeValue;
 }
@@ -567,14 +567,14 @@ void QAudioInputPrivate::suspend()
 {
     if(deviceState == QAudio::ActiveState||resuming) {
         timer->stop();
-        deviceState = QAudio::SuspendedState;
+        deviceState = QAudio::SuspendState;
         emit stateChanged(deviceState);
     }
 }
 
 void QAudioInputPrivate::userFeed()
 {
-    if(deviceState == QAudio::StoppedState || deviceState == QAudio::SuspendedState)
+    if(deviceState == QAudio::StopState || deviceState == QAudio::SuspendState)
         return;
 #ifdef DEBUG_AUDIO
     QTime now(QTime::currentTime());
@@ -606,12 +606,12 @@ bool QAudioInputPrivate::deviceReady()
     return true;
 }
 
-qint64 QAudioInputPrivate::elapsedUSecs() const
+qint64 QAudioInputPrivate::clock() const
 {
     if(!handle)
         return 0;
 
-    if (deviceState == QAudio::StoppedState)
+    if (deviceState == QAudio::StopState)
         return 0;
 
 #if(SND_LIB_MAJOR == 1 && SND_LIB_MINOR == 0 && SND_LIB_SUBMINOR >= 14) 

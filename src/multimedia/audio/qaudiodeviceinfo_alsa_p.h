@@ -92,7 +92,7 @@ public:
     QList<QAudioFormat::SampleType> sampleTypeList();
     static QByteArray defaultInputDevice();
     static QByteArray defaultOutputDevice();
-    static QList<QByteArray> availableDevices(QAudio::Mode);
+    static QList<QByteArray> deviceList(QAudio::Mode);
 
 private:
     bool open();

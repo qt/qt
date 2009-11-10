@@ -94,10 +94,10 @@ public:
     int bufferSize() const  { return 0; }
     void setNotifyInterval(int ) {}
     int notifyInterval() const { return 0; }
-    qint64 processedUSecs() const { return 0; }
-    qint64 elapsedUSecs() const { return 0; }
+    qint64 totalTime() const { return 0; }
+    qint64 clock() const { return 0; }
     QAudio::Error error() const { return QAudio::OpenError; }
-    QAudio::State state() const { return QAudio::StoppedState; }
+    QAudio::State state() const { return QAudio::StopState; }
     QAudioFormat format() const { return QAudioFormat(); }
 };
 
@@ -115,18 +115,18 @@ public:
     int bufferSize() const  { return 0; }
     void setNotifyInterval(int ) {}
     int notifyInterval() const { return 0; }
-    qint64 processedUSecs() const { return 0; }
-    qint64 elapsedUSecs() const { return 0; }
+    qint64 totalTime() const { return 0; }
+    qint64 clock() const { return 0; }
     QAudio::Error error() const { return QAudio::OpenError; }
-    QAudio::State state() const { return QAudio::StoppedState; }
+    QAudio::State state() const { return QAudio::StopState; }
     QAudioFormat format() const { return QAudioFormat(); }
 };
 
-QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
+QList<QAudioDeviceInfo> QAudioDeviceFactory::deviceList(QAudio::Mode mode)
 {
     QList<QAudioDeviceInfo> devices;
 #if (defined(Q_OS_WIN) || defined(Q_OS_MAC) || defined(HAS_ALSA))
-    foreach (const QByteArray &handle, QAudioDeviceInfoInternal::availableDevices(mode))
+    foreach (const QByteArray &handle, QAudioDeviceInfoInternal::deviceList(mode))
         devices << QAudioDeviceInfo(QLatin1String("builtin"), handle, mode);
 #endif
     QFactoryLoader* l = loader();
@@ -134,7 +134,7 @@ QList<QAudioDeviceInfo> QAudioDeviceFactory::availableDevices(QAudio::Mode mode)
     foreach (QString const& key, l->keys()) {
         QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(l->instance(key));
         if (plugin) {
-            foreach (QByteArray const& handle, plugin->availableDevices(mode))
+            foreach (QByteArray const& handle, plugin->deviceList(mode))
                 devices << QAudioDeviceInfo(key, handle, mode);
         }
 
@@ -149,7 +149,7 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultInputDevice()
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
-        QList<QByteArray> list = plugin->availableDevices(QAudio::AudioInput);
+        QList<QByteArray> list = plugin->deviceList(QAudio::AudioInput);
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioInput);
     }
@@ -164,7 +164,7 @@ QAudioDeviceInfo QAudioDeviceFactory::defaultOutputDevice()
     QAudioEngineFactoryInterface* plugin = qobject_cast<QAudioEngineFactoryInterface*>(loader()->instance(QLatin1String("default")));
 
     if (plugin) {
-        QList<QByteArray> list = plugin->availableDevices(QAudio::AudioOutput);
+        QList<QByteArray> list = plugin->deviceList(QAudio::AudioOutput);
         if (list.size() > 0)
             return QAudioDeviceInfo(QLatin1String("default"), list.at(0), QAudio::AudioOutput);
     }
