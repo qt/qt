@@ -686,9 +686,9 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
              (command == COMMAND_QMLATTACHEDSIGNAL) ||
              (command == COMMAND_QMLATTACHEDMETHOD)) {
         QString element;
-        QString name;
+        QString type;
         QmlClassNode* qmlClass = 0;
-        if (splitQmlArg(doc,arg,element,name)) {
+        if (splitQmlMethodArg(doc,arg,type,element)) {
             Node* n = tre->findNode(QStringList(element),Node::Fake);
             if (n && n->subType() == Node::QmlClass) {
                 qmlClass = static_cast<QmlClassNode*>(n);
@@ -717,15 +717,15 @@ Node *CppCodeParser::processTopicCommand(const Doc& doc,
   <type> <element>::<name>
 
   This function splits the argument into those three
-  parts, sets \a type, \a element, and \a property,
+  parts, sets \a type, \a element, and \a name,
   and returns true. If any of the parts isn't found,
-  a debug message is output and false is returned.
+  a qdoc warning is output and false is returned.
  */
 bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
                                         const QString& arg,
                                         QString& type,
                                         QString& element,
-                                        QString& property)
+                                        QString& name)
 {
     QStringList blankSplit = arg.split(" ");
     if (blankSplit.size() > 1) {
@@ -733,40 +733,47 @@ bool CppCodeParser::splitQmlPropertyArg(const Doc& doc,
         QStringList colonSplit(blankSplit[1].split("::"));
         if (colonSplit.size() > 1) {
             element = colonSplit[0];
-            property = colonSplit[1];
+            name = colonSplit[1];
             return true;
         }
         else
-            doc.location().warning(tr("Missing QML element name or property name"));
+            doc.location().warning(tr("Missing parent QML element name"));
     }
     else
-        doc.location().warning(tr("Missing QML property type or property path"));
+        doc.location().warning(tr("Missing property type"));
     return false;
 }
 
 /*!
   A QML signal or method argument has the form...
 
-  <element>::<name>
+  <type> <element>::<name>(<param>, <param>, ...)
 
   This function splits the argument into those two
   parts, sets \a element, and \a name, and returns
   true. If either of the parts isn't found, a debug
   message is output and false is returned.
  */
-bool CppCodeParser::splitQmlArg(const Doc& doc,
-                                const QString& arg,
-                                QString& element,
-                                QString& name)
+bool CppCodeParser::splitQmlMethodArg(const Doc& doc,
+                                      const QString& arg,
+                                      QString& type,
+                                      QString& element)
 {
     QStringList colonSplit(arg.split("::"));
     if (colonSplit.size() > 1) {
-        element = colonSplit[0];
-        name = colonSplit[1];
+        QStringList blankSplit = colonSplit[0].split(" ");
+        if (blankSplit.size() > 1) {
+            type = blankSplit[0];
+            element = blankSplit[1];
+        }
+        else {
+            type = QString("");
+            element = colonSplit[0];
+        }
         return true;
     }
     else
-        doc.location().warning(tr("Missing QML element name or signal/method name"));
+        doc.location().warning(tr("Missing parent QML element or method signature"));
     return false;
 }
 
@@ -811,10 +818,10 @@ Node *CppCodeParser::processTopicCommandGroup(const Doc& doc,
             ++arg;
             while (arg != args.end()) {
                 if (splitQmlPropertyArg(doc,(*arg),type,element,property)) {
-                    QmlPropertyNode * qmlPropNode = new QmlPropertyNode(qmlPropGroup,
-                                        property,
-                                        type,
-                                        attached);
+                    QmlPropertyNode* qmlPropNode = new QmlPropertyNode(qmlPropGroup,
+                                                                       property,
+                                                                       type,
+                                                                       attached);
                     if (correspondingProperty) {
                         bool writableList = type.startsWith("list") && correspondingProperty->dataType().endsWith('*');
                         qmlPropNode->setWritable(writableList || correspondingProperty->isWritable());
