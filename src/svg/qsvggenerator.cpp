@@ -796,9 +796,9 @@ int QSvgGenerator::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmDpiY:
         return d->engine->resolution();
     case QPaintDevice::PdmHeightMM:
-        return qRound(d->engine->size().height() * (d->engine->resolution() / qreal(25.4)));
+        return qRound(d->engine->size().height() * 25.4 / d->engine->resolution());
     case QPaintDevice::PdmWidthMM:
-        return qRound(d->engine->size().width() * (d->engine->resolution() / qreal(25.4)));
+        return qRound(d->engine->size().width() * 25.4 / d->engine->resolution());
     case QPaintDevice::PdmNumColors:
         return 0xffffffff;
     case QPaintDevice::PdmPhysicalDpiX:
@@ -842,9 +842,8 @@ bool QSvgPaintEngine::begin(QPaintDevice *)
     *d->stream << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" << endl << "<svg";
 
     if (d->size.isValid()) {
-        const qreal mm_factor = d->resolution / qreal(25.4);
-        const qreal wmm = d->size.width() * mm_factor;
-        const qreal hmm = d->size.height() * mm_factor;
+        qreal wmm = d->size.width() * 25.4 / d->resolution;
+        qreal hmm = d->size.height() * 25.4 / d->resolution;
         *d->stream << " width=\"" << wmm << "mm\" height=\"" << hmm << "mm\"" << endl;
     }
 

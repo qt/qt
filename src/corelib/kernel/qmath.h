@@ -45,7 +45,6 @@
 #include <math.h>
 
 #include <QtCore/qglobal.h>
-#include <private/qnumeric_p.h>
 
 QT_BEGIN_HEADER
 
@@ -107,16 +106,6 @@ inline qreal qAcos(qreal v)
         return acos(v);
 }
 
-inline qreal qAsin(qreal v)
-{
-#ifdef QT_USE_MATH_H_FLOATS
-    if (sizeof(qreal) == sizeof(float))
-        return asinf(float(v));
-    else
-#endif
-        return asin(v);
-}
-
 inline qreal qSqrt(qreal v)
 {
 #ifdef QT_USE_MATH_H_FLOATS
@@ -147,42 +136,28 @@ inline qreal qPow(qreal x, qreal y)
         return pow(x, y);
 }
 
+#ifndef M_PI
+#define M_PI (3.14159265358979323846)
+#endif
+
 inline qreal qFastSin(qreal x)
 {
-    int si = int(x * (qreal(0.5) * QT_SINE_TABLE_SIZE / Q_PI)); // Would be more accurate with qRound, but slower.
-    qreal d = x - si * (qreal(2.0) * Q_PI / QT_SINE_TABLE_SIZE);
+    int si = int(x * (0.5 * QT_SINE_TABLE_SIZE / M_PI)); // Would be more accurate with qRound, but slower.
+    qreal d = x - si * (2.0 * M_PI / QT_SINE_TABLE_SIZE);
     int ci = si + QT_SINE_TABLE_SIZE / 4;
     si &= QT_SINE_TABLE_SIZE - 1;
     ci &= QT_SINE_TABLE_SIZE - 1;
-    return qt_sine_table[si] + (qt_sine_table[ci] - qreal(0.5) * qt_sine_table[si] * d) * d;
+    return qt_sine_table[si] + (qt_sine_table[ci] - 0.5 * qt_sine_table[si] * d) * d;
 }
 
 inline qreal qFastCos(qreal x)
 {
-    int ci = int(x * (qreal(0.5) * QT_SINE_TABLE_SIZE / Q_PI)); // Would be more accurate with qRound, but slower.
-    qreal d = x - ci * (qreal(2.0) * Q_PI / QT_SINE_TABLE_SIZE);
+    int ci = int(x * (0.5 * QT_SINE_TABLE_SIZE / M_PI)); // Would be more accurate with qRound, but slower.
+    qreal d = x - ci * (2.0 * M_PI / QT_SINE_TABLE_SIZE);
     int si = ci + QT_SINE_TABLE_SIZE / 4;
     si &= QT_SINE_TABLE_SIZE - 1;
     ci &= QT_SINE_TABLE_SIZE - 1;
-    return qt_sine_table[si] - (qt_sine_table[ci] + qreal(0.5) * qt_sine_table[si] * d) * d;
-}
-
-inline qreal qFabs(qreal x)
-{
-#ifdef QT_USE_MATH_H_FLOATS
-    if(sizeof(qreal) == sizeof(float))
-        return fabsf(x);
-#endif
-    return fabs(x);
-}
-
-inline qreal qAtan2(qreal x, qreal y)
-{
-#ifdef QT_USE_MATH_H_FLOATS
-    if(sizeof(qreal) == sizeof(float))
-        return atan2f(x, y);
-#endif
-    return atan2(x, y);
+    return qt_sine_table[si] - (qt_sine_table[ci] + 0.5 * qt_sine_table[si] * d) * d;
 }
 
 QT_END_NAMESPACE

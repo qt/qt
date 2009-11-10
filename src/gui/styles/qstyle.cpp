@@ -2132,7 +2132,7 @@ int QStyle::sliderPositionFromValue(int min, int max, int logicalValue, int span
     uint p = upsideDown ? max - logicalValue : logicalValue - min;
 
     if (range > (uint)INT_MAX/4096) {
-        qreal dpos = (qreal(p))/(qreal(range)/span);
+        double dpos = (double(p))/(double(range)/span);
         return int(dpos);
     } else if (range > (uint)span) {
         return (2 * p * span + range) / (2*range);

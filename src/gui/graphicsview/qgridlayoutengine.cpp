@@ -69,22 +69,21 @@ static void insertOrRemoveItems(QVector<T> &items, int index, int delta)
 
 static qreal growthFactorBelowPreferredSize(qreal desired, qreal sumAvailable, qreal sumDesired)
 {
-    Q_ASSERT(sumDesired != qreal(0.0));
-    const qreal inv_sumDesired = 1 / sumDesired;
-    return desired * ::pow(sumAvailable * inv_sumDesired, desired * inv_sumDesired);
+    Q_ASSERT(sumDesired != 0.0);
+    return desired * ::pow(sumAvailable / sumDesired, desired / sumDesired);
 }
 
 static qreal fixedDescent(qreal descent, qreal ascent, qreal targetSize)
 {
-    if (descent < qreal(0.0))
-        return qreal(-1.0);
+    if (descent < 0.0)
+        return -1.0;
 
-    Q_ASSERT(descent >= qreal(0.0));
-    Q_ASSERT(ascent >= qreal(0.0));
+    Q_ASSERT(descent >= 0.0);
+    Q_ASSERT(ascent >= 0.0);
     Q_ASSERT(targetSize >= ascent + descent);
 
     qreal extra = targetSize - (ascent + descent);
-    return descent + (extra * qreal(0.5));
+    return descent + (extra / 2.0);
 }
 
 static qreal compare(const QGridLayoutBox &box1, const QGridLayoutBox &box2, int which)
@@ -101,7 +100,7 @@ static qreal compare(const QGridLayoutBox &box1, const QGridLayoutBox &box2, int
 
 void QGridLayoutBox::add(const QGridLayoutBox &other, int stretch, qreal spacing)
 {
-    Q_ASSERT(q_minimumDescent < qreal(0.0));
+    Q_ASSERT(q_minimumDescent < 0.0);
 
     q_minimumSize += other.q_minimumSize + spacing;
     q_preferredSize += other.q_preferredSize + spacing;
@@ -135,7 +134,7 @@ void QGridLayoutBox::normalize()
     q_preferredSize = qBound(q_minimumSize, q_preferredSize, q_maximumSize);
     q_minimumDescent = qMin(q_minimumDescent, q_minimumSize);
 
-    Q_ASSERT((q_minimumDescent < qreal(0.0)) == (q_minimumAscent < qreal(0.0)));
+    Q_ASSERT((q_minimumDescent < 0.0) == (q_minimumAscent < 0.0));
 }
 
 #ifdef QT_DEBUG
@@ -162,7 +161,7 @@ void QGridLayoutRowData::reset(int count)
     boxes.fill(QGridLayoutBox(), count);
     multiCellMap.clear();
     stretches.fill(0, count);
-    spacings.fill(qreal(0.0), count);
+    spacings.fill(0.0, count);
     hasIgnoreFlag = false;
 }
 
@@ -183,7 +182,7 @@ void QGridLayoutRowData::distributeMultiCells()
 
         for (int j = 0; j < NSizes; ++j) {
             qreal extra = compare(totalBox, box, j);
-            if (extra > qreal(0.0)) {
+            if (extra > 0.0) {
                 calculateGeometries(start, end, totalBox.q_sizes(j), dummy.data(), newSizes.data(),
                                     0, totalBox);
 
@@ -211,7 +210,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
     int n = end - start;
     QVarLengthArray<qreal> newSizes(n);
     QVarLengthArray<qreal> factors(n);
-    qreal sumFactors = qreal(0.0);
+    qreal sumFactors = 0.0;
     int sumStretches = 0;
     qreal sumAvailable;
 
@@ -224,25 +223,24 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
         stealBox(start, end, MinimumSize, positions, sizes);
 
         sumAvailable = targetSize - totalBox.q_minimumSize;
-        if (sumAvailable > qreal(0.0)) {
-            const qreal sumDesired = totalBox.q_preferredSize - totalBox.q_minimumSize;
+        if (sumAvailable > 0.0) {
+            qreal sumDesired = totalBox.q_preferredSize - totalBox.q_minimumSize;
 
             for (int i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
-                    factors[i] = qreal(0.0);
+                    factors[i] = 0.0;
                     continue;
                 }
 
                 const QGridLayoutBox &box = boxes.at(start + i);
-                const qreal desired = box.q_preferredSize - box.q_minimumSize;
+                qreal desired = box.q_preferredSize - box.q_minimumSize;
                 factors[i] = growthFactorBelowPreferredSize(desired, sumAvailable, sumDesired);
                 sumFactors += factors[i];
             }
 
-            const qreal inv_sumFactors = 1 / sumFactors;
             for (int i = 0; i < n; ++i) {
-                Q_ASSERT(sumFactors > qreal(0.0));
-                const qreal delta = sumAvailable * factors[i] * inv_sumFactors;
+                Q_ASSERT(sumFactors > 0.0);
+                qreal delta = sumAvailable * factors[i] / sumFactors;
                 newSizes[i] = sizes[i] + delta;
             }
         }
@@ -250,46 +248,46 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
         stealBox(start, end, PreferredSize, positions, sizes);
 
         sumAvailable = targetSize - totalBox.q_preferredSize;
-        if (sumAvailable > qreal(0.0)) {
+        if (sumAvailable > 0.0) {
             bool somethingHasAMaximumSize = false;
 
-            qreal sumPreferredSizes = qreal(0.0);
+            qreal sumPreferredSizes = 0.0;
             for (int i = 0; i < n; ++i)
                 sumPreferredSizes += sizes[i];
 
             for (int i = 0; i < n; ++i) {
                 if (ignore.testBit(start + i)) {
-                    newSizes[i] = qreal(0.0);
-                    factors[i] = qreal(0.0);
+                    newSizes[i] = 0.0;
+                    factors[i] = 0.0;
                     continue;
                 }
 
                 const QGridLayoutBox &box = boxes.at(start + i);
-                const qreal desired = box.q_maximumSize - box.q_preferredSize;
-                if (desired == qreal(0.0)) {
+                qreal desired = box.q_maximumSize - box.q_preferredSize;
+                if (desired == 0.0) {
                     newSizes[i] = sizes[i];
-                    factors[i] = qreal(0.0);
+                    factors[i] = 0.0;
                 } else {
-                    Q_ASSERT(desired > qreal(0.0));
+                    Q_ASSERT(desired > 0.0);
 
                     int stretch = stretches[start + i];
                     if (sumStretches == 0) {
                         if (hasIgnoreFlag) {
-                            factors[i] = (stretch < 0) ? qreal(1.0) : qreal(0.0);
+                            factors[i] = (stretch < 0) ? 1.0 : 0.0;
                         } else {
-                            factors[i] = (stretch < 0) ? sizes[i] : qreal(0.0);
+                            factors[i] = (stretch < 0) ? sizes[i] : 0.0;
                         }
                     } else if (stretch == sumStretches) {
-                        factors[i] = qreal(1.0);
+                        factors[i] = 1.0;
                     } else if (stretch <= 0) {
-                        factors[i] = qreal(0.0);
+                        factors[i] = 0.0;
                     } else {
                         qreal ultimatePreferredSize;
                         qreal ultimateSumPreferredSizes;
                         qreal x = ((stretch * sumPreferredSizes)
                                    - (sumStretches * box.q_preferredSize))
                                   / (sumStretches - stretch);
-                        if (x >= qreal(0.0)) {
+                        if (x >= 0.0) {
                             ultimatePreferredSize = box.q_preferredSize + x;
                             ultimateSumPreferredSizes = sumPreferredSizes + x;
                         } else {
@@ -303,8 +301,8 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                             (at the expense of the stretch factors, which are not fully respected
                             during the transition).
                         */
-                        ultimatePreferredSize = ultimatePreferredSize * qreal(1.5);
-                        ultimateSumPreferredSizes = ultimateSumPreferredSizes * qreal(1.5);
+                        ultimatePreferredSize = ultimatePreferredSize * 3 / 2;
+                        ultimateSumPreferredSizes = ultimateSumPreferredSizes * 3 / 2;
 
                         qreal ultimateFactor = (stretch * ultimateSumPreferredSizes
                                                 / sumStretches)
@@ -325,7 +323,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                     if (desired < sumAvailable)
                         somethingHasAMaximumSize = true;
 
-                    newSizes[i] = qreal(-1.0);
+                    newSizes[i] = -1.0;
                 }
             }
 
@@ -334,7 +332,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                 keepGoing = false;
 
                 for (int i = 0; i < n; ++i) {
-                    if (newSizes[i] >= qreal(0.0))
+                    if (newSizes[i] >= 0.0)
                         continue;
 
                     const QGridLayoutBox &box = boxes.at(start + i);
@@ -343,7 +341,7 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
                         newSizes[i] = box.q_maximumSize;
                         sumAvailable -= box.q_maximumSize - sizes[i];
                         sumFactors -= factors[i];
-                        keepGoing = (sumAvailable > qreal(0.0));
+                        keepGoing = (sumAvailable > 0.0);
                         if (!keepGoing)
                             break;
                     }
@@ -351,8 +349,8 @@ void QGridLayoutRowData::calculateGeometries(int start, int end, qreal targetSiz
             }
 
             for (int i = 0; i < n; ++i) {
-                if (newSizes[i] < qreal(0.0)) {
-                    qreal delta = (sumFactors == qreal(0.0)) ? qreal(0.0)
+                if (newSizes[i] < 0.0) {
+                    qreal delta = (sumFactors == 0.0) ? 0.0
                                                       : sumAvailable * factors[i] / sumFactors;
                     newSizes[i] = sizes[i] + delta;
                 }
@@ -408,8 +406,8 @@ QGridLayoutBox QGridLayoutRowData::totalBox(int start, int end) const
 {
     QGridLayoutBox result;
     if (start < end) {
-        result.q_maximumSize = qreal(0.0);
-        qreal nextSpacing = qreal(0.0);
+        result.q_maximumSize = 0.0;
+        qreal nextSpacing = 0.0;
         for (int i = start; i < end; ++i) {
             result.add(boxes.at(i), stretches.at(i), nextSpacing);
             nextSpacing = spacings.at(i);
@@ -420,11 +418,11 @@ QGridLayoutBox QGridLayoutRowData::totalBox(int start, int end) const
 
 void QGridLayoutRowData::stealBox(int start, int end, int which, qreal *positions, qreal *sizes)
 {
-    qreal offset = qreal(0.0);
-    qreal nextSpacing = qreal(0.0);
+    qreal offset = 0.0;
+    qreal nextSpacing = 0.0;
 
     for (int i = start; i < end; ++i) {
-        qreal avail = qreal(0.0);
+        qreal avail = 0.0;
 
         if (!ignore.testBit(i)) {
             const QGridLayoutBox &box = boxes.at(i);

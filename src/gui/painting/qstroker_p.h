@@ -110,7 +110,7 @@ struct qfixed2d
 };
 #endif
 
-#define QT_PATH_KAPPA qreal(0.5522847498)
+#define QT_PATH_KAPPA 0.5522847498
 
 QPointF qt_curves_for_arc(const QRectF &rect, qreal startAngle, qreal sweepLength,
                           QPointF *controlPoints, int *point_count);

@@ -3070,9 +3070,9 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
     int currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
 
     if (dial->maximum == dial->minimum)
-        a = Q_PI2;
+        a = Q_PI / 2;
     else if (dial->dialWrapping)
-        a = Q_PI2 * 3 - (currentSliderPosition - dial->minimum) * Q_2PI
+        a = Q_PI * 3 / 2 - (currentSliderPosition - dial->minimum) * 2 * Q_PI
             / (dial->maximum - dial->minimum);
     else
         a = (Q_PI * 8 - (currentSliderPosition - dial->minimum) * 10 * Q_PI
@@ -3087,13 +3087,12 @@ static QPolygonF calcArrow(const QStyleOptionSlider *dial, qreal &a)
     int back = len / 2;
 
     QPolygonF arrow(3);
-    const qreal five_div_by_six = 5 / 6;
-    arrow[0] = QPointF(qreal(0.5) + xc + len * qCos(a),
-                       qreal(0.5) + yc - len * qSin(a));
-    arrow[1] = QPointF(qreal(0.5) + xc + back * qCos(a + Q_PI * five_div_by_six),
-                       qreal(0.5) + yc - back * qSin(a + Q_PI * five_div_by_six));
-    arrow[2] = QPointF(qreal(0.5) + xc + back * qCos(a - Q_PI * five_div_by_six),
-                       qreal(0.5) + yc - back * qSin(a - Q_PI * five_div_by_six));
+    arrow[0] = QPointF(0.5 + xc + len * qCos(a),
+                       0.5 + yc - len * qSin(a));
+    arrow[1] = QPointF(0.5 + xc + back * qCos(a + Q_PI * 5 / 6),
+                       0.5 + yc - back * qSin(a + Q_PI * 5 / 6));
+    arrow[2] = QPointF(0.5 + xc + back * qCos(a - Q_PI * 5 / 6),
+                       0.5 + yc - back * qSin(a - Q_PI * 5 / 6));
     return arrow;
 }
 
