@@ -178,6 +178,8 @@ bool QmlDebugClient::isConnected() const
 {
     Q_D(const QmlDebugClient);
 
+    if (!d->client)
+        return false;
     return d->client->isConnected();
 }
 
