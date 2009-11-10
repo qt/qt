@@ -320,8 +320,7 @@ void tst_QDataStream::getSetCheck()
 
 tst_QDataStream::tst_QDataStream()
 {
-    svgFile = QLatin1String(SRCDIR) + QLatin1String("/") +
-              QLatin1String(SVGFILE);
+    svgFile = QLatin1String(SRCDIR SVGFILE);
 }
 
 tst_QDataStream::~tst_QDataStream()
