@@ -55,7 +55,8 @@ QT_BEGIN_NAMESPACE
 
 QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
     : QObjectPrivate(version), layoutPrivate(0), data(0),
-      sizePolicy(QSizePolicy::Fixed)
+      sizePolicy(QSizePolicy::Fixed), preferredSize(0),
+      hasSize(true), reversed(false)
 {
 }
 
@@ -76,31 +77,60 @@ void QGraphicsAnchorPrivate::setSizePolicy(QSizePolicy::Policy policy)
 
 void QGraphicsAnchorPrivate::setSpacing(qreal value)
 {
-    if (data) {
-        layoutPrivate->setAnchorSize(data, &value);
-    } else {
+    if (!data) {
         qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+        return;
     }
+
+    const qreal rawValue = reversed ? -preferredSize : preferredSize;
+    if (hasSize && (rawValue == value))
+        return;
+
+    // The anchor has an user-defined size
+    hasSize = true;
+
+    // The simplex solver cannot handle negative sizes. To workaround that,
+    // if value is less than zero, we reverse the anchor and set the absolute
+    // value;
+    if (value >= 0) {
+        preferredSize = value;
+        if (reversed)
+            qSwap(data->from, data->to);
+        reversed = false;
+    } else {
+        preferredSize = -value;
+        if (!reversed)
+            qSwap(data->from, data->to);
+        reversed = true;
+    }
+
+    layoutPrivate->q_func()->invalidate();
 }
 
 void QGraphicsAnchorPrivate::unsetSpacing()
 {
-    if (data) {
-        layoutPrivate->setAnchorSize(data, 0);
-    } else {
+    if (!data) {
         qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+        return;
     }
+
+    // Return to standard direction
+    hasSize = false;
+    if (reversed)
+        qSwap(data->from, data->to);
+    reversed = false;
+
+    layoutPrivate->q_func()->invalidate();
 }
 
 qreal QGraphicsAnchorPrivate::spacing() const
 {
-    qreal size = 0;
-    if (data) {
-        layoutPrivate->anchorSize(data, 0, &size, 0);
-    } else {
+    if (!data) {
         qWarning("QGraphicsAnchor::setSpacing: The anchor does not exist.");
+        return 0;
     }
-    return size;
+
+    return reversed ? -preferredSize : preferredSize;
 }
 
 
@@ -146,8 +176,8 @@ bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
     qreal prefSizeHint;
     qreal maxSizeHint;
 
-    // It is an internal anchor
     if (item) {
+        // It is an internal anchor, fetch size information from the item
         if (isLayoutAnchor) {
             minSize = 0;
             prefSize = 0;
@@ -175,14 +205,16 @@ bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             }
         }
     } else {
+        // It is a user-created anchor, fetch size information from the associated QGraphicsAnchor
         Q_ASSERT(graphicsAnchor);
-        policy = graphicsAnchor->sizePolicy();
+        QGraphicsAnchorPrivate *anchorPrivate = graphicsAnchor->d_func();
+        policy = anchorPrivate->sizePolicy;
         minSizeHint = 0;
-        if (hasSize) {
+        if (anchorPrivate->hasSize) {
             // One can only configure the preferred size of a normal anchor. Their minimum and
             // maximum "size hints" are always 0 and QWIDGETSIZE_MAX, correspondingly. However,
             // their effective size hints might be narrowed down due to their size policies.
-            prefSizeHint = prefSize;
+            prefSizeHint = anchorPrivate->preferredSize;
         } else {
             const Qt::Orientation orient = Qt::Orientation(QGraphicsAnchorLayoutPrivate::edgeOrientation(from->m_edge) + 1);
             qreal s = styleInfo->defaultSpacing(orient);
@@ -1565,7 +1597,13 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
     correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
 
     AnchorData *data = new AnchorData;
-    if (!spacing) {
+    QGraphicsAnchor *graphicsAnchor = acquireGraphicsAnchor(data);
+
+    addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
+
+    if (spacing) {
+        graphicsAnchor->setSpacing(*spacing);
+    } else {
         // If firstItem or secondItem is the layout itself, the spacing will default to 0.
         // Otherwise, the following matrix is used (questionmark means that the spacing
         // is queried from the style):
@@ -1578,22 +1616,13 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
             || secondItem == q
             || pickEdge(firstEdge, Horizontal) == Qt::AnchorHorizontalCenter
             || oppositeEdge(firstEdge) != secondEdge) {
-            data->setPreferredSize(0);
+            graphicsAnchor->setSpacing(0);
         } else {
-            data->unsetSize();
+            graphicsAnchor->unsetSpacing();
         }
-        addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
-
-    } else if (*spacing >= 0) {
-        data->setPreferredSize(*spacing);
-        addAnchor_helper(firstItem, firstEdge, secondItem, secondEdge, data);
-
-    } else {
-        data->setPreferredSize(-*spacing);
-        addAnchor_helper(secondItem, secondEdge, firstItem, firstEdge, data);
     }
 
-    return acquireGraphicsAnchor(data);
+    return graphicsAnchor;
 }
 
 void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstItem,
@@ -1751,67 +1780,6 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorV
     // Decrease vertices reference count (may trigger a deletion)
     removeInternalVertex(v1->m_item, v1->m_edge);
     removeInternalVertex(v2->m_item, v2->m_edge);
-}
-
-/*!
-    \internal
-    Only called from outside. (calls invalidate())
-*/
-void QGraphicsAnchorLayoutPrivate::setAnchorSize(AnchorData *data, const qreal *anchorSize)
-{
-    Q_Q(QGraphicsAnchorLayout);
-    // ### we can avoid restoration if we really want to, but we would have to
-    // search recursively through all composite anchors
-    Q_ASSERT(data);
-    restoreSimplifiedGraph(edgeOrientation(data->from->m_edge));
-
-    QGraphicsLayoutItem *firstItem = data->from->m_item;
-    QGraphicsLayoutItem *secondItem = data->to->m_item;
-    Qt::AnchorPoint firstEdge = data->from->m_edge;
-    Qt::AnchorPoint secondEdge = data->to->m_edge;
-
-    // Use heuristics to find out what the user meant with this anchor.
-    correctEdgeDirection(firstItem, firstEdge, secondItem, secondEdge);
-    if (data->from->m_item != firstItem)
-        qSwap(data->from, data->to);
-
-    if (anchorSize) {
-        // ### The current implementation makes "setAnchorSize" behavior
-        //     dependent on the argument order for cases where we have
-        //     no heuristic. Ie. two widgets, same anchor point.
-
-        // We cannot have negative sizes inside the graph. This would cause
-        // the simplex solver to fail because all simplex variables are
-        // positive by definition.
-        // "negative spacing" is handled by inverting the standard item order.
-        if (*anchorSize >= 0) {
-            data->setPreferredSize(*anchorSize);
-        } else {
-            data->setPreferredSize(-*anchorSize);
-            qSwap(data->from, data->to);
-        }
-    } else {
-        data->unsetSize();
-    }
-    q->invalidate();
-}
-
-void QGraphicsAnchorLayoutPrivate::anchorSize(const AnchorData *data,
-                                              qreal *minSize,
-                                              qreal *prefSize,
-                                              qreal *maxSize) const
-{
-    Q_ASSERT(minSize || prefSize || maxSize);
-    Q_ASSERT(data);
-    QGraphicsAnchorLayoutPrivate *that = const_cast<QGraphicsAnchorLayoutPrivate *>(this);
-    that->restoreSimplifiedGraph(Orientation(data->orientation));
-
-    if (minSize)
-        *minSize = data->minSize;
-    if (prefSize)
-        *prefSize = data->prefSize;
-    if (maxSize)
-        *maxSize = data->maxSize;
 }
 
 AnchorVertex *QGraphicsAnchorLayoutPrivate::addInternalVertex(QGraphicsLayoutItem *item,
