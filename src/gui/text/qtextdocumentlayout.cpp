@@ -1448,7 +1448,7 @@ void QTextDocumentLayoutPrivate::drawListItem(const QPointF &offset, QPainter *p
         painter->fillRect(r, brush);
         break;
     case QTextListFormat::ListCircle:
-        painter->setPen(QPen(brush));
+        painter->setPen(QPen(brush, 0));
         painter->drawEllipse(r.translated(0.5, 0.5)); // pixel align for sharper rendering
         break;
     case QTextListFormat::ListDisc:
