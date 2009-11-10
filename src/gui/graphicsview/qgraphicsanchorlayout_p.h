@@ -267,7 +267,7 @@ inline QString AnchorVertex::toString() const
         const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
         return QString::fromAscii("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
     } else if (!m_item) {
-        return "";//QString::fromAscii("NULL_%1").arg(int(this));
+        return QString::fromAscii("NULL_%1").arg(int(this));
     }
     QString edge;
     switch (m_edge) {
