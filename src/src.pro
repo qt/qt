@@ -120,7 +120,7 @@ src_declarative.target = sub-declarative
 !symbian {
 # This creates a sub-src rule
 sub_src_target.CONFIG = recursive
-sub_src_target.recurse = $$SRC_SUBDIRS
+sub_src_target.recurse = $$TOOLS_SUBDIRS $$SRC_SUBDIRS
 sub_src_target.target = sub-src
 sub_src_target.recurse_target =
 QMAKE_EXTRA_TARGETS += sub_src_target
