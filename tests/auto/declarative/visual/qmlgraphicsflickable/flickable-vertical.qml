@@ -27,4 +27,11 @@ Rectangle {
             }
         }
     }
+    Rectangle {
+        radius: 3
+        x: Flick.width-8
+        width: 8
+        y: Flick.visibleArea.yPosition * Flick.height
+        height: Flick.visibleArea.heightRatio * Flick.height
+    }
 }
