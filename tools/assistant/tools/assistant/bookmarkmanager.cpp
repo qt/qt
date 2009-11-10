@@ -150,8 +150,8 @@ void BookmarkDialog::addNewFolder()
 
         const QString &name = index.data().toString();
         ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
+        renameFolder(index, newFolder);
     }
-    ui.treeView->setFocus();
 }
 
 void BookmarkDialog::toolButtonClicked()
@@ -243,14 +243,19 @@ void BookmarkDialog::customContextMenuRequested(const QPoint &point)
         if (index.isValid())
             name = index.data().toString();
         ui.bookmarkFolders->setCurrentIndex(ui.bookmarkFolders->findText(name));
+    } else if (picked == renameItem) {
+        renameFolder(index, proxyIndex);
     }
-    else if (picked == renameItem) {
-        BookmarkModel *model = bookmarkManager->treeBookmarkModel();
-        if (QStandardItem *item = model->itemFromIndex(proxyIndex)) {
-            item->setEditable(true);
-            ui.treeView->edit(index);
-            item->setEditable(false);
-        }
+}
+
+void BookmarkDialog::renameFolder(const QModelIndex &index,
+                                  const QModelIndex &proxyIndex)
+{
+    const BookmarkModel * const model = bookmarkManager->treeBookmarkModel();
+    if (QStandardItem *item = model->itemFromIndex(proxyIndex)) {
+        item->setEditable(true);
+        ui.treeView->edit(index);
+        item->setEditable(false);
     }
 }
 
