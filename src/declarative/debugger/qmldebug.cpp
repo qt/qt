@@ -107,31 +107,35 @@ int QmlEngineDebugPrivate::getId()
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugEnginesQuery *q)
 {
-    QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    if (p && q)
+    if (c && q) {
+        QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
         p->enginesQuery.remove(q->m_queryId);
+    }
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, 
                                    QmlDebugRootContextQuery *q)
 {
-    QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    if (p && q)
+    if (c && q) {
+        QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
         p->rootContextQuery.remove(q->m_queryId);
+    }
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugObjectQuery *q)
 {
-    QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    if (p && q)
+    if (c && q) {
+        QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
         p->objectQuery.remove(q->m_queryId);
+    }
 }
 
 void QmlEngineDebugPrivate::remove(QmlEngineDebug *c, QmlDebugExpressionQuery *q)
 {
-    QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
-    if (p && q)
+    if (c && q) {
+        QmlEngineDebugPrivate *p = (QmlEngineDebugPrivate *)QObjectPrivate::get(c);
         p->expressionQuery.remove(q->m_queryId);
+    }
 }
 
 
@@ -424,6 +428,9 @@ void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
 {
     Q_D(QmlEngineDebug);
 
+    if (!watch || watch->state() == QmlDebugWatch::Inactive || watch->state() == QmlDebugWatch::Dead)
+        return;
+
     watch->setState(QmlDebugWatch::Inactive);
     d->watched.remove(watch->queryId());
 
@@ -555,7 +562,8 @@ QmlDebugWatch::QmlDebugWatch(QObject *parent)
 
 QmlDebugWatch::~QmlDebugWatch()
 {
-    m_client->removeWatch(this);
+    if (m_client)
+        m_client->removeWatch(this);
 }
 
 int QmlDebugWatch::queryId() const
