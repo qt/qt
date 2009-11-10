@@ -22,6 +22,9 @@ information about a particular change.
  - QtDBus
    * The minimum required version of the D-Bus reference library is
      now 0.93.
+   * Support for reading and writing of custom property types added.
+   * Support for getting return arguments in remote method invocation
+     via QMetaMethod::invokeMethod.
 
  - [MR#1742] Added new multimedia keys to the Qt::Key enum.
 
@@ -53,17 +56,6 @@ Third party components
 ****************************************************************************
 *                          Library                                         *
 ****************************************************************************
-
-    * [245219] Added QXmlQuery::setFocus(const QString &focus);
-
- - QGraphicsBlurEffect
-    * Since the 4.6 beta Qt::RenderHint has been moved to
-      QGraphicsBlurEffect::BlurHint.
-
-    * Input contexts are not activated for disabled widgets anymore.
-
-    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
-      a Qt application.
 
 QtCore
 
@@ -99,23 +91,91 @@ QtCore
     * Improved performance of plugin loading by reusing the plugin cache instead of loading
       it every time.
 
-- QTextStream
+ - QRegExp
+    * New pattern syntax "QRegExp::WildcardUnix" with wildcard characters escaping
+
+ - QSharedPointer
+    * Added support for creating the object along the internal private
+      data in one single memory allocation. (QSharedPointer::create)
+    * Fixed a bug where, in a race condition, QSharedPointer could
+      track a pointer that was being deleted.
+
+ - QTextStream
     * [221316] Fixed crash on large input.
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
-- QXmlStreamWriter
+ - QUrl
+    * Made QUrl hostname parser a lot stricter, requiring compliance
+      to STD3 to validate, thus preventing invalid hostnames from
+      being accepted. See below in "Important Behavior Changes".
+
+ - QXmlStreamWriter
     * [256468] fix comment indentation
 
+ - QWeakPointer
+    * Added support for tracking QObject-derived classes that aren't
+      attached to a QSharedPointer.
+    * Added QWeakPointer::data which allows you to obtain the pointer
+      being tracked (without protection).
+
+ - QUuid
+    * [QTBUG-3543] Fixed a bug in createUuid() which caused multiple
+      threads to generate the identical UUID sequences
+
+ - QEventDispatcherGlib (internal class)
+    * Fix a regression introduced in 4.5.3 that would cause timers to not
+      be delivered.
+
+ - QEventDispatcherUNIX (internal class)
+    * Improve detection of monotonic clock support to include
+      non-POSIX.1-2001 compliant systems.
+    * [250681] Fix time change detection on UNIX systems without
+      monotonic timers.
+
+ - QEventDispatcherWin32 (internal class)
+    * Changed the threshold for using multimedia timers to 20ms (was 10ms).
+    * Changed the way Qt's posted events are sent by the event
+      dispatcher. The are now driven on top of a Windows message
+      instead of an explicit call in processEvents(). This means that
+      posted events are sent even when a Windows modal message loop is
+      running (for example, when the user is moving a window or when a
+      native modal dialog is visible).
+    * Fixed a bug that would allow the same timer id to be used by
+      multiple QTimer instances.
+
+ - QTextCodec
+    * Instantiate the CP949 codec when building with -no-iconv.
+
+ - QThread
+    * [249997] Document that QThread priority has no effect on Linux.
+
 QtGui
-- QGraphicsAnchorLayout
-    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6
+      Beta had support for it).
+
+ - QCalendarWidget
+    * [252943] QCalendarWidget::setDateTextFormat() reset the format if the date is invalid.
 
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix
 
+ - QEvent
+    * Introduced RequestSoftwareInputPanel and CloseSoftwareInputPanel events.
+
  - QFontDialog
     * [256466] fixed the dialog not always returning the selected style.
+
+ - QGraphicsBlurEffect
+    * Since the 4.6 beta Qt::RenderHint has been moved to
+      QGraphicsBlurEffect::BlurHint.
+
+    * Input contexts are not activated for disabled widgets anymore.
+
+    * [250555] Data copied from Mozilla Firefox can now be pasted correctly to
+      a Qt application.
 
  - QGraphicsItem
     * Fixed bug and improved accuracy of QGraphicsItem::childrenBoundingRect().
@@ -125,6 +185,7 @@ QtGui
     * Introduced QGraphicsItem::focusProxy(), focus proxy support
     * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
     * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced modality support for QGraphicsItem panels.
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
@@ -182,6 +243,7 @@ QtGui
 
  - QLineEdit
     * [248948] Clear selection when redoing a delete operation.
+    * [QTBUG-5261] Fixed: Erasing characters from textedits does not update the text
 
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is not yet show
@@ -216,6 +278,7 @@ QtGui
 
  - QPixmap
     * Optimized width(), height(), isNull() and depth().
+    * [QTBUG-2832] Fixed bug where calling fill on pixmap with active painter could crash.
 
  - QRegion
     * Minor optimizations.
@@ -242,7 +305,12 @@ QtGui
  - QSplitter
     * [206494] Added ability to style pressed slided with stylesheet
 
+ - QStroker
+    * [QTBUG-5212] Fixed bug where thick strokes around small shapes could
+      cause holes in the stroke.
+
  - QWidget
+    * Added inputMethodHints property.
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
@@ -256,11 +324,66 @@ QtGui
     * New qt_paint_device_metric() function to replace the friend
       declarations for window surface classes that need to access metric().
 
+ - QPainterPath
+    * [QTBUG-1537] Fixed bug where the points of a rounded rectangle were added
+      in counter-clockwise order instead of clockwise order like other shapes.
+
+ - QPen
+    * [QTBUG-2738] Made QPen::setDashOffset() work with non-custom dashed lines.
+
  - QPushButton
     * [255581] Fixed sizeHint recalculation bug.
 
+ - QRasterPaintEngine
+    * [QTBUG-4210] Fixed bug where bitmaps were painted black instead of in pen colour.
+
  - QApplication
-   * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+    * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+
+QtDBus
+
+ - QDBusConnection
+    * Made sending of invalid/incomplete messages consistently fail
+      with error (no more assertions).
+
+   - QPlainTextEdit
+    * Fixed crash when clicking on a text edit which was smaller than the 
+      height of the font used.
+	  
+ - QPrinter 
+    * [QTBUG-4497] Removed redundant SetPen command in the postscript code 
+      when reusing a QPrinter object.
+
+ - QTextLayout
+    * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
+      column width.
+	* [176401] Take into account the negative right bearing of the last 
+      character in an item of text if the glyph extends beyond its ascent.
+	
+ - QTextDocument
+    * [207189] Support setting font size using short hand syntax in the 
+      CSS "font" property.
+	* [201228] Remove implicit margin on bullet lists when exporting to 
+      HTML.
+	* [240086] Fixed bug which caused floating objects which span several
+      pages to float into the second page of the document even when it's
+      the only existing object, causing the document to contain a blank
+      first page.
+	* [240325] Even when wrap mode is set to Qt::TextWordWrap, the layout
+      would sometimes break outside word boundaries when floating objects
+      affected the width available to the text. This has been fixed.
+ 
+ - QFontEngine 
+    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which 
+      also contain a regular unicode table for exactly the symbol range of
+      code points.
+	  
+ - QFontMetrics	  
+    * [176401] Account for right bearing in bounding rect.
+
+ - QPlastiqueStyle
+    * [QTBUG-3555] Fixed a bug in the Plastique style that would cause an
+      ASSERT failure in QFont when the application font has a pixel size set.
 
 QtNetwork
 
@@ -371,10 +494,32 @@ QtSql
    * QSqlDatabase now has a database level precisionPolicy. Queries now default to this.
    * Add proper iODBC linking support.
 
+QtSvg
+
+ - QSvgHandler
+   * [245602] [204686] Fixed gradient and solid-color referencing.
+   * [202426] Made attribute inheritance work with 'use' tags.
+   * [250618] Fixed gradient on strokes.
+   * [254040] Added support for 'vector-effect'.
+   
+ - QSvgPaintEngine
+   * [257052] Changed drawImage() to ignore aspect ratio.
+
 QtXml
 
-- QDomDocument
+ - QDomDocument
     * set the codec to UTF-8 if codec not present or unknown
+
+QtXmlPatterns
+
+ - QXmlQuery
+    * [245219] Added QXmlQuery::setFocus(const QString &focus);
+
+Qt Plugins
+
+ - Tiff plugin
+    * [258526] Rotate the image if the tiff file contains an orientation tag
+    * [254317] Add support for mono and indexed format
 
 ****************************************************************************
 *                      Platform Specific Changes                           *
@@ -382,6 +527,20 @@ QtXml
 
  - Added community supported Qt ports for QNX and VxWorks. See platform
    notes in the Qt documentation for details.
+
+ - Improved support for AIX using IBM's Visual Age C/C++ compiler
+   version 7 (xlC).
+
+ - Improved support for Solaris using Sun Studio 12 (CC 5.9).
+
+Qt for Unix (X11 and Mac OS X)
+------------------------------
+
+ - Added support for thread-safe FD_CLOEXEC file-descriptor creation
+   where supported by the operating system (currently only Linux).
+
+ - Ensured that system calls where EINTR is a possible result are
+   properly restarted.
 
 Qt for Linux/X11
 ----------------
@@ -402,6 +561,9 @@ Qt for Linux/X11
    when using Synergy.
  - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
  - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+ 
+ - [QTBUG-3620] Fixed bug on X11 that caused bitmap fonts to become so small 
+   it was unreadable when printed or presented in a print preview widget. 
 
  - Improved EGL integration on X11 (including better visual selection).
 
@@ -419,6 +581,24 @@ Qt for Linux/X11
  - Add new experimental QX11GLPixmapData backend for QPixmap. This pixmap
    backend uses regular X11 pixmaps to store the image data, however it uses
    OpenGL to render into them.
+
+ - Tablet: Disable event compression of events of type QTabletEvent when the
+   current event is accepted by the receiver.
+
+ - [QTBUG-4242] Fixed a bug that allowed the user to close a window
+   event though the program is using the QEventLoop::ExcludeUserInputEvents
+   flag.
+
+ - [255559] Fixed generation of XdndLeave events to include the
+   correct source id.
+
+ - [258319] Avoid division by zero on some Xlib/Xserver implementations.
+
+ - Fixed the default QWidget size on X servers with Xinerama to give widgets
+   a default size that should fit on a single screen.
+
+ - Support _NET_WORKAREA on X servers with Xinerama (previously this property
+   was ignored).
 
 Qt for Windows
 --------------
@@ -456,6 +636,12 @@ Qt for Windows
      rendering.
    * Fixed a flicker issue when switching source with a transition time of 0
 
+ - [QTBUG-4445] Fixed bug on Windows that caused problems when printing 
+   text where several characters were represented by a single glyph, e.g. 
+   a double 't' with the Calibri font.
+   
+ - Added QSysInfo::WV_WINDOWS7 and QSysInfo::WV_6_1
+
 Qt for Mac OS X
 ---------------
 
@@ -481,6 +667,23 @@ General changes on Mac OS X:
       Use the -arch flags to override.
     - Building for ppc64 is no longer supported by the gcc tool chain.
     - Building for ppc is still supported.
+
+Cocoa:
+- Fixed stacking order of modal dialogs so that they never rearrange level, or
+  hide in the background.
+- Fixed problem with plugins written with Qt that closes down the native application
+  when hiding a modal dialog.
+- Fixed problem that native applications cannot quit when using plugins written with
+  Qt from a native application.
+- Fixed problem that the menubar is not restored correctly when using plugins written
+  with Qt from a native application.
+- The event dispatcher now integrates better with native applications that spins the
+  event loop them selves.
+- Using Qt::AA_MacPluginApplication will now disable the use of native menubars on mac.
+- Sliders and scroll views in Qt now uses pixel scrolling for mouse devices
+  that supports this.
+- Wheel events can now contain a delta with a value as low as 1 for mouse devices that
+  uses pixel scrolling.
 
 Qt for Embedded Linux
 ---------------------
@@ -535,7 +738,7 @@ Qt for Windows CE
  - [257352] When configuring Qt for Windows CE, configure points the user to
    setcepaths, when its done.
  - [259850] Added a makespec template for Windows CE 6.
-
+   
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
