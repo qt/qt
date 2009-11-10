@@ -121,10 +121,10 @@ struct AnchorData : public QSimplexVariable {
     };
 
     AnchorData()
-        : QSimplexVariable(), item(0), from(0), to(0),
+        : QSimplexVariable(), from(0), to(0),
           minSize(0), prefSize(0), maxSize(0),
           sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtMaximum(0),
+          sizeAtMaximum(0), item(0),
           graphicsAnchor(0), skipInPreferred(0),
           type(Normal), hasSize(true), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
@@ -152,27 +152,32 @@ struct AnchorData : public QSimplexVariable {
         hasSize = false;
     }
 
-    // Internal anchors have associated items
-    QGraphicsLayoutItem *item;
-
     // Anchor is semantically directed
     AnchorVertex *from;
     AnchorVertex *to;
 
-    // Size restrictions of this edge. For anchors internal to items, these
-    // values are derived from the respective item size hints. For anchors
-    // that were added by users, these values are equal to the specified anchor
-    // size.
+    // Nominal sizes
+    // These are the intrinsic size restrictions for a given item. They are
+    // used as input for the calculation of the actual sizes.
+    // These values are filled by the refreshSizeHints method, based on the
+    // anchor size policy, the size hints of the item it (possibly) represents
+    // and the layout spacing information.
     qreal minSize;
     qreal prefSize;
     qreal maxSize;
 
+    // Calculated sizes
     // These attributes define which sizes should that anchor be in when the
     // layout is at its minimum, preferred or maximum sizes. Values are
     // calculated by the Simplex solver based on the current layout setup.
     qreal sizeAtMinimum;
     qreal sizeAtPreferred;
     qreal sizeAtMaximum;
+
+    // References to the classes that represent this anchor in the public world
+    // An anchor may represent a LayoutItem, it may also be acessible externally
+    // through a GraphicsAnchor "handler".
+    QGraphicsLayoutItem *item;
     QGraphicsAnchor *graphicsAnchor;
 
     uint skipInPreferred : 1;
