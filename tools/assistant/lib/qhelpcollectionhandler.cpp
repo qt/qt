@@ -308,10 +308,8 @@ bool QHelpCollectionHandler::addCustomFilter(const QString &filterName,
     m_query.prepare(QLatin1String("SELECT Id FROM FilterNameTable WHERE Name=?"));
     m_query.bindValue(0, filterName);
     m_query.exec();
-    while (m_query.next()) {
+    if (m_query.next())
         nameId = m_query.value(0).toInt();
-        break;
-    }
 
     m_query.exec(QLatin1String("SELECT Id, Name FROM FilterAttributeTable"));
     QStringList idsToInsert = attributes;
