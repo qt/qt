@@ -49,6 +49,7 @@
 #include <QtGui/qstyleoption.h>
 
 #include "../../shared/util.h"
+#include <private/qgraphicseffect_p.h>
 
 //TESTED_CLASS=
 //TESTED_FILES=
@@ -131,16 +132,16 @@ public:
     int margin() const
     { return m_margin; }
 
-    void draw(QPainter *painter, QGraphicsEffectSource *source)
+    void draw(QPainter *painter)
     {
         ++numRepaints;
         if (doNothingInDraw)
             return;
-        m_source = source;
+        m_source = source();
         m_painter = painter;
-        m_styleOption = source->styleOption();
+        m_styleOption = source()->styleOption();
         m_opacity = painter->opacity();
-        source->draw(painter);
+        drawSource(painter);
     }
 
     void sourceChanged(QGraphicsEffect::ChangeFlags flags)
