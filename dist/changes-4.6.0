@@ -230,6 +230,9 @@ QtGui
     * Interactive resizing of top level windows now respects height-for-width constraints.
     * Reduced memory footprint.
 
+ - QAbstractItemView
+    * [256502] Fixes selectionModel::hasSelection return value after model::reset
+
  - QHeaderView
     * [208320] Make sure the sort indicator s taken into account for the size hint
     * [255574] Make sure the sizehint for the section depend on visible sections
@@ -275,6 +278,9 @@ QtGui
     * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab names
       to be slightly clipped.
     * [241383] Added ability to style the close tab button with style sheet
+
+ - QImageReader
+    * [255627] Fix floating point exception in QImageReader::setScaledSize(QSize(0, 0))
 
  - QComboBox
     * [220195] Fixed keyboard search when current index is -1
@@ -928,10 +934,11 @@ Qt for Windows CE
    * currentLoopTime() returns the time inside the current loop
    * stateChanged signal sends the new state as first parameter and old state as
      the second
-   * QAnimationGroup::clearAnimations() has been renames to clear()
-   * QAnimationGroup::insertAnimationAt() has been renames to insertAnimation()
-   * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
-   * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
+   * QAnimationGroup::clearAnimations() has been renamed to clear()
+   * QAnimationGroup::insertAnimationAt() has been renamed to insertAnimation()
+   * QAnimationGroup::takeAnimationAt() has been renamed to takeAnimation()
+   * QSequentialAnimationGroup::insertPauseAt() has been renamed to insertPause()
+   * [QT-941] Avoids timer ticks when there are only pause animations running
 
 - Refactoring in OpenGL examples to improve portability and utilize the
   Animation framework for animation.  The hellogl and overpainting examples
