@@ -301,32 +301,6 @@ short QS60StylePrivate::pixelMetric(int metric)
     return returnValue;
 }
 
-void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
-{
-    if (name == propertyKeyCurrentlayout) {
-        static const QStringList layouts = styleProperty(propertyKeyLayouts).toStringList();
-        const QString layout = value.toString();
-        Q_ASSERT(layouts.contains(layout));
-        const int layoutIndex = layouts.indexOf(layout);
-        setCurrentLayout(layoutIndex);
-        QApplication::setLayoutDirection(m_layoutHeaders[layoutIndex].mirroring ? Qt::RightToLeft : Qt::LeftToRight);
-        clearCaches();
-        refreshUI();
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty(const char *name) const
-{
-    if (name == propertyKeyLayouts) {
-        static QStringList layouts;
-        if (layouts.isEmpty())
-            for (int i = 0; i < m_numberOfLayouts; i++)
-                layouts.append(QLatin1String(m_layoutHeaders[i].layoutName));
-        return layouts;
-    }
-    return QVariant();
-}
-
 QColor QS60StylePrivate::stateColor(const QColor &color, const QStyleOption *option)
 {
     QColor retColor (color);
@@ -2870,24 +2844,6 @@ void QS60Style::unpolish(QApplication *application)
     const QPalette newPalette = QApplication::style()->standardPalette();
     QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
-}
-
-/*!
-  Sets the style property \a name to the \a value.
- */
-void QS60Style::setStyleProperty(const char *name, const QVariant &value)
-{
-    Q_D(QS60Style);
-    d->setStyleProperty_specific(name, value);
-}
-
-/*!
-  Returns the value of style property \a name.
- */
-QVariant QS60Style::styleProperty(const char *name) const
-{
-    Q_D(const QS60Style);
-    return d->styleProperty_specific(name);
 }
 
 /*!
