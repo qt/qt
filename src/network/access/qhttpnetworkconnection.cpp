@@ -206,7 +206,7 @@ void QHttpNetworkConnectionPrivate::prepareRequest(HttpMessagePair &messagePair)
             acceptLanguage = QString::fromAscii("%1,*").arg(systemLocale);
         else
             acceptLanguage = QString::fromAscii("%1,en,*").arg(systemLocale);
-        request.setHeaderField("accept-language", acceptLanguage.toAscii());
+        request.setHeaderField("Accept-Language", acceptLanguage.toAscii());
     }
 
     // set the User Agent
