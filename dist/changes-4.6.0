@@ -512,6 +512,16 @@ Qt for Embedded Linux
 
 - Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
 
+- Send enter/leave events also to child widgets
+
+- Fix crash when instantiating multiple QApplications
+
+- Optimize software cursor by using native image format instead of 8-bit
+
+- [255828] Avoid window decoration flicker on show
+
+- [255495] Fix blend function crash on AVR32
+
 Qt for Windows CE
 -----------------
  - On Windows CE the link time code generation has been disabled by default to
