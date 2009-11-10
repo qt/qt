@@ -49,7 +49,7 @@ TestHTTPServer::TestHTTPServer(quint16 port)
 {
     QObject::connect(&server, SIGNAL(newConnection()), this, SLOT(newConnection()));
 
-    server.listen(QHostAddress::Any, port);
+    server.listen(QHostAddress::LocalHost, port);
 }
 
 bool TestHTTPServer::isValid() const
