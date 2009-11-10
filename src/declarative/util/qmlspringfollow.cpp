@@ -55,7 +55,7 @@ class QmlSpringFollowPrivate : public QObjectPrivate
     Q_DECLARE_PUBLIC(QmlSpringFollow)
 public:
     QmlSpringFollowPrivate()
-        : sourceValue(0), maxVelocity(0), lastTime(0)
+        : currentValue(0), sourceValue(0), maxVelocity(0), lastTime(0)
         , mass(1.0), spring(0.), damping(0.), velocity(0), epsilon(0.01)
         , modulus(0.0), useMass(false), haveModulus(false), enabled(true), mode(Track), clock(this) {}
 
