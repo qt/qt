@@ -38,7 +38,7 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-
+#ifndef QT_NO_ICON
 #include <private/qiconloader_p.h>
 
 #include <private/qapplication_p.h>
@@ -61,7 +61,6 @@
 
 #ifdef Q_WS_X11
 #include <private/qt_x11_p.h>
-#include <private/gtksymbols_p.h>
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -92,11 +91,13 @@ QIconLoader::QIconLoader() :
     if (m_systemTheme.isEmpty())
         m_systemTheme = fallbackTheme();
 
+#ifndef QT_NO_LIBRARY
     QFactoryLoader iconFactoryLoader(QIconEngineFactoryInterfaceV2_iid,
                                      QLatin1String("/iconengines"),
                                      Qt::CaseInsensitive);
     if (iconFactoryLoader.keys().contains(QLatin1String("svg")))
         m_supportsSvg = true;
+#endif //QT_NO_LIBRARY
 }
 
 QIconLoader *QIconLoader::instance()
@@ -160,7 +161,7 @@ QIconTheme::QIconTheme(const QString &themeName)
             break;
         }
     }
-
+#ifndef QT_NO_SETTINGS
     if (themeIndex.exists()) {
         const QSettings indexReader(themeIndex.fileName(), QSettings::IniFormat);
         QStringListIterator keyIterator(indexReader.allKeys());
@@ -213,6 +214,7 @@ QIconTheme::QIconTheme(const QString &themeName)
         if (!m_parents.contains(QLatin1String("hicolor")))
             m_parents.append(QLatin1String("hicolor"));
     }
+#endif //QT_NO_SETTINGS
 }
 
 QThemeIconEntries QIconLoader::findIconHelper(const QString &themeName,
@@ -546,3 +548,5 @@ void QIconLoaderEngine::virtual_hook(int id, void *data)
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_ICON

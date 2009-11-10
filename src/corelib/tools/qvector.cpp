@@ -45,7 +45,14 @@
 
 QT_BEGIN_NAMESPACE
 
-QVectorData QVectorData::shared_null = { Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, true, false };
+static inline int alignmentThreshold()
+{
+    // malloc on 32-bit platforms should return pointers that are 8-byte aligned or more
+    // while on 64-bit platforms they should be 16-byte aligned or more
+    return 2 * sizeof(void*);
+}
+
+QVectorData QVectorData::shared_null = { Q_BASIC_ATOMIC_INITIALIZER(1), 0, 0, true, false, 0 };
 
 QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVectorData *init)
 {
@@ -53,6 +60,26 @@ QVectorData *QVectorData::malloc(int sizeofTypedData, int size, int sizeofT, QVe
     Q_CHECK_PTR(p);
     ::memcpy(p, init, sizeofTypedData + (qMin(size, init->alloc) - 1) * sizeofT);
     return p;
+}
+
+QVectorData *QVectorData::allocate(int size, int alignment)
+{
+    return static_cast<QVectorData *>(alignment > alignmentThreshold() ? qMallocAligned(size, alignment) : qMalloc(size));
+}
+
+QVectorData *QVectorData::reallocate(QVectorData *x, int newsize, int oldsize, int alignment)
+{
+    if (alignment > alignmentThreshold())
+        return static_cast<QVectorData *>(qReallocAligned(x, newsize, oldsize, alignment));
+    return static_cast<QVectorData *>(qRealloc(x, newsize));
+}
+
+void QVectorData::free(QVectorData *x, int alignment)
+{
+    if (alignment > alignmentThreshold())
+        qFreeAligned(x);
+    else
+        qFree(x);
 }
 
 int QVectorData::grow(int sizeofTypedData, int size, int sizeofT, bool excessive)

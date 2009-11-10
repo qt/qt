@@ -21,6 +21,9 @@
 
 #include <QtTest/QtTest>
 
+#include <qgraphicsscene.h>
+#include <qgraphicsview.h>
+#include <qgraphicswebview.h>
 #include <qwebelement.h>
 #include <qwebpage.h>
 #include <qwidget.h>
@@ -36,6 +39,10 @@
 #include <qwebdatabase.h>
 #include <QPushButton>
 #include <QDir>
+
+#if defined(Q_OS_SYMBIAN)
+# define SRCDIR ""
+#endif
 
 // Will try to wait for the condition while allowing event processing
 #define QTRY_COMPARE(__expr, __expected) \
@@ -120,6 +127,7 @@ private slots:
     void testOptionalJSObjects();
     void testEnablePersistentStorage();
     void consoleOutput();
+    void inputMethods_data();
     void inputMethods();
     void defaultTextEncoding();
     void errorPageExtension();
@@ -128,6 +136,8 @@ private slots:
 
     void screenshot_data();
     void screenshot();
+
+    void originatingObjectInNetworkRequests();
 
 private:
     QWebView* m_view;
@@ -234,7 +244,6 @@ void tst_QWebPage::loadFinished()
 {
     qRegisterMetaType<QWebFrame*>("QWebFrame*");
     qRegisterMetaType<QNetworkRequest*>("QNetworkRequest*");
-    QSignalSpy spyNetworkRequestStarted(m_page, SIGNAL(networkRequestStarted(QWebFrame*, QNetworkRequest*)));
     QSignalSpy spyLoadStarted(m_view, SIGNAL(loadStarted()));
     QSignalSpy spyLoadFinished(m_view, SIGNAL(loadFinished(bool)));
 
@@ -245,7 +254,6 @@ void tst_QWebPage::loadFinished()
 
     QTest::qWait(3000);
 
-    QVERIFY(spyNetworkRequestStarted.count() > 1);
     QVERIFY(spyLoadStarted.count() > 1);
     QVERIFY(spyLoadFinished.count() > 1);
 
@@ -346,9 +354,11 @@ public:
     TestNetworkManager(QObject* parent) : QNetworkAccessManager(parent) {}
 
     QList<QUrl> requestedUrls;
+    QList<QNetworkRequest> requests;
 
 protected:
     virtual QNetworkReply* createRequest(Operation op, const QNetworkRequest &request, QIODevice* outgoingData) {
+        requests.append(request);
         requestedUrls.append(request.url());
         return QNetworkAccessManager::createRequest(op, request, outgoingData);
     }
@@ -450,7 +460,6 @@ void tst_QWebPage::database()
     QVERIFY(QWebSettings::offlineStorageDefaultQuota() == 1024 * 1024);
 
     m_page->settings()->setAttribute(QWebSettings::LocalStorageEnabled, true);
-    m_page->settings()->setAttribute(QWebSettings::SessionStorageEnabled, true);
     m_page->settings()->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, true);
 
     QString dbFileName = path + "Databases.db";
@@ -1262,28 +1271,87 @@ void tst_QWebPage::frameAt()
     frameAtHelper(webPage, webPage->mainFrame(), webPage->mainFrame()->pos());
 }
 
+void tst_QWebPage::inputMethods_data()
+{
+    QTest::addColumn<QString>("viewType");
+    QTest::newRow("QWebView") << "QWebView";
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    QTest::newRow("QGraphicsWebView") << "QGraphicsWebView";
+#endif
+}
+
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+static Qt::InputMethodHints inputMethodHints(QObject* object)
+{
+    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
+        return o->inputMethodHints();
+    if (QWidget* w = qobject_cast<QWidget*>(object))
+        return w->inputMethodHints();
+    return Qt::InputMethodHints();
+}
+#endif
+
+static bool inputMethodEnabled(QObject* object)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    if (QGraphicsObject* o = qobject_cast<QGraphicsObject*>(object))
+        return o->flags() & QGraphicsItem::ItemAcceptsInputMethod;
+#endif
+    if (QWidget* w = qobject_cast<QWidget*>(object))
+        return w->testAttribute(Qt::WA_InputMethodEnabled);
+    return false;
+}
+
 void tst_QWebPage::inputMethods()
 {
-    m_view->page()->mainFrame()->setHtml("<html><body>" \
+    QFETCH(QString, viewType);
+    QWebPage* page = new QWebPage;
+    QObject* view = 0;
+    QObject* container = 0;
+    if (viewType == "QWebView") {
+        QWebView* wv = new QWebView;
+        wv->setPage(page);
+        view = wv;
+        container = view;
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    else if (viewType == "QGraphicsWebView") {
+        QGraphicsWebView* wv = new QGraphicsWebView;
+        wv->setPage(page);
+        view = wv;
+
+        QGraphicsView* gv = new QGraphicsView;
+        QGraphicsScene* scene = new QGraphicsScene(gv);
+        gv->setScene(scene);
+        scene->addItem(wv);
+        wv->setGeometry(QRect(0, 0, 500, 500));
+
+        container = gv;
+    }
+#endif
+    else
+        QVERIFY2(false, "Unknown view type");
+
+    page->mainFrame()->setHtml("<html><body>" \
                                             "<input type='text' id='input1' style='font-family: serif' value='' maxlength='20'/><br>" \
                                             "<input type='password'/>" \
                                             "</body></html>");
-    m_view->page()->mainFrame()->setFocus();
+    page->mainFrame()->setFocus();
 
-    QList<QWebElement> inputs = m_view->page()->mainFrame()->documentElement().findAll("input");
+    QWebElementCollection inputs = page->mainFrame()->documentElement().findAll("input");
 
     QMouseEvent evpres(QEvent::MouseButtonPress, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    m_view->page()->event(&evpres);
+    page->event(&evpres);
     QMouseEvent evrel(QEvent::MouseButtonRelease, inputs.at(0).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    m_view->page()->event(&evrel);
+    page->event(&evrel);
 
     //ImMicroFocus
-    QVariant variant = m_view->page()->inputMethodQuery(Qt::ImMicroFocus);
+    QVariant variant = page->inputMethodQuery(Qt::ImMicroFocus);
     QRect focusRect = variant.toRect();
     QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
 
     //ImFont
-    variant = m_view->page()->inputMethodQuery(Qt::ImFont);
+    variant = page->inputMethodQuery(Qt::ImFont);
     QFont font = variant.value<QFont>();
     QCOMPARE(QString("-webkit-serif"), font.family());
 
@@ -1292,45 +1360,45 @@ void tst_QWebPage::inputMethods()
     //Insert text.
     {
         QInputMethodEvent eventText("QtWebKit", inputAttributes);
-        QSignalSpy signalSpy(m_view->page(), SIGNAL(microFocusChanged()));
-        m_view->page()->event(&eventText);
+        QSignalSpy signalSpy(page, SIGNAL(microFocusChanged()));
+        page->event(&eventText);
         QCOMPARE(signalSpy.count(), 0);
     }
 
     {
         QInputMethodEvent eventText("", inputAttributes);
         eventText.setCommitString(QString("QtWebKit"), 0, 0);
-        m_view->page()->event(&eventText);
+        page->event(&eventText);
     }
 
 #if QT_VERSION >= 0x040600
     //ImMaximumTextLength
-    variant = m_view->page()->inputMethodQuery(Qt::ImMaximumTextLength);
+    variant = page->inputMethodQuery(Qt::ImMaximumTextLength);
     QCOMPARE(20, variant.toInt());
 
     //Set selection
     inputAttributes << QInputMethodEvent::Attribute(QInputMethodEvent::Selection, 3, 2, QVariant());
     QInputMethodEvent eventSelection("",inputAttributes);
-    m_view->page()->event(&eventSelection);
+    page->event(&eventSelection);
 
     //ImAnchorPosition
-    variant = m_view->page()->inputMethodQuery(Qt::ImAnchorPosition);
+    variant = page->inputMethodQuery(Qt::ImAnchorPosition);
     int anchorPosition =  variant.toInt();
     QCOMPARE(anchorPosition, 3);
 
     //ImCursorPosition
-    variant = m_view->page()->inputMethodQuery(Qt::ImCursorPosition);
+    variant = page->inputMethodQuery(Qt::ImCursorPosition);
     int cursorPosition =  variant.toInt();
     QCOMPARE(cursorPosition, 5);
 
     //ImCurrentSelection
-    variant = m_view->page()->inputMethodQuery(Qt::ImCurrentSelection);
+    variant = page->inputMethodQuery(Qt::ImCurrentSelection);
     QString selectionValue = variant.value<QString>();
     QCOMPARE(selectionValue, QString("eb"));
 #endif
 
     //ImSurroundingText
-    variant = m_view->page()->inputMethodQuery(Qt::ImSurroundingText);
+    variant = page->inputMethodQuery(Qt::ImSurroundingText);
     QString value = variant.value<QString>();
     QCOMPARE(value, QString("QtWebKit"));
 
@@ -1341,29 +1409,31 @@ void tst_QWebPage::inputMethods()
         QInputMethodEvent::Attribute newSelection(QInputMethodEvent::Selection, 0, 0, QVariant());
         attributes.append(newSelection);
         QInputMethodEvent event("composition", attributes);
-        m_view->page()->event(&event);
+        page->event(&event);
     }
 
     // A ongoing composition should not change the surrounding text before it is committed.
-    variant = m_view->page()->inputMethodQuery(Qt::ImSurroundingText);
+    variant = page->inputMethodQuery(Qt::ImSurroundingText);
     value = variant.value<QString>();
     QCOMPARE(value, QString("QtWebKit"));
 #endif
 
     //ImhHiddenText
     QMouseEvent evpresPassword(QEvent::MouseButtonPress, inputs.at(1).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    m_view->page()->event(&evpresPassword);
+    page->event(&evpresPassword);
     QMouseEvent evrelPassword(QEvent::MouseButtonRelease, inputs.at(1).geometry().center(), Qt::LeftButton, Qt::NoButton, Qt::NoModifier);
-    m_view->page()->event(&evrelPassword);
+    page->event(&evrelPassword);
 
-    QVERIFY(m_view->testAttribute(Qt::WA_InputMethodEnabled));
+    QVERIFY(inputMethodEnabled(view));
 #if QT_VERSION >= 0x040600
-    QVERIFY(m_view->inputMethodHints() & Qt::ImhHiddenText);
+    QVERIFY(inputMethodHints(view) & Qt::ImhHiddenText);
 
-    m_view->page()->event(&evpres);
-    m_view->page()->event(&evrel);
-    QVERIFY(!(m_view->inputMethodHints() & Qt::ImhHiddenText));
+    page->event(&evpres);
+    page->event(&evrel);
+    QVERIFY(!(inputMethodHints(view) & Qt::ImhHiddenText));
 #endif
+
+    delete container;
 }
 
 // import a little DRT helper function to trigger the garbage collector
@@ -1438,11 +1508,6 @@ void tst_QWebPage::testOptionalJSObjects()
     QCOMPARE(testFlag(webPage2, QWebSettings::LocalStorageEnabled, "localStorage", true),  true);
     QCOMPARE(testFlag(webPage1, QWebSettings::LocalStorageEnabled, "localStorage", false), false);
     QCOMPARE(testFlag(webPage2, QWebSettings::LocalStorageEnabled, "localStorage", false), true);
-
-    QCOMPARE(testFlag(webPage1, QWebSettings::SessionStorageEnabled, "sessionStorage", false), false);
-    QCOMPARE(testFlag(webPage2, QWebSettings::SessionStorageEnabled, "sessionStorage", true),  true);
-    QCOMPARE(testFlag(webPage1, QWebSettings::SessionStorageEnabled, "sessionStorage", false), false);
-    QCOMPARE(testFlag(webPage2, QWebSettings::SessionStorageEnabled, "sessionStorage", false), true);
 }
 
 void tst_QWebPage::testEnablePersistentStorage()
@@ -1607,6 +1672,28 @@ void tst_QWebPage::screenshot()
     delete view;
 
     QDir::setCurrent(QApplication::applicationDirPath());
+}
+
+void tst_QWebPage::originatingObjectInNetworkRequests()
+{
+    TestNetworkManager* networkManager = new TestNetworkManager(m_page);
+    m_page->setNetworkAccessManager(networkManager);
+    networkManager->requests.clear();
+
+    m_view->setHtml(QString("data:text/html,<frameset cols=\"25%,75%\"><frame src=\"data:text/html,"
+                            "<head><meta http-equiv='refresh' content='1'></head>foo \">"
+                            "<frame src=\"data:text/html,bar\"></frameset>"), QUrl());
+    QVERIFY(::waitForSignal(m_view, SIGNAL(loadFinished(bool))));
+
+    QCOMPARE(networkManager->requests.count(), 2);
+
+    QList<QWebFrame*> childFrames = m_page->mainFrame()->childFrames();
+    QCOMPARE(childFrames.count(), 2);
+
+#if QT_VERSION >= QT_VERSION_CHECK(4, 6, 0)
+    for (int i = 0; i < 2; ++i)
+        QVERIFY(qobject_cast<QWebFrame*>(networkManager->requests.at(i).originatingObject()) == childFrames.at(i));
+#endif
 }
 
 QTEST_MAIN(tst_QWebPage)

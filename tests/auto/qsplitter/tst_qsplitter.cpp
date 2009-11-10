@@ -102,6 +102,8 @@ private slots:
     void task187373_addAbstractScrollAreas();
     void task187373_addAbstractScrollAreas_data();
     void task169702_sizes();
+    void taskQTBUG_4101_ensureOneNonCollapsedWidget_data();
+    void taskQTBUG_4101_ensureOneNonCollapsedWidget();
 
 private:
     void removeThirdWidget();
@@ -1281,6 +1283,8 @@ class MyFriendlySplitter : public QSplitter
 public:
     MyFriendlySplitter(QWidget *parent = 0) : QSplitter(parent) {}
     void setRubberBand(int pos) { QSplitter::setRubberBand(pos); }
+
+    friend class tst_QSplitter;
 };
 
 void tst_QSplitter::rubberBandNotInSplitter()
@@ -1401,6 +1405,36 @@ void tst_QSplitter::task169702_sizes()
 
     //Make sure the minimimSizeHint is respected
     QCOMPARE(testW->size().height(), testW->minimumSizeHint().height());
+}
+
+void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget_data()
+{
+    QTest::addColumn<bool>("testingHide");
+
+    QTest::newRow("last non collapsed hidden") << true;
+    QTest::newRow("last non collapsed deleted") << false;
+}
+
+void tst_QSplitter::taskQTBUG_4101_ensureOneNonCollapsedWidget()
+{
+    QFETCH(bool, testingHide);
+
+    MyFriendlySplitter s;
+    QLabel *l;
+    for (int i = 0; i < 5; ++i) {
+        l = new QLabel(QString("Label ") + QChar('A' + i));
+        l->setAlignment(Qt::AlignCenter);
+        s.addWidget(l);
+        s.moveSplitter(0, i);  // Collapse all the labels except the last one.
+    }
+
+    s.show();
+    if (testingHide)
+        l->hide();
+    else
+        delete l;
+    QTest::qWait(100);
+    QVERIFY(s.sizes().at(0) > 0);
 }
 
 QTEST_MAIN(tst_QSplitter)

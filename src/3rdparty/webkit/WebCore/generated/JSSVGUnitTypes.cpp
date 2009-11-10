@@ -142,7 +142,7 @@ JSSVGUnitTypes::JSSVGUnitTypes(NonNullPassRefPtr<Structure> structure, JSDOMGlob
 
 JSSVGUnitTypes::~JSSVGUnitTypes()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSSVGUnitTypes::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

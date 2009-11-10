@@ -63,3 +63,52 @@ line c++ comment } (with brace)
 #define This is another // comment in } define \
      something } comment
 } // complain here
+
+
+
+// Nested class in same file
+class TopLevel {
+    Q_OBJECT
+
+    class Nested;
+};
+
+class TopLevel::Nested {
+    void foo();
+};
+
+TopLevel::Nested::foo()
+{
+    TopLevel::tr("TopLevel");
+}
+
+// Nested class in other file
+#include "main.h"
+
+class TopLevel2::Nested {
+    void foo();
+};
+
+TopLevel2::Nested::foo()
+{
+    TopLevel2::tr("TopLevel2");
+}
+
+
+
+namespace NameSpace {
+class ToBeUsed;
+}
+
+// using statement before class definition
+using NameSpace::ToBeUsed;
+
+class NameSpace::ToBeUsed {
+    Q_OBJECT
+    void caller();
+};
+
+void ToBeUsed::caller()
+{
+    tr("NameSpace::ToBeUsed");
+}

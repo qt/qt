@@ -174,12 +174,11 @@ void MainWindow::highlightAllLinks()
 //! [8]
 void MainWindow::rotateImages(bool toggle)
 {
-    QString code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s') } )";
-    view->page()->mainFrame()->evaluateJavaScript(code);
+    QString code;
     if (toggle)
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(180deg)') } )";
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(180deg)') } )";
     else
-        code = "$('img').each( function () { $(this).css('-webkit-transform', 'rotate(0deg)') } )";
+        code = "$('img').each( function () { $(this).css('-webkit-transition', '-webkit-transform 2s'); $(this).css('-webkit-transform', 'rotate(0deg)') } )";
     view->page()->mainFrame()->evaluateJavaScript(code);
 }
 //! [8]

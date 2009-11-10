@@ -71,7 +71,7 @@ MainWindow::MainWindow()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     mdiArea->closeAllSubWindows();
-    if (activeMdiChild()) {
+    if (mdiArea->currentSubWindow()) {
         event->ignore();
     } else {
         writeSettings();

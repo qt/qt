@@ -50,7 +50,8 @@ ImageWidget::ImageWidget(QWidget *parent)
     horizontalOffset(0),
     verticalOffset(0),
     rotationAngle(0),
-    scaleFactor(1)
+    scaleFactor(1),
+    currentStepScaleFactor(1)
 
 {
     setMinimumSize(QSize(100,100));
@@ -75,7 +76,6 @@ bool ImageWidget::event(QEvent *event)
 void ImageWidget::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
-    p.fillRect(rect(), Qt::white);
 
     float iw = currentImage.width();
     float ih = currentImage.height();
@@ -85,7 +85,7 @@ void ImageWidget::paintEvent(QPaintEvent*)
     p.translate(ww/2, wh/2);
     p.translate(horizontalOffset, verticalOffset);
     p.rotate(rotationAngle);
-    p.scale(scaleFactor, scaleFactor);
+    p.scale(currentStepScaleFactor * scaleFactor, currentStepScaleFactor * scaleFactor);
     p.translate(-iw/2, -ih/2);
     p.drawImage(0, 0, currentImage);
 }
@@ -94,6 +94,7 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 {
     rotationAngle = 0;
     scaleFactor = 1;
+    currentStepScaleFactor = 1;
     verticalOffset = 0;
     horizontalOffset = 0;
     update();
@@ -102,17 +103,13 @@ void ImageWidget::mouseDoubleClickEvent(QMouseEvent *)
 //! [gesture event handler]
 bool ImageWidget::gestureEvent(QGestureEvent *event)
 {
-    if (QGesture *pan = event->gesture(Qt::PanGesture)) {
-        panTriggered(static_cast<QPanGesture*>(pan));
-        return true;
-    } else if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
-        pinchTriggered(static_cast<QPinchGesture*>(pinch));
-        return true;
-    } else if (QGesture *swipe = event->gesture(Qt::SwipeGesture)) {
-        swipeTriggered(static_cast<QSwipeGesture*>(swipe));
-        return true;
-    }
-    return false;
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    else if (QGesture *pan = event->gesture(Qt::PanGesture))
+        panTriggered(static_cast<QPanGesture *>(pan));
+    if (QGesture *pinch = event->gesture(Qt::PinchGesture))
+        pinchTriggered(static_cast<QPinchGesture *>(pinch));
+    return true;
 }
 //! [gesture event handler]
 
@@ -128,24 +125,27 @@ void ImageWidget::panTriggered(QPanGesture *gesture)
             setCursor(Qt::ArrowCursor);
     }
 #endif
-    QPointF lastOffset = gesture->offset();
-    horizontalOffset += lastOffset.x();
-    verticalOffset += lastOffset.y();
+    QPointF delta = gesture->delta();
+    horizontalOffset += delta.x();
+    verticalOffset += delta.y();
     update();
 }
 
 void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 {
-    QPinchGesture::WhatChanged whatChanged = gesture->whatChanged();
-    if (whatChanged & QPinchGesture::RotationAngleChanged) {
+    QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
+    if (changeFlags & QPinchGesture::RotationAngleChanged) {
         qreal value = gesture->property("rotationAngle").toReal();
         qreal lastValue = gesture->property("lastRotationAngle").toReal();
         rotationAngle += value - lastValue;
     }
-    if (whatChanged & QPinchGesture::ScaleFactorChanged) {
+    if (changeFlags & QPinchGesture::ScaleFactorChanged) {
         qreal value = gesture->property("scaleFactor").toReal();
-        qreal lastValue = gesture->property("lastScaleFactor").toReal();
-        scaleFactor += value - lastValue;
+        currentStepScaleFactor = value;
+    }
+    if (gesture->state() == Qt::GestureFinished) {
+        scaleFactor *= currentStepScaleFactor;
+        currentStepScaleFactor = 1;
     }
     update();
 }
@@ -153,12 +153,14 @@ void ImageWidget::pinchTriggered(QPinchGesture *gesture)
 //! [swipe function]
 void ImageWidget::swipeTriggered(QSwipeGesture *gesture)
 {
-    if (gesture->horizontalDirection() == QSwipeGesture::Left
+    if (gesture->state() == Qt::GestureFinished) {
+        if (gesture->horizontalDirection() == QSwipeGesture::Left
             || gesture->verticalDirection() == QSwipeGesture::Up)
-        goPrevImage();
-    else
-        goNextImage();
-    update();
+            goPrevImage();
+        else
+            goNextImage();
+        update();
+    }
 }
 //! [swipe function]
 

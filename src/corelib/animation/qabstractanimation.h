@@ -59,6 +59,8 @@ class QAbstractAnimationPrivate;
 class Q_CORE_EXPORT QAbstractAnimation : public QObject
 {
     Q_OBJECT
+    Q_ENUMS(State)
+    Q_ENUMS(Direction)
     Q_PROPERTY(State state READ state NOTIFY stateChanged)
     Q_PROPERTY(int loopCount READ loopCount WRITE setLoopCount)
     Q_PROPERTY(int currentTime READ currentTime WRITE setCurrentTime)
@@ -93,6 +95,9 @@ public:
     Direction direction() const;
     void setDirection(Direction direction);
 
+    int currentTime() const;
+    int currentLoopTime() const;
+
     int loopCount() const;
     void setLoopCount(int loopCount);
     int currentLoop() const;
@@ -100,11 +105,9 @@ public:
     virtual int duration() const = 0;
     int totalDuration() const;
 
-    int currentTime() const;
-
 Q_SIGNALS:
     void finished();
-    void stateChanged(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    void stateChanged(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
     void currentLoopChanged(int currentLoop);
     void directionChanged(QAbstractAnimation::Direction);
 
@@ -112,6 +115,7 @@ public Q_SLOTS:
     void start(QAbstractAnimation::DeletionPolicy policy = KeepWhenStopped);
     void pause();
     void resume();
+    void setPaused(bool);
     void stop();
     void setCurrentTime(int msecs);
 
@@ -120,7 +124,7 @@ protected:
     bool event(QEvent *event);
 
     virtual void updateCurrentTime(int currentTime) = 0;
-    virtual void updateState(QAbstractAnimation::State oldState, QAbstractAnimation::State newState);
+    virtual void updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState);
     virtual void updateDirection(QAbstractAnimation::Direction direction);
 
 private:

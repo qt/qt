@@ -688,6 +688,8 @@ void QPainterPath::lineTo(const QPointF &p)
         return;
     Element elm = { p.x(), p.y(), LineToElement };
     d->elements.append(elm);
+
+    d->convex = d->elements.size() == 3 || (d->elements.size() == 4 && d->isClosed());
 }
 
 /*!
@@ -960,6 +962,8 @@ void QPainterPath::addRect(const QRectF &r)
     ensureData();
     detach();
 
+    bool first = d_func()->elements.size() < 2;
+
     d_func()->elements.reserve(d_func()->elements.size() + 5);
     moveTo(r.x(), r.y());
 
@@ -970,6 +974,7 @@ void QPainterPath::addRect(const QRectF &r)
 
     d_func()->elements << l1 << l2 << l3 << l4;
     d_func()->require_moveTo = true;
+    d_func()->convex = first;
 }
 
 /*!
@@ -1039,6 +1044,7 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     detach();
 
     Q_D(QPainterPath);
+    bool first = d_func()->elements.size() < 2;
     d->elements.reserve(d->elements.size() + 13);
 
     QPointF pts[12];
@@ -1051,6 +1057,8 @@ void QPainterPath::addEllipse(const QRectF &boundingRect)
     cubicTo(pts[6], pts[7], pts[8]);           // 180 -> 90
     cubicTo(pts[9], pts[10], pts[11]);         // 90 - >0
     d_func()->require_moveTo = true;
+
+    d_func()->convex = first;
 }
 
 /*!
@@ -3027,14 +3035,17 @@ void QPainterPath::addRoundedRect(const QRectF &rect, qreal xRadius, qreal yRadi
     ensureData();
     detach();
 
-    arcMoveTo(x, y, rxx2, ryy2, 90);
-    arcTo(x, y, rxx2, ryy2, 90, 90);
-    arcTo(x, y+h-ryy2, rxx2, ryy2, 2*90, 90);
-    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 3*90, 90);
-    arcTo(x+w-rxx2, y, rxx2, ryy2, 0, 90);
+    bool first = d_func()->elements.size() < 2;
+
+    arcMoveTo(x, y, rxx2, ryy2, 180);
+    arcTo(x, y, rxx2, ryy2, 180, -90);
+    arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+    arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
     closeSubpath();
 
     d_func()->require_moveTo = true;
+    d_func()->convex = first;
 }
 
 /*!
@@ -3081,14 +3092,17 @@ void QPainterPath::addRoundRect(const QRectF &r, int xRnd, int yRnd)
     ensureData();
     detach();
 
-    arcMoveTo(x, y, rxx2, ryy2, 90);
-    arcTo(x, y, rxx2, ryy2, 90, 90);
-    arcTo(x, y+h-ryy2, rxx2, ryy2, 2*90, 90);
-    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 3*90, 90);
-    arcTo(x+w-rxx2, y, rxx2, ryy2, 0, 90);
+    bool first = d_func()->elements.size() < 2;
+
+    arcMoveTo(x, y, rxx2, ryy2, 180);
+    arcTo(x, y, rxx2, ryy2, 180, -90);
+    arcTo(x+w-rxx2, y, rxx2, ryy2, 90, -90);
+    arcTo(x+w-rxx2, y+h-ryy2, rxx2, ryy2, 0, -90);
+    arcTo(x, y+h-ryy2, rxx2, ryy2, 270, -90);
     closeSubpath();
 
     d_func()->require_moveTo = true;
+    d_func()->convex = first;
 }
 
 /*!
@@ -3269,6 +3283,7 @@ void QPainterPath::setDirty(bool dirty)
     d_func()->dirtyControlBounds = dirty;
     delete d_func()->pathConverter;
     d_func()->pathConverter = 0;
+    d_func()->convex = false;
 }
 
 void QPainterPath::computeBoundingRect() const

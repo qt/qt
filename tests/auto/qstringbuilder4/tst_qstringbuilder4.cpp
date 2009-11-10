@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtXmlPatterns module of the Qt Toolkit.
+** This file is part of the test suite module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,4 +39,36 @@
 **
 ****************************************************************************/
 
+
+// SCENARIO 4
+// this is the "full" version. Operator+ is replaced by a QStringBuilder
+// based version
+// with NO_CAST * _not_ defined
+#define P +
+#define QT_USE_FAST_OPERATOR_PLUS
+#define QT_USE_FAST_CONCATENATION
+#undef QT_NO_CAST_FROM_ASCII
+#undef QT_NO_CAST_TO_ASCII
+
+
+#include <QtTest/QtTest>
+
+//TESTED_CLASS=QStringBuilder
+//TESTED_FILES=qstringbuilder.cpp
+
+#define LITERAL "some literal"
+
+void runScenario(); // Defined in stringbuilder.cpp #included below.
+
+class tst_QStringBuilder4 : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void scenario() { runScenario(); }
+};
+
 #include "../qstringbuilder1/stringbuilder.cpp"
+#include "tst_qstringbuilder4.moc"
+
+QTEST_APPLESS_MAIN(tst_QStringBuilder4)

@@ -59,7 +59,6 @@ public:
     int duration() const;
 
     virtual void updateCurrentTime(int currentTime);
-    virtual void updateState(QAbstractAnimation::State state);
 
 private:
     DummyObject *m_object;

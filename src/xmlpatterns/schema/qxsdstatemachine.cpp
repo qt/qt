@@ -335,64 +335,6 @@ typename XsdStateMachine<TransitionType>::StateId XsdStateMachine<TransitionType
     return dfaState;
 }
 
-
-template <typename TransitionType>
-QSet<typename XsdStateMachine<TransitionType>::StateId> XsdStateMachine<TransitionType>::epsilonClosure(const QSet<StateId> &input) const
-{
-    // every state can reach itself by epsilon transition, so include the input states
-    // in the result as well
-    QSet<StateId> result = input;
-
-    // add the input states to the list of to be processed states
-    QList<StateId> workStates = input.toList();
-    while (!workStates.isEmpty()) { // while there are states to be processed left...
-
-        // dequeue one state from list
-        const StateId state = workStates.takeFirst();
-
-        // get the list of states that can be reached by the epsilon transition
-        // from the current 'state'
-        const QVector<StateId> targetStates = m_epsilonTransitions.value(state);
-        for (int i = 0; i < targetStates.count(); ++i) {
-            // if we have this target state not in our result set yet...
-            if (!result.contains(targetStates.at(i))) {
-                // ... add it to the result set
-                result.insert(targetStates.at(i));
-
-                // add the target state to the list of to be processed states as well,
-                // as we want to have the epsilon transitions not only for the first
-                // level of following states
-                workStates.append(targetStates.at(i));
-            }
-        }
-    }
-
-    return result;
-}
-
-template <typename TransitionType>
-QSet<typename XsdStateMachine<TransitionType>::StateId> XsdStateMachine<TransitionType>::move(const QSet<StateId> &states, TransitionType input) const
-{
-    QSet<StateId> result;
-
-    QSetIterator<StateId> it(states);
-    while (it.hasNext()) { // iterate over all given states
-        const StateId state = it.next();
-
-        // get the transition table for the current state
-        const QHash<TransitionType, QVector<StateId> > transitions = m_transitions.value(state);
-
-        // get the target states for the given input
-        const QVector<StateId> targetStates = transitions.value(input);
-
-        // add all target states to the result
-        for (int i = 0; i < targetStates.size(); ++i)
-            result.insert(targetStates.at(i));
-    }
-
-    return result;
-}
-
 template <typename TransitionType>
 XsdStateMachine<TransitionType> XsdStateMachine<TransitionType>::toDFA() const
 {
@@ -468,10 +410,4 @@ template <typename TransitionType>
 QHash<typename XsdStateMachine<TransitionType>::StateId, typename XsdStateMachine<TransitionType>::StateType> XsdStateMachine<TransitionType>::states() const
 {
     return m_states;
-}
-
-template <typename TransitionType>
-QHash<typename XsdStateMachine<TransitionType>::StateId, QHash<TransitionType, QVector<typename XsdStateMachine<TransitionType>::StateId> > > XsdStateMachine<TransitionType>::transitions() const
-{
-    return m_transitions;
 }

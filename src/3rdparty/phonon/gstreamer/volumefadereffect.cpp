@@ -21,11 +21,11 @@
 
 QT_BEGIN_NAMESPACE
 
+#ifndef QT_NO_PHONON_VOLUMEFADEREFFECT
 namespace Phonon
 {
 namespace Gstreamer
 {
-
 VolumeFaderEffect::VolumeFaderEffect(Backend *backend, QObject *parent) 
     : Effect(backend, parent, AudioSource | AudioSink)
     , m_fadeCurve(Phonon::VolumeFaderEffect::Fade3Decibel)
@@ -156,7 +156,7 @@ bool VolumeFaderEffect::event(QEvent *event)
 }
 
 }} //namespace Phonon::Gstreamer
-
+#endif //QT_NO_PHONON_VOLUMEFADEREFFECT
 QT_END_NAMESPACE
 
 #include "moc_volumefadereffect.cpp"

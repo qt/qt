@@ -83,10 +83,8 @@
     \clearfloat
     \section1 Size Hints and Size Policies in an Anchor Layout
 
-    QGraphicsAnchorLayout respects each item's size hints and size policies. However it does
-    not currently respect their stretch factors. This might change in the future, so avoid
-    using stretch factors in anchor layouts if you want to avoid any future regressions in
-    behavior.
+    QGraphicsAnchorLayout respects each item's size hints and size policies.
+    Note that there are some properties of QSizePolicy that are \l{Known issues}{not respected}.
 
     \section1 Spacing within an Anchor Layout
 
@@ -100,6 +98,21 @@
     \l{QStyle::}{PM_LayoutVerticalSpacing} for vertical anchors.
 
     If the spacing is negative, the items will overlap to some extent.
+
+
+    \section1 Known issues
+    There are some features that QGraphicsAnchorLayout currently does not support.
+    This might change in the future, so avoid using these features if you want to
+    avoid any future regressions in behaviour:
+    \list
+
+    \o Stretch factors are not respected.
+
+    \o QSizePolicy::ExpandFlag is not respected.
+
+    \o Height for width is not respected.
+
+    \endlist
 
     \sa QGraphicsLinearLayout, QGraphicsGridLayout, QGraphicsLayout
 */
@@ -123,7 +136,7 @@
 
 */
 #include "qgraphicsanchorlayout_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 QGraphicsAnchor::QGraphicsAnchor(QGraphicsAnchorLayout *parentLayout)
@@ -420,7 +433,7 @@ void QGraphicsAnchorLayout::setSpacing(qreal spacing)
 qreal QGraphicsAnchorLayout::horizontalSpacing() const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Horizontal);
+    return d->styleInfo().defaultSpacing(Qt::Horizontal);
 }
 
 /*!
@@ -431,7 +444,7 @@ qreal QGraphicsAnchorLayout::horizontalSpacing() const
 qreal QGraphicsAnchorLayout::verticalSpacing() const
 {
     Q_D(const QGraphicsAnchorLayout);
-    return d->effectiveSpacing(QGraphicsAnchorLayoutPrivate::Vertical);
+    return d->styleInfo().defaultSpacing(Qt::Vertical);
 }
 
 /*!
@@ -501,7 +514,8 @@ void QGraphicsAnchorLayout::invalidate()
 {
     Q_D(QGraphicsAnchorLayout);
     QGraphicsLayout::invalidate();
-    d->calculateGraphCacheDirty = 1;
+    d->calculateGraphCacheDirty = true;
+    d->styleInfoDirty = true;
 }
 
 /*!
@@ -535,3 +549,4 @@ QSizeF QGraphicsAnchorLayout::sizeHint(Qt::SizeHint which, const QSizeF &constra
 }
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW

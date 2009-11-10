@@ -147,7 +147,7 @@ JSXMLSerializer::JSXMLSerializer(NonNullPassRefPtr<Structure> structure, JSDOMGl
 
 JSXMLSerializer::~JSXMLSerializer()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSXMLSerializer::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

@@ -4,8 +4,6 @@ TEMPLATE = app
 LANGUAGE = C++
 TARGET = assistant
 
-DEFINES += QT_CLUCENE_SUPPORT
-
 contains(QT_CONFIG, webkit) {
     QT += webkit
 }

@@ -1023,7 +1023,7 @@ CGImageRef qt_mac_createCGImageFromQImage(const QImage &img, const QImage **imag
 #endif
     QCFType<CGDataProviderRef> dataProvider = CGDataProviderCreateWithData(image,
                                                           static_cast<const QImage *>(image)->bits(),
-                                                          image->numBytes(),
+                                                          image->byteCount(),
                                                           drawImageReleaseData);
     if (imagePtr)
         *imagePtr = image;

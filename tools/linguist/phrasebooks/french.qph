@@ -1326,4 +1326,44 @@
     <source>Close All Except %1</source>
     <target>Fermer tout sauf %1</target>
 </phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Suppression</target>
+</phrase>
+<phrase>
+    <source>About...</source>
+    <target>À propos…</target>
+</phrase>
+<phrase>
+    <source>Minimize</source>
+    <target>Minimiser</target>
+</phrase>
+<phrase>
+    <source>Remove</source>
+    <target>Supprimer</target>
+</phrase>
+<phrase>
+    <source>Select All</source>
+    <target>Sélectionner tout</target>
+</phrase>
+<phrase>
+    <source>Cannot create directory: %1</source>
+    <target>Impossible de créer le répertoire : %1</target>
+</phrase>
+<phrase>
+    <source>&amp;Case sensitive</source>
+    <target>&amp;Sensible à la casse</target>
+</phrase>
+<phrase>
+    <source>Whole &amp;words</source>
+    <target>M&amp;ots complets</target>
+</phrase>
+<phrase>
+    <source>Title:</source>
+    <target>Titre :</target>
+</phrase>
+<phrase>
+    <source>Fonts</source>
+    <target>Polices</target>
+</phrase>
 </QPH>

@@ -48,6 +48,7 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qbrush.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -59,38 +60,7 @@ class QStyleOption;
 class QPainter;
 class QPixmap;
 
-class QGraphicsEffectSourcePrivate;
-class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
-{
-    Q_OBJECT
-public:
-    ~QGraphicsEffectSource();
-    const QGraphicsItem *graphicsItem() const;
-    const QWidget *widget() const;
-    const QStyleOption *styleOption() const;
-
-    bool isPixmap() const;
-    void draw(QPainter *painter);
-    void update();
-
-    QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
-    QRect deviceRect() const;
-    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates, QPoint *offset = 0) const;
-
-protected:
-    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsEffectSource)
-    Q_DISABLE_COPY(QGraphicsEffectSource)
-    friend class QGraphicsEffect;
-    friend class QGraphicsEffectPrivate;
-    friend class QGraphicsScenePrivate;
-    friend class QGraphicsItem;
-    friend class QGraphicsItemPrivate;
-    friend class QWidget;
-    friend class QWidgetPrivate;
-};
+class QGraphicsEffectSource;
 
 class QGraphicsEffectPrivate;
 class Q_GUI_EXPORT QGraphicsEffect : public QObject
@@ -107,13 +77,17 @@ public:
     };
     Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag)
 
+    enum PixmapPadMode {
+        NoPad,
+        PadToTransparentBorder,
+        PadToEffectiveBoundingRect
+    };
+
     QGraphicsEffect(QObject *parent = 0);
     virtual ~QGraphicsEffect();
 
-    virtual QRectF boundingRectFor(const QRectF &rect) const;
+    virtual QRectF boundingRectFor(const QRectF &sourceRect) const;
     QRectF boundingRect() const;
-
-    QGraphicsEffectSource *source() const;
 
     bool isEnabled() const;
 
@@ -126,9 +100,16 @@ Q_SIGNALS:
 
 protected:
     QGraphicsEffect(QGraphicsEffectPrivate &d, QObject *parent = 0);
-    virtual void draw(QPainter *painter, QGraphicsEffectSource *source) = 0;
+    virtual void draw(QPainter *painter) = 0;
     virtual void sourceChanged(ChangeFlags flags);
     void updateBoundingRect();
+
+    bool sourceIsPixmap() const;
+    QRectF sourceBoundingRect(Qt::CoordinateSystem system = Qt::LogicalCoordinates) const;
+    void drawSource(QPainter *painter);
+    QPixmap sourcePixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
+                         QPoint *offset = 0,
+                         PixmapPadMode mode = PadToEffectiveBoundingRect) const;
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsEffect)
@@ -138,33 +119,12 @@ private:
     friend class QGraphicsScenePrivate;
     friend class QWidget;
     friend class QWidgetPrivate;
+
+public:
+    QGraphicsEffectSource *source() const; // internal
+
 };
 Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsEffect::ChangeFlags)
-
-class QGraphicsGrayscaleEffectPrivate;
-class Q_GUI_EXPORT QGraphicsGrayscaleEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
-public:
-    QGraphicsGrayscaleEffect(QObject *parent = 0);
-    ~QGraphicsGrayscaleEffect();
-
-    qreal strength() const;
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-public Q_SLOTS:
-    void setStrength(qreal strength);
-
-Q_SIGNALS:
-    void strengthChanged(qreal strength);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsGrayscaleEffect)
-    Q_DISABLE_COPY(QGraphicsGrayscaleEffect)
-};
 
 class QGraphicsColorizeEffectPrivate;
 class Q_GUI_EXPORT QGraphicsColorizeEffect: public QGraphicsEffect
@@ -188,67 +148,52 @@ Q_SIGNALS:
     void strengthChanged(qreal strength);
 
 protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsColorizeEffect)
     Q_DISABLE_COPY(QGraphicsColorizeEffect)
 };
 
-class QGraphicsPixelizeEffectPrivate;
-class Q_GUI_EXPORT QGraphicsPixelizeEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(int pixelSize READ pixelSize WRITE setPixelSize NOTIFY pixelSizeChanged)
-public:
-    QGraphicsPixelizeEffect(QObject *parent = 0);
-    ~QGraphicsPixelizeEffect();
-
-    int pixelSize() const;
-
-public Q_SLOTS:
-    void setPixelSize(int pixelSize);
-
-Q_SIGNALS:
-    void pixelSizeChanged(int pixelSize);
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsPixelizeEffect)
-    Q_DISABLE_COPY(QGraphicsPixelizeEffect)
-};
-
 class QGraphicsBlurEffectPrivate;
 class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
 {
     Q_OBJECT
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
-    Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
+    Q_FLAGS(BlurHint BlurHints)
+    Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(BlurHints blurHints READ blurHints WRITE setBlurHints NOTIFY blurHintsChanged)
 public:
+    enum BlurHint {
+        PerformanceHint = 0x00,
+        QualityHint = 0x01,
+        AnimationHint = 0x02
+    };
+    Q_DECLARE_FLAGS(BlurHints, BlurHint)
+
     QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
-    int blurRadius() const;
-    Qt::RenderHint blurHint() const;
+    qreal blurRadius() const;
+    BlurHints blurHints() const;
 
 public Q_SLOTS:
-    void setBlurRadius(int blurRadius);
-    void setBlurHint(Qt::RenderHint hint);
+    void setBlurRadius(qreal blurRadius);
+    void setBlurHints(BlurHints hints);
 
 Q_SIGNALS:
-    void blurRadiusChanged(int blurRadius);
-    void blurHintChanged(Qt::RenderHint hint);
+    void blurRadiusChanged(qreal blurRadius);
+    void blurHintsChanged(BlurHints hints);
 
 protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsBlurEffect)
     Q_DISABLE_COPY(QGraphicsBlurEffect)
 };
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(QGraphicsBlurEffect::BlurHints)
 
 class QGraphicsDropShadowEffectPrivate;
 class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
@@ -257,7 +202,7 @@ class Q_GUI_EXPORT QGraphicsDropShadowEffect: public QGraphicsEffect
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal xOffset READ xOffset WRITE setXOffset NOTIFY offsetChanged)
     Q_PROPERTY(qreal yOffset READ yOffset WRITE setYOffset NOTIFY offsetChanged)
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
+    Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
     Q_PROPERTY(QColor color READ color WRITE setColor NOTIFY colorChanged)
 public:
     QGraphicsDropShadowEffect(QObject *parent = 0);
@@ -272,7 +217,7 @@ public:
     inline qreal yOffset() const
     { return offset().y(); }
 
-    int blurRadius() const;
+    qreal blurRadius() const;
     QColor color() const;
 
 public Q_SLOTS:
@@ -290,16 +235,16 @@ public Q_SLOTS:
     inline void setYOffset(qreal dy)
     { setOffset(QPointF(xOffset(), dy)); }
 
-    void setBlurRadius(int blurRadius);
+    void setBlurRadius(qreal blurRadius);
     void setColor(const QColor &color);
 
 Q_SIGNALS:
     void offsetChanged(const QPointF &offset);
-    void blurRadiusChanged(int blurRadius);
+    void blurRadiusChanged(qreal blurRadius);
     void colorChanged(const QColor &color);
 
 protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsDropShadowEffect)
@@ -328,54 +273,17 @@ Q_SIGNALS:
     void opacityMaskChanged(const QBrush &mask);
 
 protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
+    void draw(QPainter *painter);
 
 private:
     Q_DECLARE_PRIVATE(QGraphicsOpacityEffect)
     Q_DISABLE_COPY(QGraphicsOpacityEffect)
 };
 
-class QGraphicsBloomEffectPrivate;
-class Q_GUI_EXPORT QGraphicsBloomEffect: public QGraphicsEffect
-{
-    Q_OBJECT
-    Q_PROPERTY(int blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
-    Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
-    Q_PROPERTY(int brightness READ brightness WRITE setBrightness NOTIFY brightnessChanged)
-    Q_PROPERTY(qreal strength READ strength WRITE setStrength NOTIFY strengthChanged)
-public:
-    QGraphicsBloomEffect(QObject *parent = 0);
-    ~QGraphicsBloomEffect();
-
-    QRectF boundingRectFor(const QRectF &rect) const;
-    int blurRadius() const;
-    Qt::RenderHint blurHint() const;
-    int brightness() const;
-    qreal strength() const;
-
-public Q_SLOTS:
-    void setBlurRadius(int blurRadius);
-    void setBlurHint(Qt::RenderHint hint);
-    void setBrightness(int brightness);
-    void setStrength(qreal strength);
-
-Q_SIGNALS:
-    void blurRadiusChanged(int blurRadius);
-    void blurHintChanged(Qt::RenderHint hint);
-    void brightnessChanged(int brightness);
-    void strengthChanged(qreal strength);
-
-protected:
-    void draw(QPainter *painter, QGraphicsEffectSource *source);
-
-private:
-    Q_DECLARE_PRIVATE(QGraphicsBloomEffect)
-    Q_DISABLE_COPY(QGraphicsBloomEffect)
-};
-
 QT_END_NAMESPACE
 
 QT_END_HEADER
+#endif //QT_NO_GRAPHICSEFFECT
 
 #endif // QGRAPHICSEFFECT_H
 

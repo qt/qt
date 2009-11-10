@@ -76,7 +76,7 @@ void tst_QAudioInput::initTestCase()
     format.setSampleType(QAudioFormat::UnSignedInt);
 
     // Only perform tests if audio input device exists!
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -137,16 +137,16 @@ void tst_QAudioInput::pullFile()
         QSignalSpy stateSignal(audio, SIGNAL(stateChanged(QAudio::State)));
 
         // Always have default states, before start
-        QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->state() == QAudio::StoppedState);
         QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->clock() == 0);
+        QVERIFY(audio->elapsedUSecs() == 0);
 
         audio->start(&filename);
         QTest::qWait(20);
         // Check state and periodSize() are valid non-zero values.
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->clock() > 10000 && audio->clock() < 800000);
+        QVERIFY(audio->elapsedUSecs() > 10000 && audio->elapsedUSecs() < 800000);
         QVERIFY(audio->periodSize() > 0);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
@@ -154,12 +154,12 @@ void tst_QAudioInput::pullFile()
         QTest::qWait(5000);
 
         QVERIFY(readSignal.count() > 0);
-        QVERIFY(audio->totalTime() > 0);
+        QVERIFY(audio->processedUSecs() > 0);
 
         audio->stop();
         QTest::qWait(20);
-        QVERIFY(audio->state() == QAudio::StopState);
-        QVERIFY(audio->clock() == 0);
+        QVERIFY(audio->state() == QAudio::StoppedState);
+        QVERIFY(audio->elapsedUSecs() == 0);
         // Can only check to make sure we got at least 1 more signal, but can be more.
         QVERIFY(stateSignal.count() > 1);
 

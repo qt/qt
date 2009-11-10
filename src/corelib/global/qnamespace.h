@@ -909,12 +909,10 @@ public:
         Key_Dead_Horn           = 0x01001262,
 
         // multimedia/internet keys - ignored by default - see QKeyEvent c'tor
-
         Key_Back  = 0x01000061,
         Key_Forward  = 0x01000062,
         Key_Stop  = 0x01000063,
         Key_Refresh  = 0x01000064,
-
         Key_VolumeDown = 0x01000070,
         Key_VolumeMute  = 0x01000071,
         Key_VolumeUp = 0x01000072,
@@ -923,7 +921,6 @@ public:
         Key_BassDown = 0x01000075,
         Key_TrebleUp = 0x01000076,
         Key_TrebleDown = 0x01000077,
-
         Key_MediaPlay  = 0x01000080,
         Key_MediaStop  = 0x01000081,
         Key_MediaPrevious  = 0x01000082,
@@ -932,13 +929,11 @@ public:
 #endif
         Key_MediaNext  = 0x01000083,
         Key_MediaRecord = 0x01000084,
-
         Key_HomePage  = 0x01000090,
         Key_Favorites  = 0x01000091,
         Key_Search  = 0x01000092,
         Key_Standby = 0x01000093,
         Key_OpenUrl = 0x01000094,
-
         Key_LaunchMail  = 0x010000a0,
         Key_LaunchMedia = 0x010000a1,
         Key_Launch0  = 0x010000a2,
@@ -957,6 +952,98 @@ public:
         Key_LaunchD  = 0x010000af,
         Key_LaunchE  = 0x010000b0,
         Key_LaunchF  = 0x010000b1,
+        Key_MonBrightnessUp = 0x010000b2,
+        Key_MonBrightnessDown = 0x010000b3,
+        Key_KeyboardLightOnOff = 0x010000b4,
+        Key_KeyboardBrightnessUp = 0x010000b5,
+        Key_KeyboardBrightnessDown = 0x010000b6,
+        Key_PowerOff = 0x010000b7,
+        Key_WakeUp = 0x010000b8,
+        Key_Eject = 0x010000b9,
+        Key_ScreenSaver = 0x010000ba,
+        Key_WWW = 0x010000bb,
+        Key_Memo = 0x010000bc,
+        Key_LightBulb = 0x010000bd,
+        Key_Shop = 0x010000be,
+        Key_History = 0x010000bf,
+        Key_AddFavorite = 0x010000c0,
+        Key_HotLinks = 0x010000c1,
+        Key_BrightnessAdjust = 0x010000c2,
+        Key_Finance = 0x010000c3,
+        Key_Community = 0x010000c4,
+        Key_AudioRewind = 0x010000c5,
+        Key_BackForward = 0x010000c6,
+        Key_ApplicationLeft = 0x010000c7,
+        Key_ApplicationRight = 0x010000c8,
+        Key_Book = 0x010000c9,
+        Key_CD = 0x010000ca,
+        Key_Calculator = 0x010000cb,
+        Key_ToDoList = 0x010000cc,
+        Key_ClearGrab = 0x010000cd,
+        Key_Close = 0x010000ce,
+        Key_Copy = 0x010000cf,
+        Key_Cut = 0x010000d0,
+        Key_Display = 0x010000d1,
+        Key_DOS = 0x010000d2,
+        Key_Documents = 0x010000d3,
+        Key_Excel = 0x010000d4,
+        Key_Explorer = 0x010000d5,
+        Key_Game = 0x010000d6,
+        Key_Go = 0x010000d7,
+        Key_iTouch = 0x010000d8,
+        Key_LogOff = 0x010000d9,
+        Key_Market = 0x010000da,
+        Key_Meeting = 0x010000db,
+        Key_MenuKB = 0x010000dc,
+        Key_MenuPB = 0x010000dd,
+        Key_MySites = 0x010000de,
+        Key_News = 0x010000df,
+        Key_OfficeHome = 0x010000e0,
+        Key_Option = 0x010000e1,
+        Key_Paste = 0x010000e2,
+        Key_Phone = 0x010000e3,
+        Key_Calendar = 0x010000e4,
+        Key_Reply = 0x010000e5,
+        Key_Reload = 0x010000e6,
+        Key_RotateWindows = 0x010000e7,
+        Key_RotationPB = 0x010000e8,
+        Key_RotationKB = 0x010000e9,
+        Key_Save = 0x010000ea,
+        Key_Send = 0x010000eb,
+        Key_Spell = 0x010000ec,
+        Key_SplitScreen = 0x010000ed,
+        Key_Support = 0x010000ee,
+        Key_TaskPane = 0x010000ef,
+        Key_Terminal = 0x010000f0,
+        Key_Tools = 0x010000f1,
+        Key_Travel = 0x010000f2,
+        Key_Video = 0x010000f3,
+        Key_Word = 0x010000f4,
+        Key_Xfer = 0x010000f5,
+        Key_ZoomIn = 0x010000f6,
+        Key_ZoomOut = 0x010000f7,
+        Key_Away = 0x010000f8,
+        Key_Messenger = 0x010000f9,
+        Key_WebCam = 0x010000fa,
+        Key_MailForward = 0x010000fb,
+        Key_Pictures = 0x010000fc,
+        Key_Music = 0x010000fd,
+        Key_Battery = 0x010000fe,
+        Key_Bluetooth = 0x010000ff,
+        Key_WLAN = 0x01000100,
+        Key_UWB = 0x01000101,
+        Key_AudioForward = 0x01000102,
+        Key_AudioRepeat = 0x01000103,
+        Key_AudioRandomPlay = 0x01000104,
+        Key_Subtitle = 0x01000105,
+        Key_AudioCycleTrack = 0x01000106,
+        Key_Time = 0x01000107,
+        Key_Hibernate = 0x01000108,
+        Key_View = 0x01000109,
+        Key_TopMenu = 0x0100010a,
+        Key_PowerDown = 0x0100010b,
+        Key_Suspend = 0x0100010c,
+        Key_ContrastAdjust = 0x0100010d,
 
         Key_MediaLast = 0x0100ffff,
 
@@ -1628,14 +1715,12 @@ public:
         LastGestureType   = ~0u
     };
 
-    enum GestureContext
+    enum GestureFlag
     {
-        WidgetGesture             = 0,
-        WidgetWithChildrenGesture = 3,
-
-        ItemGesture                  = WidgetGesture,
-        ItemWithChildrenGesture      = WidgetWithChildrenGesture
+        DontStartGestureOnChildren = 0x01,
+        ReceivePartialGestures     = 0x02
     };
+    Q_DECLARE_FLAGS(GestureFlags, GestureFlag)
 
     enum NavigationMode
     {
@@ -1644,11 +1729,6 @@ public:
         NavigationModeKeypadDirectional,
         NavigationModeCursorAuto,
         NavigationModeCursorForceVisible
-    };
-
-    enum RenderHint {
-        QualityHint,
-        PerformanceHint
     };
 }
 #ifdef Q_MOC_RUN
@@ -1670,6 +1750,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::MatchFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TextInteractionFlags)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::InputMethodHints)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::TouchPointStates)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Qt::GestureFlags)
 
 typedef bool (*qInternalCallback)(void **);
 

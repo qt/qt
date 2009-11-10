@@ -67,16 +67,17 @@ class QGesturePrivate : public QObjectPrivate
 
 public:
     QGesturePrivate()
-        : gestureType(Qt::CustomGesture), state(Qt::NoGesture), isHotSpotSet(false),
-          targetObject(0)
+        : gestureType(Qt::CustomGesture), state(Qt::NoGesture),
+          isHotSpotSet(false), gestureCancelPolicy(0)
+
     {
     }
 
     Qt::GestureType gestureType;
     Qt::GestureState state;
     QPointF hotSpot;
-    bool isHotSpotSet;
-    QObject *targetObject;
+    uint isHotSpotSet : 1;
+    uint gestureCancelPolicy : 2;
 };
 
 class QPanGesturePrivate : public QGesturePrivate
@@ -89,10 +90,9 @@ public:
     {
     }
 
-    QPointF totalOffset;
     QPointF lastOffset;
     QPointF offset;
-    QPoint lastPosition;
+    QPoint startPosition;
     qreal acceleration;
 };
 
@@ -102,12 +102,15 @@ class QPinchGesturePrivate : public QGesturePrivate
 
 public:
     QPinchGesturePrivate()
-        : whatChanged(0), totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
-          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0)
+        : totalChangeFlags(0), changeFlags(0),
+          totalScaleFactor(0), lastScaleFactor(0), scaleFactor(0),
+          totalRotationAngle(0), lastRotationAngle(0), rotationAngle(0),
+          isNewSequence(true)
     {
     }
 
-    QPinchGesture::WhatChanged whatChanged;
+    QPinchGesture::ChangeFlags totalChangeFlags;
+    QPinchGesture::ChangeFlags changeFlags;
 
     QPointF startCenterPoint;
     QPointF lastCenterPoint;
@@ -120,6 +123,9 @@ public:
     qreal totalRotationAngle;
     qreal lastRotationAngle;
     qreal rotationAngle;
+
+    bool isNewSequence;
+    QPointF startPosition[2];
 };
 
 class QSwipeGesturePrivate : public QGesturePrivate
@@ -130,13 +136,45 @@ public:
     QSwipeGesturePrivate()
         : horizontalDirection(QSwipeGesture::NoDirection),
           verticalDirection(QSwipeGesture::NoDirection),
-          swipeAngle(0)
+          swipeAngle(0),
+          started(false), speed(0)
     {
     }
 
     QSwipeGesture::SwipeDirection horizontalDirection;
     QSwipeGesture::SwipeDirection verticalDirection;
     qreal swipeAngle;
+
+    QPoint lastPositions[3];
+    bool started;
+    qreal speed;
+    QTime time;
+};
+
+class QTapGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapGesture)
+
+public:
+    QTapGesturePrivate()
+    {
+    }
+
+    QPointF position;
+};
+
+class QTapAndHoldGesturePrivate : public QGesturePrivate
+{
+    Q_DECLARE_PUBLIC(QTapAndHoldGesture)
+
+public:
+    QTapAndHoldGesturePrivate()
+        : timerId(0)
+    {
+    }
+
+    QPointF position;
+    int timerId;
 };
 
 QT_END_NAMESPACE

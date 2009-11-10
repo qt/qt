@@ -65,6 +65,7 @@ class Q_GUI_EXPORT QGesture : public QObject
 
     Q_PROPERTY(Qt::GestureState state READ state)
     Q_PROPERTY(Qt::GestureType gestureType READ gestureType)
+    Q_PROPERTY(QGesture::GestureCancelPolicy gestureCancelPolicy READ gestureCancelPolicy WRITE setGestureCancelPolicy)
     Q_PROPERTY(QPointF hotSpot READ hotSpot WRITE setHotSpot RESET unsetHotSpot)
     Q_PROPERTY(bool hasHotSpot READ hasHotSpot)
 
@@ -81,6 +82,14 @@ public:
     bool hasHotSpot() const;
     void unsetHotSpot();
 
+    enum GestureCancelPolicy {
+        CancelNone = 0,
+        CancelAllInContext
+    };
+
+    void setGestureCancelPolicy(GestureCancelPolicy policy);
+    GestureCancelPolicy gestureCancelPolicy() const;
+
 protected:
     QGesture(QGesturePrivate &dd, QObject *parent);
 
@@ -88,6 +97,7 @@ private:
     friend class QGestureEvent;
     friend class QGestureRecognizer;
     friend class QGestureManager;
+    friend class QGraphicsScenePrivate;
 };
 
 class QPanGesturePrivate;
@@ -96,20 +106,19 @@ class Q_GUI_EXPORT QPanGesture : public QGesture
     Q_OBJECT
     Q_DECLARE_PRIVATE(QPanGesture)
 
-    Q_PROPERTY(QPointF totalOffset READ totalOffset WRITE setTotalOffset)
     Q_PROPERTY(QPointF lastOffset READ lastOffset WRITE setLastOffset)
     Q_PROPERTY(QPointF offset READ offset WRITE setOffset)
+    Q_PROPERTY(QPointF delta READ delta STORED false)
     Q_PROPERTY(qreal acceleration READ acceleration WRITE setAcceleration)
 
 public:
     QPanGesture(QObject *parent = 0);
 
-    QPointF totalOffset() const;
     QPointF lastOffset() const;
     QPointF offset() const;
+    QPointF delta() const;
     qreal acceleration() const;
 
-    void setTotalOffset(const QPointF &value);
     void setLastOffset(const QPointF &value);
     void setOffset(const QPointF &value);
     void setAcceleration(qreal value);
@@ -125,14 +134,15 @@ class Q_GUI_EXPORT QPinchGesture : public QGesture
     Q_DECLARE_PRIVATE(QPinchGesture)
 
 public:
-    enum WhatChange {
+    enum ChangeFlag {
         ScaleFactorChanged = 0x1,
         RotationAngleChanged = 0x2,
         CenterPointChanged = 0x4
     };
-    Q_DECLARE_FLAGS(WhatChanged, WhatChange)
+    Q_DECLARE_FLAGS(ChangeFlags, ChangeFlag)
 
-    Q_PROPERTY(WhatChanged whatChanged READ whatChanged WRITE setWhatChanged)
+    Q_PROPERTY(ChangeFlags totalChangeFlags READ totalChangeFlags WRITE setTotalChangeFlags)
+    Q_PROPERTY(ChangeFlags changeFlags READ changeFlags WRITE setChangeFlags)
 
     Q_PROPERTY(qreal totalScaleFactor READ totalScaleFactor WRITE setTotalScaleFactor)
     Q_PROPERTY(qreal lastScaleFactor READ lastScaleFactor WRITE setLastScaleFactor)
@@ -149,8 +159,11 @@ public:
 public:
     QPinchGesture(QObject *parent = 0);
 
-    WhatChanged whatChanged() const;
-    void setWhatChanged(WhatChanged value);
+    ChangeFlags totalChangeFlags() const;
+    void setTotalChangeFlags(ChangeFlags value);
+
+    ChangeFlags changeFlags() const;
+    void setChangeFlags(ChangeFlags value);
 
     QPointF startCenterPoint() const;
     QPointF lastCenterPoint() const;
@@ -178,7 +191,7 @@ public:
 
 QT_END_NAMESPACE
 
-Q_DECLARE_METATYPE(QPinchGesture::WhatChanged)
+Q_DECLARE_METATYPE(QPinchGesture::ChangeFlags)
 
 QT_BEGIN_NAMESPACE
 
@@ -206,8 +219,43 @@ public:
     friend class QSwipeGestureRecognizer;
 };
 
+class QTapGesturePrivate;
+class Q_GUI_EXPORT QTapGesture : public QGesture
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QTapGesture)
+
+    Q_PROPERTY(QPointF position READ position WRITE setPosition)
+
+public:
+    QTapGesture(QObject *parent = 0);
+
+    QPointF position() const;
+    void setPosition(const QPointF &pos);
+
+    friend class QTapGestureRecognizer;
+};
+
+class QTapAndHoldGesturePrivate;
+class Q_GUI_EXPORT QTapAndHoldGesture : public QGesture
+{
+    Q_OBJECT
+    Q_DECLARE_PRIVATE(QTapAndHoldGesture)
+
+    Q_PROPERTY(QPointF position READ position WRITE setPosition)
+
+public:
+    QTapAndHoldGesture(QObject *parent = 0);
+
+    QPointF position() const;
+    void setPosition(const QPointF &pos);
+
+    friend class QTapAndHoldGestureRecognizer;
+};
+
 QT_END_NAMESPACE
 
+Q_DECLARE_METATYPE(QGesture::GestureCancelPolicy)
 QT_END_HEADER
 
 #endif // QGESTURE_H

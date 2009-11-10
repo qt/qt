@@ -329,7 +329,6 @@ Q_SIGNALS:
     void windowCloseRequested();
     void printRequested(QWebFrame *frame);
     void linkClicked(const QUrl &url);
-    void webInspectorTriggered(const QWebElement& inspectedElement);
 
     void toolBarVisibilityChangeRequested(bool visible);
     void statusBarVisibilityChangeRequested(bool visible);
@@ -346,8 +345,6 @@ Q_SIGNALS:
 
     void saveFrameStateRequested(QWebFrame* frame, QWebHistoryItem* item);
     void restoreFrameStateRequested(QWebFrame* frame);
-
-    void networkRequestStarted(QWebFrame* frame, QNetworkRequest* request);
 
 protected:
     virtual QWebPage *createWindow(WebWindowType type);

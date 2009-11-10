@@ -57,16 +57,19 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_NATIVE_GESTURES)
+
 class QWinNativePanGestureRecognizer : public QGestureRecognizer
 {
 public:
     QWinNativePanGestureRecognizer();
 
-    QGesture* createGesture(QObject *target) const;
-
-    QGestureRecognizer::Result filterEvent(QGesture *state, QObject *watched, QEvent *event);
+    QGesture *create(QObject *target);
+    QGestureRecognizer::Result recognize(QGesture *state, QObject *watched, QEvent *event);
     void reset(QGesture *state);
 };
+
+#endif // QT_NO_NATIVE_GESTURES
 
 QT_END_NAMESPACE
 

@@ -145,7 +145,7 @@ JSCSSValue::JSCSSValue(NonNullPassRefPtr<Structure> structure, JSDOMGlobalObject
 
 JSCSSValue::~JSCSSValue()
 {
-    forgetDOMObject(*Heap::heap(this)->globalData(), impl());
+    forgetDOMObject(this, impl());
 }
 
 JSObject* JSCSSValue::createPrototype(ExecState* exec, JSGlobalObject* globalObject)

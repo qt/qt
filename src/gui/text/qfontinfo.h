@@ -43,6 +43,7 @@
 #define QFONTINFO_H
 
 #include <QtGui/qfont.h>
+#include <QtCore/qsharedpointer.h>
 
 QT_BEGIN_HEADER
 
@@ -77,7 +78,7 @@ public:
     bool exactMatch() const;
 
 private:
-    QFontPrivate *d;
+    QExplicitlySharedDataPointer<QFontPrivate> d;
 };
 
 QT_END_NAMESPACE

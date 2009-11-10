@@ -60,7 +60,7 @@
 #include "qgraphicsanchorlayout.h"
 #include "qgraph_p.h"
 #include "qsimplex_p.h"
-
+#ifndef QT_NO_GRAPHICSVIEW
 QT_BEGIN_NAMESPACE
 
 /*
@@ -78,28 +78,196 @@ QT_BEGIN_NAMESPACE
   Represents a vertex (anchorage point) in the internal graph
 */
 struct AnchorVertex {
+    enum Type {
+        Normal = 0,
+        Pair
+    };
+
     AnchorVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge)
-        : m_item(item), m_edge(edge) {}
+        : m_item(item), m_edge(edge), m_type(Normal) {}
 
     AnchorVertex()
-        : m_item(0), m_edge(Qt::AnchorPoint(0)) {}
+        : m_item(0), m_edge(Qt::AnchorPoint(0)), m_type(Normal) {}
 
 #ifdef QT_DEBUG
     inline QString toString() const;
 #endif
+
     QGraphicsLayoutItem *m_item;
     Qt::AnchorPoint m_edge;
+    uint m_type : 1;
 
     // Current distance from this vertex to the layout edge (Left or Top)
     // Value is calculated from the current anchors sizes.
     qreal distance;
 };
 
+/*!
+  \internal
+
+  Represents an edge (anchor) in the internal graph.
+*/
+struct AnchorData : public QSimplexVariable {
+    enum Type {
+        Normal = 0,
+        Sequential,
+        Parallel
+    };
+
+    enum Dependency {
+        Independent = 0,
+        Master,
+        Slave
+    };
+
+    AnchorData()
+        : QSimplexVariable(), item(0), from(0), to(0),
+          minSize(0), prefSize(0), maxSize(0),
+          sizeAtMinimum(0), sizeAtPreferred(0),
+          sizeAtMaximum(0),
+          graphicsAnchor(0), skipInPreferred(0),
+          type(Normal), hasSize(true), isLayoutAnchor(false),
+          isCenterAnchor(false), orientation(0),
+          dependency(Independent) {}
+
+    virtual void updateChildrenSizes() {}
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+
+    virtual ~AnchorData() {}
+
+#ifdef QT_DEBUG
+    void dump(int indent = 2);
+    inline QString toString() const;
+    QString name;
+#endif
+
+    inline void setPreferredSize(qreal size)
+    {
+        prefSize = size;
+        hasSize = true;
+    }
+
+    inline void unsetSize()
+    {
+        hasSize = false;
+    }
+
+    // Internal anchors have associated items
+    QGraphicsLayoutItem *item;
+
+    // Anchor is semantically directed
+    AnchorVertex *from;
+    AnchorVertex *to;
+
+    // Size restrictions of this edge. For anchors internal to items, these
+    // values are derived from the respective item size hints. For anchors
+    // that were added by users, these values are equal to the specified anchor
+    // size.
+    qreal minSize;
+    qreal prefSize;
+    qreal maxSize;
+
+    // These attributes define which sizes should that anchor be in when the
+    // layout is at its minimum, preferred or maximum sizes. Values are
+    // calculated by the Simplex solver based on the current layout setup.
+    qreal sizeAtMinimum;
+    qreal sizeAtPreferred;
+    qreal sizeAtMaximum;
+    QGraphicsAnchor *graphicsAnchor;
+
+    uint skipInPreferred : 1;
+    uint type : 2;            // either Normal, Sequential or Parallel
+    uint hasSize : 1;         // if false, get size from style.
+    uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
+    uint isCenterAnchor : 1;
+    uint orientation : 1;
+    uint dependency : 2;      // either Independent, Master or Slave
+};
+
+#ifdef QT_DEBUG
+inline QString AnchorData::toString() const
+{
+    return QString::fromAscii("Anchor(%1)").arg(name);
+}
+#endif
+
+struct SequentialAnchorData : public AnchorData
+{
+    SequentialAnchorData(const QVector<AnchorVertex *> &vertices, const QVector<AnchorData *> &edges)
+        : AnchorData(), m_children(vertices), m_edges(edges)
+    {
+        type = AnchorData::Sequential;
+        orientation = m_edges.at(0)->orientation;
+#ifdef QT_DEBUG
+        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
+#endif
+    }
+
+    virtual void updateChildrenSizes();
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+
+    QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
+    QVector<AnchorData*> m_edges;               // keep the list of edges too.
+};
+
+struct ParallelAnchorData : public AnchorData
+{
+    ParallelAnchorData(AnchorData *first, AnchorData *second)
+        : AnchorData(), firstEdge(first), secondEdge(second)
+    {
+        type = AnchorData::Parallel;
+        orientation = first->orientation;
+
+        // This assert whether the child anchors share their vertices
+        Q_ASSERT(((first->from == second->from) && (first->to == second->to)) ||
+                 ((first->from == second->to) && (first->to == second->from)));
+
+        // We arbitrarily choose the direction of the first child as "our" direction
+        from = first->from;
+        to = first->to;
+#ifdef QT_DEBUG
+        name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
+#endif
+    }
+
+    virtual void updateChildrenSizes();
+    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+
+    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+
+    AnchorData* firstEdge;
+    AnchorData* secondEdge;
+
+    QList<QSimplexConstraint *> m_firstConstraints;
+    QList<QSimplexConstraint *> m_secondConstraints;
+};
+
+struct AnchorVertexPair : public AnchorVertex {
+    AnchorVertexPair(AnchorVertex *v1, AnchorVertex *v2, AnchorData *data)
+        : AnchorVertex(), m_first(v1), m_second(v2), m_removedAnchor(data) {
+        m_type = AnchorVertex::Pair;
+    }
+
+    AnchorVertex *m_first;
+    AnchorVertex *m_second;
+
+    AnchorData *m_removedAnchor;
+    QList<AnchorData *> m_firstAnchors;
+    QList<AnchorData *> m_secondAnchors;
+};
+
 #ifdef QT_DEBUG
 inline QString AnchorVertex::toString() const
 {
-    if (!this || !m_item) {
+    if (!this) {
         return QLatin1String("NULL");
+    } else if (m_type == Pair) {
+        const AnchorVertexPair *vp = static_cast<const AnchorVertexPair *>(this);
+        return QString::fromAscii("(%1, %2)").arg(vp->m_first->toString()).arg(vp->m_second->toString());
+    } else if (!m_item) {
+        return QString::fromAscii("NULL_%1").arg(quintptr(this));
     }
     QString edge;
     switch (m_edge) {
@@ -137,137 +305,6 @@ inline QString AnchorVertex::toString() const
     return edge.arg(itemName);
 }
 #endif
-
-/*!
-  \internal
-
-  Represents an edge (anchor) in the internal graph.
-*/
-struct AnchorData : public QSimplexVariable {
-    enum Type {
-        Normal = 0,
-        Sequential,
-        Parallel
-    };
-
-    AnchorData()
-        : QSimplexVariable(), from(0), to(0),
-          minSize(0), prefSize(0), expSize(0), maxSize(0),
-          sizeAtMinimum(0), sizeAtPreferred(0),
-          sizeAtExpanding(0), sizeAtMaximum(0),
-          graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false) {}
-
-    virtual void updateChildrenSizes() {}
-    virtual void refreshSizeHints(qreal effectiveSpacing);
-
-    virtual ~AnchorData() {}
-
-#ifdef QT_DEBUG
-    void dump(int indent = 2);
-    inline QString toString() const;
-    QString name;
-#endif
-
-    inline void setPreferredSize(qreal size)
-    {
-        prefSize = size;
-        hasSize = true;
-    }
-
-    inline void unsetSize()
-    {
-        hasSize = false;
-    }
-
-    // Anchor is semantically directed
-    AnchorVertex *from;
-    AnchorVertex *to;
-
-    // Size restrictions of this edge. For anchors internal to items, these
-    // values are derived from the respective item size hints. For anchors
-    // that were added by users, these values are equal to the specified anchor
-    // size.
-    qreal minSize;
-    qreal prefSize;
-    qreal expSize;
-    qreal maxSize;
-
-    // These attributes define which sizes should that anchor be in when the
-    // layout is at its minimum, preferred or maximum sizes. Values are
-    // calculated by the Simplex solver based on the current layout setup.
-    qreal sizeAtMinimum;
-    qreal sizeAtPreferred;
-    qreal sizeAtExpanding;
-    qreal sizeAtMaximum;
-    QGraphicsAnchor *graphicsAnchor;
-
-    uint skipInPreferred : 1;
-    uint type : 2;            // either Normal, Sequential or Parallel
-    uint hasSize : 1;         // if false, get size from style.
-    uint isLayoutAnchor : 1;  // if this anchor is connected to a layout 'edge'
-};
-
-#ifdef QT_DEBUG
-inline QString AnchorData::toString() const
-{
-    return QString::fromAscii("Anchor(%1)").arg(name);
-}
-#endif
-
-struct SequentialAnchorData : public AnchorData
-{
-    SequentialAnchorData() : AnchorData()
-    {
-        type = AnchorData::Sequential;
-#ifdef QT_DEBUG
-        name = QLatin1String("SequentialAnchorData");
-#endif
-    }
-
-    virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
-
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
-
-    void setVertices(const QVector<AnchorVertex*> &vertices)
-    {
-        m_children = vertices;
-#ifdef QT_DEBUG
-        name = QString::fromAscii("%1 -- %2").arg(vertices.first()->toString(), vertices.last()->toString());
-#endif
-    }
-
-    QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
-    QVector<AnchorData*> m_edges;               // keep the list of edges too.
-};
-
-struct ParallelAnchorData : public AnchorData
-{
-    ParallelAnchorData(AnchorData *first, AnchorData *second)
-        : AnchorData(), firstEdge(first), secondEdge(second)
-    {
-        type = AnchorData::Parallel;
-
-        // ### Those asserts force that both child anchors have the same direction,
-        // but can't we simplify a pair of anchors in opposite directions?
-        Q_ASSERT(first->from == second->from);
-        Q_ASSERT(first->to == second->to);
-        from = first->from;
-        to = first->to;
-#ifdef QT_DEBUG
-        name = QString::fromAscii("%1 | %2").arg(first->toString(), second->toString());
-#endif
-    }
-
-    virtual void updateChildrenSizes();
-    virtual void refreshSizeHints(qreal effectiveSpacing);
-
-    void refreshSizeHints_helper(qreal effectiveSpacing, bool refreshChildren = true);
-
-    AnchorData* firstEdge;
-    AnchorData* secondEdge;
-};
 
 /*!
   \internal
@@ -336,8 +373,7 @@ public:
     // Interval represents which interpolation interval are we operating in.
     enum Interval {
         MinToPreferred = 0,
-        PreferredToExpanding,
-        ExpandingToMax
+        PreferredToMax
     };
 
     // Several structures internal to the layout are duplicated to handle
@@ -423,17 +459,28 @@ public:
                               Qt::AnchorPoint &firstEdge,
                               QGraphicsLayoutItem *&secondItem,
                               Qt::AnchorPoint &secondEdge);
-    // for getting the actual spacing (will query the style if the
-    // spacing is not explicitly set).
-    qreal effectiveSpacing(Orientation orientation) const;
 
-    // Activation methods
-    void simplifyGraph(Orientation orientation);
-    bool simplifyGraphIteration(Orientation orientation);
-    void restoreSimplifiedGraph(Orientation orientation);
+    QLayoutStyleInfo &styleInfo() const;
 
+    AnchorData *addAnchorMaybeParallel(AnchorData *newAnchor, bool *feasible);
+
+    // Activation
     void calculateGraphs();
     void calculateGraphs(Orientation orientation);
+
+    // Simplification
+    bool simplifyGraph(Orientation orientation);
+    bool simplifyVertices(Orientation orientation);
+    bool simplifyGraphIteration(Orientation orientation, bool *feasible);
+
+    bool replaceVertex(Orientation orientation, AnchorVertex *oldV,
+                       AnchorVertex *newV, const QList<AnchorData *> &edges);
+
+
+    void restoreSimplifiedGraph(Orientation orientation);
+    void restoreSimplifiedAnchor(AnchorData *edge);
+    void restoreSimplifiedConstraints(ParallelAnchorData *parallel);
+    void restoreVertices(Orientation orientation);
 
     bool calculateTrunk(Orientation orientation, const GraphPath &trunkPath,
                         const QList<QSimplexConstraint *> &constraints,
@@ -441,7 +488,8 @@ public:
     bool calculateNonTrunk(const QList<QSimplexConstraint *> &constraints,
                            const QList<AnchorData *> &variables);
 
-    void setAnchorSizeHintsFromItems(Orientation orientation);
+    // Support functions for calculateGraph()
+    bool refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
@@ -460,6 +508,17 @@ public:
         return internalVertex(qMakePair(const_cast<QGraphicsLayoutItem *>(item), edge));
     }
 
+    inline void changeLayoutVertex(Orientation orientation, AnchorVertex *oldV, AnchorVertex *newV)
+    {
+        if (layoutFirstVertex[orientation] == oldV)
+            layoutFirstVertex[orientation] = newV;
+        else if (layoutCentralVertex[orientation] == oldV)
+            layoutCentralVertex[orientation] = newV;
+        else if (layoutLastVertex[orientation] == oldV)
+            layoutLastVertex[orientation] = newV;
+    }
+
+
     AnchorVertex *addInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
     void removeInternalVertex(QGraphicsLayoutItem *item, Qt::AnchorPoint edge);
 
@@ -468,18 +527,14 @@ public:
 
     void calculateVertexPositions(Orientation orientation);
     void setupEdgesInterpolation(Orientation orientation);
-    void interpolateEdge(AnchorVertex *base, AnchorData *edge, Orientation orientation);
-    void interpolateSequentialEdges(AnchorVertex *base, SequentialAnchorData *edge,
-                                    Orientation orientation);
-    void interpolateParallelEdges(AnchorVertex *base, ParallelAnchorData *edge,
-                                  Orientation orientation);
+    void interpolateEdge(AnchorVertex *base, AnchorData *edge);
+    void interpolateSequentialEdges(SequentialAnchorData *edge);
+    void interpolateParallelEdges(ParallelAnchorData *edge);
 
     // Linear Programming solver methods
     bool solveMinMax(const QList<QSimplexConstraint *> &constraints,
                      GraphPath path, qreal *min, qreal *max);
     bool solvePreferred(const QList<QSimplexConstraint *> &constraints,
-                        const QList<AnchorData *> &variables);
-    void solveExpanding(const QList<QSimplexConstraint *> &constraints,
                         const QList<AnchorData *> &variables);
     bool hasConflicts() const;
 
@@ -491,7 +546,6 @@ public:
     qreal spacings[NOrientations];
     // Size hints from simplex engine
     qreal sizeHints[2][3];
-    qreal sizeAtExpanding[2];
 
     // Items
     QVector<QGraphicsLayoutItem *> items;
@@ -503,6 +557,14 @@ public:
 
     // Internal graph of anchorage points and anchors, for both orientations
     Graph<AnchorVertex, AnchorData> graph[2];
+
+    AnchorVertex *layoutFirstVertex[2];
+    AnchorVertex *layoutCentralVertex[2];
+    AnchorVertex *layoutLastVertex[2];
+
+    // Combined anchors in order of creation
+    QList<AnchorVertexPair *> simplifiedVertices[2];
+    QList<AnchorData *> anchorsFromSimplifiedVertices[2];
 
     // Graph paths and constraints, for both orientations
     QMultiHash<AnchorVertex *, GraphPath> graphPaths[2];
@@ -524,10 +586,13 @@ public:
 #endif
 
     uint calculateGraphCacheDirty : 1;
+    mutable uint styleInfoDirty : 1;
+    mutable QLayoutStyleInfo cachedStyleInfo;
 
     friend class QGraphicsAnchorPrivate;
 };
 
 QT_END_NAMESPACE
+#endif //QT_NO_GRAPHICSVIEW
 
 #endif

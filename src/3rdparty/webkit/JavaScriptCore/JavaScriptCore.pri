@@ -39,10 +39,12 @@ win32-* {
 contains(JAVASCRIPTCORE_JIT,yes) {
     DEFINES+=ENABLE_JIT=1
     DEFINES+=ENABLE_YARR_JIT=1
+    DEFINES+=ENABLE_YARR=1
 }
 contains(JAVASCRIPTCORE_JIT,no) {
     DEFINES+=ENABLE_JIT=0
     DEFINES+=ENABLE_YARR_JIT=0
+    DEFINES+=ENABLE_YARR=0
 }
 
 # In debug mode JIT disabled until crash fixed
@@ -59,7 +61,8 @@ win32-* {
 }
 
 wince* {
-    SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.cpp
+    INCLUDEPATH += $$QT_SOURCE_TREE/src/3rdparty/ce-compat
+    SOURCES += $$QT_SOURCE_TREE/src/3rdparty/ce-compat/ce_time.c
     DEFINES += WINCEBASIC
 }
 

@@ -140,7 +140,7 @@ bool Qt::mightBeRichText(const QString& text)
 
 /*!
     Converts the plain text string \a plain to a HTML string with
-    HTML metacharacters \c{<}, \c{>}, and \c{&} replaced by HTML
+    HTML metacharacters \c{<}, \c{>}, \c{&}, and \c{"} replaced by HTML
     entities.
 
     Example:
@@ -162,6 +162,8 @@ QString Qt::escape(const QString& plain)
             rich += QLatin1String("&gt;");
         else if (plain.at(i) == QLatin1Char('&'))
             rich += QLatin1String("&amp;");
+        else if (plain.at(i) == QLatin1Char('"'))
+            rich += QLatin1String("&quot;");
         else
             rich += plain.at(i);
     }
@@ -956,6 +958,8 @@ QString QTextDocument::defaultStyleSheet() const
 
 /*!
     Returns true if undo is available; otherwise returns false.
+
+    \sa isRedoAvailable(), availableUndoSteps()
 */
 bool QTextDocument::isUndoAvailable() const
 {
@@ -965,6 +969,8 @@ bool QTextDocument::isUndoAvailable() const
 
 /*!
     Returns true if redo is available; otherwise returns false.
+
+    \sa isUndoAvailable(), availableRedoSteps()
 */
 bool QTextDocument::isRedoAvailable() const
 {
@@ -972,6 +978,29 @@ bool QTextDocument::isRedoAvailable() const
     return d->isRedoAvailable();
 }
 
+/*! \since 4.6
+
+    Returns the number of available undo steps.
+
+    \sa isUndoAvailable()
+*/
+int QTextDocument::availableUndoSteps() const
+{
+    Q_D(const QTextDocument);
+    return d->availableUndoSteps();
+}
+
+/*! \since 4.6
+
+    Returns the number of available redo steps.
+
+    \sa isRedoAvailable()
+*/
+int QTextDocument::availableRedoSteps() const
+{
+    Q_D(const QTextDocument);
+    return d->availableRedoSteps();
+}
 
 /*! \since 4.4
 
@@ -2038,7 +2067,7 @@ void QTextHtmlExporter::emitAttribute(const char *attribute, const QString &valu
     html += QLatin1Char(' ');
     html += QLatin1String(attribute);
     html += QLatin1String("=\"");
-    html += value;
+    html += Qt::escape(value);
     html += QLatin1Char('"');
 }
 
@@ -2302,12 +2331,12 @@ void QTextHtmlExporter::emitFontFamily(const QString &family)
 {
     html += QLatin1String(" font-family:");
 
-    QLatin1Char quote('\'');
-    if (family.contains(quote))
-        quote = QLatin1Char('\"');
+    QLatin1String quote("\'");
+    if (family.contains(QLatin1Char('\'')))
+        quote = QLatin1String("&quot;");
 
     html += quote;
-    html += family;
+    html += Qt::escape(family);
     html += quote;
     html += QLatin1Char(';');
 }
@@ -2341,13 +2370,13 @@ void QTextHtmlExporter::emitFragment(const QTextFragment &fragment)
         const QString name = format.anchorName();
         if (!name.isEmpty()) {
             html += QLatin1String("<a name=\"");
-            html += name;
+            html += Qt::escape(name);
             html += QLatin1String("\"></a>");
         }
         const QString href = format.anchorHref();
         if (!href.isEmpty()) {
             html += QLatin1String("<a href=\"");
-            html += href;
+            html += Qt::escape(href);
             html += QLatin1String("\">");
             closeAnchor = true;
         }

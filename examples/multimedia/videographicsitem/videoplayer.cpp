@@ -119,8 +119,7 @@ void VideoPlayer::openFile()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open Movie"));
 
     if (!fileName.isEmpty()) {
-        if (videoItem->isStarted())
-            videoItem->stop();
+        videoItem->stop();
 
         movie.setFileName(fileName);
 

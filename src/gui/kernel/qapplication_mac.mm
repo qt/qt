@@ -104,6 +104,7 @@
 #include "qdir.h"
 #include "qdebug.h"
 #include "qtimer.h"
+#include "qurl.h"
 #include "private/qmacinputcontext_p.h"
 #include "private/qpaintengine_mac_p.h"
 #include "private/qcursor_p.h"
@@ -966,7 +967,8 @@ struct QMacAppleEventTypeSpec {
     AEEventID mac_id;
 } app_apple_events[] = {
     { kCoreEventClass, kAEQuitApplication },
-    { kCoreEventClass, kAEOpenDocuments }
+    { kCoreEventClass, kAEOpenDocuments },
+    { kInternetEventClass, kAEGetURL },
 };
 
 #ifndef QT_MAC_USE_COCOA
@@ -1201,7 +1203,7 @@ void qt_init(QApplicationPrivate *priv, int)
             app_proc_ae_handlerUPP = AEEventHandlerUPP(QApplicationPrivate::globalAppleEventProcessor);
             for(uint i = 0; i < sizeof(app_apple_events) / sizeof(QMacAppleEventTypeSpec); ++i)
                 AEInstallEventHandler(app_apple_events[i].mac_class, app_apple_events[i].mac_id,
-                        app_proc_ae_handlerUPP, SRefCon(qApp), true);
+                        app_proc_ae_handlerUPP, SRefCon(qApp), false);
         }
 
         if (QApplicationPrivate::app_style) {
@@ -1237,6 +1239,10 @@ void qt_init(QApplicationPrivate *priv, int)
         [cocoaApp setMenu:[qtMenuLoader menu]];
         [newDelegate setMenuLoader:qtMenuLoader];
         [qtMenuLoader release];
+
+        NSAppleEventManager *eventManager = [NSAppleEventManager sharedAppleEventManager];
+        [eventManager setEventHandler:newDelegate andSelector:@selector(getUrl:withReplyEvent:)
+          forEventClass:kInternetEventClass andEventID:kAEGetURL];
     }
 #endif
     // Register for Carbon tablet proximity events on the event monitor target.
@@ -2474,6 +2480,22 @@ OSStatus QApplicationPrivate::globalAppleEventProcessor(const AppleEvent *ae, Ap
                     free(str_buffer);
             }
             break; }
+        default:
+            break;
+        }
+    } else if (aeClass == kInternetEventClass) {
+        switch (aeID) {
+        case kAEGetURL: {
+            char urlData[1024];
+            Size actualSize;
+            if (AEGetParamPtr(ae, keyDirectObject, typeChar, 0, urlData,
+                    sizeof(urlData) - 1, &actualSize) == noErr) {
+                urlData[actualSize] = 0;
+                QFileOpenEvent ev(QUrl(QString::fromUtf8(urlData)));
+                QApplication::sendSpontaneousEvent(app, &ev);
+            }
+            break;
+        }
         default:
             break;
         }

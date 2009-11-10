@@ -3825,6 +3825,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
             }
         }
         break;
+#ifndef QT_NO_GROUPBOX
     case CT_GroupBox:
         // Since we use a bold font we have to recalculate base width
         if (const QGroupBox *gb = qobject_cast<const QGroupBox*>(widget)) {
@@ -3840,6 +3841,7 @@ QSize QCleanlooksStyle::sizeFromContents(ContentsType type, const QStyleOption *
         }
         newSize += QSize(0, 1);
         break;
+#endif //QT_NO_GROUPBOX
     case CT_RadioButton:
     case CT_CheckBox:
         newSize += QSize(0, 1);

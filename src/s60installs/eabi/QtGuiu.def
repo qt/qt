@@ -1051,12 +1051,12 @@ EXPORTS
 	_ZN11QPaintEventD2Ev @ 1050 NONAME
 	_ZN11QPanGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 1051 NONAME
 	_ZN11QPanGesture11qt_metacastEPKc @ 1052 NONAME
-	_ZN11QPanGesture13setLastOffsetERK6QSizeF @ 1053 NONAME
-	_ZN11QPanGesture14setTotalOffsetERK6QSizeF @ 1054 NONAME
+	_ZN11QPanGesture13setLastOffsetERK6QSizeF @ 1053 NONAME ABSENT
+	_ZN11QPanGesture14setTotalOffsetERK6QSizeF @ 1054 NONAME ABSENT
 	_ZN11QPanGesture15setAccelerationEf @ 1055 NONAME
 	_ZN11QPanGesture16staticMetaObjectE @ 1056 NONAME DATA 16
 	_ZN11QPanGesture19getStaticMetaObjectEv @ 1057 NONAME
-	_ZN11QPanGesture9setOffsetERK6QSizeF @ 1058 NONAME
+	_ZN11QPanGesture9setOffsetERK6QSizeF @ 1058 NONAME ABSENT
 	_ZN11QPanGestureC1EP7QObject @ 1059 NONAME
 	_ZN11QPanGestureC2EP7QObject @ 1060 NONAME
 	_ZN11QPixmapData12toNativeTypeENS_10NativeTypeE @ 1061 NONAME
@@ -4060,7 +4060,7 @@ EXPORTS
 	_ZN17QPixmapBlurFilter11setBlurHintEN2Qt10RenderHintE @ 4059 NONAME
 	_ZN17QPixmapBlurFilter16staticMetaObjectE @ 4060 NONAME DATA 16
 	_ZN17QPixmapBlurFilter19getStaticMetaObjectEv @ 4061 NONAME
-	_ZN17QPixmapBlurFilter9setRadiusEi @ 4062 NONAME
+	_ZN17QPixmapBlurFilter9setRadiusEi @ 4062 NONAME ABSENT
 	_ZN17QPixmapBlurFilterC1EP7QObject @ 4063 NONAME
 	_ZN17QPixmapBlurFilterC2EP7QObject @ 4064 NONAME
 	_ZN17QPixmapBlurFilterD0Ev @ 4065 NONAME
@@ -4361,40 +4361,40 @@ EXPORTS
 	_ZN19QApplicationPrivateD0Ev @ 4360 NONAME
 	_ZN19QApplicationPrivateD1Ev @ 4361 NONAME
 	_ZN19QApplicationPrivateD2Ev @ 4362 NONAME
-	_ZN19QCoeFepInputContext10Extension1ERi @ 4363 NONAME
-	_ZN19QCoeFepInputContext10applyHintsE6QFlagsIN2Qt15InputMethodHintEE @ 4364 NONAME
-	_ZN19QCoeFepInputContext11applyFormatEP5QListIN17QInputMethodEvent9AttributeEE @ 4365 NONAME
-	_ZN19QCoeFepInputContext11filterEventEPK6QEvent @ 4366 NONAME
-	_ZN19QCoeFepInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 4367 NONAME
-	_ZN19QCoeFepInputContext11qt_metacastEPKc @ 4368 NONAME
-	_ZN19QCoeFepInputContext11updateHintsEb @ 4369 NONAME
-	_ZN19QCoeFepInputContext12mouseHandlerEiP11QMouseEvent @ 4370 NONAME
-	_ZN19QCoeFepInputContext14setFocusWidgetEP7QWidget @ 4371 NONAME
-	_ZN19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 4372 NONAME
-	_ZN19QCoeFepInputContext15widgetDestroyedEP7QWidget @ 4373 NONAME
-	_ZN19QCoeFepInputContext16staticMetaObjectE @ 4374 NONAME DATA 16
-	_ZN19QCoeFepInputContext17inputCapabilitiesEv @ 4375 NONAME
-	_ZN19QCoeFepInputContext19CancelFepInlineEditEv @ 4376 NONAME
-	_ZN19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 4377 NONAME
-	_ZN19QCoeFepInputContext19commitCurrentStringEb @ 4378 NONAME
-	_ZN19QCoeFepInputContext19getStaticMetaObjectEv @ 4379 NONAME
-	_ZN19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 4380 NONAME
-	_ZN19QCoeFepInputContext21ReportAknEdStateEventEN19MAknEdStateObserver19EAknEdwinStateEventE @ 4381 NONAME
-	_ZN19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 4382 NONAME
-	_ZN19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 4383 NONAME
-	_ZN19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 4384 NONAME
-	_ZN19QCoeFepInputContext29queueInputCapabilitiesChangedEv @ 4385 NONAME
-	_ZN19QCoeFepInputContext30ensureInputCapabilitiesChangedEv @ 4386 NONAME
-	_ZN19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 4387 NONAME
-	_ZN19QCoeFepInputContext5StateE4TUid @ 4388 NONAME
-	_ZN19QCoeFepInputContext5resetEv @ 4389 NONAME
-	_ZN19QCoeFepInputContext6updateEv @ 4390 NONAME
-	_ZN19QCoeFepInputContext8languageEv @ 4391 NONAME
-	_ZN19QCoeFepInputContextC1EP7QObject @ 4392 NONAME
-	_ZN19QCoeFepInputContextC2EP7QObject @ 4393 NONAME
-	_ZN19QCoeFepInputContextD0Ev @ 4394 NONAME
-	_ZN19QCoeFepInputContextD1Ev @ 4395 NONAME
-	_ZN19QCoeFepInputContextD2Ev @ 4396 NONAME
+	_ZN19QCoeFepInputContext10Extension1ERi @ 4363 NONAME ABSENT
+	_ZN19QCoeFepInputContext10applyHintsE6QFlagsIN2Qt15InputMethodHintEE @ 4364 NONAME ABSENT
+	_ZN19QCoeFepInputContext11applyFormatEP5QListIN17QInputMethodEvent9AttributeEE @ 4365 NONAME ABSENT
+	_ZN19QCoeFepInputContext11filterEventEPK6QEvent @ 4366 NONAME ABSENT
+	_ZN19QCoeFepInputContext11qt_metacallEN11QMetaObject4CallEiPPv @ 4367 NONAME ABSENT
+	_ZN19QCoeFepInputContext11qt_metacastEPKc @ 4368 NONAME ABSENT
+	_ZN19QCoeFepInputContext11updateHintsEb @ 4369 NONAME ABSENT
+	_ZN19QCoeFepInputContext12mouseHandlerEiP11QMouseEvent @ 4370 NONAME ABSENT
+	_ZN19QCoeFepInputContext14setFocusWidgetEP7QWidget @ 4371 NONAME ABSENT
+	_ZN19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 4372 NONAME ABSENT
+	_ZN19QCoeFepInputContext15widgetDestroyedEP7QWidget @ 4373 NONAME ABSENT
+	_ZN19QCoeFepInputContext16staticMetaObjectE @ 4374 NONAME DATA 16 ABSENT
+	_ZN19QCoeFepInputContext17inputCapabilitiesEv @ 4375 NONAME ABSENT
+	_ZN19QCoeFepInputContext19CancelFepInlineEditEv @ 4376 NONAME ABSENT
+	_ZN19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 4377 NONAME ABSENT
+	_ZN19QCoeFepInputContext19commitCurrentStringEb @ 4378 NONAME ABSENT
+	_ZN19QCoeFepInputContext19getStaticMetaObjectEv @ 4379 NONAME ABSENT
+	_ZN19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 4380 NONAME ABSENT
+	_ZN19QCoeFepInputContext21ReportAknEdStateEventEN19MAknEdStateObserver19EAknEdwinStateEventE @ 4381 NONAME ABSENT
+	_ZN19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 4382 NONAME ABSENT
+	_ZN19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 4383 NONAME ABSENT
+	_ZN19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 4384 NONAME ABSENT
+	_ZN19QCoeFepInputContext29queueInputCapabilitiesChangedEv @ 4385 NONAME ABSENT
+	_ZN19QCoeFepInputContext30ensureInputCapabilitiesChangedEv @ 4386 NONAME ABSENT
+	_ZN19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 4387 NONAME ABSENT
+	_ZN19QCoeFepInputContext5StateE4TUid @ 4388 NONAME ABSENT
+	_ZN19QCoeFepInputContext5resetEv @ 4389 NONAME ABSENT
+	_ZN19QCoeFepInputContext6updateEv @ 4390 NONAME ABSENT
+	_ZN19QCoeFepInputContext8languageEv @ 4391 NONAME ABSENT
+	_ZN19QCoeFepInputContextC1EP7QObject @ 4392 NONAME ABSENT
+	_ZN19QCoeFepInputContextC2EP7QObject @ 4393 NONAME ABSENT
+	_ZN19QCoeFepInputContextD0Ev @ 4394 NONAME ABSENT
+	_ZN19QCoeFepInputContextD1Ev @ 4395 NONAME ABSENT
+	_ZN19QCoeFepInputContextD2Ev @ 4396 NONAME ABSENT
 	_ZN19QEventDispatcherS6011qt_metacallEN11QMetaObject4CallEiPPv @ 4397 NONAME
 	_ZN19QEventDispatcherS6011qt_metacastEPKc @ 4398 NONAME
 	_ZN19QEventDispatcherS6013processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE @ 4399 NONAME
@@ -4412,10 +4412,10 @@ EXPORTS
 	_ZN19QGraphicsBlurEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 4411 NONAME
 	_ZN19QGraphicsBlurEffect11qt_metacastEPKc @ 4412 NONAME
 	_ZN19QGraphicsBlurEffect11setBlurHintEN2Qt10RenderHintE @ 4413 NONAME
-	_ZN19QGraphicsBlurEffect13setBlurRadiusEi @ 4414 NONAME
+	_ZN19QGraphicsBlurEffect13setBlurRadiusEi @ 4414 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect15blurHintChangedEN2Qt10RenderHintE @ 4415 NONAME
 	_ZN19QGraphicsBlurEffect16staticMetaObjectE @ 4416 NONAME DATA 16
-	_ZN19QGraphicsBlurEffect17blurRadiusChangedEi @ 4417 NONAME
+	_ZN19QGraphicsBlurEffect17blurRadiusChangedEi @ 4417 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect19getStaticMetaObjectEv @ 4418 NONAME
 	_ZN19QGraphicsBlurEffect4drawEP8QPainterP21QGraphicsEffectSource @ 4419 NONAME
 	_ZN19QGraphicsBlurEffectC1EP7QObject @ 4420 NONAME
@@ -4625,24 +4625,24 @@ EXPORTS
 	_ZN19QToolBarChangeEventD0Ev @ 4624 NONAME
 	_ZN19QToolBarChangeEventD1Ev @ 4625 NONAME
 	_ZN19QToolBarChangeEventD2Ev @ 4626 NONAME
-	_ZN20QGraphicsBloomEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 4627 NONAME
-	_ZN20QGraphicsBloomEffect11qt_metacastEPKc @ 4628 NONAME
-	_ZN20QGraphicsBloomEffect11setBlurHintEN2Qt10RenderHintE @ 4629 NONAME
-	_ZN20QGraphicsBloomEffect11setStrengthEf @ 4630 NONAME
-	_ZN20QGraphicsBloomEffect13setBlurRadiusEi @ 4631 NONAME
-	_ZN20QGraphicsBloomEffect13setBrightnessEi @ 4632 NONAME
-	_ZN20QGraphicsBloomEffect15blurHintChangedEN2Qt10RenderHintE @ 4633 NONAME
-	_ZN20QGraphicsBloomEffect15strengthChangedEf @ 4634 NONAME
-	_ZN20QGraphicsBloomEffect16staticMetaObjectE @ 4635 NONAME DATA 16
-	_ZN20QGraphicsBloomEffect17blurRadiusChangedEi @ 4636 NONAME
-	_ZN20QGraphicsBloomEffect17brightnessChangedEi @ 4637 NONAME
-	_ZN20QGraphicsBloomEffect19getStaticMetaObjectEv @ 4638 NONAME
-	_ZN20QGraphicsBloomEffect4drawEP8QPainterP21QGraphicsEffectSource @ 4639 NONAME
-	_ZN20QGraphicsBloomEffectC1EP7QObject @ 4640 NONAME
-	_ZN20QGraphicsBloomEffectC2EP7QObject @ 4641 NONAME
-	_ZN20QGraphicsBloomEffectD0Ev @ 4642 NONAME
-	_ZN20QGraphicsBloomEffectD1Ev @ 4643 NONAME
-	_ZN20QGraphicsBloomEffectD2Ev @ 4644 NONAME
+	_ZN20QGraphicsBloomEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 4627 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect11qt_metacastEPKc @ 4628 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect11setBlurHintEN2Qt10RenderHintE @ 4629 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect11setStrengthEf @ 4630 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect13setBlurRadiusEi @ 4631 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect13setBrightnessEi @ 4632 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect15blurHintChangedEN2Qt10RenderHintE @ 4633 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect15strengthChangedEf @ 4634 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect16staticMetaObjectE @ 4635 NONAME DATA 16 ABSENT
+	_ZN20QGraphicsBloomEffect17blurRadiusChangedEi @ 4636 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect17brightnessChangedEi @ 4637 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect19getStaticMetaObjectEv @ 4638 NONAME ABSENT
+	_ZN20QGraphicsBloomEffect4drawEP8QPainterP21QGraphicsEffectSource @ 4639 NONAME ABSENT
+	_ZN20QGraphicsBloomEffectC1EP7QObject @ 4640 NONAME ABSENT
+	_ZN20QGraphicsBloomEffectC2EP7QObject @ 4641 NONAME ABSENT
+	_ZN20QGraphicsBloomEffectD0Ev @ 4642 NONAME ABSENT
+	_ZN20QGraphicsBloomEffectD1Ev @ 4643 NONAME ABSENT
+	_ZN20QGraphicsBloomEffectD2Ev @ 4644 NONAME ABSENT
 	_ZN20QGraphicsEllipseItem12setExtensionEN13QGraphicsItem9ExtensionERK8QVariant @ 4645 NONAME
 	_ZN20QGraphicsEllipseItem12setSpanAngleEi @ 4646 NONAME
 	_ZN20QGraphicsEllipseItem13setStartAngleEi @ 4647 NONAME
@@ -5082,18 +5082,18 @@ EXPORTS
 	_ZN23QGraphicsColorizeEffectD0Ev @ 5081 NONAME
 	_ZN23QGraphicsColorizeEffectD1Ev @ 5082 NONAME
 	_ZN23QGraphicsColorizeEffectD2Ev @ 5083 NONAME
-	_ZN23QGraphicsPixelizeEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 5084 NONAME
-	_ZN23QGraphicsPixelizeEffect11qt_metacastEPKc @ 5085 NONAME
-	_ZN23QGraphicsPixelizeEffect12setPixelSizeEi @ 5086 NONAME
-	_ZN23QGraphicsPixelizeEffect16pixelSizeChangedEi @ 5087 NONAME
-	_ZN23QGraphicsPixelizeEffect16staticMetaObjectE @ 5088 NONAME DATA 16
-	_ZN23QGraphicsPixelizeEffect19getStaticMetaObjectEv @ 5089 NONAME
-	_ZN23QGraphicsPixelizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5090 NONAME
-	_ZN23QGraphicsPixelizeEffectC1EP7QObject @ 5091 NONAME
-	_ZN23QGraphicsPixelizeEffectC2EP7QObject @ 5092 NONAME
-	_ZN23QGraphicsPixelizeEffectD0Ev @ 5093 NONAME
-	_ZN23QGraphicsPixelizeEffectD1Ev @ 5094 NONAME
-	_ZN23QGraphicsPixelizeEffectD2Ev @ 5095 NONAME
+	_ZN23QGraphicsPixelizeEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 5084 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffect11qt_metacastEPKc @ 5085 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffect12setPixelSizeEi @ 5086 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffect16pixelSizeChangedEi @ 5087 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffect16staticMetaObjectE @ 5088 NONAME DATA 16 ABSENT
+	_ZN23QGraphicsPixelizeEffect19getStaticMetaObjectEv @ 5089 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5090 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffectC1EP7QObject @ 5091 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffectC2EP7QObject @ 5092 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffectD0Ev @ 5093 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffectD1Ev @ 5094 NONAME ABSENT
+	_ZN23QGraphicsPixelizeEffectD2Ev @ 5095 NONAME ABSENT
 	_ZN23QGraphicsSceneHelpEvent11setScenePosERK7QPointF @ 5096 NONAME
 	_ZN23QGraphicsSceneHelpEvent12setScreenPosERK6QPoint @ 5097 NONAME
 	_ZN23QGraphicsSceneHelpEventC1EN6QEvent4TypeE @ 5098 NONAME
@@ -5127,7 +5127,7 @@ EXPORTS
 	_ZN23QPaintBufferSignalProxy8instanceEv @ 5126 NONAME
 	_ZN23QPixmapDropShadowFilter11qt_metacallEN11QMetaObject4CallEiPPv @ 5127 NONAME
 	_ZN23QPixmapDropShadowFilter11qt_metacastEPKc @ 5128 NONAME
-	_ZN23QPixmapDropShadowFilter13setBlurRadiusEi @ 5129 NONAME
+	_ZN23QPixmapDropShadowFilter13setBlurRadiusEi @ 5129 NONAME ABSENT
 	_ZN23QPixmapDropShadowFilter16staticMetaObjectE @ 5130 NONAME DATA 16
 	_ZN23QPixmapDropShadowFilter19getStaticMetaObjectEv @ 5131 NONAME
 	_ZN23QPixmapDropShadowFilter8setColorERK6QColor @ 5132 NONAME
@@ -5161,18 +5161,18 @@ EXPORTS
 	_ZN23QWindowStateChangeEventD0Ev @ 5160 NONAME
 	_ZN23QWindowStateChangeEventD1Ev @ 5161 NONAME
 	_ZN23QWindowStateChangeEventD2Ev @ 5162 NONAME
-	_ZN24QGraphicsGrayscaleEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 5163 NONAME
-	_ZN24QGraphicsGrayscaleEffect11qt_metacastEPKc @ 5164 NONAME
-	_ZN24QGraphicsGrayscaleEffect11setStrengthEf @ 5165 NONAME
-	_ZN24QGraphicsGrayscaleEffect15strengthChangedEf @ 5166 NONAME
-	_ZN24QGraphicsGrayscaleEffect16staticMetaObjectE @ 5167 NONAME DATA 16
-	_ZN24QGraphicsGrayscaleEffect19getStaticMetaObjectEv @ 5168 NONAME
-	_ZN24QGraphicsGrayscaleEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5169 NONAME
-	_ZN24QGraphicsGrayscaleEffectC1EP7QObject @ 5170 NONAME
-	_ZN24QGraphicsGrayscaleEffectC2EP7QObject @ 5171 NONAME
-	_ZN24QGraphicsGrayscaleEffectD0Ev @ 5172 NONAME
-	_ZN24QGraphicsGrayscaleEffectD1Ev @ 5173 NONAME
-	_ZN24QGraphicsGrayscaleEffectD2Ev @ 5174 NONAME
+	_ZN24QGraphicsGrayscaleEffect11qt_metacallEN11QMetaObject4CallEiPPv @ 5163 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffect11qt_metacastEPKc @ 5164 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffect11setStrengthEf @ 5165 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffect15strengthChangedEf @ 5166 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffect16staticMetaObjectE @ 5167 NONAME DATA 16 ABSENT
+	_ZN24QGraphicsGrayscaleEffect19getStaticMetaObjectEv @ 5168 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5169 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffectC1EP7QObject @ 5170 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffectC2EP7QObject @ 5171 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffectD0Ev @ 5172 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffectD1Ev @ 5173 NONAME ABSENT
+	_ZN24QGraphicsGrayscaleEffectD2Ev @ 5174 NONAME ABSENT
 	_ZN24QGraphicsSceneHoverEvent10setLastPosERK7QPointF @ 5175 NONAME
 	_ZN24QGraphicsSceneHoverEvent11setScenePosERK7QPointF @ 5176 NONAME
 	_ZN24QGraphicsSceneHoverEvent12setModifiersE6QFlagsIN2Qt16KeyboardModifierEE @ 5177 NONAME
@@ -5276,9 +5276,9 @@ EXPORTS
 	_ZN25QGraphicsDropShadowEffect11qt_metacastEPKc @ 5275 NONAME
 	_ZN25QGraphicsDropShadowEffect12colorChangedERK6QColor @ 5276 NONAME
 	_ZN25QGraphicsDropShadowEffect13offsetChangedERK7QPointF @ 5277 NONAME
-	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEi @ 5278 NONAME
+	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEi @ 5278 NONAME ABSENT
 	_ZN25QGraphicsDropShadowEffect16staticMetaObjectE @ 5279 NONAME DATA 16
-	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEi @ 5280 NONAME
+	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEi @ 5280 NONAME ABSENT
 	_ZN25QGraphicsDropShadowEffect19getStaticMetaObjectEv @ 5281 NONAME
 	_ZN25QGraphicsDropShadowEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5282 NONAME
 	_ZN25QGraphicsDropShadowEffect8setColorERK6QColor @ 5283 NONAME
@@ -6366,7 +6366,7 @@ EXPORTS
 	_ZN8QGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 6365 NONAME
 	_ZN8QGesture11qt_metacastEPKc @ 6366 NONAME
 	_ZN8QGesture12unsetHotSpotEv @ 6367 NONAME
-	_ZN8QGesture15setTargetObjectEP7QObject @ 6368 NONAME
+	_ZN8QGesture15setTargetObjectEP7QObject @ 6368 NONAME ABSENT
 	_ZN8QGesture16staticMetaObjectE @ 6369 NONAME DATA 16
 	_ZN8QGesture19getStaticMetaObjectEv @ 6370 NONAME
 	_ZN8QGestureC1EN2Qt11GestureTypeEP7QObject @ 6371 NONAME ABSENT
@@ -7006,7 +7006,7 @@ EXPORTS
 	_ZN9QPolygonFC2ERK8QPolygon @ 7005 NONAME
 	_ZN9QS60Style11qt_metacallEN11QMetaObject4CallEiPPv @ 7006 NONAME
 	_ZN9QS60Style11qt_metacastEPKc @ 7007 NONAME
-	_ZN9QS60Style16setStylePropertyEPKcRK8QVariant @ 7008 NONAME
+	_ZN9QS60Style16setStylePropertyEPKcRK8QVariant @ 7008 NONAME ABSENT
 	_ZN9QS60Style16staticMetaObjectE @ 7009 NONAME DATA 16
 	_ZN9QS60Style19getStaticMetaObjectEv @ 7010 NONAME
 	_ZN9QS60Style5eventEP6QEvent @ 7011 NONAME
@@ -7888,7 +7888,7 @@ EXPORTS
 	_ZNK11QTextCursorneERKS_ @ 7887 NONAME
 	_ZNK11QTextEngine10attributesEv @ 7888 NONAME
 	_ZNK11QTextEngine10elidedTextEN2Qt13TextElideModeERK6QFixedi @ 7889 NONAME
-	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_ @ 7890 NONAME
+	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_ @ 7890 NONAME ABSENT
 	_ZNK11QTextEngine11boundingBoxEii @ 7891 NONAME
 	_ZNK11QTextEngine11formatIndexEPK11QScriptItem @ 7892 NONAME
 	_ZNK11QTextEngine11setBoundaryEi @ 7893 NONAME
@@ -8817,7 +8817,7 @@ EXPORTS
 	_ZNK14QWidgetPrivate13isAboutToShowEv @ 8816 NONAME
 	_ZNK14QWidgetPrivate13paintOnScreenEv @ 8817 NONAME
 	_ZNK14QWidgetPrivate14childAt_helperERK6QPointb @ 8818 NONAME
-	_ZNK14QWidgetPrivate15getOpaqueRegionEv @ 8819 NONAME
+	_ZNK14QWidgetPrivate15getOpaqueRegionEv @ 8819 NONAME ABSENT
 	_ZNK14QWidgetPrivate15paintBackgroundEP8QPainterRK7QRegioni @ 8820 NONAME
 	_ZNK14QWidgetPrivate17getOpaqueChildrenEv @ 8821 NONAME
 	_ZNK14QWidgetPrivate17naturalWidgetFontEj @ 8822 NONAME
@@ -9263,13 +9263,13 @@ EXPORTS
 	_ZNK19QAbstractScrollArea8viewportEv @ 9262 NONAME
 	_ZNK19QApplicationPrivate11inPopupModeEv @ 9263 NONAME
 	_ZNK19QApplicationPrivate7appNameEv @ 9264 NONAME
-	_ZNK19QCoeFepInputContext10metaObjectEv @ 9265 NONAME
-	_ZNK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 9266 NONAME
-	_ZNK19QCoeFepInputContext20DocumentLengthForFepEv @ 9267 NONAME
-	_ZNK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 9268 NONAME
-	_ZNK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 9269 NONAME
-	_ZNK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 9270 NONAME
-	_ZNK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 9271 NONAME
+	_ZNK19QCoeFepInputContext10metaObjectEv @ 9265 NONAME ABSENT
+	_ZNK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 9266 NONAME ABSENT
+	_ZNK19QCoeFepInputContext20DocumentLengthForFepEv @ 9267 NONAME ABSENT
+	_ZNK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 9268 NONAME ABSENT
+	_ZNK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 9269 NONAME ABSENT
+	_ZNK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 9270 NONAME ABSENT
+	_ZNK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 9271 NONAME ABSENT
 	_ZNK19QEventDispatcherS6010metaObjectEv @ 9272 NONAME
 	_ZNK19QGraphicsBlurEffect10blurRadiusEv @ 9273 NONAME
 	_ZNK19QGraphicsBlurEffect10metaObjectEv @ 9274 NONAME
@@ -9366,12 +9366,12 @@ EXPORTS
 	_ZNK19QTextDocumentWriter6deviceEv @ 9365 NONAME
 	_ZNK19QTextDocumentWriter6formatEv @ 9366 NONAME
 	_ZNK19QTextDocumentWriter8fileNameEv @ 9367 NONAME
-	_ZNK20QGraphicsBloomEffect10blurRadiusEv @ 9368 NONAME
-	_ZNK20QGraphicsBloomEffect10brightnessEv @ 9369 NONAME
-	_ZNK20QGraphicsBloomEffect10metaObjectEv @ 9370 NONAME
-	_ZNK20QGraphicsBloomEffect15boundingRectForERK6QRectF @ 9371 NONAME
-	_ZNK20QGraphicsBloomEffect8blurHintEv @ 9372 NONAME
-	_ZNK20QGraphicsBloomEffect8strengthEv @ 9373 NONAME
+	_ZNK20QGraphicsBloomEffect10blurRadiusEv @ 9368 NONAME ABSENT
+	_ZNK20QGraphicsBloomEffect10brightnessEv @ 9369 NONAME ABSENT
+	_ZNK20QGraphicsBloomEffect10metaObjectEv @ 9370 NONAME ABSENT
+	_ZNK20QGraphicsBloomEffect15boundingRectForERK6QRectF @ 9371 NONAME ABSENT
+	_ZNK20QGraphicsBloomEffect8blurHintEv @ 9372 NONAME ABSENT
+	_ZNK20QGraphicsBloomEffect8strengthEv @ 9373 NONAME ABSENT
 	_ZNK20QGraphicsEllipseItem10opaqueAreaEv @ 9374 NONAME
 	_ZNK20QGraphicsEllipseItem10startAngleEv @ 9375 NONAME
 	_ZNK20QGraphicsEllipseItem12boundingRectEv @ 9376 NONAME
@@ -9429,7 +9429,7 @@ EXPORTS
 	_ZNK21QGraphicsEffectSource11styleOptionEv @ 9428 NONAME
 	_ZNK21QGraphicsEffectSource12boundingRectEN2Qt16CoordinateSystemE @ 9429 NONAME
 	_ZNK21QGraphicsEffectSource12graphicsItemEv @ 9430 NONAME
-	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPoint @ 9431 NONAME
+	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPoint @ 9431 NONAME ABSENT
 	_ZNK21QGraphicsEffectSource6widgetEv @ 9432 NONAME
 	_ZNK21QGraphicsEffectSource8isPixmapEv @ 9433 NONAME
 	_ZNK21QGraphicsLinearLayout11itemSpacingEi @ 9434 NONAME
@@ -9514,8 +9514,8 @@ EXPORTS
 	_ZNK23QGraphicsColorizeEffect10metaObjectEv @ 9513 NONAME
 	_ZNK23QGraphicsColorizeEffect5colorEv @ 9514 NONAME
 	_ZNK23QGraphicsColorizeEffect8strengthEv @ 9515 NONAME
-	_ZNK23QGraphicsPixelizeEffect10metaObjectEv @ 9516 NONAME
-	_ZNK23QGraphicsPixelizeEffect9pixelSizeEv @ 9517 NONAME
+	_ZNK23QGraphicsPixelizeEffect10metaObjectEv @ 9516 NONAME ABSENT
+	_ZNK23QGraphicsPixelizeEffect9pixelSizeEv @ 9517 NONAME ABSENT
 	_ZNK23QGraphicsSceneHelpEvent8scenePosEv @ 9518 NONAME
 	_ZNK23QGraphicsSceneHelpEvent9screenPosEv @ 9519 NONAME
 	_ZNK23QGraphicsSceneMoveEvent6newPosEv @ 9520 NONAME
@@ -9539,8 +9539,8 @@ EXPORTS
 	_ZNK23QPixmapDropShadowFilter6offsetEv @ 9538 NONAME
 	_ZNK23QTreeWidgetItemIterator12matchesFlagsEPK15QTreeWidgetItem @ 9539 NONAME
 	_ZNK23QWindowStateChangeEvent10isOverrideEv @ 9540 NONAME
-	_ZNK24QGraphicsGrayscaleEffect10metaObjectEv @ 9541 NONAME
-	_ZNK24QGraphicsGrayscaleEffect8strengthEv @ 9542 NONAME
+	_ZNK24QGraphicsGrayscaleEffect10metaObjectEv @ 9541 NONAME ABSENT
+	_ZNK24QGraphicsGrayscaleEffect8strengthEv @ 9542 NONAME ABSENT
 	_ZNK24QGraphicsSceneHoverEvent12lastScenePosEv @ 9543 NONAME
 	_ZNK24QGraphicsSceneHoverEvent13lastScreenPosEv @ 9544 NONAME
 	_ZNK24QGraphicsSceneHoverEvent3posEv @ 9545 NONAME
@@ -10163,7 +10163,7 @@ EXPORTS
 	_ZNK8QGesture10hasHotSpotEv @ 10162 NONAME
 	_ZNK8QGesture10metaObjectEv @ 10163 NONAME
 	_ZNK8QGesture11gestureTypeEv @ 10164 NONAME
-	_ZNK8QGesture12targetObjectEv @ 10165 NONAME
+	_ZNK8QGesture12targetObjectEv @ 10165 NONAME ABSENT
 	_ZNK8QGesture5stateEv @ 10166 NONAME
 	_ZNK8QGesture7hotSpotEv @ 10167 NONAME
 	_ZNK8QMdiArea10backgroundEv @ 10168 NONAME
@@ -10445,7 +10445,7 @@ EXPORTS
 	_ZNK9QS60Style11drawControlEN6QStyle14ControlElementEPK12QStyleOptionP8QPainterPK7QWidget @ 10444 NONAME
 	_ZNK9QS60Style11pixelMetricEN6QStyle11PixelMetricEPK12QStyleOptionPK7QWidget @ 10445 NONAME
 	_ZNK9QS60Style13drawPrimitiveEN6QStyle16PrimitiveElementEPK12QStyleOptionP8QPainterPK7QWidget @ 10446 NONAME
-	_ZNK9QS60Style13stylePropertyEPKc @ 10447 NONAME
+	_ZNK9QS60Style13stylePropertyEPKc @ 10447 NONAME ABSENT
 	_ZNK9QS60Style14subControlRectEN6QStyle14ComplexControlEPK19QStyleOptionComplexNS0_10SubControlEPK7QWidget @ 10448 NONAME
 	_ZNK9QS60Style14subElementRectEN6QStyle10SubElementEPK12QStyleOptionPK7QWidget @ 10449 NONAME
 	_ZNK9QS60Style16sizeFromContentsEN6QStyle12ContentsTypeEPK12QStyleOptionRK5QSizePK7QWidget @ 10450 NONAME
@@ -10774,7 +10774,7 @@ EXPORTS
 	_ZTI19QAbstractProxyModel @ 10773 NONAME
 	_ZTI19QAbstractScrollArea @ 10774 NONAME
 	_ZTI19QApplicationPrivate @ 10775 NONAME
-	_ZTI19QCoeFepInputContext @ 10776 NONAME
+	_ZTI19QCoeFepInputContext @ 10776 NONAME ABSENT
 	_ZTI19QEventDispatcherS60 @ 10777 NONAME
 	_ZTI19QGraphicsBlurEffect @ 10778 NONAME
 	_ZTI19QGraphicsGridLayout @ 10779 NONAME
@@ -10788,7 +10788,7 @@ EXPORTS
 	_ZTI19QS60MainApplication @ 10787 NONAME
 	_ZTI19QStyledItemDelegate @ 10788 NONAME
 	_ZTI19QToolBarChangeEvent @ 10789 NONAME
-	_ZTI20QGraphicsBloomEffect @ 10790 NONAME
+	_ZTI20QGraphicsBloomEffect @ 10790 NONAME ABSENT
 	_ZTI20QGraphicsEllipseItem @ 10791 NONAME
 	_ZTI20QGraphicsItemPrivate @ 10792 NONAME
 	_ZTI20QGraphicsPolygonItem @ 10793 NONAME
@@ -10815,7 +10815,7 @@ EXPORTS
 	_ZTI22QStyleFactoryInterface @ 10814 NONAME
 	_ZTI22QWhatsThisClickedEvent @ 10815 NONAME
 	_ZTI23QGraphicsColorizeEffect @ 10816 NONAME
-	_ZTI23QGraphicsPixelizeEffect @ 10817 NONAME
+	_ZTI23QGraphicsPixelizeEffect @ 10817 NONAME ABSENT
 	_ZTI23QGraphicsSceneHelpEvent @ 10818 NONAME
 	_ZTI23QGraphicsSceneMoveEvent @ 10819 NONAME
 	_ZTI23QGraphicsSimpleTextItem @ 10820 NONAME
@@ -10823,7 +10823,7 @@ EXPORTS
 	_ZTI23QPictureFormatInterface @ 10822 NONAME
 	_ZTI23QPixmapDropShadowFilter @ 10823 NONAME
 	_ZTI23QWindowStateChangeEvent @ 10824 NONAME
-	_ZTI24QGraphicsGrayscaleEffect @ 10825 NONAME
+	_ZTI24QGraphicsGrayscaleEffect @ 10825 NONAME ABSENT
 	_ZTI24QGraphicsSceneHoverEvent @ 10826 NONAME
 	_ZTI24QGraphicsSceneMouseEvent @ 10827 NONAME
 	_ZTI24QGraphicsSceneWheelEvent @ 10828 NONAME
@@ -11056,7 +11056,7 @@ EXPORTS
 	_ZTV19QAbstractProxyModel @ 11055 NONAME
 	_ZTV19QAbstractScrollArea @ 11056 NONAME
 	_ZTV19QApplicationPrivate @ 11057 NONAME
-	_ZTV19QCoeFepInputContext @ 11058 NONAME
+	_ZTV19QCoeFepInputContext @ 11058 NONAME ABSENT
 	_ZTV19QEventDispatcherS60 @ 11059 NONAME
 	_ZTV19QGraphicsBlurEffect @ 11060 NONAME
 	_ZTV19QGraphicsGridLayout @ 11061 NONAME
@@ -11070,7 +11070,7 @@ EXPORTS
 	_ZTV19QS60MainApplication @ 11069 NONAME
 	_ZTV19QStyledItemDelegate @ 11070 NONAME
 	_ZTV19QToolBarChangeEvent @ 11071 NONAME
-	_ZTV20QGraphicsBloomEffect @ 11072 NONAME
+	_ZTV20QGraphicsBloomEffect @ 11072 NONAME ABSENT
 	_ZTV20QGraphicsEllipseItem @ 11073 NONAME
 	_ZTV20QGraphicsItemPrivate @ 11074 NONAME
 	_ZTV20QGraphicsPolygonItem @ 11075 NONAME
@@ -11095,14 +11095,14 @@ EXPORTS
 	_ZTV22QPaintEngineExReplayer @ 11094 NONAME
 	_ZTV22QWhatsThisClickedEvent @ 11095 NONAME
 	_ZTV23QGraphicsColorizeEffect @ 11096 NONAME
-	_ZTV23QGraphicsPixelizeEffect @ 11097 NONAME
+	_ZTV23QGraphicsPixelizeEffect @ 11097 NONAME ABSENT
 	_ZTV23QGraphicsSceneHelpEvent @ 11098 NONAME
 	_ZTV23QGraphicsSceneMoveEvent @ 11099 NONAME
 	_ZTV23QGraphicsSimpleTextItem @ 11100 NONAME
 	_ZTV23QPaintBufferSignalProxy @ 11101 NONAME
 	_ZTV23QPixmapDropShadowFilter @ 11102 NONAME
 	_ZTV23QWindowStateChangeEvent @ 11103 NONAME
-	_ZTV24QGraphicsGrayscaleEffect @ 11104 NONAME
+	_ZTV24QGraphicsGrayscaleEffect @ 11104 NONAME ABSENT
 	_ZTV24QGraphicsSceneHoverEvent @ 11105 NONAME
 	_ZTV24QGraphicsSceneMouseEvent @ 11106 NONAME
 	_ZTV24QGraphicsSceneWheelEvent @ 11107 NONAME
@@ -11164,8 +11164,8 @@ EXPORTS
 	_ZThn12_N14QDragMoveEventD1Ev @ 11163 NONAME
 	_ZThn12_N15QDragEnterEventD0Ev @ 11164 NONAME
 	_ZThn12_N15QDragEnterEventD1Ev @ 11165 NONAME
-	_ZThn12_N19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 11166 NONAME
-	_ZThn12_N19QCoeFepInputContext5StateE4TUid @ 11167 NONAME
+	_ZThn12_N19QCoeFepInputContext29SetStateTransferingOwnershipLEPN33MCoeFepAwareTextEditor_Extension16CStateE4TUid @ 11166 NONAME ABSENT
+	_ZThn12_N19QCoeFepInputContext5StateE4TUid @ 11167 NONAME ABSENT
 	_ZThn12_NK10QDropEvent11encodedDataEPKc @ 11168 NONAME
 	_ZThn12_NK10QDropEvent6formatEi @ 11169 NONAME
 	_ZThn12_NK10QDropEvent8providesEPKc @ 11170 NONAME
@@ -11173,7 +11173,7 @@ EXPORTS
 	_ZThn16_N15QGraphicsWidget14updateGeometryEv @ 11172 NONAME
 	_ZThn16_N15QGraphicsWidgetD0Ev @ 11173 NONAME
 	_ZThn16_N15QGraphicsWidgetD1Ev @ 11174 NONAME
-	_ZThn16_N19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 11175 NONAME
+	_ZThn16_N19QCoeFepInputContext15MopSupplyObjectE8TTypeUid @ 11175 NONAME ABSENT
 	_ZThn16_N20QGraphicsProxyWidget11setGeometryERK6QRectF @ 11176 NONAME
 	_ZThn16_N20QGraphicsProxyWidgetD0Ev @ 11177 NONAME
 	_ZThn16_N20QGraphicsProxyWidgetD1Ev @ 11178 NONAME
@@ -11323,13 +11323,13 @@ EXPORTS
 	_ZThn8_N17QIconEnginePluginD1Ev @ 11322 NONAME
 	_ZThn8_N19QAbstractScrollAreaD0Ev @ 11323 NONAME
 	_ZThn8_N19QAbstractScrollAreaD1Ev @ 11324 NONAME
-	_ZThn8_N19QCoeFepInputContext10Extension1ERi @ 11325 NONAME
-	_ZThn8_N19QCoeFepInputContext19CancelFepInlineEditEv @ 11326 NONAME
-	_ZThn8_N19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 11327 NONAME
-	_ZThn8_N19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 11328 NONAME
-	_ZThn8_N19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 11329 NONAME
-	_ZThn8_N19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 11330 NONAME
-	_ZThn8_N19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 11331 NONAME
+	_ZThn8_N19QCoeFepInputContext10Extension1ERi @ 11325 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext19CancelFepInlineEditEv @ 11326 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext19StartFepInlineEditLERK7TDesC16iiPK15MFormCustomDrawR29MFepInlineTextFormatRetrieverR39MFepPointerEventHandlerDuringInlineEdit @ 11327 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext20UpdateFepInlineTextLERK7TDesC16i @ 11328 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext22DoCommitFepInlineEditLEv @ 11329 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext25SetCursorSelectionForFepLERK16TCursorSelection @ 11330 NONAME ABSENT
+	_ZThn8_N19QCoeFepInputContext33SetInlineEditingCursorVisibilityLEi @ 11331 NONAME ABSENT
 	_ZThn8_N19QIconEnginePluginV2D0Ev @ 11332 NONAME
 	_ZThn8_N19QIconEnginePluginV2D1Ev @ 11333 NONAME
 	_ZThn8_N19QInputContextPluginD0Ev @ 11334 NONAME
@@ -11446,12 +11446,12 @@ EXPORTS
 	_ZThn8_NK17QGraphicsTextItem5shapeEv @ 11445 NONAME
 	_ZThn8_NK17QGraphicsTextItem8containsERK7QPointF @ 11446 NONAME
 	_ZThn8_NK17QGraphicsTextItem9extensionERK8QVariant @ 11447 NONAME
-	_ZThn8_NK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 11448 NONAME
-	_ZThn8_NK19QCoeFepInputContext20DocumentLengthForFepEv @ 11449 NONAME
-	_ZThn8_NK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 11450 NONAME
-	_ZThn8_NK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 11451 NONAME
-	_ZThn8_NK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 11452 NONAME
-	_ZThn8_NK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 11453 NONAME
+	_ZThn8_NK19QCoeFepInputContext15GetFormatForFepER11TCharFormati @ 11448 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext20DocumentLengthForFepEv @ 11449 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext22GetEditorContentForFepER6TDes16ii @ 11450 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext24GetCursorSelectionForFepER16TCursorSelection @ 11451 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext27DocumentMaximumLengthForFepEv @ 11452 NONAME ABSENT
+	_ZThn8_NK19QCoeFepInputContext27GetScreenCoordinatesForFepLER6TPointRiS2_i @ 11453 NONAME ABSENT
 	_ZThn8_NK20QGraphicsProxyWidget4typeEv @ 11454 NONAME
 	_ZThn8_NK7QLayout11maximumSizeEv @ 11455 NONAME
 	_ZThn8_NK7QLayout11minimumSizeEv @ 11456 NONAME
@@ -11615,4 +11615,49 @@ EXPORTS
 	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11614 NONAME
 	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
 	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
+	_ZN11QPanGesture13setLastOffsetERK7QPointF @ 11617 NONAME
+	_ZN11QPanGesture14setTotalOffsetERK7QPointF @ 11618 NONAME
+	_ZN11QPanGesture9setOffsetERK7QPointF @ 11619 NONAME
+	_ZN13QGestureEvent6d_funcEv @ 11620 NONAME
+	_ZN13QGestureEvent9setWidgetEP7QWidget @ 11621 NONAME
+	_ZN13QGestureEventD0Ev @ 11622 NONAME
+	_ZN13QGestureEventD1Ev @ 11623 NONAME
+	_ZN13QGestureEventD2Ev @ 11624 NONAME
+	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11625 NONAME
+	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11626 NONAME
+	_ZNK13QGestureEvent10mapToSceneERK7QPointF @ 11627 NONAME
+	_ZNK13QGestureEvent6d_funcEv @ 11628 NONAME
+	_ZNK13QGestureEvent6widgetEv @ 11629 NONAME
+	_Zls6QDebugP15QGraphicsObject @ 11630 NONAME
+	_ZN10QMatrix4x415projectedRotateEffff @ 11631 NONAME
+	_ZN9QTextLine18setLeadingIncludedEb @ 11632 NONAME
+	_ZNK10QMatrix4x411toTransformEv @ 11633 NONAME
+	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_S4_ @ 11634 NONAME
+	_ZNK9QTextLine15leadingIncludedEv @ 11635 NONAME
+	_ZNK9QTextLine7leadingEv @ 11636 NONAME
+	_ZN11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS2_E @ 11637 NONAME
+	_ZN13QGestureEvent11setAcceptedEN2Qt11GestureTypeEb @ 11638 NONAME
+	_ZN13QGestureEvent6acceptEN2Qt11GestureTypeE @ 11639 NONAME
+	_ZN13QGestureEvent6ignoreEN2Qt11GestureTypeE @ 11640 NONAME
+	_ZN17QPixmapBlurFilter9setRadiusEf @ 11641 NONAME
+	_ZN19QGraphicsBlurEffect13setBlurRadiusEf @ 11642 NONAME
+	_ZN19QGraphicsBlurEffect17blurRadiusChangedEf @ 11643 NONAME
+	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 11644 NONAME
+	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEf @ 11645 NONAME
+	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEf @ 11646 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1ERK26QStyleOptionTabWidgetFrame @ 11647 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1Ei @ 11648 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1Ev @ 11649 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2ERK26QStyleOptionTabWidgetFrame @ 11650 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2Ei @ 11651 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2Ev @ 11652 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2aSERK26QStyleOptionTabWidgetFrame @ 11653 NONAME
+	_ZN7QWidget13ungrabGestureEN2Qt11GestureTypeE @ 11654 NONAME
+	_ZN8QGesture22setGestureCancelPolicyENS_19GestureCancelPolicyE @ 11655 NONAME
+	_ZN8QToolBar15topLevelChangedEb @ 11656 NONAME
+	_ZNK13QGestureEvent10isAcceptedEN2Qt11GestureTypeE @ 11657 NONAME
+	_ZNK13QTextDocument18availableRedoStepsEv @ 11658 NONAME
+	_ZNK13QTextDocument18availableUndoStepsEv @ 11659 NONAME
+	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPointNS_13PixmapPadModeE @ 11660 NONAME
+	_ZNK8QGesture19gestureCancelPolicyEv @ 11661 NONAME
 

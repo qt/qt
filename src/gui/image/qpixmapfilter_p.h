@@ -55,7 +55,9 @@
 
 #include <QtCore/qnamespace.h>
 #include <QtGui/qpixmap.h>
+#include <QtGui/qgraphicseffect.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -129,11 +131,11 @@ public:
     QPixmapBlurFilter(QObject *parent = 0);
     ~QPixmapBlurFilter();
 
-    void setRadius(int radius);
-    void setBlurHint(Qt::RenderHint hint);
+    void setRadius(qreal radius);
+    void setBlurHints(QGraphicsBlurEffect::BlurHints hints);
 
-    int radius() const;
-    Qt::RenderHint blurHint() const;
+    qreal radius() const;
+    QGraphicsBlurEffect::BlurHints blurHints() const;
 
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
@@ -175,8 +177,8 @@ public:
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *p, const QPointF &pos, const QPixmap &px, const QRectF &src = QRectF()) const;
 
-    int blurRadius() const;
-    void setBlurRadius(int radius);
+    qreal blurRadius() const;
+    void setBlurRadius(qreal radius);
 
     QColor color() const;
     void setColor(const QColor &color);
@@ -190,4 +192,5 @@ QT_END_NAMESPACE
 
 QT_END_HEADER
 
+#endif //QT_NO_GRAPHICSEFFECT
 #endif // QPIXMAPFILTER_H

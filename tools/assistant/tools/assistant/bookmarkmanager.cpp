@@ -626,6 +626,7 @@ Qt::ItemFlags BookmarkModel::flags(const QModelIndex &index) const
 BookmarkManager::BookmarkManager(QHelpEngineCore *_helpEngine)
     : treeModel(new BookmarkModel(0, 1, this))
     , listModel(new BookmarkModel(0, 1, this))
+    , renameItem(0)
     , helpEngine(_helpEngine)
 {
     folderIcon = QApplication::style()->standardIcon(QStyle::SP_DirClosedIcon);

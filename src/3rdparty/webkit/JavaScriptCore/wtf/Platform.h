@@ -372,6 +372,10 @@
 #   endif
 #endif
 
+#if PLATFORM(WINCE) && PLATFORM(QT)
+#   include <ce_time.h>
+#endif
+
 /* Compiler */
 
 /* COMPILER(MSVC) */
@@ -466,6 +470,7 @@
 #if PLATFORM(MAC) && !PLATFORM(IPHONE)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #if !defined(BUILDING_ON_LEOPARD) && !defined(BUILDING_ON_TIGER) && defined(__x86_64__)
 #define WTF_USE_PLUGIN_HOST_PROCESS 1
 #endif
@@ -482,6 +487,7 @@
 #if PLATFORM(CHROMIUM) && PLATFORM(DARWIN)
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 
 #if PLATFORM(IPHONE)
@@ -498,6 +504,7 @@
 #define HAVE_READLINE 1
 #define WTF_PLATFORM_CF 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 
 #if PLATFORM(WIN)
@@ -511,6 +518,7 @@
 #if PLATFORM(GTK)
 #if HAVE(PTHREAD_H)
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #endif
 #endif
 
@@ -518,6 +526,7 @@
 #define HAVE_POSIX_MEMALIGN 1
 #define WTF_USE_CURL 1
 #define WTF_USE_PTHREADS 1
+#define HAVE_PTHREAD_RWLOCK 1
 #define USE_SYSTEM_MALLOC 1
 #define ENABLE_NETSCAPE_PLUGIN_API 0
 #endif
@@ -551,7 +560,7 @@
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIMEB_H 1
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE) && !PLATFORM(QT)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
@@ -698,7 +707,7 @@
 #endif
 
 #if !defined(WTF_USE_JSVALUE64) && !defined(WTF_USE_JSVALUE32) && !defined(WTF_USE_JSVALUE32_64)
-#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX))
+#if PLATFORM(X86_64) && (PLATFORM(DARWIN) || PLATFORM(LINUX) || PLATFORM(WIN_OS))
 #define WTF_USE_JSVALUE64 1
 #elif PLATFORM(ARM) || PLATFORM(PPC64)
 #define WTF_USE_JSVALUE32 1
@@ -725,8 +734,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
     #define ENABLE_JIT 1
     #define WTF_USE_JIT_STUB_ARGUMENT_VA_LIST 1
 #elif PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)
-    /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */
-    #define ENABLE_JIT 0
+    #define ENABLE_JIT 1
     #define ENABLE_JIT_OPTIMIZE_NATIVE_CALL 0
 /* The JIT is tested & working on x86 Windows */
 #elif PLATFORM(X86) && PLATFORM(WIN)
@@ -792,8 +800,7 @@ on MinGW. See https://bugs.webkit.org/show_bug.cgi?id=29268 */
 /* YARR supports x86 & x86-64, and has been tested on Mac and Windows. */
 #if (PLATFORM(X86) && PLATFORM(MAC)) \
  || (PLATFORM(X86_64) && PLATFORM(MAC)) \
- /* Under development, temporarily disabled until 16Mb link range limit in assembler is fixed. */ \
- || (PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE) && 0) \
+ || (PLATFORM(ARM_THUMB2) && PLATFORM(IPHONE)) \
  || (PLATFORM(X86) && PLATFORM(WIN))
 #define ENABLE_YARR 1
 #define ENABLE_YARR_JIT 1

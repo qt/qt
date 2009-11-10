@@ -119,6 +119,9 @@ private slots:
     void task262152_setModelColumnNavigate();
     void taskQTBUG_2233_scrollHiddenItems_data();
     void taskQTBUG_2233_scrollHiddenItems();
+    void taskQTBUG_633_changeModelData();
+    void taskQTBUG_435_deselectOnViewportClick();
+    void taskQTBUG_2678_spacingAndWrappedText();
 };
 
 // Testing get/set functions
@@ -1132,6 +1135,7 @@ void tst_QListView::selection()
 #endif
 
     v.show();
+    QTest::qWaitForWindowShown(&v);
     QApplication::processEvents();
 
     v.setSelection(selectionRect, QItemSelectionModel::ClearAndSelect);
@@ -1184,6 +1188,7 @@ void tst_QListView::scrollTo()
     lv.setModel(&model);
     lv.setFixedSize(100, 200);
     lv.show();
+    QTest::qWaitForWindowShown(&lv);
 
     //by default, the list view scrolls per item and has no wrapping
     QModelIndex index = model.index(6,0);
@@ -1782,13 +1787,14 @@ void tst_QListView::task262152_setModelColumnNavigate()
     view.setModelColumn(1);
 
     view.show();
-    QTest::qWait(100);
+    QTest::qWaitForWindowShown(&view);
+    QTest::qWait(120);
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(1,1));
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(1,1));
     QTest::keyClick(&view, Qt::Key_Down);
-    QTest::qWait(100);
-    QCOMPARE(view.currentIndex(), model.index(2,1));
+    QTest::qWait(30);
+    QTRY_COMPARE(view.currentIndex(), model.index(2,1));
 
 }
 
@@ -1827,6 +1833,62 @@ void tst_QListView::taskQTBUG_2233_scrollHiddenItems()
         QVERIFY(index.isValid());
         QCOMPARE(index.row(), 2 * i + 1);
     }
+}
+
+void tst_QListView::taskQTBUG_633_changeModelData()
+{
+    QListView view;
+    view.setFlow(QListView::LeftToRight);
+    QStandardItemModel model(5,1);
+    for (int i = 0; i < model.rowCount(); ++i) {
+        model.setData( model.index(i, 0), QString::number(i));
+    }
+
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    model.setData( model.index(1, 0), QLatin1String("long long text"));
+    QTest::qWait(100); //leave time for relayouting the items
+    QRect rectLongText = view.visualRect(model.index(1,0));
+    QRect rect2 = view.visualRect(model.index(2,0));
+    QVERIFY( ! rectLongText.intersects(rect2) );
+}
+
+void tst_QListView::taskQTBUG_435_deselectOnViewportClick()
+{
+    QListView view;
+    QStringListModel model( QStringList() << "1" << "2" << "3" << "4");
+    view.setModel(&model);
+    view.setSelectionMode(QAbstractItemView::ExtendedSelection);
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+
+
+    QPoint p = view.visualRect(model.index(model.rowCount() - 1)).center() + QPoint(0, 20);
+    //first the left button
+    QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+
+    view.selectAll();
+    QCOMPARE(view.selectionModel()->selectedIndexes().count(), model.rowCount());
+
+    //and now the right button
+    QTest::mouseClick(view.viewport(), Qt::RightButton, 0, p);
+    QVERIFY(!view.selectionModel()->hasSelection());
+}
+
+void tst_QListView::taskQTBUG_2678_spacingAndWrappedText()
+{
+    static const QString lorem("Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");
+    QStringListModel model(QStringList() << lorem << lorem << "foo" << lorem << "bar" << lorem << lorem);
+    QListView w;
+    w.setModel(&model);
+    w.setViewMode(QListView::ListMode);
+    w.setWordWrap(true);
+    w.setSpacing(10);
+    w.show();
+    QTest::qWaitForWindowShown(&w);
+    QCOMPARE(w.horizontalScrollBar()->minimum(), w.horizontalScrollBar()->maximum());
 }
 
 QTEST_MAIN(tst_QListView)
