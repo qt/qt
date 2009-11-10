@@ -42,6 +42,7 @@ Rectangle {
         currentIndex: 3
         width: 240
         height: 320
+        keyNavigationWraps: testWrap
         model: testModel
         delegate: myDelegate
         highlightMoveSpeed: 1000

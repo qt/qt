@@ -1092,15 +1092,44 @@ void QmlXMLHttpRequest::send(const QByteArray &data)
     dispatchCallback();
 
     m_request.setUrl(m_url);
+    QNetworkRequest request = m_request;
+    if(m_method == QLatin1String("POST") ||
+       m_method == QLatin1String("PUT")) {
+        QVariant var = request.header(QNetworkRequest::ContentTypeHeader);
+        if (var.isValid()) {
+            QString str = var.toString();
+            int charsetIdx = str.indexOf("charset=");
+            if (charsetIdx == -1) {
+                // No charset - append
+                if (!str.isEmpty()) str.append(QLatin1Char(';'));
+                str.append(QLatin1String("charset=UTF-8"));
+            } else {
+                charsetIdx += 8;
+                int n = 0;
+                int semiColon = str.indexOf(QLatin1Char(';'), charsetIdx);
+                if (semiColon == -1) {
+                    n = str.length() - charsetIdx;
+                } else {
+                    n = semiColon - charsetIdx;
+                }
+
+                str.replace(charsetIdx, n, QLatin1String("UTF-8"));
+            }
+            request.setHeader(QNetworkRequest::ContentTypeHeader, str);
+        } else {
+            request.setHeader(QNetworkRequest::ContentTypeHeader, 
+                              QLatin1String("text/plain;charset=UTF-8"));
+        }
+    }
 
     if (m_method == QLatin1String("GET"))
-        m_network = m_engine->networkAccessManager()->get(m_request);
+        m_network = m_engine->networkAccessManager()->get(request);
     else if (m_method == QLatin1String("HEAD"))
-        m_network = m_engine->networkAccessManager()->head(m_request);
+        m_network = m_engine->networkAccessManager()->head(request);
     else if(m_method == QLatin1String("POST"))
-        m_network = m_engine->networkAccessManager()->post(m_request, data);
+        m_network = m_engine->networkAccessManager()->post(request, data);
     else if(m_method == QLatin1String("PUT"))
-        m_network = m_engine->networkAccessManager()->put(m_request, data);
+        m_network = m_engine->networkAccessManager()->put(request, data);
 
     QObject::connect(m_network, SIGNAL(downloadProgress(qint64,qint64)), 
                      this, SLOT(downloadProgress(qint64)));

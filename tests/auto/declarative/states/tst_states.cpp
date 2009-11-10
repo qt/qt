@@ -365,13 +365,8 @@ void tst_states::signalOverrideCrash()
     MyRect *rect = qobject_cast<MyRect*>(rectComponent.create());
     QVERIFY(rect != 0);
 
-    //QCOMPARE(rect->color(),QColor("red"));
-    //rect->doSomething();
-    //QCOMPARE(rect->color(),QColor("blue"));
-
     rect->setState("overridden");
     rect->doSomething();
-    //QCOMPARE(rect->color(),QColor("green"));
 }
 
 void tst_states::parentChange()

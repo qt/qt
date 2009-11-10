@@ -24,6 +24,7 @@ SUBDIRS += \
            qmlfontloader \          # Cover
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
+           qmlgraphicsflipable    \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover

@@ -242,6 +242,7 @@ void tst_QmlGraphicsListView::items()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -289,6 +290,7 @@ void tst_QmlGraphicsListView::changed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -322,6 +324,7 @@ void tst_QmlGraphicsListView::inserted()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -408,7 +411,7 @@ void tst_QmlGraphicsListView::removed(bool animated)
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("animate", QVariant(animated));
+    ctxt->setContextProperty("testAnimate", QVariant(animated));
 
     canvas->execute();
     qApp->processEvents();
@@ -519,6 +522,7 @@ void tst_QmlGraphicsListView::moved()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -656,6 +660,7 @@ void tst_QmlGraphicsListView::spacing()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
 
     canvas->execute();
     qApp->processEvents();
@@ -778,6 +783,7 @@ void tst_QmlGraphicsListView::currentIndex()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testWrap", QVariant(false));
 
     QString filename(SRCDIR "/data/listview-initCurrent.qml");
     QFile file(filename);
@@ -794,9 +800,12 @@ void tst_QmlGraphicsListView::currentIndex()
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
+    QTest::qWait(500);
+
     // current item should be third item
     QCOMPARE(listview->currentIndex(), 3);
     QCOMPARE(listview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 3));
+    QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
     // no wrap
     listview->setCurrentIndex(0);
@@ -811,7 +820,8 @@ void tst_QmlGraphicsListView::currentIndex()
     QCOMPARE(listview->currentIndex(), 0);
 
     // with wrap
-    listview->setWrapEnabled(true);
+    ctxt->setContextProperty("testWrap", QVariant(true));
+    QVERIFY(listview->isWrapEnabled());
 
     listview->decrementCurrentIndex();
     QCOMPARE(listview->currentIndex(), model.count()-1);
@@ -843,6 +853,18 @@ void tst_QmlGraphicsListView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(listview->currentIndex(), 0);
+
+    // turn off auto highlight
+    listview->setHighlightFollowsCurrentItem(false);
+    QVERIFY(listview->highlightFollowsCurrentItem() == false);
+
+    QTest::qWait(500);
+    QVERIFY(listview->highlightItem());
+    qreal hlPos = listview->highlightItem()->y();
+
+    listview->setCurrentIndex(4);
+    QTest::qWait(500);
+    QCOMPARE(listview->highlightItem()->y(), hlPos);
 
     delete canvas;
 }

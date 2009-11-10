@@ -232,6 +232,24 @@ public:
         emit q_func()->wantsFocusChanged();
     }
 
+    // Reimplemented from QGraphicsItemPrivate
+    virtual void siblingOrderChange()
+    {
+        foreach(QmlGraphicsItemPrivate* other, siblingOrderNotifiees)
+            other->otherSiblingOrderChange(this);
+    }
+    QList<QmlGraphicsItemPrivate*> siblingOrderNotifiees;
+    void registerSiblingOrderNotification(QmlGraphicsItemPrivate* other)
+    {
+        siblingOrderNotifiees << other;
+    }
+    void unregisterSiblingOrderNotification(QmlGraphicsItemPrivate* other)
+    {
+        siblingOrderNotifiees.removeAll(other);
+    }
+    virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other) {Q_UNUSED(other)}
+
+
     static int consistentTime;
     static QTime currentTime();
     static void Q_DECLARATIVE_EXPORT setConsistentTime(int t);
