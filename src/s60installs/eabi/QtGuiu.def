@@ -11715,4 +11715,15 @@ EXPORTS
 	_ZTI18QTapAndHoldGesture @ 11714 NONAME
 	_ZTV11QTapGesture @ 11715 NONAME
 	_ZTV18QTapAndHoldGesture @ 11716 NONAME
+	_ZN10QLCDNumber13setDigitCountEi @ 11717 NONAME
+	_ZN19QAbstractScrollArea18setViewportMarginsERK8QMargins @ 11718 NONAME
+	_ZN6QImage13setColorCountEi @ 11719 NONAME
+	_ZN7QLayout18setContentsMarginsERK8QMargins @ 11720 NONAME
+	_ZN9QLineEdit14setTextMarginsERK8QMargins @ 11721 NONAME
+	_ZNK10QLCDNumber10digitCountEv @ 11722 NONAME
+	_ZNK6QImage10colorCountEv @ 11723 NONAME
+	_ZNK6QImage9byteCountEv @ 11724 NONAME
+	_ZNK7QLayout15contentsMarginsEv @ 11725 NONAME
+	_ZNK7QRegion9rectCountEv @ 11726 NONAME
+	_ZNK9QLineEdit11textMarginsEv @ 11727 NONAME
 

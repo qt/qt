@@ -4396,4 +4396,5 @@ EXPORTS
 	?insertPause@QSequentialAnimationGroup@@QAEPAVQPauseAnimation@@HH@Z @ 4395 NONAME ; class QPauseAnimation * QSequentialAnimationGroup::insertPause(int, int)
 	?setPaused@QAbstractAnimation@@QAEX_N@Z @ 4396 NONAME ; void QAbstractAnimation::setPaused(bool)
 	?takeAnimation@QAnimationGroup@@QAEPAVQAbstractAnimation@@H@Z @ 4397 NONAME ; class QAbstractAnimation * QAnimationGroup::takeAnimation(int)
+	?captureCount@QRegExp@@QBEHXZ @ 4398 NONAME ; int QRegExp::captureCount(void) const
 

@@ -343,4 +343,32 @@ EXPORTS
 	?isNull@QScriptProgram@@QBE_NXZ @ 342 NONAME ; bool QScriptProgram::isNull(void) const
 	?sourceCode@QScriptProgram@@QBE?AVQString@@XZ @ 343 NONAME ; class QString QScriptProgram::sourceCode(void) const
 	?toArrayIndex@QScriptString@@QBEIPA_N@Z @ 344 NONAME ; unsigned int QScriptString::toArrayIndex(bool *) const
+	??0PersistentIdentifier@QScriptDeclarativeClass@@AAE@_N@Z @ 345 NONAME ; QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(bool)
+	??0PersistentIdentifier@QScriptDeclarativeClass@@QAE@ABV01@@Z @ 346 NONAME ; QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(class QScriptDeclarativeClass::PersistentIdentifier const &)
+	??0PersistentIdentifier@QScriptDeclarativeClass@@QAE@XZ @ 347 NONAME ; QScriptDeclarativeClass::PersistentIdentifier::PersistentIdentifier(void)
+	??0QScriptDeclarativeClass@@QAE@PAVQScriptEngine@@@Z @ 348 NONAME ; QScriptDeclarativeClass::QScriptDeclarativeClass(class QScriptEngine *)
+	??1PersistentIdentifier@QScriptDeclarativeClass@@QAE@XZ @ 349 NONAME ; QScriptDeclarativeClass::PersistentIdentifier::~PersistentIdentifier(void)
+	??1QScriptDeclarativeClass@@UAE@XZ @ 350 NONAME ; QScriptDeclarativeClass::~QScriptDeclarativeClass(void)
+	??4PersistentIdentifier@QScriptDeclarativeClass@@QAEAAV01@ABV01@@Z @ 351 NONAME ; class QScriptDeclarativeClass::PersistentIdentifier & QScriptDeclarativeClass::PersistentIdentifier::operator=(class QScriptDeclarativeClass::PersistentIdentifier const &)
+	??_EQScriptDeclarativeClass@@UAE@I@Z @ 352 NONAME ; QScriptDeclarativeClass::~QScriptDeclarativeClass(unsigned int)
+	?context@QScriptDeclarativeClass@@QBEPAVQScriptContext@@XZ @ 353 NONAME ; class QScriptContext * QScriptDeclarativeClass::context(void) const
+	?createPersistentIdentifier@QScriptDeclarativeClass@@QAE?AVPersistentIdentifier@1@ABQAX@Z @ 354 NONAME ; class QScriptDeclarativeClass::PersistentIdentifier QScriptDeclarativeClass::createPersistentIdentifier(void * const const &)
+	?createPersistentIdentifier@QScriptDeclarativeClass@@QAE?AVPersistentIdentifier@1@ABVQString@@@Z @ 355 NONAME ; class QScriptDeclarativeClass::PersistentIdentifier QScriptDeclarativeClass::createPersistentIdentifier(class QString const &)
+	?engine@QScriptDeclarativeClass@@QBEPAVQScriptEngine@@XZ @ 356 NONAME ; class QScriptEngine * QScriptDeclarativeClass::engine(void) const
+	?function@QScriptDeclarativeClass@@SA?AVQScriptValue@@ABV2@ABQAX@Z @ 357 NONAME ; class QScriptValue QScriptDeclarativeClass::function(class QScriptValue const &, void * const const &)
+	?newObject@QScriptDeclarativeClass@@SA?AVQScriptValue@@PAVQScriptEngine@@PAV1@PAUObject@1@@Z @ 358 NONAME ; class QScriptValue QScriptDeclarativeClass::newObject(class QScriptEngine *, class QScriptDeclarativeClass *, struct QScriptDeclarativeClass::Object *)
+	?object@QScriptDeclarativeClass@@SAPAUObject@1@ABVQScriptValue@@@Z @ 359 NONAME ; struct QScriptDeclarativeClass::Object * QScriptDeclarativeClass::object(class QScriptValue const &)
+	?property@QScriptDeclarativeClass@@SA?AVQScriptValue@@ABV2@ABQAX@Z @ 360 NONAME ; class QScriptValue QScriptDeclarativeClass::property(class QScriptValue const &, void * const const &)
+	?property@QScriptDeclarativeClass@@UAE?AVQScriptValue@@PAUObject@1@ABQAX@Z @ 361 NONAME ; class QScriptValue QScriptDeclarativeClass::property(struct QScriptDeclarativeClass::Object *, void * const const &)
+	?propertyFlags@QScriptDeclarativeClass@@UAE?AV?$QFlags@W4PropertyFlag@QScriptValue@@@@PAUObject@1@ABQAX@Z @ 362 NONAME ; class QFlags<enum QScriptValue::PropertyFlag> QScriptDeclarativeClass::propertyFlags(struct QScriptDeclarativeClass::Object *, void * const const &)
+	?propertyNames@QScriptDeclarativeClass@@UAE?AVQStringList@@PAUObject@1@@Z @ 363 NONAME ; class QStringList QScriptDeclarativeClass::propertyNames(struct QScriptDeclarativeClass::Object *)
+	?pushCleanContext@QScriptDeclarativeClass@@SAPAVQScriptContext@@PAVQScriptEngine@@@Z @ 364 NONAME ; class QScriptContext * QScriptDeclarativeClass::pushCleanContext(class QScriptEngine *)
+	?queryProperty@QScriptDeclarativeClass@@UAE?AV?$QFlags@W4QueryFlag@QScriptClass@@@@PAUObject@1@ABQAXV2@@Z @ 365 NONAME ; class QFlags<enum QScriptClass::QueryFlag> QScriptDeclarativeClass::queryProperty(struct QScriptDeclarativeClass::Object *, void * const const &, class QFlags<enum QScriptClass::QueryFlag>)
+	?scopeChainValue@QScriptDeclarativeClass@@SA?AVQScriptValue@@PAVQScriptContext@@H@Z @ 366 NONAME ; class QScriptValue QScriptDeclarativeClass::scopeChainValue(class QScriptContext *, int)
+	?scriptClass@QScriptDeclarativeClass@@SAPAV1@ABVQScriptValue@@@Z @ 367 NONAME ; class QScriptDeclarativeClass * QScriptDeclarativeClass::scriptClass(class QScriptValue const &)
+	?setProperty@QScriptDeclarativeClass@@UAEXPAUObject@1@ABQAXABVQScriptValue@@@Z @ 368 NONAME ; void QScriptDeclarativeClass::setProperty(struct QScriptDeclarativeClass::Object *, void * const const &, class QScriptValue const &)
+	?toArrayIndex@QScriptDeclarativeClass@@QAEIABQAXPA_N@Z @ 369 NONAME ; unsigned int QScriptDeclarativeClass::toArrayIndex(void * const const &, bool *)
+	?toQObject@QScriptDeclarativeClass@@UAEPAVQObject@@PAUObject@1@PA_N@Z @ 370 NONAME ; class QObject * QScriptDeclarativeClass::toQObject(struct QScriptDeclarativeClass::Object *, bool *)
+	?toString@QScriptDeclarativeClass@@QAE?AVQString@@ABQAX@Z @ 371 NONAME ; class QString QScriptDeclarativeClass::toString(void * const const &)
+	?toVariant@QScriptDeclarativeClass@@UAE?AVQVariant@@PAUObject@1@PA_N@Z @ 372 NONAME ; class QVariant QScriptDeclarativeClass::toVariant(struct QScriptDeclarativeClass::Object *, bool *)
 

@@ -237,12 +237,12 @@ EXPORTS
 	?inputMethodEvent@QWebView@@MAEXPAVQInputMethodEvent@@@Z @ 236 NONAME ; void QWebView::inputMethodEvent(class QInputMethodEvent *)
 	?inputMethodQuery@QWebPage@@QBE?AVQVariant@@W4InputMethodQuery@Qt@@@Z @ 237 NONAME ; class QVariant QWebPage::inputMethodQuery(enum Qt::InputMethodQuery) const
 	?inputMethodQuery@QWebView@@UBE?AVQVariant@@W4InputMethodQuery@Qt@@@Z @ 238 NONAME ; class QVariant QWebView::inputMethodQuery(enum Qt::InputMethodQuery) const
-	?interactivityChanged@QGraphicsWebView@@IAEXXZ @ 239 NONAME ; void QGraphicsWebView::interactivityChanged(void)
+	?interactivityChanged@QGraphicsWebView@@IAEXXZ @ 239 NONAME ABSENT ; void QGraphicsWebView::interactivityChanged(void)
 	?isContentEditable@QWebHitTestResult@@QBE_NXZ @ 240 NONAME ; bool QWebHitTestResult::isContentEditable(void) const
 	?isContentEditable@QWebPage@@QBE_NXZ @ 241 NONAME ; bool QWebPage::isContentEditable(void) const
 	?isContentSelected@QWebHitTestResult@@QBE_NXZ @ 242 NONAME ; bool QWebHitTestResult::isContentSelected(void) const
 	?isEnabled@QWebPluginInfo@@QBE_NXZ @ 243 NONAME ; bool QWebPluginInfo::isEnabled(void) const
-	?isInteractive@QGraphicsWebView@@QBE_NXZ @ 244 NONAME ; bool QGraphicsWebView::isInteractive(void) const
+	?isInteractive@QGraphicsWebView@@QBE_NXZ @ 244 NONAME ABSENT ; bool QGraphicsWebView::isInteractive(void) const
 	?isModified@QWebPage@@QBE_NXZ @ 245 NONAME ; bool QWebPage::isModified(void) const
 	?isModified@QWebView@@QBE_NXZ @ 246 NONAME ; bool QWebView::isModified(void) const
 	?isNull@QWebElement@@QBE_NXZ @ 247 NONAME ; bool QWebElement::isNull(void) const
@@ -355,8 +355,8 @@ EXPORTS
 	?printRequested@QWebPage@@IAEXPAVQWebFrame@@@Z @ 354 NONAME ; void QWebPage::printRequested(class QWebFrame *)
 	?printingMaximumShrinkFactor@QWebSettings@@QBEMXZ @ 355 NONAME ; float QWebSettings::printingMaximumShrinkFactor(void) const
 	?printingMinimumShrinkFactor@QWebSettings@@QBEMXZ @ 356 NONAME ; float QWebSettings::printingMinimumShrinkFactor(void) const
-	?progress@QGraphicsWebView@@QBEMXZ @ 357 NONAME ; float QGraphicsWebView::progress(void) const
-	?progressChanged@QGraphicsWebView@@IAEXM@Z @ 358 NONAME ; void QGraphicsWebView::progressChanged(float)
+	?progress@QGraphicsWebView@@QBEMXZ @ 357 NONAME ABSENT ; float QGraphicsWebView::progress(void) const
+	?progressChanged@QGraphicsWebView@@IAEXM@Z @ 358 NONAME ABSENT ; void QGraphicsWebView::progressChanged(float)
 	?provisionalLoad@QWebFrame@@IAEXXZ @ 359 NONAME ; void QWebFrame::provisionalLoad(void)
 	?qWebKitMajorVersion@@YAHXZ @ 360 NONAME ; int qWebKitMajorVersion(void)
 	?qWebKitMinorVersion@@YAHXZ @ 361 NONAME ; int qWebKitMinorVersion(void)
@@ -463,7 +463,7 @@ EXPORTS
 	?setHtml@QWebView@@QAEXABVQString@@ABVQUrl@@@Z @ 462 NONAME ; void QWebView::setHtml(class QString const &, class QUrl const &)
 	?setIconDatabasePath@QWebSettings@@SAXABVQString@@@Z @ 463 NONAME ; void QWebSettings::setIconDatabasePath(class QString const &)
 	?setInnerXml@QWebElement@@QAEXABVQString@@@Z @ 464 NONAME ; void QWebElement::setInnerXml(class QString const &)
-	?setInteractive@QGraphicsWebView@@QAEX_N@Z @ 465 NONAME ; void QGraphicsWebView::setInteractive(bool)
+	?setInteractive@QGraphicsWebView@@QAEX_N@Z @ 465 NONAME ABSENT ; void QGraphicsWebView::setInteractive(bool)
 	?setLinkDelegationPolicy@QWebPage@@QAEXW4LinkDelegationPolicy@1@@Z @ 466 NONAME ; void QWebPage::setLinkDelegationPolicy(enum QWebPage::LinkDelegationPolicy)
 	?setLocalStoragePath@QWebSettings@@QAEXABVQString@@@Z @ 467 NONAME ; void QWebSettings::setLocalStoragePath(class QString const &)
 	?setMaximumItemCount@QWebHistory@@QAEXH@Z @ 468 NONAME ; void QWebHistory::setMaximumItemCount(int)
@@ -513,11 +513,11 @@ EXPORTS
 	?size@QWebDatabase@@QBE_JXZ @ 512 NONAME ; long long QWebDatabase::size(void) const
 	?sizeHint@QWebInspector@@UBE?AVQSize@@XZ @ 513 NONAME ; class QSize QWebInspector::sizeHint(void) const
 	?sizeHint@QWebView@@UBE?AVQSize@@XZ @ 514 NONAME ; class QSize QWebView::sizeHint(void) const
-	?status@QGraphicsWebView@@QBE?AVQString@@XZ @ 515 NONAME ; class QString QGraphicsWebView::status(void) const
+	?status@QGraphicsWebView@@QBE?AVQString@@XZ @ 515 NONAME ABSENT ; class QString QGraphicsWebView::status(void) const
 	?statusBarMessage@QWebPage@@IAEXABVQString@@@Z @ 516 NONAME ; void QWebPage::statusBarMessage(class QString const &)
 	?statusBarMessage@QWebView@@IAEXABVQString@@@Z @ 517 NONAME ; void QWebView::statusBarMessage(class QString const &)
 	?statusBarVisibilityChangeRequested@QWebPage@@IAEX_N@Z @ 518 NONAME ; void QWebPage::statusBarVisibilityChangeRequested(bool)
-	?statusChanged@QGraphicsWebView@@IAEXXZ @ 519 NONAME ; void QGraphicsWebView::statusChanged(void)
+	?statusChanged@QGraphicsWebView@@IAEXXZ @ 519 NONAME ABSENT ; void QGraphicsWebView::statusChanged(void)
 	?stop@QGraphicsWebView@@QAEXXZ @ 520 NONAME ; void QGraphicsWebView::stop(void)
 	?stop@QWebView@@QAEXXZ @ 521 NONAME ; void QWebView::stop(void)
 	?styleProperty@QWebElement@@QBE?AVQString@@ABV2@W4StyleResolveStrategy@1@@Z @ 522 NONAME ; class QString QWebElement::styleProperty(class QString const &, enum QWebElement::StyleResolveStrategy) const
@@ -538,7 +538,7 @@ EXPORTS
 	?titleChanged@QGraphicsWebView@@IAEXABVQString@@@Z @ 537 NONAME ; void QGraphicsWebView::titleChanged(class QString const &)
 	?titleChanged@QWebFrame@@IAEXABVQString@@@Z @ 538 NONAME ; void QWebFrame::titleChanged(class QString const &)
 	?titleChanged@QWebView@@IAEXABVQString@@@Z @ 539 NONAME ; void QWebView::titleChanged(class QString const &)
-	?toHtml@QGraphicsWebView@@QBE?AVQString@@XZ @ 540 NONAME ; class QString QGraphicsWebView::toHtml(void) const
+	?toHtml@QGraphicsWebView@@QBE?AVQString@@XZ @ 540 NONAME ABSENT ; class QString QGraphicsWebView::toHtml(void) const
 	?toHtml@QWebFrame@@QBE?AVQString@@XZ @ 541 NONAME ; class QString QWebFrame::toHtml(void) const
 	?toInnerXml@QWebElement@@QBE?AVQString@@XZ @ 542 NONAME ; class QString QWebElement::toInnerXml(void) const
 	?toList@QWebElementCollection@@QBE?AV?$QList@VQWebElement@@@@XZ @ 543 NONAME ; class QList<class QWebElement> QWebElementCollection::toList(void) const
@@ -600,14 +600,14 @@ EXPORTS
 	?viewportSize@QWebPage@@QBE?AVQSize@@XZ @ 599 NONAME ; class QSize QWebPage::viewportSize(void) const
 	?webFrame@QWebElement@@QBEPAVQWebFrame@@XZ @ 600 NONAME ; class QWebFrame * QWebElement::webFrame(void) const
 	?webGraphic@QWebSettings@@SA?AVQPixmap@@W4WebGraphic@1@@Z @ 601 NONAME ; class QPixmap QWebSettings::webGraphic(enum QWebSettings::WebGraphic)
-	?webInspectorTriggered@QWebPage@@IAEXABVQWebElement@@@Z @ 602 NONAME ; void QWebPage::webInspectorTriggered(class QWebElement const &)
+	?webInspectorTriggered@QWebPage@@IAEXABVQWebElement@@@Z @ 602 NONAME ABSENT ; void QWebPage::webInspectorTriggered(class QWebElement const &)
 	?wheelEvent@QGraphicsWebView@@MAEXPAVQGraphicsSceneWheelEvent@@@Z @ 603 NONAME ; void QGraphicsWebView::wheelEvent(class QGraphicsSceneWheelEvent *)
 	?wheelEvent@QWebView@@MAEXPAVQWheelEvent@@@Z @ 604 NONAME ; void QWebView::wheelEvent(class QWheelEvent *)
 	?windowCloseRequested@QWebPage@@IAEXXZ @ 605 NONAME ; void QWebPage::windowCloseRequested(void)
 	?zoomFactor@QGraphicsWebView@@QBEMXZ @ 606 NONAME ; float QGraphicsWebView::zoomFactor(void) const
 	?zoomFactor@QWebFrame@@QBEMXZ @ 607 NONAME ; float QWebFrame::zoomFactor(void) const
 	?zoomFactor@QWebView@@QBEMXZ @ 608 NONAME ; float QWebView::zoomFactor(void) const
-	?zoomFactorChanged@QGraphicsWebView@@IAEXXZ @ 609 NONAME ; void QGraphicsWebView::zoomFactorChanged(void)
+	?zoomFactorChanged@QGraphicsWebView@@IAEXXZ @ 609 NONAME ABSENT ; void QGraphicsWebView::zoomFactorChanged(void)
 	?staticMetaObject@QWebPluginDatabase@@2UQMetaObject@@B @ 610 NONAME ; struct QMetaObject const QWebPluginDatabase::staticMetaObject
 	?staticMetaObject@QWebFrame@@2UQMetaObject@@B @ 611 NONAME ; struct QMetaObject const QWebFrame::staticMetaObject
 	?staticMetaObject@QWebHistoryInterface@@2UQMetaObject@@B @ 612 NONAME ; struct QMetaObject const QWebHistoryInterface::staticMetaObject
@@ -616,4 +616,17 @@ EXPORTS
 	?staticMetaObject@QGraphicsWebView@@2UQMetaObject@@B @ 615 NONAME ; struct QMetaObject const QGraphicsWebView::staticMetaObject
 	?staticMetaObject@QWebPage@@2UQMetaObject@@B @ 616 NONAME ; struct QMetaObject const QWebPage::staticMetaObject
 	?staticMetaObject@QWebView@@2UQMetaObject@@B @ 617 NONAME ; struct QMetaObject const QWebView::staticMetaObject
+	?begin@QWebElementCollection@@QAE?AViterator@1@XZ @ 618 NONAME ; class QWebElementCollection::iterator QWebElementCollection::begin(void)
+	?constBegin@QWebElementCollection@@QBE?AVconst_iterator@1@XZ @ 619 NONAME ; class QWebElementCollection::const_iterator QWebElementCollection::constBegin(void) const
+	?constEnd@QWebElementCollection@@QBE?AVconst_iterator@1@XZ @ 620 NONAME ; class QWebElementCollection::const_iterator QWebElementCollection::constEnd(void) const
+	?end@QWebElementCollection@@QAE?AViterator@1@XZ @ 621 NONAME ; class QWebElementCollection::iterator QWebElementCollection::end(void)
+	?findText@QGraphicsWebView@@QAE_NABVQString@@V?$QFlags@W4FindFlag@QWebPage@@@@@Z @ 622 NONAME ; bool QGraphicsWebView::findText(class QString const &, class QFlags<enum QWebPage::FindFlag>)
+	?inputMethodQuery@QGraphicsWebView@@UBE?AVQVariant@@W4InputMethodQuery@Qt@@@Z @ 623 NONAME ; class QVariant QGraphicsWebView::inputMethodQuery(enum Qt::InputMethodQuery) const
+	?isModified@QGraphicsWebView@@QBE_NXZ @ 624 NONAME ; bool QGraphicsWebView::isModified(void) const
+	?linkClicked@QGraphicsWebView@@IAEXABVQUrl@@@Z @ 625 NONAME ; void QGraphicsWebView::linkClicked(class QUrl const &)
+	?loadProgress@QGraphicsWebView@@IAEXH@Z @ 626 NONAME ; void QGraphicsWebView::loadProgress(int)
+	?pageAction@QGraphicsWebView@@QBEPAVQAction@@W4WebAction@QWebPage@@@Z @ 627 NONAME ; class QAction * QGraphicsWebView::pageAction(enum QWebPage::WebAction) const
+	?sizeHint@QGraphicsWebView@@UBE?AVQSizeF@@W4SizeHint@Qt@@ABV2@@Z @ 628 NONAME ; class QSizeF QGraphicsWebView::sizeHint(enum Qt::SizeHint, class QSizeF const &) const
+	?statusBarMessage@QGraphicsWebView@@IAEXABVQString@@@Z @ 629 NONAME ; void QGraphicsWebView::statusBarMessage(class QString const &)
+	?triggerPageAction@QGraphicsWebView@@QAEXW4WebAction@QWebPage@@_N@Z @ 630 NONAME ; void QGraphicsWebView::triggerPageAction(enum QWebPage::WebAction, bool)
 

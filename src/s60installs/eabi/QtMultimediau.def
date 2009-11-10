@@ -73,7 +73,7 @@ EXPORTS
 	_ZN12QAudioOutputD0Ev @ 72 NONAME
 	_ZN12QAudioOutputD1Ev @ 73 NONAME
 	_ZN12QAudioOutputD2Ev @ 74 NONAME
-	_ZN16QAudioDeviceInfo10deviceListEN6QAudio4ModeE @ 75 NONAME
+	_ZN16QAudioDeviceInfo10deviceListEN6QAudio4ModeE @ 75 NONAME ABSENT
 	_ZN16QAudioDeviceInfo18defaultInputDeviceEv @ 76 NONAME
 	_ZN16QAudioDeviceInfo19defaultOutputDeviceEv @ 77 NONAME
 	_ZN16QAudioDeviceInfoC1ERK7QStringRK10QByteArrayN6QAudio4ModeE @ 78 NONAME
@@ -167,11 +167,11 @@ EXPORTS
 	_ZNK11QAudioInput10metaObjectEv @ 166 NONAME
 	_ZNK11QAudioInput10periodSizeEv @ 167 NONAME
 	_ZNK11QAudioInput14notifyIntervalEv @ 168 NONAME
-	_ZNK11QAudioInput5clockEv @ 169 NONAME
+	_ZNK11QAudioInput5clockEv @ 169 NONAME ABSENT
 	_ZNK11QAudioInput5errorEv @ 170 NONAME
 	_ZNK11QAudioInput5stateEv @ 171 NONAME
 	_ZNK11QAudioInput6formatEv @ 172 NONAME
-	_ZNK11QAudioInput9totalTimeEv @ 173 NONAME
+	_ZNK11QAudioInput9totalTimeEv @ 173 NONAME ABSENT
 	_ZNK11QVideoFrame10handleTypeEv @ 174 NONAME
 	_ZNK11QVideoFrame10isReadableEv @ 175 NONAME
 	_ZNK11QVideoFrame10isWritableEv @ 176 NONAME
@@ -192,7 +192,7 @@ EXPORTS
 	_ZNK12QAudioFormat10sampleSizeEv @ 191 NONAME
 	_ZNK12QAudioFormat10sampleTypeEv @ 192 NONAME
 	_ZNK12QAudioFormat5codecEv @ 193 NONAME
-	_ZNK12QAudioFormat6isNullEv @ 194 NONAME
+	_ZNK12QAudioFormat6isNullEv @ 194 NONAME ABSENT
 	_ZNK12QAudioFormat8channelsEv @ 195 NONAME
 	_ZNK12QAudioFormat9byteOrderEv @ 196 NONAME
 	_ZNK12QAudioFormat9frequencyEv @ 197 NONAME
@@ -202,12 +202,12 @@ EXPORTS
 	_ZNK12QAudioOutput10metaObjectEv @ 201 NONAME
 	_ZNK12QAudioOutput10periodSizeEv @ 202 NONAME
 	_ZNK12QAudioOutput14notifyIntervalEv @ 203 NONAME
-	_ZNK12QAudioOutput5clockEv @ 204 NONAME
+	_ZNK12QAudioOutput5clockEv @ 204 NONAME ABSENT
 	_ZNK12QAudioOutput5errorEv @ 205 NONAME
 	_ZNK12QAudioOutput5stateEv @ 206 NONAME
 	_ZNK12QAudioOutput6formatEv @ 207 NONAME
 	_ZNK12QAudioOutput9bytesFreeEv @ 208 NONAME
-	_ZNK12QAudioOutput9totalTimeEv @ 209 NONAME
+	_ZNK12QAudioOutput9totalTimeEv @ 209 NONAME ABSENT
 	_ZNK16QAudioDeviceInfo10deviceNameEv @ 210 NONAME
 	_ZNK16QAudioDeviceInfo13nearestFormatERK12QAudioFormat @ 211 NONAME
 	_ZNK16QAudioDeviceInfo15preferredFormatEv @ 212 NONAME
@@ -288,4 +288,12 @@ EXPORTS
 	_ZNK21QAbstractVideoSurface13nearestFormatERK19QVideoSurfaceFormat @ 287 NONAME
 	_ZNK21QAbstractVideoSurface17isFormatSupportedERK19QVideoSurfaceFormat @ 288 NONAME
 	_ZNK21QAbstractVideoSurface8isActiveEv @ 289 NONAME
+	_ZN11QAudioInput5startEv @ 290 NONAME
+	_ZN12QAudioOutput5startEv @ 291 NONAME
+	_ZN16QAudioDeviceInfo16availableDevicesEN6QAudio4ModeE @ 292 NONAME
+	_ZNK11QAudioInput12elapsedUSecsEv @ 293 NONAME
+	_ZNK11QAudioInput14processedUSecsEv @ 294 NONAME
+	_ZNK12QAudioFormat7isValidEv @ 295 NONAME
+	_ZNK12QAudioOutput12elapsedUSecsEv @ 296 NONAME
+	_ZNK12QAudioOutput14processedUSecsEv @ 297 NONAME
 

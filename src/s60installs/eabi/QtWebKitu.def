@@ -165,25 +165,25 @@ EXPORTS
 	_ZN16QGraphicsWebView13focusOutEventEP11QFocusEvent @ 164 NONAME
 	_ZN16QGraphicsWebView13keyPressEventEP9QKeyEvent @ 165 NONAME
 	_ZN16QGraphicsWebView13setZoomFactorEf @ 166 NONAME
-	_ZN16QGraphicsWebView13statusChangedEv @ 167 NONAME
+	_ZN16QGraphicsWebView13statusChangedEv @ 167 NONAME ABSENT
 	_ZN16QGraphicsWebView14dragEnterEventEP27QGraphicsSceneDragDropEvent @ 168 NONAME
 	_ZN16QGraphicsWebView14dragLeaveEventEP27QGraphicsSceneDragDropEvent @ 169 NONAME
 	_ZN16QGraphicsWebView14hoverMoveEventEP24QGraphicsSceneHoverEvent @ 170 NONAME
 	_ZN16QGraphicsWebView14mouseMoveEventEP24QGraphicsSceneMouseEvent @ 171 NONAME
-	_ZN16QGraphicsWebView14setInteractiveEb @ 172 NONAME
+	_ZN16QGraphicsWebView14setInteractiveEb @ 172 NONAME ABSENT
 	_ZN16QGraphicsWebView14updateGeometryEv @ 173 NONAME
 	_ZN16QGraphicsWebView15hoverLeaveEventEP24QGraphicsSceneHoverEvent @ 174 NONAME
 	_ZN16QGraphicsWebView15keyReleaseEventEP9QKeyEvent @ 175 NONAME
 	_ZN16QGraphicsWebView15mousePressEventEP24QGraphicsSceneMouseEvent @ 176 NONAME
-	_ZN16QGraphicsWebView15progressChangedEf @ 177 NONAME
+	_ZN16QGraphicsWebView15progressChangedEf @ 177 NONAME ABSENT
 	_ZN16QGraphicsWebView16contextMenuEventEP30QGraphicsSceneContextMenuEvent @ 178 NONAME
 	_ZN16QGraphicsWebView16inputMethodEventEP17QInputMethodEvent @ 179 NONAME
 	_ZN16QGraphicsWebView16staticMetaObjectE @ 180 NONAME DATA 16
 	_ZN16QGraphicsWebView17mouseReleaseEventEP24QGraphicsSceneMouseEvent @ 181 NONAME
-	_ZN16QGraphicsWebView17zoomFactorChangedEv @ 182 NONAME
+	_ZN16QGraphicsWebView17zoomFactorChangedEv @ 182 NONAME ABSENT
 	_ZN16QGraphicsWebView18focusNextPrevChildEb @ 183 NONAME
 	_ZN16QGraphicsWebView19getStaticMetaObjectEv @ 184 NONAME
-	_ZN16QGraphicsWebView20interactivityChangedEv @ 185 NONAME
+	_ZN16QGraphicsWebView20interactivityChangedEv @ 185 NONAME ABSENT
 	_ZN16QGraphicsWebView21mouseDoubleClickEventEP24QGraphicsSceneMouseEvent @ 186 NONAME
 	_ZN16QGraphicsWebView4backEv @ 187 NONAME
 	_ZN16QGraphicsWebView4loadERK15QNetworkRequestN21QNetworkAccessManager9OperationERK10QByteArray @ 188 NONAME
@@ -292,7 +292,7 @@ EXPORTS
 	_ZN8QWebPage19getStaticMetaObjectEv @ 291 NONAME
 	_ZN8QWebPage20windowCloseRequestedEv @ 292 NONAME
 	_ZN8QWebPage21databaseQuotaExceededEP9QWebFrame7QString @ 293 NONAME
-	_ZN8QWebPage21webInspectorTriggeredERK11QWebElement @ 294 NONAME
+	_ZN8QWebPage21webInspectorTriggeredERK11QWebElement @ 294 NONAME ABSENT
 	_ZN8QWebPage23acceptNavigationRequestEP9QWebFrameRK15QNetworkRequestNS_14NavigationTypeE @ 295 NONAME
 	_ZN8QWebPage23geometryChangeRequestedERK5QRect @ 296 NONAME
 	_ZN8QWebPage23saveFrameStateRequestedEP9QWebFrameP15QWebHistoryItem @ 297 NONAME
@@ -488,15 +488,15 @@ EXPORTS
 	_ZNK15QWebHistoryItem8userDataEv @ 487 NONAME
 	_ZNK16QGraphicsWebView10metaObjectEv @ 488 NONAME
 	_ZNK16QGraphicsWebView10zoomFactorEv @ 489 NONAME
-	_ZNK16QGraphicsWebView13isInteractiveEv @ 490 NONAME
+	_ZNK16QGraphicsWebView13isInteractiveEv @ 490 NONAME ABSENT
 	_ZNK16QGraphicsWebView3urlEv @ 491 NONAME
 	_ZNK16QGraphicsWebView4iconEv @ 492 NONAME
 	_ZNK16QGraphicsWebView4pageEv @ 493 NONAME
 	_ZNK16QGraphicsWebView5titleEv @ 494 NONAME
-	_ZNK16QGraphicsWebView6statusEv @ 495 NONAME
-	_ZNK16QGraphicsWebView6toHtmlEv @ 496 NONAME
+	_ZNK16QGraphicsWebView6statusEv @ 495 NONAME ABSENT
+	_ZNK16QGraphicsWebView6toHtmlEv @ 496 NONAME ABSENT
 	_ZNK16QGraphicsWebView7historyEv @ 497 NONAME
-	_ZNK16QGraphicsWebView8progressEv @ 498 NONAME
+	_ZNK16QGraphicsWebView8progressEv @ 498 NONAME ABSENT
 	_ZNK16QGraphicsWebView8settingsEv @ 499 NONAME
 	_ZNK17QWebHitTestResult11linkElementEv @ 500 NONAME
 	_ZNK17QWebHitTestResult12boundingRectEv @ 501 NONAME
@@ -678,4 +678,15 @@ EXPORTS
 	_ZNK8QWebPage21preferredContentsSizeEv @ 677 NONAME
 	_ZNK8QWebPage24setPreferredContentsSizeERK5QSize @ 678 NONAME
 	_ZThn8_N16QGraphicsWebView10itemChangeEN13QGraphicsItem18GraphicsItemChangeERK8QVariant @ 679 NONAME
+	_ZN16QGraphicsWebView11linkClickedERK4QUrl @ 680 NONAME
+	_ZN16QGraphicsWebView12loadProgressEi @ 681 NONAME
+	_ZN16QGraphicsWebView16statusBarMessageERK7QString @ 682 NONAME
+	_ZN16QGraphicsWebView17triggerPageActionEN8QWebPage9WebActionEb @ 683 NONAME
+	_ZN16QGraphicsWebView8findTextERK7QString6QFlagsIN8QWebPage8FindFlagEE @ 684 NONAME
+	_ZNK16QGraphicsWebView10isModifiedEv @ 685 NONAME
+	_ZNK16QGraphicsWebView10pageActionEN8QWebPage9WebActionE @ 686 NONAME
+	_ZNK16QGraphicsWebView16inputMethodQueryEN2Qt16InputMethodQueryE @ 687 NONAME
+	_ZNK16QGraphicsWebView8sizeHintEN2Qt8SizeHintERK6QSizeF @ 688 NONAME
+	_ZThn16_NK16QGraphicsWebView8sizeHintEN2Qt8SizeHintERK6QSizeF @ 689 NONAME
+	_ZThn8_NK16QGraphicsWebView16inputMethodQueryEN2Qt16InputMethodQueryE @ 690 NONAME
 

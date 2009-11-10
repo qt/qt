@@ -12671,4 +12671,18 @@ EXPORTS
 	?url@QFileOpenEvent@@QBE?AVQUrl@@XZ @ 12670 NONAME ; class QUrl QFileOpenEvent::url(void) const
 	?staticMetaObject@QTapGesture@@2UQMetaObject@@B @ 12671 NONAME ; struct QMetaObject const QTapGesture::staticMetaObject
 	?staticMetaObject@QTapAndHoldGesture@@2UQMetaObject@@B @ 12672 NONAME ; struct QMetaObject const QTapAndHoldGesture::staticMetaObject
+	?byteCount@QImage@@QBEHXZ @ 12673 NONAME ; int QImage::byteCount(void) const
+	?colorCount@QImage@@QBEHXZ @ 12674 NONAME ; int QImage::colorCount(void) const
+	?colorCount@QPaintDevice@@QBEHXZ @ 12675 NONAME ; int QPaintDevice::colorCount(void) const
+	?colorCount@QPixmapData@@QBEHXZ @ 12676 NONAME ; int QPixmapData::colorCount(void) const
+	?contentsMargins@QLayout@@QBE?AVQMargins@@XZ @ 12677 NONAME ; class QMargins QLayout::contentsMargins(void) const
+	?determinant@QMatrix@@QBEMXZ @ 12678 NONAME ; float QMatrix::determinant(void) const
+	?digitCount@QLCDNumber@@QBEHXZ @ 12679 NONAME ; int QLCDNumber::digitCount(void) const
+	?rectCount@QRegion@@QBEHXZ @ 12680 NONAME ; int QRegion::rectCount(void) const
+	?setColorCount@QImage@@QAEXH@Z @ 12681 NONAME ; void QImage::setColorCount(int)
+	?setContentsMargins@QLayout@@QAEXABVQMargins@@@Z @ 12682 NONAME ; void QLayout::setContentsMargins(class QMargins const &)
+	?setDigitCount@QLCDNumber@@QAEXH@Z @ 12683 NONAME ; void QLCDNumber::setDigitCount(int)
+	?setTextMargins@QLineEdit@@QAEXABVQMargins@@@Z @ 12684 NONAME ; void QLineEdit::setTextMargins(class QMargins const &)
+	?setViewportMargins@QAbstractScrollArea@@IAEXABVQMargins@@@Z @ 12685 NONAME ; void QAbstractScrollArea::setViewportMargins(class QMargins const &)
+	?textMargins@QLineEdit@@QBE?AVQMargins@@XZ @ 12686 NONAME ; class QMargins QLineEdit::textMargins(void) const
 

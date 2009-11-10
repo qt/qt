@@ -3618,4 +3618,5 @@ EXPORTS
 	_ZN21QAbstractConcatenable16convertFromAsciiEPKciRP5QChar @ 3617 NONAME
 	_ZN25QSequentialAnimationGroup11insertPauseEii @ 3618 NONAME
 	_ZNK18QAbstractAnimation15currentLoopTimeEv @ 3619 NONAME
+	_ZNK7QRegExp12captureCountEv @ 3620 NONAME
 
