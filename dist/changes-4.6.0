@@ -119,9 +119,42 @@ QtCore
     * Added QWeakPointer::data which allows you to obtain the pointer
       being tracked (without protection).
 
+ - QUuid
+    * [QTBUG-3543] Fixed a bug in createUuid() which caused multiple
+      threads to generate the identical UUID sequences
+
+ - QEventDispatcherGlib (internal class)
+    * Fix a regression introduced in 4.5.3 that would cause timers to not
+      be delivered.
+
+ - QEventDispatcherUNIX (internal class)
+    * Improve detection of monotonic clock support to include
+      non-POSIX.1-2001 compliant systems.
+    * [250681] Fix time change detection on UNIX systems without
+      monotonic timers.
+
+ - QEventDispatcherWin32 (internal class)
+    * Changed the threshold for using multimedia timers to 20ms (was 10ms).
+    * Changed the way Qt's posted events are sent by the event
+      dispatcher. The are now driven on top of a Windows message
+      instead of an explicit call in processEvents(). This means that
+      posted events are sent even when a Windows modal message loop is
+      running (for example, when the user is moving a window or when a
+      native modal dialog is visible).
+    * Fixed a bug that would allow the same timer id to be used by
+      multiple QTimer instances.
+
+ - QTextCodec
+    * Instantiate the CP949 codec when building with -no-iconv.
+
+ - QThread
+    * [249997] Document that QThread priority has no effect on Linux.
+
 QtGui
-- QGraphicsAnchorLayout
-    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6
+      Beta had support for it).
 
  - QCalendarWidget
     * [252943] QCalendarWidget::setDateTextFormat() reset the format if the date is invalid.
@@ -152,6 +185,7 @@ QtGui
     * Introduced QGraphicsItem::focusProxy(), focus proxy support
     * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
     * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced modality support for QGraphicsItem panels.
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
@@ -346,6 +380,10 @@ QtDBus
 	  
  - QFontMetrics	  
     * [176401] Account for right bearing in bounding rect.
+
+ - QPlastiqueStyle
+    * [QTBUG-3555] Fixed a bug in the Plastique style that would cause an
+      ASSERT failure in QFont when the application font has a pixel size set.
 
 QtNetwork
 
@@ -547,6 +585,21 @@ Qt for Linux/X11
  - Tablet: Disable event compression of events of type QTabletEvent when the
    current event is accepted by the receiver.
 
+ - [QTBUG-4242] Fixed a bug that allowed the user to close a window
+   event though the program is using the QEventLoop::ExcludeUserInputEvents
+   flag.
+
+ - [255559] Fixed generation of XdndLeave events to include the
+   correct source id.
+
+ - [258319] Avoid division by zero on some Xlib/Xserver implementations.
+
+ - Fixed the default QWidget size on X servers with Xinerama to give widgets
+   a default size that should fit on a single screen.
+
+ - Support _NET_WORKAREA on X servers with Xinerama (previously this property
+   was ignored).
+
 Qt for Windows
 --------------
 
@@ -587,6 +640,7 @@ Qt for Windows
    text where several characters were represented by a single glyph, e.g. 
    a double 't' with the Calibri font.
    
+ - Added QSysInfo::WV_WINDOWS7 and QSysInfo::WV_6_1
 
 Qt for Mac OS X
 ---------------
