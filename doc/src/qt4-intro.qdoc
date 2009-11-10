@@ -604,9 +604,9 @@
     \section1 Graphics Effects
 
     Effects can be used to alter the appearance of UI elements such as
-    \l{QGraphicsItem}s and \l{QWidget}s. A range of standard effects such
-    as blurring, colorizing or blooming is provided, and it is possible to
-    implement custom effects.
+    \l{QGraphicsItem}s and \l{QWidget}s. A couple of standard effects such
+    as blurring, colorizing and drop shadow are provided, and it is
+    possible to implement custom effects.
 
     \table
     \row
