@@ -44,6 +44,7 @@
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlanimation_p.h>
+#include <QVariantAnimation>
 
 class tst_animations : public QObject
 {
@@ -61,6 +62,7 @@ private slots:
     void mixedTypes();
     void properties();
     void propertiesTransition();
+    void easingStringConversion();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -382,6 +384,22 @@ void tst_animations::propertiesTransition()
         rect->setState("moved");
         QCOMPARE(myRect->x(),qreal(200));
     }
+}
+
+void tst_animations::easingStringConversion()
+{
+    QmlNumberAnimation *animation = new QmlNumberAnimation;
+    animation->setEasing("easeInOutQuad");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::InOutQuad));
+
+    animation->setEasing("OutQuad");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::OutQuad));
+
+    animation->setEasing("easeOutBounce(amplitude: 5)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutBounce);
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
+
+    delete animation;
 }
 
 QTEST_MAIN(tst_animations)
