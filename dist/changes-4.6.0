@@ -785,6 +785,10 @@ Qt for Windows CE
  -          It is now possible to further specify the kind of custom widget
             string properties using XML tags.
 
+-uic
+
+ - [260784] Generated code for retranslateUi doesn't cause compiler warnings anymore
+
 - uic3
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
