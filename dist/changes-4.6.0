@@ -62,28 +62,11 @@ QtCore
  - QByteArray
     * New overloads for QByteArray::insert() and QByteArray::prepend()
 
- - QObject
-    * [259514] fixed a possible dead-lock in the destructor
-
- - QVariant
-    * Many optimisations
-    * Added QVariant::toFloat() and QVariant::toReal()
-    * Added QVariant(float) constructor
-    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
-      identify functions
-    * Added support for math3d types.
-
- - Qt::escape
-    * now escape the double quote (&quot;)
-
- - QScopedPointer
-    * New pointer class for cleaning up objects when leaving the
-      current scope
-
  - QFile
     * Make QFile::resize() more robust when operating on buffered files
 
  - QObject
+    * [259514] fixed a possible dead-lock in the destructor
     * Added the possibility to pass the flag Qt::UniqueConnection to QObject::connect
     * Fixed race conditions that occured when moving object to threads while connecting
 
@@ -91,8 +74,16 @@ QtCore
     * Improved performance of plugin loading by reusing the plugin cache instead of loading
       it every time.
 
+ - QProcessEnvironment
+    * New class; support for easy access to key/value pairs in the
+      process environment
+
  - QRegExp
     * New pattern syntax "QRegExp::WildcardUnix" with wildcard characters escaping
+
+ - QScopedPointer
+    * New pointer class for cleaning up objects when leaving the
+      current scope
 
  - QSharedPointer
     * Added support for creating the object along the internal private
@@ -110,6 +101,14 @@ QtCore
       to STD3 to validate, thus preventing invalid hostnames from
       being accepted. See below in "Important Behavior Changes".
 
+ - QVariant
+    * Many optimisations
+    * Added QVariant::toFloat() and QVariant::toReal()
+    * Added QVariant(float) constructor
+    * qvariant_cast<QVariant> and qVariantFromValue<QVariant> are now
+      identify functions
+    * Added support for math3d types.
+
  - QXmlStreamWriter
     * [256468] fix comment indentation
 
@@ -118,16 +117,56 @@ QtCore
       attached to a QSharedPointer.
     * Added QWeakPointer::data which allows you to obtain the pointer
       being tracked (without protection).
+    * Added operator-> like the above data(), but requires a #define.
+
+ - QUuid
+    * [QTBUG-3543] Fixed a bug in createUuid() which caused multiple
+      threads to generate the identical UUID sequences
+
+ - QEventDispatcherGlib (internal class)
+    * Fix a regression introduced in 4.5.3 that would cause timers to not
+      be delivered.
+
+ - QEventDispatcherUNIX (internal class)
+    * Improve detection of monotonic clock support to include
+      non-POSIX.1-2001 compliant systems.
+    * [250681] Fix time change detection on UNIX systems without
+      monotonic timers.
+
+ - QEventDispatcherWin32 (internal class)
+    * Changed the threshold for using multimedia timers to 20ms (was 10ms).
+    * Changed the way Qt's posted events are sent by the event
+      dispatcher. The are now driven on top of a Windows message
+      instead of an explicit call in processEvents(). This means that
+      posted events are sent even when a Windows modal message loop is
+      running (for example, when the user is moving a window or when a
+      native modal dialog is visible).
+    * Fixed a bug that would allow the same timer id to be used by
+      multiple QTimer instances.
+
+ - QTextCodec
+    * Instantiate the CP949 codec when building with -no-iconv.
+
+ - QThread
+    * [249997] Document that QThread priority has no effect on Linux.
 
 QtGui
-- QGraphicsAnchorLayout
-    * Support for expanding size policy has been removed. (The Qt 4.6 Beta had support for it).
+
+ - Qt::escape
+    * now escape the double quote (&quot;)
+
+ - QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6
+      Beta had support for it).
 
  - QCalendarWidget
     * [252943] QCalendarWidget::setDateTextFormat() reset the format if the date is invalid.
 
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix
+
+ - QEvent
+    * Introduced RequestSoftwareInputPanel and CloseSoftwareInputPanel events.
 
  - QFontDialog
     * [256466] fixed the dialog not always returning the selected style.
@@ -149,6 +188,7 @@ QtGui
     * Introduced QGraphicsItem::focusProxy(), focus proxy support
     * Introduced QGraphicsItem::ItemNegativeZStacksBehindParent
     * Introduced QGraphicsItem::ItemIsPanel, light-weight window support
+    * Introduced modality support for QGraphicsItem panels.
     * Introduced activation support.
     * Introduced QGraphicsItem::stackBefore()
     * Cached items are now always invalidated when update() is called.
@@ -206,6 +246,7 @@ QtGui
 
  - QLineEdit
     * [248948] Clear selection when redoing a delete operation.
+    * [QTBUG-5261] Fixed: Erasing characters from textedits does not update the text
 
  - QListView
     * [243335] Fixed the visualRect to return correct values when the widget is not yet show
@@ -272,6 +313,7 @@ QtGui
       cause holes in the stroke.
 
  - QWidget
+    * Added inputMethodHints property.
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
@@ -301,13 +343,7 @@ QtGui
  - QApplication
     * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
 
-QtDBus
-
- - QDBusConnection
-    * Made sending of invalid/incomplete messages consistently fail
-      with error (no more assertions).
-
-   - QPlainTextEdit
+ - QPlainTextEdit
     * Fixed crash when clicking on a text edit which was smaller than the 
       height of the font used.
 	  
@@ -341,6 +377,22 @@ QtDBus
 	  
  - QFontMetrics	  
     * [176401] Account for right bearing in bounding rect.
+
+ - QPlastiqueStyle
+    * [QTBUG-3555] Fixed a bug in the Plastique style that would cause an
+      ASSERT failure in QFont when the application font has a pixel size set.
+
+QtDBus
+
+ - QDBusConnection
+    * Made sending of invalid/incomplete messages consistently fail
+      with error (no more assertions).
+    * [249528/QTBUG-3833] Added an overload of connect() that allows
+      one to specify strings for matching arguments.
+
+ - QDBusServiceWatcher
+    * New class; supports efficiently watching for a service to be
+      created, deleted or change owners
 
 QtNetwork
 
@@ -452,10 +504,13 @@ QtSql
    * Add proper iODBC linking support.
 
 QtSvg
+
  - QSvgHandler
-   * [245602] Fixed gradient and solid-color referencing.
-   * [202426] Made stroke attribute inheritance work with 'use' tags.
+   * [245602] [204686] Fixed gradient and solid-color referencing.
+   * [202426] Made attribute inheritance work with 'use' tags.
    * [250618] Fixed gradient on strokes.
+   * [254040] Added support for 'vector-effect'.
+   
  - QSvgPaintEngine
    * [257052] Changed drawImage() to ignore aspect ratio.
 
@@ -539,6 +594,21 @@ Qt for Linux/X11
  - Tablet: Disable event compression of events of type QTabletEvent when the
    current event is accepted by the receiver.
 
+ - [QTBUG-4242] Fixed a bug that allowed the user to close a window
+   event though the program is using the QEventLoop::ExcludeUserInputEvents
+   flag.
+
+ - [255559] Fixed generation of XdndLeave events to include the
+   correct source id.
+
+ - [258319] Avoid division by zero on some Xlib/Xserver implementations.
+
+ - Fixed the default QWidget size on X servers with Xinerama to give widgets
+   a default size that should fit on a single screen.
+
+ - Support _NET_WORKAREA on X servers with Xinerama (previously this property
+   was ignored).
+
 Qt for Windows
 --------------
 
@@ -579,6 +649,7 @@ Qt for Windows
    text where several characters were represented by a single glyph, e.g. 
    a double 't' with the Calibri font.
    
+ - Added QSysInfo::WV_WINDOWS7 and QSysInfo::WV_6_1
 
 Qt for Mac OS X
 ---------------
@@ -866,3 +937,10 @@ Qt for Windows CE
   Animation framework for animation.  The hellogl and overpainting examples
   now compile on OpenGL/ES 1.1.  Also common code is factored.
 
+- qmake no longer adds Qt internal dependencies to the linker when Qt
+  is built in shared mode (not static). This means that applications
+  that made use of platform-specific API may need to adjust the LIBS
+  variable in their .pro files to match:
+
+    X11: LIBS += -lX11
+    Mac: LIBS += -framework AppKit -framework Carbon
