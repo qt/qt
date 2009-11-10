@@ -87,6 +87,7 @@ private slots:
     void dockLocationChanged();
     void setTitleBarWidget();
     void titleBarDoubleClick();
+    void restoreStateOfFloating();
     // task specific tests:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
@@ -714,6 +715,21 @@ void tst_QDockWidget::titleBarDoubleClick()
     QVERIFY(!dock.isFloating());
     QCOMPARE(win.dockWidgetArea(&dock), Qt::TopDockWidgetArea);
 }
+
+void tst_QDockWidget::restoreStateOfFloating()
+{
+    QMainWindow mw;
+    QDockWidget dock;
+    dock.setObjectName("dock1");
+    mw.addDockWidget(Qt::TopDockWidgetArea, &dock);
+    QVERIFY(!dock.isFloating());
+    QByteArray ba = mw.saveState();
+    dock.setFloating(true);
+    QVERIFY(dock.isFloating());
+    QVERIFY(mw.restoreState(ba));
+    QVERIFY(!dock.isFloating());
+}
+
 
 void tst_QDockWidget::task165177_deleteFocusWidget()
 {
