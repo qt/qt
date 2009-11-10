@@ -788,6 +788,12 @@ Qt for Embedded Linux
    * Remove surface holder, which never worked all that well.
    * Implement screen rotations.
 
+- Mouse and keyboard drivers
+   * Removed obsolete drivers (vr41xx, yopy, sl5000, bus mouse).
+   * Added a new LinuxInput driver for both mouse and keyboard.
+   * Added keymap support for QWS via standard Linux .kmap files.
+     (complete with dead-keys, compose-key and LED handling)
+
 - Remove obsolete OpenGL/ES screen drivers: hybrid, ahigl.
 
 - Send enter/leave events also to child widgets
