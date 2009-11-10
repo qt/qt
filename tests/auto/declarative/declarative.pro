@@ -13,7 +13,7 @@ SUBDIRS += \
            numberformatter \        # Cover
            parserstress \           # Cover
            pathview \               # Cover
-           qfxloader \              # Cover
+           qmlgraphicsloader \      # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
            qmlconnection \          # Cover

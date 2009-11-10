@@ -5,12 +5,12 @@ Rectangle {
     height: childrenRect.height
     Column {
         width: 80
-        height: MyText.height*4
+        height: myText.height*4
         Text {
             elide: "ElideLeft"
             text: "aaa bbb ccc ddd eee fff"
             width: 80
-            id: MyText
+            id: myText
         }
         Text {
             elide: "ElideMiddle"

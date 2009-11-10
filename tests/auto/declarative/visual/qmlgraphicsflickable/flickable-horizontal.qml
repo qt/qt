@@ -5,7 +5,7 @@ Rectangle {
     width: 600; height: 300
 
     ListModel {
-        id: List
+        id: list
         ListElement { dayColor: "steelblue" }
         ListElement { dayColor: "blue" }
         ListElement { dayColor: "yellow" }
@@ -16,22 +16,22 @@ Rectangle {
     }
 
     Flickable {
-        id: Flick
+        id: flickable
         anchors.fill: parent; viewportWidth: row.width
 
         Row {
             id: row
             Repeater {
-                model: List
+                model: list
                 Rectangle { width: 200; height: 300; color: dayColor }
             }
         }
     }
     Rectangle {
         radius: 3
-        y: Flick.height-8
+        y: flickable.height-8
         height: 8
-        x: Flick.visibleArea.xPosition * Flick.width
-        width: Flick.visibleArea.widthRatio * Flick.width
+        x: flickable.visibleArea.xPosition * flickable.width
+        width: flickable.visibleArea.widthRatio * flickable.width
     }
 }

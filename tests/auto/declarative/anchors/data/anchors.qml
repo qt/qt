@@ -4,130 +4,130 @@ Rectangle {
     color: "white"
     width: 240
     height: 320
-    Rectangle { id: MasterRect; objectName: "MasterRect"; x: 26; width: 96; height: 20; color: "red" }
+    Rectangle { id: masterRect; objectName: "masterRect"; x: 26; width: 96; height: 20; color: "red" }
     Rectangle {
-        id: Rect1; objectName: "Rect1"
+        id: rect1; objectName: "rect1"
         y: 20; width: 10; height: 10
-        anchors.left: MasterRect.left
+        anchors.left: masterRect.left
     }
     Rectangle {
-        id: Rect2; objectName: "Rect2"
+        id: rect2; objectName: "rect2"
         y: 20; width: 10; height: 10
-        anchors.left: MasterRect.right
+        anchors.left: masterRect.right
     }
     Rectangle {
-        id: Rect3; objectName: "Rect3"
+        id: rect3; objectName: "rect3"
         y: 20; width: 10; height: 10
-        anchors.left: MasterRect.horizontalCenter
+        anchors.left: masterRect.horizontalCenter
     }
     Rectangle {
-        id: Rect4; objectName: "Rect4"
+        id: rect4; objectName: "rect4"
         y: 30; width: 10; height: 10
-        anchors.right: MasterRect.left
+        anchors.right: masterRect.left
     }
     Rectangle {
-        id: Rect5; objectName: "Rect5"
+        id: rect5; objectName: "rect5"
         y: 30; width: 10; height: 10
-        anchors.right: MasterRect.right
+        anchors.right: masterRect.right
     }
     Rectangle {
-        id: Rect6; objectName: "Rect6"
+        id: rect6; objectName: "rect6"
         y: 30; width: 10; height: 10
-        anchors.right: MasterRect.horizontalCenter
+        anchors.right: masterRect.horizontalCenter
     }
     Rectangle {
-        id: Rect7; objectName: "Rect7"
+        id: rect7; objectName: "rect7"
         y: 50; width: 10; height: 10
         anchors.left: parent.left
     }
     Rectangle {
-        id: Rect8; objectName: "Rect8"
+        id: rect8; objectName: "rect8"
         y: 50; width: 10; height: 10
         anchors.left: parent.right
     }
     Rectangle {
-        id: Rect9; objectName: "Rect9"
+        id: rect9; objectName: "rect9"
         y: 50; width: 10; height: 10
         anchors.left: parent.horizontalCenter
     }
     Rectangle {
-        id: Rect10; objectName: "Rect10"
+        id: rect10; objectName: "rect10"
         y: 60; width: 10; height: 10
         anchors.right: parent.left
     }
     Rectangle {
-        id: Rect11; objectName: "Rect11"
+        id: rect11; objectName: "rect11"
         y: 60; width: 10; height: 10
         anchors.right: parent.right
     }
     Rectangle {
-        id: Rect12; objectName: "Rect12"
+        id: rect12; objectName: "rect12"
         y: 60; width: 10; height: 10
         anchors.right: parent.horizontalCenter
     }
     Rectangle {
-        id: Rect13; objectName: "Rect13"
+        id: rect13; objectName: "rect13"
         x: 200; width: 10; height: 10
-        anchors.top: MasterRect.bottom
+        anchors.top: masterRect.bottom
     }
     Rectangle {
-        id: Rect14; objectName: "Rect14"
+        id: rect14; objectName: "rect14"
         width: 10; height: 10; color: "steelblue"
         anchors.verticalCenter: parent.verticalCenter
     }
     Rectangle {
-        id: Rect15; objectName: "Rect15"
+        id: rect15; objectName: "rect15"
         y: 200; height: 10
-        anchors.left: MasterRect.left
-        anchors.right: MasterRect.right
+        anchors.left: masterRect.left
+        anchors.right: masterRect.right
     }
     Rectangle {
-        id: Rect16; objectName: "Rect16"
+        id: rect16; objectName: "rect16"
         y: 220; height: 10
-        anchors.left: MasterRect.left
-        anchors.horizontalCenter: MasterRect.right
+        anchors.left: masterRect.left
+        anchors.horizontalCenter: masterRect.right
     }
     Rectangle {
-        id: Rect17; objectName: "Rect17"
+        id: rect17; objectName: "rect17"
         y: 240; height: 10
-        anchors.right: MasterRect.right
-        anchors.horizontalCenter: MasterRect.left
+        anchors.right: masterRect.right
+        anchors.horizontalCenter: masterRect.left
     }
     Rectangle {
-        id: Rect18; objectName: "Rect18"
+        id: rect18; objectName: "rect18"
         x: 180; width: 10
-        anchors.top: MasterRect.bottom
+        anchors.top: masterRect.bottom
         anchors.bottom: Rect12.top
     }
     Rectangle {
-        id: Rect19; objectName: "Rect19"
+        id: rect19; objectName: "rect19"
         y: 70; width: 10; height: 10
         anchors.horizontalCenter: parent.horizontalCenter
     }
     Rectangle {
-        id: Rect20; objectName: "Rect20"
+        id: rect20; objectName: "rect20"
         y: 70; width: 10; height: 10
         anchors.horizontalCenter: parent.right
     }
     Rectangle {
-        id: Rect21; objectName: "Rect21"
+        id: rect21; objectName: "rect21"
         y: 70; width: 10; height: 10
         anchors.horizontalCenter: parent.left
     }
     Rectangle {
-        id: Rect22; objectName: "Rect22"
+        id: rect22; objectName: "rect22"
         width: 10; height: 10
-        anchors.centerIn: MasterRect
+        anchors.centerIn: masterRect
     }
     Rectangle {
-        id: Rect23; objectName: "Rect23"
-        anchors.left: MasterRect.left
+        id: rect23; objectName: "rect23"
+        anchors.left: masterRect.left
         anchors.leftMargin: 5
-        anchors.right: MasterRect.right
+        anchors.right: masterRect.right
         anchors.rightMargin: 5
-        anchors.top: MasterRect.top
+        anchors.top: masterRect.top
         anchors.topMargin: 5
-        anchors.bottom: MasterRect.bottom
+        anchors.bottom: masterRect.bottom
         anchors.bottomMargin: 5
     }
     Text {

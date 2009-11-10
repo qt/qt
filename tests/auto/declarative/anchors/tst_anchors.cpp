@@ -97,51 +97,51 @@ void tst_anchors::basicAnchors()
     qApp->processEvents();
 
     //sibling horizontal
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect1"))->x(), 26.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect2"))->x(), 122.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect3"))->x(), 74.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect4"))->x(), 16.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect5"))->x(), 112.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect6"))->x(), 64.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect1"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect2"))->x(), 122.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect3"))->x(), 74.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect4"))->x(), 16.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect5"))->x(), 112.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect6"))->x(), 64.0);
 
     //parent horizontal
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect7"))->x(), 0.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect8"))->x(), 240.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect9"))->x(), 120.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect10"))->x(), -10.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect11"))->x(), 230.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect12"))->x(), 110.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect7"))->x(), 0.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect8"))->x(), 240.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect9"))->x(), 120.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect10"))->x(), -10.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect11"))->x(), 230.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect12"))->x(), 110.0);
 
     //vertical
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect13"))->y(), 20.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect14"))->y(), 155.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect13"))->y(), 20.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect14"))->y(), 155.0);
 
     //stretch
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect15"))->x(), 26.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect15"))->width(), 96.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect16"))->x(), 26.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect16"))->width(), 192.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect17"))->x(), -70.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect17"))->width(), 192.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect15"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect15"))->width(), 96.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect16"))->x(), 26.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect16"))->width(), 192.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect17"))->x(), -70.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect17"))->width(), 192.0);
 
     //vertical stretch
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect18"))->y(), 20.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect18"))->height(), 40.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect18"))->y(), 20.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect18"))->height(), 40.0);
 
     //more parent horizontal
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect19"))->x(), 115.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect20"))->x(), 235.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect21"))->x(), -5.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect19"))->x(), 115.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect20"))->x(), 235.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect21"))->x(), -5.0);
 
     //centerIn
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect22"))->x(), 69.0);
-    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect22"))->y(), 5.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect22"))->x(), 69.0);
+    QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect22"))->y(), 5.0);
 
     //margins
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->x(), 31.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->y(), 5.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->width(), 86.0);
-   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("Rect23"))->height(), 10.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->x(), 31.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->y(), 5.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->width(), 86.0);
+   QCOMPARE(findItem<QmlGraphicsRectangle>(view->root(), QLatin1String("rect23"))->height(), 10.0);
 
     //baseline
     QmlGraphicsText *text1 = findItem<QmlGraphicsText>(view->root(), QLatin1String("text1"));

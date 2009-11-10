@@ -8,13 +8,13 @@ Rectangle {
         color: "red"
     }
     MouseRegion {
-        id: Clickable
+        id: clickable
         anchors.fill: parent
     }
 
     states: State {
         name: "state1"
-        when: Clickable.pressed
+        when: clickable.pressed
         PropertyChanges {
             target: myRect
             x: 50; y: 50
