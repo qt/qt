@@ -12,8 +12,8 @@ Rectangle {
             id: web
             width: 250
             height: 420
-            scale: 0.75
-            smooth: true
+            zoomFactor: 0.75
+            smoothCache: true
             settings.pluginsEnabled: true
             html: "<html>\
                 <body bgcolor=white>\

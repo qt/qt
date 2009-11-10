@@ -63,7 +63,7 @@ class QmlGraphicsPaintedItemPrivate : public QmlGraphicsItemPrivate
 
 public:
     QmlGraphicsPaintedItemPrivate()
-      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false)
+      : max_imagecache_size(100000), fillColor(Qt::transparent), cachefrozen(false), smoothCache(true)
     {
     }
 
@@ -82,6 +82,7 @@ public:
     QSize contentsSize;
     QColor fillColor;
     bool cachefrozen;
+    bool smoothCache;
 };
 
 QT_END_NAMESPACE
