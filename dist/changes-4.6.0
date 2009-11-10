@@ -34,6 +34,9 @@ information about a particular change.
  - QGLShaderProgram, QGLShader
     * New classes for using shader programs written in the GL Shading Language.
 
+ - QGraphicsEffect
+    * New classes for applying graphics effects to graphics items and widgets.
+
  - Boxes demo ported to use new 3D math and shader program classes.
 
  - OpenVG graphics system added.
@@ -48,6 +51,8 @@ information about a particular change.
  - QAbstractVideoSurface, QVideoFrame
     * New abstract video output classes.
 
+ - New state machine framework added to QtCore
+ 
 Third party components
 ----------------------
 
@@ -194,7 +199,7 @@ QtGui
     * Cached items are now always invalidated when update() is called.
     * Added input hints.
 
-- QGraphicsLayout
+ - QGraphicsLayout
     * Introduced QGraphicsLayout::addChildLayoutItem()
 
  - QGraphicsObject
@@ -229,6 +234,9 @@ QtGui
     * Now inherits from QGraphicsObject instead
     * Interactive resizing of top level windows now respects height-for-width constraints.
     * Reduced memory footprint.
+
+ - QAbstractItemView
+    * [256502] Fixes selectionModel::hasSelection return value after model::reset
 
  - QHeaderView
     * [208320] Make sure the sort indicator s taken into account for the size hint
@@ -276,6 +284,9 @@ QtGui
       to be slightly clipped.
     * [241383] Added ability to style the close tab button with style sheet
 
+ - QImageReader
+    * [255627] Fix floating point exception in QImageReader::setScaledSize(QSize(0, 0))
+
  - QComboBox
     * [220195] Fixed keyboard search when current index is -1
 
@@ -317,6 +328,8 @@ QtGui
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
+    * [QTBUG-5012] Fixed uninitialized background when using
+      QWidget::render with Qt::WA_NoSystemBackground and window opacity set.
 
  - QFontEngineQPF
     * Make alphaMapForGlyph() generate the correct color table for
@@ -326,6 +339,11 @@ QtGui
  - QPaintDevice
     * New qt_paint_device_metric() function to replace the friend
       declarations for window surface classes that need to access metric().
+
+ - QPainter
+    * [QTBUG-1666] Made QPainter::drawText() respect Qt::TextDontClip flag
+      also in vertical direction.
+    * [254658] Improved clipping performance in OpenGL paint engine.
 
  - QPainterPath
     * [QTBUG-1537] Fixed bug where the points of a rounded rectangle were added
@@ -344,23 +362,23 @@ QtGui
     * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
 
  - QPlainTextEdit
-    * Fixed crash when clicking on a text edit which was smaller than the 
+    * Fixed crash when clicking on a text edit which was smaller than the
       height of the font used.
-	  
- - QPrinter 
-    * [QTBUG-4497] Removed redundant SetPen command in the postscript code 
+
+ - QPrinter
+    * [QTBUG-4497] Removed redundant SetPen command in the postscript code
       when reusing a QPrinter object.
 
  - QTextLayout
     * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
       column width.
-	* [176401] Take into account the negative right bearing of the last 
+	* [176401] Take into account the negative right bearing of the last
       character in an item of text if the glyph extends beyond its ascent.
-	
+
  - QTextDocument
-    * [207189] Support setting font size using short hand syntax in the 
+    * [207189] Support setting font size using short hand syntax in the
       CSS "font" property.
-	* [201228] Remove implicit margin on bullet lists when exporting to 
+	* [201228] Remove implicit margin on bullet lists when exporting to
       HTML.
 	* [240086] Fixed bug which caused floating objects which span several
       pages to float into the second page of the document even when it's
@@ -369,13 +387,13 @@ QtGui
 	* [240325] Even when wrap mode is set to Qt::TextWordWrap, the layout
       would sometimes break outside word boundaries when floating objects
       affected the width available to the text. This has been fixed.
- 
- - QFontEngine 
-    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which 
+
+ - QFontEngine
+    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which
       also contain a regular unicode table for exactly the symbol range of
       code points.
-	  
- - QFontMetrics	  
+
+ - QFontMetrics
     * [176401] Account for right bearing in bounding rect.
 
  - QPlastiqueStyle
@@ -393,6 +411,9 @@ QtDBus
  - QDBusServiceWatcher
     * New class; supports efficiently watching for a service to be
       created, deleted or change owners
+
+ - QPrintPreviewDialog now uses a QMainWindow with a proper QToolBar, instead
+   of a plain layout.
 
 QtNetwork
 
@@ -466,6 +487,9 @@ QtOpenGL
       instered into the fragment "pipeline".
     * Fixed conical gradients.
 
+ - Added a static function, QGL::setPreferredPaintEngine(), to allow users
+   to set the preferred GL paint engine.
+
  - Cleaned up usage of OpenGL extensions. QtOpenGL now uses the OpenGL 2.0
    names of methods rather than using the EXT postfix. However, when resolving
    extensions, QtOpenGL will also try postfixing EXT if the OpenGL 2.0 name is
@@ -474,6 +498,11 @@ QtOpenGL
  - Fix QGLWidget::showFullscreen() on EGL platforms
 
  - Added lots of OpenGL autotests.
+
+QtScript
+   * A lot of internal changes and optimizations.
+   * Improved ECMA script compliance.
+   * New method, QScriptString::toArrayIndex(), for converting QScriptString to a QtScript array index.
 
 QtSql
    * [QTBUG-3162] Views for Sql table models should not reset state on failed queries.
@@ -510,9 +539,38 @@ QtSvg
    * [202426] Made attribute inheritance work with 'use' tags.
    * [250618] Fixed gradient on strokes.
    * [254040] Added support for 'vector-effect'.
-   
+
  - QSvgPaintEngine
    * [257052] Changed drawImage() to ignore aspect ratio.
+
+QtWebKit
+ - Many bug fixes.
+
+ - QWebElement
+   * New class; introduced to implement DOM like operations on a web page.
+ 
+ - QWebFrame
+   * New properties for an URL and a focus management.
+   * New signals delivering current loading status.
+
+ - QWebInspector
+   * New class for embedding the WebInspector as a QWidget
+
+ - QWebHistory
+   * Streaming operators for saving and restoring QWebHistory's state.
+
+ - QWebPage
+   * New property; preferredContentsSize for setting layout of the page in the viewport.
+   * New slot; shouldInterruptJavaScript, called when JavaScript program is running too long.
+
+ - QWebSecurityOrigin:
+   * New functions for defining local URL schemes.
+
+ - QWebSettings
+   * New options for text encoding, printing shrink factor and off-line web application cache (HTML5).
+
+ - QWebView
+   * Support for render hints.
 
 QtXml
 
@@ -570,19 +628,22 @@ Qt for Linux/X11
    when using Synergy.
  - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
  - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
- 
- - [QTBUG-3620] Fixed bug on X11 that caused bitmap fonts to become so small 
-   it was unreadable when printed or presented in a print preview widget. 
+
+ - [QTBUG-3620] Fixed bug on X11 that caused bitmap fonts to become so small
+   it was unreadable when printed or presented in a print preview widget.
 
  - Improved EGL integration on X11 (including better visual selection).
 
- - Support Qt::WA_TranslucentBackground on top-level QGLWidgets on X11, both 
+ - Made Qt::WA_TranslucentBackground work in combination with native
+   child widgets.
+
+ - Support Qt::WA_TranslucentBackground on top-level QGLWidgets on X11, both
    (EGL & glX). This allows OpenGL (& ES) rendering to semi-transparent widgets
    if a compositing window manager is running.
 
  - Support OpenGL texture_from_pixmap extension on X11 (EGL & glX) when
    calling QPainter::drawPixmap() with the OpenGL paint engine, or calling
-   QGLContext::bindTexture() on an X11 QPixmap. If the 
+   QGLContext::bindTexture() on an X11 QPixmap. If the
    GLX_EXT_texture_from_pixmap or EGL_NOKIA_texture_from_pixmap extensions are
    present, Qt will attempt to use glXBindTexImageEXT or eglBindTexImage to
    bind the pixmap to a texture, rather than copying the pixel data.
@@ -645,11 +706,14 @@ Qt for Windows
      rendering.
    * Fixed a flicker issue when switching source with a transition time of 0
 
- - [QTBUG-4445] Fixed bug on Windows that caused problems when printing 
-   text where several characters were represented by a single glyph, e.g. 
+ - [QTBUG-4445] Fixed bug on Windows that caused problems when printing
+   text where several characters were represented by a single glyph, e.g.
    a double 't' with the Calibri font.
-   
+
  - Added QSysInfo::WV_WINDOWS7 and QSysInfo::WV_6_1
+
+ - Changed QPrintDialog under Windows to use PrintDlgEx, instead of the old
+   deprecated PrintDlg call.
 
 Qt for Mac OS X
 ---------------
@@ -661,6 +725,8 @@ Qt for Mac OS X
  - [258438] Enabled Emacs style keyboard shortcuts.
  - [258173] Fixed an issue which caused "whatsthis" pointer to flicked on Cocoa.
  - [QTBUG-4418] Fixed maximizing and restoring a window on Mac.
+ - Fixed some warnings that might get printed when reparenting QGLWidget on Cocoa.
+
 
 General changes on Mac OS X:
  - Mac OS X version support: Support for 10.3(Panther) has been dropped, support for
@@ -734,6 +800,10 @@ Qt for Embedded Linux
 
 - [255495] Fix blend function crash on AVR32
 
+- Fix qconfig configurations
+
+- Add powerpc mkspec and remove "empty" ppc mkspec 
+
 Qt for Windows CE
 -----------------
  - On Windows CE the link time code generation has been disabled by default to
@@ -747,7 +817,8 @@ Qt for Windows CE
  - [257352] When configuring Qt for Windows CE, configure points the user to
    setcepaths, when its done.
  - [259850] Added a makespec template for Windows CE 6.
-   
+ - Fixed the hardcoded GL library names for Windows CE.
+
 ****************************************************************************
 *                          Tools                                           *
 ****************************************************************************
@@ -767,12 +838,51 @@ Qt for Windows CE
  -          It is now possible to further specify the kind of custom widget
             string properties using XML tags.
 
+- uic
+
+ - [260784] Generated code for retranslateUi doesn't cause compiler warnings anymore
+
 - uic3
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
 
- - lupdate
-  - Fixed a bug in the java source code parser.
+- qdoc3
+
+  - Changed qdoc3 binary to be in bin/ instead of a platform specific location.
+
+- Linguist
+
+  - Linguist GUI: Experimental support for editing multi-length strings
+
+  - lupdate is now again the only tool which can parse program code
+
+  - lupdate
+
+    * Actually guess the target language from the file name
+    * Make -{source,target}-language actually override values from files
+    * C++ parser
+      - Properly support "using namespace", etc.
+        - Remove the obsolete TRANSLATOR hack relating to "using namespace"
+      - Support attaching meta data to translatable messages
+      - Actually use the argument of Q_DECLARE_TR_FUNCTIONS
+      - Optimizations
+      - Bug fixes and robustness improvements
+
+  - lrelease
+
+    * Add -markuntranslated <prefix> option
+
+  - both lupdate & lrelease
+
+    * Accuracy improvements of the qmake .pro file parser
+    * Support for ID-based translations. Somewhat experimental.
+
+  - lconvert
+
+    * Add --sort-contexts option
+    * Add --locations option (complementing lupdate)
+    * Add --no-ui-lines option (complementing lupdate)
+
 
 ****************************************************************************
 *                               DirectFB                                   *
@@ -928,14 +1038,18 @@ Qt for Windows CE
    * currentLoopTime() returns the time inside the current loop
    * stateChanged signal sends the new state as first parameter and old state as
      the second
-   * QAnimationGroup::clearAnimations() has been renames to clear()
-   * QAnimationGroup::insertAnimationAt() has been renames to insertAnimation()
-   * QAnimationGroup::takeAnimationAt() has been renames to takeAnimation()
-   * QSequentialAnimationGroup::insertPauseAt() has been renames to insertPause()
+   * QAnimationGroup::clearAnimations() has been renamed to clear()
+   * QAnimationGroup::insertAnimationAt() has been renamed to insertAnimation()
+   * QAnimationGroup::takeAnimationAt() has been renamed to takeAnimation()
+   * QSequentialAnimationGroup::insertPauseAt() has been renamed to insertPause()
+   * [QT-941] Avoids timer ticks when there are only pause animations running
 
 - Refactoring in OpenGL examples to improve portability and utilize the
   Animation framework for animation.  The hellogl and overpainting examples
   now compile on OpenGL/ES 1.1.  Also common code is factored.
+
+- Changed QWebFrame::setHtml() and setContent() to not affect the back/forward
+  and the session history.
 
 - qmake no longer adds Qt internal dependencies to the linker when Qt
   is built in shared mode (not static). This means that applications

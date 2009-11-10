@@ -10813,7 +10813,7 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 }
 
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                                                 QGraphicsEffectSource::PixmapPadMode mode) const
+                                                 QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!info && deviceCoordinates) {
@@ -10829,9 +10829,9 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     const QRectF sourceRect = boundingRect(system);
     QRect effectRect;
 
-    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
-    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         // adjust by 1.5 to account for cosmetic pens
         effectRect = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5).toAlignedRect();
     } else {

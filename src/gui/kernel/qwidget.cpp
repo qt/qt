@@ -5238,7 +5238,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
-                graphicsEffect->draw(&p, source);
+                graphicsEffect->draw(&p);
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
@@ -5248,7 +5248,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
-                graphicsEffect->draw(sharedPainter, source);
+                graphicsEffect->draw(sharedPainter);
                 sharedPainter->restore();
             }
             sourced->context = 0;
@@ -5470,7 +5470,7 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
 }
 
 QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                                           QGraphicsEffectSource::PixmapPadMode mode) const
+                                           QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!context && deviceCoordinates) {
@@ -5491,10 +5491,10 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     QRect effectRect;
 
-    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
 
-    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
 
     } else {
@@ -11781,10 +11781,6 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 }
 
 
-QT_END_NAMESPACE
-
-#include "moc_qwidget.cpp"
-
 /*!
     \typedef WId
     \relates QWidget
@@ -12101,3 +12097,8 @@ void QWidgetPrivate::_q_delayedDestroy(WId winId)
     delete winId;
 }
 #endif
+
+QT_END_NAMESPACE
+
+#include "moc_qwidget.cpp"
+

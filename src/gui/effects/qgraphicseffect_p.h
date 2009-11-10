@@ -63,6 +63,41 @@
 #ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
+class QGraphicsEffectSourcePrivate;
+class Q_AUTOTEST_EXPORT QGraphicsEffectSource : public QObject
+{
+    Q_OBJECT
+public:
+    ~QGraphicsEffectSource();
+    const QGraphicsItem *graphicsItem() const;
+    const QWidget *widget() const;
+    const QStyleOption *styleOption() const;
+
+    bool isPixmap() const;
+    void draw(QPainter *painter);
+    void update();
+
+    QRectF boundingRect(Qt::CoordinateSystem coordinateSystem = Qt::LogicalCoordinates) const;
+    QRect deviceRect() const;
+    QPixmap pixmap(Qt::CoordinateSystem system = Qt::LogicalCoordinates,
+                   QPoint *offset = 0,
+                   QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToEffectiveBoundingRect) const;
+
+protected:
+    QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent = 0);
+
+private:
+    Q_DECLARE_PRIVATE(QGraphicsEffectSource)
+    Q_DISABLE_COPY(QGraphicsEffectSource)
+    friend class QGraphicsEffect;
+    friend class QGraphicsEffectPrivate;
+    friend class QGraphicsScenePrivate;
+    friend class QGraphicsItem;
+    friend class QGraphicsItemPrivate;
+    friend class QWidget;
+    friend class QWidgetPrivate;
+};
+
 class QGraphicsEffectSourcePrivate : public QObjectPrivate
 {
     Q_DECLARE_PUBLIC(QGraphicsEffectSource)
@@ -70,7 +105,7 @@ public:
     QGraphicsEffectSourcePrivate()
         : QObjectPrivate()
         , m_cachedSystem(Qt::DeviceCoordinates)
-        , m_cachedMode(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+        , m_cachedMode(QGraphicsEffect::PadToTransparentBorder)
     {}
 
     virtual ~QGraphicsEffectSourcePrivate();
@@ -84,7 +119,7 @@ public:
     virtual void update() = 0;
     virtual bool isPixmap() const = 0;
     virtual QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset = 0,
-                           QGraphicsEffectSource::PixmapPadMode mode = QGraphicsEffectSource::ExpandToTransparentBorderPadMode) const = 0;
+                           QGraphicsEffect::PixmapPadMode mode = QGraphicsEffect::PadToTransparentBorder) const = 0;
     virtual void effectBoundingRectChanged() = 0;
     void invalidateCache(bool effectRectChanged = false) const;
 
@@ -94,7 +129,7 @@ public:
 
 private:
     mutable Qt::CoordinateSystem m_cachedSystem;
-    mutable QGraphicsEffectSource::PixmapPadMode m_cachedMode;
+    mutable QGraphicsEffect::PixmapPadMode m_cachedMode;
     mutable QPoint m_cachedOffset;
     mutable QPixmapCache::Key m_cacheKey;
 };
