@@ -797,13 +797,43 @@ Qt for Windows CE
 
  - [128859] Fixed code generation of QLabel's wordWrap property.
 
- - lupdate
-
-  - Fixed a bug in the java source code parser.
-
 - qdoc3
 
   - Changed qdoc3 binary to be in bin/ instead of a platform specific location.
+
+- Linguist
+
+  - Linguist GUI: Experimental support for editing multi-length strings
+
+  - lupdate is now again the only tool which can parse program code
+
+  - lupdate
+
+    * Actually guess the target language from the file name
+    * Make -{source,target}-language actually override values from files
+    * C++ parser
+      - Properly support "using namespace", etc.
+        - Remove the obsolete TRANSLATOR hack relating to "using namespace"
+      - Support attaching meta data to translatable messages
+      - Actually use the argument of Q_DECLARE_TR_FUNCTIONS
+      - Optimizations
+      - Bug fixes and robustness improvements
+
+  - lrelease
+
+    * Add -markuntranslated <prefix> option
+
+  - both lupdate & lrelease
+
+    * Accuracy improvements of the qmake .pro file parser
+    * Support for ID-based translations. Somewhat experimental.
+
+  - lconvert
+
+    * Add --sort-contexts option
+    * Add --locations option (complementing lupdate)
+    * Add --no-ui-lines option (complementing lupdate)
+
 
 ****************************************************************************
 *                               DirectFB                                   *
