@@ -126,7 +126,7 @@ struct AnchorData : public QSimplexVariable {
           sizeAtMinimum(0), sizeAtPreferred(0),
           sizeAtMaximum(0), item(0),
           graphicsAnchor(0), skipInPreferred(0),
-          type(Normal), hasSize(true), isLayoutAnchor(false),
+          type(Normal), isLayoutAnchor(false),
           isCenterAnchor(false), orientation(0),
           dependency(Independent) {}
 
@@ -140,17 +140,6 @@ struct AnchorData : public QSimplexVariable {
     inline QString toString() const;
     QString name;
 #endif
-
-    inline void setPreferredSize(qreal size)
-    {
-        prefSize = size;
-        hasSize = true;
-    }
-
-    inline void unsetSize()
-    {
-        hasSize = false;
-    }
 
     // Anchor is semantically directed
     AnchorVertex *from;
@@ -182,7 +171,6 @@ struct AnchorData : public QSimplexVariable {
 
     uint skipInPreferred : 1;
     uint type : 2;            // either Normal, Sequential or Parallel
-    uint hasSize : 1;         // if false, get size from style.
     uint isLayoutAnchor : 1;  // if this anchor is an internal layout anchor
     uint isCenterAnchor : 1;
     uint orientation : 1;
@@ -355,7 +343,13 @@ public:
 
     QGraphicsAnchorLayoutPrivate *layoutPrivate;
     AnchorData *data;
+
+    // Size information for user controlled anchor
     QSizePolicy::Policy sizePolicy;
+    qreal preferredSize;
+
+    uint hasSize : 1;         // if false, get size from style.
+    uint reversed : 1;        // if true, the anchor was inverted to keep its value positive
 };
 
 
@@ -450,11 +444,6 @@ public:
 
     void removeAnchor(AnchorVertex *firstVertex, AnchorVertex *secondVertex);
     void removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2);
-    void setAnchorSize(AnchorData *data, const qreal *anchorSize);
-    void anchorSize(const AnchorData *data,
-                    qreal *minSize = 0,
-                    qreal *prefSize = 0,
-                    qreal *maxSize = 0) const;
 
     void removeAnchors(QGraphicsLayoutItem *item);
 
