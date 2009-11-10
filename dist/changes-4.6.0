@@ -328,6 +328,21 @@ QtOpenGL
  - QGLGradientCache
    * [249919] Clean up the gradient cache in the right context.
 
+ - OpenGL (ES) 2.0 Paint Engine
+    * Re-written the OpenGL (ES) 2.0 Paint Engine's shader manager to use new
+      shader API and to allow custom code from E.g. Pixmap Filters to be
+      instered into the fragment "pipeline".
+    * Fixed conical gradients.
+
+ - Cleaned up usage of OpenGL extensions. QtOpenGL now uses the OpenGL 2.0
+   names of methods rather than using the EXT postfix. However, when resolving
+   extensions, QtOpenGL will also try postfixing EXT if the OpenGL 2.0 name is
+   not found.
+
+ - Fix QGLWidget::showFullscreen() on EGL platforms
+
+ - Added lots of OpenGL autotests.
+
 QtSql
    * [QTBUG-3162] Views for Sql table models should not reset state on failed queries.
    * [QTBUG-5251] Fix retrieval of SQL  'TIME' information for PostgreSQL.
@@ -387,6 +402,23 @@ Qt for Linux/X11
    when using Synergy.
  - [MR#797] Fixed a crash when using QX11EmbedContainer/Widget on x86_64.
  - [MR#1111] Emit workAreaResized when _NET_WORKAREA is changed on X11.
+
+ - Improved EGL integration on X11 (including better visual selection).
+
+ - Support Qt::WA_TranslucentBackground on top-level QGLWidgets on X11, both 
+   (EGL & glX). This allows OpenGL (& ES) rendering to semi-transparent widgets
+   if a compositing window manager is running.
+
+ - Support OpenGL texture_from_pixmap extension on X11 (EGL & glX) when
+   calling QPainter::drawPixmap() with the OpenGL paint engine, or calling
+   QGLContext::bindTexture() on an X11 QPixmap. If the 
+   GLX_EXT_texture_from_pixmap or EGL_NOKIA_texture_from_pixmap extensions are
+   present, Qt will attempt to use glXBindTexImageEXT or eglBindTexImage to
+   bind the pixmap to a texture, rather than copying the pixel data.
+
+ - Add new experimental QX11GLPixmapData backend for QPixmap. This pixmap
+   backend uses regular X11 pixmaps to store the image data, however it uses
+   OpenGL to render into them.
 
 Qt for Windows
 --------------
@@ -682,3 +714,4 @@ Qt for Windows CE
 - Refactoring in OpenGL examples to improve portability and utilize the
   Animation framework for animation.  The hellogl and overpainting examples
   now compile on OpenGL/ES 1.1.  Also common code is factored.
+
