@@ -82,6 +82,7 @@ namespace QFormInternal
 
 class DomButtonGroups;
 class DomButtonGroup;
+class DomCustomWidget;
 
 class QAbstractFormBuilder;
 class QResourceBuilder;
@@ -92,6 +93,16 @@ class QDESIGNER_UILIB_EXPORT QFormBuilderExtra
     QFormBuilderExtra();
     ~QFormBuilderExtra();
 public:
+    struct CustomWidgetData {
+        CustomWidgetData();
+        explicit CustomWidgetData(const DomCustomWidget *dc);
+
+        QString addPageMethod;
+        QString script;
+        QString baseClass;
+        bool isContainer;
+    };
+
     void clear();
 
     bool applyPropertyInternally(QObject *o, const QString &propertyName, const QVariant &value);
@@ -107,7 +118,6 @@ public:
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     QFormScriptRunner &formScriptRunner();
-    void storeCustomWidgetScript(const QString &className, const QString &script);
     QString customWidgetScript(const QString &className) const;
 #endif
 
@@ -123,11 +133,10 @@ public:
     static QFormBuilderExtra *instance(const QAbstractFormBuilder *afb);
     static void removeInstance(const QAbstractFormBuilder *afb);
 
-    void storeCustomWidgetAddPageMethod(const QString &className, const QString &ct);
+    void storeCustomWidgetData(const QString &className, const DomCustomWidget *d);
     QString customWidgetAddPageMethod(const QString &className) const;
-
-    void storeCustomWidgetBaseClass(const QString &className, const QString &baseClassName);
     QString customWidgetBaseClass(const QString &className) const;
+    bool isCustomWidgetContainer(const QString &className) const;
 
     // --- Hash used in creating button groups on demand. Store a map of name and pair of dom group and real group
     void registerButtonGroups(const DomButtonGroups *groups);
@@ -169,13 +178,9 @@ private:
 
 #ifndef QT_FORMBUILDER_NO_SCRIPT
     QFormScriptRunner m_FormScriptRunner;
-
-    typedef QHash<QString, QString> CustomWidgetScriptHash;
-    CustomWidgetScriptHash m_customWidgetScriptHash;
 #endif
 
-    QHash<QString, QString> m_customWidgetAddPageMethodHash;
-    QHash<QString, QString> m_customWidgetBaseClassHash;
+    QHash<QString, CustomWidgetData> m_customWidgetDataHash;
 
     ButtonGroupHash m_buttonGroups;
 
