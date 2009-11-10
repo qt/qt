@@ -5,6 +5,7 @@ SUBDIRS += \
            animations \             # Cover
            behaviors \              # Cover
            datetimeformatter \      # Cover
+           debugger \               # Cover
            examples \
            layouts \                # Cover
            qmlgraphicslistview \    # Cover
@@ -17,7 +18,6 @@ SUBDIRS += \
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
-           qmldebug \               # Cover
            qmldom \                 # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover
