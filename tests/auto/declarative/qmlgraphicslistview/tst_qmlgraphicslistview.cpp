@@ -800,9 +800,12 @@ void tst_QmlGraphicsListView::currentIndex()
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
+    QTest::qWait(500);
+
     // current item should be third item
     QCOMPARE(listview->currentIndex(), 3);
     QCOMPARE(listview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 3));
+    QCOMPARE(listview->highlightItem()->y(), listview->currentItem()->y());
 
     // no wrap
     listview->setCurrentIndex(0);
@@ -850,6 +853,18 @@ void tst_QmlGraphicsListView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(listview->currentIndex(), 0);
+
+    // turn off auto highlight
+    listview->setHighlightFollowsCurrentItem(false);
+    QVERIFY(listview->highlightFollowsCurrentItem() == false);
+
+    QTest::qWait(500);
+    QVERIFY(listview->highlightItem());
+    qreal hlPos = listview->highlightItem()->y();
+
+    listview->setCurrentIndex(4);
+    QTest::qWait(500);
+    QCOMPARE(listview->highlightItem()->y(), hlPos);
 
     delete canvas;
 }

@@ -534,9 +534,12 @@ void tst_QmlGraphicsGridView::currentIndex()
     QmlGraphicsItem *viewport = gridview->viewport();
     QVERIFY(viewport != 0);
 
+    QTest::qWait(500);
+
     // current item should be third item
     QCOMPARE(gridview->currentIndex(), 5);
     QCOMPARE(gridview->currentItem(), findItem<QmlGraphicsItem>(viewport, "wrapper", 5));
+    QCOMPARE(gridview->currentItem()->y(), gridview->highlightItem()->y());
 
     gridview->moveCurrentIndexRight();
     QCOMPARE(gridview->currentIndex(), 6);
@@ -604,6 +607,20 @@ void tst_QmlGraphicsGridView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(gridview->currentIndex(), 0);
+
+    // turn off auto highlight
+    gridview->setHighlightFollowsCurrentItem(false);
+    QVERIFY(gridview->highlightFollowsCurrentItem() == false);
+
+    QTest::qWait(500);
+    QVERIFY(gridview->highlightItem());
+    qreal hlPosX = gridview->highlightItem()->x();
+    qreal hlPosY = gridview->highlightItem()->y();
+
+    gridview->setCurrentIndex(5);
+    QTest::qWait(500);
+    QCOMPARE(gridview->highlightItem()->x(), hlPosX);
+    QCOMPARE(gridview->highlightItem()->y(), hlPosY);
 
     delete canvas;
 }

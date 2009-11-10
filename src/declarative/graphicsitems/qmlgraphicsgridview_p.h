@@ -62,8 +62,11 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsGridView : public QmlGraphicsFlickable
     Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
     Q_PROPERTY(QmlGraphicsItem *currentItem READ currentItem NOTIFY currentIndexChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
+
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
+    Q_PROPERTY(QmlGraphicsItem *highlightItem READ highlightItem NOTIFY highlightChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
+
     Q_PROPERTY(Flow flow READ flow WRITE setFlow)
     Q_PROPERTY(bool keyNavigationWraps READ isWrapEnabled WRITE setWrapEnabled)
     Q_PROPERTY(int cacheBuffer READ cacheBuffer WRITE setCacheBuffer)
@@ -85,6 +88,7 @@ public:
     void setCurrentIndex(int idx);
 
     QmlGraphicsItem *currentItem();
+    QmlGraphicsItem *highlightItem();
     int count() const;
 
     QmlComponent *highlight() const;
@@ -123,6 +127,7 @@ Q_SIGNALS:
     void currentIndexChanged();
     void cellWidthChanged();
     void cellHeightChanged();
+    void highlightChanged();
 
 protected:
     virtual void viewportMoved();
