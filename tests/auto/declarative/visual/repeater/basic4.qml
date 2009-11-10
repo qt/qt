@@ -4,9 +4,8 @@ Rectangle {
     color: "blue"
     width: 300
     height: 200
-    id: Page
     ListModel {
-        id: DataSource
+        id: dataSource
         ListElement {
             name: "January"
         }
@@ -15,7 +14,7 @@ Rectangle {
         }
     }
     Component {
-        id: Delegate
+        id: delegate
         Rectangle {
             color: "red"
             width: 100
@@ -27,8 +26,8 @@ Rectangle {
     }
     Row {
         Repeater {
-            model: DataSource
-            delegate: Delegate
+            model: dataSource
+            delegate: delegate
         }
     }
 }

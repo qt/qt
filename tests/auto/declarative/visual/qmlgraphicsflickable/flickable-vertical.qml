@@ -5,7 +5,7 @@ Rectangle {
     width: 300; height: 600
 
     ListModel {
-        id: List
+        id: list
         ListElement { dayColor: "steelblue" }
         ListElement { dayColor: "blue" }
         ListElement { dayColor: "yellow" }
@@ -22,7 +22,7 @@ Rectangle {
         Column {
             id: column
             Repeater {
-                model: List
+                model: list
                 Rectangle { width: 300; height: 200; color: dayColor }
             }
         }
