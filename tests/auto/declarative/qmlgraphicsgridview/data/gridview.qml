@@ -43,6 +43,7 @@ Rectangle {
         height: 320
         cellWidth: 80
         cellHeight: 60
+        flow: (testTopToBottom == false) ? "LeftToRight" : "TopToBottom"
         model: testModel
         delegate: myDelegate
     }

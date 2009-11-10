@@ -271,7 +271,7 @@ void QmlTimer::ticked()
         emit triggered();
 }
 
-void QmlTimer::stateChanged(QAbstractAnimation::State, QAbstractAnimation::State state)
+void QmlTimer::stateChanged(QAbstractAnimation::State state, QAbstractAnimation::State)
 {
     Q_D(QmlTimer);
     if (d->running && state != QAbstractAnimation::Running) {

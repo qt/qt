@@ -625,6 +625,7 @@ void tst_QmlGraphicsListView::enforceRange()
 
     QCOMPARE(listview->preferredHighlightBegin(), 100.0);
     QCOMPARE(listview->preferredHighlightEnd(), 100.0);
+    QCOMPARE(listview->highlightRangeMode(), QmlGraphicsListView::StrictlyEnforceRange);
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
