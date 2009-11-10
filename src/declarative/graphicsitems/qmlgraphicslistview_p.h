@@ -66,6 +66,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsListView : public QmlGraphicsFlickable
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 
     Q_PROPERTY(QmlComponent *highlight READ highlight WRITE setHighlight)
+    Q_PROPERTY(QmlGraphicsItem *highlightItem READ highlightItem NOTIFY highlightChanged)
     Q_PROPERTY(bool highlightFollowsCurrentItem READ highlightFollowsCurrentItem WRITE setHighlightFollowsCurrentItem)
     Q_PROPERTY(qreal highlightMoveSpeed READ highlightMoveSpeed WRITE setHighlightMoveSpeed NOTIFY highlightMoveSpeedChanged)
     Q_PROPERTY(qreal highlightResizeSpeed READ highlightResizeSpeed WRITE setHighlightResizeSpeed NOTIFY highlightResizeSpeedChanged)
@@ -99,6 +100,7 @@ public:
     void setCurrentIndex(int idx);
 
     QmlGraphicsItem *currentItem();
+    QmlGraphicsItem *highlightItem();
     int count() const;
 
     QmlComponent *highlight() const;
@@ -155,6 +157,7 @@ Q_SIGNALS:
     void sectionExpressionChanged();
     void highlightMoveSpeedChanged();
     void highlightResizeSpeedChanged();
+    void highlightChanged();
 
 protected:
     virtual void viewportMoved();

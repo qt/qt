@@ -75,8 +75,8 @@ var floodBoard;//Set to 1 if the floodFill reaches off that node
 //![1]
 function handleClick(x,y)
 {
-    xIdx = Math.floor(x/gameCanvas.tileSize);
-    yIdx = Math.floor(y/gameCanvas.tileSize);
+    var xIdx = Math.floor(x/gameCanvas.tileSize);
+    var yIdx = Math.floor(y/gameCanvas.tileSize);
     if(xIdx >= maxX || xIdx < 0 || yIdx >= maxY || yIdx < 0)
         return;
     if(board[index(xIdx, yIdx)] == null)
@@ -124,13 +124,13 @@ function shuffleDown()
 {
     //Fall down
     for(var xIdx=0; xIdx<maxX; xIdx++){
-        fallDist = 0;
-        for(yIdx=maxY-1; yIdx>=0; yIdx--){
+        var fallDist = 0;
+        for(var yIdx=maxY-1; yIdx>=0; yIdx--){
             if(board[index(xIdx,yIdx)] == null){
                 fallDist += 1;
             }else{
                 if(fallDist > 0){
-                    obj = board[index(xIdx,yIdx)];
+                    var obj = board[index(xIdx,yIdx)];
                     obj.y += fallDist * gameCanvas.tileSize;
                     board[index(xIdx,yIdx+fallDist)] = obj;
                     board[index(xIdx,yIdx)] = null;
@@ -139,14 +139,14 @@ function shuffleDown()
         }
     }
     //Fall to the left
-    fallDist = 0;
-    for(xIdx=0; xIdx<maxX; xIdx++){
+    var fallDist = 0;
+    for(var xIdx=0; xIdx<maxX; xIdx++){
         if(board[index(xIdx, maxY - 1)] == null){
             fallDist += 1;
         }else{
             if(fallDist > 0){
-                for(yIdx=0; yIdx<maxY; yIdx++){
-                    obj = board[index(xIdx,yIdx)];
+                for(var yIdx=0; yIdx<maxY; yIdx++){
+                    var obj = board[index(xIdx,yIdx)];
                     if(obj == null)
                         continue;
                     obj.x -= fallDist * gameCanvas.tileSize;
@@ -162,8 +162,8 @@ function shuffleDown()
 function victoryCheck()
 {
     //awards bonuses for no tiles left
-    deservesBonus = true;
-    for(xIdx=maxX-1; xIdx>=0; xIdx--)
+    var deservesBonus = true;
+    for(var xIdx=maxX-1; xIdx>=0; xIdx--)
         if(board[index(xIdx, maxY - 1)] != null)
             deservesBonus = false;
     if(deservesBonus)
@@ -181,7 +181,7 @@ function floodMoveCheck(xIdx, yIdx, type)
         return false;
     if(board[index(xIdx, yIdx)] == null)
         return false;
-    myType = board[index(xIdx, yIdx)].type;
+    var myType = board[index(xIdx, yIdx)].type;
     if(type == myType)
         return true;
     return floodMoveCheck(xIdx + 1, yIdx, myType) ||
