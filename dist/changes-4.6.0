@@ -322,6 +322,34 @@ QtOpenGL
  - QGLGradientCache
    * [249919] Clean up the gradient cache in the right context.
 
+QtSql
+   * [QTBUG-3162] Views for Sql table models should not reset state on failed queries.
+   * [QTBUG-5251] Fix retrieval of SQL  'TIME' information for PostgreSQL.
+   * Better error checking for in case of failed query.
+   * [QTBUG-5179] Fixed Floating point number truncation in qsqlpsql plugin.
+   * [QTBUG-551] Fixed Oracle batchExec using strings as out params.
+   * Updated sqlite to 3.6.19 + readded our patches.
+   * [QTBUG-3736] ODBC: Retrieved in ascii, should be stored in ascii.
+   * Fixed issue with multiple lookups to same table/field in QSqlRelationalTableModel
+   * Updated documentation of setForwardOnly
+   * [QT-754] TDS: Fixed improper formatting of date values
+   * TDS: Fixed missing field/table name escaping.
+   * ODBC: Fixed setForwardOnly not being reset on when the query is reset.
+   * [QTBUG-4510] Add reconnection option to the mysql driver.
+   * [222678] Fixed QSqlTableModel: trying to delete the wrong row.
+   * Interbase: Fixed crash when calling numRows on unknown query type.
+   * DB2: Don't return an error when the table is just empty.
+   * [17327] Added OCI support for synonyms to tables created by another user.
+   * [176267] Fixed mysql driver not knowing the difference between tables and views.
+   * Fixed determination of end of ODBC string on deficient drivers.
+   * Added ability to open sqlite databases readonly.
+   * Fixed race condition on reopening an ODBC connection.
+   * Fixed invalid use of statics in the defaultCasing code.
+   * Fixed proper quoting under odbc.
+   * [252450 & 246125] Fixed failed queries due to MySql driver auto-preparing.
+   * QSqlDatabase now has a database level precisionPolicy. Queries now default to this.
+   * Add proper iODBC linking support.
+
 QtXml
 
 - QDomDocument
