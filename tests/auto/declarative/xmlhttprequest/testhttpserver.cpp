@@ -74,6 +74,11 @@ bool TestHTTPServer::wait(const QUrl &expect, const QUrl &reply, const QUrl &bod
     }
 
     waitData = expectFile.readAll();
+    /*
+    while (waitData.endsWith('\n'))
+        waitData = waitData.left(waitData.count() - 1);
+        */
+
     replyData = replyFile.readAll();
 
     if (!replyData.endsWith('\n'))
@@ -127,7 +132,7 @@ void TestHTTPServer::readyRead()
         const char c = ba.at(ii);
         if (c == '\r' && waitData.isEmpty())
            continue;
-        else if (c == waitData.at(0))
+        else if (!waitData.isEmpty() && c == waitData.at(0))
             waitData = waitData.mid(1);
         else if (c == '\r')
             continue;

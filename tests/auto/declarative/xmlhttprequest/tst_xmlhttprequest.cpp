@@ -70,6 +70,11 @@ private slots:
     void setRequestHeader_illegalName_data();
     void setRequestHeader_illegalName();
     void setRequestHeader_sent();
+    void send_unsent();
+    void send_alreadySent();
+    void send_ignoreData();
+    void send_withdata();
+    void abort();
 
     // Crashes
     // void outstanding_request_at_shutdown();
@@ -420,6 +425,194 @@ void tst_xmlhttprequest::setRequestHeader_sent()
     delete object;
 }
 
+// Test that calling send() in UNSENT state throws an exception
+void tst_xmlhttprequest::send_unsent()
+{
+    QmlComponent component(&engine, TEST_FILE("send_unsent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// Test attempting to resend a sent request throws an exception
+void tst_xmlhttprequest::send_alreadySent()
+{
+    QmlComponent component(&engine, TEST_FILE("send_alreadySent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    delete object;
+}
+
+// Test that send for a GET or HEAD ignores data
+void tst_xmlhttprequest::send_ignoreData()
+{
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_ignoreData_GET.expect"), 
+                            TEST_FILE("send_ignoreData.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_ignoreData.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("reqType", "GET");
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_ignoreData_PUT.expect"), 
+                            TEST_FILE("send_ignoreData.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_ignoreData.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("reqType", "HEAD");
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+}
+
+// Test that send()'ing data works
+void tst_xmlhttprequest::send_withdata()
+{
+    // No content-type
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.1.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    // Correct content-type
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.2.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    // Incorrect content-type
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.3.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+    
+    // Correct content-type - out of order
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.4.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.4.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    // Incorrect content-type - out of order
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.4.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.5.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+
+    // PUT
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.6.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.6.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
+}
+
+void tst_xmlhttprequest::abort()
+{
+}
 
 QTEST_MAIN(tst_xmlhttprequest)
 
