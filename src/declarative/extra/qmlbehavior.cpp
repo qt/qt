@@ -109,7 +109,7 @@ void QmlBehavior::setAnimation(QmlAbstractAnimation *animation)
 {
     Q_D(QmlBehavior);
     if (d->animation) {
-        qmlInfo(tr("Can't change the animation assigned to a Behavior."),this);
+        qmlInfo(this) << tr("Can't change the animation assigned to a Behavior.");
         return;
     }
 

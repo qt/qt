@@ -166,7 +166,7 @@ void QmlGraphicsAnchorsPrivate::fillChanged()
         --updatingFill;
     } else {
         // ### Make this certain :)
-        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on fill."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Possible anchor loop detected on fill.");
     }
 
 }
@@ -194,7 +194,7 @@ void QmlGraphicsAnchorsPrivate::centerInChanged()
         --updatingCenterIn;
     } else {
         // ### Make this certain :)
-        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on centerIn."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Possible anchor loop detected on centerIn.");
     }
 }
 
@@ -355,7 +355,7 @@ void QmlGraphicsAnchors::setFill(QmlGraphicsItem *f)
         return;
     }
     if (f != d->item->parentItem() && f->parentItem() != d->item->parentItem()){
-        qmlInfo(tr("Can't anchor to an item that isn't a parent or sibling."), d->item);
+        qmlInfo(d->item) << tr("Can't anchor to an item that isn't a parent or sibling.");
         return;
     }
     d->remDepend(d->fill);
@@ -380,7 +380,7 @@ void QmlGraphicsAnchors::setCenterIn(QmlGraphicsItem* c)
         return;
     }
     if (c != d->item->parentItem() && c->parentItem() != d->item->parentItem()){
-        qmlInfo(tr("Can't anchor to an item that isn't a parent or sibling."), d->item);
+        qmlInfo(d->item) << tr("Can't anchor to an item that isn't a parent or sibling.");
         return;
     }
 
@@ -481,7 +481,7 @@ void QmlGraphicsAnchorsPrivate::updateVerticalAnchors()
         --updatingVerticalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on vertical anchor."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Possible anchor loop detected on vertical anchor.");
     }
 }
 
@@ -540,7 +540,7 @@ void QmlGraphicsAnchorsPrivate::updateHorizontalAnchors()
         --updatingHorizontalAnchor;
     } else {
         // ### Make this certain :)
-        qmlInfo(QmlGraphicsAnchors::tr("Possible anchor loop detected on horizontal anchor."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Possible anchor loop detected on horizontal anchor.");
     }
 }
 
@@ -912,7 +912,7 @@ bool QmlGraphicsAnchorsPrivate::checkHValid() const
     if (usedAnchors & QmlGraphicsAnchors::HasLeftAnchor &&
         usedAnchors & QmlGraphicsAnchors::HasRightAnchor &&
         usedAnchors & QmlGraphicsAnchors::HasHCenterAnchor) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't specify left, right, and hcenter anchors."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't specify left, right, and hcenter anchors.");
         return false;
     }
 
@@ -922,16 +922,16 @@ bool QmlGraphicsAnchorsPrivate::checkHValid() const
 bool QmlGraphicsAnchorsPrivate::checkHAnchorValid(QmlGraphicsAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to a null item."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor to a null item.");
         return false;
     } else if (anchor.anchorLine & QmlGraphicsAnchorLine::Vertical_Mask) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor a horizontal edge to a vertical edge."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor a horizontal edge to a vertical edge.");
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling.");
         return false;
     } else if (anchor.item == item) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor item to self."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor item to self.");
         return false;
     }
 
@@ -943,13 +943,13 @@ bool QmlGraphicsAnchorsPrivate::checkVValid() const
     if (usedAnchors & QmlGraphicsAnchors::HasTopAnchor &&
         usedAnchors & QmlGraphicsAnchors::HasBottomAnchor &&
         usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't specify top, bottom, and vcenter anchors."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't specify top, bottom, and vcenter anchors.");
         return false;
     } else if (usedAnchors & QmlGraphicsAnchors::HasBaselineAnchor &&
                (usedAnchors & QmlGraphicsAnchors::HasTopAnchor ||
                 usedAnchors & QmlGraphicsAnchors::HasBottomAnchor ||
                 usedAnchors & QmlGraphicsAnchors::HasVCenterAnchor)) {
-        qmlInfo(QmlGraphicsAnchors::tr("Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Baseline anchor can't be used in conjunction with top, bottom, or vcenter anchors.");
         return false;
     }
 
@@ -959,16 +959,16 @@ bool QmlGraphicsAnchorsPrivate::checkVValid() const
 bool QmlGraphicsAnchorsPrivate::checkVAnchorValid(QmlGraphicsAnchorLine anchor) const
 {
     if (!anchor.item) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to a null item."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor to a null item.");
         return false;
     } else if (anchor.anchorLine & QmlGraphicsAnchorLine::Horizontal_Mask) {
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor a vertical edge to a horizontal edge."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor a vertical edge to a horizontal edge.");
         return false;
     } else if (anchor.item != item->parentItem() && anchor.item->parentItem() != item->parentItem()){
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor to an item that isn't a parent or sibling.");
         return false;
     } else if (anchor.item == item){
-        qmlInfo(QmlGraphicsAnchors::tr("Can't anchor item to self."), item);
+        qmlInfo(item) << QmlGraphicsAnchors::tr("Can't anchor item to self.");
         return false;
     }
 

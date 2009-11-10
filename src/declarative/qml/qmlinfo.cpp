@@ -63,7 +63,7 @@ QT_BEGIN_NAMESPACE
     For example, 
 
     \code
-    qmlInfo(tr("component property is a write-once property"), object);
+    qmlInfo(object) << tr("component property is a write-once property");
     \endcode
 
     prints
@@ -73,7 +73,8 @@ QT_BEGIN_NAMESPACE
     \endcode
 */
 
-void qmlInfo(const QString& msg, const QObject* object)
+QmlInfo::QmlInfo(const QObject *object)
+: QDebug(QtWarningMsg)
 {
     QString pos = QLatin1String("QML");
     if (object) {
@@ -95,8 +96,14 @@ void qmlInfo(const QString& msg, const QObject* object)
     } else {
         pos += qApp->translate("QmlInfo","unknown location");
     }
-    pos += QLatin1String(") ");
-    qWarning((pos + msg).toLocal8Bit()); // XXX allow other processing?
+    pos += QLatin1String(")");
+    *this << pos;
+    nospace();
 }
+
+QmlInfo::~QmlInfo()
+{
+}
+
 
 QT_END_NAMESPACE
