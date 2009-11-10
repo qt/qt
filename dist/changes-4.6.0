@@ -240,6 +240,7 @@ QtGui
 
  - QPixmap
     * Optimized width(), height(), isNull() and depth().
+    * [QTBUG-2832] Fixed bug where calling fill on pixmap with active painter could crash.
 
  - QRegion
     * Minor optimizations.
@@ -266,6 +267,10 @@ QtGui
  - QSplitter
     * [206494] Added ability to style pressed slided with stylesheet
 
+ - QStroker
+    * [QTBUG-5212] Fixed bug where thick strokes around small shapes could
+      cause holes in the stroke.
+
  - QWidget
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
@@ -280,8 +285,18 @@ QtGui
     * New qt_paint_device_metric() function to replace the friend
       declarations for window surface classes that need to access metric().
 
+ - QPainterPath
+    * [QTBUG-1537] Fixed bug where the points of a rounded rectangle were added
+      in counter-clockwise order instead of clockwise order like other shapes.
+
+ - QPen
+    * [QTBUG-2738] Made QPen::setDashOffset() work with non-custom dashed lines.
+
  - QPushButton
     * [255581] Fixed sizeHint recalculation bug.
+
+ - QRasterPaintEngine
+    * [QTBUG-4210] Fixed bug where bitmaps were painted black instead of in pen colour.
 
  - QApplication
     * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
@@ -400,6 +415,14 @@ QtSql
    * [252450 & 246125] Fixed failed queries due to MySql driver auto-preparing.
    * QSqlDatabase now has a database level precisionPolicy. Queries now default to this.
    * Add proper iODBC linking support.
+
+QtSvg
+ - QSvgHandler
+   * [245602] Fixed gradient and solid-color referencing.
+   * [202426] Made stroke attribute inheritance work with 'use' tags.
+   * [250618] Fixed gradient on strokes.
+ - QSvgPaintEngine
+   * [257052] Changed drawImage() to ignore aspect ratio.
 
 QtXml
 
