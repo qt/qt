@@ -457,10 +457,13 @@ QtSql
    * Add proper iODBC linking support.
 
 QtSvg
+
  - QSvgHandler
-   * [245602] Fixed gradient and solid-color referencing.
-   * [202426] Made stroke attribute inheritance work with 'use' tags.
+   * [245602] [204686] Fixed gradient and solid-color referencing.
+   * [202426] Made attribute inheritance work with 'use' tags.
    * [250618] Fixed gradient on strokes.
+   * [254040] Added support for 'vector-effect'.
+   
  - QSvgPaintEngine
    * [257052] Changed drawImage() to ignore aspect ratio.
 
