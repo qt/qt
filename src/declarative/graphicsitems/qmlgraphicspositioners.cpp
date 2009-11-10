@@ -414,58 +414,24 @@ Column {
 /*!
     \qmlproperty Transition Column::remove
     This property holds the transition to apply when removing an item from the positioner. The transition is only applied to the removed items.
+    Positioner transitions will only affect the position (x,y) of items.
 
     Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
-
-    Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
-
-    \table
-    \row
-    \o \image positioner-remove.gif
-    \o
-    \qml
-Column {
-    remove: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 1
-            to: 0
-            duration: 500
-        }
-    }
-}
-    \endqml
-    \endtable
 
 */
 /*!
     \qmlproperty Transition Column::add
     This property holds the transition to be applied when adding an item to the positioner. The transition will only be applied to the added item(s).
+    Positioner transitions will only affect the position (x,y) of items.
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
-    \table
-    \row
-    \o \image positioner-add.gif
-    \o
-    \qml
-Column {
-    add: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 0
-            to: 1
-            duration: 500
-        }
-    }
-}
-    \endqml
-    \endtable
 
 */
 /*!
     \qmlproperty Transition Column::move
     This property holds the transition to apply when moving an item within the positioner.
+    Positioner transitions will only affect the position (x,y) of items.
 
     This can happen when other items are added or removed from the positioner, or when items resize themselves.
 
@@ -588,49 +554,28 @@ Row {
     \qmlproperty Transition Row::remove
     This property holds the transition to apply when removing an item from the positioner.
     The transition will only be applied to the removed item(s).
+    Positioner transitions will only affect the position (x,y) of items.
 
     Removed can mean that either the object has been deleted or reparented, and thus is now longer a child of the positioner, or that the object has had its opacity set to zero, and thus is no longer visible.
 
     Note that if the item counts as removed because its opacity is zero it will not be visible during the transition unless you set the opacity in the transition, like in the below example.
 
-    \qml
-Row {
-    remove: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 1
-            to: 0
-            duration: 500
-        }
-    }
-}
-    \endqml
 
 */
 /*!
     \qmlproperty Transition Row::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition will only be applied to the added item(s).
+    Positioner transitions will only affect the position (x,y) of items.
 
     Added can mean that either the object has been created or reparented, and thus is now a child or the positioner, or that the object has had its opacity increased from zero, and thus is now visible.
 
-    \qml
-Row {
-    add: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 0
-            to: 1
-            duration: 500
-        }
-    }
-}
-    \endqml
 
 */
 /*!
     \qmlproperty Transition Row::move
     This property holds the transition to apply when moving an item within the positioner.
+    Positioner transitions will only affect the position (x,y) of items.
 
     This can happen when other items are added or removed from the positioner, or when items resize themselves.
 
@@ -759,57 +704,32 @@ Grid {
     \qmlproperty Transition Grid::remove
     This property holds the transition to apply when removing an item from the positioner.
     The transition is only applied to the removed item(s).
+    Positioner transitions will only affect the position (x,y) of items.
 
     Removed can mean that either the object has been deleted or
     reparented, and thus is now longer a child of the positioner, or that
     the object has had its opacity set to zero, and thus is no longer
     visible.
 
-    Note that if the item counts as removed because its opacity is
-    zero it will not be visible during the transition unless you set
-    the opacity in the transition, like in the below example.
-
-    \qml
-Grid {
-    remove: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 1
-            to: 0
-            duration: 500
-        }
-    }
-}
-    \endqml
 
 */
 /*!
     \qmlproperty Transition Grid::add
     This property holds the transition to apply when adding an item to the positioner.
     The transition is only applied to the added item(s).
+    Positioner transitions will only affect the position (x,y) of items.
 
     Added can mean that either the object has been created or
     reparented, and thus is now a child or the positioner, or that the
     object has had its opacity increased from zero, and thus is now
     visible.
 
-    \qml
-Grid {
-    add: Transition {
-        NumberAnimation {
-            properties: "opacity"
-            from: 0
-            to: 1
-            duration: 500
-        }
-    }
-}
-    \endqml
 
 */
 /*!
     \qmlproperty Transition Grid::move
     This property holds the transition to apply when moving an item within the positioner.
+    Positioner transitions will only affect the position (x,y) of items.
 
     This can happen when other items are added or removed from the positioner, or
     when items resize themselves.
