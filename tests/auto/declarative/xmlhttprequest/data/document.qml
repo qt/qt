@@ -1,0 +1,49 @@
+import Qt 4.6
+
+Object {
+    property bool xmlTest: false
+    property bool dataOK: false
+
+    Script {
+        function checkXML(document)
+        {
+            if (document.xmlVersion != "1.0")
+                return;
+
+            if (document.xmlStandalone != true)
+                return;
+
+            if (document.documentElement == null)
+                return;
+
+            if (document.nodeValue != null)
+                return;
+
+            // ### Test other node properties
+            // ### test encoding (what is a valid qt encoding?)
+            xmlTest = true;
+        }
+    }
+
+    Component.onCompleted: {
+        var x = new XMLHttpRequest;
+
+        x.open("GET", "document.xml");
+
+        // Test to the end
+        x.onreadystatechange = function() {
+            if (x.readyState == XMLHttpRequest.DONE) {
+
+                dataOK = true;
+
+                if (x.responseXML != null)
+                    checkXML(x.responseXML);
+
+            }
+        }
+
+        x.send()
+    }
+}
+
+

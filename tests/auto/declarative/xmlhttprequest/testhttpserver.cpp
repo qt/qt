@@ -68,8 +68,9 @@ bool TestHTTPServer::wait(const QUrl &expect, const QUrl &reply, const QUrl &bod
     if (!replyFile.open(QIODevice::ReadOnly)) return false;
 
     bodyData = QByteArray();
-    QFile bodyFile(body.toLocalFile());
-    if (bodyFile.open(QIODevice::ReadOnly)) {
+    if (body.isValid()) {
+        QFile bodyFile(body.toLocalFile());
+        if (!bodyFile.open(QIODevice::ReadOnly)) return false;
         bodyData = bodyFile.readAll();
     }
 
