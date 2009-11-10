@@ -4,9 +4,8 @@ Rectangle {
     color: "blue"
     width: 300
     height: 200
-    id: Page
     Component {
-        id: Delegate
+        id: delegate
         Rectangle {
             color: "red"
             width: 100
@@ -18,7 +17,7 @@ Rectangle {
     }
     Row {
         Repeater {
-            delegate: Delegate
+            delegate: delegate
             model: ListModel {
                 ListElement {
                     name: "January"

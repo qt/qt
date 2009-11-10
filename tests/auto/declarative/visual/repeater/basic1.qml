@@ -4,7 +4,6 @@ Rectangle {
     color: "blue"
     width: 300
     height: 200
-    id: Page
     Row {
         Repeater {
             delegate: Rectangle {

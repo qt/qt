@@ -44,8 +44,6 @@
 #include <QHostAddress>
 #include <QDebug>
 #include <QThread>
-#include <QProcessEnvironment>
-#include <QProcess>
 
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
@@ -53,7 +51,6 @@
 #include <QtDeclarative/qmlexpression.h>
 #include <QtDeclarative/qmlmetatype.h>
 #include <QtDeclarative/qmlmetaproperty.h>
-#include <QtDeclarative/qmlcontext.h>
 #include <QtDeclarative/qmlbinding.h>
 
 #include <private/qmldebug_p.h>
@@ -61,8 +58,6 @@
 #include <private/qmldebugclient_p.h>
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
-#include <private/qmlgraphicstext_p.h>
-#include <private/qmldeclarativedata_p.h>
 
 
 class tst_QmlDebug : public QObject
@@ -81,10 +76,15 @@ protected slots:
 
 private:
     QmlDebugObjectReference findRootObject();
-    QmlDebugPropertyReference findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name);
-    QObject *findObjectWithId(const QObjectList &objects, int id);
+    QmlDebugPropertyReference findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name) const;
+    QObject *findObjectWithId(const QObjectList &objects, int id) const;
     void waitForQuery(QmlDebugQuery *query);
-    void recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive);
+
+    void recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive) const;
+
+    void recursiveCompareObjects(const QmlDebugObjectReference &a, const QmlDebugObjectReference &b) const;
+    void recursiveCompareContexts(const QmlDebugContextReference &a, const QmlDebugContextReference &b) const;
+    void compareProperties(const QmlDebugPropertyReference &a, const QmlDebugPropertyReference &b) const;
     
     QmlDebugConnection *m_conn;
     QmlEngineDebug *m_dbg;
@@ -106,6 +106,12 @@ private slots:
     void queryObject_data();
     void queryExpressionResult();
     void queryExpressionResult_data();
+
+    void tst_QmlDebugFileReference();
+    void tst_QmlDebugEngineReference();
+    void tst_QmlDebugObjectReference();
+    void tst_QmlDebugContextReference();
+    void tst_QmlDebugPropertyReference();
 };
 
 QmlDebugObjectReference tst_QmlDebug::findRootObject()
@@ -132,7 +138,7 @@ QmlDebugObjectReference tst_QmlDebug::findRootObject()
     return result;
 }
 
-QmlDebugPropertyReference tst_QmlDebug::findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name)
+QmlDebugPropertyReference tst_QmlDebug::findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name) const
 {
     foreach(const QmlDebugPropertyReference &p, props) {
         if (p.name() == name)
@@ -141,7 +147,7 @@ QmlDebugPropertyReference tst_QmlDebug::findProperty(const QList<QmlDebugPropert
     return QmlDebugPropertyReference();
 }
 
-QObject *tst_QmlDebug::findObjectWithId(const QObjectList &objects, int id)
+QObject *tst_QmlDebug::findObjectWithId(const QObjectList &objects, int id) const
 {
     foreach (QObject *o, objects) {
         if (id == QmlDebugService::idForObject(o))
@@ -165,7 +171,7 @@ void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
         QFAIL("query timed out");
 }
 
-void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive)
+void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive) const
 {
     const QMetaObject *meta = o->metaObject();
 
@@ -210,6 +216,54 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference
 
         QCOMPARE(p.hasNotifySignal(), pmeta.hasNotifySignal());
     }
+}
+
+void tst_QmlDebug::recursiveCompareObjects(const QmlDebugObjectReference &a, const QmlDebugObjectReference &b) const
+{
+    QCOMPARE(a.debugId(), b.debugId());
+    QCOMPARE(a.className(), b.className());
+    QCOMPARE(a.name(), b.name());
+    QCOMPARE(a.contextDebugId(), b.contextDebugId());
+
+    QCOMPARE(a.source().url(), b.source().url());
+    QCOMPARE(a.source().lineNumber(), b.source().lineNumber());
+    QCOMPARE(a.source().columnNumber(), b.source().columnNumber());
+
+    QCOMPARE(a.properties().count(), b.properties().count());
+    QCOMPARE(a.children().count(), b.children().count());
+
+    QList<QmlDebugPropertyReference> aprops = a.properties();
+    QList<QmlDebugPropertyReference> bprops = b.properties();
+
+    for (int i=0; i<aprops.count(); i++)
+        compareProperties(aprops[i], bprops[i]);
+
+    for (int i=0; i<a.children().count(); i++)
+        recursiveCompareObjects(a.children()[i], b.children()[i]);
+}
+
+void tst_QmlDebug::recursiveCompareContexts(const QmlDebugContextReference &a, const QmlDebugContextReference &b) const
+{
+    QCOMPARE(a.debugId(), b.debugId());
+    QCOMPARE(a.name(), b.name());
+    QCOMPARE(a.objects().count(), b.objects().count());
+    QCOMPARE(a.contexts().count(), b.contexts().count());
+
+    for (int i=0; i<a.objects().count(); i++)
+        recursiveCompareObjects(a.objects()[i], b.objects()[i]);
+
+    for (int i=0; i<a.contexts().count(); i++)
+        recursiveCompareContexts(a.contexts()[i], b.contexts()[i]);
+}
+
+void tst_QmlDebug::compareProperties(const QmlDebugPropertyReference &a, const QmlDebugPropertyReference &b) const
+{
+    QCOMPARE(a.objectDebugId(), b.objectDebugId());
+    QCOMPARE(a.name(), b.name());
+    QCOMPARE(a.value(), b.value());
+    QCOMPARE(a.valueTypeName(), b.valueTypeName());
+    QCOMPARE(a.binding(), b.binding());
+    QCOMPARE(a.hasNotifySignal(), b.hasNotifySignal());
 }
 
 void tst_QmlDebug::initTestCase()
@@ -323,7 +377,6 @@ void tst_QmlDebug::watch_expression()
     int origWidth = m_rootItem->property("width").toInt();
     
     QmlDebugObjectReference obj = findRootObject();
-    QmlDebugPropertyReference prop;
 
     QmlDebugObjectExpressionWatch *watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
@@ -376,7 +429,18 @@ void tst_QmlDebug::watch_expression_data()
 
 void tst_QmlDebug::queryAvailableEngines()
 {
-    QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
+    QmlDebugEnginesQuery *q_engines;
+
+    QmlEngineDebug unconnected(0);
+    q_engines = unconnected.queryAvailableEngines(0);
+    QCOMPARE(q_engines->state(), QmlDebugQuery::Error);
+    delete q_engines;
+
+    q_engines = m_dbg->queryAvailableEngines(this);
+    delete q_engines;
+
+    q_engines = m_dbg->queryAvailableEngines(this);
+    QVERIFY(q_engines->engines().isEmpty());
     waitForQuery(q_engines);
 
     // TODO test multiple engines
@@ -395,8 +459,19 @@ void tst_QmlDebug::queryRootContexts()
 {
     QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
     waitForQuery(q_engines);
+    int engineId = q_engines->engines()[0].debugId();
+
+    QmlDebugRootContextQuery *q_context;
     
-    QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
+    QmlEngineDebug unconnected(0);
+    q_context = unconnected.queryRootContexts(engineId, this);
+    QCOMPARE(q_context->state(), QmlDebugQuery::Error);
+    delete q_context;
+
+    q_context = m_dbg->queryRootContexts(engineId, this);
+    delete q_context;
+
+    q_context = m_dbg->queryRootContexts(engineId, this);
     waitForQuery(q_context);
 
     QmlContext *actualContext = m_engine->rootContext();
@@ -427,12 +502,19 @@ void tst_QmlDebug::queryObject()
     
     QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
+    QmlDebugObjectReference rootObject = q_context->rootContext().objects()[0];
 
     QmlDebugObjectQuery *q_obj = 0;
-    if (recursive)
-        q_obj = m_dbg->queryObjectRecursive(q_context->rootContext().objects()[0], this);
-    else
-        q_obj = m_dbg->queryObject(q_context->rootContext().objects()[0], this);
+
+    QmlEngineDebug unconnected(0);
+    q_obj = recursive ? unconnected.queryObjectRecursive(rootObject, this) : unconnected.queryObject(rootObject, this);
+    QCOMPARE(q_obj->state(), QmlDebugQuery::Error);
+    delete q_obj;
+
+    q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
+    delete q_obj;
+
+    q_obj = recursive ? m_dbg->queryObjectRecursive(rootObject, this) : m_dbg->queryObject(rootObject, this);
     waitForQuery(q_obj);
 
     QmlDebugObjectReference obj = q_obj->object();
@@ -494,8 +576,19 @@ void tst_QmlDebug::queryExpressionResult()
     
     QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
+    int objectId = q_context->rootContext().objects()[0].debugId();
 
-    QmlDebugExpressionQuery *q_expr = m_dbg->queryExpressionResult(q_context->rootContext().objects()[0].debugId(), expr, this);
+    QmlDebugExpressionQuery *q_expr;
+
+    QmlEngineDebug unconnected(0);
+    q_expr = unconnected.queryExpressionResult(objectId, expr, this);
+    QCOMPARE(q_expr->state(), QmlDebugQuery::Error);
+    delete q_expr;
+    
+    q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
+    delete q_expr;
+
+    q_expr = m_dbg->queryExpressionResult(objectId, expr, this);
     QCOMPARE(q_expr->expression(), expr);
     waitForQuery(q_expr);
 
@@ -516,6 +609,120 @@ void tst_QmlDebug::queryExpressionResult_data()
     QTest::newRow("bad expr") << "aeaef" << qVariantFromValue(QString("<undefined>"));
 }
 
+void tst_QmlDebug::tst_QmlDebugFileReference()
+{
+    QmlDebugFileReference ref;
+    QVERIFY(ref.url().isEmpty());
+    QCOMPARE(ref.lineNumber(), -1);
+    QCOMPARE(ref.columnNumber(), -1);
+
+    ref.setUrl(QUrl("http://test"));
+    QCOMPARE(ref.url(), QUrl("http://test"));
+    ref.setLineNumber(1);
+    QCOMPARE(ref.lineNumber(), 1);
+    ref.setColumnNumber(1);
+    QCOMPARE(ref.columnNumber(), 1);
+
+    QmlDebugFileReference copy(ref);
+    QmlDebugFileReference copyAssign;
+    copyAssign = ref;
+    foreach (const QmlDebugFileReference &r, (QList<QmlDebugFileReference>() << copy << copyAssign)) {
+        QCOMPARE(r.url(), ref.url());
+        QCOMPARE(r.lineNumber(), ref.lineNumber());
+        QCOMPARE(r.columnNumber(), ref.columnNumber());
+    }
+}
+
+void tst_QmlDebug::tst_QmlDebugEngineReference()
+{
+    QmlDebugEngineReference ref;
+    QCOMPARE(ref.debugId(), -1);
+    QVERIFY(ref.name().isEmpty());
+
+    ref = QmlDebugEngineReference(1);
+    QCOMPARE(ref.debugId(), 1);
+    QVERIFY(ref.name().isEmpty());
+
+    QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
+    waitForQuery(q_engines);
+    ref = q_engines->engines()[0];
+    delete q_engines;
+
+    QmlDebugEngineReference copy(ref);
+    QmlDebugEngineReference copyAssign;
+    copyAssign = ref;
+    foreach (const QmlDebugEngineReference &r, (QList<QmlDebugEngineReference>() << copy << copyAssign)) {
+        QCOMPARE(r.debugId(), ref.debugId());
+        QCOMPARE(r.name(), ref.name());
+    }
+}
+
+void tst_QmlDebug::tst_QmlDebugObjectReference()
+{
+    QmlDebugObjectReference ref;
+    QCOMPARE(ref.debugId(), -1);
+    QCOMPARE(ref.className(), QString());
+    QCOMPARE(ref.name(), QString());
+    QCOMPARE(ref.contextDebugId(), -1);
+    QVERIFY(ref.properties().isEmpty());
+    QVERIFY(ref.children().isEmpty());
+
+    QmlDebugFileReference source = ref.source();
+    QVERIFY(source.url().isEmpty());
+    QVERIFY(source.lineNumber() < 0);
+    QVERIFY(source.columnNumber() < 0);
+
+    ref = QmlDebugObjectReference(1);
+    QCOMPARE(ref.debugId(), 1);
+
+    QmlDebugObjectReference rootObject = findRootObject();
+    QmlDebugObjectQuery *query = m_dbg->queryObjectRecursive(rootObject, this);
+    waitForQuery(query);
+    ref = query->object();
+    delete query;
+
+    QVERIFY(ref.debugId() >= 0);
+
+    QmlDebugObjectReference copy(ref);
+    QmlDebugObjectReference copyAssign;
+    copyAssign = ref;
+    foreach (const QmlDebugObjectReference &r, (QList<QmlDebugObjectReference>() << copy << copyAssign))
+        recursiveCompareObjects(r, ref);
+}
+
+void tst_QmlDebug::tst_QmlDebugContextReference()
+{
+    QmlDebugContextReference ref;
+    QCOMPARE(ref.debugId(), -1);
+    QVERIFY(ref.name().isEmpty());
+    QVERIFY(ref.objects().isEmpty());
+    QVERIFY(ref.contexts().isEmpty());
+
+    QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
+    waitForQuery(q_engines);
+    QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
+    waitForQuery(q_context);
+
+    ref = q_context->rootContext();
+    delete q_engines;
+    delete q_context;
+    QVERIFY(ref.debugId() >= 0);
+
+    QmlDebugContextReference copy(ref);
+    QmlDebugContextReference copyAssign;
+    copyAssign = ref;
+    foreach (const QmlDebugContextReference &r, (QList<QmlDebugContextReference>() << copy << copyAssign))
+        recursiveCompareContexts(r, ref);
+}
+
+void tst_QmlDebug::tst_QmlDebugPropertyReference()
+{
+    QmlDebugObjectReference rootObject = findRootObject();
+    QmlDebugObjectQuery *query = m_dbg->queryObject(rootObject, this);
+    waitForQuery(query);
+    QmlDebugObjectReference obj = query->object();
+    delete query;   
+}
 
 class TestRunnerThread : public QThread
 {
