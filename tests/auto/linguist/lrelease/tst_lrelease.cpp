@@ -60,6 +60,7 @@ private slots:
     void mixedcodecs();
     void compressed();
     void idbased();
+    void markuntranslated();
     void dupes();
 
 private:
@@ -208,6 +209,18 @@ void tst_lrelease::idbased()
 
     QCOMPARE(qtTrId("test_id"), QString::fromAscii("This is a test string."));
     QCOMPARE(qtTrId("untranslated_id"), QString::fromAscii("This has no translation."));
+}
+
+void tst_lrelease::markuntranslated()
+{
+    QVERIFY(!QProcess::execute(binDir + "/lrelease -markuntranslated # -idbased testdata/idbased.ts"));
+
+    QTranslator translator;
+    QVERIFY(translator.load("testdata/idbased.qm"));
+    qApp->installTranslator(&translator);
+
+    QCOMPARE(qtTrId("test_id"), QString::fromAscii("This is a test string."));
+    QCOMPARE(qtTrId("untranslated_id"), QString::fromAscii("#This has no translation."));
 }
 
 void tst_lrelease::dupes()

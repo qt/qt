@@ -565,6 +565,7 @@ void QmlGraphicsGridViewPrivate::updateTrackedItem()
 void QmlGraphicsGridViewPrivate::createHighlight()
 {
     Q_Q(QmlGraphicsGridView);
+    bool changed = false;
     if (highlight) {
         if (trackedItem == highlight)
             trackedItem = 0;
@@ -575,6 +576,7 @@ void QmlGraphicsGridViewPrivate::createHighlight()
         delete highlightYAnimator;
         highlightXAnimator = 0;
         highlightYAnimator = 0;
+        changed = true;
     }
 
     if (currentItem) {
@@ -606,8 +608,11 @@ void QmlGraphicsGridViewPrivate::createHighlight()
             highlightYAnimator->setTarget(QmlMetaProperty(highlight->item, QLatin1String("y")));
             highlightYAnimator->setDuration(150);
             highlightYAnimator->setEnabled(autoHighlight);
+            changed = true;
         }
     }
+    if (changed)
+        emit q->highlightChanged();
 }
 
 void QmlGraphicsGridViewPrivate::updateHighlight()
@@ -887,6 +892,25 @@ QmlGraphicsItem *QmlGraphicsGridView::currentItem()
 }
 
 /*!
+  \qmlproperty Item GridView::highlightItem
+
+  \c highlightItem holds the highlight item, which was created
+  from the \l highlight component.
+
+  The highlightItem is managed by the view unless
+  \l highlightFollowsCurrentItem is set to false.
+
+  \sa highlight, highlightFollowsCurrentItem
+*/
+QmlGraphicsItem *QmlGraphicsGridView::highlightItem()
+{
+    Q_D(QmlGraphicsGridView);
+    if (!d->highlight)
+        return 0;
+    return d->highlight->item;
+}
+
+/*!
   \qmlproperty int GridView::count
   This property holds the number of items in the view.
 */
@@ -909,7 +933,7 @@ int QmlGraphicsGridView::count() const
   The below example demonstrates how to make a simple highlight:
   \snippet doc/src/snippets/declarative/gridview/gridview.qml 1
 
-  \sa highlightFollowsCurrentItem
+  \sa highlightItem, highlightFollowsCurrentItem
 */
 QmlComponent *QmlGraphicsGridView::highlight() const
 {

@@ -7,10 +7,9 @@ Item {
 
     GraphicsObjectContainer {
         anchors.fill:parent
+        synchronizedResizing: true
 
         QGraphicsWidget {
-            size.width:parent.width
-            size.height:parent.height
 
             layout: QGraphicsLinearLayout {
                 spacing: 0

@@ -79,7 +79,7 @@ Rectangle {
         width: 240
         height: 320
         model: testModel
-        delegate: animate ? myDelegate : animatedDelegate
+        delegate: testAnimate ? myDelegate : animatedDelegate
         highlightMoveSpeed: 1000
     }
 }

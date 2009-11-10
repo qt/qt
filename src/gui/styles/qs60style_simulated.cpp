@@ -322,7 +322,7 @@ QPixmap QS60StylePrivate::backgroundTexture()
 {
     if (!m_background) {
         const QSize size = QApplication::desktop()->screen()->size();
-        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size);
+        QPixmap background = part(QS60StyleEnums::SP_QsnBgScreen, size, 0);
         m_background = new QPixmap(background);
     }
     return *m_background;

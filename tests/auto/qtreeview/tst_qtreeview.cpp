@@ -3669,11 +3669,11 @@ void tst_QTreeView::doubleClickedWithSpans()
 
     //end the previous edition
     QTest::mouseClick(view.viewport(), Qt::LeftButton, 0, p);
-    QTest::qWait(100);
+    QTest::qWait(150);
     QTest::mousePress(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseDClick(view.viewport(), Qt::LeftButton, 0, p);
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, p);
-    QCOMPARE(spy.count(), 2);
+    QTRY_COMPARE(spy.count(), 2);
 }
 
 QTEST_MAIN(tst_QTreeView)

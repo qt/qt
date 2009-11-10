@@ -835,16 +835,17 @@ bool QPen::operator==(const QPen &p) const
 {
     QPenData *dd = static_cast<QPenData *>(d);
     QPenData *pdd = static_cast<QPenData *>(p.d);
-    return (p.d == d) || (p.d->style == d->style
-                          && p.d->capStyle == d->capStyle
-                          && p.d->joinStyle == d->joinStyle
-                          && p.d->width == d->width
-                          && pdd->miterLimit == dd->miterLimit
-                          && (d->style != Qt::CustomDashLine
-                              || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
-                                  pdd->dashPattern == dd->dashPattern))
-                          && p.d->brush == d->brush
-                          && pdd->cosmetic == dd->cosmetic);
+    return (p.d == d)
+        || (p.d->style == d->style
+            && p.d->capStyle == d->capStyle
+            && p.d->joinStyle == d->joinStyle
+            && p.d->width == d->width
+            && pdd->miterLimit == dd->miterLimit
+            && (d->style != Qt::CustomDashLine
+                || (qFuzzyCompare(pdd->dashOffset, dd->dashOffset) &&
+                    pdd->dashPattern == dd->dashPattern))
+            && p.d->brush == d->brush
+            && pdd->cosmetic == dd->cosmetic);
 }
 
 
@@ -983,8 +984,18 @@ QDataStream &operator>>(QDataStream &s, QPen &p)
 QDebug operator<<(QDebug dbg, const QPen &p)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
+    const char *PEN_STYLES[] = {
+        "NoPen",
+        "SolidLine",
+        "DashLine",
+        "DotLine",
+        "DashDotLine",
+        "DashDotDotLine",
+        "CustomDashLine"
+    };
+
     dbg.nospace() << "QPen(" << p.width() << ',' << p.brush()
-                  << ',' << int(p.style()) << ',' << int(p.capStyle())
+                  << ',' << PEN_STYLES[p.style()] << ',' << int(p.capStyle())
                   << ',' << int(p.joinStyle()) << ',' << p.dashPattern()
                   << ',' << p.dashOffset()
                   << ',' << p.miterLimit() << ')';

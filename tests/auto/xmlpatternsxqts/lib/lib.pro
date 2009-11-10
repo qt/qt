@@ -13,6 +13,12 @@ mac {
     INSTALLS += target
 }
 
+symbian {
+    TARGET.EPOCALLOWDLLDATA=1
+    TARGET.CAPABILITY = All -Tcb
+    MMP_RULES += EXPORTUNFROZEN
+}
+
 # We add gui, because xmlpatterns.pri pull it out.
 QT      += xmlpatterns xml network testlib gui
 

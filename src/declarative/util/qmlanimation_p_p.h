@@ -108,7 +108,7 @@ public:
 protected:
     virtual void updateCurrentTime(int) {}
 
-    virtual void updateState(State /*oldState*/, State newState)
+    virtual void updateState(State newState, State /*oldState*/)
     {
         if (newState == Running) {
             if (animAction)
@@ -147,9 +147,9 @@ protected:
         if (animValue)
             animValue->setValue(value.toDouble());
     }
-    virtual void updateState(State oldState, State newState)
+    virtual void updateState(State newState, State oldState)
     {
-        QVariantAnimation::updateState(oldState, newState);
+        QVariantAnimation::updateState(newState, oldState);
         if (newState == Running) {
             //check for new from every loop
             if (fromSourced)

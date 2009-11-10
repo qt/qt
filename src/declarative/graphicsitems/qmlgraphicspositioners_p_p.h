@@ -60,6 +60,7 @@
 #include <private/qmlstate_p.h>
 #include <private/qmltransitionmanager_p_p.h>
 #include <private/qmlstateoperations_p.h>
+#include <QtCore/QTimer>
 
 QT_BEGIN_NAMESPACE
 class QmlGraphicsBasePositionerPrivate : public QmlGraphicsItemPrivate
@@ -70,8 +71,15 @@ public:
     QmlGraphicsBasePositionerPrivate()
         : _ep(false), _componentComplete(false), _spacing(0),
         aut(QmlGraphicsBasePositioner::None), moveTransition(0), addTransition(0),
-        removeTransition(0), _movingItem(0)
+        removeTransition(0), _movingItem(0), queuedPositioning(false)
     {
+    }
+
+    ~QmlGraphicsBasePositionerPrivate()
+    {
+        watched.removeAll(0);
+        foreach(QmlGraphicsItem* other, watched)
+            unwatchChanges(other);//Need to deregister from a list in QmlGI Private
     }
 
     void init(QmlGraphicsBasePositioner::AutoUpdateType at)
@@ -99,6 +107,22 @@ public:
     QmlTransitionManager removeTransitionManager;
 //    QmlStateGroup *stateGroup;
     QmlGraphicsItem *_movingItem;
+
+    void watchChanges(QmlGraphicsItem *other);
+    void unwatchChanges(QmlGraphicsItem* other);
+    QList<QGuard<QmlGraphicsItem> > watched;
+    bool queuedPositioning;
+
+    virtual void otherSiblingOrderChange(QmlGraphicsItemPrivate* other)
+    {
+        Q_Q(QmlGraphicsBasePositioner);
+        Q_UNUSED(other);
+        if(!queuedPositioning){
+            //Delay is due to many children often being reordered at once
+            QTimer::singleShot(0,q,SLOT(prePositioning()));
+            queuedPositioning = true;
+        }
+    }
 };
 
 QT_END_NAMESPACE

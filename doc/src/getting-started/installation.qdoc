@@ -498,10 +498,9 @@ in the \l{Qt for Windows CE Requirements} document.
 */
 
 /*! \page install-Symbian-installer.html
-
-\title Installing Qt on the Symbian platform using binary package
+\title Installing Qt on the Symbian Platform from a Binary Package
 \ingroup qts60
-\brief How to install Qt on the Symbian platform using the binary package.
+\brief How to install Qt on the Symbian platform from a binary package.
 
 \note Qt for Symbian platform has some requirements that are given in more detail
 in the \l{Qt for Symbian platform Requirements} document.
@@ -528,9 +527,9 @@ in the \l{Qt for Symbian platform Requirements} document.
 
         To run the demos and examples on the emulator, you need to build them first.
         Open the "Qt for Symbian platform Command Prompt" from the Start menu and type:
-        
+
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 25
-        
+
         To run the demos on the emulator simply navigate to the directory of the demo 
         you want to see and run:
 
@@ -538,7 +537,7 @@ in the \l{Qt for Symbian platform Requirements} document.
 
         For more information about building and running Qt programs on the
 Symbian platform,
-        see \l{Symbian platform - Introduction to using Qt}.
+        see \l{Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -546,19 +545,18 @@ Symbian platform,
 
 */
 /*! \page install-Symbian.html
-
-\title Installing Qt on the Symbian platform
+\title Installing Qt on the Symbian Platform
 \ingroup installation
 \ingroup qts60
-\brief How to install Qt for the Symbian platform
+\brief How to install Qt on the Symbian platform.
 
 \note Qt for the Symbian platform has some requirements that are given in more detail
-in the \l{Qt for Symbian platform Requirements} document.
+in the \l{Qt for Symbian Platform Requirements} document.
 
 \note \bold {This document describes how to install and configure Qt for
 the Symbian platform from scratch. 
-If you are using pre-built binaries, follow the instructions
-\l{Installing Qt on the Symbian platform using binary package}{here}.}
+If you are using pre-built binaries, follow the instructions given in the
+\l{Installing Qt on the Symbian Platform from a Binary Package} document.}
 
 \list 1
 
@@ -608,7 +606,7 @@ If you are using pre-built binaries, follow the instructions
         To build Qt for the device, type:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 28
-        
+
         Congratulations, Qt is now ready to use.
 
     \o  Running Qt demos
@@ -617,7 +615,7 @@ If you are using pre-built binaries, follow the instructions
         to try out. An excellent starting point is the "fluidlauncher"
         demo. To run the demo on a real device, you first have to install
         the Qt libraries on the device:
-        
+
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 29
 
         \note You will need to supply certificate that allows installation 
@@ -629,14 +627,14 @@ If you are using pre-built binaries, follow the instructions
 
         This will create a self-signed \c fluidlauncher_armv5_urel.sis and
         install it to your device.
-        
+
         To run the demos on the emulator simply navigate to the directory of the demo 
         you want to see and run:
 
         \snippet doc/src/snippets/code/doc_src_installation.qdoc 27
 
         For more information about building and running Qt programs on the
-Symbian platform, see \l{Symbian platform - Introduction to using Qt}.
+Symbian platform, see \l{Symbian platform - Introduction to Qt}.
 
     We hope you will enjoy using Qt.
 
@@ -956,7 +954,7 @@ Symbian platform, see \l{Symbian platform - Introduction to using Qt}.
 
 /*!
     \page requirements-symbian.html
-    \title Qt for Symbian platform Requirements
+    \title Qt for Symbian Platform Requirements
     \ingroup installation
     \brief Setting up the Symbian platform environment for Qt.
     \previouspage General Qt Requirements

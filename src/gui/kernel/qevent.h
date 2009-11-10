@@ -638,9 +638,11 @@ class Q_GUI_EXPORT QFileOpenEvent : public QEvent
 {
 public:
     QFileOpenEvent(const QString &file);
+    QFileOpenEvent(const QUrl &url);
     ~QFileOpenEvent();
 
     inline QString file() const { return f; }
+    QUrl url() const;
 private:
     QString f;
 };
@@ -827,7 +829,7 @@ public:
     QGestureEvent(const QList<QGesture *> &gestures);
     ~QGestureEvent();
 
-    QList<QGesture *> allGestures() const;
+    QList<QGesture *> gestures() const;
     QGesture *gesture(Qt::GestureType type) const;
 
     QList<QGesture *> activeGestures() const;
@@ -860,7 +862,7 @@ public:
     QWidget *widget() const;
 
 #ifndef QT_NO_GRAPHICSVIEW
-    QPointF mapToScene(const QPointF &gesturePoint) const;
+    QPointF mapToGraphicsScene(const QPointF &gesturePoint) const;
 #endif
 
 private:

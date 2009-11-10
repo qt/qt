@@ -48,6 +48,7 @@
 #include <QtGui/qcolor.h>
 #include <QtGui/qbrush.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
@@ -183,22 +184,28 @@ class Q_GUI_EXPORT QGraphicsBlurEffect: public QGraphicsEffect
 {
     Q_OBJECT
     Q_PROPERTY(qreal blurRadius READ blurRadius WRITE setBlurRadius NOTIFY blurRadiusChanged)
-    Q_PROPERTY(Qt::RenderHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
+    Q_PROPERTY(BlurHint blurHint READ blurHint WRITE setBlurHint NOTIFY blurHintChanged)
 public:
+    enum BlurHint {
+        QualityHint,
+        PerformanceHint,
+        AnimationHint
+    };
+
     QGraphicsBlurEffect(QObject *parent = 0);
     ~QGraphicsBlurEffect();
 
     QRectF boundingRectFor(const QRectF &rect) const;
     qreal blurRadius() const;
-    Qt::RenderHint blurHint() const;
+    BlurHint blurHint() const;
 
 public Q_SLOTS:
     void setBlurRadius(qreal blurRadius);
-    void setBlurHint(Qt::RenderHint hint);
+    void setBlurHint(BlurHint hint);
 
 Q_SIGNALS:
     void blurRadiusChanged(qreal blurRadius);
-    void blurHintChanged(Qt::RenderHint hint);
+    void blurHintChanged(BlurHint hint);
 
 protected:
     void draw(QPainter *painter, QGraphicsEffectSource *source);
@@ -296,6 +303,7 @@ private:
 QT_END_NAMESPACE
 
 QT_END_HEADER
+#endif //QT_NO_GRAPHICSEFFECT
 
 #endif // QGRAPHICSEFFECT_H
 

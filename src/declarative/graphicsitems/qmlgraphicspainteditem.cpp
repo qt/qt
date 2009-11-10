@@ -209,17 +209,12 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
 
     ++inpaint;
 
-    QRectF clipf = p->clipRegion().boundingRect();
-    if (clipf.isEmpty())
-        clipf = mapToScene(content).boundingRect(); // ### Inefficient: Maps toScene and then fromScene
-    else
-        clipf = mapToScene(clipf).boundingRect();
-
-    const QRect clip = mapFromScene(clipf).boundingRect().toRect();
+    const QRect clip = p->clipRegion().boundingRect();
 
     QRegion topaint(clip);
     topaint &= content;
     QRegion uncached(content);
+    p->setRenderHints(QPainter::SmoothPixmapTransform, d->smooth);
 
     int cachesize=0;
     for (int i=0; i<d->imagecache.count(); ++i) {
@@ -229,7 +224,7 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
             if (!d->cachefrozen) {
                 if (!d->imagecache[i]->dirty.isNull() && topaint.contains(d->imagecache[i]->dirty)) {
                     QPainter qp(&d->imagecache[i]->image);
-                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
                     qp.translate(-area.x(), -area.y());
                     if (d->fillColor.isValid()){
                         if(d->fillColor.alpha() < 255){
@@ -285,7 +280,7 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
                     img.fill(d->fillColor);
                 {
                     QPainter qp(&img);
-                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smooth);
+                    qp.setRenderHints(QPainter::HighQualityAntialiasing | QPainter::Antialiasing | QPainter::TextAntialiasing | QPainter::SmoothPixmapTransform, d->smoothCache);
 
                     qp.translate(-r.x(),-r.y());
                     drawContents(&qp, r);
@@ -382,6 +377,31 @@ QColor QmlGraphicsPaintedItem::fillColor() const
     Q_D(const QmlGraphicsPaintedItem);
     return d->fillColor;
 }
+
+/*!
+    \qmlproperty bool PaintedItem::smoothCache
+
+    Controls whether the cached tiles of which the item is composed are
+    rendered smoothly when they are generated.
+
+    This is in addition toe Item::smooth, which controls the smooth painting of
+    the already-painted cached tiles under transformation.
+*/
+bool QmlGraphicsPaintedItem::smoothCache() const
+{
+    Q_D(const QmlGraphicsPaintedItem);
+    return d->smoothCache;
+}
+
+void QmlGraphicsPaintedItem::setSmoothCache(bool on)
+{
+    Q_D(QmlGraphicsPaintedItem);
+    if (d->smoothCache != on) {
+        d->smoothCache = on;
+        clearCache();
+    }
+}
+
 
 
 QT_END_NAMESPACE

@@ -293,17 +293,6 @@ void QDesktopServices::unsetUrlHandler(const QString &scheme)
     have desktop concept, DesktopLocation returns same path as DocumentsLocation.
     Rest of the standard locations point to folder on same drive with executable, except
     that if executable is in ROM the folder from C drive is returned.
-
-    \note On Mac OS X, DataLocation does not include QCoreApplication::organizationName.
-    Use code like this to add it:
-
-    \code
-    QString location = QDesktopServices::storageLocation(QDesktopServices::DataLocation);
-    #ifdef Q_WS_MAC
-        location.insert(location.count() - QCoreApplication::applicationName().count(),
-            QCoreApplication::organizationName() + "/");
-    #endif
-    \endcode
 */
 
 /*!

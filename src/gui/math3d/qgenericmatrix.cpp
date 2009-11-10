@@ -80,7 +80,7 @@ QT_BEGIN_NAMESPACE
     The contents of the array \a values is assumed to be in
     row-major order.
 
-    \sa toValueArray()
+    \sa copyDataTo()
 */
 
 /*!
@@ -102,11 +102,11 @@ QT_BEGIN_NAMESPACE
 
     Returns true if this matrix is the identity; false otherwise.
 
-    \sa setIdentity()
+    \sa setToIdentity()
 */
 
 /*!
-    \fn void QGenericMatrix::setIdentity()
+    \fn void QGenericMatrix::setToIdentity()
 
     Sets this matrix to the identity.
 
@@ -213,9 +213,9 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \fn void QGenericMatrix::toValueArray(T *values)
+    \fn void QGenericMatrix::copyDataTo(T *values) const
 
-    Retrieves the N * M items in this matrix and writes them to \a values
+    Retrieves the N * M items in this matrix and copies them to \a values
     in row-major order.
 */
 
@@ -241,6 +241,102 @@ QT_BEGIN_NAMESPACE
     Returns a constant pointer to the raw data of this matrix.
 
     \sa data()
+*/
+
+#ifndef QT_NO_DATASTREAM
+
+/*!
+    \fn QDataStream &operator<<(QDataStream &stream, const QGenericMatrix<N, M, T> &matrix)
+    \relates QGenericMatrix
+
+    Writes the given \a matrix to the given \a stream and returns a
+    reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+/*!
+    \fn QDataStream &operator>>(QDataStream &stream, QGenericMatrix<N, M, T> &matrix)
+    \relates QGenericMatrix
+
+    Reads a NxM matrix from the given \a stream into the given \a matrix
+    and returns a reference to the stream.
+
+    \sa {Format of the QDataStream Operators}
+*/
+
+#endif
+
+/*!
+    \typedef QMatrix2x2
+    \relates QGenericMatrix
+
+    The QMatrix2x2 type defines a convenient instantiation of the
+    QGenericMatrix template for 2 columns, 2 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix2x3
+    \relates QGenericMatrix
+
+    The QMatrix2x3 type defines a convenient instantiation of the
+    QGenericMatrix template for 2 columns, 3 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix2x4
+    \relates QGenericMatrix
+
+    The QMatrix2x4 type defines a convenient instantiation of the
+    QGenericMatrix template for 2 columns, 4 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix3x2
+    \relates QGenericMatrix
+
+    The QMatrix3x2 type defines a convenient instantiation of the
+    QGenericMatrix template for 3 columns, 2 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix3x3
+    \relates QGenericMatrix
+
+    The QMatrix3x3 type defines a convenient instantiation of the
+    QGenericMatrix template for 3 columns, 3 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix3x4
+    \relates QGenericMatrix
+
+    The QMatrix3x4 type defines a convenient instantiation of the
+    QGenericMatrix template for 3 columns, 4 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix4x2
+    \relates QGenericMatrix
+
+    The QMatrix4x2 type defines a convenient instantiation of the
+    QGenericMatrix template for 4 columns, 2 rows, and qreal as
+    the element type.
+*/
+
+/*!
+    \typedef QMatrix4x3
+    \relates QGenericMatrix
+
+    The QMatrix4x3 type defines a convenient instantiation of the
+    QGenericMatrix template for 4 columns, 3 rows, and qreal as
+    the element type.
 */
 
 QT_END_NAMESPACE

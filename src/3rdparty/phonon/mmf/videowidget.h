@@ -31,6 +31,7 @@ namespace Phonon
 {
 namespace MMF
 {
+class AncestorMoveMonitor;
 class VideoOutput;
 
 class VideoWidget       :   public MediaNode
@@ -40,7 +41,7 @@ class VideoWidget       :   public MediaNode
     Q_INTERFACES(Phonon::VideoWidgetInterface)
 
 public:
-    VideoWidget(QWidget* parent);
+    VideoWidget(AncestorMoveMonitor* ancestorMoveMonitor, QWidget* parent);
     ~VideoWidget();
 
     // VideoWidgetInterface

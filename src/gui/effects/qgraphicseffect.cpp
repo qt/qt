@@ -97,6 +97,8 @@
 */
 
 #include "qgraphicseffect_p.h"
+#include "private/qgraphicsitem_p.h"
+
 #include <QtGui/qgraphicsitem.h>
 
 #include <QtGui/qimage.h>
@@ -106,6 +108,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qdrawhelper_p.h>
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 /*!
@@ -122,6 +125,19 @@ QT_BEGIN_NAMESPACE
     pixmap with the source painted into it.
 
     \sa QGraphicsItem::setGraphicsEffect(), QWidget::setGraphicsEffect().
+*/
+
+/*!
+    \enum QGraphicsEffectSource::PixmapPadMode
+
+    This enum describes how much of the effect will be rendered to a pixmap
+    created using the pixmap() function.
+
+    \value NoExpandPadMode  The pixmap is the size of the widget or graphics item.
+    \value ExpandToTransparentBorderPadMode  The pixmap is expanded to include
+        the widget or graphics item plus a transparent border.
+    \value ExpandToEffectRectPadMode  The pixmap is expanded to include the widget
+        or graphics item and the effect.
 */
 
 /*!
@@ -210,7 +226,23 @@ const QStyleOption *QGraphicsEffectSource::styleOption() const
 */
 void QGraphicsEffectSource::draw(QPainter *painter)
 {
-    d_func()->draw(painter);
+    Q_D(const QGraphicsEffectSource);
+
+    QPixmap pm;
+    if (QPixmapCache::find(d->m_cacheKey, &pm)) {
+        QTransform restoreTransform;
+        if (d->m_cachedSystem == Qt::DeviceCoordinates) {
+            restoreTransform = painter->worldTransform();
+            painter->setWorldTransform(QTransform());
+        }
+
+        painter->drawPixmap(d->m_cachedOffset, pm);
+
+        if (d->m_cachedSystem == Qt::DeviceCoordinates)
+            painter->setWorldTransform(restoreTransform);
+    } else {
+        d_func()->draw(painter);
+    }
 }
 
 /*!
@@ -245,6 +277,9 @@ bool QGraphicsEffectSource::isPixmap() const
     The optional \a offset parameter returns the offset where the pixmap should
     be painted at using the current painter.
 
+    The \a mode determines how much of the effect the pixmap will contain.
+    By default, the pixmap will contain the whole effect.
+
     The returned pixmap is bound to the current painter's device rectangle when
     \a system is Qt::DeviceCoordinates.
 
@@ -258,6 +293,12 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
     const QGraphicsItem *item = graphicsItem();
     if (system == Qt::LogicalCoordinates && mode == NoExpandPadMode && item && isPixmap()) {
         return ((QGraphicsPixmapItem *) item)->pixmap();
+    }
+
+    if (system == Qt::DeviceCoordinates && item
+        && !static_cast<const QGraphicsItemEffectSourcePrivate *>(d_func())->info) {
+        qWarning("QGraphicsEffectSource::pixmap: Not yet implemented, lacking device context");
+        return QPixmap();
     }
 
     QPixmap pm;
@@ -277,6 +318,18 @@ QPixmap QGraphicsEffectSource::pixmap(Qt::CoordinateSystem system, QPoint *offse
         *offset = d->m_cachedOffset;
 
     return pm;
+}
+
+QGraphicsEffectSourcePrivate::~QGraphicsEffectSourcePrivate()
+{
+    invalidateCache();
+}
+
+void QGraphicsEffectSourcePrivate::invalidateCache(bool effectRectChanged) const
+{
+    if (effectRectChanged && m_cachedMode != QGraphicsEffectSource::ExpandToEffectRectPadMode)
+        return;
+    QPixmapCache::remove(m_cacheKey);
 }
 
 /*!
@@ -418,7 +471,7 @@ void QGraphicsEffect::updateBoundingRect()
     Q_D(QGraphicsEffect);
     if (d->source) {
         d->source->d_func()->effectBoundingRectChanged();
-        d->source->d_func()->invalidateCache();
+        d->source->d_func()->invalidateCache(true);
     }
 }
 
@@ -606,6 +659,26 @@ void QGraphicsColorizeEffect::draw(QPainter *painter, QGraphicsEffectSource *sou
 */
 
 /*!
+    \enum QGraphicsBlurEffect::BlurHint
+    \since 4.6
+
+    This enum describes the possible hints that can be used to control how
+    blur effects are applied. The hints might not have an effect in all the
+    paint engines.
+
+    \value QualityHint Indicates that rendering quality is the most important factor,
+    at the potential cost of lower performance.
+
+    \value PerformanceHint Indicates that rendering performance is the most important factor,
+    at the potential cost of lower quality.
+
+    \value AnimationHint Indicates that the blur radius is going to be animated, hinting
+    that the implementation can keep a cache of blurred verisons of the source pixmap.
+    Do not use this hint if the source item is going to be dynamically changing.
+*/
+
+
+/*!
     Constructs a new QGraphicsBlurEffect instance.
     The \a parent parameter is passed to QGraphicsEffect's constructor.
 */
@@ -613,7 +686,7 @@ QGraphicsBlurEffect::QGraphicsBlurEffect(QObject *parent)
     : QGraphicsEffect(*new QGraphicsBlurEffectPrivate, parent)
 {
     Q_D(QGraphicsBlurEffect);
-    d->filter->setBlurHint(Qt::PerformanceHint);
+    d->filter->setBlurHint(QGraphicsBlurEffect::PerformanceHint);
 }
 
 /*!
@@ -660,20 +733,19 @@ void QGraphicsBlurEffect::setBlurRadius(qreal radius)
     \property QGraphicsBlurEffect::blurHint
     \brief the blur hint of the effect.
 
-    Use the Qt::PerformanceHint hint to say that you want a faster blur,
-    and the Qt::QualityHint hint to say that you prefer a higher quality blur.
+    Use the PerformanceHint hint to say that you want a faster blur,
+    the QualityHint hint to say that you prefer a higher quality blur,
+    or the AnimationHint when you want to animate the blur radius.
 
-    When animating the blur radius it's recommended to use Qt::PerformanceHint.
-
-    By default, the blur hint is Qt::PerformanceHint.
+    By default, the blur hint is PerformanceHint.
 */
-Qt::RenderHint QGraphicsBlurEffect::blurHint() const
+QGraphicsBlurEffect::BlurHint QGraphicsBlurEffect::blurHint() const
 {
     Q_D(const QGraphicsBlurEffect);
     return d->filter->blurHint();
 }
 
-void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
+void QGraphicsBlurEffect::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
 {
     Q_D(QGraphicsBlurEffect);
     if (d->filter->blurHint() == hint)
@@ -684,7 +756,7 @@ void QGraphicsBlurEffect::setBlurHint(Qt::RenderHint hint)
 }
 
 /*!
-    \fn void QGraphicsBlurEffect::blurHintChanged(Qt::RenderHint hint)
+    \fn void QGraphicsBlurEffect::blurHintChanged(QGraphicsBlurEffect::BlurHint hint)
 
     This signal is emitted whenever the effect's blur hint changes.
     The \a hint parameter holds the effect's new blur hint.
@@ -1078,3 +1150,4 @@ void QGraphicsOpacityEffect::draw(QPainter *painter, QGraphicsEffectSource *sour
 
 QT_END_NAMESPACE
 
+#endif //QT_NO_GRAPHICSEFFECT

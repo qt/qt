@@ -328,4 +328,19 @@ EXPORTS
 	?functionMetaIndex@QScriptContextInfo@@QBEHXZ @ 327 NONAME ; int QScriptContextInfo::functionMetaIndex(void) const
 	?columnNumber@QScriptContextInfo@@QBEHXZ @ 328 NONAME ; int QScriptContextInfo::columnNumber(void) const
 	??0QScriptValue@@QAE@_N@Z @ 329 NONAME ; QScriptValue::QScriptValue(bool)
+	??0QScriptProgram@@QAE@ABV0@@Z @ 330 NONAME ; QScriptProgram::QScriptProgram(class QScriptProgram const &)
+	??0QScriptProgram@@QAE@ABVQString@@V1@H@Z @ 331 NONAME ; QScriptProgram::QScriptProgram(class QString const &, class QString, int)
+	??0QScriptProgram@@QAE@XZ @ 332 NONAME ; QScriptProgram::QScriptProgram(void)
+	??1QScriptProgram@@QAE@XZ @ 333 NONAME ; QScriptProgram::~QScriptProgram(void)
+	??4QScriptProgram@@QAEAAV0@ABV0@@Z @ 334 NONAME ; class QScriptProgram & QScriptProgram::operator=(class QScriptProgram const &)
+	??8QScriptProgram@@QBE_NABV0@@Z @ 335 NONAME ; bool QScriptProgram::operator==(class QScriptProgram const &) const
+	??9QScriptProgram@@QBE_NABV0@@Z @ 336 NONAME ; bool QScriptProgram::operator!=(class QScriptProgram const &) const
+	?d_func@QScriptProgram@@AAEPAVQScriptProgramPrivate@@XZ @ 337 NONAME ; class QScriptProgramPrivate * QScriptProgram::d_func(void)
+	?d_func@QScriptProgram@@ABEPBVQScriptProgramPrivate@@XZ @ 338 NONAME ; class QScriptProgramPrivate const * QScriptProgram::d_func(void) const
+	?evaluate@QScriptEngine@@QAE?AVQScriptValue@@ABVQScriptProgram@@@Z @ 339 NONAME ; class QScriptValue QScriptEngine::evaluate(class QScriptProgram const &)
+	?fileName@QScriptProgram@@QBE?AVQString@@XZ @ 340 NONAME ; class QString QScriptProgram::fileName(void) const
+	?firstLineNumber@QScriptProgram@@QBEHXZ @ 341 NONAME ; int QScriptProgram::firstLineNumber(void) const
+	?isNull@QScriptProgram@@QBE_NXZ @ 342 NONAME ; bool QScriptProgram::isNull(void) const
+	?sourceCode@QScriptProgram@@QBE?AVQString@@XZ @ 343 NONAME ; class QString QScriptProgram::sourceCode(void) const
+	?toArrayIndex@QScriptString@@QBEIPA_N@Z @ 344 NONAME ; unsigned int QScriptString::toArrayIndex(bool *) const
 

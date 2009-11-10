@@ -24,6 +24,8 @@ SUBDIRS += \
            qmlfontloader \          # Cover
            qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
+           qmlgraphicsflickable   \ # Cover
+           qmlgraphicsflipable    \ # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
@@ -46,7 +48,9 @@ SUBDIRS += \
            sql \                    # Cover
            states \                 # Cover
            valuetypes \             # Cover
-           visual                   # Cover
+           visual \                 # Cover
+           xmlhttprequest           # Cover
+
 
 # Tests which should run in Pulse
 PULSE_TESTS = $$SUBDIRS

@@ -401,6 +401,7 @@ private slots:
     void modality_clickFocus();
     void modality_keyEvents();
     void itemIsInFront();
+    void scenePosChange();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -4229,6 +4230,8 @@ protected:
             break;
         case QGraphicsItem::ItemOpacityHasChanged:
             break;
+        case QGraphicsItem::ItemScenePositionHasChanged:
+            break;
         }
         return itemChangeReturnValue.isValid() ? itemChangeReturnValue : value;
     }
@@ -7676,20 +7679,6 @@ void tst_QGraphicsItem::hitTestGraphicsEffectItem()
     QCOMPARE(items.size(), 1);
     QCOMPARE(items.at(0), static_cast<QGraphicsItem *>(item3));
 
-    item1->repaints = 0;
-    item2->repaints = 0;
-    item3->repaints = 0;
-
-    view.viewport()->update(75, 75, 20, 20);
-    QTest::qWait(50);
-
-    // item1 is the effect source and must therefore be repainted.
-    // item2 intersects with the exposed region
-    // item3 is just another child outside the exposed region
-    QCOMPARE(item1->repaints, 1);
-    QCOMPARE(item2->repaints, 1);
-    QCOMPARE(item3->repaints, 0);
-
     scene.setItemIndexMethod(QGraphicsScene::NoIndex);
     QTest::qWait(100);
 
@@ -9689,6 +9678,77 @@ void tst_QGraphicsItem::itemIsInFront()
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1), true);
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2), false);
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2child1), false);
+}
+
+class ScenePosChangeTester : public ItemChangeTester
+{
+public:
+    ScenePosChangeTester()
+    { }
+    ScenePosChangeTester(QGraphicsItem *parent) : ItemChangeTester(parent)
+    { }
+};
+
+void tst_QGraphicsItem::scenePosChange()
+{
+    ScenePosChangeTester* root = new ScenePosChangeTester;
+    ScenePosChangeTester* child1 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild1 = new ScenePosChangeTester(child1);
+    ScenePosChangeTester* child2 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild2 = new ScenePosChangeTester(child2);
+
+    child1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // ignore uninteresting changes
+    child1->clear();
+    child2->clear();
+    grandChild1->clear();
+    grandChild2->clear();
+
+    // move whole tree
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+
+    // move subtree
+    child2->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+
+    // reparent
+    grandChild2->setParentItem(child1);
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // change flags
+    grandChild1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, false);
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // remove
+    scene.removeItem(grandChild1);
+    delete grandChild2; grandChild2 = 0;
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 4);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

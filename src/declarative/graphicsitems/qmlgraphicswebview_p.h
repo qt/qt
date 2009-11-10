@@ -94,7 +94,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsWebView : public QmlGraphicsPaintedItem
     Q_PROPERTY(QString html READ html WRITE setHtml)
 
     Q_PROPERTY(int preferredWidth READ preferredWidth WRITE setPreferredWidth NOTIFY preferredWidthChanged)
-    Q_PROPERTY(int webPageWidth READ webPageWidth WRITE setWebPageWidth)
+    Q_PROPERTY(int preferredHeight READ preferredHeight WRITE setPreferredHeight NOTIFY preferredHeightChanged)
     Q_PROPERTY(int pixelCacheSize READ pixelCacheSize WRITE setPixelCacheSize)
     Q_PROPERTY(QUrl url READ url WRITE setUrl NOTIFY urlChanged)
     Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
@@ -127,11 +127,12 @@ public:
 
     qreal zoomFactor() const;
     void setZoomFactor(qreal);
+    Q_INVOKABLE bool heuristicZoom(int clickX, int clickY, qreal maxzoom);
 
     int preferredWidth() const;
     void setPreferredWidth(int);
-    int webPageWidth() const;
-    void setWebPageWidth(int);
+    int preferredHeight() const;
+    void setPreferredHeight(int);
 
     enum Status { Null, Ready, Loading, Error };
     Status status() const;
@@ -191,11 +192,10 @@ Q_SIGNALS:
 
     void doubleClick(int clickX, int clickY);
 
-    void zooming(qreal zoom, int centerX, int centerY);
+    void zoomTo(qreal zoom, int centerX, int centerY);
 
 public Q_SLOTS:
     QVariant evaluateJavaScript(const QString&);
-    void heuristicZoom(int clickX, int clickY);
 
 private Q_SLOTS:
     void expandToWebPage();

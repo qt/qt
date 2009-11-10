@@ -491,6 +491,13 @@ Requires: SCROLLAREA
 Name: QGraphicsView
 SeeAlso: ???
 
+Feature: GRAPHICSEFFECT
+Description: Supports the graphicseffect classes.
+Section: Widgets
+Requires: GRAPHICSVIEW
+Name: QGraphicsEffect
+SeeAlso: ???
+
 Feature: SPINWIDGET
 Description: Supports spinbox control widgets.
 Section: Widgets

@@ -288,7 +288,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     // original problem.
     // Otherwise, we clean up our structures and report there is
     // no feasible solution.
-    if (valueAt(0, columns - 1) != 0.0) {
+    if ((valueAt(0, columns - 1) != 0.0) && (qAbs(valueAt(0, columns - 1)) > 0.00001)) {
         qWarning() << "QSimplex: No feasible solution!";
         clearDataStructures();
         return false;
