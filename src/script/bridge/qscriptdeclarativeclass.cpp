@@ -44,6 +44,7 @@
 #include "qscriptobject_p.h"
 #include <QtScript/qscriptstring.h>
 #include <QtScript/qscriptengine.h>
+#include <QtScript/qscriptengineagent.h>
 #include <private/qscriptengine_p.h>
 #include <private/qscriptvalue_p.h>
 #include <private/qscriptqobject_p.h>
@@ -215,6 +216,38 @@ QScriptValue QScriptDeclarativeClass::scopeChainValue(QScriptContext *context, i
     }
 
     return QScriptValue();
+}
+
+/*!
+  Enters a new execution context and returns the associated
+  QScriptContext object.
+
+  Once you are done with the context, you should call popContext() to
+  restore the old context.
+
+  By default, the `this' object of the new context is the Global Object.
+  The context's \l{QScriptContext::callee()}{callee}() will be invalid.
+
+  Unlike pushContext(), the default scope chain is reset to include
+  only the global object and the QScriptContext's activation object.
+
+  \sa QScriptEngine::popContext()
+*/
+QScriptContext * QScriptDeclarativeClass::pushCleanContext(QScriptEngine *engine)
+{
+    if (!engine)
+        return 0;
+
+    QScriptEnginePrivate *d = QScriptEnginePrivate::get(engine);
+
+    JSC::CallFrame* newFrame = d->pushContext(d->currentFrame, 
+                                              d->currentFrame->globalData().dynamicGlobalObject,
+                                              JSC::ArgList(), /*callee = */0, false, true);
+
+    if (engine->agent())
+        engine->agent()->contextPush();
+
+    return d->contextForFrame(newFrame);
 }
 
 QScriptDeclarativeClass::~QScriptDeclarativeClass()

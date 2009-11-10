@@ -388,7 +388,7 @@ void QmlAbstractAnimation::setRepeat(bool r)
 
 int QmlAbstractAnimation::currentTime()
 {
-    return qtAnimation()->currentTime();
+    return qtAnimation()->currentLoopTime();
 }
 
 void QmlAbstractAnimation::setCurrentTime(int time)
