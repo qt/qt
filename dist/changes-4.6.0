@@ -34,6 +34,9 @@ information about a particular change.
  - QGLShaderProgram, QGLShader
     * New classes for using shader programs written in the GL Shading Language.
 
+ - QGraphicsEffect
+    * New classes for applying graphics effects to graphics items and widgets.
+
  - Boxes demo ported to use new 3D math and shader program classes.
 
  - OpenVG graphics system added.
@@ -323,6 +326,8 @@ QtGui
     * [201649] Added QWidget::previousInFocusChain
     * [254563] Fixed a crash when setting a focus in a widget tree that
       contains invisible widgets
+    * [QTBUG-5012] Fixed uninitialized background when using
+      QWidget::render with Qt::WA_NoSystemBackground and window opacity set.
 
  - QFontEngineQPF
     * Make alphaMapForGlyph() generate the correct color table for
@@ -332,6 +337,11 @@ QtGui
  - QPaintDevice
     * New qt_paint_device_metric() function to replace the friend
       declarations for window surface classes that need to access metric().
+
+ - QPainter
+    * [QTBUG-1666] Made QPainter::drawText() respect Qt::TextDontClip flag
+      also in vertical direction.
+    * [254658] Improved clipping performance in OpenGL paint engine.
 
  - QPainterPath
     * [QTBUG-1537] Fixed bug where the points of a rounded rectangle were added
@@ -587,6 +597,9 @@ Qt for Linux/X11
    it was unreadable when printed or presented in a print preview widget.
 
  - Improved EGL integration on X11 (including better visual selection).
+
+ - Made Qt::WA_TranslucentBackground work in combination with native
+   child widgets.
 
  - Support Qt::WA_TranslucentBackground on top-level QGLWidgets on X11, both
    (EGL & glX). This allows OpenGL (& ES) rendering to semi-transparent widgets
