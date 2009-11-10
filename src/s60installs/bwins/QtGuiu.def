@@ -3409,7 +3409,7 @@ EXPORTS
 	??_0QTransform@@QAEAAV0@M@Z @ 3408 NONAME ; class QTransform & QTransform::operator/=(float)
 	?staticMetaObject@QLineControl@@2UQMetaObject@@B @ 3409 NONAME ; struct QMetaObject const QLineControl::staticMetaObject
 	?viewportEvent@QGraphicsView@@MAE_NPAVQEvent@@@Z @ 3410 NONAME ; bool QGraphicsView::viewportEvent(class QEvent *)
-	?styleProperty@QS60Style@@QBE?AVQVariant@@PBD@Z @ 3411 NONAME ; class QVariant QS60Style::styleProperty(char const *) const
+	?styleProperty@QS60Style@@QBE?AVQVariant@@PBD@Z @ 3411 NONAME ABSENT ; class QVariant QS60Style::styleProperty(char const *) const
 	?setStackingMode@QStackedLayout@@QAEXW4StackingMode@1@@Z @ 3412 NONAME ; void QStackedLayout::setStackingMode(enum QStackedLayout::StackingMode)
 	?event@QScrollBar@@UAE_NPAVQEvent@@@Z @ 3413 NONAME ; bool QScrollBar::event(class QEvent *)
 	?metaObject@QPushButton@@UBEPBUQMetaObject@@XZ @ 3414 NONAME ; struct QMetaObject const * QPushButton::metaObject(void) const
@@ -11915,7 +11915,7 @@ EXPORTS
 	?submitPolicy@QDataWidgetMapper@@QBE?AW4SubmitPolicy@1@XZ @ 11914 NONAME ; enum QDataWidgetMapper::SubmitPolicy QDataWidgetMapper::submitPolicy(void) const
 	??1QGraphicsSystem@@UAE@XZ @ 11915 NONAME ; QGraphicsSystem::~QGraphicsSystem(void)
 	?setSceneRect@QGraphicsView@@QAEXABVQRectF@@@Z @ 11916 NONAME ; void QGraphicsView::setSceneRect(class QRectF const &)
-	?setStyleProperty@QS60Style@@QAEXPBDABVQVariant@@@Z @ 11917 NONAME ; void QS60Style::setStyleProperty(char const *, class QVariant const &)
+	?setStyleProperty@QS60Style@@QAEXPBDABVQVariant@@@Z @ 11917 NONAME ABSENT ; void QS60Style::setStyleProperty(char const *, class QVariant const &)
 	?hasExtendedInfo@QKeyEvent@@QBE_NXZ @ 11918 NONAME ; bool QKeyEvent::hasExtendedInfo(void) const
 	?pen@QGraphicsLineItem@@QBE?AVQPen@@XZ @ 11919 NONAME ; class QPen QGraphicsLineItem::pen(void) const
 	?standardPixmap@QCommonStyle@@UBE?AVQPixmap@@W4StandardPixmap@QStyle@@PBVQStyleOption@@PBVQWidget@@@Z @ 11920 NONAME ; class QPixmap QCommonStyle::standardPixmap(enum QStyle::StandardPixmap, class QStyleOption const *, class QWidget const *) const
