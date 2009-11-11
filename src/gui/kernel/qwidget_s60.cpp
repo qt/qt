@@ -1238,7 +1238,7 @@ void QWidget::releaseKeyboard()
 
 void QWidget::grabMouse()
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -1255,7 +1255,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
