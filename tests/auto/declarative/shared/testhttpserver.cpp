@@ -43,7 +43,50 @@
 #include <QTcpSocket>
 #include <QDebug>
 #include <QFile>
+#include <QTimer>
 
+/*!
+\internal
+\class TestHTTPServer
+\brief provides a very, very basic HTTP server for testing.
+
+Inside the test case, an instance of TestHTTPServer should be created, with the
+appropriate port to listen on.  The server will listen on the localhost interface.
+
+Directories to serve can then be added to server, which will be added as "roots".
+Each root can be added as a Normal, Delay or Disconnect root.  Requests for files
+within a Normal root are returned immediately.  Request for files within a Delay
+root are delayed for 500ms, and then served.  Requests for files within a Disconnect
+directory cause the server to disconnect immediately.  A request for a file that isn't
+found in any root will return a 404 error.
+
+If you have the following directory structure:
+
+\code
+disconnect/disconnectTest.qml
+files/main.qml
+files/Button.qml
+files/content/WebView.qml
+slowFiles/slowMain.qml
+\endcode
+it can be added like this:
+\code
+TestHTTPServer server(14445);
+server.serveDirectory("disconnect", TestHTTPServer::Disconnect);
+server.serveDirectory("files");
+server.serveDirectory("slowFiles", TestHTTPServer::Delay);
+\endcode
+
+The following request urls will then result in the appropriate action:
+\table
+\header \o URL \o Action
+\row \o http://localhost:14445/disconnectTest.qml \o Disconnection
+\row \o http://localhost:14445/main.qml \o main.qml returned immediately
+\row \o http://localhost:14445/Button.qml \o Button.qml returned immediately
+\row \o http://localhost:14445/content/WebView.qml \o content/WebView.qml returned immediately
+\row \o http://localhost:14445/slowMain.qml \o slowMain.qml returned after 500ms
+\endtable
+*/
 TestHTTPServer::TestHTTPServer(quint16 port)
 : m_hasFailed(false)
 {
@@ -55,6 +98,12 @@ TestHTTPServer::TestHTTPServer(quint16 port)
 bool TestHTTPServer::isValid() const
 {
     return server.isListening();
+}
+
+bool TestHTTPServer::serveDirectory(const QString &dir, Mode mode)
+{
+    dirs.append(qMakePair(dir, mode));
+    return true;
 }
 
 bool TestHTTPServer::wait(const QUrl &expect, const QUrl &reply, const QUrl &body)
@@ -108,13 +157,26 @@ void TestHTTPServer::newConnection()
     QTcpSocket *socket = server.nextPendingConnection();
     if (!socket) return;
 
+    if (!dirs.isEmpty())
+        dataCache.insert(socket, QByteArray());
+
     QObject::connect(socket, SIGNAL(disconnected()), this, SLOT(disconnected()));
     QObject::connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
 }
 
 void TestHTTPServer::disconnected()
 {
-    sender()->deleteLater();
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    if (!socket) return;
+
+    dataCache.remove(socket);
+    for (int ii = 0; ii < toSend.count(); ++ii) {
+        if (toSend.at(ii).first == socket) {
+            toSend.removeAt(ii);
+            --ii;
+        }
+    }
+    socket->deleteLater();
 }
 
 void TestHTTPServer::readyRead()
@@ -123,6 +185,11 @@ void TestHTTPServer::readyRead()
     if (!socket) return;
 
     QByteArray ba = socket->readAll();
+
+    if (!dirs.isEmpty()) {
+        serveGET(socket, ba);
+        return;
+    }
 
     if (m_hasFailed || waitData.isEmpty()) {
         qWarning() << "TestHTTPServer: Unexpected data" << ba;
@@ -149,6 +216,83 @@ void TestHTTPServer::readyRead()
     if (waitData.isEmpty()) {
         socket->write(replyData);
         socket->disconnect();
+    }
+}
+
+bool TestHTTPServer::reply(QTcpSocket *socket, const QByteArray &fileName)
+{
+    for (int ii = 0; ii < dirs.count(); ++ii) {
+        QString dir = dirs.at(ii).first;
+        Mode mode = dirs.at(ii).second;
+
+        QString dirFile = dir + QLatin1String("/") + QLatin1String(fileName);
+        
+        QFile file(dirFile);
+        if (file.open(QIODevice::ReadOnly)) {
+
+            if (mode == Disconnect)
+                return true;
+
+            QByteArray data = file.readAll();
+
+            QByteArray response = "HTTP/1.0 200 OK\r\nContent-type: text/html; charset=UTF-8\r\nContent-length: ";
+            response += QByteArray::number(data.count());
+            response += "\r\n\r\n";
+            response += data;
+
+            if (mode == Delay) {
+                toSend.append(qMakePair(socket, response));
+                QTimer::singleShot(500, this, SLOT(sendOne()));
+                return false;
+            } else {
+                socket->write(response);
+                return true;
+            }
+        }
+    }
+
+
+    QByteArray response = "HTTP/1.0 404 Not found\r\nContent-type: text/html; charset=UTF-8\r\n\r\n";
+    socket->write(response);
+
+    return true;
+}
+
+void TestHTTPServer::sendOne()
+{
+    if (!toSend.isEmpty()) {
+        toSend.first().first->write(toSend.first().second);
+        toSend.first().first->close();
+        toSend.removeFirst();
+    }
+}
+
+void TestHTTPServer::serveGET(QTcpSocket *socket, const QByteArray &data)
+{
+    if (!dataCache.contains(socket))
+        return;
+
+    QByteArray total = dataCache[socket] + data;
+    dataCache[socket] = total;
+    
+    if (total.contains("\n\r\n")) {
+
+        bool close = true;
+
+        if (total.startsWith("GET /")) {
+
+            int space = total.indexOf(' ', 4);
+            if (space != -1) {
+
+                QByteArray req = total.mid(5, space - 5);
+                close = reply(socket, req);
+
+            }
+        }
+        dataCache.remove(socket);
+
+        if (close)
+            socket->close();
     }
 }
 

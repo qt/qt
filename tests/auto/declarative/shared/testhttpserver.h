@@ -45,6 +45,7 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QUrl>
+#include <QPair>
 
 class TestHTTPServer : public QObject
 {
@@ -54,6 +55,9 @@ public:
 
     bool isValid() const;
 
+    enum Mode { Normal, Delay, Disconnect };
+    bool serveDirectory(const QString &, Mode = Normal);
+
     bool wait(const QUrl &expect, const QUrl &reply, const QUrl &body);
     bool hasFailed() const;
 
@@ -61,8 +65,16 @@ private slots:
     void newConnection();
     void disconnected();
     void readyRead();
+    void sendOne();
 
 private:
+    void serveGET(QTcpSocket *, const QByteArray &);
+    bool reply(QTcpSocket *, const QByteArray &);
+
+    QList<QPair<QString, Mode> > dirs;
+    QHash<QTcpSocket *, QByteArray> dataCache;
+    QList<QPair<QTcpSocket *, QByteArray> > toSend;
+
     QByteArray waitData;
     QByteArray replyData;
     QByteArray bodyData;
