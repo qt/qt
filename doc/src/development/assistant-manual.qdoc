@@ -672,9 +672,6 @@
     to make Assistant listen to your application, turn on its remote control
     functionality by passing the \c{-enableRemoteControl} command line option.
 
-    \warning The trailing '\0' must be appended separately to the QByteArray,
-    e.g., \c{QByteArray("command" + '\0')}.
-
     The following example shows how this can be done:
 
     \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 2
@@ -684,6 +681,9 @@
     page in the documentation.
 
     \snippet doc/src/snippets/code/doc_src_assistant-manual.qdoc 3
+
+    Note that the trailing newline character is required to mark the end
+    of the input.
 
     The following commands can be used to control \QA:
 
