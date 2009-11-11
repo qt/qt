@@ -733,6 +733,14 @@ TTypeUid::Ptr QCoeFepInputContext::MopSupplyObject(TTypeUid /*id*/)
     return TTypeUid::Null();
 }
 
+MObjectProvider *QCoeFepInputContext::MopNext()
+{
+    QWidget *w = focusWidget();
+    if (w)
+        return w->effectiveWinId();
+    return 0;
+}
+
 QT_END_NAMESPACE
 
 #endif // QT_NO_IM

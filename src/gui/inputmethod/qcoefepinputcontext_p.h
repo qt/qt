@@ -132,6 +132,7 @@ public:
     // From MObjectProvider
 public:
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
+    MObjectProvider *MopNext();
 
 private:
     QSymbianControl *m_parent;
