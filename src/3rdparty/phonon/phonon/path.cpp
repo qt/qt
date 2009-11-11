@@ -244,8 +244,8 @@ bool Path::disconnect()
     //lets build the disconnection list
     QList<QObjectPair> disco;
     if (list.count() >=2 ) {
-        QObjectList::const_iterator it = list.begin();
-        for(;it+1 != list.end();++it) {
+        QObjectList::const_iterator it = list.constBegin();
+        for(;it+1 != list.constEnd();++it) {
             disco << QObjectPair(*it, *(it+1));
         }
     }
