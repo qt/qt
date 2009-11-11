@@ -42,12 +42,16 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include <QMainWindow>
 #include <QUrl>
-#include <QWidget>
+#include <QWebElement>
+
+class QTreeWidgetItem;
+
 //! [Window class definition]
 #include "ui_window.h"
 
-class Window : public QWidget, private Ui::Window
+class Window : public QMainWindow, private Ui::Window
 {
     Q_OBJECT
 
@@ -56,8 +60,11 @@ public:
     void setUrl(const QUrl &url);
 
 public slots:
-    void on_elementLineEdit_returnPressed();
-    void on_highlightButton_clicked();
+    void on_webView_loadFinished();
+
+private:
+    void examineChildElements(const QWebElement &parentElement,
+                              QTreeWidgetItem *parentItem);
 };
 //! [Window class definition]
 

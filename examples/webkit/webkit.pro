@@ -1,5 +1,6 @@
 TEMPLATE =  subdirs
-SUBDIRS +=  formextractor \
+SUBDIRS +=  domtraversal \
+            formextractor \
             previewer \
             fancybrowser \
             simpleselector

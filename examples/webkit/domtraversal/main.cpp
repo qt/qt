@@ -39,26 +39,14 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#include <QApplication>
+#include "window.h"
 
-#include <QUrl>
-#include <QWidget>
-//! [Window class definition]
-#include "ui_window.h"
-
-class Window : public QWidget, private Ui::Window
+int main(int argc, char *argv[])
 {
-    Q_OBJECT
-
-public:
-    Window(QWidget *parent = 0);
-    void setUrl(const QUrl &url);
-
-public slots:
-    void on_elementLineEdit_returnPressed();
-    void on_highlightButton_clicked();
-};
-//! [Window class definition]
-
-#endif
+    QApplication app(argc, argv);
+    Window window;
+    window.show();
+    window.setUrl(QUrl("http://qt.nokia.com/"));
+    return app.exec();
+}

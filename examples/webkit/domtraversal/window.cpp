@@ -39,26 +39,52 @@
 **
 ****************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#include <QtGui>
+#include <QtWebKit>
 
-#include <QUrl>
-#include <QWidget>
-//! [Window class definition]
-#include "ui_window.h"
+#include "window.h"
 
-class Window : public QWidget, private Ui::Window
+//! [Window constructor]
+Window::Window(QWidget *parent)
+    : QMainWindow(parent)
 {
-    Q_OBJECT
+    setupUi(this);
+}
+//! [Window constructor]
 
-public:
-    Window(QWidget *parent = 0);
-    void setUrl(const QUrl &url);
+//! [set URL]
+void Window::setUrl(const QUrl &url)
+{    
+    webView->setUrl(url);
+}
+//! [set URL]
+    
+//! [begin document inspection]
+void Window::on_webView_loadFinished()
+{
+    treeWidget->clear();
 
-public slots:
-    void on_elementLineEdit_returnPressed();
-    void on_highlightButton_clicked();
-};
-//! [Window class definition]
+    QWebFrame *frame = webView->page()->mainFrame();
+    QWebElement document = frame->documentElement();
 
-#endif
+    examineChildElements(document, treeWidget->invisibleRootItem());
+}
+//! [begin document inspection]
+
+//! [traverse document]
+void Window::examineChildElements(const QWebElement &parentElement,
+                                  QTreeWidgetItem *parentItem)
+{
+    QWebElement element = parentElement.firstChild();
+    while (!element.isNull()) {
+
+        QTreeWidgetItem *item = new QTreeWidgetItem();
+        item->setText(0, element.tagName());
+        parentItem->addChild(item);
+
+        examineChildElements(element, item);
+
+        element = element.nextSibling();
+    }
+}
+//! [traverse document]

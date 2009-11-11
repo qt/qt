@@ -58,7 +58,7 @@ void Window::on_elementLineEdit_returnPressed()
 
 //! [select elements]
     QWebElement document = frame->documentElement();
-    QList<QWebElement> elements = document.findAll(elementLineEdit->text());
+    QWebElementCollection elements = document.findAll(elementLineEdit->text());
 //! [select elements]
 
     foreach (QWebElement element, elements)
