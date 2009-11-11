@@ -39,44 +39,68 @@
 **
 ****************************************************************************/
 
-#ifndef QMLGRAPHICSANIMATEDIMAGE_P_H
-#define QMLGRAPHICSANIMATEDIMAGE_P_H
+#ifndef QMLGRAPHICSANIMATEDIMAGE_H
+#define QMLGRAPHICSANIMATEDIMAGE_H
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
+#include <private/qmlgraphicsimage_p.h>
 
-#include <private/qmlgraphicsimage_p_p.h>
+QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
 
+QT_MODULE(Declarative)
+
 class QMovie;
-class QNetworkReply;
+class QmlGraphicsAnimatedImagePrivate;
 
-class QmlGraphicsAnimatedImageItemPrivate : public QmlGraphicsImagePrivate
+class Q_DECLARATIVE_EXPORT QmlGraphicsAnimatedImage : public QmlGraphicsImage
 {
-    Q_DECLARE_PUBLIC(QmlGraphicsAnimatedImageItem)
+    Q_OBJECT
 
+    Q_PROPERTY(bool playing READ isPlaying WRITE setPlaying NOTIFY playingChanged)
+    Q_PROPERTY(bool paused READ isPaused WRITE setPaused NOTIFY pausedChanged)
+    Q_PROPERTY(int currentFrame READ currentFrame WRITE setCurrentFrame NOTIFY frameChanged)
+    Q_PROPERTY(int frameCount READ frameCount)
 public:
-    QmlGraphicsAnimatedImageItemPrivate()
-      : playing(true), paused(false), preset_currentframe(0), _movie(0), reply(0)
-    {
-    }
+    QmlGraphicsAnimatedImage(QmlGraphicsItem *parent=0);
+    ~QmlGraphicsAnimatedImage();
 
-    bool playing;
-    bool paused;
-    int preset_currentframe;
-    QMovie *_movie;
-    QNetworkReply *reply;
+    bool isPlaying() const;
+    void setPlaying(bool play);
+
+    bool isPaused() const;
+    void setPaused(bool pause);
+
+    int currentFrame() const;
+    void setCurrentFrame(int frame);
+
+    int frameCount() const;
+
+    // Extends QmlGraphicsImage's src property*/
+    virtual void setSource(const QUrl&);
+
+Q_SIGNALS:
+    void playingChanged();
+    void pausedChanged();
+    void frameChanged();
+
+private Q_SLOTS:
+    void movieUpdate();
+    void movieRequestFinished();
+    void playingStatusChanged();
+
+protected:
+    void componentComplete();
+
+private:
+    Q_DISABLE_COPY(QmlGraphicsAnimatedImage)
+    Q_DECLARE_PRIVATE_D(QGraphicsItem::d_ptr.data(), QmlGraphicsAnimatedImage)
 };
 
 QT_END_NAMESPACE
 
-#endif // QMLGRAPHICSANIMATEDIMAGE_P_H
+QML_DECLARE_TYPE(QmlGraphicsAnimatedImage)
+
+QT_END_HEADER
+
+#endif

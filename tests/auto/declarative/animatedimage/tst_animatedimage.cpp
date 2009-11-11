@@ -44,7 +44,7 @@
 #include <QtDeclarative/qmlview.h>
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlgraphicsimage_p.h>
-#include <private/qmlgraphicsanimatedimageitem_p.h>
+#include <private/qmlgraphicsanimatedimage_p.h>
 
 class tst_animatedimage : public QObject
 {
@@ -55,6 +55,7 @@ public:
 private slots:
     void play();
     void pause();
+    void stopped();
     void setFrame();
     void frameCount();
 };
@@ -63,34 +64,61 @@ void tst_animatedimage::play()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickman.qml"));
-    QmlGraphicsAnimatedImageItem *anim = qobject_cast<QmlGraphicsAnimatedImageItem *>(component.create());
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
+
+    delete anim;
 }
 
 void tst_animatedimage::pause()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanpause.qml"));
-    QmlGraphicsAnimatedImageItem *anim = qobject_cast<QmlGraphicsAnimatedImageItem *>(component.create());
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
     QVERIFY(anim->isPaused());
+
+    delete anim;
+}
+
+void tst_animatedimage::stopped()
+{
+    QmlEngine engine;
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanstopped.qml"));
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
+    QVERIFY(anim);
+    QVERIFY(!anim->isPlaying());
+    QCOMPARE(anim->currentFrame(), 0);
+
+    delete anim;
 }
 
 void tst_animatedimage::setFrame()
 {
     QmlEngine engine;
     QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/stickmanpause.qml"));
-    QmlGraphicsAnimatedImageItem *anim = qobject_cast<QmlGraphicsAnimatedImageItem *>(component.create());
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
     QVERIFY(anim);
     QVERIFY(anim->isPlaying());
     QCOMPARE(anim->currentFrame(), 2);
+
+    delete anim;
 }
 
 void tst_animatedimage::frameCount()
 {
-    // GIF doesn't support frameCount until first pass through
+    QmlEngine engine;
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/colors.qml"));
+    QmlGraphicsAnimatedImage *anim = qobject_cast<QmlGraphicsAnimatedImage *>(component.create());
+    QVERIFY(anim);
+    QVERIFY(anim->isPlaying());
+    QCOMPARE(anim->frameCount(), 0); // GIF doesn't support frameCount until first pass through
+    QTest::qWait(600 + 100);
+    QCOMPARE(anim->frameCount(), 3);
+
+    delete anim;
 }
 
 QTEST_MAIN(tst_animatedimage)
