@@ -570,8 +570,6 @@ public:
     Interval interpolationInterval[2];
     qreal interpolationProgress[2];
 
-    // ###
-    bool graphSimplified[2];
     bool graphHasConflicts[2];
     QSet<QGraphicsLayoutItem *> m_floatItems[2];
 

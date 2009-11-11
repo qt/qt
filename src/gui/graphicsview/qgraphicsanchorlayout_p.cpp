@@ -62,8 +62,6 @@ QGraphicsAnchorPrivate::QGraphicsAnchorPrivate(int version)
 
 QGraphicsAnchorPrivate::~QGraphicsAnchorPrivate()
 {
-    // ###
-    layoutPrivate->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Orientation(data->orientation));
     layoutPrivate->removeAnchor(data->from, data->to);
 }
 
@@ -529,7 +527,6 @@ QGraphicsAnchorLayoutPrivate::QGraphicsAnchorLayoutPrivate()
         interpolationProgress[i] = -1;
 
         spacings[i] = -1;
-        graphSimplified[i] = false;
         graphHasConflicts[i] = false;
 
         layoutFirstVertex[i] = 0;
@@ -735,16 +732,18 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
 */
 bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 {
-    static bool noSimplification = !qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
-    if (noSimplification || items.isEmpty())
+    if (items.isEmpty())
         return true;
 
-    if (graphSimplified[orientation])
-        return true;
-
-#if 0
+#if defined(QT_DEBUG) && 0
     qDebug("Simplifying Graph for %s",
            orientation == Horizontal ? "Horizontal" : "Vertical");
+
+    static int count = 0;
+    if (orientation == Horizontal) {
+        count++;
+        dumpGraph(QString::fromAscii("%1-full").arg(count));
+    }
 #endif
 
     // Vertex simplification
@@ -762,13 +761,16 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraph(Orientation orientation)
 
     // Note that if we are not feasible, we fallback and make sure that the graph is fully restored
     if (!feasible) {
-        graphSimplified[orientation] = true;
         restoreSimplifiedGraph(orientation);
         restoreVertices(orientation);
         return false;
     }
 
-    graphSimplified[orientation] = true;
+#if defined(QT_DEBUG) && 0
+    dumpGraph(QString::fromAscii("%1-simplified-%2").arg(count).arg(
+                  QString::fromAscii(orientation == Horizontal ? "Horizontal" : "Vertical")));
+#endif
+
     return true;
 }
 
@@ -1173,10 +1175,6 @@ void QGraphicsAnchorLayoutPrivate::restoreSimplifiedConstraints(ParallelAnchorDa
 
 void QGraphicsAnchorLayoutPrivate::restoreSimplifiedGraph(Orientation orientation)
 {
-    if (!graphSimplified[orientation])
-        return;
-    graphSimplified[orientation] = false;
-
 #if 0
     qDebug("Restoring Simplified Graph for %s",
            orientation == Horizontal ? "Horizontal" : "Vertical");
@@ -1331,8 +1329,6 @@ void QGraphicsAnchorLayoutPrivate::deleteLayoutEdges()
 
 void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
 {
-    Q_ASSERT(!graphSimplified[Horizontal] && !graphSimplified[Vertical]);
-
     items.append(item);
 
     // Create horizontal and vertical internal anchors for the item and
@@ -1374,8 +1370,6 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
         // Don't create center edges unless needed
         return;
     }
-
-    Q_ASSERT(!graphSimplified[orientation]);
 
     // Check if vertex already exists
     if (internalVertex(item, centerEdge))
@@ -1442,8 +1436,6 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         // Don't remove edges that not the center ones
         return;
     }
-
-    Q_ASSERT(!graphSimplified[orientation]);
 
     // Orientation code
     Qt::AnchorPoint firstEdge;
@@ -1512,8 +1504,6 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
 void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *item,
                                                            Orientation orientation)
 {
-    Q_ASSERT(!graphSimplified[orientation]);
-
     // Remove the item center constraints associated to this item
     // ### This is a temporary solution. We should probably use a better
     // data structure to hold items and/or their associated constraints
@@ -1579,10 +1569,6 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
         return 0;
     }
 
-    // Guarantee that the graph is no simplified when adding this anchor,
-    // anchor manipulation always happen in the full graph
-    restoreSimplifiedGraph(edgeOrientation(firstEdge));
-
     // In QGraphicsAnchorLayout, items are represented in its internal
     // graph as four anchors that connect:
     //  - Left -> HCenter
@@ -1592,12 +1578,10 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
 
     // Ensure that the internal anchors have been created for both items.
     if (firstItem != q && !items.contains(firstItem)) {
-        restoreSimplifiedGraph(edgeOrientation(firstEdge) == Horizontal ? Vertical : Horizontal);
         createItemEdges(firstItem);
         addChildLayoutItem(firstItem);
     }
     if (secondItem != q && !items.contains(secondItem)) {
-        restoreSimplifiedGraph(edgeOrientation(firstEdge) == Horizontal ? Vertical : Horizontal);
         createItemEdges(secondItem);
         addChildLayoutItem(secondItem);
     }
@@ -1657,10 +1641,6 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
 
     const Orientation orientation = edgeOrientation(firstEdge);
 
-    // Guarantee that the graph is no simplified when adding this anchor,
-    // anchor manipulation always happen in the full graph
-    restoreSimplifiedGraph(orientation);
-
     // Create or increase the reference count for the related vertices.
     AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = addInternalVertex(secondItem, secondEdge);
@@ -1696,15 +1676,13 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::getAnchor(QGraphicsLayoutItem *fi
                                                          QGraphicsLayoutItem *secondItem,
                                                          Qt::AnchorPoint secondEdge)
 {
-    Orientation orient = edgeOrientation(firstEdge);
-    restoreSimplifiedGraph(orient);
-
+    const Orientation orientation = edgeOrientation(firstEdge);
     AnchorVertex *v1 = internalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = internalVertex(secondItem, secondEdge);
 
     QGraphicsAnchor *graphicsAnchor = 0;
 
-    AnchorData *data = graph[orient].edgeData(v1, v2);
+    AnchorData *data = graph[orientation].edgeData(v1, v2);
     if (data)
         graphicsAnchor = acquireGraphicsAnchor(data);
     return graphicsAnchor;
@@ -1789,12 +1767,9 @@ void QGraphicsAnchorLayoutPrivate::removeAnchor(AnchorVertex *firstVertex,
 void QGraphicsAnchorLayoutPrivate::removeAnchor_helper(AnchorVertex *v1, AnchorVertex *v2)
 {
     Q_ASSERT(v1 && v2);
-    // Guarantee that the graph is no simplified when removing this anchor,
-    // anchor manipulation always happen in the full graph
-    Orientation o = edgeOrientation(v1->m_edge);
-    restoreSimplifiedGraph(o);
 
     // Remove edge from graph
+    const Orientation o = edgeOrientation(v1->m_edge);
     graph[o].removeEdge(v1, v2);
 
     // Decrease vertices reference count (may trigger a deletion)
@@ -1867,8 +1842,6 @@ void QGraphicsAnchorLayoutPrivate::removeVertex(QGraphicsLayoutItem *item, Qt::A
 
 void QGraphicsAnchorLayoutPrivate::removeAnchors(QGraphicsLayoutItem *item)
 {
-    Q_ASSERT(!graphSimplified[Horizontal] && !graphSimplified[Vertical]);
-
     // remove the center anchor first!!
     removeCenterAnchors(item, Qt::AnchorHorizontalCenter, false);
     removeVertex(item, Qt::AnchorLeft);
@@ -1971,20 +1944,8 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs()
 {
     if (!calculateGraphCacheDirty)
         return;
-
-#if defined(QT_DEBUG) && 0
-    static int count = 0;
-    count++;
-    dumpGraph(QString::fromAscii("%1-before").arg(count));
-#endif
-
     calculateGraphs(Horizontal);
     calculateGraphs(Vertical);
-
-#if defined(QT_DEBUG) && 0
-    dumpGraph(QString::fromAscii("%1-after").arg(count));
-#endif
-
     calculateGraphCacheDirty = false;
 }
 
@@ -2032,18 +1993,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     lastCalculationUsedSimplex[orientation] = false;
 #endif
 
-    // ### This is necessary because now we do vertex simplification, we still don't know
-    // differentiate between invalidate()s that doesn't need resimplification and those which
-    // need. For example, when size hint of an item changes, this may cause an anchor to reach 0 or to
-    // leave 0 and get a size. In both cases we need resimplify.
-    //
-    // ### one possible solution would be tracking all the 0-sized anchors, if this set change, we need
-    // resimplify.
-    restoreSimplifiedGraph(orientation);
+    static bool simplificationEnabled = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
 
-    // Reset the nominal sizes of each anchor based on the current item sizes.  This function
-    // works with both simplified and non-simplified graphs, so it'll work when the
-    // simplification is going to be reused.
+    // Reset the nominal sizes of each anchor based on the current item sizes.
     if (!refreshAllSizeHints(orientation)) {
         qWarning("QGraphicsAnchorLayout: anchor setup is not feasible.");
         graphHasConflicts[orientation] = true;
@@ -2051,7 +2003,7 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     }
 
     // Simplify the graph
-    if (!simplifyGraph(orientation)) {
+    if (simplificationEnabled && !simplifyGraph(orientation)) {
         qWarning("QGraphicsAnchorLayout: anchor setup is not feasible.");
         graphHasConflicts[orientation] = true;
         return;
@@ -2115,6 +2067,9 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
     qDeleteAll(constraints[orientation]);
     constraints[orientation].clear();
     graphPaths[orientation].clear(); // ###
+
+    if (simplificationEnabled)
+        restoreSimplifiedGraph(orientation);
 }
 
 /*!
