@@ -59,6 +59,8 @@
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 
+#include "../debuggerutil_p.h"
+
 
 class tst_QmlDebug : public QObject
 {
@@ -67,12 +69,6 @@ class tst_QmlDebug : public QObject
 public:
     tst_QmlDebug(QmlDebugConnection *conn, QmlEngine *engine, QmlGraphicsItem *rootItem)
         : m_conn(conn), m_dbg(0), m_engine(engine), m_rootItem(rootItem) {}
-
-protected slots:
-    void saveValueChange(const QByteArray &ba, const QVariant &v)
-    {
-        m_savedValueChanges[ba] = v;
-    }
 
 private:
     QmlDebugObjectReference findRootObject();
@@ -90,7 +86,6 @@ private:
     QmlEngineDebug *m_dbg;
     QmlEngine *m_engine;
     QmlGraphicsItem *m_rootItem;
-    QHash<QByteArray, QVariant> m_savedValueChanges;
 
 private slots:
     void initTestCase();
@@ -160,14 +155,8 @@ void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
 {
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
-    QEventLoop loop;
-    QTimer timer;
     QVERIFY(query->state() == QmlDebugQuery::Waiting);
-    connect(query, SIGNAL(stateChanged(State)), &loop, SLOT(quit()));
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-    timer.start(5000);
-    loop.exec();
-    if (!timer.isActive())
+    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(State))))
         QFAIL("query timed out");
 }
 
@@ -282,23 +271,18 @@ void tst_QmlDebug::watch_property()
     QCOMPARE(watch->name(), prop.name());
 
     QSignalSpy spy(watch, SIGNAL(valueChanged(QByteArray,QVariant)));
-    QEventLoop loop;
-    QTimer timer;
-    connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)), &loop, SLOT(quit()));
-    connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
 
     int origWidth = m_rootItem->property("width").toInt();
-    timer.start(5000);
     m_rootItem->setProperty("width", origWidth*2);
-    loop.exec();
 
-    if (!timer.isActive())
-        QFAIL("Did not receive valueChanged() for property");
+    // stateChanged() is received before valueChanged()
+    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(State))));
+    QCOMPARE(spy.count(), 1);
 
     m_dbg->removeWatch(watch);
     delete watch;
 
-    // restore original value and verify spy doesn't get a signal since watch has been removed
+    // restore original value and verify spy doesn't get additional signal since watch has been removed
     m_rootItem->setProperty("width", origWidth);
     QTest::qWait(100);
     QCOMPARE(spy.count(), 1);
@@ -328,44 +312,40 @@ void tst_QmlDebug::watch_object()
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
 
-    m_savedValueChanges.clear();
-    connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
-            SLOT(saveValueChange(QByteArray,QVariant)));
+    QSignalSpy spy(watch, SIGNAL(valueChanged(QByteArray,QVariant)));
 
     int origWidth = m_rootItem->property("width").toInt();
     int origHeight = m_rootItem->property("height").toInt();
     m_rootItem->setProperty("width", origWidth*2);
     m_rootItem->setProperty("height", origHeight*2);
 
-    QEventLoop loop;
-    QTimer timer;
-    timer.start(5000);
-    while (timer.isActive() &&
-            (!m_savedValueChanges.contains("width") || !m_savedValueChanges.contains("height"))) {
-        loop.processEvents(QEventLoop::AllEvents, 50);
-    }
+    // stateChanged() is received before any valueChanged() signals
+    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(State))));
+    QVERIFY(spy.count() > 0);
 
-    QVariant newWidth = m_savedValueChanges["width"];
-    QVariant newHeight = m_savedValueChanges["height"];
+    int newWidth = -1;
+    int newHeight = -1;
+    for (int i=0; i<spy.count(); i++) {
+        const QVariantList &values = spy[i];
+        if (values[0].value<QByteArray>() == "width")
+            newWidth = values[1].value<QVariant>().toInt();
+        else if (values[0].value<QByteArray>() == "height")
+            newHeight = values[1].value<QVariant>().toInt();
+
+    }
 
     m_dbg->removeWatch(watch);
     delete watch;
 
     // since watch has been removed, restoring the original values should not trigger a valueChanged()
-    m_savedValueChanges.clear();
+    spy.clear();
     m_rootItem->setProperty("width", origWidth);
     m_rootItem->setProperty("height", origHeight);
     QTest::qWait(100);
-    QCOMPARE(m_savedValueChanges.count(), 0);
+    QCOMPARE(spy.count(), 0);
 
-    if (newWidth.isNull() || newHeight.isNull()) {
-        QString s = QString("Did not receive both width and height changes (width=%1, height=%2)")
-                .arg(newWidth.toString()).arg(newHeight.toString());
-        QFAIL(qPrintable(s));
-    }
-
-    QCOMPARE(newWidth, qVariantFromValue(origWidth*2));
-    QCOMPARE(newHeight, qVariantFromValue(origHeight*2));
+    QCOMPARE(newWidth, origWidth * 2);
+    QCOMPARE(newHeight, origHeight * 2);
 }
 
 void tst_QmlDebug::watch_expression()
@@ -388,18 +368,12 @@ void tst_QmlDebug::watch_expression()
 
     int width = origWidth;
     for (int i=0; i<incrementCount+1; i++) {
-        QTimer timer;
-        timer.start(5000);
         if (i > 0) {
             width += increment;
             m_rootItem->setProperty("width", width);
         }
-        QEventLoop loop;
-        connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-        connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)), &loop, SLOT(quit()));
-        loop.exec();
-        if (!timer.isActive())
-            QFAIL("Did not receive valueChanged() signal for expression");
+        if (!QmlDebuggerTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
+            QFAIL("Did not receive valueChanged() for expression");
     }
 
     m_dbg->removeWatch(watch);
