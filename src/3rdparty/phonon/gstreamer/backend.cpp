@@ -207,8 +207,15 @@ QStringList Backend::availableMimeTypes() const
         GstPluginFeature *feature = GST_PLUGIN_FEATURE(iter->data);
         QString klass = gst_element_factory_get_klass(GST_ELEMENT_FACTORY(feature));
 
-        if (klass == QLatin1String("Codec/Decoder/Audio") || 
-            klass == QLatin1String("Codec/Decoder/Video")) {
+        if (klass == QLatin1String("Codec/Decoder") ||
+            klass == QLatin1String("Codec/Decoder/Audio") ||
+            klass == QLatin1String("Codec/Decoder/Video") ||
+            klass == QLatin1String("Codec/Demuxer") ||
+            klass == QLatin1String("Codec/Demuxer/Audio") ||
+            klass == QLatin1String("Codec/Demuxer/Video") ||
+            klass == QLatin1String("Codec/Parser") ||
+            klass == QLatin1String("Codec/Parser/Audio") ||
+            klass == QLatin1String("Codec/Parser/Video")) {
 
             const GList *static_templates;
             GstElementFactory *factory = GST_ELEMENT_FACTORY(feature);
