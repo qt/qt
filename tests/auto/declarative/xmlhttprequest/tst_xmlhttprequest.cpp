@@ -265,7 +265,7 @@ void tst_xmlhttprequest::open()
         QmlComponent component(&engine, TEST_FILE("open.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         QCOMPARE(object->property("readyState").toBool(), true);
@@ -341,7 +341,7 @@ void tst_xmlhttprequest::setRequestHeader()
     QmlComponent component(&engine, TEST_FILE("setRequestHeader.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
     TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -403,7 +403,7 @@ void tst_xmlhttprequest::setRequestHeader_illegalName()
     QmlComponent component(&engine, TEST_FILE("setRequestHeader_illegalName.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     object->setProperty("header", name);
     component.completeCreate();
 
@@ -431,7 +431,7 @@ void tst_xmlhttprequest::setRequestHeader_sent()
     QmlComponent component(&engine, TEST_FILE("setRequestHeader_sent.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
     QCOMPARE(object->property("test").toBool(), true);
@@ -480,7 +480,7 @@ void tst_xmlhttprequest::send_ignoreData()
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
         object->setProperty("reqType", "GET");
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -499,7 +499,7 @@ void tst_xmlhttprequest::send_ignoreData()
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
         object->setProperty("reqType", "HEAD");
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -522,7 +522,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.1.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -541,7 +541,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.2.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -560,7 +560,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.3.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -579,7 +579,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.4.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -598,7 +598,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.5.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -617,7 +617,7 @@ void tst_xmlhttprequest::send_withdata()
         QmlComponent component(&engine, TEST_FILE("send_data.6.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         component.completeCreate();
 
         TRY_WAIT(object->property("dataOK").toBool() == true);
@@ -680,8 +680,8 @@ void tst_xmlhttprequest::abort()
     QmlComponent component(&engine, TEST_FILE("abort.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("urlDummy", "http://localhost:14449/testdocument.html");
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("urlDummy", "http://127.0.0.1:14449/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
     QCOMPARE(object->property("seenDone").toBool(), true);
@@ -707,7 +707,7 @@ void tst_xmlhttprequest::getResponseHeader()
     QmlComponent component(&engine, TEST_FILE("getResponseHeader.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
     QCOMPARE(object->property("unsentException").toBool(), true);
@@ -745,7 +745,7 @@ void tst_xmlhttprequest::getAllResponseHeaders()
     QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders.qml"));
     QObject *object = component.beginCreate(engine.rootContext());
     QVERIFY(object != 0);
-    object->setProperty("url", "http://localhost:14445/testdocument.html");
+    object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
     component.completeCreate();
 
     QCOMPARE(object->property("unsentException").toBool(), true);
@@ -776,7 +776,7 @@ void tst_xmlhttprequest::status()
         QmlComponent component(&engine, TEST_FILE("status.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedStatus", 200);
         component.completeCreate();
 
@@ -803,7 +803,7 @@ void tst_xmlhttprequest::status()
         QmlComponent component(&engine, TEST_FILE("status.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedStatus", 404);
         component.completeCreate();
 
@@ -833,7 +833,7 @@ void tst_xmlhttprequest::statusText()
         QmlComponent component(&engine, TEST_FILE("statusText.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedStatus", "OK");
         component.completeCreate();
 
@@ -860,7 +860,7 @@ void tst_xmlhttprequest::statusText()
         QmlComponent component(&engine, TEST_FILE("statusText.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedStatus", "Document not found");
         component.completeCreate();
 
@@ -890,7 +890,7 @@ void tst_xmlhttprequest::responseText()
         QmlComponent component(&engine, TEST_FILE("responseText.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedText", "QML Rocks!\n");
         component.completeCreate();
 
@@ -917,7 +917,7 @@ void tst_xmlhttprequest::responseText()
         QmlComponent component(&engine, TEST_FILE("responseText.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedText", "");
         component.completeCreate();
 
@@ -944,7 +944,7 @@ void tst_xmlhttprequest::responseText()
         QmlComponent component(&engine, TEST_FILE("responseText.qml"));
         QObject *object = component.beginCreate(engine.rootContext());
         QVERIFY(object != 0);
-        object->setProperty("url", "http://localhost:14445/testdocument.html");
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
         object->setProperty("expectedText", "");
         component.completeCreate();
 

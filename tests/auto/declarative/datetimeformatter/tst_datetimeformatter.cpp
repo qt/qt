@@ -81,6 +81,8 @@ void tst_datetimeformatter::date()
 
     QVERIFY(formatter->timeText().isEmpty());
     QVERIFY(formatter->dateTimeText().isEmpty());
+
+    delete formatter;
 }
 
 void tst_datetimeformatter::time()
@@ -111,6 +113,8 @@ void tst_datetimeformatter::time()
 
     QVERIFY(formatter->dateText().isEmpty());
     QVERIFY(formatter->dateTimeText().isEmpty());
+
+    delete formatter;
 }
 
 void tst_datetimeformatter::dateTime()
@@ -134,6 +138,8 @@ void tst_datetimeformatter::dateTime()
     formatter->setDateTimeFormat("M/d/yy H:m:s a");
     QCOMPARE(formatter->dateTimeFormat(), QLatin1String("M/d/yy H:m:s a"));
     QCOMPARE(formatter->dateTimeText(),dateTime.toString("M/d/yy H:m:s a"));
+
+    delete formatter;
 }
 
 QTEST_MAIN(tst_datetimeformatter)
