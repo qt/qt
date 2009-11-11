@@ -1731,7 +1731,7 @@ VisualTest {
     Key {
         type: 6
         key: 16777249
-        modifiers: 0
+        modifiers: 67108864
         text: ""
         autorep: false
         count: 1

@@ -52,13 +52,4 @@ Rectangle {
         GradientRect { color: "thistle"; radius: 10; rotation: 10; smooth: true }
         GradientRect { color: "thistle"; radius: 10; border: "gray"; rotation: 10; smooth: true }
     }
-
-    Text {
-        text: "smooth: false"; font.bold: true
-        anchors.horizontalCenter: parent.horizontalCenter; anchors.top: parent.top
-    }
-    Text {
-        text: "smooth: true"; font.bold: true
-        anchors.horizontalCenter: parent.horizontalCenter; anchors.bottom: parent.bottom
-    }
 }
