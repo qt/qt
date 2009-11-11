@@ -65,9 +65,9 @@ void QVNCCursor::setCursorMode(bool vnc)
     if (vnc) {
         screen->setDirty(prevRect);
         prevRect = QRect();
-        sendClientCursor();
+        server->setDirtyCursor();
     } else {
-        clearClientCursor();
+        server->setDirtyCursor();
     }
     useVncCursor = vnc;
 }
@@ -76,7 +76,7 @@ void QVNCCursor::setCursor(Qt::CursorShape shape)
 {
     QGraphicsSystemCursor::setCursor(shape);
     if (useVncCursor) {
-        sendClientCursor();
+        server->setDirtyCursor();
     }
 }
 
@@ -84,7 +84,7 @@ void QVNCCursor::setCursor(const uchar *data, const uchar *mask, int width, int 
 {
     QGraphicsSystemCursor::setCursor(data, mask, width, height, hotX, hotY);
     if (useVncCursor) {
-        sendClientCursor();
+        server->setDirtyCursor();
     }
 }
 
@@ -121,6 +121,10 @@ void QVNCCursor::clearClientCursor()
 
 void QVNCCursor::sendClientCursor()
 {
+    if (useVncCursor == false) {
+        clearClientCursor();
+        return;
+    }
     QImage *image = graphic->image();
     if (image->isNull())
         return;

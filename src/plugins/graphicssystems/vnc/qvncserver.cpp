@@ -1840,6 +1840,7 @@ void QVNCServer::checkUpdate()
         Q_ASSERT(qvnc_cursor);
         qvnc_cursor->write();
 #endif
+        cursor->sendClientCursor();
         dirtyCursor = false;
         wantUpdate = false;
         return;
