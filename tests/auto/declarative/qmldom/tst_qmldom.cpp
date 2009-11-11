@@ -73,6 +73,7 @@ private slots:
     void object_url();
 
     void copy();
+    void position();
 private:
     QmlEngine engine;
 };
@@ -1186,6 +1187,125 @@ void tst_qmldom::copy()
         QCOMPARE(list.commaPositions(), list3.commaPositions());
 
     }
+}
+
+// Tests the position/length of various elements
+void tst_qmldom::position()
+{
+    QByteArray qml = "import Qt 4.6\n"
+         /*14*/      "Item {\n"
+         /*21*/      "    id: myItem\n"
+         /*36*/      "    property int a: 10\n"
+         /*59*/      "    x: 10\n"
+         /*69*/      "    y: x + 10\n"
+         /*83*/      "    z: NumberAnimation {}\n"
+        /*109*/      "    opacity: Behavior {}\n"
+        /*134*/      "    Component {\n"
+        /*150*/      "        Item{}\n"
+        /*165*/      "    }\n"
+        /*171*/      "    children: [ Item{}, Item{} ]\n"
+        /*204*/      "}\n";
+
+
+    QmlDomDocument document;
+    QVERIFY(document.load(&engine, qml));
+
+    QmlDomObject root = document.rootObject();
+
+    // All QmlDomDynamicProperty
+    QmlDomDynamicProperty dynProp = root.dynamicProperty("a");
+    QCOMPARE(dynProp.position(), 40);
+    QCOMPARE(dynProp.length(), 18);
+
+    // All QmlDomProperty
+    QmlDomProperty x = root.property("x");
+    QCOMPARE(x.position(), 63);
+    QCOMPARE(x.length(), 1);
+
+    QmlDomProperty y = root.property("y");
+    QCOMPARE(y.position(), 73);
+    QCOMPARE(y.length(), 1);
+
+    QmlDomProperty z = root.property("z");
+    QCOMPARE(z.position(), 87);
+    QCOMPARE(z.length(), 1);
+
+    QmlDomProperty opacity = root.property("opacity");
+    QCOMPARE(opacity.position(), 113);
+    QCOMPARE(opacity.length(), 7);
+
+    QmlDomProperty data = root.property("data");
+    QCOMPARE(data.position(), 138);
+    QCOMPARE(data.length(), 0);
+
+    QmlDomProperty children = root.property("children");
+    QCOMPARE(children.position(), 175);
+    QCOMPARE(children.length(), 8);
+
+    QmlDomList dataList = data.value().toList();
+    QCOMPARE(dataList.values().count(), 1);
+    QmlDomList childrenList = children.value().toList();
+    QCOMPARE(childrenList.values().count(), 2);
+
+    // All QmlDomObject
+    QCOMPARE(root.position(), 14);
+    QCOMPARE(root.length(), 191);
+
+    QmlDomObject numberAnimation = z.value().toValueSource().object();
+    QCOMPARE(numberAnimation.position(), 90);
+    QCOMPARE(numberAnimation.length(), 18);
+
+    QmlDomObject behavior = opacity.value().toValueInterceptor().object();
+    QCOMPARE(behavior.position(), 122);
+    QCOMPARE(behavior.length(), 11);
+
+    QmlDomObject component = dataList.values().at(0).toObject();
+    QCOMPARE(component.position(), 138);
+    QCOMPARE(component.length(), 32);
+
+    QmlDomObject componentRoot = component.toComponent().componentRoot();
+    QCOMPARE(componentRoot.position(), 158);
+    QCOMPARE(componentRoot.length(), 6);
+
+    QmlDomObject child1 = childrenList.values().at(0).toObject();
+    QCOMPARE(child1.position(), 187);
+    QCOMPARE(child1.length(), 6);
+
+    QmlDomObject child2 = childrenList.values().at(1).toObject();
+    QCOMPARE(child2.position(), 195);
+    QCOMPARE(child2.length(), 6);
+
+    // All QmlDomValue
+    QmlDomValue xValue = x.value();
+    QCOMPARE(xValue.position(), 66);
+    QCOMPARE(xValue.length(), 2);
+
+    QmlDomValue yValue = y.value();
+    QCOMPARE(yValue.position(), 76);
+    QCOMPARE(yValue.length(), 6);
+
+    QmlDomValue zValue = z.value();
+    QCOMPARE(zValue.position(), 90);
+    QCOMPARE(zValue.length(), 18);
+
+    QmlDomValue opacityValue = opacity.value();
+    QCOMPARE(opacityValue.position(), 122);
+    QCOMPARE(opacityValue.length(), 11);
+
+    QmlDomValue dataValue = data.value();
+    QCOMPARE(dataValue.position(), 138);
+    QCOMPARE(dataValue.length(), 32);
+
+    QmlDomValue child1Value = childrenList.values().at(0);
+    QCOMPARE(child1Value.position(), 187);
+    QCOMPARE(child1Value.length(), 6);
+
+    QmlDomValue child2Value = childrenList.values().at(1);
+    QCOMPARE(child2Value.position(), 195);
+    QCOMPARE(child2Value.length(), 6);
+
+    // All QmlDomList
+    qWarning("QmlListValue position test required");
 }
 
 QTEST_MAIN(tst_qmldom)
