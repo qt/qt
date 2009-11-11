@@ -202,9 +202,9 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_previousEventLongTap : 1;
 
 #ifdef Q_WS_S60
     // Fader object used to fade everything except this menu and the CBA.
