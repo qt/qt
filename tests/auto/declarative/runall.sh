@@ -5,7 +5,7 @@ sleep 1
 trap "kill $!" EXIT
 export DISPLAY=:7
 
-make install 2>&1 |
+make -k -j1 install 2>&1 |
     while read line
     do
         case "$line" in
