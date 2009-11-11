@@ -467,7 +467,7 @@ void QmlListModel::remove(int index)
 }
 
 /*!
-    \qmlmethod ListModel::insert(index,dict)
+    \qmlmethod ListModel::insert(int index, jsobject dict)
 
     Adds a new item to the list model at position \a index, with the
     values in \a dict.
@@ -500,7 +500,7 @@ void QmlListModel::insert(int index, const QScriptValue& valuemap)
 }
 
 /*!
-    \qmlmethod ListModel::move(from,to,n)
+    \qmlmethod ListModel::move(int from, int to, int n)
 
     Moves \a n items \a from one position \a to another.
 
@@ -551,7 +551,7 @@ void QmlListModel::move(int from, int to, int n)
 }
 
 /*!
-    \qmlmethod ListModel::append(dict)
+    \qmlmethod ListModel::append(jsobject dict)
 
     Adds a new item to the end of the list model, with the
     values in \a dict.
@@ -578,7 +578,7 @@ void QmlListModel::append(const QScriptValue& valuemap)
 }
 
 /*!
-    \qmlmethod object ListModel::get(index)
+    \qmlmethod object ListModel::get(int index)
 
     Returns the item at \a index in the list model.
 
@@ -620,7 +620,7 @@ QScriptValue QmlListModel::get(int index) const
 }
 
 /*!
-    \qmlmethod ListModel::set(index,dict)
+    \qmlmethod ListModel::set(int index, jsobject dict)
 
     Changes the item at \a index in the list model with the
     values in \a dict. Properties not appearing in \a valuemap
@@ -663,7 +663,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 }
 
 /*!
-    \qmlmethod ListModel::set(index,property,value)
+    \qmlmethod ListModel::set(int index, string property, variant value)
 
     Changes the \a property of the item at \a index in the list model to \a value.
 

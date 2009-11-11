@@ -212,6 +212,8 @@ void tst_numberformat::text()
 
     QCOMPARE(formatter->format(), format);
     QCOMPARE(formatter->text(), text);
+
+    delete formatter;
 }
 
 QTEST_MAIN(tst_numberformat)

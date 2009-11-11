@@ -1,7 +1,4 @@
 // Demonstrates opening new WebViews from HTML
-//
-// Note that to open windows from JavaScript, you will need to
-// allow it on WebView with settings.javascriptCanOpenWindows: true
 
 import Qt 4.6
 
@@ -9,6 +6,7 @@ Grid {
     columns: 3
     id: pages
     height: 300; width: 600
+    property int total: 0
 
     Component {
         id: webViewPage
@@ -22,6 +20,10 @@ Grid {
                 newWindowComponent: webViewPage
                 newWindowParent: pages
                 url: "newwindows.html"
+                Timer {
+                    interval: 10; running: total<4; repeat: false;
+                    onTriggered: {total++; webView.evaluateJavaScript("clickTheLink()")}
+                }
             }
         }
     }

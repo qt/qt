@@ -21,7 +21,12 @@ SOURCES += \
            util/qmltimer.cpp \
            util/qmlbind.cpp \
            util/qmlpropertymap.cpp \
-           util/qmlpixmapcache.cpp
+           util/qmlpixmapcache.cpp \
+           util/qnumberformat.cpp \
+           util/qmlnumberformatter.cpp \
+           util/qmldatetimeformatter.cpp \
+           util/qmlbehavior.cpp \
+           util/qmlfontloader.cpp
 
 HEADERS += \
            util/qmlview.h \
@@ -49,4 +54,15 @@ HEADERS += \
            util/qmltimer_p.h \
            util/qmlbind_p.h \
            util/qmlpropertymap_p.h \
-           util/qmlpixmapcache_p.h
+           util/qmlpixmapcache_p.h \
+           util/qnumberformat_p.h \
+           util/qmlnumberformatter_p.h \
+           util/qmldatetimeformatter_p.h \
+           util/qmlbehavior_p.h \
+           util/qmlfontloader_p.h
+
+contains(QT_CONFIG, xmlpatterns) {
+    QT+=xmlpatterns
+    SOURCES += util/qmlxmllistmodel.cpp
+    HEADERS += util/qmlxmllistmodel_p.h
+}

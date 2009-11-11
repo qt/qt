@@ -1169,7 +1169,7 @@ void QmlGraphicsParticles::setMotion(QmlGraphicsParticleMotion *motion)
 }
 
 /*!
-    \qmlmethod Particles::burst
+    \qmlmethod Particles::burst(int count, int emissionRate)
 
     Initiates a burst of particles.
 

@@ -19,7 +19,6 @@ include(3rdparty/3rdparty.pri)
 include(util/util.pri)
 include(graphicsitems/graphicsitems.pri)
 include(qml/qml.pri)
-include(extra/extra.pri)
 include(widgets/widgets.pri)
 include(debugger/debugger.pri)
 

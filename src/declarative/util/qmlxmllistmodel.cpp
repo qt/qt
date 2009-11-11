@@ -463,7 +463,7 @@ QHash<int,QVariant> QmlXmlListModel::data(int index, const QList<int> &roles) co
     for (int i = 0; i < roles.size(); ++i) {
         int role = roles.at(i);
         int roleIndex = d->roles.indexOf(role);
-        rv.insert(role, d->data.at(roleIndex).at(index));
+        rv.insert(role, roleIndex == -1 ? QVariant() : d->data.at(roleIndex).at(index));
     }
     return rv;
 }

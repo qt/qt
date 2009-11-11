@@ -108,7 +108,7 @@ QString QmlNumberFormatter::text() const
 }
 
 /*!
-    \qmlproperty qreal NumberFormatter::number
+    \qmlproperty real NumberFormatter::number
    
     A single point precision number. (Doubles are not yet supported)
 
