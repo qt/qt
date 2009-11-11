@@ -331,7 +331,7 @@ void QmlEngineDebugPrivate::message(const QByteArray &data)
         QVariant value;
         ds >> queryId >> debugId >> name >> value;
 
-        QmlDebugWatch *watch = watched.value(queryId);
+        QmlDebugWatch *watch = watched.value(queryId, 0);
         if (!watch)
             return;
         emit watch->valueChanged(name, value);
@@ -428,10 +428,10 @@ void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
 {
     Q_D(QmlEngineDebug);
 
-    if (!watch || watch->state() == QmlDebugWatch::Inactive || watch->state() == QmlDebugWatch::Dead)
+    if (!watch || watch->state() == QmlDebugWatch::Dead)
         return;
 
-    watch->setState(QmlDebugWatch::Inactive);
+    watch->setState(QmlDebugWatch::Dead);
     d->watched.remove(watch->queryId());
 
     if (d->client->isConnected()) {
@@ -562,8 +562,7 @@ QmlDebugWatch::QmlDebugWatch(QObject *parent)
 
 QmlDebugWatch::~QmlDebugWatch()
 {
-    if (m_client)
-        m_client->removeWatch(this);
+    m_client->removeWatch(this);
 }
 
 int QmlDebugWatch::queryId() const
