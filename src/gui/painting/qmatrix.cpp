@@ -85,7 +85,7 @@ QT_BEGIN_NAMESPACE
     which returns true if the matrix is non-singular (i.e. AB = BA =
     I). The inverted() function returns an inverted copy of \e this
     matrix if it is invertible (otherwise it returns the identity
-    matrix). In addition, QMatrix provides the det() function
+    matrix). In addition, QMatrix provides the determinant() function
     returning the matrix's determinant.
 
     Finally, the QMatrix class supports matrix multiplication, and
@@ -959,7 +959,17 @@ QMatrix &QMatrix::rotate(qreal a)
 */
 
 /*!
+    \obsolete
     \fn qreal QMatrix::det() const
+
+    Returns the matrix's determinant.
+
+    \sa determinant()
+*/
+
+/*!
+    \since 4.6
+    \fn qreal QMatrix::determinant() const
 
     Returns the matrix's determinant.
 */
@@ -985,8 +995,8 @@ QMatrix &QMatrix::rotate(qreal a)
 
 QMatrix QMatrix::inverted(bool *invertible) const
 {
-    qreal determinant = det();
-    if (determinant == 0.0) {
+    qreal dtr = determinant();
+    if (dtr == 0.0) {
         if (invertible)
             *invertible = false;                // singular matrix
         return QMatrix(true);
@@ -994,7 +1004,7 @@ QMatrix QMatrix::inverted(bool *invertible) const
     else {                                        // invertible matrix
         if (invertible)
             *invertible = true;
-        qreal dinv = 1.0/determinant;
+        qreal dinv = 1.0/dtr;
         return QMatrix((_m22*dinv),        (-_m12*dinv),
                        (-_m21*dinv), (_m11*dinv),
                        ((_m21*_dy - _m22*_dx)*dinv),

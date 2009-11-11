@@ -1014,23 +1014,6 @@ QS60StylePrivate::QS60StylePrivate()
     setActiveLayout();
 }
 
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    if (QLatin1String(name) == QLatin1String("foo")) {
-        // BaR
-    } else {
-        setStyleProperty(name, value);
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    if (QLatin1String(name) == QLatin1String("foo"))
-        return QLatin1String("Bar");
-    else
-        return styleProperty(name);
-}
-
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
     int index, const QStyleOption *option)
 {

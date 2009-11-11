@@ -1465,7 +1465,7 @@ bool QPlainTextEdit::event(QEvent *e)
                 // QPlainTextEdit scrolls by lines only in vertical direction
                 QFontMetrics fm(document()->defaultFont());
                 int lineHeight = fm.height();
-                int newX = hBar->value() - g->lastOffset().x();
+                int newX = hBar->value() - g->delta().x();
                 int newY = d->originalOffsetY - offset.y()/lineHeight;
                 hBar->setValue(newX);
                 vBar->setValue(newY);

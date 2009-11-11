@@ -685,6 +685,16 @@ bool loadQM(Translator &translator, QIODevice &dev, ConversionData &cd)
 
 
 
+static bool containsStripped(const Translator &translator, const TranslatorMessage &msg)
+{
+    foreach (const TranslatorMessage &tmsg, translator.messages())
+        if (tmsg.sourceText() == msg.sourceText()
+            && tmsg.context() == msg.context()
+            && tmsg.comment().isEmpty())
+        return true;
+    return false;
+}
+
 static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData &cd)
 {
     Releaser releaser;
@@ -741,7 +751,7 @@ static bool saveQM(const Translator &translator, QIODevice &dev, ConversionData 
                 bool forceComment =
                         msg.comment().isEmpty()
                         || msg.context().isEmpty()
-                        || translator.contains(msg.context(), msg.sourceText(), QString());
+                        || containsStripped(translator, msg);
                 releaser.insert(msg, tlns, forceComment);
             }
         }

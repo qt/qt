@@ -1,3 +1,255 @@
+2009-11-09  Benjamin Poulain  <benjamin.poulain@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        https://bugs.webkit.org/show_bug.cgi?id=30772
+        Add a non-const iterator to QWebElementCollection.
+        Move the two attributes of the iterator to private.
+
+        * Api/qwebelement.h:
+        (const_iterator::begin):
+        (const_iterator::end):
+        (const_iterator::constBegin):
+        (const_iterator::constEnd):
+        (const_iterator::iterator::iterator):
+        (const_iterator::iterator::operator*):
+        (const_iterator::iterator::operator==):
+        (const_iterator::iterator::operator!=):
+        (const_iterator::iterator::operator<):
+        (const_iterator::iterator::operator<=):
+        (const_iterator::iterator::operator>):
+        (const_iterator::iterator::operator>=):
+        (const_iterator::iterator::operator++):
+        (const_iterator::iterator::operator--):
+        (const_iterator::iterator::operator+=):
+        (const_iterator::iterator::operator-=):
+        (const_iterator::iterator::operator+):
+        (const_iterator::iterator::operator-):
+        * tests/qwebelement/tst_qwebelement.cpp:
+        (tst_QWebElement::nonConstIterator):
+        (tst_QWebElement::constIterator):
+
+2009-11-09  Laszlo Gombos  <laszlo.1.gombos@nokia.com>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] Remove the sessionStorage setting (per Page)
+        https://bugs.webkit.org/show_bug.cgi?id=31249
+
+        This setting allows to run sessionStorage on/off on a per page
+        basis. Remove this prematurely exposed API.
+
+        * Api/qwebsettings.cpp:
+        (QWebSettingsPrivate::apply):
+        (QWebSettings::QWebSettings):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::database):
+        (tst_QWebPage::testOptionalJSObjects):
+
+2009-11-09  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Simon Hausmann.
+
+        [Qt] Remove the QWebPage:webInspectorTriggered signal.
+        User customization of the communication between QWebPage
+        and QWebInspector will be properly designed in the next version.
+        https://bugs.webkit.org/show_bug.cgi?id=30773
+
+        * Api/qwebinspector.cpp:
+        * Api/qwebpage.cpp:
+        (QWebPagePrivate::getOrCreateInspector):
+        (QWebPage::triggerAction):
+        * Api/qwebpage.h:
+        * QtLauncher/main.cpp:
+        (MainWindow::MainWindow):
+
+2009-11-05  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Added a missing re-implementation of QGraphicsItem::inputMethodQuery().
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::inputMethodQuery):
+        * Api/qgraphicswebview.h:
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Provide a dummy re-implementation of QGraphicsLayoutItem::sizeHint(),
+        similar to QWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::sizeHint):
+        * Api/qgraphicswebview.h:
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Removed zoomFactoryChanged() signal and added
+        linkClicked() to QGraphicsWebView, for consistency with
+        QWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::setPage):
+        (QGraphicsWebView::setZoomFactor):
+        * Api/qgraphicswebview.h:
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Added QGraphicsWebView::findText() for convenience and consistency
+        with QWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::findText):
+        * Api/qgraphicswebview.h:
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Added QGraphicsWebView::pageAction() and triggerPageAction(), for
+        consistency with QWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::pageAction):
+        (QGraphicsWebView::triggerPageAction):
+        * Api/qgraphicswebview.h:
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Removed QGraphicsWebView::toHtml() after API review.
+
+        That's consistent with QWebView and also based on the assumption that
+        toHtml() is called less frequently than setHtml().
+
+        * Api/qgraphicswebview.cpp:
+        * Api/qgraphicswebview.h:
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::qgraphicswebview):
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Removed the interactive property of QGraphicsWebView.
+
+        There are clearly use-cases for this feature, but it will require
+        more work to make this fully work with an enum to have fine-grained
+        control over the interactivity levels. For now it is easy to achieve
+        in user-code what the boolean property did.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::QGraphicsWebViewPrivate):
+        (QGraphicsWebView::hoverMoveEvent):
+        (QGraphicsWebView::mouseMoveEvent):
+        (QGraphicsWebView::mousePressEvent):
+        (QGraphicsWebView::mouseReleaseEvent):
+        (QGraphicsWebView::mouseDoubleClickEvent):
+        (QGraphicsWebView::keyPressEvent):
+        (QGraphicsWebView::keyReleaseEvent):
+        (QGraphicsWebView::dragLeaveEvent):
+        (QGraphicsWebView::dragMoveEvent):
+        (QGraphicsWebView::dropEvent):
+        (QGraphicsWebView::wheelEvent):
+        (QGraphicsWebView::inputMethodEvent):
+        * Api/qgraphicswebview.h:
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::qgraphicswebview):
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Make the QGraphicsWebView constructor explicit.
+
+        * Api/qgraphicswebview.h:
+
+2009-11-05  Simon Hausmann  <hausmann@webkit.org>
+
+        Last Qt 4.5 build fix (*sigh*)
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (inputMethodHints): inputMethodHints() is only used for 
+        Qt 4.6, so guard the whole function.
+
+2009-11-05  Simon Hausmann  <hausmann@webkit.org>
+
+        Another prospective build fix against Qt 4.5 (build bot)
+
+        Don't compile & run the QGraphicsWebView portion of the
+        input methods auto test with Qt 4.5.
+
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods_data):
+        (inputMethodHints):
+        (inputMethodEnabled):
+        (tst_QWebPage::inputMethods):
+
+2009-11-05  Simon Hausmann  <hausmann@webkit.org>
+
+        Prospective build fix against Qt 4.5 (build bot)
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::setInputMethodEnabled): Guard the
+        use of Qt 4.6 specific API with #ifdefs.
+
+2009-11-01  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        [Qt] Fix enabling of input method support on QGraphicsWebView.
+        https://bugs.webkit.org/show_bug.cgi?id=30605
+
+        Instead of setting the unsupported widget attribute on the
+        QGraphicsWidget in setInputMethodEnabled() set the 
+        ItemAcceptsInputMethod GraphicsItem flag directly.
+
+        Changed the existing input method auto test to run once
+        on a QWebView and once on a QGraphicsWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::setInputMethodEnabled):
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (tst_QWebPage::inputMethods_data):
+        (inputMethodHints):
+        (inputMethodEnabled):
+        (tst_QWebPage::inputMethods):
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        Added QGraphicsWebView::modified property, for consistency
+        with QWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebView::isModified):
+        * Api/qgraphicswebview.h:
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::qgraphicswebview):
+
+2009-11-04  Simon Hausmann  <hausmann@webkit.org>
+
+        Reviewed by Kenneth Christiansen.
+
+        Removed status and progress properties of QGraphicsWebView.
+        Added loadProgress and statusBarMessage signals instead,
+        after API review.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::QGraphicsWebViewPrivate):
+        (QGraphicsWebView::setPage):
+        * Api/qgraphicswebview.h:
+        * tests/qgraphicswebview/tst_qgraphicswebview.cpp:
+        (tst_QGraphicsWebView::qgraphicswebview):
+
 2009-11-04  Yael Aharon  <yael.aharon@nokia.com>
 
         Reviewed by Simon Hausmann.
