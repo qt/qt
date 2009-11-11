@@ -11855,8 +11855,7 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
     isVisible() returns false for a widget, that widget cannot call
     grabMouse().
 
-    \sa releaseMouse() grabKeyboard() releaseKeyboard() grabKeyboard()
-    focusWidget()
+    \sa releaseMouse() grabKeyboard() releaseKeyboard()
 */
 
 /*!
