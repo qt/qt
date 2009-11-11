@@ -41,6 +41,7 @@ SUBDIRS += \
            qmlpixmapcache \         # Cover
            qmlpropertymap \         # Cover
            qmlqt \                  # Cover
+           qmlspringfollow \        # Cover
            qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover

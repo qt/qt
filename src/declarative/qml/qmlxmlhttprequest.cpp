@@ -134,7 +134,7 @@ public:
 class DocumentImpl : public QmlRefCount
 {
 public:
-    DocumentImpl() : root(0) {}
+    DocumentImpl() : root(0) { }
     virtual ~DocumentImpl() {
         if (root) D(root);
     }
@@ -242,6 +242,22 @@ public:
 class Element : public Node
 {
 public:
+    // C++ API
+    static QScriptValue prototype(QScriptEngine *);
+};
+
+class Attr : public Node
+{
+public:
+    // JS API
+    static QScriptValue name(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue specified(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue value(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue ownerElement(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue schemaTypeInfo(QScriptContext *context, QScriptEngine *engine);
+    static QScriptValue isId(QScriptContext *context, QScriptEngine *engine);
+
+    // C++ API
     static QScriptValue prototype(QScriptEngine *);
 };
 
@@ -308,6 +324,7 @@ QScriptValue Node::nodeName(QScriptContext *context, QScriptEngine *engine)
 {
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
+
     return QScriptValue(node.d->name);
 }
 
@@ -315,6 +332,15 @@ QScriptValue Node::nodeValue(QScriptContext *context, QScriptEngine *engine)
 {
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
+
+    if (node.d->type == NodeImpl::Document ||
+        node.d->type == NodeImpl::DocumentFragment ||
+        node.d->type == NodeImpl::DocumentType ||
+        node.d->type == NodeImpl::Element ||
+        node.d->type == NodeImpl::Entity ||
+        node.d->type == NodeImpl::EntityReference ||
+        node.d->type == NodeImpl::Notation)
+        return engine->nullValue();
 
     return QScriptValue(node.d->data);
 }
@@ -430,6 +456,8 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
 
     switch (data->type) {
     case NodeImpl::Attr:
+        instance.setPrototype(Attr::prototype(engine));
+        break;
     case NodeImpl::Comment:
     case NodeImpl::Document:
     case NodeImpl::DocumentFragment:
@@ -466,6 +494,42 @@ QScriptValue Element::prototype(QScriptEngine *engine)
     proto.setProperty(QLatin1String("tagName"), engine->newFunction(nodeName), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
 
     return proto;
+}
+
+QScriptValue Attr::prototype(QScriptEngine *engine)
+{
+    QScriptValue proto = engine->newObject();
+    proto.setPrototype(Node::prototype(engine));
+
+    proto.setProperty(QLatin1String("name"), engine->newFunction(name), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
+    proto.setProperty(QLatin1String("value"), engine->newFunction(value), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
+    proto.setProperty(QLatin1String("ownerElement"), engine->newFunction(ownerElement), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
+
+    return proto;
+}
+
+QScriptValue Attr::name(QScriptContext *context, QScriptEngine *engine)
+{
+    Node node = qscriptvalue_cast<Node>(context->thisObject());
+    if (node.isNull()) return engine->undefinedValue();
+
+    return QScriptValue(node.d->name);
+}
+
+QScriptValue Attr::value(QScriptContext *context, QScriptEngine *engine)
+{
+    Node node = qscriptvalue_cast<Node>(context->thisObject());
+    if (node.isNull()) return engine->undefinedValue();
+
+    return QScriptValue(node.d->data);
+}
+
+QScriptValue Attr::ownerElement(QScriptContext *context, QScriptEngine *engine)
+{
+    Node node = qscriptvalue_cast<Node>(context->thisObject());
+    if (node.isNull()) return engine->undefinedValue();
+
+    return Node::create(engine, node.d->parent);
 }
 
 QScriptValue CharacterData::length(QScriptContext *context, QScriptEngine *engine)
@@ -581,6 +645,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
                 attr->namespaceUri = a.namespaceUri().toString();
                 attr->name = a.name().toString();
                 attr->data = a.value().toString();
+                attr->parent = node;
                 node->attributes.append(attr);
             }
         } 
@@ -800,17 +865,29 @@ NamedNodeMapClass::QueryFlags NamedNodeMapClass::queryProperty(const QScriptValu
     if (!(flags & HandlesReadAccess))
         return 0;
 
-    bool ok = false;
-    uint index = name.toString().toUInt(&ok);
-    if (!ok)
+    NamedNodeMap map = qscriptvalue_cast<NamedNodeMap>(object.data());
+    if (map.isNull())
         return 0;
 
-    NamedNodeMap map = qscriptvalue_cast<NamedNodeMap>(object.data());
-    if (map.isNull() || (uint)map.list->count() <= index)
-        return 0; // ### I think we're meant to raise an exception
+    bool ok = false;
+    QString nameString = name.toString();
+    uint index = nameString.toUInt(&ok);
+    if (ok) {
+        if ((uint)map.list->count() <= index)
+            return 0;
 
-    *id = index;
-    return HandlesReadAccess;
+        *id = index;
+        return HandlesReadAccess;
+    } else {
+        for (int ii = 0; ii < map.list->count(); ++ii) {
+            if (map.list->at(ii) && map.list->at(ii)->name == nameString) {
+                *id = ii;
+                return HandlesReadAccess;
+            }
+        }
+    }
+
+    return 0;
 }
 
 QScriptValue NamedNodeMapClass::property(const QScriptValue &object, const QScriptString &, uint id)
@@ -1050,7 +1127,7 @@ void QmlXMLHttpRequest::addHeader(const QString &name, const QString &value)
 
 QString QmlXMLHttpRequest::header(const QString &name)
 {
-    QByteArray utfname = name.toUtf8();
+    QByteArray utfname = name.toLower().toUtf8();
 
     foreach (const HeaderPair &header, m_headersList) {
         if (header.first == utfname)
@@ -1079,7 +1156,11 @@ void QmlXMLHttpRequest::fillHeadersList()
 
     m_headersList.clear();
     foreach (const QByteArray &header, headerList) {
-        HeaderPair pair (header, m_network->rawHeader(header));
+        HeaderPair pair (header.toLower(), m_network->rawHeader(header));
+	if (pair.first == "set-cookie" ||
+	    pair.first == "set-cookie2") 
+	    continue;
+
         m_headersList << pair;
     }
 }
@@ -1190,10 +1271,18 @@ void QmlXMLHttpRequest::error(QNetworkReply::NetworkError error)
         QString::fromUtf8(m_network->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toByteArray());
 
     m_responseEntityBody = QByteArray();
-    m_errorFlag = true;
-    m_request = QNetworkRequest();
 
+    m_request = QNetworkRequest();
     destroyNetwork();
+
+    if (error != QNetworkReply::ContentAccessDenied &&
+        error != QNetworkReply::ContentOperationNotPermittedError &&
+        error != QNetworkReply::ContentNotFoundError) {
+        m_errorFlag = true;
+    } else {
+        m_state = Loading;
+        dispatchCallback();
+    }
 
     m_state = Done;
     dispatchCallback();

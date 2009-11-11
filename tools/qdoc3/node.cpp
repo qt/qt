@@ -1094,6 +1094,13 @@ QString FunctionNode::signature(bool values) const
     return s;
 }
 
+/*!
+  Print some debugging stuff.
+ */
+void FunctionNode::debug() const
+{
+    qDebug() << "QML METHOD" << name() << "rt" << rt << "pp" << pp;
+}
 
 /*!
   \class PropertyNode

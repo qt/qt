@@ -64,7 +64,6 @@ class Q_DECLARATIVE_EXPORT QmlSpringFollow : public QObject,
     Q_PROPERTY(qreal spring READ spring WRITE setSpring)
     Q_PROPERTY(qreal damping READ damping WRITE setDamping)
     Q_PROPERTY(qreal epsilon READ epsilon WRITE setEpsilon)
-    Q_PROPERTY(qreal modulus READ modulus WRITE setModulus)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled)
     Q_PROPERTY(qreal value READ value NOTIFY valueChanged)
     Q_PROPERTY(qreal modulus READ modulus WRITE setModulus NOTIFY modulusChanged)
