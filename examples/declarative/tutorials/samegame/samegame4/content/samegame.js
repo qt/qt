@@ -5,7 +5,7 @@ var maxY = 15;
 var maxIndex = maxX*maxY;
 var board = new Array(maxIndex);
 var tileSrc = "content/BoomBlock.qml";
-var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
+//var scoresURL = "http://qtfx-nokia.trolltech.com.au/samegame/scores.php";
 var scoresURL = "";
 var timer;
 var component = createComponent(tileSrc);
@@ -206,6 +206,7 @@ function createBlock(xIdx,yIdx){
     return true;
 }
 
+//![2]
 function saveHighScore(name) {
     if(scoresURL!="")
         sendHighScore(name);
@@ -241,6 +242,7 @@ function saveHighScore(name) {
         }
     );
 }
+//![2]
 
 //![1]
 function sendHighScore(name) {
