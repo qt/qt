@@ -413,6 +413,16 @@ void QmlViewer::createMenu(QMenuBar *menu, QMenu *flatmenu)
 
     if (flatmenu) flatmenu->addSeparator();
 
+    QMenu *debugMenu = flatmenu ? flatmenu->addMenu(tr("&Debugging")) : menu->addMenu(tr("&Debugging"));
+
+    QAction *slowAction = new QAction(tr("&Slow Down Animations"), parent);
+    slowAction->setShortcut(QKeySequence("Ctrl+."));
+    slowAction->setCheckable(true);
+    connect(slowAction, SIGNAL(triggered(bool)), this, SLOT(setSlowMode(bool)));
+    debugMenu->addAction(slowAction);
+
+    if (flatmenu) flatmenu->addSeparator();
+
     QMenu *skinMenu = flatmenu ? flatmenu->addMenu(tr("&Skin")) : menu->addMenu(tr("&Skin"));
 
     QActionGroup *skinActions;
@@ -625,6 +635,11 @@ void QmlViewer::toggleRecording()
     bool recording = !recordTimer.isRunning();
     recordAction->setText(recording ? tr("&Stop Recording Video\tF9") : tr("&Start Recording Video\tF9"));
     setRecording(recording);
+}
+
+void QmlViewer::setSlowMode(bool enable)
+{
+    QUnifiedTimer::instance()->setSlowModeEnabled(enable);
 }
 
 void QmlViewer::addLibraryPath(const QString& lib)
