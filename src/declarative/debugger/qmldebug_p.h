@@ -113,7 +113,7 @@ public:
     State state() const;
 
 Q_SIGNALS:
-    void stateChanged(State);
+    void stateChanged(QmlDebugWatch::State);
     //void objectChanged(int, const QmlDebugObjectReference &);
     //void valueChanged(int, const QVariant &);
 
@@ -170,7 +170,7 @@ public:
 //    bool waitUntilCompleted();
 
 Q_SIGNALS:
-    void stateChanged(State);
+    void stateChanged(QmlDebugQuery::State);
 
 protected:
     QmlDebugQuery(QObject *);

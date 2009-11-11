@@ -47,14 +47,14 @@
 
 namespace QmlDebuggerTest {
 
-    void waitForSignal(QObject *receiver, const char *member);
+    bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
 }
 
-class EchoService : public QmlDebugService
+class QmlDebuggerTestService : public QmlDebugService
 {
     Q_OBJECT
 public:
-    EchoService(const QString &s, QObject *parent = 0);
+    QmlDebuggerTestService(const QString &s, QObject *parent = 0);
     bool enabled;
 
 signals:
@@ -66,11 +66,11 @@ protected:
     virtual void enabledChanged(bool e);
 };
 
-class MyQmlDebugClient : public QmlDebugClient
+class QmlDebuggerTestClient : public QmlDebugClient
 {
     Q_OBJECT
 public:
-    MyQmlDebugClient(const QString &s, QmlDebugConnection *c);
+    QmlDebuggerTestClient(const QString &s, QmlDebugConnection *c);
 
     QByteArray waitForResponse();
 

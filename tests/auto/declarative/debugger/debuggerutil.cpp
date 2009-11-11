@@ -49,41 +49,42 @@
 
 namespace QmlDebuggerTest {
 
-    void waitForSignal(QObject *receiver, const char *member) {
+    bool waitForSignal(QObject *receiver, const char *member, int timeout) {
         QEventLoop loop;
         QTimer timer;
         QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
         QObject::connect(receiver, member, &loop, SLOT(quit()));
-        timer.start(5000);
+        timer.start(timeout);
         loop.exec();
+        return timer.isActive();
     }
 
 }
 
 
-EchoService::EchoService(const QString &s, QObject *parent)
+QmlDebuggerTestService::QmlDebuggerTestService(const QString &s, QObject *parent)
     : QmlDebugService(s, parent), enabled(false)
 {
 }
 
-void EchoService::messageReceived(const QByteArray &ba)
+void QmlDebuggerTestService::messageReceived(const QByteArray &ba)
 {
     sendMessage(ba);
 }
 
-void EchoService::enabledChanged(bool e)
+void QmlDebuggerTestService::enabledChanged(bool e)
 {
     emit enabledStateChanged();
     enabled = e;
 }
 
 
-MyQmlDebugClient::MyQmlDebugClient(const QString &s, QmlDebugConnection *c)
+QmlDebuggerTestClient::QmlDebuggerTestClient(const QString &s, QmlDebugConnection *c)
     : QmlDebugClient(s, c)
 {
 }
 
-QByteArray MyQmlDebugClient::waitForResponse()
+QByteArray QmlDebuggerTestClient::waitForResponse()
 {
     QSignalSpy spy(this, SIGNAL(serverMessage(QByteArray)));
     QmlDebuggerTest::waitForSignal(this, SIGNAL(serverMessage(QByteArray)));
@@ -94,7 +95,7 @@ QByteArray MyQmlDebugClient::waitForResponse()
     return spy.at(0).at(0).value<QByteArray>();
 }
 
-void MyQmlDebugClient::messageReceived(const QByteArray &ba)
+void QmlDebuggerTestClient::messageReceived(const QByteArray &ba)
 {
     emit serverMessage(ba);
 }

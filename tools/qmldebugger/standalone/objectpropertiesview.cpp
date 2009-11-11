@@ -124,7 +124,7 @@ void ObjectPropertiesView::reload(const QmlDebugObjectReference &obj)
     if (!m_query->isWaiting())
         queryFinished();
     else
-        QObject::connect(m_query, SIGNAL(stateChanged(State)),
+        QObject::connect(m_query, SIGNAL(stateChanged(QmlDebugQuery::State)),
                          this, SLOT(queryFinished()));
 }
 
@@ -223,7 +223,7 @@ void ObjectPropertiesView::watchCreated(QmlDebugWatch *watch)
 {
     if (watch->objectDebugId() == m_object.debugId()
             && qobject_cast<QmlDebugPropertyWatch*>(watch)) {
-        connect(watch, SIGNAL(stateChanged(State)), SLOT(watchStateChanged()));
+        connect(watch, SIGNAL(stateChanged(QmlDebugWatch::State)), SLOT(watchStateChanged()));
         setWatched(qobject_cast<QmlDebugPropertyWatch*>(watch)->name(), true);
     }
 }

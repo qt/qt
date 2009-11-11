@@ -89,8 +89,8 @@ void tst_QmlDebugClient::isEnabled()
 
 void tst_QmlDebugClient::setEnabled()
 {
-    EchoService service("tst_QmlDebugClient::setEnabled()");
-    MyQmlDebugClient client("tst_QmlDebugClient::setEnabled()", m_conn);
+    QmlDebuggerTestService service("tst_QmlDebugClient::setEnabled()");
+    QmlDebuggerTestClient client("tst_QmlDebugClient::setEnabled()", m_conn);
 
     QCOMPARE(service.isEnabled(), false);
 
@@ -125,8 +125,8 @@ void tst_QmlDebugClient::isConnected()
 
 void tst_QmlDebugClient::sendMessage()
 {
-    EchoService service("tst_QmlDebugClient::sendMessage()");
-    MyQmlDebugClient client("tst_QmlDebugClient::sendMessage()", m_conn);
+    QmlDebuggerTestService service("tst_QmlDebugClient::sendMessage()");
+    QmlDebuggerTestClient client("tst_QmlDebugClient::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
 
