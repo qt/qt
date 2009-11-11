@@ -12,8 +12,8 @@ SOURCES += qvncserver.cpp
 HEADERS += qvnccursor.h
 SOURCES += qvnccursor.cpp
 
-target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
+include(../fb_base/fb_base.pri)
 
-LIBS += -L$$[QT_INSTALL_PLUGINS]/graphicssystems -lfb_base
+target.path += $$[QT_INSTALL_PLUGINS]/graphicssystems
 
 INSTALLS += target
