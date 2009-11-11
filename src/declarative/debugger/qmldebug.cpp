@@ -428,13 +428,15 @@ void QmlEngineDebug::removeWatch(QmlDebugWatch *watch)
 {
     Q_D(QmlEngineDebug);
 
-    if (!watch || watch->state() == QmlDebugWatch::Dead)
+    if (!watch || !watch->m_client)
         return;
 
-    watch->setState(QmlDebugWatch::Dead);
+    watch->m_client = 0;
+    watch->setState(QmlDebugWatch::Inactive);
+    
     d->watched.remove(watch->queryId());
 
-    if (d->client->isConnected()) {
+    if (d->client && d->client->isConnected()) {
         QByteArray message;
         QDataStream ds(&message, QIODevice::WriteOnly);
         ds << QByteArray("NO_WATCH") << watch->queryId();
@@ -562,7 +564,6 @@ QmlDebugWatch::QmlDebugWatch(QObject *parent)
 
 QmlDebugWatch::~QmlDebugWatch()
 {
-    m_client->removeWatch(this);
 }
 
 int QmlDebugWatch::queryId() const
