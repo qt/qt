@@ -1130,10 +1130,13 @@ void QAbstractScrollArea::mouseMoveEvent(QMouseEvent *e)
 void QAbstractScrollArea::wheelEvent(QWheelEvent *e)
 {
     Q_D(QAbstractScrollArea);
-    if (static_cast<QWheelEvent*>(e)->orientation() == Qt::Horizontal)
-        QApplication::sendEvent(d->hbar, e);
-    else
-        QApplication::sendEvent(d->vbar, e);
+    QScrollBar *const bars[2] = { d->hbar, d->vbar };
+    int idx = (e->orientation() == Qt::Vertical) ? 1 : 0;
+    int other = (idx + 1) % 2;
+    if (!bars[idx]->isVisible() && bars[other]->isVisible())
+        idx = other;   // If the scrollbar of the event orientation is hidden, fallback to the other.
+
+    QApplication::sendEvent(bars[idx], e);
 }
 #endif
 
