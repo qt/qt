@@ -72,6 +72,8 @@ public:
     virtual int depth() const = 0;
     virtual QImage::Format format() const = 0;
     virtual QSize physicalSize() const = 0;
+    virtual void setDirty(QRect) { }
+    virtual void pointerEvent(QMouseEvent &) { }
 };
 
 class Q_GUI_EXPORT QGraphicsSystem

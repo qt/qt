@@ -54,6 +54,7 @@
 //
 
 #include "qgraphicssystem_vnc.h"
+#include "qvnccursor.h"
 #define QT_NO_QWS_CURSOR
 
 #ifndef QT_NO_QWS_VNC
@@ -466,7 +467,7 @@ public:
     inline bool hasClientCursor() const { return qvnc_cursor != 0; }
 #endif
 
-    void setCursor(QVNCCursor *c) { cursor = c; }
+    void setCursor(QVNCCursor * c) { cursor = c; }
 private:
     void setPixelFormat();
     void setEncodings();
@@ -517,7 +518,7 @@ private:
 #endif
 
     QRfbEncoder *encoder;
-    QVNCCursor * cursor;
+    QVNCCursor *cursor;
 };
 
 

@@ -680,6 +680,7 @@ void QVNCServer::setEncodings()
     };
 
     supportCursor = false;
+
     if (encodingsPending && (unsigned)client->bytesAvailable() >=
                                 encodingsPending * sizeof(quint32)) {
         for (int i = 0; i < encodingsPending; ++i) {
@@ -783,6 +784,7 @@ void QVNCServer::setEncodings()
         qDebug("QVNCServer::setEncodings: fallback using raw");
 #endif
     }
+
     if (cursor)
         cursor->setCursorMode(supportCursor);
 }
@@ -833,10 +835,8 @@ void QVNCServer::pointerEvent()
         if (buttonChange(buttons, ev.buttons, &button, &isPress))
             type = isPress ? QEvent::MouseButtonPress : QEvent::MouseButtonRelease;
         QMouseEvent me(type, QPoint(ev.x, ev.y), QPoint(ev.x, ev.y), button, ev.buttons, keymod);
-        if (cursor)
+        if(cursor)
             cursor->pointerEvent(me);
-        else
-            QApplicationPrivate::handleMouseEvent(0, me);
         buttons = ev.buttons;
         handleMsg = false;
     }
@@ -1827,7 +1827,7 @@ void QRfbRawEncoder::write()
 
 inline QImage *QVNCServer::screenImage() const
 {
-    return qvnc_screen->mScreenImage;
+    return qvnc_screen->image();
 }
 
 void QVNCServer::checkUpdate()

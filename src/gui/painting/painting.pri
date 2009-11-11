@@ -182,7 +182,10 @@ embedded {
 embedded_lite {
         SOURCES += \
                 painting/qcolormap_lite.cpp \
-                painting/qpaintdevice_lite.cpp
+                painting/qpaintdevice_lite.cpp \
+                painting/qgraphicssystemcursor.cpp
+        HEADERS += \
+                painting/qgraphicssystemcursor.h
 }
 
 symbian {

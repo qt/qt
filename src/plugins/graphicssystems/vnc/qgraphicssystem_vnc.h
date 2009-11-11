@@ -43,8 +43,8 @@
 #define QGRAPHICSSYSTEM_VNC_H
 
 #include <QtGui/private/qgraphicssystem_p.h>
-#include "qwindowsurface_vnc.h"
 #include "qvnccursor.h"
+#include "../fb_base/fb_base.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -53,57 +53,21 @@ class QVNCDirtyMap;
 
 class QVNCGraphicsSystemScreenPrivate;
 
-class QVNCGraphicsSystemScreenTimerHelper;
-
-class QVNCGraphicsSystemScreen : public QGraphicsSystemScreen
+class QVNCGraphicsSystemScreen : public QGraphicsSystemFbScreen
 {
 public:
     QVNCGraphicsSystemScreen();
-    ~QVNCGraphicsSystemScreen();
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
-    int linestep() const { return mScreenImage ? mScreenImage->bytesPerLine() : 0; }
-    uchar *base() const { return mScreenImage ? mScreenImage->bits() : 0; }
+    int linestep() const { return image() ? image()->bytesPerLine() : 0; }
+    uchar *base() const { return image() ? image()->bits() : 0; }
     QVNCDirtyMap *dirtyMap();
 
-    void setDirty(const QRect &rect);
-
-    void removeWindowSurface(QVNCWindowSurface * surface);
-    void addWindowSurface(QVNCWindowSurface * surface) { windowStack.append(surface); }
-    void pointerEvent(QMouseEvent & me);
-
 public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-    QImage *mScreenImage;
-
     QVNCGraphicsSystemScreenPrivate *d_ptr;
-private:
-    QList<QVNCWindowSurface *> windowStack;
-    QRegion repaintRegion;
-    QTimer * repaintTimer;
-    QVNCGraphicsSystemScreenTimerHelper * helper;
-    void doRedraw();
-    friend class QVNCGraphicsSystemScreenTimerHelper;
 
-    QVNCCursor * cursor;
-};
-
-class QVNCGraphicsSystemScreenTimerHelper : public QObject
-{
-    Q_OBJECT
-public:
-    QVNCGraphicsSystemScreenTimerHelper(QVNCGraphicsSystemScreen * s)
-        { screen = s; }
-public slots:
-    void fireSlot() { screen->doRedraw(); }
 private:
-    QVNCGraphicsSystemScreen * screen;
+    QVNCServer *server;
+    QRegion doRedraw();
 };
 
 class QVNCGraphicsSystemPrivate;

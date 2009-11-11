@@ -2655,7 +2655,7 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
     // Update cursor for alien/graphics widgets.
 
     const bool enterOnAlien = (enter && (isAlien(enter) || enter->testAttribute(Qt::WA_DontShowOnScreen)));
-#if defined(Q_WS_X11)
+#if defined(Q_WS_X11) || defined(Q_WS_LITE)
     //Whenever we leave an alien widget on X11, we need to reset its nativeParentWidget()'s cursor.
     // This is not required on Windows as the cursor is reset on every single mouse move.
     QWidget *parentOfLeavingCursor = 0;
@@ -2676,7 +2676,11 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
         if (!parentOfLeavingCursor->window()->graphicsProxyWidget())
 #endif
         {
+#if defined(Q_WS_X11)
             qt_x11_enforce_cursor(parentOfLeavingCursor,true);
+#elif defined(Q_WS_LITE)
+            qt_lite_set_cursor(parentOfLeavingCursor, true);
+#endif
         }
     }
 #endif
@@ -2700,6 +2704,8 @@ void QApplicationPrivate::dispatchEnterLeave(QWidget* enter, QWidget* leave) {
             qt_x11_enforce_cursor(cursorWidget, true);
 #elif defined(Q_WS_S60)
             qt_symbian_set_cursor(cursorWidget, true);
+#elif defined(Q_WS_LITE)
+            qt_lite_set_cursor(cursorWidget, true);
 #endif
         }
     }

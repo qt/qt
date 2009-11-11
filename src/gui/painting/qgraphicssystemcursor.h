@@ -38,40 +38,61 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#ifndef QVNCCURSOR_H
-#define QVNCCURSOR_H
+#ifndef QGRAPHICSSYSTEMCURSOR_H
+#define QGRAPHICSSYSTEMCURSOR_H
 
-#include "qgraphicssystemcursor.h"
 #include <QList>
 #include <QImage>
 #include <QMouseEvent>
+#include <QPointer>
+#include <QObject>
+#include "qgraphicssystem_p.h"
 
 QT_BEGIN_NAMESPACE
 
-class QVNCGraphicsSystemScreen;
-class QVNCServer;
-
-class QVNCCursor : public QGraphicsSystemCursor {
+// Cursor graphics management
+class QGraphicsSystemCursorImage {
 public:
-    QVNCCursor(QVNCServer *, QVNCGraphicsSystemScreen *);
+    QGraphicsSystemCursorImage(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY)
+    { set(data, mask, width, height, hotX, hotY); }
+    QImage * image() { return &cursorImage; }
+    QPoint hotspot() { return hot; }
+    void set(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
+    void set(Qt::CursorShape);
+private:
+    static void createSystemCursor(int id);
+    QImage cursorImage;
+    QPoint hot;
+};
+
+class Q_GUI_EXPORT QGraphicsSystemCursor : public QObject {
+public:
+    QGraphicsSystemCursor(QGraphicsSystemScreen *);
+    virtual ~QGraphicsSystemCursor();
 
     // input methods
-    void setCursorMode(bool vnc);
-    void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
-    void setCursor(Qt::CursorShape shape);
+    virtual void setCursor(const uchar *data, const uchar *mask, int width, int height, int hotX, int hotY);
+    virtual void setCursor(Qt::CursorShape shape);
+    virtual void pointerEvent(QMouseEvent & event);
+    virtual void changeCursor(QWidget * widget);
 
     // output methods
-    QRect drawCursor(QPainter &);
+    virtual QRect drawCursor(QPainter &);
+    virtual QRect dirtyRect();
 
-    // VNC client communication
-    void sendClientCursor();
-    void clearClientCursor();
-private:
-    bool useVncCursor;      // VNC or local
+    static QPointer<QGraphicsSystemCursor> instance;
 
-    QVNCServer * server;    // VNC server to get events from
+protected:
+
+    QRect currentRect;      // next place to draw the cursor
+    QRect prevRect;         // last place the cursor was drawn
+
+    QGraphicsSystemScreen * screen;  // Where to request an update
+    QWidget * currentWidget; // widget currently under the cursor
+
+    QGraphicsSystemCursorImage * graphic;
 };
 
 QT_END_NAMESPACE
 
-#endif // QVNCCURSOR_H
+#endif // QGRAPHICSSYSTEMCURSOR_H

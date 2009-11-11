@@ -43,28 +43,24 @@
 #define QGRAPHICSSYSTEM_LINUXFB_H
 
 #include <QtGui/private/qgraphicssystem_p.h>
+#include "../fb_base/fb_base.h"
 
 QT_BEGIN_NAMESPACE
 
-class QLinuxFbGraphicsSystemScreen : public QGraphicsSystemScreen
+class QLinuxFbGraphicsSystemScreen : public QGraphicsSystemFbScreen
 {
 public:
-    QLinuxFbGraphicsSystemScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0) {}
-    ~QLinuxFbGraphicsSystemScreen() { delete mScreenImage; }
+    QLinuxFbGraphicsSystemScreen(uchar * d, int w, int h, int lstep, QImage::Format screenFormat);
+    void setGeometry(QRect rect);
+    void setFormat(QImage::Format format);
 
-    QRect geometry() const { return mGeometry; }
-    int depth() const { return mDepth; }
-    QImage::Format format() const { return mFormat; }
-    QSize physicalSize() const { return mPhysicalSize; }
+public slots:
+    QRegion doRedraw();
 
-public:
-    QRect mGeometry;
-    int mDepth;
-    QImage::Format mFormat;
-    QSize mPhysicalSize;
-    QImage *mScreenImage;
-
+private:
+    QImage * mFbScreenImage;
+    uchar * data;
+    int bytesPerLine;
 };
 
 class QLinuxFbGraphicsSystemPrivate;

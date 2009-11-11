@@ -40,7 +40,8 @@
 ****************************************************************************/
 
 #include "qgraphicssystem_vnc.h"
-#include "qwindowsurface_vnc.h"
+#include "../fb_base/fb_base.h"
+#include <private/qapplication_p.h>
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <QtCore/qdebug.h>
 
@@ -49,12 +50,9 @@
 
 #include <QtCore/QTimer>
 
-#include <private/qapplication_p.h>
-
-#include "qvnccursor.h"
 
 QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
-        : mDepth(16), mFormat(QImage::Format_RGB16), mScreenImage(0)
+        : QGraphicsSystemFbScreen::QGraphicsSystemFbScreen()
 {
     int w = 800;
     int h = 600;
@@ -65,32 +63,16 @@ QVNCGraphicsSystemScreen::QVNCGraphicsSystemScreen()
         h = eh;
     }
 
-    mGeometry = QRect(0,0,w, h);
+    setGeometry(QRect(0,0,w, h));
+    setDepth(32);
+    setFormat(QImage::Format_RGB32);
+    setPhysicalSize((geometry().size()*254)/720);
 
-    mDepth = 32;
-    mFormat = QImage::Format_RGB32;
-    mPhysicalSize = (mGeometry.size()*254)/720;
 
-
-    mScreenImage = new QImage(mGeometry.size(), mFormat);
     d_ptr = new QVNCGraphicsSystemScreenPrivate(this);
 
-    helper = new QVNCGraphicsSystemScreenTimerHelper(this);
-    repaintTimer = new QTimer();
-    repaintTimer->setSingleShot(true);
-    repaintTimer->setInterval(0);
-    QObject::connect(repaintTimer, SIGNAL(timeout()), helper, SLOT(fireSlot()));
-
     cursor = new QVNCCursor(d_ptr->vncServer, this);
-    d_ptr->vncServer->setCursor(cursor);
-}
-
-
-QVNCGraphicsSystemScreen::~QVNCGraphicsSystemScreen()
-{
-    delete mScreenImage;
-    delete repaintTimer;
-    delete helper;
+    d_ptr->vncServer->setCursor(static_cast<QVNCCursor *>(cursor));
 }
 
 QVNCDirtyMap *QVNCGraphicsSystemScreen::dirtyMap()
@@ -98,66 +80,21 @@ QVNCDirtyMap *QVNCGraphicsSystemScreen::dirtyMap()
     return d_ptr->dirty;
 }
 
-
-void QVNCGraphicsSystemScreen::setDirty(const QRect &rect)
+QRegion QVNCGraphicsSystemScreen::doRedraw()
 {
-    repaintRegion += rect;
-    if (!repaintTimer->isActive()) {
-        repaintTimer->start();
-    }
-}
+    QRegion touched;
+    touched = QGraphicsSystemFbScreen::doRedraw();
 
-void QVNCGraphicsSystemScreen::doRedraw()
-{
-    repaintRegion += cursor->dirtyRect();
-
-    if (repaintRegion.isEmpty())
-        return;
-
-    QPainter compositePainter(mScreenImage);
-
-    QVector<QRect> rects = repaintRegion.rects();
-
-    for (int rectIndex = 0; rectIndex < repaintRegion.numRects(); rectIndex++) {
-        QRect rect = rects[rectIndex];
-        // Blank the affected area, just in case there's nothing to display
-        // Question - What's the background color?
-        // Another option - a base level window that is the size of the display
-        compositePainter.fillRect(rect, Qt::black);
-        for (int i = 0; i < windowStack.length(); i++) {
-            if (!windowStack[i]->visible())
-                continue;
-            QRect windowRect = windowStack[i]->geometry();
-            QRect intersect = windowRect.intersected(rect);
-            QRect windowIntersect = intersect.translated(-windowRect.left(),
-                                                         -windowRect.top());
-            if (intersect.isNull())
-                continue;
-            compositePainter.drawImage(intersect, windowStack[i]->image(),
-                                       windowIntersect);
-        }
-    }
-
-    QRect pointerRect = cursor->drawCursor(compositePainter);
-    repaintRegion += pointerRect;
-    rects = repaintRegion.rects();
-    for (int i = 0; i < rects.size(); i ++)
+    QVector<QRect> rects = touched.rects();
+    for (int i = 0; i < rects.size(); i++)
         d_ptr->setDirty(rects[i]);
-
-    repaintRegion = QRegion();
+    return touched;
 }
 
 
 QVNCGraphicsSystem::QVNCGraphicsSystem()
 {
-////////    xd = new MyDisplay;
-
     mPrimaryScreen = new QVNCGraphicsSystemScreen();
-
-
-    //int dw = mPrimaryScreen->geometry().width();
-    //int dh = mPrimaryScreen->geometry().height();
-
 
     mScreens.append(mPrimaryScreen);
 }
@@ -171,19 +108,8 @@ QWindowSurface *QVNCGraphicsSystem::createWindowSurface(QWidget *widget) const
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
-    QVNCWindowSurface * newSurface = new QVNCWindowSurface
-        (const_cast<QVNCGraphicsSystem *>(this), mPrimaryScreen, widget);
-    mPrimaryScreen->addWindowSurface(newSurface);
-    return newSurface;
-}
-
-void QVNCGraphicsSystemScreen::removeWindowSurface(QVNCWindowSurface * surface)
-{
-    windowStack.removeOne(surface);
-    setDirty(surface->geometry());
-}
-
-void QVNCGraphicsSystemScreen::pointerEvent(QMouseEvent & me)
-{
-    QApplicationPrivate::handleMouseEvent(0, me);
+    QGraphicsSystemFbWindowSurface * surface;
+    surface = new QGraphicsSystemFbWindowSurface(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindowSurface(surface);
+    return surface;
 }

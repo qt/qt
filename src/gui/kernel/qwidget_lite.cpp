@@ -48,6 +48,8 @@
 #include "private/qapplication_p.h"
 #include "qdesktopwidget.h"
 
+#include "qgraphicssystemcursor.h"
+
 QT_BEGIN_NAMESPACE
 
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destroyOldWindow*/)
@@ -647,4 +649,26 @@ void QWidgetPrivate::setModal_sys()
 {
 }
 
+void qt_lite_set_cursor(QWidget * w, bool force)
+{
+    static QPointer<QWidget> lastUnderMouse = 0;
+    if (force) {
+        lastUnderMouse = w;
+    } else if (w->testAttribute(Qt::WA_WState_Created) && lastUnderMouse
+               && lastUnderMouse->effectiveWinId() == w->effectiveWinId()) {
+        w = lastUnderMouse;
+    }
+
+    QWidget * curWin = QApplication::activeWindow();
+    if (!curWin && w && w->internalWinId())
+        return;
+    QWidget* cW = w && !w->internalWinId() ? w : curWin;
+    if (!cW || cW->window() != w->window() ||
+         !cW->isVisible() || !cW->underMouse() || QApplication::overrideCursor())
+        return;
+
+    if (QGraphicsSystemCursor::instance) {
+        QGraphicsSystemCursor::instance->changeCursor(w);
+    }
+}
 QT_END_NAMESPACE

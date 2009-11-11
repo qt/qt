@@ -40,9 +40,11 @@
 ****************************************************************************/
 
 #include "qgraphicssystem_linuxfb.h"
-#include "qwindowsurface_linuxfb.h"
+#include "../fb_base/fb_base.h"
 #include <QtGui/private/qpixmap_raster_p.h>
 #include <private/qcore_unix_p.h> // overrides QT_OPEN
+#include <qimage.h>
+#include <qdebug.h>
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -163,15 +165,11 @@ QLinuxFbGraphicsSystem::QLinuxFbGraphicsSystem()
     if (!connect(displaySpec))
         qFatal("QLinuxFbGraphicsSystem: could not initialize screen");
 
-    mPrimaryScreen = new QLinuxFbGraphicsSystemScreen();
-    mPrimaryScreen->mGeometry = QRect(0, 0, w, h);
-    mPrimaryScreen->mDepth = d;
-    mPrimaryScreen->mFormat = screenFormat;
-    mPrimaryScreen->mPhysicalSize = QSize(physWidth, physHeight);
-
     // Create a QImage directly on the screen's framebuffer.
     // This is the blit target for copying windows to the screen.
-    mPrimaryScreen->mScreenImage = new QImage(data, w, h, lstep, screenFormat);
+    mPrimaryScreen = new QLinuxFbGraphicsSystemScreen(data, w, h, lstep,
+                                                      screenFormat);
+    mPrimaryScreen->setPhysicalSize(QSize(physWidth, physHeight));
 
     mScreens.append(mPrimaryScreen);
 }
@@ -791,7 +789,57 @@ QWindowSurface *QLinuxFbGraphicsSystem::createWindowSurface(QWidget *widget) con
 {
     if (widget->windowType() == Qt::Desktop)
         return 0;   // Don't create an explicit window surface for the destkop.
-    return new QLinuxFbWindowSurface(mPrimaryScreen, widget);
+    QGraphicsSystemFbWindowSurface * surface =
+        new QGraphicsSystemFbWindowSurface(mPrimaryScreen, widget);
+    mPrimaryScreen->addWindowSurface(surface);
+    return surface;
 }
 
+QLinuxFbGraphicsSystemScreen::QLinuxFbGraphicsSystemScreen(uchar * d, int w,
+    int h, int lstep, QImage::Format screenFormat)
+{
+    data = d;
+    mGeometry = QRect(0,0,w,h);
+    bytesPerLine = lstep;
+    mFormat = screenFormat;
+    mDepth = 16;
+    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
+                              mFormat);
+    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
+                              bytesPerLine, mFormat);
+}
+
+void QLinuxFbGraphicsSystemScreen::setGeometry(QRect rect)
+{
+    mGeometry = rect;
+    delete mFbScreenImage;
+    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
+                           bytesPerLine, mFormat);
+    delete mScreenImage;
+    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
+                              mFormat);
+}
+
+void QLinuxFbGraphicsSystemScreen::setFormat(QImage::Format format)
+{
+    mFormat = format;
+    delete mFbScreenImage;
+    mFbScreenImage = new QImage(data, mGeometry.width(), mGeometry.height(),
+                             bytesPerLine, mFormat);
+    delete mScreenImage;
+    mScreenImage = new QImage(mGeometry.width(), mGeometry.height(),
+                              mFormat);
+}
+
+QRegion QLinuxFbGraphicsSystemScreen::doRedraw()
+{
+    QRegion touched;
+    touched = QGraphicsSystemFbScreen::doRedraw();
+
+    QPainter compositePainter(mFbScreenImage);
+    QVector<QRect> rects = touched.rects();
+    for (int i = 0; i < rects.size(); i++)
+        compositePainter.drawImage(rects[i], *mScreenImage, rects[i]);
+    return touched;
+}
 QT_END_NAMESPACE
