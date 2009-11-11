@@ -667,6 +667,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
     bool seenWM_QT_SENDPOSTEDEVENTS = false;
     bool needWM_QT_SENDPOSTEDEVENTS = false;
     do {
+        if (! (flags & QEventLoop::EventLoopExec)) {
+            // when called "manually", always send posted events
+            QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+        }
+
         DWORD waitRet = 0;
         HANDLE pHandles[MAXIMUM_WAIT_OBJECTS - 1];
         QVarLengthArray<MSG> processedTimers;
