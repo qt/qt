@@ -174,6 +174,7 @@ MyWidget::MyWidget(int width, int height, QWidget *parent, Qt::WindowFlags flags
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->addDefaultObject(this);
+    ctxt->setContextProperty("tiles", QVariant::fromValue<QList<Tile*>*>(&_tiles));//QTBUG-5675
 
     canvas->execute();
 }
