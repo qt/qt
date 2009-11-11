@@ -1180,48 +1180,46 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     for (int i = 2; i < rows - 1; ++i)
         yTarget[i] = yTarget[i - 1] + dy;
 
-    const qreal inv_d_source_width = 1 / (qreal)d.source.width();
-	const qreal inv_d_source_height = 1 / (qreal)d.source.height();
     // corners
     if (targetMargins.top() > 0 && targetMargins.left() > 0 && sourceMargins.top() > 0 && sourceMargins.left() > 0) { // top left
         d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
         d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
         d.source = QRectF(sourceRect.left(), sourceRect.top(), sourceMargins.left(), sourceMargins.top());
-        d.scaleX = qreal(xTarget[1] - xTarget[0]) * inv_d_source_width;
-        d.scaleY = qreal(yTarget[1] - yTarget[0]) * inv_d_source_height;
+        d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+        d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
         if (hints & QDrawBorderPixmap::OpaqueTopLeft)
             opaqueData.append(d);
         else
             translucentData.append(d);
     }
     if (targetMargins.top() > 0 && targetMargins.right() > 0 && sourceMargins.top() > 0 && sourceMargins.right() > 0) { // top right
-        d.point.setX(qreal(0.5) * (xTarget[columns] + xTarget[columns - 1]));
-        d.point.setY(qreal(0.5) * (yTarget[1] + yTarget[0]));
+        d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+        d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
         d.source = QRectF(sourceCenterRight, sourceRect.top(), sourceMargins.right(), sourceMargins.top());
-        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) * inv_d_source_width;
-        d.scaleY = qreal(yTarget[1] - yTarget[0]) * inv_d_source_height;
+        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+        d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
         if (hints & QDrawBorderPixmap::OpaqueTopRight)
             opaqueData.append(d);
         else
             translucentData.append(d);
     }
     if (targetMargins.bottom() > 0 && targetMargins.left() > 0 && sourceMargins.bottom() > 0 && sourceMargins.left() > 0) { // bottom left
-        d.point.setX(qreal(0.5) * (xTarget[1] + xTarget[0]));
-        d.point.setY(qreal(0.5) * (yTarget[rows] + yTarget[rows - 1]));
+        d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
+        d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
         d.source = QRectF(sourceRect.left(), sourceCenterBottom, sourceMargins.left(), sourceMargins.bottom());
-        d.scaleX = qreal(xTarget[1] - xTarget[0]) * inv_d_source_width;
-        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) * inv_d_source_height;
+        d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
         if (hints & QDrawBorderPixmap::OpaqueBottomLeft)
             opaqueData.append(d);
         else
             translucentData.append(d);
     }
     if (targetMargins.bottom() > 0 && targetMargins.right() > 0 && sourceMargins.bottom() > 0 && sourceMargins.right() > 0) { // bottom right
-        d.point.setX(qreal(0.5) * (xTarget[columns] + xTarget[columns - 1]));
-        d.point.setY(qreal(0.5) * (yTarget[rows] + yTarget[rows - 1]));
+        d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+        d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
         d.source = QRectF(sourceCenterRight, sourceCenterBottom, sourceMargins.right(), sourceMargins.bottom());
-        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) * inv_d_source_width;
-        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) * inv_d_source_height;
+        d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+        d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
         if (hints & QDrawBorderPixmap::OpaqueBottomRight)
             opaqueData.append(d);
         else
@@ -1233,11 +1231,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         if (targetMargins.top() > 0 && sourceMargins.top() > 0) { // top
             QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueTop ? opaqueData : translucentData;
             d.source = QRectF(sourceCenterLeft, sourceRect.top(), sourceCenterWidth, sourceMargins.top());
-            d.point.setY(qreal(0.5) * (yTarget[1] + yTarget[0]));
-            d.scaleX = dx * inv_d_source_width;
-            d.scaleY = qreal(yTarget[1] - yTarget[0]) * inv_d_source_height;
+            d.point.setY(0.5 * (yTarget[1] + yTarget[0]));
+            d.scaleX = dx / d.source.width();
+            d.scaleY = qreal(yTarget[1] - yTarget[0]) / d.source.height();
             for (int i = 1; i < columns - 1; ++i) {
-                d.point.setX(qreal(0.5) * (xTarget[i + 1] + xTarget[i]));
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
             if (rules.horizontal == Qt::RepeatTile)
@@ -1246,11 +1244,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         if (targetMargins.bottom() > 0 && sourceMargins.bottom() > 0) { // bottom
             QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueBottom ? opaqueData : translucentData;
             d.source = QRectF(sourceCenterLeft, sourceCenterBottom, sourceCenterWidth, sourceMargins.bottom());;
-            d.point.setY(qreal(0.5) * (yTarget[rows] + yTarget[rows - 1]));
-            d.scaleX = dx * inv_d_source_width;
-            d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) * inv_d_source_height;
+            d.point.setY(0.5 * (yTarget[rows] + yTarget[rows - 1]));
+            d.scaleX = dx / d.source.width();
+            d.scaleY = qreal(yTarget[rows] - yTarget[rows - 1]) / d.source.height();
             for (int i = 1; i < columns - 1; ++i) {
-                d.point.setX(qreal(0.5) * (xTarget[i + 1] + xTarget[i]));
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
             if (rules.horizontal == Qt::RepeatTile)
@@ -1263,11 +1261,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         if (targetMargins.left() > 0 && sourceMargins.left() > 0) { // left
             QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueLeft ? opaqueData : translucentData;
             d.source = QRectF(sourceRect.left(), sourceCenterTop, sourceMargins.left(), sourceCenterHeight);
-            d.point.setX(qreal(0.5) * (xTarget[1] + xTarget[0]));
-            d.scaleX = qreal(xTarget[1] - xTarget[0]) * inv_d_source_width;
-            d.scaleY = dy * inv_d_source_height;
+            d.point.setX(0.5 * (xTarget[1] + xTarget[0]));
+            d.scaleX = qreal(xTarget[1] - xTarget[0]) / d.source.width();
+            d.scaleY = dy / d.source.height();
             for (int i = 1; i < rows - 1; ++i) {
-                d.point.setY(qreal(0.5) * (yTarget[i + 1] + yTarget[i]));
+                d.point.setY(0.5 * (yTarget[i + 1] + yTarget[i]));
                 data.append(d);
             }
             if (rules.vertical == Qt::RepeatTile)
@@ -1276,11 +1274,11 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
         if (targetMargins.right() > 0 && sourceMargins.right() > 0) { // right
             QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueRight ? opaqueData : translucentData;
             d.source = QRectF(sourceCenterRight, sourceCenterTop, sourceMargins.right(), sourceCenterHeight);
-            d.point.setX(qreal(0.5) * (xTarget[columns] + xTarget[columns - 1]));
-            d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) * inv_d_source_width;
-            d.scaleY = dy * inv_d_source_height;
+            d.point.setX(0.5 * (xTarget[columns] + xTarget[columns - 1]));
+            d.scaleX = qreal(xTarget[columns] - xTarget[columns - 1]) / d.source.width();
+            d.scaleY = dy / d.source.height();
             for (int i = 1; i < rows - 1; ++i) {
-                d.point.setY(qreal(0.5) * (yTarget[i + 1] + yTarget[i]));
+                d.point.setY(0.5 * (yTarget[i + 1] + yTarget[i]));
                 data.append(d);
             }
             if (rules.vertical == Qt::RepeatTile)
@@ -1292,16 +1290,16 @@ void qDrawBorderPixmap(QPainter *painter, const QRect &targetRect, const QMargin
     if (targetCenterWidth > 0 && targetCenterHeight > 0 && sourceCenterWidth > 0 && sourceCenterHeight > 0) {
         QDrawPixmapsDataArray &data = hints & QDrawBorderPixmap::OpaqueCenter ? opaqueData : translucentData;
         d.source = QRectF(sourceCenterLeft, sourceCenterTop, sourceCenterWidth, sourceCenterHeight);
-        d.scaleX = dx * inv_d_source_width;
-        d.scaleY = dy * inv_d_source_height;
+        d.scaleX = dx / d.source.width();
+        d.scaleY = dy / d.source.height();
 
         qreal repeatWidth = (xTarget[columns - 1] - xTarget[columns - 2]) / d.scaleX;
         qreal repeatHeight = (yTarget[rows - 1] - yTarget[rows - 2]) / d.scaleY;
 
         for (int j = 1; j < rows - 1; ++j) {
-            d.point.setY(qreal(0.5) * (yTarget[j + 1] + yTarget[j]));
+            d.point.setY(0.5 * (yTarget[j + 1] + yTarget[j]));
             for (int i = 1; i < columns - 1; ++i) {
-                d.point.setX(qreal(0.5) * (xTarget[i + 1] + xTarget[i]));
+                d.point.setX(0.5 * (xTarget[i + 1] + xTarget[i]));
                 data.append(d);
             }
             if (rules.horizontal == Qt::RepeatTile)

@@ -568,7 +568,6 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (!cfbsBitmap)
         return 0;
 
-    qreal div_by_KTwipsPerInch = 1 / (qreal)KTwipsPerInch;
     switch (metric) {
     case QPaintDevice::PdmWidth:
         return cfbsBitmap->SizeInPixels().iWidth;
@@ -576,23 +575,23 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
         return cfbsBitmap->SizeInPixels().iHeight;
     case QPaintDevice::PdmWidthMM: {
         TInt twips = cfbsBitmap->SizeInTwips().iWidth;
-        return (int)(twips * (qreal(25.4) * div_by_KTwipsPerInch));
+        return (int)(twips * (25.4/KTwipsPerInch));
     }
     case QPaintDevice::PdmHeightMM: {
         TInt twips = cfbsBitmap->SizeInTwips().iHeight;
-        return (int)(twips * (qreal(25.4) * div_by_KTwipsPerInch));
+        return (int)(twips * (25.4/KTwipsPerInch));
     }
     case QPaintDevice::PdmNumColors:
         return TDisplayModeUtils::NumDisplayModeColors(cfbsBitmap->DisplayMode());
     case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmPhysicalDpiX: {
-        qreal inches = cfbsBitmap->SizeInTwips().iWidth * div_by_KTwipsPerInch;
+        TReal inches = cfbsBitmap->SizeInTwips().iWidth / (TReal)KTwipsPerInch;
         TInt pixels = cfbsBitmap->SizeInPixels().iWidth;
         return pixels / inches;
     }
     case QPaintDevice::PdmDpiY:
     case QPaintDevice::PdmPhysicalDpiY: {
-        qreal inches = cfbsBitmap->SizeInTwips().iHeight * div_by_KTwipsPerInch;
+        TReal inches = cfbsBitmap->SizeInTwips().iHeight / (TReal)KTwipsPerInch;
         TInt pixels = cfbsBitmap->SizeInPixels().iHeight;
         return pixels / inches;
     }

@@ -285,11 +285,11 @@ void QVector4D::normalize()
         return;
 
     len = qSqrt(len);
-    const double inv_len = 1 / len;
-    xp *= inv_len;
-    yp *= inv_len;
-    zp *= inv_len;
-    wp *= inv_len;
+
+    xp /= len;
+    yp /= len;
+    zp /= len;
+    wp /= len;
 }
 
 /*!
@@ -459,8 +459,7 @@ QVector2D QVector4D::toVector2DAffine() const
 {
     if (qIsNull(wp))
         return QVector2D();
-    const qreal inv_wp = 1 / wp;
-    return QVector2D(xp * inv_wp, yp * inv_wp, 1);
+    return QVector2D(xp / wp, yp / wp, 1);
 }
 
 #endif
@@ -487,8 +486,7 @@ QVector3D QVector4D::toVector3DAffine() const
 {
     if (qIsNull(wp))
         return QVector3D();
-    const qreal inv_wp = 1 / wp;
-    return QVector3D(xp * inv_wp, yp * inv_wp, zp * inv_wp, 1);
+    return QVector3D(xp / wp, yp / wp, zp / wp, 1);
 }
 
 #endif

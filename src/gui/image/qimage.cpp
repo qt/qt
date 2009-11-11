@@ -5351,19 +5351,19 @@ int QImage::metric(PaintDeviceMetric metric) const
         break;
 
     case PdmDpiX:
-        return qRound(d->dpmx * qreal(0.0254));
+        return qRound(d->dpmx * 0.0254);
         break;
 
     case PdmDpiY:
-        return qRound(d->dpmy * qreal(0.0254));
+        return qRound(d->dpmy * 0.0254);
         break;
 
     case PdmPhysicalDpiX:
-        return qRound(d->dpmx * qreal(0.0254));
+        return qRound(d->dpmx * 0.0254);
         break;
 
     case PdmPhysicalDpiY:
-        return qRound(d->dpmy * qreal(0.0254));
+        return qRound(d->dpmy * 0.0254);
         break;
 
     default:
@@ -5429,12 +5429,12 @@ bool qt_xForm_helper(const QTransform &trueMat, int xoffset, int type, int depth
                      uchar *dptr, int dbpl, int p_inc, int dHeight,
                      const uchar *sptr, int sbpl, int sWidth, int sHeight)
 {
-    int m11 = int(trueMat.m11()*qreal(4096.0));
-    int m12 = int(trueMat.m12()*qreal(4096.0));
-    int m21 = int(trueMat.m21()*qreal(4096.0));
-    int m22 = int(trueMat.m22()*qreal(4096.0));
-    int dx  = qRound(trueMat.dx()*qreal(4096.0));
-    int dy  = qRound(trueMat.dy()*qreal(4096.0));
+    int m11 = int(trueMat.m11()*4096.0);
+    int m12 = int(trueMat.m12()*4096.0);
+    int m21 = int(trueMat.m21()*4096.0);
+    int m22 = int(trueMat.m22()*4096.0);
+    int dx  = qRound(trueMat.dx()*4096.0);
+    int dy  = qRound(trueMat.dy()*4096.0);
 
     int m21ydx = dx + (xoffset<<16) + (m11 + m21) / 2;
     int m22ydy = dy + (m12 + m22) / 2;
@@ -6018,22 +6018,22 @@ QImage QImage::transformed(const QTransform &matrix, Qt::TransformationMode mode
     if (mat.type() <= QTransform::TxScale) {
         if (mat.type() == QTransform::TxNone) // identity matrix
             return *this;
-        else if (mat.m11() == qreal(-1.) && mat.m22() == qreal(-1.))
+        else if (mat.m11() == -1. && mat.m22() == -1.)
             return rotated180(*this);
 
         if (mode == Qt::FastTransformation) {
             hd = qRound(qAbs(mat.m22()) * hs);
             wd = qRound(qAbs(mat.m11()) * ws);
         } else {
-            hd = int(qAbs(mat.m22()) * hs + qreal(0.9999));
-            wd = int(qAbs(mat.m11()) * ws + qreal(0.9999));
+            hd = int(qAbs(mat.m22()) * hs + 0.9999);
+            wd = int(qAbs(mat.m11()) * ws + 0.9999);
         }
         scale_xform = true;
     } else {
         if (mat.type() <= QTransform::TxRotate && mat.m11() == 0 && mat.m22() == 0) {
-            if (mat.m12() == qreal(1.) && mat.m21() == qreal(-1.))
+            if (mat.m12() == 1. && mat.m21() == -1.)
                 return rotated90(*this);
-            else if (mat.m12() == qreal(-1.) && mat.m21() == qreal(1.))
+            else if (mat.m12() == -1. && mat.m21() == 1.)
                 return rotated270(*this);
         }
 

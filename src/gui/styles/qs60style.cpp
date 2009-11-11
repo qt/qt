@@ -553,7 +553,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
 
 #if 0
     painter->save();
-    painter->setOpacity(qreal(.3));
+    painter->setOpacity(.3);
     painter->fillRect(startRect, Qt::red);
     painter->fillRect(middleRect, Qt::green);
     painter->fillRect(endRect, Qt::blue);
@@ -1598,7 +1598,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
-                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? qreal(1.0)
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
                 if (optionProgressBar->orientation == Qt::Horizontal) {
                     progressRect.setWidth(int(progressRect.width() * progressFactor));
@@ -1723,7 +1723,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 optionMenuItem.palette.setColor(QPalette::Disabled, QPalette::Text, QS60StylePrivate::lighterColor(
                         optionMenuItem.palette.color(QPalette::Disabled, QPalette::Text)));
                 painter->save();
-                painter->setOpacity(qreal(0.75));
+                painter->setOpacity(0.5);
             }
             QCommonStyle::drawItemText(painter, textRect, text_flags,
                     optionMenuItem.palette, enabled,
@@ -1829,7 +1829,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                         painter->save();
                         if (widget)
                             painter->setBrush(widget->palette().button());
-                        painter->setOpacity(qreal(0.3));
+                        painter->setOpacity(0.3);
                         painter->fillRect(toolBar->rect, painter->brush());
                         painter->restore();
                 }
@@ -1886,12 +1886,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? qreal(0.65) : qreal(0.45); // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = qreal(0.5);
+            const qreal opacity = 0.5;
 #endif
             // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-            const qreal rectAdjustment = (penWidth % 2) ? qreal(-.5) : 0;
+            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
 
             // Make sure that the pen stroke is inside the rect
             const QRectF adjustedRect =
@@ -1915,7 +1915,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_Splitter:
         if (option->state & State_Sunken && option->state & State_Enabled) {
             painter->save();
-            painter->setOpacity(qreal(0.5));
+            painter->setOpacity(0.5);
             painter->setBrush(d->themePalette()->light());
             painter->setRenderHint(QPainter::Antialiasing);
             const qreal roundRectRadius = 4 * goldenRatio;
@@ -1993,8 +1993,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorRadioButton: {
             QRect buttonRect = option->rect;
             //there is empty (a. 33%) space in svg graphics for radiobutton
-            const qreal reduceWidth = (qreal)buttonRect.width()/qreal(3.0);
-            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : qreal(1.0);
+            const qreal reduceWidth = (qreal)buttonRect.width()/3.0;
+            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : 1.0;
             // Try to occupy the full area
             const qreal scaler = 1 + (reduceWidth/rectWidth);
             buttonRect.setWidth((int)((buttonRect.width()-reduceWidth) * scaler));

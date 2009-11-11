@@ -40,7 +40,6 @@
 ****************************************************************************/
 
 #include "qmatrix4x4.h"
-#include <private/qnumeric_p.h>
 #include <QtCore/qmath.h>
 #include <QtCore/qvariant.h>
 #include <QtGui/qmatrix.h>
@@ -59,7 +58,7 @@ QT_BEGIN_NAMESPACE
     \sa QVector3D, QGenericMatrix
 */
 
-static const qreal inv_dist_to_plane = qreal(1.) / qreal(1024.);
+static const qreal inv_dist_to_plane = 1. / 1024.;
 
 /*!
     \fn QMatrix4x4::QMatrix4x4()
@@ -507,23 +506,22 @@ QMatrix4x4 QMatrix4x4::transposed() const
 */
 QMatrix4x4& QMatrix4x4::operator/=(qreal divisor)
 {
-    const qreal inv_divisor = (1 / divisor); 
-    m[0][0] *= inv_divisor;
-    m[0][1] *= inv_divisor;
-    m[0][2] *= inv_divisor;
-    m[0][3] *= inv_divisor;
-    m[1][0] *= inv_divisor;
-    m[1][1] *= inv_divisor;
-    m[1][2] *= inv_divisor;
-    m[1][3] *= inv_divisor;
-    m[2][0] *= inv_divisor;
-    m[2][1] *= inv_divisor;
-    m[2][2] *= inv_divisor;
-    m[2][3] *= inv_divisor;
-    m[3][0] *= inv_divisor;
-    m[3][1] *= inv_divisor;
-    m[3][2] *= inv_divisor;
-    m[3][3] *= inv_divisor;
+    m[0][0] /= divisor;
+    m[0][1] /= divisor;
+    m[0][2] /= divisor;
+    m[0][3] /= divisor;
+    m[1][0] /= divisor;
+    m[1][1] /= divisor;
+    m[1][2] /= divisor;
+    m[1][3] /= divisor;
+    m[2][0] /= divisor;
+    m[2][1] /= divisor;
+    m[2][2] /= divisor;
+    m[2][3] /= divisor;
+    m[3][0] /= divisor;
+    m[3][1] /= divisor;
+    m[3][2] /= divisor;
+    m[3][3] /= divisor;
     flagBits = General;
     return *this;
 }
@@ -664,24 +662,23 @@ QMatrix4x4& QMatrix4x4::operator/=(qreal divisor)
 */
 QMatrix4x4 operator/(const QMatrix4x4& matrix, qreal divisor)
 {
-    const qreal inv_divisor = (1 / divisor);
     QMatrix4x4 m(1); // The "1" says to not load the identity.
-    m.m[0][0] = matrix.m[0][0] * inv_divisor;
-    m.m[0][1] = matrix.m[0][1] * inv_divisor;
-    m.m[0][2] = matrix.m[0][2] * inv_divisor;
-    m.m[0][3] = matrix.m[0][3] * inv_divisor;
-    m.m[1][0] = matrix.m[1][0] * inv_divisor;
-    m.m[1][1] = matrix.m[1][1] * inv_divisor;
-    m.m[1][2] = matrix.m[1][2] * inv_divisor;
-    m.m[1][3] = matrix.m[1][3] * inv_divisor;
-    m.m[2][0] = matrix.m[2][0] * inv_divisor;
-    m.m[2][1] = matrix.m[2][1] * inv_divisor;
-    m.m[2][2] = matrix.m[2][2] * inv_divisor;
-    m.m[2][3] = matrix.m[2][3] * inv_divisor;
-    m.m[3][0] = matrix.m[3][0] * inv_divisor;
-    m.m[3][1] = matrix.m[3][1] * inv_divisor;
-    m.m[3][2] = matrix.m[3][2] * inv_divisor;
-    m.m[3][3] = matrix.m[3][3] * inv_divisor;
+    m.m[0][0] = matrix.m[0][0] / divisor;
+    m.m[0][1] = matrix.m[0][1] / divisor;
+    m.m[0][2] = matrix.m[0][2] / divisor;
+    m.m[0][3] = matrix.m[0][3] / divisor;
+    m.m[1][0] = matrix.m[1][0] / divisor;
+    m.m[1][1] = matrix.m[1][1] / divisor;
+    m.m[1][2] = matrix.m[1][2] / divisor;
+    m.m[1][3] = matrix.m[1][3] / divisor;
+    m.m[2][0] = matrix.m[2][0] / divisor;
+    m.m[2][1] = matrix.m[2][1] / divisor;
+    m.m[2][2] = matrix.m[2][2] / divisor;
+    m.m[2][3] = matrix.m[2][3] / divisor;
+    m.m[3][0] = matrix.m[3][0] / divisor;
+    m.m[3][1] = matrix.m[3][1] / divisor;
+    m.m[3][2] = matrix.m[3][2] / divisor;
+    m.m[3][3] = matrix.m[3][3] / divisor;
     return m;
 }
 
@@ -1014,7 +1011,7 @@ void QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
         s = 0.0f;
         c = -1.0f;
     } else {
-        qreal a = angle * Q_PI180;
+        qreal a = angle * M_PI / 180.0f;
         c = qCos(a);
         s = qSin(a);
     }
@@ -1069,11 +1066,10 @@ void QMatrix4x4::rotate(qreal angle, qreal x, qreal y, qreal z)
     if (!quick) {
         qreal len = x * x + y * y + z * z;
         if (!qFuzzyIsNull(len - 1.0f) && !qFuzzyIsNull(len)) {
-            const qreal inv_len = 1 / len;
             len = qSqrt(len);
-            x *= inv_len;
-            y *= inv_len;
-            z *= inv_len;
+            x /= len;
+            y /= len;
+            z /= len;
         }
         ic = 1.0f - c;
         m.m[0][0] = x * x * ic + c;
@@ -1122,7 +1118,7 @@ void QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
         s = 0.0f;
         c = -1.0f;
     } else {
-        qreal a = angle * Q_PI180;
+        qreal a = angle * M_PI / 180.0f;
         c = qCos(a);
         s = qSin(a);
     }
@@ -1173,11 +1169,10 @@ void QMatrix4x4::projectedRotate(qreal angle, qreal x, qreal y, qreal z)
     if (!quick) {
         qreal len = x * x + y * y + z * z;
         if (!qFuzzyIsNull(len - 1.0f) && !qFuzzyIsNull(len)) {
-            const qreal inv_len = 1 / len;
             len = qSqrt(len);
-            x *= inv_len;
-            y *= inv_len;
-            z *= inv_len;
+            x /= len;
+            y /= len;
+            z /= len;
         }
         ic = 1.0f - c;
         m.m[0][0] = x * x * ic + c;
@@ -1304,39 +1299,35 @@ void QMatrix4x4::ortho(qreal left, qreal right, qreal bottom, qreal top, qreal n
     qreal width = right - left;
     qreal invheight = top - bottom;
     qreal clip = farPlane - nearPlane;
-    qreal inv_width = 1 / width;
-    qreal inv_invheight = 1 / invheight;
-    qreal inv_clip = 1 / clip;
 #ifndef QT_NO_VECTOR3D
     if (clip == 2.0f && (nearPlane + farPlane) == 0.0f) {
         // We can express this projection as a translate and scale
         // which will be more efficient to modify with further
         // transformations than producing a "General" matrix.
-
         translate(QVector3D
-            (-(left + right) * inv_width,
-             -(top + bottom) * inv_invheight,
+            (-(left + right) / width,
+             -(top + bottom) / invheight,
              0.0f));
         scale(QVector3D
-            (2.0f * inv_width,
-             2.0f * inv_invheight,
+            (2.0f / width,
+             2.0f / invheight,
              -1.0f));
         return;
     }
 #endif
     QMatrix4x4 m(1);
-    m.m[0][0] = 2.0f * inv_width;
+    m.m[0][0] = 2.0f / width;
     m.m[1][0] = 0.0f;
     m.m[2][0] = 0.0f;
-    m.m[3][0] = -(left + right) * inv_width;
+    m.m[3][0] = -(left + right) / width;
     m.m[0][1] = 0.0f;
-    m.m[1][1] = 2.0f * inv_invheight;
+    m.m[1][1] = 2.0f / invheight;
     m.m[2][1] = 0.0f;
-    m.m[3][1] = -(top + bottom) * inv_invheight;
+    m.m[3][1] = -(top + bottom) / invheight;
     m.m[0][2] = 0.0f;
     m.m[1][2] = 0.0f;
-    m.m[2][2] = -2.0f * inv_clip;
-    m.m[3][2] = -(nearPlane + farPlane) * inv_clip;
+    m.m[2][2] = -2.0f / clip;
+    m.m[3][2] = -(nearPlane + farPlane) / clip;
     m.m[0][3] = 0.0f;
     m.m[1][3] = 0.0f;
     m.m[2][3] = 0.0f;
@@ -1363,24 +1354,21 @@ void QMatrix4x4::frustum(qreal left, qreal right, qreal bottom, qreal top, qreal
 
     // Construct the projection.
     QMatrix4x4 m(1);
-    const qreal width = right - left;
-    const qreal invheight = top - bottom;
-    const qreal clip = farPlane - nearPlane;
-    const qreal inv_width = 1 / width;
-    const qreal inv_invheight = 1 / invheight;
-    const qreal inv_clip = 1 / clip;
-    m.m[0][0] = 2.0f * nearPlane * inv_width;
+    qreal width = right - left;
+    qreal invheight = top - bottom;
+    qreal clip = farPlane - nearPlane;
+    m.m[0][0] = 2.0f * nearPlane / width;
     m.m[1][0] = 0.0f;
-    m.m[2][0] = (left + right) * inv_width;
+    m.m[2][0] = (left + right) / width;
     m.m[3][0] = 0.0f;
     m.m[0][1] = 0.0f;
-    m.m[1][1] = 2.0f * nearPlane * inv_invheight;
-    m.m[2][1] = (top + bottom) * inv_invheight;
+    m.m[1][1] = 2.0f * nearPlane / invheight;
+    m.m[2][1] = (top + bottom) / invheight;
     m.m[3][1] = 0.0f;
     m.m[0][2] = 0.0f;
     m.m[1][2] = 0.0f;
-    m.m[2][2] = -(nearPlane + farPlane) * inv_clip;
-    m.m[3][2] = -2.0f * nearPlane * farPlane * inv_clip;
+    m.m[2][2] = -(nearPlane + farPlane) / clip;
+    m.m[3][2] = -2.0f * nearPlane * farPlane / clip;
     m.m[0][3] = 0.0f;
     m.m[1][3] = 0.0f;
     m.m[2][3] = -1.0f;
@@ -1406,13 +1394,12 @@ void QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, qreal f
 
     // Construct the projection.
     QMatrix4x4 m(1);
-    const qreal radians = (angle * 0.5f) * Q_PI180;
-    const qreal sine = qSin(radians);
+    qreal radians = (angle / 2.0f) * M_PI / 180.0f;
+    qreal sine = qSin(radians);
     if (sine == 0.0f)
         return;
-    const qreal cotan = qCos(radians) / sine;
-    const qreal clip = farPlane - nearPlane;
-    const qreal inv_clip = 1 / clip;
+    qreal cotan = qCos(radians) / sine;
+    qreal clip = farPlane - nearPlane;
     m.m[0][0] = cotan / aspect;
     m.m[1][0] = 0.0f;
     m.m[2][0] = 0.0f;
@@ -1423,8 +1410,8 @@ void QMatrix4x4::perspective(qreal angle, qreal aspect, qreal nearPlane, qreal f
     m.m[3][1] = 0.0f;
     m.m[0][2] = 0.0f;
     m.m[1][2] = 0.0f;
-    m.m[2][2] = -(nearPlane + farPlane) * inv_clip;
-    m.m[3][2] = -(2.0f * nearPlane * farPlane) * inv_clip;
+    m.m[2][2] = -(nearPlane + farPlane) / clip;
+    m.m[3][2] = -(2.0f * nearPlane * farPlane) / clip;
     m.m[0][3] = 0.0f;
     m.m[1][3] = 0.0f;
     m.m[2][3] = -1.0f;

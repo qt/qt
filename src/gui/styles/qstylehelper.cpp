@@ -117,15 +117,15 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
     const int currentSliderPosition = dial->upsideDown ? dial->sliderPosition : (dial->maximum - dial->sliderPosition);
     qreal a = 0;
     if (dial->maximum == dial->minimum)
-        a = Q_PI2;
+        a = Q_PI / 2;
     else if (dial->dialWrapping)
-        a = Q_PI2 * 3 - (currentSliderPosition - dial->minimum) * Q_2PI
+        a = Q_PI * 3 / 2 - (currentSliderPosition - dial->minimum) * 2 * Q_PI
             / (dial->maximum - dial->minimum);
     else
         a = (Q_PI * 8 - (currentSliderPosition - dial->minimum) * 10 * Q_PI
             / (dial->maximum - dial->minimum)) / 6;
-    const qreal xc = width * qreal(0.5);
-    const qreal yc = height * qreal(0.5);
+    qreal xc = width / 2.0;
+    qreal yc = height / 2.0;
     qreal len = r - QStyleHelper::calcBigLineSize(r) - 3;
     qreal back = offset * len;
     QPointF pos(QPointF(xc + back * qCos(a), yc - back * qSin(a)));
@@ -134,7 +134,7 @@ static QPointF calcRadialPos(const QStyleOptionSlider *dial, qreal offset)
 
 qreal angle(const QPointF &p1, const QPointF &p2)
 {
-    static const qreal rad_factor = Q_PI180;
+    static const qreal rad_factor = 180 / Q_PI;
     qreal _angle = 0;
 
     if (p1.x() == p2.x()) {
@@ -186,7 +186,7 @@ QPolygonF calcLines(const QStyleOptionSlider *dial)
     poly.resize(2 + 2 * notches);
     int smallLineSize = bigLineSize / 2;
     for (int i = 0; i <= notches; ++i) {
-        qreal angle = dial->dialWrapping ? Q_PI2 * 3 - i * Q_2PI / notches
+        qreal angle = dial->dialWrapping ? Q_PI * 3 / 2 - i * 2 * Q_PI / notches
                   : (Q_PI * 8 - i * 10 * Q_PI / notches) / 6;
         qreal s = qSin(angle);
         qreal c = qCos(angle);
@@ -215,7 +215,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     const bool enabled = option->state & QStyle::State_Enabled;
     qreal r = qMin(width, height) / 2;
     r -= r/50;
-    const qreal penSize = r/qreal(20.0);
+    const qreal penSize = r/20.0;
 
     painter->save();
     painter->setRenderHint(QPainter::Antialiasing);
@@ -234,7 +234,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     const qreal dx = option->rect.x() + d_ + (width - 2 * r) / 2 + 1;
     const qreal dy = option->rect.y() + d_ + (height - 2 * r) / 2 + 1;
 
-    QRectF br = QRectF(dx + qreal(0.5), dy + qreal(0.5),
+    QRectF br = QRectF(dx + 0.5, dy + 0.5,
                        int(r * 2 - 2 * d_ - 2),
                        int(r * 2 - 2 * d_ - 2));
     buttonColor.setHsv(buttonColor .hue(),
@@ -244,11 +244,11 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
     if (enabled) {
         // Drop shadow
-        const qreal shadowSize = qMax(qreal(1.0), penSize * qreal(0.5));
+        qreal shadowSize = qMax(1.0, penSize/2.0);
         QRectF shadowRect= br.adjusted(-2*shadowSize, -2*shadowSize,
                                        2*shadowSize, 2*shadowSize);
         QRadialGradient shadowGradient(shadowRect.center().x(),
-                                       shadowRect.center().y(), shadowRect.width() * qreal(0.5),
+                                       shadowRect.center().y(), shadowRect.width()/2.0,
                                        shadowRect.center().x(), shadowRect.center().y());
         shadowGradient.setColorAt(qreal(0.91), QColor(0, 0, 0, 40));
         shadowGradient.setColorAt(qreal(1.0), Qt::transparent);
@@ -260,7 +260,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
 
         // Main gradient
         QRadialGradient gradient(br.center().x() - br.width()/3, dy,
-                                 br.width()*qreal(1.3), br.center().x(),
+                                 br.width()*1.3, br.center().x(),
                                  br.center().y() - br.height()/2);
         gradient.setColorAt(0, buttonColor.lighter(110));
         gradient.setColorAt(qreal(0.5), buttonColor);
@@ -283,7 +283,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
                          qMin(160, highlight.saturation()),
                          qMax(230, highlight.value()));
         highlight.setAlpha(127);
-        p->setPen(QPen(highlight, qreal(2.0)));
+        p->setPen(QPen(highlight, 2.0));
         p->setBrush(Qt::NoBrush);
         p->drawEllipse(br.adjusted(-1, -1, 1, 1));
     }
@@ -302,7 +302,7 @@ void drawDial(const QStyleOptionSlider *option, QPainter *painter)
     dialGradient.setColorAt(1, buttonColor.darker(140));
     dialGradient.setColorAt(qreal(0.4), buttonColor.darker(120));
     dialGradient.setColorAt(0, buttonColor.darker(110));
-    if (penSize > qreal(3.0)) {
+    if (penSize > 3.0) {
         painter->setPen(QPen(QColor(0, 0, 0, 25), penSize));
         painter->drawLine(calcRadialPos(option, qreal(0.90)), calcRadialPos(option, qreal(0.96)));
     }

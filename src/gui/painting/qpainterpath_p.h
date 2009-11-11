@@ -258,7 +258,7 @@ inline void QPainterPathData::maybeMoveTo()
     }
 }
 
-#define KAPPA qreal(0.5522847498)
+#define KAPPA 0.5522847498
 
 
 QT_END_NAMESPACE
