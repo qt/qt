@@ -374,9 +374,21 @@ bool MediaObject::createPipefromURL(const QUrl &url)
         return false;
 
     // Set the device for MediaSource::Disc
-    QByteArray mediaDevice = QFile::encodeName(m_source.deviceName());
-    if (!mediaDevice.isEmpty())
-        g_object_set (m_datasource, "device", mediaDevice.constData(), (const char*)NULL);
+    if (m_source.type() == MediaSource::Disc) {
+
+        if (g_object_class_find_property (G_OBJECT_GET_CLASS (m_datasource), "device")) {
+            QByteArray mediaDevice = QFile::encodeName(m_source.deviceName());
+            if (!mediaDevice.isEmpty())
+                g_object_set (G_OBJECT (m_datasource), "device", mediaDevice.constData(), (const char*)NULL);
+        }
+
+        // Also Set optical disc speed to 2X for Audio CD
+        if (m_source.discType() == Phonon::Cd
+            && (g_object_class_find_property (G_OBJECT_GET_CLASS (m_datasource), "read-speed"))) {
+            g_object_set (G_OBJECT (m_datasource), "read-speed", 2, (const char*)NULL);
+            m_backend->logMessage(QString("new device speed : 2X"), Backend::Info, this);
+        }
+    }
 
     // Link data source into pipeline
     gst_bin_add(GST_BIN(m_pipeline), m_datasource);
