@@ -61,6 +61,8 @@
 
 #include "../debuggerutil_p.h"
 
+Q_DECLARE_METATYPE(QmlDebugWatch::State)
+
 
 class tst_QmlDebug : public QObject
 {
@@ -94,6 +96,8 @@ private slots:
     void watch_object();
     void watch_expression();
     void watch_expression_data();
+    void watch_context();
+    void watch_file();
 
     void queryAvailableEngines();
     void queryRootContexts();
@@ -156,7 +160,7 @@ void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
     QVERIFY(query->state() == QmlDebugQuery::Waiting);
-    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugWatch::State))))
+    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugQuery::State))))
         QFAIL("query timed out");
 }
 
@@ -258,6 +262,8 @@ void tst_QmlDebug::compareProperties(const QmlDebugPropertyReference &a, const Q
 void tst_QmlDebug::initTestCase()
 {
     m_dbg = new QmlEngineDebug(m_conn, this);
+
+    qRegisterMetaType<QmlDebugWatch::State>();
 }
 
 void tst_QmlDebug::watch_property()
@@ -265,7 +271,14 @@ void tst_QmlDebug::watch_property()
     QmlDebugObjectReference obj = findRootObject();
     QmlDebugPropertyReference prop = findProperty(obj.properties(), "width");
 
-    QmlDebugPropertyWatch *watch = m_dbg->addWatch(prop, this);
+    QmlDebugPropertyWatch *watch;
+    
+    QmlEngineDebug unconnected(0);
+    watch = unconnected.addWatch(prop, this);
+    QCOMPARE(watch->state(), QmlDebugWatch::Dead);
+    delete watch;
+    
+    watch = m_dbg->addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
     QCOMPARE(watch->name(), prop.name());
@@ -308,7 +321,14 @@ void tst_QmlDebug::watch_object()
     delete q_context;
     delete q_obj;
 
-    QmlDebugWatch *watch = m_dbg->addWatch(obj, this);
+    QmlDebugWatch *watch;
+
+    QmlEngineDebug unconnected(0);
+    watch = unconnected.addWatch(obj, this);
+    QCOMPARE(watch->state(), QmlDebugWatch::Dead);
+    delete watch;
+    
+    watch = m_dbg->addWatch(obj, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
 
@@ -358,10 +378,19 @@ void tst_QmlDebug::watch_expression()
     
     QmlDebugObjectReference obj = findRootObject();
 
-    QmlDebugObjectExpressionWatch *watch = m_dbg->addWatch(obj, expr, this);
+    QmlDebugObjectExpressionWatch *watch;
+
+    QmlEngineDebug unconnected(0);
+    watch = unconnected.addWatch(obj, expr, this);
+    QCOMPARE(watch->state(), QmlDebugWatch::Dead);
+    delete watch;
+    
+    watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
     QCOMPARE(watch->expression(), expr);
+
+    QSignalSpy spyState(watch, SIGNAL(stateChanged(QmlDebugWatch::State)));
 
     QSignalSpy spy(watch, SIGNAL(valueChanged(QByteArray,QVariant)));
     int expectedSpyCount = incrementCount + 1;  // should also get signal with expression's initial value
@@ -375,6 +404,10 @@ void tst_QmlDebug::watch_expression()
         if (!QmlDebuggerTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
             QFAIL("Did not receive valueChanged() for expression");
     }
+
+    if (spyState.count() == 0)
+        QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(spyState.count(), 1);
 
     m_dbg->removeWatch(watch);
     delete watch;
@@ -399,6 +432,20 @@ void tst_QmlDebug::watch_expression_data()
 
     QTest::newRow("width") << "width" << 0 << 0;
     QTest::newRow("width+10") << "width + 10" << 10 << 5;
+}
+
+void tst_QmlDebug::watch_context()
+{
+    QmlDebugContextReference c;
+    QTest::ignoreMessage(QtWarningMsg, "QmlEngineDebug::addWatch(): Not implemented");
+    QVERIFY(!m_dbg->addWatch(c, QString(), this));
+}
+
+void tst_QmlDebug::watch_file()
+{
+    QmlDebugFileReference f;
+    QTest::ignoreMessage(QtWarningMsg, "QmlEngineDebug::addWatch(): Not implemented");
+    QVERIFY(!m_dbg->addWatch(f, this));
 }
 
 void tst_QmlDebug::queryAvailableEngines()
@@ -696,6 +743,20 @@ void tst_QmlDebug::tst_QmlDebugPropertyReference()
     waitForQuery(query);
     QmlDebugObjectReference obj = query->object();
     delete query;   
+
+    QmlDebugPropertyReference ref = findProperty(obj.properties(), "scale");
+    QVERIFY(ref.objectDebugId() > 0);
+    QVERIFY(!ref.name().isEmpty());
+    QVERIFY(!ref.value().isNull());
+    QVERIFY(!ref.valueTypeName().isEmpty());
+    QVERIFY(!ref.binding().isEmpty());
+    QVERIFY(ref.hasNotifySignal());
+  
+    QmlDebugPropertyReference copy(ref);
+    QmlDebugPropertyReference copyAssign;
+    copyAssign = ref;
+    foreach (const QmlDebugPropertyReference &r, (QList<QmlDebugPropertyReference>() << copy << copyAssign))
+        compareProperties(r, ref);
 }
 
 class TestRunnerThread : public QThread
@@ -745,7 +806,7 @@ int main(int argc, char *argv[])
     QmlComponent component(&engine,
                 "import Qt 4.6\n"
                     "Item {\n"
-                        "width: 10; height: 20;\n"
+                        "width: 10; height: 20; scale: blueRect.scale;\n"
                         "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                         "Text { color: blueRect.color; }"
                     "}\n",
