@@ -49,6 +49,13 @@ Backend::Backend(QObject *parent, const QVariantList &)
         , m_debugLevel(Warning)
         , m_isValid(false)
 {
+    // In order to support reloading, we only set the app name once...
+    static bool first = true;
+    if (first) {
+        first = false;
+        g_set_application_name(qApp->applicationName().toUtf8());
+    }
+
     GError *err = 0;
     bool wasInit = gst_init_check(0, 0, &err);  //init gstreamer: must be called before any gst-related functions
     if (err)
