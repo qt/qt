@@ -354,3 +354,4 @@ QScriptContext *QScriptDeclarativeClass::context() const
     return d_ptr->context;
 }
 
+QT_END_NAMESPACE
