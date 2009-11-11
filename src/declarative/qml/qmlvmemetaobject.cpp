@@ -210,17 +210,18 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
 
             if (id < metaData->aliasCount) {
 
-                if (!ctxt) return -1;
                 QmlVMEMetaData::AliasData *d = metaData->aliasData() + id;
+
+                if (d->flags & QML_ALIAS_FLAG_PTR && c == QMetaObject::ReadProperty) 
+                        *reinterpret_cast<void **>(a[0]) = 0;
+
+                if (!ctxt) return -1;
                 QmlContextPrivate *ctxtPriv = 
                     (QmlContextPrivate *)QObjectPrivate::get(ctxt);
 
                 QObject *target = ctxtPriv->idValues[d->contextIdx].data();
-                if (!target) {
-                    if (d->propertyIdx == -1) 
-                        *reinterpret_cast<QObject **>(a[0]) = target;
+                if (!target) 
                     return -1;
-                }
 
                 if (c == QMetaObject::ReadProperty && !aConnected.testBit(id)) {
                     int sigIdx = methodOffset + id + metaData->propertyCount;
