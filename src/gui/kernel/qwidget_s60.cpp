@@ -359,6 +359,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(true, desktop));
+        control->SetMopParent(static_cast<CEikAppUi*>(S60->appUi()));
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
