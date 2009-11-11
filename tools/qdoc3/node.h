@@ -609,6 +609,8 @@ class FunctionNode : public LeafNode
     const QString& element() const { return parent()->name(); }
     bool isAttached() const { return att; }
 
+    void debug() const;
+
  private:
     void setAssociatedProperty(PropertyNode *property);
 

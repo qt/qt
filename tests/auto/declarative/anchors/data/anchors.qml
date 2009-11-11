@@ -97,7 +97,7 @@ Rectangle {
         id: rect18; objectName: "rect18"
         x: 180; width: 10
         anchors.top: masterRect.bottom
-        anchors.bottom: Rect12.top
+        anchors.bottom: rect12.top
     }
     Rectangle {
         id: rect19; objectName: "rect19"

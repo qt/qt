@@ -104,6 +104,7 @@ public slots:
     void proxySettingsChanged ();
     void setScaleView();
     void executeErrors();
+    void setSlowMode(bool);
 
 protected:
     virtual void keyPressEvent(QKeyEvent *);
