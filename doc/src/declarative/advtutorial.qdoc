@@ -53,10 +53,10 @@ The results of the individual steps are in the $QTDIR/examples/declarative/tutor
 Tutorial chapters:
 
 \list
-\o \l {advtutorial1}{Advanced Tutorial 1 - Basic Game Screen and Block}
-\o \l {advtutorial2}{Advanced Tutorial 2 - Dynamically create the Blocks}
-\o \l {advtutorial3}{Advanced Tutorial 3 - Implement the Game Logic}
-\o \l {advtutorial4}{Advanced Tutorial 4 - Finishing Touches}
+\o \l {Advanced Tutorial 1 - Creating the Game Canvas and Blocks}
+\o \l {Advanced Tutorial 2 - Populating the Game Canvas}
+\o \l {Advanced Tutorial 3 - Implementing the Game Logic}
+\o \l {Advanced Tutorial 4 - Finishing Touches}
 \endlist
 
 */

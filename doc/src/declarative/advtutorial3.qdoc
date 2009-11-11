@@ -41,7 +41,7 @@
 
 /*!
 \page advtutorial3.html
-\target advtutorial3
+\example declarative/tutorials/samegame/samegame3
 \title Advanced Tutorial 3 - Implementing the Game Logic
 
 To the \c initBoard function we added clearing the board beforehand, so that clicking new game won't leave the previous game
@@ -111,7 +111,7 @@ The game works, but it's a little boring right now. Where's the smooth animated 
 If you were a QML expert you could have written these in for the first iteration, but in this tutorial they've been saved
 until the next chapter - where your application becomes alive!
 
-[Previous: \l {advtutorial2}{Advanced Tutorial 2}] [\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial4}{Advanced Tutorial 4}]
+[Previous: \l {Advanced Tutorial 2 - Populating the Game Canvas}] [\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {Advanced Tutorial 4 - Finishing Touches}]
 
 */
 

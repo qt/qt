@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-#include "qmlpropertymap_p.h"
+#include "qmlpropertymap.h"
 #include <private/qmlopenmetaobject_p.h>
 #include <QDebug>
 
