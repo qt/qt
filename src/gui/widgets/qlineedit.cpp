@@ -1594,7 +1594,9 @@ void QLineEdit::keyPressEvent(QKeyEvent *event)
                         && !isReadOnly())
                     {
                         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
                         clear();
+#endif
                     } else {
                         event->ignore();
                         return;
@@ -1651,7 +1653,9 @@ void QLineEdit::inputMethodEvent(QInputMethodEvent *e)
         && hasFocus() && !hasEditFocus()
         && !e->preeditString().isEmpty()) {
         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
         selectAll();        // so text is replaced rather than appended to
+#endif
     }
 #endif
 
