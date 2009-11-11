@@ -2073,7 +2073,7 @@ void QImage::setNumColors(int numColors)
     have entries for all the pixel/index values present in the image,
     otherwise the results are undefined.
 
-    \sa colorsCount(), colorTable(), setColor(), {QImage#Image
+    \sa colorCount(), colorTable(), setColor(), {QImage#Image
     Transformations}{Image Transformations}
 */
 
