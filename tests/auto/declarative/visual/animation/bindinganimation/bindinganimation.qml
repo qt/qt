@@ -21,7 +21,7 @@ Rectangle {
             }
             PropertyChanges {
                 target: MyMouseRegion
-                onClicked: "Page.currentState = ''"
+                onClicked: Page.state = ''
             }
         }
     ]

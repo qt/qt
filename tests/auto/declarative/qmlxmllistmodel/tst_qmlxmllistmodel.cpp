@@ -56,6 +56,8 @@ private slots:
     void missingFields();
     void cdata();
     void attributes();
+    void roles();
+    void roleErrors();
 
 private:
     QmlEngine engine;
@@ -76,6 +78,8 @@ void tst_qmlxmllistmodel::buildModel()
     QCOMPARE(data.value(Qt::UserRole+1).toString(), QLatin1String("Dog"));
     QCOMPARE(data.value(Qt::UserRole+2).toInt(), 9);
     QCOMPARE(data.value(Qt::UserRole+3).toString(), QLatin1String("Medium"));
+
+    delete listModel;
 }
 
 void tst_qmlxmllistmodel::missingFields()
@@ -95,6 +99,8 @@ void tst_qmlxmllistmodel::missingFields()
     data = listModel->data(7, roles);
     QVERIFY(data.count() == 5);
     QCOMPARE(data.value(Qt::UserRole+2).toString(), QLatin1String(""));
+
+    delete listModel;
 }
 
 void tst_qmlxmllistmodel::cdata()
@@ -109,6 +115,8 @@ void tst_qmlxmllistmodel::cdata()
     QHash<int, QVariant> data = listModel->data(2, roles);
     QVERIFY(data.count() == 1);
     QVERIFY(data.value(Qt::UserRole+2).toString().startsWith(QLatin1String("<html>")));
+
+    delete listModel;
 }
 
 void tst_qmlxmllistmodel::attributes()
@@ -123,8 +131,49 @@ void tst_qmlxmllistmodel::attributes()
     QHash<int, QVariant> data = listModel->data(2, roles);
     QVERIFY(data.count() == 1);
     QCOMPARE(data.value(Qt::UserRole).toString(), QLatin1String("Vegetable Soup"));
+
+    delete listModel;
 }
 
+void tst_qmlxmllistmodel::roles()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/model.qml"));
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 9);
+
+    QList<int> roles = listModel->roles();
+    QCOMPARE(roles.count(), 4);
+    QCOMPARE(listModel->toString(roles.at(0)), QLatin1String("name"));
+    QCOMPARE(listModel->toString(roles.at(1)), QLatin1String("type"));
+    QCOMPARE(listModel->toString(roles.at(2)), QLatin1String("age"));
+    QCOMPARE(listModel->toString(roles.at(3)), QLatin1String("size"));
+
+    delete listModel;
+}
+
+void tst_qmlxmllistmodel::roleErrors()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/roleErrors.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlXmlListModelRole (file://" SRCDIR "/data/roleErrors.qml:6:5) An XmlRole query must not start with '/'");
+    //### make sure we receive all expected warning messages.
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 9);
+
+    QList<int> roles;
+    roles << Qt::UserRole << Qt::UserRole + 1 << Qt::UserRole + 2 << Qt::UserRole + 3;
+    QHash<int, QVariant> data = listModel->data(3, roles);
+    QVERIFY(data.count() == 4);
+
+    //### should any of these return valid values?
+    QCOMPARE(data.value(Qt::UserRole), QVariant());
+    QCOMPARE(data.value(Qt::UserRole+1), QVariant());
+    QCOMPARE(data.value(Qt::UserRole+2), QVariant());
+    QCOMPARE(data.value(Qt::UserRole+3), QVariant());
+
+    delete listModel;
+}
 
 QTEST_MAIN(tst_qmlxmllistmodel)
 

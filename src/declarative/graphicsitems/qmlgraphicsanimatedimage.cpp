@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     QMovie::supportedFormats().
 
     \table
-    \row 
+    \row
     \o \image animatedimageitem.gif
     \o
     \qml

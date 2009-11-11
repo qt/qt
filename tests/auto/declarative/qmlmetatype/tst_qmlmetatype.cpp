@@ -239,7 +239,7 @@ void tst_qmlmetatype::copy()
     QT_COPY_TEST(QTextFormat, QTextFormat(QTextFormat::ListFormat));
     QT_COPY_TEST(QMatrix, QMatrix().translate(10, 10));
     QT_COPY_TEST(QTransform, QTransform().translate(10, 10));
-    QT_COPY_TEST(QMatrix4x4, QMatrix4x4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1));
+    QT_COPY_TEST(QMatrix4x4, QMatrix4x4(1,0,2,3,0,1,0,0,9,0,1,0,0,0,10,1));
     QT_COPY_TEST(QVector2D, QVector2D(10.2, 1));
     QT_COPY_TEST(QVector3D, QVector3D(10.2, 1, -2));
     QT_COPY_TEST(QVector4D, QVector4D(10.2, 1, -2, 1.2));
