@@ -344,7 +344,7 @@ void MediaObject::cb_pad_added(GstElement *decodebin,
     Q_UNUSED(decodebin);
     GstPad *decodepad = static_cast<GstPad*>(data);
     gst_pad_link (pad, decodepad);
-    gst_object_unref (decodepad);
+    //gst_object_unref (decodepad);
 }
 
 /**
@@ -928,23 +928,27 @@ void MediaObject::setSource(const MediaSource &source)
             setError(tr("Could not open media source."));
         break;
 
-    case MediaSource::Disc: // CD tracks can be specified by setting the url in the following way uri=cdda:4
+    case MediaSource::Disc:
         {
-            QUrl url;
+            QString mediaUrl;
             switch (source.discType()) {
-                case Phonon::Cd:
-                    url = QUrl(QLatin1String("cdda://"));
-                    break;
-                case Phonon::Dvd:
-                    url = QUrl(QLatin1String("dvd://"));
-                    break;
-                case Phonon::Vcd:
-                    url = QUrl(QLatin1String("vcd://"));
-                    break;
-                default:
-                    break;
+            case Phonon::NoDisc:
+                qWarning() << "I should never get to see a MediaSource that is a disc but doesn't specify which one";
+                return;
+            case Phonon::Cd:  // CD tracks can be specified by setting the url in the following way uri=cdda:4
+                mediaUrl = QLatin1String("cdda://");
+                break;
+            case Phonon::Dvd:
+                mediaUrl = QLatin1String("dvd://");
+                break;
+            case Phonon::Vcd:
+                mediaUrl = QLatin1String("vcd://");
+                break;
+            default:
+                qWarning() <<  "media " << source.discType() << " not implemented";
+                return;
             }
-            if (!url.isEmpty() && createPipefromURL(url))
+            if (!mediaUrl.isEmpty() && createPipefromURL(QUrl(mediaUrl)))
                 m_loading = true;
             else
                 setError(tr("Could not open media source."));
