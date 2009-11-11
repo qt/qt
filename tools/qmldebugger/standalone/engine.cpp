@@ -163,7 +163,7 @@ void EnginePane::queryContext(int id)
     if (!m_context->isWaiting())
         contextChanged();
     else
-        QObject::connect(m_context, SIGNAL(stateChanged(State)),
+        QObject::connect(m_context, SIGNAL(stateChanged(QmlDebugQuery::State)),
                          this, SLOT(contextChanged()));
 }
 
@@ -186,7 +186,7 @@ void EnginePane::refreshEngines()
     if (!m_engines->isWaiting())
         enginesChanged();
     else
-        QObject::connect(m_engines, SIGNAL(stateChanged(State)), 
+        QObject::connect(m_engines, SIGNAL(stateChanged(QmlDebugQuery::State)), 
                          this, SLOT(enginesChanged()));
 }
 
