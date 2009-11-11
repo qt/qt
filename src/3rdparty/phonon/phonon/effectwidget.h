@@ -39,7 +39,7 @@ class Effect;
     class EffectWidgetPrivate;
 
     /** \class EffectWidget effectwidget.h Phonon/EffectWidget
-     * \brief Widget to control the parameters of an \ref Effect.
+     * \brief Widget to control the parameters of an Effect.
      *
      * \ingroup PhononWidgets
      * \ingroup PhononEffects
