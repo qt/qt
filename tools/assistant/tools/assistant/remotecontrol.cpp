@@ -97,9 +97,9 @@ void StdInListenerWin::run()
 #endif
 
     while (ok) {
-        ok = ReadFile(hStdinDup, chBuf, 4096, &dwRead, NULL);
+        ok = ReadFile(hStdinDup, chBuf, sizeof(chBuf), &dwRead, NULL);
         if (ok && dwRead != 0)
-            emit receivedCommand(QString::fromLocal8Bit(chBuf));
+            emit receivedCommand(QString::fromLocal8Bit(chBuf, dwRead));
     }
 }
 #endif
