@@ -1329,9 +1329,9 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 
     Key handling is available to all Item-based visual elements via the \l {Keys}{Keys}
     attached property.  The \e Keys attached property provides basic handlers such
-    as \l {Keys::onPressed(event)}{onPressed} and \l {Keys::onReleased(event)}{onReleased},
+    as \l {Keys::onPressed}{onPressed} and \l {Keys::onReleased}{onReleased},
     as well as handlers for specific keys, such as
-    \l {Keys::onCancelPressed(event)}{onCancelPressed}.  The example below
+    \l {Keys::onCancelPressed}{onCancelPressed}.  The example below
     assigns \l {qmlfocus}{focus} to the item and handles
     the Left key via the general \e onPressed handler and the Select key via the
     onSelectPressed handler:
