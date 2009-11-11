@@ -48,5 +48,5 @@ HEADERS += \
            util/qmltimeline_p_p.h \
            util/qmltimer_p.h \
            util/qmlbind_p.h \
-           util/qmlpropertymap_p.h \
+           util/qmlpropertymap.h \
            util/qmlpixmapcache_p.h
