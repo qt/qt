@@ -4,9 +4,12 @@ MyQmlObject {
     Script { source: "scriptErrors.js" }
     Script { function getValue() { a = 10; return 0; } }
 
-    property int x: a.value
-    property int y: getValue();
+    property int t: a.value
+    property int w: getValue();
+    property int x: undefinedObject
+    property int y: (a.value, undefinedObject)
 
     onBasicSignal: { print(a.value); }
+
 }
 

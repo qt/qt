@@ -175,7 +175,18 @@ void QmlBinding::update(QmlMetaProperty::WriteFlags flags)
             bool isUndefined = false;
             QVariant value = this->value(&isUndefined);
 
-            if (!isUndefined && data->property.object() && 
+            if (isUndefined && !data->error.isValid()) {
+
+                QUrl url = data->url;
+                int line = data->line;
+                if (url.isEmpty()) url = QUrl(QLatin1String("<Unknown File>"));
+
+                data->error.setUrl(url);
+                data->error.setLine(line);
+                data->error.setColumn(-1);
+                data->error.setDescription(QLatin1String("Unable to assign [undefined] to ") + QLatin1String(QMetaType::typeName(data->property.propertyType())));
+
+            } else if (!isUndefined && data->property.object() && 
                 !data->property.write(value, flags)) {
 
                 QUrl url = data->url;
