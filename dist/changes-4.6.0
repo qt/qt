@@ -76,6 +76,27 @@ QtCore
  - QByteArray
     * New overloads for QByteArray::insert() and QByteArray::prepend().
 
+ - QEventDispatcherGlib (internal class)
+    * Fix a regression introduced in 4.5.3 that would cause timers to not
+      be delivered.
+
+ - QEventDispatcherUNIX (internal class)
+    * Improve detection of monotonic clock support to include
+      non-POSIX.1-2001 compliant systems.
+    * [250681] Fix time change detection on UNIX systems without monotonic
+      timers.
+
+ - QEventDispatcherWin32 (internal class)
+    * Changed the threshold for using multimedia timers to 20ms (was 10ms).
+    * Changed the way Qt's posted events are sent by the event
+      dispatcher. They are now driven on top of a Windows message
+      instead of an explicit call in processEvents(). This means that
+      posted events are sent even when a Windows modal message loop is
+      running (for example, when the user is moving a window or when a
+      native modal dialog is visible).
+    * Fixed a bug that would allow the same timer id to be used by multiple
+      QTimer instances.
+
  - QFile
     * Make QFile::resize() more robust when operating on buffered files.
 
@@ -108,15 +129,25 @@ QtCore
     * Fixed a bug where, in a race condition, QSharedPointer could track a
       pointer that was being deleted.
 
+ - QTextCodec
+    * Instantiate the CP949 codec when building with -no-iconv.
+
  - QTextStream
     * [221316] Fixed crash on large input.
     * Improved reading utf8/utf16/utf32 data by correctly skipping the
       ByteOrderMark when reading data by one character at a time.
 
+ - QThread
+    * [249997] Document that QThread priority has no effect on Linux.
+
  - QUrl
     * Made QUrl hostname parser a lot stricter, requiring compliance
       to STD3 to validate, thus preventing invalid hostnames from
       being accepted. See below in "Important Behavior Changes".
+
+ - QUuid
+    * [QTBUG-3543] Fixed a bug in createUuid() which caused multiple
+      threads to generate the identical UUID sequences.
 
  - QVariant
     * Many optimisations.
@@ -126,9 +157,6 @@ QtCore
       identity functions.
     * Added support for math3d types.
 
- - QXmlStreamWriter
-    * [256468] Fixed comment indentation.
-
  - QWeakPointer
     * Added support for tracking QObject-derived classes that aren't
       attached to a QSharedPointer.
@@ -136,49 +164,30 @@ QtCore
       being tracked (without protection).
     * Added operator-> like the above data(), but requires a #define.
 
- - QUuid
-    * [QTBUG-3543] Fixed a bug in createUuid() which caused multiple
-      threads to generate the identical UUID sequences.
-
- - QEventDispatcherGlib (internal class)
-    * Fix a regression introduced in 4.5.3 that would cause timers to not
-      be delivered.
-
- - QEventDispatcherUNIX (internal class)
-    * Improve detection of monotonic clock support to include
-      non-POSIX.1-2001 compliant systems.
-    * [250681] Fix time change detection on UNIX systems without monotonic
-      timers.
-
- - QEventDispatcherWin32 (internal class)
-    * Changed the threshold for using multimedia timers to 20ms (was 10ms).
-    * Changed the way Qt's posted events are sent by the event
-      dispatcher. They are now driven on top of a Windows message
-      instead of an explicit call in processEvents(). This means that
-      posted events are sent even when a Windows modal message loop is
-      running (for example, when the user is moving a window or when a
-      native modal dialog is visible).
-    * Fixed a bug that would allow the same timer id to be used by multiple
-      QTimer instances.
-
- - QTextCodec
-    * Instantiate the CP949 codec when building with -no-iconv.
-
- - QThread
-    * [249997] Document that QThread priority has no effect on Linux.
+ - QXmlStreamWriter
+    * [256468] Fixed comment indentation.
 
 QtGui
 
  - Qt::escape
     * Now escape the double quote (&quot;).
 
- - QGraphicsAnchorLayout
-    * Support for expanding size policy has been removed. (The Qt 4.6 Beta
-      had support for it).
+ - QAbstractItemView
+    * [256502] Fixes selectionModel::hasSelection return value after
+      model::reset.
+
+ - QApplication
+    * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
 
  - QCalendarWidget
     * [252943] QCalendarWidget::setDateTextFormat() reset the format if the
       date is invalid.
+
+ - QColumnView
+    * [246999] Fixed view not updating when the model changed dynamically.
+
+ - QComboBox
+    * [220195] Fixed keyboard search when current index is -1.
 
  - QCompleter
     * [246056] Fixed a possible assertion when setting the completer prefix.
@@ -188,6 +197,23 @@ QtGui
 
  - QFontDialog
     * [256466] Fixed the dialog not always returning the selected style.
+
+ - QFontEngine
+    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which
+      also contain a regular unicode table for exactly the symbol range of
+      code points.
+
+ - QFontEngineQPF
+    * Make alphaMapForGlyph() generate the correct color table for
+      Indexed8 and Mono glyph images.  Fixed the "all glyphs are white
+      boxes" problem in OpenGL1 paint engine.
+
+ - QFontMetrics
+    * [176401] Account for right bearing in bounding rect.
+
+ - QGraphicsAnchorLayout
+    * Support for expanding size policy has been removed. (The Qt 4.6 Beta
+      had support for it).
 
  - QGraphicsBlurEffect
     * Since the 4.6 Beta, Qt::RenderHint has been moved to
@@ -253,28 +279,15 @@ QtGui
       constraints.
     * Reduced memory footprint.
 
- - QAbstractItemView
-    * [256502] Fixes selectionModel::hasSelection return value after
-      model::reset.
-
  - QHeaderView
     * [208320] Make sure the sort indicator is taken into account for the size
       hint.
     * [255574] Make sure the size hint for the section depends on visible
       sections.
 
- - QMainWindow
-    * [226060] Adding actions to a toolbar would always make the next toolbar
-      move.
-
- - QMenuBar
-    * [260873] Fix mouse interaction while undocking a widget from the main
-      window
-    * Dock areas didn't get a splitter if their dock widgets were not
-      resizable.
-
- - QColumnView
-    * [246999] Fixed view not updating when the model changed dynamically.
+ - QImageReader
+    * [255627] Fix floating point exception in
+      QImageReader::setScaledSize(QSize(0, 0)).
 
  - QLineEdit
     * [248948] Clear selection when redoing a delete operation.
@@ -285,85 +298,19 @@ QtGui
     * [243335] Fixed the visualRect to return correct values when the widget is
       not yet shown.
 
- - QTreeView
-    * [234930] Be able to use :has-children and :has-sibillings in a stylesheet.
-    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning
-      columns.
-    * [245654] Fixed expandAll when deleting and recreating a mode for the tree.
-    * [239271] Fixed missing update when adding a row when the first column is
-      hidden.
-    * [258225] Fixed scrollTo with center and bottom.
-
- - QTreeWidget
-    * [253109] Shows the widget when calling setItemWidget.
-
- - QTableView
-    * [191545] Selections work more similarly to well-known spreadsheets.
-    * [234926] Fixed sorting after changing QTableView header.
-    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
-      performance improvements, support for row/column insertioa and removal,
-      and better keyboard navigation.
-
- - QTableWidget
-    * [234641] Fixed takeItem to cause the view to be updated.
-
- - QTabBar
-    * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab
-      names being slightly clipped.
-    * [241383] Added ability to style the close tab button with style sheet
-
- - QImageReader
-    * [255627] Fix floating point exception in
-      QImageReader::setScaledSize(QSize(0, 0)).
-
- - QComboBox
-    * [220195] Fixed keyboard search when current index is -1.
-
- - QPixmap
-    * Optimized width(), height(), isNull() and depth().
-    * [QTBUG-2832] Fixed bug where calling fill on pixmap with active painter
-      could crash.
-
- - QRegion
-    * Minor optimizations.
-
- - QSpinBox
-    * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow
-      position.
-    * [255051] Fixed sizeHint update bug.
-
- - QStandardItemModel
-    * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel.
-
- - QToolTip
-    * Fixed a bug where tooltips were not shown in popups (Windows only).
+ - QMainWindow
+    * [226060] Adding actions to a toolbar would always make the next toolbar
+      move.
 
  - QMenu
     * [252610] Fixed position of the shortcut text while setting a stylesheet
       on menu items
 
- - QSortFilterProxyModel
-    * [251296] Fixed bugs in which filtered items could not be filtered.
-
- - QSplitter
-    * [206494] Added ability to style pressed slider with stylesheet.
-
- - QStroker
-    * [QTBUG-5212] Fixed bug where thick strokes around small shapes could
-      cause holes in the stroke.
-
- - QWidget
-    * Added inputMethodHints property.
-    * [201649] Added QWidget::previousInFocusChain.
-    * [254563] Fixed a crash when setting focus in a widget tree that
-      contains invisible widgets.
-    * [QTBUG-5012] Fixed uninitialized background when using QWidget::render
-      with Qt::WA_NoSystemBackground and window opacity set.
-
- - QFontEngineQPF
-    * Make alphaMapForGlyph() generate the correct color table for
-      Indexed8 and Mono glyph images.  Fixed the "all glyphs are white
-      boxes" problem in OpenGL1 paint engine.
+ - QMenuBar
+    * [260873] Fix mouse interaction while undocking a widget from the main
+      window
+    * Dock areas didn't get a splitter if their dock widgets were not
+      resizable.
 
  - QPaintDevice
     * New qt_paint_device_metric() function to replace the friend declarations
@@ -381,6 +328,26 @@ QtGui
  - QPen
     * [QTBUG-2738] Made QPen::setDashOffset() work with non-custom dashed lines.
 
+ - QPixmap
+    * Optimized width(), height(), isNull() and depth().
+    * [QTBUG-2832] Fixed bug where calling fill on pixmap with active painter
+      could crash.
+
+ - QPlainTextEdit
+    * Fixed crash when clicking on a text edit which was smaller than the
+      height of the font used.
+
+ - QPlastiqueStyle
+    * [QTBUG-3555] Fixed a bug in the Plastique style that would cause an
+      ASSERT failure in QFont when the application font has a pixel size set.
+
+ - QPrinter
+    * [QTBUG-4497] Removed redundant SetPen command in the postscript code when
+      reusing a QPrinter object.
+
+ - QPrintPreviewDialog now uses a QMainWindow with a proper QToolBar, instead
+   of a plain layout.
+
  - QPushButton
     * [255581] Fixed sizeHint recalculation bug.
 
@@ -388,22 +355,41 @@ QtGui
     * [QTBUG-4210] Fixed bug where bitmaps were painted black instead of in pen
       colour.
 
- - QApplication
-    * [QTBUG-739] Removed internal widgets from QApplication::topLevelWidgets().
+ - QRegion
+    * Minor optimizations.
 
- - QPlainTextEdit
-    * Fixed crash when clicking on a text edit which was smaller than the
-      height of the font used.
+ - QSortFilterProxyModel
+    * [251296] Fixed bugs in which filtered items could not be filtered.
 
- - QPrinter
-    * [QTBUG-4497] Removed redundant SetPen command in the postscript code when
-      reusing a QPrinter object.
+ - QSplitter
+    * [206494] Added ability to style pressed slider with stylesheet.
 
- - QTextLayout
-    * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
-      column width.
-    * [176401] Take into account the negative right bearing of the last
-      character in an item of text if the glyph extends beyond its ascent.
+ - QSpinBox
+    * [259226] Fixed setting a stylesheet on a QSpinBox to change the arrow
+      position.
+    * [255051] Fixed sizeHint update bug.
+
+ - QStandardItemModel
+    * [255652] Fixed crash while using takeRow with a QSortFilterProxyModel.
+
+ - QStroker
+    * [QTBUG-5212] Fixed bug where thick strokes around small shapes could
+      cause holes in the stroke.
+
+ - QTabBar
+    * [196326] Fixed having a stylesheet on a QTabBar resulted in some tab
+      names being slightly clipped.
+    * [241383] Added ability to style the close tab button with style sheet
+
+ - QTableView
+    * [191545] Selections work more similarly to well-known spreadsheets.
+    * [234926] Fixed sorting after changing QTableView header.
+    * [244651] [245327] [250193] [QTBUG-5062] Spans get plenty of love with
+      performance improvements, support for row/column insertioa and removal,
+      and better keyboard navigation.
+
+ - QTableWidget
+    * [234641] Fixed takeItem to cause the view to be updated.
 
  - QTextDocument
     * [207189] Support setting font size using short hand syntax in the
@@ -417,20 +403,34 @@ QtGui
       would sometimes break outside word boundaries when floating objects
       affected the width available to the text.
 
- - QFontEngine
-    * [QTBUG-2354] Support certain 'Microsoft' platform symbol fonts which
-      also contain a regular unicode table for exactly the symbol range of
-      code points.
+ - QTextLayout
+    * [QTBUG-4468] Count tabs as multiple characters when applying a fixed
+      column width.
+    * [176401] Take into account the negative right bearing of the last
+      character in an item of text if the glyph extends beyond its ascent.
 
- - QFontMetrics
-    * [176401] Account for right bearing in bounding rect.
+ - QToolTip
+    * Fixed a bug where tooltips were not shown in popups (Windows only).
 
- - QPlastiqueStyle
-    * [QTBUG-3555] Fixed a bug in the Plastique style that would cause an
-      ASSERT failure in QFont when the application font has a pixel size set.
+ - QTreeView
+    * [234930] Be able to use :has-children and :has-sibillings in a stylesheet.
+    * [252616] Set QStyleOptionViewItemV4::OnlyOne flag when painting spanning
+      columns.
+    * [245654] Fixed expandAll when deleting and recreating a mode for the tree.
+    * [239271] Fixed missing update when adding a row when the first column is
+      hidden.
+    * [258225] Fixed scrollTo with center and bottom.
 
- - QPrintPreviewDialog now uses a QMainWindow with a proper QToolBar, instead
-   of a plain layout.
+ - QTreeWidget
+    * [253109] Shows the widget when calling setItemWidget.
+
+ - QWidget
+    * Added inputMethodHints property.
+    * [201649] Added QWidget::previousInFocusChain.
+    * [254563] Fixed a crash when setting focus in a widget tree that
+      contains invisible widgets.
+    * [QTBUG-5012] Fixed uninitialized background when using QWidget::render
+      with Qt::WA_NoSystemBackground and window opacity set.
 
 QtDBus
 
@@ -482,14 +482,19 @@ QtNetwork
 
 QtOpenGL
 
+ - QGLColormap
+    * setEntry() was inserting entries instead of replacing them.
+    * Clarified documentation for isEmpty().
+
+ - QGLContext
+    * Fix RGB565 mode in bindTexture().
+    * Map mipmaps work on OpenGL/ES 2.0 systems in bindTexture().
+    * Improve performance of QGLContext::currentContext().
+
  - QGLFormat
     * Increase unit test coverage and fix some long-standing issues.
     * Improve performance of code that tests QGLFormat options.
     * operator==() now tests for equality on all fields.
-
- - QGLColormap
-    * setEntry() was inserting entries instead of replacing them.
-    * Clarified documentation for isEmpty().
 
  - QGLFramebufferObject
     * Add support for the ARB_framebuffer_object, OES_framebuffer_object,
@@ -501,11 +506,6 @@ QtOpenGL
     * New class for controlling fbo options.
 
  - Improvements to context sharing and object cleanup logic.
-
- - QGLContext
-    * Fix RGB565 mode in bindTexture().
-    * Map mipmaps work on OpenGL/ES 2.0 systems in bindTexture().
-    * Improve performance of QGLContext::currentContext().
 
  - QGLGradientCache
    * [249919] Clean up the gradient cache in the right context.
