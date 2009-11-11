@@ -87,12 +87,14 @@ private slots:
     void dockLocationChanged();
     void setTitleBarWidget();
     void titleBarDoubleClick();
+    void restoreStateOfFloating();
     // task specific tests:
     void task165177_deleteFocusWidget();
     void task169808_setFloating();
     void task237438_setFloatingCrash();
     void task248604_infiniteResize();
     void task258459_visibilityChanged();
+    void taskQTBUG_1665_closableChanged();
 };
 
 // Testing get/set functions
@@ -612,6 +614,7 @@ void tst_QDockWidget::dockLocationChanged()
 
     QMainWindow mw;
     QDockWidget dw;
+    dw.setObjectName("dock1");
     QSignalSpy spy(&dw, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)));
 
     mw.addDockWidget(Qt::LeftDockWidgetArea, &dw);
@@ -636,6 +639,7 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(spy.count(), 0);
 
     QDockWidget dw2;
+    dw2.setObjectName("dock2");
     mw.addDockWidget(Qt::TopDockWidgetArea, &dw2);
     mw.tabifyDockWidget(&dw2, &dw);
     QCOMPARE(spy.count(), 1);
@@ -657,6 +661,12 @@ void tst_QDockWidget::dockLocationChanged()
     QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
              Qt::TopDockWidgetArea);
     spy.clear();
+
+    QByteArray ba = mw.saveState();
+    mw.restoreState(ba);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(qvariant_cast<Qt::DockWidgetArea>(spy.at(0).at(0)),
+             Qt::TopDockWidgetArea);
 }
 
 void tst_QDockWidget::featuresChanged()
@@ -713,6 +723,21 @@ void tst_QDockWidget::titleBarDoubleClick()
     QVERIFY(!dock.isFloating());
     QCOMPARE(win.dockWidgetArea(&dock), Qt::TopDockWidgetArea);
 }
+
+void tst_QDockWidget::restoreStateOfFloating()
+{
+    QMainWindow mw;
+    QDockWidget dock;
+    dock.setObjectName("dock1");
+    mw.addDockWidget(Qt::TopDockWidgetArea, &dock);
+    QVERIFY(!dock.isFloating());
+    QByteArray ba = mw.saveState();
+    dock.setFloating(true);
+    QVERIFY(dock.isFloating());
+    QVERIFY(mw.restoreState(ba));
+    QVERIFY(!dock.isFloating());
+}
+
 
 void tst_QDockWidget::task165177_deleteFocusWidget()
 {
@@ -833,6 +858,23 @@ void tst_QDockWidget::task258459_visibilityChanged()
     QCOMPARE(spy2.count(), 1);
     QCOMPARE(spy2.first().first().toBool(), true); //dock1 is visible
 }
+
+void tst_QDockWidget::taskQTBUG_1665_closableChanged()
+{
+    QDockWidget dock;
+    dock.show();
+    QTest::qWaitForWindowShown(&dock);
+
+    if (dock.windowFlags() & Qt::FramelessWindowHint)
+        QSKIP("this machine doesn't support native dock widget", SkipAll);
+
+    QVERIFY(dock.windowFlags() & Qt::WindowCloseButtonHint);
+
+    //now let's remove the closable attribute
+    dock.setFeatures(dock.features() ^ QDockWidget::DockWidgetClosable);
+    QVERIFY(!(dock.windowFlags() & Qt::WindowCloseButtonHint));
+}
+
 
 QTEST_MAIN(tst_QDockWidget)
 #include "tst_qdockwidget.moc"

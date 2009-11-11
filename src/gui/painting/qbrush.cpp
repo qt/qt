@@ -970,7 +970,7 @@ bool QBrush::operator==(const QBrush &b) const
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    const char *BRUSH_STYLES[] = {
+    static const char *BRUSH_STYLES[] = {
      "NoBrush",
      "SolidPattern",
      "Dense1Pattern",
