@@ -213,12 +213,13 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
     nativeContainer->DrawableWindow()->SetOrdinalPosition(0);
     nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
+    nativeContainer->DrawableWindow()->SetFaded(EFalse, RWindowTreeNode::EFadeIncludeChildren);
 
     int position = -1;
     bool needsExitButton = true;
     QT_TRAP_THROWING(
         //Using -1 instead of EAknSoftkeyEmpty to avoid flickering.
-        nativeContainer->SetCommandL(0, -1, KNullDesC); 
+        nativeContainer->SetCommandL(0, -1, KNullDesC);
         nativeContainer->SetCommandL(2, -1, KNullDesC);
     );
 
