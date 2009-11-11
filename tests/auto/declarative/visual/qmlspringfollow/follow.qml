@@ -28,7 +28,6 @@ Rectangle {
         y: 200
         y: SpringFollow { source: rect.y; velocity: 200 }
     }
-    Text { x: rect.width; y: 220; text: "Velocity" }
 
     // Spring
     Rectangle {
@@ -43,7 +42,6 @@ Rectangle {
         y: 200
         y: SpringFollow { source: rect.y; spring: 1.0; damping: 0.2; mass: 3.0 } // "heavier" object
     }
-    Text { x: rect.width * 2; y: 220; text: "Spring" }
 
     // Follow mouse
     MouseRegion {
