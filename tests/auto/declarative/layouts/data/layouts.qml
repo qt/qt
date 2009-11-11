@@ -6,7 +6,7 @@ Item {
     height:300
 
     GraphicsObjectContainer {
-        anchors.fill:parent
+        anchors.fill: parent
         synchronizedResizing: true
 
         QGraphicsWidget {
