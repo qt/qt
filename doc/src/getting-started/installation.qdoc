@@ -39,10 +39,6 @@
 **
 ****************************************************************************/
 
-/****************************************************************************
-** Please remember to update the corresponding INSTALL files.
-****************************************************************************/
-
 /*!
 \group installation
 \title Installation
@@ -484,6 +480,7 @@ in the \l{Qt for Windows CE Requirements} document.
         \o \l{Windows CE - Introduction to using Qt}
         \o \l{Windows CE - Working with Custom SDKs}
         \o \l{Windows CE - Using shadow builds}
+        \o \l{Windows CE - Signing}
         \endlist
 
         Information on feature and performance tuning for embedded builds can

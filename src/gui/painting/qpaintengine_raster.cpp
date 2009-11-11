@@ -1362,7 +1362,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     Q_D(QRasterPaintEngine);
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -4536,7 +4536,7 @@ void QClipData::setClipRect(const QRect &rect)
  */
 void QClipData::setClipRegion(const QRegion &region)
 {
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         setClipRect(region.rects().at(0));
         return;
     }
