@@ -11,3 +11,6 @@ sources.files = $$SOURCES \
     $$FORMS \
     fademessage.pro
 sources.path = $$[QT_INSTALL_EXAMPLES]/effects/fademessage
+
+DEPLOYMENT_PLUGIN += qjpeg
+
