@@ -319,7 +319,11 @@ void QLongTapTimer::RunL()
 }
 
 QSymbianControl::QSymbianControl(QWidget *w)
-    : CCoeControl(), qwidget(w), m_ignoreFocusChanged(false)
+    : CCoeControl()
+    , qwidget(w)
+    , m_longTapDetector(0)
+    , m_ignoreFocusChanged(0)
+    , m_previousEventLongTap(0)
 {
 }
 
