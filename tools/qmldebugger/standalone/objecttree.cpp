@@ -86,7 +86,7 @@ void ObjectTree::reload(int objectDebugId)
     if (!m_query->isWaiting())
         objectFetched();
     else
-        QObject::connect(m_query, SIGNAL(stateChanged(State)), 
+        QObject::connect(m_query, SIGNAL(stateChanged(QmlDebugQuery::State)), 
                          this, SLOT(objectFetched()));
 }
 

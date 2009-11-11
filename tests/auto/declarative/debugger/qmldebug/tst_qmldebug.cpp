@@ -156,7 +156,7 @@ void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
     QVERIFY(query->state() == QmlDebugQuery::Waiting);
-    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(State))))
+    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugWatch::State))))
         QFAIL("query timed out");
 }
 
@@ -276,7 +276,7 @@ void tst_QmlDebug::watch_property()
     m_rootItem->setProperty("width", origWidth*2);
 
     // stateChanged() is received before valueChanged()
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(State))));
+    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QCOMPARE(spy.count(), 1);
 
     m_dbg->removeWatch(watch);
@@ -320,7 +320,7 @@ void tst_QmlDebug::watch_object()
     m_rootItem->setProperty("height", origHeight*2);
 
     // stateChanged() is received before any valueChanged() signals
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(State))));
+    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QVERIFY(spy.count() > 0);
 
     int newWidth = -1;

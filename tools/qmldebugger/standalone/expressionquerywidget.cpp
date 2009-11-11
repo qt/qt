@@ -173,7 +173,7 @@ void ExpressionQueryWidget::executeExpression()
         if (!m_query->isWaiting())
             showResult();
         else
-            QObject::connect(m_query, SIGNAL(stateChanged(State)),
+            QObject::connect(m_query, SIGNAL(stateChanged(QmlDebugQuery::State)),
                             this, SLOT(showResult()));
 
         m_lastExpr = m_expr;
