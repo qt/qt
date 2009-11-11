@@ -53,6 +53,9 @@ information about a particular change.
 
  - New state machine framework added to QtCore
  
+ - QContiguousCache
+    * New class for efficiently caching items within a scrolling view.
+
 Third party components
 ----------------------
 
