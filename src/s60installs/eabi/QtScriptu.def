@@ -341,22 +341,4 @@ EXPORTS
 	_ZThn8_N22QScriptExtensionPluginD1Ev @ 340 NONAME
 	_ZlsR11QDataStreamRK18QScriptContextInfo @ 341 NONAME
 	_ZrsR11QDataStreamR18QScriptContextInfo @ 342 NONAME
-	_Z5qHashRK13QScriptString @ 343 NONAME
-	_ZN13QScriptEngine8evaluateERK14QScriptProgram @ 344 NONAME
-	_ZN14QScriptProgramC1ERK7QStringS0_i @ 345 NONAME
-	_ZN14QScriptProgramC1ERKS_ @ 346 NONAME
-	_ZN14QScriptProgramC1Ev @ 347 NONAME
-	_ZN14QScriptProgramC2ERK7QStringS0_i @ 348 NONAME
-	_ZN14QScriptProgramC2ERKS_ @ 349 NONAME
-	_ZN14QScriptProgramC2Ev @ 350 NONAME
-	_ZN14QScriptProgramD1Ev @ 351 NONAME
-	_ZN14QScriptProgramD2Ev @ 352 NONAME
-	_ZN14QScriptProgramaSERKS_ @ 353 NONAME
-	_ZNK13QScriptString12toArrayIndexEPb @ 354 NONAME
-	_ZNK14QScriptProgram10sourceCodeEv @ 355 NONAME
-	_ZNK14QScriptProgram15firstLineNumberEv @ 356 NONAME
-	_ZNK14QScriptProgram6isNullEv @ 357 NONAME
-	_ZNK14QScriptProgram8fileNameEv @ 358 NONAME
-	_ZNK14QScriptProgrameqERKS_ @ 359 NONAME
-	_ZNK14QScriptProgramneERKS_ @ 360 NONAME
 
