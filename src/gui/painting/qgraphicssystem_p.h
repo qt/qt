@@ -60,6 +60,7 @@ QT_BEGIN_NAMESPACE
 
 class QPixmapFilter;
 
+#ifdef Q_WS_LITE
 class Q_GUI_EXPORT QGraphicsSystemScreen : public QObject
 {
     Q_OBJECT
@@ -75,6 +76,7 @@ public:
     virtual void setDirty(QRect) { }
     virtual void pointerEvent(QMouseEvent &) { }
 };
+#endif // Q_WS_LITE
 
 class Q_GUI_EXPORT QGraphicsSystem
 {
@@ -84,8 +86,10 @@ public:
 
     virtual ~QGraphicsSystem() = 0;
 
+#ifdef Q_WS_LITE
     virtual QList<QGraphicsSystemScreen *> screens() const;
-
+    virtual QPixmap grabWindow(WId window, int x, int y, int width, int height) const;
+#endif
     //### Remove this & change qpixmap.cpp & qbitmap.cpp once every platform is gaurenteed
     //    to have a graphics system.
     static QPixmapData *createDefaultPixmapData(QPixmapData::PixelType type);

@@ -77,4 +77,12 @@ QWindowSurface *QTestLiteGraphicsSystem::createWindowSurface(QWidget *widget) co
         (const_cast<QTestLiteGraphicsSystem *>(this), mPrimaryScreen, widget);
 }
 
+
+QPixmap QTestLiteGraphicsSystem::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    qDebug() << "grabWindow" << hex << window << dec<< x << y << width << height;
+    return QPixmap();
+}
+
+
 QT_END_NAMESPACE

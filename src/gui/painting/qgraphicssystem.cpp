@@ -84,10 +84,22 @@ QPixmapData *QGraphicsSystem::createDefaultPixmapData(QPixmapData::PixelType typ
     return 0;
 }
 
+#ifdef Q_WS_LITE
 QList<QGraphicsSystemScreen *> QGraphicsSystem::screens() const
 {
     return QList<QGraphicsSystemScreen *>();
 }
+
+QPixmap QGraphicsSystem::grabWindow(WId window, int x, int y, int width, int height) const
+{
+    Q_UNUSED(window);
+    Q_UNUSED(x);
+    Q_UNUSED(y);
+    Q_UNUSED(width);
+    Q_UNUSED(height);
+    return QPixmap();
+}
+
 
 QGraphicsSystemScreen::QGraphicsSystemScreen(QObject *parent)
   : QObject(parent)
@@ -101,5 +113,7 @@ QRect QGraphicsSystemScreen::availableGeometry() const
 {
     return geometry();
 }
+
+#endif //Q_WS_LITE
 
 QT_END_NAMESPACE

@@ -40,13 +40,10 @@
 ****************************************************************************/
 
 #include <qpixmap.h>
+#include <private/qgraphicssystem_p.h>
+#include <private/qapplication_p.h>
 
 QPixmap QPixmap::grabWindow(WId window, int x, int y, int w, int h)
 {
-    Q_UNUSED(window);
-    Q_UNUSED(x);
-    Q_UNUSED(y);
-    Q_UNUSED(w);
-    Q_UNUSED(h);
-    return QPixmap();
+    return QApplicationPrivate::graphicsSystem()->grabWindow(window, x, y, w, h);
 }
