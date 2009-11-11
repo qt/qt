@@ -4074,8 +4074,11 @@ void tst_QGraphicsItem::defaultItemTest_QGraphicsTextItem()
 
     QCOMPARE(text->pos(), QPointF(10, 10));
 
+    text->setTextInteractionFlags(Qt::NoTextInteraction);
+    QVERIFY(!(text->flags() & QGraphicsItem::ItemAcceptsInputMethod));
     text->setTextInteractionFlags(Qt::TextEditorInteraction);
     QCOMPARE(text->textInteractionFlags(), Qt::TextInteractionFlags(Qt::TextEditorInteraction));
+    QVERIFY(text->flags() & QGraphicsItem::ItemAcceptsInputMethod);
 
     {
         QGraphicsSceneMouseEvent event2(QEvent::GraphicsSceneMouseMove);
