@@ -528,7 +528,7 @@ QString QAccessibleDisplay::text(Text t, int child) const
 #ifndef QT_NO_LCDNUMBER
             } else if (qobject_cast<QLCDNumber*>(object())) {
                 QLCDNumber *l = qobject_cast<QLCDNumber*>(object());
-                if (l->numDigits())
+                if (l->digitCount())
                     str = QString::number(l->value());
                 else
                     str = QString::number(l->intValue());

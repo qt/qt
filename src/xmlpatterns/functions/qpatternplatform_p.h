@@ -180,7 +180,7 @@ namespace QPatternist
     inline int PatternPlatform::captureCount() const
     {
         if(m_compiledParts.testFlag(PatternPrecompiled))
-            return m_pattern.numCaptures();
+            return m_pattern.captureCount();
         else
             return -1;
     }
