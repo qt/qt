@@ -3141,7 +3141,7 @@ EXPORTS
 	_ZN14QWidgetPrivate25setLayoutDirection_helperEN2Qt15LayoutDirectionE @ 3140 NONAME
 	_ZN14QWidgetPrivate26adjustQuitOnCloseAttributeEv @ 3141 NONAME
 	_ZN14QWidgetPrivate26createDefaultWindowSurfaceEv @ 3142 NONAME
-	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEPK7QWidget @ 3143 NONAME
+	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEP7QWidget @ 3143 NONAME ABSENT
 	_ZN14QWidgetPrivate27widgetInNavigationDirectionENS_9DirectionE @ 3144 NONAME
 	_ZN14QWidgetPrivate29invalidateBuffer_resizeHelperERK6QPointRK5QSize @ 3145 NONAME
 	_ZN14QWidgetPrivate30createDefaultWindowSurface_sysEv @ 3146 NONAME
@@ -4417,7 +4417,7 @@ EXPORTS
 	_ZN19QGraphicsBlurEffect16staticMetaObjectE @ 4416 NONAME DATA 16
 	_ZN19QGraphicsBlurEffect17blurRadiusChangedEi @ 4417 NONAME ABSENT
 	_ZN19QGraphicsBlurEffect19getStaticMetaObjectEv @ 4418 NONAME
-	_ZN19QGraphicsBlurEffect4drawEP8QPainterP21QGraphicsEffectSource @ 4419 NONAME
+	_ZN19QGraphicsBlurEffect4drawEP8QPainterP21QGraphicsEffectSource @ 4419 NONAME ABSENT
 	_ZN19QGraphicsBlurEffectC1EP7QObject @ 4420 NONAME
 	_ZN19QGraphicsBlurEffectC2EP7QObject @ 4421 NONAME
 	_ZN19QGraphicsBlurEffectD0Ev @ 4422 NONAME
@@ -5015,7 +5015,7 @@ EXPORTS
 	_ZN22QGraphicsOpacityEffect16staticMetaObjectE @ 5014 NONAME DATA 16
 	_ZN22QGraphicsOpacityEffect18opacityMaskChangedERK6QBrush @ 5015 NONAME
 	_ZN22QGraphicsOpacityEffect19getStaticMetaObjectEv @ 5016 NONAME
-	_ZN22QGraphicsOpacityEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5017 NONAME
+	_ZN22QGraphicsOpacityEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5017 NONAME ABSENT
 	_ZN22QGraphicsOpacityEffectC1EP7QObject @ 5018 NONAME
 	_ZN22QGraphicsOpacityEffectC2EP7QObject @ 5019 NONAME
 	_ZN22QGraphicsOpacityEffectD0Ev @ 5020 NONAME
@@ -5075,7 +5075,7 @@ EXPORTS
 	_ZN23QGraphicsColorizeEffect15strengthChangedEf @ 5074 NONAME
 	_ZN23QGraphicsColorizeEffect16staticMetaObjectE @ 5075 NONAME DATA 16
 	_ZN23QGraphicsColorizeEffect19getStaticMetaObjectEv @ 5076 NONAME
-	_ZN23QGraphicsColorizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5077 NONAME
+	_ZN23QGraphicsColorizeEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5077 NONAME ABSENT
 	_ZN23QGraphicsColorizeEffect8setColorERK6QColor @ 5078 NONAME
 	_ZN23QGraphicsColorizeEffectC1EP7QObject @ 5079 NONAME
 	_ZN23QGraphicsColorizeEffectC2EP7QObject @ 5080 NONAME
@@ -5280,7 +5280,7 @@ EXPORTS
 	_ZN25QGraphicsDropShadowEffect16staticMetaObjectE @ 5279 NONAME DATA 16
 	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEi @ 5280 NONAME ABSENT
 	_ZN25QGraphicsDropShadowEffect19getStaticMetaObjectEv @ 5281 NONAME
-	_ZN25QGraphicsDropShadowEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5282 NONAME
+	_ZN25QGraphicsDropShadowEffect4drawEP8QPainterP21QGraphicsEffectSource @ 5282 NONAME ABSENT
 	_ZN25QGraphicsDropShadowEffect8setColorERK6QColor @ 5283 NONAME
 	_ZN25QGraphicsDropShadowEffect9setOffsetERK7QPointF @ 5284 NONAME
 	_ZN25QGraphicsDropShadowEffectC1EP7QObject @ 5285 NONAME
@@ -9187,7 +9187,7 @@ EXPORTS
 	_ZNK17QPixmapBlurFilter15boundingRectForERK6QRectF @ 9186 NONAME
 	_ZNK17QPixmapBlurFilter4drawEP8QPainterRK7QPointFRK7QPixmapRK6QRectF @ 9187 NONAME
 	_ZNK17QPixmapBlurFilter6radiusEv @ 9188 NONAME
-	_ZNK17QPixmapBlurFilter8blurHintEv @ 9189 NONAME
+	_ZNK17QPixmapBlurFilter8blurHintEv @ 9189 NONAME ABSENT
 	_ZNK17QRasterPixmapData11paintEngineEv @ 9190 NONAME
 	_ZNK17QRasterPixmapData15hasAlphaChannelEv @ 9191 NONAME
 	_ZNK17QRasterPixmapData6metricEN12QPaintDevice17PaintDeviceMetricE @ 9192 NONAME
@@ -9274,7 +9274,7 @@ EXPORTS
 	_ZNK19QGraphicsBlurEffect10blurRadiusEv @ 9273 NONAME
 	_ZNK19QGraphicsBlurEffect10metaObjectEv @ 9274 NONAME
 	_ZNK19QGraphicsBlurEffect15boundingRectForERK6QRectF @ 9275 NONAME
-	_ZNK19QGraphicsBlurEffect8blurHintEv @ 9276 NONAME
+	_ZNK19QGraphicsBlurEffect8blurHintEv @ 9276 NONAME ABSENT
 	_ZNK19QGraphicsGridLayout10rowSpacingEi @ 9277 NONAME
 	_ZNK19QGraphicsGridLayout11columnCountEv @ 9278 NONAME
 	_ZNK19QGraphicsGridLayout12rowAlignmentEi @ 9279 NONAME
@@ -9424,7 +9424,7 @@ EXPORTS
 	_ZNK21QGraphicsAnchorLayout5countEv @ 9423 NONAME
 	_ZNK21QGraphicsAnchorLayout6itemAtEi @ 9424 NONAME
 	_ZNK21QGraphicsAnchorLayout8sizeHintEN2Qt8SizeHintERK6QSizeF @ 9425 NONAME
-	_ZNK21QGraphicsEffectSource10deviceRectEv @ 9426 NONAME
+	_ZNK21QGraphicsEffectSource10deviceRectEv @ 9426 NONAME ABSENT
 	_ZNK21QGraphicsEffectSource10metaObjectEv @ 9427 NONAME
 	_ZNK21QGraphicsEffectSource11styleOptionEv @ 9428 NONAME
 	_ZNK21QGraphicsEffectSource12boundingRectEN2Qt16CoordinateSystemE @ 9429 NONAME
@@ -11557,173 +11557,182 @@ EXPORTS
 	qt_pixmap_cleanup_hook @ 11556 NONAME DATA 4
 	qt_pixmap_cleanup_hook_64 @ 11557 NONAME DATA 4
 	qt_tab_all_widgets @ 11558 NONAME DATA 1
-	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 11559 NONAME
-	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 11560 NONAME
-	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 11561 NONAME
-	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 11562 NONAME
-	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 11563 NONAME DATA 16
-	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 11564 NONAME
-	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 11565 NONAME
-	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 11566 NONAME
-	_ZN18QGuiPlatformPlugin7paletteEv @ 11567 NONAME
-	_ZN18QGuiPlatformPlugin9styleNameEv @ 11568 NONAME
-	_ZN18QGuiPlatformPluginC1EP7QObject @ 11569 NONAME
-	_ZN18QGuiPlatformPluginC2EP7QObject @ 11570 NONAME
-	_ZN18QGuiPlatformPluginD0Ev @ 11571 NONAME
-	_ZN18QGuiPlatformPluginD1Ev @ 11572 NONAME
-	_ZN18QGuiPlatformPluginD2Ev @ 11573 NONAME
-	_ZN8QGestureC1ER15QGesturePrivateP7QObject @ 11574 NONAME
-	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 11575 NONAME
-	_ZNK13QGestureEvent7gestureEN2Qt11GestureTypeE @ 11576 NONAME
-	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 11577 NONAME
-	_ZTI18QGuiPlatformPlugin @ 11578 NONAME
-	_ZTI27QGuiPlatformPluginInterface @ 11579 NONAME
-	_ZTV18QGuiPlatformPlugin @ 11580 NONAME
-	_ZThn8_N18QGuiPlatformPluginD0Ev @ 11581 NONAME
-	_ZThn8_N18QGuiPlatformPluginD1Ev @ 11582 NONAME
-	_Z22qt_paint_device_metricPK12QPaintDeviceNS_17PaintDeviceMetricE @ 11583 NONAME
-	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11584 NONAME
-	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11585 NONAME
-	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11586 NONAME
-	_ZN12QApplication18symbianEventFilterEPK13QSymbianEvent @ 11587 NONAME
-	_ZN12QApplication19symbianProcessEventEPK13QSymbianEvent @ 11588 NONAME
-	_ZN13QInputContext18symbianFilterEventEP7QWidgetPK13QSymbianEvent @ 11589 NONAME
-	_ZN13QSymbianEventC1ENS_4TypeEi @ 11590 NONAME
-	_ZN13QSymbianEventC1EPK8TWsEvent @ 11591 NONAME
-	_ZN13QSymbianEventC2ENS_4TypeEi @ 11592 NONAME
-	_ZN13QSymbianEventC2EPK8TWsEvent @ 11593 NONAME
-	_ZN13QSymbianEventD1Ev @ 11594 NONAME
-	_ZN13QSymbianEventD2Ev @ 11595 NONAME
-	_ZN15QGraphicsAnchor13setSizePolicyEN11QSizePolicy6PolicyE @ 11596 NONAME
-	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11597 NONAME
-	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11598 NONAME
-	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11599 NONAME
-	_ZN24QImagePixmapCleanupHooks24addPixmapDestructionHookEPFvP7QPixmapE @ 11600 NONAME
-	_ZN24QImagePixmapCleanupHooks25addPixmapModificationHookEPFvP7QPixmapE @ 11601 NONAME
-	_ZN24QImagePixmapCleanupHooks27removePixmapDestructionHookEPFvP7QPixmapE @ 11602 NONAME
-	_ZN24QImagePixmapCleanupHooks28removePixmapModificationHookEPFvP7QPixmapE @ 11603 NONAME
-	_ZN24QImagePixmapCleanupHooks29executePixmapDestructionHooksEP7QPixmap @ 11604 NONAME
-	_ZN24QImagePixmapCleanupHooks30executePixmapModificationHooksEP7QPixmap @ 11605 NONAME
-	_ZNK11QPixmapData26createCompatiblePixmapDataEv @ 11606 NONAME
-	_ZNK13QSymbianEvent17windowServerEventEv @ 11607 NONAME
-	_ZNK13QSymbianEvent18resourceChangeTypeEv @ 11608 NONAME
-	_ZNK13QSymbianEvent7commandEv @ 11609 NONAME
-	_ZNK15QGraphicsAnchor10sizePolicyEv @ 11610 NONAME
-	_ZNK21QGraphicsLinearLayout4dumpEi @ 11611 NONAME
-	_Zls6QDebug6QFlagsIN6QStyle9StateFlagEE @ 11612 NONAME
-	_Zls6QDebugRK12QStyleOption @ 11613 NONAME
-	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11614 NONAME
-	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11615 NONAME
-	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11616 NONAME
-	_ZN11QPanGesture13setLastOffsetERK7QPointF @ 11617 NONAME
-	_ZN11QPanGesture14setTotalOffsetERK7QPointF @ 11618 NONAME ABSENT
-	_ZN11QPanGesture9setOffsetERK7QPointF @ 11619 NONAME
-	_ZN13QGestureEvent6d_funcEv @ 11620 NONAME
-	_ZN13QGestureEvent9setWidgetEP7QWidget @ 11621 NONAME
-	_ZN13QGestureEventD0Ev @ 11622 NONAME
-	_ZN13QGestureEventD1Ev @ 11623 NONAME
-	_ZN13QGestureEventD2Ev @ 11624 NONAME
-	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11625 NONAME
-	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11626 NONAME
-	_ZNK13QGestureEvent10mapToSceneERK7QPointF @ 11627 NONAME ABSENT
-	_ZNK13QGestureEvent6d_funcEv @ 11628 NONAME
-	_ZNK13QGestureEvent6widgetEv @ 11629 NONAME
-	_Zls6QDebugP15QGraphicsObject @ 11630 NONAME
-	_ZN10QMatrix4x415projectedRotateEffff @ 11631 NONAME
-	_ZN9QTextLine18setLeadingIncludedEb @ 11632 NONAME
-	_ZNK10QMatrix4x411toTransformEv @ 11633 NONAME
-	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_S4_ @ 11634 NONAME
-	_ZNK9QTextLine15leadingIncludedEv @ 11635 NONAME
-	_ZNK9QTextLine7leadingEv @ 11636 NONAME
-	_ZN11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS2_E @ 11637 NONAME
-	_ZN13QGestureEvent11setAcceptedEN2Qt11GestureTypeEb @ 11638 NONAME
-	_ZN13QGestureEvent6acceptEN2Qt11GestureTypeE @ 11639 NONAME
-	_ZN13QGestureEvent6ignoreEN2Qt11GestureTypeE @ 11640 NONAME
-	_ZN17QPixmapBlurFilter9setRadiusEf @ 11641 NONAME
-	_ZN19QGraphicsBlurEffect13setBlurRadiusEf @ 11642 NONAME
-	_ZN19QGraphicsBlurEffect17blurRadiusChangedEf @ 11643 NONAME
-	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 11644 NONAME
-	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEf @ 11645 NONAME
-	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEf @ 11646 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C1ERK26QStyleOptionTabWidgetFrame @ 11647 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C1Ei @ 11648 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C1Ev @ 11649 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C2ERK26QStyleOptionTabWidgetFrame @ 11650 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C2Ei @ 11651 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2C2Ev @ 11652 NONAME
-	_ZN28QStyleOptionTabWidgetFrameV2aSERK26QStyleOptionTabWidgetFrame @ 11653 NONAME
-	_ZN7QWidget13ungrabGestureEN2Qt11GestureTypeE @ 11654 NONAME
-	_ZN8QGesture22setGestureCancelPolicyENS_19GestureCancelPolicyE @ 11655 NONAME
-	_ZN8QToolBar15topLevelChangedEb @ 11656 NONAME
-	_ZNK13QGestureEvent10isAcceptedEN2Qt11GestureTypeE @ 11657 NONAME
-	_ZNK13QTextDocument18availableRedoStepsEv @ 11658 NONAME
-	_ZNK13QTextDocument18availableUndoStepsEv @ 11659 NONAME
-	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPointNS_13PixmapPadModeE @ 11660 NONAME
-	_ZNK8QGesture19gestureCancelPolicyEv @ 11661 NONAME
-	_ZN10QMatrix4x48optimizeEv @ 11662 NONAME
-	_ZN11QPixmapData6createEiiNS_9PixelTypeE @ 11663 NONAME
-	_ZN13QPinchGesture14setChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11664 NONAME
-	_ZN13QPinchGesture19setTotalChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11665 NONAME
-	_ZN15QGraphicsObject11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11666 NONAME
-	_ZN15QGraphicsObject13ungrabGestureEN2Qt11GestureTypeE @ 11667 NONAME
-	_ZN17QPixmapBlurFilter11setBlurHintEN19QGraphicsBlurEffect8BlurHintE @ 11668 NONAME
-	_ZN18QGestureRecognizer18registerRecognizerEPS_ @ 11669 NONAME
-	_ZN18QGestureRecognizer20unregisterRecognizerEN2Qt11GestureTypeE @ 11670 NONAME
-	_ZN18QGestureRecognizer6createEP7QObject @ 11671 NONAME
-	_ZN19QGraphicsBlurEffect11setBlurHintENS_8BlurHintE @ 11672 NONAME
-	_ZN19QGraphicsBlurEffect15blurHintChangedENS_8BlurHintE @ 11673 NONAME
-	_ZN19QKeyEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11674 NONAME
-	_ZN21QMouseEventTransition14setHitTestPathERK12QPainterPath @ 11675 NONAME
-	_ZN21QMouseEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11676 NONAME
-	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksEP11QPixmapData @ 11677 NONAME
-	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK6QImage @ 11678 NONAME
-	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK7QPixmap @ 11679 NONAME
-	_ZN7QWidget11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11680 NONAME
-	_ZNK10QMatrix4x410copyDataToEPf @ 11681 NONAME
-	_ZNK11QPanGesture5deltaEv @ 11682 NONAME
-	_ZNK11QQuaternion13rotatedVectorERK9QVector3D @ 11683 NONAME
-	_ZNK13QGestureEvent18mapToGraphicsSceneERK7QPointF @ 11684 NONAME
-	_ZNK13QGestureEvent8gesturesEv @ 11685 NONAME
-	_ZNK13QPinchGesture11changeFlagsEv @ 11686 NONAME
-	_ZNK13QPinchGesture16totalChangeFlagsEv @ 11687 NONAME
-	_ZNK19QKeyEventTransition12modifierMaskEv @ 11688 NONAME
-	_ZNK21QMouseEventTransition11hitTestPathEv @ 11689 NONAME
-	_ZNK21QMouseEventTransition12modifierMaskEv @ 11690 NONAME
-	_ZN11QTapGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11691 NONAME
-	_ZN11QTapGesture11qt_metacastEPKc @ 11692 NONAME
-	_ZN11QTapGesture11setPositionERK7QPointF @ 11693 NONAME
-	_ZN11QTapGesture16staticMetaObjectE @ 11694 NONAME DATA 16
-	_ZN11QTapGesture19getStaticMetaObjectEv @ 11695 NONAME
-	_ZN11QTapGestureC1EP7QObject @ 11696 NONAME
-	_ZN11QTapGestureC2EP7QObject @ 11697 NONAME
-	_ZN14QFileOpenEventC1ERK4QUrl @ 11698 NONAME
-	_ZN14QFileOpenEventC2ERK4QUrl @ 11699 NONAME
-	_ZN18QTapAndHoldGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11700 NONAME
-	_ZN18QTapAndHoldGesture11qt_metacastEPKc @ 11701 NONAME
-	_ZN18QTapAndHoldGesture11setPositionERK7QPointF @ 11702 NONAME
-	_ZN18QTapAndHoldGesture16staticMetaObjectE @ 11703 NONAME DATA 16
-	_ZN18QTapAndHoldGesture19getStaticMetaObjectEv @ 11704 NONAME
-	_ZN18QTapAndHoldGestureC1EP7QObject @ 11705 NONAME
-	_ZN18QTapAndHoldGestureC2EP7QObject @ 11706 NONAME
-	_ZN20QGraphicsItemPrivate18siblingOrderChangeEv @ 11707 NONAME
-	_ZNK11QTapGesture10metaObjectEv @ 11708 NONAME
-	_ZNK11QTapGesture8positionEv @ 11709 NONAME
-	_ZNK14QFileOpenEvent3urlEv @ 11710 NONAME
-	_ZNK18QTapAndHoldGesture10metaObjectEv @ 11711 NONAME
-	_ZNK18QTapAndHoldGesture8positionEv @ 11712 NONAME
-	_ZTI11QTapGesture @ 11713 NONAME
-	_ZTI18QTapAndHoldGesture @ 11714 NONAME
-	_ZTV11QTapGesture @ 11715 NONAME
-	_ZTV18QTapAndHoldGesture @ 11716 NONAME
-	_ZN10QLCDNumber13setDigitCountEi @ 11717 NONAME
-	_ZN19QAbstractScrollArea18setViewportMarginsERK8QMargins @ 11718 NONAME
-	_ZN6QImage13setColorCountEi @ 11719 NONAME
-	_ZN7QLayout18setContentsMarginsERK8QMargins @ 11720 NONAME
-	_ZN9QLineEdit14setTextMarginsERK8QMargins @ 11721 NONAME
-	_ZNK10QLCDNumber10digitCountEv @ 11722 NONAME
-	_ZNK6QImage10colorCountEv @ 11723 NONAME
-	_ZNK6QImage9byteCountEv @ 11724 NONAME
-	_ZNK7QLayout15contentsMarginsEv @ 11725 NONAME
-	_ZNK7QRegion9rectCountEv @ 11726 NONAME
-	_ZNK9QLineEdit11textMarginsEv @ 11727 NONAME
+	_Z22qt_paint_device_metricPK12QPaintDeviceNS_17PaintDeviceMetricE @ 11559 NONAME
+	_ZN10QLCDNumber13setDigitCountEi @ 11560 NONAME
+	_ZN10QMatrix4x415projectedRotateEffff @ 11561 NONAME
+	_ZN10QMatrix4x48optimizeEv @ 11562 NONAME
+	_ZN11QPanGesture13setLastOffsetERK7QPointF @ 11563 NONAME
+	_ZN11QPanGesture9setOffsetERK7QPointF @ 11564 NONAME
+	_ZN11QPixmapData6createEiiNS_9PixelTypeE @ 11565 NONAME
+	_ZN11QTapGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11566 NONAME
+	_ZN11QTapGesture11qt_metacastEPKc @ 11567 NONAME
+	_ZN11QTapGesture11setPositionERK7QPointF @ 11568 NONAME
+	_ZN11QTapGesture16staticMetaObjectE @ 11569 NONAME DATA 16
+	_ZN11QTapGesture19getStaticMetaObjectEv @ 11570 NONAME
+	_ZN11QTapGestureC1EP7QObject @ 11571 NONAME
+	_ZN11QTapGestureC2EP7QObject @ 11572 NONAME
+	_ZN11QVectorPath12addCacheDataEP14QPaintEngineExPvPFvS2_E @ 11573 NONAME
+	_ZN12QApplication18symbianEventFilterEPK13QSymbianEvent @ 11574 NONAME
+	_ZN12QApplication19symbianProcessEventEPK13QSymbianEvent @ 11575 NONAME
+	_ZN13QGestureEvent11setAcceptedEN2Qt11GestureTypeEb @ 11576 NONAME
+	_ZN13QGestureEvent6acceptEN2Qt11GestureTypeE @ 11577 NONAME
+	_ZN13QGestureEvent6d_funcEv @ 11578 NONAME
+	_ZN13QGestureEvent6ignoreEN2Qt11GestureTypeE @ 11579 NONAME
+	_ZN13QGestureEvent9setWidgetEP7QWidget @ 11580 NONAME
+	_ZN13QGestureEventD0Ev @ 11581 NONAME
+	_ZN13QGestureEventD1Ev @ 11582 NONAME
+	_ZN13QGestureEventD2Ev @ 11583 NONAME
+	_ZN13QInputContext18symbianFilterEventEP7QWidgetPK13QSymbianEvent @ 11584 NONAME
+	_ZN13QPinchGesture14setChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11585 NONAME
+	_ZN13QPinchGesture19setTotalChangeFlagsE6QFlagsINS_10ChangeFlagEE @ 11586 NONAME
+	_ZN13QSymbianEventC1ENS_4TypeEi @ 11587 NONAME
+	_ZN13QSymbianEventC1EPK8TWsEvent @ 11588 NONAME
+	_ZN13QSymbianEventC2ENS_4TypeEi @ 11589 NONAME
+	_ZN13QSymbianEventC2EPK8TWsEvent @ 11590 NONAME
+	_ZN13QSymbianEventD1Ev @ 11591 NONAME
+	_ZN13QSymbianEventD2Ev @ 11592 NONAME
+	_ZN14QFileOpenEventC1ERK4QUrl @ 11593 NONAME
+	_ZN14QFileOpenEventC2ERK4QUrl @ 11594 NONAME
+	_ZN14QWidgetPrivate17_q_delayedDestroyEP11CCoeControl @ 11595 NONAME
+	_ZN14QWidgetPrivate21activateSymbianWindowEP11CCoeControl @ 11596 NONAME
+	_ZN14QWidgetPrivate26nearestGraphicsProxyWidgetEPK7QWidget @ 11597 NONAME
+	_ZN14QWidgetPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11598 NONAME
+	_ZN15QGraphicsAnchor13setSizePolicyEN11QSizePolicy6PolicyE @ 11599 NONAME
+	_ZN15QGraphicsEffect10drawSourceEP8QPainter @ 11600 NONAME
+	_ZN15QGraphicsObject11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11601 NONAME
+	_ZN15QGraphicsObject13ungrabGestureEN2Qt11GestureTypeE @ 11602 NONAME
+	_ZN17QPixmapBlurFilter12setBlurHintsE6QFlagsIN19QGraphicsBlurEffect8BlurHintEE @ 11603 NONAME
+	_ZN17QPixmapBlurFilter9setRadiusEf @ 11604 NONAME
+	_ZN18QGestureRecognizer18registerRecognizerEPS_ @ 11605 NONAME
+	_ZN18QGestureRecognizer20unregisterRecognizerEN2Qt11GestureTypeE @ 11606 NONAME
+	_ZN18QGestureRecognizer6createEP7QObject @ 11607 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacallEN11QMetaObject4CallEiPPv @ 11608 NONAME
+	_ZN18QGuiPlatformPlugin11qt_metacastEPKc @ 11609 NONAME
+	_ZN18QGuiPlatformPlugin12platformHintENS_12PlatformHintE @ 11610 NONAME
+	_ZN18QGuiPlatformPlugin14fileSystemIconERK9QFileInfo @ 11611 NONAME
+	_ZN18QGuiPlatformPlugin16staticMetaObjectE @ 11612 NONAME DATA 16
+	_ZN18QGuiPlatformPlugin19getStaticMetaObjectEv @ 11613 NONAME
+	_ZN18QGuiPlatformPlugin19systemIconThemeNameEv @ 11614 NONAME
+	_ZN18QGuiPlatformPlugin20iconThemeSearchPathsEv @ 11615 NONAME
+	_ZN18QGuiPlatformPlugin7paletteEv @ 11616 NONAME
+	_ZN18QGuiPlatformPlugin9styleNameEv @ 11617 NONAME
+	_ZN18QGuiPlatformPluginC1EP7QObject @ 11618 NONAME
+	_ZN18QGuiPlatformPluginC2EP7QObject @ 11619 NONAME
+	_ZN18QGuiPlatformPluginD0Ev @ 11620 NONAME
+	_ZN18QGuiPlatformPluginD1Ev @ 11621 NONAME
+	_ZN18QGuiPlatformPluginD2Ev @ 11622 NONAME
+	_ZN18QTapAndHoldGesture11qt_metacallEN11QMetaObject4CallEiPPv @ 11623 NONAME
+	_ZN18QTapAndHoldGesture11qt_metacastEPKc @ 11624 NONAME
+	_ZN18QTapAndHoldGesture11setPositionERK7QPointF @ 11625 NONAME
+	_ZN18QTapAndHoldGesture16staticMetaObjectE @ 11626 NONAME DATA 16
+	_ZN18QTapAndHoldGesture19getStaticMetaObjectEv @ 11627 NONAME
+	_ZN18QTapAndHoldGestureC1EP7QObject @ 11628 NONAME
+	_ZN18QTapAndHoldGestureC2EP7QObject @ 11629 NONAME
+	_ZN19QAbstractScrollArea18setViewportMarginsERK8QMargins @ 11630 NONAME
+	_ZN19QApplicationPrivate20symbianHandleCommandEi @ 11631 NONAME
+	_ZN19QApplicationPrivate21symbianProcessWsEventEPK8TWsEvent @ 11632 NONAME
+	_ZN19QApplicationPrivate21symbianResourceChangeEi @ 11633 NONAME
+	_ZN19QGraphicsBlurEffect12setBlurHintsE6QFlagsINS_8BlurHintEE @ 11634 NONAME
+	_ZN19QGraphicsBlurEffect13setBlurRadiusEf @ 11635 NONAME
+	_ZN19QGraphicsBlurEffect16blurHintsChangedE6QFlagsINS_8BlurHintEE @ 11636 NONAME
+	_ZN19QGraphicsBlurEffect17blurRadiusChangedEf @ 11637 NONAME
+	_ZN19QGraphicsBlurEffect4drawEP8QPainter @ 11638 NONAME
+	_ZN19QKeyEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11639 NONAME
+	_ZN20QGraphicsItemPrivate18siblingOrderChangeEv @ 11640 NONAME
+	_ZN20QGraphicsItemPrivate36invalidateGraphicsEffectsRecursivelyEv @ 11641 NONAME
+	_ZN21QMouseEventTransition14setHitTestPathERK12QPainterPath @ 11642 NONAME
+	_ZN21QMouseEventTransition15setModifierMaskE6QFlagsIN2Qt16KeyboardModifierEE @ 11643 NONAME
+	_ZN22QGraphicsOpacityEffect4drawEP8QPainter @ 11644 NONAME
+	_ZN23QGraphicsColorizeEffect4drawEP8QPainter @ 11645 NONAME
+	_ZN23QPixmapDropShadowFilter13setBlurRadiusEf @ 11646 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksEP11QPixmapData @ 11647 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK6QImage @ 11648 NONAME
+	_ZN24QImagePixmapCleanupHooks18enableCleanupHooksERK7QPixmap @ 11649 NONAME
+	_ZN24QImagePixmapCleanupHooks24addPixmapDestructionHookEPFvP7QPixmapE @ 11650 NONAME
+	_ZN24QImagePixmapCleanupHooks25addPixmapModificationHookEPFvP7QPixmapE @ 11651 NONAME
+	_ZN24QImagePixmapCleanupHooks27removePixmapDestructionHookEPFvP7QPixmapE @ 11652 NONAME
+	_ZN24QImagePixmapCleanupHooks28removePixmapModificationHookEPFvP7QPixmapE @ 11653 NONAME
+	_ZN24QImagePixmapCleanupHooks29executePixmapDestructionHooksEP7QPixmap @ 11654 NONAME
+	_ZN24QImagePixmapCleanupHooks30executePixmapModificationHooksEP7QPixmap @ 11655 NONAME
+	_ZN25QGraphicsDropShadowEffect13setBlurRadiusEf @ 11656 NONAME
+	_ZN25QGraphicsDropShadowEffect17blurRadiusChangedEf @ 11657 NONAME
+	_ZN25QGraphicsDropShadowEffect4drawEP8QPainter @ 11658 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1ERK26QStyleOptionTabWidgetFrame @ 11659 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1Ei @ 11660 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C1Ev @ 11661 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2ERK26QStyleOptionTabWidgetFrame @ 11662 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2Ei @ 11663 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2C2Ev @ 11664 NONAME
+	_ZN28QStyleOptionTabWidgetFrameV2aSERK26QStyleOptionTabWidgetFrame @ 11665 NONAME
+	_ZN6QImage13setColorCountEi @ 11666 NONAME
+	_ZN7QLayout18setContentsMarginsERK8QMargins @ 11667 NONAME
+	_ZN7QWidget11grabGestureEN2Qt11GestureTypeE6QFlagsINS0_11GestureFlagEE @ 11668 NONAME
+	_ZN7QWidget13ungrabGestureEN2Qt11GestureTypeE @ 11669 NONAME
+	_ZN8QGesture22setGestureCancelPolicyENS_19GestureCancelPolicyE @ 11670 NONAME
+	_ZN8QGestureC1ER15QGesturePrivateP7QObject @ 11671 NONAME
+	_ZN8QGestureC2ER15QGesturePrivateP7QObject @ 11672 NONAME
+	_ZN8QToolBar15topLevelChangedEb @ 11673 NONAME
+	_ZN9QLineEdit14setTextMarginsERK8QMargins @ 11674 NONAME
+	_ZN9QTextLine18setLeadingIncludedEb @ 11675 NONAME
+	_ZNK10QLCDNumber10digitCountEv @ 11676 NONAME
+	_ZNK10QMatrix4x410copyDataToEPf @ 11677 NONAME
+	_ZNK10QMatrix4x411toTransformEv @ 11678 NONAME
+	_ZNK11QPanGesture5deltaEv @ 11679 NONAME
+	_ZNK11QPixmapData26createCompatiblePixmapDataEv @ 11680 NONAME
+	_ZNK11QQuaternion13rotatedVectorERK9QVector3D @ 11681 NONAME
+	_ZNK11QTapGesture10metaObjectEv @ 11682 NONAME
+	_ZNK11QTapGesture8positionEv @ 11683 NONAME
+	_ZNK11QTextEngine10fontEngineERK11QScriptItemP6QFixedS4_S4_ @ 11684 NONAME
+	_ZNK13QGestureEvent10isAcceptedEN2Qt11GestureTypeE @ 11685 NONAME
+	_ZNK13QGestureEvent18mapToGraphicsSceneERK7QPointF @ 11686 NONAME
+	_ZNK13QGestureEvent6d_funcEv @ 11687 NONAME
+	_ZNK13QGestureEvent6widgetEv @ 11688 NONAME
+	_ZNK13QGestureEvent7gestureEN2Qt11GestureTypeE @ 11689 NONAME
+	_ZNK13QGestureEvent8gesturesEv @ 11690 NONAME
+	_ZNK13QPinchGesture11changeFlagsEv @ 11691 NONAME
+	_ZNK13QPinchGesture16totalChangeFlagsEv @ 11692 NONAME
+	_ZNK13QSymbianEvent17windowServerEventEv @ 11693 NONAME
+	_ZNK13QSymbianEvent18resourceChangeTypeEv @ 11694 NONAME
+	_ZNK13QSymbianEvent7commandEv @ 11695 NONAME
+	_ZNK13QTextDocument18availableRedoStepsEv @ 11696 NONAME
+	_ZNK13QTextDocument18availableUndoStepsEv @ 11697 NONAME
+	_ZNK14QDesktopWidget14screenGeometryEPK7QWidget @ 11698 NONAME
+	_ZNK14QDesktopWidget17availableGeometryEPK7QWidget @ 11699 NONAME
+	_ZNK14QFileOpenEvent3urlEv @ 11700 NONAME
+	_ZNK15QGraphicsAnchor10sizePolicyEv @ 11701 NONAME
+	_ZNK15QGraphicsEffect12sourcePixmapEN2Qt16CoordinateSystemEP6QPointNS_13PixmapPadModeE @ 11702 NONAME
+	_ZNK15QGraphicsEffect14sourceIsPixmapEv @ 11703 NONAME
+	_ZNK15QGraphicsEffect18sourceBoundingRectEN2Qt16CoordinateSystemE @ 11704 NONAME
+	_ZNK17QPixmapBlurFilter9blurHintsEv @ 11705 NONAME
+	_ZNK17QRasterPixmapData26createCompatiblePixmapDataEv @ 11706 NONAME
+	_ZNK18QGuiPlatformPlugin10metaObjectEv @ 11707 NONAME
+	_ZNK18QTapAndHoldGesture10metaObjectEv @ 11708 NONAME
+	_ZNK18QTapAndHoldGesture8positionEv @ 11709 NONAME
+	_ZNK19QGraphicsBlurEffect9blurHintsEv @ 11710 NONAME
+	_ZNK19QKeyEventTransition12modifierMaskEv @ 11711 NONAME
+	_ZNK21QGraphicsEffectSource6pixmapEN2Qt16CoordinateSystemEP6QPointN15QGraphicsEffect13PixmapPadModeE @ 11712 NONAME
+	_ZNK21QGraphicsLinearLayout4dumpEi @ 11713 NONAME
+	_ZNK21QMouseEventTransition11hitTestPathEv @ 11714 NONAME
+	_ZNK21QMouseEventTransition12modifierMaskEv @ 11715 NONAME
+	_ZNK6QImage10colorCountEv @ 11716 NONAME
+	_ZNK6QImage9byteCountEv @ 11717 NONAME
+	_ZNK7QLayout15contentsMarginsEv @ 11718 NONAME
+	_ZNK7QRegion9rectCountEv @ 11719 NONAME
+	_ZNK8QGesture19gestureCancelPolicyEv @ 11720 NONAME
+	_ZNK9QLineEdit11textMarginsEv @ 11721 NONAME
+	_ZNK9QTextLine15leadingIncludedEv @ 11722 NONAME
+	_ZNK9QTextLine7leadingEv @ 11723 NONAME
+	_ZTI11QTapGesture @ 11724 NONAME
+	_ZTI18QGuiPlatformPlugin @ 11725 NONAME
+	_ZTI18QTapAndHoldGesture @ 11726 NONAME
+	_ZTI27QGuiPlatformPluginInterface @ 11727 NONAME
+	_ZTV11QTapGesture @ 11728 NONAME
+	_ZTV18QGuiPlatformPlugin @ 11729 NONAME
+	_ZTV18QTapAndHoldGesture @ 11730 NONAME
+	_ZThn8_N18QGuiPlatformPluginD0Ev @ 11731 NONAME
+	_ZThn8_N18QGuiPlatformPluginD1Ev @ 11732 NONAME
+	_Zls6QDebug6QFlagsIN6QStyle9StateFlagEE @ 11733 NONAME
+	_Zls6QDebugP15QGraphicsObject @ 11734 NONAME
+	_Zls6QDebugRK12QStyleOption @ 11735 NONAME
+	_Zls6QDebugRKN12QStyleOption10OptionTypeE @ 11736 NONAME
 
