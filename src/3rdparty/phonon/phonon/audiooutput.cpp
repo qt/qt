@@ -126,7 +126,9 @@ void AudioOutput::setName(const QString &newName)
     d->name = newName;
     setVolume(Platform::loadVolume(newName));
 #ifndef QT_NO_DBUS
-    emit d->adaptor->nameChanged(newName);
+    if (d->adaptor) {
+        emit d->adaptor->nameChanged(newName);
+    }
 #endif
 }
 
@@ -403,7 +405,9 @@ void AudioOutputPrivate::handleAutomaticDeviceChange(const AudioOutputDevice &de
 AudioOutputPrivate::~AudioOutputPrivate()
 {
 #ifndef QT_NO_DBUS
-    emit adaptor->outputDestroyed();
+    if (adaptor) {
+        emit adaptor->outputDestroyed();
+    }
 #endif
 }
 
