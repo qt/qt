@@ -55,6 +55,7 @@
 #include <qstyle.h>
 #include <qtimer.h>
 #include "private/qtextdocumentlayout_p.h"
+#include "private/qabstracttextdocumentlayout_p.h"
 #include "private/qtextedit_p.h"
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
@@ -2313,6 +2314,9 @@ void QTextControl::print(QPrinter *printer) const
         tempDoc->setUseDesignMetrics(doc->useDesignMetrics());
         QTextCursor(tempDoc).insertFragment(d->cursor.selection());
         doc = tempDoc;
+
+        // copy the custom object handlers
+        doc->documentLayout()->d_func()->handlers = d->doc->documentLayout()->d_func()->handlers;
     }
     doc->print(printer);
     delete tempDoc;
