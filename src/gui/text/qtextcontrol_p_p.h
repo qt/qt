@@ -206,6 +206,7 @@ public:
     QString anchorOnMousePress;
     bool hadSelectionOnMousePress;
 
+    bool ignoreUnusedNavigationEvents;
     bool openExternalLinks;
 
     QString linkToCopy;
