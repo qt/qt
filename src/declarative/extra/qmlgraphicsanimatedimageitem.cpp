@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     QMovie::supportedFormats().
 
     \table
-    \row 
+    \row
     \o \image animatedimageitem.gif
     \o
     \qml
@@ -80,11 +80,6 @@ QML_DEFINE_TYPE(Qt,4,6,AnimatedImage,QmlGraphicsAnimatedImageItem)
 
 QmlGraphicsAnimatedImageItem::QmlGraphicsAnimatedImageItem(QmlGraphicsItem *parent)
     : QmlGraphicsImage(*(new QmlGraphicsAnimatedImageItemPrivate), parent)
-{
-}
-
-QmlGraphicsAnimatedImageItem::QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent)
-    : QmlGraphicsImage(dd, parent)
 {
 }
 

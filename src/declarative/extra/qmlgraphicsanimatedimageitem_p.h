@@ -90,7 +90,6 @@ private Q_SLOTS:
     void playingStatusChanged();
 
 protected:
-    QmlGraphicsAnimatedImageItem(QmlGraphicsAnimatedImageItemPrivate &dd, QmlGraphicsItem *parent);
     void componentComplete();
 
 private:
