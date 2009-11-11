@@ -205,6 +205,7 @@ void QUnifiedTimer::updateAnimationsTime()
             QAbstractAnimation *animation = animations.at(currentAnimationIdx);
             int elapsed = QAbstractAnimationPrivate::get(animation)->totalCurrentTime
                           + (animation->direction() == QAbstractAnimation::Forward ? delta : -delta);
+            //qWarning() << "SCT" << elapsed;
             animation->setCurrentTime(elapsed);
         }
         currentAnimationIdx = 0;
@@ -229,7 +230,9 @@ void QUnifiedTimer::restartAnimationTimer()
 
 void QUnifiedTimer::timerEvent(QTimerEvent *event)
 {
-    if (event->timerId() == startStopAnimationTimer.timerId()) {
+    if ((consistentTiming && startStopAnimationTimer.isActive()) ||
+        (event->timerId() == startStopAnimationTimer.timerId())) {
+        //qWarning() << "A SSAT";
         startStopAnimationTimer.stop();
 
         //we transfer the waiting animations into the "really running" state
@@ -247,8 +250,11 @@ void QUnifiedTimer::timerEvent(QTimerEvent *event)
                 time.start();
             }
         }
-    } else if (event->timerId() == animationTimer.timerId()) {
+    } 
+    
+    if (event->timerId() == animationTimer.timerId()) {
         // update current time on all top level animations
+        //qWarning() << "A AT";
         updateAnimationsTime();
         restartAnimationTimer();
     }
@@ -261,8 +267,10 @@ void QUnifiedTimer::registerAnimation(QAbstractAnimation *animation, bool isTopL
         Q_ASSERT(!QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer);
         QAbstractAnimationPrivate::get(animation)->hasRegisteredTimer = true;
         animationsToStart << animation;
-        if (!startStopAnimationTimer.isActive())
+        if (!startStopAnimationTimer.isActive()) {
+            //qWarning("Starting SSAT 1");
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        }
     }
 }
 
@@ -280,8 +288,10 @@ void QUnifiedTimer::unregisterAnimation(QAbstractAnimation *animation)
         if (idx <= currentAnimationIdx)
             --currentAnimationIdx;
 
-        if (animations.isEmpty() && !startStopAnimationTimer.isActive())
+        if (animations.isEmpty() && !startStopAnimationTimer.isActive()) {
+            //qWarning("Starting SSAT 2");
             startStopAnimationTimer.start(STARTSTOP_TIMER_DELAY, this);
+        }
     } else {
         animationsToStart.removeOne(animation);
     }
