@@ -27,6 +27,7 @@ SUBDIRS += \
            qmlgraphicsflickable   \ # Cover
            qmlgraphicsflipable    \ # Cover
            qmlgraphicsparticles \   # Cover
+           qmlgraphicspathview \    # Cover
            qmlgraphicspositioners \ # Cover
            qmlgraphicstext \        # Cover
            qmlgraphicstextedit \    # Cover
