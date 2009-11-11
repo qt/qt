@@ -11,12 +11,13 @@ Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Qt Bug Tracker, the (now obsolete) Task
 Tracker, or the Merge Request queue of the public source repository.
 
-Qt Bug Tracker: http://bugreports.qt.nokia.com
-Task Tracker: http://qt.nokia.com/developer/task-tracker
-Merge Request: http://qt.gitorious.org
+Each of these identifiers can be entered in the tracker to obtain more
+information about a particular change.  Issue numbers for the various
+trackers have the following formats:
 
-Each of these identifiers can be entered in the task tracker to obtain more
-information about a particular change.
+QTBUG-1234 - Qt Bug Tracker: http://bugreports.qt.nokia.com
+MR#1234    - Merge Request: http://qt.gitorious.org
+123456     - Task Tracker: http://qt.nokia.com/developer/task-tracker
 
 ****************************************************************************
 *                           General                                        *
@@ -56,6 +57,8 @@ information about a particular change.
 
  - New state machine framework added to QtCore.
  
+ - QContiguousCache
+    * New class for efficiently caching items within a scrolling view.
 
 Third party components
 ----------------------
