@@ -85,7 +85,6 @@ Backend::Backend(QObject *parent, const QVariantList &)
 
 Backend::~Backend() 
 {
-    gst_deinit();
 }
 
 gboolean Backend::busCall(GstBus *bus, GstMessage *msg, gpointer data)
