@@ -43,6 +43,7 @@
 #include <qmlview.h>
 #include <private/qmlgraphicslayoutitem_p.h>
 #include <qmlexpression.h>
+#include <QStyle>
 
 class tst_QmlGraphicsLayouts : public QObject
 {
@@ -74,7 +75,12 @@ void tst_QmlGraphicsLayouts::test_qml()
     QmlGraphicsLayoutItem *right = static_cast<QmlGraphicsLayoutItem*>(canvas->root()->findChild<QmlGraphicsItem*>("right"));
     QVERIFY(right != 0);
 
-    qreal gvMargin = 9.0;
+    qreal l = QApplication::style()->pixelMetric(QStyle::PM_LayoutLeftMargin);
+    qreal r = QApplication::style()->pixelMetric(QStyle::PM_LayoutRightMargin);
+    qreal t = QApplication::style()->pixelMetric(QStyle::PM_LayoutTopMargin);
+    qreal b = QApplication::style()->pixelMetric(QStyle::PM_LayoutBottomMargin);
+    QVERIFY2(l == r && r == t && t == b, "Test assumes equal margins.");
+    qreal gvMargin = l;
     //Preferred Size
     canvas->root()->setWidth(300 + 2*gvMargin);
     canvas->root()->setHeight(300 + 2*gvMargin);
@@ -116,6 +122,7 @@ void tst_QmlGraphicsLayouts::test_qml()
     QCOMPARE(right->width(), 400.0);
     QCOMPARE(right->height(), 300.0);
 
+    delete canvas;
 }
 
 void tst_QmlGraphicsLayouts::test_cpp()
@@ -129,8 +136,8 @@ QmlView *tst_QmlGraphicsLayouts::createView(const QString &filename)
 
     QFile file(filename);
     file.open(QFile::ReadOnly);
-    QString xml = file.readAll();
-    canvas->setQml(xml, filename);
+    QString qml = file.readAll();
+    canvas->setQml(qml, filename);
 
     return canvas;
 }

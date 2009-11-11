@@ -85,10 +85,10 @@ void tst_QmlDebugService::name()
 
 void tst_QmlDebugService::isEnabled()
 {
-    EchoService service("tst_QmlDebugService::isEnabled()", m_conn);
+    QmlDebuggerTestService service("tst_QmlDebugService::isEnabled()", m_conn);
     QCOMPARE(service.isEnabled(), false);
 
-    MyQmlDebugClient client("tst_QmlDebugService::isEnabled()", m_conn);
+    QmlDebuggerTestClient client("tst_QmlDebugService::isEnabled()", m_conn);
     client.setEnabled(true);
     QmlDebuggerTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
     QCOMPARE(service.isEnabled(), true);
@@ -100,8 +100,8 @@ void tst_QmlDebugService::isEnabled()
 
 void tst_QmlDebugService::enabledChanged()
 {
-    EchoService service("tst_QmlDebugService::enabledChanged()");
-    MyQmlDebugClient client("tst_QmlDebugService::enabledChanged()", m_conn);
+    QmlDebuggerTestService service("tst_QmlDebugService::enabledChanged()");
+    QmlDebuggerTestClient client("tst_QmlDebugService::enabledChanged()", m_conn);
 
     QCOMPARE(service.enabled, false);
 
@@ -112,8 +112,8 @@ void tst_QmlDebugService::enabledChanged()
 
 void tst_QmlDebugService::sendMessage()
 {
-    EchoService service("tst_QmlDebugService::sendMessage()");
-    MyQmlDebugClient client("tst_QmlDebugService::sendMessage()", m_conn);
+    QmlDebuggerTestService service("tst_QmlDebugService::sendMessage()");
+    QmlDebuggerTestClient client("tst_QmlDebugService::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
 

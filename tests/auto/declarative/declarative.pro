@@ -8,12 +8,9 @@ SUBDIRS += \
            debugger \               # Cover
            examples \
            layouts \                # Cover
-           qmlgraphicslistview \    # Cover
-           qmlgraphicsgridview \    # Cover
            numberformatter \        # Cover
            parserstress \           # Cover
            pathview \               # Cover
-           qmlgraphicsloader \      # Cover
            qmetaobjectbuilder \     # Cover
            qmlbinding \             # Cover
            qmlconnection \          # Cover
@@ -22,10 +19,13 @@ SUBDIRS += \
            qmlecmascript \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover
-           qmlgraphicsitem \        # Cover
            qmlgraphicsborderimage \ # Cover
            qmlgraphicsflickable   \ # Cover
            qmlgraphicsflipable    \ # Cover
+           qmlgraphicsgridview \    # Cover
+           qmlgraphicsitem \        # Cover
+           qmlgraphicslistview \    # Cover
+           qmlgraphicsloader \      # Cover
            qmlgraphicsparticles \   # Cover
            qmlgraphicspathview \    # Cover
            qmlgraphicspositioners \ # Cover
@@ -37,6 +37,7 @@ SUBDIRS += \
            qmllanguage \            # Cover
            qmllist \                # Cover
            qmllistaccessor \        # Cover
+           qmllistmodel \           # Cover
            qmlmetaproperty \        # Cover
            qmlmetatype \            # Cover
            qmlpixmapcache \         # Cover

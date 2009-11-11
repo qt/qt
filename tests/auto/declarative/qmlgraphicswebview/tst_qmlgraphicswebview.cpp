@@ -43,6 +43,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicswebview_p.h>
+#include <private/qmlgraphicspositioners_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtCore/qdir.h>
@@ -57,6 +58,7 @@ public:
 private slots:
     void basicProperties();
     void historyNav();
+    void multipleWindows();
     void loadError();
     void setHtml();
     void javaScript();
@@ -216,6 +218,16 @@ void tst_qmlgraphicswebview::historyNav()
     QVERIFY(wv->forwardAction()->isEnabled());
     QVERIFY(wv->stopAction());
     QVERIFY(!wv->stopAction()->isEnabled());
+}
+
+void tst_qmlgraphicswebview::multipleWindows()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/newwindows.qml"));
+    checkNoErrors(component);
+
+    QmlGraphicsGrid *grid = qobject_cast<QmlGraphicsGrid*>(component.create());
+    QVERIFY(grid != 0);
+    QTRY_COMPARE(grid->children().count(), 2+5); // Component, Loader, 5 WebViews
 }
 
 void tst_qmlgraphicswebview::loadError()

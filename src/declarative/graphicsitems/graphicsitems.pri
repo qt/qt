@@ -14,6 +14,8 @@ HEADERS += \
            graphicsitems/qmlgraphicsimage_p_p.h \
            graphicsitems/qmlgraphicsborderimage_p_p.h \
            graphicsitems/qmlgraphicsimagebase_p_p.h \
+           graphicsitems/qmlgraphicsanimatedimage_p.h \
+           graphicsitems/qmlgraphicsanimatedimage_p_p.h \
            graphicsitems/qmlgraphicsitem.h \
            graphicsitems/qmlgraphicsitem_p.h \
            graphicsitems/qmlgraphicsfocuspanel_p.h \
@@ -55,6 +57,7 @@ SOURCES += \
            graphicsitems/qmlgraphicsimage.cpp \
            graphicsitems/qmlgraphicsborderimage.cpp \
            graphicsitems/qmlgraphicsimagebase.cpp \
+           graphicsitems/qmlgraphicsanimatedimage.cpp \
            graphicsitems/qmlgraphicspainteditem.cpp \
            graphicsitems/qmlgraphicsitem.cpp \
            graphicsitems/qmlgraphicsfocuspanel.cpp \

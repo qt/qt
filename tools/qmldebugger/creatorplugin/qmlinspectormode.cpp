@@ -489,7 +489,7 @@ void QmlInspectorMode::reloadEngines()
     if (!m_engineQuery->isWaiting())
         enginesChanged();
     else
-        QObject::connect(m_engineQuery, SIGNAL(stateChanged(State)), 
+        QObject::connect(m_engineQuery, SIGNAL(stateChanged(QmlDebugQuery::State)), 
                          this, SLOT(enginesChanged()));    
 }
 
@@ -528,7 +528,7 @@ void QmlInspectorMode::queryEngineContext(int id)
     if (!m_contextQuery->isWaiting())
         contextChanged();
     else
-        QObject::connect(m_contextQuery, SIGNAL(stateChanged(State)),
+        QObject::connect(m_contextQuery, SIGNAL(stateChanged(QmlDebugQuery::State)),
                          this, SLOT(contextChanged()));
 }
 

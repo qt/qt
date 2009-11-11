@@ -77,7 +77,7 @@ void WatchTableModel::addWatch(QmlDebugWatch *watch, const QString &title)
     connect(watch, SIGNAL(valueChanged(QByteArray,QVariant)),
             SLOT(watchedValueChanged(QByteArray,QVariant)));
 
-    connect(watch, SIGNAL(stateChanged(State)), SLOT(watchStateChanged()));
+    connect(watch, SIGNAL(stateChanged(QmlDebugWatch::State)), SLOT(watchStateChanged()));
 
     int col = columnCount(QModelIndex());
     beginInsertColumns(QModelIndex(), col, col);

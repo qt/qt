@@ -5,9 +5,10 @@
 
 import Qt 4.6
 
-Row {
+Grid {
+    columns: 3
     id: pages
-    height: 200; width: 500
+    height: 300; width: 600
 
     Component {
         id: webViewPage

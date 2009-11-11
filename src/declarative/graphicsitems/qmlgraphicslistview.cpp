@@ -1663,7 +1663,7 @@ void QmlGraphicsListView::keyPressEvent(QKeyEvent *event)
 }
 
 /*!
-    \qmlmethod ListView::incrementCurrentIndex
+    \qmlmethod ListView::incrementCurrentIndex()
 
     Increments the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the end.
@@ -1680,7 +1680,7 @@ void QmlGraphicsListView::incrementCurrentIndex()
 }
 
 /*!
-    \qmlmethod ListView::decrementCurrentIndex
+    \qmlmethod ListView::decrementCurrentIndex()
 
     Decrements the current index.  The current index will wrap
     if keyNavigationWraps is true and it is currently at the beginning.

@@ -3275,13 +3275,10 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
-    if (d->exposedRegion.isEmpty())
-        d->exposedRegion = viewport()->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
-    painter.setClipRect(event->rect(), Qt::IntersectClip);
 #ifndef QT_NO_RUBBERBAND
     if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();

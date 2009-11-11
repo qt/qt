@@ -49,6 +49,7 @@
 #include <QApplication>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QPaintEngine>
 
 QT_BEGIN_NAMESPACE
 
@@ -209,9 +210,24 @@ void QmlGraphicsPaintedItem::paint(QPainter *p, const QStyleOptionGraphicsItem *
 
     ++inpaint;
 
-    const QRect clip = p->clipRegion().boundingRect();
+    const QTransform &x = p->deviceTransform();
+    QTransform xinv = x.inverted();
+    QRegion effectiveClip;
+    QRegion sysClip = p->paintEngine()->systemClip();
+    if (xinv.type() <= QTransform::TxScale && sysClip.numRects() < 5) {
+        // simple transform, region gets no more complicated...
+        effectiveClip = xinv.map(sysClip);
+    } else {
+        // do not make complicated regions...
+        effectiveClip = xinv.mapRect(sysClip.boundingRect());
+    }
 
-    QRegion topaint(clip);
+    QRegion topaint = p->clipRegion();
+    if (topaint.isEmpty())
+        topaint = effectiveClip;
+    else
+        topaint &= effectiveClip;
+
     topaint &= content;
     QRegion uncached(content);
     p->setRenderHints(QPainter::SmoothPixmapTransform, d->smooth);
