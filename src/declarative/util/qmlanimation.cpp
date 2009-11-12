@@ -1085,7 +1085,33 @@ QML_DEFINE_TYPE(Qt,4,6,PropertyAction,QmlPropertyAction)
 /*!
     \qmlclass ParentAction QmlParentAction
     \inherits Animation
-    \brief The ParentAction allows parent changes during transitions.
+    \brief The ParentAction element allows parent changes during animation.
+
+    ParentAction provides a way to specify at what point in a Transition a ParentChange should
+    occur.
+    \qml
+    State {
+        ParentChange {
+            target: myItem
+            parent: newParent
+        }
+    }
+    Transition {
+        SequentialAnimation {
+            PropertyAnimation { ... }
+            ParentAction {}   //reparent myItem now
+            PropertyAnimation { ... }
+        }
+    }
+    \endqml
+
+    It also provides a way to explicitly reparent an item during an animation.
+    \qml
+    SequentialAnimation {
+        ParentAction { target: myItem; parent: newParent }
+        PropertyAnimation {}
+    }
+    \endqml
 
     The ParentAction is immediate - it is not animated in any way.
 */
@@ -1108,6 +1134,11 @@ void QmlParentActionPrivate::init()
     QmlGraphics_setParent_noEvent(cpa, q);
 }
 
+/*!
+    \qmlproperty Item ParentAction::target
+
+    This property holds an explicit target item to reparent.
+ */
 QmlGraphicsItem *QmlParentAction::object() const
 {
     Q_D(const QmlParentAction);
@@ -1120,6 +1151,52 @@ void QmlParentAction::setObject(QmlGraphicsItem *target)
     d->pcTarget = target;
 }
 
+/*!
+    \qmlproperty Item ParentAction::matchTarget
+    This property holds the item this action will match against -- the item
+    that the action will reparent, assuming its parent has changed.
+
+    In the following example, \c myItem will be reparented by the ParentAction, while
+    \c myOtherItem will not.
+    \qml
+    State {
+        ParentChange {
+            target: myItem
+            parent: newParent
+        }
+        ParentChange {
+            target: myOtherItem
+            parent: otherNewParent
+        }
+    }
+    Transition {
+        SequentialAnimation {
+            PropertyAnimation { ... }
+            ParentAction { matchTargets: myItem }
+            PropertyAnimation { ... }
+        }
+    }
+    \endqml
+
+    This property is typically used for an action appearing as part of a Transition.
+ */
+QmlGraphicsItem *QmlParentAction::matchTarget() const
+{
+    Q_D(const QmlParentAction);
+    return d->pcTarget;
+}
+
+void QmlParentAction::setMatchTarget(QmlGraphicsItem *target)
+{
+    Q_D(QmlParentAction);
+    d->pcMatchTarget = target;
+}
+
+/*!
+    \qmlproperty Item ParentAction::parent
+
+    The item to reparent to (i.e. the new parent).
+ */
 QmlGraphicsItem *QmlParentAction::parent() const
 {
     Q_D(const QmlParentAction);
@@ -1176,23 +1253,29 @@ void QmlParentAction::transition(QmlStateActions &actions,
 
     QmlParentActionData *data = new QmlParentActionData;
 
-    bool explicitMatchFound = false;
+    if (d->pcTarget && d->pcMatchTarget) {
+        qmlInfo(this) << tr("matchTarget and target are mutually exclusive.");
+        return;
+    }
 
     for (int ii = 0; ii < actions.count(); ++ii) {
         Action &action = actions[ii];
 
         if (action.event && action.event->typeName() == QLatin1String("ParentChange")
-            && (!d->target || static_cast<QmlParentChange*>(action.event)->object() == d->target)) {
+            && !d->pcTarget
+            && (!d->pcMatchTarget || static_cast<QmlParentChange*>(action.event)->object() == d->pcMatchTarget)) {
             Action myAction = action;
             data->reverse = action.reverseEvent;
+            //### this logic differs from PropertyAnimation
+            //    (probably a result of modified vs. done)
             if (d->pcParent) {
+                //### should we disallow this case?
                 QmlParentChange *pc = new QmlParentChange;
                 pc->setObject(d->pcTarget);
-                pc->setParent(d->pcParent);
+                pc->setParent(static_cast<QmlParentChange*>(action.event)->parent());
                 myAction.event = pc;
                 data->pc = pc;
                 data->actions << myAction;
-                if (d->target) explicitMatchFound = true;
                 break;  //only match one
             } else {
                 action.actionDone = true;
@@ -1201,7 +1284,7 @@ void QmlParentAction::transition(QmlStateActions &actions,
         }
     }
 
-    if (!explicitMatchFound && d->pcTarget && d->pcParent) {
+    if (d->pcTarget && d->pcParent) {
         data->reverse = false;
         Action myAction;
         QmlParentChange *pc = new QmlParentChange;
