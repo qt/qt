@@ -439,6 +439,19 @@ static inline void ensureTerminated(QProcess *p)
         qWarning("Unable to terminate process");
 }
 
+static const QStringList &stderrWhiteList()
+{
+    static QStringList rc;
+    if (rc.empty()) {
+        rc << QLatin1String("QPainter::begin: Paint device returned engine == 0, type: 2")
+           << QLatin1String("QPainter::setRenderHint: Painter must be active to set rendering hints")
+           << QLatin1String("QPainter::setPen: Painter not active")
+           << QLatin1String("QPainter::setBrush: Painter not active")
+           << QLatin1String("QPainter::end: Painter not active, aborted");
+    }
+    return rc;
+}
+
 bool tst_GuiAppLauncher::runApp(const AppLaunchData &data, QString *errorMessage) const
 {
     qDebug("Launching: %s\n", qPrintable(data.binary));
@@ -483,7 +496,7 @@ bool tst_GuiAppLauncher::runApp(const AppLaunchData &data, QString *errorMessage
     const QStringList stderrOutput = QString::fromLocal8Bit(process.readAllStandardOutput()).split(QLatin1Char('\n'));
     foreach(const QString &stderrLine, stderrOutput) {
         // Skip expected QPainter warnings from oxygen.
-        if (stderrLine.startsWith(QLatin1String("QPainter:"))) {
+        if (stderrWhiteList().contains(stderrLine)) {
             qWarning("%s: stderr: %s\n", qPrintable(data.binary), qPrintable(stderrLine));
         } else {
             if (!stderrLine.isEmpty()) { // Split oddity gives empty messages
