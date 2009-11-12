@@ -75,6 +75,7 @@ public:
     virtual void setCursor(Qt::CursorShape shape);
     virtual void pointerEvent(QMouseEvent & event);
     virtual void changeCursor(QWidget * widget);
+    virtual void changeCursor(QCursor * widgetCursor);
 
     // output methods
     virtual QRect drawCursor(QPainter &);

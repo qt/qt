@@ -336,14 +336,18 @@ bool QApplication::isEffectEnabled(Qt::UIEffect effect)
 }
 
 #ifndef QT_NO_CURSOR
-void QApplication::setOverrideCursor(const QCursor &)
+void QApplication::setOverrideCursor(const QCursor &cursor)
 {
-    // XXX
+    qApp->d_func()->cursor_list.prepend(cursor);
+    qt_lite_set_cursor(0, false);
 }
 
 void QApplication::restoreOverrideCursor()
 {
-    // XXX
+    if (qApp->d_func()->cursor_list.isEmpty())
+        return;
+    qApp->d_func()->cursor_list.removeFirst();
+    qt_lite_set_cursor(0, false);
 }
 
 #endif// QT_NO_CURSOR

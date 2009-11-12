@@ -105,22 +105,27 @@ void QGraphicsSystemCursor::pointerEvent(QMouseEvent & e)
     screen->pointerEvent(e);
 }
 
+void QGraphicsSystemCursor::changeCursor(QCursor * widgetCursor)
+{
+    Qt::CursorShape shape = widgetCursor->shape();
+
+    if (shape == Qt::BitmapCursor) {
+        // application supplied cursor
+        const QBitmap * map = widgetCursor->bitmap();
+        const QBitmap * mask = widgetCursor->mask();
+        QPoint spot = widgetCursor->hotSpot();
+        setCursor(map->toImage().bits(), mask->toImage().bits(), map->width(), map->height(), spot.x(), spot.y());
+    } else {
+        // system cursor
+        setCursor(shape);
+    }
+}
+
 void QGraphicsSystemCursor::changeCursor(QWidget * widget)
 {
     if (widget) {
         QCursor widgetCursor = widget->cursor();
-        Qt::CursorShape shape = widgetCursor.shape();
-
-        if (shape == Qt::BitmapCursor) {
-            // application supplied cursor
-            const QBitmap * map = widgetCursor.bitmap();
-            const QBitmap * mask = widgetCursor.mask();
-            QPoint spot = widgetCursor.hotSpot();
-            setCursor(map->toImage().bits(), mask->toImage().bits(), map->width(), map->height(), spot.x(), spot.y());
-        } else {
-            // system cursor
-            setCursor(shape);
-        }
+        changeCursor(&widgetCursor);
      } else {
         // default cursor
         setCursor(Qt::ArrowCursor);
