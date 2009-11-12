@@ -58,12 +58,12 @@
     an example:
 
     \code
-        QPropertyAnimation animation(myWidget, "geometry");
-        animation.setDuration(10000);
-        animation.setStartValue(QRect(0, 0, 100, 30));
-        animation.setEndValue(QRect(250, 250, 100, 30));
+        QPropertyAnimation *animation = new QPropertyAnimation(myWidget, "geometry");
+        animation->setDuration(10000);
+        animation->setStartValue(QRect(0, 0, 100, 30));
+        animation->setEndValue(QRect(250, 250, 100, 30));
 
-        animation.start();
+        animation->start();
     \endcode
 
     The property name and the QObject instance of which property

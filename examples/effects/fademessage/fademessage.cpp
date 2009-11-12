@@ -43,7 +43,7 @@
 
 #include <QtGui>
 
-FadeMessage::FadeMessage(QWidget *parent): QGraphicsView(parent), m_index(0.0)
+FadeMessage::FadeMessage(QWidget *parent): QGraphicsView(parent)
 {
     setScene(&m_scene);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -51,9 +51,12 @@ FadeMessage::FadeMessage(QWidget *parent): QGraphicsView(parent), m_index(0.0)
 
     setupScene();
 
-    m_timeLine = new QTimeLine(500, this);
-    m_timeLine->setCurveShape(QTimeLine::EaseInOutCurve);
-    connect(m_timeLine, SIGNAL(valueChanged(qreal)), m_effect, SLOT(setStrength(qreal)));
+    m_animation = new QPropertyAnimation(m_effect, "strength", this);
+    m_animation->setDuration(500);
+    m_animation->setEasingCurve(QEasingCurve::InOutSine);
+    m_animation->setStartValue(0);
+    m_animation->setEndValue(1);
+
 
     setRenderHint(QPainter::Antialiasing, true);
     setFrameStyle(QFrame::NoFrame);
@@ -63,13 +66,12 @@ void FadeMessage::togglePopup()
 {
     if (m_message->isVisible()) {
         m_message->setVisible(false);
-        m_timeLine->setDirection(QTimeLine::Backward);
-        m_timeLine->start();
+        m_animation->setDirection(QAbstractAnimation::Backward);
     } else {
         m_message->setVisible(true);
-        m_timeLine->setDirection(QTimeLine::Forward);
-        m_timeLine->start();
+        m_animation->setDirection(QAbstractAnimation::Forward);
     }
+    m_animation->start();
 }
 
 void FadeMessage::setupScene()
