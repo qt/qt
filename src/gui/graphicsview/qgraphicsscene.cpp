@@ -4656,7 +4656,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             sourced->lastEffectTransform = painter->worldTransform();
             sourced->invalidateCache();
         }
-        item->d_ptr->graphicsEffect->draw(painter, source);
+        item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
     } else

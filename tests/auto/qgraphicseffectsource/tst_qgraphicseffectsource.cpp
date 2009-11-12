@@ -46,6 +46,8 @@
 #include <QtGui/qgraphicsitem.h>
 #include <QtGui/qstyleoption.h>
 
+#include <private/qgraphicseffect_p.h>
+
 //TESTED_CLASS=
 //TESTED_FILES=
 
@@ -54,13 +56,12 @@ class CustomItem : public QGraphicsRectItem
 public:
     CustomItem(qreal x, qreal y, qreal width, qreal height)
         : QGraphicsRectItem(x, y, width, height), numRepaints(0),
-          m_painter(0), m_styleOption(0)
+          m_painter(0)
     {}
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
     {
         m_painter = painter;
-        m_styleOption = option;
         ++numRepaints;
         QGraphicsRectItem::paint(painter, option, widget);
     }
@@ -69,12 +70,10 @@ public:
     {
         numRepaints = 0;
         m_painter = 0;
-        m_styleOption = 0;
     }
 
     int numRepaints;
     QPainter *m_painter;
-    const QStyleOption *m_styleOption;
 };
 
 class CustomEffect : public QGraphicsEffect
@@ -84,7 +83,7 @@ public:
         : QGraphicsEffect(), numRepaints(0), m_margin(10), m_sourceChanged(false),
           m_sourceBoundingRectChanged(false), doNothingInDraw(false),
           storeDeviceDependentStuff(false),
-          m_painter(0), m_styleOption(0), m_source(0)
+          m_painter(0), m_source(0)
     {}
 
     QRectF boundingRectFor(const QRectF &rect) const
@@ -96,7 +95,6 @@ public:
         m_sourceChanged = false;
         m_sourceBoundingRectChanged = false;
         m_painter = 0;
-        m_styleOption = 0;
         m_source = 0;
         deviceCoordinatesPixmap = QPixmap();
         deviceRect = QRect();
@@ -112,20 +110,19 @@ public:
     int margin() const
     { return m_margin; }
 
-    void draw(QPainter *painter, QGraphicsEffectSource *source)
+    void draw(QPainter *painter)
     {
         ++numRepaints;
         if (storeDeviceDependentStuff) {
-            deviceCoordinatesPixmap = source->pixmap(Qt::DeviceCoordinates);
-            deviceRect = source->deviceRect();
-            sourceDeviceBoundingRect = source->boundingRect(Qt::DeviceCoordinates);
+            deviceCoordinatesPixmap = source()->pixmap(Qt::DeviceCoordinates);
+            deviceRect = QRect(0, 0, painter->device()->width(), painter->device()->height());
+            sourceDeviceBoundingRect = source()->boundingRect(Qt::DeviceCoordinates);
         }
         if (doNothingInDraw)
             return;
-        m_source = source;
+        m_source = source();
         m_painter = painter;
-        m_styleOption = source->styleOption();
-        source->draw(painter);
+        source()->draw(painter);
     }
 
     void sourceChanged()
@@ -141,7 +138,6 @@ public:
     bool doNothingInDraw;
     bool storeDeviceDependentStuff;
     QPainter *m_painter;
-    const QStyleOption *m_styleOption;
     QGraphicsEffectSource *m_source;
     QPixmap deviceCoordinatesPixmap;
     QRect deviceRect;
@@ -227,8 +223,6 @@ void tst_QGraphicsEffectSource::styleOption()
     QTest::qWait(50);
     QCOMPARE(item->numRepaints, 1);
     QCOMPARE(effect->numRepaints, 1);
-    QVERIFY(effect->m_styleOption);
-    QCOMPARE(effect->m_styleOption, item->m_styleOption);
 }
 
 void tst_QGraphicsEffectSource::isPixmap()
@@ -291,10 +285,6 @@ void tst_QGraphicsEffectSource::boundingRect()
 
 void tst_QGraphicsEffectSource::deviceRect()
 {
-    QTest::ignoreMessage(QtWarningMsg, "QGraphicsEffectSource::deviceRect: Not yet implemented, lacking device context");
-    QCOMPARE(effect->source()->deviceRect(), QRect());
-
-    // We can at least check that the rect was correct in QGraphicsEffect::draw.
     effect->storeDeviceDependentStuff = true;
     effect->source()->update();
     QTest::qWait(50);
@@ -332,13 +322,13 @@ public:
         return src.adjusted(-10, -10, 10, 10);
     }
 
-    void draw(QPainter *, QGraphicsEffectSource *source) {
-        pix = source->pixmap(coordinateMode, &offset, padMode);
+    void draw(QPainter *) {
+        pix = source()->pixmap(coordinateMode, &offset, padMode);
     }
 
     QPixmap pix;
     QPoint offset;
-    QGraphicsEffectSource::PixmapPadMode padMode;
+    QGraphicsEffect::PixmapPadMode padMode;
     Qt::CoordinateSystem coordinateMode;
 };
 
@@ -351,32 +341,32 @@ void tst_QGraphicsEffectSource::pixmapPadding_data()
     QTest::addColumn<uint>("ulPixel");
 
     QTest::newRow("log,nopad") << int(Qt::LogicalCoordinates)
-                               << int(QGraphicsEffectSource::NoExpandPadMode)
+                               << int(QGraphicsEffect::NoPad)
                                << QSize(10, 10) << QPoint(0, 0)
                                << 0xffff0000u;
 
     QTest::newRow("log,transparent") << int(Qt::LogicalCoordinates)
-                                     << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+                                     << int(QGraphicsEffect::PadToTransparentBorder)
                                      << QSize(14, 14) << QPoint(-2, -2)
                                      << 0x00000000u;
 
     QTest::newRow("log,effectrect") << int(Qt::LogicalCoordinates)
-                                    << int(QGraphicsEffectSource::ExpandToEffectRectPadMode)
+                                    << int(QGraphicsEffect::PadToEffectiveBoundingRect)
                                     << QSize(30, 30) << QPoint(-10, -10)
                                     << 0x00000000u;
 
     QTest::newRow("dev,nopad") << int(Qt::DeviceCoordinates)
-                               << int(QGraphicsEffectSource::NoExpandPadMode)
+                               << int(QGraphicsEffect::NoPad)
                                << QSize(20, 20) << QPoint(40, 40)
                                << 0xffff0000u;
 
     QTest::newRow("dev,transparent") << int(Qt::DeviceCoordinates)
-                                     << int(QGraphicsEffectSource::ExpandToTransparentBorderPadMode)
+                                     << int(QGraphicsEffect::PadToTransparentBorder)
                                      << QSize(24, 24) << QPoint(38, 38)
                                      << 0x00000000u;
 
     QTest::newRow("dev,effectrect") << int(Qt::DeviceCoordinates)
-                                    << int(QGraphicsEffectSource::ExpandToEffectRectPadMode)
+                                    << int(QGraphicsEffect::PadToEffectiveBoundingRect)
                                     << QSize(40, 40) << QPoint(30, 30)
                                     << 0x00000000u;
 
@@ -404,7 +394,7 @@ void tst_QGraphicsEffectSource::pixmapPadding()
     QFETCH(QSize, size);
     QFETCH(uint, ulPixel);
 
-    effect->padMode = (QGraphicsEffectSource::PixmapPadMode) padMode;
+    effect->padMode = (QGraphicsEffect::PixmapPadMode) padMode;
     effect->coordinateMode = (Qt::CoordinateSystem) coordinateMode;
 
     scene->render(&dummyPainter, scene->itemsBoundingRect(), scene->itemsBoundingRect());

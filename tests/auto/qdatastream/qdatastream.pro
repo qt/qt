@@ -12,7 +12,7 @@ QT += svg
 
 
 wince*: {
-   addFiles.sources = datastream.q42 gearflowers.svg
+   addFiles.sources = datastream.q42 tests2.svg
    addFiles.path = .
    DEPLOYMENT += addFiles
    DEFINES += SRCDIR=\\\"\\\"

@@ -18,6 +18,12 @@ backslashed \ stuff.</source>
         </translation>
         <extra-some>thing</extra-some>
     </message>
+    <message id="yet_another_id">
+        <location filename="main.cpp" line="254"/>
+        <source></source>
+        <extracomment>This is a message without a source string</extracomment>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Dialog2</name>

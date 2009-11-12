@@ -321,7 +321,7 @@ struct RefCounted
         instanceCount.ref();
     }
 
-    RefCounted(RefCounted const &other)
+    RefCounted(RefCounted const &)
         : ref(0)
     {
         instanceCount.ref();
@@ -335,6 +335,7 @@ struct RefCounted
 
     RefCounted &operator=(RefCounted const &)
     {
+        return *this;
     }
 
     QAtomicInt ref;
@@ -413,27 +414,6 @@ void tst_QScopedPointer::comparison()
     QCOMPARE( int(RefCounted::instanceCount), 0 );
 
     {
-        // QCustomScopedPointer is an internal helper class -- it is unsupported!
-
-        RefCounted *a = new RefCounted;
-        RefCounted *b = new RefCounted;
-
-        QCOMPARE( int(RefCounted::instanceCount), 2 );
-
-        QCustomScopedPointer<RefCounted> pa1(a);
-        QCustomScopedPointer<RefCounted> pa2(a);
-        QCustomScopedPointer<RefCounted> pb(b);
-
-        scopedPointerComparisonTest(pa1, pa2, pb);
-
-        pa2.take();
-
-        QCOMPARE( int(RefCounted::instanceCount), 2 );
-    }
-
-    QCOMPARE( int(RefCounted::instanceCount), 0 );
-
-    {
         // QScopedSharedPointer is an internal helper class -- it is unsupported!
 
         RefCounted *a = new RefCounted;
@@ -441,13 +421,9 @@ void tst_QScopedPointer::comparison()
 
         QCOMPARE( int(RefCounted::instanceCount), 2 );
 
-        a->ref.ref();
-        QScopedSharedPointer<RefCounted> pa1(a);
-        a->ref.ref();
-        QScopedSharedPointer<RefCounted> pa2(a);
-        b->ref.ref();
-        QScopedSharedPointer<RefCounted> pb(b);
-
+        QSharedDataPointer<RefCounted> pa1(a);
+        QSharedDataPointer<RefCounted> pa2(a);
+        QSharedDataPointer<RefCounted> pb(b);
 
         QCOMPARE( int(a->ref), 2 );
         QCOMPARE( int(b->ref), 1 );

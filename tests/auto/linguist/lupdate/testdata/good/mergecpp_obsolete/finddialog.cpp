@@ -150,6 +150,9 @@ void FindDialog::doFind(bool forward)
 
 bool FindDialog::hasFindExpression() const
 {
+    //% "This is some random text"
+    qtTrId("keep_id")
+
     return !findExpr.isEmpty();
 }
 

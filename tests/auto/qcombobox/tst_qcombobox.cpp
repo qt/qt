@@ -2517,8 +2517,8 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     cb.addItem("1");
     cb.addItem("2");
     QLineEdit edit;
-    layout.add(&cb);
-    layout.add(&edit);
+    layout.addWidget(&cb);
+    layout.addWidget(&edit);
 
     w.show();
     QTest::qWaitForWindowShown(&w);
