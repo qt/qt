@@ -480,6 +480,12 @@ void tst_qmlecmascript::enums()
     // Non-existant enums
     {
     QmlComponent component(&engine, TEST_FILE("enums.2.qml"));
+
+    QString warning1 = component.url().toString() + ":5: Unable to assign [undefined] to int";
+    QString warning2 = component.url().toString() + ":6: Unable to assign [undefined] to int";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
     QCOMPARE(object->property("a").toInt(), 0);
@@ -586,6 +592,10 @@ Tests for a regression where this used to crash.
 void tst_qmlecmascript::nonExistantAttachedObject()
 {
     QmlComponent component(&engine, TEST_FILE("nonExistantAttachedObject.qml"));
+
+    QString warning = component.url().toString() + ":4: Unable to assign [undefined] to QString";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 }
@@ -683,6 +693,10 @@ Tests that only methods of Script {} blocks are exposed.
 void tst_qmlecmascript::scriptAccess()
 {
     QmlComponent component(&engine, TEST_FILE("scriptAccess.qml"));
+
+    QString warning = component.url().toString() + ":16: Unable to assign [undefined] to int";
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning));
+
     QObject *object = component.create();
     QVERIFY(object != 0);
 
@@ -811,11 +825,15 @@ void tst_qmlecmascript::scriptErrors()
     QString warning1 = url.left(url.length() - 3) + "js:2: Error: Invalid write to global property \"a\"";
     QString warning2 = url + ":7: TypeError: Result of expression 'a' [undefined] is not an object.";
     QString warning3 = url + ":5: Error: Invalid write to global property \"a\"";
-    QString warning4 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning4 = url + ":12: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning5 = url + ":10: TypeError: Result of expression 'a' [undefined] is not an object.";
+    QString warning6 = url + ":9: Unable to assign [undefined] to int";
 
     QTest::ignoreMessage(QtWarningMsg, warning1.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning2.toLatin1().constData());
     QTest::ignoreMessage(QtWarningMsg, warning3.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning5.toLatin1().constData());
+    QTest::ignoreMessage(QtWarningMsg, warning6.toLatin1().constData());
     MyQmlObject *object = qobject_cast<MyQmlObject *>(component.create());
     QVERIFY(object != 0);
 

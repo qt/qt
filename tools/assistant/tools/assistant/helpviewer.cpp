@@ -133,10 +133,9 @@ HelpNetworkAccessManager::HelpNetworkAccessManager(QHelpEngine *engine,
 {
 }
 
-QNetworkReply *HelpNetworkAccessManager::createRequest(Operation op,
-    const QNetworkRequest &request, QIODevice *outgoingData)
+QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
+    const QNetworkRequest &request, QIODevice* /*outgoingData*/)
 {
-    const QString& scheme = request.url().scheme();
     const QUrl& url = request.url();
     QString mimeType = url.toString();
     if (mimeType.endsWith(QLatin1String(".svg"))

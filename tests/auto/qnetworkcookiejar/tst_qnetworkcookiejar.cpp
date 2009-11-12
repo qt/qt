@@ -120,7 +120,7 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
 
     cookie.setName("a");
     cookie.setPath("/");
-    cookie.setDomain("www.foo.tld");
+    cookie.setDomain(".foo.tld");
     result += cookie;
     QTest::newRow("just-add") << preset << cookie << "http://www.foo.tld" << result << true;
 
@@ -148,6 +148,20 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     cookie.setPath("/");
     QTest::newRow("diff-path-order") << preset << cookie << "http://www.foo.tld" << result << true;
 
+    preset.clear();
+    result.clear();
+    QNetworkCookie finalCookie = cookie;
+    cookie.setDomain("foo.tld");
+    finalCookie.setDomain(".foo.tld");
+    result += finalCookie;
+    QTest::newRow("should-add-dot-prefix") << preset << cookie << "http://www.foo.tld" << result << true;
+
+    result.clear();
+    cookie.setDomain("");
+    finalCookie.setDomain("www.foo.tld");
+    result += finalCookie;
+    QTest::newRow("should-set-default-domain") << preset << cookie << "http://www.foo.tld" << result << true;
+
     // security test:
     result.clear();
     preset.clear();
@@ -159,7 +173,7 @@ void tst_QNetworkCookieJar::setCookiesFromUrl_data()
     QTest::newRow("security-path-1") << preset << cookie << "http://www.foo.tld" << result << false;
 
     // setting the defaults:
-    QNetworkCookie finalCookie = cookie;
+    finalCookie = cookie;
     finalCookie.setPath("/something/");
     cookie.setPath("");
     cookie.setDomain("");

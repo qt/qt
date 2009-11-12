@@ -95,6 +95,7 @@ public slots:
     void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
+    void currentFilterChanged(const QString &filter);
 
 private slots:
     void insertLastPages();

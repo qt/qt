@@ -600,7 +600,7 @@ static void blit_template(QScreen *screen, const QImage &image,
     const int screenStride = screen->linestep();
     const int imageStride = image.bytesPerLine();
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         const QRect r = region.boundingRect();
         const SRC *src = reinterpret_cast<const SRC*>(image.scanLine(r.y()))
                          + r.x();
@@ -1385,7 +1385,7 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
 
     QScreen provides several functions to retrieve information about
     the color palette: The clut() function returns a pointer to the
-    color lookup table (i.e. its color palette). Use the numCols()
+    color lookup table (i.e. its color palette). Use the colorCount()
     function to determine the number of entries in this table, and the
     alloc() function to retrieve the palette index of the color that
     is the closest match to a given RGB value.
@@ -1998,11 +1998,19 @@ QImage::Format QScreenPrivate::preferredImageFormat() const
     i.e. in modes where only the palette indexes (and not the actual
     color values) are stored in memory.
 
-    \sa alloc(), depth(), numCols()
+    \sa alloc(), depth(), colorCount()
 */
 
 /*!
+    \obsolete
     \fn int QScreen::numCols()
+
+    \sa colorCount()
+*/
+
+/*!
+    \since 4.6
+    \fn int QScreen::colorCount()
 
     Returns the number of entries in the screen's color lookup table
     (i.e. its color palette). A pointer to the color table can be
@@ -2103,7 +2111,7 @@ void QScreen::setPixelFormat(QImage::Format format)
     i.e. in modes where only the palette indexes (and not the actual
     color values) are stored in memory.
 
-    \sa clut(), numCols()
+    \sa clut(), colorCount()
 */
 
 int QScreen::alloc(unsigned int r,unsigned int g,unsigned int b)
@@ -2455,7 +2463,7 @@ void QScreen::exposeRegion(QRegion r, int windowIndex)
         delete blendBuffer;
     }
 
-    if (r.numRects() == 1) {
+    if (r.rectCount() == 1) {
         setDirty(r.boundingRect());
     } else {
         const QVector<QRect> rects = r.rects();

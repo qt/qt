@@ -52,6 +52,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#if !defined(QT_NO_NATIVE_GESTURES)
+
 QWinNativePanGestureRecognizer::QWinNativePanGestureRecognizer()
 {
 }
@@ -121,5 +123,7 @@ void QWinNativePanGestureRecognizer::reset(QGesture *state)
 
     QGestureRecognizer::reset(state);
 }
+
+#endif // QT_NO_NATIVE_GESTURES
 
 QT_END_NAMESPACE
