@@ -10,7 +10,8 @@ TEMPLATE = subdirs
            linguist \
            moc \
            uic \
-           uic3
+           uic3 \
+           guiapplauncher	   
 Q3SUBDIRS += \
            q3accel \
            q3action \
