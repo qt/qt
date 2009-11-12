@@ -151,6 +151,7 @@ class Node
 
     virtual bool isInnerNode() const = 0;
     virtual bool isReimp() const { return false; }
+    virtual bool isFunction() const { return false; }
     Type type() const { return typ; }
     virtual SubType subType() const { return NoSubType; }
     InnerNode *parent() const { return par; }
@@ -238,6 +239,9 @@ class InnerNode : public Node
     int numOverloads(const QString& funcName) const;
     NodeList overloads(const QString &funcName) const;
     const QStringList& includes() const { return inc; }
+
+    QStringList primaryKeys();
+    QStringList secondaryKeys();
 
  protected:
     InnerNode(Type type, InnerNode *parent, const QString& name);
@@ -421,36 +425,6 @@ class QmlPropertyNode : public LeafNode
     Trool   wri;
     bool    att;
 };
-
-class QmlSignalNode : public LeafNode
-{
- public:
-    QmlSignalNode(QmlClassNode* parent, 
-                  const QString& name,
-                  bool attached);
-    virtual ~QmlSignalNode() { }
-
-    const QString& element() const { return parent()->name(); }
-    bool isAttached() const { return att; }
-
- private:
-    bool    att;
-};
-
-class QmlMethodNode : public LeafNode
-{
- public:
-    QmlMethodNode(QmlClassNode* parent,
-                  const QString& name,
-                  bool attached);
-    virtual ~QmlMethodNode() { }
-
-    const QString& element() const { return parent()->name(); }
-    bool isAttached() const { return att; }
-
- private:
-    bool    att;
-};
 #endif
 
 class EnumItem
@@ -564,6 +538,7 @@ class FunctionNode : public LeafNode
     enum Virtualness { NonVirtual, ImpureVirtual, PureVirtual };
 
     FunctionNode(InnerNode *parent, const QString &name);
+    FunctionNode(Type type, InnerNode *parent, const QString &name, bool attached);
     virtual ~FunctionNode() { }
 
     void setReturnType(const QString& returnType) { rt = returnType; }
@@ -589,6 +564,7 @@ class FunctionNode : public LeafNode
     bool isStatic() const { return sta; }
     bool isOverload() const { return ove; }
     bool isReimp() const { return reimp; }
+    bool isFunction() const { return true; }
     int overloadNumber() const;
     int numOverloads() const;
     const QList<Parameter>& parameters() const { return params; }
@@ -600,6 +576,10 @@ class FunctionNode : public LeafNode
 
     QStringList reconstructParams(bool values = false) const;
     QString signature(bool values = false) const;
+    const QString& element() const { return parent()->name(); }
+    bool isAttached() const { return att; }
+
+    void debug() const;
 
  private:
     void setAssociatedProperty(PropertyNode *property);
@@ -620,6 +600,7 @@ class FunctionNode : public LeafNode
     bool sta : 1;
     bool ove : 1;
     bool reimp: 1; 
+    bool att: 1;
     QList<Parameter> params;
     const FunctionNode *rf;
     const PropertyNode *ap;
