@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSIMAGEITEM_H
 #define QMLGRAPHICSIMAGEITEM_H
 
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 
 
 QT_BEGIN_HEADER

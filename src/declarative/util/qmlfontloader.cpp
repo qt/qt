@@ -47,7 +47,7 @@
 #include <QNetworkReply>
 #include <QFile>
 #include <QmlContext>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <QFontDatabase>
 
 QT_BEGIN_NAMESPACE

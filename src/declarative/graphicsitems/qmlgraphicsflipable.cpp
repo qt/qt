@@ -42,7 +42,7 @@
 #include "qmlgraphicsflipable_p.h"
 #include "private/qmlgraphicsitem_p.h"
 #include "QtGui/qgraphicstransform.h"
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
 

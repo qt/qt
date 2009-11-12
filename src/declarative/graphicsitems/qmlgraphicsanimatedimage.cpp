@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QMovie>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include "qmlgraphicsanimatedimage_p.h"
 #include "qmlgraphicsanimatedimage_p_p.h"
 #include <QNetworkRequest>

@@ -43,7 +43,7 @@
 #include "qmlgraphicsitem.h"
 #include "qmlgraphicsitem_p.h"
 #include <QDebug>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
 

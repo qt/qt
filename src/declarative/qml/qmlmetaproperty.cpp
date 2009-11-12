@@ -50,7 +50,7 @@
 #include "qmlboundsignal_p.h"
 #include <math.h>
 #include <QtCore/qdebug.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <private/qmlengine_p.h>
 #include <private/qmldeclarativedata_p.h>
 

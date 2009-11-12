@@ -57,7 +57,7 @@
 #include <QtCore/QObject>
 #include <private/qmetaobjectbuilder_p.h>
 #include <private/qobject_p.h>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 
 QT_BEGIN_HEADER
 

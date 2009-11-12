@@ -61,8 +61,8 @@
 #include <QtCore/QAnimationGroup>
 #include <QtGui/QColor>
 #include <private/qmlanimation_p.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qml.h>
+#include <qmlcontext.h>
 #include <private/qmltimeline_p_p.h>
 
 QT_BEGIN_NAMESPACE

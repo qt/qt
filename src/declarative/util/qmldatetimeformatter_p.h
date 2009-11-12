@@ -43,7 +43,7 @@
 #define QMLDATETIMEFORMATTER_H
 
 #include <QtCore/qdatetime.h>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 
 QT_BEGIN_HEADER
 

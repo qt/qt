@@ -44,7 +44,7 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QTransform>
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 #include <QtGui/qvector3d.h>
 
 QT_BEGIN_HEADER
