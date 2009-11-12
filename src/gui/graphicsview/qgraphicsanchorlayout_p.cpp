@@ -2564,21 +2564,6 @@ void QGraphicsAnchorLayoutPrivate::setItemsGeometries(const QRectF &geom)
 }
 
 /*!
-    \internal
-
-    Fill the distance in the vertex and in the sub-vertices if its a combined vertex.
-*/
-static void setVertexDistance(AnchorVertex *v, qreal distance)
-{
-    v->distance = distance;
-    if (v->m_type == AnchorVertex::Pair) {
-        AnchorVertexPair *pair = static_cast<AnchorVertexPair *>(v);
-        setVertexDistance(pair->m_first, distance);
-        setVertexDistance(pair->m_second, distance);
-    }
-}
-
-/*!
   \internal
 
   Calculate the position of each vertex based on the paths to each of
@@ -2593,7 +2578,7 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     // Get root vertex
     AnchorVertex *root = layoutFirstVertex[orientation];
 
-    setVertexDistance(root, 0);
+    root->distance = 0;
     visited.insert(root);
 
     // Add initial edges to the queue
@@ -2604,16 +2589,12 @@ void QGraphicsAnchorLayoutPrivate::calculateVertexPositions(
     // Do initial calculation required by "interpolateEdge()"
     setupEdgesInterpolation(orientation);
 
-    // Traverse the graph and calculate vertex positions, we need to
-    // visit all pairs since each of them could have a sequential
-    // anchor inside, which hides more vertices.
+    // Traverse the graph and calculate vertex positions
     while (!queue.isEmpty()) {
         QPair<AnchorVertex *, AnchorVertex *> pair = queue.dequeue();
         AnchorData *edge = graph[orientation].edgeData(pair.first, pair.second);
 
-        // Both vertices were interpolated, and the anchor itself can't have other
-        // anchors inside (it's not a complex anchor).
-        if (edge->type == AnchorData::Normal && visited.contains(pair.second))
+        if (visited.contains(pair.second))
             continue;
 
         visited.insert(pair.second);
@@ -2653,24 +2634,20 @@ void QGraphicsAnchorLayoutPrivate::setupEdgesInterpolation(
 }
 
 /*!
-  \internal
+    \internal
 
-  Calculate the current Edge size based on the current Layout size and the
-  size the edge is supposed to have when the layout is at its:
+    Calculate the current Edge size based on the current Layout size and the
+    size the edge is supposed to have when the layout is at its:
 
-   - minimum size,
-   - preferred size,
-   - maximum size.
+    - minimum size,
+    - preferred size,
+    - maximum size.
 
-   These three key values are calculated in advance using linear
-   programming (more expensive) or the simplification algorithm, then
-   subsequential resizes of the parent layout require a simple
-   interpolation.
-
-   If the edge is sequential or parallel, it's possible to have more
-   vertices to be initalized, so it calls specialized functions that
-   will recurse back to interpolateEdge().
- */
+    These three key values are calculated in advance using linear
+    programming (more expensive) or the simplification algorithm, then
+    subsequential resizes of the parent layout require a simple
+    interpolation.
+*/
 void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorData *edge)
 {
     const Orientation orientation = Orientation(edge->orientation);
@@ -2684,64 +2661,10 @@ void QGraphicsAnchorLayoutPrivate::interpolateEdge(AnchorVertex *base, AnchorDat
 
     // Calculate the distance for the vertex opposite to the base
     if (edge->from == base) {
-        setVertexDistance(edge->to, base->distance + edgeDistance);
+        edge->to->distance = base->distance + edgeDistance;
     } else {
-        setVertexDistance(edge->from, base->distance - edgeDistance);
+        edge->from->distance = base->distance - edgeDistance;
     }
-
-    // Process child anchors
-    if (edge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(edge));
-    else if (edge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(edge));
-}
-
-void QGraphicsAnchorLayoutPrivate::interpolateParallelEdges(ParallelAnchorData *data)
-{
-    // In parallels the boundary vertices are already calculate, we
-    // just need to look for sequential groups inside, because only
-    // them may have new vertices associated.
-
-    // First edge
-    if (data->firstEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->firstEdge));
-    else if (data->firstEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->firstEdge));
-
-    // Second edge
-    if (data->secondEdge->type == AnchorData::Sequential)
-        interpolateSequentialEdges(static_cast<SequentialAnchorData *>(data->secondEdge));
-    else if (data->secondEdge->type == AnchorData::Parallel)
-        interpolateParallelEdges(static_cast<ParallelAnchorData *>(data->secondEdge));
-}
-
-void QGraphicsAnchorLayoutPrivate::interpolateSequentialEdges(SequentialAnchorData *data)
-{
-    // This method is supposed to handle any sequential anchor, even out-of-order
-    // ones. However, in the current QGAL implementation we should get only the
-    // well behaved ones.
-    Q_ASSERT(data->m_edges.first()->from == data->from);
-    Q_ASSERT(data->m_edges.last()->to == data->to);
-
-    // At this point, the two outter vertices already have their distance
-    // calculated.
-    // We use the first as the base to calculate the internal ones
-
-    AnchorVertex *prev = data->from;
-
-    for (int i = 0; i < data->m_edges.count() - 1; ++i) {
-        AnchorData *edge = data->m_edges.at(i);
-        interpolateEdge(prev, edge);
-
-        // Use the recently calculated vertex as the base for the next one
-        const bool edgeIsForward = (edge->from == prev);
-        prev = edgeIsForward ? edge->to : edge->from;
-    }
-
-    // Treat the last specially, since we already calculated it's end
-    // vertex, so it's only interesting if it's a complex one
-    if (data->m_edges.last()->type != AnchorData::Normal)
-        interpolateEdge(prev, data->m_edges.last());
 }
 
 bool QGraphicsAnchorLayoutPrivate::solveMinMax(const QList<QSimplexConstraint *> &constraints,
