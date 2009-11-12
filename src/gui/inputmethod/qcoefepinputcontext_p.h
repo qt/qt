@@ -132,6 +132,7 @@ public:
     // From MObjectProvider
 public:
     TTypeUid::Ptr MopSupplyObject(TTypeUid id);
+    MObjectProvider *MopNext();
 
 private:
     QSymbianControl *m_parent;
@@ -146,6 +147,8 @@ private:
     int m_inlinePosition;
     MFepInlineTextFormatRetriever *m_formatRetriever;
     MFepPointerEventHandlerDuringInlineEdit *m_pointerHandler;
+    int m_longPress;
+    int m_cursorPos;
 };
 
 QT_END_NAMESPACE

@@ -359,6 +359,7 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
 
         QScopedPointer<QSymbianControl> control( q_check_ptr(new QSymbianControl(q)) );
         QT_TRAP_THROWING(control->ConstructL(true, desktop));
+        control->SetMopParent(static_cast<CEikAppUi*>(S60->appUi()));
 
         // Symbian windows are always created in an inactive state
         // We perform this assignment for the case where the window is being re-created
@@ -1235,7 +1236,7 @@ void QWidget::releaseKeyboard()
 
 void QWidget::grabMouse()
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));
@@ -1252,7 +1253,7 @@ void QWidget::grabMouse()
 #ifndef QT_NO_CURSOR
 void QWidget::grabMouse(const QCursor &cursor)
 {
-    if (!qt_nograb()) {
+    if (isVisible() && !qt_nograb()) {
         if (QWidgetPrivate::mouseGrabber && QWidgetPrivate::mouseGrabber != this)
             QWidgetPrivate::mouseGrabber->releaseMouse();
         Q_ASSERT(testAttribute(Qt::WA_WState_Created));

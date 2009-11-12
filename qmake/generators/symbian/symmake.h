@@ -147,6 +147,7 @@ protected:
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension) = 0;
     virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly) = 0;
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile) = 0;
+    virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath) = 0;
 
 public:
 
