@@ -256,8 +256,13 @@ void ParallelAnchorData::updateChildrenSizes()
     firstEdge->sizeAtPreferred = sizeAtPreferred;
     firstEdge->sizeAtMaximum = sizeAtMaximum;
 
-    const bool secondFwd = (secondEdge->from == from);
-    if (secondFwd) {
+    // We have the convention that the first children will define the direction of the
+    // pararell group. So we can check whether the second edge is "forward" in relation
+    // to the group if it have the same direction as the first edge. Note that we don't
+    // use 'this->from' because it might be changed by vertex simplification.
+    const bool secondForward = (firstEdge->from == secondEdge->from);
+
+    if (secondForward) {
         secondEdge->sizeAtMinimum = sizeAtMinimum;
         secondEdge->sizeAtPreferred = sizeAtPreferred;
         secondEdge->sizeAtMaximum = sizeAtMaximum;
@@ -287,10 +292,12 @@ bool ParallelAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleIn
     // Account for parallel anchors where the second edge is backwards.
     // We rely on the fact that a forward anchor of sizes min, pref, max is equivalent
     // to a backwards anchor of size (-max, -pref, -min)
-    const bool secondFwd = (secondEdge->from == from);
-    const qreal secondMin = secondFwd ? secondEdge->minSize : -secondEdge->maxSize;
-    const qreal secondPref = secondFwd ? secondEdge->prefSize : -secondEdge->prefSize;
-    const qreal secondMax = secondFwd ? secondEdge->maxSize : -secondEdge->minSize;
+
+    // Also see comments in updateChildrenSizes().
+    const bool secondForward = (firstEdge->from == secondEdge->from);
+    const qreal secondMin = secondForward ? secondEdge->minSize : -secondEdge->maxSize;
+    const qreal secondPref = secondForward ? secondEdge->prefSize : -secondEdge->prefSize;
+    const qreal secondMax = secondForward ? secondEdge->maxSize : -secondEdge->minSize;
 
     minSize = qMax(firstEdge->minSize, secondMin);
     maxSize = qMin(firstEdge->maxSize, secondMax);
