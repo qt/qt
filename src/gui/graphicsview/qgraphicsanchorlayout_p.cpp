@@ -167,7 +167,7 @@ static void internalSizeHints(QSizePolicy::Policy policy,
         *prefSize = prefSizeHint;
 }
 
-bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
+void AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
 {
     QSizePolicy::Policy policy;
     qreal minSizeHint;
@@ -182,7 +182,7 @@ bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
             maxSize = QWIDGETSIZE_MAX;
             if (isCenterAnchor)
                 maxSize /= 2;
-            return true;
+            return;
         } else {
             if (orientation == QGraphicsAnchorLayoutPrivate::Horizontal) {
                 policy = item->sizePolicy().horizontalPolicy();
@@ -244,8 +244,6 @@ bool AnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
     sizeAtMinimum = prefSize;
     sizeAtPreferred = prefSize;
     sizeAtMaximum = prefSize;
-
-    return true;
 }
 
 void ParallelAnchorData::updateChildrenSizes()
@@ -274,18 +272,11 @@ void ParallelAnchorData::updateChildrenSizes()
     secondEdge->updateChildrenSizes();
 }
 
-bool ParallelAnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
+bool ParallelAnchorData::calculateSizeHints()
 {
-    return refreshSizeHints_helper(styleInfo);
-}
-
-bool ParallelAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo,
-                                                 bool refreshChildren)
-{
-    if (refreshChildren && (!firstEdge->refreshSizeHints(styleInfo)
-                            || !secondEdge->refreshSizeHints(styleInfo))) {
-        return false;
-    }
+    // Note that parallel groups can lead to unfeasibility, so during calculation, we can
+    // find out one unfeasibility. Because of that this method return boolean. This can't
+    // happen in sequential, so there the method is void.
 
     // Account for parallel anchors where the second edge is backwards.
     // We rely on the fact that a forward anchor of sizes min, pref, max is equivalent
@@ -423,13 +414,7 @@ void SequentialAnchorData::updateChildrenSizes()
     }
 }
 
-bool SequentialAnchorData::refreshSizeHints(const QLayoutStyleInfo *styleInfo)
-{
-    return refreshSizeHints_helper(styleInfo);
-}
-
-bool SequentialAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo,
-                                                   bool refreshChildren)
+void SequentialAnchorData::calculateSizeHints()
 {
     minSize = 0;
     prefSize = 0;
@@ -437,11 +422,6 @@ bool SequentialAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *style
 
     for (int i = 0; i < m_edges.count(); ++i) {
         AnchorData *edge = m_edges.at(i);
-
-        // If it's the case refresh children information first
-        if (refreshChildren && !edge->refreshSizeHints(styleInfo))
-            return false;
-
         minSize += edge->minSize;
         prefSize += edge->prefSize;
         maxSize += edge->maxSize;
@@ -451,8 +431,6 @@ bool SequentialAnchorData::refreshSizeHints_helper(const QLayoutStyleInfo *style
     sizeAtMinimum = prefSize;
     sizeAtPreferred = prefSize;
     sizeAtMaximum = prefSize;
-
-    return true;
 }
 
 #ifdef QT_DEBUG
@@ -627,7 +605,7 @@ AnchorData *QGraphicsAnchorLayoutPrivate::addAnchorMaybeParallel(AnchorData *new
 
         // At this point we can identify that the parallel anchor is not feasible, e.g. one
         // anchor minimum size is bigger than the other anchor maximum size.
-        *feasible = parallel->refreshSizeHints_helper(0, false);
+        *feasible = parallel->calculateSizeHints();
         newAnchor = parallel;
     }
 
@@ -688,7 +666,7 @@ static AnchorData *createSequence(Graph<AnchorVertex, AnchorData> *graph,
     sequence->from = before;
     sequence->to = after;
 
-    sequence->refreshSizeHints_helper(0, false);
+    sequence->calculateSizeHints();
 
     return sequence;
 }
@@ -1335,11 +1313,11 @@ void QGraphicsAnchorLayoutPrivate::createItemEdges(QGraphicsLayoutItem *item)
     // refresh its size hint / policy values.
     AnchorData *data = new AnchorData;
     addAnchor_helper(item, Qt::AnchorLeft, item, Qt::AnchorRight, data);
-    data->refreshSizeHints(0); // 0 = effectiveSpacing, will not be used
+    data->refreshSizeHints();
 
     data = new AnchorData;
     addAnchor_helper(item, Qt::AnchorTop, item, Qt::AnchorBottom, data);
-    data->refreshSizeHints(0); // 0 = effectiveSpacing, will not be used
+    data->refreshSizeHints();
 }
 
 /*!
@@ -1399,14 +1377,14 @@ void QGraphicsAnchorLayoutPrivate::createCenterAnchors(
     addAnchor_helper(item, firstEdge, item, centerEdge, data);
     data->isCenterAnchor = true;
     data->dependency = AnchorData::Master;
-    data->refreshSizeHints(0);
+    data->refreshSizeHints();
 
     data = new AnchorData;
     c->variables.insert(data, -1.0);
     addAnchor_helper(item, centerEdge, item, lastEdge, data);
     data->isCenterAnchor = true;
     data->dependency = AnchorData::Slave;
-    data->refreshSizeHints(0);
+    data->refreshSizeHints();
 
     itemCenterConstraints[orientation].append(c);
 
@@ -1473,7 +1451,7 @@ void QGraphicsAnchorLayoutPrivate::removeCenterAnchors(
         // Create the new anchor that should substitute the left-center-right anchors.
         AnchorData *data = new AnchorData;
         addAnchor_helper(item, firstEdge, item, lastEdge, data);
-        data->refreshSizeHints(0);
+        data->refreshSizeHints();
 
         // Remove old anchors
         removeAnchor_helper(first, center);
@@ -1995,12 +1973,8 @@ void QGraphicsAnchorLayoutPrivate::calculateGraphs(
 
     static bool simplificationEnabled = qgetenv("QT_ANCHORLAYOUT_NO_SIMPLIFICATION").isEmpty();
 
-    // Reset the nominal sizes of each anchor based on the current item sizes.
-    if (!refreshAllSizeHints(orientation)) {
-        qWarning("QGraphicsAnchorLayout: anchor setup is not feasible.");
-        graphHasConflicts[orientation] = true;
-        return;
-    }
+    // Reset the nominal sizes of each anchor based on the current item sizes
+    refreshAllSizeHints(orientation);
 
     // Simplify the graph
     if (simplificationEnabled && !simplifyGraph(orientation)) {
@@ -2169,29 +2143,19 @@ bool QGraphicsAnchorLayoutPrivate::calculateNonTrunk(const QList<QSimplexConstra
 /*!
     \internal
 
-    Traverse the graph refreshing the size hints. Complex anchors will call the
-    refresh method of their children anchors. Simple anchors, if are internal
-    anchors, will query the associated item for their size hints.
-
-    Returns false if some unfeasibility was found in the graph regarding the
-    complex anchors.
+    Traverse the graph refreshing the size hints. Edges will query their associated
+    item or graphicsAnchor for their size hints.
 */
-bool QGraphicsAnchorLayoutPrivate::refreshAllSizeHints(Orientation orientation)
+void QGraphicsAnchorLayoutPrivate::refreshAllSizeHints(Orientation orientation)
 {
     Graph<AnchorVertex, AnchorData> &g = graph[orientation];
     QList<QPair<AnchorVertex *, AnchorVertex *> > vertices = g.connections();
 
     QLayoutStyleInfo styleInf = styleInfo();
     for (int i = 0; i < vertices.count(); ++i) {
-        AnchorData *data = g.edgeData(vertices.at(i).first, vertices.at(i).second);;
-        Q_ASSERT(data->from && data->to);
-
-        // During the traversal we check the feasibility of the complex anchors.
-        if (!data->refreshSizeHints(&styleInf))
-            return false;
+        AnchorData *data = g.edgeData(vertices.at(i).first, vertices.at(i).second);
+        data->refreshSizeHints(&styleInf);
     }
-
-    return true;
 }
 
 /*!

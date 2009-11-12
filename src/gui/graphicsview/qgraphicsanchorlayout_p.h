@@ -131,7 +131,7 @@ struct AnchorData : public QSimplexVariable {
           dependency(Independent) {}
 
     virtual void updateChildrenSizes() {}
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
+    void refreshSizeHints(const QLayoutStyleInfo *styleInfo = 0);
 
     virtual ~AnchorData() {}
 
@@ -197,9 +197,7 @@ struct SequentialAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
-
-    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    void calculateSizeHints();
 
     QVector<AnchorVertex*> m_children;          // list of vertices in the sequence
     QVector<AnchorData*> m_edges;               // keep the list of edges too.
@@ -226,9 +224,7 @@ struct ParallelAnchorData : public AnchorData
     }
 
     virtual void updateChildrenSizes();
-    virtual bool refreshSizeHints(const QLayoutStyleInfo *styleInfo);
-
-    bool refreshSizeHints_helper(const QLayoutStyleInfo *styleInfo, bool refreshChildren = true);
+    bool calculateSizeHints();
 
     AnchorData* firstEdge;
     AnchorData* secondEdge;
@@ -483,7 +479,7 @@ public:
                            const QList<AnchorData *> &variables);
 
     // Support functions for calculateGraph()
-    bool refreshAllSizeHints(Orientation orientation);
+    void refreshAllSizeHints(Orientation orientation);
     void findPaths(Orientation orientation);
     void constraintsFromPaths(Orientation orientation);
     void updateAnchorSizes(Orientation orientation);
