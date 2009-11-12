@@ -148,126 +148,179 @@ void RemoteControl::handleCommandString(const QString &cmdString)
 {
     QStringList cmds = cmdString.split(QLatin1Char(';'));
     QStringList::const_iterator it = cmds.constBegin();
-    QString cmdLine, cmd, arg;
     while (it != cmds.constEnd()) {
-        cmdLine = (*it).trimmed();
-        cmd = cmdLine;
-        arg.clear();
-        int i = cmdLine.indexOf(QLatin1Char(' '));
-        if (i > 0) {
-            cmd = cmdLine.left(i);
-            arg = cmdLine.mid(i+1);
-        }
-        cmd = cmd.toLower();
+        QString cmd, arg;
+        splitInputString(*it, cmd, arg);
 
         if (m_debug)
             QMessageBox::information(0, tr("Debugging Remote Control"),
                 tr("Received Command: %1 %2").arg(cmd).arg(arg));
 
-        if (cmd == QLatin1String("debug")) {
-            if (arg == QLatin1String("on"))
-                m_debug = true;
-            else
-                m_debug = false;
-        } else if (cmd == QLatin1String("show")) {
-            if (arg.toLower() == QLatin1String("contents")) {
-                m_mainWindow->showContents();
-            } else if (arg.toLower() == QLatin1String("index")) {
-                m_mainWindow->showIndex();
-            } else if (arg.toLower() == QLatin1String("bookmarks")) {
-                m_mainWindow->showBookmarks();
-            } else if (arg.toLower() == QLatin1String("search")) {
-                m_mainWindow->showSearch();
-            }
-        } else if (cmd == QLatin1String("hide")) {
-            if (arg.toLower() == QLatin1String("contents")) {
-                m_mainWindow->hideContents();
-            } else if (arg.toLower() == QLatin1String("index")) {
-                m_mainWindow->hideIndex();
-            } else if (arg.toLower() == QLatin1String("bookmarks")) {
-                m_mainWindow->hideBookmarks();
-            } else if (arg.toLower() == QLatin1String("search")) {
-                m_mainWindow->hideSearch();
-            }
-        } else if (cmd == QLatin1String("setsource")) {
-            QUrl url(arg);
-            if (url.isValid()) {
-                if (url.isRelative())
-                    url = CentralWidget::instance()->currentSource().resolved(url);
-                if (m_caching) {
-                    clearCache();
-                    m_setSource = url;
-                } else {
-                    CentralWidget::instance()->setSource(url);
-                }
-            }
-        } else if (cmd == QLatin1String("synccontents")) {
-            if (m_caching)
-                m_syncContents = true;
-            else
-                m_mainWindow->syncContents();
-        } else if (cmd == QLatin1String("activatekeyword")) {
-            if (m_caching) {
-                clearCache();
-                m_activateKeyword = arg;
-            } else {
-                m_mainWindow->setIndexString(arg);
-                if (!arg.isEmpty())
-                    m_helpEngine->indexWidget()->activateCurrentItem();
-            }
-        } else if (cmd == QLatin1String("activateidentifier")) {
-            if (m_caching) {
-                clearCache();
-                m_activateIdentifier = arg;
-            } else {
-                QMap<QString, QUrl> links =
-                    m_helpEngine->linksForIdentifier(arg);
-                if (links.count())
-                    CentralWidget::instance()->setSource(links.constBegin().value());
-            }
-        } else if (cmd == QLatin1String("expandtoc")) {
-            bool ok = false;
-            int depth = -1;
-            if (!arg.isEmpty())
-                depth = arg.toInt(&ok);
-            if (!ok)
-                depth = -1;
-
-            if (m_caching)
-                m_expandTOC = depth;
-            else
-                m_mainWindow->expandTOC(depth);
-        } else if (cmd == QLatin1String("setcurrentfilter")
-                   && m_helpEngine->customFilters().contains(arg)) {
-            if (m_caching) {
-                clearCache();
-                m_currentFilter = arg;
-            } else {
-                m_helpEngine->setCurrentFilter(arg);
-            }
-        } else if (cmd == QLatin1String("register")) {
-            const QString &absFileName = QFileInfo(arg).absoluteFilePath();
-            if (m_helpEngine->registeredDocumentations().
-                contains(QHelpEngineCore::namespaceName(absFileName)))
-                return;
-            m_helpEngine->registerDocumentation(absFileName);
-            m_helpEngine->setupData();
-        } else if (cmd == QLatin1String("unregister")) {
-            const QString &absFileName = QFileInfo(arg).absoluteFilePath();
-            const QString &ns = QHelpEngineCore::namespaceName(absFileName);
-            if (m_helpEngine->registeredDocumentations().contains(ns)) {
-                CentralWidget* widget = CentralWidget::instance();
-                widget->closeTabs(widget->currentSourceFileList().keys(ns));
-                m_helpEngine->unregisterDocumentation(ns);
-                m_helpEngine->setupData();
-            }
-        } else {
+        if (cmd == QLatin1String("debug"))
+            handleDebugCommand(arg);
+         else if (cmd == QLatin1String("show"))
+            handleShowCommand(arg);
+         else if (cmd == QLatin1String("hide"))
+            handleHideCommand(arg);
+         else if (cmd == QLatin1String("setsource"))
+            handleSetSourceCommand(arg);
+         else if (cmd == QLatin1String("synccontents"))
+            handleSyncContentsCommand();
+         else if (cmd == QLatin1String("activatekeyword"))
+            handleActivateKeywordCommand(arg);
+         else if (cmd == QLatin1String("activateidentifier"))
+            handleActivateIdentifierCommand(arg);
+         else if (cmd == QLatin1String("expandtoc"))
+            handleExpandTocCommand(arg);
+         else if (cmd == QLatin1String("setcurrentfilter"))
+            handleSetCurrentFilterCommand(arg);
+         else if (cmd == QLatin1String("register"))
+            handleRegisterCommand(arg);
+         else if (cmd == QLatin1String("unregister"))
+            handleUnregisterCommand(arg);
+         else
             return;
-        }
+
         ++it;
     }
     m_mainWindow->raise();
     m_mainWindow->activateWindow();
+}
+
+void RemoteControl::splitInputString(const QString &input, QString &cmd,
+                                     QString &arg)
+{
+    QString cmdLine = input.trimmed();
+    int i = cmdLine.indexOf(QLatin1Char(' '));
+    cmd = cmdLine.left(i);
+    arg = cmdLine.mid(i+1);
+    cmd = cmd.toLower();
+}
+
+void RemoteControl::handleDebugCommand(const QString &arg)
+{
+    m_debug = arg == QLatin1String("on");
+}
+
+void RemoteControl::handleShowCommand(const QString &arg)
+{
+    if (arg.toLower() == QLatin1String("contents"))
+        m_mainWindow->showContents();
+    else if (arg.toLower() == QLatin1String("index"))
+        m_mainWindow->showIndex();
+    else if (arg.toLower() == QLatin1String("bookmarks"))
+        m_mainWindow->showBookmarks();
+    else if (arg.toLower() == QLatin1String("search"))
+        m_mainWindow->showSearch();
+}
+
+void RemoteControl::handleHideCommand(const QString &arg)
+{
+    if (arg.toLower() == QLatin1String("contents"))
+        m_mainWindow->hideContents();
+    else if (arg.toLower() == QLatin1String("index"))
+        m_mainWindow->hideIndex();
+    else if (arg.toLower() == QLatin1String("bookmarks"))
+        m_mainWindow->hideBookmarks();
+    else if (arg.toLower() == QLatin1String("search"))
+        m_mainWindow->hideSearch();
+}
+
+void RemoteControl::handleSetSourceCommand(const QString &arg)
+{
+    QUrl url(arg);
+    if (url.isValid()) {
+        if (url.isRelative())
+            url = CentralWidget::instance()->currentSource().resolved(url);
+        if (m_caching) {
+            clearCache();
+            m_setSource = url;
+        } else {
+            CentralWidget::instance()->setSource(url);
+        }
+    }
+}
+
+void RemoteControl::handleSyncContentsCommand()
+{
+    if (m_caching)
+        m_syncContents = true;
+    else
+        m_mainWindow->syncContents();
+}
+
+void RemoteControl::handleActivateKeywordCommand(const QString &arg)
+{
+    if (m_caching) {
+        clearCache();
+        m_activateKeyword = arg;
+    } else {
+        m_mainWindow->setIndexString(arg);
+        if (!arg.isEmpty())
+            m_helpEngine->indexWidget()->activateCurrentItem();
+    }
+}
+
+void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
+{
+    if (m_caching) {
+        clearCache();
+        m_activateIdentifier = arg;
+    } else {
+        const QMap<QString, QUrl> &links =
+            m_helpEngine->linksForIdentifier(arg);
+        if (!links.isEmpty())
+            CentralWidget::instance()->setSource(links.constBegin().value());
+    }
+}
+
+void RemoteControl::handleExpandTocCommand(const QString &arg)
+{
+    bool ok = false;
+    int depth = -1;
+    if (!arg.isEmpty())
+        depth = arg.toInt(&ok);
+    if (!ok)
+        depth = -1;
+
+    if (m_caching)
+        m_expandTOC = depth;
+    else
+        m_mainWindow->expandTOC(depth);
+}
+
+void RemoteControl::handleSetCurrentFilterCommand(const QString &arg)
+{
+    if (m_helpEngine->customFilters().contains(arg)) {
+        if (m_caching) {
+            clearCache();
+            m_currentFilter = arg;
+        } else {
+            m_helpEngine->setCurrentFilter(arg);
+        }
+    }
+}
+
+void RemoteControl::handleRegisterCommand(const QString &arg)
+{
+    const QString &absFileName = QFileInfo(arg).absoluteFilePath();
+    if (m_helpEngine->registeredDocumentations().
+            contains(QHelpEngineCore::namespaceName(absFileName)))
+        return;
+    m_helpEngine->registerDocumentation(absFileName);
+    m_helpEngine->setupData();
+}
+
+void RemoteControl::handleUnregisterCommand(const QString &arg)
+{
+    const QString &absFileName = QFileInfo(arg).absoluteFilePath();
+    const QString &ns = QHelpEngineCore::namespaceName(absFileName);
+    if (m_helpEngine->registeredDocumentations().contains(ns)) {
+        CentralWidget* widget = CentralWidget::instance();
+        widget->closeTabs(widget->currentSourceFileList().keys(ns));
+        m_helpEngine->unregisterDocumentation(ns);
+        m_helpEngine->setupData();
+    }
 }
 
 void RemoteControl::applyCache()
