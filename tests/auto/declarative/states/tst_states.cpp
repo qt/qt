@@ -56,8 +56,11 @@ private slots:
     void signalOverride();
     void signalOverrideCrash();
     void parentChange();
+    void parentChangeErrors();
     void anchorChanges();
     void script();
+    void restoreEntryValues();
+    void explicitChanges();
 };
 
 void tst_states::basicChanges()
@@ -425,6 +428,43 @@ void tst_states::parentChange()
     }
 }
 
+void tst_states::parentChangeErrors()
+{
+    QmlEngine engine;
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/parentChange4.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlParentChange (file://" SRCDIR "/data/parentChange4.qml:25:9) Unable to preserve appearance under non-uniform scale");
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QCOMPARE(innerRect->y(), qreal(5));
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/parentChange5.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        QTest::ignoreMessage(QtWarningMsg, "QML QmlParentChange (file://" SRCDIR "/data/parentChange5.qml:25:9) Unable to preserve appearance under complex transform");
+        rect->setState("reparented");
+        QCOMPARE(innerRect->rotation(), qreal(0));
+        QCOMPARE(innerRect->scale(), qreal(1));
+        QCOMPARE(innerRect->x(), qreal(5));
+        QCOMPARE(innerRect->y(), qreal(5));
+    }
+}
+
 void tst_states::anchorChanges()
 {
     QmlEngine engine;
@@ -477,6 +517,48 @@ void tst_states::script()
         rect->setState("");
         QCOMPARE(rect->color(),QColor("blue")); // a script isn't reverted
     }
+}
+
+void tst_states::restoreEntryValues()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/restoreEntryValues.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("blue"));
+}
+
+void tst_states::explicitChanges()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/explicit.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setProperty("sourceColor", QColor("green"));
+    QCOMPARE(rect->color(),QColor("blue"));
+
+    rect->setState("");
+    QCOMPARE(rect->color(),QColor("red"));
+    rect->setProperty("sourceColor", QColor("yellow"));
+    QCOMPARE(rect->color(),QColor("red"));
+
+    rect->setState("blue");
+    QCOMPARE(rect->color(),QColor("yellow"));
 }
 
 QTEST_MAIN(tst_states)
