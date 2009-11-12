@@ -159,9 +159,9 @@ void RemoteControl::handleCommandString(const QString &cmdString)
         if (cmd == QLatin1String("debug"))
             handleDebugCommand(arg);
          else if (cmd == QLatin1String("show"))
-            handleShowCommand(arg);
+            handleShowOrHideCommand(arg, true);
          else if (cmd == QLatin1String("hide"))
-            handleHideCommand(arg);
+            handleShowOrHideCommand(arg, false);
          else if (cmd == QLatin1String("setsource"))
             handleSetSourceCommand(arg);
          else if (cmd == QLatin1String("synccontents"))
@@ -202,28 +202,16 @@ void RemoteControl::handleDebugCommand(const QString &arg)
     m_debug = arg == QLatin1String("on");
 }
 
-void RemoteControl::handleShowCommand(const QString &arg)
+void RemoteControl::handleShowOrHideCommand(const QString &arg, bool show)
 {
     if (arg.toLower() == QLatin1String("contents"))
-        m_mainWindow->showContents();
+        m_mainWindow->setContentsVisible(show);
     else if (arg.toLower() == QLatin1String("index"))
-        m_mainWindow->showIndex();
+        m_mainWindow->setIndexVisible(show);
     else if (arg.toLower() == QLatin1String("bookmarks"))
-        m_mainWindow->showBookmarks();
+        m_mainWindow->setBookmarksVisible(show);
     else if (arg.toLower() == QLatin1String("search"))
-        m_mainWindow->showSearch();
-}
-
-void RemoteControl::handleHideCommand(const QString &arg)
-{
-    if (arg.toLower() == QLatin1String("contents"))
-        m_mainWindow->hideContents();
-    else if (arg.toLower() == QLatin1String("index"))
-        m_mainWindow->hideIndex();
-    else if (arg.toLower() == QLatin1String("bookmarks"))
-        m_mainWindow->hideBookmarks();
-    else if (arg.toLower() == QLatin1String("search"))
-        m_mainWindow->hideSearch();
+        m_mainWindow->setSearchVisible(show);
 }
 
 void RemoteControl::handleSetSourceCommand(const QString &arg)

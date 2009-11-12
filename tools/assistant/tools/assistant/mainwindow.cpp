@@ -875,26 +875,17 @@ void MainWindow::showAboutDialog()
     aboutDia.exec();
 }
 
+void MainWindow::setContentsVisible(bool visible)
+{
+    if (visible)
+        showContents();
+    else
+        hideContents();
+}
+
 void MainWindow::showContents()
 {
     activateDockWidget(m_contentWindow);
-}
-
-void MainWindow::showIndex()
-{
-    activateDockWidget(m_indexWindow);
-}
-
-void MainWindow::showBookmarks()
-{
-    activateDockWidget(m_bookmarkWidget);
-}
-
-void MainWindow::activateDockWidget(QWidget *w)
-{
-    w->parentWidget()->show();
-    w->parentWidget()->raise();
-    w->setFocus();
 }
 
 void MainWindow::hideContents()
@@ -902,14 +893,66 @@ void MainWindow::hideContents()
     m_contentWindow->parentWidget()->hide();
 }
 
+void MainWindow::setIndexVisible(bool visible)
+{
+    if (visible)
+        showIndex();
+    else
+        hideIndex();
+}
+
+void MainWindow::showIndex()
+{
+    activateDockWidget(m_indexWindow);
+}
+
 void MainWindow::hideIndex()
 {
     m_indexWindow->parentWidget()->hide();
 }
 
+void MainWindow::setBookmarksVisible(bool visible)
+{
+    if (visible)
+        showBookmarks();
+    else
+        hideBookmarks();
+}
+
+
+void MainWindow::showBookmarks()
+{
+    activateDockWidget(m_bookmarkWidget);
+}
+
 void MainWindow::hideBookmarks()
 {
     m_bookmarkWidget->parentWidget()->hide();
+}
+
+void MainWindow::setSearchVisible(bool visible)
+{
+    if (visible)
+        showSearch();
+    else
+        hideSearch();
+}
+
+void MainWindow::showSearch()
+{
+    m_centralWidget->activateSearchWidget();
+}
+
+void MainWindow::hideSearch()
+{
+    m_centralWidget->removeSearchWidget();
+}
+
+void MainWindow::activateDockWidget(QWidget *w)
+{
+    w->parentWidget()->show();
+    w->parentWidget()->raise();
+    w->setFocus();
 }
 
 void MainWindow::setIndexString(const QString &str)
@@ -930,19 +973,9 @@ void MainWindow::activateCurrentCentralWidgetTab()
     m_centralWidget->activateTab();
 }
 
-void MainWindow::showSearch()
-{
-    m_centralWidget->activateSearchWidget();
-}
-
 void MainWindow::showSearchWidget()
 {
     m_centralWidget->activateSearchWidget(true);
-}
-
-void MainWindow::hideSearch()
-{
-    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::updateApplicationFont()

@@ -67,8 +67,7 @@ private:
     void clearCache();
     void splitInputString(const QString &input, QString &cmd, QString &arg);
     void handleDebugCommand(const QString &arg);
-    void handleShowCommand(const QString &arg);
-    void handleHideCommand(const QString &arg);
+    void handleShowOrHideCommand(const QString &arg, bool show);
     void handleSetSourceCommand(const QString &arg);
     void handleSyncContentsCommand();
     void handleActivateKeywordCommand(const QString &arg);
