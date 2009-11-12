@@ -65,7 +65,6 @@ QCoeFepInputContext::QCoeFepInputContext(QObject *parent)
       m_fepState(q_check_ptr(new CAknEdwinState)),		// CBase derived object needs check on new
       m_lastImHints(Qt::ImhNone),
       m_textCapabilities(TCoeInputCapabilities::EAllText),
-      m_isEditing(false),
       m_inDestruction(false),
       m_pendingInputCapabilitiesChanged(false),
       m_cursorVisibility(1),
@@ -245,7 +244,6 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
 
 void QCoeFepInputContext::mouseHandler( int x, QMouseEvent *event)
 {
-    Q_ASSERT(m_isEditing);
     Q_ASSERT(focusWidget());
 
     if (event->type() == QEvent::MouseButtonPress && event->button() == Qt::LeftButton) {
@@ -488,8 +486,6 @@ void QCoeFepInputContext::StartFepInlineEditL(const TDesC& aInitialInlineText,
     if (!w)
         return;
 
-    m_isEditing = true;
-
     m_cursorPos = w->inputMethodQuery(Qt::ImCursorPosition).toInt();
     
     QList<QInputMethodEvent::Attribute> attributes;
@@ -555,8 +551,6 @@ void QCoeFepInputContext::CancelFepInlineEdit()
     event.setCommitString(QLatin1String(""), 0, 0);
     m_preeditString.clear();
     sendEvent(event);
-
-    m_isEditing = false;
 }
 
 TInt QCoeFepInputContext::DocumentLengthForFep() const
@@ -711,7 +705,6 @@ void QCoeFepInputContext::commitCurrentString(bool triggeredBySymbian)
     sendEvent(event);
 
     m_longPress = 0;
-    m_isEditing = false;
 
     if (!triggeredBySymbian) {
         CCoeFep* fep = CCoeEnv::Static()->Fep();
