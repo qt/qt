@@ -3612,4 +3612,11 @@ EXPORTS
 	_ZNK13QStateMachine10isAnimatedEv @ 3611 NONAME
 	_ZNK18QAbstractAnimation15currentLoopTimeEv @ 3612 NONAME
 	_ZNK7QRegExp12captureCountEv @ 3613 NONAME
+	_Z38QBasicAtomicPointer_isTestAndSetNativev @ 3614 NONAME
+	_Z39QBasicAtomicPointer_isFetchAndAddNativev @ 3615 NONAME
+	_Z41QBasicAtomicPointer_isFetchAndStoreNativev @ 3616 NONAME
+	_ZN15QBasicAtomicInt18isTestAndSetNativeEv @ 3617 NONAME
+	_ZN15QBasicAtomicInt19isFetchAndAddNativeEv @ 3618 NONAME
+	_ZN15QBasicAtomicInt21isFetchAndStoreNativeEv @ 3619 NONAME
+	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3620 NONAME
 
