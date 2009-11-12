@@ -42,6 +42,7 @@
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
+#include <QtCore/QList>
 #include <QtCore/QUrl>
 #include <QtCore/QPoint>
 #include <QtCore/QObject>
@@ -134,6 +135,7 @@ public:
     int availableHelpViewer() const;
     bool enableTabCloseAction() const;
 
+    void closeTabs(const QList<int> &indices);
     void closeTabAt(int index);
     QMap<int, QString> currentSourceFileList() const;
 

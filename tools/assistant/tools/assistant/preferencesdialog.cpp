@@ -378,12 +378,7 @@ void PreferencesDialog::applyChanges()
         }
     }
 
-    qSort(m_TabsToClose);
-    CentralWidget* widget = CentralWidget::instance();
-    for (int i = m_TabsToClose.count(); --i >= 0;)
-        widget->closeTabAt(m_TabsToClose.at(i));
-    if (widget->availableHelpViewer()== 0)
-        widget->setSource(QUrl(QLatin1String("about:blank")));
+    CentralWidget::instance()->closeTabs(m_TabsToClose);
 
     if (m_unregDocs.count()) {
         foreach (const QString &doc, m_unregDocs)

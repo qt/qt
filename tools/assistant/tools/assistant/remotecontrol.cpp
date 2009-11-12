@@ -44,6 +44,7 @@
 #include "centralwidget.h"
 
 #include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QThread>
 #include <QtCore/QTextStream>
 #include <QtCore/QSocketNotifier>
@@ -236,14 +237,29 @@ void RemoteControl::handleCommandString(const QString &cmdString)
                 m_expandTOC = depth;
             else
                 m_mainWindow->expandTOC(depth);
-        } else if (cmd == QLatin1String("setcurrentfilter")) {
-            if (!m_helpEngine->customFilters().contains(arg))
-                return;
+        } else if (cmd == QLatin1String("setcurrentfilter")
+                   && m_helpEngine->customFilters().contains(arg)) {
             if (m_caching) {
                 clearCache();
                 m_currentFilter = arg;
             } else {
                 m_helpEngine->setCurrentFilter(arg);
+            }
+        } else if (cmd == QLatin1String("register")) {
+            const QString &absFileName = QFileInfo(arg).absoluteFilePath();
+            if (m_helpEngine->registeredDocumentations().
+                contains(QHelpEngineCore::namespaceName(absFileName)))
+                return;
+            m_helpEngine->registerDocumentation(absFileName);
+            m_helpEngine->setupData();
+        } else if (cmd == QLatin1String("unregister")) {
+            const QString &absFileName = QFileInfo(arg).absoluteFilePath();
+            const QString &ns = QHelpEngineCore::namespaceName(absFileName);
+            if (m_helpEngine->registeredDocumentations().contains(ns)) {
+                CentralWidget* widget = CentralWidget::instance();
+                widget->closeTabs(widget->currentSourceFileList().keys(ns));
+                m_helpEngine->unregisterDocumentation(ns);
+                m_helpEngine->setupData();
             }
         } else {
             return;
