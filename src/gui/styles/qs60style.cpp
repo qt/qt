@@ -799,6 +799,9 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabPassiveR:
         case QS60StyleEnums::SP_QgnGrafTabPassiveL:
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            //Returned QSize for tabs must not be square, but narrow rectangle with width:height
+            //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
+            result.setWidth(10);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -809,7 +812,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
-            
+
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
