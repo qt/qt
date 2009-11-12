@@ -72,7 +72,7 @@ int screenDepthPerComponent(Widget* w)
 
 bool screenIsMonochrome(Widget* w)
 {
-    return QApplication::desktop()->screen(screenNumber(w))->colorCount() < 2;
+    return QApplication::desktop()->screen(screenNumber(w))->numColors() < 2;
 }
 
 FloatRect screenRect(Widget* w)

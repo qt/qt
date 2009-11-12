@@ -1,3 +1,38 @@
+2009-11-09  Norbert Leser  <norbert.leser@nokia.com>
+
+        Reviewed by Kenneth Rohde Christiansen.
+
+        Moved macro MMP_RULES (LINKEROPTION) into symbian instead of symbian-sbsv2,
+        since adjustment of RW-section base address will be needed for all new symbian
+        tool chains, specifically for arm and gcc compilation targets.
+        Also, change target address to 0xE00000 to be sufficient for all targets.
+
+        * WebCore.pro:
+
+2009-11-11  Jocelyn Turcotte  <jocelyn.turcotte@nokia.com>
+
+        Reviewed by Eric Seidel.
+
+        [Qt] Make the default style background color valid.
+        Currently the color is transparent but invalid, this causes
+        list boxes in QtWebKit to be drawn with a black background
+        since r49242.
+        https://bugs.webkit.org/show_bug.cgi?id=31295
+
+        * rendering/style/RenderStyle.h:
+        (WebCore::InheritedFlags::initialBackgroundColor):
+        * rendering/style/StyleBackgroundData.cpp:
+        (WebCore::StyleBackgroundData::StyleBackgroundData):
+
+2009-11-11  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Introduce a function for querying the input method status
+        in QWebPageClient.
+
+        * platform/qt/QWebPageClient.h:
+
 2009-11-09  Yael Aharon  <yael.aharon@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.

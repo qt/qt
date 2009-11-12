@@ -1,3 +1,96 @@
+2009-11-11  Liang QI  <liang.qi@nokia.com>
+
+        [Qt] Fix tst_qwebpage and tst_qwebframe compilation on Symbian.
+
+        * tests/qwebframe/qwebframe.pro:
+        * tests/qwebframe/tst_qwebframe.cpp:
+        * tests/qwebpage/qwebpage.pro:
+        * tests/qwebpage/tst_qwebpage.cpp:
+
+2009-11-11  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Reviewed by Simon Hausmann.
+
+        Fix a crash in the layout test plugins/document-open.html
+
+        * Api/qwebframe.cpp:
+        (QWebFrame::toPlainText):
+
+2009-11-11  Warwick Allison  <warwick.allison@nokia.com>, Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        [Qt] Regression: Preserve the parent of plugin objects when using
+        QtWebKit with only a QWebPage.
+
+        * WebCoreSupport/FrameLoaderClientQt.cpp:
+        (WebCore::FrameLoaderClientQt::createPlugin): Don't reparent
+        plugins to 0.
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (PluginCounterPage::PluginCounterPage): Initialize m_pluginParent to 0.
+        (PluginCounterPage::~PluginCounterPage): Delete the plugin parent later
+        (after the page)
+        (PluginTracerPage::createPlugin): Assign a dummy parent to the plugin.
+        (PluginTracerPage::PluginTracerPage): Set up the plugin parent.
+        (tst_QWebPage::createViewlessPlugin): Verify that for viewless pages the
+        plugin parent remains unchanged.
+
+2009-11-11  David Boddie  <dboddie@trolltech.com>
+
+        [Qt] Doc: Added internal or hidden placeholder documentation.
+
+        * Api/qwebpage.cpp:
+
+2009-11-11  Martin Smith  <msmith@trolltech.com>
+
+        [Qt] doc: Changed Trolltech to Nokia
+
+        * Api/qwebview.cpp:
+
+2009-11-10  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Unreviewed documentation fixes.
+
+        Added a few improvements from Jocelyn Turcotte to the
+        createWindow docs.
+
+        * Api/qwebview.cpp:
+
+2009-11-10  Kenneth Rohde Christiansen  <kenneth@webkit.org>
+
+        Unreviewed documentation fix.
+
+        [Qt] Make qwebpage's createWindow not qwebview dependent.
+        https://bugs.webkit.org/show_bug.cgi?id=30771
+
+        Update documentation to make it clear that a reimplementation
+        of the createWindow method of the associated QWebPage can
+        result in the QWebView::createWindow method to never be called.
+
+        * Api/qwebview.cpp:
+
+2009-11-11  Simon Hausmann  <simon.hausmann@nokia.com>
+
+        Reviewed by Tor Arne Vestbø.
+
+        Fix enabling of software input panel when activating editable elements
+        in QGraphicsWebView.
+
+        * Api/qgraphicswebview.cpp:
+        (QGraphicsWebViewPrivate::inputMethodEnabled): Implement method to
+        query for input method support.
+        * Api/qwebpage.cpp:
+        (QWebPageWidgetClient::inputMethodEnabled): Ditto for QWidget.
+        (QWebPagePrivate::handleSoftwareInputPanel): Don't use view() to
+        test for input method support. Instead query using QWebPageClient
+        and send the SIPR event to the ownerWidget() instead of the view().
+        The latter is null for QGraphicsWebView.
+        * tests/qwebpage/tst_qwebpage.cpp:
+        (EventSpy::EventSpy):
+        (EventSpy::eventFilter):
+        (tst_QWebPage::inputMethods): Modify the test to verify that SIPR
+        events are dispatched when activating focusable content.
+
 2009-11-09  Benjamin Poulain  <benjamin.poulain@nokia.com>
 
         Reviewed by Kenneth Rohde Christiansen.
