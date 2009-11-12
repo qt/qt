@@ -31,6 +31,7 @@ win32:DEFINES += QT_NODLL
 INCLUDEPATH += $$QT_BUILD_TREE/include \
             $$QT_BUILD_TREE/include/QtCore \
             $$QT_BUILD_TREE/include/QtXml \
+            $$QT_BUILD_TREE/src/corelib/global   # qlibraryinfo.cpp includes qconfig.cpp
 
 DEPENDPATH += $$INCLUDEPATH \
               ../../corelib/global \
