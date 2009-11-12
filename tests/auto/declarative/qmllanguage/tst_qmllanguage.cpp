@@ -693,11 +693,22 @@ void tst_qmllanguage::valueTypes()
 
 void tst_qmllanguage::cppnamespace()
 {
-    QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
-    VERIFY_ERRORS(0);
-    QObject *object = component.create();
-    QVERIFY(object != 0);
-    delete object;
+    {
+        QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("cppnamespace.2.qml"));
+        qWarning() << component.errors();
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        delete object;
+    }
 }
 
 void tst_qmllanguage::aliasProperties()
