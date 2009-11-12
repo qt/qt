@@ -1537,15 +1537,21 @@ void QGraphicsAnchorLayoutPrivate::removeCenterConstraints(QGraphicsLayoutItem *
 
 /*!
  * \internal
+ * Implements the high level "addAnchor" feature. Called by the public API
+ * addAnchor method.
  *
- * Helper function that is called from the anchor functions in the public API.
- * If \a spacing is 0, it will pick up the spacing defined by the style.
+ * The optional \a spacing argument defines the size of the anchor. If not provided,
+ * the anchor size is either 0 or not-set, depending on type of anchor created (see
+ * matrix below).
+ *
+ * All anchors that remain with size not-set will assume the standard spacing,
+ * set either by the layout style or through the "setSpacing" layout API.
  */
 QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *firstItem,
-                                                      Qt::AnchorPoint firstEdge,
-                                                      QGraphicsLayoutItem *secondItem,
-                                                      Qt::AnchorPoint secondEdge,
-                                                      qreal *spacing)
+                                                         Qt::AnchorPoint firstEdge,
+                                                         QGraphicsLayoutItem *secondItem,
+                                                         Qt::AnchorPoint secondEdge,
+                                                         qreal *spacing)
 {
     Q_Q(QGraphicsAnchorLayout);
     if ((firstItem == 0) || (secondItem == 0)) {
@@ -1625,11 +1631,20 @@ QGraphicsAnchor *QGraphicsAnchorLayoutPrivate::addAnchor(QGraphicsLayoutItem *fi
     return graphicsAnchor;
 }
 
+/*
+  \internal
+
+  This method adds an AnchorData to the internal graph. It is responsible for doing
+  the boilerplate part of such task.
+
+  If another AnchorData exists between the mentioned vertices, it is deleted and
+  the new one is inserted.
+*/
 void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstItem,
-                                             Qt::AnchorPoint firstEdge,
-                                             QGraphicsLayoutItem *secondItem,
-                                             Qt::AnchorPoint secondEdge,
-                                             AnchorData *data)
+                                                    Qt::AnchorPoint firstEdge,
+                                                    QGraphicsLayoutItem *secondItem,
+                                                    Qt::AnchorPoint secondEdge,
+                                                    AnchorData *data)
 {
     Q_Q(QGraphicsAnchorLayout);
 
@@ -1639,13 +1654,11 @@ void QGraphicsAnchorLayoutPrivate::addAnchor_helper(QGraphicsLayoutItem *firstIt
     // anchor manipulation always happen in the full graph
     restoreSimplifiedGraph(orientation);
 
-    // Is the Vertex (firstItem, firstEdge) already represented in our
-    // internal structure?
+    // Create or increase the reference count for the related vertices.
     AnchorVertex *v1 = addInternalVertex(firstItem, firstEdge);
     AnchorVertex *v2 = addInternalVertex(secondItem, secondEdge);
 
     // Remove previous anchor
-    // ### Could we update the existing edgeData rather than creating a new one?
     if (graph[orientation].edgeData(v1, v2)) {
         removeAnchor_helper(v1, v2);
     }
