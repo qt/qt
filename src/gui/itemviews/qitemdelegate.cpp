@@ -1059,7 +1059,7 @@ QPixmap *QItemDelegate::selected(const QPixmap &pixmap, const QPalette &palette,
         painter.end();
 
         QPixmap selected = QPixmap(QPixmap::fromImage(img));
-        int n = (img.numBytes() >> 10) + 1;
+        int n = (img.byteCount() >> 10) + 1;
         if (QPixmapCache::cacheLimit() < n)
             QPixmapCache::setCacheLimit(n);
 

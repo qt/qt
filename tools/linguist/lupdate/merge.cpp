@@ -247,10 +247,8 @@ int applyNumberHeuristic(Translator &tor)
         t = translated.find(zeroKey((*u).sourceText()));
         if (t != translated.end() && !t.key().isEmpty()
             && t->sourceText() != u->sourceText()) {
-            TranslatorMessage m = *u;
-            m.setTranslation(translationAttempt(t->translation(), t->sourceText(),
-                                                u->sourceText()));
-            tor.replace(m);
+            u->setTranslation(translationAttempt(t->translation(), t->sourceText(),
+                                                 u->sourceText()));
             inserted++;
         }
     }
@@ -305,9 +303,7 @@ int applySameTextHeuristic(Translator &tor)
         QString key = u->sourceText();
         t = translated.find(key);
         if (t != translated.end()) {
-            TranslatorMessage m = *u;
-            m.setTranslations(t->translations());
-            tor.replace(m);
+            u->setTranslations(t->translations());
             ++inserted;
         }
     }
@@ -345,15 +341,17 @@ Translator merge(const Translator &tor, const Translator &virginTor,
     foreach (TranslatorMessage m, tor.messages()) {
         TranslatorMessage::Type newType = TranslatorMessage::Finished;
 
-        if (m.sourceText().isEmpty()) {
+        if (m.sourceText().isEmpty() && m.id().isEmpty()) {
             // context/file comment
             TranslatorMessage mv = virginTor.find(m.context());
             if (!mv.isNull())
                 m.setComment(mv.comment());
         } else {
-            TranslatorMessage mv = virginTor.find(m.context(), m.sourceText(), m.comment());
-            if (mv.isNull()) {
+            TranslatorMessage mv;
+            int mvi = virginTor.find(m);
+            if (mvi < 0) {
                 if (!(options & HeuristicSimilarText)) {
+                  makeObsolete:
                     newType = TranslatorMessage::Obsolete;
                     if (m.type() != TranslatorMessage::Obsolete)
                         obsoleted++;
@@ -362,10 +360,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                     mv = virginTor.find(m.context(), m.comment(), m.allReferences());
                     if (mv.isNull()) {
                         // did not find it in the virgin, mark it as obsolete
-                        newType = TranslatorMessage::Obsolete;
-                        if (m.type() != TranslatorMessage::Obsolete)
-                            obsoleted++;
-                        m.clearReferences();
+                        goto makeObsolete;
                     } else {
                         // Do not just accept it if its on the same line number,
                         // but different source text.
@@ -380,6 +375,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                             ++similarTextHeuristicCount;
                             neww++;
 
+                          outdateSource:
                             m.setOldSourceText(m.sourceText());
                             m.setSourceText(mv.sourceText());
                             const QString &oldpluralsource = m.extra(QLatin1String("po-msgid_plural"));
@@ -387,38 +383,45 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                                 m.setExtra(QLatin1String("po-old_msgid_plural"), oldpluralsource);
                                 m.unsetExtra(QLatin1String("po-msgid_plural"));
                             }
-                            m.setReferences(mv.allReferences()); // Update secondary references
-                            m.setPlural(mv.isPlural());
-                            m.setUtf8(mv.isUtf8());
-                            m.setExtraComment(mv.extraComment());
+                            goto copyAttribs; // Update secondary references
                         } else {
                             // The virgin and vernacular sourceTexts are so
                             // different that we could not find it.
-                            newType = TranslatorMessage::Obsolete;
-                            if (m.type() != TranslatorMessage::Obsolete)
-                                obsoleted++;
-                            m.clearReferences();
+                            goto makeObsolete;
                         }
                     }
                 }
             } else {
-                switch (m.type()) {
-                case TranslatorMessage::Finished:
-                default:
-                    if (m.isPlural() == mv.isPlural()) {
-                        newType = TranslatorMessage::Finished;
-                    } else {
+                mv = virginTor.message(mvi);
+                if (!mv.id().isEmpty()
+                    && (mv.context() != m.context()
+                        || mv.sourceText() != m.sourceText()
+                        || mv.comment() != m.comment())) {
+                    known++;
+                    newType = TranslatorMessage::Unfinished;
+                    m.setContext(mv.context());
+                    m.setComment(mv.comment());
+                    if (mv.sourceText() != m.sourceText())
+                        goto outdateSource;
+                } else {
+                    switch (m.type()) {
+                    case TranslatorMessage::Finished:
+                    default:
+                        if (m.isPlural() == mv.isPlural()) {
+                            newType = TranslatorMessage::Finished;
+                        } else {
+                            newType = TranslatorMessage::Unfinished;
+                        }
+                        known++;
+                        break;
+                    case TranslatorMessage::Unfinished:
                         newType = TranslatorMessage::Unfinished;
+                        known++;
+                        break;
+                    case TranslatorMessage::Obsolete:
+                        newType = TranslatorMessage::Unfinished;
+                        neww++;
                     }
-                    known++;
-                    break;
-                case TranslatorMessage::Unfinished:
-                    newType = TranslatorMessage::Unfinished;
-                    known++;
-                    break;
-                case TranslatorMessage::Obsolete:
-                    newType = TranslatorMessage::Unfinished;
-                    neww++;
                 }
 
                 // Always get the filename and linenumber info from the
@@ -426,10 +429,12 @@ Translator merge(const Translator &tor, const Translator &virginTor,
                 // This should also enable us to read a file that does not
                 // have the <location> element.
                 // why not use operator=()? Because it overwrites e.g. userData.
+              copyAttribs:
                 m.setReferences(mv.allReferences());
                 m.setPlural(mv.isPlural());
                 m.setUtf8(mv.isUtf8());
                 m.setExtraComment(mv.extraComment());
+                m.setId(mv.id());
             }
         }
 
@@ -442,11 +447,11 @@ Translator merge(const Translator &tor, const Translator &virginTor,
       vernacular translator.
     */
     foreach (const TranslatorMessage &mv, virginTor.messages()) {
-        if (mv.sourceText().isEmpty()) {
+        if (mv.sourceText().isEmpty() && mv.id().isEmpty()) {
             if (tor.contains(mv.context()))
                 continue;
         } else {
-            if (tor.contains(mv.context(), mv.sourceText(), mv.comment()))
+            if (tor.find(mv) >= 0)
                 continue;
             if (options & HeuristicSimilarText) {
                 TranslatorMessage m = tor.find(mv.context(), mv.comment(), mv.allReferences());
@@ -460,7 +465,7 @@ Translator merge(const Translator &tor, const Translator &virginTor,
             outTor.append(mv);
         else
             outTor.appendSorted(mv);
-        if (!mv.sourceText().isEmpty())
+        if (!mv.sourceText().isEmpty() || !mv.id().isEmpty())
             ++neww;
     }
 

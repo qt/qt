@@ -4208,7 +4208,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     QRect br = pixmapExposed.boundingRect();
 
     // Don't use subpixmap if we get a full update.
-    if (pixmapExposed.isEmpty() || (pixmapExposed.numRects() == 1 && br.contains(pix->rect()))) {
+    if (pixmapExposed.isEmpty() || (pixmapExposed.rectCount() == 1 && br.contains(pix->rect()))) {
         pix->fill(Qt::transparent);
         pixmapPainter.begin(pix);
     } else {
@@ -4656,7 +4656,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             sourced->lastEffectTransform = painter->worldTransform();
             sourced->invalidateCache();
         }
-        item->d_ptr->graphicsEffect->draw(painter, source);
+        item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
     } else

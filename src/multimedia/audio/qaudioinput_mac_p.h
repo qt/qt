@@ -129,8 +129,8 @@ public:
     void setNotifyInterval(int milliSeconds);
     int notifyInterval() const;
 
-    qint64 totalTime() const;
-    qint64 clock() const;
+    qint64 processedUSecs() const;
+    qint64 elapsedUSecs() const;
 
     QAudio::Error error() const;
     QAudio::State state() const;

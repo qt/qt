@@ -271,11 +271,12 @@ class QmlParentActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlParentAction)
 public:
     QmlParentActionPrivate()
-    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
+    : QmlAbstractAnimationPrivate(), pcTarget(0), pcMatchTarget(0), pcParent(0) {}
 
     void init();
 
     QmlGraphicsItem *pcTarget;
+    QmlGraphicsItem *pcMatchTarget;
     QmlGraphicsItem *pcParent;
 
     void doAction();

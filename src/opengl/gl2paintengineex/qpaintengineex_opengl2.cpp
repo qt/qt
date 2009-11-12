@@ -2107,7 +2107,7 @@ void QGL2PaintEngineExPrivate::systemStateChanged()
     q->state()->rectangleClip = use_system_clip ? systemClip.boundingRect() : QRect(0, 0, width, height);
     updateClipScissorTest();
 
-    if (systemClip.numRects() == 1) {
+    if (systemClip.rectCount() == 1) {
         if (systemClip.boundingRect() == QRect(0, 0, width, height))
             use_system_clip = false;
 #ifndef QT_GL_NO_SCISSOR_TEST

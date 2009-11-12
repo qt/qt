@@ -44,7 +44,8 @@ HEADERS +=  \
         tools/qunicodetables_p.h \
         tools/qvarlengtharray.h \
         tools/qvector.h \
-        tools/qscopedpointer.h
+        tools/qscopedpointer.h \
+        tools/qscopedpointer_p.h
 
 
 SOURCES += \

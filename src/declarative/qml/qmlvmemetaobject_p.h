@@ -61,6 +61,8 @@
 
 QT_BEGIN_NAMESPACE
 
+#define QML_ALIAS_FLAG_PTR 0x00000001
+
 struct QmlVMEMetaData
 {
     short propertyCount;
@@ -71,6 +73,7 @@ struct QmlVMEMetaData
     struct AliasData {
         int contextIdx;
         int propertyIdx;
+        int flags;
     };
     
     struct PropertyData {

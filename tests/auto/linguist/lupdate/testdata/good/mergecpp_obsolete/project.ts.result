@@ -2,6 +2,18 @@
 <!DOCTYPE TS>
 <TS version="2.0">
 <context>
+    <name></name>
+    <message id="keep_id">
+        <location filename="finddialog.cpp" line="154"/>
+        <source>This is some random text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="obsolete_id">
+        <source>Should be obsolete, too</source>
+        <translation type="obsolete">SHOULD BE OBSOLETE AS WELL</translation>
+    </message>
+</context>
+<context>
     <name>FindDialog</name>
     <message>
         <source>Enter the text you are looking for.</source>
