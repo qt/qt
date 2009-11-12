@@ -59,7 +59,7 @@
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 
-#include "../debuggerutil_p.h"
+#include "../debugutil_p.h"
 
 Q_DECLARE_METATYPE(QmlDebugWatch::State)
 
@@ -69,8 +69,12 @@ class tst_QmlDebug : public QObject
     Q_OBJECT
 
 public:
-    tst_QmlDebug(QmlDebugConnection *conn, QmlEngine *engine, QmlGraphicsItem *rootItem)
-        : m_conn(conn), m_dbg(0), m_engine(engine), m_rootItem(rootItem) {}
+    tst_QmlDebug(QmlDebugTestData *data)
+    {
+        m_conn = data->conn;
+        m_engine = data->engine;
+        m_rootItem = data->items[0];
+    }
 
 private:
     QmlDebugObjectReference findRootObject();
@@ -160,7 +164,7 @@ void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
     QVERIFY(query->state() == QmlDebugQuery::Waiting);
-    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugQuery::State))))
+    if (!QmlDebugTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugQuery::State))))
         QFAIL("query timed out");
 }
 
@@ -289,7 +293,7 @@ void tst_QmlDebug::watch_property()
     m_rootItem->setProperty("width", origWidth*2);
 
     // stateChanged() is received before valueChanged()
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QCOMPARE(spy.count(), 1);
 
     m_dbg->removeWatch(watch);
@@ -340,7 +344,7 @@ void tst_QmlDebug::watch_object()
     m_rootItem->setProperty("height", origHeight*2);
 
     // stateChanged() is received before any valueChanged() signals
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QVERIFY(spy.count() > 0);
 
     int newWidth = -1;
@@ -401,12 +405,12 @@ void tst_QmlDebug::watch_expression()
             width += increment;
             m_rootItem->setProperty("width", width);
         }
-        if (!QmlDebuggerTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
+        if (!QmlDebugTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
             QFAIL("Did not receive valueChanged() for expression");
     }
 
     if (spyState.count() == 0)
-        QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+        QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QCOMPARE(spyState.count(), 1);
 
     m_dbg->removeWatch(watch);
@@ -759,72 +763,32 @@ void tst_QmlDebug::tst_QmlDebugPropertyReference()
         compareProperties(r, ref);
 }
 
-class TestRunnerThread : public QThread
+
+class tst_QmlDebug_Factory : public QmlTestFactory
 {
-    Q_OBJECT
 public:
-    void run() {
-        QTest::qWait(1000);
-        connectToEngine();
-    }
-
-    QPointer<QmlEngine> m_engine;
-    QPointer<QmlGraphicsItem> m_item;
-
-signals:
-    void testsFinished();
-
-public slots:
-
-    void connectToEngine()
-    {
-        QmlDebugConnection conn;
-        conn.connectToHost("127.0.0.1", 3768);
-        bool ok = conn.waitForConnected(5000);
-        Q_ASSERT(ok);
-        while (!m_engine && !m_item)
-            QTest::qWait(50);
-
-        tst_QmlDebug test(&conn, m_engine, m_item);
-        QTest::qExec(&test); 
-        emit testsFinished();
-    }
+    QObject *createTest(QmlDebugTestData *data) { return new tst_QmlDebug(data); }
 };
-
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    qputenv("QML_DEBUG_SERVER_PORT", "3768");
 
-    TestRunnerThread thread;
-    QObject::connect(&thread, SIGNAL(testsFinished()), qApp, SLOT(quit()));
-    thread.start();
-
-    QmlEngine engine;  // blocks until client connects
-
-    QmlComponent component(&engine,
-                "import Qt 4.6\n"
-                    "Item {\n"
-                        "width: 10; height: 20; scale: blueRect.scale;\n"
-                        "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
-                        "Text { color: blueRect.color; }"
-                    "}\n",
-            QUrl("file://"));
-    Q_ASSERT(component.isReady());
-    QObject *o = component.create();
-    QObject::connect(&thread, SIGNAL(testsFinished()), o, SLOT(deleteLater()));
-
-    // allows us to test that multiple contexts can be detected
-    QObject *o2 = component.create();
-    QObject::connect(&thread, SIGNAL(testsFinished()), o2, SLOT(deleteLater()));
-
-    // start the test
-    thread.m_engine = &engine;
-    thread.m_item = qobject_cast<QmlGraphicsItem*>(o);
-
-    return app.exec();
-
+    QList<QByteArray> qml;
+    qml << "import Qt 4.6\n"
+            "Item {"
+                "width: 10; height: 20; scale: blueRect.scale;"
+                "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
+                "Text { color: blueRect.color; }"
+            "}"
+        << "import Qt 4.6\n"
+            "Item {"
+                "MouseRegion {"
+                    "onEntered: { print('hello') }"
+                "}"
+            "}";
+    tst_QmlDebug_Factory factory;
+    return QmlDebugTest::runTests(&factory, qml);
 }
 
 //QTEST_MAIN(tst_QmlDebug)
