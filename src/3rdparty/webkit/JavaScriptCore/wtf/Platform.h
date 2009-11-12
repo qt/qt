@@ -372,10 +372,6 @@
 #   endif
 #endif
 
-#if PLATFORM(WINCE) && PLATFORM(QT)
-#   include <ce_time.h>
-#endif
-
 /* Compiler */
 
 /* COMPILER(MSVC) */
@@ -560,7 +556,7 @@
 #define HAVE_SYS_TIME_H 1
 #define HAVE_SYS_TIMEB_H 1
 
-#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE) && !PLATFORM(QT)
+#if !defined(BUILDING_ON_TIGER) && !defined(BUILDING_ON_LEOPARD) && !PLATFORM(IPHONE)
 #define HAVE_MADV_FREE_REUSE 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
