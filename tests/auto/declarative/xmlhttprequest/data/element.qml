@@ -5,7 +5,7 @@ Object {
     property bool dataOK: false
 
     Script {
-        function checkElement(e)
+        function checkElement(e, person, fruit)
         {
             if (e.tagName != "root")
                 return;
@@ -47,6 +47,9 @@ Object {
             if (e.attributes == null)
                 return;
 
+            if (e.attributes.length != 2)
+                return;
+
             var attr1 = e.attributes["attr"];
             if (attr1.nodeValue != "value")
                 return;
@@ -67,12 +70,33 @@ Object {
             if (attrIdx2 != null)
                 return;
 
+            // Check person and fruit sub elements
+            if (person.parentNode.nodeName != "root")
+                return;
+
+            if (person.previousSibling != null)
+                return;
+
+            if (person.nextSibling.nodeName != "fruit")
+                return;
+
+            if (fruit.parentNode.nodeName != "root")
+                return;
+
+            if (fruit.previousSibling.nodeName != "person")
+                return;
+
+            if (fruit.nextSibling != null)
+                return;
+
             xmlTest = true;
         }
 
         function checkXML(document)
         {
-            checkElement(document.documentElement);
+            checkElement(document.documentElement, 
+                         document.documentElement.childNodes[0], 
+                         document.documentElement.childNodes[1]);
         }
     }
 

@@ -5,18 +5,20 @@ Object {
     property bool dataOK: false
 
     Script {
-        function checkText(text, whitespacetext)
+        function checkCData(text, whitespacetext)
         {
+            // This is essentially a copy of text.qml/checkText()
+
             if (text == null)
                 return;
 
-            if (text.nodeName != "#text")
+            if (text.nodeName != "#cdata-section")
                 return;
 
             if (text.nodeValue != "Hello world!")
                 return;
 
-            if (text.nodeType != 3)
+            if (text.nodeType != 4)
                 return;
 
             if (text.parentNode.nodeName != "item")
@@ -52,13 +54,13 @@ Object {
             if (text.isElementContentWhitespace != false)
                 return;
 
-            if (whitespacetext.nodeName != "#text")
+            if (whitespacetext.nodeName != "#cdata-section")
                 return;
 
             if (whitespacetext.nodeValue != "   ")
                 return;
 
-            if (whitespacetext.nodeType != 3)
+            if (whitespacetext.nodeType != 4)
                 return;
 
             if (whitespacetext.parentNode.nodeName != "item")
@@ -94,13 +96,14 @@ Object {
             if (whitespacetext.isElementContentWhitespace != true)
                 return;
 
+
             xmlTest = true;
         }
 
         function checkXML(document)
         {
-            checkText(document.documentElement.childNodes[0].childNodes[0],
-                      document.documentElement.childNodes[1].childNodes[0]);
+            checkCData(document.documentElement.childNodes[0].childNodes[0],
+                       document.documentElement.childNodes[1].childNodes[0]);
 
         }
     }
@@ -108,7 +111,7 @@ Object {
     Component.onCompleted: {
         var x = new XMLHttpRequest;
 
-        x.open("GET", "text.xml");
+        x.open("GET", "cdata.xml");
 
         // Test to the end
         x.onreadystatechange = function() {
@@ -125,6 +128,7 @@ Object {
         x.send()
     }
 }
+
 
 
 
