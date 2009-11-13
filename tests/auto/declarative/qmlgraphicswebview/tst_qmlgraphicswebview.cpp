@@ -59,6 +59,7 @@ private slots:
     void basicProperties();
     void historyNav();
     void multipleWindows();
+    void elementAreaAt();
     void loadError();
     void setHtml();
     void javaScript();
@@ -256,6 +257,21 @@ void tst_qmlgraphicswebview::setHtml()
     QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
     QVERIFY(wv != 0);
     QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
+}
+
+void tst_qmlgraphicswebview::elementAreaAt()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/elements.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QCOMPARE(wv->elementAreaAt(40,30,100,100),QRect(1,1,75,54)); // Area A in data/elements.html
+    QCOMPARE(wv->elementAreaAt(130,30,200,100),QRect(78,3,110,50)); // Area B
+    QCOMPARE(wv->elementAreaAt(40,30,400,400),QRect(0,0,310,100)); // Whole view
+    QCOMPARE(wv->elementAreaAt(130,30,280,280),QRect(76,1,223,54)); // Area BC
+    QCOMPARE(wv->elementAreaAt(130,30,400,400),QRect(0,0,310,100)); // Whole view
 }
 
 void tst_qmlgraphicswebview::javaScript()

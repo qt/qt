@@ -10,10 +10,16 @@ Object {
             if (document.xmlVersion != "1.0")
                 return;
 
+            if (document.xmlEncoding != "UTF-8")
+                return;
+
             if (document.xmlStandalone != true)
                 return;
 
             if (document.documentElement == null)
+                return;
+
+            if (document.nodeName != "#document")
                 return;
 
             if (document.nodeValue != null)
