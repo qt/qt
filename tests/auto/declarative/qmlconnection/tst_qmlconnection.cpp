@@ -44,6 +44,7 @@
 #include <private/qmlconnection_p.h>
 #include <private/qmlgraphicsitem_p.h>
 #include "../../../shared/util.h"
+#include <QtDeclarative/qmlscriptstring.h>
 
 class tst_qmlconnection : public QObject
 
@@ -53,6 +54,8 @@ public:
     tst_qmlconnection();
 
 private slots:
+    void defaultValues();
+    void properties();
     void connection();
 
 private:
@@ -61,6 +64,36 @@ private:
 
 tst_qmlconnection::tst_qmlconnection()
 {
+}
+
+void tst_qmlconnection::defaultValues()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-connection3.qml"));
+    QmlConnection *item = qobject_cast<QmlConnection*>(c.create());
+
+    QVERIFY(item != 0);
+    QVERIFY(item->signalSender() == 0);
+    QCOMPARE(item->script().script(), QString());
+    QCOMPARE(item->signal(), QString());
+
+    delete item;
+}
+
+void tst_qmlconnection::properties()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/test-connection2.qml"));
+    QmlConnection *item = qobject_cast<QmlConnection*>(c.create());
+
+    QVERIFY(item != 0);
+
+    QVERIFY(item != 0);
+    QVERIFY(item->signalSender() == item);
+    QCOMPARE(item->script().script(), QString("1 == 1"));
+    QCOMPARE(item->signal(), QString("widthChanged()"));
+
+    delete item;
 }
 
 void tst_qmlconnection::connection()
