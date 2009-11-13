@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -213,6 +213,15 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
 
     if ((q->windowType() == Qt::Desktop))
         return;
+
+    QPoint oldPos(q->pos());
+    QSize oldSize(q->size());
+    QRect oldGeom(data.crect);
+
+    // Lose maximized status if deliberate resize
+    if (w != oldSize.width() || h != oldSize.height())
+        data.window_state &= ~Qt::WindowMaximized;
+
     if (extra) {                                // any size restrictions?
         w = qMin(w,extra->maxw);
         h = qMin(h,extra->maxh);
@@ -228,16 +237,9 @@ void QWidgetPrivate::setGeometry_sys(int x, int y, int w, int h, bool isMove)
         data.window_state = s;
     }
 
-    QPoint oldPos(q->pos());
-    QSize oldSize(q->size());
-    QRect oldGeom(data.crect);
-
     bool isResize = w != oldSize.width() || h != oldSize.height();
     if (!isMove && !isResize)
         return;
-
-    if (isResize)
-        data.window_state &= ~Qt::WindowMaximized;
 
     if (q->isWindow()) {
         if (w == 0 || h == 0) {

@@ -13,7 +13,7 @@ EXPORTS
 	_Z11qt_int_sqrtj @ 12 NONAME
 	_Z12noforcepointR11QTextStream @ 13 NONAME
 	_Z12qSharedBuildv @ 14 NONAME
-	_Z12q_atomic_swpPVcc @ 15 NONAME
+	_Z12q_atomic_swpPVcc @ 15 NONAME ABSENT
 	_Z12qt_s60GetRFsv @ 16 NONAME
 	_Z13lowercasebaseR11QTextStream @ 17 NONAME
 	_Z13qErrnoWarningPKcz @ 18 NONAME
@@ -24,7 +24,7 @@ EXPORTS
 	_Z15lowercasedigitsR11QTextStream @ 23 NONAME
 	_Z15qAddPostRoutinePFvvE @ 24 NONAME
 	_Z15qInitResourceIOv @ 25 NONAME
-	_Z15qt_atomic_yieldPi @ 26 NONAME
+	_Z15qt_atomic_yieldPi @ 26 NONAME ABSENT
 	_Z15qt_error_stringi @ 27 NONAME
 	_Z15uppercasedigitsR11QTextStream @ 28 NONAME
 	_Z16qt_QString2HBufCRK7QString @ 29 NONAME
@@ -706,7 +706,7 @@ EXPORTS
 	_ZN15QAnimationGroupD0Ev @ 705 NONAME
 	_ZN15QAnimationGroupD1Ev @ 706 NONAME
 	_ZN15QAnimationGroupD2Ev @ 707 NONAME
-	_ZN15QBasicAtomicInt20fetchAndStoreOrderedEi @ 708 NONAME
+	_ZN15QBasicAtomicInt20fetchAndStoreOrderedEi @ 708 NONAME ABSENT
 	_ZN15QDateTimeParser11parseFormatERK7QString @ 709 NONAME
 	_ZN15QLinkedListData11shared_nullE @ 710 NONAME DATA 20
 	_ZN15QObjectUserDataD0Ev @ 711 NONAME
@@ -3566,7 +3566,7 @@ EXPORTS
 	inflateSync @ 3565 NONAME
 	inflateSyncPoint @ 3566 NONAME
 	qMetaTypeGuiHelper @ 3567 NONAME DATA 4
-	q_atomic_lock @ 3568 NONAME DATA 1
+	q_atomic_lock @ 3568 NONAME DATA 1 ABSENT
 	qt_addObject @ 3569 NONAME
 	qt_global_mutexpool @ 3570 NONAME DATA 4
 	qt_locale_initialized @ 3571 NONAME DATA 1
@@ -3612,4 +3612,11 @@ EXPORTS
 	_ZNK13QStateMachine10isAnimatedEv @ 3611 NONAME
 	_ZNK18QAbstractAnimation15currentLoopTimeEv @ 3612 NONAME
 	_ZNK7QRegExp12captureCountEv @ 3613 NONAME
+	_Z38QBasicAtomicPointer_isTestAndSetNativev @ 3614 NONAME
+	_Z39QBasicAtomicPointer_isFetchAndAddNativev @ 3615 NONAME
+	_Z41QBasicAtomicPointer_isFetchAndStoreNativev @ 3616 NONAME
+	_ZN15QBasicAtomicInt18isTestAndSetNativeEv @ 3617 NONAME
+	_ZN15QBasicAtomicInt19isFetchAndAddNativeEv @ 3618 NONAME
+	_ZN15QBasicAtomicInt21isFetchAndStoreNativeEv @ 3619 NONAME
+	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3620 NONAME
 

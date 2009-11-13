@@ -145,7 +145,7 @@ namespace QPdf {
             fileBackingActive(false),
             handleDirty(false)
     {
-        dev->open(QIODevice::ReadWrite);
+        dev->open(QIODevice::ReadWrite | QIODevice::Append);
     }
 
     ByteStream::ByteStream(bool fileBacking)
