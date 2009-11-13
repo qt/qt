@@ -84,10 +84,14 @@ private slots:
     void statusText();
     void responseText();
     void responseXML_invalid();
+    void invalidMethodUsage();
 
+    // Attributes
     void document();
     void element();
     void attr();
+    void text();
+    void cdata();
 
     // Crashes
     // void outstanding_request_at_shutdown();
@@ -962,6 +966,10 @@ void tst_xmlhttprequest::responseText()
     }
 }
 
+void tst_xmlhttprequest::invalidMethodUsage()
+{
+}
+
 void tst_xmlhttprequest::responseXML_invalid()
 {
     QmlComponent component(&engine, TEST_FILE("responseXML_invalid.qml"));
@@ -1007,6 +1015,34 @@ void tst_xmlhttprequest::element()
 void tst_xmlhttprequest::attr()
 {
     QmlComponent component(&engine, TEST_FILE("attr.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    QCOMPARE(object->property("xmlTest").toBool(), true);
+
+    delete object;
+}
+
+// Test the Text DOM element
+void tst_xmlhttprequest::text()
+{
+    QmlComponent component(&engine, TEST_FILE("text.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    QCOMPARE(object->property("xmlTest").toBool(), true);
+
+    delete object;
+}
+
+// Test the CDataSection DOM element
+void tst_xmlhttprequest::cdata()
+{
+    QmlComponent component(&engine, TEST_FILE("cdata.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
 

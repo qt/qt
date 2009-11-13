@@ -131,10 +131,10 @@ public:
     QList<NodeImpl *> attributes;
 };
 
-class DocumentImpl : public QmlRefCount
+class DocumentImpl : public NodeImpl
 {
 public:
-    DocumentImpl() : root(0) { }
+    DocumentImpl() : root(0) { type = Document; }
     virtual ~DocumentImpl() {
         if (root) D(root);
     }
@@ -158,12 +158,13 @@ public:
 
     NamedNodeMap();
     NamedNodeMap(const NamedNodeMap &);
-    NamedNodeMap &operator=(const NamedNodeMap &);
     ~NamedNodeMap();
     bool isNull();
 
     NodeImpl *d;
     QList<NodeImpl *> *list;
+private:
+    NamedNodeMap &operator=(const NamedNodeMap &);
 };
 
 class NamedNodeMapClass : public QScriptClass
@@ -180,7 +181,6 @@ class NodeList
 public:
     // JS API
     static QScriptValue length(QScriptContext *context, QScriptEngine *engine);
-    static QScriptValue item(QScriptContext *context, QScriptEngine *engine);
 
     // C++ API
     static QScriptValue prototype(QScriptEngine *);
@@ -188,11 +188,12 @@ public:
 
     NodeList();
     NodeList(const NodeList &);
-    NodeList &operator=(const NodeList &);
     ~NodeList();
     bool isNull();
 
     NodeImpl *d;
+private:
+    NodeList &operator=(const NodeList &);
 };
 
 class NodeListClass : public QScriptClass
@@ -232,11 +233,13 @@ public:
 
     Node();
     Node(const Node &o);
-    Node &operator=(const Node &);
     ~Node();
     bool isNull() const;
 
     NodeImpl *d;
+
+private:
+    Node &operator=(const Node &);
 };
 
 class Element : public Node
@@ -301,31 +304,29 @@ public:
     // C++ API
     static QScriptValue prototype(QScriptEngine *);
     static QScriptValue load(QScriptEngine *engine, const QString &data);
-
-    Document();
-    Document(const Document &);
-    Document &operator=(const Document &);
-    ~Document();
-    bool isNull() const;
-
-    DocumentImpl *d;
-private:
-    Document(DocumentImpl *);
 };
 
-};
+}; // namespace
 
 Q_DECLARE_METATYPE(Node);
 Q_DECLARE_METATYPE(NodeList);
 Q_DECLARE_METATYPE(NamedNodeMap);
-Q_DECLARE_METATYPE(Document);
 
 QScriptValue Node::nodeName(QScriptContext *context, QScriptEngine *engine)
 {
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    return QScriptValue(node.d->name);
+    switch (node.d->type) {
+    case NodeImpl::Document:
+        return QScriptValue(QLatin1String("#document"));
+    case NodeImpl::CDATA:
+        return QScriptValue(QLatin1String("#cdata-section"));
+    case NodeImpl::Text:
+        return QScriptValue(QLatin1String("#text"));
+    default:
+        return QScriptValue(node.d->name);
+    }
 }
 
 QScriptValue Node::nodeValue(QScriptContext *context, QScriptEngine *engine)
@@ -465,11 +466,10 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
     case NodeImpl::Entity:
     case NodeImpl::EntityReference:
     case NodeImpl::Notation:
+    case NodeImpl::ProcessingInstruction:
+        return QScriptValue();
     case NodeImpl::CDATA:
         instance.setPrototype(CDATA::prototype(engine));
-        break;
-    case NodeImpl::ProcessingInstruction:
-        instance.setPrototype(Node::prototype(engine));
         break;
     case NodeImpl::Text:
         instance.setPrototype(Text::prototype(engine));
@@ -556,8 +556,7 @@ QScriptValue Text::isElementContentWhitespace(QScriptContext *context, QScriptEn
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(false);
+    return node.d->data.trimmed().isEmpty();
 }
 
 QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
@@ -565,8 +564,7 @@ QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(QString());
+    return node.d->data;
 }
 
 QScriptValue Text::prototype(QScriptEngine *engine)
@@ -646,6 +644,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
                 attr->name = a.name().toString();
                 attr->data = a.value().toString();
                 attr->parent = node;
+                A(attr->parent);
                 node->attributes.append(attr);
             }
         } 
@@ -681,7 +680,9 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
 
     QScriptValue instance = engine->newObject();
     instance.setPrototype(Document::prototype(engine));
-    return engine->newVariant(instance, qVariantFromValue(Document(document)));
+    Node documentNode;
+    documentNode.d = document;
+    return engine->newVariant(instance, qVariantFromValue(documentNode));
 }
 
 Node::Node()
@@ -693,14 +694,6 @@ Node::Node(const Node &o)
 : d(o.d)
 {
     if (d) A(d);
-}
-
-Node &Node::operator=(const Node &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
 }
 
 Node::~Node()
@@ -761,15 +754,6 @@ NamedNodeMap::NamedNodeMap(const NamedNodeMap &o)
     if (d) A(d);
 }
 
-NamedNodeMap &NamedNodeMap::operator=(const NamedNodeMap &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    list = o.list;
-    return *this;
-}
-
 NamedNodeMap::~NamedNodeMap()
 {
     if (d) D(d);
@@ -778,20 +762,6 @@ NamedNodeMap::~NamedNodeMap()
 bool NamedNodeMap::isNull()
 {
     return d == 0;
-}
-
-QScriptValue NodeList::item(QScriptContext *context, QScriptEngine *engine)
-{
-    NodeList list = qscriptvalue_cast<NodeList>(context->thisObject().data());
-    if (list.isNull() || context->argumentCount() != 1)
-        return engine->undefinedValue();
-
-    qint32 index = context->argument(0).toInt32();
-
-    if (index >= list.d->children.count())
-        return engine->undefinedValue(); // ### Exception
-    else
-        return Node::create(engine, list.d->children.at(index));
 }
 
 QScriptValue NodeList::length(QScriptContext *context, QScriptEngine *engine)
@@ -807,7 +777,6 @@ QScriptValue NodeList::prototype(QScriptEngine *engine)
     QScriptValue proto = engine->newObject();
 
     proto.setProperty(QLatin1String("length"), engine->newFunction(length), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
-    proto.setProperty(QLatin1String("item"), engine->newFunction(item, 1), QScriptValue::ReadOnly);
 
     return proto;
 }
@@ -840,14 +809,6 @@ NodeList::NodeList(const NodeList &o)
 : d(o.d)
 {
     if (d) A(d);
-}
-
-NodeList &NodeList::operator=(const NodeList &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
 }
 
 NodeList::~NodeList()
@@ -920,81 +881,36 @@ QScriptValue NodeListClass::property(const QScriptValue &object, const QScriptSt
     return Node::create(engine(), list.d->children.at(id));
 }
 
-Document::Document()
-: d(0)
-{
-}
-
-Document::Document(DocumentImpl *data)
-: d(data)
-{
-}
-
-Document::Document(const Document &o)
-: Node(o), d(o.d)
-{
-    if (d) A(d);
-}
-
-Document &Document::operator=(const Document &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
-}
-
-Document::~Document()
-{
-    if (d) D(d);
-}
-
-bool Document::isNull() const
-{
-    return d == 0;
-}
-
 QScriptValue Document::documentElement(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (!document.d->root) return engine->nullValue();
-
-    return Node::create(engine, document.d->root);
+    return Node::create(engine, static_cast<DocumentImpl *>(document.d)->root);
 }
 
 QScriptValue Document::xmlStandalone(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->isStandalone = context->argument(0).toBool();
-
-    return QScriptValue(document.d->isStandalone);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->isStandalone);
 }
 
 QScriptValue Document::xmlVersion(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->version = context->argument(0).toString();
-
-    return QScriptValue(document.d->version);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->version);
 }
 
 QScriptValue Document::xmlEncoding(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->encoding = context->argument(0).toString();
-
-    return QScriptValue(document.d->encoding);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->encoding);
 }
 
 class QmlXMLHttpRequest : public QObject
