@@ -52,15 +52,18 @@
 #include <private/qmldebugclient_p.h>
 #include <private/qmldebugservice_p.h>
 
-#include "../debuggerutil_p.h"
+#include "../debugutil_p.h"
 
 class tst_QmlDebugClient : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_QmlDebugClient(QmlDebugConnection *conn, QmlEngine *engine)
-        : m_conn(conn), m_engine(engine) {}
+    tst_QmlDebugClient(QmlDebugTestData *data)
+    {
+        m_conn = data->conn;
+        m_engine = data->engine;
+    }
 
     QmlDebugConnection *m_conn;
     QmlEngine *m_engine;
@@ -89,19 +92,19 @@ void tst_QmlDebugClient::isEnabled()
 
 void tst_QmlDebugClient::setEnabled()
 {
-    QmlDebuggerTestService service("tst_QmlDebugClient::setEnabled()");
-    QmlDebuggerTestClient client("tst_QmlDebugClient::setEnabled()", m_conn);
+    QmlDebugTestService service("tst_QmlDebugClient::setEnabled()");
+    QmlDebugTestClient client("tst_QmlDebugClient::setEnabled()", m_conn);
 
     QCOMPARE(service.isEnabled(), false);
 
     client.setEnabled(true);
     QCOMPARE(client.isEnabled(), true);
-    QmlDebuggerTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
+    QmlDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
     QCOMPARE(service.isEnabled(), true);
 
     client.setEnabled(false);
     QCOMPARE(client.isEnabled(), false);
-    QmlDebuggerTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
+    QmlDebugTest::waitForSignal(&service, SIGNAL(enabledStateChanged()));
     QCOMPARE(service.isEnabled(), false);
 }
 
@@ -125,8 +128,8 @@ void tst_QmlDebugClient::isConnected()
 
 void tst_QmlDebugClient::sendMessage()
 {
-    QmlDebuggerTestService service("tst_QmlDebugClient::sendMessage()");
-    QmlDebuggerTestClient client("tst_QmlDebugClient::sendMessage()", m_conn);
+    QmlDebugTestService service("tst_QmlDebugClient::sendMessage()");
+    QmlDebugTestClient client("tst_QmlDebugClient::sendMessage()", m_conn);
 
     QByteArray msg = "hello!";
 
@@ -136,55 +139,18 @@ void tst_QmlDebugClient::sendMessage()
 }
 
 
-
-class tst_QmlDebugClient_Thread : public QThread
+class tst_QmlDebugClient_Factory : public QmlTestFactory
 {
-    Q_OBJECT
 public:
-    void run() {
-        QTest::qWait(1000);
-        connectToEngine();
-    }
-
-    QPointer<QmlEngine> m_engine;
-
-signals:
-    void testsFinished();
-
-public slots:
-
-    void connectToEngine()
-    {
-        QmlDebugConnection conn;
-        conn.connectToHost("127.0.0.1", 3768);
-        bool ok = conn.waitForConnected(5000);
-        Q_ASSERT(ok);
-        while (!m_engine)
-            QTest::qWait(50);
-
-        tst_QmlDebugClient test(&conn, m_engine);
-        QTest::qExec(&test); 
-        emit testsFinished();
-    }
+    QObject *createTest(QmlDebugTestData *data) { return new tst_QmlDebugClient(data); }
 };
-
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    qputenv("QML_DEBUG_SERVER_PORT", "3768");
 
-    tst_QmlDebugClient_Thread thread;
-    QObject::connect(&thread, SIGNAL(testsFinished()), qApp, SLOT(quit()));
-    thread.start();
-
-    QmlEngine engine;  // blocks until client connects
-
-    // start the test
-    thread.m_engine = &engine;
-
-    return app.exec();
-
+    tst_QmlDebugClient_Factory factory;
+    return QmlDebugTest::runTests(&factory);
 }
 
 #include "tst_qmldebugclient.moc"

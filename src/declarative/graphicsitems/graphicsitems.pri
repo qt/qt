@@ -83,5 +83,6 @@ contains(QT_CONFIG, webkit) {
     QT+=webkit
     SOURCES += graphicsitems/qmlgraphicswebview.cpp
     HEADERS += graphicsitems/qmlgraphicswebview_p.h
+    HEADERS += graphicsitems/qmlgraphicswebview_p_p.h
 }
 

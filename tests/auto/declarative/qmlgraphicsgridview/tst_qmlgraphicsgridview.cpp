@@ -38,6 +38,9 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#include <qmlengine.h>
+#include <qmlcomponent.h>
 #include <QtTest/QtTest>
 #include <private/qlistmodelinterface_p.h>
 #include <qmlview.h>
@@ -60,6 +63,8 @@ private slots:
     void moved();
     void currentIndex();
     void changeFlow();
+    void defaultValues();
+    void properties();
 
 private:
     QmlView *createView(const QString &filename);
@@ -688,6 +693,52 @@ void tst_QmlGraphicsGridView::changeFlow()
     }
 
     delete canvas;
+}
+
+void tst_QmlGraphicsGridView::defaultValues()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview3.qml"));
+    QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
+
+    QVERIFY(obj != 0);
+    QVERIFY(obj->model() == QVariant());
+    QVERIFY(obj->delegate() == 0);
+    QCOMPARE(obj->currentIndex(), -1);
+    QVERIFY(obj->currentItem() == 0);
+    QCOMPARE(obj->count(), 0);
+    QVERIFY(obj->highlight() == 0);
+    QVERIFY(obj->highlightItem() == 0);
+    QCOMPARE(obj->highlightFollowsCurrentItem(), true);
+    QVERIFY(obj->flow() == 0);
+    QCOMPARE(obj->isWrapEnabled(), false);
+    QCOMPARE(obj->cacheBuffer(), 0);
+    QCOMPARE(obj->cellWidth(), 100); //### Should 100 be the default?
+    QCOMPARE(obj->cellHeight(), 100);
+    delete obj;
+}
+
+void tst_QmlGraphicsGridView::properties()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/gridview2.qml"));
+    QmlGraphicsGridView *obj = qobject_cast<QmlGraphicsGridView*>(c.create());
+
+    QVERIFY(obj != 0);
+    QVERIFY(obj->model() != QVariant());
+    QVERIFY(obj->delegate() != 0);
+    QCOMPARE(obj->currentIndex(), 0);
+    QVERIFY(obj->currentItem() != 0);
+    QCOMPARE(obj->count(), 4);
+    QVERIFY(obj->highlight() != 0);
+    QVERIFY(obj->highlightItem() != 0);
+    QCOMPARE(obj->highlightFollowsCurrentItem(), false);
+    QVERIFY(obj->flow() == 0);
+    QCOMPARE(obj->isWrapEnabled(), true);
+    QCOMPARE(obj->cacheBuffer(), 200);
+    QCOMPARE(obj->cellWidth(), 100);
+    QCOMPARE(obj->cellHeight(), 100);
+    delete obj;
 }
 
 QmlView *tst_QmlGraphicsGridView::createView(const QString &filename)

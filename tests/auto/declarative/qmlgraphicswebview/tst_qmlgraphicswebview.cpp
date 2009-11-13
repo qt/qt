@@ -43,6 +43,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicswebview_p.h>
+#include <private/qmlgraphicswebview_p_p.h>
 #include <private/qmlgraphicspositioners_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
@@ -57,6 +58,7 @@ public:
 
 private slots:
     void basicProperties();
+    void settings();
     void historyNav();
     void multipleWindows();
     void elementAreaAt();
@@ -154,6 +156,71 @@ void tst_qmlgraphicswebview::basicProperties()
     QCOMPARE(wv->pixelCacheSize(),0);
     wv->reloadAction()->trigger();
     QTRY_COMPARE(wv->progress(), 1.0);
+}
+
+void tst_qmlgraphicswebview::settings()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QmlGraphicsWebSettings *s = wv->settingsObject();
+
+    // merely tests that setting gets stored (in QWebSettings)
+    // behavioural tests are in WebKit.
+    for (int b=0; b<=1; ++b) {
+        bool on = !!b;
+
+        s->setAutoLoadImages(on);
+        s->setDeveloperExtrasEnabled(on);
+        s->setJavaEnabled(on);
+        s->setJavascriptCanAccessClipboard(on);
+        s->setJavascriptCanOpenWindows(on);
+        s->setJavascriptEnabled(on);
+        s->setLinksIncludedInFocusChain(on);
+        s->setLocalContentCanAccessRemoteUrls(on);
+        s->setLocalStorageDatabaseEnabled(on);
+        s->setOfflineStorageDatabaseEnabled(on);
+        s->setOfflineWebApplicationCacheEnabled(on);
+        s->setPluginsEnabled(on);
+        s->setPrintElementBackgrounds(on);
+        s->setPrivateBrowsingEnabled(on);
+        s->setZoomTextOnly(on);
+
+        QVERIFY(s->autoLoadImages() == on);
+        QVERIFY(s->developerExtrasEnabled() == on);
+        QVERIFY(s->javaEnabled() == on);
+        QVERIFY(s->javascriptCanAccessClipboard() == on);
+        QVERIFY(s->javascriptCanOpenWindows() == on);
+        QVERIFY(s->javascriptEnabled() == on);
+        QVERIFY(s->linksIncludedInFocusChain() == on);
+        QVERIFY(s->localContentCanAccessRemoteUrls() == on);
+        QVERIFY(s->localStorageDatabaseEnabled() == on);
+        QVERIFY(s->offlineStorageDatabaseEnabled() == on);
+        QVERIFY(s->offlineWebApplicationCacheEnabled() == on);
+        QVERIFY(s->pluginsEnabled() == on);
+        QVERIFY(s->printElementBackgrounds() == on);
+        QVERIFY(s->privateBrowsingEnabled() == on);
+        QVERIFY(s->zoomTextOnly() == on);
+
+        QVERIFY(s->property("autoLoadImages") == on);
+        QVERIFY(s->property("developerExtrasEnabled") == on);
+        QVERIFY(s->property("javaEnabled") == on);
+        QVERIFY(s->property("javascriptCanAccessClipboard") == on);
+        QVERIFY(s->property("javascriptCanOpenWindows") == on);
+        QVERIFY(s->property("javascriptEnabled") == on);
+        QVERIFY(s->property("linksIncludedInFocusChain") == on);
+        QVERIFY(s->property("localContentCanAccessRemoteUrls") == on);
+        QVERIFY(s->property("localStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineWebApplicationCacheEnabled") == on);
+        QVERIFY(s->property("pluginsEnabled") == on);
+        QVERIFY(s->property("printElementBackgrounds") == on);
+        QVERIFY(s->property("privateBrowsingEnabled") == on);
+        QVERIFY(s->property("zoomTextOnly") == on);
+    }
 }
 
 void tst_qmlgraphicswebview::historyNav()
