@@ -210,8 +210,8 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv, useGui);
     a.addLibraryPath(a.applicationDirPath() + QLatin1String("/plugins"));
 
-    CmdLineParser cmd;
-    CmdLineParser::Result res = cmd.parse(a.arguments());
+    CmdLineParser cmd(a.arguments());
+    CmdLineParser::Result res = cmd.parse();
     if (res == CmdLineParser::Help)
         return 0;
     else if (res == CmdLineParser::Error)
