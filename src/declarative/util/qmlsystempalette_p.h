@@ -43,7 +43,7 @@
 #define QMLSYSTEMPALETTE_H
 
 #include <QtCore/qobject.h>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <QPalette>
 
 QT_BEGIN_HEADER

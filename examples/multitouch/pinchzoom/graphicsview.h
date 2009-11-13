@@ -50,4 +50,7 @@ public:
     GraphicsView(QGraphicsScene *scene = 0, QWidget *parent = 0);
 
     bool viewportEvent(QEvent *event);
+
+private:
+    qreal totalScaleFactor;
 };

@@ -43,9 +43,9 @@
 #define QMLSTATEOPERATIONS_H
 
 #include <private/qmlstate_p.h>
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 #include <private/qmlgraphicsanchors_p.h>
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qmlscriptstring.h>
 
 QT_BEGIN_HEADER
 

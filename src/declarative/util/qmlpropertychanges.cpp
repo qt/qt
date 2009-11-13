@@ -43,12 +43,12 @@
 #include "qmlopenmetaobject_p.h"
 #include "qmlpropertychanges_p.h"
 #include <QtCore/qdebug.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
-#include <QtDeclarative/qmlexpression.h>
-#include <QtDeclarative/qmlbinding.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlexpression.h>
+#include <qmlbinding.h>
+#include <qmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -43,8 +43,8 @@
 #include <private/qmlanimation_p.h>
 #include <private/qmltransition_p.h>
 #include "qmlbehavior_p.h"
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlcontext.h>
+#include <qmlinfo.h>
 #include <QtCore/qparallelanimationgroup.h>
 
 QT_BEGIN_NAMESPACE

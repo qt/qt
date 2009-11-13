@@ -14,6 +14,7 @@ wince*|symbian {
 }
 
 wince* {
+    SOURCES += $$QT_SOURCE_TREE/src/corelib/kernel/qfunctions_wince.cpp     # needed for QT_OPEN
     DEFINES += SRCDIR=\\\"\\\"
 } else:symbian {
     # do not define SRCDIR at all

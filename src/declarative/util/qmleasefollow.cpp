@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include "qmleasefollow_p.h"
-#include <QtDeclarative/qmlmetaproperty.h>
+#include <qmlmetaproperty.h>
 #include <math.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlanimation_p_p.h>

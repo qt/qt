@@ -2003,7 +2003,7 @@
     \value Tool    Indicates that the widget is a tool window. A tool
                    window is often a small window with a smaller than
                    usual title bar and decoration, typically used for
-                   collections of tool buttons. It there is a parent,
+                   collections of tool buttons. If there is a parent,
                    the tool window will always be kept on top of it.
                    If there isn't a parent, you may consider using
                    Qt::WindowStaysOnTopHint as well. If the window

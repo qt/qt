@@ -41,7 +41,7 @@
 
 #include "qmlinfo.h"
 #include <private/qmldeclarativedata_p.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlcontext.h>
 #include <QtGui/qapplication.h>
 
 QT_BEGIN_NAMESPACE
