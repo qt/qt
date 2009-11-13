@@ -1,5 +1,5 @@
 isEmpty(TARGET):error(You must set TARGET before include()'ing $${_FILE_})
-!equals(TARGET, QtDeclarative): contains():INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
+!equals(TARGET, QtDeclarative): INCLUDEPATH *= $$QMAKE_INCDIR_QT/$$TARGET #just for today to have some compat
 !isEmpty(RCC_DIR): INCLUDEPATH += $$RCC_DIR
 isEmpty(QT_ARCH):!isEmpty(ARCH):QT_ARCH=$$ARCH #another compat that will rot for change #215700
 TEMPLATE	= lib
