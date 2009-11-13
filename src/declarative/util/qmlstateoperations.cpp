@@ -76,18 +76,19 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
         const QTransform &transform = target->itemTransform(targetParent, &ok);
         if (transform.type() >= QTransform::TxShear || !ok) {
             qmlInfo(q) << QObject::tr("Unable to preserve appearance under complex transform");
+            ok = false;
         }
 
         qreal scale = 1;
         qreal rotation = 0;
-        if (transform.type() != QTransform::TxRotate) {
+        if (ok && transform.type() != QTransform::TxRotate) {
             if (transform.m11() == transform.m22())
                 scale = transform.m11();
             else {
                 qmlInfo(q) << QObject::tr("Unable to preserve appearance under non-uniform scale");
                 ok = false;
             }
-        } else if (transform.type() == QTransform::TxRotate) {
+        } else if (ok && transform.type() == QTransform::TxRotate) {
             if (transform.m11() == transform.m22())
                 scale = qSqrt(transform.m11()*transform.m11() + transform.m12()*transform.m12());
             else {
@@ -105,7 +106,7 @@ void QmlParentChangePrivate::doChange(QmlGraphicsItem *targetParent, QmlGraphics
 
         qreal xt = transform.dx();
         qreal yt = transform.dy();
-        if (target->transformOrigin() != QmlGraphicsItem::TopLeft) {
+        if (ok && target->transformOrigin() != QmlGraphicsItem::TopLeft) {
             qreal tempxt = target->transformOriginPoint().x();
             qreal tempyt = target->transformOriginPoint().y();
             QTransform t;

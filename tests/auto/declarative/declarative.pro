@@ -16,6 +16,7 @@ SUBDIRS += \
            qmlconnection \          # Cover
            qmlcontext \             # Cover
            qmldom \                 # Cover
+           qmleasefollow \          # Cover
            qmlecmascript \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover

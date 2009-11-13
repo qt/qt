@@ -535,7 +535,19 @@ namespace MyNamespace {
     {
         Q_OBJECT
     };
+
+    class MySecondNamespacedType : public QObject
+    {
+        Q_OBJECT
+        Q_PROPERTY(QmlList<MyNamespace::MyNamespacedType *> *list READ list);
+    public:
+        QmlList<MyNamespacedType *> *list() { return &m_list; }
+
+    private:
+        QmlConcreteList<MyNamespacedType *> m_list;
+    };
 }
 QML_DECLARE_TYPE(MyNamespace::MyNamespacedType);
+QML_DECLARE_TYPE(MyNamespace::MySecondNamespacedType);
 
 #endif // TESTTYPES_H

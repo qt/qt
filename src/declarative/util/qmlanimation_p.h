@@ -229,6 +229,7 @@ class QmlParentAction : public QmlAbstractAnimation
     Q_DECLARE_PRIVATE(QmlParentAction)
 
     Q_PROPERTY(QmlGraphicsItem *target READ object WRITE setObject)
+    Q_PROPERTY(QmlGraphicsItem *matchTarget READ matchTarget WRITE setMatchTarget)
     Q_PROPERTY(QmlGraphicsItem *parent READ parent WRITE setParent)
 
 public:
@@ -237,6 +238,9 @@ public:
 
     QmlGraphicsItem *object() const;
     void setObject(QmlGraphicsItem *);
+
+    QmlGraphicsItem *matchTarget() const;
+    void setMatchTarget(QmlGraphicsItem *);
 
     QmlGraphicsItem *parent() const;
     void setParent(QmlGraphicsItem *);

@@ -17,7 +17,7 @@ Rectangle {
             name: "hello"
             PropertyChanges {
                 target: MyRectangle
-                x: 100
+                x: 50 + 50
             }
             PropertyChanges {
                 target: MyMouseRegion
