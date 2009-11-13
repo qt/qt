@@ -67,7 +67,17 @@
     \o QGraphicsOpacityEffect - renders the item with an opacity
     \endlist
 
-    \img graphicseffect-effects.png
+    \table
+    \row
+    \o{2,1} \img graphicseffect-plain.png
+    \row
+    \o \img graphicseffect-blur.png
+    \o \img graphicseffect-colorize.png
+    \row
+    \o \img graphicseffect-opacity.png
+    \o \img graphicseffect-drop-shadow.png
+    \endtable
+
     \img graphicseffect-widget.png
 
     For more information on how to use each effect, refer to the specific

@@ -64,7 +64,7 @@
 QT_BEGIN_NAMESPACE
 
 class QGraphicsEffectSourcePrivate;
-class Q_AUTOTEST_EXPORT QGraphicsEffectSource : public QObject
+class Q_GUI_EXPORT QGraphicsEffectSource : public QObject
 {
     Q_OBJECT
 public:

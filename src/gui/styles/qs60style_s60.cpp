@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -1012,23 +1012,6 @@ QS60StylePrivate::QS60StylePrivate()
 {
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
-}
-
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    if (QLatin1String(name) == QLatin1String("foo")) {
-        // BaR
-    } else {
-        setStyleProperty(name, value);
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    if (QLatin1String(name) == QLatin1String("foo"))
-        return QLatin1String("Bar");
-    else
-        return styleProperty(name);
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,

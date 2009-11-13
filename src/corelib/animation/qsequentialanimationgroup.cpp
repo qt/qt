@@ -63,12 +63,12 @@
     pause to a sequential animation group.
 
     \code
-        QSequentialAnimationGroup group;
+        QSequentialAnimationGroup *group = new QSequentialAnimationGroup;
 
-        group.addAnimation(anim1);
-        group.addAnimation(anim2);
+        group->addAnimation(anim1);
+        group->addAnimation(anim2);
 
-        group.start();
+        group->start();
     \endcode
 
     In this example, \c anim1 and \c anim2 are two already set up

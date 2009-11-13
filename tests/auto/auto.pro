@@ -136,6 +136,7 @@ SUBDIRS += \
            qfocusevent \
            qfocusframe \
            qfont \
+           qfontcombobox \
            qfontdatabase \
            qfontdialog \
            qfontmetrics \

@@ -217,7 +217,6 @@ private slots:
     void update();
     void inputMethodSensitivity();
     void inputContextReset();
-    void defaultClipIntersectToView();
 
     // task specific tests below me
     void task172231_untransformableItems();
@@ -3691,77 +3690,6 @@ void tst_QGraphicsView::inputContextReset()
     inputContext.resets = 0;
     scene.setFocusItem(item1);
     QCOMPARE(inputContext.resets, 0);
-}
-
-class ViewClipTester : public QGraphicsView
-{
-public:
-    ViewClipTester(QGraphicsScene *scene = 0)
-        : QGraphicsView(scene)
-    { }
-    QRegion clipRegion;
-
-protected:
-    void drawBackground(QPainter *painter, const QRectF &rect)
-    {
-        clipRegion = painter->clipRegion();
-    }
-};
-
-class ItemClipTester : public QGraphicsRectItem
-{
-public:
-    ItemClipTester() : QGraphicsRectItem(0, 0, 20, 20)
-    {
-        setBrush(Qt::blue);
-    }
-    QRegion clipRegion;
-
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0)
-    {
-        clipRegion = painter->clipRegion();
-        QGraphicsRectItem::paint(painter, option, widget);
-    }
-};
-
-void tst_QGraphicsView::defaultClipIntersectToView()
-{
-    QGraphicsScene scene;
-    ItemClipTester *tester = new ItemClipTester;
-    scene.addItem(tester);
-
-    ViewClipTester view(&scene);
-    view.setAlignment(Qt::AlignTop | Qt::AlignLeft);
-    view.setFrameStyle(0);
-    view.resize(200, 200);
-    view.show();
-    QTRY_COMPARE(QApplication::activeWindow(), (QWidget *)&view);
-
-    QRect viewRect(0, 0, 200, 200);
-    QCOMPARE(view.clipRegion, QRegion(viewRect));
-    QCOMPARE(tester->clipRegion, QRegion(viewRect));
-
-    view.viewport()->update(0, 0, 5, 5);
-    view.viewport()->update(10, 10, 5, 5);
-    qApp->processEvents();
-    viewRect = QRect(0, 0, 15, 15);
-    QCOMPARE(view.clipRegion, QRegion(viewRect));
-    QCOMPARE(tester->clipRegion, QRegion(viewRect));
-
-    view.scale(2, 2);
-    qApp->processEvents();
-
-    viewRect.moveTop(-viewRect.height());
-    viewRect = QRect(0, 0, 100, 100);
-    QCOMPARE(view.clipRegion, QRegion(viewRect));
-    QCOMPARE(tester->clipRegion, QRegion(viewRect));
-
-    view.viewport()->update(0, 0, 5, 5);
-    view.viewport()->update(10, 10, 5, 5);
-    qApp->processEvents();
-    viewRect = QRect(0, 0, 8, 8);
-    QCOMPARE(view.clipRegion, QRegion(viewRect));
-    QCOMPARE(tester->clipRegion, QRegion(viewRect));
 }
 
 void tst_QGraphicsView::task253415_reconnectUpdateSceneOnSceneChanged()

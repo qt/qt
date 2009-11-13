@@ -903,7 +903,7 @@ bool QGraphicsAnchorLayoutPrivate::simplifyGraphIteration(QGraphicsAnchorLayoutP
     QStack<QPair<AnchorVertex *, AnchorVertex *> > stack;
     stack.push(qMakePair(static_cast<AnchorVertex *>(0), layoutFirstVertex[orientation]));
     QVector<AnchorVertex*> candidates;
-    bool candidatesForward;
+    bool candidatesForward = true;
 
     // Walk depth-first, in the stack we store start of the candidate sequence (beforeSequence)
     // and the vertex to be visited.
