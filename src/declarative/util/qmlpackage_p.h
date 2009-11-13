@@ -42,7 +42,7 @@
 #ifndef QMLPACKAGE_H
 #define QMLPACKAGE_H
 
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 
 QT_BEGIN_HEADER
 

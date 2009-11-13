@@ -321,7 +321,7 @@ struct RefCounted
         instanceCount.ref();
     }
 
-    RefCounted(RefCounted const &other)
+    RefCounted(RefCounted const &)
         : ref(0)
     {
         instanceCount.ref();
@@ -335,6 +335,7 @@ struct RefCounted
 
     RefCounted &operator=(RefCounted const &)
     {
+        return *this;
     }
 
     QAtomicInt ref;

@@ -45,10 +45,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
-#include <QtDeclarative/qmlprivate.h>
-#include <QtDeclarative/qmlparserstatus.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlpropertyvalueinterceptor.h>
+#include <qmlprivate.h>
+#include <qmlparserstatus.h>
+#include <qmlpropertyvaluesource.h>
+#include <qmlpropertyvalueinterceptor.h>
 
 QT_BEGIN_HEADER
 

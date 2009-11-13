@@ -44,8 +44,8 @@
 
 #include <QtCore/QObject>
 #include <QtGui/QPainterPath>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qml.h>
+#include <qmlgraphicsitem.h>
 
 
 QT_BEGIN_HEADER

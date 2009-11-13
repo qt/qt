@@ -53,13 +53,13 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 #include <private/qmlstate_p.h>
 #include <private/qmlgraphicsanchors_p.h>
 #include <private/qmlnullablevalue_p_p.h>
 #include <private/qmlgraphicsanchors_p_p.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qml.h>
+#include <qmlcontext.h>
 #include <QtCore/qlist.h>
 #include <private/qgraphicsitem_p.h>
 #include <QtCore/qdebug.h>

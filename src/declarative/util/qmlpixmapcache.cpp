@@ -45,7 +45,7 @@
 #include <QNetworkReply>
 #include <QPixmapCache>
 #include <private/qfxperf_p_p.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <QFile>
 #include <QtCore/qdebug.h>
 

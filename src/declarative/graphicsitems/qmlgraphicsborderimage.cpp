@@ -44,7 +44,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 

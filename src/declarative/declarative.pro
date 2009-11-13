@@ -12,6 +12,8 @@ unix:QMAKE_PKGCONFIG_REQUIRES = QtCore QtGui QtXml
 # QMAKE_CXXFLAGS = -fprofile-arcs -ftest-coverage
 # LIBS += -lgcov
 
+INCLUDEPATH += ../../include/QtDeclarative
+
 include(../qbase.pri)
 
 #modules
