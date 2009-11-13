@@ -53,13 +53,15 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QBitArray>
 #include <QtCore/QPair>
 #include <private/qobject_p.h>
 
 QT_BEGIN_NAMESPACE
+
+#define QML_ALIAS_FLAG_PTR 0x00000001
 
 struct QmlVMEMetaData
 {
@@ -71,6 +73,7 @@ struct QmlVMEMetaData
     struct AliasData {
         int contextIdx;
         int propertyIdx;
+        int flags;
     };
     
     struct PropertyData {

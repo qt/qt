@@ -57,8 +57,8 @@
 #include "private/qfxperf_p_p.h"
 
 #include "qmlview.h"
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlengine.h>
+#include <qmlcontext.h>
 #include <private/qmldebug_p.h>
 #include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>
@@ -124,12 +124,6 @@ void FrameBreakAnimation::updateCurrentTime(int msecs)
     server->frameBreak();
 }
 
-
-static QVariant stringToKeySequence(const QString &str)
-{
-    return QVariant::fromValue(QKeySequence(str));
-}
-
 class QmlViewPrivate
 {
 public:
@@ -190,13 +184,12 @@ QmlView::QmlView(QWidget *parent)
 
 void QmlViewPrivate::init()
 {
-    // XXX: These need to be put in a central location for this kind of thing
-    QmlMetaType::registerCustomStringConverter(QVariant::KeySequence, &stringToKeySequence);
-
 #ifdef Q_ENABLE_PERFORMANCE_LOG
-    QmlPerfTimer<QmlPerf::FontDatabase> perf;
+    {
+        QmlPerfTimer<QmlPerf::FontDatabase> perf;
+        QFontDatabase database;
+    }
 #endif
-    QFontDatabase database;
 
     q->setScene(&scene);
 
@@ -520,7 +513,7 @@ QmlGraphicsItem* QmlView::addItem(const QString &qml, QmlGraphicsItem* parent)
 }
 
 /*!
-  Deletes the view's \l {QmlGraphicsItem} {items} and the \l {QmlEngine}
+  Deletes the view's \l {QmlGraphicsItem} {items} and clears the \l {QmlEngine}
   {QML engine's} Component cache.
  */
 void QmlView::reset()
@@ -580,27 +573,6 @@ void QmlView::paintEvent(QPaintEvent *event)
         qfxViewDebugServer()->addTiming(d->frameTimer.elapsed(), time);
     if (frameRateDebug())
         qDebug() << "paintEvent:" << d->frameTimer.elapsed() << "time since last frame:" << time;
-}
-
-/*! \fn void QmlView::focusInEvent(QFocusEvent *e)
-  This virtual function does nothing with the event \a e
-  in this class.
- */
-void QmlView::focusInEvent(QFocusEvent *e)
-{
-    // Do nothing (do not call QWidget::update())
-    QGraphicsView::focusInEvent(e);
-}
-
-
-/*! \fn void QmlView::focusOutEvent(QFocusEvent *e)
-  This virtual function does nothing with the event \a e
-  in this class.
- */
-void QmlView::focusOutEvent(QFocusEvent *e)
-{
-    // Do nothing (do not call QWidget::update())
-    QGraphicsView::focusOutEvent(e);
 }
 
 QT_END_NAMESPACE

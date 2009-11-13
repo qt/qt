@@ -86,7 +86,7 @@
     \row    \o Apple Mac OS X 10.5 "Leopard" x86_64 (Carbon, Cocoa 32 and 64bit)
                                      \o As provided by Apple
     \row    \o Embedded Linux QWS (ARM)
-                                     \o gcc (\l{http:\\www.codesourcery.com}{Codesourcery version)}
+                                     \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Windows CE 5.0 (ARMv4i, x86, MIPS)
                                      \o MSVC 2005 WinCE 5.0 Standard (x86, pocket, smart, mipsii)
     \row    \o Symbian (S60 3.1, 3.2 and 5.0)
@@ -125,7 +125,7 @@
     \row    \o Linux
                                      \o Intel Compiler
     \row    \o Embedded Linux QWS (Mips, PowerPC)
-                                     \o gcc (\l{http:\\www.codesourcery.com}{Codesourcery version)}
+                                     \o gcc (\l{http://www.codesourcery.com/}{Codesourcery version)}
     \row    \o Embedded Linux X11 (ARM)
                                      \o gcc (\l{http://www.scratchbox.org/}{Scratchbox)}
     \row    \o Windows CE 6.0 (ARMv4i, x86, MIPS)

@@ -105,7 +105,7 @@ static bool loadTsFile(Translator &tor, const QString &tsFileName, bool /* verbo
 static bool releaseTranslator(Translator &tor, const QString &qmFileName,
     ConversionData &cd, bool removeIdentical)
 {
-    Translator::reportDuplicates(tor.resolveDuplicates(), qmFileName, cd.isVerbose());
+    tor.reportDuplicates(tor.resolveDuplicates(), qmFileName, cd.isVerbose());
 
     if (cd.isVerbose())
         printOut(QCoreApplication::tr( "Updating '%1'...\n").arg(qmFileName));

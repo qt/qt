@@ -69,17 +69,20 @@ private slots:
 
 void tst_QAudioFormat::checkNull()
 {
-    // Default constructed QAudioFormat is null.
+    // Default constructed QAudioFormat is invalid.
     QAudioFormat    audioFormat0;
-    QVERIFY(audioFormat0.isNull());
+    QVERIFY(!audioFormat0.isValid());
 
-    // Null is transferred
+    // validity is transferred
     QAudioFormat    audioFormat1(audioFormat0);
-    QVERIFY(audioFormat1.isNull());
+    QVERIFY(!audioFormat1.isValid());
 
-    // Null is voided on activity
     audioFormat0.setFrequency(44100);
-    QVERIFY(!audioFormat0.isNull());
+    audioFormat0.setChannels(2);
+    audioFormat0.setSampleSize(16);
+    audioFormat0.setCodec("audio/pcm");
+    audioFormat0.setSampleType(QAudioFormat::SignedInt);
+    QVERIFY(audioFormat0.isValid());
 }
 
 void tst_QAudioFormat::checkFrequency()

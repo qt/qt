@@ -46,6 +46,7 @@
 #include <QmlComponent>
 #include <QDir>
 #include <QVector3D>
+#include <QCryptographicHash>
 
 class tst_qmlqt : public QObject
 {
@@ -67,6 +68,7 @@ private slots:
     void closestAngle();
     void playSound();
     void openUrlExternally();
+    void md5();
 
 private:
     QmlEngine engine;
@@ -278,6 +280,19 @@ void tst_qmlqt::openUrlExternally()
     QEXPECT_FAIL("", "How do we test this?", Abort);
     QVERIFY(false);
 }
+
+void tst_qmlqt::md5()
+{
+    QmlComponent component(&engine, TEST_FILE("md5.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test1").toString(), QLatin1String(QCryptographicHash::hash(QByteArray(), QCryptographicHash::Md5).toHex()));
+    QCOMPARE(object->property("test2").toString(), QLatin1String(QCryptographicHash::hash("Hello World", QCryptographicHash::Md5).toHex()));
+
+    delete object;
+}
+
 
 QTEST_MAIN(tst_qmlqt)
 

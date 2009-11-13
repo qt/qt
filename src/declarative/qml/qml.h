@@ -46,11 +46,11 @@
 #include <QtCore/qstringlist.h>
 #include <QtCore/qurl.h>
 #include <QtCore/qmetaobject.h>
-#include <QtDeclarative/qmlmetatype.h>
-#include <QtDeclarative/qmlmetaproperty.h>
-#include <QtDeclarative/qmlparserstatus.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmllist.h>
+#include <qmlmetatype.h>
+#include <qmlmetaproperty.h>
+#include <qmlparserstatus.h>
+#include <qmlpropertyvaluesource.h>
+#include <qmllist.h>
 
 QT_BEGIN_HEADER
 

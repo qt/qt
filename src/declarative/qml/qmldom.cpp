@@ -57,13 +57,6 @@ QmlDomDocumentPrivate::QmlDomDocumentPrivate()
 {
 }
 
-QmlDomDocumentPrivate::QmlDomDocumentPrivate(const QmlDomDocumentPrivate &other)
-: QSharedData(other), root(0)
-{
-    root = other.root;
-    if (root) root->addref();
-}
-
 QmlDomDocumentPrivate::~QmlDomDocumentPrivate()
 {
     if (root) root->release();
@@ -141,7 +134,7 @@ QList<QmlDomImport> QmlDomDocument::imports() const
 /*!
     Loads a QmlDomDocument from \a data.  \a data should be valid QML
     data.  On success, true is returned.  If the \a data is malformed, false
-    is returned and QmlDomDocument::loadError() contains an error description.
+    is returned and QmlDomDocument::errors() contains an error description.
 
     \sa QmlDomDocument::loadError()
 */
@@ -160,7 +153,8 @@ bool QmlDomDocument::load(QmlEngine *engine, const QByteArray &data, const QUrl 
         td->release();
         component->release();
         return false;
-    } else if(td->status == QmlCompositeTypeData::Waiting) {
+    } else if(td->status == QmlCompositeTypeData::Waiting ||
+              td->status == QmlCompositeTypeData::WaitingResources) {
         QmlError error;
         error.setDescription(QLatin1String("QmlDomDocument supports local types only"));
         d->errors << error;
@@ -234,13 +228,6 @@ QmlDomPropertyPrivate::QmlDomPropertyPrivate()
 {
 }
 
-QmlDomPropertyPrivate::QmlDomPropertyPrivate(const QmlDomPropertyPrivate &other)
-: QSharedData(other), property(0)
-{
-    property = other.property;
-    if (property) property->addref();
-}
-
 QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
 {
     if (property) property->release();
@@ -249,13 +236,6 @@ QmlDomPropertyPrivate::~QmlDomPropertyPrivate()
 QmlDomDynamicPropertyPrivate::QmlDomDynamicPropertyPrivate():
         valid(false)
 {
-}
-
-QmlDomDynamicPropertyPrivate::QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &other)
-: QSharedData(other), valid(other.valid)
-{
-    property = other.property;
-    if (valid && property.defaultValue) property.defaultValue->addref();
 }
 
 QmlDomDynamicPropertyPrivate::~QmlDomDynamicPropertyPrivate()
@@ -305,6 +285,15 @@ QmlDomProperty &QmlDomProperty::operator=(const QmlDomProperty &other)
     d = other.d;
     return *this;
 }
+
+/*!
+    Returns true if this is a valid QmlDomProperty, false otherwise.
+*/
+bool QmlDomProperty::isValid() const
+{
+    return d->property != 0;
+}
+
 
 /*!
     Return the name of this property.
@@ -482,7 +471,7 @@ int QmlDomDynamicProperty::propertyType() const
                 return QMetaType::type("QColor");
 
             case QmlParser::Object::DynamicProperty::Date:
-                return QMetaType::type("QDateTime");
+                return QMetaType::type("QDate");
 
             case QmlParser::Object::DynamicProperty::Int:
                 return QMetaType::type("int");
@@ -505,6 +494,14 @@ int QmlDomDynamicProperty::propertyType() const
     }
 
     return -1;
+}
+
+QByteArray QmlDomDynamicProperty::propertyTypeName() const
+{
+    if (isValid()) 
+        return d->property.customType;
+
+    return QByteArray();
 }
 
 /*!
@@ -539,6 +536,7 @@ QmlDomProperty QmlDomDynamicProperty::defaultValue() const
 
     if (isValid() && d->property.defaultValue) {
         rp.d->property = d->property.defaultValue;
+        rp.d->propertyName = propertyName();
         rp.d->property->addref();
     }
 
@@ -570,16 +568,8 @@ int QmlDomDynamicProperty::length() const
 }
 
 QmlDomObjectPrivate::QmlDomObjectPrivate()
-: object(0), isVirtualComponent(false)
+: object(0)
 {
-}
-
-QmlDomObjectPrivate::QmlDomObjectPrivate(const QmlDomObjectPrivate &other)
-: QSharedData(other), object(0), isVirtualComponent(false)
-{
-    object = other.object;
-    if (object) object->addref();
-    isVirtualComponent = other.isVirtualComponent;
 }
 
 QmlDomObjectPrivate::~QmlDomObjectPrivate()
@@ -662,16 +652,6 @@ QGraphicsWidget {
 QmlDomObject::QmlDomObject()
 : d(new QmlDomObjectPrivate)
 {
-}
-
-/*!
-    Construct a new QmlDomObject with the specified \a objectType.
-*/
-QmlDomObject::QmlDomObject(const QByteArray &objectType)
-: d(new QmlDomObjectPrivate)
-{
-    Q_UNUSED(objectType);
-    qWarning("QmlDomObject::QmlDomObject(const QByteArray &): Not implemented");
 }
 
 /*!
@@ -785,7 +765,7 @@ QList<QmlDomProperty> QmlDomObject::properties() const
 {
     QList<QmlDomProperty> rv;
 
-    if (!d->object)
+    if (!d->object || isComponent())
         return rv;
 
     QmlDomObjectPrivate::Properties properties = d->properties();
@@ -853,6 +833,9 @@ QmlDomDynamicProperty QmlDomObject::dynamicProperty(const QByteArray &name) cons
 {
     QmlDomDynamicProperty p;
 
+    if (!isValid())
+        return p;
+
     for (int i = 0; i < d->object->dynamicProperties.size(); ++i) {
         if (d->object->dynamicProperties.at(i).name == name) {
             p.d = new QmlDomDynamicPropertyPrivate;
@@ -900,8 +883,7 @@ QByteArray QmlDomObject::customTypeData() const
 */
 bool QmlDomObject::isComponent() const
 {
-    return d->isVirtualComponent ||
-           (d->object && d->object->typeName == "Qt/Component");
+    return (d->object && d->object->typeName == "Qt/Component");
 }
 
 /*!
@@ -956,13 +938,6 @@ QUrl QmlDomObject::url() const
 QmlDomBasicValuePrivate::QmlDomBasicValuePrivate()
 : value(0)
 {
-}
-
-QmlDomBasicValuePrivate::QmlDomBasicValuePrivate(const QmlDomBasicValuePrivate &other)
-: QSharedData(other), value(0)
-{
-    value = other.value;
-    if (value) value->addref();
 }
 
 QmlDomBasicValuePrivate::~QmlDomBasicValuePrivate()
@@ -1248,15 +1223,6 @@ QmlDomObject QmlDomValueValueInterceptor::object() const
 QmlDomValuePrivate::QmlDomValuePrivate()
 : property(0), value(0)
 {
-}
-
-QmlDomValuePrivate::QmlDomValuePrivate(const QmlDomValuePrivate &other)
-: QSharedData(other), property(0), value(0)
-{
-    property = other.property;
-    value = other.value;
-    if (property) property->addref();
-    if (value) value->addref();
 }
 
 QmlDomValuePrivate::~QmlDomValuePrivate()
@@ -1754,10 +1720,7 @@ Item {
 QmlDomObject QmlDomComponent::componentRoot() const
 {
     QmlDomObject rv;
-    if (d->isVirtualComponent) {
-        rv.d->object = d->object;
-        rv.d->object->addref();
-    } else if (d->object) {
+    if (d->object) {
         QmlParser::Object *obj = 0;
         if (d->object->defaultProperty &&
            d->object->defaultProperty->values.count() == 1 &&
@@ -1775,11 +1738,6 @@ QmlDomObject QmlDomComponent::componentRoot() const
 
 QmlDomImportPrivate::QmlDomImportPrivate()
 : type(File)
-{
-}
-
-QmlDomImportPrivate::QmlDomImportPrivate(const QmlDomImportPrivate &other)
-: QSharedData(other)
 {
 }
 

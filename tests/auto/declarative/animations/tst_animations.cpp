@@ -53,6 +53,7 @@ public:
     tst_animations() {}
 
 private slots:
+    void simpleProperty();
     void simpleNumber();
     void simpleColor();
     void alwaysRunToEnd();
@@ -73,7 +74,31 @@ private slots:
     } \
     QCOMPARE(lhs, rhs); \
 } while (false)
-        
+
+void tst_animations::simpleProperty()
+{
+    QmlGraphicsRectangle rect;
+    QmlPropertyAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("pos");
+    animation.setTo(QPointF(200,200));
+    QVERIFY(animation.target() == &rect);
+    QVERIFY(animation.property() == "pos");
+    QVERIFY(animation.to().toPointF() == QPointF(200,200));
+    animation.start();
+    QVERIFY(animation.isRunning());
+    QTest::qWait(animation.duration());
+    QTIMED_COMPARE(rect.pos(), QPointF(200,200));
+
+    rect.setPos(0,0);
+    animation.start();
+    animation.pause();
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
+    animation.setCurrentTime(125);
+    QCOMPARE(rect.pos(), QPointF(100,100));
+}
+
 void tst_animations::simpleNumber()
 {
     QmlGraphicsRectangle rect;
@@ -81,13 +106,19 @@ void tst_animations::simpleNumber()
     animation.setTarget(&rect);
     animation.setProperty("x");
     animation.setTo(200);
+    QVERIFY(animation.target() == &rect);
+    QVERIFY(animation.property() == "x");
+    QVERIFY(animation.to() == 200);
     animation.start();
+    QVERIFY(animation.isRunning());
     QTest::qWait(animation.duration());
     QTIMED_COMPARE(rect.x(), qreal(200));
 
     rect.setX(0);
     animation.start();
     animation.pause();
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
     QCOMPARE(rect.x(), qreal(100));
 }
@@ -99,13 +130,19 @@ void tst_animations::simpleColor()
     animation.setTarget(&rect);
     animation.setProperty("color");
     animation.setTo(QColor("red"));
+    QVERIFY(animation.target() == &rect);
+    QVERIFY(animation.property() == "color");
+    QVERIFY(animation.to() == QColor("red"));
     animation.start();
+    QVERIFY(animation.isRunning());
     QTest::qWait(animation.duration());
     QTIMED_COMPARE(rect.color(), QColor("red"));
 
     rect.setColor(QColor("blue"));
     animation.start();
     animation.pause();
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
 }

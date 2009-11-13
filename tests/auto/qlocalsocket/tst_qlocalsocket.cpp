@@ -587,14 +587,16 @@ void tst_QLocalSocket::readBufferOverflow()
     char buffer[dataBufferSize];
     memset(buffer, 0, dataBufferSize);
     serverSocket->write(buffer, dataBufferSize);
-    serverSocket->flush();
+    serverSocket->waitForBytesWritten();
 
+    // wait until the first 128 bytes are ready to read
     QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
-#if defined(QT_LOCALSOCKET_TCP) || defined(Q_OS_SYMBIAN)
-    QTest::qWait(250);
-#endif
+    // wait until the second 128 bytes are ready to read
+    QVERIFY(client.waitForReadyRead());
     QCOMPARE(client.read(buffer, readBufferSize), qint64(readBufferSize));
+    // no more bytes available
+    QVERIFY(client.bytesAvailable() == 0);
 }
 
 // QLocalSocket/Server can take a name or path, check that it works as expected

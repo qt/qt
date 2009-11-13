@@ -43,6 +43,8 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicswebview_p.h>
+#include <private/qmlgraphicswebview_p_p.h>
+#include <private/qmlgraphicspositioners_p.h>
 #include <QtWebKit/qwebpage.h>
 #include <QtWebKit/qwebframe.h>
 #include <QtCore/qdir.h>
@@ -56,7 +58,10 @@ public:
 
 private slots:
     void basicProperties();
+    void settings();
     void historyNav();
+    void multipleWindows();
+    void elementAreaAt();
     void loadError();
     void setHtml();
     void javaScript();
@@ -153,6 +158,71 @@ void tst_qmlgraphicswebview::basicProperties()
     QTRY_COMPARE(wv->progress(), 1.0);
 }
 
+void tst_qmlgraphicswebview::settings()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QmlGraphicsWebSettings *s = wv->settingsObject();
+
+    // merely tests that setting gets stored (in QWebSettings)
+    // behavioural tests are in WebKit.
+    for (int b=0; b<=1; ++b) {
+        bool on = !!b;
+
+        s->setAutoLoadImages(on);
+        s->setDeveloperExtrasEnabled(on);
+        s->setJavaEnabled(on);
+        s->setJavascriptCanAccessClipboard(on);
+        s->setJavascriptCanOpenWindows(on);
+        s->setJavascriptEnabled(on);
+        s->setLinksIncludedInFocusChain(on);
+        s->setLocalContentCanAccessRemoteUrls(on);
+        s->setLocalStorageDatabaseEnabled(on);
+        s->setOfflineStorageDatabaseEnabled(on);
+        s->setOfflineWebApplicationCacheEnabled(on);
+        s->setPluginsEnabled(on);
+        s->setPrintElementBackgrounds(on);
+        s->setPrivateBrowsingEnabled(on);
+        s->setZoomTextOnly(on);
+
+        QVERIFY(s->autoLoadImages() == on);
+        QVERIFY(s->developerExtrasEnabled() == on);
+        QVERIFY(s->javaEnabled() == on);
+        QVERIFY(s->javascriptCanAccessClipboard() == on);
+        QVERIFY(s->javascriptCanOpenWindows() == on);
+        QVERIFY(s->javascriptEnabled() == on);
+        QVERIFY(s->linksIncludedInFocusChain() == on);
+        QVERIFY(s->localContentCanAccessRemoteUrls() == on);
+        QVERIFY(s->localStorageDatabaseEnabled() == on);
+        QVERIFY(s->offlineStorageDatabaseEnabled() == on);
+        QVERIFY(s->offlineWebApplicationCacheEnabled() == on);
+        QVERIFY(s->pluginsEnabled() == on);
+        QVERIFY(s->printElementBackgrounds() == on);
+        QVERIFY(s->privateBrowsingEnabled() == on);
+        QVERIFY(s->zoomTextOnly() == on);
+
+        QVERIFY(s->property("autoLoadImages") == on);
+        QVERIFY(s->property("developerExtrasEnabled") == on);
+        QVERIFY(s->property("javaEnabled") == on);
+        QVERIFY(s->property("javascriptCanAccessClipboard") == on);
+        QVERIFY(s->property("javascriptCanOpenWindows") == on);
+        QVERIFY(s->property("javascriptEnabled") == on);
+        QVERIFY(s->property("linksIncludedInFocusChain") == on);
+        QVERIFY(s->property("localContentCanAccessRemoteUrls") == on);
+        QVERIFY(s->property("localStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineStorageDatabaseEnabled") == on);
+        QVERIFY(s->property("offlineWebApplicationCacheEnabled") == on);
+        QVERIFY(s->property("pluginsEnabled") == on);
+        QVERIFY(s->property("printElementBackgrounds") == on);
+        QVERIFY(s->property("privateBrowsingEnabled") == on);
+        QVERIFY(s->property("zoomTextOnly") == on);
+    }
+}
+
 void tst_qmlgraphicswebview::historyNav()
 {
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/basic.qml"));
@@ -218,6 +288,16 @@ void tst_qmlgraphicswebview::historyNav()
     QVERIFY(!wv->stopAction()->isEnabled());
 }
 
+void tst_qmlgraphicswebview::multipleWindows()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/newwindows.qml"));
+    checkNoErrors(component);
+
+    QmlGraphicsGrid *grid = qobject_cast<QmlGraphicsGrid*>(component.create());
+    QVERIFY(grid != 0);
+    QTRY_COMPARE(grid->children().count(), 2+5); // Component, Loader, 5 WebViews
+}
+
 void tst_qmlgraphicswebview::loadError()
 {
     QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/loadError.qml"));
@@ -244,6 +324,21 @@ void tst_qmlgraphicswebview::setHtml()
     QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
     QVERIFY(wv != 0);
     QCOMPARE(wv->html(),QString("<html><head></head><body><p>This is a <b>string</b> set on the WebView</p></body></html>"));
+}
+
+void tst_qmlgraphicswebview::elementAreaAt()
+{
+    QmlComponent component(&engine, QUrl::fromLocalFile(SRCDIR "/data/elements.qml"));
+    checkNoErrors(component);
+    QmlGraphicsWebView *wv = qobject_cast<QmlGraphicsWebView*>(component.create());
+    QVERIFY(wv != 0);
+    QTRY_COMPARE(wv->progress(), 1.0);
+
+    QCOMPARE(wv->elementAreaAt(40,30,100,100),QRect(1,1,75,54)); // Area A in data/elements.html
+    QCOMPARE(wv->elementAreaAt(130,30,200,100),QRect(78,3,110,50)); // Area B
+    QCOMPARE(wv->elementAreaAt(40,30,400,400),QRect(0,0,310,100)); // Whole view
+    QCOMPARE(wv->elementAreaAt(130,30,280,280),QRect(76,1,223,54)); // Area BC
+    QCOMPARE(wv->elementAreaAt(130,30,400,400),QRect(0,0,310,100)); // Whole view
 }
 
 void tst_qmlgraphicswebview::javaScript()

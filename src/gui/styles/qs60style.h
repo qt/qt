@@ -79,10 +79,6 @@ public:
 #ifndef Q_NO_USING_KEYWORD
     using QCommonStyle::polish;
 #endif
-
-    void setStyleProperty(const char *name, const QVariant &value);
-    QVariant styleProperty(const char *name) const;
-
     bool event(QEvent *e);
 
 #ifndef Q_WS_S60

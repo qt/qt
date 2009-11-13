@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QMovie>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include "qmlgraphicsanimatedimage_p.h"
 #include "qmlgraphicsanimatedimage_p_p.h"
 #include <QNetworkRequest>
@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
     QMovie::supportedFormats().
 
     \table
-    \row 
+    \row
     \o \image animatedimageitem.gif
     \o
     \qml

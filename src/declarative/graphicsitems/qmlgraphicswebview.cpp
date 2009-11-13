@@ -59,6 +59,7 @@
 #include <private/qlistmodelinterface_p.h>
 
 #include "qmlgraphicswebview_p.h"
+#include "qmlgraphicswebview_p_p.h"
 #include <private/qmlgraphicspainteditem_p_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -67,97 +68,6 @@ QML_DEFINE_NOCREATE_TYPE(QAction)
 
 static const int MAX_DOUBLECLICK_TIME=500; // XXX need better gesture system
 
-class QmlGraphicsWebSettings : public QObject {
-    Q_OBJECT
-
-    Q_PROPERTY(QString standardFontFamily READ standardFontFamily WRITE setStandardFontFamily)
-    Q_PROPERTY(QString fixedFontFamily READ fixedFontFamily WRITE setFixedFontFamily)
-    Q_PROPERTY(QString serifFontFamily READ serifFontFamily WRITE setSerifFontFamily)
-    Q_PROPERTY(QString sansSerifFontFamily READ sansSerifFontFamily WRITE setSansSerifFontFamily)
-    Q_PROPERTY(QString cursiveFontFamily READ cursiveFontFamily WRITE setCursiveFontFamily)
-    Q_PROPERTY(QString fantasyFontFamily READ fantasyFontFamily WRITE setFantasyFontFamily)
-
-    Q_PROPERTY(int minimumFontSize READ minimumFontSize WRITE setMinimumFontSize)
-    Q_PROPERTY(int minimumLogicalFontSize READ minimumLogicalFontSize WRITE setMinimumLogicalFontSize)
-    Q_PROPERTY(int defaultFontSize READ defaultFontSize WRITE setDefaultFontSize)
-    Q_PROPERTY(int defaultFixedFontSize READ defaultFixedFontSize WRITE setDefaultFixedFontSize)
-
-    Q_PROPERTY(bool autoLoadImages READ autoLoadImages WRITE setAutoLoadImages)
-    Q_PROPERTY(bool javascriptEnabled READ javascriptEnabled WRITE setJavascriptEnabled)
-    Q_PROPERTY(bool javaEnabled READ javaEnabled WRITE setJavaEnabled)
-    Q_PROPERTY(bool pluginsEnabled READ pluginsEnabled WRITE setPluginsEnabled)
-    Q_PROPERTY(bool privateBrowsingEnabled READ privateBrowsingEnabled WRITE setPrivateBrowsingEnabled)
-    Q_PROPERTY(bool javascriptCanOpenWindows READ javascriptCanOpenWindows WRITE setJavascriptCanOpenWindows)
-    Q_PROPERTY(bool javascriptCanAccessClipboard READ javascriptCanAccessClipboard WRITE setJavascriptCanAccessClipboard)
-    Q_PROPERTY(bool developerExtrasEnabled READ developerExtrasEnabled WRITE setDeveloperExtrasEnabled)
-    Q_PROPERTY(bool linksIncludedInFocusChain READ linksIncludedInFocusChain WRITE setLinksIncludedInFocusChain)
-    Q_PROPERTY(bool zoomTextOnly READ zoomTextOnly WRITE setZoomTextOnly)
-    Q_PROPERTY(bool printElementBackgrounds READ printElementBackgrounds WRITE setPrintElementBackgrounds)
-    Q_PROPERTY(bool offlineStorageDatabaseEnabled READ offlineStorageDatabaseEnabled WRITE setOfflineStorageDatabaseEnabled)
-    Q_PROPERTY(bool offlineWebApplicationCacheEnabled READ offlineWebApplicationCacheEnabled WRITE setOfflineWebApplicationCacheEnabled)
-    Q_PROPERTY(bool localStorageDatabaseEnabled READ localStorageDatabaseEnabled WRITE setLocalStorageDatabaseEnabled)
-    Q_PROPERTY(bool localContentCanAccessRemoteUrls READ localContentCanAccessRemoteUrls WRITE setLocalContentCanAccessRemoteUrls)
-
-public:
-    QmlGraphicsWebSettings() {}
-
-    QString standardFontFamily() const { return s->fontFamily(QWebSettings::StandardFont); }
-    void setStandardFontFamily(const QString& f) { s->setFontFamily(QWebSettings::StandardFont,f); }
-    QString fixedFontFamily() const { return s->fontFamily(QWebSettings::FixedFont); }
-    void setFixedFontFamily(const QString& f) { s->setFontFamily(QWebSettings::FixedFont,f); }
-    QString serifFontFamily() const { return s->fontFamily(QWebSettings::SerifFont); }
-    void setSerifFontFamily(const QString& f) { s->setFontFamily(QWebSettings::SerifFont,f); }
-    QString sansSerifFontFamily() const { return s->fontFamily(QWebSettings::SansSerifFont); }
-    void setSansSerifFontFamily(const QString& f) { s->setFontFamily(QWebSettings::SansSerifFont,f); }
-    QString cursiveFontFamily() const { return s->fontFamily(QWebSettings::CursiveFont); }
-    void setCursiveFontFamily(const QString& f) { s->setFontFamily(QWebSettings::CursiveFont,f); }
-    QString fantasyFontFamily() const { return s->fontFamily(QWebSettings::FantasyFont); }
-    void setFantasyFontFamily(const QString& f) { s->setFontFamily(QWebSettings::FantasyFont,f); }
-
-    int minimumFontSize() const { return s->fontSize(QWebSettings::MinimumFontSize); }
-    void setMinimumFontSize(int size) { s->setFontSize(QWebSettings::MinimumFontSize,size); }
-    int minimumLogicalFontSize() const { return s->fontSize(QWebSettings::MinimumLogicalFontSize); }
-    void setMinimumLogicalFontSize(int size) { s->setFontSize(QWebSettings::MinimumLogicalFontSize,size); }
-    int defaultFontSize() const { return s->fontSize(QWebSettings::DefaultFontSize); }
-    void setDefaultFontSize(int size) { s->setFontSize(QWebSettings::DefaultFontSize,size); }
-    int defaultFixedFontSize() const { return s->fontSize(QWebSettings::DefaultFixedFontSize); }
-    void setDefaultFixedFontSize(int size) { s->setFontSize(QWebSettings::DefaultFixedFontSize,size); }
-
-    bool autoLoadImages() const { return s->testAttribute(QWebSettings::AutoLoadImages); }
-    void setAutoLoadImages(bool on) { s->setAttribute(QWebSettings::AutoLoadImages, on); }
-    bool javascriptEnabled() const { return s->testAttribute(QWebSettings::JavascriptEnabled); }
-    void setJavascriptEnabled(bool on) { s->setAttribute(QWebSettings::JavascriptEnabled, on); }
-    bool javaEnabled() const { return s->testAttribute(QWebSettings::JavaEnabled); }
-    void setJavaEnabled(bool on) { s->setAttribute(QWebSettings::JavaEnabled, on); }
-    bool pluginsEnabled() const { return s->testAttribute(QWebSettings::PluginsEnabled); }
-    void setPluginsEnabled(bool on) { s->setAttribute(QWebSettings::PluginsEnabled, on); }
-    bool privateBrowsingEnabled() const { return s->testAttribute(QWebSettings::PrivateBrowsingEnabled); }
-    void setPrivateBrowsingEnabled(bool on) { s->setAttribute(QWebSettings::PrivateBrowsingEnabled, on); }
-    bool javascriptCanOpenWindows() const { return s->testAttribute(QWebSettings::JavascriptCanOpenWindows); }
-    void setJavascriptCanOpenWindows(bool on) { s->setAttribute(QWebSettings::JavascriptCanOpenWindows, on); }
-    bool javascriptCanAccessClipboard() const { return s->testAttribute(QWebSettings::JavascriptCanAccessClipboard); }
-    void setJavascriptCanAccessClipboard(bool on) { s->setAttribute(QWebSettings::JavascriptCanAccessClipboard, on); }
-    bool developerExtrasEnabled() const { return s->testAttribute(QWebSettings::DeveloperExtrasEnabled); }
-    void setDeveloperExtrasEnabled(bool on) { s->setAttribute(QWebSettings::DeveloperExtrasEnabled, on); }
-    bool linksIncludedInFocusChain() const { return s->testAttribute(QWebSettings::LinksIncludedInFocusChain); }
-    void setLinksIncludedInFocusChain(bool on) { s->setAttribute(QWebSettings::LinksIncludedInFocusChain, on); }
-    bool zoomTextOnly() const { return s->testAttribute(QWebSettings::ZoomTextOnly); }
-    void setZoomTextOnly(bool on) { s->setAttribute(QWebSettings::ZoomTextOnly, on); }
-    bool printElementBackgrounds() const { return s->testAttribute(QWebSettings::PrintElementBackgrounds); }
-    void setPrintElementBackgrounds(bool on) { s->setAttribute(QWebSettings::PrintElementBackgrounds, on); }
-    bool offlineStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::OfflineStorageDatabaseEnabled); }
-    void setOfflineStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::OfflineStorageDatabaseEnabled, on); }
-    bool offlineWebApplicationCacheEnabled() const { return s->testAttribute(QWebSettings::OfflineWebApplicationCacheEnabled); }
-    void setOfflineWebApplicationCacheEnabled(bool on) { s->setAttribute(QWebSettings::OfflineWebApplicationCacheEnabled, on); }
-    bool localStorageDatabaseEnabled() const { return s->testAttribute(QWebSettings::LocalStorageDatabaseEnabled); }
-    void setLocalStorageDatabaseEnabled(bool on) { s->setAttribute(QWebSettings::LocalStorageDatabaseEnabled, on); }
-    bool localContentCanAccessRemoteUrls() const { return s->testAttribute(QWebSettings::LocalContentCanAccessRemoteUrls); }
-    void setLocalContentCanAccessRemoteUrls(bool on) { s->setAttribute(QWebSettings::LocalContentCanAccessRemoteUrls, on); }
-
-    QWebSettings *s;
-};
-
-QML_DECLARE_TYPE(QmlGraphicsWebSettings)
 QML_DEFINE_NOCREATE_TYPE(QmlGraphicsWebSettings)
 
 class QmlGraphicsWebViewPrivate : public QmlGraphicsPaintedItemPrivate
@@ -309,7 +219,8 @@ QmlGraphicsWebView::Status QmlGraphicsWebView::status() const
     \qmlproperty real WebView::progress
     This property holds the progress of loading the current URL, from 0 to 1.
 
-    \sa onLoadFinished() onLoadFailed()
+    If you just want to know when progress gets to 1, use
+    WebView::onLoadFinished() or WebView::onLoadFailed() instead.
 */
 qreal QmlGraphicsWebView::progress() const
 {
@@ -705,7 +616,7 @@ void QmlGraphicsWebView::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     \i includes (\a clickX, \a clickY)
     \i fits into the preferredWidth and preferredHeight
     \i zooms by no more than \a maxzoom
-    \i is more than 20% above the current zoom
+    \i is more than 10% above the current zoom
     \endlist
 
     If such a zoom exists, emits zoomTo(zoom,centerX,centerY) and returns true; otherwise,
@@ -721,7 +632,7 @@ bool QmlGraphicsWebView::heuristicZoom(int clickX, int clickY, qreal maxzoom)
     qreal z = qMin(qreal(d->preferredwidth)*ozf/showarea.width(),qreal(d->preferredheight)*ozf/showarea.height());
     if (z > maxzoom)
         z = maxzoom;
-    if (z/ozf > 1.2) {
+    if (z/ozf > 1.1) {
         QRectF r(showarea.left()/ozf*z, showarea.top()/ozf*z, showarea.width()/ozf*z, showarea.height()/ozf*z);
         emit zoomTo(z,r.x()+r.width()/2, r.y()+r.height()/2);
         return true;
@@ -1057,27 +968,26 @@ void QmlGraphicsWebView::setPage(QWebPage *page)
     \qmlsignal WebView::onLoadStarted()
 
     This handler is called when the web engine begins loading
-    a page.
-
-    \sa progress onLoadFinished() onLoadFailed()
+    a page. Later, WebView::onLoadFinished() or WebView::onLoadFailed()
+    will be emitted.
 */
 
 /*!
     \qmlsignal WebView::onLoadFinished()
 
-    This handler is called when the web engine finishes loading
-    a page, including any component content.
+    This handler is called when the web engine \e successfully
+    finishes loading a page, including any component content
+    (WebView::onLoadFailed() will be emitted otherwise).
 
-    \sa progress onLoadFailed()
+    \sa progress
 */
 
 /*!
     \qmlsignal WebView::onLoadFailed()
 
     This handler is called when the web engine fails loading
-    a page or any component content.
-
-    \sa progress onLoadFinished()
+    a page or any component content
+    (WebView::onLoadFinished() will be emitted on success).
 */
 
 void QmlGraphicsWebView::load(const QNetworkRequest &request,

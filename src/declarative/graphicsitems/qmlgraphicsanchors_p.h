@@ -43,8 +43,8 @@
 #define QMLGRAPHICSANCHORS_H
 
 #include <QtCore/QObject>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qml.h>
+#include <qmlgraphicsitem.h>
 
 QT_BEGIN_HEADER
 

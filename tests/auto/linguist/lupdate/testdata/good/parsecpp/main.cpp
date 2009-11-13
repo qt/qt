@@ -247,3 +247,8 @@ class YetAnotherTest : QObject {
         tr("nothing");
     }
 };
+
+
+
+//: This is a message without a source string
+QString test = qtTrId("yet_another_id");

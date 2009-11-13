@@ -62,7 +62,8 @@ class QmlDomDocumentPrivate : public QSharedData
 {
 public:
     QmlDomDocumentPrivate();
-    QmlDomDocumentPrivate(const QmlDomDocumentPrivate &);
+    QmlDomDocumentPrivate(const QmlDomDocumentPrivate &o)
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomDocumentPrivate();
 
     QList<QmlError> errors;
@@ -75,7 +76,8 @@ class QmlDomObjectPrivate : public QSharedData
 {
 public:
     QmlDomObjectPrivate();
-    QmlDomObjectPrivate(const QmlDomObjectPrivate &);
+    QmlDomObjectPrivate(const QmlDomObjectPrivate &o)
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomObjectPrivate();
 
     typedef QList<QPair<QmlParser::Property *, QByteArray> > Properties;
@@ -83,14 +85,14 @@ public:
     Properties properties(QmlParser::Property *) const;
 
     QmlParser::Object *object;
-    bool isVirtualComponent;
 };
 
 class QmlDomPropertyPrivate : public QSharedData
 {
 public:
     QmlDomPropertyPrivate();
-    QmlDomPropertyPrivate(const QmlDomPropertyPrivate &);
+    QmlDomPropertyPrivate(const QmlDomPropertyPrivate &o)
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomPropertyPrivate();
 
     QByteArray propertyName;
@@ -101,7 +103,8 @@ class QmlDomDynamicPropertyPrivate : public QSharedData
 {
 public:
     QmlDomDynamicPropertyPrivate();
-    QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &);
+    QmlDomDynamicPropertyPrivate(const QmlDomDynamicPropertyPrivate &o)
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomDynamicPropertyPrivate();
 
     bool valid;
@@ -112,7 +115,8 @@ class QmlDomValuePrivate : public QSharedData
 {
 public:
     QmlDomValuePrivate();
-    QmlDomValuePrivate(const QmlDomValuePrivate &);
+    QmlDomValuePrivate(const QmlDomValuePrivate &o)
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomValuePrivate();
 
     QmlParser::Property *property;
@@ -123,7 +127,8 @@ class QmlDomBasicValuePrivate : public QSharedData
 {
 public:
     QmlDomBasicValuePrivate();
-    QmlDomBasicValuePrivate(const QmlDomBasicValuePrivate &);
+    QmlDomBasicValuePrivate(const QmlDomBasicValuePrivate &o) 
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomBasicValuePrivate();
 
     QmlParser::Value *value;
@@ -133,7 +138,8 @@ class QmlDomImportPrivate : public QSharedData
 {
 public:
     QmlDomImportPrivate();
-    QmlDomImportPrivate(const QmlDomImportPrivate &);
+    QmlDomImportPrivate(const QmlDomImportPrivate &o) 
+    : QSharedData(o) { qFatal("Not impl"); }
     ~QmlDomImportPrivate();
 
     enum Type { Library, File };

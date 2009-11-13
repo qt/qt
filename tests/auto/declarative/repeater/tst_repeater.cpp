@@ -52,6 +52,8 @@ public:
     tst_QmlGraphicsRepeater();
 
 private slots:
+    void numberModel();
+    void objectList();
     void stringList();
 
 private:
@@ -62,6 +64,42 @@ private:
 
 tst_QmlGraphicsRepeater::tst_QmlGraphicsRepeater()
 {
+}
+
+void tst_QmlGraphicsRepeater::numberModel()
+{
+    QmlView *canvas = createView(SRCDIR "/data/intmodel.qml");
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testData", 5);
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QVERIFY(repeater != 0);
+    QCOMPARE(repeater->parentItem()->childItems().count(), 5+1);
+}
+
+void tst_QmlGraphicsRepeater::objectList()
+{
+    QmlView *canvas = createView(SRCDIR "/data/objlist.qml");
+
+    QObjectList* data = new QObjectList;
+    for(int i=0; i<100; i++){
+        *data << new QObject();
+        data->back()->setProperty("idx", i);
+    }
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testData", QVariant::fromValue<QObjectList*>(data));
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QVERIFY(repeater != 0);
+    QCOMPARE(repeater->property("errors").toInt(), 0);//If this fails either they are out of order or can't find the object's data
+    QCOMPARE(repeater->property("instantiated").toInt(), 100);
 }
 
 /*

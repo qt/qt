@@ -49,7 +49,6 @@
 #include "testtypes.h"
 
 #include "../../../shared/util.h"
-#include "../../network-settings.h"
 
 /*
 This test case covers QML language issues.  This covers everything that does 
@@ -694,11 +693,22 @@ void tst_qmllanguage::valueTypes()
 
 void tst_qmllanguage::cppnamespace()
 {
-    QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
-    VERIFY_ERRORS(0);
-    QObject *object = component.create();
-    QVERIFY(object != 0);
-    delete object;
+    {
+        QmlComponent component(&engine, TEST_FILE("cppnamespace.qml"));
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        delete object;
+    }
+
+    {
+        QmlComponent component(&engine, TEST_FILE("cppnamespace.2.qml"));
+        qWarning() << component.errors();
+        VERIFY_ERRORS(0);
+        QObject *object = component.create();
+        QVERIFY(object != 0);
+        delete object;
+    }
 }
 
 void tst_qmllanguage::aliasProperties()
@@ -1070,19 +1080,23 @@ void tst_qmllanguage::importsRemote_data()
     QTest::addColumn<QString>("qml");
     QTest::addColumn<QString>("type");
 
-    QString serverdir = "http://"
-            + QtNetworkSettings::serverName()
-            + "/qtest/declarative/qmllanguage";
+    QString serverdir = "http://127.0.0.1:14445/qtest/declarative/qmllanguage";
 
     QTest::newRow("remote import") << "import \""+serverdir+"\"\nTest {}" << "QmlGraphicsRectangle";
     QTest::newRow("remote import with subdir") << "import \""+serverdir+"\"\nTestSubDir {}" << "QmlGraphicsText";
     QTest::newRow("remote import with local") << "import \""+serverdir+"\"\nTestLocal {}" << "QmlGraphicsImage";
 }
 
+#include "testhttpserver.h"
+
 void tst_qmllanguage::importsRemote()
 {
     QFETCH(QString, qml);
     QFETCH(QString, type);
+
+    TestHTTPServer server(14445);
+    server.serveDirectory(SRCDIR);
+
     testType(qml,type);
 }
 

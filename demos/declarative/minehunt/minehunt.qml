@@ -107,8 +107,8 @@ Item {
                     onPressed: {
                         field.clickx = flipable.parent.x;
                         field.clicky = flipable.parent.y;
-                        row = Math.floor(index/9);
-                        col = index - (Math.floor(index/9) * 9);
+                        var row = Math.floor(index/9);
+                        var col = index - (Math.floor(index/9) * 9);
                         if (mouse.button==undefined || mouse.button==Qt.RightButton) {
                             flag(row,col);
                         } else {
@@ -131,6 +131,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
     }
     Repeater {
+        id: repeater
         model: tiles
         x: 1
         y: 1

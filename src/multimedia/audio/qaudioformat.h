@@ -71,7 +71,7 @@ public:
     bool operator==(const QAudioFormat &other) const;
     bool operator!=(const QAudioFormat &other) const;
 
-    bool isNull() const;
+    bool isValid() const;
 
     void setFrequency(int frequency);
     int frequency() const;

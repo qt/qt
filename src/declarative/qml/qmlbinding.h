@@ -43,9 +43,9 @@
 #define QMLBINDING_H
 
 #include <QtCore/QObject>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <qml.h>
+#include <qmlpropertyvaluesource.h>
+#include <qmlexpression.h>
 #include <QtCore/QMetaProperty>
 
 QT_BEGIN_HEADER

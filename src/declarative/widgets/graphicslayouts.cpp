@@ -128,11 +128,11 @@ void QGraphicsLinearLayoutObject::insertLayoutItem(int index, QGraphicsLayoutIte
                          this, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
         QObject::connect(obj, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
                          this, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));
-        //XXX need to disconnect when widget is removed?
+        //### need to disconnect when widget is removed?
     }
 }
 
-//XXX is there a better way to do this?
+//### is there a better way to do this?
 void QGraphicsLinearLayoutObject::clearChildren()
 {
     for (int i = 0; i < count(); ++i)
@@ -156,11 +156,6 @@ LinearLayoutAttached *QGraphicsLinearLayoutObject::qmlAttachedProperties(QObject
     if (!qobject_cast<QGraphicsLayoutItem*>(obj))
         return 0;
     LinearLayoutAttached *rv = new LinearLayoutAttached(obj);
-    /*if (QGraphicsLinearLayoutObject *lo = qobject_cast<QGraphicsLinearLayoutObject*>(obj->parent()))
-        QObject::connect(rv, SIGNAL(stretchChanged(QGraphicsLayoutItem*,int)),
-                         lo, SLOT(updateStretch(QGraphicsLayoutItem*,int)));
-        QObject::connect(rv, SIGNAL(alignmentChanged(QGraphicsLayoutItem*,Qt::Alignment)),
-                         lo, SLOT(updateAlignment(QGraphicsLayoutItem*,Qt::Alignment)));*/
     attachedProperties.insert(qobject_cast<QGraphicsLayoutItem*>(obj), rv);
     return rv;
 }
@@ -293,7 +288,7 @@ void QGraphicsGridLayoutObject::addLayoutItem(QGraphicsLayoutItem *item)
     }
 }
 
-//XXX is there a better way to do this?
+//### is there a better way to do this?
 void QGraphicsGridLayoutObject::clearChildren()
 {
     for (int i = 0; i < count(); ++i)
@@ -304,7 +299,7 @@ qreal QGraphicsGridLayoutObject::spacing() const
 {
     if (verticalSpacing() == horizontalSpacing())
         return verticalSpacing();
-    return -1;  //XXX
+    return -1;  //###
 }
 
 QHash<QGraphicsLayoutItem*, GridLayoutAttached*> QGraphicsGridLayoutObject::attachedProperties;

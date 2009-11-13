@@ -79,7 +79,7 @@ void tst_QAudioOutput::initTestCase()
     format.setSampleType(QAudioFormat::UnSignedInt);
 
     // Only perform tests if audio output device exists!
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioOutput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioOutput);
     if(devices.size() > 0)
         available = true;
     else {
@@ -140,9 +140,9 @@ void tst_QAudioOutput::pullFile()
         audio->setNotifyInterval(100);
 
         // Always have default states, before start
-        QVERIFY(audio->state() == QAudio::StopState);
+        QVERIFY(audio->state() == QAudio::StoppedState);
         QVERIFY(audio->error() == QAudio::NoError);
-        QVERIFY(audio->clock() == 0);
+        QVERIFY(audio->elapsedUSecs() == 0);
 
         audio->start(&file);
         QTest::qWait(20); // wait 20ms
@@ -150,12 +150,12 @@ void tst_QAudioOutput::pullFile()
         QVERIFY(audio->state() == QAudio::ActiveState);
         QVERIFY(audio->error() == QAudio::NoError);
         QVERIFY(audio->periodSize() > 0);
-        QVERIFY(audio->clock() > 10000 && audio->clock() < 800000);
+        QVERIFY(audio->elapsedUSecs() > 10000 && audio->elapsedUSecs() < 800000);
         QVERIFY(stateSignal.count() == 1); // State changed to QAudio::ActiveState
 
         // Wait until finished...
         QTestEventLoop::instance().enterLoop(1);
-        QCOMPARE(audio->totalTime(), qint64(692250));
+        QCOMPARE(audio->processedUSecs(), qint64(692250));
 
 #ifdef Q_OS_WINCE
         // 4.wav is a little less than 700ms, so notify should fire 4 times on Wince!
@@ -166,8 +166,8 @@ void tst_QAudioOutput::pullFile()
 #endif
         audio->stop();
         QTest::qWait(20); // wait 20ms
-        QVERIFY(audio->state() == QAudio::StopState);
-        QVERIFY(audio->clock() == 0);
+        QVERIFY(audio->state() == QAudio::StoppedState);
+        QVERIFY(audio->elapsedUSecs() == 0);
         // Can only check to make sure we got at least 1 more signal, but can be more.
         QVERIFY(stateSignal.count() > 1);
 
@@ -184,7 +184,7 @@ void tst_QAudioOutput::pushFile()
 
         const qint64 fileSize = file.size();
 
-        QIODevice* feed = audio->start(0);
+        QIODevice* feed = audio->start();
 
         char* buffer = new char[fileSize];
         file.read(buffer, fileSize);
@@ -199,7 +199,7 @@ void tst_QAudioOutput::pushFile()
         QTestEventLoop::instance().enterLoop(1);
 
         QVERIFY(written == fileSize);
-        QVERIFY(audio->totalTime() == 692250);
+        QVERIFY(audio->processedUSecs() == 692250);
 
         audio->stop();
         file.close();

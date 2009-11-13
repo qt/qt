@@ -237,6 +237,8 @@ void RemoteControl::handleCommandString(const QString &cmdString)
             else
                 m_mainWindow->expandTOC(depth);
         } else if (cmd == QLatin1String("setcurrentfilter")) {
+            if (!m_helpEngine->customFilters().contains(arg))
+                return;
             if (m_caching) {
                 clearCache();
                 m_currentFilter = arg;

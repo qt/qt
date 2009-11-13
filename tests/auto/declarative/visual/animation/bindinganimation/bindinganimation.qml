@@ -1,0 +1,40 @@
+import Qt 4.6
+
+Rectangle {
+    color: "blue"
+    width: 320
+    height: 240
+    id: Page
+    Rectangle {
+        id: MyRectangle
+        width: 100
+        height: 100
+        color: "red"
+        x: 10
+    }
+    states: [
+        State {
+            name: "hello"
+            PropertyChanges {
+                target: MyRectangle
+                x: 50 + 50
+            }
+            PropertyChanges {
+                target: MyMouseRegion
+                onClicked: Page.state = ''
+            }
+        }
+    ]
+    transitions: [
+        Transition {
+            NumberAnimation {
+                matchProperties: "x"
+            }
+        }
+    ]
+    MouseRegion {
+        id: MyMouseRegion
+        anchors.fill: parent
+        onClicked: { Page.state= 'hello' }
+    }
+}

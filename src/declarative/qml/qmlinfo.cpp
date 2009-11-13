@@ -41,13 +41,13 @@
 
 #include "qmlinfo.h"
 #include <private/qmldeclarativedata_p.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlcontext.h>
 #include <QtGui/qapplication.h>
 
 QT_BEGIN_NAMESPACE
 
 /*!
-    \fn void qmlInfo(const QString& message, const QObject *object)
+    \fn QmlInfo qmlInfo(const QObject *object)
 
     \brief Prints warnings messages that include the file and line number for QML types.
 

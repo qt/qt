@@ -69,7 +69,7 @@
 #include <private/qmlexpression_p.h>
 #include "qmlmetaproperty_p.h"
 #include "qmlrewrite_p.h"
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qmlscriptstring.h>
 #include <private/qmlglobal_p.h>
 
 #include "qmlscriptparser_p.h"
@@ -2340,6 +2340,7 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
     QByteArray typeName;
 
     int propIdx = -1;
+    int flags = 0;
     bool writable = false;
     if (alias.count() == 2) {
         propIdx = idObject->metaObject()->indexOfProperty(alias.at(1).toUtf8().constData());
@@ -2359,8 +2360,12 @@ bool QmlCompiler::compileAlias(QMetaObjectBuilder &builder,
         typeName += "*";
     }
 
+    if (typeName.endsWith('*'))
+        flags |= QML_ALIAS_FLAG_PTR;
+
     data.append((const char *)&idObject->idIndex, sizeof(idObject->idIndex));
     data.append((const char *)&propIdx, sizeof(propIdx));
+    data.append((const char *)&flags, sizeof(flags));
 
     builder.addSignal(prop.name + "Changed()");
     QMetaPropertyBuilder propBuilder = 

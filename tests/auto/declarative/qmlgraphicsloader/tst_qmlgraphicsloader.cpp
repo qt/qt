@@ -114,7 +114,7 @@ void tst_QmlGraphicsLoader::component()
 
 void tst_QmlGraphicsLoader::invalidUrl()
 {
-//    QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/IDontExist.qml)");
+    QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/IDontExist.qml) ");
 
     QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), QUrl("file://" SRCDIR "/"));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());

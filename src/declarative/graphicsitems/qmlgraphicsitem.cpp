@@ -51,7 +51,7 @@
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
 
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <private/qmlopenmetaobject_p.h>
 #include <private/qmlstate_p.h>
 #include <private/qlistmodelinterface_p.h>
@@ -1325,13 +1325,31 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
     }
     \endqml
 
+    \section1 Identity
+
+    Each item has an "id" - the identifier of the Item.
+
+    The identifier can be used in bindings and other expressions to
+    refer to the item. For example:
+
+    \qml
+    Text { id: myText; ... }
+    Text { text: myText.text }
+    \endqml
+
+    The identifier is available throughout to the \l {components}{component}
+    where it is declared.  The identifier must be unique in the component.
+
+    The id should not be thought of as a "property" - it makes no sense
+    to write \c myText.id, for example.
+
     \section1 Key Handling
 
     Key handling is available to all Item-based visual elements via the \l {Keys}{Keys}
     attached property.  The \e Keys attached property provides basic handlers such
-    as \l {Keys::onPressed(event)}{onPressed} and \l {Keys::onReleased(event)}{onReleased},
+    as \l {Keys::onPressed}{onPressed} and \l {Keys::onReleased}{onReleased},
     as well as handlers for specific keys, such as
-    \l {Keys::onCancelPressed(event)}{onCancelPressed}.  The example below
+    \l {Keys::onCancelPressed}{onCancelPressed}.  The example below
     assigns \l {qmlfocus}{focus} to the item and handles
     the Left key via the general \e onPressed handler and the Select key via the
     onSelectPressed handler:
@@ -1508,6 +1526,14 @@ void QmlGraphicsItem::setParentItem(QmlGraphicsItem *parent)
     QObject::setParent(parent);
     QGraphicsObject::setParentItem(parent);
 }
+
+/*!
+    \fn void QmlGraphicsItem::setParent(QmlGraphicsItem *parent)
+    \overload
+    Sets both the parent object and parent item to \a parent. This
+    function avoids the programming error of calling setParent()
+    when you mean setParentItem().
+*/
 
 /*!
     Returns the QmlGraphicsItem parent of this item.
@@ -1994,22 +2020,6 @@ QVariant QmlGraphicsItem::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 /*!
-  \qmlproperty string Item::id
-  This property holds the identifier for the item.
-
-  The identifier can be used in bindings and other expressions to
-  refer to the item. For example:
-
-  \qml
-  Text { id: myText; ... }
-  Text { text: myText.text }
-  \endqml
-
-  The identifier is available throughout to the \l {components}{component}
-  where it is declared.  The identifier must be unique in thecomponent.
-*/
-
-/*!
     \internal
 */
 QmlGraphicsAnchorLine QmlGraphicsItem::left() const
@@ -2357,7 +2367,7 @@ bool QmlGraphicsItem::keepMouseGrab() const
   to steal a mouse grab if it detects that the user has begun to
   move the viewport.
 
-  \sa keepMouseGrab
+  \sa keepMouseGrab()
  */
 void QmlGraphicsItem::setKeepMouseGrab(bool keep)
 {
@@ -2801,12 +2811,19 @@ void QmlGraphicsItem::resetWidth()
     setImplicitWidth(implicitWidth());
 }
 
+/*!
+    Returns the width of the item that is implied by other properties that determine the content.
+*/
 qreal QmlGraphicsItem::implicitWidth() const
 {
     Q_D(const QmlGraphicsItem);
     return d->implicitWidth;
 }
 
+/*!
+    Sets the implied width of the item to \a w.
+    This is the width implied by other properties that determine the content.
+*/
 void QmlGraphicsItem::setImplicitWidth(qreal w)
 {
     Q_D(QmlGraphicsItem);
@@ -2824,6 +2841,9 @@ void QmlGraphicsItem::setImplicitWidth(qreal w)
                     QRectF(x(), y(), oldWidth, height()));
 }
 
+/*!
+    Returns whether the width property has been set explicitly.
+*/
 bool QmlGraphicsItem::widthValid() const
 {
     Q_D(const QmlGraphicsItem);
@@ -2860,12 +2880,19 @@ void QmlGraphicsItem::resetHeight()
     setImplicitHeight(implicitHeight());
 }
 
+/*!
+    Returns the height of the item that is implied by other properties that determine the content.
+*/
 qreal QmlGraphicsItem::implicitHeight() const
 {
     Q_D(const QmlGraphicsItem);
     return d->implicitHeight;
 }
 
+/*!
+    Sets the implied height of the item to \a h.
+    This is the height implied by other properties that determine the content.
+*/
 void QmlGraphicsItem::setImplicitHeight(qreal h)
 {
     Q_D(QmlGraphicsItem);
@@ -2883,6 +2910,9 @@ void QmlGraphicsItem::setImplicitHeight(qreal h)
                     QRectF(x(), y(), width(), oldHeight));
 }
 
+/*!
+    Returns whether the height property has been set explicitly.
+*/
 bool QmlGraphicsItem::heightValid() const
 {
     Q_D(const QmlGraphicsItem);

@@ -42,7 +42,7 @@
 #include "private/qobject_p.h"
 #include "qmlstategroup_p.h"
 #include "qmltransition_p.h"
-#include <QtDeclarative/qmlbinding.h>
+#include <qmlbinding.h>
 #include <QtCore/qdebug.h>
 #include <private/qmlglobal_p.h>
 
@@ -109,7 +109,7 @@ public:
    }
    \endqml
 
-   \sa {qmlstate}{States} and {state-transitions}{Transitions}
+   \sa {qmlstate}{States} {state-transitions}{Transitions}
 */
 
 QmlStateGroup::QmlStateGroup(QObject *parent)

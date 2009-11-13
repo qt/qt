@@ -42,8 +42,7 @@
 /*!
 \page advtutorial1.html
 \example declarative/tutorials/samegame/samegame1
-\target advtutorial1
-\title Advanced Tutorial 1 - Creating the Game canvas and block
+\title Advanced Tutorial 1 - Creating the Game Canvas and Blocks
 
 The first step is to create the items in your application. In Same Game we have a main game screen and the blocks that populate it.
 
@@ -79,6 +78,6 @@ You should be familiar with all that goes on in these files so far. This is a
 very basic start and doesn't move at all - next we will populate the game canvas
 with some blocks.
 
-[\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {advtutorial2}{Advanced Tutorial 2}]
+[\l {advtutorial.html}{Advanced Tutorial}] [Next: \l {Advanced Tutorial 2 - Populating the Game Canvas}]
 */
 

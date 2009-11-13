@@ -41,7 +41,7 @@
 
 /*!
 \page advtutorial4.html
-\target advtutorial4
+\example declarative/tutorials/samegame/samegame4
 \title Advanced Tutorial 4 - Finishing Touches
 
 Now we're going to do two things to liven the game up. Animate the blocks and add a web-based high score system.
@@ -118,17 +118,26 @@ player's actions. The end result is shown below:
 
 \image declarative-adv-tutorial4.gif
 
-\section2 Web-based High Scores
-
-Another extension we might want for the game is some way of storing and retrieving high scores. In this tutorial we'll show you
-how to integrate a web enabled high score storage into your QML application. The implementation we've done is very
-simple - the high score data is posted to a php script running on a server somewhere, and that server then stores it and
-displays it to visitors. You could request an XML or QML file from that same server, which contained and displayed the scores,
-but that's beyond the scope of this tutorial.
+\section2 Offline High Scores
+Another extension we might want for the game is some way of storing and retrieving high scores. This tutorial contains both online and offline high score storage. 
 
 For better high score data, we want the name and time of the player. The time is obtained in the script fairly simply, but we
 have to ask the player for their name. We thus re-use the dialog QML file to pop up a dialog asking for the player's name (and
-if they exit this dialog without entering it they have a way to opt out of posting their high score). When the dialog is closed,
+if they exit this dialog without entering it they have a way to opt out of posting their high score). When the dialog is closed we store the name and high score, using the code below. 
+
+\snippet declarative/tutorials/samegame/samegame4/content/samegame.js 2
+
+For offline storage, we use the HTML 5 offline storage javascript API to maintain a persistant SQL database unique to this application. This first line in this function calls the function for the web-based high scores, described later, if it has been setup. Next we create an offline storage database for the high scores using openDatabase and prepare the data and SQL query that we want to use to save it. The offline storage API uses SQL queries for data manipulation and retrival, and in the db.transaction call we use three SQL queries to initialize the database (if necessary), and then add to and retrieve high scores. To use the returned data, we turn it into a string with one line per row returned, and show a dialog containing that string. For a more detailed explanation of the offline storage API in QML, consult the global object documentation.
+
+This is one way of storing and displaying high scores locally, but not the only way. A more complex alternative would have been to create a high score dialog component, and pass the results to it for processing and display (instead of resusing the Dialog). This would allow a more themable dialog that could present the high scores better. If your QML is the UI for a C++ application, you could also have passed the score to a C++ function to store it locally in a variety of ways, including a simple format without SQL.
+
+\section2 Web-based High Scores
+
+You've seen how to store high scores locally, but it is also easy to integrate a web enabled high score storage into your QML application. This tutorial also shows you how to communicate the high scores to a web server. The implementation we've done is very
+simple - the high score data is posted to a php script running on a server somewhere, and that server then stores it and
+displays it to visitors. You could request an XML or QML file from that same server, which contained and displayed the scores,
+but that's beyond the scope of this tutorial. The php script we've used is available in the examples directory.
+
 if the player entered their name we can send the data to the web service in the following snippet out of the script file:
 
 \snippet declarative/tutorials/samegame/samegame4/content/samegame.js 1
@@ -145,5 +154,5 @@ By following this tutorial you've now ben shown how to write a fully functional 
 written in a script file and with both many fluid animations and being web-enabled. Congratulations, you should now be skilled
 enough to write your own QML applications.
 
-[Previous: \l {advtutorial3}{Advanced Tutorial 3}] [\l {advtutorial.html}{Advanced Tutorial}]
+[Previous: \l {Advanced Tutorial 3 - Implementing the Game Logic}] [\l {advtutorial.html}{Advanced Tutorial}]
 */

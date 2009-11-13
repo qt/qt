@@ -86,8 +86,9 @@
 #include <private/qmlsqldatabase_p.h>
 #include <private/qmltypenamescriptclass_p.h>
 #include <private/qmllistscriptclass_p.h>
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qmlscriptstring.h>
 #include <private/qmlglobal_p.h>
+#include <QtCore/qcryptographichash.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"
@@ -150,6 +151,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("closestAngle"), scriptEngine.newFunction(QmlEnginePrivate::closestAngle, 2));
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -816,6 +818,18 @@ QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngin
     return e->newVariant(QVariant(ret));
 }
 
+QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *e)
+{
+    QByteArray data;
+
+    if (ctxt->argumentCount() >= 1)
+        data = ctxt->argument(0).toString().toUtf8();
+
+    QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
+
+    return QScriptValue(QLatin1String(result.toHex()));
+}
+
 QScriptValue QmlEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)
 {
     if(ctxt->argumentCount() < 2)
@@ -1140,7 +1154,7 @@ QmlEnginePrivate::Imports::~Imports()
         delete d;
 }
 
-#include <QtDeclarative/qmlmetatype.h>
+#include <qmlmetatype.h>
 #include <private/qmltypenamecache_p.h>
 static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePrivate::ImportedNamespace &set, QmlTypeNameCache *cache)
 {

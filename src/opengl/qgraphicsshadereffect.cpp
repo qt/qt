@@ -241,7 +241,7 @@ void QGraphicsShaderEffect::setPixelShaderFragment(const QByteArray& code)
 /*#
     \reimp
 */
-void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *source)
+void QGraphicsShaderEffect::draw(QPainter *painter)
 {
     Q_D(QGraphicsShaderEffect);
 
@@ -256,13 +256,13 @@ void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     bool usingShader = d->customShaderStage->setOnPainter(painter);
 
     QPoint offset;
-    if (source->isPixmap()) {
+    if (sourceIsPixmap()) {
         // No point in drawing in device coordinates (pixmap will be scaled anyways).
-        const QPixmap pixmap = source->pixmap(Qt::LogicalCoordinates, &offset);
+        const QPixmap pixmap = sourcePixmap(Qt::LogicalCoordinates, &offset);
         painter->drawPixmap(offset, pixmap);
     } else {
         // Draw pixmap in device coordinates to avoid pixmap scaling.
-        const QPixmap pixmap = source->pixmap(Qt::DeviceCoordinates, &offset);
+        const QPixmap pixmap = sourcePixmap(Qt::DeviceCoordinates, &offset);
         QTransform restoreTransform = painter->worldTransform();
         painter->setWorldTransform(QTransform());
         painter->drawPixmap(offset, pixmap);
@@ -273,7 +273,7 @@ void QGraphicsShaderEffect::draw(QPainter *painter, QGraphicsEffectSource *sourc
     if (usingShader)
         d->customShaderStage->removeFromPainter(painter);
 #else
-    source->draw(painter);
+    drawSource(painter);
 #endif
 }
 

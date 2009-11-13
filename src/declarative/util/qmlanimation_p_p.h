@@ -61,8 +61,8 @@
 #include <QtCore/QAnimationGroup>
 #include <QtGui/QColor>
 #include <private/qmlanimation_p.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qml.h>
+#include <qmlcontext.h>
 #include <private/qmltimeline_p_p.h>
 
 QT_BEGIN_NAMESPACE
@@ -271,11 +271,12 @@ class QmlParentActionPrivate : public QmlAbstractAnimationPrivate
     Q_DECLARE_PUBLIC(QmlParentAction)
 public:
     QmlParentActionPrivate()
-    : QmlAbstractAnimationPrivate(), pcTarget(0), pcParent(0) {}
+    : QmlAbstractAnimationPrivate(), pcTarget(0), pcMatchTarget(0), pcParent(0) {}
 
     void init();
 
     QmlGraphicsItem *pcTarget;
+    QmlGraphicsItem *pcMatchTarget;
     QmlGraphicsItem *pcParent;
 
     void doAction();

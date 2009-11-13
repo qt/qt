@@ -43,8 +43,8 @@
 #define QMLEASEFOLLOW_H
 
 #include <QtCore/qobject.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
+#include <qml.h>
+#include <qmlpropertyvaluesource.h>
 
 QT_BEGIN_HEADER
 

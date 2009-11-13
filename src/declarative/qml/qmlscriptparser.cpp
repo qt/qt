@@ -342,10 +342,17 @@ ProcessAST::defineObjectBinding_helper(AST::UiQualifiedId *propertyName,
                 Value *v = new Value;
                 v->object = obj;
                 v->location = obj->location;
-                if (state.property)
+                if (state.property) {
                     state.property->addValue(v);
-                else
-                    state.object->getDefaultProperty()->addValue(v);
+                } else {
+                    Property *defaultProp = state.object->getDefaultProperty();
+                    if (defaultProp->location.start.line == -1) {
+                        defaultProp->location = v->location;
+                        defaultProp->location.end = defaultProp->location.start;
+                        defaultProp->location.range.length = 0;
+                    }
+                    defaultProp->addValue(v);
+                }
             }
         }
 
@@ -583,8 +590,8 @@ bool ProcessAST::visit(AST::UiPublicMember *node)
             QmlScriptParser::TypeReference *typeRef = 
                 _parser->findOrCreateType(memberType);
             typeRef->refObjects.append(_stateStack.top().object);
-            property.customType = memberType.toUtf8();
         }
+        property.customType = memberType.toUtf8();
         property.name = name.toUtf8();
         property.location = location(node->firstSourceLocation(),
                                      node->lastSourceLocation());

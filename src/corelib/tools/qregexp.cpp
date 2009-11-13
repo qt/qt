@@ -1083,7 +1083,7 @@ public:
 
     bool isValid() const { return valid; }
     const QString &errorString() const { return yyError; }
-    int numCaptures() const { return officialncap; }
+    int captureCount() const { return officialncap; }
 
     int createState(QChar ch);
     int createState(const QRegExpCharClass &cc);
@@ -1378,7 +1378,7 @@ void QRegExpMatchState::prepareForMatch(QRegExpEngine *eng)
 #else
     int newSlideTabSize = 0;
 #endif
-    int numCaptures = eng->numCaptures();
+    int numCaptures = eng->captureCount();
     int newCapturedSize = 2 + 2 * numCaptures;
     bigArray = q_check_ptr((int *)realloc(bigArray, ((3 + 4 * ncap) * ns + 4 * ncap + newSlideTabSize + newCapturedSize)*sizeof(int)));
 
@@ -4168,12 +4168,24 @@ int QRegExp::matchedLength() const
 
 #ifndef QT_NO_REGEXP_CAPTURE
 /*!
+  \obsolete
   Returns the number of captures contained in the regular expression.
+
+  \sa captureCount()
  */
 int QRegExp::numCaptures() const
 {
+    return captureCount();
+}
+
+/*!
+  \since 4.6
+  Returns the number of captures contained in the regular expression.
+ */
+int QRegExp::captureCount() const
+{
     prepareEngine(priv);
-    return priv->eng->numCaptures();
+    return priv->eng->captureCount();
 }
 
 /*!

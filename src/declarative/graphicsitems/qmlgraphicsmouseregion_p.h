@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSMOUSEREGION_H
 #define QMLGRAPHICSMOUSEREGION_H
 
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 
 QT_BEGIN_HEADER
 

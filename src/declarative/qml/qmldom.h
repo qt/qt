@@ -44,7 +44,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 
@@ -92,6 +92,8 @@ public:
     ~QmlDomProperty();
     QmlDomProperty &operator=(const QmlDomProperty &);
 
+    bool isValid() const;
+
     QByteArray propertyName() const;
     QList<QByteArray> propertyNameParts() const;
 
@@ -121,6 +123,7 @@ public:
 
     QByteArray propertyName() const;
     int propertyType() const;
+    QByteArray propertyTypeName() const;
 
     bool isDefaultProperty() const;
 
@@ -139,7 +142,6 @@ class Q_DECLARATIVE_EXPORT QmlDomObject
 {
 public:
     QmlDomObject();
-    QmlDomObject(const QByteArray &);
     QmlDomObject(const QmlDomObject &);
     ~QmlDomObject();
     QmlDomObject &operator=(const QmlDomObject &);

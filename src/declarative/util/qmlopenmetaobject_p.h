@@ -43,7 +43,7 @@
 #define QMLOPENMETAOBJECT_H
 
 #include <QtCore/QMetaObject>
-#include <QtCore/private/qobject_p.h>
+#include <private/qobject_p.h>
 #include <QtCore/QObject>
 
 QT_BEGIN_HEADER

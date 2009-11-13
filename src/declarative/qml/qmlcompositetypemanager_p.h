@@ -56,8 +56,8 @@
 #include <QtCore/qglobal.h>
 #include <private/qmlscriptparser_p.h>
 #include <private/qmlrefcount_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlerror.h>
+#include <qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 

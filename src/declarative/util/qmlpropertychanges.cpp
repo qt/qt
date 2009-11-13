@@ -43,12 +43,12 @@
 #include "qmlopenmetaobject_p.h"
 #include "qmlpropertychanges_p.h"
 #include <QtCore/qdebug.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 #include <private/qmlcustomparser_p.h>
 #include <private/qmlparser_p.h>
-#include <QtDeclarative/qmlexpression.h>
-#include <QtDeclarative/qmlbinding.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlexpression.h>
+#include <qmlbinding.h>
+#include <qmlcontext.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -287,6 +287,15 @@ void QmlPropertyChanges::setObject(QObject *o)
     d->object = o;
 }
 
+/*!
+    \qmlproperty bool PropertyChanges::restoreEntryValues
+    
+    Whether or not the previous values should be restored when
+    leaving the state. By default, restoreEntryValues is true.
+
+    By setting restoreEntryValues to false, you can create a temporary state
+    that has permanent effects on property values.
+*/
 bool QmlPropertyChanges::restoreEntryValues() const
 {
     Q_D(const QmlPropertyChanges);
@@ -380,6 +389,25 @@ QmlPropertyChanges::ActionList QmlPropertyChanges::actions()
     return list;
 }
 
+/*!
+    \qmlproperty bool PropertyChanges::explicit
+
+    If explicit is set to true, any potential bindings will be interpreted as
+    once-off assignments that occur when the state is entered.
+
+    In the following example, the addition of explicit prevents myItem.width from
+    being bound to parent.width. Instead, it is assigned the value of parent.width
+    at the time of the state change.
+    \qml
+    PropertyChanges {
+        target: myItem
+        explicit: true
+        width: parent.width
+    }
+    \endqml
+
+    By default, explicit is false.
+*/
 bool QmlPropertyChanges::isExplicit() const
 {
     Q_D(const QmlPropertyChanges);

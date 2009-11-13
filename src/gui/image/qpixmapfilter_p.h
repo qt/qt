@@ -132,10 +132,10 @@ public:
     ~QPixmapBlurFilter();
 
     void setRadius(qreal radius);
-    void setBlurHint(QGraphicsBlurEffect::BlurHint hint);
+    void setBlurHints(QGraphicsBlurEffect::BlurHints hints);
 
     qreal radius() const;
-    QGraphicsBlurEffect::BlurHint blurHint() const;
+    QGraphicsBlurEffect::BlurHints blurHints() const;
 
     QRectF boundingRectFor(const QRectF &rect) const;
     void draw(QPainter *painter, const QPointF &dest, const QPixmap &src, const QRectF &srcRect = QRectF()) const;
