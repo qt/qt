@@ -127,7 +127,8 @@ public:
     enum Type {
         QtObject,
         Variant,
-        ClassObject
+        ClassObject,
+        DeclarativeClassObject
     };
 
     QScriptObjectDelegate();

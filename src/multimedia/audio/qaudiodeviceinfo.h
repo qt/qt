@@ -92,7 +92,7 @@ public:
     static QAudioDeviceInfo defaultInputDevice();
     static QAudioDeviceInfo defaultOutputDevice();
 
-    static QList<QAudioDeviceInfo> deviceList(QAudio::Mode mode);
+    static QList<QAudioDeviceInfo> availableDevices(QAudio::Mode mode);
 
 private:
     QAudioDeviceInfo(const QString &realm, const QByteArray &handle, QAudio::Mode mode);

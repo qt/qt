@@ -170,7 +170,7 @@ InputTest::InputTest()
     layout->addWidget(canvas);
 
     deviceBox = new QComboBox(this);
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::deviceList(QAudio::AudioInput);
+    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
     for(int i = 0; i < devices.size(); ++i) {
         deviceBox->addItem(devices.at(i).deviceName(), qVariantFromValue(devices.at(i)));
     }
@@ -216,7 +216,7 @@ InputTest::~InputTest() {}
 
 void InputTest::status()
 {
-    qWarning()<<"bytesReady = "<<audioInput->bytesReady()<<" bytes, clock = "<<audioInput->clock()/1000<<"ms, totalTime = "<<audioInput->totalTime()/1000<<"ms";
+    qWarning()<<"bytesReady = "<<audioInput->bytesReady()<<" bytes, elapsedUSecs = "<<audioInput->elapsedUSecs()<<", processedUSecs = "<<audioInput->processedUSecs();
 }
 
 void InputTest::readMore()
@@ -239,7 +239,7 @@ void InputTest::toggleMode()
 
     if (pullMode) {
         button->setText(tr("Click for Pull Mode"));
-        input = audioInput->start(0);
+        input = audioInput->start();
         connect(input,SIGNAL(readyRead()),SLOT(readMore()));
         pullMode = false;
     } else {
@@ -252,7 +252,7 @@ void InputTest::toggleMode()
 void InputTest::toggleSuspend()
 {
     // toggle suspend/resume
-    if(audioInput->state() == QAudio::SuspendState) {
+    if(audioInput->state() == QAudio::SuspendedState) {
         qWarning()<<"status: Suspended, resume()";
         audioInput->resume();
         button2->setText("Click To Suspend");
@@ -260,7 +260,7 @@ void InputTest::toggleSuspend()
         qWarning()<<"status: Active, suspend()";
         audioInput->suspend();
         button2->setText("Click To Resume");
-    } else if (audioInput->state() == QAudio::StopState) {
+    } else if (audioInput->state() == QAudio::StoppedState) {
         qWarning()<<"status: Stopped, resume()";
         audioInput->resume();
         button2->setText("Click To Suspend");

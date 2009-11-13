@@ -313,30 +313,128 @@ void tst_QScopedPointer::objectSize()
     QCOMPARE(sizeof(QScopedPointer<int>), sizeof(void *));
 }
 
+struct RefCounted
+{
+    RefCounted()
+        : ref(0)
+    {
+        instanceCount.ref();
+    }
+
+    RefCounted(RefCounted const &)
+        : ref(0)
+    {
+        instanceCount.ref();
+    }
+
+    ~RefCounted()
+    {
+        QVERIFY( ref == 0 );
+        instanceCount.deref();
+    }
+
+    RefCounted &operator=(RefCounted const &)
+    {
+        return *this;
+    }
+
+    QAtomicInt ref;
+
+    static QAtomicInt instanceCount;
+};
+
+QAtomicInt RefCounted::instanceCount = 0;
+
+template <class A1, class A2, class B>
+void scopedPointerComparisonTest(const A1 &a1, const A2 &a2, const B &b)
+{
+    // test equality on equal pointers
+    QVERIFY(a1 == a2);
+    QVERIFY(a2 == a1);
+
+    // test inequality on equal pointers
+    QVERIFY(!(a1 != a2));
+    QVERIFY(!(a2 != a1));
+
+    // test equality on unequal pointers
+    QVERIFY(!(a1 == b));
+    QVERIFY(!(a2 == b));
+    QVERIFY(!(b == a1));
+    QVERIFY(!(b == a2));
+
+    // test inequality on unequal pointers
+    QVERIFY(b != a1);
+    QVERIFY(b != a2);
+    QVERIFY(a1 != b);
+    QVERIFY(a2 != b);
+}
+
 void tst_QScopedPointer::comparison()
 {
-    int *a = new int(42);
-    int *b = new int(43);
+    QCOMPARE( int(RefCounted::instanceCount), 0 );
 
-    QScopedPointer<int> pa(a);
-    QScopedPointer<int> pa2(a);
-    QScopedPointer<int> pb(b);
+    {
+        RefCounted *a = new RefCounted;
+        RefCounted *b = new RefCounted;
 
-    // test equality on equal pointers
-    QVERIFY(pa == pa2);
-    QVERIFY(pa2 == pa);
+        QCOMPARE( int(RefCounted::instanceCount), 2 );
 
-    // test unequality on equal pointers
-    QVERIFY(!(pa != pa2));
-    QVERIFY(!(pa2 != pa));
+        QScopedPointer<RefCounted> pa1(a);
+        QScopedPointer<RefCounted> pa2(a);
+        QScopedPointer<RefCounted> pb(b);
 
-    // test on unequal pointers
-    QVERIFY(!(pa == pb));
-    QVERIFY(!(pb == pa));
-    QVERIFY(pb != pa);
-    QVERIFY(pa != pb);
+        scopedPointerComparisonTest(pa1, pa1, pb);
+        scopedPointerComparisonTest(pa2, pa2, pb);
+        scopedPointerComparisonTest(pa1, pa2, pb);
 
-    pa2.take();
+        pa2.take();
+
+        QCOMPARE( int(RefCounted::instanceCount), 2 );
+    }
+
+    QCOMPARE( int(RefCounted::instanceCount), 0 );
+
+    {
+        RefCounted *a = new RefCounted[42];
+        RefCounted *b = new RefCounted[43];
+
+        QCOMPARE( int(RefCounted::instanceCount), 85 );
+
+        QScopedArrayPointer<RefCounted> pa1(a);
+        QScopedArrayPointer<RefCounted> pa2(a);
+        QScopedArrayPointer<RefCounted> pb(b);
+
+        scopedPointerComparisonTest(pa1, pa2, pb);
+
+        pa2.take();
+
+        QCOMPARE( int(RefCounted::instanceCount), 85 );
+    }
+
+    QCOMPARE( int(RefCounted::instanceCount), 0 );
+
+    {
+        // QScopedSharedPointer is an internal helper class -- it is unsupported!
+
+        RefCounted *a = new RefCounted;
+        RefCounted *b = new RefCounted;
+
+        QCOMPARE( int(RefCounted::instanceCount), 2 );
+
+        QSharedDataPointer<RefCounted> pa1(a);
+        QSharedDataPointer<RefCounted> pa2(a);
+        QSharedDataPointer<RefCounted> pb(b);
+
+        QCOMPARE( int(a->ref), 2 );
+        QCOMPARE( int(b->ref), 1 );
+        QCOMPARE( int(RefCounted::instanceCount), 2 );
+
+        scopedPointerComparisonTest(pa1, pa2, pb);
+
+        QCOMPARE( int(RefCounted::instanceCount), 2 );
+    }
+
+    QCOMPARE( int(RefCounted::instanceCount), 0 );
 }
 
 QTEST_MAIN(tst_QScopedPointer)
