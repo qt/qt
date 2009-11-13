@@ -182,8 +182,6 @@ void QmlGraphicsImagePrivate::setPixmap(const QPixmap &pixmap)
     \endlist
 
     \image declarative-image_fillMode.gif
-    \sa examples/declarative/fillmode
-    \sa examples/declarative/aspectratio
 */
 QmlGraphicsImage::FillMode QmlGraphicsImage::fillMode() const
 {
