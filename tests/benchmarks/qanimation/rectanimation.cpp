@@ -92,8 +92,3 @@ void RectAnimation::updateCurrentTime(int currentTime)
     if (m_object)
         m_object->setRect(m_current);
 }
-
-void RectAnimation::updateState(QAbstractAnimation::State state)
-{
-    Q_UNUSED(state);
-}

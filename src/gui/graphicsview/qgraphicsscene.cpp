@@ -294,6 +294,7 @@ QGraphicsScenePrivate::QGraphicsScenePrivate()
       needSortTopLevelItems(true),
       holesInTopLevelSiblingIndex(false),
       topLevelSequentialOrdering(true),
+      scenePosDescendantsUpdatePending(false),
       stickyFocus(false),
       hasFocus(false),
       focusItem(0),
@@ -488,6 +489,55 @@ void QGraphicsScenePrivate::_q_processDirtyItems()
 
 /*!
     \internal
+*/
+void QGraphicsScenePrivate::setScenePosItemEnabled(QGraphicsItem *item, bool enabled)
+{
+    QGraphicsItem *p = item->d_ptr->parent;
+    while (p) {
+        p->d_ptr->scenePosDescendants = enabled;
+        p = p->d_ptr->parent;
+    }
+    if (!enabled && !scenePosDescendantsUpdatePending) {
+        scenePosDescendantsUpdatePending = true;
+        QMetaObject::invokeMethod(q_func(), "_q_updateScenePosDescendants", Qt::QueuedConnection);
+    }
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::registerScenePosItem(QGraphicsItem *item)
+{
+    scenePosItems.insert(item);
+    setScenePosItemEnabled(item, true);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::unregisterScenePosItem(QGraphicsItem *item)
+{
+    scenePosItems.remove(item);
+    setScenePosItemEnabled(item, false);
+}
+
+/*!
+    \internal
+*/
+void QGraphicsScenePrivate::_q_updateScenePosDescendants()
+{
+    foreach (QGraphicsItem *item, scenePosItems) {
+        QGraphicsItem *p = item->d_ptr->parent;
+        while (p) {
+            p->d_ptr->scenePosDescendants = 1;
+            p = p->d_ptr->parent;
+        }
+    }
+    scenePosDescendantsUpdatePending = false;
+}
+
+/*!
+    \internal
 
     Schedules an item for removal. This function leaves some stale indexes
     around in the BSP tree if called from the item's destructor; these will
@@ -522,6 +572,9 @@ void QGraphicsScenePrivate::removeItemHelper(QGraphicsItem *item)
         QGraphicsWidget *widget = static_cast<QGraphicsWidget *>(item);
         widget->d_func()->fixFocusChainBeforeReparenting(0, 0);
     }
+
+    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+        unregisterScenePosItem(item);
 
     item->d_func()->scene = 0;
 
@@ -2293,8 +2346,9 @@ void QGraphicsScene::clear()
     // NB! We have to clear the index before deleting items; otherwise the
     // index might try to access dangling item pointers.
     d->index->clear();
-    const QList<QGraphicsItem *> items = d->topLevelItems;
-    qDeleteAll(items);
+    // NB! QGraphicsScenePrivate::unregisterTopLevelItem() removes items
+    while (!d->topLevelItems.isEmpty())
+        delete d->topLevelItems.first();
     Q_ASSERT(d->topLevelItems.isEmpty());
     d->lastItemCount = 0;
     d->allItemsIgnoreHoverEvents = true;
@@ -2539,6 +2593,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
                 d->lastActivePanel = item;
         }
     }
+
+    if (item->flags() & QGraphicsItem::ItemSendsScenePositionChanges)
+        d->registerScenePosItem(item);
 
     // Ensure that newly added items that have subfocus set, gain
     // focus automatically if there isn't a focus item already.
@@ -2826,18 +2883,20 @@ void QGraphicsScene::removeItem(QGraphicsItem *item)
 }
 
 /*!
-    Returns the scene's current focus item, or 0 if no item currently has
-    focus.
+    When the scene is active, this functions returns the scene's current focus
+    item, or 0 if no item currently has focus. When the scene is inactive, this
+    functions returns the item that will gain input focus when the scene becomes
+    active.
 
     The focus item receives keyboard input when the scene receives a
     key event.
 
-    \sa setFocusItem(), QGraphicsItem::hasFocus()
+    \sa setFocusItem(), QGraphicsItem::hasFocus(), isActive()
 */
 QGraphicsItem *QGraphicsScene::focusItem() const
 {
     Q_D(const QGraphicsScene);
-    return d->focusItem;
+    return isActive() ? d->focusItem : d->lastFocusItem;
 }
 
 /*!
@@ -4149,7 +4208,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     QRect br = pixmapExposed.boundingRect();
 
     // Don't use subpixmap if we get a full update.
-    if (pixmapExposed.isEmpty() || (pixmapExposed.numRects() == 1 && br.contains(pix->rect()))) {
+    if (pixmapExposed.isEmpty() || (pixmapExposed.rectCount() == 1 && br.contains(pix->rect()))) {
         pix->fill(Qt::transparent);
         pixmapPainter.begin(pix);
     } else {
@@ -4577,6 +4636,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
     if (itemHasChildren && itemClipsChildrenToShape)
         ENSURE_TRANSFORM_PTR;
 
+#ifndef QT_NO_GRAPHICSEFFECT
     if (item->d_ptr->graphicsEffect && item->d_ptr->graphicsEffect->isEnabled()) {
         ENSURE_TRANSFORM_PTR;
         QGraphicsItemPaintInfo info(viewTransform, transformPtr, effectTransform, exposedRegion, widget, &styleOptionTmp,
@@ -4596,10 +4656,12 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             sourced->lastEffectTransform = painter->worldTransform();
             sourced->invalidateCache();
         }
-        item->d_ptr->graphicsEffect->draw(painter, source);
+        item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
-    } else {
+    } else
+#endif //QT_NO_GRAPHICSEFFECT
+    {
         draw(item, painter, viewTransform, transformPtr, exposedRegion, widget, opacity,
              effectTransform, wasDirtyParentSceneTransform, drawItem);
     }
@@ -4768,10 +4830,12 @@ void QGraphicsScenePrivate::markDirty(QGraphicsItem *item, const QRectF &rect, b
     QGraphicsItem *p = item->d_ptr->parent;
     while (p) {
         p->d_ptr->dirtyChildren = 1;
+#ifndef QT_NO_GRAPHICSEFFECT
         if (p->d_ptr->graphicsEffect && p->d_ptr->graphicsEffect->isEnabled()) {
             p->d_ptr->dirty = 1;
             p->d_ptr->fullUpdatePending = 1;
         }
+#endif //QT_NO_GRAPHICSEFFECT
         p = p->d_ptr->parent;
     }
 }

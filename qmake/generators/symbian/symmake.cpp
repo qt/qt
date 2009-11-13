@@ -74,6 +74,9 @@
 #define MMP_OPTION_CW "OPTION CW"
 #define MMP_OPTION_ARMCC "OPTION ARMCC"
 #define MMP_OPTION_GCCE "OPTION GCCE"
+#define MMP_LINKEROPTION_CW "LINKEROPTION CW"
+#define MMP_LINKEROPTION_ARMCC "LINKEROPTION ARMCC"
+#define MMP_LINKEROPTION_GCCE "LINKEROPTION GCCE"
 
 #define SIS_TARGET "sis"
 #define OK_SIS_TARGET "ok_sis"
@@ -655,8 +658,7 @@ void SymbianMakefileGenerator::initMmpVariables()
 
     // Check MMP_RULES for singleton keywords that are overridden
     QStringList overridableMmpKeywords;
-    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE) << QLatin1String(MMP_OPTION_CW)
-        << QLatin1String(MMP_OPTION_ARMCC) << QLatin1String(MMP_OPTION_GCCE);
+    overridableMmpKeywords << QLatin1String(MMP_TARGETTYPE);
 
     foreach (QString item, project->values("MMP_RULES")) {
         if (project->values(item).isEmpty()) {
@@ -971,6 +973,7 @@ void SymbianMakefileGenerator::writeMmpFileCapabilityPart(QTextStream& t)
 void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
 {
     QString cw, armcc, gcce;
+    QString cwlink, armlink, gccelink;
 
     if (0 != project->values("QMAKE_CXXFLAGS.CW").size()) {
         cw.append(project->values("QMAKE_CXXFLAGS.CW").join(" "));
@@ -1020,12 +1023,42 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         gcce.append(" ");
     }
 
+    if (0 != project->values("QMAKE_LFLAGS.CW").size()) {
+        cwlink.append(project->values("QMAKE_LFLAGS.CW").join(" "));
+        cwlink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS.ARMCC").size()) {
+        armlink.append(project->values("QMAKE_LFLAGS.ARMCC").join(" "));
+        armlink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS.GCCE").size()) {
+        gccelink.append(project->values("QMAKE_LFLAGS.GCCE").join(" "));
+        gccelink.append(" ");
+    }
+
+    if (0 != project->values("QMAKE_LFLAGS").size()) {
+        cwlink.append(project->values("QMAKE_LFLAGS").join(" "));
+        cwlink.append(" ");
+        armlink.append(project->values("QMAKE_LFLAGS").join(" "));
+        armlink.append(" ");
+        gccelink.append(project->values("QMAKE_LFLAGS").join(" "));
+        gccelink.append(" ");
+    }
+
     if (!cw.isEmpty() && cw[cw.size()-1] == ' ')
         cw.chop(1);
     if (!armcc.isEmpty() && armcc[armcc.size()-1] == ' ')
         armcc.chop(1);
     if (!gcce.isEmpty() && gcce[gcce.size()-1] == ' ')
         gcce.chop(1);
+    if (!cwlink.isEmpty() && cwlink[cwlink.size()-1] == ' ')
+        cwlink.chop(1);
+    if (!armlink.isEmpty() && armlink[armlink.size()-1] == ' ')
+        armlink.chop(1);
+    if (!gccelink.isEmpty() && gccelink[gccelink.size()-1] == ' ')
+        gccelink.chop(1);
 
     if (!cw.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_CW))
         t << MMP_OPTION_CW " " << cw <<  endl;
@@ -1033,6 +1066,13 @@ void SymbianMakefileGenerator::writeMmpFileCompilerOptionPart(QTextStream& t)
         t << MMP_OPTION_ARMCC " " << armcc <<  endl;
     if (!gcce.isEmpty() && !overriddenMmpKeywords.contains(MMP_OPTION_GCCE))
         t << MMP_OPTION_GCCE " " << gcce <<  endl;
+
+    if (!cwlink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_CW))
+        t << MMP_LINKEROPTION_CW " " << cwlink <<  endl;
+    if (!armlink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_ARMCC))
+        t << MMP_LINKEROPTION_ARMCC " " << armlink <<  endl;
+    if (!gccelink.isEmpty() && !overriddenMmpKeywords.contains(MMP_LINKEROPTION_GCCE))
+        t << MMP_LINKEROPTION_GCCE " " << gccelink <<  endl;
 
     t <<  endl;
 }

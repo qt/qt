@@ -45,9 +45,6 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QString>
 #include <QtCore/QObject>
-#include <QtCore/QRegExp>
-#include <QtCore/QMutexLocker>
-#include <QtGui/QTextDocument>
 
 QT_BEGIN_HEADER
 
@@ -65,56 +62,13 @@ QT_MODULE(Help)
 
 class QHelpGlobal {
 public:
-    static QString uniquifyConnectionName(const QString &name, void *pointer)
-    {
-        static int counter = 0;
-        static QMutex mutex;
+    static QString uniquifyConnectionName(const QString &name, void *pointer);
+    static QString documentTitle(const QString &content);
+    static QString codecFromData(const QByteArray &data);
 
-        QMutexLocker locker(&mutex);
-        if (++counter > 1000)
-            counter = 0;
-        
-        return QString::fromLatin1("%1-%2-%3")
-            .arg(name).arg(long(pointer)).arg(counter);
-    };
-
-    static QString documentTitle(const QString &content)
-    {
-        QString title = QObject::tr("Untitled");
-        if (!content.isEmpty()) {
-            int start = content.indexOf(QLatin1String("<title>"), 0, Qt::CaseInsensitive) + 7;
-            int end = content.indexOf(QLatin1String("</title>"), 0, Qt::CaseInsensitive);
-            if ((end - start) > 0) {
-                title = content.mid(start, end - start);
-                if (Qt::mightBeRichText(title) || title.contains(QLatin1Char('&'))) {
-                    QTextDocument doc;
-                    doc.setHtml(title);
-                    title = doc.toPlainText();
-                }
-            }
-        }
-        return title;
-    };
-
-    static QString charsetFromData(const QByteArray &data)
-    {
-        QString content = QString::fromUtf8(data.constData(), data.size());
-        int start =
-            content.indexOf(QLatin1String("<meta"), 0, Qt::CaseInsensitive);
-        if (start > 0) {
-            int end;
-            QRegExp r(QLatin1String("charset=([^\"\\s]+)"));
-            while (start != -1) {
-                end = content.indexOf(QLatin1Char('>'), start) + 1;
-                const QString &meta = content.mid(start, end - start).toLower();
-                if (r.indexIn(meta) != -1)
-                    return r.cap(1);
-                start = content.indexOf(QLatin1String("<meta"), end,
-                    Qt::CaseInsensitive);
-            }
-        }
-        return QLatin1String("utf-8");
-    }
+private:
+    static QString codecFromHtmlData(const QByteArray &data);
+    static QString codecFromXmlData(const QByteArray &data);
 };
 
 QT_END_NAMESPACE

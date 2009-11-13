@@ -54,7 +54,10 @@
 #ifdef Q_OS_WIN
 
 #include <windows.h>
+
+#ifndef Q_OS_WINCE
 #include <io.h>
+#endif
 
 #ifndef FSCTL_SET_SPARSE
 // MinGW doesn't define this.
@@ -295,7 +298,7 @@ void tst_LargeFile::sparseFileData()
 
 void tst_LargeFile::createSparseFile()
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN32)
     // On Windows platforms, we must explicitly set the file to be sparse,
     // so disk space is not allocated for the full file when writing to it.
     HANDLE handle = ::CreateFileA("qt_largefile.tmp",
@@ -313,7 +316,7 @@ void tst_LargeFile::createSparseFile()
     int fd = ::_open_osfhandle((intptr_t)handle, 0);
     QVERIFY( -1 != fd );
     QVERIFY( largeFile.open(fd, QIODevice::WriteOnly | QIODevice::Unbuffered) );
-#else // !Q_OS_WIN
+#else // !Q_OS_WIN32
     largeFile.setFileName("qt_largefile.tmp");
     QVERIFY( largeFile.open(QIODevice::WriteOnly | QIODevice::Unbuffered) );
 #endif
@@ -321,13 +324,13 @@ void tst_LargeFile::createSparseFile()
 
 void tst_LargeFile::closeSparseFile()
 {
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN32)
     int fd = largeFile.handle();
 #endif
 
     largeFile.close();
 
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN32)
     if (-1 != fd)
         ::_close(fd);
 #endif
@@ -339,12 +342,47 @@ void tst_LargeFile::fillFileSparsely()
     QFETCH( QByteArray, block );
     QCOMPARE( block.size(), blockSize );
 
+    static int lastKnownGoodIndex = 0;
+    struct ScopeGuard {
+        ScopeGuard(tst_LargeFile* test)
+            : this_(test)
+            , failed(true)
+        {
+            QFETCH( int, index );
+            index_ = index;
+        }
+
+        ~ScopeGuard()
+        {
+            if (failed) {
+                this_->maxSizeBits = lastKnownGoodIndex;
+                QWARN( qPrintable(
+                    QString("QFile::error %1: '%2'. Maximum size bits reset to %3.")
+                        .arg(this_->largeFile.error())
+                        .arg(this_->largeFile.errorString())
+                        .arg(this_->maxSizeBits)) );
+            } else
+                lastKnownGoodIndex = qMax<int>(index_, lastKnownGoodIndex);
+        }
+
+    private:
+        tst_LargeFile * const this_;
+        int index_;
+
+    public:
+        bool failed;
+    };
+
+    ScopeGuard resetMaxSizeBitsOnFailure(this);
+
     QVERIFY( largeFile.seek(position) );
     QCOMPARE( largeFile.pos(), position );
 
     QCOMPARE( largeFile.write(block), (qint64)blockSize );
     QCOMPARE( largeFile.pos(), position + blockSize );
     QVERIFY( largeFile.flush() );
+
+    resetMaxSizeBitsOnFailure.failed = false;
 }
 
 void tst_LargeFile::fileCreated()

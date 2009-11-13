@@ -399,6 +399,40 @@ QMouseEventEx::~QMouseEventEx()
 
     The function pos() gives the current cursor position, while oldPos() gives
     the old mouse position.
+
+    There are a few similarities between the events QEvent::HoverEnter
+    and QEvent::HoverLeave, and the events QEvent::Enter and QEvent::Leave.
+    However, they are slightly different because we do an update() in the event
+    handler of HoverEnter and HoverLeave.
+
+    QEvent::HoverMove is also slightly different from QEvent::MouseMove. Let us
+    consider a top-level window A containing a child B which in turn contains a
+    child C (all with mouse tracking enabled):
+
+    \image hoverEvents.png
+
+    Now, if you move the cursor from the top to the bottom in the middle of A,
+    you will get the following QEvent::MouseMove events:
+
+    \list 1
+        \o A::MouseMove
+        \o B::MouseMove
+        \o C::MouseMove
+    \endlist
+
+    You will get the same events for QEvent::HoverMove, except that the event
+    always propagates to the top-level regardless whether the event is accepted
+    or not. It will only stop propagating with the Qt::WA_NoMousePropagation
+    attribute.
+
+    In this case the events will occur in the following way:
+
+    \list 1
+        \o A::HoverMove
+        \o A::HoverMove, B::HoverMove
+        \o A::HoverMove, B::HoverMove, C::HoverMove
+    \endlist
+    
 */
 
 /*!
@@ -2976,13 +3010,13 @@ QShowEvent::~QShowEvent()
 /*!
     \class QFileOpenEvent
     \brief The QFileOpenEvent class provides an event that will be
-    sent when there is a request to open a file.
+    sent when there is a request to open a file or a URL.
 
     \ingroup events
 
     File open events will be sent to the QApplication::instance()
-    when the operating system requests that a file be opened. This is
-    a high-level event that can be caused by different user actions
+    when the operating system requests that a file or URL should be opened.
+    This is a high-level event that can be caused by different user actions
     depending on the user's desktop environment; for example, double
     clicking on an file icon in the Finder on Mac OS X.
 
@@ -2999,12 +3033,27 @@ QShowEvent::~QShowEvent()
 */
 QFileOpenEvent::QFileOpenEvent(const QString &file)
     : QEvent(FileOpen), f(file)
-{}
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(QUrl::fromLocalFile(file)));
+}
+
+/*!
+    \internal
+
+    Constructs a file open event for the given \a url.
+*/
+QFileOpenEvent::QFileOpenEvent(const QUrl &url)
+    : QEvent(FileOpen)
+{
+    d = reinterpret_cast<QEventPrivate *>(new QFileOpenEventPrivate(url));
+    f = url.toLocalFile();
+}
 
 /*! \internal
 */
 QFileOpenEvent::~QFileOpenEvent()
 {
+    delete reinterpret_cast<QFileOpenEventPrivate *>(d);
 }
 
 /*!
@@ -3012,6 +3061,16 @@ QFileOpenEvent::~QFileOpenEvent()
 
     Returns the file that is being opened.
 */
+
+/*!
+    \fn QUrl QFileOpenEvent::url() const
+
+    Returns the url that is being opened.
+*/
+QUrl QFileOpenEvent::url() const
+{
+    return reinterpret_cast<const QFileOpenEventPrivate *>(d)->url;
+}
 
 #ifndef QT_NO_TOOLBAR
 /*!

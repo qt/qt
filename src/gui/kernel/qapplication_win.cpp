@@ -832,6 +832,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureInfo = (PtrGetGestureInfo) &TKGetGestureInfo;
     priv->GetGestureExtraArgs = (PtrGetGestureExtraArgs) &TKGetGestureExtraArguments;
 #elif !defined(Q_WS_WINCE)
+  #if !defined(QT_NO_NATIVE_GESTURES)
     priv->GetGestureInfo =
             (PtrGetGestureInfo)QLibrary::resolve(QLatin1String("user32"),
                                                  "GetGestureInfo");
@@ -847,6 +848,7 @@ void qt_init(QApplicationPrivate *priv, int)
     priv->GetGestureConfig =
             (PtrGetGestureConfig)QLibrary::resolve(QLatin1String("user32"),
                                                    "GetGestureConfig");
+  #endif // QT_NO_NATIVE_GESTURES
     priv->BeginPanningFeedback =
             (PtrBeginPanningFeedback)QLibrary::resolve(QLatin1String("uxtheme"),
                                                        "BeginPanningFeedback");

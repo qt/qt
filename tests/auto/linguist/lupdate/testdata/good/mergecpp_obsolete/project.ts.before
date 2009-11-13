@@ -1,6 +1,19 @@
 <?xml version="1.0"?>
 <!DOCTYPE TS><TS version="1.1">
 <context>
+    <name></name>
+    <message id="keep_id">
+        <location filename="finddialog.cpp" line="154"/>
+        <source>This is some random text</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message id="obsolete_id">
+        <location filename="finddialog.cpp" line="155"/>
+        <source>Should be obsolete, too</source>
+        <translation type="unfinished">SHOULD BE OBSOLETE AS WELL</translation>
+    </message>
+</context>
+<context>
     <name>FindDialog</name>
     <message>
         <location filename="finddialog.cpp" line="85"/>

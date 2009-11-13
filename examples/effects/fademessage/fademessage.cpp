@@ -94,13 +94,17 @@ void FadeMessage::setupScene()
     QFont font;
     font.setPointSize(font.pointSize() * 2);
     font.setBold(true);
-    int fh = QFontMetrics(font).height();
+    QFontMetrics fontMetrics(font);
+    int fh = fontMetrics.height();
 
-    QGraphicsRectItem *block = m_scene.addRect(50, 300, 300, fh + 3);
+    QString sceneText = "Qt Everywhere!";
+    int sceneTextWidth = fontMetrics.width(sceneText);
+
+    QGraphicsRectItem *block = m_scene.addRect(50, 300, sceneTextWidth, fh + 3);
     block->setPen(Qt::NoPen);
     block->setBrush(QColor(102, 153, 51));
 
-    QGraphicsTextItem *text = m_scene.addText("Qt Everywhere!", font);
+    QGraphicsTextItem *text = m_scene.addText(sceneText, font);
     text->setDefaultTextColor(Qt::white);
     text->setPos(50, 300);
     block->setZValue(2);

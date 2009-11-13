@@ -879,7 +879,7 @@ void tst_QListWidget::moveItemsPriv()
     for (int r = 0; r < rowCount; ++r)
         new QListWidgetItem(QString::number(r), testWidget);
 
-    QListModel *model = dynamic_cast<QListModel *>(testWidget->model());
+    QListModel *model = qobject_cast<QListModel *>(testWidget->model());
     QVERIFY(model);
     QSignalSpy beginMoveSpy(model, SIGNAL(rowsAboutToBeMoved(QModelIndex,int,int,QModelIndex,int)));
     QSignalSpy movedSpy(model, SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)));

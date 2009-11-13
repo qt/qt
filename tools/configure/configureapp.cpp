@@ -351,6 +351,7 @@ Configure::Configure( int& argc, char** argv )
 
     dictionary[ "INCREDIBUILD_XGE" ] = "auto";
     dictionary[ "LTCG" ]            = "no";
+    dictionary[ "NATIVE_GESTURES" ] = "yes";
 }
 
 Configure::~Configure()
@@ -796,6 +797,10 @@ void Configure::parseCmdLine()
             dictionary[ "INCREDIBUILD_XGE" ] = "no";
         else if( configCmdLine.at(i) == "-incredibuild-xge" )
             dictionary[ "INCREDIBUILD_XGE" ] = "yes";
+        else if( configCmdLine.at(i) == "-native-gestures" )
+            dictionary[ "NATIVE_GESTURES" ] = "yes";
+        else if( configCmdLine.at(i) == "-no-native-gestures" )
+            dictionary[ "NATIVE_GESTURES" ] = "no";
 #if !defined(EVAL)
         // Others ---------------------------------------------------
         else if (configCmdLine.at(i) == "-fpu" )
@@ -1774,6 +1779,8 @@ bool Configure::displayHelp()
         desc("STYLE_WINDOWSCE", "yes", "",              "  windowsce", ' ');
         desc("STYLE_WINDOWSMOBILE" , "yes", "",         "  windowsmobile", ' ');
         desc("STYLE_S60" , "yes", "",                   "  s60\n", ' ');
+        desc("NATIVE_GESTURES", "no", "-no-native-gestures", "Do not use native gestures on Windows 7.");
+        desc("NATIVE_GESTURES", "yes", "-native-gestures", "Use native gestures on Windows 7.");
 
 /*      We do not support -qconfig on Windows yet
 
@@ -2521,6 +2528,9 @@ void Configure::generateOutputVars()
     if (dictionary["DECLARATIVE"] == "yes")
         qtConfig += "declarative";
 
+    if( dictionary[ "NATIVE_GESTURES" ] == "yes" )
+        qtConfig += "native-gestures";
+
     // We currently have no switch for QtSvg, so add it unconditionally.
     qtConfig += "svg";
 
@@ -2897,6 +2907,7 @@ void Configure::generateConfigfiles()
         if(dictionary["SCRIPTTOOLS"] == "no")       qconfigList += "QT_NO_SCRIPTTOOLS";
         if(dictionary["FREETYPE"] == "no")          qconfigList += "QT_NO_FREETYPE";
         if(dictionary["S60"] == "no")               qconfigList += "QT_NO_S60";
+        if(dictionary["NATIVE_GESTURES"] == "no")   qconfigList += "QT_NO_NATIVE_GESTURES";
 
         if(dictionary["OPENGL_ES_CM"] == "yes" ||
            dictionary["OPENGL_ES_CL"] == "yes" ||
@@ -3391,10 +3402,7 @@ void Configure::buildHostTools()
     QString pwd = QDir::currentPath();
     QStringList hostToolsDirs;
     hostToolsDirs
-        << "src/tools/bootstrap"
-        << "src/tools/moc"
-        << "src/tools/rcc"
-        << "src/tools/uic";
+        << "src/tools";
 
     if(dictionary["XQMAKESPEC"].startsWith("wince"))
         hostToolsDirs << "tools/checksdk";

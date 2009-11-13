@@ -900,7 +900,7 @@ void QWidget::setAutoFillBackground(bool enabled)
     passing a \c QAction with a softkey role set on it. When the widget
     containing the softkey actions has focus, its softkeys should appear in
     the user interface. Softkeys are discovered by traversing the widget
-    heirarchy so it is possible to define a single set of softkeys that are
+    hierarchy so it is possible to define a single set of softkeys that are
     present at all times by calling addAction() for a given top level widget.
 
     On some platforms, this concept overlaps with \c QMenuBar such that if no
@@ -5238,7 +5238,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 QPainter p(pdev);
                 p.translate(offset);
                 context.painter = &p;
-                graphicsEffect->draw(&p, source);
+                graphicsEffect->draw(&p);
                 paintEngine->d_func()->systemClip = QRegion();
             } else {
                 context.painter = sharedPainter;
@@ -5248,7 +5248,7 @@ void QWidgetPrivate::drawWidget(QPaintDevice *pdev, const QRegion &rgn, const QP
                 }
                 sharedPainter->save();
                 sharedPainter->translate(offset);
-                graphicsEffect->draw(sharedPainter, source);
+                graphicsEffect->draw(sharedPainter);
                 sharedPainter->restore();
             }
             sourced->context = 0;
@@ -5470,7 +5470,7 @@ void QWidgetEffectSourcePrivate::draw(QPainter *painter)
 }
 
 QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                                           QGraphicsEffectSource::PixmapPadMode mode) const
+                                           QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!context && deviceCoordinates) {
@@ -5491,10 +5491,10 @@ QPixmap QWidgetEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *
 
     QRect effectRect;
 
-    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         effectRect = m_widget->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
 
-    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         effectRect = sourceRect.adjusted(-1, -1, 1, 1).toAlignedRect();
 
     } else {
@@ -11462,6 +11462,17 @@ void QWidget::languageChange() { }  // compat
      \sa QWidget::setMaximumSize()
 */
 
+/*!
+    \fn QWidget::setupUi(QWidget *widget)
+
+    Sets up the user interface for the specified \a widget.
+
+    \note This function is available with widgets that derive from user
+    interface descriptions created using \l{uic}.
+
+    \sa {Using a Designer UI File in Your Application}
+*/
+
 QRect QWidgetPrivate::frameStrut() const
 {
     Q_Q(const QWidget);
@@ -11781,10 +11792,6 @@ void QWidget::ungrabGesture(Qt::GestureType gesture)
 }
 
 
-QT_END_NAMESPACE
-
-#include "moc_qwidget.cpp"
-
 /*!
     \typedef WId
     \relates QWidget
@@ -12101,3 +12108,8 @@ void QWidgetPrivate::_q_delayedDestroy(WId winId)
     delete winId;
 }
 #endif
+
+QT_END_NAMESPACE
+
+#include "moc_qwidget.cpp"
+

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -47,6 +47,7 @@
 #include <private/qcore_symbian_p.h>
 
 #include <fepitfr.h>
+#include <hal.h>
 
 #include <limits.h>
 // You only find these enumerations on SDK 5 onwards, so we need to provide our own
@@ -153,6 +154,44 @@ QString QCoeFepInputContext::language()
     }
 }
 
+bool QCoeFepInputContext::needsInputPanel()
+{
+    switch (QSysInfo::s60Version()) {
+    case QSysInfo::SV_S60_3_1:
+    case QSysInfo::SV_S60_3_2:
+        // There are no touch phones for pre-5.0 SDKs.
+        return false;
+#ifdef Q_CC_NOKIAX86
+    default:
+        // For emulator we assume that we need an input panel, since we can't
+        // separate between phone types.
+        return true;
+#else
+    case QSysInfo::SV_S60_5_0: {
+        // For SDK == 5.0, we need phone specific detection, since the HAL API
+        // is no good on most phones. However, all phones at the time of writing use the
+        // input panel, except N97 in landscape mode, but in this mode it refuses to bring
+        // up the panel anyway, so we don't have to care.
+        return true;
+    }
+    default:
+        // For unknown/newer types, we try to use the HAL API.
+        int keyboardEnabled;
+        int keyboardType;
+        int err[2];
+        err[0] = HAL::Get(HAL::EKeyboard, keyboardType);
+        err[1] = HAL::Get(HAL::EKeyboardState, keyboardEnabled);
+        if (err[0] == KErrNone && err[1] == KErrNone
+                && keyboardType != 0 && keyboardEnabled)
+            // Means that we have some sort of keyboard.
+            return false;
+
+        // Fall back to using the input panel.
+        return true;
+#endif // !Q_CC_NOKIAX86
+    }
+}
+
 bool QCoeFepInputContext::filterEvent(const QEvent *event)
 {
     // The CloseSoftwareInputPanel event is not handled here, because the VK will automatically
@@ -174,10 +213,8 @@ bool QCoeFepInputContext::filterEvent(const QEvent *event)
         }
     }
 
-    // For pre-5.0 SDKs, we don't launch the keyboard.
-    if (QSysInfo::s60Version() != QSysInfo::SV_S60_5_0) {
+    if (!needsInputPanel())
         return false;
-    }
 
     if (event->type() == QEvent::RequestSoftwareInputPanel) {
         // Notify S60 that we want the virtual keyboard to show up.

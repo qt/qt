@@ -479,7 +479,7 @@ public:
         QGraphicsProxyWidget *ancestorProxy = widget->d_func()->nearestGraphicsProxyWidget(widget);
         //It's embedded if it has an ancestor
         if (ancestorProxy) {
-            if (!bypassGraphicsProxyWidget(widget)) {
+            if (!bypassGraphicsProxyWidget(widget) && ancestorProxy->scene() != 0) {
                 // One view, let be smart and return the viewport rect then the popup is aligned
                 if (ancestorProxy->scene()->views().size() == 1) {
                     QGraphicsView *view = ancestorProxy->scene()->views().at(0);
@@ -824,7 +824,7 @@ public:
     QRectF boundingRect(Qt::CoordinateSystem system) const;
     void draw(QPainter *p);
     QPixmap pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                   QGraphicsEffectSource::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QWidget *m_widget;
     QWidgetPaintContext *context;

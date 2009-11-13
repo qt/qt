@@ -557,7 +557,7 @@ void tst_QImageWriter::saveWithNoFormat()
     QFETCH(QImageWriter::ImageWriterError, error);
 
     QImage niceImage(64, 64, QImage::Format_ARGB32);
-    qMemSet(niceImage.bits(), 0, niceImage.numBytes());
+    qMemSet(niceImage.bits(), 0, niceImage.byteCount());
 
     QImageWriter writer(fileName /* , 0 - no format! */);
     if (error != 0) {

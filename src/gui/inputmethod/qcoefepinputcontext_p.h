@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -65,10 +65,10 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_GUI_EXPORT QCoeFepInputContext : public QInputContext,
-                                         public MCoeFepAwareTextEditor,
-                                         public MCoeFepAwareTextEditor_Extension1,
-                                         public MObjectProvider
+class QCoeFepInputContext : public QInputContext,
+                            public MCoeFepAwareTextEditor,
+                            public MCoeFepAwareTextEditor_Extension1,
+                            public MObjectProvider
 {
     Q_OBJECT
 
@@ -97,6 +97,7 @@ private:
     void applyHints(Qt::InputMethodHints hints);
     void applyFormat(QList<QInputMethodEvent::Attribute> *attributes);
     void queueInputCapabilitiesChanged();
+    bool needsInputPanel();
 
 private Q_SLOTS:
     void ensureInputCapabilitiesChanged();

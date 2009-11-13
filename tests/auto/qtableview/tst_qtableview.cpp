@@ -197,6 +197,7 @@ private slots:
     void task259308_scrollVerticalHeaderSwappedSections();
     void task191545_dragSelectRows();
     void taskQTBUG_5062_spansInconsistency();
+    void taskQTBUG_4516_clickOnRichTextLabel();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3884,6 +3885,24 @@ void tst_QTableView::taskQTBUG_5062_spansInconsistency()
 
     VERIFY_SPANS_CONSISTENCY(&view);
 }
+
+void tst_QTableView::taskQTBUG_4516_clickOnRichTextLabel()
+{
+    QTableView view;
+    QStandardItemModel model(5,5);
+    view.setModel(&model);
+    QLabel label("rich text");
+    label.setTextFormat(Qt::RichText);
+    view.setIndexWidget(model.index(1,1), &label);
+    view.setCurrentIndex(model.index(0,0));
+    QCOMPARE(view.currentIndex(), model.index(0,0));
+
+    QTest::mouseClick(&label, Qt::LeftButton);
+    QCOMPARE(view.currentIndex(), model.index(1,1));
+
+
+}
+
 
 void tst_QTableView::changeHeaderData()
 {

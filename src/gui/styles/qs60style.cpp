@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -281,7 +281,7 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         drawFrame(SF_ButtonInactive, painter, rect, flags | SF_PointNorth);
         break;
     case SE_Editor:
-        drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
+        drawFrame(SF_FrameLineEdit, painter, rect, flags | SF_PointNorth);
         break;
     default:
         break;
@@ -299,32 +299,6 @@ short QS60StylePrivate::pixelMetric(int metric)
     Q_ASSERT(metric < MAX_PIXELMETRICS);
     const short returnValue = m_pmPointer[metric];
     return returnValue;
-}
-
-void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
-{
-    if (name == propertyKeyCurrentlayout) {
-        static const QStringList layouts = styleProperty(propertyKeyLayouts).toStringList();
-        const QString layout = value.toString();
-        Q_ASSERT(layouts.contains(layout));
-        const int layoutIndex = layouts.indexOf(layout);
-        setCurrentLayout(layoutIndex);
-        QApplication::setLayoutDirection(m_layoutHeaders[layoutIndex].mirroring ? Qt::RightToLeft : Qt::LeftToRight);
-        clearCaches();
-        refreshUI();
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty(const char *name) const
-{
-    if (name == propertyKeyLayouts) {
-        static QStringList layouts;
-        if (layouts.isEmpty())
-            for (int i = 0; i < m_numberOfLayouts; i++)
-                layouts.append(QLatin1String(m_layoutHeaders[i].layoutName));
-        return layouts;
-    }
-    return QVariant();
 }
 
 QColor QS60StylePrivate::stateColor(const QColor &color, const QStyleOption *option)
@@ -433,7 +407,7 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
             return Qt::black;
 
         const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
-        const int pixels = frameImage.numBytes()/sizeof(QRgb);
+        const int pixels = frameImage.byteCount()/sizeof(QRgb);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -831,6 +805,11 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
 
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
+            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            break;
+            
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
@@ -1676,18 +1655,18 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
                 text_flags |= Qt::TextHideMnemonic;
 
-            QRect iconRect =
-                subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
-
             if ((option->state & State_Selected) && (option->state & State_Enabled))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+
+            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
+            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
             //todo: move the vertical spacing stuff into subElementRect
             const int vSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
             if (checkable){
+                const int hSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
                 QStyleOptionMenuItem optionCheckBox;
-                optionCheckBox.QStyleOption::operator=(*menuItem);
+                optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
                 optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
                 optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
                 const int moveByX = optionCheckBox.rect.width()+vSpacing;
@@ -1696,6 +1675,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     iconRect.translate(moveByX, 0);
                     iconRect.setWidth(iconRect.width()+vSpacing);
                     textRect.setWidth(textRect.width()-moveByX-vSpacing);
+                    optionCheckBox.rect.translate(vSpacing/2, hSpacing/2);
                 } else {
                     textRect.setWidth(textRect.width()-moveByX);
                     iconRect.setWidth(iconRect.width()+vSpacing);
@@ -2292,8 +2272,18 @@ QSize QS60Style::sizeFromContents(ContentsType ct, const QStyleOption *opt,
 {
     QSize sz(csz);
     switch (ct) {
+        case CT_ToolButton:
+            sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            //FIXME properly - style should calculate the location of border frame-part
+            sz += QSize(2*pixelMetric(PM_ButtonMargin), 2*pixelMetric(PM_ButtonMargin));
+            if (const QStyleOptionToolButton *toolBtn = qstyleoption_cast<const QStyleOptionToolButton *>(opt))
+                if (toolBtn->subControls & SC_ToolButtonMenu)
+                    sz += QSize(pixelMetric(PM_MenuButtonIndicator),0);
+            break;
         case CT_PushButton:
             sz = QCommonStyle::sizeFromContents( ct, opt, csz, widget);
+            //FIXME properly - style should calculate the location of border frame-part
+            sz += QSize(2*pixelMetric(PM_ButtonMargin), 2*pixelMetric(PM_ButtonMargin));
             if (const QAbstractButton *buttonWidget = (qobject_cast<const QAbstractButton *>(widget)))
                 if (buttonWidget->isCheckable())
                     sz += QSize(pixelMetric(PM_IndicatorWidth) + pixelMetric(PM_CheckBoxLabelSpacing), 0);
@@ -2572,8 +2562,8 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
         break;
     case CC_ToolButton:
         if (const QStyleOptionToolButton *toolButton = qstyleoption_cast<const QStyleOptionToolButton *>(option)) {
-            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator, toolButton, widget) +
-                                      2*pixelMetric(PM_ButtonMargin, toolButton, widget);
+            const int indicatorRect = pixelMetric(PM_MenuButtonIndicator) + 2*pixelMetric(PM_ButtonMargin);
+            const int border = pixelMetric(PM_ButtonMargin) + pixelMetric(PM_DefaultFrameWidth);
             ret = toolButton->rect;
             const bool popup = (toolButton->features & 
                     (QStyleOptionToolButton::MenuButtonPopup | QStyleOptionToolButton::PopupDelay))
@@ -2585,7 +2575,7 @@ QRect QS60Style::subControlRect(ComplexControl control, const QStyleOptionComple
                 break;
             case SC_ToolButtonMenu:
                 if (popup)
-                    ret.adjust(ret.width() - indicatorRect, ret.height() - indicatorRect, 0, 0);
+                    ret.adjust(ret.width() - indicatorRect, border, -pixelMetric(PM_ButtonMargin), -border);
                 break;
             default:
                 break;
@@ -2607,8 +2597,8 @@ QRect QS60Style::subElementRect(SubElement element, const QStyleOption *opt, con
     QRect ret;
     switch (element) {
         case SE_LineEditContents: {
-            // in S60 the input text box doesn't start from line Edit's TL, but
-            // a bit indented.
+                // in S60 the input text box doesn't start from line Edit's TL, but
+                // a bit indented.
                 QRect lineEditRect = opt->rect;
                 const int adjustment = opt->rect.height()>>2;
                 lineEditRect.adjust(adjustment,0,0,0);
@@ -2854,24 +2844,6 @@ void QS60Style::unpolish(QApplication *application)
     const QPalette newPalette = QApplication::style()->standardPalette();
     QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
-}
-
-/*!
-  Sets the style property \a name to the \a value.
- */
-void QS60Style::setStyleProperty(const char *name, const QVariant &value)
-{
-    Q_D(QS60Style);
-    d->setStyleProperty_specific(name, value);
-}
-
-/*!
-  Returns the value of style property \a name.
- */
-QVariant QS60Style::styleProperty(const char *name) const
-{
-    Q_D(const QS60Style);
-    return d->styleProperty_specific(name);
 }
 
 /*!

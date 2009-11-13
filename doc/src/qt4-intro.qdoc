@@ -581,11 +581,7 @@
     DOM, helps reuse CSS selector knowledge, and gives little
     maintenance or footprint overhead.
 
-    \code
-        QWebElement document = frame->documentElement();
-        QList<QWebElement> allSpans = document.findAll("span");
-        QList<QWebElement> introSpans = document.findAll("p.intro span");
-    \endcode
+    \snippet webkitsnippets/webelement/main.cpp FindAll intro
 
     See the QWebElement class documentation for more information.
 
@@ -608,19 +604,19 @@
     \section1 Graphics Effects
 
     Effects can be used to alter the appearance of UI elements such as
-    \l{QGraphicsItem}s and \l{QWidget}s. A range of standard effects such
-    as blurring, colorizing or blooming is provided, and it is possible to
-    implement custom effects.
+    \l{QGraphicsItem}s and \l{QWidget}s. A couple of standard effects such
+    as blurring, colorizing and drop shadow are provided, and it is
+    possible to implement custom effects.
 
     \table
     \row
-    \o
-    \o \img graphicseffect-plain.png
-    \o
+    \o{2,1} \img graphicseffect-plain.png
     \row
     \o \img graphicseffect-blur.png
     \o \img graphicseffect-colorize.png
-    \o \img graphicseffect-bloom.png
+    \row
+    \o \img graphicseffect-opacity.png
+    \o \img graphicseffect-drop-shadow.png
     \endtable
 
     See the QGraphicsEffect class documentation for more information.
@@ -664,7 +660,7 @@
 
     See the \l{QtMultimedia Module} documentation for more information.
 
-    \section1 New Classes, Functions, Macros, etc
+    \section1 New Classes, Functions, Macros, etc.
 
     Links to new classes, functions, macros, and other items
     introduced in Qt 4.6.

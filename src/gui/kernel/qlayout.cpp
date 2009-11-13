@@ -496,6 +496,21 @@ void QLayout::setContentsMargins(int left, int top, int right, int bottom)
 }
 
 /*!
+    \since 4.6
+
+    Sets the \a margins to use around the layout.
+
+    By default, QLayout uses the values provided by the style. On
+    most platforms, the margin is 11 pixels in all directions.
+
+    \sa contentsMargins()
+*/
+void QLayout::setContentsMargins(const QMargins &margins)
+{
+    setContentsMargins(margins.left(), margins.top(), margins.right(), margins.bottom());
+}
+
+/*!
     \since 4.3
 
     Extracts the left, top, right, and bottom margins used around the
@@ -518,6 +533,23 @@ void QLayout::getContentsMargins(int *left, int *top, int *right, int *bottom) c
     d->getMargin(top, d->userTopMargin, QStyle::PM_LayoutTopMargin);
     d->getMargin(right, d->userRightMargin, QStyle::PM_LayoutRightMargin);
     d->getMargin(bottom, d->userBottomMargin, QStyle::PM_LayoutBottomMargin);
+}
+
+/*!
+    \since 4.6
+
+    Returns the margins used around the layout.
+
+    By default, QLayout uses the values provided by the style. On
+    most platforms, the margin is 11 pixels in all directions.
+
+    \sa setContentsMargins()
+*/
+QMargins QLayout::contentsMargins() const
+{
+    int left, top, right, bottom;
+    getContentsMargins(&left, &top, &right, &bottom);
+    return QMargins(left, top, right, bottom);
 }
 
 /*!

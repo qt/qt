@@ -198,6 +198,13 @@ bool QNetworkCookieJar::setCookiesFromUrl(const QList<QNetworkCookie> &cookieLis
         if (cookie.domain().isEmpty()) {
             cookie.setDomain(defaultDomain);
         } else {
+            // Ensure the domain starts with a dot if its field was not empty
+            // in the HTTP header. There are some servers that forget the
+            // leading dot and this is actually forbidden according to RFC 2109,
+            // but all browsers accept it anyway so we do that as well.
+            if (!cookie.domain().startsWith(QLatin1Char('.')))
+                cookie.setDomain(QLatin1Char('.') + cookie.domain());
+
             QString domain = cookie.domain();
             if (!(isParentDomain(domain, defaultDomain)
                 || isParentDomain(defaultDomain, domain))) {

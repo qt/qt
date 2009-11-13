@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -434,8 +434,10 @@ void QWidgetPrivate::create_sys(WId window, bool /* initializeWindow */, bool de
         drawableWindow->PointerFilter(EPointerFilterEnterExit
             | EPointerFilterMove | EPointerFilterDrag, 0);
 
-        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped))
+        if (q->isVisible() && q->testAttribute(Qt::WA_Mapped)) {
             activateSymbianWindow(control.data());
+            control->MakeVisible(true);
+        }
 
         // We wait until the control is fully constructed before calling setWinId, because
         // this generates a WinIdChanged event.

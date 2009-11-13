@@ -140,7 +140,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
 
     // Not ready for painting yet, bail out. This can happen in
     // QWidget::create_sys()
-    if (!d->image || rgn.numRects() == 0)
+    if (!d->image || rgn.rectCount() == 0)
         return;
 
 #ifdef Q_WS_WIN
@@ -203,7 +203,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         wrgn.translate(-wOffset);
     QRect wbr = wrgn.boundingRect();
 
-    if (wrgn.numRects() != 1) {
+    if (wrgn.rectCount() != 1) {
         int num;
         XRectangle *rects = (XRectangle *)qt_getClipRects(wrgn, num);
         XSetClipRectangles(X11->display, d_ptr->gc, 0, 0, rects, num, YXBanded);
@@ -242,7 +242,7 @@ void QRasterWindowSurface::flush(QWidget *widget, const QRegion &rgn, const QPoi
         }
     }
 
-    if (wrgn.numRects() != 1)
+    if (wrgn.rectCount() != 1)
         XSetClipMask(X11->display, d_ptr->gc, XNone);
 #endif // FALCON
 

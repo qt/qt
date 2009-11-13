@@ -52,7 +52,7 @@
 #ifdef Q_WS_MAC
 #include "qmacgesturerecognizer_mac_p.h"
 #endif
-#if defined(Q_OS_WIN)
+#if defined(Q_OS_WIN) && !defined(QT_NO_NATIVE_GESTURES)
 #include "qwinnativepangesturerecognizer_win_p.h"
 #endif
 
@@ -90,9 +90,15 @@ QGestureManager::QGestureManager(QObject *parent)
 #else
     registerGestureRecognizer(new QPanGestureRecognizer);
     registerGestureRecognizer(new QPinchGestureRecognizer);
-#if defined(Q_OS_WIN)
-    registerGestureRecognizer(new QWinNativePanGestureRecognizer);
+    registerGestureRecognizer(new QSwipeGestureRecognizer);
+    registerGestureRecognizer(new QTapGestureRecognizer);
 #endif
+#if defined(Q_OS_WIN)
+  #if !defined(QT_NO_NATIVE_GESTURES)
+    registerGestureRecognizer(new QWinNativePanGestureRecognizer);
+  #endif
+#else
+    registerGestureRecognizer(new QTapAndHoldGestureRecognizer);
 #endif
 }
 
@@ -175,8 +181,10 @@ QGesture *QGestureManager::getState(QObject *object, QGestureRecognizer *recogni
             return 0;
     } else if (QGesture *g = qobject_cast<QGesture *>(object)) {
         return g;
+#ifndef QT_NO_GRAPHICSVIEW
     } else {
         Q_ASSERT(qobject_cast<QGraphicsObject *>(object));
+#endif
     }
 
     QList<QGesture *> states =

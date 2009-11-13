@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -357,6 +357,9 @@ QSymbianControl::~QSymbianControl()
         setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
+
+    if(m_previousEventLongTap)
+        QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
@@ -866,6 +869,11 @@ void QSymbianControl::SizeChanged()
                 tlwExtra->inTopLevelResize = false;
         }
     }
+
+    // CCoeControl::SetExtent calls SizeChanged, but does not call
+    // PositionChanged, so we call it here to ensure that the widget's
+    // position is updated.
+    PositionChanged();
 }
 
 void QSymbianControl::PositionChanged()
@@ -1255,7 +1263,7 @@ bool QApplicationPrivate::modalState()
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(ETrue);
         // Modal partial screen dialogs (like queries) capture pointer events.
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(ETrue);
@@ -1270,7 +1278,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(EFalse);
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(EFalse);
         widget->effectiveWinId()->SetPointerCapture(EFalse);
