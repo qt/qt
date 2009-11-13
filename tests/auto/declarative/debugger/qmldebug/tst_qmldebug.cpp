@@ -59,7 +59,7 @@
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 
-#include "../debuggerutil_p.h"
+#include "../debugutil_p.h"
 
 Q_DECLARE_METATYPE(QmlDebugWatch::State)
 
@@ -69,13 +69,16 @@ class tst_QmlDebug : public QObject
     Q_OBJECT
 
 public:
-    tst_QmlDebug(QmlDebugConnection *conn, QmlEngine *engine, QmlGraphicsItem *rootItem)
-        : m_conn(conn), m_dbg(0), m_engine(engine), m_rootItem(rootItem) {}
+    tst_QmlDebug(QmlDebugTestData *data)
+    {
+        m_conn = data->conn;
+        m_engine = data->engine;
+        m_rootItem = data->items[0];
+    }
 
 private:
     QmlDebugObjectReference findRootObject();
     QmlDebugPropertyReference findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name) const;
-    QObject *findObjectWithId(const QObjectList &objects, int id) const;
     void waitForQuery(QmlDebugQuery *query);
 
     void recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive) const;
@@ -146,21 +149,12 @@ QmlDebugPropertyReference tst_QmlDebug::findProperty(const QList<QmlDebugPropert
     return QmlDebugPropertyReference();
 }
 
-QObject *tst_QmlDebug::findObjectWithId(const QObjectList &objects, int id) const
-{
-    foreach (QObject *o, objects) {
-        if (id == QmlDebugService::idForObject(o))
-            return o;
-    }
-    return 0;
-}
-
 void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
 {
     QVERIFY(query);
     QCOMPARE(query->parent(), this);
     QVERIFY(query->state() == QmlDebugQuery::Waiting);
-    if (!QmlDebuggerTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugQuery::State))))
+    if (!QmlDebugTest::waitForSignal(query, SIGNAL(stateChanged(QmlDebugQuery::State))))
         QFAIL("query timed out");
 }
 
@@ -177,21 +171,40 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference
     QCOMPARE(oref.className(), className);
     QCOMPARE(oref.contextDebugId(), QmlDebugService::idForObject(qmlContext(o)));
 
-    foreach (const QmlDebugObjectReference &cref, oref.children()) {
-        // ignore children with no context
-        if (cref.contextDebugId() < 0)
+    const QObjectList &children = o->children();
+    for (int i=0; i<children.count(); i++) {
+        QObject *child = children[i];
+        if (!qmlContext(child))
             continue;
+        int debugId = QmlDebugService::idForObject(child);
+        QVERIFY(debugId >= 0);
 
-        QObject *childObject = findObjectWithId(o->children(), cref.debugId());
-        QVERIFY2(childObject, qPrintable(QString("Can't find QObject* for %1").arg(cref.className())));
+        QmlDebugObjectReference cref;
+        foreach (const QmlDebugObjectReference &ref, oref.children()) {
+            if (ref.debugId() == debugId) {
+                cref = ref;
+                break;
+            }
+        }
+        QVERIFY(cref.debugId() >= 0);
 
         if (recursive)
-            recursiveObjectTest(childObject, cref, true);
+            recursiveObjectTest(child, cref, true);
     }
 
     foreach (const QmlDebugPropertyReference &p, oref.properties()) {
+        QCOMPARE(p.objectDebugId(), QmlDebugService::idForObject(o));
+
+        // signal properties are fake - they are generated from QmlBoundSignal children
+        if (p.name().startsWith("on") && p.name().length() > 2 && p.name()[2].isUpper()) {
+            QVERIFY(p.value().toString().startsWith('{') && p.value().toString().endsWith('}'));
+            QVERIFY(p.valueTypeName().isEmpty());
+            QVERIFY(p.binding().isEmpty());
+            QVERIFY(!p.hasNotifySignal());
+            continue;
+        }
+
         QMetaProperty pmeta = meta->property(meta->indexOfProperty(p.name().toUtf8().constData()));
-        QVERIFY(pmeta.isValid());
 
         QCOMPARE(p.name(), QString::fromUtf8(pmeta.name()));
 
@@ -208,6 +221,8 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference
             QCOMPARE(binding->expression(), p.binding());
 
         QCOMPARE(p.hasNotifySignal(), pmeta.hasNotifySignal());
+
+        QVERIFY(pmeta.isValid());
     }
 }
 
@@ -277,6 +292,11 @@ void tst_QmlDebug::watch_property()
     watch = unconnected.addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
+
+    watch = m_dbg->addWatch(QmlDebugPropertyReference(), this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
     
     watch = m_dbg->addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
@@ -289,7 +309,8 @@ void tst_QmlDebug::watch_property()
     m_rootItem->setProperty("width", origWidth*2);
 
     // stateChanged() is received before valueChanged()
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
     QCOMPARE(spy.count(), 1);
 
     m_dbg->removeWatch(watch);
@@ -328,6 +349,11 @@ void tst_QmlDebug::watch_object()
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
     
+    watch = m_dbg->addWatch(QmlDebugObjectReference(), this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
+
     watch = m_dbg->addWatch(obj, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -340,7 +366,8 @@ void tst_QmlDebug::watch_object()
     m_rootItem->setProperty("height", origHeight*2);
 
     // stateChanged() is received before any valueChanged() signals
-    QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
     QVERIFY(spy.count() > 0);
 
     int newWidth = -1;
@@ -385,6 +412,11 @@ void tst_QmlDebug::watch_expression()
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
     
+    watch = m_dbg->addWatch(QmlDebugObjectReference(), expr, this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
+    
     watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -401,13 +433,14 @@ void tst_QmlDebug::watch_expression()
             width += increment;
             m_rootItem->setProperty("width", width);
         }
-        if (!QmlDebuggerTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
+        if (!QmlDebugTest::waitForSignal(watch, SIGNAL(valueChanged(QByteArray,QVariant))))
             QFAIL("Did not receive valueChanged() for expression");
     }
 
     if (spyState.count() == 0)
-        QVERIFY(QmlDebuggerTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+        QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QCOMPARE(spyState.count(), 1);
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
 
     m_dbg->removeWatch(watch);
     delete watch;
@@ -500,15 +533,16 @@ void tst_QmlDebug::queryRootContexts()
     QCOMPARE(context.debugId(), QmlDebugService::idForObject(actualContext));
     QCOMPARE(context.name(), actualContext->objectName());
 
-    QCOMPARE(context.objects().count(), 2); // 2 objects created for engine in main()
+    QCOMPARE(context.objects().count(), 2); // 2 qml component objects created for context in main()
 
     // root context query sends only root object data - it doesn't fill in
     // the children or property info
     QCOMPARE(context.objects()[0].properties().count(), 0);
     QCOMPARE(context.objects()[0].children().count(), 0);
 
-    // TODO have multiple contexts
-    QCOMPARE(context.contexts().count(), 0);
+    QCOMPARE(context.contexts().count(), 1);
+    QVERIFY(context.contexts()[0].debugId() >= 0);
+    QCOMPARE(context.contexts()[0].name(), QString("tst_QmlDebug_childContext"));
 
     delete q_engines;
     delete q_context;
@@ -593,7 +627,7 @@ void tst_QmlDebug::queryExpressionResult()
     QFETCH(QVariant, result);
 
     QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
-    waitForQuery(q_engines);
+    waitForQuery(q_engines);    // check immediate deletion is ok
     
     QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
@@ -759,72 +793,37 @@ void tst_QmlDebug::tst_QmlDebugPropertyReference()
         compareProperties(r, ref);
 }
 
-class TestRunnerThread : public QThread
+
+class tst_QmlDebug_Factory : public QmlTestFactory
 {
-    Q_OBJECT
 public:
-    void run() {
-        QTest::qWait(1000);
-        connectToEngine();
-    }
-
-    QPointer<QmlEngine> m_engine;
-    QPointer<QmlGraphicsItem> m_item;
-
-signals:
-    void testsFinished();
-
-public slots:
-
-    void connectToEngine()
+    QObject *createTest(QmlDebugTestData *data)
     {
-        QmlDebugConnection conn;
-        conn.connectToHost("127.0.0.1", 3768);
-        bool ok = conn.waitForConnected(5000);
-        Q_ASSERT(ok);
-        while (!m_engine && !m_item)
-            QTest::qWait(50);
-
-        tst_QmlDebug test(&conn, m_engine, m_item);
-        QTest::qExec(&test); 
-        emit testsFinished();
+        QmlContext *c = new QmlContext(data->engine->rootContext());
+        c->setObjectName("tst_QmlDebug_childContext");
+        return new tst_QmlDebug(data);
     }
 };
-
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
-    qputenv("QML_DEBUG_SERVER_PORT", "3768");
 
-    TestRunnerThread thread;
-    QObject::connect(&thread, SIGNAL(testsFinished()), qApp, SLOT(quit()));
-    thread.start();
-
-    QmlEngine engine;  // blocks until client connects
-
-    QmlComponent component(&engine,
-                "import Qt 4.6\n"
-                    "Item {\n"
-                        "width: 10; height: 20; scale: blueRect.scale;\n"
-                        "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
-                        "Text { color: blueRect.color; }"
-                    "}\n",
-            QUrl("file://"));
-    Q_ASSERT(component.isReady());
-    QObject *o = component.create();
-    QObject::connect(&thread, SIGNAL(testsFinished()), o, SLOT(deleteLater()));
-
-    // allows us to test that multiple contexts can be detected
-    QObject *o2 = component.create();
-    QObject::connect(&thread, SIGNAL(testsFinished()), o2, SLOT(deleteLater()));
-
-    // start the test
-    thread.m_engine = &engine;
-    thread.m_item = qobject_cast<QmlGraphicsItem*>(o);
-
-    return app.exec();
-
+    QList<QByteArray> qml;
+    qml << "import Qt 4.6\n"
+            "Item {"
+                "width: 10; height: 20; scale: blueRect.scale;"
+                "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
+                "Text { color: blueRect.color; }"
+                "MouseRegion {"
+                    "onEntered: { print('hello') }"
+                "}"
+            "}";
+    // add second component to test multiple root contexts
+    qml << "import Qt 4.6\n"
+            "Item {}";
+    tst_QmlDebug_Factory factory;
+    return QmlDebugTest::runTests(&factory, qml);
 }
 
 //QTEST_MAIN(tst_QmlDebug)

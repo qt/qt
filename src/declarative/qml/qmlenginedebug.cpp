@@ -358,7 +358,7 @@ void QmlEngineDebugServer::messageReceived(const QByteArray &message)
 
         QByteArray reply;
         QDataStream rs(&reply, QIODevice::WriteOnly);
-        rs << QByteArray("WATCH_OBJECT_R") << queryId << objectId << ok;
+        rs << QByteArray("WATCH_OBJECT_R") << queryId << ok;
 
         sendMessage(reply);
     } else if (type == "WATCH_PROPERTY") {

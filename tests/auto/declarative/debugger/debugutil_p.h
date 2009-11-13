@@ -40,21 +40,61 @@
 ****************************************************************************/
 #include <QSignalSpy>
 #include <QEventLoop>
+#include <QPointer>
 #include <QTimer>
+#include <QThread>
+#include <QTest>
+
+#include <QtDeclarative/qmlengine.h>
 
 #include <private/qmldebugclient_p.h>
 #include <private/qmldebugservice_p.h>
+#include <private/qmlgraphicsitem_p.h>
 
-namespace QmlDebuggerTest {
 
-    bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
-}
-
-class QmlDebuggerTestService : public QmlDebugService
+class QmlDebugTestData : public QObject
 {
     Q_OBJECT
 public:
-    QmlDebuggerTestService(const QString &s, QObject *parent = 0);
+    QmlDebugTestData(QEventLoop *el);
+
+    ~QmlDebugTestData();
+
+    QmlEngine *engine;
+    QmlDebugConnection *conn;
+
+    int exitCode;
+    QEventLoop *loop;
+
+    QList<QmlGraphicsItem *> items;
+
+public slots:
+    void testsFinished(int code);
+};
+
+
+class QmlTestFactory
+{
+public:
+    QmlTestFactory() {}
+    virtual ~QmlTestFactory() {}
+
+    virtual QObject *createTest(QmlDebugTestData *data) = 0;
+};
+
+
+namespace QmlDebugTest {
+
+    bool waitForSignal(QObject *receiver, const char *member, int timeout = 5000);
+
+    int runTests(QmlTestFactory *factory, const QList<QByteArray> &qml = QList<QByteArray>());
+}
+
+class QmlDebugTestService : public QmlDebugService
+{
+    Q_OBJECT
+public:
+    QmlDebugTestService(const QString &s, QObject *parent = 0);
     bool enabled;
 
 signals:
@@ -66,11 +106,11 @@ protected:
     virtual void enabledChanged(bool e);
 };
 
-class QmlDebuggerTestClient : public QmlDebugClient
+class QmlDebugTestClient : public QmlDebugClient
 {
     Q_OBJECT
 public:
-    QmlDebuggerTestClient(const QString &s, QmlDebugConnection *c);
+    QmlDebugTestClient(const QString &s, QmlDebugConnection *c);
 
     QByteArray waitForResponse();
 
@@ -79,6 +119,24 @@ signals:
 
 protected:
     virtual void messageReceived(const QByteArray &ba);
+};
+
+class tst_QmlDebug_Thread : public QThread
+{
+    Q_OBJECT
+public:
+    tst_QmlDebug_Thread(QmlDebugTestData *data, QmlTestFactory *factory);
+
+    void run();
+
+    bool m_ready;
+
+signals:
+    void testsFinished(int);
+
+private:
+    QmlDebugTestData *m_data;
+    QmlTestFactory *m_factory;
 };
 
 
