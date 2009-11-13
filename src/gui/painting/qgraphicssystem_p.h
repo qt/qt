@@ -75,6 +75,9 @@ public:
     virtual QSize physicalSize() const = 0;
     virtual void setDirty(QRect) { }
     virtual void pointerEvent(QMouseEvent &) { }
+
+    virtual void raise(QWindowSurface *) { qWarning("This plugin does not support raise()"); }
+    virtual void lower(QWindowSurface *) { qWarning("This plugin does not support lower()"); }
 };
 #endif // Q_WS_LITE
 

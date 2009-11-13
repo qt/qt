@@ -51,6 +51,7 @@
 #include "qgraphicssystemcursor.h"
 
 QT_BEGIN_NAMESPACE
+static QGraphicsSystemScreen *qt_screenForWidget(const QWidget *w);
 
 void QWidgetPrivate::create_sys(WId window, bool initializeWindow, bool /*destroyOldWindow*/)
 {
@@ -421,7 +422,9 @@ void QWidgetPrivate::raise_sys()
 {
     Q_Q(QWidget);
     if (q->isWindow()) {
-    qWarning() << "raise_sys not implemented for tlw" << q;
+        QWindowSurface *surface = q->windowSurface();
+        QGraphicsSystemScreen *screen = qt_screenForWidget(q);
+        screen->raise(surface);
     }
 }
 
@@ -430,7 +433,9 @@ void QWidgetPrivate::lower_sys()
     Q_Q(QWidget);
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
-        qWarning() << "lower_sys not implemented for tlw" << q;
+        QWindowSurface *surface = q->windowSurface();
+        QGraphicsSystemScreen *screen = qt_screenForWidget(q);
+        screen->lower(surface);
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
         p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));
