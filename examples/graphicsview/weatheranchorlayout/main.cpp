@@ -188,7 +188,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG_MODE
         QGraphicsProxyWidget *title = createItem("Title");
         QGraphicsProxyWidget *place = createItem("Place");
-        QGraphicsProxyWidget *sun = createItem("Sun");
+        QGraphicsProxyWidget *sunnyWeather = createItem("Sun");
         QGraphicsProxyWidget *details = createItem("Details");
         QGraphicsProxyWidget *tabbar = createItem("Tabbar");
 #else
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
         PixmapWidget *title = new PixmapWidget(QPixmap(":/images/title.jpg"));
         PlaceWidget *place = new PlaceWidget(QPixmap(":/images/place.jpg"));
         PixmapWidget *details = new PixmapWidget(QPixmap(":/images/5days.jpg"));
-        PixmapWidget *sun = new PixmapWidget(QPixmap(":/images/weather-few-clouds.png"));
+        PixmapWidget *sunnyWeather = new PixmapWidget(QPixmap(":/images/weather-few-clouds.png"));
         PixmapWidget *tabbar = new PixmapWidget(QPixmap(":/images/tabbar.jpg"));
 #endif
 
@@ -215,9 +215,9 @@ int main(int argc, char **argv)
     tabbar->setPreferredSize(QSizeF(70, 24));
     tabbar->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-    sun->setPreferredSize(QSizeF(128, 97));
-    sun->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    sun->setZValue(9999);
+    sunnyWeather->setPreferredSize(QSizeF(128, 97));
+    sunnyWeather->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    sunnyWeather->setZValue(9999);
 
     // start anchor layout
     QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout;
@@ -238,8 +238,8 @@ int main(int argc, char **argv)
     anchor = l->addAnchor(place, Qt::AnchorBottom, l, Qt::AnchorBottom);
     anchor->setSpacing(12);
 
-    anchor = l->addAnchor(sun, Qt::AnchorTop, title, Qt::AnchorTop);
-    anchor = l->addAnchor(sun, Qt::AnchorBottom, l, Qt::AnchorVerticalCenter);
+    anchor = l->addAnchor(sunnyWeather, Qt::AnchorTop, title, Qt::AnchorTop);
+    anchor = l->addAnchor(sunnyWeather, Qt::AnchorBottom, l, Qt::AnchorVerticalCenter);
 
     anchor = l->addAnchor(tabbar, Qt::AnchorTop, title, Qt::AnchorBottom);
     anchor->setSpacing(5);
@@ -257,8 +257,8 @@ int main(int argc, char **argv)
     anchor = l->addAnchor(place, Qt::AnchorRight, details, Qt::AnchorLeft);
     anchor->setSpacing(35);
 
-    anchor = l->addAnchor(sun, Qt::AnchorLeft, place, Qt::AnchorHorizontalCenter);
-    anchor = l->addAnchor(sun, Qt::AnchorRight, l, Qt::AnchorHorizontalCenter);
+    anchor = l->addAnchor(sunnyWeather, Qt::AnchorLeft, place, Qt::AnchorHorizontalCenter);
+    anchor = l->addAnchor(sunnyWeather, Qt::AnchorRight, l, Qt::AnchorHorizontalCenter);
 
     anchor = l->addAnchor(tabbar, Qt::AnchorHorizontalCenter, details, Qt::AnchorHorizontalCenter);
     anchor = l->addAnchor(details, Qt::AnchorRight, l, Qt::AnchorRight);
