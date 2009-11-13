@@ -17,15 +17,23 @@ Rectangle {
 
     Flickable {
         id: Flick
-        anchors.fill: parent; viewportHeight: column.height
+        height: parent.height-50
+        width: parent.width; viewportHeight: column.height
 
         Column {
             id: column
             Repeater {
                 model: list
-                Rectangle { width: 300; height: 200; color: dayColor }
+                Rectangle { width: 300; height: 200; color: mr.pressed ? "black" : dayColor
+                    MouseRegion {
+                        id: mr
+                        anchors.fill: parent
+                    }
+                }
             }
         }
+        clip: true
+        reportedVelocitySmoothing: 1000
     }
     Rectangle {
         radius: 3
@@ -33,5 +41,38 @@ Rectangle {
         width: 8
         y: Flick.visibleArea.yPosition * Flick.height
         height: Flick.visibleArea.heightRatio * Flick.height
+    }
+
+    // click to toggle interactive flag
+    Rectangle {
+        width: 98
+        height: 48
+        y: parent.height - 50
+        color: "red"
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: Flick.interactive = Flick.interactive ? false : true
+        }
+    }
+
+    // click to toggle click delay
+    Rectangle {
+        width: 98
+        height: 48
+        x: 100
+        y: parent.height - 50
+        color: "green"
+        MouseRegion {
+            anchors.fill: parent
+            onClicked: Flick.pressDelay = Flick.pressDelay > 0 ? 0 : 500
+        }
+    }
+
+    Rectangle {
+        width: Math.abs(Flick.verticalVelocity)/100
+        height: 50
+        x: 200
+        y: parent.height - 50
+        color: blue
     }
 }
