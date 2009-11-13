@@ -87,7 +87,8 @@ symbianresources.commands = cpp -nostdinc -undef \
                             $$symbian_resources_DEFINES \
                             ${QMAKE_FILE_NAME} \
                             -o $${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
-                            && rcomp -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
+                            && rcomp -u -m045,046,047 \
+                            -s$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rpp \
                             -o$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsc \
                             -h$${symbian_resources_RCC_DIR}/${QMAKE_FILE_BASE}.rsg \
                             -i${QMAKE_FILE_NAME}
