@@ -7,8 +7,13 @@ Prerequisites:
     yet.
 
   - A working GnuPoc environment. See this page for details:
-    http://www.martin.st/symbian/. The part about Wine setup I didn't
-    have to do, but Wine does need to be available.
+    http://www.martin.st/symbian/. Make sure you do the part about
+    Wine setup as well.
+
+  - Anderson Lizardo's patches for GnuPoc. Look for the
+    qt_s60_gnupoc_v9.patch on this page:
+    http://lizardo.wordpress.com/2009/09/24/installing-qt-for-s60-daily-snapshots-on-linux/
+    and carry out the instructions under point 8: Installing Open C.
 
 Compiling:
 
