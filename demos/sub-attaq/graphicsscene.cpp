@@ -278,4 +278,5 @@ void GraphicsScene::clearScene()
 
     boat->stop();
     boat->hide();
+    boat->setEnabled(true);
 }
