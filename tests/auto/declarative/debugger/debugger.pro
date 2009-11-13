@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS += qmldebug \
            qmldebugclient \
-           qmldebugservice
+           qmldebugservice \
+           qpacketprotocol
