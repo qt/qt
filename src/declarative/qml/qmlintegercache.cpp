@@ -41,7 +41,7 @@
 
 #include "qmlintegercache_p.h"
 #include <private/qmlengine_p.h>
-#include <QtDeclarative/qmlmetatype.h>
+#include <qmlmetatype.h>
 
 QT_BEGIN_NAMESPACE
 

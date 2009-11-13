@@ -849,6 +849,7 @@ Item {
 \endcode
 
 \section1 Defining new Components
+\target components
 
 A component is a reusable type with a well-defined interface built entirely in
 QML.  Components appear as regular QML elements, and can be used interchangably

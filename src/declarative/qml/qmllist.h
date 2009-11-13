@@ -42,7 +42,7 @@
 #ifndef QMLLIST_H
 #define QMLLIST_H
 
-#include <QtDeclarative/qmlprivate.h>
+#include <qmlprivate.h>
 
 QT_BEGIN_HEADER
 

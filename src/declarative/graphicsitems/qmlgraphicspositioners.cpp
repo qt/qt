@@ -70,15 +70,18 @@ void QmlGraphicsBasePositionerPrivate::watchChanges(QmlGraphicsItem *other)
 void QmlGraphicsBasePositionerPrivate::unwatchChanges(QmlGraphicsItem* other)
 {
     Q_Q(QmlGraphicsBasePositioner);
-    QObject::disconnect(other, SIGNAL(visibleChanged()),
+    bool stillAlive = false; //Use the return from disconnect to see if it was deleted or just reparented
+    stillAlive |= QObject::disconnect(other, SIGNAL(visibleChanged()),
                      q, SLOT(prePositioning()));
-    QObject::disconnect(other, SIGNAL(opacityChanged()),
+    stillAlive |= QObject::disconnect(other, SIGNAL(opacityChanged()),
                      q, SLOT(prePositioning()));
-    QObject::disconnect(other, SIGNAL(heightChanged()),
+    stillAlive |= QObject::disconnect(other, SIGNAL(heightChanged()),
                      q, SLOT(prePositioning()));
-    QObject::disconnect(other, SIGNAL(widthChanged()),
+    stillAlive |= QObject::disconnect(other, SIGNAL(widthChanged()),
                      q, SLOT(prePositioning()));
-    static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))->unregisterSiblingOrderNotification(this);
+    if(stillAlive)
+        static_cast<QmlGraphicsItemPrivate*>(QGraphicsItemPrivate::get(other))
+                ->unregisterSiblingOrderNotification(this);
     watched.removeAll(other);
 }
 
@@ -266,18 +269,9 @@ void QmlGraphicsBasePositioner::prePositioning()
         positionedItems << child;
     }
     QSet<QmlGraphicsItem *> deletedItems = d->_items - allItems;
-    foreach(QmlGraphicsItem *child, d->_items){
-        if (!allItems.contains(child)){
-            if (!deletedItems.contains(child)) {
-                QObject::disconnect(child, SIGNAL(opacityChanged()),
-                                 this, SLOT(prePositioning()));
-                QObject::disconnect(child, SIGNAL(heightChanged()),
-                                 this, SLOT(prePositioning()));
-                QObject::disconnect(child, SIGNAL(widthChanged()),
-                                 this, SLOT(prePositioning()));
-            }
-            d->_items -= child;
-        }
+    foreach(QmlGraphicsItem *child, deletedItems){
+        d->unwatchChanges(child);
+        d->_items -= child;
     }
     d->_animated.clear();
     doPositioning();

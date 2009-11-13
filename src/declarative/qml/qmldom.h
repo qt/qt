@@ -44,7 +44,7 @@
 
 #include <QtCore/qlist.h>
 #include <QtCore/qshareddata.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

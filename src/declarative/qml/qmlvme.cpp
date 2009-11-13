@@ -67,7 +67,7 @@
 #include <private/qmlbinding_p.h>
 #include <private/qmlcontext_p.h>
 #include <private/qmlbindingoptimizations_p.h>
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qmlscriptstring.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -45,10 +45,10 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/qvariant.h>
 #include <QtCore/qbitarray.h>
-#include <QtDeclarative/qmlprivate.h>
-#include <QtDeclarative/qmlparserstatus.h>
-#include <QtDeclarative/qmlpropertyvaluesource.h>
-#include <QtDeclarative/qmlpropertyvalueinterceptor.h>
+#include <qmlprivate.h>
+#include <qmlparserstatus.h>
+#include <qmlpropertyvaluesource.h>
+#include <qmlpropertyvalueinterceptor.h>
 
 QT_BEGIN_HEADER
 
@@ -220,7 +220,7 @@ int qmlRegisterExtendedType(const char *typeName)
         attachedMo = QmlPrivate::attachedPropertiesMetaObject<T>();
     }
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0,
             &T::staticMetaObject, attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
             QmlPrivate::StaticCastSelector<T,QObject>::cast(),

@@ -44,7 +44,7 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qvariant.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

@@ -353,7 +353,7 @@ FxGridItem *QmlGraphicsGridViewPrivate::createItem(int modelIndex)
         listItem->index = modelIndex;
         // complete
         model->completeItem();
-        listItem->item->setZValue(modelIndex + 1);
+        listItem->item->setZValue(1);
         listItem->item->setParent(q->viewport());
     }
     requestedIndex = 0;

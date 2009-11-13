@@ -54,7 +54,7 @@
 
 #include <QtCore/QList>
 #include <QtCore/QUrl>
-#include <QtDeclarative/qmlerror.h>
+#include <qmlerror.h>
 #include "qmlparser_p.h"
 
 QT_BEGIN_HEADER

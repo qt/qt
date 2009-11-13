@@ -42,8 +42,8 @@
 #include "qmlxmllistmodel_p.h"
 #include "private/qobject_p.h"
 
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlcontext.h>
+#include <qmlengine.h>
 #include <QDebug>
 #include <QApplication>
 #include <QThread>

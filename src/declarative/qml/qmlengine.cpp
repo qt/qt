@@ -86,7 +86,7 @@
 #include <private/qmlsqldatabase_p.h>
 #include <private/qmltypenamescriptclass_p.h>
 #include <private/qmllistscriptclass_p.h>
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qmlscriptstring.h>
 #include <private/qmlglobal_p.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
@@ -1140,7 +1140,7 @@ QmlEnginePrivate::Imports::~Imports()
         delete d;
 }
 
-#include <QtDeclarative/qmlmetatype.h>
+#include <qmlmetatype.h>
 #include <private/qmltypenamecache_p.h>
 static QmlTypeNameCache *cacheForNamespace(QmlEngine *engine, const QmlEnginePrivate::ImportedNamespace &set, QmlTypeNameCache *cache)
 {

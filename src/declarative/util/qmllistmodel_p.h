@@ -47,7 +47,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QList>
 #include <QtCore/QVariant>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <private/qlistmodelinterface_p.h>
 #include <QtScript/qscriptvalue.h>
 

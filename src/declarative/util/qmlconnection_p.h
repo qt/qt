@@ -44,8 +44,8 @@
 
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlscriptstring.h>
+#include <qml.h>
+#include <qmlscriptstring.h>
 
 QT_BEGIN_HEADER
 

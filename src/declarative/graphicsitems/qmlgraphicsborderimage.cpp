@@ -44,7 +44,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QFile>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -55,7 +55,7 @@ QML_DEFINE_TYPE(Qt,4,6,BorderImage,QmlGraphicsBorderImage)
     \brief The BorderImage element provides an image that can be used as a border.
     \inherits Item
 
-    \snippet examples/declarative/border-image/example.qml 0
+    \snippet snippets/declarative/border-image.qml 0
 
     \image BorderImage.png
 
