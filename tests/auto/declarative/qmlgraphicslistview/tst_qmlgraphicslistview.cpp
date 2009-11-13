@@ -906,12 +906,20 @@ void tst_QmlGraphicsListView::itemList()
     QVERIFY(item);
     QCOMPARE(item->x(), 0.0);
 
+    QmlGraphicsText *text = findItem<QmlGraphicsText>(viewport, "text1");
+    QVERIFY(text);
+    QCOMPARE(text->text(), QLatin1String("index: 0"));
+
     listview->setCurrentIndex(2);
     QTest::qWait(1000);
 
     item = findItem<QmlGraphicsItem>(viewport, "item3");
     QVERIFY(item);
     QCOMPARE(item->x(), 480.0);
+
+    text = findItem<QmlGraphicsText>(viewport, "text3");
+    QVERIFY(text);
+    QCOMPARE(text->text(), QLatin1String("index: 2"));
 
     delete canvas;
 }
