@@ -54,7 +54,7 @@
 //
 
 #include <private/qmlexpression_p.h>
-#include <QtDeclarative/qmlbinding.h>
+#include <qmlbinding.h>
 
 QT_BEGIN_HEADER
 

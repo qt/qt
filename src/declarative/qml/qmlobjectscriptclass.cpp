@@ -46,7 +46,7 @@
 #include <private/qmldeclarativedata_p.h>
 #include <private/qmltypenamescriptclass_p.h>
 #include <private/qmllistscriptclass_p.h>
-#include <QtDeclarative/qmlbinding.h>
+#include <qmlbinding.h>
 #include <QtCore/qtimer.h>
 
 QT_BEGIN_NAMESPACE

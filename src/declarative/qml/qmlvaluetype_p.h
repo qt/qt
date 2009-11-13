@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-class Q_AUTOTEST_EXPORT QmlValueType : public QObject
+class Q_DECLARATIVE_EXPORT QmlValueType : public QObject
 {
     Q_OBJECT
 public:
@@ -73,7 +73,7 @@ public:
     virtual void setValue(QVariant) = 0;
 };
 
-class Q_AUTOTEST_EXPORT QmlValueTypeFactory
+class Q_DECLARATIVE_EXPORT QmlValueTypeFactory
 {
 public:
     QmlValueTypeFactory();

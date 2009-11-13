@@ -57,8 +57,8 @@
 #include "private/qfxperf_p_p.h"
 
 #include "qmlview.h"
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlengine.h>
+#include <qmlcontext.h>
 #include <private/qmldebug_p.h>
 #include <private/qmldebugservice_p.h>
 #include <QtCore/qabstractanimation.h>

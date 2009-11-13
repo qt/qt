@@ -64,12 +64,12 @@
 #include <private/qmlclassfactory_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qpodvector_p.h>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <private/qmlbasicscript_p.h>
 #include <private/qmlvaluetype_p.h>
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <qmlcontext.h>
+#include <qmlengine.h>
+#include <qmlexpression.h>
 #include <QtScript/qscriptengine.h>
 #include <private/qmlmetaproperty_p.h>
 #include <private/qmlpropertycache_p.h>

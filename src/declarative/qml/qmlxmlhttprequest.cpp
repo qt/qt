@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 #include <QtCore/qobject.h>
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <private/qmlengine_p.h>
 #include <QtScript/qscriptvalue.h>
 #include <QtScript/qscriptcontext.h>

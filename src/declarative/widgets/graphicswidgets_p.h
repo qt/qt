@@ -42,7 +42,7 @@
 #ifndef GRAPHICSWIDGETS_H
 #define GRAPHICSWIDGETS_H
 
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <QtGui/QGraphicsScene>
 #include <QtGui/QGraphicsView>
 #include <QtGui/QGraphicsWidget>

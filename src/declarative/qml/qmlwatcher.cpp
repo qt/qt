@@ -41,10 +41,10 @@
 
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdebug.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <qmlexpression.h>
 #include <private/qmldebugservice_p.h>
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qml.h>
+#include <qmlcontext.h>
+#include <qml.h>
 
 #include "qmlwatcher_p.h"
 

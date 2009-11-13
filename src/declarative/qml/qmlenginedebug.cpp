@@ -43,8 +43,8 @@
 #include "qmlboundsignal_p.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qmetaobject.h>
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlmetatype.h>
+#include <qmlengine.h>
+#include <qmlmetatype.h>
 #include <qmlmetaproperty.h>
 #include <qmlbinding.h>
 #include "qmlcontext_p.h"

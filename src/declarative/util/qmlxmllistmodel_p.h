@@ -42,9 +42,9 @@
 #ifndef QMLXMLLISTMODEL_H
 #define QMLXMLLISTMODEL_H
 
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <private/qlistmodelinterface_p.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 
 QT_BEGIN_HEADER
 
