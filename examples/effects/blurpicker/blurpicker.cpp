@@ -49,24 +49,29 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-BlurPicker::BlurPicker(QWidget *parent): QGraphicsView(parent), m_index(0.0)
+BlurPicker::BlurPicker(QWidget *parent): QGraphicsView(parent), m_index(0.0), m_animation(this, "index")
 {
     setBackgroundBrush(QPixmap(":/images/background.jpg"));
-    setScene(&m_scene);
+    setScene(new QGraphicsScene(this));
 
     setupScene();
-    updateIconPositions();
+    setIndex(0);
 
-    connect(&m_timeLine, SIGNAL(valueChanged(qreal)), SLOT(updateIconPositions()));
-    m_timeLine.setDuration(400);
+    m_animation.setDuration(400);
+    m_animation.setEasingCurve(QEasingCurve::InOutSine);
 
     setRenderHint(QPainter::Antialiasing, true);
     setFrameStyle(QFrame::NoFrame);
 }
 
-void BlurPicker::updateIconPositions()
+qreal BlurPicker::index() const
 {
-    m_index = m_timeLine.currentFrame() / 1000.0;
+    return m_index;
+}
+
+void BlurPicker::setIndex(qreal index)
+{
+    m_index = index;
 
     qreal baseline = 0;
     for (int i = 0; i < m_icons.count(); ++i) {
@@ -82,12 +87,12 @@ void BlurPicker::updateIconPositions()
         static_cast<BlurEffect *>(icon->graphicsEffect())->setBaseLine(baseline);
     }
 
-    m_scene.update();
+    scene()->update();
 }
 
 void BlurPicker::setupScene()
 {
-    m_scene.setSceneRect(-200, -120, 400, 240);
+    scene()->setSceneRect(-200, -120, 400, 240);
 
     QStringList names;
     names << ":/images/accessories-calculator.png";
@@ -101,32 +106,34 @@ void BlurPicker::setupScene()
 
     for (int i = 0; i < names.count(); i++) {
         QPixmap pixmap(names[i]);
-        QGraphicsPixmapItem *icon = m_scene.addPixmap(pixmap);
+        QGraphicsPixmapItem *icon = scene()->addPixmap(pixmap);
         icon->setZValue(1);
         icon->setGraphicsEffect(new BlurEffect(icon));
         m_icons << icon;
     }
 
-    QGraphicsPixmapItem *bg = m_scene.addPixmap(QPixmap(":/images/background.jpg"));
+    QGraphicsPixmapItem *bg = scene()->addPixmap(QPixmap(":/images/background.jpg"));
     bg->setZValue(0);
     bg->setPos(-200, -150);
 }
 
 void BlurPicker::keyPressEvent(QKeyEvent *event)
 {
-    if (event->key() == Qt::Key_Left) {
-        if (m_timeLine.state() == QTimeLine::NotRunning) {
-            m_timeLine.setFrameRange(m_index * 1000, m_index * 1000 - 1000);
-            m_timeLine.start();
-            event->accept();
-        }
+    int delta = 0;
+    switch (event->key())
+    {
+    case Qt::Key_Left:
+        delta = -1;
+        break;
+    case  Qt::Key_Right:
+        delta = 1;
+        break;
+    default:
+        break;
     }
-
-    if (event->key() == Qt::Key_Right) {
-        if (m_timeLine.state() == QTimeLine::NotRunning) {
-            m_timeLine.setFrameRange(m_index * 1000, m_index * 1000 + 1000);
-            m_timeLine.start();
+    if (m_animation.state() == QAbstractAnimation::Stopped && delta) {
+            m_animation.setEndValue(m_index + delta);
+            m_animation.start();
             event->accept();
-        }
     }
 }

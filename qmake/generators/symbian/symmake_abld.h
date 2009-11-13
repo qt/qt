@@ -55,6 +55,7 @@ protected:
     virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension);
     virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly);
     virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile);
+    virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath);
 
     void writeStoreBuildTarget(QTextStream &t);
     bool writeDeploymentTargets(QTextStream &t);

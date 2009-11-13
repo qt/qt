@@ -26,12 +26,17 @@ QT_BEGIN_NAMESPACE
 
 using namespace Phonon::MMF;
 
-/*! \class MMF::AncestorMoveMonitor
+/*! \class Phonon::MMF::AncestorMoveMonitor
   \internal
   \brief Class which installs a global event filter, and listens for move
   events which may affect the absolute position of widgets registered with
   the monitor
   See QTBUG-4956
+*/
+
+
+/*! \class Phonon::MMF::VideoOutputObserver
+    \internal
 */
 
 //-----------------------------------------------------------------------------

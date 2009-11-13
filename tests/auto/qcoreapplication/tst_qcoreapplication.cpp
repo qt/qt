@@ -58,6 +58,7 @@ private slots:
 #endif
     void applicationPid();
     void globalPostedEventsCount();
+    void processEventsAlwaysSendsPostedEvents();
 };
 
 class EventSpy : public QObject
@@ -486,6 +487,41 @@ void tst_QCoreApplication::globalPostedEventsCount()
                           << 1
                           << 0;
     QCOMPARE(x.globalPostedEventsCount, expected);
+}
+
+class ProcessEventsAlwaysSendsPostedEventsObject : public QObject
+{
+public:
+    int counter;
+
+    inline ProcessEventsAlwaysSendsPostedEventsObject()
+        : counter(0)
+    { }
+
+    bool event(QEvent *event)
+    {
+        if (event->type() == QEvent::User)
+            ++counter;
+        return QObject::event(event);
+    }
+};
+
+void tst_QCoreApplication::processEventsAlwaysSendsPostedEvents()
+{
+    int argc = 1;
+    char *argv[] = { "tst_qcoreapplication" };
+    QCoreApplication app(argc, argv);
+
+    ProcessEventsAlwaysSendsPostedEventsObject object;
+    QTime t;
+    t.start();
+    int i = 1;
+    do {
+        QCoreApplication::postEvent(&object, new QEvent(QEvent::User));
+        QCoreApplication::processEvents();
+        QCOMPARE(object.counter, i);
+        ++i;
+    } while (t.elapsed() < 3000);
 }
 
 QTEST_APPLESS_MAIN(tst_QCoreApplication)

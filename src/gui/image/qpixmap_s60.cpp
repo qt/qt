@@ -349,7 +349,8 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     bitmapDevice(0),
     bitmapGc(0),
     pengine(0),
-    bytes(0)
+    bytes(0),
+    formatLocked(false)
 {
 
 }
@@ -425,11 +426,12 @@ void QS60PixmapData::release()
 }
 
 /*!
- * Takes ownership of bitmap
+ * Takes ownership of bitmap. Used by window surface
  */
 void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap)
 {
 	cfbsBitmap = bitmap;
+	formatLocked = true;
 
 	 if(!initSymbianBitmapContext()) {
 		qWarning("Could not create CBitmapContext");
@@ -693,8 +695,10 @@ void QS60PixmapData::beginDataAccess()
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
     QImage::Format format = qt_TDisplayMode2Format(mode);
-    //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
-    if (format == QImage::Format_ARGB32)
+    // On S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type.
+    // S60 window surface needs backing store pixmap for transparent window in ARGB32 format.
+    // In that case formatLocked is true.
+    if (!formatLocked && format == QImage::Format_ARGB32)
         format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
 
     QVector<QRgb> savedColorTable;
