@@ -1180,7 +1180,7 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
 
     QRect r = originRect(rect, background()->origin);
     QRect aligned = QStyle::alignedRect(Qt::LeftToRight, background()->position, bgp.size(), r);
-    QRect inter = aligned.intersected(r);
+    QRect inter = aligned.translated(-off).intersected(r);
 
     switch (background()->repeat) {
     case Repeat_Y:

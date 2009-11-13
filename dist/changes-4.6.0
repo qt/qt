@@ -56,7 +56,10 @@ MR#1234    - Merge Request: http://qt.gitorious.org
     * New abstract video output classes.
 
  - New state machine framework added to QtCore.
- 
+
+ - QtTest now supports outputting XUnit XML documents, for integrating
+   with existing continuous integration systems. This is enabled by
+   running the test program with the -xunitxml option.
 
 Third party components
 ----------------------

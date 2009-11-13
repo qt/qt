@@ -97,8 +97,9 @@ void EffectWidgetPrivate::autogenerateUi()
     Q_Q(EffectWidget);
     QVBoxLayout *mainLayout = new QVBoxLayout(q);
     mainLayout->setMargin(0);
-    for (int i = 0; i < effect->parameters().count(); ++i) {
-        const EffectParameter &para = effect->parameters().at(i);
+    const QList<Phonon::EffectParameter> parameters = effect->parameters();
+    for (int i = 0; i < parameters.count(); ++i) {
+        const EffectParameter &para = parameters.at(i);
         QVariant value = effect->parameterValue(para);
         QHBoxLayout *pLayout = new QHBoxLayout;
         mainLayout->addLayout(pLayout);
