@@ -103,7 +103,7 @@ void QGraphicsSystemFbScreen::raise(QWindowSurface * surface)
     int index = windowStack.indexOf(s);
     if (index <= 0)
         return;
-    windowStack.move(index, index - 1);
+    windowStack.move(index, 0);
     setDirty(s->geometry());
 }
 
@@ -113,7 +113,7 @@ void QGraphicsSystemFbScreen::lower(QWindowSurface * surface)
     int index = windowStack.indexOf(s);
     if (index == -1 || index == (windowStack.size() - 1))
         return;
-    windowStack.move(index, index + 1);
+    windowStack.move(index, windowStack.size() - 1);
     setDirty(s->geometry());
 }
 
