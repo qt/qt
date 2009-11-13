@@ -11,16 +11,20 @@ http://qt.nokia.com/doc/latest/porting4.html.
 
 INSTALLING Qt
 
+If you have a source package (a .tar.gz, or .zip file), follow the
+instructions in the INSTALL file.
+
 On Windows and Mac OS X, if you want to install the precompiled binary
 packages, simply launch the package and follow the instructions in the
 installation wizard.
 
-On Mac OS X, the binary package requires Mac OS X 10.4.x (Tiger) or
+For Mac OS X Carbon, the binary package requires Mac OS X 10.4 (Tiger) or
 later and GCC 4.0.1 to develop applications. Its applications will run
-on Mac OS X 10.3.9 and above.
+on Mac OS X 10.4 and above.
 
-If you have a source package (a .tar.gz, or .zip file), follow the
-instructions in the INSTALL file.
+For Mac OS X Cocoa, the binary package requires Mac OS X 10.5 (Leopard) or
+later and GCC 4.0.1 to develop applications.  Its applications will run
+on Mac OS X 10.5 and above.
 
 
 DEMOS AND EXAMPLES
