@@ -89,6 +89,7 @@ bool ContentWindow::syncToContent(const QUrl& url)
 
 void ContentWindow::expandTOC()
 {
+    Q_ASSERT(m_expandDepth >= -2);
     if (m_expandDepth > -2) {
         expandToDepth(m_expandDepth);
         m_expandDepth = -2;
@@ -97,11 +98,14 @@ void ContentWindow::expandTOC()
 
 void ContentWindow::expandToDepth(int depth)
 {
+    Q_ASSERT(depth >= -2);
     m_expandDepth = depth;
     if (depth == -1)
         m_contentWidget->expandAll();
+    else if (depth == 0)
+        m_contentWidget->collapseAll();
     else
-        m_contentWidget->expandToDepth(depth);
+        m_contentWidget->expandToDepth(depth - 1);
 }
 
 void ContentWindow::focusInEvent(QFocusEvent *e)

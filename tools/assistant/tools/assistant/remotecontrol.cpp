@@ -112,7 +112,7 @@ RemoteControl::RemoteControl(MainWindow *mainWindow, QHelpEngine *helpEngine)
     , m_debug(false)
     , m_caching(true)
     , m_syncContents(false)
-    , m_expandTOC(-3)
+    , m_expandTOC(-2)
 
 {
     connect(m_mainWindow, SIGNAL(initDone()), this, SLOT(applyCache()));
@@ -265,15 +265,15 @@ void RemoteControl::handleActivateIdentifierCommand(const QString &arg)
 void RemoteControl::handleExpandTocCommand(const QString &arg)
 {
     bool ok = false;
-    int depth = -1;
+    int depth = -2;
     if (!arg.isEmpty())
         depth = arg.toInt(&ok);
-    if (!ok)
-        depth = -1;
+    if (!ok || depth < -2)
+        depth = -2;
 
     if (m_caching)
         m_expandTOC = depth;
-    else
+    else if (depth != -2)
         m_mainWindow->expandTOC(depth);
 }
 
@@ -330,7 +330,8 @@ void RemoteControl::applyCache()
     if (m_syncContents)
         m_mainWindow->syncContents();
 
-    if (m_expandTOC != -3)
+    Q_ASSERT(m_expandTOC >= -2);
+    if (m_expandTOC != -2)
         m_mainWindow->expandTOC(m_expandTOC);
 
     m_caching = false;

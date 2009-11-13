@@ -722,13 +722,20 @@
             \o Selects the item in the contents widget which corresponds to
             the currently displayed page.
         \row
-            \o \c{setCurrentFilter}
+            \o \c{setCurrentFilter <filter>}
             \o Selects the specified filter and updates the visual representation
             accordingly.
         \row
             \o \c{expandToc <Depth>}
             \o Expands the table of contents tree to the given depth. If depth
-            is less than 1, the tree will be collapsed completely.
+            is 0, the tree will be collapsed completely. If depth is -1,
+            the tree will be expanded completely.
+        \row
+            \o \c{register <help file>}
+            \o Adds the given Qt compressed help file to the collection.
+        \row
+            \o \c{unregister <help file>}
+            \o Removes the given Qt compressed help file from the collection.
     \endtable
 
     If you want to send several commands within a short period of time, it is

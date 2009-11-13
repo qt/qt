@@ -1007,6 +1007,7 @@ void MainWindow::filterDocumentation(const QString &customFilter)
 
 void MainWindow::expandTOC(int depth)
 {
+    Q_ASSERT(depth >= -1);
     m_contentWindow->expandToDepth(depth);
 }
 
