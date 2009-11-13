@@ -91,16 +91,16 @@
 
 namespace {
 
-class NodeImpl : public QmlRefCount
+class DocumentImpl;
+class NodeImpl 
 {
 public:
-    NodeImpl() : type(Element), parent(0) {}
+    NodeImpl() : type(Element), document(0), parent(0) {}
     virtual ~NodeImpl() { 
-        if (parent) D(parent); 
         for (int ii = 0; ii < children.count(); ++ii)
-            D(children.at(ii));
+            delete children.at(ii);
         for (int ii = 0; ii < attributes.count(); ++ii)
-            D(attributes.at(ii));
+            delete attributes.at(ii);
     }
 
     // These numbers are copied from the Node IDL definition
@@ -125,18 +125,22 @@ public:
 
     QString data;
 
+    void addref();
+    void release();
+
+    DocumentImpl *document;
     NodeImpl *parent;
 
     QList<NodeImpl *> children;
     QList<NodeImpl *> attributes;
 };
 
-class DocumentImpl : public NodeImpl
+class DocumentImpl : public QmlRefCount, public NodeImpl
 {
 public:
     DocumentImpl() : root(0) { type = Document; }
     virtual ~DocumentImpl() {
-        if (root) D(root);
+        if (root) delete root;
     }
 
     QString version;
@@ -144,6 +148,9 @@ public:
     bool isStandalone;
 
     NodeImpl *root;
+
+    void addref() { QmlRefCount::addref(); }
+    void release() { QmlRefCount::release(); }
 };
 
 class NamedNodeMap
@@ -311,6 +318,16 @@ public:
 Q_DECLARE_METATYPE(Node);
 Q_DECLARE_METATYPE(NodeList);
 Q_DECLARE_METATYPE(NamedNodeMap);
+
+void NodeImpl::addref() 
+{
+    A(document);
+}
+
+void NodeImpl::release()
+{
+    D(document);
+}
 
 QScriptValue Node::nodeName(QScriptContext *context, QScriptEngine *engine)
 {
@@ -616,6 +633,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         case QXmlStreamReader::StartDocument:
             Q_ASSERT(!document);
             document = new DocumentImpl;
+            document->document = document;
             document->version = reader.documentVersion().toString();
             document->encoding = reader.documentEncoding().toString();
             document->isStandalone = reader.isStandaloneDocument();
@@ -626,25 +644,25 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         {
             Q_ASSERT(document);
             NodeImpl *node = new NodeImpl;
+            node->document = document;
             node->namespaceUri = reader.namespaceUri().toString();
             node->name = reader.name().toString();
             if (nodeStack.isEmpty()) {
                 document->root = node;
             } else {
                 node->parent = nodeStack.top();
-                A(node->parent);
                 node->parent->children.append(node);
             }
             nodeStack.append(node);
 
             foreach (const QXmlStreamAttribute &a, reader.attributes()) {
                 NodeImpl *attr = new NodeImpl;
+                attr->document = document;
                 attr->type = NodeImpl::Attr;
                 attr->namespaceUri = a.namespaceUri().toString();
                 attr->name = a.name().toString();
                 attr->data = a.value().toString();
                 attr->parent = node;
-                A(attr->parent);
                 node->attributes.append(attr);
             }
         } 
@@ -655,9 +673,9 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         case QXmlStreamReader::Characters:
         {
             NodeImpl *node = new NodeImpl;
+            node->document = document;
             node->type = reader.isCDATA()?NodeImpl::CDATA:NodeImpl::Text;
             node->parent = nodeStack.top();
-            A(node->parent);
             node->parent->children.append(node);
             node->data = reader.text().toString();
         }
@@ -827,8 +845,7 @@ NamedNodeMapClass::QueryFlags NamedNodeMapClass::queryProperty(const QScriptValu
         return 0;
 
     NamedNodeMap map = qscriptvalue_cast<NamedNodeMap>(object.data());
-    if (map.isNull())
-        return 0;
+    Q_ASSERT(!map.isNull());
 
     bool ok = false;
     QString nameString = name.toString();
@@ -1307,7 +1324,7 @@ static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 2)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
 
     if (request->readyState() != QmlXMLHttpRequest::Opened ||
@@ -1388,7 +1405,7 @@ static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context,
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 1)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
@@ -1408,7 +1425,7 @@ static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *cont
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 0)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
