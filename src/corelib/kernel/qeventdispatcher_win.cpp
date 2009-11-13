@@ -70,7 +70,8 @@ extern uint qGlobalPostedEventsCount();
 
 enum {
     WM_QT_SOCKETNOTIFIER = WM_USER,
-    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1
+    WM_QT_SENDPOSTEDEVENTS = WM_USER + 1,
+    SendPostedEventsTimerId = ~1u
 };
 
 #if defined(Q_OS_WINCE)
@@ -470,7 +471,7 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         }
         return 0;
     } else if (message == WM_TIMER) {    
-        if (wp == ~0u) {
+        if (wp == SendPostedEventsTimerId) {
             KillTimer(d->internalHwnd, wp);
             int localSerialNumber = d->serialNumber;
             (void) d->wakeUps.fetchAndStoreRelease(0);
@@ -488,7 +489,14 @@ LRESULT CALLBACK qt_internal_proc(HWND hwnd, UINT message, WPARAM wp, LPARAM lp)
         if (GetQueueStatus(QS_INPUT | QS_RAWINPUT | QS_TIMER) != 0) {
             // delay the next pass of sendPostedEvents() until we get the special
             // WM_TIMER, which allows all pending Windows messages to be processed
-            SetTimer(d->internalHwnd, ~0u, 0, 0);
+            if (SetTimer(d->internalHwnd, SendPostedEventsTimerId, 0, 0) == 0) {
+                // failed to start the timer, oops, clear wakeUps in an attempt to keep things running
+                qErrnoWarning("Qt: INTERNAL ERROR: failed to start sendPostedEvents() timer");
+                d->wakeUps.fetchAndStoreRelease(0);
+            } else {
+                // SetTimer() succeeded, nothing to do now
+                ;
+            }
         } else {
             // nothing pending in the queue, let sendPostedEvents go through
             d->wakeUps.fetchAndStoreRelease(0);
@@ -531,15 +539,16 @@ static HWND qt_create_internal_window(const QEventDispatcherWin32 *eventDispatch
                             qWinAppInst(),     // application
                             0);                // windows creation data.
 
+    if (!wnd) {
+        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
+    }
+
 #ifdef GWLP_USERDATA
     SetWindowLongPtr(wnd, GWLP_USERDATA, (LONG_PTR)eventDispatcher);
 #else
     SetWindowLong(wnd, GWL_USERDATA, (LONG)eventDispatcher);
 #endif
 
-    if (!wnd) {
-        qWarning("QEventDispatcher: Failed to create QEventDispatcherWin32 internal window: %d\n", (int)GetLastError());
-    }
     return wnd;
 }
 
@@ -550,7 +559,7 @@ void QEventDispatcherWin32Private::registerTimer(WinTimerInfo *t)
     Q_Q(QEventDispatcherWin32);
 
     int ok = 0;
-    if (t->interval > 15 || !t->interval || !qtimeSetEvent) {
+    if (t->interval > 20 || !t->interval || !qtimeSetEvent) {
         ok = 1;
         if (!t->interval)  // optimization for single-shot-zero-timer
             QCoreApplication::postEvent(q, new QZeroTimerEvent(t->timerId));
@@ -666,6 +675,11 @@ bool QEventDispatcherWin32::processEvents(QEventLoop::ProcessEventsFlags flags)
     bool seenWM_QT_SENDPOSTEDEVENTS = false;
     bool needWM_QT_SENDPOSTEDEVENTS = false;
     do {
+        if (! (flags & QEventLoop::EventLoopExec)) {
+            // when called "manually", always send posted events
+            QCoreApplicationPrivate::sendPostedEvents(0, 0, d->threadData);
+        }
+
         DWORD waitRet = 0;
         HANDLE pHandles[MAXIMUM_WAIT_OBJECTS - 1];
         QVarLengthArray<MSG> processedTimers;

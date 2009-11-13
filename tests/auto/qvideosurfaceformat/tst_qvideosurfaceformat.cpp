@@ -68,8 +68,8 @@ private slots:
     void scanLineDirection();
     void frameRate_data();
     void frameRate();
-    void yuvColorSpace_data();
-    void yuvColorSpace();
+    void yCbCrColorSpace_data();
+    void yCbCrColorSpace();
     void pixelAspectRatio_data();
     void pixelAspectRatio();
     void sizeHint_data();
@@ -80,9 +80,6 @@ private slots:
     void copy();
     void assign();
 };
-
-Q_DECLARE_METATYPE(QVideoSurfaceFormat::ViewportMode)
-
 
 tst_QVideoSurfaceFormat::tst_QVideoSurfaceFormat()
 {
@@ -122,7 +119,7 @@ void tst_QVideoSurfaceFormat::constructNull()
     QCOMPARE(format.scanLineDirection(), QVideoSurfaceFormat::TopToBottom);
     QCOMPARE(format.frameRate(), 0.0);
     QCOMPARE(format.pixelAspectRatio(), QSize(1, 1));
-    QCOMPARE(format.yuvColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
+    QCOMPARE(format.yCbCrColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
 }
 
 void tst_QVideoSurfaceFormat::construct_data()
@@ -161,7 +158,7 @@ void tst_QVideoSurfaceFormat::construct()
     QCOMPARE(format.scanLineDirection(), QVideoSurfaceFormat::TopToBottom);
     QCOMPARE(format.frameRate(), 0.0);
     QCOMPARE(format.pixelAspectRatio(), QSize(1, 1));
-    QCOMPARE(format.yuvColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
+    QCOMPARE(format.yCbCrColorSpace(), QVideoSurfaceFormat::YCbCr_Undefined);
 }
 
 void tst_QVideoSurfaceFormat::frameSize_data()
@@ -202,45 +199,23 @@ void tst_QVideoSurfaceFormat::viewport_data()
     QTest::addColumn<QSize>("initialSize");
     QTest::addColumn<QRect>("viewport");
     QTest::addColumn<QSize>("newSize");
-    QTest::addColumn<QVideoSurfaceFormat::ViewportMode>("viewportMode");
     QTest::addColumn<QRect>("expectedViewport");
 
     QTest::newRow("grow reset")
             << QSize(64, 64)
             << QRect(8, 8, 48, 48)
             << QSize(1024, 1024)
-            << QVideoSurfaceFormat::ResetViewport
             << QRect(0, 0, 1024, 1024);
-    QTest::newRow("grow keep")
-            << QSize(64, 64)
-            << QRect(8, 8, 48, 48)
-            << QSize(1024, 1024)
-            << QVideoSurfaceFormat::KeepViewport
-            << QRect(8, 8, 48, 48);
     QTest::newRow("shrink reset")
             << QSize(1024, 1024)
             << QRect(8, 8, 1008, 1008)
             << QSize(64, 64)
-            << QVideoSurfaceFormat::ResetViewport
             << QRect(0, 0, 64, 64);
-    QTest::newRow("shrink keep")
-            << QSize(1024, 1024)
-            << QRect(8, 8, 1008, 1008)
-            << QSize(64, 64)
-            << QVideoSurfaceFormat::KeepViewport
-            << QRect(8, 8, 56, 56);
     QTest::newRow("unchanged reset")
             << QSize(512, 512)
             << QRect(8, 8, 496, 496)
             << QSize(512, 512)
-            << QVideoSurfaceFormat::ResetViewport
             << QRect(0, 0, 512, 512);
-    QTest::newRow("unchanged keep")
-            << QSize(512, 512)
-            << QRect(8, 8, 496, 496)
-            << QSize(512, 512)
-            << QVideoSurfaceFormat::KeepViewport
-            << QRect(8, 8, 496, 496);
 }
 
 void tst_QVideoSurfaceFormat::viewport()
@@ -248,7 +223,6 @@ void tst_QVideoSurfaceFormat::viewport()
     QFETCH(QSize, initialSize);
     QFETCH(QRect, viewport);
     QFETCH(QSize, newSize);
-    QFETCH(QVideoSurfaceFormat::ViewportMode, viewportMode);
     QFETCH(QRect, expectedViewport);
 
     {
@@ -261,7 +235,7 @@ void tst_QVideoSurfaceFormat::viewport()
         QCOMPARE(format.viewport(), viewport);
         QCOMPARE(format.property("viewport").toRect(), viewport);
 
-        format.setFrameSize(newSize, viewportMode);
+        format.setFrameSize(newSize);
 
         QCOMPARE(format.viewport(), expectedViewport);
         QCOMPARE(format.property("viewport").toRect(), expectedViewport);
@@ -318,13 +292,13 @@ void tst_QVideoSurfaceFormat::frameRate_data()
     QTest::addColumn<qreal>("frameRate");
 
     QTest::newRow("null")
-            << 0.0;
+            << qreal(0.0);
     QTest::newRow("1/1")
-            << 1.0;
+            << qreal(1.0);
     QTest::newRow("24/1")
-            << 24.0;
+            << qreal(24.0);
     QTest::newRow("15/2")
-            << 7.5;
+            << qreal(7.5);
 }
 
 void tst_QVideoSurfaceFormat::frameRate()
@@ -350,9 +324,9 @@ void tst_QVideoSurfaceFormat::frameRate()
     }
 }
 
-void tst_QVideoSurfaceFormat::yuvColorSpace_data()
+void tst_QVideoSurfaceFormat::yCbCrColorSpace_data()
 {
-    QTest::addColumn<QVideoSurfaceFormat::YuvColorSpace>("colorspace");
+    QTest::addColumn<QVideoSurfaceFormat::YCbCrColorSpace>("colorspace");
 
     QTest::newRow("undefined")
             << QVideoSurfaceFormat::YCbCr_Undefined;
@@ -364,24 +338,24 @@ void tst_QVideoSurfaceFormat::yuvColorSpace_data()
             << QVideoSurfaceFormat::YCbCr_JPEG;
 }
 
-void tst_QVideoSurfaceFormat::yuvColorSpace()
+void tst_QVideoSurfaceFormat::yCbCrColorSpace()
 {
-    QFETCH(QVideoSurfaceFormat::YuvColorSpace, colorspace);
+    QFETCH(QVideoSurfaceFormat::YCbCrColorSpace, colorspace);
 
     {
         QVideoSurfaceFormat format(QSize(64, 64), QVideoFrame::Format_RGB32);
-        format.setYuvColorSpace(colorspace);
+        format.setYCbCrColorSpace(colorspace);
 
-        QCOMPARE(format.yuvColorSpace(), colorspace);
-        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::YuvColorSpace>(format.property("yuvColorSpace")),
+        QCOMPARE(format.yCbCrColorSpace(), colorspace);
+        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::YCbCrColorSpace>(format.property("yCbCrColorSpace")),
                 colorspace);
     }
     {
         QVideoSurfaceFormat format(QSize(64, 64), QVideoFrame::Format_RGB32);
-        format.setProperty("yuvColorSpace", qVariantFromValue(colorspace));
+        format.setProperty("yCbCrColorSpace", qVariantFromValue(colorspace));
 
-        QCOMPARE(format.yuvColorSpace(), colorspace);
-        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::YuvColorSpace>(format.property("yuvColorSpace")),
+        QCOMPARE(format.yCbCrColorSpace(), colorspace);
+        QCOMPARE(qvariant_cast<QVideoSurfaceFormat::YCbCrColorSpace>(format.property("yCbCrColorSpace")),
                 colorspace);
     }
 }
@@ -483,7 +457,7 @@ void tst_QVideoSurfaceFormat::staticPropertyNames()
     QVERIFY(propertyNames.contains("scanLineDirection"));
     QVERIFY(propertyNames.contains("frameRate"));
     QVERIFY(propertyNames.contains("pixelAspectRatio"));
-    QVERIFY(propertyNames.contains("yuvColorSpace"));
+    QVERIFY(propertyNames.contains("yCbCrColorSpace"));
     QVERIFY(propertyNames.contains("sizeHint"));
     QCOMPARE(propertyNames.count(), 10);
 }
@@ -566,19 +540,26 @@ void tst_QVideoSurfaceFormat::compare()
     QCOMPARE(format1 == format4, false);
     QCOMPARE(format1 != format4, true);
 
-    format2.setFrameSize(1024, 768, QVideoSurfaceFormat::ResetViewport);
+    format2.setFrameSize(1024, 768);
 
     // Not equal, frame size differs.
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format1.setFrameSize(1024, 768, QVideoSurfaceFormat::KeepViewport);
+    format1.setFrameSize(1024, 768);
 
-    // Not equal, viewport differs.
+    // Equal.
+    QCOMPARE(format1 == format2, true);
+    QCOMPARE(format1 != format2, false);
+
+    format1.setViewport(QRect(0, 0, 800, 600));
+    format2.setViewport(QRect(112, 84, 800, 600));
+
+    // Not equal, viewports differ.
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format1.setViewport(QRect(0, 0, 1024, 768));
+    format1.setViewport(QRect(112, 84, 800, 600));
 
     // Equal.
     QCOMPARE(format1 == format2, true);
@@ -602,7 +583,7 @@ void tst_QVideoSurfaceFormat::compare()
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format2.setFrameRate(7.50001);
+    format2.setFrameRate(qreal(7.50001));
 
     // Equal.
     QCOMPARE(format1 == format2, true);
@@ -620,13 +601,13 @@ void tst_QVideoSurfaceFormat::compare()
     QCOMPARE(format1 == format2, true);
     QCOMPARE(format1 != format2, false);
 
-    format2.setYuvColorSpace(QVideoSurfaceFormat::YCbCr_xvYCC601);
+    format2.setYCbCrColorSpace(QVideoSurfaceFormat::YCbCr_xvYCC601);
 
     // Not equal yuv color space differs.
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format1.setYuvColorSpace(QVideoSurfaceFormat::YCbCr_xvYCC601);
+    format1.setYCbCrColorSpace(QVideoSurfaceFormat::YCbCr_xvYCC601);
 
     // Equal.
     QCOMPARE(format1 == format2, true);

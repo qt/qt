@@ -273,7 +273,7 @@ void QMenuPrivate::updateActionRects() const
 
     for (int i = 0; i < actions.count(); ++i) {
         QAction *action = actions.at(i);
-        if (action->isSeparator() || !action->isVisible() || widgetItems.at(i))
+        if (action->isSeparator() || !action->isVisible() || widgetItems.contains(action))
             continue;
         //..and some members
         hasCheckableItems |= action->isCheckable();
@@ -301,7 +301,7 @@ void QMenuPrivate::updateActionRects() const
         const QFontMetrics &fm = opt.fontMetrics;
 
         QSize sz;
-        if (QWidget *w = widgetItems.at(i)) {
+        if (QWidget *w = widgetItems.value(action)) {
           sz = w->sizeHint().expandedTo(w->minimumSize()).expandedTo(w->minimumSizeHint()).boundedTo(w->maximumSize());
         } else {
             //calc what I think the size is..
@@ -370,7 +370,7 @@ void QMenuPrivate::updateActionRects() const
         rect.setWidth(max_column_width); //uniform width
 
         //we need to update the widgets geometry
-        if (QWidget *widget = widgetItems.at(i)) {
+        if (QWidget *widget = widgetItems.value(actions.at(i))) {
             widget->setGeometry(rect);
             widget->setVisible(actions.at(i)->isVisible());
         }
@@ -583,8 +583,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
             q->update(actionRect(action));
 
             if (reason == SelectedFromKeyboard) {
-                const int actionIndex = actions.indexOf(action);
-                QWidget *widget = widgetItems.at(actionIndex);
+                QWidget *widget = widgetItems.value(action);
                 if (widget) {
                     if (widget->focusPolicy() != Qt::NoFocus)
                         widget->setFocus(Qt::TabFocusReason);
@@ -603,14 +602,7 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
         }
 #ifndef QT_NO_STATUSTIP
     }  else if (previousAction) {
-        QWidget *w = causedPopup.widget;
-        while (QMenu *m = qobject_cast<QMenu*>(w))
-            w = m->d_func()->causedPopup.widget;
-        if (w) {
-            QString empty;
-            QStatusTipEvent tip(empty);
-            QApplication::sendEvent(w, &tip);
-        }
+        previousAction->d_func()->showStatusText(topCausedWidget(), QString());
 #endif
     }
     if (hideActiveMenu) {
@@ -622,6 +614,15 @@ void QMenuPrivate::setCurrentAction(QAction *action, int popup, SelectionReason 
 #endif
         hideMenu(hideActiveMenu);
     }
+}
+
+//return the top causedPopup.widget that is not a QMenu
+QWidget *QMenuPrivate::topCausedWidget() const
+{
+    QWidget* top = causedPopup.widget;
+    while (QMenu* m = qobject_cast<QMenu *>(top))
+        top = m->d_func()->causedPopup.widget;
+    return top;
 }
 
 QAction *QMenuPrivate::actionAt(QPoint p) const
@@ -800,7 +801,7 @@ void QMenuPrivate::scrollMenu(QAction *action, QMenuScroller::ScrollLocation loc
             current.moveTop(current.top() + delta);
 
             //we need to update the widgets geometry
-            if (QWidget *w = widgetItems.at(i))
+            if (QWidget *w = widgetItems.value(actions.at(i)))
                 w->setGeometry(current);
         }
     }
@@ -1095,10 +1096,7 @@ void QMenuPrivate::activateAction(QAction *action, QAction::ActionEvent action_e
             QAccessible::updateAccessibility(q, actionIndex, QAccessible::Selection);
         }
 #endif
-        QWidget *w = causedPopup.widget;
-        while (QMenu *m = qobject_cast<QMenu*>(w))
-            w = m->d_func()->causedPopup.widget;
-        action->showStatusText(w);
+        action->showStatusText(topCausedWidget());
     } else {
         actionAboutToTrigger = 0;
     }
@@ -1392,11 +1390,12 @@ QMenu::QMenu(QMenuPrivate &dd, QWidget *parent)
 QMenu::~QMenu()
 {
     Q_D(QMenu);
-    for (int i = 0; i < d->widgetItems.count(); ++i) {
-        if (QWidget *widget = d->widgetItems.at(i)) {
-            QWidgetAction *action = static_cast<QWidgetAction *>(d->actions.at(i));
+    QHash<QAction *, QWidget *>::iterator it = d->widgetItems.begin();
+    for (; it != d->widgetItems.end(); ++it) {
+        if (QWidget *widget = it.value()) {
+            QWidgetAction *action = static_cast<QWidgetAction *>(it.key());
             action->releaseWidget(widget);
-            d->widgetItems[i] = 0;
+            *it = 0;
         }
     }
 
@@ -1801,10 +1800,7 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
 #ifndef QT_NO_MENUBAR
     // if this menu is part of a chain attached to a QMenuBar, set the
     // _NET_WM_WINDOW_TYPE_DROPDOWN_MENU X11 window type
-    QWidget* top = this;
-    while (QMenu* m = qobject_cast<QMenu *>(top))
-        top = m->d_func()->causedPopup.widget;
-    setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu, qobject_cast<QMenuBar *>(top) != 0);
+    setAttribute(Qt::WA_X11NetWmWindowTypeDropDownMenu, qobject_cast<QMenuBar *>(d->topCausedWidget()) != 0);
 #endif
 
     ensurePolished(); // Get the right font
@@ -1878,9 +1874,11 @@ void QMenu::popup(const QPoint &p, QAction *atAction)
             if(snapToMouse) //position flowing left from the mouse
                 pos.setX(mouse.x()-size.width());
 
+#ifndef QT_NO_MENUBAR
             //if in a menubar, it should be right-aligned
             if (qobject_cast<QMenuBar*>(d->causedPopup.widget))
                 pos.rx() -= size.width();
+#endif //QT_NO_MENUBAR
 
             if (pos.x() < screen.left()+desktopFrame)
                 pos.setX(qMax(p.x(), screen.left()+desktopFrame));
@@ -2151,7 +2149,7 @@ void QMenu::paintEvent(QPaintEvent *e)
         QAction *action = d->actions.at(i);
         QRect adjustedActionRect = d->actionRects.at(i);
         if (!e->rect().intersects(adjustedActionRect)
-            || d->widgetItems.at(i))
+            || d->widgetItems.value(action))
            continue;
         //set the clip region to be extra safe (and adjust for the scrollers)
         QRegion adjustedActionReg(adjustedActionRect);
@@ -2750,18 +2748,14 @@ void QMenu::keyPressEvent(QKeyEvent *e)
             }
         }
         if (!key_consumed) {
-            if (QWidget *caused = d->causedPopup.widget) {
-                while(QMenu *m = qobject_cast<QMenu*>(caused))
-                    caused = m->d_func()->causedPopup.widget;
 #ifndef QT_NO_MENUBAR
-                if (QMenuBar *mb = qobject_cast<QMenuBar*>(caused)) {
-                    QAction *oldAct = mb->d_func()->currentAction;
-                    QApplication::sendEvent(mb, e);
-                    if (mb->d_func()->currentAction != oldAct)
-                        key_consumed = true;
-                }
-#endif
+            if (QMenuBar *mb = qobject_cast<QMenuBar*>(d->topCausedWidget())) {
+                QAction *oldAct = mb->d_func()->currentAction;
+                QApplication::sendEvent(mb, e);
+                if (mb->d_func()->currentAction != oldAct)
+                    key_consumed = true;
             }
+#endif
         }
 
 #ifdef Q_OS_WIN32
@@ -2862,25 +2856,20 @@ void QMenu::actionEvent(QActionEvent *e)
             connect(e->action(), SIGNAL(triggered()), this, SLOT(_q_actionTriggered()));
             connect(e->action(), SIGNAL(hovered()), this, SLOT(_q_actionHovered()));
         }
-        QWidget *widget = 0;
-        if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action()))
-            widget = wa->requestWidget(this);
-
-        int index = d->actions.indexOf(e->action());
-        Q_ASSERT(index != -1);
-        d->widgetItems.insert(index, widget);
-
+        if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
+            QWidget *widget = wa->requestWidget(this);
+            if (widget)
+                d->widgetItems.insert(wa, widget);
+        }
     } else if (e->type() == QEvent::ActionRemoved) {
         e->action()->disconnect(this);
         if (e->action() == d->currentAction)
             d->currentAction = 0;
-        int index = d->actions.indexOf(e->before()) + 1;
         if (QWidgetAction *wa = qobject_cast<QWidgetAction *>(e->action())) {
-            if (QWidget *widget = d->widgetItems.at(index))
+            if (QWidget *widget = d->widgetItems.value(wa))
                 wa->releaseWidget(widget);
         }
-        Q_ASSERT(index != -1);
-        d->widgetItems.removeAt(index);
+        d->widgetItems.remove(e->action());
     }
 
 #ifdef Q_WS_MAC

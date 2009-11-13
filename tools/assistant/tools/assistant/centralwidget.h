@@ -48,6 +48,8 @@
 
 #include <QtGui/QWidget>
 
+#include "searchwidget.h"
+
 QT_BEGIN_NAMESPACE
 
 class QEvent;
@@ -65,7 +67,6 @@ class CentralWidget;
 class PrintHelper;
 class MainWindow;
 
-class SearchWidget;
 class QHelpSearchEngine;
 
 class FindWidget : public QWidget
@@ -123,6 +124,9 @@ public:
     HelpViewer *currentHelpViewer() const;
     void activateTab(bool onlyHelpViewer = false);
 
+    bool searchWidgetAttached() const {
+        return m_searchWidget && m_searchWidget->isAttached();
+    }
     void createSearchWidget(QHelpSearchEngine *searchEngine);
     void activateSearchWidget(bool updateLastTabPage = false);
     void removeSearchWidget();
@@ -189,6 +193,9 @@ private:
     QString quoteTabTitle(const QString &title) const;
     void highlightSearchTerms();
     void setLastShownPages();
+
+    void getBrowserFontFor(QWidget* viewer, QFont *font);
+    void setBrowserFontFor(QWidget *widget, const QFont &font);
 
 private:
     int lastTabPage;

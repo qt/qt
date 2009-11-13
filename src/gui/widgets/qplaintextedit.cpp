@@ -730,9 +730,6 @@ QPlainTextEditPrivate::QPlainTextEditPrivate()
     backgroundVisible = false;
     centerOnScroll = false;
     inDrag = false;
-#ifdef Q_WS_WIN
-    singleFingerPanEnabled = true;
-#endif
 }
 
 
@@ -789,6 +786,9 @@ void QPlainTextEditPrivate::init(const QString &txt)
     viewport->setCursor(Qt::IBeamCursor);
 #endif
     originalOffsetY = 0;
+#ifdef Q_WS_WIN
+    setSingleFingerPanEnabled(true);
+#endif
 }
 
 void QPlainTextEditPrivate::_q_repaintContents(const QRectF &contentsRect)
@@ -1450,6 +1450,29 @@ bool QPlainTextEdit::event(QEvent *e)
             d->sendControlEvent(e);
     }
 #endif
+    else if (e->type() == QEvent::Gesture) {
+        QGestureEvent *ge = static_cast<QGestureEvent *>(e);
+        QPanGesture *g = static_cast<QPanGesture *>(ge->gesture(Qt::PanGesture));
+        if (g) {
+            QScrollBar *hBar = horizontalScrollBar();
+            QScrollBar *vBar = verticalScrollBar();
+            if (g->state() == Qt::GestureStarted)
+                d->originalOffsetY = vBar->value();
+            QPointF offset = g->offset();
+            if (!offset.isNull()) {
+                if (QApplication::isRightToLeft())
+                    offset.rx() *= -1;
+                // QPlainTextEdit scrolls by lines only in vertical direction
+                QFontMetrics fm(document()->defaultFont());
+                int lineHeight = fm.height();
+                int newX = hBar->value() - g->delta().x();
+                int newY = d->originalOffsetY - offset.y()/lineHeight;
+                hBar->setValue(newX);
+                vBar->setValue(newY);
+            }
+        }
+        return true;
+    }
     return QAbstractScrollArea::event(e);
 }
 
@@ -2928,30 +2951,6 @@ QAbstractTextDocumentLayout::PaintContext QPlainTextEdit::getPaintContext() cons
     This signal is emitted whenever redo operations become available
     (\a available is true) or unavailable (\a available is false).
 */
-
-//void QPlainTextEditPrivate::_q_gestureTriggered()
-//{
-//    Q_Q(QPlainTextEdit);
-//    QPanGesture *g = qobject_cast<QPanGesture*>(q->sender());
-//    if (!g)
-//        return;
-//    QScrollBar *hBar = q->horizontalScrollBar();
-//    QScrollBar *vBar = q->verticalScrollBar();
-//    if (g->state() == Qt::GestureStarted)
-//        originalOffsetY = vBar->value();
-//    QSizeF totalOffset = g->totalOffset();
-//    if (!totalOffset.isNull()) {
-//        if (QApplication::isRightToLeft())
-//            totalOffset.rwidth() *= -1;
-//        // QPlainTextEdit scrolls by lines only in vertical direction
-//        QFontMetrics fm(q->document()->defaultFont());
-//        int lineHeight = fm.height();
-//        int newX = hBar->value() - g->lastOffset().width();
-//        int newY = originalOffsetY - totalOffset.height()/lineHeight;
-//        hbar->setValue(newX);
-//        vbar->setValue(newY);
-//    }
-//}
 
 QT_END_NAMESPACE
 

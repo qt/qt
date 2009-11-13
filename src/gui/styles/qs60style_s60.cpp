@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -318,16 +318,6 @@ const partMapEntry QS60StyleModeSpecifics::m_partMap[] = {
     /* SP_QsnFrButtonSideLInactive */    {KAknsIIDQsnFrButtonTbSideL,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b7},
     /* SP_QsnFrButtonSideRInactive */    {KAknsIIDQsnFrButtonTbSideR,           ENoDraw,     ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b8},
     /* SP_QsnFrButtonCenterInactive */   {KAknsIIDQsnFrButtonTbCenter,          EDrawIcon,   ES60_3_1 | ES60_3_2, EAknsMajorSkin, 0x21b9},
-
-    /* SP_QsnFrNotepadCornerTl */        {KAknsIIDQsnFrNotepadContCornerTl,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerTr */        {KAknsIIDQsnFrNotepadContCornerTr,     ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBl */        {KAknsIIDQsnFrNotepadCornerBl,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCornerBr */        {KAknsIIDQsnFrNotepadCornerBr,         ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideT */           {KAknsIIDQsnFrNotepadContSideT,        ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideB */           {KAknsIIDQsnFrNotepadSideB,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideL */           {KAknsIIDQsnFrNotepadSideL,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadSideR */           {KAknsIIDQsnFrNotepadSideR,            ENoDraw,     ES60_AllReleases,    -1,-1},
-    /* SP_QsnFrNotepadCenter */          {KAknsIIDQsnFrNotepadCenter,           EDrawIcon,   ES60_AllReleases,    -1,-1},
 
 };
 
@@ -852,10 +842,6 @@ void QS60StyleModeSpecifics::frameIdAndCenterId(QS60StylePrivate::SkinFrameEleme
             centerId.Set(KAknsIIDNone);
             frameId.Set(KAknsIIDQsnFrSetOpt);
             break;
-        case QS60StylePrivate::SF_Editor:
-            centerId.Set(KAknsIIDQsnFrNotepadCenter);
-            frameId.Set(KAknsIIDQsnFrNotepadCont);
-            break;
         default:
             // center should be correct here
             frameId.iMinor = centerId.iMinor - 9;
@@ -1026,23 +1012,6 @@ QS60StylePrivate::QS60StylePrivate()
 {
     // No need to set active layout, if dynamic metrics API is available
     setActiveLayout();
-}
-
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    if (QLatin1String(name) == QLatin1String("foo")) {
-        // BaR
-    } else {
-        setStyleProperty(name, value);
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    if (QLatin1String(name) == QLatin1String("foo"))
-        return QLatin1String("Bar");
-    else
-        return styleProperty(name);
 }
 
 QColor QS60StylePrivate::s60Color(QS60StyleEnums::ColorLists list,
@@ -1382,13 +1351,13 @@ QSize QS60StylePrivate::naviPaneSize()
 QSize QS60StyleModeSpecifics::naviPaneSize()
 {
     CAknNavigationControlContainer* naviContainer;
-    if (S60->statusPane())
-        naviContainer = static_cast<CAknNavigationControlContainer*>
-            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi)));
-    if (naviContainer)
-        return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
-    else
-        return QSize(0,0);
+    if (S60->statusPane()) {
+        TRAPD(err, naviContainer = static_cast<CAknNavigationControlContainer*>
+            (S60->statusPane()->ControlL(TUid::Uid(EEikStatusPaneUidNavi))));
+        if (err==KErrNone)
+            return QSize(naviContainer->Size().iWidth, naviContainer->Size().iHeight);
+    }
+    return QSize(0,0);
 }
 
 #endif // Q_WS_S60

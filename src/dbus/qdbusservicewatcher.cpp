@@ -47,6 +47,8 @@
 
 #include <private/qobject_p.h>
 
+QT_BEGIN_NAMESPACE
+
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busService, (QLatin1String(DBUS_SERVICE_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busPath, (QLatin1String(DBUS_PATH_DBUS)))
 Q_GLOBAL_STATIC_WITH_ARGS(QString, busInterface, (QLatin1String(DBUS_INTERFACE_DBUS)))
@@ -150,14 +152,14 @@ void QDBusServiceWatcherPrivate::removeService(const QString &service)
     modes:
 
     \list
-      \o watching for service registration only
-      \o watching for service unregistration only
-      \o watching for any kind of service ownership change (the default mode)
+      \o Watching for service registration only.
+      \o Watching for service unregistration only.
+      \o Watching for any kind of service ownership change (the default mode).
     \endlist
 
     Besides being created or deleted, services may change owners without a
-    unregister/register operation happening. So the \ref serviceRegistered()
-    and \ref serviceUnregistered() signals may not be emitted if that
+    unregister/register operation happening. So the serviceRegistered()
+    and serviceUnregistered() signals may not be emitted if that
     happens.
 
     This class is more efficient than using the
@@ -370,5 +372,7 @@ void QDBusServiceWatcher::setConnection(const QDBusConnection &connection)
         return;
     d->setConnection(d->servicesWatched, connection, d->watchMode);
 }
+
+QT_END_NAMESPACE
 
 #include "moc_qdbusservicewatcher.cpp"

@@ -288,7 +288,7 @@ QAudioOutputPrivate::QAudioOutputPrivate(const QByteArray& device, const QAudioF
         internalBufferSize = default_buffer_size;
         clockFrequency = AudioGetHostClockFrequency() / 1000;
         errorCode = QAudio::NoError;
-        stateCode = QAudio::StopState;
+        stateCode = QAudio::StoppedState;
         audioThreadState = Stopped;
 
         intervalTimer = new QTimer(this);
@@ -436,7 +436,7 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
     QIODevice*  op = device;
 
     if (!open()) {
-        stateCode = QAudio::StopState;
+        stateCode = QAudio::StoppedState;
         errorCode = QAudio::OpenError;
         return audioIO;
     }
@@ -468,10 +468,10 @@ QIODevice* QAudioOutputPrivate::start(QIODevice* device)
 void QAudioOutputPrivate::stop()
 {
     QMutexLocker    lock(&mutex);
-    if (stateCode != QAudio::StopState) {
+    if (stateCode != QAudio::StoppedState) {
         audioThreadDrain();
 
-        stateCode = QAudio::StopState;
+        stateCode = QAudio::StoppedState;
         errorCode = QAudio::NoError;
         QMetaObject::invokeMethod(this, "stateChanged", Qt::QueuedConnection, Q_ARG(QAudio::State, stateCode));
     }
@@ -480,10 +480,10 @@ void QAudioOutputPrivate::stop()
 void QAudioOutputPrivate::reset()
 {
     QMutexLocker    lock(&mutex);
-    if (stateCode != QAudio::StopState) {
+    if (stateCode != QAudio::StoppedState) {
         audioThreadStop();
 
-        stateCode = QAudio::StopState;
+        stateCode = QAudio::StoppedState;
         errorCode = QAudio::NoError;
         QMetaObject::invokeMethod(this, "stateChanged", Qt::QueuedConnection, Q_ARG(QAudio::State, stateCode));
     }
@@ -495,7 +495,7 @@ void QAudioOutputPrivate::suspend()
     if (stateCode == QAudio::ActiveState || stateCode == QAudio::IdleState) {
         audioThreadStop();
 
-        stateCode = QAudio::SuspendState;
+        stateCode = QAudio::SuspendedState;
         errorCode = QAudio::NoError;
         QMetaObject::invokeMethod(this, "stateChanged", Qt::QueuedConnection, Q_ARG(QAudio::State, stateCode));
     }
@@ -504,7 +504,7 @@ void QAudioOutputPrivate::suspend()
 void QAudioOutputPrivate::resume()
 {
     QMutexLocker    lock(&mutex);
-    if (stateCode == QAudio::SuspendState) {
+    if (stateCode == QAudio::SuspendedState) {
         audioThreadStart();
 
         stateCode = QAudio::ActiveState;
@@ -525,7 +525,7 @@ int QAudioOutputPrivate::periodSize() const
 
 void QAudioOutputPrivate::setBufferSize(int bs)
 {
-    if (stateCode == QAudio::StopState)
+    if (stateCode == QAudio::StoppedState)
         internalBufferSize = bs;
 }
 
@@ -544,14 +544,14 @@ int QAudioOutputPrivate::notifyInterval() const
     return intervalTimer->interval();
 }
 
-qint64 QAudioOutputPrivate::totalTime() const
+qint64 QAudioOutputPrivate::processedUSecs() const
 {
     return totalFrames * 1000000 / audioFormat.frequency();
 }
 
-qint64 QAudioOutputPrivate::clock() const
+qint64 QAudioOutputPrivate::elapsedUSecs() const
 {
-    if (stateCode == QAudio::StopState)
+    if (stateCode == QAudio::StoppedState)
         return 0;
 
     return (AudioGetCurrentHostTime() - startTime) / (clockFrequency / 1000);
@@ -614,7 +614,7 @@ void QAudioOutputPrivate::audioDeviceError()
         audioDeviceStop();
 
         errorCode = QAudio::IOError;
-        stateCode = QAudio::StopState;
+        stateCode = QAudio::StoppedState;
         QMetaObject::invokeMethod(this, "deviceStopped", Qt::QueuedConnection);
     }
 }

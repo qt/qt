@@ -149,8 +149,8 @@ void tst_QXmlSchemaValidator::propertyInitialization() const
         schema.setNetworkAccessManager(&manager);
 
         QXmlSchemaValidator validator(schema);
-        QCOMPARE(validator.messageHandler(), &handler);
-        QCOMPARE(validator.uriResolver(), &resolver);
+        QCOMPARE(validator.messageHandler(), static_cast<QAbstractMessageHandler *>(&handler));
+        QCOMPARE(validator.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
         QCOMPARE(validator.networkAccessManager(), &manager);
     }
 }
@@ -384,7 +384,7 @@ void tst_QXmlSchemaValidator::messageHandler() const
         QXmlSchemaValidator validator(schema);
 
         validator.setMessageHandler(&handler);
-        QCOMPARE(validator.messageHandler(), &handler);
+        QCOMPARE(validator.messageHandler(), static_cast<QAbstractMessageHandler *>(&handler));
     }
 
     /* Test that we return the message handler that was set, even if the schema changed in between. */
@@ -399,7 +399,7 @@ void tst_QXmlSchemaValidator::messageHandler() const
         const QXmlSchema schema2;
         validator.setSchema(schema2);
 
-        QCOMPARE(validator.messageHandler(), &handler);
+        QCOMPARE(validator.messageHandler(), static_cast<QAbstractMessageHandler *>(&handler));
     }
 }
 
@@ -452,7 +452,7 @@ void tst_QXmlSchemaValidator::uriResolver() const
         QXmlSchemaValidator validator(schema);
 
         validator.setUriResolver(&resolver);
-        QCOMPARE(validator.uriResolver(), &resolver);
+        QCOMPARE(validator.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
     }
 
     /* Test that we return the uri resolver that was set, even if the schema changed in between. */
@@ -467,7 +467,7 @@ void tst_QXmlSchemaValidator::uriResolver() const
         const QXmlSchema schema2;
         validator.setSchema(schema2);
 
-        QCOMPARE(validator.uriResolver(), &resolver);
+        QCOMPARE(validator.uriResolver(), static_cast<const QAbstractUriResolver *>(&resolver));
     }
 }
 

@@ -190,7 +190,7 @@ public:
     QRect actionRect(QAction *) const;
 
     mutable QVector<QRect> actionRects;
-    mutable QWidgetList widgetItems;
+    mutable QHash<QAction *, QWidget *> widgetItems;
     void updateActionRects() const;
     QRect popupGeometry(const QWidget *widget) const;
     QRect popupGeometry(int screen = -1) const;
@@ -215,6 +215,7 @@ public:
         SelectedFromKeyboard,
         SelectedFromElsewhere
     };
+    QWidget *topCausedWidget() const;
     QAction *actionAt(QPoint p) const;
     void setFirstActionActive();
     void setCurrentAction(QAction *, int popup = -1, SelectionReason reason = SelectedFromElsewhere, bool activateFirst = false);

@@ -401,6 +401,7 @@ private slots:
     void modality_clickFocus();
     void modality_keyEvents();
     void itemIsInFront();
+    void scenePosChange();
 
     // task specific tests below me
     void task141694_textItemEnsureVisible();
@@ -412,6 +413,7 @@ private slots:
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
     void QTBUG_4233_updateCachedWithSceneRect();
+    void QTBUG_5418_textItemSetDefaultColor();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -4228,6 +4230,8 @@ protected:
             oldValues << opacity();
             break;
         case QGraphicsItem::ItemOpacityHasChanged:
+            break;
+        case QGraphicsItem::ItemScenePositionHasChanged:
             break;
         }
         return itemChangeReturnValue.isValid() ? itemChangeReturnValue : value;
@@ -9675,6 +9679,134 @@ void tst_QGraphicsItem::itemIsInFront()
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect1), true);
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2), false);
     QCOMPARE(qt_closestItemFirst(rect1child1_2, rect2child1), false);
+}
+
+class ScenePosChangeTester : public ItemChangeTester
+{
+public:
+    ScenePosChangeTester()
+    { }
+    ScenePosChangeTester(QGraphicsItem *parent) : ItemChangeTester(parent)
+    { }
+};
+
+void tst_QGraphicsItem::scenePosChange()
+{
+    ScenePosChangeTester* root = new ScenePosChangeTester;
+    ScenePosChangeTester* child1 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild1 = new ScenePosChangeTester(child1);
+    ScenePosChangeTester* child2 = new ScenePosChangeTester(root);
+    ScenePosChangeTester* grandChild2 = new ScenePosChangeTester(child2);
+
+    child1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+
+    QGraphicsScene scene;
+    scene.addItem(root);
+
+    // ignore uninteresting changes
+    child1->clear();
+    child2->clear();
+    grandChild1->clear();
+    grandChild2->clear();
+
+    // move whole tree
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+
+    // move subtree
+    child2->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+
+    // reparent
+    grandChild2->setParentItem(child1);
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 2);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // change flags
+    grandChild1->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
+    grandChild2->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, false);
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    child1->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+    QCOMPARE(grandChild2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 3);
+
+    // remove
+    scene.removeItem(grandChild1);
+    delete grandChild2; grandChild2 = 0;
+    QCoreApplication::processEvents(); // QGraphicsScenePrivate::_q_updateScenePosDescendants()
+    root->moveBy(1.0, 1.0);
+    QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 4);
+    QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
+    QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+}
+
+void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
+{
+    struct Item : public QGraphicsTextItem
+    {
+        bool painted;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
+        {
+            painted = true;
+            QGraphicsTextItem::paint(painter, opt, wid);
+        }
+    };
+
+    Item *i = new Item;
+    i->painted = false;
+    i->setPlainText("I AM A TROLL");
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    scene.addItem(i);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted);
+    QApplication::processEvents();
+
+    i->painted = false;
+    QColor col(Qt::red);
+    i->setDefaultTextColor(col);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted); //check that changing the color force an update
+
+    i->painted = false;
+    QImage image(400, 200, QImage::Format_RGB32);
+    image.fill(0);
+    QPainter painter(&image);
+    scene.render(&painter);
+    painter.end();
+    QVERIFY(i->painted);
+
+    int numRedPixel = 0;
+    QRgb rgb = col.rgb();
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            // Because of antialiasing we allow a certain range of errors here.
+            QRgb pixel = image.pixel(x, y);
+            if (qAbs((int)(pixel & 0xff) - (int)(rgb & 0xff)) +
+                qAbs((int)((pixel & 0xff00) >> 8) - (int)((rgb & 0xff00) >> 8)) +
+                qAbs((int)((pixel & 0xff0000) >> 16) - (int)((rgb & 0xff0000) >> 16)) <= 50) {
+                if (++numRedPixel >= 10) {
+                    return;
+                }
+            }
+        }
+    }
+    QCOMPARE(numRedPixel, -1); //color not found, FAIL!
 }
 
 QTEST_MAIN(tst_QGraphicsItem)

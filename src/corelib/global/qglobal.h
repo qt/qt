@@ -437,13 +437,18 @@ namespace QT_NAMESPACE {}
 #elif defined(__GCCE__)
 #  define Q_CC_GCCE
 #  define QT_VISIBILITY_AVAILABLE
+#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
+#    define QT_HAVE_ARMV6
+#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
    so check for it before that */
 #elif defined(__ARMCC__) || defined(__CC_ARM)
 #  define Q_CC_RVCT
-
+#  if __TARGET_ARCH_ARM >= 6
+#    define QT_HAVE_ARMV6
+#  endif
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -1486,17 +1491,26 @@ public:
 #ifdef Q_OS_SYMBIAN
     enum SymbianVersion {
         SV_Unknown = 0x0000,
+        //These are the Symbian Ltd versions 9.2-9.4
         SV_9_2 = 10,
         SV_9_3 = 20,
-        SV_9_4 = 30
+        SV_9_4 = 30,
+        //Following values are the symbian foundation versions, i.e. Symbian^1 == SV_SF_1
+        SV_SF_1 = SV_9_4,
+        SV_SF_2 = 40,
+        SV_SF_3 = 50,
+        SV_SF_4 = 60
     };
     static SymbianVersion symbianVersion();
     enum S60Version {
         SV_S60_None = 0,
         SV_S60_Unknown = 1,
-        SV_S60_3_1 = 10,
-        SV_S60_3_2 = 20,
-        SV_S60_5_0 = 30
+        SV_S60_3_1 = SV_9_2,
+        SV_S60_3_2 = SV_9_3,
+        SV_S60_5_0 = SV_9_4,
+        //versions beyond 5.0 are to be confirmed - it is better to use symbian version
+        SV_S60_5_1 = SV_SF_2,
+        SV_S60_5_2 = SV_SF_3
     };
     static S60Version s60Version();
 #endif

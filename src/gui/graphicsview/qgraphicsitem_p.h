@@ -179,6 +179,7 @@ public:
         holesInSiblingIndex(0),
         sequentialOrdering(1),
         updateDueToGraphicsEffect(0),
+        scenePosDescendants(0),
         globalStackingOrder(-1),
         q_ptr(0)
     {
@@ -223,7 +224,9 @@ public:
     bool discardUpdateRequest(bool ignoreClipping = false, bool ignoreVisibleBit = false,
                               bool ignoreDirtyBit = false, bool ignoreOpacity = false) const;
     int depth() const;
+#ifndef QT_NO_GRAPHICSEFFECT
     void invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
     void invalidateDepthRecursively();
     void resolveDepth();
     void addChild(QGraphicsItem *child);
@@ -429,6 +432,8 @@ public:
     inline void ensureSortedChildren();
     static inline bool insertionOrder(QGraphicsItem *a, QGraphicsItem *b);
     void ensureSequentialSiblingIndex();
+    inline void sendScenePosChange();
+    virtual void siblingOrderChange();
 
     QPainterPath cachedClipPath;
     QRectF childrenBoundingRect;
@@ -453,7 +458,7 @@ public:
     QGraphicsItem *focusScopeItem;
     Qt::InputMethodHints imHints;
     QGraphicsItem::PanelModality panelModality;
-    QMap<Qt::GestureType, Qt::GestureContext> gestureContext;
+    QMap<Qt::GestureType, Qt::GestureFlags> gestureContext;
 
     // Packed 32 bits
     quint32 acceptedMouseButtons : 5;
@@ -483,7 +488,7 @@ public:
 
     // Packed 32 bits
     quint32 fullUpdatePending : 1;
-    quint32 flags : 16;
+    quint32 flags : 17;
     quint32 dirtyChildrenBoundingRect : 1;
     quint32 paintedViewBoundingRectsNeedRepaint : 1;
     quint32 dirtySceneTransform : 1;
@@ -498,14 +503,15 @@ public:
     quint32 sceneTransformTranslateOnly : 1;
     quint32 notifyBoundingRectChanged : 1;
     quint32 notifyInvalidated : 1;
-    quint32 mouseSetsFocus : 1;
 
     // New 32 bits
+    quint32 mouseSetsFocus : 1;
     quint32 explicitActivate : 1;
     quint32 wantsActive : 1;
     quint32 holesInSiblingIndex : 1;
     quint32 sequentialOrdering : 1;
     quint32 updateDueToGraphicsEffect : 1;
+    quint32 scenePosDescendants : 1;
 
     // Optional stacking order
     int globalStackingOrder;
@@ -577,6 +583,7 @@ struct QGraphicsItemPaintInfo
     quint32 drawItem : 1;
 };
 
+#ifndef QT_NO_GRAPHICSEFFECT
 class QGraphicsItemEffectSourcePrivate : public QGraphicsEffectSourcePrivate
 {
 public:
@@ -626,13 +633,13 @@ public:
     void draw(QPainter *);
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
-                   QGraphicsEffectSource::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;
     QTransform lastEffectTransform;
 };
-
+#endif //QT_NO_GRAPHICSEFFECT
 
 /*!
     Returns true if \a item1 is on top of \a item2.

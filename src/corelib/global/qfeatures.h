@@ -632,6 +632,11 @@
 #define QT_NO_COLORDIALOG
 #endif
 
+// QGraphicsEffect
+#if !defined(QT_NO_GRAPHICSEFFECT) && (defined(QT_NO_GRAPHICSVIEW))
+#define QT_NO_GRAPHICSEFFECT
+#endif
+
 // The Model/View Framework
 #if !defined(QT_NO_ITEMVIEWS) && (defined(QT_NO_RUBBERBAND) || defined(QT_NO_SCROLLAREA))
 #define QT_NO_ITEMVIEWS

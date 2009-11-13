@@ -20,15 +20,6 @@ HEADERS += bubble.h
 RESOURCES += texture.qrc
 QT += opengl
 
-wince*:{
-    contains(QT_CONFIG,opengles1) {
-            QMAKE_LIBS += "libGLES_CM.lib"
-    }
-    contains(QT_CONFIG,opengles1cl) {
-            QMAKE_LIBS += "libGLES_CL.lib"
-    }
-}
-
 # install
 target.path = $$[QT_INSTALL_EXAMPLES]/opengl/hellogl_es
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS hellogl_es.pro

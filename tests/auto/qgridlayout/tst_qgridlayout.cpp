@@ -268,7 +268,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     leftChild.setMinimumSize(100, 100);
     leftChild.setMaximumSize(200, 200);
     layout.addWidget(&leftChild, 0, 0);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumSize(), leftChild.minimumSize());
     QCOMPARE(widget.maximumSize(), leftChild.maximumSize());
 
@@ -277,7 +277,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     rightChild.setMinimumSize(100, 100);
     rightChild.setMaximumSize(200, 200);
     layout.addWidget(&rightChild, 0, 2);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
 
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth());
@@ -293,7 +293,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     layout.setColumnMinimumWidth(1, colMin);
     QCOMPARE(layout.columnMinimumWidth(1), colMin);
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth() + colMin);
     QCOMPARE(widget.maximumWidth(),
@@ -306,7 +306,7 @@ void tst_QGridLayout::setMinAndMaxSize()
 
 
     layout.setColumnStretch(1,1);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth() + colMin);
     QCOMPARE(widget.maximumWidth(), QLAYOUTSIZE_MAX);
@@ -318,7 +318,7 @@ void tst_QGridLayout::setMinAndMaxSize()
 
 
     layout.setColumnStretch(1,0);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth() + colMin);
     QCOMPARE(widget.maximumWidth(),
@@ -335,7 +335,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     static const int spacerS = 250;
     QSpacerItem *spacer = new QSpacerItem(spacerS, spacerS);
     layout.addItem(spacer, 0, 1);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
 
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth() + spacerS);
@@ -348,7 +348,7 @@ void tst_QGridLayout::setMinAndMaxSize()
 
     spacer->changeSize(spacerS, spacerS, QSizePolicy::Fixed, QSizePolicy::Minimum);
     layout.invalidate();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumWidth(),
              leftChild.minimumWidth() + rightChild.minimumWidth() + spacerS);
     QCOMPARE(widget.maximumWidth(),
@@ -358,13 +358,13 @@ void tst_QGridLayout::setMinAndMaxSize()
     layout.removeItem(spacer);
 
     rightChild.hide();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumSize(), leftChild.minimumSize());
     QCOMPARE(widget.maximumSize(), leftChild.maximumSize());
 
     rightChild.show();
     layout.removeWidget(&rightChild);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumSize(), leftChild.minimumSize());
     QCOMPARE(widget.maximumSize(), leftChild.maximumSize());
 
@@ -373,7 +373,7 @@ void tst_QGridLayout::setMinAndMaxSize()
     bottomChild.setMinimumSize(100, 100);
     bottomChild.setMaximumSize(200, 200);
     layout.addWidget(&bottomChild, 1, 0);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
 
     QCOMPARE(widget.minimumHeight(),
              leftChild.minimumHeight() + bottomChild.minimumHeight());
@@ -385,13 +385,13 @@ void tst_QGridLayout::setMinAndMaxSize()
              qMax(leftChild.maximumWidth(), bottomChild.maximumWidth()));
 
     bottomChild.hide();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumSize(), leftChild.minimumSize());
     QCOMPARE(widget.maximumSize(), leftChild.maximumSize());
 
     bottomChild.show();
     layout.removeWidget(&bottomChild);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.minimumSize(), leftChild.minimumSize());
     QCOMPARE(widget.maximumSize(), leftChild.maximumSize());
 }
@@ -423,7 +423,7 @@ void tst_QGridLayout::spacingAndSpacers()
     SizeHinter leftChild(100,100);
     leftChild.setPalette(QPalette(Qt::red));
     layout.addWidget(&leftChild, 0, 0);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     expectedSizeHint = leftChild.sizeHint();
     QCOMPARE(widget.sizeHint(), expectedSizeHint);
 
@@ -431,7 +431,7 @@ void tst_QGridLayout::spacingAndSpacers()
     SizeHinter rightChild(200,100);
     rightChild.setPalette(QPalette(Qt::green));
     layout.addWidget(&rightChild, 0, 2);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(rightChild.sizeHint(), QSize(200,100));
 
     expectedSizeHint += QSize(rightChild.sizeHint().width(), 0);
@@ -440,11 +440,11 @@ void tst_QGridLayout::spacingAndSpacers()
     layout.setColumnMinimumWidth(1, 100);
     widget.adjustSize();
     expectedSizeHint += QSize(100,0);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.sizeHint(), expectedSizeHint);
 
     rightChild.hide();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     expectedSizeHint -= QSize(rightChild.sizeHint().width(), 0);
     QCOMPARE(widget.sizeHint(), expectedSizeHint);
 
@@ -459,12 +459,12 @@ void tst_QGridLayout::spacingAndSpacers()
     leftChild.setMaximumWidth(200);
     rightChild.setMaximumWidth(200);
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.maximumWidth(), leftChild.maximumWidth() + rightChild.maximumWidth());
 #endif
 
     layout.removeWidget(&rightChild);
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     QCOMPARE(widget.sizeHint(), expectedSizeHint);
 
 
@@ -920,9 +920,9 @@ void tst_QGridLayout::minMaxSize()
 #if defined(Q_WS_X11)
         qt_x11_wait_for_window_manager(m_toplevel);     // wait for the show
 #endif
-        QTest::qWait(20);
+        QTest::qWait(40);
         m_toplevel->adjustSize();
-        QTest::qWait(120);                              // wait for the implicit adjustSize
+        QTest::qWait(240);                              // wait for the implicit adjustSize
         // If the following fails we might have to wait longer.
         // If that does not help there is likely a problem with the implicit adjustSize in show()
         if (!fixedSize.isValid()) {

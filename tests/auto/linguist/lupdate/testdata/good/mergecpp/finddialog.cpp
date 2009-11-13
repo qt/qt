@@ -63,5 +63,20 @@ void FindDialog::reset()
 {
     tr("%n item(s)", "merge from singular to plural form", 4);
     tr("%n item(s)", "merge from a finished singular form to an unfinished plural form", 4);
-}
 
+
+
+    //% "Hello"
+    qtTrId("xx_hello");
+
+    //% "New world"
+    qtTrId("xx_world");
+
+
+    //= new_id
+    tr("this is just some text");
+
+
+    //: A message without source string
+    qtTrId("qtn_virtual");
+}

@@ -44,7 +44,7 @@
 
 #include <QGraphicsEffect>
 #include <QGraphicsView>
-#include <QTimeLine>
+#include <QPropertyAnimation>
 
 #include "fademessage.h"
 
@@ -62,11 +62,10 @@ private slots:
     void togglePopup();
 
 private:
-    qreal m_index;
     QGraphicsScene m_scene;
     QGraphicsColorizeEffect *m_effect;
     QGraphicsItem *m_message;
-    QTimeLine *m_timeLine;
+    QPropertyAnimation *m_animation;
 };
 
 #endif // FADEMESSAGE_H

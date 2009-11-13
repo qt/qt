@@ -137,12 +137,14 @@ QAction *QSoftKeyManager::createAction(StandardSoftKey standardKey, QWidget *act
 */
 QAction *QSoftKeyManager::createKeyedAction(StandardSoftKey standardKey, Qt::Key key, QWidget *actionWidget)
 {
+#ifndef QT_NO_ACTION
     QScopedPointer<QAction> action(createAction(standardKey, actionWidget));
 
     connect(action.data(), SIGNAL(triggered()), QSoftKeyManager::instance(), SLOT(sendKeyEvent()));
     connect(action.data(), SIGNAL(destroyed(QObject*)), QSoftKeyManager::instance(), SLOT(cleanupHash(QObject*)));
     QSoftKeyManager::instance()->d_func()->keyedActions.insert(action.data(), key);
     return action.take();
+#endif //QT_NO_ACTION
 }
 
 void QSoftKeyManager::cleanupHash(QObject* obj)
@@ -175,6 +177,7 @@ void QSoftKeyManager::updateSoftKeys()
 
 bool QSoftKeyManager::event(QEvent *e)
 {
+#ifndef QT_NO_ACTION
     if (e->type() == QEvent::UpdateSoftKeys) {
         QList<QAction*> softKeys;
         QWidget *source = QApplication::focusWidget();
@@ -197,10 +200,10 @@ bool QSoftKeyManager::event(QEvent *e)
         } while (source);
 
         QSoftKeyManagerPrivate::softKeySource = source;
-        if (source)
-            QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
+        QSoftKeyManagerPrivate::updateSoftKeys_sys(softKeys);
         return true;
     }
+#endif //QT_NO_ACTION
     return false;
 }
 
@@ -210,11 +213,15 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
     CEikButtonGroupContainer* nativeContainer = S60->buttonGroupContainer();
     nativeContainer->DrawableWindow()->SetOrdinalPosition(0);
     nativeContainer->DrawableWindow()->SetPointerCapturePriority(1); //keep softkeys available in modal dialog
-    QT_TRAP_THROWING(nativeContainer->SetCommandSetL(R_AVKON_SOFTKEYS_EMPTY_WITH_IDS));
+    nativeContainer->DrawableWindow()->SetFaded(EFalse, RWindowTreeNode::EFadeIncludeChildren);
 
     int position = -1;
-    int command;
     bool needsExitButton = true;
+    QT_TRAP_THROWING(
+        //Using -1 instead of EAknSoftkeyEmpty to avoid flickering.
+        nativeContainer->SetCommandL(0, -1, KNullDesC);
+        nativeContainer->SetCommandL(2, -1, KNullDesC);
+    );
 
     for (int index = 0; index < softkeys.count(); index++) {
         const QAction* softKeyAction = softkeys.at(index);
@@ -235,7 +242,7 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
             break;
         }
 
-        command = (softKeyAction->objectName().contains("_q_menuSoftKeyAction"))
+        int command = (softKeyAction->objectName().contains("_q_menuSoftKeyAction"))
                     ? EAknSoftkeyOptions
                     : s60CommandStart + index;
 
@@ -247,9 +254,13 @@ void QSoftKeyManagerPrivate::updateSoftKeys_sys(const QList<QAction*> &softkeys)
         }
     }
 
-    Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource->window()->windowType();
+    const Qt::WindowType sourceWindowType = QSoftKeyManagerPrivate::softKeySource
+        ?   QSoftKeyManagerPrivate::softKeySource->window()->windowType()
+        :   Qt::Widget;
+
     if (needsExitButton && sourceWindowType != Qt::Dialog && sourceWindowType != Qt::Popup)
-        QT_TRAP_THROWING(nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
+        QT_TRAP_THROWING(
+            nativeContainer->SetCommandL(2, EAknSoftkeyExit, qt_QString2TPtrC(QSoftKeyManager::tr("Exit"))));
 
     nativeContainer->DrawDeferred(); // 3.1 needs an extra invitation
 }

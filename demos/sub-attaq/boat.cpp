@@ -62,13 +62,13 @@ static QAbstractAnimation *setupDestroyAnimation(Boat *boat)
     for (int i = 1; i <= 4; i++) {
         PixmapItem *step = new PixmapItem(QString("explosion/boat/step%1").arg(i),GraphicsScene::Big, boat);
         step->setZValue(6);
-        step->setOpacity(0); 
+        step->setOpacity(0);
 
         //fade-in
         QPropertyAnimation *anim = new QPropertyAnimation(step, "opacity");
         anim->setEndValue(1);
         anim->setDuration(100);
-        group->insertAnimationAt(i-1, anim);
+        group->insertAnimation(i-1, anim);
 
         //and then fade-out
         QPropertyAnimation *anim2 = new QPropertyAnimation(step, "opacity");
@@ -92,10 +92,10 @@ Boat::Boat() : PixmapItem(QString("boat"), GraphicsScene::Big),
     //The movement animation used to animate the boat
     movementAnimation = new QPropertyAnimation(this, "pos");
 
-    //The movement animation used to animate the boat
+    //The destroy animation used to explode the boat
     destroyAnimation = setupDestroyAnimation(this);
 
-    //We setup the state machien of the boat
+    //We setup the state machine of the boat
     machine = new QStateMachine(this);
     QState *moving = new QState(machine);
     StopState *stopState = new StopState(this, moving);

@@ -529,7 +529,9 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rgn.isEmpty());
 
+#ifndef QT_NO_GRAPHICSEFFECT
     widget->d_func()->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {
@@ -559,9 +561,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
 
     if (invalidateBuffer) {
         const bool eventAlreadyPosted = !dirty.isEmpty();
+#ifndef QT_NO_GRAPHICSEFFECT
         if (widget->d_func()->graphicsEffect)
             dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect()).translated(offset);
         else
+#endif //QT_NO_GRAPHICSEFFECT
             dirty += rgn.translated(offset);
         if (!eventAlreadyPosted || updateImmediately)
             sendUpdateRequest(tlw, updateImmediately);
@@ -576,9 +580,11 @@ void QWidgetBackingStore::markDirty(const QRegion &rgn, QWidget *widget, bool up
 
     if (widget->d_func()->inDirtyList) {
         if (!qt_region_strictContains(widget->d_func()->dirty, widgetRect)) {
+#ifndef QT_NO_GRAPHICSEFFECT
             if (widget->d_func()->graphicsEffect)
                 widget->d_func()->dirty += widget->d_func()->effectiveRectFor(rgn.boundingRect());
             else
+#endif //QT_NO_GRAPHICSEFFECT
                 widget->d_func()->dirty += rgn;
         }
     } else {
@@ -606,7 +612,9 @@ void QWidgetBackingStore::markDirty(const QRect &rect, QWidget *widget, bool upd
     Q_ASSERT(widget->window() == tlw);
     Q_ASSERT(!rect.isEmpty());
 
+#ifndef QT_NO_GRAPHICSEFFECT
     widget->d_func()->invalidateGraphicsEffectsRecursively();
+#endif //QT_NO_GRAPHICSEFFECT
 
     if (widget->d_func()->paintOnScreen()) {
         if (widget->d_func()->dirty.isEmpty()) {

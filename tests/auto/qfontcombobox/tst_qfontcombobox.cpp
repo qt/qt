@@ -153,7 +153,7 @@ void tst_QFontComboBox::currentFont()
 
     if (oldCurrentFont != box.currentFont()) {
         //the signal may be emit twice if there is a foundry into brackets
-        QVERIFY(spy0.count() >= 1);
+        QCOMPARE(spy0.count(),1);
     }
 }
 
@@ -286,6 +286,10 @@ void tst_QFontComboBox::currentFontChanged()
     if (box.model()->rowCount() > 2) {
         QTest::keyPress(&box, Qt::Key_Down);
         QCOMPARE(spy0.count(), 1);
+
+        QFont f( "Sans Serif" );
+        box.setCurrentFont(f);
+        QCOMPARE(spy0.count(), 2);
     } else
         qWarning("Not enough fonts installed on test system. Consider adding some");
 }

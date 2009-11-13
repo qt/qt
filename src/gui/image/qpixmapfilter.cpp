@@ -53,6 +53,7 @@
 #include "private/qpaintengineex_p.h"
 #include "private/qpaintengine_raster_p.h"
 
+#ifndef QT_NO_GRAPHICSEFFECT
 QT_BEGIN_NAMESPACE
 
 class QPixmapFilterPrivate : public QObjectPrivate
@@ -489,7 +490,7 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
     which is applied when \l{QPixmapFilter::}{draw()} is called.
 
     The filter lets you specialize the radius of the blur as well
-    as hint as to whether to prefer performance or quality.
+    as hints as to whether to prefer performance or quality.
 
     By default, the blur effect is produced by applying an exponential
     filter generated from the specified blurRadius().  Paint engines
@@ -504,10 +505,10 @@ void QPixmapConvolutionFilter::draw(QPainter *painter, const QPointF &p, const Q
 class QPixmapBlurFilterPrivate : public QPixmapFilterPrivate
 {
 public:
-    QPixmapBlurFilterPrivate() : radius(5), hint(QGraphicsBlurEffect::PerformanceHint) {}
+    QPixmapBlurFilterPrivate() : radius(5), hints(QGraphicsBlurEffect::PerformanceHint) {}
 
     qreal radius;
-    QGraphicsBlurEffect::BlurHint hint;
+    QGraphicsBlurEffect::BlurHints hints;
 };
 
 
@@ -553,9 +554,9 @@ qreal QPixmapBlurFilter::radius() const
 }
 
 /*!
-    Setting the blur hint to PerformanceHint causes the implementation
+    Setting the blur hints to PerformanceHint causes the implementation
     to trade off visual quality to blur the image faster.  Setting the
-    blur hint to QualityHint causes the implementation to improve
+    blur hints to QualityHint causes the implementation to improve
     visual quality at the expense of speed.
 
     AnimationHint causes the implementation to optimize for animating
@@ -567,21 +568,21 @@ qreal QPixmapBlurFilter::radius() const
 
     \internal
 */
-void QPixmapBlurFilter::setBlurHint(QGraphicsBlurEffect::BlurHint hint)
+void QPixmapBlurFilter::setBlurHints(QGraphicsBlurEffect::BlurHints hints)
 {
     Q_D(QPixmapBlurFilter);
-    d->hint = hint;
+    d->hints = hints;
 }
 
 /*!
-    Gets the blur hint of the blur filter.
+    Gets the blur hints of the blur filter.
 
     \internal
 */
-QGraphicsBlurEffect::BlurHint QPixmapBlurFilter::blurHint() const
+QGraphicsBlurEffect::BlurHints QPixmapBlurFilter::blurHints() const
 {
     Q_D(const QPixmapBlurFilter);
-    return d->hint;
+    return d->hints;
 }
 
 /*!
@@ -684,7 +685,7 @@ void QPixmapBlurFilter::draw(QPainter *painter, const QPointF &p, const QPixmap 
     QPixmapBlurFilter *blurFilter = static_cast<QPixmapBlurFilter*>(filter);
     if (blurFilter) {
         blurFilter->setRadius(d->radius);
-        blurFilter->setBlurHint(d->hint);
+        blurFilter->setBlurHints(d->hints);
         blurFilter->draw(painter, p, src, srcRect);
         return;
     }
@@ -1063,9 +1064,7 @@ void QPixmapDropShadowFilter::setOffset(const QPointF &offset)
 QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
-    qreal delta = d->radius + 1;
-    return rect.adjusted(-2, -2, 2, 2).united(
-            rect.translated(d->offset).adjusted(-delta, -delta, delta, delta));
+    return rect.united(rect.translated(d->offset).adjusted(-d->radius, -d->radius, d->radius, d->radius));
 }
 
 /*!
@@ -1088,22 +1087,29 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
         return;
     }
 
-    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toAlignedRect()).toImage();
+    QImage tmp(px.size(), QImage::Format_ARGB32_Premultiplied);
+    tmp.fill(0);
+    QPainter tmpPainter(&tmp);
+    tmpPainter.setCompositionMode(QPainter::CompositionMode_Source);
+    tmpPainter.drawPixmap(d->offset, px);
+    tmpPainter.end();
 
     // blur the alpha channel
     tmp = blurred(tmp, tmp.rect(), qRound(d->radius), true);
 
     // blacken the image...
-    QPainter tmpPainter(&tmp);
+    tmpPainter.begin(&tmp);
     tmpPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    tmpPainter.fillRect(0, 0, tmp.width(), tmp.height(), d->color);
+    tmpPainter.fillRect(tmp.rect(), d->color);
     tmpPainter.end();
 
     // draw the blurred drop shadow...
-    p->drawImage(pos + d->offset, tmp);
+    p->drawImage(pos, tmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);
 }
 
 QT_END_NAMESPACE
+
+#endif //QT_NO_GRAPHICSEFFECT

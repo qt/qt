@@ -1616,9 +1616,8 @@ void QStateMachinePrivate::unregisterEventTransition(QEventTransition *transitio
 }
 
 void QStateMachinePrivate::handleFilteredEvent(QObject *watched, QEvent *event)
-{
-    Q_ASSERT(qobjectEvents.contains(watched));
-    if (qobjectEvents[watched].contains(event->type())) {
+{    
+    if (qobjectEvents.value(watched).contains(event->type())) {
         postInternalEvent(new QStateMachine::WrappedEvent(watched, handler->cloneEvent(event)));
         processEvents(DirectProcessing);
     }

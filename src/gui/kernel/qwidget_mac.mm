@@ -730,6 +730,7 @@ static EventTypeSpec window_events[] = {
     { kEventClassWindow, kEventWindowClose },
     { kEventClassWindow, kEventWindowExpanded },
     { kEventClassWindow, kEventWindowHidden },
+    { kEventClassWindow, kEventWindowZoom },
     { kEventClassWindow, kEventWindowZoomed },
     { kEventClassWindow, kEventWindowCollapsed },
     { kEventClassWindow, kEventWindowToolbarSwitchMode },
@@ -812,6 +813,9 @@ OSStatus QWidgetPrivate::qt_window_event(EventHandlerCallRef er, EventRef event,
 
             QShowEvent qse;
             QApplication::sendSpontaneousEvent(widget, &qse);
+        } else if(ekind == kEventWindowZoom) {
+            widget->d_func()->topData()->normalGeometry = widget->geometry();
+            handled_event = false;
         } else if(ekind == kEventWindowZoomed) {
             WindowPartCode windowPart;
             GetEventParameter(event, kEventParamWindowPartCode,
@@ -3017,10 +3021,17 @@ void QWidgetPrivate::setWindowIcon_sys(bool forceReset)
 #else
         QMacCocoaAutoReleasePool pool;
         NSButton *iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        if (iconButton == nil) {
+            QCFString string(q->windowTitle());
+            const NSString *tmpString = reinterpret_cast<const NSString *>((CFStringRef)string);
+            [qt_mac_window_for(q) setRepresentedURL:[NSURL fileURLWithPath:tmpString]];
+            iconButton = [qt_mac_window_for(q) standardWindowButton:NSWindowDocumentIconButton];
+        }
         if (icon.isNull()) {
             [iconButton setImage:nil];
         } else {
-            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(*pm));
+            QPixmap scaled = pm->scaled(QSize(16,16), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            NSImage *image = static_cast<NSImage *>(qt_mac_create_nsimage(scaled));
             [iconButton setImage:image];
             [image release];
         }
@@ -3480,10 +3491,10 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                     qt_mac_set_fullscreen_mode(true);
             } else {
                 needShow = isVisible();
-                setParent(parentWidget(), d->topData()->savedFlags);
-                setGeometry(d->topData()->normalGeometry);
                 if(!qApp->desktop()->screenNumber(this))
                     qt_mac_set_fullscreen_mode(false);
+                setParent(parentWidget(), d->topData()->savedFlags);
+                setGeometry(d->topData()->normalGeometry);
                 d->topData()->normalGeometry.setRect(0, 0, -1, -1);
             }
         }
@@ -3585,7 +3596,7 @@ void QWidget::setWindowState(Qt::WindowStates newstate)
                 [window zoom:window];
 #endif
                 needSendStateChange = oldstate == windowState(); // Zoom didn't change flags.
-            } else if(oldstate & Qt::WindowMaximized) {
+            } else if(oldstate & Qt::WindowMaximized && !(oldstate & Qt::WindowFullScreen)) {
 #ifndef QT_MAC_USE_COCOA
                 Point idealSize;
                 ZoomWindowIdeal(window, inZoomIn, &idealSize);
@@ -3780,7 +3791,7 @@ void QWidgetPrivate::stackUnder_sys(QWidget *w)
 /*
     Modifies the bounds for a widgets backing HIView during moves and resizes. Also updates the
     widget, either by scrolling its contents or repainting, depending on the WA_StaticContents
-    and QWidgetPrivate::isOpaque flags.
+    flag
 */
 static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newRect)
 {
@@ -3797,8 +3808,8 @@ static void qt_mac_update_widget_posisiton(QWidget *q, QRect oldRect, QRect newR
 
     // Perform a normal (complete repaint) update in some cases:
     if (
-        // move-by-scroll requires QWidgetPrivate::isOpaque set
-        (isMove && q->testAttribute(Qt::WA_OpaquePaintEvent) == false) ||
+        // always repaint on move.
+        (isMove) ||
 
         // limited update on resize requires WA_StaticContents.
         (isResize && q->testAttribute(Qt::WA_StaticContents) == false) ||

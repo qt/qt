@@ -78,6 +78,7 @@
 #include "Cache.h"
 #include "runtime/InitializeThreading.h"
 #include "PageGroup.h"
+#include "QWebPageClient.h"
 
 #include <QApplication>
 #include <QBasicTimer>
@@ -106,6 +107,9 @@
 #include <QNetworkRequest>
 #else
 #include "qwebnetworkinterface.h"
+#endif
+#if defined(Q_WS_X11)
+#include <QX11Info>
 #endif
 
 using namespace WebCore;
@@ -136,6 +140,95 @@ void QWEBKIT_EXPORT qt_webpage_setGroupName(QWebPage* page, const QString& group
 QString QWEBKIT_EXPORT qt_webpage_groupName(QWebPage* page)
 {
     return page->handle()->page->groupName();
+}
+
+class QWebPageWidgetClient : public QWebPageClient {
+public:
+    QWebPageWidgetClient(QWidget* view)
+        : view(view)
+    {
+        Q_ASSERT(view);
+    }
+
+    virtual void scroll(int dx, int dy, const QRect&);
+    virtual void update(const QRect& dirtyRect);
+    virtual void setInputMethodEnabled(bool enable);
+#if QT_VERSION >= 0x040600
+    virtual void setInputMethodHint(Qt::InputMethodHint hint, bool enable);
+#endif
+
+#ifndef QT_NO_CURSOR
+    virtual QCursor cursor() const;
+    virtual void updateCursor(const QCursor& cursor);
+#endif
+
+    virtual QPalette palette() const;
+    virtual int screenNumber() const;
+    virtual QWidget* ownerWidget() const;
+
+    virtual QObject* pluginParent() const;
+
+    QWidget* view;
+};
+
+void QWebPageWidgetClient::scroll(int dx, int dy, const QRect& rectToScroll)
+{
+    view->scroll(qreal(dx), qreal(dy), rectToScroll);
+}
+
+void QWebPageWidgetClient::update(const QRect & dirtyRect)
+{
+    view->update(dirtyRect);
+}
+
+void QWebPageWidgetClient::setInputMethodEnabled(bool enable)
+{
+    view->setAttribute(Qt::WA_InputMethodEnabled, enable);
+}
+#if QT_VERSION >= 0x040600
+void QWebPageWidgetClient::setInputMethodHint(Qt::InputMethodHint hint, bool enable)
+{
+    if (enable)
+        view->setInputMethodHints(view->inputMethodHints() | hint);
+    else
+        view->setInputMethodHints(view->inputMethodHints() & ~hint);
+}
+#endif
+#ifndef QT_NO_CURSOR
+QCursor QWebPageWidgetClient::cursor() const
+{
+    return view->cursor();
+}
+
+void QWebPageWidgetClient::updateCursor(const QCursor& cursor)
+{
+    view->setCursor(cursor);
+}
+#endif
+
+QPalette QWebPageWidgetClient::palette() const
+{
+    return view->palette();
+}
+
+int QWebPageWidgetClient::screenNumber() const
+{
+#if defined(Q_WS_X11)
+    if (view)
+        return view->x11Info().screen();
+#endif
+
+    return 0;
+}
+
+QWidget* QWebPageWidgetClient::ownerWidget() const
+{
+    return view;
+}
+
+QObject* QWebPageWidgetClient::pluginParent() const
+{
+    return view;
 }
 
 // Lookup table mapping QWebPage::WebActions to the associated Editor commands
@@ -1378,8 +1471,6 @@ QWebInspector* QWebPagePrivate::getOrCreateInspector()
     if (!inspector) {
         QWebInspector* insp = new QWebInspector;
         insp->setPage(q);
-        insp->connect(q, SIGNAL(webInspectorTriggered(const QWebElement&)), SLOT(show()));
-        insp->show(); // The inspector is expected to be shown on inspection
         inspectorIsInternalOnly = true;
 
         Q_ASSERT(inspector); // Associated through QWebInspector::setPage(q)
@@ -1672,6 +1763,15 @@ void QWebPage::setView(QWidget *view)
 {
     if (this->view() != view) {
         d->view = view;
+        if (!view) {
+            delete d->client;
+            d->client = 0;
+        } else {
+            if (!d->client) 
+                d->client = new QWebPageWidgetClient(view);
+            else
+                static_cast<QWebPageWidgetClient*>(d->client)->view = view;
+        }
         setViewportSize(view ? view->size() : QSize(0, 0));
     }
 }
@@ -1916,11 +2016,9 @@ void QWebPage::triggerAction(WebAction action, bool)
             editor->setBaseWritingDirection(RightToLeftWritingDirection);
             break;
         case InspectElement: {
-            QWebElement inspectedElement(QWebElement::enclosingElement(d->hitTestResult.d->innerNonSharedNode.get()));
-            emit webInspectorTriggered(inspectedElement);
-
             if (!d->hitTestResult.isNull()) {
                 d->getOrCreateInspector(); // Make sure the inspector is created
+                d->inspector->show(); // The inspector is expected to be shown on inspection
                 d->page->inspectorController()->inspect(d->hitTestResult.d->innerNonSharedNode.get());
             }
             break;
@@ -3338,24 +3436,6 @@ quint64 QWebPage::bytesReceived() const
 */
 
 /*!
-    \fn void QWebPage::webInspectorTriggered(const QWebElement& inspectedElement);
-    \since 4.6
-
-    This signal is emitted when the user triggered an inspection through the
-    context menu. If a QWebInspector is associated to this page, it should be
-    visible to the user after this signal has been emitted.
-
-    If still no QWebInspector is associated to this QWebPage after the emission
-    of this signal, a privately owned inspector will be shown to the user.
-
-    \note \a inspectedElement contains the QWebElement under the context menu.
-    It is not garanteed to be the same as the focused element in the web
-    inspector.
-
-    \sa QWebInspector
-*/
-
-/*!
     \fn void QWebPage::toolBarVisibilityChangeRequested(bool visible)
 
     This signal is emitted whenever the visibility of the toolbar in a web browser
@@ -3403,16 +3483,6 @@ quint64 QWebPage::bytesReceived() const
   \fn void QWebPage::restoreFrameStateRequested(QWebFrame* frame);
 
   This signal is emitted when the load of \a frame is finished and the application may now update its state accordingly.
-*/
-
-/*!
-  \since 4.6
-  \fn void QWebPage::networkRequestStarted(QWebFrame* frame, QNetworkRequest* request);
-  \preliminary
-
-  This signal is emitted when a \a frame of the current page requests a web resource. The application
-  may want to associate the \a request with the \a frame that initiated it by storing the \a frame
-  as an attribute of the \a request.
 */
 
 /*!

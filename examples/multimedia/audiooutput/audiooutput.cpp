@@ -134,7 +134,7 @@ AudioTest::AudioTest()
     QVBoxLayout* layout = new QVBoxLayout;
 
     deviceBox = new QComboBox(this);
-    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::deviceList(QAudio::AudioOutput))
+    foreach (const QAudioDeviceInfo &deviceInfo, QAudioDeviceInfo::availableDevices(QAudio::AudioOutput))
         deviceBox->addItem(deviceInfo.deviceName(), qVariantFromValue(deviceInfo));
     connect(deviceBox,SIGNAL(activated(int)),SLOT(deviceChanged(int)));
     layout->addWidget(deviceBox);
@@ -200,7 +200,7 @@ void AudioTest::deviceChanged(int idx)
 
 void AudioTest::status()
 {
-    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, clock = "<<audioOutput->clock()/1000<<"ms, totalTime = "<<audioOutput->totalTime()/1000<<"ms";
+    qWarning()<<"byteFree = "<<audioOutput->bytesFree()<<" bytes, elapsedUSecs = "<<audioOutput->elapsedUSecs()<<", processedUSecs = "<<audioOutput->processedUSecs();
 }
 
 void AudioTest::writeMore()
@@ -208,7 +208,7 @@ void AudioTest::writeMore()
     if(!audioOutput)
         return;
 
-    if(audioOutput->state() == QAudio::StopState)
+    if(audioOutput->state() == QAudio::StoppedState)
         return;
 
     int    l;
@@ -234,7 +234,7 @@ void AudioTest::toggle()
 
     if (pullMode) {
         button->setText("Click for Pull Mode");
-        output = audioOutput->start(0);
+        output = audioOutput->start();
         pullMode = false;
         timer->start(20);
     } else {
@@ -247,7 +247,7 @@ void AudioTest::toggle()
 void AudioTest::togglePlay()
 {
     // toggle suspend/resume
-    if(audioOutput->state() == QAudio::SuspendState) {
+    if(audioOutput->state() == QAudio::SuspendedState) {
         qWarning()<<"status: Suspended, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");
@@ -255,7 +255,7 @@ void AudioTest::togglePlay()
         qWarning()<<"status: Active, suspend()";
         audioOutput->suspend();
         button2->setText("Click To Resume");
-    } else if (audioOutput->state() == QAudio::StopState) {
+    } else if (audioOutput->state() == QAudio::StoppedState) {
         qWarning()<<"status: Stopped, resume()";
         audioOutput->resume();
         button2->setText("Click To Suspend");

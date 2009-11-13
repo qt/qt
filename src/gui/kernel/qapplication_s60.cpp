@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -319,7 +319,12 @@ void QLongTapTimer::RunL()
 }
 
 QSymbianControl::QSymbianControl(QWidget *w)
-    : CCoeControl(), qwidget(w), m_ignoreFocusChanged(false)
+    : CCoeControl()
+    , qwidget(w)
+    , m_longTapDetector(0)
+    , m_ignoreFocusChanged(0)
+    , m_previousEventLongTap(0)
+    , m_symbianPopupIsOpen(0)
 {
 }
 
@@ -357,6 +362,9 @@ QSymbianControl::~QSymbianControl()
         setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
+
+    if(m_previousEventLongTap)
+        QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
@@ -836,7 +844,7 @@ void QSymbianControl::Draw(const TRect& controlRect) const
             if (qwidget->d_func()->isOpaque)
                 gc.SetDrawMode(CGraphicsContext::EDrawModeWriteAlpha);
             gc.BitBlt(controlRect.iTl, bitmap, backingStoreRect);
-	    }
+        }
     } else {
         surface->flush(qwidget, QRegion(qt_TRect2QRect(backingStoreRect)), QPoint());
     }
@@ -866,6 +874,11 @@ void QSymbianControl::SizeChanged()
                 tlwExtra->inTopLevelResize = false;
         }
     }
+
+    // CCoeControl::SetExtent calls SizeChanged, but does not call
+    // PositionChanged, so we call it here to ensure that the widget's
+    // position is updated.
+    PositionChanged();
 }
 
 void QSymbianControl::PositionChanged()
@@ -903,6 +916,15 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         return;
 
     if (IsFocused() && IsVisible()) {
+        if (m_symbianPopupIsOpen) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = false;
+        }
+
         QApplication::setActiveWindow(qwidget->window());
 #ifdef Q_WS_S60
         // If widget is fullscreen, hide status pane and button container
@@ -910,12 +932,22 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         CEikStatusPane* statusPane = S60->statusPane();
         CEikButtonGroupContainer* buttonGroup = S60->buttonGroupContainer();
         bool isFullscreen = qwidget->windowState() & Qt::WindowFullScreen;
-        if (statusPane && (statusPane->IsVisible() == isFullscreen))
+        if (statusPane && (bool)statusPane->IsVisible() == isFullscreen)
             statusPane->MakeVisible(!isFullscreen);
-        if (buttonGroup && (buttonGroup->IsVisible() == isFullscreen))
+        if (buttonGroup && (bool)buttonGroup->IsVisible() == isFullscreen)
             buttonGroup->MakeVisible(!isFullscreen);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
+        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = true;
+            return;
+        }
+
         QApplication::setActiveWindow(0);
     }
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
@@ -925,6 +957,12 @@ void QSymbianControl::HandleResourceChange(int resourceType)
 {
     switch (resourceType) {
     case KInternalStatusPaneChange:
+        if (qwidget->isFullScreen()) {
+            SetExtentToWholeScreen();
+        } else if (qwidget->isMaximized()) {
+            TRect r = static_cast<CEikAppUi*>(S60->appUi())->ClientRect();
+            SetExtent(r.iTl, r.Size());
+        }
         qwidget->d_func()->setWindowIcon_sys(true);
         break;
     case KUidValueCoeFontChangeEvent:
@@ -1046,8 +1084,17 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         // After this construction, CEikonEnv will be available from CEikonEnv::Static().
         // (much like our qApp).
         CEikonEnv* coe = new CEikonEnv;
-        QT_TRAP_THROWING(coe->ConstructAppFromCommandLineL(factory,*commandLine));
+        //not using QT_TRAP_THROWING, because coe owns the cleanupstack so it can't be pushed there.
+        if(err == KErrNone)
+            TRAP(err, coe->ConstructAppFromCommandLineL(factory,*commandLine));
         delete commandLine;
+        if(err != KErrNone) {
+            qWarning() << "qt_init: Eikon application construct failed ("
+                       << err
+                       << "), maybe missing resource file on S60 3.1?";
+            delete coe;
+            qt_symbian_throwIfError(err);
+        }
 
         S60->s60InstalledTrapHandler = User::SetTrapHandler(origTrapHandler);
 
@@ -1080,9 +1127,9 @@ void qt_init(QApplicationPrivate * /* priv */, int)
 
     // enable focus events - used to re-enable mouse after focus changed between mouse and non mouse app,
     // and for dimming behind modal windows
-	S60->windowGroup().EnableFocusChangeEvents();
+    S60->windowGroup().EnableFocusChangeEvents();
 
-	//Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
+    //Check if mouse interaction is supported (either EMouse=1 in the HAL, or EMachineUID is one of the phones known to support this)
     const TInt KMachineUidSamsungI8510 = 0x2000C51E;
     // HAL::Get(HALData::EPen, TInt& result) may set 'result' to 1 on some 3.1 systems (e.g. N95).
     // But we know that S60 systems below 5.0 did not support touch.
@@ -1240,7 +1287,7 @@ bool QApplicationPrivate::modalState()
 void QApplicationPrivate::enterModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(ETrue);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(ETrue);
         // Modal partial screen dialogs (like queries) capture pointer events.
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(ETrue);
@@ -1255,7 +1302,7 @@ void QApplicationPrivate::enterModal_sys(QWidget *widget)
 void QApplicationPrivate::leaveModal_sys(QWidget *widget)
 {
     if (widget) {
-        widget->effectiveWinId()->DrawableWindow()->FadeBehind(EFalse);
+        static_cast<QSymbianControl *>(widget->effectiveWinId())->FadeBehindPopup(EFalse);
         // ### FixMe: Add specialized behaviour for fullscreen modal dialogs
         widget->effectiveWinId()->SetGloballyCapturing(EFalse);
         widget->effectiveWinId()->SetPointerCapture(EFalse);
@@ -1560,7 +1607,7 @@ int QApplicationPrivate::symbianProcessWsEvent(const TWsEvent *event)
         }
 #endif
         break;
-	default:
+    default:
         break;
     }
 

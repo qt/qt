@@ -401,7 +401,8 @@ void QLineControl::moveCursor(int pos, bool mark)
 void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 {
     int priorState = 0;
-    bool isGettingInput = !event->commitString().isEmpty() || !event->preeditString().isEmpty()
+    bool isGettingInput = !event->commitString().isEmpty()
+            || event->preeditString() != preeditAreaText()
             || event->replacementLength() > 0;
     bool cursorPositionChanged = false;
 
@@ -413,7 +414,7 @@ void QLineControl::processInputMethodEvent(QInputMethodEvent *event)
 
 
     int c = m_cursor; // cursor position after insertion of commit string
-    if (event->replacementStart() <= 0)
+    if (event->replacementStart() == 0)
         c += event->commitString().length() + qMin(-event->replacementStart(), event->replacementLength());
 
     m_cursor += event->replacementStart();
@@ -1510,6 +1511,18 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
     }
 #endif // QT_NO_COMPLETER
 
+    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
+        if (hasAcceptableInput() || fixup()) {
+            emit accepted();
+            emit editingFinished();
+        }
+        if (inlineCompletionAccepted)
+            event->accept();
+        else
+            event->ignore();
+        return;
+    }
+
     if (echoMode() == QLineEdit::PasswordEchoOnEdit
         && !passwordEchoEditing()
         && !isReadOnly()
@@ -1530,17 +1543,6 @@ void QLineControl::processKeyEvent(QKeyEvent* event)
         clear();
     }
 
-    if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {
-        if (hasAcceptableInput() || fixup()) {
-            emit accepted();
-            emit editingFinished();
-        }
-        if (inlineCompletionAccepted)
-            event->accept();
-        else
-            event->ignore();
-        return;
-    }
     bool unknown = false;
 
     if (false) {

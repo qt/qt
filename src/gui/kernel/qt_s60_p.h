@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -73,6 +73,7 @@
 #include <akntitle.h>               // CAknTitlePane
 #include <akncontext.h>             // CAknContextPane
 #include <eikspane.h>               // CEikStatusPane
+#include <aknpopupfader.h>          // MAknFadedComponent and TAknPopupFader
 #endif
 
 QT_BEGIN_NAMESPACE
@@ -114,7 +115,7 @@ public:
     int supportsPremultipliedAlpha : 1;
     QApplication::QS60MainApplicationFactory s60ApplicationFactory; // typedef'ed pointer type
     static inline void updateScreenSize();
-	static inline RWsSession& wsSession();
+    static inline RWsSession& wsSession();
     static inline RWindowGroup& windowGroup();
     static inline CWsScreenDevice* screenDevice();
     static inline CCoeAppUi* appUi();
@@ -140,7 +141,11 @@ public:
 };
 class QLongTapTimer;
 
+
 class QSymbianControl : public CCoeControl, public QAbstractLongTapObserver
+#ifdef Q_WS_S60
+, public MAknFadedComponent
+#endif
 {
 public:
     DECLARE_TYPE_ID(0x51740000) // Fun fact: the two first values are "Qt" in ASCII.
@@ -165,6 +170,17 @@ public:
 
     void setFocusSafely(bool focus);
 
+#ifdef Q_WS_S60
+    void FadeBehindPopup(bool fade){ popupFader.FadeBehindPopup( this, this, fade); }
+
+protected: // from MAknFadedComponent
+    TInt CountFadedComponents() {return 1;}
+    CCoeControl* FadedComponent(TInt /*aIndex*/) {return this;}
+#else
+    #warning No fallback implementation for QSymbianControl::FadeBehindPopup
+    void FadeBehindPopup(bool /*fade*/){ }
+#endif
+
 protected:
     void Draw(const TRect& aRect) const;
     void SizeChanged();
@@ -186,9 +202,15 @@ private:
 
 private:
     QWidget *qwidget;
-    bool m_ignoreFocusChanged;
     QLongTapTimer* m_longTapDetector;
-    bool m_previousEventLongTap;
+    bool m_ignoreFocusChanged : 1;
+    bool m_previousEventLongTap : 1;
+    bool m_symbianPopupIsOpen : 1;
+
+#ifdef Q_WS_S60
+    // Fader object used to fade everything except this menu and the CBA.
+    TAknPopupFader popupFader;
+#endif
 };
 
 inline QS60Data::QS60Data()

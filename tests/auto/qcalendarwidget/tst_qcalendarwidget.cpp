@@ -75,6 +75,8 @@ private slots:
     void resetTextFormat();
 
     void setWeekdayFormat();
+    void showPrevNext_data();
+    void showPrevNext();
 };
 
 // Testing get/set functions
@@ -291,6 +293,74 @@ void tst_QCalendarWidget::init()
 
 void tst_QCalendarWidget::cleanup()
 {
+}
+
+
+typedef void (QCalendarWidget::*ShowFunc)();
+Q_DECLARE_METATYPE(ShowFunc)
+
+void tst_QCalendarWidget::showPrevNext_data()
+{
+    QTest::addColumn<ShowFunc>("function");
+    QTest::addColumn<QDate>("dateOrigin");
+    QTest::addColumn<QDate>("expectedDate");
+
+    QTest::newRow("showNextMonth") << &QCalendarWidget::showNextMonth << QDate(1984,7,30) << QDate(1984,8,30);
+    QTest::newRow("showPrevMonth") << &QCalendarWidget::showPreviousMonth << QDate(1984,7,30) << QDate(1984,6,30);
+    QTest::newRow("showNextYear") << &QCalendarWidget::showNextYear << QDate(1984,7,30) << QDate(1985,7,30);
+    QTest::newRow("showPrevYear") << &QCalendarWidget::showPreviousYear << QDate(1984,7,30) << QDate(1983,7,30);
+
+    QTest::newRow("showNextMonth limit") << &QCalendarWidget::showNextMonth << QDate(2007,12,4) << QDate(2008,1,4);
+    QTest::newRow("showPreviousMonth limit") << &QCalendarWidget::showPreviousMonth << QDate(2006,1,23) << QDate(2005,12,23);
+
+    QTest::newRow("showNextMonth now") << &QCalendarWidget::showNextMonth << QDate() << QDate::currentDate().addMonths(1);
+    QTest::newRow("showNextYear now") << &QCalendarWidget::showNextYear << QDate() << QDate::currentDate().addYears(1);
+    QTest::newRow("showPrevieousMonth now") << &QCalendarWidget::showPreviousMonth << QDate() << QDate::currentDate().addMonths(-1);
+    QTest::newRow("showPreviousYear now") << &QCalendarWidget::showPreviousYear << QDate() << QDate::currentDate().addYears(-1);
+
+    QTest::newRow("showToday now") << &QCalendarWidget::showToday << QDate(2000,1,31) << QDate::currentDate();
+    QTest::newRow("showNextMonth 31") << &QCalendarWidget::showNextMonth << QDate(2000,1,31) << QDate(2000,2,28);
+    QTest::newRow("selectedDate") << &QCalendarWidget::showSelectedDate << QDate(2008,2,29) << QDate(2008,2,29);
+
+}
+
+void tst_QCalendarWidget::showPrevNext()
+{
+    QFETCH(ShowFunc, function);
+    QFETCH(QDate, dateOrigin);
+    QFETCH(QDate, expectedDate);
+
+    QCalendarWidget calWidget;
+    calWidget.show();
+    QTest::qWaitForWindowShown(&calWidget);
+    if(!dateOrigin.isNull()) {
+        calWidget.setSelectedDate(dateOrigin);
+        calWidget.setCurrentPage(dateOrigin.year(), dateOrigin.month());
+
+        QCOMPARE(calWidget.yearShown(), dateOrigin.year());
+        QCOMPARE(calWidget.monthShown(), dateOrigin.month());
+    } else {
+        QCOMPARE(calWidget.yearShown(), QDate::currentDate().year());
+        QCOMPARE(calWidget.monthShown(), QDate::currentDate().month());
+    }
+
+    (calWidget.*function)();
+
+    QCOMPARE(calWidget.yearShown(), expectedDate.year());
+    QCOMPARE(calWidget.monthShown(), expectedDate.month());
+
+    // QTBUG-4058
+    QTest::qWait(20);
+    QToolButton *button = qFindChild<QToolButton *>(&calWidget, "qt_calendar_prevmonth");
+    QTest::mouseClick(button, Qt::LeftButton);
+    expectedDate = expectedDate.addMonths(-1);
+    QCOMPARE(calWidget.yearShown(), expectedDate.year());
+    QCOMPARE(calWidget.monthShown(), expectedDate.month());
+
+    if(!dateOrigin.isNull()) {
+        //the selectedDate should not have changed
+        QCOMPARE(calWidget.selectedDate(), dateOrigin);
+    }
 }
 
 QTEST_MAIN(tst_QCalendarWidget)
