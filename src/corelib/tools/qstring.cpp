@@ -7204,7 +7204,7 @@ QString QString::fromRawData(const QChar *unicode, int size)
 */
 
 
-#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 /*!
     \fn QDataStream &operator<<(QDataStream &stream, const QString &string)
     \relates QString

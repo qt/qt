@@ -572,7 +572,7 @@ inline QByteArray &QByteArray::setNum(float n, char f, int prec)
 { return setNum(double(n),f,prec); }
 
 
-#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 Q_CORE_EXPORT QDataStream &operator<<(QDataStream &, const QByteArray &);
 Q_CORE_EXPORT QDataStream &operator>>(QDataStream &, QByteArray &);
 #endif

@@ -2638,7 +2638,7 @@ void QByteArray::clear()
     d->ref.ref();
 }
 
-#if !defined(QT_NO_DATASTREAM) || defined(QT_BOOTSTRAPPED)
+#if !defined(QT_NO_DATASTREAM) || (defined(QT_BOOTSTRAPPED) && !defined(QT_BUILD_QMAKE))
 
 /*! \relates QByteArray
 

@@ -14,7 +14,6 @@ SOURCES += \
            $$QT_SOURCE_TREE/src/corelib/io/qdiriterator.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qiodevice.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qbuffer.cpp \
-           $$QT_SOURCE_TREE/src/corelib/io/qdatastream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qtextstream.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qurl.cpp \
            $$QT_SOURCE_TREE/src/corelib/io/qsettings.cpp \     
