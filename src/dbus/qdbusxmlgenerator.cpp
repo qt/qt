@@ -203,7 +203,7 @@ static QString generateInterfaceXml(const QMetaObject *mo, int flags, int method
                 const char *typeName = QVariant::typeToName( QVariant::Type(types.at(j)) );
                 xml += QString::fromLatin1("      <annotation name=\"com.trolltech.QtDBus.QtTypeName.%1%2\" value=\"%3\"/>\n")
                        .arg(isOutput ? QLatin1String("Out") : QLatin1String("In"))
-                       .arg(isOutput ? j - inputCount : j - 1)
+                       .arg(isOutput && !isSignal ? j - inputCount : j - 1)
                        .arg(typeNameToXml(typeName));
             }
         }
