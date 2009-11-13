@@ -791,7 +791,8 @@ void QApplicationPrivate::construct(
     }
 
     //make sure the plugin is loaded
-    qt_guiPlatformPlugin();
+    if (qt_is_gui_used)
+        qt_guiPlatformPlugin();
 #endif
 }
 

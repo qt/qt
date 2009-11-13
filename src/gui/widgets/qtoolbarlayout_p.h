@@ -112,7 +112,7 @@ public:
     bool hasExpandFlag() const;
 
 public Q_SLOTS:
-    void setExpanded(bool b, bool animated = true);
+    void setExpanded(bool b);
 
 private:
     QList<QToolBarItem*> items;

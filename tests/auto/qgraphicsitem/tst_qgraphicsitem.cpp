@@ -413,6 +413,7 @@ private slots:
     void task243707_addChildBeforeParent();
     void task197802_childrenVisibility();
     void QTBUG_4233_updateCachedWithSceneRect();
+    void QTBUG_5418_textItemSetDefaultColor();
 
 private:
     QList<QGraphicsItem *> paintedItems;
@@ -9749,6 +9750,63 @@ void tst_QGraphicsItem::scenePosChange()
     QCOMPARE(child1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 4);
     QCOMPARE(grandChild1->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 1);
     QCOMPARE(child2->changes.count(QGraphicsItem::ItemScenePositionHasChanged), 0);
+}
+
+void  tst_QGraphicsItem::QTBUG_5418_textItemSetDefaultColor()
+{
+    struct Item : public QGraphicsTextItem
+    {
+        bool painted;
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *opt, QWidget *wid)
+        {
+            painted = true;
+            QGraphicsTextItem::paint(painter, opt, wid);
+        }
+    };
+
+    Item *i = new Item;
+    i->painted = false;
+    i->setPlainText("I AM A TROLL");
+
+    QGraphicsScene scene;
+    QGraphicsView view(&scene);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+    scene.addItem(i);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted);
+    QApplication::processEvents();
+
+    i->painted = false;
+    QColor col(Qt::red);
+    i->setDefaultTextColor(col);
+    QApplication::processEvents();
+    QTRY_VERIFY(i->painted); //check that changing the color force an update
+
+    i->painted = false;
+    QImage image(400, 200, QImage::Format_RGB32);
+    image.fill(0);
+    QPainter painter(&image);
+    scene.render(&painter);
+    painter.end();
+    QVERIFY(i->painted);
+
+    int numRedPixel = 0;
+    QRgb rgb = col.rgb();
+    for (int y = 0; y < image.height(); ++y) {
+        for (int x = 0; x < image.width(); ++x) {
+            // Because of antialiasing we allow a certain range of errors here.
+            QRgb pixel = image.pixel(x, y);
+            if (qAbs((int)(pixel & 0xff) - (int)(rgb & 0xff)) +
+                qAbs((int)((pixel & 0xff00) >> 8) - (int)((rgb & 0xff00) >> 8)) +
+                qAbs((int)((pixel & 0xff0000) >> 16) - (int)((rgb & 0xff0000) >> 16)) <= 50) {
+                if (++numRedPixel >= 10) {
+                    return;
+                }
+            }
+        }
+    }
+    QCOMPARE(numRedPixel, -1); //color not found, FAIL!
 }
 
 QTEST_MAIN(tst_QGraphicsItem)
