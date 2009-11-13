@@ -581,6 +581,9 @@ while ( @ARGV ) {
     } elsif("$arg" eq "-show") {
 	$var = "showonly";
 	$val = "yes";
+    } elsif("$arg" eq "-quiet") {
+	$var = "quiet";
+	$val = "yes";
     } elsif("$arg" eq '*') {
         # workaround for windows 9x where "%*" expands to "*"
         $var = 1;
@@ -601,6 +604,12 @@ while ( @ARGV ) {
 	    $showonly++;
 	} elsif($showonly) {
 	    $showonly--;
+	}
+    } elsif ("$var" eq "quiet") {
+	if("$val" eq "yes") {
+	    $quiet++;
+	} elsif($quiet) {
+	    $quiet--;
 	}
     } elsif ("$var" eq "check-includes") {
 	if("$val" eq "yes") {
