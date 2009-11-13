@@ -465,11 +465,10 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
     case NodeImpl::Entity:
     case NodeImpl::EntityReference:
     case NodeImpl::Notation:
+    case NodeImpl::ProcessingInstruction:
+        return QScriptValue();
     case NodeImpl::CDATA:
         instance.setPrototype(CDATA::prototype(engine));
-        break;
-    case NodeImpl::ProcessingInstruction:
-        instance.setPrototype(Node::prototype(engine));
         break;
     case NodeImpl::Text:
         instance.setPrototype(Text::prototype(engine));
@@ -556,8 +555,7 @@ QScriptValue Text::isElementContentWhitespace(QScriptContext *context, QScriptEn
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(false);
+    return node.d->data.trimmed().isEmpty();
 }
 
 QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
@@ -565,8 +563,7 @@ QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(QString());
+    return node.d->data;
 }
 
 QScriptValue Text::prototype(QScriptEngine *engine)

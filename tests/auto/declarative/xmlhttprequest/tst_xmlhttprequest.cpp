@@ -88,6 +88,7 @@ private slots:
     void document();
     void element();
     void attr();
+    void text();
 
     // Crashes
     // void outstanding_request_at_shutdown();
@@ -1007,6 +1008,19 @@ void tst_xmlhttprequest::element()
 void tst_xmlhttprequest::attr()
 {
     QmlComponent component(&engine, TEST_FILE("attr.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    QCOMPARE(object->property("xmlTest").toBool(), true);
+
+    delete object;
+}
+
+void tst_xmlhttprequest::text()
+{
+    QmlComponent component(&engine, TEST_FILE("text.qml"));
     QObject *object = component.create();
     QVERIFY(object != 0);
 
