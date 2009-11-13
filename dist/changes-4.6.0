@@ -11,13 +11,9 @@ Some of the changes listed in this file include issue tracking numbers
 corresponding to tasks in the Qt Bug Tracker, the (now obsolete) Task
 Tracker, or the Merge Request queue of the public source repository.
 
-Each of these identifiers can be entered in the tracker to obtain more
-information about a particular change.  Issue numbers for the various
-trackers have the following formats:
-
-QTBUG-1234 - Qt Bug Tracker: http://bugreports.qt.nokia.com
-MR#1234    - Merge Request: http://qt.gitorious.org
-123456     - Task Tracker: http://qt.nokia.com/developer/task-tracker
+Qt Bug Tracker: http://bugreports.qt.nokia.com
+Task Tracker: http://qt.nokia.com/developer/task-tracker
+Merge Request: http://qt.gitorious.org
 
 ****************************************************************************
 *                           General                                        *
@@ -59,6 +55,10 @@ MR#1234    - Merge Request: http://qt.gitorious.org
  
  - QContiguousCache
     * New class for efficiently caching items within a scrolling view.
+
+ - QtTest now supports outputting XUnit XML documents, for integrating
+   with existing continuous integration systems. This is enabled by
+   running the test program with the -xunitxml option.
 
 Third party components
 ----------------------
