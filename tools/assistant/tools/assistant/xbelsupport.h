@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the Qt Assistant of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,18 +39,49 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "mainwindow.h"
+#ifndef XBELSUPPORT_H
+#define XBELSUPPORT_H
 
-int main(int argc, char * argv[])
+#include <QtGui/QIcon>
+#include <QtXml/QXmlStreamReader>
+
+QT_FORWARD_DECLARE_CLASS(QIODevice)
+QT_FORWARD_DECLARE_CLASS(QStandardItem)
+
+class BookmarkModel;
+
+class XbelWriter : public QXmlStreamWriter
 {
-    QApplication app(argc, argv);
-    QUrl url;
-    if (argc > 1)
-        url = QUrl(argv[1]);
-    else
-        url = QUrl("http://www.google.com/ncr");
-    MainWindow *browser = new MainWindow(url);
-    browser->show();
-    return app.exec();
-}
+public:
+    XbelWriter(BookmarkModel *model);
+    void writeToFile(QIODevice *device);
+
+private:
+    void writeData(QStandardItem *item);
+
+private:
+    BookmarkModel *treeModel;
+};
+
+class XbelReader : public QXmlStreamReader
+{
+public:
+    XbelReader(BookmarkModel *tree, BookmarkModel *list);
+    bool readFromFile(QIODevice *device);
+
+private:
+    void readXBEL();
+    void readUnknownElement();
+    void readFolder(QStandardItem *item);
+    void readBookmark(QStandardItem *item);
+    QStandardItem* createChildItem(QStandardItem *item);
+
+private:
+    QIcon folderIcon;
+    QIcon bookmarkIcon;
+
+    BookmarkModel *treeModel;
+    BookmarkModel *listModel;
+};
+
+#endif  // XBELSUPPORT_H

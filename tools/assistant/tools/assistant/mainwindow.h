@@ -76,10 +76,6 @@ public:
     static QString defaultHelpCollectionFileName();
 
 public:
-    void hideContents();
-    void hideIndex();
-    void hideBookmarks();
-    void hideSearch();
     void setIndexString(const QString &str);
     void expandTOC(int depth);
     bool usesDefaultCollection() const;
@@ -88,16 +84,20 @@ signals:
     void initDone();
 
 public slots:
-    void showContents();
-    void showIndex();
-    void showBookmarks();
-    void showSearch();
+    void setContentsVisible(bool visible);
+    void setIndexVisible(bool visible);
+    void setBookmarksVisible(bool visible);
+    void setSearchVisible(bool visible);
     void showSearchWidget();
     void syncContents();
     void activateCurrentCentralWidgetTab();
     void currentFilterChanged(const QString &filter);
 
 private slots:
+    void showContents();
+    void showIndex();
+    void showBookmarks();
+    void showSearch();
     void insertLastPages();
     void addBookmark();
     void gotoAddress();
@@ -123,6 +123,9 @@ private slots:
     void updateBookmarkMenu();
     void showBookmark(QAction *action);
 
+    void importBookmarks();
+    void exportBookmarks();
+
 private:
     bool initHelpDB();
     void setupActions();
@@ -133,6 +136,10 @@ private:
     void setupAddressToolbar();
     QMenu *toolBarMenu();
     QWidget *setupBookmarkWidget();
+    void hideContents();
+    void hideIndex();
+    void hideBookmarks();
+    void hideSearch();
 
     QHelpEngine *m_helpEngine;
     CentralWidget *m_centralWidget;
@@ -163,6 +170,8 @@ private:
     QMenu *m_toolBarMenu;
     QMenu *m_bookmarkMenu;
     QAction *m_bookmarkMenuAction;
+    QAction *m_importBookmarkAction;
+    QAction *m_exportBookmarkAction;
 
     CmdLineParser *m_cmdLine;
 

@@ -128,6 +128,9 @@ public:
     QList<QByteArray> rawHeaderList() const;
     QByteArray rawHeader(const QByteArray &headerName) const;
 
+    typedef QPair<QByteArray, QByteArray> RawHeaderPair;
+    const QList<RawHeaderPair>& rawHeaderPairs() const;
+
     // attributes
     QVariant attribute(QNetworkRequest::Attribute code) const;
 

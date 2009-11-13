@@ -550,18 +550,17 @@ void CentralWidget::print()
 
     initPrinter();
 
-    QPrintDialog *dlg = new QPrintDialog(printer, this);
+    QPrintDialog dlg(printer, this);
 #if defined(QT_NO_WEBKIT)
     if (viewer->textCursor().hasSelection())
-        dlg->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+        dlg.addEnabledOption(QAbstractPrintDialog::PrintSelection);
 #endif
-    dlg->addEnabledOption(QAbstractPrintDialog::PrintPageRange);
-    dlg->addEnabledOption(QAbstractPrintDialog::PrintCollateCopies);
-    dlg->setWindowTitle(tr("Print Document"));
-    if (dlg->exec() == QDialog::Accepted) {
+    dlg.addEnabledOption(QAbstractPrintDialog::PrintPageRange);
+    dlg.addEnabledOption(QAbstractPrintDialog::PrintCollateCopies);
+    dlg.setWindowTitle(tr("Print Document"));
+    if (dlg.exec() == QDialog::Accepted) {
         viewer->print(printer);
     }
-    delete dlg;
 #endif
 }
 
@@ -1002,7 +1001,7 @@ void CentralWidget::updateBrowserFont()
 
     int i = searchAttached ? 1 : 0;
     getBrowserFontFor(tabWidget->widget(i), &font);
-    for (i; i < tabWidget->count(); ++i)
+    for (; i < tabWidget->count(); ++i)
         setBrowserFontFor(tabWidget->widget(i), font);
 }
 
@@ -1141,6 +1140,17 @@ CentralWidget::highlightSearchTerms()
 
     viewer->viewport()->setUpdatesEnabled(true);
 #endif
+}
+
+
+void CentralWidget::closeTabs(const QList<int> &indices)
+{
+    QList<int> sortedIndices = indices;
+    qSort(sortedIndices);
+    for (int i = sortedIndices.count(); --i >= 0;)
+        closeTabAt(sortedIndices.at(i));
+    if (availableHelpViewer() == 0)
+        setSource(QUrl(QLatin1String("about:blank")));
 }
 
 void CentralWidget::closeTabAt(int index)

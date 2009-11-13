@@ -52,6 +52,7 @@
 #include "aboutdialog.h"
 #include "searchwidget.h"
 #include "qtdocinstaller.h"
+#include "xbelsupport.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QTimer>
@@ -76,6 +77,7 @@
 #include <QtGui/QProgressBar>
 #include <QtGui/QDesktopServices>
 #include <QtGui/QToolButton>
+#include <QtGui/QFileDialog>
 
 #include <QtHelp/QHelpEngine>
 #include <QtHelp/QHelpSearchEngine>
@@ -374,13 +376,17 @@ void MainWindow::checkInitState()
 void MainWindow::updateBookmarkMenu()
 {
     if (m_bookmarkManager) {
+        m_bookmarkMenu->removeAction(m_importBookmarkAction);
+        m_bookmarkMenu->removeAction(m_exportBookmarkAction);
         m_bookmarkMenu->removeAction(m_bookmarkMenuAction);
-        
+
         m_bookmarkMenu->clear();
-        
+
+        m_bookmarkMenu->addAction(m_importBookmarkAction);
+        m_bookmarkMenu->addAction(m_exportBookmarkAction);
         m_bookmarkMenu->addAction(m_bookmarkMenuAction);
         m_bookmarkMenu->addSeparator();
-        
+
         m_bookmarkManager->fillBookmarkMenu(m_bookmarkMenu);
     }
 }
@@ -437,8 +443,12 @@ void MainWindow::setupActions()
     m_closeTabAction->setShortcuts(QKeySequence::Close);
 
     QAction *tmp = menu->addAction(tr("&Quit"), this, SLOT(close()));
-    tmp->setShortcut(QKeySequence::Quit);
     tmp->setMenuRole(QAction::QuitRole);
+#ifdef Q_OS_WIN
+    tmp->setShortcut(QKeySequence(tr("CTRL+Q")));
+#else
+    tmp->setShortcut(QKeySequence::Quit);
+#endif
 
     menu = menuBar()->addMenu(tr("&Edit"));
     m_copyAction = menu->addAction(tr("&Copy selected Text"), m_centralWidget,
@@ -529,6 +539,10 @@ void MainWindow::setupActions()
         << QKeySequence(Qt::CTRL + Qt::Key_PageUp));
 
     m_bookmarkMenu = menuBar()->addMenu(tr("&Bookmarks"));
+    m_importBookmarkAction = m_bookmarkMenu->addAction(tr("Import..."),
+        this, SLOT(importBookmarks()));
+    m_exportBookmarkAction = m_bookmarkMenu->addAction(tr("Export..."),
+        this, SLOT(exportBookmarks()));
     m_bookmarkMenuAction = m_bookmarkMenu->addAction(tr("Add Bookmark..."),
         this, SLOT(addBookmark()));
     m_bookmarkMenuAction->setShortcut(tr("CTRL+D"));
@@ -861,26 +875,17 @@ void MainWindow::showAboutDialog()
     aboutDia.exec();
 }
 
+void MainWindow::setContentsVisible(bool visible)
+{
+    if (visible)
+        showContents();
+    else
+        hideContents();
+}
+
 void MainWindow::showContents()
 {
     activateDockWidget(m_contentWindow);
-}
-
-void MainWindow::showIndex()
-{
-    activateDockWidget(m_indexWindow);
-}
-
-void MainWindow::showBookmarks()
-{
-    activateDockWidget(m_bookmarkWidget);
-}
-
-void MainWindow::activateDockWidget(QWidget *w)
-{
-    w->parentWidget()->show();
-    w->parentWidget()->raise();
-    w->setFocus();
 }
 
 void MainWindow::hideContents()
@@ -888,14 +893,66 @@ void MainWindow::hideContents()
     m_contentWindow->parentWidget()->hide();
 }
 
+void MainWindow::setIndexVisible(bool visible)
+{
+    if (visible)
+        showIndex();
+    else
+        hideIndex();
+}
+
+void MainWindow::showIndex()
+{
+    activateDockWidget(m_indexWindow);
+}
+
 void MainWindow::hideIndex()
 {
     m_indexWindow->parentWidget()->hide();
 }
 
+void MainWindow::setBookmarksVisible(bool visible)
+{
+    if (visible)
+        showBookmarks();
+    else
+        hideBookmarks();
+}
+
+
+void MainWindow::showBookmarks()
+{
+    activateDockWidget(m_bookmarkWidget);
+}
+
 void MainWindow::hideBookmarks()
 {
     m_bookmarkWidget->parentWidget()->hide();
+}
+
+void MainWindow::setSearchVisible(bool visible)
+{
+    if (visible)
+        showSearch();
+    else
+        hideSearch();
+}
+
+void MainWindow::showSearch()
+{
+    m_centralWidget->activateSearchWidget();
+}
+
+void MainWindow::hideSearch()
+{
+    m_centralWidget->removeSearchWidget();
+}
+
+void MainWindow::activateDockWidget(QWidget *w)
+{
+    w->parentWidget()->show();
+    w->parentWidget()->raise();
+    w->setFocus();
 }
 
 void MainWindow::setIndexString(const QString &str)
@@ -916,19 +973,9 @@ void MainWindow::activateCurrentCentralWidgetTab()
     m_centralWidget->activateTab();
 }
 
-void MainWindow::showSearch()
-{
-    m_centralWidget->activateSearchWidget();
-}
-
 void MainWindow::showSearchWidget()
 {
     m_centralWidget->activateSearchWidget(true);
-}
-
-void MainWindow::hideSearch()
-{
-    m_centralWidget->removeSearchWidget();
 }
 
 void MainWindow::updateApplicationFont()
@@ -1033,6 +1080,41 @@ QString MainWindow::defaultHelpCollectionFileName()
     return collectionFileDirectory() + QDir::separator() +
         QString(QLatin1String("qthelpcollection_%1.qhc")).
         arg(QLatin1String(QT_VERSION_STR));
+}
+
+void MainWindow::importBookmarks()
+{
+    const QString &fileName = QFileDialog::getOpenFileName(0, tr("Open File"),
+        QDir::currentPath(), tr("Files (*.xbel)"));
+
+    if (fileName.isEmpty())
+        return;
+
+    QFile file(fileName);
+    if (file.open(QIODevice::ReadOnly)) {
+        XbelReader reader(m_bookmarkManager->treeBookmarkModel(),
+            m_bookmarkManager->listBookmarkModel());
+        reader.readFromFile(&file);
+    }
+}
+
+void MainWindow::exportBookmarks()
+{
+    QString fileName = QFileDialog::getSaveFileName(0, tr("Save File"),
+        "untitled.xbel", tr("Files (*.xbel)"));
+
+    QLatin1String suffix(".xbel");
+    if (!fileName.endsWith(suffix))
+        fileName.append(suffix);
+
+    QFile file(fileName);
+    if (file.open(QIODevice::WriteOnly)) {
+        XbelWriter writer(m_bookmarkManager->treeBookmarkModel());
+        writer.writeToFile(&file);
+    } else {
+        QMessageBox::information(this, tr("Qt Assistant"),
+            tr("Unable to save bookmarks."), tr("OK"));
+    }
 }
 
 void MainWindow::currentFilterChanged(const QString &filter)

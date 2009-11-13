@@ -530,6 +530,12 @@ QByteArray QNetworkReply::rawHeader(const QByteArray &headerName) const
     return QByteArray();
 }
 
+const QList<QNetworkReply::RawHeaderPair>& QNetworkReply::rawHeaderPairs() const
+{
+    Q_D(const QNetworkReply);
+    return d->rawHeaders;
+}
+
 /*!
     Returns a list of headers fields that were sent by the remote
     server, in the order that they were sent. Duplicate headers are

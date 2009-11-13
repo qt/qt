@@ -90,6 +90,7 @@ private slots:
 
 private:
     bool eventFilter(QObject *object, QEvent *e);
+    void renameFolder(const QModelIndex &index, const QModelIndex &proxyIndex);
 
 private:
     QString m_url;
@@ -202,6 +203,7 @@ private:
 private:
     QString oldText;
     QIcon folderIcon;
+    QIcon bookmarkIcon;
 
     BookmarkModel *treeModel;
     BookmarkModel *listModel;

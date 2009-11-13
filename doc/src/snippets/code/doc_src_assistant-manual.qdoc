@@ -58,7 +58,7 @@ assistant -collectionFile file
         <cacheDirectory>mycompany/myapplication</cacheDirectory>
         <aboutMenuText>
             <text>About My Application</text>
-            <text language="de">Über meine Applikation...</text>
+            <text language="de">Ãœber meine Applikation...</text>
         </aboutMenuText>
         <aboutDialog>
             <file>about.txt</file>
@@ -95,8 +95,7 @@ if (!process->waitForStarted())
 
 //! [3]
 QByteArray ba;
-ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html");
-ba.append('\0');
+ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html\n");
 process->write(ba);
 //! [3]
 
@@ -105,8 +104,7 @@ process->write(ba);
 QByteArray ba;
 ba.append("hide bookmarks;");
 ba.append("hide index;");
-ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html");
-ba.append('\0');
+ba.append("setSource qthelp://com.mycompany.1_0_0/doc/index.html\n");
 process->write(ba);
 //! [4]
 

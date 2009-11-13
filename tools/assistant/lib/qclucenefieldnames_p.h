@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the examples of the Qt Toolkit.
+** This file is part of the Qt Assistant of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,18 +39,27 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include "mainwindow.h"
+#ifndef QCLUCENEFIELDNAMES_P_H
+#define QCLUCENEFIELDNAMES_P_H
 
-int main(int argc, char * argv[])
-{
-    QApplication app(argc, argv);
-    QUrl url;
-    if (argc > 1)
-        url = QUrl(argv[1]);
-    else
-        url = QUrl("http://www.google.com/ncr");
-    MainWindow *browser = new MainWindow(url);
-    browser->show();
-    return app.exec();
-}
+#include <QtCore/QtGlobal>
+#include <QtCore/QString>
+
+QT_BEGIN_NAMESPACE
+
+namespace qt {
+namespace fulltextsearch {
+namespace clucene {
+    extern const QString AttributeField;
+    extern const QString ContentField;
+    extern const QString NamespaceField;
+    extern const QString PathField;
+    extern const QString TitleField;
+    extern const QString TitleTokenizedField;
+} // namespace clucene
+} // namespace fulltextsearch
+} // namespace qt
+
+QT_END_NAMESPACE
+
+#endif // QCLUCENEFIELDNAMES_P_H

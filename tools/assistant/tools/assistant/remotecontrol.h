@@ -43,6 +43,7 @@
 #define REMOTECONTROL_H
 
 #include <QtCore/QObject>
+#include <QtCore/QString>
 #include <QtCore/QUrl>
 
 QT_BEGIN_NAMESPACE
@@ -64,6 +65,17 @@ private slots:
 
 private:
     void clearCache();
+    void splitInputString(const QString &input, QString &cmd, QString &arg);
+    void handleDebugCommand(const QString &arg);
+    void handleShowOrHideCommand(const QString &arg, bool show);
+    void handleSetSourceCommand(const QString &arg);
+    void handleSyncContentsCommand();
+    void handleActivateKeywordCommand(const QString &arg);
+    void handleActivateIdentifierCommand(const QString &arg);
+    void handleExpandTocCommand(const QString &arg);
+    void handleSetCurrentFilterCommand(const QString &arg);
+    void handleRegisterCommand(const QString &arg);
+    void handleUnregisterCommand(const QString &arg);
 
 private:
     MainWindow *m_mainWindow;

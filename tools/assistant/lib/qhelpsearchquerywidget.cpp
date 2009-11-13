@@ -120,33 +120,6 @@ private:
         // nothing todo
     }
 
-    QString escapeString(const QString &text)
-    {
-        QString retValue = text;
-        const QString escape(QLatin1String("\\"));
-        QStringList escapableCharsList;
-        escapableCharsList << QLatin1String("\\") << QLatin1String("+")
-            << QLatin1String("-") << QLatin1String("!") << QLatin1String("(")
-            << QLatin1String(")") << QLatin1String(":") << QLatin1String("^")
-            << QLatin1String("[") << QLatin1String("]") << QLatin1String("{")
-            << QLatin1String("}") << QLatin1String("~");
-
-        // make sure we won't end up with an empty string
-        foreach (const QString escapeChar, escapableCharsList) {
-            if (retValue.contains(escapeChar))
-                retValue.replace(escapeChar, QLatin1String(""));
-        }
-        if (retValue.trimmed().isEmpty())
-            return retValue;
-
-        retValue = text; // now realy escape the string...
-        foreach (const QString escapeChar, escapableCharsList) {
-            if (retValue.contains(escapeChar))
-                retValue.replace(escapeChar, escape + escapeChar);
-        }
-        return retValue;
-    }
-
     QStringList buildTermList(const QString query)
     {
         bool s = false;
@@ -295,14 +268,14 @@ private slots:
 #else
         if (defaultQuery->isEnabled()) {
             queryList.append(QHelpSearchQuery(QHelpSearchQuery::DEFAULT,
-                                              buildTermList(escapeString(defaultQuery->text()))));
+                                              buildTermList(defaultQuery->text())));
         } else {
             const QRegExp exp(QLatin1String("\\s+"));
             QStringList lst = similarQuery->text().split(exp, QString::SkipEmptyParts);
             if (!lst.isEmpty()) {
                 QStringList fuzzy;
                 foreach (const QString term, lst)
-                    fuzzy += buildTermList(escapeString(term));
+                    fuzzy += buildTermList(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::FUZZY, fuzzy));
             }
 
@@ -310,13 +283,13 @@ private slots:
             if (!lst.isEmpty()) {
                 QStringList without;
                 foreach (const QString term, lst)
-                    without.append(escapeString(term));
+                    without.append(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::WITHOUT, without));
             }
 
             if (!exactQuery->text().isEmpty()) {
                 QString phrase = exactQuery->text().remove(QLatin1Char('\"'));
-                phrase = escapeString(phrase.simplified());
+                phrase = phrase.simplified();
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::PHRASE, QStringList(phrase)));
             }
 
@@ -324,7 +297,7 @@ private slots:
             if (!lst.isEmpty()) {
                 QStringList all;
                 foreach (const QString term, lst)
-                    all.append(escapeString(term));
+                    all.append(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ALL, all));
             }
 
@@ -332,7 +305,7 @@ private slots:
             if (!lst.isEmpty()) {
                 QStringList atLeast;
                 foreach (const QString term, lst)
-                    atLeast += buildTermList(escapeString(term));
+                    atLeast += buildTermList(term);
                 queryList.append(QHelpSearchQuery(QHelpSearchQuery::ATLEAST, atLeast));
             }
         }

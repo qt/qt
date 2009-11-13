@@ -36,7 +36,8 @@ HEADERS += helpviewer.h \
            remotecontrol.h \
            cmdlineparser.h \
            aboutdialog.h \
-           qtdocinstaller.h
+           qtdocinstaller.h \
+           xbelsupport.h
 
 win32 {
     HEADERS += remotecontrol_win.h
@@ -57,7 +58,8 @@ SOURCES += helpviewer.cpp \
            remotecontrol.cpp \
            cmdlineparser.cpp \
            aboutdialog.cpp \
-           qtdocinstaller.cpp
+           qtdocinstaller.cpp \
+           xbelsupport.cpp
 
 FORMS += topicchooser.ui \
          preferencesdialog.ui \
