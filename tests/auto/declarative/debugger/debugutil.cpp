@@ -133,7 +133,10 @@ void tst_QmlDebug_Thread::run()
         QTest::qWait(100);
 
     m_data->conn = &conn;
+
+    Q_ASSERT(m_factory);
     QObject *test = m_factory->createTest(m_data);
+    Q_ASSERT(test);
     int code = QTest::qExec(test); 
     emit testsFinished(code);
 }

@@ -79,7 +79,6 @@ public:
 private:
     QmlDebugObjectReference findRootObject();
     QmlDebugPropertyReference findProperty(const QList<QmlDebugPropertyReference> &props, const QString &name) const;
-    QObject *findObjectWithId(const QObjectList &objects, int id) const;
     void waitForQuery(QmlDebugQuery *query);
 
     void recursiveObjectTest(QObject *o, const QmlDebugObjectReference &oref, bool recursive) const;
@@ -150,15 +149,6 @@ QmlDebugPropertyReference tst_QmlDebug::findProperty(const QList<QmlDebugPropert
     return QmlDebugPropertyReference();
 }
 
-QObject *tst_QmlDebug::findObjectWithId(const QObjectList &objects, int id) const
-{
-    foreach (QObject *o, objects) {
-        if (id == QmlDebugService::idForObject(o))
-            return o;
-    }
-    return 0;
-}
-
 void tst_QmlDebug::waitForQuery(QmlDebugQuery *query)
 {
     QVERIFY(query);
@@ -181,21 +171,40 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference
     QCOMPARE(oref.className(), className);
     QCOMPARE(oref.contextDebugId(), QmlDebugService::idForObject(qmlContext(o)));
 
-    foreach (const QmlDebugObjectReference &cref, oref.children()) {
-        // ignore children with no context
-        if (cref.contextDebugId() < 0)
+    const QObjectList &children = o->children();
+    for (int i=0; i<children.count(); i++) {
+        QObject *child = children[i];
+        if (!qmlContext(child))
             continue;
+        int debugId = QmlDebugService::idForObject(child);
+        QVERIFY(debugId >= 0);
 
-        QObject *childObject = findObjectWithId(o->children(), cref.debugId());
-        QVERIFY2(childObject, qPrintable(QString("Can't find QObject* for %1").arg(cref.className())));
+        QmlDebugObjectReference cref;
+        foreach (const QmlDebugObjectReference &ref, oref.children()) {
+            if (ref.debugId() == debugId) {
+                cref = ref;
+                break;
+            }
+        }
+        QVERIFY(cref.debugId() >= 0);
 
         if (recursive)
-            recursiveObjectTest(childObject, cref, true);
+            recursiveObjectTest(child, cref, true);
     }
 
     foreach (const QmlDebugPropertyReference &p, oref.properties()) {
+        QCOMPARE(p.objectDebugId(), QmlDebugService::idForObject(o));
+
+        // signal properties are fake - they are generated from QmlBoundSignal children
+        if (p.name().startsWith("on") && p.name().length() > 2 && p.name()[2].isUpper()) {
+            QVERIFY(p.value().toString().startsWith('{') && p.value().toString().endsWith('}'));
+            QVERIFY(p.valueTypeName().isEmpty());
+            QVERIFY(p.binding().isEmpty());
+            QVERIFY(!p.hasNotifySignal());
+            continue;
+        }
+
         QMetaProperty pmeta = meta->property(meta->indexOfProperty(p.name().toUtf8().constData()));
-        QVERIFY(pmeta.isValid());
 
         QCOMPARE(p.name(), QString::fromUtf8(pmeta.name()));
 
@@ -212,6 +221,8 @@ void tst_QmlDebug::recursiveObjectTest(QObject *o, const QmlDebugObjectReference
             QCOMPARE(binding->expression(), p.binding());
 
         QCOMPARE(p.hasNotifySignal(), pmeta.hasNotifySignal());
+
+        QVERIFY(pmeta.isValid());
     }
 }
 
@@ -281,6 +292,11 @@ void tst_QmlDebug::watch_property()
     watch = unconnected.addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
+
+    watch = m_dbg->addWatch(QmlDebugPropertyReference(), this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
     
     watch = m_dbg->addWatch(prop, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
@@ -294,6 +310,7 @@ void tst_QmlDebug::watch_property()
 
     // stateChanged() is received before valueChanged()
     QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
     QCOMPARE(spy.count(), 1);
 
     m_dbg->removeWatch(watch);
@@ -332,6 +349,11 @@ void tst_QmlDebug::watch_object()
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
     
+    watch = m_dbg->addWatch(QmlDebugObjectReference(), this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
+
     watch = m_dbg->addWatch(obj, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -345,6 +367,7 @@ void tst_QmlDebug::watch_object()
 
     // stateChanged() is received before any valueChanged() signals
     QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
     QVERIFY(spy.count() > 0);
 
     int newWidth = -1;
@@ -389,6 +412,11 @@ void tst_QmlDebug::watch_expression()
     QCOMPARE(watch->state(), QmlDebugWatch::Dead);
     delete watch;
     
+    watch = m_dbg->addWatch(QmlDebugObjectReference(), expr, this);
+    QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
+    QCOMPARE(watch->state(), QmlDebugWatch::Inactive);
+    delete watch;
+    
     watch = m_dbg->addWatch(obj, expr, this);
     QCOMPARE(watch->state(), QmlDebugWatch::Waiting);
     QCOMPARE(watch->objectDebugId(), obj.debugId());
@@ -412,6 +440,7 @@ void tst_QmlDebug::watch_expression()
     if (spyState.count() == 0)
         QVERIFY(QmlDebugTest::waitForSignal(watch, SIGNAL(stateChanged(QmlDebugWatch::State))));
     QCOMPARE(spyState.count(), 1);
+    QCOMPARE(watch->state(), QmlDebugWatch::Active);
 
     m_dbg->removeWatch(watch);
     delete watch;
@@ -504,15 +533,16 @@ void tst_QmlDebug::queryRootContexts()
     QCOMPARE(context.debugId(), QmlDebugService::idForObject(actualContext));
     QCOMPARE(context.name(), actualContext->objectName());
 
-    QCOMPARE(context.objects().count(), 2); // 2 objects created for engine in main()
+    QCOMPARE(context.objects().count(), 2); // 2 qml component objects created for context in main()
 
     // root context query sends only root object data - it doesn't fill in
     // the children or property info
     QCOMPARE(context.objects()[0].properties().count(), 0);
     QCOMPARE(context.objects()[0].children().count(), 0);
 
-    // TODO have multiple contexts
-    QCOMPARE(context.contexts().count(), 0);
+    QCOMPARE(context.contexts().count(), 1);
+    QVERIFY(context.contexts()[0].debugId() >= 0);
+    QCOMPARE(context.contexts()[0].name(), QString("tst_QmlDebug_childContext"));
 
     delete q_engines;
     delete q_context;
@@ -597,7 +627,7 @@ void tst_QmlDebug::queryExpressionResult()
     QFETCH(QVariant, result);
 
     QmlDebugEnginesQuery *q_engines = m_dbg->queryAvailableEngines(this);
-    waitForQuery(q_engines);
+    waitForQuery(q_engines);    // check immediate deletion is ok
     
     QmlDebugRootContextQuery *q_context = m_dbg->queryRootContexts(q_engines->engines()[0].debugId(), this);
     waitForQuery(q_context);
@@ -767,7 +797,12 @@ void tst_QmlDebug::tst_QmlDebugPropertyReference()
 class tst_QmlDebug_Factory : public QmlTestFactory
 {
 public:
-    QObject *createTest(QmlDebugTestData *data) { return new tst_QmlDebug(data); }
+    QObject *createTest(QmlDebugTestData *data)
+    {
+        QmlContext *c = new QmlContext(data->engine->rootContext());
+        c->setObjectName("tst_QmlDebug_childContext");
+        return new tst_QmlDebug(data);
+    }
 };
 
 int main(int argc, char *argv[])
@@ -780,13 +815,13 @@ int main(int argc, char *argv[])
                 "width: 10; height: 20; scale: blueRect.scale;"
                 "Rectangle { id: blueRect; width: 500; height: 600; color: \"blue\"; }"
                 "Text { color: blueRect.color; }"
-            "}"
-        << "import Qt 4.6\n"
-            "Item {"
                 "MouseRegion {"
                     "onEntered: { print('hello') }"
                 "}"
             "}";
+    // add second component to test multiple root contexts
+    qml << "import Qt 4.6\n"
+            "Item {}";
     tst_QmlDebug_Factory factory;
     return QmlDebugTest::runTests(&factory, qml);
 }
