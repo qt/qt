@@ -17,6 +17,14 @@ Rectangle {
             ListElement { itemColor: "yellow" }
             ListElement { itemColor: "slategrey" }
             ListElement { itemColor: "cyan" }
+            ListElement { itemColor: "red" }
+            ListElement { itemColor: "green" }
+            ListElement { itemColor: "blue" }
+            ListElement { itemColor: "orange" }
+            ListElement { itemColor: "purple" }
+            ListElement { itemColor: "yellow" }
+            ListElement { itemColor: "slategrey" }
+            ListElement { itemColor: "cyan" }
         }
         delegate: Package {
             Rectangle {
