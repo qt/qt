@@ -147,7 +147,6 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
 
         bool endsAtStart = startPts[0] == *(endPts-2) && startPts[1] == *(endPts-1);
 
-        Qt::PenCapStyle cap = m_cap_style;
         if (endsAtStart || path.hasImplicitClose())
             m_cap_style = Qt::FlatCap;
         moveTo(pts);
@@ -169,7 +168,7 @@ void QTriangulatingStroker::process(const QVectorPath &path, const QPen &pen)
             switch (*types) {
             case QPainterPath::MoveToElement: {
                 if (pts != path.points())
-                    endCapOrJoinClosed(startPts, pts, path.hasImplicitClose(), endsAtStart);
+                    endCapOrJoinClosed(startPts, pts-2, path.hasImplicitClose(), endsAtStart);
 
                 startPts = pts;
                 int end = (endPts - pts) / 2;
@@ -247,8 +246,6 @@ void QTriangulatingStroker::cubicTo(const qreal *pts)
     m_nvy = vy;
 }
 
-
-
 static void qdashprocessor_moveTo(qreal x, qreal y, void *data)
 {
     ((QDashedStrokeProcessor *) data)->addElement(QPainterPath::MoveToElement, x, y);
@@ -282,12 +279,12 @@ void QDashedStrokeProcessor::process(const QVectorPath &path, const QPen &pen)
     m_points.reset();
     m_types.reset();
 
-    qreal width = pen.width();
+    qreal width = qpen_widthf(pen);
     if (width == 0)
         width = 1;
 
     m_dash_stroker.setDashPattern(pen.dashPattern());
-    m_dash_stroker.setStrokeWidth(width);
+    m_dash_stroker.setStrokeWidth(pen.isCosmetic() ? width * m_inv_scale : width);
     m_dash_stroker.setMiterLimit(pen.miterLimit());
     qreal curvyness = sqrt(width) * m_inv_scale / 8;
 
