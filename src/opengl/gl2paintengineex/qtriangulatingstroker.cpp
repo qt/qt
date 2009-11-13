@@ -61,6 +61,9 @@ void QTriangulatingStroker::endCapOrJoinClosed(const qreal *start, const qreal *
     } else {
         endCap(cur);
     }
+    int count = m_vertices.size();
+    m_vertices.add(m_vertices.at(count-2));
+    m_vertices.add(m_vertices.at(count-1));
 }
 
 

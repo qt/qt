@@ -188,10 +188,6 @@ inline void QTriangulatingStroker::endCap(const qreal *pts)
         break;
     default: break; // to shut gcc up...
     }
-
-    int count = m_vertices.size();
-    m_vertices.add(m_vertices.at(count-2));
-    m_vertices.add(m_vertices.at(count-1));
 }
 
 
