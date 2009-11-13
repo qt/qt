@@ -59,11 +59,9 @@ public:
     virtual void setDirty(const QRect &rect);
 
     virtual void removeWindowSurface(QGraphicsSystemFbWindowSurface * surface);
-    virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) { windowStack.append(surface); }
-    virtual void raise(QGraphicsSystemFbWindowSurface * surface);
-    virtual void lower(QGraphicsSystemFbWindowSurface * surface);
-    virtual void top(QGraphicsSystemFbWindowSurface * surface);
-    virtual void bottom(QGraphicsSystemFbWindowSurface * surface);
+    virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) { windowStack.prepend(surface); }
+    virtual void raise(QWindowSurface * surface);
+    virtual void lower(QWindowSurface * surface);
 
     virtual void pointerEvent(QMouseEvent & me);
 

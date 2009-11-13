@@ -66,7 +66,7 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
         QRect rect = rects[rectIndex];
         // Blank the affected area, just in case there's nothing to display
         compositePainter.fillRect(rect, Qt::black);
-        for (int i = 0; i < windowStack.length(); i++) {
+        for (int i = windowStack.length() - 1; i >= 0; i--) {
             if (!windowStack[i]->visible())
                 continue;
             QRect windowRect = windowStack[i]->geometry();
@@ -97,38 +97,25 @@ void QGraphicsSystemFbScreen::removeWindowSurface(QGraphicsSystemFbWindowSurface
     setDirty(surface->geometry());
 }
 
-void QGraphicsSystemFbScreen::raise(QGraphicsSystemFbWindowSurface * surface)
+void QGraphicsSystemFbScreen::raise(QWindowSurface * surface)
 {
-    int index = windowStack.indexOf(surface);
+    QGraphicsSystemFbWindowSurface *s = static_cast<QGraphicsSystemFbWindowSurface *>(surface);
+    int index = windowStack.indexOf(s);
     if (index <= 0)
         return;
     windowStack.move(index, index - 1);
+    setDirty(s->geometry());
 }
 
-void QGraphicsSystemFbScreen::lower(QGraphicsSystemFbWindowSurface * surface)
+void QGraphicsSystemFbScreen::lower(QWindowSurface * surface)
 {
-    int index = windowStack.indexOf(surface);
+    QGraphicsSystemFbWindowSurface *s = static_cast<QGraphicsSystemFbWindowSurface *>(surface);
+    int index = windowStack.indexOf(s);
     if (index == -1 || index == (windowStack.size() - 1))
         return;
     windowStack.move(index, index + 1);
+    setDirty(s->geometry());
 }
-
-void QGraphicsSystemFbScreen::top(QGraphicsSystemFbWindowSurface * surface)
-{
-    int index = windowStack.indexOf(surface);
-    if (index == -1)
-        return;
-    windowStack.move(index, 0);
-}
-
-void QGraphicsSystemFbScreen::bottom(QGraphicsSystemFbWindowSurface * surface)
-{
-    int index = windowStack.indexOf(surface);
-    if (index == -1)
-        return;
-    windowStack.move(index, windowStack.size() - 1);
-}
-
 
 void QGraphicsSystemFbScreen::pointerEvent(QMouseEvent & me)
 {
