@@ -55,8 +55,8 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qxmlstream.h>
-#include <QtDeclarative/qmlmetatype.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qmlmetatype.h>
+#include <qmlerror.h>
 #include <private/qmlparser_p.h>
 
 QT_BEGIN_HEADER

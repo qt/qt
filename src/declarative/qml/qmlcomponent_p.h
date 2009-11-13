@@ -60,9 +60,9 @@
 #include <private/qmlengine_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qbitfield_p.h>
-#include <QtDeclarative/qmlerror.h>
-#include <QtDeclarative/qmlcomponent.h>
-#include <QtDeclarative/qml.h>
+#include <qmlerror.h>
+#include <qmlcomponent.h>
+#include <qml.h>
 
 QT_BEGIN_NAMESPACE
 

@@ -51,7 +51,7 @@
 #include <QtGui/qgraphicstransform.h>
 #include <QtGui/qgraphicseffect.h>
 
-#include <QtDeclarative/qmlengine.h>
+#include <qmlengine.h>
 #include <private/qmlopenmetaobject_p.h>
 #include <private/qmlstate_p.h>
 #include <private/qlistmodelinterface_p.h>

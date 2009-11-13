@@ -44,7 +44,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 #include <private/qmlstate_p.h>
 
 

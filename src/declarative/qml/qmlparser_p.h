@@ -56,7 +56,7 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QList>
 #include <QtCore/qstring.h>
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <private/qmlrefcount_p.h>
 #include <private/qobject_p.h>
 

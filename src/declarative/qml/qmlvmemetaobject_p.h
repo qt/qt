@@ -53,7 +53,7 @@
 // We mean it.
 //
 
-#include <QtDeclarative/qml.h>
+#include <qml.h>
 #include <QtCore/QMetaObject>
 #include <QtCore/QBitArray>
 #include <QtCore/QPair>

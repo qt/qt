@@ -55,8 +55,8 @@
 
 #include <QtCore/qbytearray.h>
 #include <QtCore/qset.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qml.h>
+#include <qmlerror.h>
 #include <private/qmlinstruction_p.h>
 #include <private/qmlcompositetypemanager_p.h>
 #include <private/qmlparser_p.h>

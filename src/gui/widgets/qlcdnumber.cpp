@@ -444,7 +444,7 @@ QLCDNumber::~QLCDNumber()
     \obsolete
     \property QLCDNumber::numDigits
     \brief the current number of digits displayed
-    \sa setDigitCount
+    \sa setDigitCount()
 */
 
 void QLCDNumber::setNumDigits(int numDigits)
@@ -466,6 +466,10 @@ void QLCDNumber::setNumDigits(int numDigits)
     \sa smallDecimalPoint
 */
 
+/*!
+  Sets the current number of digits to \a numDigits. Must
+  be in the range 0..99.
+ */
 void QLCDNumber::setDigitCount(int numDigits)
 {
     Q_D(QLCDNumber);
@@ -483,7 +487,7 @@ void QLCDNumber::setDigitCount(int numDigits)
         d->ndigits = numDigits;
         d->digitStr.fill(QLatin1Char(' '), d->ndigits);
         d->points.fill(0, d->ndigits);
-        d->digitStr[d->ndigits - 1] = QLatin1Char('0');            // "0" is the default number
+        d->digitStr[d->ndigits - 1] = QLatin1Char('0'); // "0" is the default number
     } else {
         bool doDisplay = d->ndigits == 0;
         if (numDigits == d->ndigits)             // no change
@@ -521,6 +525,9 @@ int QLCDNumber::numDigits() const
     return d->ndigits;
 }
 
+/*!
+  Returns the current number of digits.
+ */
 int QLCDNumber::digitCount() const
 {
     Q_D(const QLCDNumber);

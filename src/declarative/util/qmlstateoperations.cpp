@@ -41,11 +41,11 @@
 
 #include <private/qobject_p.h>
 #include <qml.h>
-#include <QtDeclarative/qmlcontext.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <qmlcontext.h>
+#include <qmlexpression.h>
 #include "qmlstateoperations_p.h"
 #include <QtCore/qdebug.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 #include <private/qmlgraphicsanchors_p_p.h>
 #include <private/qmlgraphicsitem_p.h>
 #include <QtGui/qgraphicsitem.h>

@@ -39,8 +39,8 @@
 **
 ****************************************************************************/
 
-#include <QtDeclarative/qmlengine.h>
-#include <QtDeclarative/qmlcontext.h>
+#include <qmlengine.h>
+#include <qmlcontext.h>
 #include <private/qobject_p.h>
 #include <QtCore/qfile.h>
 #include <QtCore/qdebug.h>

@@ -49,7 +49,7 @@
 #include <QtCore/qdebug.h>
 #include <private/qmlbindingoptimizations_p.h>
 #include <private/qscriptdeclarativeclass_p.h>
-#include <QtDeclarative/qmlinfo.h>
+#include <qmlinfo.h>
 
 QT_BEGIN_NAMESPACE
 

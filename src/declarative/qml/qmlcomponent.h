@@ -45,8 +45,8 @@
 #include <QtCore/qobject.h>
 #include <QtCore/qstring.h>
 #include <QtScript/qscriptvalue.h>
-#include <QtDeclarative/qml.h>
-#include <QtDeclarative/qmlerror.h>
+#include <qml.h>
+#include <qmlerror.h>
 
 QT_BEGIN_HEADER
 

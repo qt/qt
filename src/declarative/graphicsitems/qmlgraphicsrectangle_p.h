@@ -42,7 +42,7 @@
 #ifndef QMLGRAPHICSRECT_H
 #define QMLGRAPHICSRECT_H
 
-#include <QtDeclarative/qmlgraphicsitem.h>
+#include <qmlgraphicsitem.h>
 #include <QtGui/qbrush.h>
 
 

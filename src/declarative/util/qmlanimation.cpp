@@ -54,7 +54,7 @@
 #include <QtCore/qrect.h>
 #include <QtCore/qpoint.h>
 #include <QtCore/qsize.h>
-#include <QtDeclarative/qmlexpression.h>
+#include <qmlexpression.h>
 #include <private/qmlstateoperations_p.h>
 #include <private/qmlstringconverters_p.h>
 #include <private/qvariantanimation_p.h>
