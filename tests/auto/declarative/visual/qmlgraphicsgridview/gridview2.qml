@@ -43,6 +43,7 @@ Rectangle {
         id: gridView; anchors.fill: parent
         cellWidth: 100; cellHeight: 100; cacheBuffer: 200
         model: appModel; delegate: appDelegate; focus: true
+        keyNavigationWraps: true
 
         flickableData: [
             Rectangle {
