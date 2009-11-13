@@ -236,7 +236,9 @@ QmlComponent::Status QmlComponent::status() const
 }
 
 /*!
-    Returns true if the component is in the Null state, false otherwise.
+    \property QmlComponent::isNull
+
+    Is true if the component is in the Null state, false otherwise.
 
     Equivalent to status() == QmlComponent::Null.
 */
@@ -246,7 +248,9 @@ bool QmlComponent::isNull() const
 }
 
 /*!
-    Returns true if the component is in the Ready state, false otherwise.
+    \property QmlComponent::isReady
+
+    Is true if the component is in the Ready state, false otherwise.
 
     Equivalent to status() == QmlComponent::Ready.
 */
@@ -256,7 +260,9 @@ bool QmlComponent::isReady() const
 }
 
 /*!
-    Returns true if the component is in the Error state, false otherwise.
+    \property QmlComponent::isError
+
+    Is true if the component is in the Error state, false otherwise.
 
     Equivalent to status() == QmlComponent::Error.
 */
@@ -266,7 +272,9 @@ bool QmlComponent::isError() const
 }
 
 /*!
-    Returns true if the component is in the Loading state, false otherwise.
+    \property QmlComponent::isLoading
+
+    Is true if the component is in the Loading state, false otherwise.
 
     Equivalent to status() == QmlComponent::Loading.
 */

@@ -109,7 +109,7 @@ public:
    }
    \endqml
 
-   \sa {qmlstate}{States} and {state-transitions}{Transitions}
+   \sa {qmlstate}{States} {state-transitions}{Transitions}
 */
 
 QmlStateGroup::QmlStateGroup(QObject *parent)

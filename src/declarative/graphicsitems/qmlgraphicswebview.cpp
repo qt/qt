@@ -309,7 +309,8 @@ QmlGraphicsWebView::Status QmlGraphicsWebView::status() const
     \qmlproperty real WebView::progress
     This property holds the progress of loading the current URL, from 0 to 1.
 
-    \sa onLoadFinished() onLoadFailed()
+    If you just want to know when progress gets to 1, use
+    WebView::onLoadFinished() or WebView::onLoadFailed() instead.
 */
 qreal QmlGraphicsWebView::progress() const
 {
@@ -1057,27 +1058,26 @@ void QmlGraphicsWebView::setPage(QWebPage *page)
     \qmlsignal WebView::onLoadStarted()
 
     This handler is called when the web engine begins loading
-    a page.
-
-    \sa progress onLoadFinished() onLoadFailed()
+    a page. Later, WebView::onLoadFinished() or WebView::onLoadFailed()
+    will be emitted.
 */
 
 /*!
     \qmlsignal WebView::onLoadFinished()
 
-    This handler is called when the web engine finishes loading
-    a page, including any component content.
+    This handler is called when the web engine \e successfully
+    finishes loading a page, including any component content
+    (WebView::onLoadFailed() will be emitted otherwise).
 
-    \sa progress onLoadFailed()
+    \sa progress
 */
 
 /*!
     \qmlsignal WebView::onLoadFailed()
 
     This handler is called when the web engine fails loading
-    a page or any component content.
-
-    \sa progress onLoadFinished()
+    a page or any component content
+    (WebView::onLoadFinished() will be emitted on success).
 */
 
 void QmlGraphicsWebView::load(const QNetworkRequest &request,

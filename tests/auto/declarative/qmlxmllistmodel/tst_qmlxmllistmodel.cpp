@@ -58,6 +58,7 @@ private slots:
     void attributes();
     void roles();
     void roleErrors();
+    void uniqueRoleNames();
 
 private:
     QmlEngine engine;
@@ -171,6 +172,20 @@ void tst_qmlxmllistmodel::roleErrors()
     QCOMPARE(data.value(Qt::UserRole+1), QVariant());
     QCOMPARE(data.value(Qt::UserRole+2), QVariant());
     QCOMPARE(data.value(Qt::UserRole+3), QVariant());
+
+    delete listModel;
+}
+
+void tst_qmlxmllistmodel::uniqueRoleNames()
+{
+    QmlComponent component(&engine, QUrl("file://" SRCDIR "/data/unique.qml"));
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlXmlListModelRole (file://" SRCDIR "/data/unique.qml:7:5) \"name\" duplicates a previous role name and will be disabled.");
+    QmlXmlListModel *listModel = qobject_cast<QmlXmlListModel*>(component.create());
+    QVERIFY(listModel != 0);
+    QTRY_COMPARE(listModel->count(), 9);
+
+    QList<int> roles = listModel->roles();
+    QCOMPARE(roles.count(), 1);
 
     delete listModel;
 }

@@ -62,10 +62,6 @@ public:
     virtual QSizeF sizeHint(Qt::SizeHint, const QSizeF &) const;
 };
 
-//TODO:
-//  -content margins
-//  -per-item spacing (does this need to be exposed?)
-//  -per-item alignment
 class LinearLayoutAttached;
 class QGraphicsLinearLayoutObject : public QObject, public QGraphicsLinearLayout
 {
@@ -117,13 +113,6 @@ private:
     ChildList _children;
 };
 
-//TODO:
-//  -content margins
-//  -column and row specific settings:
-//      -alignment
-//      -fixed/min/max/preferred width
-//      -spacing
-//      -stretch
 class GridLayoutAttached;
 class QGraphicsGridLayoutObject : public QObject, public QGraphicsGridLayout
 {
@@ -166,7 +155,7 @@ private:
         virtual int count() const { return obj->count(); }
         virtual void removeAt(int i) { obj->removeAt(i); }
         virtual QGraphicsLayoutItem *at(int i) const { return obj->itemAt(i); }
-        //XXX GridLayout doesn't have an insert, so for now we treat it as an append.
+        //### GridLayout doesn't have an insert, so for now we treat it as an append.
         //    this is obviously potenitally dangerous -- perhaps should be a concrete
         //    list with no relation to layout index, etc at all.
         virtual void insert(int, QGraphicsLayoutItem *item) { append(item); }

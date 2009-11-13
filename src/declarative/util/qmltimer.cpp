@@ -260,7 +260,7 @@ void QmlTimer::componentComplete()
 }
 
 /*!
-    \qmlsignal Timer::onTriggered
+    \qmlsignal Timer::onTriggered()
 
     This handler is called when the Timer is triggered.
 */
