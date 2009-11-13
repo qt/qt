@@ -1,6 +1,24 @@
+load(qt)
+
 isEmpty(DESTDIR) {
     DESTDIR = .
 }
+
+for(libraries, LIBS) {
+    isLib = $$find(libraries, \.lib)
+    isEmpty(isLib) {
+        LIBS += $${libraries}.lib\\(VtblExports.o\\)
+    }
+}
+for(libraries, QMAKE_LIBS) {
+    isLib = $$find(libraries, \.lib)
+    isEmpty(isLib) {
+        QMAKE_LIBS += $${libraries}.lib\\(VtblExports.o\\)
+    }
+}
+
+# This needs to be done after the above LIBS mangling.
+include(../platformlibs.conf)
 
 contains(TEMPLATE, lib):!contains(CONFIG, static):!contains(CONFIG, staticlib) {
     exports.commands = winewrapper getexports.exe ${QMAKE_FILE_NAME} > ${OBJECTS_DIR}${QMAKE_FILE_BASE}.exports
