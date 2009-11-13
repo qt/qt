@@ -185,20 +185,12 @@ int main(int argc, char **argv)
     QGraphicsScene scene;
     scene.setSceneRect(0, 0, 800, 480);
 
-#ifdef DEBUG_MODE
-        QGraphicsProxyWidget *title = createItem("Title");
-        QGraphicsProxyWidget *place = createItem("Place");
-        QGraphicsProxyWidget *sunnyWeather = createItem("Sun");
-        QGraphicsProxyWidget *details = createItem("Details");
-        QGraphicsProxyWidget *tabbar = createItem("Tabbar");
-#else
-        // pixmaps widgets
-        PixmapWidget *title = new PixmapWidget(QPixmap(":/images/title.jpg"));
-        PlaceWidget *place = new PlaceWidget(QPixmap(":/images/place.jpg"));
-        PixmapWidget *details = new PixmapWidget(QPixmap(":/images/5days.jpg"));
-        PixmapWidget *sunnyWeather = new PixmapWidget(QPixmap(":/images/weather-few-clouds.png"));
-        PixmapWidget *tabbar = new PixmapWidget(QPixmap(":/images/tabbar.jpg"));
-#endif
+    // pixmaps widgets
+    PixmapWidget *title = new PixmapWidget(QPixmap(":/images/title.jpg"));
+    PlaceWidget *place = new PlaceWidget(QPixmap(":/images/place.jpg"));
+    PixmapWidget *details = new PixmapWidget(QPixmap(":/images/5days.jpg"));
+    PixmapWidget *sunnyWeather = new PixmapWidget(QPixmap(":/images/weather-few-clouds.png"));
+    PixmapWidget *tabbar = new PixmapWidget(QPixmap(":/images/tabbar.jpg"));
 
 
     // setup sizes
