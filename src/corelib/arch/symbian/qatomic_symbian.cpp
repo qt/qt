@@ -50,7 +50,7 @@ QT_BEGIN_NAMESPACE
 // This way we can report on heap cells and handles that are really not owned by anything which still exists.
 // This information can be used to detect whether memory leaks are happening, particularly if these numbers grow as the app is used more.
 // This code is placed here as it happens to make it the very last static to be destroyed in a Qt app. The
-// reason assumed is that this file appears before any other file declaring static data in the generated 
+// reason assumed is that this file appears before any other file declaring static data in the generated
 // Symbian MMP file. This particular file was chosen as it is the earliest symbian specific file.
 struct QSymbianPrintExitInfo
 {
@@ -77,37 +77,158 @@ struct QSymbianPrintExitInfo
     TInt initThreadHandleCount;
 } symbian_printExitInfo;
 
-QT_END_NAMESPACE
-
-
-#if defined(Q_CC_RVCT)
-
-#include "../arm/qatomic_arm.cpp"
-
-QT_BEGIN_NAMESPACE
-
-Q_CORE_EXPORT __asm char q_atomic_swp(volatile char *ptr, char newval)
+Q_CORE_EXPORT bool QBasicAtomicInt::isReferenceCountingNative()
 {
-    add r2, pc, #0
-    bx r2
-    arm
-    swpb r2,r1,[r0]
-    mov r0, r2
-    bx lr
-    thumb
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
 }
 
-Q_CORE_EXPORT __asm int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
+Q_CORE_EXPORT bool QBasicAtomicInt::isTestAndSetNative()
 {
-    add r2, pc, #0
-    bx r2
-    arm
-    swp r2,r1,[r0]
-    mov r0, r2
-    bx lr
-    thumb
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
 }
 
-QT_END_NAMESPACE
+Q_CORE_EXPORT bool QBasicAtomicInt::isFetchAndStoreNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
 
-#endif // Q_CC_RVCT
+Q_CORE_EXPORT bool QBasicAtomicInt::isFetchAndAddNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isTestAndSetNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndStoreNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+Q_CORE_EXPORT bool QBasicAtomicPointer_isFetchAndAddNative()
+{
+#ifdef QT_HAVE_ARMV6
+    return true;
+#else
+    return false;
+#endif
+}
+
+//For ARMv6, the generic atomics are machine coded
+#ifndef QT_HAVE_ARMV6
+
+class QCriticalSection
+{
+public:
+        QCriticalSection()  { fastlock.CreateLocal(); }
+        ~QCriticalSection() { fastlock.Close(); }
+        void lock()         { fastlock.Wait(); }
+        void unlock()       { fastlock.Signal(); }
+
+private:
+        RFastLock fastlock;
+};
+
+QCriticalSection qAtomicCriticalSection;
+
+Q_CORE_EXPORT
+bool QBasicAtomicInt_testAndSetOrdered(volatile int *_q_value, int expectedValue, int newValue)
+{
+    bool returnValue = false;
+    qAtomicCriticalSection.lock();
+    if (*_q_value == expectedValue) {
+        *_q_value = newValue;
+        returnValue = true;
+    }
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+Q_CORE_EXPORT
+int QBasicAtomicInt_fetchAndStoreOrdered(volatile int *_q_value, int newValue)
+{
+    int returnValue;
+        qAtomicCriticalSection.lock();
+    returnValue = *_q_value;
+    *_q_value = newValue;
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+Q_CORE_EXPORT
+int QBasicAtomicInt_fetchAndAddOrdered(volatile int *_q_value, int valueToAdd)
+{
+    int returnValue;
+        qAtomicCriticalSection.lock();
+    returnValue = *_q_value;
+    *_q_value += valueToAdd;
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+Q_CORE_EXPORT
+bool QBasicAtomicPointer_testAndSetOrdered(void * volatile *_q_value,
+                                           void *expectedValue,
+                                           void *newValue)
+{
+    bool returnValue = false;
+        qAtomicCriticalSection.lock();
+    if (*_q_value == expectedValue) {
+        *_q_value = newValue;
+        returnValue = true;
+    }
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+Q_CORE_EXPORT
+void *QBasicAtomicPointer_fetchAndStoreOrdered(void * volatile *_q_value, void *newValue)
+{
+    void *returnValue;
+        qAtomicCriticalSection.lock();
+    returnValue = *_q_value;
+    *_q_value = newValue;
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+Q_CORE_EXPORT
+void *QBasicAtomicPointer_fetchAndAddOrdered(void * volatile *_q_value, qptrdiff valueToAdd)
+{
+    void *returnValue;
+        qAtomicCriticalSection.lock();
+    returnValue = *_q_value;
+    *_q_value = reinterpret_cast<char *>(returnValue) + valueToAdd;
+        qAtomicCriticalSection.unlock();
+    return returnValue;
+}
+
+#endif // QT_HAVE_ARMV6
+
+QT_END_NAMESPACE
