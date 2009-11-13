@@ -43,7 +43,6 @@
 
 QT_BEGIN_NAMESPACE
 
-//### the single (default) property could alternatively be added to graphics view directly
 class QGraphicsViewDeclarativeUI : public QObject
 {
     Q_OBJECT
@@ -83,27 +82,23 @@ private:
         virtual void clear()
         {
             for (int i = 0; i < count(); ++i)
-                if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
-                    static_cast<QGraphicsScene *>(q)->removeItem(w);
+                if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(at(i)))
+                    static_cast<QGraphicsScene *>(q)->removeItem(go);
             QmlConcreteList<QObject *>::clear();
         }
         virtual void removeAt(int i)
         {
-            if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(at(i)))
-                static_cast<QGraphicsScene *>(q)->removeItem(w);
+            if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(at(i)))
+                static_cast<QGraphicsScene *>(q)->removeItem(go);
             QmlConcreteList<QObject *>::removeAt(i);
         }
         virtual void insert(int i, QObject *o)
         {
             QmlConcreteList<QObject *>::insert(i, o);
-
-            //XXX are there any cases when insertion should be different from appension?
-            if (QGraphicsWidget *w = qobject_cast<QGraphicsWidget *>(o))
-                static_cast<QGraphicsScene *>(q)->addItem(w);
+            if (QGraphicsObject *go = qobject_cast<QGraphicsObject *>(o))
+                static_cast<QGraphicsScene *>(q)->addItem(go);
             //else if (QWidget *w = qobject_cast<QWidget *>(o))
             //    static_cast<QGraphicsScene *>(q)->addWidget(w);
-            //else
-            //    qWarning() << "Can't add" << o << "to a QGraphicsScene";
         }
     private:
         QObject *q;
@@ -139,11 +134,6 @@ private:
         wid->setParentItem(static_cast<QGraphicsWidget *>(parent()));
     }
 
-    //###
-    void clearWidget()
-    {
-    }
-
     class WidgetList : public QmlConcreteList<QGraphicsItem *>
     {
     public:
@@ -151,8 +141,8 @@ private:
             : obj(o) {}
 
         virtual void append(QGraphicsItem *w)  { QmlConcreteList<QGraphicsItem *>::append(w); obj->setItemParent(w); }
-        virtual void clear() { QmlConcreteList<QGraphicsItem *>::clear(); obj->clearWidget(); }
-        virtual void removeAt(int i) { QmlConcreteList<QGraphicsItem *>::removeAt(i); }     //XXX
+        virtual void clear() { QmlConcreteList<QGraphicsItem *>::clear(); } //###
+        virtual void removeAt(int i) { QmlConcreteList<QGraphicsItem *>::removeAt(i); }     //###
         virtual void insert(int i, QGraphicsItem *item) { QmlConcreteList<QGraphicsItem *>::insert(i, item); obj->setItemParent(item); }
 
     private:
