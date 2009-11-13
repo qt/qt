@@ -98,8 +98,6 @@ private Q_SLOTS:
 protected:
     virtual void resizeEvent(QResizeEvent *);
     virtual void paintEvent(QPaintEvent *event);
-    void focusInEvent(QFocusEvent *);
-    void focusOutEvent(QFocusEvent *);
     void timerEvent(QTimerEvent*);
 
 private:
