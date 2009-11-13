@@ -47,7 +47,7 @@
 QT_BEGIN_NAMESPACE
 
 /*!
-    \fn void qmlInfo(const QString& message, const QObject *object)
+    \fn QmlInfo qmlInfo(const QObject *object)
 
     \brief Prints warnings messages that include the file and line number for QML types.
 

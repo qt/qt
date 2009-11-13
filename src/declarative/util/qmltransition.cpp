@@ -111,7 +111,7 @@ public:
     public:
         AnimationList() : parent(0) {}
         virtual void append(QmlAbstractAnimation *a);
-        virtual void clear() {  QmlConcreteList<QmlAbstractAnimation *>::clear(); } //XXX
+        virtual void clear() {  QmlConcreteList<QmlAbstractAnimation *>::clear(); } //###
 
         QmlTransitionPrivate *parent;
     };
@@ -127,7 +127,6 @@ void QmlTransitionPrivate::AnimationList::append(QmlAbstractAnimation *a)
 void ParallelAnimationWrapper::updateState(QAbstractAnimation::State newState, QAbstractAnimation::State oldState)
 {
     QParallelAnimationGroup::updateState(newState, oldState);
-    //XXX not 100% guaranteed to be at end (if there are many zero duration animations at the end)?
     if (newState == Stopped &&
         ((direction() == QAbstractAnimation::Forward && currentLoopTime() == duration()) ||
          (direction() == QAbstractAnimation::Backward && currentLoopTime() == 0)))

@@ -132,8 +132,6 @@ struct QmlXmlRoleList : public QmlConcreteList<QmlXmlListModelRole *>
     QmlXmlRoleList(QmlXmlListModelPrivate *p)
         : model(p) {}
     virtual void append(QmlXmlListModelRole *role);
-    //XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
-    //    (and the model should emit the appropriate signals)
     virtual void clear();
     virtual void removeAt(int i);
     virtual void insert(int i, QmlXmlListModelRole *role);
@@ -309,7 +307,7 @@ void QmlXmlQuery::doSubQueryJob()
         b.seek(0);
     }
 
-    //XXX this method is much slower, but would work better for incremental loading
+    //this method is much slower, but works better for incremental loading
     /*for (int j = 0; j < m_size; ++j) {
         QList<QVariant> resultList;
         for (int i = 0; i < m_roleObjects->size(); ++i) {
@@ -337,13 +335,6 @@ void QmlXmlQuery::doSubQueryJob()
         m_modelData << resultList;
     }*/
 }
-
-
-//TODO: error handling (currently quite fragile)
-//      profile doQuery and doSubquery
-//      support complex/nested objects?
-//      how do we handle data updates (like rss feed -- usually items inserted at beginning)
-
 
 class QmlXmlListModelPrivate : public QObjectPrivate
 {
@@ -373,14 +364,12 @@ public:
 };
 
 
-void QmlXmlRoleList::append(QmlXmlListModelRole *role) {
-    QmlConcreteList<QmlXmlListModelRole *>::append(role);
-    model->roles << model->highestRole;
-    model->roleNames << role->name();
-    ++model->highestRole;
+void QmlXmlRoleList::append(QmlXmlListModelRole *role)
+{
+    insert(size(), role);
 }
 
-//XXX clear, removeAt, and insert need to invalidate any cached data (in data table) as well
+//### clear, removeAt, and insert need to invalidate any cached data (in data table) as well
 //    (and the model should emit the appropriate signals)
 void QmlXmlRoleList::clear()
 {
@@ -396,10 +385,13 @@ void QmlXmlRoleList::removeAt(int i)
     QmlConcreteList<QmlXmlListModelRole *>::removeAt(i);
 }
 
-//### we should enforce unique role names
 void QmlXmlRoleList::insert(int i, QmlXmlListModelRole *role)
 {
     QmlConcreteList<QmlXmlListModelRole *>::insert(i, role);
+    if (model->roleNames.contains(role->name())) {
+        qmlInfo(role) << QObject::tr("\"%1\" duplicates a previous role name and will be disabled.").arg(role->name());
+        return;
+    }
     model->roles.insert(i, model->highestRole);
     model->roleNames.insert(i, role->name());
     ++model->highestRole;
