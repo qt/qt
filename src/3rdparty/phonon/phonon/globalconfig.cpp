@@ -178,13 +178,15 @@ QList<int> GlobalConfig::audioOutputDeviceListFor(Phonon::Category category, int
 
     return listSortedByConfig(backendConfig, category, defaultList);
 }
-#endif //QT_NO_SETTINGSGROUPS
+#endif //QT_NO_PHONON_SETTINGSGROUP
 int GlobalConfig::audioOutputDeviceFor(Phonon::Category category, int override) const
 {
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     QList<int> ret = audioOutputDeviceListFor(category, override);
-    if (ret.isEmpty())
-        return -1;
-    return ret.first();
+    if (!ret.isEmpty())
+        return ret.first();
+#endif //QT_NO_PHONON_SETTINGSGROUP
+    return -1;
 }
 
 #ifndef QT_NO_PHONON_AUDIOCAPTURE

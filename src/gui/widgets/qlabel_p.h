@@ -113,7 +113,7 @@ public:
     mutable uint hasShortcut : 1;
     Qt::TextFormat textformat;
     mutable QTextControl *control;
-    QTextCursor shortcutCursor;
+    mutable QTextCursor shortcutCursor;
     Qt::TextInteractionFlags textInteractionFlags;
 
     inline bool needTextControl() const {

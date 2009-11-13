@@ -257,6 +257,7 @@ void AudioOutputPrivate::setupBackendObject()
     // set up attributes
     pINTERFACE_CALL(setVolume(pow(volume, VOLTAGE_TO_LOUDNESS_EXPONENT)));
 
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     // if the output device is not available and the device was not explicitly set
     if (!callSetOutputDevice(this, device) && !outputDeviceOverridden) {
         // fall back in the preference list of output devices
@@ -276,6 +277,7 @@ void AudioOutputPrivate::setupBackendObject()
         callSetOutputDevice(this, none);
         handleAutomaticDeviceChange(none, FallbackChange);
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 }
 
 void AudioOutputPrivate::_k_volumeChanged(qreal newVolume)
@@ -305,6 +307,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
     pDebug() << Q_FUNC_INFO;
     // outputDeviceIndex identifies a failing device
     // fall back in the preference list of output devices
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings | GlobalConfig::HideUnavailableDevices);
     for (int i = 0; i < deviceList.count(); ++i) {
         const int devIndex = deviceList.at(i);
@@ -317,6 +320,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
             }
         }
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
     // if we get here there is no working output device. Tell the backend.
     const AudioOutputDevice none;
     callSetOutputDevice(this, none);
@@ -326,6 +330,7 @@ void AudioOutputPrivate::_k_audioDeviceFailed()
 void AudioOutputPrivate::_k_deviceListChanged()
 {
     pDebug() << Q_FUNC_INFO;
+#ifndef QT_NO_PHONON_SETTINGSGROUP
     // let's see if there's a usable device higher in the preference list
     const QList<int> deviceList = GlobalConfig().audioOutputDeviceListFor(category, GlobalConfig::AdvancedDevicesFromSettings);
     DeviceChangeType changeType = HigherPreferenceChange;
@@ -351,6 +356,7 @@ void AudioOutputPrivate::_k_deviceListChanged()
             break; // found one with higher preference that works
         }
     }
+#endif //QT_NO_PHONON_SETTINGSGROUP
 }
 
 static struct
