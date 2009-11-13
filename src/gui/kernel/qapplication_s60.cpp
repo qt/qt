@@ -1145,11 +1145,13 @@ void qt_init(QApplicationPrivate * /* priv */, int)
         S60->virtualMouseRequired = false;
     }
 
+#ifdef QT_KEYPAD_NAVIGATION
     if (touch) {
         QApplicationPrivate::navigationMode = Qt::NavigationModeNone;
     } else {
         QApplicationPrivate::navigationMode = Qt::NavigationModeKeypadDirectional;
     }
+#endif
 
 #ifndef QT_NO_CURSOR
     //Check if window server pointer cursors are supported or not
