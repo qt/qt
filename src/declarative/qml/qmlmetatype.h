@@ -220,7 +220,7 @@ int qmlRegisterExtendedType(const char *typeName)
         attachedMo = QmlPrivate::attachedPropertiesMetaObject<T>();
     }
 
-    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0, 0,
+    return QmlMetaType::registerType(ids, QmlPrivate::list_nocreate_op<T>, 0, 0, 0, 0,
             &T::staticMetaObject, attached, attachedMo,
             QmlPrivate::StaticCastSelector<T,QmlParserStatus>::cast(), 
             QmlPrivate::StaticCastSelector<T,QObject>::cast(),
