@@ -1095,7 +1095,7 @@ void QmlXMLHttpRequest::send(const QByteArray &data)
         QVariant var = request.header(QNetworkRequest::ContentTypeHeader);
         if (var.isValid()) {
             QString str = var.toString();
-            int charsetIdx = str.indexOf("charset=");
+            int charsetIdx = str.indexOf(QLatin1String("charset="));
             if (charsetIdx == -1) {
                 // No charset - append
                 if (!str.isEmpty()) str.append(QLatin1Char(';'));
@@ -1550,23 +1550,23 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
 
     // DOM Exception
     QScriptValue domExceptionPrototype = engine->newObject();
-    domExceptionPrototype.setProperty("INDEX_SIZE_ERR", INDEX_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("DOMSTRING_SIZE_ERR", DOMSTRING_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("HIERARCHY_REQUEST_ERR", HIERARCHY_REQUEST_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("WRONG_DOCUMENT_ERR", WRONG_DOCUMENT_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_CHARACTER_ERR", INVALID_CHARACTER_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NO_DATA_ALLOWED_ERR", NO_DATA_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NO_MODIFICATION_ALLOWED_ERR", NO_MODIFICATION_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NOT_FOUND_ERR", NOT_FOUND_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NOT_SUPPORTED_ERR", NOT_SUPPORTED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INUSE_ATTRIBUTE_ERR", INUSE_ATTRIBUTE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_STATE_ERR", INVALID_STATE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("SYNTAX_ERR", SYNTAX_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_MODIFICATION_ERR", INVALID_MODIFICATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NAMESPACE_ERR", NAMESPACE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_ACCESS_ERR", INVALID_ACCESS_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("VALIDATION_ERR", VALIDATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("TYPE_MISMATCH_ERR", TYPE_MISMATCH_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INDEX_SIZE_ERR"), INDEX_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("DOMSTRING_SIZE_ERR"), DOMSTRING_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("HIERARCHY_REQUEST_ERR"), HIERARCHY_REQUEST_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("WRONG_DOCUMENT_ERR"), WRONG_DOCUMENT_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_CHARACTER_ERR"), INVALID_CHARACTER_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NO_DATA_ALLOWED_ERR"), NO_DATA_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NO_MODIFICATION_ALLOWED_ERR"), NO_MODIFICATION_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NOT_FOUND_ERR"), NOT_FOUND_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NOT_SUPPORTED_ERR"), NOT_SUPPORTED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INUSE_ATTRIBUTE_ERR"), INUSE_ATTRIBUTE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_STATE_ERR"), INVALID_STATE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("SYNTAX_ERR"), SYNTAX_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_MODIFICATION_ERR"), INVALID_MODIFICATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NAMESPACE_ERR"), NAMESPACE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_ACCESS_ERR"), INVALID_ACCESS_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("VALIDATION_ERR"), VALIDATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("TYPE_MISMATCH_ERR"), TYPE_MISMATCH_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
 
     engine->globalObject().setProperty(QLatin1String("DOMException"), domExceptionPrototype);
 }
