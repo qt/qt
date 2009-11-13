@@ -1933,9 +1933,6 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
                     item_list.append(item);
             } else {
                 QDockAreaLayoutItem item(new QDockWidgetItem(widget));
-                if (!testing) {
-                    item_list.append(item);
-                }
                 if (flags & StateFlagFloating) {
                	    bool drawer = false;
 #ifdef Q_WS_MAC // drawer support
@@ -1973,11 +1970,13 @@ bool QDockAreaLayoutInfo::restoreState(QDataStream &stream, QList<QDockWidget*> 
 
                     if (!testing) {
                         widget->setVisible(flags & StateFlagVisible);
+                        item_list.append(item);
                     }
                 } else {
                     int dummy;
                     stream >> item.pos >> item.size >> dummy >> dummy;
                     if (!testing) {
+                        item_list.append(item);
                         widget->setFloating(false);
                         widget->setVisible(flags & StateFlagVisible);
                     }
