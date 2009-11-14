@@ -46,8 +46,7 @@
     \brief A summary of known issues in Qt %VERSION% at the time of release.
 
     An up-to-date list of known issues with Qt %VERSION% can be found via the
-    \l{Task Tracker} on the Qt website which provides additional information
-    about known issues and tasks related to Qt.
+    \l{http://bugreports.qt.nokia.com/}{Qt Bug Tracker}.
 
     \section1 General Issues
 
@@ -115,13 +114,6 @@
         +
          }
         \endcode
-
-    \o  Under certain circumstances Visual Studio Integration v1.4.0 will not
-        be able to install the integration for Visual Studio 2005 on Windows
-        Vista. An error message states that .NET Framework v2.0 Service Pack 1
-        is not installed. This is due to a problem with the built-in
-        installation of this on Windows Vista. This issue can be fixed by
-        installing .NET Framework version 3.5.
 
     \o  With NVIDIA GeForce 7950 GT (driver version 6.14.11.7824), a fullscreen
         QGLWidget flickers when child widgets are shown/hidden. The workaround
