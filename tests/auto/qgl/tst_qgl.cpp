@@ -1722,6 +1722,7 @@ void tst_QGL::shareRegister()
     QVERIFY(qt_shared_test()->value(glw1->context()) == res1);
 
     // Create another context that shares with the first.
+    QVERIFY(!glw1->isSharing());
     QGLWidget *glw2 = new QGLWidget(0, glw1);
     if (!glw2->isSharing()) {
         delete glw2;
@@ -1759,6 +1760,7 @@ void tst_QGL::shareRegister()
 
     // Create a third context, not sharing with the others.
     QGLWidget *glw3 = new QGLWidget();
+    QVERIFY(!glw3->isSharing());
 
     // Create a guard on the standalone context.
     QGLSharedResourceGuard guard3(glw3->context());
@@ -1806,6 +1808,9 @@ void tst_QGL::shareRegister()
 
     // Delete the first context.
     delete glw1;
+
+    // The second context should no longer register as sharing.
+    QVERIFY(!glw2->isSharing());
 
     // The first context's resource should transfer to the second context.
     QCOMPARE(tst_QGLResource::deletions, 0);
