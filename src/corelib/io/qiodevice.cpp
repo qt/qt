@@ -757,22 +757,20 @@ qint64 QIODevice::read(char *data, qint64 maxSize)
 
     // Short circuit for getChar()
     if (maxSize == 1) {
-        int chint = d->buffer.getChar();
-        if (chint != -1) {
+        int chint;
+        while ((chint = d->buffer.getChar()) != -1) {
+            if (!sequential)
+                ++d->pos;
+
             char c = char(uchar(chint));
-            if (c == '\r' && (d->openMode & Text)) {
-                d->buffer.ungetChar(c);
-            } else {
-                if (data)
-                    *data = c;
-                if (!sequential)
-                    ++d->pos;
+            if (c == '\r' && (d->openMode & Text))
+                continue;
+            *data = c;
 #if defined QIODEVICE_DEBUG
-                printf("%p \tread 0x%hhx (%c) returning 1 (shortcut)\n", this,
-                       int(c), isprint(c) ? c : '?');
+            printf("%p \tread 0x%hhx (%c) returning 1 (shortcut)\n", this,
+                   int(c), isprint(c) ? c : '?');
 #endif
-                return qint64(1);
-            }
+            return qint64(1);
         }
     }
 
@@ -1379,40 +1377,8 @@ bool QIODevicePrivate::putCharHelper(char c)
 */
 bool QIODevice::getChar(char *c)
 {
-    Q_D(QIODevice);
-    const OpenMode openMode = d->openMode;
-    if (!(openMode & ReadOnly)) {
-        if (openMode == NotOpen)
-            qWarning("QIODevice::getChar: Closed device");
-        else
-            qWarning("QIODevice::getChar: WriteOnly device");
-        return false;
-    }
-
-    // Shortcut for QIODevice::read(c, 1)
-    QRingBuffer *buffer = &d->buffer;
-    const int chint = buffer->getChar();
-    if (chint != -1) {
-        char ch = char(uchar(chint));
-        if ((openMode & Text) && ch == '\r') {
-            buffer->ungetChar(ch);
-        } else {
-            if (c)
-                *c = ch;
-            if (!d->isSequential())
-                ++d->pos;
-            return true;
-        }
-    }
-
-    // Fall back to read().
     char ch;
-    if (read(&ch, 1) == 1) {
-        if (c)
-            *c = ch;
-        return true;
-    }
-    return false;
+    return (1 == read(c ? c : &ch, 1));
 }
 
 /*!
