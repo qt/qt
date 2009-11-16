@@ -7,6 +7,7 @@ Rectangle {
     states: State {
         name: "blue"
         PropertyChanges {
+            objectName: "changes"
             target: MyRectangle; explicit: true
             color: sourceColor
         }

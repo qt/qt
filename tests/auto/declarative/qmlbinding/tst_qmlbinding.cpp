@@ -77,6 +77,12 @@ void tst_qmlbinding::binding()
     rect->setProperty("changeColor", true);
     QCOMPARE(rect->color(), QColor("red"));
 
+    QmlBind *binding = qobject_cast<QmlBind*>(rect->findChild<QmlBind*>("binding1"));
+    QVERIFY(binding != 0);
+    QCOMPARE(binding->object(), rect);
+    QCOMPARE(binding->property(), QLatin1String("text"));
+    QCOMPARE(binding->value().toString(), QLatin1String("Hello"));
+
     delete rect;
 }
 
