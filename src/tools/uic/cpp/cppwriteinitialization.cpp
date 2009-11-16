@@ -721,7 +721,7 @@ void WriteInitialization::acceptWidget(DomWidget *node)
             m_output << m_indent << parentWidget << "->addDockWidget(" << area << varName << ");\n";
         } else if (m_uic->customWidgetsInfo()->extends(className, QLatin1String("QStatusBar"))) {
             m_output << m_indent << parentWidget << "->setStatusBar(" << varName << ");\n";
-        } else if (className == QLatin1String("QWidget")) {
+        } else {
             m_output << m_indent << parentWidget << "->setCentralWidget(" << varName << ");\n";
         }
     }
