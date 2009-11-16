@@ -104,4 +104,21 @@ Rectangle {
             }
         }
     }
+
+    // click, then double click me - nothing should happen
+    Rectangle {
+        x: 100
+        y: 50
+        width: 98; height: 48
+        color: "red"
+        MouseRegion {
+            id: mr7
+            anchors.fill: parent
+            enabled: false
+            onClicked: { parent.color = "blue" }
+            onPressed: { parent.color = "yellow" }
+            onReleased: { parent.color = "cyan" }
+            onDoubleClicked: { parent.color = "green" }
+        }
+    }
 }
