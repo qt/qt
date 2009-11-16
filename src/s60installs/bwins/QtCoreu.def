@@ -4384,4 +4384,7 @@ EXPORTS
 	?staticMetaObject@QAbstractTableModel@@2UQMetaObject@@B @ 4383 NONAME ; struct QMetaObject const QAbstractTableModel::staticMetaObject
 	?staticMetaObject@QFile@@2UQMetaObject@@B @ 4384 NONAME ; struct QMetaObject const QFile::staticMetaObject
 	?staticMetaObject@QHistoryState@@2UQMetaObject@@B @ 4385 NONAME ; struct QMetaObject const QHistoryState::staticMetaObject
+	?QBasicAtomicPointer_isFetchAndAddNative@@YA_NXZ @ 4386 NONAME ; bool QBasicAtomicPointer_isFetchAndAddNative(void)
+	?QBasicAtomicPointer_isFetchAndStoreNative@@YA_NXZ @ 4387 NONAME ; bool QBasicAtomicPointer_isFetchAndStoreNative(void)
+	?QBasicAtomicPointer_isTestAndSetNative@@YA_NXZ @ 4388 NONAME ; bool QBasicAtomicPointer_isTestAndSetNative(void)
 

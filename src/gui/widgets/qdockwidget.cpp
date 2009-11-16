@@ -1225,6 +1225,7 @@ void QDockWidget::setFeatures(QDockWidget::DockWidgetFeatures features)
     features &= DockWidgetFeatureMask;
     if (d->features == features)
         return;
+    const bool closableChanged = (d->features ^ features) & DockWidgetClosable;
     d->features = features;
     QDockWidgetLayout *layout
         = qobject_cast<QDockWidgetLayout*>(this->layout());
@@ -1233,6 +1234,10 @@ void QDockWidget::setFeatures(QDockWidget::DockWidgetFeatures features)
     d->toggleViewAction->setEnabled((d->features & DockWidgetClosable) == DockWidgetClosable);
     emit featuresChanged(d->features);
     update();
+    if (closableChanged && layout->nativeWindowDeco()) {
+        //this ensures the native decoration is drawn
+        d->setWindowState(true /*floating*/, true /*unplug*/);
+    }
 }
 
 QDockWidget::DockWidgetFeatures QDockWidget::features() const

@@ -437,13 +437,18 @@ namespace QT_NAMESPACE {}
 #elif defined(__GCCE__)
 #  define Q_CC_GCCE
 #  define QT_VISIBILITY_AVAILABLE
+#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
+#    define QT_HAVE_ARMV6
+#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
    so check for it before that */
 #elif defined(__ARMCC__) || defined(__CC_ARM)
 #  define Q_CC_RVCT
-
+#  if __TARGET_ARCH_ARM >= 6
+#    define QT_HAVE_ARMV6
+#  endif
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS

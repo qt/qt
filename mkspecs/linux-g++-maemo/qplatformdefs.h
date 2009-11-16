@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui module of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,53 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef QWINDOWSURFACE_S60_P_H
-#define QWINDOWSURFACE_S60_P_H
-
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists for the convenience
-// of other Qt classes.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <qglobal.h>
-#include "private/qwindowsurface_p.h"
-
-class CFbsBitmap;
-
-QT_BEGIN_NAMESPACE
-
-struct QS60WindowSurfacePrivate;
-
-class QS60WindowSurface : public QWindowSurface
-{
-public:
-    QS60WindowSurface(QWidget *widget);
-    ~QS60WindowSurface();
-
-    QPaintDevice *paintDevice();
-    void flush(QWidget *widget, const QRegion &region, const QPoint &offset);
-    bool scroll(const QRegion &area, int dx, int dy);
-
-    void beginPaint(const QRegion &);
-    void endPaint(const QRegion &);
-
-    QImage* buffer(const QWidget *widget);
-
-    void setGeometry(const QRect &rect);
-
-    CFbsBitmap *symbianBitmap() const;
-
-private:
-    QS60WindowSurfacePrivate* d_ptr;
-
-};
-
-QT_END_NAMESPACE
-
-#endif // QWINDOWSURFACE_S60_P_H
+#include "../linux-g++/qplatformdefs.h"
