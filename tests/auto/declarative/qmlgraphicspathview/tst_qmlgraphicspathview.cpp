@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 #include <private/qmlgraphicspathview_p.h>
+#include <private/qmlgraphicspath_p.h>
 #include <qmlcontext.h>
 #include <qmlexpression.h>
 #include <qtest.h>
@@ -57,6 +58,7 @@ private slots:
     void initValues();
     void pathview2();
     void pathview3();
+    void path();
 };
 
 
@@ -116,6 +118,51 @@ void tst_QmlGraphicsPathView::pathview3()
     QCOMPARE(obj->dragMargin(), 24.);
     QCOMPARE(obj->count(), 8);
     QCOMPARE(obj->pathItemCount(), 4);
+}
+
+void tst_QmlGraphicsPathView::path()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/path.qml"));
+    QmlGraphicsPath *obj = qobject_cast<QmlGraphicsPath*>(c.create());
+
+    QVERIFY(obj != 0);
+    QCOMPARE(obj->startX(), 120.);
+    QCOMPARE(obj->startY(), 100.);
+    QVERIFY(obj->path() != QPainterPath());
+
+    QList<QmlGraphicsPathElement*> *list = obj->pathElements();
+    QCOMPARE(list->count(), 5);
+
+    QmlGraphicsPathAttribute* attr = qobject_cast<QmlGraphicsPathAttribute*>(list->at(0));
+    QVERIFY(attr != 0);
+    QCOMPARE(attr->name(), QString("scale"));
+    QCOMPARE(attr->value(), 1.0);
+
+    QmlGraphicsPathQuad* quad = qobject_cast<QmlGraphicsPathQuad*>(list->at(1));
+    QVERIFY(quad != 0);
+    QCOMPARE(quad->x(), 120.);
+    QCOMPARE(quad->y(), 25.);
+    QCOMPARE(quad->controlX(), 260.);
+    QCOMPARE(quad->controlY(), 75.);
+
+    QmlGraphicsPathPercent* perc = qobject_cast<QmlGraphicsPathPercent*>(list->at(2));
+    QVERIFY(perc != 0);
+    QCOMPARE(perc->value(), 0.3);
+
+    QmlGraphicsPathLine* line = qobject_cast<QmlGraphicsPathLine*>(list->at(3));
+    QVERIFY(line != 0);
+    QCOMPARE(line->x(), 120.);
+    QCOMPARE(line->y(), 100.);
+
+    QmlGraphicsPathCubic* cubic = qobject_cast<QmlGraphicsPathCubic*>(list->at(4));
+    QVERIFY(cubic != 0);
+    QCOMPARE(cubic->x(), 180.);
+    QCOMPARE(cubic->y(), 0.);
+    QCOMPARE(cubic->control1X(), -10.);
+    QCOMPARE(cubic->control1Y(), 90.);
+    QCOMPARE(cubic->control2X(), 210.);
+    QCOMPARE(cubic->control2Y(), 90.);
 }
 
 QTEST_MAIN(tst_QmlGraphicsPathView)
