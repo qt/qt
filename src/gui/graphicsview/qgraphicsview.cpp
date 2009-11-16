@@ -1517,6 +1517,8 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
             QEvent windowDeactivate(QEvent::WindowDeactivate);
             QApplication::sendEvent(d->scene, &windowDeactivate);
         }
+        if(hasFocus())
+            d->scene->clearFocus();
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
