@@ -43,8 +43,8 @@ Rectangle {
         width: 240
         height: 320
         keyNavigationWraps: testWrap
-        model: testModel
         delegate: myDelegate
         highlightMoveSpeed: 1000
+        model: testModel
     }
 }
