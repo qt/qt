@@ -210,6 +210,7 @@ private slots:
     void task167217();
 
     void openDirectory();
+    void writeNothing();
 
 public:
 // disabled this test for the moment... it hangs
@@ -2837,6 +2838,17 @@ void tst_QFile::openStandardStreams()
         QCOMPARE( err.pos(), (qint64)0 );
         QCOMPARE( err.size(), (qint64)0 );
         QVERIFY( err.isSequential() );
+    }
+}
+
+void tst_QFile::writeNothing()
+{
+    for (int i = 0; i < 3; ++i) {
+        QFile file("file.txt");
+        QVERIFY( openFile(file, QIODevice::WriteOnly | QIODevice::Unbuffered, FileType(i)) );
+        QVERIFY( 0 == file.write((char *)0, 0) );
+        QCOMPARE( file.error(), QFile::NoError );
+        closeFile(file);
     }
 }
 
