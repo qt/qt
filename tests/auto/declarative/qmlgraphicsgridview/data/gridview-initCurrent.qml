@@ -45,7 +45,7 @@ Rectangle {
         currentIndex: 5
         cellWidth: 80
         cellHeight: 60
-        model: testModel
         delegate: myDelegate
+        model: testModel
     }
 }

@@ -843,6 +843,9 @@ QmlComponent *QmlGraphicsGridView::delegate() const
 void QmlGraphicsGridView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QmlGraphicsGridView);
+    if (delegate == this->delegate())
+        return;
+
     if (!d->ownModel) {
         d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
@@ -944,9 +947,11 @@ QmlComponent *QmlGraphicsGridView::highlight() const
 void QmlGraphicsGridView::setHighlight(QmlComponent *highlight)
 {
     Q_D(QmlGraphicsGridView);
-    delete d->highlightComponent;
-    d->highlightComponent = highlight;
-    d->updateCurrent(d->currentIndex);
+    if (highlight != d->highlightComponent) {
+        delete d->highlightComponent;
+        d->highlightComponent = highlight;
+        d->updateCurrent(d->currentIndex);
+    }
 }
 
 /*!
@@ -978,12 +983,14 @@ bool QmlGraphicsGridView::highlightFollowsCurrentItem() const
 void QmlGraphicsGridView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
     Q_D(QmlGraphicsGridView);
-    d->autoHighlight = autoHighlight;
-    if (d->highlightXAnimator) {
-        d->highlightXAnimator->setEnabled(d->autoHighlight);
-        d->highlightYAnimator->setEnabled(d->autoHighlight);
+    if (d->autoHighlight != autoHighlight) {
+        d->autoHighlight = autoHighlight;
+        if (d->highlightXAnimator) {
+            d->highlightXAnimator->setEnabled(d->autoHighlight);
+            d->highlightYAnimator->setEnabled(d->autoHighlight);
+        }
+        d->updateHighlight();
     }
-    d->updateHighlight();
 }
 
 /*!
