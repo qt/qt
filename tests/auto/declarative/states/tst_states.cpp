@@ -42,6 +42,7 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicsrectangle_p.h>
+#include <private/qmlpropertychanges_p.h>
 
 class tst_states : public QObject
 {
@@ -61,6 +62,7 @@ private slots:
     void script();
     void restoreEntryValues();
     void explicitChanges();
+    void propertyErrors();
 };
 
 void tst_states::basicChanges()
@@ -544,6 +546,10 @@ void tst_states::explicitChanges()
     QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
     QVERIFY(rect != 0);
 
+    QmlPropertyChanges *changes = qobject_cast<QmlPropertyChanges*>(rect->findChild<QmlPropertyChanges*>("changes"));
+    QVERIFY(changes != 0);
+    QVERIFY(changes->isExplicit());
+
     QCOMPARE(rect->color(),QColor("red"));
 
     rect->setState("blue");
@@ -559,6 +565,20 @@ void tst_states::explicitChanges()
 
     rect->setState("blue");
     QCOMPARE(rect->color(),QColor("yellow"));
+}
+
+void tst_states::propertyErrors()
+{
+    QmlEngine engine;
+    QmlComponent rectComponent(&engine, SRCDIR "/data/propertyErrors.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QCOMPARE(rect->color(),QColor("red"));
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to non-existant property \"colr\"");
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyChanges (file://" SRCDIR "/data/propertyErrors.qml:8:9) Cannot assign to read-only property \"wantsFocus\"");
+    rect->setState("blue");
 }
 
 QTEST_MAIN(tst_states)
