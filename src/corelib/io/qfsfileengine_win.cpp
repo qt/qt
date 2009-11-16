@@ -66,10 +66,6 @@
 #include <ctype.h>
 #include <limits.h>
 #define SECURITY_WIN32
-#ifdef Q_CC_MINGW
-// A workaround for a certain version of MinGW, the define UNICODE_STRING.
-#include <subauth.h>
-#endif
 #include <security.h>
 
 #ifndef _INTPTR_T_DEFINED

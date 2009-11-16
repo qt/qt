@@ -58,19 +58,6 @@
 #  include <private/qmutexpool_p.h>
 #endif
 
-#include <shlobj.h>
-//At some point we can hope that mingw will support that interface
-#if !defined(Q_WS_WINCE) && !defined(Q_CC_MINGW)
-#include <shobjidl.h>
-#endif
-
-#include <objbase.h>
-
-#if defined(__IFileDialog_INTERFACE_DEFINED__) \
-	&& defined(__IFileOpenDialog_INTERFACE_DEFINED__)
-#define USE_COMMON_ITEM_DIALOG
-#endif
-
 #ifdef Q_WS_WINCE
 #include <commdlg.h>
 #  ifndef BFFM_SETSELECTION
@@ -89,6 +76,12 @@ typedef struct qt_priv_browseinfo {
     int           iImage;
 } qt_BROWSEINFO;
 bool qt_priv_ptr_valid = false;
+#else
+#include "qfiledialog_win_p.h"
+//we have to declare them here because they're not present for all SDK/compilers
+static const IID   QT_IID_IFileOpenDialog  = {0xd57c7288, 0xd4ad, 0x4768, {0xbe, 0x02, 0x9d, 0x96, 0x95, 0x32, 0xd9, 0x60} };
+static const IID   QT_IID_IShellItem       = {0x43826d1e, 0xe718, 0x42ee, {0xbc, 0x55, 0xa1, 0xe2, 0x61, 0xc3, 0x7b, 0xfe} };
+static const CLSID QT_CLSID_FileOpenDialog = {0xdc1c5a9c, 0xe88a, 0x4dde, {0xa5, 0xa1, 0x60, 0xf8, 0x2a, 0x20, 0xae, 0xf7} };
 #endif
 
 
@@ -421,7 +414,7 @@ QString qt_win_get_save_file_name(const QFileDialogArgs &args,
 }
 
 
-#if defined(USE_COMMON_ITEM_DIALOG)
+#ifndef Q_WS_WINCE
 
 typedef HRESULT (WINAPI *PtrSHCreateItemFromParsingName)(PCWSTR pszPath, IBindCtx *pbc, REFIID riid, void **ppv);
 static PtrSHCreateItemFromParsingName pSHCreateItemFromParsingName = 0;
@@ -481,9 +474,8 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
     tInitDir = QDir::toNativeSeparators(initialDirectory);
     if (!tInitDir.isEmpty()) {
         IShellItem *psiDefaultFolder;
-        hr = pSHCreateItemFromParsingName((wchar_t*)tInitDir.utf16(),
-                                      NULL,
-                                      IID_PPV_ARGS(&psiDefaultFolder));
+        hr = pSHCreateItemFromParsingName((wchar_t*)tInitDir.utf16(), NULL, QT_IID_IShellItem, 
+            reinterpret_cast<void**>(&psiDefaultFolder));
 
         if (SUCCEEDED(hr)) {
             hr = pfd->SetFolder(psiDefaultFolder);
@@ -522,7 +514,7 @@ static bool qt_win_set_IFileDialogOptions(IFileDialog *pfd,
     return SUCCEEDED(hr);
 }
 
-QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
+static QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
                                        QString *initialDirectory,
                                        const QStringList &filterList,
                                        QString *selectedFilter,
@@ -535,10 +527,8 @@ QStringList qt_win_CID_get_open_file_names(const QFileDialogArgs &args,
     QApplicationPrivate::enterModal(&modal_widget);
     // Multiple selection is allowed only in IFileOpenDialog.
     IFileOpenDialog *pfd;
-    HRESULT hr = CoCreateInstance(CLSID_FileOpenDialog,
-                                  NULL,
-                                  CLSCTX_INPROC_SERVER,
-                                  IID_PPV_ARGS(&pfd));
+    HRESULT hr = CoCreateInstance(QT_CLSID_FileOpenDialog, NULL, CLSCTX_INPROC_SERVER, QT_IID_IFileOpenDialog, 
+        reinterpret_cast<void**>(&pfd));
 
     if (SUCCEEDED(hr)) {
         qt_win_set_IFileDialogOptions(pfd, args.selection,
@@ -641,7 +631,7 @@ QStringList qt_win_get_open_file_names(const QFileDialogArgs &args,
     // multiple files belonging to different folders from these search results, the
     // GetOpenFileName() will return only one folder name for all the files. To retrieve
     // the correct path for all selected files, we have to use Common Item Dialog interfaces.
-#if defined(USE_COMMON_ITEM_DIALOG)
+#ifndef Q_WS_WINCE
     if (QSysInfo::WindowsVersion >= QSysInfo::WV_VISTA && QSysInfo::WindowsVersion < QSysInfo::WV_NT_based)
         return qt_win_CID_get_open_file_names(args, initialDirectory, filterLst, selectedFilter, idx);
 #endif

@@ -52,7 +52,7 @@
 #include <private/qprintengine_win_p.h>
 #include <private/qprinter_p.h>
 
-#if defined(Q_CC_MINGW) && !defined(PD_NOCURRENTPAGE)
+#if !defined(PD_NOCURRENTPAGE)
 #define PD_NOCURRENTPAGE    0x00800000
 #define PD_RESULT_PRINT	1
 #define PD_RESULT_APPLY	2
