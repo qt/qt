@@ -94,6 +94,9 @@ public:
     virtual Qt::WindowFlags setWindowFlags(Qt::WindowFlags type);
     virtual Qt::WindowFlags windowFlags() const;
     virtual WId winId() const;
+
+    virtual void raise() { qWarning("This plugin does not support raise()"); }
+    virtual void lower() { qWarning("This plugin does not support lower()"); }
 #endif
     bool hasStaticContentsSupport() const;
 

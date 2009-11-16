@@ -578,4 +578,15 @@ WId QTestLiteWindowSurface::winId() const
         return WId(0);
 }
 
+void QTestLiteWindowSurface::raise()
+{
+    WId window = winId();
+    XRaiseWindow(mGraphicsSystem->xd->display, window);
+}
+
+void QTestLiteWindowSurface::lower()
+{
+    WId window = winId();
+    XLowerWindow(mGraphicsSystem->xd->display, window);
+}
 QT_END_NAMESPACE

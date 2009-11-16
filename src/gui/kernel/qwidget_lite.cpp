@@ -423,8 +423,7 @@ void QWidgetPrivate::raise_sys()
     Q_Q(QWidget);
     if (q->isWindow()) {
         QWindowSurface *surface = q->windowSurface();
-        QGraphicsSystemScreen *screen = qt_screenForWidget(q);
-        screen->raise(surface);
+        surface->raise();
     }
 }
 
@@ -434,8 +433,7 @@ void QWidgetPrivate::lower_sys()
     if (q->isWindow()) {
         Q_ASSERT(q->testAttribute(Qt::WA_WState_Created));
         QWindowSurface *surface = q->windowSurface();
-        QGraphicsSystemScreen *screen = qt_screenForWidget(q);
-        screen->lower(surface);
+        surface->lower();
     } else if (QWidget *p = q->parentWidget()) {
         setDirtyOpaqueRegion();
         p->d_func()->invalidateBuffer(effectiveRectFor(q->geometry()));

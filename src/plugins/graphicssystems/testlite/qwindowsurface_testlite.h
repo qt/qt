@@ -79,6 +79,8 @@ public:
     Qt::WindowFlags windowFlags() const;
     void setVisible(bool visible);
     WId winId() const;
+    void raise();
+    void lower();
 
 private:
     QTestLiteGraphicsSystem *mGraphicsSystem;

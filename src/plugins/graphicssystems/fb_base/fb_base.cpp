@@ -97,6 +97,11 @@ void QGraphicsSystemFbScreen::removeWindowSurface(QGraphicsSystemFbWindowSurface
     setDirty(surface->geometry());
 }
 
+void QGraphicsSystemFbWindowSurface::raise()
+{
+    mScreen->raise(this);
+}
+
 void QGraphicsSystemFbScreen::raise(QWindowSurface * surface)
 {
     QGraphicsSystemFbWindowSurface *s = static_cast<QGraphicsSystemFbWindowSurface *>(surface);
@@ -105,6 +110,11 @@ void QGraphicsSystemFbScreen::raise(QWindowSurface * surface)
         return;
     windowStack.move(index, 0);
     setDirty(s->geometry());
+}
+
+void QGraphicsSystemFbWindowSurface::lower()
+{
+    mScreen->lower(this);
 }
 
 void QGraphicsSystemFbScreen::lower(QWindowSurface * surface)

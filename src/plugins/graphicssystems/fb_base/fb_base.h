@@ -32,6 +32,10 @@ public:
 
     const QImage image() { return mImage; }
     void setGeometry(const QRect &rect);
+
+    virtual void raise();
+    virtual void lower();
+
 protected:
     QGraphicsSystemFbScreen *mScreen;
     QRect oldGeometry;
