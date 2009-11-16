@@ -100,7 +100,6 @@ void QGraphicsSystemCursor::pointerEvent(QMouseEvent & e)
     currentRect = graphic->image()->rect().translated(-graphic->hotspot().x(),
                                                       -graphic->hotspot().y());
     currentRect.translate(e.pos());
-    screen->setDirty(currentRect);
 
     screen->pointerEvent(e);
 }
