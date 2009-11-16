@@ -619,7 +619,8 @@ qint64 QIODevice::size() const
 */
 bool QIODevice::seek(qint64 pos)
 {
-    if (d_func()->openMode == NotOpen) {
+    Q_D(QIODevice);
+    if (d->openMode == NotOpen) {
         qWarning("QIODevice::seek: The device is not open");
         return false;
     }
@@ -628,7 +629,6 @@ bool QIODevice::seek(qint64 pos)
         return false;
     }
 
-    Q_D(QIODevice);
 #if defined QIODEVICE_DEBUG
     printf("%p QIODevice::seek(%d), before: d->pos = %d, d->buffer.size() = %d\n",
            this, int(pos), int(d->pos), d->buffer.size());
@@ -640,21 +640,16 @@ bool QIODevice::seek(qint64 pos)
         d->devicePos = pos;
     }
 
-    if (offset > 0 && !d->buffer.isEmpty()) {
-        // When seeking forwards, we need to pop bytes off the front of the
-        // buffer.
-        do {
-            int bytesToSkip = int(qMin<qint64>(offset, INT_MAX));
-            d->buffer.skip(bytesToSkip);
-            offset -= bytesToSkip;
-        } while (offset > 0);
-    } else if (offset < 0) {
+    if (offset < 0
+            || offset >= qint64(d->buffer.size()))
         // When seeking backwards, an operation that is only allowed for
         // random-access devices, the buffer is cleared. The next read
         // operation will then refill the buffer. We can optimize this, if we
         // find that seeking backwards becomes a significant performance hit.
         d->buffer.clear();
-    }
+    else if (!d->buffer.isEmpty())
+        d->buffer.skip(int(offset));
+
 #if defined QIODEVICE_DEBUG
     printf("%p \tafter: d->pos == %d, d->buffer.size() == %d\n", this, int(d->pos),
            d->buffer.size());
