@@ -168,6 +168,7 @@ QmlCompositeTypeData *QmlCompositeTypeManager::get(const QUrl &url)
     if (!unit) {
         unit = new QmlCompositeTypeData;
         unit->status = QmlCompositeTypeData::Waiting;
+        unit->progress = 0.0;
         unit->imports.setBaseUrl(url);
         components.insert(url.toString(), unit);
 
@@ -217,7 +218,6 @@ void QmlCompositeTypeManager::replyFinished()
     Q_ASSERT(unit);
 
     if (reply->error() != QNetworkReply::NoError) {
-
         QString errorDescription;
         // ### - Fill in error
         errorDescription = QLatin1String("Network error for URL ") + 
