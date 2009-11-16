@@ -16,6 +16,8 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
+#ifndef QT_NO_DEBUG
+
 #include <QTextStream>
 #include <QWidget>
 #include "objecttree.h"
@@ -98,5 +100,5 @@ AncestorConstIterator::AncestorConstIterator(const QObject& leaf)
 
 QT_END_NAMESPACE
 
-
+#endif
 

@@ -109,12 +109,12 @@ void MMF::AbstractMediaPlayer::pause()
     case GroundState:
     case LoadingState:
     case PausedState:
-    case ErrorState:
         // Do nothing
         break;
 
     case StoppedState:
     case PlayingState:
+    case ErrorState:
     case BufferingState:
         doPause();
         stopTickTimer();
@@ -288,10 +288,6 @@ void MMF::AbstractMediaPlayer::setNextSource(const MediaSource &source)
     TRACE_EXIT_0();
 }
 
-
-//-----------------------------------------------------------------------------
-// VolumeObserver
-//-----------------------------------------------------------------------------
 
 void MMF::AbstractMediaPlayer::volumeChanged(qreal volume)
 {
