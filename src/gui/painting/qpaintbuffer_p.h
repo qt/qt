@@ -66,7 +66,7 @@ class QPaintBufferPlayback;
 
 class Q_GUI_EXPORT QPaintBuffer : public QPaintDevice
 {
-    Q_DECLARE_PRIVATE(QPaintBuffer);
+    Q_DECLARE_PRIVATE(QPaintBuffer)
 public:
     QPaintBuffer();
     QPaintBuffer(const QPaintBuffer &other);

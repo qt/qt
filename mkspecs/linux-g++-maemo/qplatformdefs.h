@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the qmake application of the Qt Toolkit.
+** This file is part of the qmake spec of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -39,31 +39,4 @@
 **
 ****************************************************************************/
 
-#ifndef SYMMAKE_ABLD_H
-#define SYMMAKE_ABLD_H
-
-#include <symmake.h>
-
-QT_BEGIN_NAMESPACE
-
-class SymbianAbldMakefileGenerator : public SymbianMakefileGenerator
-{
-protected:
-
-    // Inherited from parent
-    virtual void writeBldInfExtensionRulesPart(QTextStream& t);
-    virtual void writeBldInfMkFilePart(QTextStream& t, bool addDeploymentExtension);
-    virtual void writeMkFile(const QString& wrapperFileName, bool deploymentOnly);
-    virtual void writeWrapperMakefile(QFile& wrapperFile, bool isPrimaryMakefile);
-    virtual void appendAbldTempDirs(QStringList& sysincspaths, QString includepath);
-
-    void writeStoreBuildTarget(QTextStream &t);
-    bool writeDeploymentTargets(QTextStream &t);
-
-public:
-
-    SymbianAbldMakefileGenerator();
-    ~SymbianAbldMakefileGenerator();
-};
-
-#endif // SYMMAKE_ABLD_H
+#include "../linux-g++/qplatformdefs.h"

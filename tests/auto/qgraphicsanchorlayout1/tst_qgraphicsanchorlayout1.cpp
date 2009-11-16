@@ -1722,7 +1722,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QRectF expected = truncate(item.rect);
         QRectF actual = truncate(widgets[item.index]->geometry());
 
-        QCOMPARE(expected, actual);
+        QCOMPARE(actual, expected);
     }
 
     // Test mirrored mode
@@ -1739,7 +1739,7 @@ void tst_QGraphicsAnchorLayout1::testBasicLayout()
         QRectF expected = truncate(mirroredRect);
         QRectF actual = truncate(widgets[item.index]->geometry());
 
-        QCOMPARE(expected, actual);
+        QCOMPARE(actual, expected);
         delete widgets[item.index];
     }
 

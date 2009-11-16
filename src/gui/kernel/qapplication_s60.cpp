@@ -319,7 +319,12 @@ void QLongTapTimer::RunL()
 }
 
 QSymbianControl::QSymbianControl(QWidget *w)
-    : CCoeControl(), qwidget(w), m_ignoreFocusChanged(false)
+    : CCoeControl()
+    , qwidget(w)
+    , m_longTapDetector(0)
+    , m_ignoreFocusChanged(0)
+    , m_previousEventLongTap(0)
+    , m_symbianPopupIsOpen(0)
 {
 }
 
@@ -911,6 +916,15 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
         return;
 
     if (IsFocused() && IsVisible()) {
+        if (m_symbianPopupIsOpen) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusIn, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = false;
+        }
+
         QApplication::setActiveWindow(qwidget->window());
 #ifdef Q_WS_S60
         // If widget is fullscreen, hide status pane and button container
@@ -924,6 +938,16 @@ void QSymbianControl::FocusChanged(TDrawNow /* aDrawNow */)
             buttonGroup->MakeVisible(!isFullscreen);
 #endif
     } else if (QApplication::activeWindow() == qwidget->window()) {
+        if (CCoeEnv::Static()->AppUi()->IsDisplayingMenuOrDialog()) {
+            QWidget *fw = QApplication::focusWidget();
+            if (fw) {
+                QFocusEvent event(QEvent::FocusOut, Qt::PopupFocusReason);
+                QCoreApplication::sendEvent(fw, &event);
+            }
+            m_symbianPopupIsOpen = true;
+            return;
+        }
+
         QApplication::setActiveWindow(0);
     }
     // else { We don't touch the active window unless we were explicitly activated or deactivated }
