@@ -62,6 +62,9 @@ public:
 private:
     QTextEdit *textEdit;
     QPushButton *closeButton;
+    QPushButton *showNormalButton;
+    QPushButton *showMaximizedButton;
+    QPushButton *showFullScreenButton;
 };
 
 class PreviewDialog : public QDialog
@@ -76,6 +79,9 @@ public:
 private:
     QTextEdit *textEdit;
     QPushButton *closeButton;
+    QPushButton *showNormalButton;
+    QPushButton *showMaximizedButton;
+    QPushButton *showFullScreenButton;
 };
 
 #endif

@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -349,7 +349,8 @@ QS60PixmapData::QS60PixmapData(PixelType type) : QRasterPixmapData(type),
     bitmapDevice(0),
     bitmapGc(0),
     pengine(0),
-    bytes(0)
+    bytes(0),
+    formatLocked(false)
 {
 
 }
@@ -425,11 +426,12 @@ void QS60PixmapData::release()
 }
 
 /*!
- * Takes ownership of bitmap
+ * Takes ownership of bitmap. Used by window surface
  */
 void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap)
 {
 	cfbsBitmap = bitmap;
+	formatLocked = true;
 
 	 if(!initSymbianBitmapContext()) {
 		qWarning("Could not create CBitmapContext");
@@ -443,7 +445,7 @@ void QS60PixmapData::fromSymbianBitmap(CFbsBitmap* bitmap)
 
 	// Create default palette if needed
 	if (cfbsBitmap->DisplayMode() == EGray2) {
-		image.setNumColors(2);
+		image.setColorCount(2);
 		image.setColor(0, QColor(Qt::color0).rgba());
 		image.setColor(1, QColor(Qt::color1).rgba());
 
@@ -526,13 +528,13 @@ void QS60PixmapData::fromImage(const QImage &img, Qt::ImageConversionFlags flags
     const uchar *sptr = const_cast<const QImage &>(sourceImage).bits();
     symbianBitmapDataAccess->beginDataAccess(cfbsBitmap);
     uchar *dptr = (uchar*)cfbsBitmap->DataAddress();
-    Mem::Copy(dptr, sptr, sourceImage.numBytes());
+    Mem::Copy(dptr, sptr, sourceImage.byteCount());
     symbianBitmapDataAccess->endDataAccess(cfbsBitmap);
 
     UPDATE_BUFFER();
 
     if (destFormat == QImage::Format_MonoLSB) {
-		image.setNumColors(2);
+		image.setColorCount(2);
 		image.setColor(0, QColor(Qt::color0).rgba());
 		image.setColor(1, QColor(Qt::color1).rgba());
 	} else {
@@ -568,7 +570,6 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     if (!cfbsBitmap)
         return 0;
 
-    qreal div_by_KTwipsPerInch = 1 / (qreal)KTwipsPerInch;
     switch (metric) {
     case QPaintDevice::PdmWidth:
         return cfbsBitmap->SizeInPixels().iWidth;
@@ -576,23 +577,23 @@ int QS60PixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
         return cfbsBitmap->SizeInPixels().iHeight;
     case QPaintDevice::PdmWidthMM: {
         TInt twips = cfbsBitmap->SizeInTwips().iWidth;
-        return (int)(twips * (qreal(25.4) * div_by_KTwipsPerInch));
+        return (int)(twips * (25.4/KTwipsPerInch));
     }
     case QPaintDevice::PdmHeightMM: {
         TInt twips = cfbsBitmap->SizeInTwips().iHeight;
-        return (int)(twips * (qreal(25.4) * div_by_KTwipsPerInch));
+        return (int)(twips * (25.4/KTwipsPerInch));
     }
     case QPaintDevice::PdmNumColors:
         return TDisplayModeUtils::NumDisplayModeColors(cfbsBitmap->DisplayMode());
     case QPaintDevice::PdmDpiX:
     case QPaintDevice::PdmPhysicalDpiX: {
-        qreal inches = cfbsBitmap->SizeInTwips().iWidth * div_by_KTwipsPerInch;
+        TReal inches = cfbsBitmap->SizeInTwips().iWidth / (TReal)KTwipsPerInch;
         TInt pixels = cfbsBitmap->SizeInPixels().iWidth;
         return pixels / inches;
     }
     case QPaintDevice::PdmDpiY:
     case QPaintDevice::PdmPhysicalDpiY: {
-        qreal inches = cfbsBitmap->SizeInTwips().iHeight * div_by_KTwipsPerInch;
+        TReal inches = cfbsBitmap->SizeInTwips().iHeight / (TReal)KTwipsPerInch;
         TInt pixels = cfbsBitmap->SizeInPixels().iHeight;
         return pixels / inches;
     }
@@ -694,8 +695,10 @@ void QS60PixmapData::beginDataAccess()
     bytes = newBytes;
     TDisplayMode mode = cfbsBitmap->DisplayMode();
     QImage::Format format = qt_TDisplayMode2Format(mode);
-    //on S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type
-    if (format == QImage::Format_ARGB32)
+    // On S60 3.1, premultiplied alpha pixels are stored in a bitmap with 16MA type.
+    // S60 window surface needs backing store pixmap for transparent window in ARGB32 format.
+    // In that case formatLocked is true.
+    if (!formatLocked && format == QImage::Format_ARGB32)
         format = QImage::Format_ARGB32_Premultiplied; // pixel data is actually in premultiplied format
 
     QVector<QRgb> savedColorTable;
@@ -836,7 +839,7 @@ void* QS60PixmapData::toNativeType(NativeType type)
             symbianBitmapDataAccess->beginDataAccess(newBitmap);
 
             uchar *dptr = (uchar*)newBitmap->DataAddress();
-            Mem::Copy(dptr, sptr, source.numBytes());
+            Mem::Copy(dptr, sptr, source.byteCount());
 
             symbianBitmapDataAccess->endDataAccess(newBitmap);
 

@@ -52,7 +52,7 @@
 
 QT_BEGIN_NAMESPACE
 
-#define Q_NEAR_CLIP (sizeof(qreal) == sizeof(double) ? qreal(0.000001) : qreal(0.0001))
+#define Q_NEAR_CLIP (sizeof(qreal) == sizeof(double) ? 0.000001 : 0.0001)
 
 #ifdef MAP
 #  undef MAP
@@ -82,7 +82,7 @@ QT_BEGIN_NAMESPACE
             if (t == TxProject) {                                       \
                 qreal w = (m_13 * FX_ + m_23 * FY_ + m_33);              \
                 if (w < qreal(Q_NEAR_CLIP)) w = qreal(Q_NEAR_CLIP);     \
-                w = qreal(1.)/w;                                               \
+                w = 1./w;                                               \
                 nx *= w;                                                \
                 ny *= w;                                                \
             }                                                           \
@@ -369,8 +369,8 @@ QTransform QTransform::inverted(bool *invertible) const
         inv = !qFuzzyIsNull(affine._m11);
         inv &= !qFuzzyIsNull(affine._m22);
         if (inv) {
-            invert.affine._m11 = qreal(1.) / affine._m11;
-            invert.affine._m22 = qreal(1.) / affine._m22;
+            invert.affine._m11 = 1. / affine._m11;
+            invert.affine._m22 = 1. / affine._m22;
             invert.affine._dx = -affine._dx * invert.affine._m11;
             invert.affine._dy = -affine._dy * invert.affine._m22;
         }
@@ -1087,7 +1087,7 @@ QPoint QTransform::map(const QPoint &p) const
         x = affine._m11 * fx + affine._m21 * fy + affine._dx;
         y = affine._m12 * fx + affine._m22 * fy + affine._dy;
         if (t == TxProject) {
-            qreal w = qreal(1.)/(m_13 * fx + m_23 * fy + m_33);
+            qreal w = 1./(m_13 * fx + m_23 * fy + m_33);
             x *= w;
             y *= w;
         }
@@ -1138,7 +1138,7 @@ QPointF QTransform::map(const QPointF &p) const
         x = affine._m11 * fx + affine._m21 * fy + affine._dx;
         y = affine._m12 * fx + affine._m22 * fy + affine._dy;
         if (t == TxProject) {
-            qreal w = qreal(1.)/(m_13 * fx + m_23 * fy + m_33);
+            qreal w = 1./(m_13 * fx + m_23 * fy + m_33);
             x *= w;
             y *= w;
         }
@@ -1217,10 +1217,10 @@ QLine QTransform::map(const QLine &l) const
         x2 = affine._m11 * fx2 + affine._m21 * fy2 + affine._dx;
         y2 = affine._m12 * fx2 + affine._m22 * fy2 + affine._dy;
         if (t == TxProject) {
-            qreal w = qreal(1.)/(m_13 * fx1 + m_23 * fy1 + m_33);
+            qreal w = 1./(m_13 * fx1 + m_23 * fy1 + m_33);
             x1 *= w;
             y1 *= w;
-            w = qreal(1.)/(m_13 * fx2 + m_23 * fy2 + m_33);
+            w = 1./(m_13 * fx2 + m_23 * fy2 + m_33);
             x2 *= w;
             y2 *= w;
         }
@@ -1276,10 +1276,10 @@ QLineF QTransform::map(const QLineF &l) const
         x2 = affine._m11 * fx2 + affine._m21 * fy2 + affine._dx;
         y2 = affine._m12 * fx2 + affine._m22 * fy2 + affine._dy;
         if (t == TxProject) {
-            qreal w = qreal(1.)/(m_13 * fx1 + m_23 * fy1 + m_33);
+            qreal w = 1./(m_13 * fx1 + m_23 * fy1 + m_33);
             x1 *= w;
             y1 *= w;
-            w = qreal(1.)/(m_13 * fx2 + m_23 * fy2 + m_33);
+            w = 1./(m_13 * fx2 + m_23 * fy2 + m_33);
             x2 *= w;
             y2 *= w;
         }
@@ -1421,7 +1421,7 @@ QRegion QTransform::map(const QRegion &r) const
         return copy;
     }
 
-    if (t == TxScale && r.numRects() == 1)
+    if (t == TxScale && r.rectCount() == 1)
         return QRegion(mapRect(r.boundingRect()));
 
     QPainterPath p = map(qt_regionToPath(r));
@@ -1438,7 +1438,7 @@ struct QHomogeneousCoordinate
     QHomogeneousCoordinate(qreal x_, qreal y_, qreal w_) : x(x_), y(y_), w(w_) {}
 
     const QPointF toPoint() const {
-        qreal iw = qreal(1.) / w;
+        qreal iw = 1. / w;
         return QPointF(x * iw, y * iw);
     }
 };
@@ -1695,9 +1695,8 @@ bool QTransform::squareToQuad(const QPolygonF &quad, QTransform &trans)
         if (!bottom)
             return false;
 
-        double inv_bottom = 1 / bottom;
-        g = gtop * inv_bottom;
-        h = htop * inv_bottom;
+        g = gtop/bottom;
+        h = htop/bottom;
 
         a = dx1 - dx0 + g * dx1;
         b = dx3 - dx0 + h * dx3;

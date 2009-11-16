@@ -399,7 +399,7 @@ void tst_QGraphicsGridLayout::columnAlignment()
     widget->resize(widget->effectiveSizeHint(Qt::MaximumSize));
     view.show();
     widget->show();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     // Check default
     QCOMPARE(layout->columnAlignment(0), 0);
     QCOMPARE(layout->columnAlignment(1), 0);
@@ -414,7 +414,7 @@ void tst_QGraphicsGridLayout::columnAlignment()
     layout->setAlignment(layout->itemAt(1,1), Qt::AlignRight);
     layout->setAlignment(layout->itemAt(1,2), Qt::AlignLeft);
 
-    QApplication::processEvents();  // process LayoutRequest
+    QApplication::sendPostedEvents(0, 0);  // process LayoutRequest
     /*
       +----------+------------+---------+
       | Left     |  HCenter   |  Right  |
@@ -846,7 +846,7 @@ void tst_QGraphicsGridLayout::rowAlignment()
     widget->resize(300, 400);
     view.show();
     widget->show();
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     // Check default
     QCOMPARE(layout->rowAlignment(0), 0);
     QCOMPARE(layout->rowAlignment(1), 0);
@@ -869,7 +869,7 @@ void tst_QGraphicsGridLayout::rowAlignment()
     layout->setAlignment(layout->itemAt(1,0), Qt::AlignTop);
     layout->setAlignment(layout->itemAt(2,0), Qt::AlignHCenter);
 
-    QApplication::processEvents();  // process LayoutRequest
+    QApplication::sendPostedEvents(0, 0);   // process LayoutRequest
 
     QCOMPARE(layout->alignment(layout->itemAt(0,0)), Qt::AlignRight);  //Qt::AlignRight | Qt::AlignBottom
     QCOMPARE(layout->itemAt(0,0)->geometry(), QRectF(50,  50,  50,  50));
@@ -1834,7 +1834,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors()
         desc.apply(layout, item);
     }
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
 
     widget->show();
     view.show();
@@ -1842,7 +1842,7 @@ void tst_QGraphicsGridLayout::defaultStretchFactors()
     if (newSize.isValid())
         widget->resize(newSize);
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     for (i = 0; i < expectedSizes.count(); ++i) {
         QSizeF itemSize = layout->itemAt(i)->geometry().size();
         QCOMPARE(itemSize, expectedSizes.at(i));
@@ -1994,7 +1994,7 @@ void tst_QGraphicsGridLayout::alignment2()
         desc.apply(layout, item);
     }
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
 
     widget->show();
     view.resize(400,300);
@@ -2002,7 +2002,7 @@ void tst_QGraphicsGridLayout::alignment2()
     if (newSize.isValid())
         widget->resize(newSize);
 
-    QApplication::processEvents();
+    QApplication::sendPostedEvents(0, 0);
     for (i = 0; i < expectedGeometries.count(); ++i) {
         QRectF itemRect = layout->itemAt(i)->geometry();
         QCOMPARE(itemRect, expectedGeometries.at(i));

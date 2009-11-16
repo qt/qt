@@ -201,7 +201,7 @@ QBitmap QPixmapData::mask() const
     if (mask.isNull()) // allocation failed
         return QBitmap();
 
-    mask.setNumColors(2);
+    mask.setColorCount(2);
     mask.setColor(0, QColor(Qt::color0).rgba());
     mask.setColor(1, QColor(Qt::color1).rgba());
 

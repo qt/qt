@@ -225,6 +225,7 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &path,
 {
     if (!relative)
         relative = root();
+
     do {
         const Node *node = relative;
         int i;
@@ -244,8 +245,7 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &path,
                 NodeList baseClasses = allBaseClasses(static_cast<const ClassNode *>(node));
                 foreach (const Node *baseClass, baseClasses) {
                     if (i == path.size() - 1)
-                        next = static_cast<const InnerNode *>(baseClass)->
-                                findFunctionNode(path.at(i));
+                        next = static_cast<const InnerNode *>(baseClass)->findFunctionNode(path.at(i));
                     else
                         next = static_cast<const InnerNode *>(baseClass)->findNode(path.at(i));
 
@@ -256,11 +256,10 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &path,
 
             node = next;
         }
-        if (node && i == path.size() && node->type() == Node::Function) {
+        if (node && i == path.size() && node->isFunction()) {
             // CppCodeParser::processOtherMetaCommand ensures that reimplemented
             // functions are private.
             const FunctionNode *func = static_cast<const FunctionNode*>(node);
-
             while (func->access() == Node::Private) {
                 const FunctionNode *from = func->reimplementedFrom();
                 if (from != 0) {
@@ -268,7 +267,8 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &path,
                         return from;
                     else
                         func = from;
-                } else
+                }
+                else
                     break;
             }
             return func;
@@ -303,7 +303,8 @@ const FunctionNode *Tree::findFunctionNode(const QStringList &parentPath,
     const Node *parent = findNode(parentPath, relative, findFlags);
     if (parent == 0 || !parent->isInnerNode()) {
         return 0;
-    } else {
+    }
+    else {
         return ((InnerNode *)parent)->findFunctionNode(clone);
     }
 }

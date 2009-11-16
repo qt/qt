@@ -2047,10 +2047,14 @@ void QWidgetPrivate::registerTouchWindow()
 
 void QWidgetPrivate::winSetupGestures()
 {
+#if !defined(QT_NO_NATIVE_GESTURES)
     Q_Q(QWidget);
-    if (!q || !q->isVisible())
+    if (!q || !q->isVisible() || !nativeGesturePanEnabled)
         return;
+
     QApplicationPrivate *qAppPriv = QApplicationPrivate::instance();
+    if (!qAppPriv->SetGestureConfig)
+        return;
     WId winid = q->internalWinId();
 
     bool needh = false;
@@ -2068,11 +2072,12 @@ void QWidgetPrivate::winSetupGestures()
         needv = (vbarpolicy == Qt::ScrollBarAlwaysOn ||
                  (vbarpolicy == Qt::ScrollBarAsNeeded && vbar->minimum() < vbar->maximum()));
         singleFingerPanEnabled = asa->d_func()->singleFingerPanEnabled;
-        if (!winid)
+        if (!winid) {
             winid = q->winId(); // enforces the native winid on the viewport
+        }
     }
 #endif //QT_NO_SCROLLAREA
-    if (winid && qAppPriv->SetGestureConfig) {
+    if (winid) {
         GESTURECONFIG gc[1];
         memset(gc, 0, sizeof(gc));
         gc[0].dwID = GID_PAN;
@@ -2092,6 +2097,7 @@ void QWidgetPrivate::winSetupGestures()
 
         qAppPriv->SetGestureConfig(winid, 0, sizeof(gc)/sizeof(gc[0]), gc, sizeof(gc[0]));
     }
+#endif
 }
 
 QT_END_NAMESPACE

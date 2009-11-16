@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -306,16 +306,6 @@ QPixmap QS60StylePrivate::frame(SkinFrameElements frame, const QSize &size,
 #endif
 
     return result;
-}
-
-void QS60StylePrivate::setStyleProperty_specific(const char *name, const QVariant &value)
-{
-    setStyleProperty(name, value);
-}
-
-QVariant QS60StylePrivate::styleProperty_specific(const char *name) const
-{
-    return styleProperty(name);
 }
 
 QPixmap QS60StylePrivate::backgroundTexture()

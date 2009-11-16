@@ -574,7 +574,7 @@ qreal QLineF::angle() const
     const qreal dx = pt2.x() - pt1.x();
     const qreal dy = pt2.y() - pt1.y();
 
-    const qreal theta = qAtan2(-dy, dx) * qreal(360.0) / Q_2PI;
+    const qreal theta = atan2(-dy, dx) * 360.0 / M_2PI;
 
     const qreal theta_normalized = theta < 0 ? theta + 360 : theta;
 
@@ -598,7 +598,7 @@ qreal QLineF::angle() const
 */
 void QLineF::setAngle(qreal angle)
 {
-    const qreal angleR = angle * Q_2PI / qreal(360.0);
+    const qreal angleR = angle * M_2PI / 360.0;
     const qreal l = length();
 
     const qreal dx = qCos(angleR) * l;
@@ -620,7 +620,7 @@ void QLineF::setAngle(qreal angle)
 */
 QLineF QLineF::fromPolar(qreal length, qreal angle)
 {
-    const qreal angleR = angle * Q_2PI / qreal(360.0);
+    const qreal angleR = angle * M_2PI / 360.0;
     return QLineF(0, 0, qCos(angleR) * length, -qSin(angleR) * length);
 }
 
@@ -639,7 +639,7 @@ QLineF QLineF::unitVector() const
     QLineF f(p1(), QPointF(pt1.x() + x/len, pt1.y() + y/len));
 
 #ifndef QT_NO_DEBUG
-    if (qAbs(f.length() - 1) >= qreal(0.001))
+    if (qAbs(f.length() - 1) >= 0.001)
         qWarning("QLine::unitVector: New line does not have unit length");
 #endif
 
@@ -814,8 +814,8 @@ qreal QLineF::angle(const QLineF &l) const
     qreal cos_line = (dx()*l.dx() + dy()*l.dy()) / (length()*l.length());
     qreal rad = 0;
     // only accept cos_line in the range [-1,1], if it is outside, use 0 (we return 0 rather than PI for those cases)
-    if (cos_line >= qreal(-1.0) && cos_line <= qreal(1.0)) rad = qAcos( cos_line );
-    return rad * 360 / Q_2PI;
+    if (cos_line >= -1.0 && cos_line <= 1.0) rad = acos( cos_line );
+    return rad * 360 / M_2PI;
 }
 
 

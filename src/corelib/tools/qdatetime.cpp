@@ -1915,7 +1915,7 @@ QTime QTime::fromString(const QString& s, Qt::DateFormat f)
             const float msec(msec_s.toFloat(&ok));
             if (!ok)
                 return QTime();
-            return QTime(hour, minute, second, qMin(qRound(msec * qreal(1000.0)), 999));
+            return QTime(hour, minute, second, qMin(qRound(msec * 1000.0), 999));
         }
     }
 }

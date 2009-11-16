@@ -694,11 +694,11 @@ EXPORTS
 	_ZN15QAnimationGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 693 NONAME
 	_ZN15QAnimationGroup11qt_metacastEPKc @ 694 NONAME
 	_ZN15QAnimationGroup12addAnimationEP18QAbstractAnimation @ 695 NONAME
-	_ZN15QAnimationGroup15clearAnimationsEv @ 696 NONAME
+	_ZN15QAnimationGroup15clearAnimationsEv @ 696 NONAME ABSENT
 	_ZN15QAnimationGroup15removeAnimationEP18QAbstractAnimation @ 697 NONAME
-	_ZN15QAnimationGroup15takeAnimationAtEi @ 698 NONAME
+	_ZN15QAnimationGroup15takeAnimationAtEi @ 698 NONAME ABSENT
 	_ZN15QAnimationGroup16staticMetaObjectE @ 699 NONAME DATA 16
-	_ZN15QAnimationGroup17insertAnimationAtEiP18QAbstractAnimation @ 700 NONAME
+	_ZN15QAnimationGroup17insertAnimationAtEiP18QAbstractAnimation @ 700 NONAME ABSENT
 	_ZN15QAnimationGroup19getStaticMetaObjectEv @ 701 NONAME
 	_ZN15QAnimationGroup5eventEP6QEvent @ 702 NONAME
 	_ZN15QAnimationGroupC2EP7QObject @ 703 NONAME
@@ -1376,7 +1376,7 @@ EXPORTS
 	_ZN25QSequentialAnimationGroup11qt_metacallEN11QMetaObject4CallEiPPv @ 1375 NONAME
 	_ZN25QSequentialAnimationGroup11qt_metacastEPKc @ 1376 NONAME
 	_ZN25QSequentialAnimationGroup11updateStateEN18QAbstractAnimation5StateES1_ @ 1377 NONAME
-	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 1378 NONAME
+	_ZN25QSequentialAnimationGroup13insertPauseAtEii @ 1378 NONAME ABSENT
 	_ZN25QSequentialAnimationGroup15updateDirectionEN18QAbstractAnimation9DirectionE @ 1379 NONAME
 	_ZN25QSequentialAnimationGroup16staticMetaObjectE @ 1380 NONAME DATA 16
 	_ZN25QSequentialAnimationGroup17updateCurrentTimeEi @ 1381 NONAME
@@ -3577,38 +3577,46 @@ EXPORTS
 	uncompress @ 3576 NONAME
 	zError @ 3577 NONAME
 	zlibVersion @ 3578 NONAME
-	_Z12qFreeAlignedPv @ 3579 NONAME
-	_Z14qMallocAlignedjj @ 3580 NONAME
-	_Z15qReallocAlignedPvjjj @ 3581 NONAME
-	_ZN11QVectorData10reallocateEPS_iii @ 3582 NONAME
-	_ZN11QVectorData4freeEPS_i @ 3583 NONAME
-	_ZN11QVectorData8allocateEii @ 3584 NONAME
-	_ZN12QLibraryInfo9buildDateEv @ 3585 NONAME
-	_ZN20QContiguousCacheData4freeEPS_ @ 3586 NONAME
-	_ZN20QContiguousCacheData8allocateEii @ 3587 NONAME
-	_ZN20QStateMachinePrivate12toFinalStateEP14QAbstractState @ 3588 NONAME
-	_ZN20QStateMachinePrivate14toHistoryStateEP14QAbstractState @ 3589 NONAME
-	_ZN20QStateMachinePrivate15toStandardStateEP14QAbstractState @ 3590 NONAME
-	_ZN20QStateMachinePrivate15toStandardStateEPK14QAbstractState @ 3591 NONAME
-	_ZN20QStateMachinePrivate17postExternalEventEP6QEvent @ 3592 NONAME
-	_ZN20QStateMachinePrivate17postInternalEventEP6QEvent @ 3593 NONAME
-	_ZN20QStateMachinePrivate20dequeueExternalEventEv @ 3594 NONAME
-	_ZN20QStateMachinePrivate20dequeueInternalEventEv @ 3595 NONAME
-	_ZN20QStateMachinePrivate25isExternalEventQueueEmptyEv @ 3596 NONAME
-	_ZN20QStateMachinePrivate25isInternalEventQueueEmptyEv @ 3597 NONAME
-	_ZN8QMapData10createDataEi @ 3598 NONAME
-	_ZN8QMapData11node_createEPPNS_4NodeEii @ 3599 NONAME
-	_ZN9QHashData12allocateNodeEi @ 3600 NONAME
-	_ZN9QHashData14detach_helper2EPFvPNS_4NodeEPvEPFvS1_Eii @ 3601 NONAME
-	_Z10qShapeItemP14HB_ShaperItem_ @ 3602 NONAME
-	_Z38QBasicAtomicPointer_isTestAndSetNativev @ 3603 NONAME
-	_Z39QBasicAtomicPointer_isFetchAndAddNativev @ 3604 NONAME
-	_Z41QBasicAtomicPointer_isFetchAndStoreNativev @ 3605 NONAME
-	_ZN13QStateMachine11setAnimatedEb @ 3606 NONAME
-	_ZN15QBasicAtomicInt18isTestAndSetNativeEv @ 3607 NONAME
-	_ZN15QBasicAtomicInt19isFetchAndAddNativeEv @ 3608 NONAME
-	_ZN15QBasicAtomicInt21isFetchAndStoreNativeEv @ 3609 NONAME
-	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3610 NONAME
-	_ZN6QState18propertiesAssignedEv @ 3611 NONAME
-	_ZNK13QStateMachine10isAnimatedEv @ 3612 NONAME
+	_Z10qShapeItemP14HB_ShaperItem_ @ 3579 NONAME
+	_Z12qFreeAlignedPv @ 3580 NONAME
+	_Z14qMallocAlignedjj @ 3581 NONAME
+	_Z15qReallocAlignedPvjjj @ 3582 NONAME
+	_ZN11QVectorData10reallocateEPS_iii @ 3583 NONAME
+	_ZN11QVectorData4freeEPS_i @ 3584 NONAME
+	_ZN11QVectorData8allocateEii @ 3585 NONAME
+	_ZN12QLibraryInfo9buildDateEv @ 3586 NONAME
+	_ZN13QStateMachine11setAnimatedEb @ 3587 NONAME
+	_ZN15QAnimationGroup13takeAnimationEi @ 3588 NONAME
+	_ZN15QAnimationGroup15insertAnimationEiP18QAbstractAnimation @ 3589 NONAME
+	_ZN15QAnimationGroup5clearEv @ 3590 NONAME
+	_ZN18QAbstractAnimation9setPausedEb @ 3591 NONAME
+	_ZN20QContiguousCacheData4freeEPS_ @ 3592 NONAME
+	_ZN20QContiguousCacheData8allocateEii @ 3593 NONAME
+	_ZN20QStateMachinePrivate12toFinalStateEP14QAbstractState @ 3594 NONAME
+	_ZN20QStateMachinePrivate14toHistoryStateEP14QAbstractState @ 3595 NONAME
+	_ZN20QStateMachinePrivate15toStandardStateEP14QAbstractState @ 3596 NONAME
+	_ZN20QStateMachinePrivate15toStandardStateEPK14QAbstractState @ 3597 NONAME
+	_ZN20QStateMachinePrivate17postExternalEventEP6QEvent @ 3598 NONAME
+	_ZN20QStateMachinePrivate17postInternalEventEP6QEvent @ 3599 NONAME
+	_ZN20QStateMachinePrivate20dequeueExternalEventEv @ 3600 NONAME
+	_ZN20QStateMachinePrivate20dequeueInternalEventEv @ 3601 NONAME
+	_ZN20QStateMachinePrivate25isExternalEventQueueEmptyEv @ 3602 NONAME
+	_ZN20QStateMachinePrivate25isInternalEventQueueEmptyEv @ 3603 NONAME
+	_ZN21QAbstractConcatenable16convertFromAsciiEPKciRP5QChar @ 3604 NONAME
+	_ZN25QSequentialAnimationGroup11insertPauseEii @ 3605 NONAME
+	_ZN6QState18propertiesAssignedEv @ 3606 NONAME
+	_ZN8QMapData10createDataEi @ 3607 NONAME
+	_ZN8QMapData11node_createEPPNS_4NodeEii @ 3608 NONAME
+	_ZN9QHashData12allocateNodeEi @ 3609 NONAME
+	_ZN9QHashData14detach_helper2EPFvPNS_4NodeEPvEPFvS1_Eii @ 3610 NONAME
+	_ZNK13QStateMachine10isAnimatedEv @ 3611 NONAME
+	_ZNK18QAbstractAnimation15currentLoopTimeEv @ 3612 NONAME
+	_ZNK7QRegExp12captureCountEv @ 3613 NONAME
+	_Z38QBasicAtomicPointer_isTestAndSetNativev @ 3614 NONAME
+	_Z39QBasicAtomicPointer_isFetchAndAddNativev @ 3615 NONAME
+	_Z41QBasicAtomicPointer_isFetchAndStoreNativev @ 3616 NONAME
+	_ZN15QBasicAtomicInt18isTestAndSetNativeEv @ 3617 NONAME
+	_ZN15QBasicAtomicInt19isFetchAndAddNativeEv @ 3618 NONAME
+	_ZN15QBasicAtomicInt21isFetchAndStoreNativeEv @ 3619 NONAME
+	_ZN15QBasicAtomicInt25isReferenceCountingNativeEv @ 3620 NONAME
 

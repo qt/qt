@@ -317,7 +317,7 @@ class QEasingCurveFunction
 public:
     enum Type { In, Out, InOut, OutIn };
 
-    QEasingCurveFunction(QEasingCurveFunction::Type type = In, qreal period = qreal(0.3), qreal amplitude = qreal(1.0),
+    QEasingCurveFunction(QEasingCurveFunction::Type type = In, qreal period = 0.3, qreal amplitude = 1.0,
         qreal overshoot = 1.70158f)
         : _t(type), _p(period), _a(amplitude), _o(overshoot)
     { }
@@ -667,7 +667,7 @@ bool QEasingCurve::operator==(const QEasingCurve &other) const
  */
 qreal QEasingCurve::amplitude() const
 {
-    return d_ptr->config ? d_ptr->config->_a : qreal(1.0);
+    return d_ptr->config ? d_ptr->config->_a : 1.0;
 }
 
 /*!
@@ -691,7 +691,7 @@ void QEasingCurve::setAmplitude(qreal amplitude)
  */
 qreal QEasingCurve::period() const
 {
-    return d_ptr->config ? d_ptr->config->_p : qreal(0.3);
+    return d_ptr->config ? d_ptr->config->_p : 0.3;
 }
 
 /*!
@@ -742,9 +742,9 @@ QEasingCurve::Type QEasingCurve::type() const
 
 void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
 {
-    qreal amp = qreal(-1.0);
-    qreal period = qreal(-1.0);
-    qreal overshoot = qreal(-1.0);
+    qreal amp = -1.0;
+    qreal period = -1.0;
+    qreal overshoot = -1.0;
 
     if (config) {
         amp = config->_a;
@@ -754,13 +754,13 @@ void QEasingCurvePrivate::setType_helper(QEasingCurve::Type newType)
         config = 0;
     }
 
-    if (isConfigFunction(newType) || (amp != qreal(-1.0)) || (period != qreal(-1.0)) || (overshoot != qreal(-1.0))) {
+    if (isConfigFunction(newType) || (amp != -1.0) || (period != -1.0) || (overshoot != -1.0)) {
         config = curveToFunctionObject(newType);
-        if (amp != qreal(-1.0))
+        if (amp != -1.0)
             config->_a = amp;
-        if (period != qreal(-1.0))
+        if (period != -1.0)
             config->_p = period;
-        if (overshoot != qreal(-1.0))
+        if (overshoot != -1.0)
             config->_o = overshoot;
         func = 0;
     } else if (newType != QEasingCurve::Custom) {

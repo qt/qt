@@ -3349,6 +3349,9 @@ QPointF QGraphicsItem::pos() const
 */
 void QGraphicsItem::setX(qreal x)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(x, d_ptr->pos.y()));
 }
 
@@ -3370,6 +3373,9 @@ void QGraphicsItem::setX(qreal x)
 */
 void QGraphicsItem::setY(qreal y)
 {
+    if (d_ptr->inDestructor)
+        return;
+
     d_ptr->setPosHelper(QPointF(d_ptr->pos.x(), y));
 }
 
@@ -3433,6 +3439,9 @@ void QGraphicsItemPrivate::setTransformHelper(const QTransform &transform)
 void QGraphicsItem::setPos(const QPointF &pos)
 {
     if (d_ptr->pos == pos)
+        return;
+
+    if (d_ptr->inDestructor)
         return;
 
     // Update and repositition.
@@ -8451,9 +8460,8 @@ QPainterPath QGraphicsEllipseItem::shape() const
     if (d->rect.isNull())
         return path;
     if (d->spanAngle != 360 * 16) {
-        const qreal inv_16 = 1 / qreal(16.0);
         path.moveTo(d->rect.center());
-        path.arcTo(d->rect, d->startAngle * inv_16, d->spanAngle * inv_16);
+        path.arcTo(d->rect, d->startAngle / 16.0, d->spanAngle / 16.0);
     } else {
         path.addEllipse(d->rect);
     }
@@ -9598,6 +9606,7 @@ void QGraphicsTextItem::setDefaultTextColor(const QColor &col)
     QPalette pal = c->palette();
     pal.setColor(QPalette::Text, col);
     c->setPalette(pal);
+    update();
 }
 
 /*!
@@ -10804,7 +10813,7 @@ void QGraphicsItemEffectSourcePrivate::draw(QPainter *painter)
 }
 
 QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QPoint *offset,
-                                                 QGraphicsEffectSource::PixmapPadMode mode) const
+                                                 QGraphicsEffect::PixmapPadMode mode) const
 {
     const bool deviceCoordinates = (system == Qt::DeviceCoordinates);
     if (!info && deviceCoordinates) {
@@ -10820,9 +10829,9 @@ QPixmap QGraphicsItemEffectSourcePrivate::pixmap(Qt::CoordinateSystem system, QP
     const QRectF sourceRect = boundingRect(system);
     QRect effectRect;
 
-    if (mode == QGraphicsEffectSource::ExpandToEffectRectPadMode) {
+    if (mode == QGraphicsEffect::PadToEffectiveBoundingRect) {
         effectRect = item->graphicsEffect()->boundingRectFor(sourceRect).toAlignedRect();
-    } else if (mode == QGraphicsEffectSource::ExpandToTransparentBorderPadMode) {
+    } else if (mode == QGraphicsEffect::PadToTransparentBorder) {
         // adjust by 1.5 to account for cosmetic pens
         effectRect = sourceRect.adjusted(-1.5, -1.5, 1.5, 1.5).toAlignedRect();
     } else {

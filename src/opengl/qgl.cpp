@@ -3030,7 +3030,7 @@ void QGLContext::setValid(bool valid)
 bool QGLContext::isSharing() const
 {
     Q_D(const QGLContext);
-    return d->sharing;
+    return d->group->isSharing();
 }
 
 QGLFormat QGLContext::format() const
@@ -4078,7 +4078,7 @@ QImage QGLWidget::grabFrameBuffer(bool withAlpha)
         glReadPixels(0, 0, w, h, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, res.bits());
         const QVector<QColor> pal = QColormap::instance().colormap();
         if (pal.size()) {
-            res.setNumColors(pal.size());
+            res.setColorCount(pal.size());
             for (int i = 0; i < pal.size(); i++)
                 res.setColor(i, pal.at(i).rgb());
         }

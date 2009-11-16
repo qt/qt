@@ -311,7 +311,7 @@ bool QDirectFBWindowSurface::scroll(const QRegion &region, int dx, int dy)
     if (!dfbSurface || !(flipFlags & DSFLIP_BLIT) || region.isEmpty())
         return false;
     dfbSurface->SetBlittingFlags(dfbSurface, DSBLIT_NOFX);
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         scrollSurface(dfbSurface, region.boundingRect(), dx, dy);
     } else {
         const QVector<QRect> rects = region.rects();

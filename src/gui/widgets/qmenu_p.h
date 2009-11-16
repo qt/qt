@@ -215,6 +215,7 @@ public:
         SelectedFromKeyboard,
         SelectedFromElsewhere
     };
+    QWidget *topCausedWidget() const;
     QAction *actionAt(QPoint p) const;
     void setFirstActionActive();
     void setCurrentAction(QAction *, int popup = -1, SelectionReason reason = SelectedFromElsewhere, bool activateFirst = false);

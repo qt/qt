@@ -4168,13 +4168,13 @@ static void _q_paintItem(QGraphicsItem *item, QPainter *painter,
     QGraphicsWidget *widgetItem = static_cast<QGraphicsWidget *>(item);
     QGraphicsProxyWidget *proxy = qobject_cast<QGraphicsProxyWidget *>(widgetItem);
     const qreal windowOpacity = (proxy && proxy->widget() && useWindowOpacity)
-                                ? proxy->widget()->windowOpacity() : qreal(1.0);
+                                ? proxy->widget()->windowOpacity() : 1.0;
     const qreal oldPainterOpacity = painter->opacity();
 
     if (qFuzzyIsNull(windowOpacity))
         return;
     // Set new painter opacity.
-    if (windowOpacity < qreal(1.0))
+    if (windowOpacity < 1.0)
         painter->setOpacity(oldPainterOpacity * windowOpacity);
 
     // set layoutdirection on the painter
@@ -4208,7 +4208,7 @@ static void _q_paintIntoCache(QPixmap *pix, QGraphicsItem *item, const QRegion &
     QRect br = pixmapExposed.boundingRect();
 
     // Don't use subpixmap if we get a full update.
-    if (pixmapExposed.isEmpty() || (pixmapExposed.numRects() == 1 && br.contains(pix->rect()))) {
+    if (pixmapExposed.isEmpty() || (pixmapExposed.rectCount() == 1 && br.contains(pix->rect()))) {
         pix->fill(Qt::transparent);
         pixmapPainter.begin(pix);
     } else {
@@ -4268,7 +4268,7 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
     QGraphicsProxyWidget *proxy = item->isWidget() ? qobject_cast<QGraphicsProxyWidget *>(static_cast<QGraphicsWidget *>(item)) : 0;
     if (proxy && proxy->widget()) {
         const qreal windowOpacity = proxy->widget()->windowOpacity();
-        if (windowOpacity < qreal(1.0))
+        if (windowOpacity < 1.0)
             newPainterOpacity *= windowOpacity;
     }
 
@@ -4551,6 +4551,10 @@ void QGraphicsScenePrivate::drawItemHelper(QGraphicsItem *item, QPainter *painte
 void QGraphicsScenePrivate::drawItems(QPainter *painter, const QTransform *const viewTransform,
                                       QRegion *exposedRegion, QWidget *widget)
 {
+    // Make sure we don't have unpolished items before we draw.
+    if (!unpolishedItems.isEmpty())
+        _q_polishItems();
+
     QRectF exposedSceneRect;
     if (exposedRegion && indexMethod != QGraphicsScene::NoIndex) {
         exposedSceneRect = exposedRegion->boundingRect().adjusted(-1, -1, 1, 1);
@@ -4656,7 +4660,7 @@ void QGraphicsScenePrivate::drawSubtreeRecursive(QGraphicsItem *item, QPainter *
             sourced->lastEffectTransform = painter->worldTransform();
             sourced->invalidateCache();
         }
-        item->d_ptr->graphicsEffect->draw(painter, source);
+        item->d_ptr->graphicsEffect->draw(painter);
         painter->setWorldTransform(restoreTransform);
         sourced->info = 0;
     } else
@@ -5077,6 +5081,10 @@ void QGraphicsScene::drawItems(QPainter *painter,
                                const QStyleOptionGraphicsItem options[], QWidget *widget)
 {
     Q_D(QGraphicsScene);
+    // Make sure we don't have unpolished items before we draw.
+    if (!d->unpolishedItems.isEmpty())
+        d->_q_polishItems();
+
     QTransform viewTransform = painter->worldTransform();
     Q_UNUSED(options);
 

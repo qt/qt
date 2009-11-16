@@ -243,7 +243,7 @@ void Window::openFileOfItem(int row, int /* column */)
 {
     QTableWidgetItem *item = filesTable->item(row, 0);
 
-    QDesktopServices::openUrl(currentDir.absoluteFilePath(item->text()));
+    QDesktopServices::openUrl(QUrl::fromLocalFile(currentDir.absoluteFilePath(item->text())));
 }
 
 //! [12]

@@ -1180,7 +1180,7 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
 
     QRect r = originRect(rect, background()->origin);
     QRect aligned = QStyle::alignedRect(Qt::LeftToRight, background()->position, bgp.size(), r);
-    QRect inter = aligned.intersected(r);
+    QRect inter = aligned.translated(-off).intersected(r);
 
     switch (background()->repeat) {
     case Repeat_Y:
@@ -1252,20 +1252,20 @@ QPainterPath QRenderRule::borderClip(QRect r)
     const QRectF rect(r);
     const int *borders = border()->borders;
     QPainterPath path;
-    qreal curY = rect.y() + borders[TopEdge]*qreal(0.5);
+    qreal curY = rect.y() + borders[TopEdge]/2.0;
     path.moveTo(rect.x() + tlr.width(), curY);
     path.lineTo(rect.right() - trr.width(), curY);
-    qreal curX = rect.right() - borders[RightEdge]*qreal(0.5);
+    qreal curX = rect.right() - borders[RightEdge]/2.0;
     path.arcTo(curX - 2*trr.width() + borders[RightEdge], curY,
                trr.width()*2 - borders[RightEdge], trr.height()*2 - borders[TopEdge], 90, -90);
 
     path.lineTo(curX, rect.bottom() - brr.height());
-    curY = rect.bottom() - borders[BottomEdge]*qreal(0.5);
+    curY = rect.bottom() - borders[BottomEdge]/2.0;
     path.arcTo(curX - 2*brr.width() + borders[RightEdge], curY - 2*brr.height() + borders[BottomEdge],
                brr.width()*2 - borders[RightEdge], brr.height()*2 - borders[BottomEdge], 0, -90);
 
     path.lineTo(rect.x() + blr.width(), curY);
-    curX = rect.left() + borders[LeftEdge]*qreal(0.5);
+    curX = rect.left() + borders[LeftEdge]/2.0;
     path.arcTo(curX, rect.bottom() - 2*blr.height() + borders[BottomEdge]/2,
                blr.width()*2 - borders[LeftEdge], blr.height()*2 - borders[BottomEdge], 270, -90);
 

@@ -35,7 +35,7 @@ install( FILES
   Phonon/VolumeFaderEffect
   Phonon/VolumeFaderInterface
   Phonon/VolumeSlider
-DESTINATION ${INCLUDE_INSTALL_DIR}/KDE/Phonon)
+DESTINATION ${INCLUDE_INSTALL_DIR}/KDE/Phonon COMPONENT Devel)
 
 install(FILES
   Phonon/Experimental/AbstractVideoDataOutput
@@ -46,4 +46,4 @@ install(FILES
   Phonon/Experimental/VideoFrame
   Phonon/Experimental/VideoFrame2
   Phonon/Experimental/Visualization
-DESTINATION ${INCLUDE_INSTALL_DIR}/KDE/Phonon/Experimental)
+DESTINATION ${INCLUDE_INSTALL_DIR}/KDE/Phonon/Experimental COMPONENT Devel)

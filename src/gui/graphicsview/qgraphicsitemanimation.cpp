@@ -165,7 +165,7 @@ qreal QGraphicsItemAnimationPrivate::linearValueForStep(qreal step, QList<Pair> 
 
 void QGraphicsItemAnimationPrivate::insertUniquePair(qreal step, qreal value, QList<Pair> *binList, const char* method)
 {
-    if (step < qreal(0.0) || step > qreal(1.0)) {
+    if (step < 0.0 || step > 1.0) {
         qWarning("QGraphicsItemAnimation::%s: invalid step = %f", method, step);
         return;
     }
@@ -255,7 +255,7 @@ void QGraphicsItemAnimation::setTimeLine(QTimeLine *timeLine)
 */
 QPointF QGraphicsItemAnimation::posAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::posAt: invalid step = %f", step);
 
     return QPointF(d->linearValueForStep(step, &d->xPosition, d->startPos.x()),
@@ -294,7 +294,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::posList() const
 */
 QMatrix QGraphicsItemAnimation::matrixAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::matrixAt: invalid step = %f", step);
 
     QMatrix matrix;
@@ -316,7 +316,7 @@ QMatrix QGraphicsItemAnimation::matrixAt(qreal step) const
 */
 qreal QGraphicsItemAnimation::rotationAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::rotationAt: invalid step = %f", step);
 
     return d->linearValueForStep(step, &d->rotation);
@@ -405,7 +405,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::translationList() const
 */
 qreal QGraphicsItemAnimation::verticalScaleAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::verticalScaleAt: invalid step = %f", step);
 
     return d->linearValueForStep(step, &d->verticalScale, 1);
@@ -418,7 +418,7 @@ qreal QGraphicsItemAnimation::verticalScaleAt(qreal step) const
 */
 qreal QGraphicsItemAnimation::horizontalScaleAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::horizontalScaleAt: invalid step = %f", step);
 
     return d->linearValueForStep(step, &d->horizontalScale, 1);
@@ -457,7 +457,7 @@ QList<QPair<qreal, QPointF> > QGraphicsItemAnimation::scaleList() const
 */
 qreal QGraphicsItemAnimation::verticalShearAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::verticalShearAt: invalid step = %f", step);
 
     return d->linearValueForStep(step, &d->verticalShear, 0);
@@ -470,7 +470,7 @@ qreal QGraphicsItemAnimation::verticalShearAt(qreal step) const
 */
 qreal QGraphicsItemAnimation::horizontalShearAt(qreal step) const
 {
-    if (step < qreal(0.0) || step > qreal(1.0))
+    if (step < 0.0 || step > 1.0)
         qWarning("QGraphicsItemAnimation::horizontalShearAt: invalid step = %f", step);
 
     return d->linearValueForStep(step, &d->horizontalShear, 0);
@@ -527,7 +527,7 @@ void QGraphicsItemAnimation::clear()
 */
 void QGraphicsItemAnimation::setStep(qreal x)
 {
-    if (x < qreal(0.0) || x > qreal(1.0)) {
+    if (x < 0.0 || x > 1.0) {
         qWarning("QGraphicsItemAnimation::setStep: invalid step = %f", x);
         return;
     }

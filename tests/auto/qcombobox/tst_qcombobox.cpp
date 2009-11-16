@@ -2479,6 +2479,10 @@ void tst_QComboBox::keyBoardNavigationWithMouse()
 
     QCOMPARE(combo.currentText(), QLatin1String("0"));
 
+#ifdef Q_OS_WINCE
+    QSKIP("When calling cursor function, Windows CE responds with: This function is not supported on this system.", SkipAll);
+#endif
+
     QCursor::setPos(combo.view()->mapToGlobal(combo.view()->rect().center()));
     QTest::qWait(200);
 
@@ -2517,8 +2521,8 @@ void tst_QComboBox::task_QTBUG_1071_changingFocusEmitsActivated()
     cb.addItem("1");
     cb.addItem("2");
     QLineEdit edit;
-    layout.add(&cb);
-    layout.add(&edit);
+    layout.addWidget(&cb);
+    layout.addWidget(&edit);
 
     w.show();
     QTest::qWaitForWindowShown(&w);

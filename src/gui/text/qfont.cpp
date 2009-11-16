@@ -309,7 +309,7 @@ QFontPrivate *QFontPrivate::smallCapsFontPrivate() const
     QFont font(const_cast<QFontPrivate *>(this));
     qreal pointSize = font.pointSizeF();
     if (pointSize > 0)
-        font.setPointSizeF(pointSize * qreal(.7));
+        font.setPointSizeF(pointSize * .7);
     else
         font.setPixelSize((font.pixelSize() * 7 + 5) / 10);
     scFont = font.d.data();
@@ -1613,7 +1613,8 @@ bool QFont::operator==(const QFont &f) const
                 && f.d->underline == d->underline
                 && f.d->overline  == d->overline
                 && f.d->strikeOut == d->strikeOut
-                && f.d->kerning == d->kerning));
+                && f.d->kerning == d->kerning
+                && f.d->capital == d->capital));
 }
 
 
@@ -1645,6 +1646,7 @@ bool QFont::operator<(const QFont &f) const
 #ifdef Q_WS_X11
     if (r1.addStyle != r2.addStyle) return r1.addStyle < r2.addStyle;
 #endif // Q_WS_X11
+    if (f.d->capital != d->capital) return f.d->capital < d->capital;
 
     int f1attrs = (f.d->underline << 3) + (f.d->overline << 2) + (f.d->strikeOut<<1) + f.d->kerning;
     int f2attrs = (d->underline << 3) + (d->overline << 2) + (d->strikeOut<<1) + d->kerning;
@@ -2143,7 +2145,7 @@ QDataStream &operator<<(QDataStream &s, const QFont &font)
 
     if (s.version() >= QDataStream::Qt_4_0) {
         // 4.0
-        qreal pointSize = font.d->request.pointSize;
+        double pointSize = font.d->request.pointSize;
         qint32 pixelSize = font.d->request.pixelSize;
         s << pointSize;
         s << pixelSize;
@@ -2205,7 +2207,7 @@ QDataStream &operator>>(QDataStream &s, QFont &font)
 
     if (s.version() >= QDataStream::Qt_4_0) {
         // 4.0
-        qreal pointSize;
+        double pointSize;
         qint32 pixelSize;
         s >> pointSize;
         s >> pixelSize;

@@ -602,7 +602,7 @@ void QPaintEngineEx::clip(const QRect &r, Qt::ClipOperation op)
 
 void QPaintEngineEx::clip(const QRegion &region, Qt::ClipOperation op)
 {
-    if (region.numRects() == 1)
+    if (region.rectCount() == 1)
         clip(region.boundingRect(), op);
 
     QVector<QRect> rects = region.rects();
@@ -731,9 +731,8 @@ void QPaintEngineEx::drawRoundedRect(const QRectF &rect, qreal xRadius, qreal yR
     qreal y2 = rect.bottom();
 
     if (mode == Qt::RelativeSize) {
-        const qreal inv_200 = 1 / qreal(200.);
-        xRadius = xRadius * rect.width() * inv_200;
-        yRadius = yRadius * rect.height() * inv_200;
+        xRadius = xRadius * rect.width() / 200.;
+        yRadius = yRadius * rect.height() / 200.;
     }
 
     xRadius = qMin(xRadius, rect.width() / 2);
@@ -847,7 +846,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + qreal(0.001);
+                pts[++oset] = points[i].x() + 0.001;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
@@ -857,7 +856,7 @@ void QPaintEngineEx::drawPoints(const QPointF *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + qreal(0.001), points[i].y() };
+            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 0.001, points[i].y() };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }
@@ -878,7 +877,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
             for (int i=0; i<count; ++i) {
                 pts[++oset] = points[i].x();
                 pts[++oset] = points[i].y();
-                pts[++oset] = points[i].x() + qreal(0.001);
+                pts[++oset] = points[i].x() + 0.001;
                 pts[++oset] = points[i].y();
             }
             QVectorPath path(pts, count * 2, qpaintengineex_line_types_16, QVectorPath::LinesHint);
@@ -888,7 +887,7 @@ void QPaintEngineEx::drawPoints(const QPoint *points, int pointCount)
         }
     } else {
         for (int i=0; i<pointCount; ++i) {
-            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + qreal(0.001), points[i].y() };
+            qreal pts[] = { points[i].x(), points[i].y(), points[i].x() + 0.001, points[i].y() };
             QVectorPath path(pts, 2, 0);
             stroke(path, pen);
         }

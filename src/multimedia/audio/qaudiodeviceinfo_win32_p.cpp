@@ -103,6 +103,7 @@ QAudioFormat QAudioDeviceInfoInternal::preferredFormat() const
     } else {
         nearest.setFrequency(11025);
         nearest.setChannels(1);
+        nearest.setByteOrder(QAudioFormat::LittleEndian);
         nearest.setSampleType(QAudioFormat::SignedInt);
         nearest.setSampleSize(8);
         nearest.setCodec(QLatin1String("audio/pcm"));
@@ -333,7 +334,7 @@ void QAudioDeviceInfoInternal::updateLists()
     }
 }
 
-QList<QByteArray> QAudioDeviceInfoInternal::deviceList(QAudio::Mode mode)
+QList<QByteArray> QAudioDeviceInfoInternal::availableDevices(QAudio::Mode mode)
 {
     Q_UNUSED(mode)
 

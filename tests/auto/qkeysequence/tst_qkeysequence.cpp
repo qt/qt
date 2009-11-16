@@ -119,6 +119,7 @@ private slots:
     void symetricConstructors_data();
     void symetricConstructors();
     void checkMultipleNames();
+    void mnemonic_data();
     void mnemonic();
     void toString_data();
     void toString();
@@ -132,6 +133,7 @@ private slots:
     void keyBindings();
     void translated_data();
     void translated();
+
 
     void initTestCase();
 private:
@@ -299,7 +301,7 @@ void tst_QKeySequence::standardKeys_data()
     QTest::newRow("findNext") << (int)QKeySequence::FindNext<< QString("F3");
     QTest::newRow("findPrevious") << (int)QKeySequence::FindPrevious << QString("SHIFT+F3");
     QTest::newRow("close") << (int)QKeySequence::Close<< QString("CTRL+F4");
-    QTest::newRow("replace") << (int)QKeySequence::Replace<< QString("CTRL+H");    
+    QTest::newRow("replace") << (int)QKeySequence::Replace<< QString("CTRL+H");
 #endif
     QTest::newRow("bold") << (int)QKeySequence::Bold << QString("CTRL+B");
     QTest::newRow("italic") << (int)QKeySequence::Italic << QString("CTRL+I");
@@ -357,16 +359,49 @@ void tst_QKeySequence::keyBindings()
 }
 
 
+
+void tst_QKeySequence::mnemonic_data()
+{
+    QTest::addColumn<QString>("string");
+    QTest::addColumn<QString>("key");
+    QTest::addColumn<bool>("warning");
+
+    QTest::newRow("1") << QString::fromLatin1("&bonjour") << QString::fromLatin1("ALT+B") << false;
+    QTest::newRow("2") << QString::fromLatin1("&&bonjour") << QString() << false;
+    QTest::newRow("3") << QString::fromLatin1("&&bon&jour") << QString::fromLatin1("ALT+J") << false;
+    QTest::newRow("4") << QString::fromLatin1("&&bon&jo&ur") << QString::fromLatin1("ALT+J") << true;
+    QTest::newRow("5") << QString::fromLatin1("b&on&&jour") << QString::fromLatin1("ALT+O") << false;
+    QTest::newRow("6") << QString::fromLatin1("bonjour") << QString() << false;
+    QTest::newRow("7") << QString::fromLatin1("&&&bonjour") << QString::fromLatin1("ALT+B") << false;
+    QTest::newRow("8") << QString::fromLatin1("bonjour&&&") << QString() << false;
+    QTest::newRow("9") << QString::fromLatin1("bo&&nj&o&&u&r") << QString::fromLatin1("ALT+O") << true;
+    QTest::newRow("10") << QString::fromLatin1("BON&JOUR") << QString::fromLatin1("ALT+J") << false;
+    QTest::newRow("11") << QString::fromUtf8("bonjour") << QString() << false;
+}
+
 void tst_QKeySequence::mnemonic()
 {
 #ifdef Q_WS_MAC
     QSKIP("mnemonics are not used on Mac OS X", SkipAll);
 #endif
-    QKeySequence k = QKeySequence::mnemonic("&Foo");
-    QVERIFY(k == QKeySequence("ALT+F"));
-    k = QKeySequence::mnemonic("&& &x");
-    QVERIFY(k == QKeySequence("ALT+X"));
+    QFETCH(QString, string);
+    QFETCH(QString, key);
+    QFETCH(bool, warning);
+
+#ifndef QT_NO_DEBUG
+    if (warning) {
+        QString str = QString::fromLatin1("QKeySequence::mnemonic: \"%1\" contains multiple occurences of '&'").arg(string);
+        QTest::ignoreMessage(QtWarningMsg, qPrintable(str));
+    //    qWarning(qPrintable(str));
+    }
+#endif
+    QKeySequence seq = QKeySequence::mnemonic(string);
+    QKeySequence res = QKeySequence(key);
+
+    QCOMPARE(seq, res);
 }
+
+
 
 void tst_QKeySequence::toString_data()
 {

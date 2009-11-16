@@ -63,21 +63,17 @@ void tst_QGraphicsWebView::qgraphicswebview()
     item.title();
     item.icon();
     item.zoomFactor();
-    item.isInteractive();
-    item.progress();
-    item.toHtml();
     item.history();
     item.settings();
-    item.status();
     item.page();
     item.setPage(0);
     item.page();
     item.setUrl(QUrl());
     item.setZoomFactor(0);
-    item.setInteractive(true);
     item.load(QUrl());
     item.setHtml(QString());
     item.setContent(QByteArray());
+    item.isModified();
 }
 
 class WebPage : public QWebPage

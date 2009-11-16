@@ -126,7 +126,7 @@ void dumpClip(int width, int height, const QClipData *clip);
 #define int_dim(pos, dim) (int(pos+dim) - int(pos))
 
 // use the same rounding as in qrasterizer.cpp (6 bit fixed point)
-static const qreal aliasedCoordinateDelta = qreal(0.5) - qreal(0.015625);
+static const qreal aliasedCoordinateDelta = 0.5 - 0.015625;
 
 #ifdef Q_WS_WIN
 extern bool qt_cleartype_enabled;
@@ -1362,7 +1362,7 @@ void QRasterPaintEngine::clip(const QRegion &region, Qt::ClipOperation op)
 
     Q_D(QRasterPaintEngine);
 
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         clip(region.boundingRect(), op);
         return;
     }
@@ -1743,8 +1743,8 @@ void QRasterPaintEngine::stroke(const QVectorPath &path, const QPen &pen)
             if (lines[i].p1() == lines[i].p2()) {
                 if (s->lastPen.capStyle() != Qt::FlatCap) {
                     QPointF p = lines[i].p1();
-                    QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*qreal(0.5), p.y()),
-                                                       QPointF(p.x() + width*qreal(0.5), p.y())));
+                    QLineF line = s->matrix.map(QLineF(QPointF(p.x() - width*0.5, p.y()),
+                                                       QPointF(p.x() + width*0.5, p.y())));
                     d->rasterizer->rasterizeLine(line.p1(), line.p2(), 1);
                 }
                 continue;
@@ -1958,9 +1958,8 @@ static bool splitPolygon(const QPointF *points, int pointCount, QVector<QPointF>
     QVector<const QPointF *> sorted;
     sorted.reserve(pointCount);
 
-    const qreal three_quarters = qreal(3) / qreal(4);
-    upper->reserve(pointCount * three_quarters);
-    lower->reserve(pointCount * three_quarters);
+    upper->reserve(pointCount * 3 / 4);
+    lower->reserve(pointCount * 3 / 4);
 
     for (int i = 0; i < pointCount; ++i)
         sorted << points + i;
@@ -2337,13 +2336,13 @@ void QRasterPaintEngine::strokePolygonCosmetic(const QPoint *points, int pointCo
 
         int x1 = points[pointCount-1].x() * m11 + dx;
         int y1 = points[pointCount-1].y() * m22 + dy;
-        qreal w = m13*points[pointCount-1].x() + m23*points[pointCount-1].y() + qreal(1.);
+        qreal w = m13*points[pointCount-1].x() + m23*points[pointCount-1].y() + 1.;
         w = 1/w;
         x1 = int(x1*w);
         y1 = int(y1*w);
         int x2 = points[0].x() * m11 + dx;
         int y2 = points[0].y() * m22 + dy;
-        w = m13*points[0].x() + m23*points[0].y() + qreal(1.);
+        w = m13*points[0].x() + m23*points[0].y() + 1.;
         w = 1/w;
         x2 = int(x2 * w);
         y2 = int(y2 * w);
@@ -4537,7 +4536,7 @@ void QClipData::setClipRect(const QRect &rect)
  */
 void QClipData::setClipRegion(const QRegion &region)
 {
-    if (region.numRects() == 1) {
+    if (region.rectCount() == 1) {
         setClipRect(region.rects().at(0));
         return;
     }
@@ -4868,7 +4867,7 @@ void QGradientCache::generateGradientColorTable(const QGradient& gradient, uint 
     uint next_color;
 
     qreal incr = 1 / qreal(size); // the double increment.
-    qreal dpos = qreal(1.5) * incr; // current position in gradient stop list (0 to 1)
+    qreal dpos = 1.5 * incr; // current position in gradient stop list (0 to 1)
 
      // Up to first point
     colorTable[pos++] = PREMUL(current_color);
@@ -5042,7 +5041,7 @@ void QSpanData::setup(const QBrush &brush, int alpha, QPainter::CompositionMode 
             QPointF center = g->center();
             conicalData.center.x = center.x();
             conicalData.center.y = center.y();
-            conicalData.angle = g->angle() * Q_2PI / qreal(360.0);
+            conicalData.angle = g->angle() * 2 * Q_PI / 360.0;
         }
         break;
 
@@ -5141,8 +5140,7 @@ void QSpanData::setupMatrix(const QTransform &matrix, int bilin)
 {
     QTransform delta;
     // make sure we round off correctly in qdrawhelper.cpp
-    const qreal inv_65536 = qreal(1.0) / 65536;
-    delta.translate(inv_65536, inv_65536);
+    delta.translate(1.0 / 65536, 1.0 / 65536);
 
     QTransform inv = (delta * matrix).inverted();
     m11 = inv.m11();
@@ -6051,9 +6049,9 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
     const QFixed b = QFixed(rect.height()) >> 1;
     QFixed d = b*b - (a*a*b) + ((a*a) >> 2);
 #else
-    const qreal a = qreal(rect.width()) * qreal(0.5);
-    const qreal b = qreal(rect.height()) * qreal(0.5);
-    qreal d = b*b - (a*a*b) + qreal(0.25)*a*a;
+    const qreal a = qreal(rect.width()) / 2;
+    const qreal b = qreal(rect.height()) / 2;
+    qreal d = b*b - (a*a*b) + 0.25*a*a;
 #endif
 
     int x = 0;
@@ -6081,7 +6079,7 @@ static void drawEllipse_midpoint_i(const QRect &rect, const QRect &clip,
     d = b*b*(x + (QFixed(1) >> 1))*(x + (QFixed(1) >> 1))
         + a*a*((y - 1)*(y - 1) - b*b);
 #else
-    d = b*b*(x + qreal(0.5))*(x + qreal(0.5)) + a*a*(qreal(y - 1)*qreal(y - 1) - b*b);
+    d = b*b*(x + 0.5)*(x + 0.5) + a*a*((y - 1)*(y - 1) - b*b);
 #endif
     const int miny = rect.height() & 0x1;
     while (y > miny) {

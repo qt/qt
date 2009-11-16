@@ -633,7 +633,7 @@ public:
     void draw(QPainter *);
     QPixmap pixmap(Qt::CoordinateSystem system,
                    QPoint *offset,
-                   QGraphicsEffectSource::PixmapPadMode mode) const;
+                   QGraphicsEffect::PixmapPadMode mode) const;
 
     QGraphicsItem *item;
     QGraphicsItemPaintInfo *info;

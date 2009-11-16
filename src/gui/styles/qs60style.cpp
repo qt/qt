@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtGui of the Qt Toolkit.
+** This file is part of the QtGui module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -301,32 +301,6 @@ short QS60StylePrivate::pixelMetric(int metric)
     return returnValue;
 }
 
-void QS60StylePrivate::setStyleProperty(const char *name, const QVariant &value)
-{
-    if (name == propertyKeyCurrentlayout) {
-        static const QStringList layouts = styleProperty(propertyKeyLayouts).toStringList();
-        const QString layout = value.toString();
-        Q_ASSERT(layouts.contains(layout));
-        const int layoutIndex = layouts.indexOf(layout);
-        setCurrentLayout(layoutIndex);
-        QApplication::setLayoutDirection(m_layoutHeaders[layoutIndex].mirroring ? Qt::RightToLeft : Qt::LeftToRight);
-        clearCaches();
-        refreshUI();
-    }
-}
-
-QVariant QS60StylePrivate::styleProperty(const char *name) const
-{
-    if (name == propertyKeyLayouts) {
-        static QStringList layouts;
-        if (layouts.isEmpty())
-            for (int i = 0; i < m_numberOfLayouts; i++)
-                layouts.append(QLatin1String(m_layoutHeaders[i].layoutName));
-        return layouts;
-    }
-    return QVariant();
-}
-
 QColor QS60StylePrivate::stateColor(const QColor &color, const QStyleOption *option)
 {
     QColor retColor (color);
@@ -433,7 +407,7 @@ QColor QS60StylePrivate::colorFromFrameGraphics(SkinFrameElements frame) const
             return Qt::black;
 
         const QRgb *pixelRgb = (const QRgb*)frameImage.bits();
-        const int pixels = frameImage.numBytes()/sizeof(QRgb);
+        const int pixels = frameImage.byteCount()/sizeof(QRgb);
 
         int estimatedRed = 0;
         int estimatedGreen = 0;
@@ -499,7 +473,7 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
-    setThemePalette(app);
+    setThemePalette(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -579,7 +553,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
 
 #if 0
     painter->save();
-    painter->setOpacity(qreal(.3));
+    painter->setOpacity(.3);
     painter->fillRect(startRect, Qt::red);
     painter->fillRect(middleRect, Qt::green);
     painter->fillRect(endRect, Qt::blue);
@@ -694,7 +668,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
     palette->setColor(QPalette::BrightText, palette->color(QPalette::WindowText).lighter());
     palette->setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     palette->setColor(QPalette::Link,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
@@ -809,6 +783,14 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setBrush(QPalette::Window, QBrush());
     QApplication::setPalette(widgetPalette, "QScrollArea");
     widgetPalette = *palette;
+
+    //Webpages should not use S60 theme colors as they are designed to work
+    //with themeBackground and do not generally mesh well with web page backgrounds.
+    QPalette webPalette = *palette;
+    webPalette.setColor(QPalette::WindowText, Qt::black);
+    webPalette.setColor(QPalette::Text, Qt::black);
+    QApplication::setPalette(webPalette, "QWebView");
+    QApplication::setPalette(webPalette, "QGraphicsWebView");
 }
 
 QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
@@ -825,6 +807,9 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabPassiveR:
         case QS60StyleEnums::SP_QgnGrafTabPassiveL:
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            //Returned QSize for tabs must not be square, but narrow rectangle with width:height
+            //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
+            result.setWidth(10);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -835,7 +820,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
-            
+
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
@@ -1624,7 +1609,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
-                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? qreal(1.0)
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
                 if (optionProgressBar->orientation == Qt::Horizontal) {
                     progressRect.setWidth(int(progressRect.width() * progressFactor));
@@ -1912,12 +1897,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? qreal(0.65) : qreal(0.45); // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = qreal(0.5);
+            const qreal opacity = 0.5;
 #endif
             // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-            const qreal rectAdjustment = (penWidth % 2) ? qreal(-.5) : 0;
+            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
 
             // Make sure that the pen stroke is inside the rect
             const QRectF adjustedRect =
@@ -1941,7 +1926,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_Splitter:
         if (option->state & State_Sunken && option->state & State_Enabled) {
             painter->save();
-            painter->setOpacity(qreal(0.5));
+            painter->setOpacity(0.5);
             painter->setBrush(d->themePalette()->light());
             painter->setRenderHint(QPainter::Antialiasing);
             const qreal roundRectRadius = 4 * goldenRatio;
@@ -2019,8 +2004,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorRadioButton: {
             QRect buttonRect = option->rect;
             //there is empty (a. 33%) space in svg graphics for radiobutton
-            const qreal reduceWidth = (qreal)buttonRect.width()/qreal(3.0);
-            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : qreal(1.0);
+            const qreal reduceWidth = (qreal)buttonRect.width()/3.0;
+            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : 1.0;
             // Try to occupy the full area
             const qreal scaler = 1 + (reduceWidth/rectWidth);
             buttonRect.setWidth((int)((buttonRect.width()-reduceWidth) * scaler));
@@ -2030,7 +2015,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.adjust(0,-newY,0,-newY);
 
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
+            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
             QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);
@@ -2870,24 +2855,6 @@ void QS60Style::unpolish(QApplication *application)
     const QPalette newPalette = QApplication::style()->standardPalette();
     QApplication::setPalette(newPalette);
     QApplicationPrivate::setSystemPalette(d->m_originalPalette);
-}
-
-/*!
-  Sets the style property \a name to the \a value.
- */
-void QS60Style::setStyleProperty(const char *name, const QVariant &value)
-{
-    Q_D(QS60Style);
-    d->setStyleProperty_specific(name, value);
-}
-
-/*!
-  Returns the value of style property \a name.
- */
-QVariant QS60Style::styleProperty(const char *name) const
-{
-    Q_D(const QS60Style);
-    return d->styleProperty_specific(name);
 }
 
 /*!

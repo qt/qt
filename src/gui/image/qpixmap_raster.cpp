@@ -119,7 +119,7 @@ void QRasterPixmapData::resize(int width, int height)
     is_null = (w <= 0 || h <= 0);
 
     if (pixelType() == BitmapType && !image.isNull()) {
-        image.setNumColors(2);
+        image.setColorCount(2);
         image.setColor(0, QColor(Qt::color0).rgba());
         image.setColor(1, QColor(Qt::color1).rgba());
     }
@@ -373,9 +373,9 @@ int QRasterPixmapData::metric(QPaintDevice::PaintDeviceMetric metric) const
     case QPaintDevice::PdmHeight:
         return h;
     case QPaintDevice::PdmWidthMM:
-        return qRound(d->width * qreal(25.4) / qt_defaultDpiX());
+        return qRound(d->width * 25.4 / qt_defaultDpiX());
     case QPaintDevice::PdmHeightMM:
-        return qRound(d->width * qreal(25.4) / qt_defaultDpiY());
+        return qRound(d->width * 25.4 / qt_defaultDpiY());
     case QPaintDevice::PdmNumColors:
         return d->colortable.size();
     case QPaintDevice::PdmDepth:
