@@ -2044,12 +2044,12 @@ bool QmlCompiler::checkDynamicMeta(QmlParser::Object *obj)
 
         if (prop.isDefaultProperty) {
             if (seenDefaultProperty)
-                COMPILE_EXCEPTION(obj, qApp->translate("QmlCompiler","Duplicate default property"));
+                COMPILE_EXCEPTION(&prop, qApp->translate("QmlCompiler","Duplicate default property"));
             seenDefaultProperty = true;
         }
 
         if (propNames.contains(prop.name))
-            COMPILE_EXCEPTION(obj, qApp->translate("QmlCompiler","Duplicate property name"));
+            COMPILE_EXCEPTION(&prop, qApp->translate("QmlCompiler","Duplicate property name"));
 
         propNames.insert(prop.name);
     }

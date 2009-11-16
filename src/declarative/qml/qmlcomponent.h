@@ -67,6 +67,9 @@ class Q_DECLARATIVE_EXPORT QmlComponent : public QObject
     Q_PROPERTY(bool isReady READ isReady NOTIFY statusChanged)
     Q_PROPERTY(bool isError READ isError NOTIFY statusChanged)
     Q_PROPERTY(bool isLoading READ isLoading NOTIFY statusChanged)
+    Q_PROPERTY(qreal progress READ progress NOTIFY progressChanged)
+    Q_PROPERTY(Status status READ status NOTIFY statusChanged)
+    Q_PROPERTY(QUrl url READ url CONSTANT)
 
 public:
     QmlComponent(QObject *parent = 0);

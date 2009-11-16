@@ -47,6 +47,7 @@
 #include <QDir>
 #include <QVector3D>
 #include <QCryptographicHash>
+#include <QmlGraphicsItem>
 
 class tst_qmlqt : public QObject
 {
@@ -69,6 +70,8 @@ private slots:
     void playSound();
     void openUrlExternally();
     void md5();
+    void createComponent();
+    void createQmlObject();
 
 private:
     QmlEngine engine;
@@ -299,6 +302,56 @@ void tst_qmlqt::md5()
     delete object;
 }
 
+void tst_qmlqt::createComponent()
+{
+    QmlComponent component(&engine, TEST_FILE("createComponent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("incorrectArgCount1").toBool(), true);
+    QCOMPARE(object->property("incorrectArgCount2").toBool(), true);
+    QCOMPARE(object->property("emptyArg").toBool(), true);
+
+    QCOMPARE(object->property("absoluteUrl").toString(), QString("http://www.example.com/test.qml"));
+    QCOMPARE(object->property("relativeUrl").toString(), TEST_FILE("createComponentData.qml").toString());
+
+    delete object;
+}
+
+void tst_qmlqt::createQmlObject()
+{
+    QmlComponent component(&engine, TEST_FILE("createQmlObject.qml"));
+
+    QString warning1 = "QmlEngine::createQmlObject():";
+    QString warning2 = "    " + TEST_FILE("main.qml").toString() + ":4:1: Duplicate property name";
+    QString warning3 = "QmlEngine::createQmlObject(): Component is not ready";
+    QString warning4 = "QmlEngine::createQmlObject():";
+    QString warning5 = "    :3: Cannot assign object type QObject with no default method";
+
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning1));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning2));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning3));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning4));
+    QTest::ignoreMessage(QtWarningMsg, qPrintable(warning5));
+
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("incorrectArgCount1").toBool(), true);
+    QCOMPARE(object->property("incorrectArgCount2").toBool(), true);
+    QCOMPARE(object->property("emptyArg").toBool(), true);
+    QCOMPARE(object->property("errors").toBool(), true);
+    QCOMPARE(object->property("noParent").toBool(), true);
+    QCOMPARE(object->property("notReady").toBool(), true);
+    QCOMPARE(object->property("runtimeError").toBool(), true);
+    QCOMPARE(object->property("success").toBool(), true);
+
+    QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem *>(object);
+    QVERIFY(item != 0);
+    QVERIFY(item->childItems().count() == 1);
+
+    delete object;
+}
 
 QTEST_MAIN(tst_qmlqt)
 
