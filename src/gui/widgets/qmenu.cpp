@@ -1106,6 +1106,7 @@ void QMenuPrivate::_q_actionTriggered()
 {
     Q_Q(QMenu);
     if (QAction *action = qobject_cast<QAction *>(q->sender())) {
+        QWeakPointer<QAction> actionGuard = action;
 #ifdef QT3_SUPPORT
         //we store it here because the action might be deleted/changed by connected slots
         const int id = q->findIdForAction(action);
@@ -1115,7 +1116,7 @@ void QMenuPrivate::_q_actionTriggered()
         emit q->activated(id);
 #endif
 
-        if (!activationRecursionGuard) {
+        if (!activationRecursionGuard && actionGuard) {
             //in case the action has not been activated by the mouse
             //we check the parent hierarchy
             QList< QPointer<QWidget> > list;
