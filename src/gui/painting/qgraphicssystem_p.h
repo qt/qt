@@ -55,6 +55,7 @@
 
 #include "private/qpixmapdata_p.h"
 #include "private/qwindowsurface_p.h"
+#include "private/qpaintengine_blitter_p.h"
 
 #include <qdebug.h>
 
@@ -85,6 +86,7 @@ class Q_GUI_EXPORT QGraphicsSystem
 public:
     virtual QPixmapData *createPixmapData(QPixmapData::PixelType type) const = 0;
     virtual QWindowSurface *createWindowSurface(QWidget *widget) const = 0;
+    virtual QBlittable *createBlittable(const QRect &rect) { return 0; }
 
     virtual ~QGraphicsSystem() = 0;
 

@@ -147,9 +147,9 @@ public:
 class QBlitterPaintEnginePrivate : public QPaintEngineExPrivate
 {
 public:
-    QBlitterPaintEnginePrivate(QPaintDevice *p)
-            : QPaintEngineExPrivate(),
-              raster(new QRasterPaintEngine(p)), isBlitterLocked(false),
+    QBlitterPaintEnginePrivate(QPixmapData *p)
+            : QPaintEngineExPrivate(), pixmap(p),
+              raster(new QRasterPaintEngine(&pixmap)), isBlitterLocked(false),
               capabillities(0), hasXForm(false)
     {
         if (QGraphicsSystem *gs = QApplicationPrivate::graphicsSystem()) {
@@ -235,6 +235,7 @@ public:
         raster->d_func()->systemStateChanged();
     }
 
+    QPixmap pixmap;
     QRasterPaintEngine *raster;
     QRasterPaintEngineState *state;
 
@@ -246,7 +247,7 @@ public:
     uint hasXForm;
 };
 
-QBlitterPaintEngine::QBlitterPaintEngine(QPaintDevice *p)
+QBlitterPaintEngine::QBlitterPaintEngine(QPixmapData *p)
     : QPaintEngineEx(*(new QBlitterPaintEnginePrivate(p)))
 {
 }
@@ -607,22 +608,18 @@ void QBlitterPaintEngine::setState(QPainterState *s)
 class QBlittablePrivate
 {
 public:
+    QBlittablePrivate(const QRect &rect, QBlittable::Capabilities caps)
+        : m_rect(rect), caps(caps)
+    {}
     QBlittable::Capabilities caps;
+    QRect m_rect;
 };
 
 
-QBlittable::QBlittable(Capabilities caps)
-    : d_ptr(new QBlittablePrivate)
+QBlittable::QBlittable(const QRect &rect, Capabilities caps)
+    : d_ptr(new QBlittablePrivate(rect,caps))
 {
-    d_ptr->caps = caps;
 }
-
-QBlittable::QBlittable(QBlittablePrivate &d, Capabilities caps)
-    : d_ptr(&d)
-{
-    d_ptr->caps = caps;
-}
-
 
 QBlittable::~QBlittable()
 {
@@ -634,5 +631,11 @@ QBlittable::Capabilities QBlittable::capabilities() const
 {
     Q_D(const QBlittable);
     return d->caps;
+}
+
+QRect QBlittable::rect() const
+{
+    Q_D(const QBlittable);
+    return d->m_rect;
 }
 

@@ -23,6 +23,7 @@ HEADERS += \
         image/qpictureformatplugin.h \
         image/qpixmap.h \
         image/qpixmap_raster_p.h \
+        miage/qpixmap_blitter_p.h \
         image/qpixmapcache.h \
         image/qpixmapcache_p.h \
         image/qpixmapdata_p.h \
@@ -51,6 +52,7 @@ SOURCES += \
         image/qiconengineplugin.cpp \
         image/qmovie.cpp \
         image/qpixmap_raster.cpp \
+        image/qpixmap_blitter.cpp \
         image/qnativeimage.cpp \
         image/qimagepixmapcleanuphooks.cpp \
 

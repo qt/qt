@@ -22,12 +22,13 @@ public:
         // Internal ones
         OutlineCapability               = 0x0001000,
     };
-    Q_DECLARE_FLAGS(Capabilities, Capability);
+    Q_DECLARE_FLAGS (Capabilities, Capability);
 
-    QBlittable(Capabilities caps);
+    QBlittable(const QRect &rect, Capabilities caps);
     virtual ~QBlittable();
 
     Capabilities capabilities() const;
+    QRect rect() const;
 
     virtual void fillRect(const QRectF &rect, const QColor &color) = 0;
     virtual void drawPixmap(const QRectF &rect, const QPixmap &pixmap, const QRectF &subrect) = 0;
@@ -37,8 +38,6 @@ public:
 
 protected:
     QBlittablePrivate *d_ptr;
-
-    QBlittable(QBlittablePrivate &d, Capabilities caps);
 };
 
 
@@ -46,7 +45,7 @@ class Q_GUI_EXPORT QBlitterPaintEngine : public QPaintEngineEx
 {
     Q_DECLARE_PRIVATE(QBlitterPaintEngine);
 public:
-    QBlitterPaintEngine(QPaintDevice *p);
+    QBlitterPaintEngine(QPixmapData *p);
     ~QBlitterPaintEngine();
 
     virtual QPainterState *createState(QPainterState *orig) const;
