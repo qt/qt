@@ -368,8 +368,13 @@ void QmlGraphicsWebView::setPreferredHeight(int ih)
 }
 
 /*!
-    Evaluates the \a scriptSource JavaScript inside the main frame
-    context and returns the result of the last executed statement.
+    \qmlmethod bool WebView::evaluateJavaScript(string)
+
+    Evaluates the \a scriptSource JavaScript inside the context of the
+    main web frame, and returns the result of the last executed statement.
+
+    Note that this JavaScript does \e not have any access to QML objects
+    except as made available as windowObjects.
 */
 QVariant QmlGraphicsWebView::evaluateJavaScript(const QString &scriptSource)
 {
