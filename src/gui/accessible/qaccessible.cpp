@@ -984,6 +984,16 @@ const QAccessibleInterface *other, int otherChild) const
 */
 
 /*!
+    \fn QAccessibleActionInterface *QAccessibleInterface::actionInterface()
+    \internal
+*/
+
+/*!
+    \fn QAccessibleImageInterface *QAccessibleInterface::imageInterface()
+    \internal
+*/
+
+/*!
     \class QAccessibleEvent
     \brief The QAccessibleEvent class is used to query addition
     accessibility information about complex widgets.

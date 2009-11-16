@@ -135,19 +135,6 @@ QT_BEGIN_NAMESPACE
 */
 
 /*!
-    \enum QGraphicsEffectSource::PixmapPadMode
-
-    This enum describes how much of the effect will be rendered to a pixmap
-    created using the pixmap() function.
-
-    \value NoExpandPadMode  The pixmap is the size of the widget or graphics item.
-    \value ExpandToTransparentBorderPadMode  The pixmap is expanded to include
-        the widget or graphics item plus a transparent border.
-    \value ExpandToEffectRectPadMode  The pixmap is expanded to include the widget
-        or graphics item and the effect.
-*/
-
-/*!
     \internal
 */
 QGraphicsEffectSource::QGraphicsEffectSource(QGraphicsEffectSourcePrivate &dd, QObject *parent)

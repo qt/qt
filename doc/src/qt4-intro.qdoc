@@ -583,7 +583,7 @@
     DOM, helps reuse CSS selector knowledge, and gives little
     maintenance or footprint overhead.
 
-    \snippet webkitsnippets/webelement/main.cpp FindAll intro
+    \snippet webkitsnippets/webelement/main.cpp FindAll
 
     See the QWebElement class documentation for more information.
 
