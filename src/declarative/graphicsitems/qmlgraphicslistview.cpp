@@ -1158,6 +1158,8 @@ QmlComponent *QmlGraphicsListView::delegate() const
 void QmlGraphicsListView::setDelegate(QmlComponent *delegate)
 {
     Q_D(QmlGraphicsListView);
+    if (delegate == this->delegate())
+        return;
     if (!d->ownModel) {
         d->model = new QmlGraphicsVisualDataModel(qmlContext(this));
         d->ownModel = true;
@@ -1263,9 +1265,11 @@ QmlComponent *QmlGraphicsListView::highlight() const
 void QmlGraphicsListView::setHighlight(QmlComponent *highlight)
 {
     Q_D(QmlGraphicsListView);
-    delete d->highlightComponent;
-    d->highlightComponent = highlight;
-    d->updateCurrent(d->currentIndex);
+    if (highlight != d->highlightComponent) {
+        delete d->highlightComponent;
+        d->highlightComponent = highlight;
+        d->updateCurrent(d->currentIndex);
+    }
 }
 
 /*!
@@ -1295,12 +1299,14 @@ bool QmlGraphicsListView::highlightFollowsCurrentItem() const
 void QmlGraphicsListView::setHighlightFollowsCurrentItem(bool autoHighlight)
 {
     Q_D(QmlGraphicsListView);
-    d->autoHighlight = autoHighlight;
-    if (d->highlightPosAnimator) {
-        d->highlightPosAnimator->setEnabled(d->autoHighlight);
-        d->highlightSizeAnimator->setEnabled(d->autoHighlight);
+    if (d->autoHighlight != autoHighlight) {
+        d->autoHighlight = autoHighlight;
+        if (d->highlightPosAnimator) {
+            d->highlightPosAnimator->setEnabled(d->autoHighlight);
+            d->highlightSizeAnimator->setEnabled(d->autoHighlight);
+        }
+        d->updateHighlight();
     }
-    d->updateHighlight();
 }
 
 /*!
@@ -1520,8 +1526,7 @@ qreal QmlGraphicsListView::highlightMoveSpeed() const
 void QmlGraphicsListView::setHighlightMoveSpeed(qreal speed)
 {
     Q_D(QmlGraphicsListView);\
-    if (d->highlightMoveSpeed != speed)
-    {
+    if (d->highlightMoveSpeed != speed) {
         d->highlightMoveSpeed = speed;
         if (d->highlightPosAnimator)
             d->highlightPosAnimator->setVelocity(d->highlightMoveSpeed);
@@ -1538,8 +1543,7 @@ qreal QmlGraphicsListView::highlightResizeSpeed() const
 void QmlGraphicsListView::setHighlightResizeSpeed(qreal speed)
 {
     Q_D(QmlGraphicsListView);\
-    if (d->highlightResizeSpeed != speed)
-    {
+    if (d->highlightResizeSpeed != speed) {
         d->highlightResizeSpeed = speed;
         if (d->highlightSizeAnimator)
             d->highlightSizeAnimator->setVelocity(d->highlightResizeSpeed);
