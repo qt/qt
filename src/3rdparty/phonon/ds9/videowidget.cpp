@@ -24,8 +24,12 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "mediaobject.h"
 
+#ifndef Q_OS_WINCE
 #include "videorenderer_evr.h"
 #include "videorenderer_vmr9.h"
+#else
+#include "videorenderer_default.h"
+#endif
 #include "videorenderer_soft.h"
 
 QT_BEGIN_NAMESPACE
@@ -351,20 +355,28 @@ namespace Phonon
             if (m_renderers[index] == 0 && autoCreate) {
                 AbstractVideoRenderer *renderer = 0;
                 if (type == Native) {
+#ifndef Q_OS_WINCE
                     renderer = new VideoRendererEVR(m_widget);
                     if (renderer->getFilter() == 0) {
                         delete renderer;
-                        renderer = 0;
-                    }
-                    if (renderer == 0) {
+                        //EVR not present, let's try VMR
                         renderer = new VideoRendererVMR9(m_widget);
                         if (renderer->getFilter() == 0) {
-                            //instanciating the renderer might fail with error VFW_E_DDRAW_CAPS_NOT_SUITABLE (0x80040273)
+                            //instanciating the renderer might fail
                             m_noNativeRendererSupported = true;
                             delete renderer;
                             renderer = 0;
                         }
                     }
+#else
+                    renderer = new VideoRendererVMR9(m_widget);
+                    if (renderer->getFilter() == 0) {
+                        //instanciating the renderer might fail
+                        m_noNativeRendererSupported = true;
+                        delete renderer;
+                        renderer = 0;
+                    }
+#endif
                 }
 
                 if (renderer == 0) {

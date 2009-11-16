@@ -17,15 +17,12 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 
 #include "videorenderer_evr.h"
+#include "qevr9.h"
 
 #ifndef QT_NO_PHONON_VIDEO
 
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
-#include <QtCore/QTimerEvent>
-
-#include <d3d9.h>
-#include <Evr9.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -33,6 +30,29 @@ namespace Phonon
 {
     namespace DS9
     {
+        //we have to define them here because not all compilers/sdk have them
+        static const GUID MR_VIDEO_RENDER_SERVICE =     {0x1092a86c, 0xab1a, 0x459a, {0xa3, 0x36, 0x83, 0x1f, 0xbc, 0x4d, 0x11, 0xff} };
+        static const GUID MR_VIDEO_MIXER_SERVICE =      { 0x73cd2fc, 0x6cf4, 0x40b7, {0x88, 0x59, 0xe8, 0x95, 0x52, 0xc8, 0x41, 0xf8} };
+        static const IID IID_IMFVideoDisplayControl =   {0xa490b1e4, 0xab84, 0x4d31, {0xa1, 0xb2, 0x18, 0x1e, 0x03, 0xb1, 0x07, 0x7a} };
+        static const IID IID_IMFVideoMixerControl =     {0xA5C6C53F, 0xC202, 0x4aa5, {0x96, 0x95, 0x17, 0x5B, 0xA8, 0xC5, 0x08, 0xA5} };
+        static const IID IID_IMFVideoProcessor =        {0x6AB0000C, 0xFECE, 0x4d1f, {0xA2, 0xAC, 0xA9, 0x57, 0x35, 0x30, 0x65, 0x6E} };
+        static const IID IID_IMFGetService =            {0xFA993888, 0x4383, 0x415A, {0xA9, 0x30, 0xDD, 0x47, 0x2A, 0x8C, 0xF6, 0xF7} };
+        static const GUID CLSID_EnhancedVideoRenderer = {0xfa10746c, 0x9b63, 0x4b6c, {0xbc, 0x49, 0xfc, 0x30,  0xe, 0xa5, 0xf2, 0x56} };
+
+        template <typename T> ComPointer<T> getService(const Filter &filter, REFGUID guidService, REFIID riid)
+        {
+            //normally we should use IID_IMFGetService but this introduces another dependency
+            //so here we simply define our own IId with the same value
+            ComPointer<IMFGetService> getService(filter, IID_IMFGetService);
+            Q_ASSERT(getService);
+            T *ptr = 0;
+            HRESULT hr = getService->GetService(guidService, riid, reinterpret_cast<void **>(&ptr));
+            if (!SUCCEEDED(hr) || ptr == 0)
+                Q_ASSERT(!SUCCEEDED(hr) && ptr != 0);
+            ComPointer<T> service(ptr);
+            return service;
+        }
+
         VideoRendererEVR::~VideoRendererEVR()
         {
         }
@@ -46,11 +66,10 @@ namespace Phonon
         {
             m_filter = Filter(CLSID_EnhancedVideoRenderer, IID_IBaseFilter);
             if (!m_filter) {
-                qWarning("the video widget could not be initialized correctly");
                 return;
             }
 
-            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
 
             filterControl->SetVideoWindow(reinterpret_cast<HWND>(target->winId()));
             filterControl->SetAspectRatioMode(MFVideoARMode_None); // We're in control of the size
@@ -58,10 +77,9 @@ namespace Phonon
 
         QImage VideoRendererEVR::snapshot() const
         {
-            // TODO test
             // This will always capture black areas where no video is drawn, if any are present.
             // Due to the hack in notifyResize()
-            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
             if (filterControl) {
                 BITMAPINFOHEADER bmi;
                 BYTE *buffer = 0;
@@ -101,7 +119,7 @@ namespace Phonon
             SIZE nativeSize;
             SIZE aspectRatioSize;
 
-            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
 
             filterControl->GetNativeVideoSize(&nativeSize, &aspectRatioSize);
 
@@ -111,7 +129,7 @@ namespace Phonon
         void VideoRendererEVR::repaintCurrentFrame(QWidget *target, const QRect &rect)
         {
             // repaint the video
-            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
             // All failed results can be safely ignored
             filterControl->RepaintVideo();
         }
@@ -121,7 +139,7 @@ namespace Phonon
         {
             if (!isActive()) {
                 RECT dummyRect = { 0, 0, 0, 0};
-                ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+                ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
                 filterControl->SetVideoPosition(0, &dummyRect);
                 return;
             }
@@ -137,8 +155,8 @@ namespace Phonon
             MFVideoNormalizedRect streamOutputRect = { float(m_dstX) / float(size.width()), float(m_dstY) / float(size.height()),
                                                        float(m_dstWidth + m_dstX) / float(size.width()), float(m_dstHeight + m_dstY) / float(size.height())};
 
-            ComPointer<IMFVideoMixerControl> filterMixer = getService<IMFVideoMixerControl>(MR_VIDEO_MIXER_SERVICE, IID_IMFVideoMixerControl);
-            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
+            ComPointer<IMFVideoMixerControl> filterMixer = getService<IMFVideoMixerControl>(m_filter, MR_VIDEO_MIXER_SERVICE, IID_IMFVideoMixerControl);
+            ComPointer<IMFVideoDisplayControl> filterControl = getService<IMFVideoDisplayControl>(m_filter, MR_VIDEO_RENDER_SERVICE, IID_IMFVideoDisplayControl);
 
             filterMixer->SetStreamOutputRect(0, &streamOutputRect);
             filterControl->SetVideoPosition(0, &dstRectWin);
@@ -153,7 +171,7 @@ namespace Phonon
             }
 
             // Get the "Video Processor" (used for brightness/contrast/saturation/hue)
-            ComPointer<IMFVideoProcessor> processor = getService<IMFVideoProcessor>(MR_VIDEO_MIXER_SERVICE, IID_IMFVideoProcessor);
+            ComPointer<IMFVideoProcessor> processor = getService<IMFVideoProcessor>(m_filter, MR_VIDEO_MIXER_SERVICE, IID_IMFVideoProcessor);
             Q_ASSERT(processor);
 
             DXVA2_ValueRange contrastRange;

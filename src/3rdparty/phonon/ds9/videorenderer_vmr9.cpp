@@ -22,14 +22,9 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QtGui/QWidget>
 #include <QtGui/QPainter>
-#include <QtCore/QTimerEvent>
 
-#ifndef Q_OS_WINCE
 #include <d3d9.h>
 #include <vmr9.h>
-#else
-#include <uuids.h>
-#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -48,116 +43,10 @@ namespace Phonon
         }
 
 
-#ifdef Q_OS_WINCE
-        VideoRendererVMR9::VideoRendererVMR9(QWidget *target) : m_target(target)
-        {
-            m_target->setAttribute(Qt::WA_PaintOnScreen, true);
-            m_filter = Filter(CLSID_VideoRenderer, IID_IBaseFilter);
-        }
-
-        QSize VideoRendererVMR9::videoSize() const
-        {
-            LONG w = 0,
-                h = 0;
-            ComPointer<IBasicVideo> basic(m_filter, IID_IBasicVideo);
-            if (basic) {
-                basic->GetVideoSize( &w, &h);
-            }
-            return QSize(w, h);
-        }
-
-        void VideoRendererVMR9::repaintCurrentFrame(QWidget * /*target*/, const QRect & /*rect*/)
-        {
-            //nothing to do here: the renderer paints everything
-        }
-
-        void VideoRendererVMR9::notifyResize(const QSize &size, Phonon::VideoWidget::AspectRatio aspectRatio,
-            Phonon::VideoWidget::ScaleMode scaleMode)
-        {
-            if (!isActive()) {
-                ComPointer<IBasicVideo> basic(m_filter, IID_IBasicVideo);
-                if (basic) {
-                    basic->SetDestinationPosition(0, 0, 0, 0);
-                }
-                return;
-            }
-
-            ComPointer<IVideoWindow> video(m_filter, IID_IVideoWindow);
-
-            OAHWND owner;
-            HRESULT hr = video->get_Owner(&owner);
-            if (FAILED(hr)) {
-                return;
-            }
-
-            const OAHWND newOwner = reinterpret_cast<OAHWND>(m_target->winId());
-            if (owner != newOwner) {
-                video->put_Owner(newOwner);
-                video->put_MessageDrain(newOwner);
-                video->put_WindowStyle(WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
-            }
-
-            //make sure the widget takes the whole size of the parent
-            video->SetWindowPosition(0, 0, size.width(), size.height());
-
-            const QSize vsize = videoSize();
-            internalNotifyResize(size, vsize, aspectRatio, scaleMode);
-
-            ComPointer<IBasicVideo> basic(m_filter, IID_IBasicVideo);
-            if (basic) {
-                basic->SetDestinationPosition(m_dstX, m_dstY, m_dstWidth, m_dstHeight);
-            }
-        }
-
-        void VideoRendererVMR9::applyMixerSettings(qreal /*brightness*/, qreal /*contrast*/, qreal /*m_hue*/, qreal /*saturation*/)
-        {
-            //this can't be supported for WinCE
-        }
-
-        QImage VideoRendererVMR9::snapshot() const
-        {
-            ComPointer<IBasicVideo> basic(m_filter, IID_IBasicVideo);
-            if (basic) {
-                LONG bufferSize = 0;
-                //1st we get the buffer size
-                basic->GetCurrentImage(&bufferSize, 0);
-
-                QByteArray buffer;
-                buffer.resize(bufferSize);
-                HRESULT hr = basic->GetCurrentImage(&bufferSize, reinterpret_cast<long*>(buffer.data()));
-
-                if (SUCCEEDED(hr)) {
-
-                    const BITMAPINFOHEADER  *bmi = reinterpret_cast<const BITMAPINFOHEADER*>(buffer.constData());
-
-                    const int w = qAbs(bmi->biWidth),
-                        h = qAbs(bmi->biHeight);
-
-                    // Create image and copy data into image.
-                    QImage ret(w, h, QImage::Format_RGB32);
-
-                    if (!ret.isNull()) {
-                        const char *data = buffer.constData() + bmi->biSize;
-                        const int bytes_per_line = w * sizeof(QRgb);
-                        for (int y = h - 1; y >= 0; --y) {
-                            qMemCopy(ret.scanLine(y), //destination
-                                data,     //source
-                                bytes_per_line);
-                            data += bytes_per_line;
-                        }
-                    }
-                    return ret;
-                }
-            }
-            return QImage();
-        }
-
-#else
         VideoRendererVMR9::VideoRendererVMR9(QWidget *target) : m_target(target)
         {
             m_filter = Filter(CLSID_VideoMixingRenderer9, IID_IBaseFilter);
             if (!m_filter) {
-                qWarning("the video widget could not be initialized correctly");
                 return;
             }
 
@@ -325,7 +214,6 @@ namespace Phonon
             //finally set the settings
             mixer->SetProcAmpControl(0, &ctrl);
         }
-#endif
     }
 }
 
