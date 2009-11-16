@@ -112,7 +112,7 @@ void QFileNetworkReplyPrivate::_q_startOperation()
     // could we open the file?
     if (!opened) {
         QString msg = QCoreApplication::translate("QNetworkAccessFileBackend", "Error opening %1: %2")
-                      .arg(realFile.name(), realFile.errorString());
+                      .arg(realFile.fileName(), realFile.errorString());
 
         if (realFile.exists()) {
             q->setError(QNetworkReply::ContentAccessDenied, msg);
