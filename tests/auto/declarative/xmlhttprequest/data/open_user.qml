@@ -2,7 +2,6 @@ import Qt 4.6
 
 Object {
     property string url
-    property string header
 
     property bool readyState: false
     property bool openedState: false
@@ -20,9 +19,7 @@ Object {
         if (x.readyState == XMLHttpRequest.UNSENT)
             readyState = true;
 
-        x.open("GET", url);
-
-        x.setRequestHeader(header, "Value");
+        x.open("GET", url, true, "username", "password");
 
         if (x.readyState  == XMLHttpRequest.OPENED)
             openedState = true;
@@ -53,5 +50,4 @@ Object {
         x.send()
     }
 }
-
 

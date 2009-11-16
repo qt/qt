@@ -433,8 +433,11 @@ void QmlState::apply(QmlStateGroup *group, QmlTransition *trans, QmlState *rever
     // Output for debugging
     if (stateChangeDebug()) {
         foreach(const Action &action, applyList) {
-            qWarning() << "    Action:" << action.property.object()
-                       << action.property.name() << action.toValue;
+            if (action.event)
+                qWarning() << "    Action event:" << action.event;
+            else
+                qWarning() << "    Action:" << action.property.object()
+                           << action.property.name() << action.toValue;
         }
     }
 

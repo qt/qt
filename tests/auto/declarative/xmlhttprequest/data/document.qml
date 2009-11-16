@@ -25,6 +25,9 @@ Object {
             if (document.nodeValue != null)
                 return;
 
+            if (document.parentNode != null)
+                return;
+
             // ### Test other node properties
             // ### test encoding (what is a valid qt encoding?)
             xmlTest = true;

@@ -103,6 +103,7 @@ void tst_qmlsystempalette::inactivePalette()
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);
+    QVERIFY(object->colorGroup() == QmlSystemPalette::Inactive);
 
     QPalette palette;
     palette.setCurrentColorGroup(QPalette::Inactive);
@@ -131,6 +132,7 @@ void tst_qmlsystempalette::disabledPalette()
     QmlSystemPalette *object = qobject_cast<QmlSystemPalette*>(component.create());
 
     QVERIFY(object != 0);
+    QVERIFY(object->colorGroup() == QmlSystemPalette::Disabled);
 
     QPalette palette;
     palette.setCurrentColorGroup(QPalette::Disabled);

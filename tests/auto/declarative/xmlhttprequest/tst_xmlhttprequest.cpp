@@ -71,6 +71,7 @@ private slots:
     void setRequestHeader_illegalName_data();
     void setRequestHeader_illegalName();
     void setRequestHeader_sent();
+    void setRequestHeader_args();
     void send_unsent();
     void send_alreadySent();
     void send_ignoreData();
@@ -79,7 +80,13 @@ private slots:
     void abort_unsent();
     void abort_opened();
     void getResponseHeader();
+    void getResponseHeader_unsent();
+    void getResponseHeader_sent();
+    void getResponseHeader_args();
     void getAllResponseHeaders();
+    void getAllResponseHeaders_unsent();
+    void getAllResponseHeaders_sent();
+    void getAllResponseHeaders_args();
     void status();
     void statusText();
     void responseText();
@@ -283,6 +290,34 @@ void tst_xmlhttprequest::open()
 
         delete object;
     }
+
+    // User/pass
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("open_network.expect"), 
+                            TEST_FILE("open_network.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("open_user.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+        component.completeCreate();
+
+        QCOMPARE(object->property("readyState").toBool(), true);
+        QCOMPARE(object->property("openedState").toBool(), true);
+        QCOMPARE(object->property("status").toBool(), true);
+        QCOMPARE(object->property("statusText").toBool(), true);
+        QCOMPARE(object->property("responseText").toBool(), true);
+        QCOMPARE(object->property("responseXML").toBool(), true);
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        // ### Check that the username/password were sent to the server
+
+        delete object;
+    }
 }
 
 // Test that calling XMLHttpRequest.open() with an invalid method raises an exception
@@ -441,6 +476,18 @@ void tst_xmlhttprequest::setRequestHeader_sent()
     QCOMPARE(object->property("test").toBool(), true);
     
     TRY_WAIT(object->property("dataOK").toBool() == true);
+
+    delete object;
+}
+
+// Invalid arg count throws exception
+void tst_xmlhttprequest::setRequestHeader_args()
+{
+    QmlComponent component(&engine, TEST_FILE("setRequestHeader_args.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("exceptionThrown").toBool(), true);
 
     delete object;
 }
@@ -628,6 +675,25 @@ void tst_xmlhttprequest::send_withdata()
 
         delete object;
     }
+
+    // Correct content-type - no charset
+    {
+        TestHTTPServer server(SERVER_PORT);
+        QVERIFY(server.isValid());
+        QVERIFY(server.wait(TEST_FILE("send_data.1.expect"), 
+                            TEST_FILE("send_data.reply"), 
+                            TEST_FILE("testdocument.html")));
+
+        QmlComponent component(&engine, TEST_FILE("send_data.7.qml"));
+        QObject *object = component.beginCreate(engine.rootContext());
+        QVERIFY(object != 0);
+        object->setProperty("url", "http://127.0.0.1:14445/testdocument.html");
+        component.completeCreate();
+
+        TRY_WAIT(object->property("dataOK").toBool() == true);
+
+        delete object;
+    }
 }
 
 // Test abort() has no effect in unsent state
@@ -736,6 +802,42 @@ void tst_xmlhttprequest::getResponseHeader()
     delete object;
 }
 
+// Test getResponseHeader throws an exception in an invalid state
+void tst_xmlhttprequest::getResponseHeader_unsent()
+{
+    QmlComponent component(&engine, TEST_FILE("getResponseHeader_unsent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// Test getResponseHeader throws an exception in an invalid state
+void tst_xmlhttprequest::getResponseHeader_sent()
+{
+    QmlComponent component(&engine, TEST_FILE("getResponseHeader_sent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// Invalid arg count throws exception
+void tst_xmlhttprequest::getResponseHeader_args()
+{
+    QmlComponent component(&engine, TEST_FILE("getResponseHeader_args.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    TRY_WAIT(object->property("exceptionThrown").toBool() == true);
+
+    delete object;
+}
+
 void tst_xmlhttprequest::getAllResponseHeaders()
 {
     QmlEngine engine; // Avoid cookie contamination
@@ -764,6 +866,42 @@ void tst_xmlhttprequest::getAllResponseHeaders()
 
     QCOMPARE(object->property("doneState").toBool(), true);
     QCOMPARE(object->property("doneHeader").toBool(), true);
+
+    delete object;
+}
+
+// Test getAllResponseHeaders throws an exception in an invalid state
+void tst_xmlhttprequest::getAllResponseHeaders_unsent()
+{
+    QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_unsent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// Test getAllResponseHeaders throws an exception in an invalid state
+void tst_xmlhttprequest::getAllResponseHeaders_sent()
+{
+    QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_sent.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toBool(), true);
+
+    delete object;
+}
+
+// Invalid arg count throws exception
+void tst_xmlhttprequest::getAllResponseHeaders_args()
+{
+    QmlComponent component(&engine, TEST_FILE("getAllResponseHeaders_args.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    TRY_WAIT(object->property("exceptionThrown").toBool() == true);
 
     delete object;
 }
@@ -966,8 +1104,29 @@ void tst_xmlhttprequest::responseText()
     }
 }
 
+// Test that calling hte XMLHttpRequest methods on a non-XMLHttpRequest object
+// throws an exception
 void tst_xmlhttprequest::invalidMethodUsage()
 {
+    QmlComponent component(&engine, TEST_FILE("invalidMethodUsage.qml"));
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("onreadystatechange").toBool(), true);
+    QCOMPARE(object->property("readyState").toBool(), true);
+    QCOMPARE(object->property("status").toBool(), true);
+    QCOMPARE(object->property("statusText").toBool(), true);
+    QCOMPARE(object->property("responseText").toBool(), true);
+    QCOMPARE(object->property("responseXML").toBool(), true);
+
+    QCOMPARE(object->property("open").toBool(), true);
+    QCOMPARE(object->property("setRequestHeader").toBool(), true);
+    QCOMPARE(object->property("send").toBool(), true);
+    QCOMPARE(object->property("abort").toBool(), true);
+    QCOMPARE(object->property("getResponseHeader").toBool(), true);
+    QCOMPARE(object->property("getAllResponseHeaders").toBool(), true);
+
+    delete object;
 }
 
 void tst_xmlhttprequest::responseXML_invalid()

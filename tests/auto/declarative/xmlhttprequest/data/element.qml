@@ -32,6 +32,15 @@ Object {
             if (e.childNodes[childTagNames.length + 1] != null)
                 return;
 
+            // Check writing fails
+            e.childNodes[0] = null;
+            if (e.childNodes[0] == null)
+                return;
+
+            e.childNodes[10] = 10;
+            if (e.childNodes[10] != null)
+                return;
+
             if (e.firstChild.tagName != e.childNodes[0].tagName)
                 return;
 
@@ -68,6 +77,19 @@ Object {
 
             var attrIdx2 = e.attributes[11];
             if (attrIdx2 != null)
+                return;
+
+            // Check writing fails
+            e.attributes[0] = null;
+            if (e.attributes[0] == null)
+                return;
+
+            e.attributes["attr"] = null;
+            if (e.attributes["attr"] == null)
+                return;
+
+            e.attributes["attr3"] = 10;
+            if (e.attributes["attr3"] != null)
                 return;
 
             // Check person and fruit sub elements

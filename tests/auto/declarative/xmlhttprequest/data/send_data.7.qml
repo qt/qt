@@ -8,7 +8,7 @@ Object {
     Component.onCompleted: {
         var x = new XMLHttpRequest;
         x.open("POST", url);
-        x.setRequestHeader("Content-Type", "charset=UTF-8;text/plain");
+        x.setRequestHeader("Content-Type", "text/plain");
 
         // Test to the end
         x.onreadystatechange = function() {
