@@ -2489,13 +2489,13 @@ void tst_QFile::readEof()
         }
 
         QByteArray ret = file.read(10);
-        QVERIFY(ret.isNull());
+        QVERIFY(ret.isEmpty());
         QVERIFY(file.error() == QFile::NoError);
         QVERIFY(file.atEnd());
 
         // Do it again to ensure that we get the same result
         ret = file.read(10);
-        QVERIFY(ret.isNull());
+        QVERIFY(ret.isEmpty());
         QVERIFY(file.error() == QFile::NoError);
         QVERIFY(file.atEnd());
     }
