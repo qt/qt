@@ -323,7 +323,6 @@ QSymbianControl::QSymbianControl(QWidget *w)
     , qwidget(w)
     , m_longTapDetector(0)
     , m_ignoreFocusChanged(0)
-    , m_previousEventLongTap(0)
     , m_symbianPopupIsOpen(0)
 {
 }
@@ -362,9 +361,6 @@ QSymbianControl::~QSymbianControl()
         setFocusSafely(false);
     S60->appUi()->RemoveFromStack(this);
     delete m_longTapDetector;
-
-    if(m_previousEventLongTap)
-        QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
 }
 
 void QSymbianControl::setWidget(QWidget *w)
@@ -379,19 +375,11 @@ void QSymbianControl::HandleLongTapEventL( const TPoint& aPenEventLocation, cons
     alienWidget = qwidget->childAt(widgetPos);
     if (!alienWidget)
         alienWidget = qwidget;
-    QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons &(~Qt::LeftButton);
-    QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons | Qt::RightButton;
-    QMouseEvent mEvent(QEvent::MouseButtonPress, alienWidget->mapFrom(qwidget, widgetPos), globalPos,
-        Qt::RightButton, QApplicationPrivate::mouse_buttons, Qt::NoModifier);
-
-    bool res = sendMouseEvent(alienWidget, &mEvent);
 
 #if !defined(QT_NO_CONTEXTMENU)
-    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, mEvent.modifiers());
+    QContextMenuEvent contextMenuEvent(QContextMenuEvent::Mouse, widgetPos, globalPos, Qt::NoModifier);
     qt_sendSpontaneousEvent(alienWidget, &contextMenuEvent);
 #endif
-
-    m_previousEventLongTap = true;
 }
 
 #ifdef QT_SYMBIAN_SUPPORTS_ADVANCED_POINTER
@@ -515,12 +503,6 @@ void QSymbianControl::HandlePointerEvent(const TPointerEvent& pEvent)
     mapS60MouseEventTypeToQt(&type, &button, &pEvent);
     Qt::KeyboardModifiers modifiers = mapToQtModifiers(pEvent.iModifiers);
 
-    if (m_previousEventLongTap)
-        if (type == QEvent::MouseButtonRelease){
-            button = Qt::RightButton;
-            QApplicationPrivate::mouse_buttons = QApplicationPrivate::mouse_buttons & ~Qt::RightButton;
-            m_previousEventLongTap = false;
-        }
     if (type == QMouseEvent::None)
         return;
 

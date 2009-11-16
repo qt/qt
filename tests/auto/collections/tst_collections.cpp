@@ -3586,7 +3586,7 @@ void tst_Collections::alignment()
 #else
 void tst_Collections::alignment()
 {
-    QSKIP("Compiler doesn't support necessary extension keywords", SkipAll)
+    QSKIP("Compiler doesn't support necessary extension keywords", SkipAll);
 }
 #endif
 
