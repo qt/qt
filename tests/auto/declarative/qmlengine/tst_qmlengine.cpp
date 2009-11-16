@@ -159,10 +159,18 @@ void tst_qmlengine::contextForObject()
 
 void tst_qmlengine::offlineStoragePath()
 {
+    // Without these set, QDesktopServices::storageLocation returns
+    // strings with extra "//" at the end. We set them to ignore this problem.
+    qApp->setApplicationName("tst_qmlengine");
+    qApp->setOrganizationName("Nokia");
+    qApp->setOrganizationDomain("nokia.com");
+
     QmlEngine engine;
 
     QDir dir(QDesktopServices::storageLocation(QDesktopServices::DataLocation));
+    dir.mkpath("QML");
     dir.cd("QML");
+    dir.mkpath("OfflineStorage");
     dir.cd("OfflineStorage");
 
     QCOMPARE(engine.offlineStoragePath(), dir.path());

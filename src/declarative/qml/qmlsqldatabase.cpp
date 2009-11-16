@@ -337,7 +337,8 @@ static QScriptValue qmlsqldatabase_open(QScriptContext *context, QScriptEngine *
         database = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), dbid);
     }
     if (!database.isOpen()) {
-        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath + QLatin1String("/Databases/");
+        QString basename = QmlEnginePrivate::get(engine)->offlineStoragePath
+            + QDir::separator() + QLatin1String("Databases") + QDir::separator();
         QDir().mkpath(basename);
         basename += dbid;
         database.setDatabaseName(basename+QLatin1String(".sqlite"));
