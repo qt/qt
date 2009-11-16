@@ -42,6 +42,23 @@
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicsloader_p.h>
+#include "testhttpserver.h"
+
+#define SERVER_PORT 14445
+
+inline QUrl TEST_FILE(const QString &filename)
+{
+    return QUrl::fromLocalFile(QLatin1String(SRCDIR) + QLatin1String("/data/") + filename);
+}
+
+#define TRY_WAIT(expr) \
+    do { \
+        for (int ii = 0; ii < 6; ++ii) { \
+            if ((expr)) break; \
+            QTest::qWait(50); \
+        } \
+        QVERIFY((expr)); \
+    } while (false)
 
 class tst_QmlGraphicsLoader : public QObject
 
@@ -60,23 +77,13 @@ private slots:
     void sizeLoaderToItem();
     void sizeItemToLoader();
     void noResize();
+    void networkRequest();
+    void failNetworkRequest();
 
 private:
     QmlEngine engine;
 };
 
-/*
-inline QUrl TEST_FILE(const QString &filename)
-{
-    QFileInfo fileInfo(__FILE__);
-    return QUrl::fromLocalFile(fileInfo.absoluteDir().filePath(filename));
-}
-
-inline QUrl TEST_FILE(const char *filename)
-{
-    return TEST_FILE(QLatin1String(filename));
-}
-*/
 
 tst_QmlGraphicsLoader::tst_QmlGraphicsLoader()
 {
@@ -84,11 +91,11 @@ tst_QmlGraphicsLoader::tst_QmlGraphicsLoader()
 
 void tst_QmlGraphicsLoader::url()
 {
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), QUrl("file://" SRCDIR "/"));
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"Rect120x60.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item());
-    QVERIFY(loader->source() == QUrl("file://" SRCDIR "/Rect120x60.qml"));
+    QVERIFY(loader->source() == QUrl("file://" SRCDIR "/data/Rect120x60.qml"));
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(loader->status(), QmlGraphicsLoader::Ready);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
@@ -98,7 +105,7 @@ void tst_QmlGraphicsLoader::url()
 
 void tst_QmlGraphicsLoader::component()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/SetSourceComponent.qml"));
+    QmlComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
     QVERIFY(item);
 
@@ -114,9 +121,9 @@ void tst_QmlGraphicsLoader::component()
 
 void tst_QmlGraphicsLoader::invalidUrl()
 {
-    QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/IDontExist.qml) ");
+    QTest::ignoreMessage(QtWarningMsg, "(:-1: File error for URL file://" SRCDIR "/data/IDontExist.qml) ");
 
-    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), QUrl("file://" SRCDIR "/"));
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"IDontExist.qml\" }"), TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->item() == 0);
@@ -136,7 +143,7 @@ void tst_QmlGraphicsLoader::clear()
                     "  source: 'Rect120x60.qml'\n"
                     "  Timer { interval: 200; running: true; onTriggered: loader.source = '' }\n"
                     " }")
-                , QUrl("file://" SRCDIR "/"));
+                , TEST_FILE(""));
         QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
         QVERIFY(loader != 0);
         QVERIFY(loader->item());
@@ -153,7 +160,7 @@ void tst_QmlGraphicsLoader::clear()
         delete loader;
     }
     {
-        QmlComponent component(&engine, QUrl("file://" SRCDIR "/SetSourceComponent.qml"));
+        QmlComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
         QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
         QVERIFY(item);
 
@@ -183,7 +190,7 @@ void tst_QmlGraphicsLoader::urlToComponent()
                 " source: \"Rect120x60.qml\"\n"
                 " Timer { interval: 100; running: true; onTriggered: loader.sourceComponent = myComp }\n"
                 "}" )
-            , QUrl("file://" SRCDIR "/"));
+            , TEST_FILE(""));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QTest::qWait(500);
     QVERIFY(loader != 0);
@@ -198,7 +205,7 @@ void tst_QmlGraphicsLoader::urlToComponent()
 
 void tst_QmlGraphicsLoader::componentToUrl()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/SetSourceComponent.qml"));
+    QmlComponent component(&engine, TEST_FILE("/SetSourceComponent.qml"));
     QmlGraphicsItem *item = qobject_cast<QmlGraphicsItem*>(component.create());
     QVERIFY(item);
 
@@ -208,7 +215,7 @@ void tst_QmlGraphicsLoader::componentToUrl()
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
 
-    loader->setSource(QUrl("file://" SRCDIR "/Rect120x60.qml"));
+    loader->setSource(TEST_FILE("/Rect120x60.qml"));
     QVERIFY(loader->item());
     QCOMPARE(loader->progress(), 1.0);
     QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
@@ -220,7 +227,7 @@ void tst_QmlGraphicsLoader::componentToUrl()
 
 void tst_QmlGraphicsLoader::sizeLoaderToItem()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/SizeToItem.qml"));
+    QmlComponent component(&engine, TEST_FILE("/SizeToItem.qml"));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->resizeMode() == QmlGraphicsLoader::SizeLoaderToItem);
@@ -245,7 +252,7 @@ void tst_QmlGraphicsLoader::sizeLoaderToItem()
 
 void tst_QmlGraphicsLoader::sizeItemToLoader()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/SizeToLoader.qml"));
+    QmlComponent component(&engine, TEST_FILE("/SizeToLoader.qml"));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QVERIFY(loader->resizeMode() == QmlGraphicsLoader::SizeItemToLoader);
@@ -266,7 +273,7 @@ void tst_QmlGraphicsLoader::sizeItemToLoader()
 
 void tst_QmlGraphicsLoader::noResize()
 {
-    QmlComponent component(&engine, QUrl("file://" SRCDIR "/NoResize.qml"));
+    QmlComponent component(&engine, TEST_FILE("/NoResize.qml"));
     QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
     QVERIFY(loader != 0);
     QCOMPARE(loader->width(), 200.0);
@@ -276,6 +283,46 @@ void tst_QmlGraphicsLoader::noResize()
     QVERIFY(rect);
     QCOMPARE(rect->width(), 120.0);
     QCOMPARE(rect->height(), 60.0);
+}
+
+void tst_QmlGraphicsLoader::networkRequest()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory("data");
+
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/Rect120x60.qml\" }"), TEST_FILE(""));
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
+    QVERIFY(loader != 0);
+
+    TRY_WAIT(loader->status() == QmlGraphicsLoader::Ready);
+
+    QVERIFY(loader->item());
+    QCOMPARE(loader->progress(), 1.0);
+    QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 1);
+
+    delete loader;
+}
+
+void tst_QmlGraphicsLoader::failNetworkRequest()
+{
+    TestHTTPServer server(SERVER_PORT);
+    QVERIFY(server.isValid());
+    server.serveDirectory("data");
+
+    QTest::ignoreMessage(QtWarningMsg, "(:-1: Network error for URL http://127.0.0.1:14445/IDontExist.qml) ");
+
+    QmlComponent component(&engine, QByteArray("import Qt 4.6\nLoader { source: \"http://127.0.0.1:14445/IDontExist.qml\" }"), TEST_FILE(""));
+    QmlGraphicsLoader *loader = qobject_cast<QmlGraphicsLoader*>(component.create());
+    QVERIFY(loader != 0);
+
+    TRY_WAIT(loader->status() == QmlGraphicsLoader::Error);
+
+    QVERIFY(loader->item() == 0);
+    QCOMPARE(loader->progress(), 0.0);
+    QCOMPARE(static_cast<QGraphicsItem*>(loader)->children().count(), 0);
+
+    delete loader;
 }
 
 QTEST_MAIN(tst_QmlGraphicsLoader)
