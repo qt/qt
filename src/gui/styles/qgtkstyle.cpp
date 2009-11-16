@@ -3198,10 +3198,6 @@ QSize QGtkStyle::sizeFromContents(ContentsType type, const QStyleOption *option,
     }
     break;
 
-    case CT_MenuBarItem://cleanlooks adds 2 pixels
-        newSize = QWindowsStyle::sizeFromContents(type, option, size, widget) + QSize(0, 1);
-        break;
-
     case CT_LineEdit: {
         GtkWidget *gtkEntry = d->gtkWidget(QLS("GtkEntry"));
         newSize = size + QSize(2*gtkEntry->style->xthickness, 2*gtkEntry->style->ythickness);
