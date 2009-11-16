@@ -473,7 +473,7 @@ void QS60StylePrivate::setBackgroundTexture(QApplication *app) const
     Q_UNUSED(app)
     QPalette applicationPalette = QApplication::palette();
     applicationPalette.setBrush(QPalette::Window, backgroundTexture());
-    setThemePalette(app);
+    setThemePalette(&applicationPalette);
 }
 
 void QS60StylePrivate::deleteBackground()
@@ -668,7 +668,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
     palette->setColor(QPalette::BrightText, palette->color(QPalette::WindowText).lighter());
     palette->setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     palette->setColor(QPalette::Link,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
@@ -799,6 +799,9 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafTabPassiveR:
         case QS60StyleEnums::SP_QgnGrafTabPassiveL:
         case QS60StyleEnums::SP_QgnGrafTabActiveL:
+            //Returned QSize for tabs must not be square, but narrow rectangle with width:height
+            //ratio of 1:2 for horizontal tab bars (and 2:1 for vertical ones).
+            result.setWidth(10);
             break;
         case QS60StyleEnums::SP_QgnIndiSliderEdit:
             result.scale(pixelMetric(QStyle::PM_SliderLength),
@@ -809,7 +812,7 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
         case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
             result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
             break;
-            
+
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
