@@ -1853,8 +1853,16 @@ bool Configure::findFile( const QString &fileName )
 
     QString paths;
     if (file.endsWith(".h")) {
-        if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
-		    return true;
+        if (!mingwPath.isNull()) {
+            if (!findFileInPaths(file, mingwPath + QLatin1String("/../include")).isNull())
+		        return true;
+            //now let's try the additional compiler path
+            QDir mingwLibDir = mingwPath + QLatin1String("/../lib/gcc/mingw32");
+            foreach(const QFileInfo &version, mingwLibDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+                if (!findFileInPaths(file, version.absoluteFilePath() + QLatin1String("/include")).isNull())
+                    return true;
+            }
+        }
         paths = QString::fromLocal8Bit(getenv("INCLUDE"));
     } else if ( file.endsWith( ".lib" ) ||  file.endsWith( ".a" ) ) {
         if (!mingwPath.isNull() && !findFileInPaths(file, mingwPath + QLatin1String("/../lib")).isNull())
@@ -1991,11 +1999,11 @@ bool Configure::checkAvailability(const QString &part)
     else if (part == "DIRECTSHOW")
         available = (dictionary[ "ARCHITECTURE" ]  == "windowsce");
     else if (part == "SSE2")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "3DNOW" )
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-icc") && findFile("mm3dnow.h") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-icc") && findFile("mm3dnow.h");
     else if (part == "MMX" || part == "SSE")
-        available = (dictionary.value("QMAKESPEC") != "win32-msvc") && (dictionary.value("QMAKESPEC") != "win32-g++");
+        available = (dictionary.value("QMAKESPEC") != "win32-msvc");
     else if (part == "OPENSSL")
         available = findFile("openssl\\ssl.h");
     else if (part == "DBUS")
