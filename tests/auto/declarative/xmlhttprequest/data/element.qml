@@ -5,7 +5,7 @@ Object {
     property bool dataOK: false
 
     Script {
-        function checkElement(e)
+        function checkElement(e, person, fruit)
         {
             if (e.tagName != "root")
                 return;
@@ -32,6 +32,15 @@ Object {
             if (e.childNodes[childTagNames.length + 1] != null)
                 return;
 
+            // Check writing fails
+            e.childNodes[0] = null;
+            if (e.childNodes[0] == null)
+                return;
+
+            e.childNodes[10] = 10;
+            if (e.childNodes[10] != null)
+                return;
+
             if (e.firstChild.tagName != e.childNodes[0].tagName)
                 return;
 
@@ -45,6 +54,9 @@ Object {
                 return;
 
             if (e.attributes == null)
+                return;
+
+            if (e.attributes.length != 2)
                 return;
 
             var attr1 = e.attributes["attr"];
@@ -67,12 +79,46 @@ Object {
             if (attrIdx2 != null)
                 return;
 
+            // Check writing fails
+            e.attributes[0] = null;
+            if (e.attributes[0] == null)
+                return;
+
+            e.attributes["attr"] = null;
+            if (e.attributes["attr"] == null)
+                return;
+
+            e.attributes["attr3"] = 10;
+            if (e.attributes["attr3"] != null)
+                return;
+
+            // Check person and fruit sub elements
+            if (person.parentNode.nodeName != "root")
+                return;
+
+            if (person.previousSibling != null)
+                return;
+
+            if (person.nextSibling.nodeName != "fruit")
+                return;
+
+            if (fruit.parentNode.nodeName != "root")
+                return;
+
+            if (fruit.previousSibling.nodeName != "person")
+                return;
+
+            if (fruit.nextSibling != null)
+                return;
+
             xmlTest = true;
         }
 
         function checkXML(document)
         {
-            checkElement(document.documentElement);
+            checkElement(document.documentElement, 
+                         document.documentElement.childNodes[0], 
+                         document.documentElement.childNodes[1]);
         }
     }
 

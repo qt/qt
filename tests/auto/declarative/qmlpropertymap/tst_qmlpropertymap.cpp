@@ -41,7 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcontext.h>
-#include <private/qmlpropertymap_p.h>
+#include <QtDeclarative/qmlpropertymap.h>
 #include <QtDeclarative/qmlcomponent.h>
 #include <private/qmlgraphicstext_p.h>
 #include <QSignalSpy>

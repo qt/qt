@@ -50,6 +50,7 @@
 #include <QTextCursor>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <qmath.h>
 
 QT_BEGIN_NAMESPACE
 QML_DEFINE_TYPE(Qt,4,6,Text,QmlGraphicsText)
@@ -600,7 +601,7 @@ QSize QmlGraphicsTextPrivate::setupTextLayout(QTextLayout *layout)
         line.setPosition(QPointF(0, height));
         height += int(line.height());
     }
-    return QSize((int)widthUsed, height);
+    return QSize(qCeil(widthUsed), height);
 }
 
 QPixmap QmlGraphicsTextPrivate::wrappedTextImage(bool drawStyle)

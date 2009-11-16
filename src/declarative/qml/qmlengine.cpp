@@ -88,6 +88,7 @@
 #include <private/qmllistscriptclass_p.h>
 #include <qmlscriptstring.h>
 #include <private/qmlglobal_p.h>
+#include <QtCore/qcryptographichash.h>
 
 #ifdef Q_OS_WIN // for %APPDATA%
 #include "qt_windows.h"
@@ -150,6 +151,7 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
     qtObject.setProperty(QLatin1String("closestAngle"), scriptEngine.newFunction(QmlEnginePrivate::closestAngle, 2));
     qtObject.setProperty(QLatin1String("playSound"), scriptEngine.newFunction(QmlEnginePrivate::playSound, 1));
     qtObject.setProperty(QLatin1String("openUrlExternally"),scriptEngine.newFunction(desktopOpenUrl, 1));
+    qtObject.setProperty(QLatin1String("md5"),scriptEngine.newFunction(md5, 1));
 
     scriptEngine.globalObject().setProperty(QLatin1String("createQmlObject"),
             scriptEngine.newFunction(QmlEnginePrivate::createQmlObject, 1));
@@ -425,22 +427,16 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
  */
 void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(object);
+    if (!object || !context)
+        return;
 
-    QmlDeclarativeData *data =
-        static_cast<QmlDeclarativeData *>(priv->declarativeData);
-
-    if (data && data->context) {
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object, true);
+    if (data->context) {
         qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
         return;
     }
 
-    if (!data) {
-        priv->declarativeData = new QmlDeclarativeData(context);
-    } else {
-        data->context = context;
-    }
-
+    data->context = context;
     context->d_func()->contextObjects.append(object);
 }
 
@@ -814,6 +810,18 @@ QScriptValue QmlEnginePrivate::desktopOpenUrl(QScriptContext *ctxt, QScriptEngin
         return e->newVariant(QVariant(false));
     bool ret = QDesktopServices::openUrl(QUrl(ctxt->argument(0).toString()));
     return e->newVariant(QVariant(ret));
+}
+
+QScriptValue QmlEnginePrivate::md5(QScriptContext *ctxt, QScriptEngine *e)
+{
+    QByteArray data;
+
+    if (ctxt->argumentCount() >= 1)
+        data = ctxt->argument(0).toString().toUtf8();
+
+    QByteArray result = QCryptographicHash::hash(data, QCryptographicHash::Md5);
+
+    return QScriptValue(QLatin1String(result.toHex()));
 }
 
 QScriptValue QmlEnginePrivate::closestAngle(QScriptContext *ctxt, QScriptEngine *e)

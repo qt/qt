@@ -81,5 +81,6 @@ Rectangle {
         model: testModel
         delegate: testAnimate ? myDelegate : animatedDelegate
         highlightMoveSpeed: 1000
+        highlightResizeSpeed: 1000
     }
 }

@@ -75,6 +75,7 @@ private slots:
     void enforceRange();
     void spacing();
     void sections();
+    void cacheBuffer();
 
 private:
     template <class T> void items();
@@ -274,6 +275,9 @@ void tst_QmlGraphicsListView::items()
 
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     QVERIFY(itemCount == 0);
+
+    QCOMPARE(listview->highlightResizeSpeed(), 1000.0);
+    QCOMPARE(listview->highlightMoveSpeed(), 1000.0);
 
     delete canvas;
 }
@@ -727,6 +731,8 @@ void tst_QmlGraphicsListView::sections()
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
 
+    QCOMPARE(listview->sectionExpression(), QLatin1String("Math.floor(number/5)"));
+
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     for (int i = 0; i < model.count() && i < itemCount; ++i) {
@@ -769,6 +775,13 @@ void tst_QmlGraphicsListView::sections()
 
     listview->setViewportY(140);
     QVERIFY(listview->currentSection() == "1");
+
+    listview->setViewportY(20);
+    QVERIFY(listview->currentSection() == "0");
+
+    item = findItem<QmlGraphicsItem>(viewport, "wrapper", 1);
+    QVERIFY(item);
+    QCOMPARE(item->height(), 20.0);
 
     delete canvas;
 }
@@ -893,12 +906,66 @@ void tst_QmlGraphicsListView::itemList()
     QVERIFY(item);
     QCOMPARE(item->x(), 0.0);
 
+    QmlGraphicsText *text = findItem<QmlGraphicsText>(viewport, "text1");
+    QVERIFY(text);
+    QCOMPARE(text->text(), QLatin1String("index: 0"));
+
     listview->setCurrentIndex(2);
     QTest::qWait(1000);
 
     item = findItem<QmlGraphicsItem>(viewport, "item3");
     QVERIFY(item);
     QCOMPARE(item->x(), 480.0);
+
+    text = findItem<QmlGraphicsText>(viewport, "text3");
+    QVERIFY(text);
+    QCOMPARE(text->text(), QLatin1String("index: 2"));
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsListView::cacheBuffer()
+{
+    QmlView *canvas = createView(SRCDIR "/data/listview.qml");
+
+    TestModel model;
+    for (int i = 0; i < 30; i++)
+        model.addItem("Item" + QString::number(i), "");
+
+    QmlContext *ctxt = canvas->rootContext();
+    ctxt->setContextProperty("testModel", &model);
+    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsListView *listview = findItem<QmlGraphicsListView>(canvas->root(), "list");
+    QVERIFY(listview != 0);
+
+    QmlGraphicsItem *viewport = listview->viewport();
+    QVERIFY(viewport != 0);
+
+    // Confirm items positioned correctly
+    int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    for (int i = 0; i < model.count() && i < itemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QVERIFY(item->y() == i*20);
+    }
+
+    listview->setCacheBuffer(400);
+
+    int newItemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
+    QVERIFY(newItemCount > itemCount);
+
+    // Confirm items positioned correctly
+    for (int i = 0; i < model.count() && i < newItemCount; ++i) {
+        QmlGraphicsItem *item = findItem<QmlGraphicsItem>(viewport, "wrapper", i);
+        if (!item) qWarning() << "Item" << i << "not found";
+        QVERIFY(item);
+        QVERIFY(item->y() == i*20);
+    }
 
     delete canvas;
 }

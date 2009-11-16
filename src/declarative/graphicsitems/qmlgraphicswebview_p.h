@@ -128,6 +128,7 @@ public:
     qreal zoomFactor() const;
     void setZoomFactor(qreal);
     Q_INVOKABLE bool heuristicZoom(int clickX, int clickY, qreal maxzoom);
+    QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
 
     int preferredWidth() const;
     void setPreferredWidth(int);
@@ -223,7 +224,6 @@ protected:
     virtual void focusChanged(bool);
     virtual bool sceneEvent(QEvent *event);
     QmlGraphicsWebView *createWindow(QWebPage::WebWindowType type);
-    QRect elementAreaAt(int x, int y, int minwidth, int minheight) const;
 
 private:
     void init();

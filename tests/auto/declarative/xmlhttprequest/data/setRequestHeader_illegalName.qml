@@ -22,6 +22,8 @@ Object {
 
         x.open("GET", url);
 
+        x.setRequestHeader(header, "Value");
+
         if (x.readyState  == XMLHttpRequest.OPENED)
             openedState = true;
 

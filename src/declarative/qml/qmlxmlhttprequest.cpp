@@ -91,16 +91,16 @@
 
 namespace {
 
-class NodeImpl : public QmlRefCount
+class DocumentImpl;
+class NodeImpl 
 {
 public:
-    NodeImpl() : type(Element), parent(0) {}
+    NodeImpl() : type(Element), document(0), parent(0) {}
     virtual ~NodeImpl() { 
-        if (parent) D(parent); 
         for (int ii = 0; ii < children.count(); ++ii)
-            D(children.at(ii));
+            delete children.at(ii);
         for (int ii = 0; ii < attributes.count(); ++ii)
-            D(attributes.at(ii));
+            delete attributes.at(ii);
     }
 
     // These numbers are copied from the Node IDL definition
@@ -125,18 +125,22 @@ public:
 
     QString data;
 
+    void addref();
+    void release();
+
+    DocumentImpl *document;
     NodeImpl *parent;
 
     QList<NodeImpl *> children;
     QList<NodeImpl *> attributes;
 };
 
-class DocumentImpl : public QmlRefCount
+class DocumentImpl : public QmlRefCount, public NodeImpl
 {
 public:
-    DocumentImpl() : root(0) { }
+    DocumentImpl() : root(0) { type = Document; }
     virtual ~DocumentImpl() {
-        if (root) D(root);
+        if (root) delete root;
     }
 
     QString version;
@@ -144,6 +148,9 @@ public:
     bool isStandalone;
 
     NodeImpl *root;
+
+    void addref() { QmlRefCount::addref(); }
+    void release() { QmlRefCount::release(); }
 };
 
 class NamedNodeMap
@@ -158,12 +165,13 @@ public:
 
     NamedNodeMap();
     NamedNodeMap(const NamedNodeMap &);
-    NamedNodeMap &operator=(const NamedNodeMap &);
     ~NamedNodeMap();
     bool isNull();
 
     NodeImpl *d;
     QList<NodeImpl *> *list;
+private:
+    NamedNodeMap &operator=(const NamedNodeMap &);
 };
 
 class NamedNodeMapClass : public QScriptClass
@@ -180,7 +188,6 @@ class NodeList
 public:
     // JS API
     static QScriptValue length(QScriptContext *context, QScriptEngine *engine);
-    static QScriptValue item(QScriptContext *context, QScriptEngine *engine);
 
     // C++ API
     static QScriptValue prototype(QScriptEngine *);
@@ -188,11 +195,12 @@ public:
 
     NodeList();
     NodeList(const NodeList &);
-    NodeList &operator=(const NodeList &);
     ~NodeList();
     bool isNull();
 
     NodeImpl *d;
+private:
+    NodeList &operator=(const NodeList &);
 };
 
 class NodeListClass : public QScriptClass
@@ -232,11 +240,13 @@ public:
 
     Node();
     Node(const Node &o);
-    Node &operator=(const Node &);
     ~Node();
     bool isNull() const;
 
     NodeImpl *d;
+
+private:
+    Node &operator=(const Node &);
 };
 
 class Element : public Node
@@ -301,31 +311,39 @@ public:
     // C++ API
     static QScriptValue prototype(QScriptEngine *);
     static QScriptValue load(QScriptEngine *engine, const QString &data);
-
-    Document();
-    Document(const Document &);
-    Document &operator=(const Document &);
-    ~Document();
-    bool isNull() const;
-
-    DocumentImpl *d;
-private:
-    Document(DocumentImpl *);
 };
 
-};
+}; // namespace
 
 Q_DECLARE_METATYPE(Node);
 Q_DECLARE_METATYPE(NodeList);
 Q_DECLARE_METATYPE(NamedNodeMap);
-Q_DECLARE_METATYPE(Document);
+
+void NodeImpl::addref() 
+{
+    A(document);
+}
+
+void NodeImpl::release()
+{
+    D(document);
+}
 
 QScriptValue Node::nodeName(QScriptContext *context, QScriptEngine *engine)
 {
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    return QScriptValue(node.d->name);
+    switch (node.d->type) {
+    case NodeImpl::Document:
+        return QScriptValue(QLatin1String("#document"));
+    case NodeImpl::CDATA:
+        return QScriptValue(QLatin1String("#cdata-section"));
+    case NodeImpl::Text:
+        return QScriptValue(QLatin1String("#text"));
+    default:
+        return QScriptValue(node.d->name);
+    }
 }
 
 QScriptValue Node::nodeValue(QScriptContext *context, QScriptEngine *engine)
@@ -465,11 +483,10 @@ QScriptValue Node::create(QScriptEngine *engine, NodeImpl *data)
     case NodeImpl::Entity:
     case NodeImpl::EntityReference:
     case NodeImpl::Notation:
+    case NodeImpl::ProcessingInstruction:
+        return QScriptValue();
     case NodeImpl::CDATA:
         instance.setPrototype(CDATA::prototype(engine));
-        break;
-    case NodeImpl::ProcessingInstruction:
-        instance.setPrototype(Node::prototype(engine));
         break;
     case NodeImpl::Text:
         instance.setPrototype(Text::prototype(engine));
@@ -556,8 +573,7 @@ QScriptValue Text::isElementContentWhitespace(QScriptContext *context, QScriptEn
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(false);
+    return node.d->data.trimmed().isEmpty();
 }
 
 QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
@@ -565,8 +581,7 @@ QScriptValue Text::wholeText(QScriptContext *context, QScriptEngine *engine)
     Node node = qscriptvalue_cast<Node>(context->thisObject());
     if (node.isNull()) return engine->undefinedValue();
 
-    // ### implement
-    return QScriptValue(QString());
+    return node.d->data;
 }
 
 QScriptValue Text::prototype(QScriptEngine *engine)
@@ -618,6 +633,7 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         case QXmlStreamReader::StartDocument:
             Q_ASSERT(!document);
             document = new DocumentImpl;
+            document->document = document;
             document->version = reader.documentVersion().toString();
             document->encoding = reader.documentEncoding().toString();
             document->isStandalone = reader.isStandaloneDocument();
@@ -628,19 +644,20 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         {
             Q_ASSERT(document);
             NodeImpl *node = new NodeImpl;
+            node->document = document;
             node->namespaceUri = reader.namespaceUri().toString();
             node->name = reader.name().toString();
             if (nodeStack.isEmpty()) {
                 document->root = node;
             } else {
                 node->parent = nodeStack.top();
-                A(node->parent);
                 node->parent->children.append(node);
             }
             nodeStack.append(node);
 
             foreach (const QXmlStreamAttribute &a, reader.attributes()) {
                 NodeImpl *attr = new NodeImpl;
+                attr->document = document;
                 attr->type = NodeImpl::Attr;
                 attr->namespaceUri = a.namespaceUri().toString();
                 attr->name = a.name().toString();
@@ -656,9 +673,9 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
         case QXmlStreamReader::Characters:
         {
             NodeImpl *node = new NodeImpl;
+            node->document = document;
             node->type = reader.isCDATA()?NodeImpl::CDATA:NodeImpl::Text;
             node->parent = nodeStack.top();
-            A(node->parent);
             node->parent->children.append(node);
             node->data = reader.text().toString();
         }
@@ -681,7 +698,9 @@ QScriptValue Document::load(QScriptEngine *engine, const QString &data)
 
     QScriptValue instance = engine->newObject();
     instance.setPrototype(Document::prototype(engine));
-    return engine->newVariant(instance, qVariantFromValue(Document(document)));
+    Node documentNode;
+    documentNode.d = document;
+    return engine->newVariant(instance, qVariantFromValue(documentNode));
 }
 
 Node::Node()
@@ -693,14 +712,6 @@ Node::Node(const Node &o)
 : d(o.d)
 {
     if (d) A(d);
-}
-
-Node &Node::operator=(const Node &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
 }
 
 Node::~Node()
@@ -761,15 +772,6 @@ NamedNodeMap::NamedNodeMap(const NamedNodeMap &o)
     if (d) A(d);
 }
 
-NamedNodeMap &NamedNodeMap::operator=(const NamedNodeMap &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    list = o.list;
-    return *this;
-}
-
 NamedNodeMap::~NamedNodeMap()
 {
     if (d) D(d);
@@ -778,20 +780,6 @@ NamedNodeMap::~NamedNodeMap()
 bool NamedNodeMap::isNull()
 {
     return d == 0;
-}
-
-QScriptValue NodeList::item(QScriptContext *context, QScriptEngine *engine)
-{
-    NodeList list = qscriptvalue_cast<NodeList>(context->thisObject().data());
-    if (list.isNull() || context->argumentCount() != 1)
-        return engine->undefinedValue();
-
-    qint32 index = context->argument(0).toInt32();
-
-    if (index >= list.d->children.count())
-        return engine->undefinedValue(); // ### Exception
-    else
-        return Node::create(engine, list.d->children.at(index));
 }
 
 QScriptValue NodeList::length(QScriptContext *context, QScriptEngine *engine)
@@ -807,7 +795,6 @@ QScriptValue NodeList::prototype(QScriptEngine *engine)
     QScriptValue proto = engine->newObject();
 
     proto.setProperty(QLatin1String("length"), engine->newFunction(length), QScriptValue::ReadOnly | QScriptValue::PropertyGetter);
-    proto.setProperty(QLatin1String("item"), engine->newFunction(item, 1), QScriptValue::ReadOnly);
 
     return proto;
 }
@@ -842,14 +829,6 @@ NodeList::NodeList(const NodeList &o)
     if (d) A(d);
 }
 
-NodeList &NodeList::operator=(const NodeList &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
-}
-
 NodeList::~NodeList()
 {
     if (d) D(d);
@@ -866,8 +845,7 @@ NamedNodeMapClass::QueryFlags NamedNodeMapClass::queryProperty(const QScriptValu
         return 0;
 
     NamedNodeMap map = qscriptvalue_cast<NamedNodeMap>(object.data());
-    if (map.isNull())
-        return 0;
+    Q_ASSERT(!map.isNull());
 
     bool ok = false;
     QString nameString = name.toString();
@@ -920,81 +898,36 @@ QScriptValue NodeListClass::property(const QScriptValue &object, const QScriptSt
     return Node::create(engine(), list.d->children.at(id));
 }
 
-Document::Document()
-: d(0)
-{
-}
-
-Document::Document(DocumentImpl *data)
-: d(data)
-{
-}
-
-Document::Document(const Document &o)
-: Node(o), d(o.d)
-{
-    if (d) A(d);
-}
-
-Document &Document::operator=(const Document &o)
-{
-    if (o.d) A(o.d);
-    if (d) D(d);
-    d = o.d;
-    return *this;
-}
-
-Document::~Document()
-{
-    if (d) D(d);
-}
-
-bool Document::isNull() const
-{
-    return d == 0;
-}
-
 QScriptValue Document::documentElement(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (!document.d->root) return engine->nullValue();
-
-    return Node::create(engine, document.d->root);
+    return Node::create(engine, static_cast<DocumentImpl *>(document.d)->root);
 }
 
 QScriptValue Document::xmlStandalone(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->isStandalone = context->argument(0).toBool();
-
-    return QScriptValue(document.d->isStandalone);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->isStandalone);
 }
 
 QScriptValue Document::xmlVersion(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->version = context->argument(0).toString();
-
-    return QScriptValue(document.d->version);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->version);
 }
 
 QScriptValue Document::xmlEncoding(QScriptContext *context, QScriptEngine *engine)
 {
-    Document document = qscriptvalue_cast<Document>(context->thisObject());
-    if (document.isNull()) return engine->undefinedValue();
+    Node document = qscriptvalue_cast<Node>(context->thisObject());
+    if (document.isNull() || document.d->type != NodeImpl::Document) return engine->undefinedValue();
 
-    if (context->argumentCount())
-        document.d->encoding = context->argument(0).toString();
-
-    return QScriptValue(document.d->encoding);
+    return QScriptValue(static_cast<DocumentImpl *>(document.d)->encoding);
 }
 
 class QmlXMLHttpRequest : public QObject
@@ -1179,7 +1112,7 @@ void QmlXMLHttpRequest::send(const QByteArray &data)
         QVariant var = request.header(QNetworkRequest::ContentTypeHeader);
         if (var.isValid()) {
             QString str = var.toString();
-            int charsetIdx = str.indexOf("charset=");
+            int charsetIdx = str.indexOf(QLatin1String("charset="));
             if (charsetIdx == -1) {
                 // No charset - append
                 if (!str.isEmpty()) str.append(QLatin1Char(';'));
@@ -1391,7 +1324,7 @@ static QScriptValue qmlxmlhttprequest_setRequestHeader(QScriptContext *context, 
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 2)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
 
     if (request->readyState() != QmlXMLHttpRequest::Opened ||
@@ -1472,7 +1405,7 @@ static QScriptValue qmlxmlhttprequest_getResponseHeader(QScriptContext *context,
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 1)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
@@ -1492,7 +1425,7 @@ static QScriptValue qmlxmlhttprequest_getAllResponseHeaders(QScriptContext *cont
         THROW_REFERENCE("Not an XMLHttpRequest object");
 
     if (context->argumentCount() != 0)
-        THROW_SYNTAX("Incorrect argument count");
+        THROW_DOM(SYNTAX_ERR, "Incorrect argument count");
 
     if (request->readyState() != QmlXMLHttpRequest::Loading &&
         request->readyState() != QmlXMLHttpRequest::Done &&
@@ -1634,23 +1567,23 @@ void qt_add_qmlxmlhttprequest(QScriptEngine *engine)
 
     // DOM Exception
     QScriptValue domExceptionPrototype = engine->newObject();
-    domExceptionPrototype.setProperty("INDEX_SIZE_ERR", INDEX_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("DOMSTRING_SIZE_ERR", DOMSTRING_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("HIERARCHY_REQUEST_ERR", HIERARCHY_REQUEST_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("WRONG_DOCUMENT_ERR", WRONG_DOCUMENT_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_CHARACTER_ERR", INVALID_CHARACTER_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NO_DATA_ALLOWED_ERR", NO_DATA_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NO_MODIFICATION_ALLOWED_ERR", NO_MODIFICATION_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NOT_FOUND_ERR", NOT_FOUND_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NOT_SUPPORTED_ERR", NOT_SUPPORTED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INUSE_ATTRIBUTE_ERR", INUSE_ATTRIBUTE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_STATE_ERR", INVALID_STATE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("SYNTAX_ERR", SYNTAX_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_MODIFICATION_ERR", INVALID_MODIFICATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("NAMESPACE_ERR", NAMESPACE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("INVALID_ACCESS_ERR", INVALID_ACCESS_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("VALIDATION_ERR", VALIDATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
-    domExceptionPrototype.setProperty("TYPE_MISMATCH_ERR", TYPE_MISMATCH_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INDEX_SIZE_ERR"), INDEX_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("DOMSTRING_SIZE_ERR"), DOMSTRING_SIZE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("HIERARCHY_REQUEST_ERR"), HIERARCHY_REQUEST_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("WRONG_DOCUMENT_ERR"), WRONG_DOCUMENT_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_CHARACTER_ERR"), INVALID_CHARACTER_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NO_DATA_ALLOWED_ERR"), NO_DATA_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NO_MODIFICATION_ALLOWED_ERR"), NO_MODIFICATION_ALLOWED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NOT_FOUND_ERR"), NOT_FOUND_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NOT_SUPPORTED_ERR"), NOT_SUPPORTED_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INUSE_ATTRIBUTE_ERR"), INUSE_ATTRIBUTE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_STATE_ERR"), INVALID_STATE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("SYNTAX_ERR"), SYNTAX_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_MODIFICATION_ERR"), INVALID_MODIFICATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("NAMESPACE_ERR"), NAMESPACE_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("INVALID_ACCESS_ERR"), INVALID_ACCESS_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("VALIDATION_ERR"), VALIDATION_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
+    domExceptionPrototype.setProperty(QLatin1String("TYPE_MISMATCH_ERR"), TYPE_MISMATCH_ERR, QScriptValue::ReadOnly | QScriptValue::Undeletable | QScriptValue::SkipInEnumeration);
 
     engine->globalObject().setProperty(QLatin1String("DOMException"), domExceptionPrototype);
 }

@@ -14,17 +14,17 @@ Rectangle {
         Rectangle {
             objectName: "item1"
             height: view.height; width: view.width; color: "#FFFEF0"
-            Text { text: "Page 1"; font.bold: true; anchors.centerIn: parent }
+            Text { objectName: "text1"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
             objectName: "item2"
             height: view.height; width: view.width; color: "#F0FFF7"
-            Text { text: "Page 2"; font.bold: true; anchors.centerIn: parent }
+            Text { objectName: "text2"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
         Rectangle {
             objectName: "item3"
             height: view.height; width: view.width; color: "#F4F0FF"
-            Text { text: "Page 3"; font.bold: true; anchors.centerIn: parent }
+            Text { objectName: "text3"; text: "index: " + parent.VisualItemModel.index; font.bold: true; anchors.centerIn: parent }
         }
     }
 
