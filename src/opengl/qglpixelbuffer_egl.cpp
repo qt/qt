@@ -72,37 +72,53 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
         return false;
     }
 
+    // Find the shared context.
+    QEglContext *shareContext = 0;
+    if (shareWidget && shareWidget->d_func()->glcx)
+        shareContext = shareWidget->d_func()->glcx->d_func()->eglContext;
+
     // Choose an appropriate configuration.  We use the best format
     // we can find, even if it is greater than the requested format.
     // We try for a pbuffer that is capable of texture rendering if possible.
-    QEglProperties configProps;
-    qt_egl_set_format(configProps, QInternal::Pbuffer, f);
-    configProps.setRenderableType(ctx->api());
-    bool ok = false;
+    textureFormat = EGL_NONE;
+    if (shareContext) {
+        // Use the same configuration as the widget we are sharing with.
+        ctx->setConfig(shareContext->config());
 #if QGL_RENDER_TEXTURE
-    textureFormat = EGL_TEXTURE_RGBA;
-    configProps.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
-    ok = ctx->chooseConfig(configProps, QEgl::BestPixelFormat);
-    if (!ok) {
-        // Try again with RGB texture rendering.
-        textureFormat = EGL_TEXTURE_RGB;
-        configProps.removeValue(EGL_BIND_TO_TEXTURE_RGBA);
-        configProps.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
+        EGLint value = EGL_FALSE;
+        if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGBA, &value) && value)
+            textureFormat = EGL_TEXTURE_RGBA;
+        else if (ctx->configAttrib(EGL_BIND_TO_TEXTURE_RGB, &value) && value)
+            textureFormat = EGL_TEXTURE_RGB;
+#endif
+    } else {
+        QEglProperties configProps;
+        qt_egl_set_format(configProps, QInternal::Pbuffer, f);
+        configProps.setRenderableType(ctx->api());
+        bool ok = false;
+#if QGL_RENDER_TEXTURE
+        textureFormat = EGL_TEXTURE_RGBA;
+        configProps.setValue(EGL_BIND_TO_TEXTURE_RGBA, EGL_TRUE);
         ok = ctx->chooseConfig(configProps, QEgl::BestPixelFormat);
         if (!ok) {
-            // One last try for a pbuffer with no texture rendering.
-            configProps.removeValue(EGL_BIND_TO_TEXTURE_RGB);
-            textureFormat = EGL_NONE;
+            // Try again with RGB texture rendering.
+            textureFormat = EGL_TEXTURE_RGB;
+            configProps.removeValue(EGL_BIND_TO_TEXTURE_RGBA);
+            configProps.setValue(EGL_BIND_TO_TEXTURE_RGB, EGL_TRUE);
+            ok = ctx->chooseConfig(configProps, QEgl::BestPixelFormat);
+            if (!ok) {
+                // One last try for a pbuffer with no texture rendering.
+                configProps.removeValue(EGL_BIND_TO_TEXTURE_RGB);
+                textureFormat = EGL_NONE;
+            }
         }
-    }
-#else
-    textureFormat = EGL_NONE;
 #endif
-    if (!ok) {
-        if (!ctx->chooseConfig(configProps, QEgl::BestPixelFormat)) {
-            delete ctx;
-            ctx = 0;
-            return false;
+        if (!ok) {
+            if (!ctx->chooseConfig(configProps, QEgl::BestPixelFormat)) {
+                delete ctx;
+                ctx = 0;
+                return false;
+            }
         }
     }
 
@@ -137,9 +153,6 @@ bool QGLPixelBufferPrivate::init(const QSize &size, const QGLFormat &f, QGLWidge
     }
 
     // Create a new context for the configuration.
-    QEglContext *shareContext = 0;
-    if (shareWidget && shareWidget->d_func()->glcx)
-        shareContext = shareWidget->d_func()->glcx->d_func()->eglContext;
     if (!ctx->createContext(shareContext)) {
         delete ctx;
         ctx = 0;

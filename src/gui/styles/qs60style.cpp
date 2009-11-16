@@ -668,7 +668,7 @@ void QS60StylePrivate::setThemePalette(QPalette *palette) const
         s60Color(QS60StyleEnums::CL_QsnTextColors, 55, 0));
     palette->setColor(QPalette::BrightText, palette->color(QPalette::WindowText).lighter());
     palette->setColor(QPalette::HighlightedText,
-        s60Color(QS60StyleEnums::CL_QsnTextColors, 10, 0));
+        s60Color(QS60StyleEnums::CL_QsnTextColors, 24, 0));
     palette->setColor(QPalette::Link,
         s60Color(QS60StyleEnums::CL_QsnHighlightColors, 3, 0));
     palette->setColor(QPalette::LinkVisited, palette->color(QPalette::Link).darker());
@@ -783,6 +783,14 @@ void QS60StylePrivate::setThemePaletteHash(QPalette *palette) const
     widgetPalette.setBrush(QPalette::Window, QBrush());
     QApplication::setPalette(widgetPalette, "QScrollArea");
     widgetPalette = *palette;
+
+    //Webpages should not use S60 theme colors as they are designed to work
+    //with themeBackground and do not generally mesh well with web page backgrounds.
+    QPalette webPalette = *palette;
+    webPalette.setColor(QPalette::WindowText, Qt::black);
+    webPalette.setColor(QPalette::Text, Qt::black);
+    QApplication::setPalette(webPalette, "QWebView");
+    QApplication::setPalette(webPalette, "QGraphicsWebView");
 }
 
 QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlags flags)
@@ -2007,7 +2015,7 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
             buttonRect.adjust(0,-newY,0,-newY);
 
             painter->save();
-            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnIconColors, 13, option);
+            QColor themeColor = d->s60Color(QS60StyleEnums::CL_QsnTextColors, 6, option);
             QColor buttonTextColor = option->palette.buttonText().color();
             if (themeColor != buttonTextColor)
                 painter->setPen(buttonTextColor);
