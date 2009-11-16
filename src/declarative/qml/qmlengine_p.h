@@ -112,7 +112,6 @@ public:
     struct CapturedProperty {
         CapturedProperty(QObject *o, int c, int n)
             : object(o), coreIndex(c), notifyIndex(n) {}
-        CapturedProperty(const QmlMetaProperty &);
 
         QObject *object;
         int coreIndex;
@@ -123,9 +122,6 @@ public:
     QmlContext *rootContext;
     QmlExpression *currentExpression;
     bool isDebugging;
-#ifdef QT_SCRIPTTOOLS_LIB
-    QScriptEngineDebugger *debugger;
-#endif
 
     struct ImportedNamespace;
     QmlContextScriptClass *contextClass;

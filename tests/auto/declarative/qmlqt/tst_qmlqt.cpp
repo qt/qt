@@ -213,6 +213,9 @@ void tst_qmlqt::lighter()
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(1, 0.8, 0.3).lighter());
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor("red").lighter());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());
 
     delete object;
 }
@@ -226,6 +229,9 @@ void tst_qmlqt::darker()
     QCOMPARE(qvariant_cast<QColor>(object->property("test1")), QColor::fromRgbF(1, 0.8, 0.3).darker());
     QCOMPARE(qvariant_cast<QColor>(object->property("test2")), QColor());
     QCOMPARE(qvariant_cast<QColor>(object->property("test3")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test4")), QColor("red").darker());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test5")), QColor());
+    QCOMPARE(qvariant_cast<QColor>(object->property("test6")), QColor());
 
     delete object;
 }

@@ -1004,6 +1004,9 @@ void tst_QmlGraphicsListView::cacheBuffer()
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
+    QVERIFY(listview->delegate() != 0);
+    QVERIFY(listview->model() != 0);
+    QVERIFY(listview->highlight() == 0);
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -1015,6 +1018,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     }
 
     listview->setCacheBuffer(400);
+    QVERIFY(listview->cacheBuffer() == 400);
 
     int newItemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     QVERIFY(newItemCount > itemCount);
