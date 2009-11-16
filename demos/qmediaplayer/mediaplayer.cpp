@@ -471,7 +471,7 @@ void MediaPlayer::effectChanged()
 
 void MediaPlayer::showSettingsDialog()
 {
-    playPauseForDialog();
+    const bool hasPausedForDialog = playPauseForDialog();
 
     if (!settingsDialog)
         initSettingsDialog();
@@ -519,7 +519,8 @@ void MediaPlayer::showSettingsDialog()
         ui->audioEffectsCombo->setCurrentIndex(currentEffect);
     }
 
-    playPauseForDialog();
+    if (hasPausedForDialog)
+        m_MediaObject.play();
 }
 
 void MediaPlayer::initVideoWindow()
@@ -656,24 +657,29 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
-void MediaPlayer::playPauseForDialog()
+bool MediaPlayer::playPauseForDialog()
 {
-    // If we're running on a small screen, we want to pause the video
-    // when popping up dialogs.
-    if (m_hasSmallScreen &&
-        (Phonon::PlayingState == m_MediaObject.state() ||
-         Phonon::PausedState == m_MediaObject.state()))
-        playPause();
+    // If we're running on a small screen, we want to pause the video when
+    // popping up dialogs. We neither want to tamper with the state if the
+    // user has paused.
+    if (m_hasSmallScreen && m_MediaObject.hasVideo()) {
+        if (Phonon::PlayingState == m_MediaObject.state()) {
+            m_MediaObject.pause();
+            return true;
+        }
+    }
+    return false;
 }
 
 void MediaPlayer::openFile()
 {
-    playPauseForDialog();
+    const bool hasPausedForDialog = playPauseForDialog();
 
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
                                                           QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
 
-    playPauseForDialog();
+    if (hasPausedForDialog)
+        m_MediaObject.play();
 
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {

@@ -111,7 +111,7 @@ private slots:
     void hasVideoChanged(bool);
 
 private:
-    void playPauseForDialog();
+    bool playPauseForDialog();
 
     QIcon playIcon;
     QIcon pauseIcon;
