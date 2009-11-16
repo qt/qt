@@ -63,6 +63,12 @@
 
 QT_BEGIN_NAMESPACE
 
+namespace {
+    const QString PageNotFoundMessage =
+        QObject::tr("<title>Error 404...</title><div align=\"center\"><br><br>"
+        "<h1>The page could not be found</h1><br><h3>'%1'</h3></div>");
+}
+
 #if !defined(QT_NO_WEBKIT)
 
 class HelpNetworkReply : public QNetworkReply
@@ -151,7 +157,10 @@ QNetworkReply *HelpNetworkAccessManager::createRequest(Operation /*op*/,
         mimeType = QLatin1String("text/html");
     }
 
-    return new HelpNetworkReply(request, helpEngine->fileData(url), mimeType);
+    const QByteArray &data = helpEngine->findFile(url).isValid()
+        ? helpEngine->fileData(url)
+        : PageNotFoundMessage.arg(url.toString()).toUtf8();
+    return new HelpNetworkReply(request, data, mimeType);
 }
 
 class HelpPage : public QWebPage
@@ -425,9 +434,7 @@ void HelpViewer::setSource(const QUrl &url)
             "assistantinternal-1.0.0/assistant/assistant.html")));
     } else {
         QTextBrowser::setSource(url);
-        setHtml(tr("<title>Error 404...</title><div align=\"center\"><br><br>"
-            "<h1>The page could not be found</h1><br><h3>'%1'</h3></div>")
-            .arg(url.toString()));
+        setHtml(PageNotFoundMessage.arg(url.toString()));
         emit sourceChanged(url);
     }
 }
