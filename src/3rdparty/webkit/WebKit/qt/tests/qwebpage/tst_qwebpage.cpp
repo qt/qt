@@ -1404,9 +1404,9 @@ void tst_QWebPage::inputMethods()
     QVERIFY(inputs.at(0).geometry().contains(variant.toRect().topLeft()));
 
     //ImFont
-    variant = page->inputMethodQuery(Qt::ImFont);
-    QFont font = variant.value<QFont>();
-    QCOMPARE(QString("-webkit-serif"), font.family());
+    //variant = page->inputMethodQuery(Qt::ImFont);
+    //QFont font = variant.value<QFont>();
+    //QCOMPARE(QString("-webkit-serif"), font.family());
 
     QList<QInputMethodEvent::Attribute> inputAttributes;
 
