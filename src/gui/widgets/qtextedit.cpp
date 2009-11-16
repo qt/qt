@@ -1901,7 +1901,7 @@ void QTextEdit::setOverwriteMode(bool overwrite)
     \brief the tab stop width in pixels
     \since 4.1
 
-    By default, this property contains a value of 80.
+    By default, this property contains a value of 80 pixels.
 */
 
 int QTextEdit::tabStopWidth() const
