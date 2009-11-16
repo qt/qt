@@ -47,10 +47,6 @@
 #include <private/qscriptdeclarativeclass_p.h>
 #include <private/qmlglobalscriptclass_p.h>
 
-#ifdef QT_SCRIPTTOOLS_LIB
-#include <QScriptEngineDebugger>
-#endif
-
 #include <QScriptClass>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -101,7 +97,6 @@ Q_DECLARE_METATYPE(QList<QObject *>);
 
 QT_BEGIN_NAMESPACE
 
-DEFINE_BOOL_CONFIG_OPTION(qmlDebugger, QML_DEBUGGER)
 DEFINE_BOOL_CONFIG_OPTION(qmlImportTrace, QML_IMPORT_TRACE)
 
 QML_DEFINE_TYPE(Qt,4,6,Object,QObject)
@@ -229,12 +224,6 @@ void QmlEnginePrivate::init()
     typeNameClass = new QmlTypeNameScriptClass(q);
     listClass = new QmlListScriptClass(q);
     rootContext = new QmlContext(q,true);
-#ifdef QT_SCRIPTTOOLS_LIB
-    if (qmlDebugger()){
-        debugger = new QScriptEngineDebugger(q);
-        debugger->attachTo(&scriptEngine);
-    }
-#endif
 
     if (QCoreApplication::instance()->thread() == q->thread() &&
         QmlEngineDebugServer::isDebuggingEnabled()) {
@@ -244,11 +233,6 @@ void QmlEnginePrivate::init()
 
         qmlEngineDebugServer()->waitForClients();
     }
-}
-
-QmlEnginePrivate::CapturedProperty::CapturedProperty(const QmlMetaProperty &p)
-: object(p.object()), coreIndex(p.coreIndex()), notifyIndex(p.property().notifySignalIndex())
-{
 }
 
 /*!

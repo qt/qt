@@ -90,6 +90,38 @@ private:
     QList<T*> findItems(QmlGraphicsItem *parent, const QString &objectName);
 };
 
+class TestObject : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(bool error READ error WRITE setError NOTIFY changedError)
+    Q_PROPERTY(bool animate READ animate NOTIFY changedAnim)
+    Q_PROPERTY(bool invalidHighlight READ invalidHighlight NOTIFY changedHl)
+
+public:
+    TestObject(QObject *parent = 0)
+        : QObject(parent), mError(true), mAnimate(false), mInvalidHighlight(false) {}
+
+    bool error() const { return mError; }
+    void setError(bool err) { mError = err; emit changedError(); }
+
+    bool animate() const { return mAnimate; }
+    void setAnimate(bool anim) { mAnimate = anim; emit changedAnim(); }
+
+    bool invalidHighlight() const { return mInvalidHighlight; }
+    void setInvalidHighlight(bool invalid) { mInvalidHighlight = invalid; emit changedHl(); }
+
+signals:
+    void changedError();
+    void changedAnim();
+    void changedHl();
+
+public:
+    bool mError;
+    bool mAnimate;
+    bool mInvalidHighlight;
+};
+
 class TestModel : public QListModelInterface
 {
     Q_OBJECT
@@ -243,7 +275,9 @@ void tst_QmlGraphicsListView::items()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -253,6 +287,9 @@ void tst_QmlGraphicsListView::items()
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
+
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
 
     QCOMPARE(listview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
@@ -268,6 +305,16 @@ void tst_QmlGraphicsListView::items()
         QVERIFY(number != 0);
         QCOMPARE(number->text(), model.number(i));
     }
+
+    // switch to other delegate
+    testObject->setAnimate(true);
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+
+    // set invalid highlight
+    testObject->setInvalidHighlight(true);
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
 
     // set an empty model and confirm that items are destroyed
     T model2;
@@ -294,7 +341,9 @@ void tst_QmlGraphicsListView::changed()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -328,7 +377,9 @@ void tst_QmlGraphicsListView::inserted()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -415,7 +466,10 @@ void tst_QmlGraphicsListView::removed(bool animated)
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(animated));
+
+    TestObject *testObject = new TestObject;
+    testObject->setAnimate(animated);
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -526,7 +580,9 @@ void tst_QmlGraphicsListView::moved()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -665,7 +721,9 @@ void tst_QmlGraphicsListView::spacing()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -934,7 +992,9 @@ void tst_QmlGraphicsListView::cacheBuffer()
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testModel", &model);
-    ctxt->setContextProperty("testAnimate", QVariant(false));
+
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
 
     canvas->execute();
     qApp->processEvents();
@@ -944,6 +1004,9 @@ void tst_QmlGraphicsListView::cacheBuffer()
 
     QmlGraphicsItem *viewport = listview->viewport();
     QVERIFY(viewport != 0);
+    QVERIFY(listview->delegate() != 0);
+    QVERIFY(listview->model() != 0);
+    QVERIFY(listview->highlight() == 0);
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -955,6 +1018,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     }
 
     listview->setCacheBuffer(400);
+    QVERIFY(listview->cacheBuffer() == 400);
 
     int newItemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
     QVERIFY(newItemCount > itemCount);

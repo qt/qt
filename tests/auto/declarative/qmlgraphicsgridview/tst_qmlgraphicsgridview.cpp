@@ -390,7 +390,11 @@ void tst_QmlGraphicsGridView::removed()
     gridview->setViewportY(120);
     gridview->setCurrentIndex(10);
 
+    // let transitions settle.
+    QTest::qWait(300);
+
     model.removeItem(1);
+
     // let transitions settle.
     QTest::qWait(300);
 
