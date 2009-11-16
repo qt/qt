@@ -751,6 +751,7 @@ void tst_QFile::readAllStdin()
 
     QProcess process;
     process.start("stdinprocess/stdinprocess all");
+    QVERIFY( process.waitForStarted() );
     for (int i = 0; i < 5; ++i) {
         QTest::qWait(1000);
         process.write(lotsOfData);
