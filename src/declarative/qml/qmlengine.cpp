@@ -427,22 +427,16 @@ QmlContext *QmlEngine::contextForObject(const QObject *object)
  */
 void QmlEngine::setContextForObject(QObject *object, QmlContext *context)
 {
-    QObjectPrivate *priv = QObjectPrivate::get(object);
+    if (!object || !context)
+        return;
 
-    QmlDeclarativeData *data =
-        static_cast<QmlDeclarativeData *>(priv->declarativeData);
-
-    if (data && data->context) {
+    QmlDeclarativeData *data = QmlDeclarativeData::get(object, true);
+    if (data->context) {
         qWarning("QmlEngine::setContextForObject(): Object already has a QmlContext");
         return;
     }
 
-    if (!data) {
-        priv->declarativeData = new QmlDeclarativeData(context);
-    } else {
-        data->context = context;
-    }
-
+    data->context = context;
     context->d_func()->contextObjects.append(object);
 }
 

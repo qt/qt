@@ -18,6 +18,7 @@ SUBDIRS += \
            qmldom \                 # Cover
            qmleasefollow \          # Cover
            qmlecmascript \          # Cover
+           qmlengine     \          # Cover
            qmlerror \               # Cover
            qmlfontloader \          # Cover
            qmlgraphicsborderimage \ # Cover
