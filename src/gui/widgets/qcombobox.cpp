@@ -1111,6 +1111,32 @@ void QComboBoxPrivate::updateLineEditGeometry()
     lineEdit->setGeometry(editRect);
 }
 
+Qt::MatchFlags QComboBoxPrivate::matchFlags() const
+{
+    // Base how duplicates are determined on the autocompletion case sensitivity
+    Qt::MatchFlags flags = Qt::MatchFixedString;
+#ifndef QT_NO_COMPLETER
+    if (!lineEdit->completer() || lineEdit->completer()->caseSensitivity() == Qt::CaseSensitive)
+#endif
+        flags |= Qt::MatchCaseSensitive;
+    return flags;
+}
+
+
+void QComboBoxPrivate::_q_editingFinished()
+{
+    Q_Q(QComboBox);
+    if (lineEdit && !lineEdit->text().isEmpty()) {
+        //here we just check if the current item was entered
+        const int index = q_func()->findText(lineEdit->text(), matchFlags());
+        if (index != -1 && itemText(currentIndex) != lineEdit->text()) {
+            q->setCurrentIndex(index);
+            emitActivated(currentIndex);
+        }
+    }
+
+}
+
 void QComboBoxPrivate::_q_returnPressed()
 {
     Q_Q(QComboBox);
@@ -1123,13 +1149,7 @@ void QComboBoxPrivate::_q_returnPressed()
         // check for duplicates (if not enabled) and quit
         int index = -1;
         if (!duplicatesEnabled) {
-            // Base how duplicates are determined on the autocompletion case sensitivity
-            Qt::MatchFlags flags = Qt::MatchFixedString;
-#ifndef QT_NO_COMPLETER
-            if (!lineEdit->completer() || lineEdit->completer()->caseSensitivity() == Qt::CaseSensitive)
-#endif
-                flags |= Qt::MatchCaseSensitive;
-            index = q->findText(text, flags);
+            index = q->findText(text, matchFlags());
             if (index != -1) {
                 q->setCurrentIndex(index);
                 emitActivated(currentIndex);
@@ -1664,6 +1684,7 @@ void QComboBox::setLineEdit(QLineEdit *edit)
     if (d->lineEdit->parent() != this)
         d->lineEdit->setParent(this);
     connect(d->lineEdit, SIGNAL(returnPressed()), this, SLOT(_q_returnPressed()));
+    connect(d->lineEdit, SIGNAL(editingFinished()), this, SLOT(_q_editingFinished()));
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(editTextChanged(QString)));
 #ifdef QT3_SUPPORT
     connect(d->lineEdit, SIGNAL(textChanged(QString)), this, SIGNAL(textChanged(QString)));
@@ -1960,7 +1981,7 @@ void QComboBoxPrivate::setCurrentIndex(const QModelIndex &mi)
     if (lineEdit) {
         QString newText = q->itemText(currentIndex.row());
         if (lineEdit->text() != newText)
-            lineEdit->setText(q->itemText(currentIndex.row()));
+            lineEdit->setText(newText);
         updateLineEditGeometry();
     }
     if (indexChanged) {

@@ -153,7 +153,7 @@ EXPORTS
 	?trimmed@QByteArray@@QBE?AV1@XZ @ 152 NONAME ; class QByteArray QByteArray::trimmed(void) const
 	??1QObjectUserData@@UAE@XZ @ 153 NONAME ; QObjectUserData::~QObjectUserData(void)
 	?event@QAbstractState@@MAE_NPAVQEvent@@@Z @ 154 NONAME ; bool QAbstractState::event(class QEvent *)
-	?qShapeItem@@YAEPAUHB_ShaperItem@@@Z @ 155 NONAME ; unsigned char qShapeItem(struct HB_ShaperItem *)
+	?qShapeItem@@YAEPAUHB_ShaperItem@@@Z @ 155 NONAME ABSENT ; unsigned char qShapeItem(struct HB_ShaperItem *)
 	??9QLocale@@QBE_NABV0@@Z @ 156 NONAME ; bool QLocale::operator!=(class QLocale const &) const
 	?started@QThread@@IAEXXZ @ 157 NONAME ; void QThread::started(void)
 	?postEvent@QStateMachine@@QAEXPAVQEvent@@W4EventPriority@1@@Z @ 158 NONAME ; void QStateMachine::postEvent(class QEvent *, enum QStateMachine::EventPriority)
@@ -235,7 +235,7 @@ EXPORTS
 	?columnsInserted@QAbstractItemModel@@AAEXABVQModelIndex@@HH@Z @ 234 NONAME ; void QAbstractItemModel::columnsInserted(class QModelIndex const &, int, int)
 	?getStaticMetaObject@QState@@SAABUQMetaObject@@XZ @ 235 NONAME ; struct QMetaObject const & QState::getStaticMetaObject(void)
 	?getStaticMetaObject@QAnimationGroup@@SAABUQMetaObject@@XZ @ 236 NONAME ; struct QMetaObject const & QAnimationGroup::getStaticMetaObject(void)
-	?setAnimationsEnabled@QStateMachine@@QAEX_N@Z @ 237 NONAME ; void QStateMachine::setAnimationsEnabled(bool)
+	?setAnimationsEnabled@QStateMachine@@QAEX_N@Z @ 237 NONAME ABSENT ; void QStateMachine::setAnimationsEnabled(bool)
 	??MQLatin1String@@QBE_NABVQString@@@Z @ 238 NONAME ; bool QLatin1String::operator<(class QString const &) const
 	?contains@QSettings@@QBE_NABVQString@@@Z @ 239 NONAME ; bool QSettings::contains(class QString const &) const
 	?wrap@QNonContiguousByteDeviceFactory@@SAPAVQIODevice@@PAVQNonContiguousByteDevice@@@Z @ 240 NONAME ; class QIODevice * QNonContiguousByteDeviceFactory::wrap(class QNonContiguousByteDevice *)
@@ -724,7 +724,7 @@ EXPORTS
 	?fileEngine@QFile@@UBEPAVQAbstractFileEngine@@XZ @ 723 NONAME ; class QAbstractFileEngine * QFile::fileEngine(void) const
 	??1QAbstractState@@UAE@XZ @ 724 NONAME ; QAbstractState::~QAbstractState(void)
 	?resume@QAbstractAnimation@@QAEXXZ @ 725 NONAME ; void QAbstractAnimation::resume(void)
-	?addTransition@QState@@QAEPAVQAbstractTransition@@PAV2@@Z @ 726 NONAME ; class QAbstractTransition * QState::addTransition(class QAbstractTransition *)
+	?addTransition@QState@@QAEPAVQAbstractTransition@@PAV2@@Z @ 726 NONAME ABSENT ; class QAbstractTransition * QState::addTransition(class QAbstractTransition *)
 	?rowsRemoved@QAbstractItemModel@@AAEXABVQModelIndex@@HH@Z @ 727 NONAME ; void QAbstractItemModel::rowsRemoved(class QModelIndex const &, int, int)
 	?intersects@QRect@@QBE_NABV1@@Z @ 728 NONAME ; bool QRect::intersects(class QRect const &) const
 	?size@QRect@@QBE?AVQSize@@XZ @ 729 NONAME ; class QSize QRect::size(void) const
@@ -1449,7 +1449,7 @@ EXPORTS
 	??0QTextStreamManipulator@@QAE@P8QTextStream@@AEXVQChar@@@Z0@Z @ 1448 NONAME ; QTextStreamManipulator::QTextStreamManipulator(void (*)(class QChar), class QChar)
 	??6QDebug@@QAEAAV0@PBX@Z @ 1449 NONAME ; class QDebug & QDebug::operator<<(void const *)
 	?d_func@QXmlStreamWriter@@AAEPAVQXmlStreamWriterPrivate@@XZ @ 1450 NONAME ; class QXmlStreamWriterPrivate * QXmlStreamWriter::d_func(void)
-	?animationsEnabled@QStateMachine@@QBE_NXZ @ 1451 NONAME ; bool QStateMachine::animationsEnabled(void) const
+	?animationsEnabled@QStateMachine@@QBE_NXZ @ 1451 NONAME ABSENT ; bool QStateMachine::animationsEnabled(void) const
 	?scale@QSize@@QAEXHHW4AspectRatioMode@Qt@@@Z @ 1452 NONAME ; void QSize::scale(int, int, enum Qt::AspectRatioMode)
 	?fileFlags@QFSFileEngine@@UBE?AV?$QFlags@W4FileFlag@QAbstractFileEngine@@@@V2@@Z @ 1453 NONAME ; class QFlags<enum QAbstractFileEngine::FileFlag> QFSFileEngine::fileFlags(class QFlags<enum QAbstractFileEngine::FileFlag>) const
 	??1QReadLocker@@QAE@XZ @ 1454 NONAME ; QReadLocker::~QReadLocker(void)
@@ -2195,7 +2195,7 @@ EXPORTS
 	??0QString@@QAE@VQChar@@@Z @ 2194 NONAME ; QString::QString(class QChar)
 	?namespaceUri@QXmlStreamNamespaceDeclaration@@QBE?AVQStringRef@@XZ @ 2195 NONAME ; class QStringRef QXmlStreamNamespaceDeclaration::namespaceUri(void) const
 	?patternSyntax@QRegExp@@QBE?AW4PatternSyntax@1@XZ @ 2196 NONAME ; enum QRegExp::PatternSyntax QRegExp::patternSyntax(void) const
-	?polished@QState@@IAEXXZ @ 2197 NONAME ; void QState::polished(void)
+	?polished@QState@@IAEXXZ @ 2197 NONAME ABSENT ; void QState::polished(void)
 	?finished@QProcess@@IAEXHW4ExitStatus@1@@Z @ 2198 NONAME ; void QProcess::finished(int, enum QProcess::ExitStatus)
 	?autoRemove@QTemporaryFile@@QBE_NXZ @ 2199 NONAME ; bool QTemporaryFile::autoRemove(void) const
 	?createLocalFile@QTemporaryFile@@SAPAV1@AAVQFile@@@Z @ 2200 NONAME ; class QTemporaryFile * QTemporaryFile::createLocalFile(class QFile &)
@@ -4380,4 +4380,12 @@ EXPORTS
 	?toHistoryState@QStateMachinePrivate@@SAPAVQHistoryState@@PAVQAbstractState@@@Z @ 4379 NONAME ; class QHistoryState * QStateMachinePrivate::toHistoryState(class QAbstractState *)
 	?toStandardState@QStateMachinePrivate@@SAPAVQState@@PAVQAbstractState@@@Z @ 4380 NONAME ; class QState * QStateMachinePrivate::toStandardState(class QAbstractState *)
 	?toStandardState@QStateMachinePrivate@@SAPBVQState@@PBVQAbstractState@@@Z @ 4381 NONAME ; class QState const * QStateMachinePrivate::toStandardState(class QAbstractState const *)
+	?QBasicAtomicPointer_isFetchAndAddNative@@YA_NXZ @ 4382 NONAME ; bool QBasicAtomicPointer_isFetchAndAddNative(void)
+	?QBasicAtomicPointer_isFetchAndStoreNative@@YA_NXZ @ 4383 NONAME ; bool QBasicAtomicPointer_isFetchAndStoreNative(void)
+	?QBasicAtomicPointer_isTestAndSetNative@@YA_NXZ @ 4384 NONAME ; bool QBasicAtomicPointer_isTestAndSetNative(void)
+	?addTransition@QState@@QAEXPAVQAbstractTransition@@@Z @ 4385 NONAME ; void QState::addTransition(class QAbstractTransition *)
+	?isAnimated@QStateMachine@@QBE_NXZ @ 4386 NONAME ; bool QStateMachine::isAnimated(void) const
+	?propertiesAssigned@QState@@IAEXXZ @ 4387 NONAME ; void QState::propertiesAssigned(void)
+	?qShapeItem@@YAEPAUHB_ShaperItem_@@@Z @ 4388 NONAME ; unsigned char qShapeItem(struct HB_ShaperItem_ *)
+	?setAnimated@QStateMachine@@QAEX_N@Z @ 4389 NONAME ; void QStateMachine::setAnimated(bool)
 

@@ -307,6 +307,18 @@ static void cleanupCocoaWindowDelegate()
     return m_windowHash->value(window);
 }
 
+- (BOOL)windowShouldZoom:(NSWindow *)window toFrame:(NSRect)newFrame
+{
+    Q_UNUSED(newFrame);
+    // saving the current window geometry before the window is maximized
+    QWidget *qwidget = m_windowHash->value(window);
+    if (qwidget->isWindow() && !(qwidget->windowState() & Qt::WindowMaximized)) {
+        QWidgetPrivate *widgetPrivate = qt_widget_private(qwidget);
+        widgetPrivate->topData()->normalGeometry = qwidget->geometry();
+    }
+    return YES;
+}
+
 - (NSRect)windowWillUseStandardFrame:(NSWindow *)window defaultFrame:(NSRect)defaultFrame
 {
     NSRect frameToReturn = defaultFrame;

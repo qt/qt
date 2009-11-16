@@ -799,8 +799,9 @@ void QPainterPath::quadTo(const QPointF &c, const QPointF &e)
     if (prev == c && c == e)
         return;
 
-    QPointF c1((prev.x() + 2*c.x()) / 3, (prev.y() + 2*c.y()) / 3);
-    QPointF c2((e.x() + 2*c.x()) / 3, (e.y() + 2*c.y()) / 3);
+    const qreal inv_3 = 1 / qreal(3);
+    QPointF c1((prev.x() + 2*c.x()) * inv_3, (prev.y() + 2*c.y()) * inv_3);
+    QPointF c2((e.x() + 2*c.x()) * inv_3, (e.y() + 2*c.y()) * inv_3);
     cubicTo(c1, c2, e);
 }
 
@@ -1804,22 +1805,24 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
         return false;
 
     if (p1 | p2) {
-        qreal dx = x2 - x1;
-        qreal dy = y2 - y1;
+        const qreal dx = x2 - x1;
+        const qreal dy = y2 - y1;
+        const qreal dx_dy_ratio = dx / dy;
+        const qreal dy_dx_ratio = dy / dx;
 
         // clip x coordinates
         if (x1 < left) {
-            y1 += dy/dx * (left - x1);
+            y1 += dy_dx_ratio * (left - x1);
             x1 = left;
         } else if (x1 > right) {
-            y1 -= dy/dx * (x1 - right);
+            y1 -= dy_dx_ratio * (x1 - right);
             x1 = right;
         }
         if (x2 < left) {
-            y2 += dy/dx * (left - x2);
+            y2 += dy_dx_ratio * (left - x2);
             x2 = left;
         } else if (x2 > right) {
-            y2 -= dy/dx * (x2 - right);
+            y2 -= dy_dx_ratio * (x2 - right);
             x2 = right;
         }
 
@@ -1833,17 +1836,17 @@ static bool qt_painterpath_isect_line_rect(qreal x1, qreal y1, qreal x2, qreal y
 
         // clip y coordinates
         if (y1 < top) {
-            x1 += dx/dy * (top - y1);
+            x1 += dx_dy_ratio * (top - y1);
             y1 = top;
         } else if (y1 > bottom) {
-            x1 -= dx/dy * (y1 - bottom);
+            x1 -= dx_dy_ratio * (y1 - bottom);
             y1 = bottom;
         }
         if (y2 < top) {
-            x2 += dx/dy * (top - y2);
+            x2 += dx_dy_ratio * (top - y2);
             y2 = top;
         } else if (y2 > bottom) {
-            x2 -= dx/dy * (y2 - bottom);
+            x2 -= dx_dy_ratio * (y2 - bottom);
             y2 = bottom;
         }
 

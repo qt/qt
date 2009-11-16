@@ -41,8 +41,15 @@
 
 #define LITERAL "some literal"
 
+// "some literal", but replacing all vocals by their umlauted UTF-8 string :)
+#define UTF8_LITERAL "s\xc3\xb6m\xc3\xab l\xc3\xaft\xc3\xabr\xc3\xa4l"
+
 void runScenario()
 {
+    // set codec for C strings to 0, enforcing Latin1
+    QTextCodec::setCodecForCStrings(0);
+    QVERIFY(!QTextCodec::codecForCStrings());
+
     QLatin1Literal l1literal(LITERAL);
     QLatin1String l1string(LITERAL);
     QString string(l1string);
@@ -70,6 +77,25 @@ void runScenario()
     r = string P LITERAL;
     QCOMPARE(r, r2);
     r = LITERAL P string;
+    QCOMPARE(r, r2);
+    r = ba P string;
+    QCOMPARE(r, r2);
+    r = string P ba;
+    QCOMPARE(r, r2);
+
+    // now test with codec for C strings set
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QVERIFY(QTextCodec::codecForCStrings());
+    QCOMPARE(QTextCodec::codecForCStrings()->name(), QByteArray("UTF-8"));
+
+    string = QString::fromUtf8(UTF8_LITERAL);
+    r2 = QString::fromUtf8(UTF8_LITERAL UTF8_LITERAL);
+    ba = UTF8_LITERAL;
+
+    r = string P UTF8_LITERAL;
+    QCOMPARE(r.size(), r2.size());
+    QCOMPARE(r, r2);
+    r = UTF8_LITERAL P string;
     QCOMPARE(r, r2);
     r = ba P string;
     QCOMPARE(r, r2);

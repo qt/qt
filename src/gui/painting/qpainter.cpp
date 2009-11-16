@@ -383,8 +383,8 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
                 QPainterPath stroke = stroker.createStroke(originalPath);
                 strokeBounds = (stroke * state->matrix).boundingRect();
             } else {
-                strokeOffsetX = qAbs(penWidth * state->matrix.m11() / 2.0);
-                strokeOffsetY = qAbs(penWidth * state->matrix.m22() / 2.0);
+                strokeOffsetX = qAbs(penWidth * state->matrix.m11() * qreal(0.5));
+                strokeOffsetY = qAbs(penWidth * state->matrix.m22() * qreal(0.5));
             }
         }
     }
@@ -467,7 +467,7 @@ void QPainterPrivate::draw_helper(const QPainterPath &originalPath, DrawOperatio
         pt.end();
         p.resetTransform();
         p.setCompositionMode(QPainter::CompositionMode_SourceAtop);
-        p.setOpacity(0.5);
+        p.setOpacity(qreal(0.5));
         p.fillRect(0, 0, image.width(), image.height(), QBrush(block));
     }
 #endif
@@ -3565,7 +3565,7 @@ void QPainter::drawPoints(const QPointF *points, int pointCount)
         QPainterPath path;
         for (int i=0; i<pointCount; ++i) {
             path.moveTo(points[i].x(), points[i].y());
-            path.lineTo(points[i].x() + 0.0001, points[i].y());
+            path.lineTo(points[i].x() + qreal(0.0001), points[i].y());
         }
         d->draw_helper(path, QPainterPrivate::StrokeDraw);
         if (flat_pen)
@@ -3627,7 +3627,7 @@ void QPainter::drawPoints(const QPoint *points, int pointCount)
         QPainterPath path;
         for (int i=0; i<pointCount; ++i) {
             path.moveTo(points[i].x(), points[i].y());
-            path.lineTo(points[i].x() + 0.0001, points[i].y());
+            path.lineTo(points[i].x() + qreal(0.0001), points[i].y());
         }
         d->draw_helper(path, QPainterPrivate::StrokeDraw);
         if (flat_pen)
@@ -3787,27 +3787,14 @@ void QPainter::setPen(const QPen &pen)
     if (d->state->pen == pen)
         return;
 
+    d->state->pen = pen;
+
     if (d->extended) {
-        d->state->pen = pen;
         d->checkEmulation();
         d->extended->penChanged();
         return;
     }
 
-    // Do some checks to see if we are the same pen.
-    Qt::PenStyle currentStyle = d->state->pen.style();
-    if (currentStyle == pen.style() && currentStyle != Qt::CustomDashLine) {
-        if (currentStyle == Qt::NoPen ||
-            (d->state->pen.isSolid() && pen.isSolid()
-             && d->state->pen.color() == pen.color()
-             && d->state->pen.widthF() == pen.widthF()
-             && d->state->pen.capStyle() == pen.capStyle()
-             && d->state->pen.joinStyle() == pen.joinStyle()
-             && d->state->pen.isCosmetic() == pen.isCosmetic()))
-            return;
-    }
-
-    d->state->pen = pen;
     d->state->dirtyFlags |= QPaintEngine::DirtyPen;
 }
 
@@ -3888,14 +3875,6 @@ void QPainter::setBrush(const QBrush &brush)
         d->checkEmulation();
         d->extended->brushChanged();
         return;
-    }
-
-    Qt::BrushStyle currentStyle = d->state->brush.style();
-    if (currentStyle == brush.style()) {
-        if (currentStyle == Qt::NoBrush
-            || (currentStyle == Qt::SolidPattern
-                && d->state->brush.color() == brush.color()))
-            return;
     }
 
     d->state->brush = brush;
@@ -4291,8 +4270,9 @@ void QPainter::drawArc(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    const qreal inv_16 = 1 / qreal(16.0);
+    path.arcMoveTo(rect, a * inv_16);
+    path.arcTo(rect, a * inv_16, alen * inv_16);
     strokePath(path, d->state->pen);
 }
 
@@ -4361,8 +4341,9 @@ void QPainter::drawPie(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
+    const qreal inv_16 = 1 / qreal(16.0);
     path.moveTo(rect.center());
-    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a/16.0, alen/16.0);
+    path.arcTo(rect.x(), rect.y(), rect.width(), rect.height(), a * inv_16, alen * inv_16);
     path.closeSubpath();
     drawPath(path);
 
@@ -4423,8 +4404,9 @@ void QPainter::drawChord(const QRectF &r, int a, int alen)
     QRectF rect = r.normalized();
 
     QPainterPath path;
-    path.arcMoveTo(rect, a/16.0);
-    path.arcTo(rect, a/16.0, alen/16.0);
+    const qreal inv_16 = 1 / qreal(16.0);
+    path.arcMoveTo(rect, a * inv_16);
+    path.arcTo(rect, a * inv_16, alen * inv_16);
     path.closeSubpath();
     drawPath(path);
 }
@@ -5926,7 +5908,7 @@ static QPainterPath generateWavyPath(qreal minWidth, qreal maxRadius, QPaintDevi
     QPainterPath path;
 
     bool up = true;
-    const qreal radius = qMax(qreal(.5), qMin(qreal(1.25 * device->logicalDpiY() / qt_defaultDpi()), maxRadius));
+    const qreal radius = qMax(qreal(.5), qMin(qreal(1.25) * device->logicalDpiY() / qt_defaultDpi(), maxRadius));
     qreal xs, ys;
     int i = 0;
     path.moveTo(0, radius);
@@ -6006,7 +5988,7 @@ static void drawTextItemDecoration(QPainter *painter, const QPointF &pos, const 
 
     if (ti.flags & QTextItem::StrikeOut) {
         QLineF strikeOutLine = line;
-        strikeOutLine.translate(0., - fe->ascent().toReal() / 3.);
+        strikeOutLine.translate(qreal(0.), - fe->ascent().toReal() / qreal(3.));
         painter->setPen(pen);
         painter->drawLine(strikeOutLine);
     }

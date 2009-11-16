@@ -342,7 +342,7 @@ void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
     }
     d->pic_d->pictb.seek(newpos);                  // set to new position
 
-    if (br.width() > 0.0 || br.height() > 0.0) {
+    if (br.width() > qreal(0.0) || br.height() > qreal(0.0)) {
         if (corr) {                             // widen bounding rect
             int w2 = painter()->pen().width() / 2;
             br.setCoords(br.left() - w2, br.top() - w2,
@@ -354,7 +354,7 @@ void QPicturePaintEngine::writeCmdLength(int pos, const QRectF &r, bool corr)
             br &= cr;
         }
 
-        if (br.width() > 0.0 || br.height() > 0.0) {
+        if (br.width() > qreal(0.0) || br.height() > qreal(0.0)) {
             int minx = qFloor(br.left());
             int miny = qFloor(br.top());
             int maxx = qCeil(br.right());

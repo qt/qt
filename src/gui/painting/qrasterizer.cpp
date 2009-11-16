@@ -44,6 +44,7 @@
 #include <QPoint>
 #include <QRect>
 
+#include <qmath.h>
 #include <private/qmath_p.h>
 #include <private/qdatabuffer_p.h>
 #include <private/qdrawhelper_p.h>
@@ -51,8 +52,8 @@
 QT_BEGIN_NAMESPACE
 
 typedef int Q16Dot16;
-#define Q16Dot16ToFloat(i) ((i)/65536.)
-#define FloatToQ16Dot16(i) (int)((i) * 65536.)
+#define Q16Dot16ToFloat(i) ((i)/qreal(65536.))
+#define FloatToQ16Dot16(i) (int)((i) * qreal(65536.))
 #define IntToQ16Dot16(i) ((i) << 16)
 #define Q16Dot16ToInt(i) ((i) >> 16)
 #define Q16Dot16Factor 65536
@@ -707,12 +708,12 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
     if (a == b || width == 0 || d->clipRect.isEmpty())
         return;
 
-    Q_ASSERT(width > 0.0);
+    Q_ASSERT(width > qreal(0.0));
 
     QPointF pa = a;
     QPointF pb = b;
 
-    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * 0.5;    
+    QPointF offs = QPointF(qAbs(b.y() - a.y()), qAbs(b.x() - a.x())) * width * qreal(0.5);
     if (squareCap)
         offs += QPointF(offs.y(), offs.x());
     const QRectF clip(d->clipRect.topLeft() - offs, d->clipRect.bottomRight() + QPoint(1, 1) + offs);
@@ -750,10 +751,12 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
     }
 
     if (!d->antialiased) {
-        pa.rx() += (COORD_OFFSET - COORD_ROUNDING)/64.;
-        pa.ry() += (COORD_OFFSET - COORD_ROUNDING)/64.;
-        pb.rx() += (COORD_OFFSET - COORD_ROUNDING)/64.;
-        pb.ry() += (COORD_OFFSET - COORD_ROUNDING)/64.;
+        const qreal inv_64 =  1 / qreal(64.);
+        const qreal delta = (COORD_OFFSET - COORD_ROUNDING) * inv_64;
+        pa.rx() += delta;
+        pa.ry() += delta;
+        pb.rx() += delta;
+        pb.ry() += delta;
     }
 
     {
@@ -778,7 +781,7 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
             return;
 
         // adjust width which is given relative to |b - a|
-        width *= sqrt(w0 / w);
+        width *= qSqrt(w0 / w);
     }
 
     QSpanBuffer buffer(d->blend, d->data, d->clipRect);
@@ -793,10 +796,11 @@ void QRasterizer::rasterizeLine(const QPointF &a, const QPointF &b, qreal width,
         pa = QPointF(x, y - dy);
         pb = QPointF(x, y + dy);
 
+        const qreal inv_width = 1 / width;
         if (squareCap)
-            width = 1 / width + 1.0f;
+            width = inv_width + 1.0f;
         else
-            width = 1 / width;
+            width = inv_width;
 
         squareCap = false;
     }
@@ -1192,8 +1196,10 @@ void QRasterizer::rasterize(const QPainterPath &path, Qt::FillRule fillRule)
 
     QRectF bounds = path.controlPointRect();
 
-    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
-    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - 0.5 + (COORD_OFFSET - COORD_ROUNDING)/64.));
+    const qreal inv_64 = 1 / qreal(64.);
+    const qreal delta = (COORD_OFFSET - COORD_ROUNDING) * inv_64 ;
+    int iTopBound = qMax(d->clipRect.top(), int(bounds.top() + qreal(0.5) + delta));
+    int iBottomBound = qMin(d->clipRect.bottom(), int(bounds.bottom() - qreal(0.5) + delta));
 
     if (iTopBound > iBottomBound)
         return;

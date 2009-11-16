@@ -732,8 +732,8 @@ bool Q_INTERNAL_WIN_NO_THROW QPNGImageWriter::writeImage(const QImage& image_in,
         png_set_compression_level(png_ptr, quality);
     }
 
-    if (gamma != 0.0) {
-        png_set_gAMA(png_ptr, info_ptr, 1.0/gamma);
+    if (gamma != qreal(0.0)) {
+        png_set_gAMA(png_ptr, info_ptr, qreal(1.0)/gamma);
     }
 
     png_set_write_fn(png_ptr, (void*)this, qpiw_write_fn, qpiw_flush_fn);

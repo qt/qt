@@ -321,11 +321,11 @@ void QIntersectionFinder::intersectLines(const QLineF &a, const QLineF &b, QData
     if (p1_equals_q1 || p1_equals_q2 || p2_equals_q1 || p2_equals_q2)
         return;
 
-
+    const qreal inv_par = 1 / qreal(par);
     const qreal tp = (qDelta.y() * (q1.x() - p1.x()) -
-                      qDelta.x() * (q1.y() - p1.y())) / par;
+                      qDelta.x() * (q1.y() - p1.y())) * inv_par;
     const qreal tq = (pDelta.y() * (q1.x() - p1.x()) -
-                      pDelta.x() * (q1.y() - p1.y())) / par;
+                      pDelta.x() * (q1.y() - p1.y())) * inv_par;
 
     if (tp<0 || tp>1 || tq<0 || tq>1)
         return;
@@ -1192,24 +1192,24 @@ static qreal computeAngle(const QPointF &v)
 {
 #if 1
     if (v.x() == 0) {
-        return v.y() <= 0 ? 0 : 64.;
+        return v.y() <= 0 ? 0 : qreal(64.);
     } else if (v.y() == 0) {
-        return v.x() <= 0 ? 32. : 96.;
+        return v.x() <= 0 ? qreal(32.) : qreal(96.);
     }
 
     QPointF nv = normalize(v);
     if (nv.y() < 0) {
         if (nv.x() < 0) { // 0 - 32
-            return -32. * nv.x();
+            return qreal(-32.) * nv.x();
         } else { // 96 - 128
-            return 128. - 32. * nv.x();
+            return qreal(128.) - qreal(32.) * nv.x();
         }
     } else { // 32 - 96
-        return 64. + 32 * nv.x();
+        return qreal(64.) + 32 * nv.x();
     }
 #else
     // doesn't seem to be robust enough
-    return atan2(v.x(), v.y()) + Q_PI;
+    return qAtan2(v.x(), v.y()) + Q_PI;
 #endif
 }
 

@@ -105,7 +105,7 @@ public:
         int top() const { return startValue().toInt(); }
         QRect rect() const { QRect rect = viewport->rect(); rect.moveTop(top()); return rect; }
         void updateCurrentValue(const QVariant &) { viewport->update(rect()); }
-        void updateState(State, State state) { if (state == Stopped) before = after = QPixmap(); }
+        void updateState(State state, State) { if (state == Stopped) before = after = QPixmap(); }
     } animatedOperation;
     void prepareAnimatedOperation(int item, QVariantAnimation::Direction d);
     void beginAnimatedOperation();

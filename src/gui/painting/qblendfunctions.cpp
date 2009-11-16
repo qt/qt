@@ -223,11 +223,23 @@ void qt_scale_image_16bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
+    quint32 basex;
+    quint32 srcy;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint16 *dst = ((quint16 *) (destPixels + ty1 * dbpl)) + tx1;
 
@@ -723,11 +735,23 @@ template <typename T> void qt_scale_image_32bit(uchar *destPixels, int dbpl,
     int h = ty2 - ty1;
     int w = tx2 - tx1;
 
-    const int dstx = qCeil((tx1 + 0.5 - qMin(targetRect.left(), targetRect.right())) * ix) - 1;
-    const int dsty = qCeil((ty1 + 0.5 - qMin(targetRect.top(), targetRect.bottom())) * iy) - 1;
+    quint32 basex;
+    quint32 srcy;
 
-    quint32 basex = quint32((sx < 0 ? srcRect.right() : srcRect.left()) * 65536) + dstx;
-    quint32 srcy = quint32((sy < 0 ? srcRect.bottom() : srcRect.top()) * 65536) + dsty;
+    if (sx < 0) {
+        int dstx = qFloor((tx1 + qreal(0.5) - targetRect.right()) * ix) + 1;
+        basex = quint32(srcRect.right() * 65536) + dstx;
+    } else {
+        int dstx = qCeil((tx1 + qreal(0.5) - targetRect.left()) * ix) - 1;
+        basex = quint32(srcRect.left() * 65536) + dstx;
+    }
+    if (sy < 0) {
+        int dsty = qFloor((ty1 + qreal(0.5) - targetRect.bottom()) * iy) + 1;
+        srcy = quint32(srcRect.bottom() * 65536) + dsty;
+    } else {
+        int dsty = qCeil((ty1 + qreal(0.5) - targetRect.top()) * iy) - 1;
+        srcy = quint32(srcRect.top() * 65536) + dsty;
+    }
 
     quint32 *dst = ((quint32 *) (destPixels + ty1 * dbpl)) + tx1;
 
@@ -818,8 +842,8 @@ void qt_transform_image_rasterize(DestT *destPixels, int dbpl,
     qreal rightSlope = (bottomRight.x - topRight.x) / (bottomRight.y - topRight.y);
     int dx_l = int(leftSlope * 0x10000);
     int dx_r = int(rightSlope * 0x10000);
-    int x_l = int((topLeft.x + (0.5 + fromY - topLeft.y) * leftSlope + 0.5) * 0x10000);
-    int x_r = int((topRight.x + (0.5 + fromY - topRight.y) * rightSlope + 0.5) * 0x10000);
+    int x_l = int((topLeft.x + (qreal(0.5) + fromY - topLeft.y) * leftSlope + qreal(0.5)) * 0x10000);
+    int x_r = int((topRight.x + (qreal(0.5) + fromY - topRight.y) * rightSlope + qreal(0.5)) * 0x10000);
 
     int fromX, toX, x1, x2, u, v, i, ii;
     DestT *line;
@@ -996,7 +1020,7 @@ void qt_transform_image(DestT *destPixels, int dbpl,
     if (det == 0)
         return;
 
-    qreal invDet = 1.0 / det;
+    qreal invDet = qreal(1.0) / det;
     qreal m11, m12, m21, m22, mdx, mdy;
 
     m11 = (u.u * w.y - u.y * w.u) * invDet;
@@ -1010,8 +1034,8 @@ void qt_transform_image(DestT *destPixels, int dbpl,
     int dvdx = int(m21 * 0x10000);
     int dudy = int(m12 * 0x10000);
     int dvdy = int(m22 * 0x10000);
-    int u0 = qCeil((0.5 * m11 + 0.5 * m12 + mdx) * 0x10000) - 1;
-    int v0 = qCeil((0.5 * m21 + 0.5 * m22 + mdy) * 0x10000) - 1;
+    int u0 = qCeil((qreal(0.5) * m11 + qreal(0.5) * m12 + mdx) * 0x10000) - 1;
+    int v0 = qCeil((qreal(0.5) * m21 + qreal(0.5) * m22 + mdy) * 0x10000) - 1;
 
     int x1 = qFloor(sourceRect.left());
     int y1 = qFloor(sourceRect.top());

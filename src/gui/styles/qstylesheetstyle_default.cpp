@@ -203,49 +203,6 @@ StyleSheet QStyleSheetStyle::getDefaultStyleSheet() const
         ADD_STYLE_RULE;
     }
 
-    /*QLineEdit[style="QCleanlooksStyle"] {
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }*/
-    if (baseStyle()->inherits("QCleanlooksStyle"))
-    {
-        SET_ELEMENT_NAME(QLatin1String("QLineEdit"));
-        ADD_BASIC_SELECTOR;
-        ADD_SELECTOR;
-
-
-        SET_PROPERTY(QLatin1String("padding-top"), PaddingTop);
-        ADD_VALUE(Value::Identifier, QString::fromLatin1("2px"));
-        ADD_DECLARATION;
-
-        SET_PROPERTY(QLatin1String("padding-bottom"), PaddingBottom);
-        ADD_VALUE(Value::Identifier, QString::fromLatin1("2px"));
-        ADD_DECLARATION;
-
-        ADD_STYLE_RULE;
-    }
-
-    /*QLineEdit[style="QWindowsXPStyle"],
-      QLineEdit[style="QWindowsVistaStyle"],
-      QLineEdit[style="QGtkStyle"] {
-        padding-top: 1px;
-        padding-bottom: 1px;
-    }*/
-    if (baseStyle()->inherits("QWindowsXPStyle") || baseStyle()->inherits("QGtkStyle"))
-    {
-        SET_ELEMENT_NAME(QLatin1String("QLineEdit"));
-
-        SET_PROPERTY(QLatin1String("padding-top"), PaddingTop);
-        ADD_VALUE(Value::Identifier, QString::fromLatin1("1px"));
-        ADD_DECLARATION;
-
-        SET_PROPERTY(QLatin1String("padding-bottom"), PaddingBottom);
-        ADD_VALUE(Value::Identifier, QString::fromLatin1("1px"));
-        ADD_DECLARATION;
-
-        ADD_STYLE_RULE;
-    }
-
     /*QFrame {
         border: native;
     }*/

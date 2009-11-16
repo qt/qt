@@ -120,7 +120,7 @@ QMacPinchGestureRecognizer::recognize(QGesture *gesture, QObject *obj, QEvent *e
         case QNativeGestureEvent::Zoom:
             g->setLastScaleFactor(g->scaleFactor());
             g->setLastRotationAngle(g->rotationAngle());
-            g->setScaleFactor(g->scaleFactor() + ev->percentage);
+            g->setScaleFactor(g->scaleFactor() * (1 + ev->percentage));
             g->setChangeFlags(QPinchGesture::ScaleFactorChanged);
             g->setTotalChangeFlags(g->totalChangeFlags() | g->changeFlags());
             return QGestureRecognizer::TriggerGesture | QGestureRecognizer::ConsumeEventHint;

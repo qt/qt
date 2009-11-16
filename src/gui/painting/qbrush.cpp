@@ -970,7 +970,29 @@ bool QBrush::operator==(const QBrush &b) const
 QDebug operator<<(QDebug dbg, const QBrush &b)
 {
 #ifndef Q_BROKEN_DEBUG_STREAM
-    dbg.nospace() << "QBrush(" << b.color() << ',' << b.style() << ')';
+    char *BRUSH_STYLES[] = {
+     "NoBrush",
+     "SolidPattern",
+     "Dense1Pattern",
+     "Dense2Pattern",
+     "Dense3Pattern",
+     "Dense4Pattern",
+     "Dense5Pattern",
+     "Dense6Pattern",
+     "Dense7Pattern",
+     "HorPattern",
+     "VerPattern",
+     "CrossPattern",
+     "BDiagPattern",
+     "FDiagPattern",
+     "DiagCrossPattern",
+     "LinearGradientPattern",
+     "RadialGradientPattern",
+     "ConicalGradientPattern",
+     "TexturePattern"
+    };
+
+    dbg.nospace() << "QBrush(" << b.color() << ',' << BRUSH_STYLES[b.style()] << ')';
     return dbg.space();
 #else
     qWarning("This compiler doesn't support streaming QBrush to QDebug");
@@ -1752,7 +1774,7 @@ static QPointF qt_radial_gradient_adapt_focal_point(const QPointF &center,
     // We have a one pixel buffer zone to avoid numerical instability on the
     // circle border
     //### this is hacky because technically we should adjust based on current matrix
-    const qreal compensated_radius = radius - radius * 0.001;
+    const qreal compensated_radius = radius - radius * qreal(0.001);
     QLineF line(center, focalPoint);
     if (line.length() > (compensated_radius))
         line.setLength(compensated_radius);

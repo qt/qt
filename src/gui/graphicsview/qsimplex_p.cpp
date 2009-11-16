@@ -288,7 +288,7 @@ bool QSimplex::setConstraints(const QList<QSimplexConstraint *> newConstraints)
     // original problem.
     // Otherwise, we clean up our structures and report there is
     // no feasible solution.
-    if (valueAt(0, columns - 1) != 0.0) {
+    if ((valueAt(0, columns - 1) != 0.0) && (qAbs(valueAt(0, columns - 1)) > 0.00001)) {
         qWarning() << "QSimplex: No feasible solution!";
         clearDataStructures();
         return false;
@@ -485,8 +485,8 @@ bool QSimplex::iterate()
 
     // Normalize Pivot Row
     qreal pivot = valueAt(pivotRow, pivotColumn);
-    if (pivot != 1.0)
-        combineRows(pivotRow, pivotRow, (1.0 - pivot) / pivot);
+    if (pivot != qreal(1.0))
+        combineRows(pivotRow, pivotRow, (qreal(1.0) - pivot) / pivot);
 
     // Update other rows
     for (int row=0; row < rows; ++row) {

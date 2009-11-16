@@ -967,10 +967,10 @@ int QPicture::metric(PaintDeviceMetric m) const
             val = brect.height();
             break;
         case PdmWidthMM:
-            val = int(25.4/qt_defaultDpiX()*brect.width());
+            val = int(qreal(25.4)/qt_defaultDpiX()*brect.width());
             break;
         case PdmHeightMM:
-            val = int(25.4/qt_defaultDpiY()*brect.height());
+            val = int(qreal(25.4)/qt_defaultDpiY()*brect.height());
             break;
         case PdmDpiX:
         case PdmPhysicalDpiX:

@@ -216,9 +216,9 @@ void QVector2D::normalize()
         return;
 
     len = qSqrt(len);
-
-    xp /= len;
-    yp /= len;
+    const double inv_len = 1 / len;
+    xp *= inv_len;
+    yp *= inv_len;
 }
 
 /*!

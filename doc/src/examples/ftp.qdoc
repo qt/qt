@@ -90,12 +90,12 @@
     the FTP server, and registers whether an entry represents a
     directory or a file. We use the QFile object to download files
     from the FTP server. 
- 
+
     \section1 FtpWindow Class Implementation
 
     We skip the \c FtpWindow constructor as it only contains code for
     setting up the GUI, which is explained in other examples.
-    
+
     We move on to the slots, starting with \c connectOrDisconnect().
 
     \snippet examples/network/qftp/ftpwindow.cpp 0
@@ -137,7 +137,7 @@
     \snippet examples/network/qftp/ftpwindow.cpp 3
     \dots
     \snippet examples/network/qftp/ftpwindow.cpp 4
-    
+
     We first fetch the name of the file, which we find in the selected
     item of \c fileList. We then start the download by using
     QFtp::get(). QFtp will send progress signals during the download
@@ -153,7 +153,7 @@
     finished a QFtp::Command. If an error occurred during the
     command, QFtp will set \c error to one of the values in
     the QFtp::Error enum; otherwise, \c error is zero.
-    
+
     \snippet examples/network/qftp/ftpwindow.cpp 7
 
     After login, the QFtp::list() function will list the top-level
@@ -165,7 +165,7 @@
 
     When a \l{QFtp::}{Get} command is finished, a file has finished
     downloading (or an error occurred during the download).
-    
+
     \snippet examples/network/qftp/ftpwindow.cpp 9
 
     After a \l{QFtp::}{List} command is performed, we have to check if

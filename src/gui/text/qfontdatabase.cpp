@@ -533,7 +533,13 @@ static int requiredUnicodeBits[QFontDatabase::WritingSystemsCount][2] = {
         // Vietnamese,
     { 0, 127 }, // same as latin1
         // Other,
-    { 126, 127 }
+    { 126, 127 },
+        // Ogham,
+    { 78, 127 },
+        // Runic,
+    { 79, 127 },
+        // Nko,
+    { 14, 127 },
 };
 
 #define SimplifiedChineseCsbBit 18
@@ -873,7 +879,8 @@ static const int scriptForWritingSystem[] = {
     QUnicodeTables::Common, // Braille
     QUnicodeTables::Common, // Symbol
     QUnicodeTables::Ogham,  // Ogham
-    QUnicodeTables::Runic // Runic
+    QUnicodeTables::Runic, // Runic
+    QUnicodeTables::Nko // Nko
 };
 
 
@@ -881,12 +888,12 @@ static const int scriptForWritingSystem[] = {
 static inline bool requiresOpenType(int writingSystem)
 {
     return ((writingSystem >= QFontDatabase::Syriac && writingSystem <= QFontDatabase::Sinhala)
-            || writingSystem == QFontDatabase::Khmer);
+            || writingSystem == QFontDatabase::Khmer || writingSystem == QFontDatabase::Nko);
 }
 static inline bool scriptRequiresOpenType(int script)
 {
     return ((script >= QUnicodeTables::Syriac && script <= QUnicodeTables::Sinhala)
-            || script == QUnicodeTables::Khmer);
+            || script == QUnicodeTables::Khmer || script == QUnicodeTables::Nko);
 }
 #endif
 
@@ -1558,6 +1565,7 @@ QFontDatabase::QFontDatabase()
     \value Other (the same as Symbol)
     \value Ogham
     \value Runic
+    \value Nko
 
     \omitvalue WritingSystemsCount
 */
@@ -1877,11 +1885,12 @@ QList<int> QFontDatabase::pointSizes(const QString &family,
                 smoothScalable = true;
                 goto end;
             }
+            const qreal pointsize_factor = qreal(72.0) / dpi;
             for (int l = 0; l < style->count; l++) {
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * pointsize_factor);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }
@@ -1984,11 +1993,12 @@ QList<int> QFontDatabase::smoothSizes(const QString &family,
                 smoothScalable = true;
                 goto end;
             }
+            const qreal pointsize_factor = qreal(72.0) / dpi;
             for (int l = 0; l < style->count; l++) {
                 const QtFontSize *size = style->pixelSizes + l;
 
                 if (size->pixelSize != 0 && size->pixelSize != USHRT_MAX) {
-                    const uint pointSize = qRound(size->pixelSize * 72.0 / dpi);
+                    const uint pointSize = qRound(size->pixelSize * pointsize_factor);
                     if (! sizes.contains(pointSize))
                         sizes.append(pointSize);
                 }
@@ -2232,6 +2242,9 @@ QString QFontDatabase::writingSystemName(WritingSystem writingSystem)
     case Runic:
         name = QT_TRANSLATE_NOOP("QFontDatabase", "Runic");
         break;
+    case Nko:
+        name = QT_TRANSLATE_NOOP("QFontDatabase", "N'Ko");
+        break;
     default:
         Q_ASSERT_X(false, "QFontDatabase::writingSystemName", "invalid 'writingSystem' parameter");
         break;
@@ -2444,6 +2457,12 @@ QString QFontDatabase::writingSystemSample(WritingSystem writingSystem)
         sample += QChar(0x16a1);
         sample += QChar(0x16a2);
         sample += QChar(0x16a3);
+        break;
+    case Nko:
+        sample += QChar(0x7ca);
+        sample += QChar(0x7cb);
+        sample += QChar(0x7cc);
+        sample += QChar(0x7cd);
         break;
     default:
         break;

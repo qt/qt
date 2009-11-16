@@ -281,7 +281,7 @@ void QS60StylePrivate::drawSkinElement(SkinElements element, QPainter *painter,
         drawFrame(SF_ButtonInactive, painter, rect, flags | SF_PointNorth);
         break;
     case SE_Editor:
-        drawFrame(SF_Editor, painter, rect, flags | SF_PointNorth);
+        drawFrame(SF_FrameLineEdit, painter, rect, flags | SF_PointNorth);
         break;
     default:
         break;
@@ -579,7 +579,7 @@ void QS60StylePrivate::drawRow(QS60StyleEnums::SkinParts start,
 
 #if 0
     painter->save();
-    painter->setOpacity(.3);
+    painter->setOpacity(qreal(.3));
     painter->fillRect(startRect, Qt::red);
     painter->fillRect(middleRect, Qt::green);
     painter->fillRect(endRect, Qt::blue);
@@ -831,6 +831,11 @@ QSize QS60StylePrivate::partSize(QS60StyleEnums::SkinParts part, SkinElementFlag
                 pixelMetric(QStyle::PM_SliderControlThickness), Qt::IgnoreAspectRatio);
             break;
 
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideL:
+        case QS60StyleEnums::SP_QgnGrafBarFrameSideR:
+            result.setWidth(pixelMetric(PM_Custom_FrameCornerWidth));
+            break;
+            
         case QS60StyleEnums::SP_QsnCpScrollHandleBottomPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleTopPressed:
         case QS60StyleEnums::SP_QsnCpScrollHandleMiddlePressed:
@@ -1619,7 +1624,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     QS60StylePrivate::SF_PointNorth : QS60StylePrivate::SF_PointWest;
                 QS60StylePrivate::drawSkinPart(QS60StyleEnums::SP_QgnGrafBarWait, painter, progressRect, flags | orientationFlag);
             } else {
-                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? 1.0
+                const qreal progressFactor = (optionProgressBar->minimum == optionProgressBar->maximum) ? qreal(1.0)
                     : (qreal)optionProgressBar->progress / optionProgressBar->maximum;
                 if (optionProgressBar->orientation == Qt::Horizontal) {
                     progressRect.setWidth(int(progressRect.width() * progressFactor));
@@ -1676,18 +1681,18 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
             if (!styleHint(SH_UnderlineShortcut, menuItem, widget))
                 text_flags |= Qt::TextHideMnemonic;
 
-            QRect iconRect =
-                subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
-            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
-
             if ((option->state & State_Selected) && (option->state & State_Enabled))
                 QS60StylePrivate::drawSkinElement(QS60StylePrivate::SE_ListHighlight, painter, option->rect, flags);
+
+            QRect iconRect = subElementRect(SE_ItemViewItemDecoration, &optionMenuItem, widget);
+            QRect textRect = subElementRect(SE_ItemViewItemText, &optionMenuItem, widget);
 
             //todo: move the vertical spacing stuff into subElementRect
             const int vSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutVerticalSpacing);
             if (checkable){
+                const int hSpacing = QS60StylePrivate::pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
                 QStyleOptionMenuItem optionCheckBox;
-                optionCheckBox.QStyleOption::operator=(*menuItem);
+                optionCheckBox.QStyleOptionMenuItem::operator=(*menuItem);
                 optionCheckBox.rect.setWidth(pixelMetric(PM_IndicatorWidth));
                 optionCheckBox.rect.setHeight(pixelMetric(PM_IndicatorHeight));
                 const int moveByX = optionCheckBox.rect.width()+vSpacing;
@@ -1696,6 +1701,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                     iconRect.translate(moveByX, 0);
                     iconRect.setWidth(iconRect.width()+vSpacing);
                     textRect.setWidth(textRect.width()-moveByX-vSpacing);
+                    optionCheckBox.rect.translate(vSpacing/2, hSpacing/2);
                 } else {
                     textRect.setWidth(textRect.width()-moveByX);
                     iconRect.setWidth(iconRect.width()+vSpacing);
@@ -1906,12 +1912,12 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
                 if (focusFrame->widget() && focusFrame->widget()->hasEditFocus())
                     editFocus = true;
             }
-            const qreal opacity = editFocus ? 0.65 : 0.45; // Trial and error factors. Feel free to improve.
+            const qreal opacity = editFocus ? qreal(0.65) : qreal(0.45); // Trial and error factors. Feel free to improve.
 #else
-            const qreal opacity = 0.5;
+            const qreal opacity = qreal(0.5);
 #endif
             // Because of Qts coordinate system, we need to tweak the rect by .5 pixels, otherwise it gets blurred.
-            const qreal rectAdjustment = (penWidth % 2) ? -.5 : 0;
+            const qreal rectAdjustment = (penWidth % 2) ? qreal(-.5) : 0;
 
             // Make sure that the pen stroke is inside the rect
             const QRectF adjustedRect =
@@ -1935,7 +1941,7 @@ void QS60Style::drawControl(ControlElement element, const QStyleOption *option, 
     case CE_Splitter:
         if (option->state & State_Sunken && option->state & State_Enabled) {
             painter->save();
-            painter->setOpacity(0.5);
+            painter->setOpacity(qreal(0.5));
             painter->setBrush(d->themePalette()->light());
             painter->setRenderHint(QPainter::Antialiasing);
             const qreal roundRectRadius = 4 * goldenRatio;
@@ -2013,8 +2019,8 @@ void QS60Style::drawPrimitive(PrimitiveElement element, const QStyleOption *opti
     case PE_IndicatorRadioButton: {
             QRect buttonRect = option->rect;
             //there is empty (a. 33%) space in svg graphics for radiobutton
-            const qreal reduceWidth = (qreal)buttonRect.width()/3.0;
-            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : 1.0;
+            const qreal reduceWidth = (qreal)buttonRect.width()/qreal(3.0);
+            const qreal rectWidth = (qreal)option->rect.width() != 0 ? option->rect.width() : qreal(1.0);
             // Try to occupy the full area
             const qreal scaler = 1 + (reduceWidth/rectWidth);
             buttonRect.setWidth((int)((buttonRect.width()-reduceWidth) * scaler));

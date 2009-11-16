@@ -297,7 +297,7 @@ inline int q_round_bound(qreal d) //### (int)(qreal) INT_MAX != INT_MAX for sing
         return INT_MIN;
     else if (d >= (qreal) INT_MAX)
         return INT_MAX;
-    return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1);
+    return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1);
 }
 
 void QGraphicsViewPrivate::translateTouchEvent(QGraphicsViewPrivate *d, QTouchEvent *touchEvent)
@@ -1512,6 +1512,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
                    this, SLOT(updateSceneRect(QRectF)));
         d->scene->d_func()->removeView(this);
         d->connectedToScene = false;
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
     }
 
     // Assign the new scene and update the contents (scrollbars, etc.)).
@@ -1533,6 +1538,11 @@ void QGraphicsView::setScene(QGraphicsScene *scene)
         // enable touch events if any items is interested in them
         if (!d->scene->d_func()->allItemsIgnoreTouchEvents)
             d->viewport->setAttribute(Qt::WA_AcceptTouchEvents);
+
+        if (isActiveWindow() && isVisible()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
     } else {
         d->recalculateContentSize();
     }
@@ -2638,6 +2648,19 @@ bool QGraphicsView::viewportEvent(QEvent *event)
             d->scene->d_func()->removePopup(d->scene->d_func()->popupWidgets.first());
         QApplication::sendEvent(d->scene, event);
         break;
+    case QEvent::Show:
+        if (d->scene && isActiveWindow()) {
+            QEvent windowActivate(QEvent::WindowActivate);
+            QApplication::sendEvent(d->scene, &windowActivate);
+        }
+        break;
+    case QEvent::Hide:
+        // spontaneous event will generate a WindowDeactivate.
+        if (!event->spontaneous() && d->scene && isActiveWindow()) {
+            QEvent windowDeactivate(QEvent::WindowDeactivate);
+            QApplication::sendEvent(d->scene, &windowDeactivate);
+        }
+        break;
     case QEvent::Leave:
         // ### This is a temporary fix for until we get proper mouse grab
         // events. activeMouseGrabberItem should be set to 0 if we lose the
@@ -3252,10 +3275,13 @@ void QGraphicsView::paintEvent(QPaintEvent *event)
 
     // Determine the exposed region
     d->exposedRegion = event->region();
+    if (d->exposedRegion.isEmpty())
+        d->exposedRegion = viewport()->rect();
     QRectF exposedSceneRect = mapToScene(d->exposedRegion.boundingRect()).boundingRect();
 
     // Set up the painter
     QPainter painter(viewport());
+    painter.setClipRect(event->rect(), Qt::IntersectClip);
 #ifndef QT_NO_RUBBERBAND
     if (d->rubberBanding && !d->rubberBandRect.isEmpty())
         painter.save();

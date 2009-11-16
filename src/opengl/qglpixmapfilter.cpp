@@ -518,7 +518,7 @@ bool QGLPixmapBlurFilter::processGL(QPainter *painter, const QPointF &pos, const
             m_singlePass = false;
 
             QGLFramebufferObjectFormat format;
-            format.setInternalTextureFormat(GL_RGBA);
+            format.setInternalTextureFormat(GLenum(GL_RGBA));
             QGLFramebufferObject *fbo = qgl_fbo_pool()->acquire(targetRect.size() / 2, format, true);
 
             if (!fbo)

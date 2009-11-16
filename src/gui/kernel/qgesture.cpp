@@ -174,6 +174,16 @@ void QGesture::unsetHotSpot()
 }
 
 /*!
+    \property QGesture::gestureCancelPolicy
+    \brief the policy for deciding what happens on accepting a gesture
+
+    On accepting one gesture Qt can automatically cancel other gestures
+    that belong to other targets. The policy is normally set to not cancel
+    any other gestures and can be set to cancel all active gestures in the
+    context. For example for all child widgets.
+*/
+
+/*!
     \enum QGesture::GestureCancelPolicy
 
     This enum describes how accepting a gesture can cancel other gestures
@@ -207,16 +217,6 @@ QGesture::GestureCancelPolicy QGesture::gestureCancelPolicy() const
     \image pangesture.png
 
     \sa {Gestures Programming}, QPinchGesture, QSwipeGesture
-*/
-
-/*!
-    \property QGesture::gestureCancelPolicy
-    \brief the policy for deciding what happens on accepting a gesture
-
-    On accepting one gesture Qt can automatically cancel other gestures
-    that belong to other targets. The policy is normally set to not cancel
-    any other gestures and can be set to cancel all active gestures in the
-    context. For example for all child widgets.
 */
 
 /*!
@@ -656,6 +656,72 @@ qreal QSwipeGesture::swipeAngle() const
 void QSwipeGesture::setSwipeAngle(qreal value)
 {
     d_func()->swipeAngle = value;
+}
+
+/*!
+    \class QTapGesture
+    \since 4.6
+    \brief The QTapGesture class describes a tap gesture made by the user.
+    \ingroup gestures
+
+    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+*/
+
+/*!
+    \property QTapGesture::position
+    \brief the position of the tap
+*/
+
+/*!
+    \internal
+*/
+QTapGesture::QTapGesture(QObject *parent)
+    : QGesture(*new QTapGesturePrivate, parent)
+{
+    d_func()->gestureType = Qt::TapGesture;
+}
+
+QPointF QTapGesture::position() const
+{
+    return d_func()->position;
+}
+
+void QTapGesture::setPosition(const QPointF &value)
+{
+    d_func()->position = value;
+}
+/*!
+    \class QTapAndHoldGesture
+    \since 4.6
+    \brief The QTapAndHoldGesture class describes a tap-and-hold (aka LongTap)
+    gesture made by the user.
+    \ingroup gestures
+
+    \sa {Gestures Programming}, QPanGesture, QPinchGesture
+*/
+
+/*!
+    \property QTapAndHoldGesture::position
+    \brief the position of the tap
+*/
+
+/*!
+    \internal
+*/
+QTapAndHoldGesture::QTapAndHoldGesture(QObject *parent)
+    : QGesture(*new QTapAndHoldGesturePrivate, parent)
+{
+    d_func()->gestureType = Qt::TapAndHoldGesture;
+}
+
+QPointF QTapAndHoldGesture::position() const
+{
+    return d_func()->position;
+}
+
+void QTapAndHoldGesture::setPosition(const QPointF &value)
+{
+    d_func()->position = value;
 }
 
 QT_END_NAMESPACE

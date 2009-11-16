@@ -437,13 +437,18 @@ namespace QT_NAMESPACE {}
 #elif defined(__GCCE__)
 #  define Q_CC_GCCE
 #  define QT_VISIBILITY_AVAILABLE
+#  if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__)
+#    define QT_HAVE_ARMV6
+#  endif
 
 /* ARM Realview Compiler Suite
    RVCT compiler also defines __EDG__ and __GNUC__ (if --gnu flag is given),
    so check for it before that */
 #elif defined(__ARMCC__) || defined(__CC_ARM)
 #  define Q_CC_RVCT
-
+#  if __TARGET_ARCH_ARM >= 6
+#    define QT_HAVE_ARMV6
+#  endif
 #elif defined(__GNUC__)
 #  define Q_CC_GNU
 #  define Q_C_CALLBACKS
@@ -1076,14 +1081,14 @@ template <typename T>
 inline T qAbs(const T &t) { return t >= 0 ? t : -t; }
 
 inline int qRound(qreal d)
-{ return d >= 0.0 ? int(d + 0.5) : int(d - int(d-1) + 0.5) + int(d-1); }
+{ return d >= qreal(0.0) ? int(d + qreal(0.5)) : int(d - int(d-1) + qreal(0.5)) + int(d-1); }
 
 #if defined(QT_NO_FPU) || defined(QT_ARCH_ARM) || defined(QT_ARCH_WINDOWSCE) || defined(QT_ARCH_SYMBIAN)
 inline qint64 qRound64(double d)
 { return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
 #else
 inline qint64 qRound64(qreal d)
-{ return d >= 0.0 ? qint64(d + 0.5) : qint64(d - qreal(qint64(d-1)) + 0.5) + qint64(d-1); }
+{ return d >= 0.0 ? qint64(d + qreal(0.5)) : qint64(d - qreal(qint64(d-1)) + qreal(0.5)) + qint64(d-1); }
 #endif
 
 template <typename T>

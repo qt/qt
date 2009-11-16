@@ -1252,20 +1252,20 @@ QPainterPath QRenderRule::borderClip(QRect r)
     const QRectF rect(r);
     const int *borders = border()->borders;
     QPainterPath path;
-    qreal curY = rect.y() + borders[TopEdge]/2.0;
+    qreal curY = rect.y() + borders[TopEdge]*qreal(0.5);
     path.moveTo(rect.x() + tlr.width(), curY);
     path.lineTo(rect.right() - trr.width(), curY);
-    qreal curX = rect.right() - borders[RightEdge]/2.0;
+    qreal curX = rect.right() - borders[RightEdge]*qreal(0.5);
     path.arcTo(curX - 2*trr.width() + borders[RightEdge], curY,
                trr.width()*2 - borders[RightEdge], trr.height()*2 - borders[TopEdge], 90, -90);
 
     path.lineTo(curX, rect.bottom() - brr.height());
-    curY = rect.bottom() - borders[BottomEdge]/2.0;
+    curY = rect.bottom() - borders[BottomEdge]*qreal(0.5);
     path.arcTo(curX - 2*brr.width() + borders[RightEdge], curY - 2*brr.height() + borders[BottomEdge],
                brr.width()*2 - borders[RightEdge], brr.height()*2 - borders[BottomEdge], 0, -90);
 
     path.lineTo(rect.x() + blr.width(), curY);
-    curX = rect.left() + borders[LeftEdge]/2.0;
+    curX = rect.left() + borders[LeftEdge]*qreal(0.5);
     path.arcTo(curX, rect.bottom() - 2*blr.height() + borders[BottomEdge]/2,
                blr.width()*2 - borders[LeftEdge], blr.height()*2 - borders[BottomEdge], 270, -90);
 
@@ -3325,9 +3325,14 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
         break;
 
     case CE_PushButton:
-        ParentStyle::drawControl(ce, opt, p, w);
-        return;
-
+        if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
+            if (rule.hasDrawable() || rule.hasBox() || rule.hasPosition() || rule.hasPalette() ||
+                    ((btn->features & QStyleOptionButton::HasMenu) && hasStyleRule(w, PseudoElement_PushButtonMenuIndicator))) {
+                ParentStyle::drawControl(ce, opt, p, w);
+                return;
+            }
+        }
+        break;
     case CE_PushButtonBevel:
         if (const QStyleOptionButton *btn = qstyleoption_cast<const QStyleOptionButton *>(opt)) {
             QStyleOptionButton btnOpt(*btn);
@@ -3370,7 +3375,9 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             if (rule.hasPosition() && rule.position()->textAlignment != 0) {
                 Qt::Alignment textAlignment = rule.position()->textAlignment;
                 QRect textRect = button->rect;
-                uint tf = Qt::AlignVCenter | Qt::TextShowMnemonic;
+                uint tf = Qt::TextShowMnemonic;
+                const uint verticalAlignMask = Qt::AlignVCenter | Qt::AlignTop | Qt::AlignLeft;
+                tf |= (textAlignment & verticalAlignMask) ? (textAlignment & verticalAlignMask) : Qt::AlignVCenter;
                 if (!styleHint(SH_UnderlineShortcut, button, w))
                     tf |= Qt::TextHideMnemonic;
                 if (!button->icon.isNull()) {
@@ -3599,6 +3606,27 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
                 }
             } else if (hasStyleRule(w, PseudoElement_MenuCheckMark) || hasStyleRule(w, PseudoElement_MenuRightArrow)) {
                 QWindowsStyle::drawControl(ce, &mi, p, w);
+                if (mi.checkType != QStyleOptionMenuItem::NotCheckable && !mi.checked) {
+                    // We have a style defined, but QWindowsStyle won't draw anything if not checked.
+                    // So we mimick what QWindowsStyle would do.
+                    int checkcol = qMax<int>(mi.maxIconWidth, QWindowsStylePrivate::windowsCheckMarkWidth);
+                    QRect vCheckRect = visualRect(opt->direction, mi.rect, QRect(mi.rect.x(), mi.rect.y(), checkcol, mi.rect.height()));
+                    if (mi.state.testFlag(State_Enabled) && mi.state.testFlag(State_Selected)) {
+                        qDrawShadePanel(p, vCheckRect, mi.palette, true, 1, &mi.palette.brush(QPalette::Button));
+                    } else {
+                        QBrush fill(mi.palette.light().color(), Qt::Dense4Pattern);
+                        qDrawShadePanel(p, vCheckRect, mi.palette, true, 1, &fill);
+                    }
+                    QRenderRule subSubRule = renderRule(w, opt, PseudoElement_MenuCheckMark);
+                    if (subSubRule.hasDrawable()) {
+                        QStyleOptionMenuItem newMi(mi);
+                        newMi.rect = visualRect(opt->direction, mi.rect, QRect(mi.rect.x() + QWindowsStylePrivate::windowsItemFrame,
+                                                                               mi.rect.y() + QWindowsStylePrivate::windowsItemFrame,
+                                                                               checkcol - 2 * QWindowsStylePrivate::windowsItemFrame,
+                                                                               mi.rect.height() - 2 * QWindowsStylePrivate::windowsItemFrame));
+                        drawPrimitive(PE_IndicatorMenuCheckMark, &newMi, p, w);
+                    }
+                }
             } else {
                 if (rule.hasDrawable() && !subRule.hasDrawable() && !(opt->state & QStyle::State_Selected)) {
                     mi.palette.setColor(QPalette::Window, Qt::transparent);
@@ -3668,7 +3696,7 @@ void QStyleSheetStyle::drawControl(ControlElement ce, const QStyleOption *opt, Q
             }
             if (!cb->currentText.isEmpty() && !cb->editable) {
                 drawItemText(p, editRect.adjusted(0, 0, 0, 0), Qt::AlignLeft | Qt::AlignVCenter, cb->palette,
-                             cb->state & State_Enabled, cb->currentText);
+                             cb->state & State_Enabled, cb->currentText, QPalette::Text);
             }
             p->restore();
             return;
@@ -4275,23 +4303,7 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
                     p->fillRect(v2->rect, v2->palette.alternateBase());
                 subRule.drawRule(p, opt->rect);
             } else {
-                QStyleOptionViewItemV2 v2Copy(*v2);
-                if (v2->showDecorationSelected) {
-                    QRenderRule subRule2 = renderRule(w, opt, PseudoElement_ViewItem);
-                    if (v2->state & QStyle::State_Selected) {
-                        subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::Highlight);
-                    } else if (v2->features & QStyleOptionViewItemV2::Alternate) {
-                        subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::AlternateBase);
-                    } else if (subRule2.hasBackground()) {
-                        p->fillRect(v2->rect, subRule2.background()->brush);
-                    }
-                } else if (v2->features & QStyleOptionViewItemV2::Alternate) {
-                    quint64 pc = v2->state & QStyle::State_Enabled ? PseudoClass_Enabled : PseudoClass_Disabled;
-                    pc |= PseudoClass_Alternate;
-                    QRenderRule subRule2 = renderRule(w, PseudoElement_ViewItem, pc);
-                    subRule2.configurePalette(&v2Copy.palette, QPalette::NoRole, QPalette::AlternateBase);
-                }
-                baseStyle()->drawPrimitive(pe, &v2Copy, p, w);
+                baseStyle()->drawPrimitive(pe, v2, p, w);
             }
         }
         return;
@@ -4356,18 +4368,6 @@ void QStyleSheetStyle::drawPrimitive(PrimitiveElement pe, const QStyleOption *op
         break;
 
     case PE_PanelItemViewItem:
-        if (!styleHint(SH_ItemView_ShowDecorationSelected, opt, w)) {
-            rect = subElementRect(QStyle::SE_ItemViewItemText,  opt, w)
-                   | subElementRect(QStyle::SE_ItemViewItemDecoration, opt, w)
-                   | subElementRect(QStyle::SE_ItemViewItemCheckIndicator, opt, w);
-        }
-        pseudoElement = PseudoElement_ViewItem;
-        break;
-
-    case PE_PanelItemViewRow:
-        ParentStyle::drawPrimitive(pe, opt, p, w);
-        if (!styleHint(SH_ItemView_ShowDecorationSelected, opt, w))
-            return;
         pseudoElement = PseudoElement_ViewItem;
         break;
 
