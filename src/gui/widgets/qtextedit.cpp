@@ -1576,7 +1576,8 @@ void QTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         ensureCursorVisible();
     }
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
