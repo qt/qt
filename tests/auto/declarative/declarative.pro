@@ -36,6 +36,7 @@ SUBDIRS += \
            qmlgraphicstextinput \   # Cover
            qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
+           qmlinstruction \         # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
            qmllistaccessor \        # Cover
