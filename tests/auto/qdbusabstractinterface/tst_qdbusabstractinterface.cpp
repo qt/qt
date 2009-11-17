@@ -133,7 +133,7 @@ tst_QDBusAbstractInterface::tst_QDBusAbstractInterface()
 void tst_QDBusAbstractInterface::initTestCase()
 {
     // enable debugging temporarily:
-    putenv("QDBUS_DEBUG=1");
+    //putenv("QDBUS_DEBUG=1");
 
     // register the object
     QDBusConnection con = QDBusConnection::sessionBus();
@@ -465,6 +465,7 @@ void tst_QDBusAbstractInterface::followSignal()
                                              QDBusConnectionInterface::DontAllowReplacement);
     QVERIFY(r.isValid() && r.value() == QDBusConnectionInterface::ServiceRegistered);
     QVERIFY(con.interface()->isServiceRegistered(serviceToFollow));
+    QCoreApplication::instance()->processEvents();
 
     // emit the signal again:
     emit targetObj.voidSignal();

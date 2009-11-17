@@ -608,8 +608,7 @@ QtWebKit
    * New functions for defining local URL schemes.
 
  - QWebSettings
-   * New options for text encoding, printing shrink factor and off-line web
-     application cache (HTML5).
+   * New options for text encoding and off-line web application cache (HTML5).
 
  - QWebView
    * Support for render hints.

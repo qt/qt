@@ -4713,10 +4713,17 @@ QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(int version)
 }
 
 
+/*! \fn QStyleOptionTabWidgetFrameV2::QStyleOptionTabWidgetFrameV2(const QStyleOptionTabWidgetFrameV2 &other)
+    Constructs a QStyleOptionTabWidgetFrameV2 copy of the \a other style option.
+
+    If the \a other style option's version is 1, the new style option's \l
+    selectedTabRect and tabBarRect will contain null rects
+
+    \sa version
+*/
+
 /*!
-    Constructs a QStyleOptionTabWidgetFrameV2 copy of the \a other style option
-    which can be either of the QStyleOptionTabWidgetFrameV2 or
-    QStyleOptionTabWidgetFrame types.
+    Constructs a QStyleOptionTabWidgetFrameV2 copy of the \a other style option.
 
     If the \a other style option's version is 1, the new style option's \l
     selectedTabRect and tabBarRect will contain null rects

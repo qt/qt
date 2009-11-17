@@ -4,7 +4,7 @@
 <context>
     <name>AboutDialog</name>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1357"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="+1358"/>
         <source>Qt Linguist</source>
         <translation>Qt Linguist</translation>
     </message>
@@ -109,11 +109,17 @@
     </message>
     <message>
         <location line="+4"/>
+        <location line="+8"/>
         <source>&lt;p&gt;[more duplicates omitted]</source>
         <translation>&lt;p&gt;[weitere mehrfach vorhandene Nachrichten weggelassen]</translation>
     </message>
     <message>
-        <location line="+3"/>
+        <location line="-5"/>
+        <source>&lt;p&gt;* ID: %1</source>
+        <translation>&lt;p&gt;* ID: %1</translation>
+    </message>
+    <message>
+        <location line="+8"/>
         <source>&lt;p&gt;* Context: %1&lt;br&gt;* Source: %2</source>
         <translation>&lt;p&gt;* Kontext: %1&lt;br&gt;* Quelle: %2</translation>
     </message>
@@ -123,7 +129,7 @@
         <translation>&lt;br&gt;* Kommentar: %3</translation>
     </message>
     <message>
-        <location line="+70"/>
+        <location line="+71"/>
         <source>Linguist does not know the plural rules for &apos;%1&apos;.
 Will assume a single universal form.</source>
         <translation>Die Regeln zur Pluralbildung der Sprache &apos;%1&apos; sind in Linguist nicht definiert.
@@ -311,7 +317,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
 <context>
     <name>LRelease</name>
     <message numerus="yes">
-        <location filename="../tools/linguist/shared/qm.cpp" line="+747"/>
+        <location filename="../tools/linguist/shared/qm.cpp" line="+761"/>
         <source>Dropped %n message(s) which had no ID.</source>
         <translation>
             <numerusform>Es wurde ein Eintrag ohne Bezeichner gelöscht.</numerusform>
@@ -908,7 +914,7 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
         <translation>Freigeben unter ...</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2004"/>
+        <location filename="../tools/linguist/linguist/mainwindow.cpp" line="-2005"/>
         <source></source>
         <comment>This is the application&apos;s main window.</comment>
         <translation></translation>
@@ -926,17 +932,17 @@ Es wird mit einer einfachen Universalform gearbeitet.</translation>
     </message>
     <message>
         <location line="-2"/>
-        <location line="+62"/>
+        <location line="+63"/>
         <source>Context</source>
         <translation>Kontext</translation>
     </message>
     <message>
-        <location line="-61"/>
+        <location line="-62"/>
         <source>Items</source>
         <translation>Einträge</translation>
     </message>
     <message>
-        <location line="+78"/>
+        <location line="+79"/>
         <source>This panel lists the source contexts.</source>
         <translation>Dieser Bereich zeigt die Kontexte an.</translation>
     </message>
@@ -1391,7 +1397,7 @@ Alle Dateien (*)</translation>
     <message>
         <location filename="../tools/linguist/linguist/mainwindow.ui"/>
         <source>Open/Refresh Form &amp;Preview</source>
-        <translation>Die &amp;Vorschau öffnen/&amp;aktualisieren</translation>
+        <translation>&amp;Vorschau öffnen/aktualisieren</translation>
     </message>
     <message>
         <location/>
@@ -1801,8 +1807,8 @@ Zeile: %2</translation>
         <translation>Alle Dateien (*)</translation>
     </message>
     <message>
-        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1118"/>
-        <location line="+18"/>
+        <location filename="../tools/linguist/linguist/messagemodel.cpp" line="-1127"/>
+        <location line="+27"/>
         <location line="+67"/>
         <location line="+39"/>
         <location line="+17"/>

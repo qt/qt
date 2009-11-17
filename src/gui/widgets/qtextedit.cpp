@@ -530,7 +530,9 @@ void QTextEditPrivate::_q_ensureVisible(const QRectF &_rect)
     when the property is set.
 
     If the text edit has another content type, it will not be replaced
-    by plain text if you call toPlainText().
+    by plain text if you call toPlainText(). The only exception to this
+    is the non-break space, \e{nbsp;}, that will be converted into
+    standard space.
 
     By default, for an editor with no contents, this property contains
     an empty string.
@@ -1904,7 +1906,7 @@ void QTextEdit::setOverwriteMode(bool overwrite)
     \brief the tab stop width in pixels
     \since 4.1
 
-    By default, this property contains a value of 80.
+    By default, this property contains a value of 80 pixels.
 */
 
 int QTextEdit::tabStopWidth() const

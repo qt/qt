@@ -465,6 +465,12 @@ public:
     void setLayoutItemMargins(QStyle::SubElement element, const QStyleOption *opt = 0);
 
     QInputContext *inputContext() const;
+    inline QWidget *effectiveFocusWidget() {
+        QWidget *w = q_func();
+        while (w->focusProxy())
+            w = w->focusProxy();
+        return w;
+    }
 
     void setModal_sys();
 
