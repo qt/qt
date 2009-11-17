@@ -479,8 +479,12 @@ void tst_states::anchorChanges()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
+        QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+        QVERIFY(aChanges != 0);
+
         rect->setState("right");
         QCOMPARE(innerRect->x(), qreal(150));
+        QCOMPARE(aChanges->reset(), QString("left"));
 
         rect->setState("");
         QCOMPARE(innerRect->x(), qreal(5));

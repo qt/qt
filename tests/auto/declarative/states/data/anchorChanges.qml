@@ -14,6 +14,7 @@ Rectangle {
     states: State {
         name: "right"
         AnchorChanges {
+            id: AncCh
             target: myRect;
             reset: "left"
             right: container.right
