@@ -25,6 +25,7 @@ private slots:
     void create();
     void className();
     void superClass();
+    void flags();
     void method();
     void slot();
     void signal();
@@ -37,6 +38,7 @@ private slots:
     void staticMetacall();
     void copyMetaObject();
     void serialize();
+    void removeNotifySignal();
 
 private:
     static bool checkForSideEffects
@@ -44,6 +46,61 @@ private:
          QMetaObjectBuilder::AddMembers members);
     static bool sameMetaObject
         (const QMetaObject *meta1, const QMetaObject *meta2);
+};
+
+// Dummy class that has something of every type of thing moc can generate.
+class SomethingOfEverything : public QObject
+{
+    Q_OBJECT
+    Q_CLASSINFO("ci_foo", "ABC")
+    Q_CLASSINFO("ci_bar", "DEF")
+    Q_PROPERTY(QString prop READ prop WRITE setProp NOTIFY propChanged)
+    Q_PROPERTY(QString prop2 READ prop WRITE setProp)
+    Q_PROPERTY(SomethingEnum eprop READ eprop)
+    Q_PROPERTY(SomethingFlagEnum fprop READ fprop)
+    Q_PROPERTY(QLocale::Language language READ language)
+    Q_ENUMS(SomethingEnum)
+    Q_FLAGS(SomethingFlagEnum)
+public:
+    Q_INVOKABLE SomethingOfEverything() {}
+    ~SomethingOfEverything() {}
+
+    enum SomethingEnum
+    {
+        GHI,
+        JKL = 10
+    };
+
+    enum SomethingFlagEnum
+    {
+        XYZ = 1,
+        UVW = 8
+    };
+
+    Q_INVOKABLE Q_SCRIPTABLE void method1() {}
+
+    QString prop() const { return QString(); }
+    void setProp(const QString& v) { Q_UNUSED(v); }
+
+    SomethingOfEverything::SomethingEnum eprop() const { return GHI; }
+    SomethingOfEverything::SomethingFlagEnum fprop() const { return XYZ; }
+    QLocale::Language language() const { return QLocale::English; }
+
+public slots:
+    void slot1(const QString&) {}
+    void slot2(int, const QString&) {}
+
+private slots:
+    void slot3() {}
+
+protected slots:
+    Q_SCRIPTABLE void slot4(int) {}
+    void slot5(int a, const QString& b) { Q_UNUSED(a); Q_UNUSED(b); }
+
+signals:
+    void sig1();
+    void sig2(int x, const QString& y);
+    void propChanged(const QString&);
 };
 
 void tst_QMetaObjectBuilder::mocVersionCheck()
@@ -112,9 +169,32 @@ void tst_QMetaObjectBuilder::superClass()
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::SuperClass));
 }
 
+void tst_QMetaObjectBuilder::flags()
+{
+    QMetaObjectBuilder builder;
+
+    // Check default
+    QVERIFY(builder.flags() == 0);
+
+    // Set flags
+    builder.setFlags(QMetaObjectBuilder::DynamicMetaObject);
+    QVERIFY(builder.flags() == QMetaObjectBuilder::DynamicMetaObject);
+}
+
 void tst_QMetaObjectBuilder::method()
 {
     QMetaObjectBuilder builder;
+
+    // Check null method
+    QMetaMethodBuilder nullMethod;
+    QCOMPARE(nullMethod.signature(), QByteArray());
+    QVERIFY(nullMethod.methodType() == QMetaMethod::Method);
+    QVERIFY(nullMethod.returnType().isEmpty());
+    QVERIFY(nullMethod.parameterNames().isEmpty());
+    QVERIFY(nullMethod.tag().isEmpty());
+    QVERIFY(nullMethod.access() == QMetaMethod::Public);
+    QCOMPARE(nullMethod.attributes(), 0);
+    QCOMPARE(nullMethod.index(), 0);
 
     // Add a method and check its attributes.
     QMetaMethodBuilder method1 = builder.addMethod("foo(const QString&, int)");
@@ -129,10 +209,10 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(builder.methodCount(), 1);
 
     // Add another method and check again.
-    QMetaMethodBuilder method2 = builder.addMethod("bar(QString)");
+    QMetaMethodBuilder method2 = builder.addMethod("bar(QString)", "int");
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Method);
-    QVERIFY(method2.returnType().isEmpty());
+    QCOMPARE(method2.returnType(), QByteArray("int"));
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
     QVERIFY(method2.access() == QMetaMethod::Public);
@@ -163,7 +243,7 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(method1.index(), 0);
     QCOMPARE(method2.signature(), QByteArray("bar(QString)"));
     QVERIFY(method2.methodType() == QMetaMethod::Method);
-    QVERIFY(method2.returnType().isEmpty());
+    QCOMPARE(method2.returnType(), QByteArray("int"));
     QVERIFY(method2.parameterNames().isEmpty());
     QVERIFY(method2.tag().isEmpty());
     QVERIFY(method2.access() == QMetaMethod::Public);
@@ -214,6 +294,8 @@ void tst_QMetaObjectBuilder::method()
     QCOMPARE(builder.indexOfMethod("foo(const QString&, int)"), -1);
     QCOMPARE(builder.indexOfMethod("bar(QString)"), 0);
     QCOMPARE(builder.indexOfMethod("baz()"), -1);
+    QCOMPARE(builder.method(0).signature(), QByteArray("bar(QString)"));
+    QCOMPARE(builder.method(9).signature(), QByteArray());
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Methods));
@@ -247,6 +329,11 @@ void tst_QMetaObjectBuilder::slot()
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
 
+    // Perform index-based lookup
+    QCOMPARE(builder.indexOfSlot("foo(const QString &, int)"), 0);
+    QCOMPARE(builder.indexOfSlot("bar(QString)"), 1);
+    QCOMPARE(builder.indexOfSlot("baz()"), -1);
+
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Methods));
 }
@@ -278,6 +365,11 @@ void tst_QMetaObjectBuilder::signal()
     QCOMPARE(method2.attributes(), 0);
     QCOMPARE(method2.index(), 1);
     QCOMPARE(builder.methodCount(), 2);
+
+    // Perform index-based lookup
+    QCOMPARE(builder.indexOfSignal("foo(const QString &, int)"), 0);
+    QCOMPARE(builder.indexOfSignal("bar(QString)"), 1);
+    QCOMPARE(builder.indexOfSignal("baz()"), -1);
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Methods));
@@ -315,6 +407,8 @@ void tst_QMetaObjectBuilder::constructor()
     QCOMPARE(builder.indexOfConstructor("foo(const QString&, int)"), 0);
     QCOMPARE(builder.indexOfConstructor("bar(QString)"), 1);
     QCOMPARE(builder.indexOfConstructor("baz()"), -1);
+    QCOMPARE(builder.constructor(1).signature(), QByteArray("bar(QString)"));
+    QCOMPARE(builder.constructor(9).signature(), QByteArray());
 
     // Modify the attributes on ctor1.
     ctor1.setReturnType("int");
@@ -386,6 +480,17 @@ void tst_QMetaObjectBuilder::constructor()
     QCOMPARE(builder.indexOfConstructor("bar(QString)"), 0);
     QCOMPARE(builder.indexOfConstructor("baz()"), -1);
 
+    // Add constructor from prototype
+    QMetaMethod prototype = SomethingOfEverything::staticMetaObject.constructor(0);
+    QMetaMethodBuilder prototypeConstructor = builder.addMethod(prototype);
+    QCOMPARE(builder.constructorCount(), 2);
+
+    QCOMPARE(prototypeConstructor.signature(), QByteArray("SomethingOfEverything()"));
+    QVERIFY(prototypeConstructor.methodType() == QMetaMethod::Constructor);
+    QCOMPARE(prototypeConstructor.returnType(), QByteArray());
+    QVERIFY(prototypeConstructor.access() == QMetaMethod::Public);
+    QCOMPARE(prototypeConstructor.index(), 1);
+
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Constructors));
 }
@@ -393,6 +498,24 @@ void tst_QMetaObjectBuilder::constructor()
 void tst_QMetaObjectBuilder::property()
 {
     QMetaObjectBuilder builder;
+
+    // Null property builder
+    QMetaPropertyBuilder nullProp;
+    QCOMPARE(nullProp.name(), QByteArray());
+    QCOMPARE(nullProp.type(), QByteArray());
+    QVERIFY(!nullProp.hasNotifySignal());
+    QVERIFY(!nullProp.isReadable());
+    QVERIFY(!nullProp.isWritable());
+    QVERIFY(!nullProp.isResettable());
+    QVERIFY(!nullProp.isDesignable());
+    QVERIFY(!nullProp.isScriptable());
+    QVERIFY(!nullProp.isStored());
+    QVERIFY(!nullProp.isEditable());
+    QVERIFY(!nullProp.isUser());
+    QVERIFY(!nullProp.hasStdCppSet());
+    QVERIFY(!nullProp.isEnumOrFlag());
+    QVERIFY(!nullProp.isDynamic());
+    QCOMPARE(nullProp.index(), 0);
 
     // Add a property and check its attributes.
     QMetaPropertyBuilder prop1 = builder.addProperty("foo", "const QString &");
@@ -409,6 +532,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop1.isUser());
     QVERIFY(!prop1.hasStdCppSet());
     QVERIFY(!prop1.isEnumOrFlag());
+    QVERIFY(!prop1.isDynamic());
     QCOMPARE(prop1.index(), 0);
     QCOMPARE(builder.propertyCount(), 1);
 
@@ -427,6 +551,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isDynamic());
     QCOMPARE(prop2.index(), 1);
     QCOMPARE(builder.propertyCount(), 2);
 
@@ -434,6 +559,8 @@ void tst_QMetaObjectBuilder::property()
     QCOMPARE(builder.indexOfProperty("foo"), 0);
     QCOMPARE(builder.indexOfProperty("bar"), 1);
     QCOMPARE(builder.indexOfProperty("baz"), -1);
+    QCOMPARE(builder.property(1).name(), QByteArray("bar"));
+    QCOMPARE(builder.property(9).name(), QByteArray());
 
     // Modify the attributes on prop1.
     prop1.setReadable(false);
@@ -446,6 +573,7 @@ void tst_QMetaObjectBuilder::property()
     prop1.setUser(true);
     prop1.setStdCppSet(true);
     prop1.setEnumOrFlag(true);
+    prop1.setDynamic(true);
 
     // Check that prop1 is changed, but prop2 is not.
     QCOMPARE(prop1.name(), QByteArray("foo"));
@@ -460,6 +588,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(prop1.isUser());
     QVERIFY(prop1.hasStdCppSet());
     QVERIFY(prop1.isEnumOrFlag());
+    QVERIFY(prop1.isDynamic());
     QVERIFY(prop2.isReadable());
     QVERIFY(prop2.isWritable());
     QCOMPARE(prop2.name(), QByteArray("bar"));
@@ -472,6 +601,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isDynamic());
 
     // Remove prop1 and check that prop2 becomes index 0.
     builder.removeProperty(0);
@@ -487,6 +617,7 @@ void tst_QMetaObjectBuilder::property()
     QVERIFY(!prop2.isUser());
     QVERIFY(!prop2.hasStdCppSet());
     QVERIFY(!prop2.isEnumOrFlag());
+    QVERIFY(!prop2.isDynamic());
     QCOMPARE(prop2.index(), 0);
 
     // Perform index-based lookup again.
@@ -510,6 +641,7 @@ void tst_QMetaObjectBuilder::property()
             prop2.setUser(false); \
             prop2.setStdCppSet(false); \
             prop2.setEnumOrFlag(false); \
+            prop2.setDynamic(false); \
         } while (0)
 #define COUNT_FLAGS() \
         ((prop2.isReadable() ? 1 : 0) + \
@@ -521,7 +653,8 @@ void tst_QMetaObjectBuilder::property()
          (prop2.isEditable() ? 1 : 0) + \
          (prop2.isUser() ? 1 : 0) + \
          (prop2.hasStdCppSet() ? 1 : 0) + \
-         (prop2.isEnumOrFlag() ? 1 : 0))
+         (prop2.isEnumOrFlag() ? 1 : 0) + \
+         (prop2.isDynamic() ? 1 : 0)) 
 #define CHECK_FLAG(setFunc,isFunc) \
         do { \
             CLEAR_FLAGS(); \
@@ -540,9 +673,20 @@ void tst_QMetaObjectBuilder::property()
     CHECK_FLAG(setUser, isUser);
     CHECK_FLAG(setStdCppSet, hasStdCppSet);
     CHECK_FLAG(setEnumOrFlag, isEnumOrFlag);
+    CHECK_FLAG(setDynamic, isDynamic);
 
     // Check that nothing else changed.
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::Properties));
+
+    // Add property from prototype
+    QMetaProperty prototype = SomethingOfEverything::staticMetaObject.property(1);
+    QVERIFY(prototype.name() == QByteArray("prop"));
+    QMetaPropertyBuilder prototypeProp = builder.addProperty(prototype);
+    QCOMPARE(prototypeProp.name(), QByteArray("prop"));
+    QVERIFY(prototypeProp.hasNotifySignal());
+    QCOMPARE(prototypeProp.notifySignal().signature(), QByteArray("propChanged(QString)"));
+    QCOMPARE(builder.methodCount(), 1);
+    QCOMPARE(builder.method(0).signature(), QByteArray("propChanged(QString)"));
 }
 
 void tst_QMetaObjectBuilder::notifySignal()
@@ -601,6 +745,8 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(builder.indexOfEnumerator("foo"), 0);
     QCOMPARE(builder.indexOfEnumerator("bar"), 1);
     QCOMPARE(builder.indexOfEnumerator("baz"), -1);
+    QCOMPARE(builder.enumerator(1).name(), QByteArray("bar"));
+    QCOMPARE(builder.enumerator(9).name(), QByteArray());
 
     // Modify the attributes on enum1.
     enum1.setIsFlag(true);
@@ -616,6 +762,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.key(0), QByteArray("ABC"));
     QCOMPARE(enum1.key(1), QByteArray("DEF"));
     QCOMPARE(enum1.key(2), QByteArray("GHI"));
+    QCOMPARE(enum1.key(3), QByteArray());
     QCOMPARE(enum1.value(0), 0);
     QCOMPARE(enum1.value(1), 1);
     QCOMPARE(enum1.value(2), -1);
@@ -637,6 +784,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum1.key(0), QByteArray("ABC"));
     QCOMPARE(enum1.key(1), QByteArray("DEF"));
     QCOMPARE(enum1.key(2), QByteArray("GHI"));
+    QCOMPARE(enum1.key(3), QByteArray());
     QCOMPARE(enum1.value(0), 0);
     QCOMPARE(enum1.value(1), 1);
     QCOMPARE(enum1.value(2), -1);
@@ -646,6 +794,29 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum2.index(), 1);
     QCOMPARE(enum2.key(0), QByteArray("XYZ"));
     QCOMPARE(enum2.key(1), QByteArray("UVW"));
+    QCOMPARE(enum2.key(2), QByteArray());
+    QCOMPARE(enum2.value(0), 10);
+    QCOMPARE(enum2.value(1), 19);
+
+    // Remove enum1 key
+    enum1.removeKey(2);
+    QCOMPARE(enum1.name(), QByteArray("foo"));
+    QVERIFY(enum1.isFlag());
+    QCOMPARE(enum1.keyCount(), 2);
+    QCOMPARE(enum1.index(), 0);
+    QCOMPARE(enum1.key(0), QByteArray("ABC"));
+    QCOMPARE(enum1.key(1), QByteArray("DEF"));
+    QCOMPARE(enum1.key(2), QByteArray());
+    QCOMPARE(enum1.value(0), 0);
+    QCOMPARE(enum1.value(1), 1);
+    QCOMPARE(enum1.value(2), -1);
+    QCOMPARE(enum2.name(), QByteArray("bar"));
+    QVERIFY(enum2.isFlag());
+    QCOMPARE(enum2.keyCount(), 2);
+    QCOMPARE(enum2.index(), 1);
+    QCOMPARE(enum2.key(0), QByteArray("XYZ"));
+    QCOMPARE(enum2.key(1), QByteArray("UVW"));
+    QCOMPARE(enum2.key(2), QByteArray());
     QCOMPARE(enum2.value(0), 10);
     QCOMPARE(enum2.value(1), 19);
 
@@ -659,6 +830,7 @@ void tst_QMetaObjectBuilder::enumerator()
     QCOMPARE(enum2.index(), 0);
     QCOMPARE(enum2.key(0), QByteArray("XYZ"));
     QCOMPARE(enum2.key(1), QByteArray("UVW"));
+    QCOMPARE(enum2.key(2), QByteArray());
     QCOMPARE(enum2.value(0), 10);
     QCOMPARE(enum2.value(1), 19);
 
@@ -682,6 +854,8 @@ void tst_QMetaObjectBuilder::classInfo()
     QCOMPARE(builder.classInfoValue(0), QByteArray("value1"));
     QCOMPARE(builder.classInfoName(1), QByteArray("bar"));
     QCOMPARE(builder.classInfoValue(1), QByteArray("value2"));
+    QCOMPARE(builder.classInfoName(9), QByteArray());
+    QCOMPARE(builder.classInfoValue(9), QByteArray());
     QCOMPARE(builder.classInfoCount(), 2);
 
     // Perform index-based lookup.
@@ -738,61 +912,6 @@ void tst_QMetaObjectBuilder::staticMetacall()
     QVERIFY(checkForSideEffects(builder, QMetaObjectBuilder::StaticMetacall));
 }
 
-// Dummy class that has something of every type of thing moc can generate.
-class SomethingOfEverything : public QObject
-{
-    Q_OBJECT
-    Q_CLASSINFO("ci_foo", "ABC")
-    Q_CLASSINFO("ci_bar", "DEF")
-    Q_PROPERTY(QString prop READ prop WRITE setProp NOTIFY propChanged)
-    Q_PROPERTY(QString prop2 READ prop WRITE setProp)
-    Q_PROPERTY(SomethingEnum eprop READ eprop)
-    Q_PROPERTY(SomethingFlagEnum fprop READ fprop)
-    Q_PROPERTY(QLocale::Language language READ language)
-    Q_ENUMS(SomethingEnum)
-    Q_FLAGS(SomethingFlagEnum)
-public:
-    Q_INVOKABLE SomethingOfEverything() {}
-    ~SomethingOfEverything() {}
-
-    enum SomethingEnum
-    {
-        GHI,
-        JKL = 10
-    };
-
-    enum SomethingFlagEnum
-    {
-        XYZ = 1,
-        UVW = 8
-    };
-
-    Q_INVOKABLE Q_SCRIPTABLE void method1() {}
-
-    QString prop() const { return QString(); }
-    void setProp(const QString& v) { Q_UNUSED(v); }
-
-    SomethingOfEverything::SomethingEnum eprop() const { return GHI; }
-    SomethingOfEverything::SomethingFlagEnum fprop() const { return XYZ; }
-    QLocale::Language language() const { return QLocale::English; }
-
-public slots:
-    void slot1(const QString&) {}
-    void slot2(int, const QString&) {}
-
-private slots:
-    void slot3() {}
-
-protected slots:
-    Q_SCRIPTABLE void slot4(int) {}
-    void slot5(int a, const QString& b) { Q_UNUSED(a); Q_UNUSED(b); }
-
-signals:
-    void sig1();
-    void sig2(int x, const QString& y);
-    void propChanged(const QString&);
-};
-
 // Copy the entire contents of a static QMetaObject and then check
 // that QMetaObjectBuilder will produce an exact copy as output.
 void tst_QMetaObjectBuilder::copyMetaObject()
@@ -817,6 +936,8 @@ void tst_QMetaObjectBuilder::copyMetaObject()
 // it round-trips to the exact same value.
 void tst_QMetaObjectBuilder::serialize()
 {
+    // Full QMetaObjectBuilder
+    {
     QMetaObjectBuilder builder(&SomethingOfEverything::staticMetaObject);
     QMetaObject *meta = builder.toMetaObject();
 
@@ -835,6 +956,53 @@ void tst_QMetaObjectBuilder::serialize()
     QVERIFY(sameMetaObject(meta, meta2));
     qFree(meta);
     qFree(meta2);
+    }
+
+    // Partial QMetaObjectBuilder
+    {
+    QMetaObjectBuilder builder;
+    builder.setClassName("Test");
+    builder.addProperty("foo", "int");
+    builder.setSuperClass(0);
+
+    QByteArray data;
+    QDataStream stream(&data, QIODevice::WriteOnly | QIODevice::Append);
+    builder.serialize(stream);
+
+    QMetaObjectBuilder builder2;
+    QDataStream stream2(data);
+    builder2.deserialize(stream2, QMap<QByteArray, const QMetaObject *>());
+
+    QCOMPARE(builder.superClass(), builder2.superClass());
+    QCOMPARE(builder.className(), builder2.className());
+    QCOMPARE(builder.propertyCount(), builder2.propertyCount());
+    QCOMPARE(builder.property(0).name(), builder2.property(0).name());
+    QCOMPARE(builder.property(0).type(), builder2.property(0).type());
+    }
+}
+
+// Check that removing a method updates notify signals appropriately
+void tst_QMetaObjectBuilder::removeNotifySignal()
+{
+    QMetaObjectBuilder builder;
+
+    QMetaMethodBuilder method1 = builder.addSignal("foo(const QString&, int)");
+    QMetaMethodBuilder method2 = builder.addSignal("bar(QString)");
+
+    // Setup property
+    QMetaPropertyBuilder prop = builder.addProperty("prop", "const QString &");
+    prop.setNotifySignal(method2);
+    QVERIFY(prop.hasNotifySignal());
+    QCOMPARE(prop.notifySignal().index(), 1);
+
+    // Remove non-notify signal
+    builder.removeMethod(0);
+    QVERIFY(prop.hasNotifySignal());
+    QCOMPARE(prop.notifySignal().index(), 0);
+
+    // Remove notify signal
+    builder.removeMethod(0);
+    QVERIFY(!prop.hasNotifySignal());
 }
 
 // Check that the only changes to a "builder" relative to the default
