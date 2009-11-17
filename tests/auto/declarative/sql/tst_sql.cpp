@@ -144,6 +144,7 @@ void tst_sql::testQml_data()
     QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 1 << true; // Some HTML5 documents say to use rows by index, others by item() function
     QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 1 << true; // As with previous, WebKit doesn't give an array
     QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 1 << true; // It's very inefficient to find the total number of results, here is a solution
+    QTest::newRow("error-a") << "data/7a-error.js" << "passed" << 1 << false;
 }
 
 void tst_sql::validateAgainstWebkit_data()
@@ -177,7 +178,7 @@ void tst_sql::validateAgainstWebkit()
     webpage.mainFrame()->evaluateJavaScript(js);
     QTest::qWait(200); // WebKit db access is asynchronous
     QTRY_COMPARE(webpage.mainFrame()->evaluateJavaScript("test()").toString(),result);
-    QTest::qWait(200); // WebKit crashes if you quit it too fast
+    QTest::qWait(1000); // WebKit crashes if you quit it too fast
 
     QWebSecurityOrigin origin = webpage.mainFrame()->securityOrigin();
     QList<QWebDatabase> dbs = origin.databases();
