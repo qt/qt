@@ -97,10 +97,12 @@ class TestObject : public QObject
     Q_PROPERTY(bool error READ error WRITE setError NOTIFY changedError)
     Q_PROPERTY(bool animate READ animate NOTIFY changedAnim)
     Q_PROPERTY(bool invalidHighlight READ invalidHighlight NOTIFY changedHl)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer NOTIFY changedCacheBuffer)
 
 public:
     TestObject(QObject *parent = 0)
-        : QObject(parent), mError(true), mAnimate(false), mInvalidHighlight(false) {}
+        : QObject(parent), mError(true), mAnimate(false), mInvalidHighlight(false)
+        , mCacheBuffer(0) {}
 
     bool error() const { return mError; }
     void setError(bool err) { mError = err; emit changedError(); }
@@ -111,15 +113,20 @@ public:
     bool invalidHighlight() const { return mInvalidHighlight; }
     void setInvalidHighlight(bool invalid) { mInvalidHighlight = invalid; emit changedHl(); }
 
+    int cacheBuffer() const { return mCacheBuffer; }
+    void setCacheBuffer(int buffer) { mCacheBuffer = buffer; emit changedCacheBuffer(); }
+
 signals:
     void changedError();
     void changedAnim();
     void changedHl();
+    void changedCacheBuffer();
 
 public:
     bool mError;
     bool mAnimate;
     bool mInvalidHighlight;
+    int mCacheBuffer;
 };
 
 class TestModel : public QListModelInterface
@@ -1019,7 +1026,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
         QVERIFY(item->y() == i*20);
     }
 
-    listview->setCacheBuffer(400);
+    testObject->setCacheBuffer(400);
     QVERIFY(listview->cacheBuffer() == 400);
 
     int newItemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
