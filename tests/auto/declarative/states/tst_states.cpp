@@ -488,6 +488,8 @@ void tst_states::anchorChanges()
 
         rect->setState("");
         QCOMPARE(innerRect->x(), qreal(5));
+
+        delete rect;
     }
 
     {
@@ -499,10 +501,36 @@ void tst_states::anchorChanges()
         QVERIFY(innerRect != 0);
 
         rect->setState("right");
+        QEXPECT_FAIL("", "QTBUG-5338", Continue);
         QCOMPARE(innerRect->x(), qreal(150));
 
         rect->setState("");
         QCOMPARE(innerRect->x(), qreal(5));
+
+        delete rect;
+    }
+
+    {
+        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges3.qml");
+        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+        QVERIFY(rect != 0);
+
+        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+        QVERIFY(innerRect != 0);
+
+        rect->setState("reanchored");
+        QCOMPARE(innerRect->x(), qreal(10));
+        QCOMPARE(innerRect->y(), qreal(0));
+        QCOMPARE(innerRect->width(), qreal(190));
+        QCOMPARE(innerRect->height(), qreal(150));
+
+        rect->setState("");
+        QCOMPARE(innerRect->x(), qreal(0));
+        QCOMPARE(innerRect->y(), qreal(10));
+        QCOMPARE(innerRect->width(), qreal(150));
+        QCOMPARE(innerRect->height(), qreal(190));
+
+        delete rect;
     }
 }
 

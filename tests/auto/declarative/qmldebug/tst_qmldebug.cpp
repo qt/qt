@@ -59,7 +59,7 @@
 #include <private/qmldebugservice_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 
-#include "../debugutil_p.h"
+#include "../shared/debugutil_p.h"
 
 Q_DECLARE_METATYPE(QmlDebugWatch::State)
 
