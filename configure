@@ -404,7 +404,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         exit 1
     fi
     ProductCode=`echo $LicenseKeyExt | cut -f 1 -d - | cut -b 1`
-    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d - | cut -b 1`
+    PlatformCode=`echo $LicenseKeyExt | cut -f 2 -d -`
     LicenseTypeCode=`echo $LicenseKeyExt | cut -f 3 -d -`
     LicenseFeatureCode=`echo $LicenseKeyExt | cut -f 4 -d - | cut -b 1`
 
@@ -448,65 +448,44 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
 
     # verify that we are licensed to use Qt on this platform
     LICENSE_EXTENSION=
-    if [ "$PlatformCode" = "X" ]; then
-	# Qt All-OS
-	LICENSE_EXTENSION="-ALLOS"
-    elif [ "$PLATFORM_QWS" = "yes" ]; then
-        case $PlatformCode in
-        2|4|8|A|B|E|G|J|K|P|Q|S|U|V|W)
+    case "$PlatformCode" in
+	*L)
+	    PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
+	    ;;
+	*)
+	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
+	    ;;
+    esac
+    case "$PlatformCode,$PLATFORM_MAC,$PLATFORM_QWS" in
+        X9,* | XC,* | XU,* | XW,*)
+            # Qt All-OS
+            LICENSE_EXTENSION="-ALLOS"
+            ;;
+        8M,* | S9,* | SC,* | SU,* | SW,* | X9,* | XC,* | XU,* | XW,*)
             # Qt for Embedded Linux
             LICENSE_EXTENSION="-EMBEDDED"
             ;;
-        *)
-            echo
-            echo "You are not licensed for Qt for Embedded Linux."
-            echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include Qt for Embedded Linux, or install the"
-            echo "Qt Open Source Edition if you intend to develop free software."
-            exit 1
-            ;;
-        esac
-    elif [ "$PLATFORM_MAC" = "yes" ]; then
-        case $PlatformCode in
-        2|4|5|7|9|B|C|E|F|G|L|M|U|W|Y)
-            # Qt/Mac
-            LICENSE_EXTENSION="-DESKTOP"
-            ;;
-        3|6|8|A|D|H|J|K|P|Q|S|V)
+        6M,*,no | N7,*,no | N9,*,no | NX,*,no)
             # Embedded no-deploy
             LICENSE_EXTENSION="-EMBEDDED"
-	    ;;
+            ;;
+        FM,*,no | LM,yes,* | ZM,no,no)
+            # Desktop
+            LICENSE_EXTENSION="-DESKTOP"
+            ;;
         *)
+            Platform=Linux/X11
+            [ "$PLATFORM_MAC" = "yes" ] && Platform='Mac OS X'
+            [ "$PLATFORM_QWS" = "yes" ] && Platform='Embedded Linux'
             echo
-            echo "You are not licensed for the Qt/Mac platform."
+            echo "You are not licensed for the $Platform platform."
             echo
-            echo "Please contact qt-info@nokia.com to upgrade your license"
-            echo "to include the Qt/Mac platform."
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include the $Platform platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
             exit 1
             ;;
-        esac
-     else
-         case $PlatformCode in
-         2|3|4|5|7|D|E|F|J|M|Q|S|T|V|Z)
-             # Qt/X11
-             LICENSE_EXTENSION="-DESKTOP"
-             ;;
-         6|8|9|A|B|C|G|H|K|P|U|W)
-             # Embedded no-deploy
-             LICENSE_EXTENSION="-EMBEDDED"
-             ;;
-         *)
-             echo
-             echo "You are not licensed for the Qt/X11 platform."
-             echo
-             echo "Please contact qt-info@nokia.com to upgrade your license to"
-             echo "include the Qt/X11 platform, or install the Qt Open Source Edition"
-             echo "if you intend to develop free software."
-             exit 1
-             ;;
-        esac
-    fi
+    esac
 
     if test -r "$relpath/.LICENSE"; then
 	# Generic, non-final license
