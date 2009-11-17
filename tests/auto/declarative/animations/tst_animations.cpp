@@ -57,6 +57,8 @@ private slots:
     void simpleNumber();
     void simpleColor();
     void alwaysRunToEnd();
+    void complete();
+    void resume();
     void dotProperty();
     void badTypes();
     void badProperties();
@@ -64,6 +66,7 @@ private slots:
     void properties();
     void propertiesTransition();
     void easingStringConversion();
+    void invalidDuration();
 };
 
 #define QTIMED_COMPARE(lhs, rhs) do { \
@@ -96,6 +99,7 @@ void tst_animations::simpleProperty()
     QVERIFY(animation.isRunning());
     QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
     QCOMPARE(rect.pos(), QPointF(100,100));
 }
 
@@ -120,6 +124,7 @@ void tst_animations::simpleNumber()
     QVERIFY(animation.isRunning());
     QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
     QCOMPARE(rect.x(), qreal(100));
 }
 
@@ -144,6 +149,7 @@ void tst_animations::simpleColor()
     QVERIFY(animation.isRunning());
     QVERIFY(animation.isPaused());
     animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
     QCOMPARE(rect.color(), QColor::fromRgbF(0.498039, 0, 0.498039, 1));
 }
 
@@ -157,12 +163,62 @@ void tst_animations::alwaysRunToEnd()
     animation.setDuration(1000);
     animation.setRepeat(true);
     animation.setAlwaysRunToEnd(true);
+    QVERIFY(animation.repeat() == true);
+    QVERIFY(animation.alwaysRunToEnd() == true);
     animation.start();
     QTest::qWait(1500);
     animation.stop();
     QVERIFY(rect.x() != qreal(200));
     QTest::qWait(500);
     QTIMED_COMPARE(rect.x(), qreal(200));
+}
+
+void tst_animations::complete()
+{
+    QmlGraphicsRectangle rect;
+    QmlPropertyAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setFrom(1);
+    animation.setTo(200);
+    animation.setDuration(500);
+    QVERIFY(animation.from() == 1);
+    animation.start();
+    QTest::qWait(50);
+    animation.stop();
+    QVERIFY(rect.x() != qreal(200));
+    animation.start();
+    QTest::qWait(50);
+    QVERIFY(animation.isRunning());
+    animation.complete();
+    QCOMPARE(rect.x(), qreal(200));
+}
+
+void tst_animations::resume()
+{
+    QmlGraphicsRectangle rect;
+    QmlPropertyAnimation animation;
+    animation.setTarget(&rect);
+    animation.setProperty("x");
+    animation.setFrom(10);
+    animation.setTo(200);
+    animation.setDuration(500);
+    QVERIFY(animation.from() == 10);
+
+    animation.start();
+    QTest::qWait(50);
+    animation.pause();
+    qreal x = rect.x();
+    QVERIFY(x != qreal(200));
+    QVERIFY(animation.isRunning());
+    QVERIFY(animation.isPaused());
+
+    animation.resume();
+    QVERIFY(animation.isRunning());
+    QVERIFY(!animation.isPaused());
+    QTest::qWait(50);
+    animation.stop();
+    QVERIFY(rect.x() > x);
 }
 
 void tst_animations::dotProperty()
@@ -180,6 +236,7 @@ void tst_animations::dotProperty()
     animation.start();
     animation.pause();
     animation.setCurrentTime(125);
+    QVERIFY(animation.currentTime() == 125);
     QCOMPARE(rect.border()->width(), 5);
 }
 
@@ -427,6 +484,7 @@ void tst_animations::easingStringConversion()
 {
     QmlNumberAnimation *animation = new QmlNumberAnimation;
     animation->setEasing("easeInOutQuad");
+    QCOMPARE(animation->easing(),QLatin1String("easeInOutQuad"));
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve(), QEasingCurve(QEasingCurve::InOutQuad));
 
     animation->setEasing("OutQuad");
@@ -436,7 +494,54 @@ void tst_animations::easingStringConversion()
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutBounce);
     QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
 
+    animation->setEasing("easeOutElastic(amplitude: 5, period: 3)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutElastic);
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude(), qreal(5));
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().period(), qreal(3));
+
+    animation->setEasing("easeInOutBack(overshoot: 2)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutBack);
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().overshoot(), qreal(2));
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unmatched parenthesis in easing function \"easeInOutBack(overshoot: 2\"");
+    animation->setEasing("easeInOutBack(overshoot: 2");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Easing function \"InOutBack(overshoot: 2)\" must start with \"ease\"");
+    animation->setEasing("InOutBack(overshoot: 2)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unknown easing curve \"NonExistantEase\"");
+    animation->setEasing("NonExistantEase");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::Linear);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude 5)\"");
+    animation->setEasing("easeInOutElastic(amplitude 5)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Improperly specified parameter in easing function \"easeInOutElastic(amplitude: yes)\"");
+    animation->setEasing("easeInOutElastic(amplitude: yes)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::InOutElastic);
+    QVERIFY(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().amplitude() != qreal(5));
+
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlNumberAnimation (unknown location) Unknown easing parameter \"nonexistantproperty\"");
+    animation->setEasing("easeOutQuad(nonexistantproperty: 12)");
+    QCOMPARE(static_cast<QVariantAnimation*>(((QmlAbstractAnimation*)animation)->qtAnimation())->easingCurve().type(), QEasingCurve::OutQuad);
+
     delete animation;
+}
+
+void tst_animations::invalidDuration()
+{
+    QmlPropertyAnimation *animation = new QmlPropertyAnimation;
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlPropertyAnimation (unknown location) Cannot set a duration of < 0");
+    animation->setDuration(-1);
+    QCOMPARE(animation->duration(), 250);
+
+    QmlPauseAnimation *pauseAnimation = new QmlPauseAnimation;
+    QTest::ignoreMessage(QtWarningMsg, "QML QmlPauseAnimation (unknown location) Cannot set a duration of < 0");
+    pauseAnimation->setDuration(-1);
+    QCOMPARE(pauseAnimation->duration(), 250);
 }
 
 QTEST_MAIN(tst_animations)
