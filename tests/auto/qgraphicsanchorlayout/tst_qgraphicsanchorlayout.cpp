@@ -85,6 +85,7 @@ private slots:
     void simplificationVsOrder();
     void parallelSimplificationOfCenter();
     void simplificationVsRedundance();
+    void spacingPersistency();
 };
 
 class RectWidget : public QGraphicsWidget
@@ -1864,6 +1865,31 @@ void tst_QGraphicsAnchorLayout::simplificationVsRedundance()
 
     QCOMPARE(usedSimplex(l, Qt::Horizontal), false);
     QCOMPARE(usedSimplex(l, Qt::Vertical), false);
+}
+
+/*
+  Avoid regression where the saved prefSize would be lost. This was
+  solved by saving the original spacing in the QGraphicsAnchorPrivate class
+*/
+void tst_QGraphicsAnchorLayout::spacingPersistency()
+{
+    QGraphicsWidget w;
+    QGraphicsWidget *a = createItem();
+    QGraphicsAnchorLayout *l = new QGraphicsAnchorLayout(&w);
+
+    l->addAnchors(l, a, Qt::Horizontal);
+    QGraphicsAnchor *anchor = l->anchor(l, Qt::AnchorLeft, a, Qt::AnchorLeft);
+
+    anchor->setSpacing(-30);
+    QCOMPARE(anchor->spacing(), -30.0);
+
+    anchor->setSpacing(30);
+    QCOMPARE(anchor->spacing(), 30.0);
+
+    anchor->setSizePolicy(QSizePolicy::Ignored);
+    w.effectiveSizeHint(Qt::PreferredSize);
+
+    QCOMPARE(anchor->spacing(), 30.0);
 }
 
 QTEST_MAIN(tst_QGraphicsAnchorLayout)

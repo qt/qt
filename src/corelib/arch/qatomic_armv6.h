@@ -45,7 +45,6 @@
 QT_BEGIN_HEADER
 
 QT_BEGIN_NAMESPACE
-
 #define Q_ATOMIC_INT_REFERENCE_COUNTING_IS_ALWAYS_NATIVE
 
 inline bool QBasicAtomicInt::isReferenceCountingNative()
@@ -101,6 +100,8 @@ template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::isFetchAndAddWaitFree()
 { return false; }
 
+#ifndef Q_CC_RVCT
+
 inline bool QBasicAtomicInt::ref()
 {
     register int newValue;
@@ -155,21 +156,6 @@ inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
     return result == 0;
 }
 
-inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
 inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 {
     register int originalValue;
@@ -186,21 +172,6 @@ inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
                    [_q_value] "r" (&_q_value)
                  : "cc", "memory");
     return originalValue;
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
-{
-    return fetchAndStoreOrdered(newValue);
 }
 
 inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
@@ -224,21 +195,6 @@ inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
     return originalValue;
 }
 
-inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
-inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
-{
-    return fetchAndAddOrdered(valueToAdd);
-}
-
 template <typename T>
 Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
 {
@@ -256,24 +212,6 @@ Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValu
                    [_q_value] "r" (&_q_value)
                  : "cc", "memory");
     return result == 0;
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
-{
-    return testAndSetOrdered(expectedValue, newValue);
 }
 
 template <typename T>
@@ -296,24 +234,6 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 }
 
 template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
-Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
-{
-    return fetchAndStoreOrdered(newValue);
-}
-
-template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
 {
     register T *originalValue;
@@ -333,6 +253,226 @@ Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueTo
                    [_q_value] "r" (&_q_value)
                  : "cc", "memory");
     return originalValue;
+}
+
+#else
+// This is Q_CC_RVCT
+
+// RVCT inline assembly documentation:
+// http://www.keil.com/support/man/docs/armcc/armcc_chdcffdb.htm
+// RVCT embedded assembly documentation:
+// http://www.keil.com/support/man/docs/armcc/armcc_chddbeib.htm
+
+// save our pragma state and switch to ARM mode
+#pragma push
+#pragma arm
+
+inline bool QBasicAtomicInt::ref()
+{
+    register int newValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   newValue, [&_q_value]
+        add     newValue, newValue, #1
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return newValue != 0;
+}
+
+inline bool QBasicAtomicInt::deref()
+{
+    register int newValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   newValue, [&_q_value]
+        sub     newValue, newValue, #1
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return newValue != 0;
+}
+
+inline bool QBasicAtomicInt::testAndSetOrdered(int expectedValue, int newValue)
+{
+    register int result;
+    retry:
+    __asm {
+        ldrex   result, [&_q_value]
+        eors    result, result, expectedValue
+        strexeq result, newValue, [&_q_value]
+        teqeq   result, #1
+        beq     retry
+    }
+    return result == 0;
+}
+
+inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
+{
+    register int originalValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   originalValue, [&_q_value]
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return originalValue;
+}
+
+inline int QBasicAtomicInt::fetchAndAddOrdered(int valueToAdd)
+{
+    register int originalValue;
+    register int newValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   originalValue, [&_q_value]
+        add     newValue, originalValue, valueToAdd
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return originalValue;
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetOrdered(T *expectedValue, T *newValue)
+{
+    register T *result;
+    retry:
+    __asm {
+        ldrex   result, [&_q_value]
+        eors    result, result, expectedValue
+        strexeq result, newValue, [&_q_value]
+        teqeq   result, #1
+        beq     retry
+    }
+    return result == 0;
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
+{
+    register T *originalValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   originalValue, [&_q_value]
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return originalValue;
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndAddOrdered(qptrdiff valueToAdd)
+{
+    register T *originalValue;
+    register T *newValue;
+    register int result;
+    retry:
+    __asm {
+        ldrex   originalValue, [&_q_value]
+        add     newValue, originalValue, valueToAdd * sizeof(T)
+        strex   result, newValue, [&_q_value]
+        teq     result, #0
+        bne     retry
+    }
+    return originalValue;
+}
+
+// go back to the previous pragma state (probably Thumb mode)
+#pragma pop
+#endif
+
+// common code
+
+inline bool QBasicAtomicInt::testAndSetRelaxed(int expectedValue, int newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+inline bool QBasicAtomicInt::testAndSetAcquire(int expectedValue, int newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+inline int QBasicAtomicInt::fetchAndStoreRelaxed(int newValue)
+{
+    return fetchAndStoreOrdered(newValue);
+}
+
+inline int QBasicAtomicInt::fetchAndStoreAcquire(int newValue)
+{
+    return fetchAndStoreOrdered(newValue);
+}
+
+inline int QBasicAtomicInt::fetchAndStoreRelease(int newValue)
+{
+    return fetchAndStoreOrdered(newValue);
+}
+
+inline int QBasicAtomicInt::fetchAndAddRelaxed(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
+inline int QBasicAtomicInt::fetchAndAddAcquire(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
+inline int QBasicAtomicInt::fetchAndAddRelease(int valueToAdd)
+{
+    return fetchAndAddOrdered(valueToAdd);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelaxed(T *expectedValue, T *newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetAcquire(T *expectedValue, T *newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE bool QBasicAtomicPointer<T>::testAndSetRelease(T *expectedValue, T *newValue)
+{
+    return testAndSetOrdered(expectedValue, newValue);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelaxed(T *newValue)
+{
+    return fetchAndStoreOrdered(newValue);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreAcquire(T *newValue)
+{
+    return fetchAndStoreOrdered(newValue);
+}
+
+template <typename T>
+Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreRelease(T *newValue)
+{
+    return fetchAndStoreOrdered(newValue);
 }
 
 template <typename T>
