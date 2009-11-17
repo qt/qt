@@ -43,7 +43,6 @@
 #define QMLSTATE_H
 
 #include <QtCore/qobject.h>
-#include <QtCore/QSequentialAnimationGroup>
 #include <qml.h>
 
 QT_BEGIN_HEADER
@@ -90,6 +89,10 @@ public:
     virtual bool isReversable();
     virtual void reverse();
     virtual void saveOriginals() {}
+
+    virtual bool isRewindable() { return isReversable(); }
+    virtual void rewind() {}
+    virtual void saveCurrentValues() {}
 
     //virtual bool hasExtraActions();
     virtual QList<Action> extraActions();
