@@ -65,6 +65,11 @@ public:
     int count() const;
     QVariant at(int) const;
 
+    virtual void append(const QVariant &);
+    virtual void insert(int, const QVariant &);
+    virtual void removeAt(int);
+    virtual void clear();
+
     enum Type { Invalid, StringList, VariantList, QmlList, QList, Instance, Integer };
     Type type() const { return m_type; }
 
