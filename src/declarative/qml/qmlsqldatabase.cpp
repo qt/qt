@@ -248,10 +248,10 @@ static QScriptValue qmlsqldatabase_executeSql(QScriptContext *context, QScriptEn
     QSqlQuery query(db);
     bool err = false;
     if (query.prepare(sql)) {
-        if (values.isArray()) {
+        if (values.isObject()) {
             for (QScriptValueIterator it(values); it.hasNext();) {
                 it.next();
-                query.addBindValue(it.value().toVariant());
+                query.bindValue(it.name(),it.value().toVariant());
             }
         } else {
             query.bindValue(0,values.toVariant());
