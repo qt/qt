@@ -149,6 +149,134 @@ QVariant QmlListAccessor::at(int idx) const
     return QVariant();
 }
 
+void QmlListAccessor::append(const QVariant &value)
+{
+    switch(m_type) {
+    case Invalid:
+        break;
+    case StringList:
+        {
+            const QString &str = value.toString();
+            qvariant_cast<QStringList>(d).append(str);
+            break;
+        }
+    case VariantList:
+        {
+            qvariant_cast<QVariantList>(d).append(value);
+            break;
+        }
+    case QmlList:
+        {
+            QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
+            li->append(const_cast<void *>(value.constData()));  //XXX
+            break;
+        }
+    case QList:
+        QmlMetaType::append(d, value);
+        break;
+    case Instance:
+    case Integer:
+        //do nothing
+        break;
+    }
+}
+
+void QmlListAccessor::insert(int index, const QVariant &value)
+{
+    switch(m_type) {
+    case Invalid:
+        break;
+    case StringList:
+        {
+            const QString &str = value.toString();
+            qvariant_cast<QStringList>(d).insert(index, str);
+            break;
+        }
+    case VariantList:
+        {
+            qvariant_cast<QVariantList>(d).insert(index, value);
+            break;
+        }
+    case QmlList:
+        {
+            QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
+            li->insert(index, const_cast<void *>(value.constData()));   //XXX
+            break;
+        }
+    case QList:
+        //XXX needs implementation
+        qWarning() << "insert function not yet implemented for QLists";
+        break;
+    case Instance:
+        //XXX do nothing?
+        if (index == 0)
+            setList(value);
+        break;
+    case Integer:
+        break;
+    }
+}
+
+void QmlListAccessor::removeAt(int index)
+{
+    switch(m_type) {
+    case Invalid:
+        break;
+    case StringList:
+        qvariant_cast<QStringList>(d).removeAt(index);
+        break;
+    case VariantList:
+        qvariant_cast<QVariantList>(d).removeAt(index);
+        break;
+    case QmlList:
+        {
+            QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
+            li->removeAt(index);
+            break;
+        }
+    case QList:
+        //XXX needs implementation
+        qWarning() << "removeAt function not yet implemented for QLists";
+        break;
+    case Instance:
+        //XXX do nothing?
+        if (index == 0)
+            setList(QVariant());
+        break;
+    case Integer:
+        break;
+    }
+}
+
+void QmlListAccessor::clear()
+{
+    switch(m_type) {
+    case Invalid:
+        break;
+    case StringList:
+        qvariant_cast<QStringList>(d).clear();
+        break;
+    case VariantList:
+        qvariant_cast<QVariantList>(d).clear();
+        break;
+    case QmlList:
+        {
+            QmlPrivate::ListInterface *li = *(QmlPrivate::ListInterface **)d.constData();
+            li->clear();
+            break;
+        }
+    case QList:
+        QmlMetaType::clear(d);
+        break;
+    case Instance:
+        //XXX what should we do here?
+        setList(QVariant());
+        break;
+    case Integer:
+        d = 0;
+    }
+}
+
 bool QmlListAccessor::isValid() const
 {
     return m_type != Invalid;
