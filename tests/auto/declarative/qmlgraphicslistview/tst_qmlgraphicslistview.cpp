@@ -575,6 +575,25 @@ void tst_QmlGraphicsListView::removed(bool animated)
         QCOMPARE(item->y(),40+i*20.0);
     }
 
+    // remove current item beyond visible items.
+    listview->setCurrentIndex(20);
+    QTest::qWait(500);
+    model.removeItem(20);
+    QTest::qWait(500);
+
+    QCOMPARE(listview->currentIndex(), 20);
+    QVERIFY(listview->currentItem() != 0);
+
+    // remove item before current, but visible
+    listview->setCurrentIndex(8);
+    QTest::qWait(500);
+    QmlGraphicsItem *oldCurrent = listview->currentItem();
+    model.removeItem(6);
+    QTest::qWait(500);
+
+    QCOMPARE(listview->currentIndex(), 7);
+    QVERIFY(listview->currentItem() == oldCurrent);
+
     delete canvas;
 }
 
