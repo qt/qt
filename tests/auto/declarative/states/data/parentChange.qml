@@ -21,6 +21,7 @@ Rectangle {
         x: -100; y: -50
         Item {
             id: newParent
+            objectName: "NewParent"
             x: 248; y: 360
         }
     }

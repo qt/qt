@@ -266,8 +266,10 @@ void QmlGraphicsRepeater::clear()
 {
     Q_D(QmlGraphicsRepeater);
     if (d->model) {
-        foreach (QmlGraphicsItem *item, d->deletables)
+        foreach (QmlGraphicsItem *item, d->deletables) {
+            item->setParentItem(this);
             d->model->release(item);
+        }
     }
     d->deletables.clear();
 }

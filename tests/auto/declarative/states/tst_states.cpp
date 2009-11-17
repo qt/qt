@@ -41,6 +41,7 @@
 #include <qtest.h>
 #include <QtDeclarative/qmlengine.h>
 #include <QtDeclarative/qmlcomponent.h>
+#include <private/qmlgraphicsanchors_p_p.h>
 #include <private/qmlgraphicsrectangle_p.h>
 #include <private/qmlpropertychanges_p.h>
 
@@ -59,6 +60,10 @@ private slots:
     void parentChange();
     void parentChangeErrors();
     void anchorChanges();
+    void anchorChanges2();
+    void anchorChanges3();
+    void anchorChanges4();
+    void anchorChanges5();
     void script();
     void restoreEntryValues();
     void explicitChanges();
@@ -386,6 +391,13 @@ void tst_states::parentChange()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
+        QmlParentChange *pChange = qobject_cast<QmlParentChange*>(rect->states()->at(0)->changes()->at(0));
+        QVERIFY(pChange != 0);
+        QmlGraphicsItem *nParent = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("NewParent"));
+        QVERIFY(nParent != 0);
+
+        QCOMPARE(pChange->parent(), nParent);
+
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
@@ -471,63 +483,153 @@ void tst_states::anchorChanges()
 {
     QmlEngine engine;
 
-    {
-        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
-        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
-        QVERIFY(rect != 0);
+    QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
 
-        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
-        QVERIFY(innerRect != 0);
+    QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
 
-        rect->setState("right");
-        QCOMPARE(innerRect->x(), qreal(150));
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QVERIFY(aChanges != 0);
 
-        rect->setState("");
-        QCOMPARE(innerRect->x(), qreal(5));
+    rect->setState("right");
+    QCOMPARE(innerRect->x(), qreal(150));
+    QCOMPARE(aChanges->reset(), QString("left"));
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->right().item, rect->right().item);
+    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
 
-        delete rect;
-    }
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(5));
 
-    {
-        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges2.qml");
-        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
-        QVERIFY(rect != 0);
+    delete rect;
+}
 
-        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
-        QVERIFY(innerRect != 0);
+void tst_states::anchorChanges2()
+{
+    QmlEngine engine;
 
-        rect->setState("right");
-        QEXPECT_FAIL("", "QTBUG-5338", Continue);
-        QCOMPARE(innerRect->x(), qreal(150));
+    QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges2.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
 
-        rect->setState("");
-        QCOMPARE(innerRect->x(), qreal(5));
+    QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
 
-        delete rect;
-    }
+    rect->setState("right");
+    QEXPECT_FAIL("", "QTBUG-5338", Continue);
+    QCOMPARE(innerRect->x(), qreal(150));
 
-    {
-        QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges3.qml");
-        QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
-        QVERIFY(rect != 0);
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(5));
 
-        QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
-        QVERIFY(innerRect != 0);
+    delete rect;
+}
 
-        rect->setState("reanchored");
-        QCOMPARE(innerRect->x(), qreal(10));
-        QCOMPARE(innerRect->y(), qreal(0));
-        QCOMPARE(innerRect->width(), qreal(190));
-        QCOMPARE(innerRect->height(), qreal(150));
+void tst_states::anchorChanges3()
+{
+    QmlEngine engine;
 
-        rect->setState("");
-        QCOMPARE(innerRect->x(), qreal(0));
-        QCOMPARE(innerRect->y(), qreal(10));
-        QCOMPARE(innerRect->width(), qreal(150));
-        QCOMPARE(innerRect->height(), qreal(190));
+    QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges3.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
 
-        delete rect;
-    }
+    QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QmlGraphicsItem *leftGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->left().item, leftGuideline->left().item);
+    QCOMPARE(aChanges->left().anchorLine, leftGuideline->left().anchorLine);
+    QCOMPARE(aChanges->right().item, rect->right().item);
+    QCOMPARE(aChanges->right().anchorLine, rect->right().anchorLine);
+    QCOMPARE(aChanges->top().item, rect->top().item);
+    QCOMPARE(aChanges->top().anchorLine, rect->top().anchorLine);
+    QCOMPARE(aChanges->bottom().item, bottomGuideline->bottom().item);
+    QCOMPARE(aChanges->bottom().anchorLine, bottomGuideline->bottom().anchorLine);
+
+    QCOMPARE(innerRect->x(), qreal(10));
+    QCOMPARE(innerRect->y(), qreal(0));
+    QCOMPARE(innerRect->width(), qreal(190));
+    QCOMPARE(innerRect->height(), qreal(150));
+
+    rect->setState("");
+    QCOMPARE(innerRect->x(), qreal(0));
+    QCOMPARE(innerRect->y(), qreal(10));
+    QCOMPARE(innerRect->width(), qreal(150));
+    QCOMPARE(innerRect->height(), qreal(190));
+
+    delete rect;
+}
+
+void tst_states::anchorChanges4()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges4.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QmlGraphicsItem *leftGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->verticalCenter().item, leftGuideline->verticalCenter().item);
+    QCOMPARE(aChanges->verticalCenter().anchorLine, leftGuideline->verticalCenter().anchorLine);
+
+    delete rect;
+}
+
+void tst_states::anchorChanges5()
+{
+    QmlEngine engine;
+
+    QmlComponent rectComponent(&engine, SRCDIR "/data/anchorChanges5.qml");
+    QmlGraphicsRectangle *rect = qobject_cast<QmlGraphicsRectangle*>(rectComponent.create());
+    QVERIFY(rect != 0);
+
+    QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
+    QVERIFY(innerRect != 0);
+
+    QmlGraphicsItem *leftGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("LeftGuideline"));
+    QVERIFY(leftGuideline != 0);
+
+    QmlGraphicsItem *bottomGuideline = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("BottomGuideline"));
+    QVERIFY(bottomGuideline != 0);
+
+    QmlAnchorChanges *aChanges = qobject_cast<QmlAnchorChanges*>(rect->states()->at(0)->changes()->at(0));
+    QVERIFY(aChanges != 0);
+
+    rect->setState("reanchored");
+    QCOMPARE(aChanges->object(), innerRect);
+    QCOMPARE(aChanges->horizontalCenter().item, bottomGuideline->horizontalCenter().item);
+    QCOMPARE(aChanges->horizontalCenter().anchorLine, bottomGuideline->horizontalCenter().anchorLine);
+    QCOMPARE(aChanges->baseline().item, leftGuideline->baseline().item);
+    QCOMPARE(aChanges->baseline().anchorLine, leftGuideline->baseline().anchorLine);
+
+    delete rect;
 }
 
 void tst_states::script()
