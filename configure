@@ -226,6 +226,7 @@ COMMERCIAL_USER=ask
 CFG_DEV=no
 CFG_NOKIA=no
 CFG_EMBEDDED=no
+CFG_RTOS_ENABLED=yes
 EditionString=Commercial
 
 earlyArgParse()
@@ -450,9 +451,11 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     LICENSE_EXTENSION=
     case "$PlatformCode" in
 	*L)
+	    CFG_RTOS_ENABLED=yes
 	    PlatformCode=`echo "$PlatformCode" | sed 'h;y/8NPQRTZ/UCWX9M7/;x;G;s/\(.\)....\(.\)./\1\2/'`
 	    ;;
 	*)
+	    CFG_RTOS_ENABLED=no
 	    PlatformCode=`echo "$PlatformCode" | sed 's/.$//'`
 	    ;;
     esac
@@ -512,7 +515,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
     fi
 
     case "$LicenseFeatureCode" in
-    G|L)
+    B|G|L|Y)
         # US
         case "$LicenseType" in
         Commercial)
@@ -523,7 +526,7 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
             ;;
         esac
         ;;
-    2|5)
+    2|4|5|F)
         # non-US
         case "$LicenseType" in
         Commercial)
@@ -539,6 +542,14 @@ elif [ $COMMERCIAL_USER = "yes" ]; then
         echo "Invalid license key. Please check the license key."
         exit 1
         ;;
+    esac
+    case "$LicenseFeatureCode" in
+	4|B|F|Y)
+	    CFG_RTOS_ENABLED=yes
+	    ;;
+	2|5|G|L)
+	    CFG_RTOS_ENABLED=no
+	    ;;
     esac
     if [ '!' -f "$outpath/LICENSE" ]; then
         echo "The LICENSE, LICENSE.GPL3 LICENSE.LGPL file shipped with"
@@ -2608,6 +2619,20 @@ if [ "$CFG_EMBEDDED" != "no" -a "$CFG_EMBEDDED" != "auto" ] && [ -n "$CFG_ARCH" 
     fi
 fi
 
+if [ "$CFG_RTOS_ENABLED" = "no" ]; then
+    case `basename "$XPLATFORM"` in
+	qnx-* | vxworks-*)
+            echo ""
+            echo "You are not licensed for Qt for `basename $XPLATFORM`."
+            echo ""
+            echo "Please contact qt-info@nokia.com to upgrade your license to"
+            echo "include this platform, or install the Qt Open Source Edition"
+            echo "if you intend to develop free software."
+            exit 1
+	    ;;
+    esac
+fi
+
 if [ -z "${CFG_HOST_ARCH}" ]; then
     case "$UNAME_SYSTEM:$UNAME_RELEASE:$UNAME_MACHINE" in
     IRIX*:*:*)
@@ -3862,10 +3887,10 @@ fi # Help
 if [ "$PLATFORM_QWS" = "yes" ]; then
     Platform="Qt for Embedded Linux"
 elif [ "$PLATFORM_MAC" = "yes" ]; then
-    Platform="Qt/Mac"
+    Platform="Qt for Mac OS X"
 else
     PLATFORM_X11=yes
-    Platform="Qt/X11"
+    Platform="Qt for Linux/X11"
 fi
 
 echo
