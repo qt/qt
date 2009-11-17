@@ -69,6 +69,8 @@ QRegion QGraphicsSystemFbScreen::doRedraw()
         for (int i = windowStack.length() - 1; i >= 0; i--) {
             if (!windowStack[i]->visible())
                 continue;
+            if (windowStack[i]->window()->isMinimized())
+                continue;
             QRect windowRect = windowStack[i]->geometry();
             QRect intersect = windowRect.intersected(rect);
             QRect windowIntersect = intersect.translated(-windowRect.left(),
@@ -146,7 +148,8 @@ QWidget * QGraphicsSystemFbScreen::topLevelAt(QPoint p)
 {
     for(int i = 0; i < windowStack.size(); i++) {
         if (windowStack[i]->geometry().contains(p, false) &&
-            windowStack[i]->visible()) {
+            windowStack[i]->visible() &&
+            !windowStack[i]->window()->isMinimized()) {
             return windowStack[i]->window();
         }
     }
