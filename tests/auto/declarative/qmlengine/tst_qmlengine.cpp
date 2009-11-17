@@ -47,6 +47,7 @@
 #include <QDir>
 #include <QDesktopServices>
 #include <QDebug>
+#include <QmlComponent>
 
 class tst_qmlengine : public QObject
 {
@@ -60,6 +61,7 @@ private slots:
     void baseUrl();
     void contextForObject();
     void offlineStoragePath();
+    void clearComponentCache();
 };
 
 void tst_qmlengine::rootContext()
@@ -177,6 +179,57 @@ void tst_qmlengine::offlineStoragePath()
 
     engine.setOfflineStoragePath(QDir::homePath());
     QCOMPARE(engine.offlineStoragePath(), QDir::homePath());
+}
+
+void tst_qmlengine::clearComponentCache()
+{
+    QmlEngine engine;
+
+    // Create original qml file
+    {
+        QFile file("temp.qml");
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("import Qt 4.6\nObject {\nproperty int test: 10\n}\n");
+        file.close();
+    }
+
+    // Test "test" property
+    {
+        QmlComponent component(&engine, "temp.qml");
+        QObject *obj = component.create();
+        QVERIFY(obj != 0);
+        QCOMPARE(obj->property("test").toInt(), 10);
+        delete obj;
+    }
+
+    // Modify qml file
+    {
+        QFile file("temp.qml");
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.write("import Qt 4.6\nObject {\nproperty int test: 11\n}\n");
+        file.close();
+    }
+
+    // Test cache hit
+    {
+        QmlComponent component(&engine, "temp.qml");
+        QObject *obj = component.create();
+        QVERIFY(obj != 0);
+        QCOMPARE(obj->property("test").toInt(), 10);
+        delete obj;
+    }
+
+    // Clear cache
+    engine.clearComponentCache();
+
+    // Test cache refresh
+    {
+        QmlComponent component(&engine, "temp.qml");
+        QObject *obj = component.create();
+        QVERIFY(obj != 0);
+        QCOMPARE(obj->property("test").toInt(), 11);
+        delete obj;
+    }
 }
 
 QTEST_MAIN(tst_qmlengine)

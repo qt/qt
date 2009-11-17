@@ -569,23 +569,23 @@ QmlContext *QmlEnginePrivate::getContext(QScriptContext *ctxt)
 QScriptValue QmlEnginePrivate::createComponent(QScriptContext *ctxt,
                                                QScriptEngine *engine)
 {
-    QmlComponent* c;
-
     QmlEnginePrivate *activeEnginePriv =
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
     QmlContext* context = activeEnginePriv->getContext(ctxt);
+    Q_ASSERT(context);
     if(ctxt->argumentCount() != 1) {
-        c = new QmlComponent(activeEngine);
+        return engine->nullValue();
     }else{
-        QUrl url = QUrl(context->resolvedUrl(ctxt->argument(0).toString()));
-        if(!url.isValid())
-            url = QUrl(ctxt->argument(0).toString());
-        c = new QmlComponent(activeEngine, url, activeEngine);
+        QString arg = ctxt->argument(0).toString();
+        if (arg.isEmpty())
+            return engine->nullValue();
+        QUrl url = QUrl(context->resolvedUrl(arg));
+        QmlComponent *c = new QmlComponent(activeEngine, url, activeEngine);
+        c->setCreationContext(context);
+        return activeEnginePriv->objectClass->newQObject(c, qMetaTypeId<QmlComponent*>());
     }
-    c->setCreationContext(context);
-    return engine->newQObject(c);
 }
 
 QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngine *engine)
@@ -594,57 +594,64 @@ QScriptValue QmlEnginePrivate::createQmlObject(QScriptContext *ctxt, QScriptEngi
         static_cast<QmlScriptEngine*>(engine)->p;
     QmlEngine* activeEngine = activeEnginePriv->q_func();
 
-    if(ctxt->argumentCount() < 2)
+    if(ctxt->argumentCount() < 2 || ctxt->argumentCount() > 3)
         return engine->nullValue();
 
+    QmlContext* context = activeEnginePriv->getContext(ctxt);
+    Q_ASSERT(context);
+
     QString qml = ctxt->argument(0).toString();
+    if (qml.isEmpty())
+        return engine->nullValue();
+
     QUrl url;
     if(ctxt->argumentCount() > 2)
         url = QUrl(ctxt->argument(2).toString());
+
+    if (url.isValid() && url.isRelative())
+        url = context->resolvedUrl(url);
+
     QObject *parentArg = activeEnginePriv->objectClass->toQObject(ctxt->argument(1));
-    QmlContext *qmlCtxt = qmlContext(parentArg);
-    if(!parentArg || !qmlCtxt){
-        //TODO: Could use a qmlInfo() like function for script functions
-        qWarning() << "createQmlObject called with invalid parent object";
+    if(!parentArg) 
         return engine->nullValue();
-    }
-    if (url.isEmpty()) {
-        url = qmlCtxt->resolvedUrl(QUrl(QLatin1String("<Unknown File>")));
-    } else {
-        url = qmlCtxt->resolvedUrl(url);
-    }
 
     QmlComponent component(activeEngine, qml.toUtf8(), url);
 
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
-        qWarning() <<"QmlEngine::createQmlObject():";
+        qWarning().nospace() << "QmlEngine::createQmlObject():";
         foreach (const QmlError &error, errors)
-            qWarning() << "    " << error;
+            qWarning().nospace() << "    " << error;
 
         return engine->nullValue();
     }
 
-    QObject *obj = component.create(qmlCtxt);
+    if (!component.isReady()) {
+        qWarning().nospace() << "QmlEngine::createQmlObject(): Component is not ready";
+
+        return engine->nullValue();
+    }
+
+    QObject *obj = component.create(context);
 
     if(component.isError()) {
         QList<QmlError> errors = component.errors();
-        qWarning() <<"QmlEngine::createQmlObject():";
+        qWarning().nospace() << "QmlEngine::createQmlObject():";
         foreach (const QmlError &error, errors)
-            qWarning() << "    " << error;
+            qWarning().nospace() << "    " << error;
 
         return engine->nullValue();
     }
 
-    if(obj) {
-        obj->setParent(parentArg);
-        QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
-        QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
-        if(gobj && gparent)
-            gobj->setParentItem(gparent);
-        return qmlScriptObject(obj, activeEngine);
-    }
-    return engine->nullValue();
+    Q_ASSERT(obj);
+
+    obj->setParent(parentArg);
+    QGraphicsObject* gobj = qobject_cast<QGraphicsObject*>(obj);
+    QGraphicsObject* gparent = qobject_cast<QGraphicsObject*>(parentArg);
+    if(gobj && gparent)
+        gobj->setParentItem(gparent);
+
+    return qmlScriptObject(obj, activeEngine);
 }
 
 QScriptValue QmlEnginePrivate::vector(QScriptContext *ctxt, QScriptEngine *engine)
