@@ -2,9 +2,11 @@ TEMPLATE = subdirs
 SUBDIRS += \
            anchors \                # Cover
            animatedimage \          # Cover
+           animations \             # Cover
+           behaviors \              # Cover
            datetimeformatter \      # Cover
            examples \
-	   graphicswidgets \        # Cover
+	       graphicswidgets \        # Cover
            layouts \                # Cover
            numberformatter \        # Cover
            parserstress \           # Cover
