@@ -236,7 +236,7 @@ public:
                 EdgeData *data = edgeData(v, v1);
                 bool forward = data->from == v;
                 if (forward) {
-                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5]\" dir=both color=\"#000000:#a0a0a0\"] \n")
+                    edges += QString::fromAscii("\"%1\"->\"%2\" [label=\"[%3,%4,%5]\" color=\"#000000\"] \n")
                         .arg(v->toString())
                         .arg(v1->toString())
                         .arg(data->minSize)
