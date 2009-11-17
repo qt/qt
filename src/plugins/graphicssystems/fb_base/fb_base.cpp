@@ -145,7 +145,8 @@ void QGraphicsSystemFbScreen::pointerEvent(QMouseEvent & me)
 QWidget * QGraphicsSystemFbScreen::topLevelAt(QPoint p)
 {
     for(int i = 0; i < windowStack.size(); i++) {
-        if (windowStack[i]->geometry().contains(p, false)) {
+        if (windowStack[i]->geometry().contains(p, false) &&
+            windowStack[i]->visible()) {
             qDebug() << "toplevel at" << p << windowStack[i]->window()->objectName();
             return windowStack[i]->window();
         }
