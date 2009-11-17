@@ -453,6 +453,10 @@ public:
 
     static QSize naviPaneSize();
 
+    //Checks that the current brush is transparent or has BrushStyle NoBrush,
+    //so that theme graphic background can be drawn. 
+    static bool canDrawThemeBackground(const QBrush &backgroundBrush);
+
 private:
     static void drawPart(QS60StyleEnums::SkinParts part, QPainter *painter,
         const QRect &rect, SkinElementFlags flags = KDefaultSkinElementFlags);
