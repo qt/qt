@@ -91,6 +91,8 @@ private slots:
     void idProperty();
     void assignSignal();
     void dynamicProperties();
+    void dynamicPropertiesNested();
+    void listProperties();
     void dynamicObjectProperties();
     void dynamicSignalsAndSlots();
     void simpleBindings();
@@ -554,10 +556,38 @@ void tst_qmllanguage::dynamicProperties()
     QCOMPARE(object->property("doubleProperty"), QVariant(-10.1));
     QCOMPARE(object->property("realProperty"), QVariant((qreal)-19.9));
     QCOMPARE(object->property("stringProperty"), QVariant("Hello World!"));
+    QCOMPARE(object->property("urlProperty"), QVariant(TEST_FILE("main.qml")));
     QCOMPARE(object->property("colorProperty"), QVariant(QColor("red")));
     QCOMPARE(object->property("dateProperty"), QVariant(QDate(1945, 9, 2)));
     QCOMPARE(object->property("varProperty"), QVariant("Hello World!"));
     QCOMPARE(object->property("variantProperty"), QVariant(12));
+}
+
+// Test that nested types can use dynamic properties
+void tst_qmllanguage::dynamicPropertiesNested()
+{
+    QmlComponent component(&engine, TEST_FILE("dynamicPropertiesNested.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("super_a").toInt(), 11); // Overridden
+    QCOMPARE(object->property("super_c").toInt(), 14); // Inherited
+    QCOMPARE(object->property("a").toInt(), 13); // New
+    QCOMPARE(object->property("b").toInt(), 12); // New
+
+    delete object;
+}
+
+// Tests the creation and assignment to dynamic list properties
+void tst_qmllanguage::listProperties()
+{
+    QmlComponent component(&engine, TEST_FILE("listProperties.qml"));
+    VERIFY_ERRORS(0);
+    QObject *object = component.create();
+    QVERIFY(object != 0);
+
+    QCOMPARE(object->property("test").toInt(), 2);
 }
 
 // Tests the creation and assignment of dynamic object properties
@@ -584,6 +614,10 @@ void tst_qmllanguage::dynamicSignalsAndSlots()
     QVERIFY(object->metaObject()->indexOfMethod("signal2()") != -1);
     QVERIFY(object->metaObject()->indexOfMethod("slot1()") != -1);
     QVERIFY(object->metaObject()->indexOfMethod("slot2()") != -1);
+
+    QCOMPARE(object->property("test").toInt(), 0);
+    QMetaObject::invokeMethod(object, "slot3", Qt::DirectConnection, Q_ARG(QVariant, QVariant(10)));
+    QCOMPARE(object->property("test").toInt(), 10);
 }
 
 void tst_qmllanguage::simpleBindings()
