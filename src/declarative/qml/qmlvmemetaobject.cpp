@@ -108,15 +108,7 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
             QPair<int, QmlPropertyValueInterceptor*> pair = interceptors.value(id);
             int valueIndex = pair.first;
             QmlPropertyValueInterceptor *vi = pair.second;
-            QVariant::Type type = QVariant::Invalid;
-            if (id >= propOffset) {
-                id -= propOffset;
-                if (id < metaData->propertyCount) {
-                    type = data[id].type();
-                }
-            } else {
-                type = property(id).type();
-            }
+            QVariant::Type type = property(id).type();
 
             if (type != QVariant::Invalid) {
                 if (valueIndex != -1) {
@@ -129,6 +121,8 @@ int QmlVMEMetaObject::metaCall(QMetaObject::Call c, int _id, void **a)
                     valueType->setValue(QVariant(type, a[0]));
                     QMetaProperty valueProp = valueType->metaObject()->property(valueIndex);
                     vi->write(valueProp.read(valueType));
+
+                    if (!ep) delete valueType;
                     return -1;
                 } else {
                     vi->write(QVariant(type, a[0]));
