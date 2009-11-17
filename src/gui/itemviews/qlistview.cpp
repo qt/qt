@@ -972,9 +972,9 @@ void QListView::paintEvent(QPaintEvent *e)
         option.rect = visualRect(*it);
 
         if (flow() == TopToBottom)
-            option.rect.setWidth(qMin(viewport()->size().width() - 2 * d->spacing(), option.rect.width()));
+            option.rect.setWidth(qMin(d->contentsSize().width() - 2 * d->spacing(), option.rect.width()));
         else
-            option.rect.setHeight(qMin(viewport()->size().height() - 2 * d->spacing(), option.rect.height()));
+            option.rect.setHeight(qMin(d->contentsSize().height() - 2 * d->spacing(), option.rect.height()));
 
         option.state = state;
         if (selections && selections->isSelected(*it))
