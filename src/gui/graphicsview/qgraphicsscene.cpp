@@ -2556,11 +2556,9 @@ void QGraphicsScene::addItem(QGraphicsItem *item)
     item->d_ptr->resolveFont(d->font.resolve());
     item->d_ptr->resolvePalette(d->palette.resolve());
 
-    if (!item->d_ptr->explicitlyHidden) {
-       if (d->unpolishedItems.isEmpty())
-           QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
-       d->unpolishedItems.insert(item);
-    }
+   if (d->unpolishedItems.isEmpty())
+       QMetaObject::invokeMethod(this, "_q_polishItems", Qt::QueuedConnection);
+   d->unpolishedItems.insert(item);
 
     // Reenable selectionChanged() for individual items
     --d->selectionChanging;
