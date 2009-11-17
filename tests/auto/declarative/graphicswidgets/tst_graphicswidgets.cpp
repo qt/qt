@@ -4,7 +4,7 @@
 ** All rights reserved.
 ** Contact: Nokia Corporation (qt-info@nokia.com)
 **
-** This file is part of the QtDeclarative module of the Qt Toolkit.
+** This file is part of the test suite of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:LGPL$
 ** No Commercial Usage
@@ -38,43 +38,40 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <qtest.h>
+#include <QFile>
+#include <QtDeclarative/qmlengine.h>
+#include <QtDeclarative/qmlcomponent.h>
+#include <private/graphicswidgets_p.h>
 
-#ifndef QMLREFCOUNT_P_H
-#define QMLREFCOUNT_P_H
+class tst_graphicswidgets : public QObject
 
-//
-//  W A R N I N G
-//  -------------
-//
-// This file is not part of the Qt API.  It exists purely as an
-// implementation detail.  This header file may change from version to
-// version without notice, or even be removed.
-//
-// We mean it.
-//
-
-#include <QtCore/qglobal.h>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
-
-QT_MODULE(Declarative)
-
-class Q_AUTOTEST_EXPORT QmlRefCount
 {
+    Q_OBJECT
 public:
-    QmlRefCount();
-    virtual ~QmlRefCount();
-    void addref();
-    void release();
+    tst_graphicswidgets();
 
-private:
-    int refCount;
+private slots:
+    void widgets();
 };
 
-QT_END_NAMESPACE
+tst_graphicswidgets::tst_graphicswidgets()
+{
+}
 
-QT_END_HEADER
+void tst_graphicswidgets::widgets()
+{
+    QmlEngine engine;
+    QmlComponent c(&engine, QUrl("file://" SRCDIR "/data/graphicswidgets.qml"));
+    QGraphicsView *obj = qobject_cast<QGraphicsView*>(c.create());
 
-#endif // QMLREFCOUNT_P_H
+    QVERIFY(obj != 0);
+    QVERIFY(obj->scene() != 0);
+    QList<QObject*> list;
+    QVERIFY(obj->scene()->children() != list);
+    delete obj;
+}
+
+QTEST_MAIN(tst_graphicswidgets)
+
+#include "tst_graphicswidgets.moc"

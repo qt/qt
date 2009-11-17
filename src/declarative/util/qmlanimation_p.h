@@ -136,7 +136,7 @@ private Q_SLOTS:
 };
 
 class QmlPauseAnimationPrivate;
-class QmlPauseAnimation : public QmlAbstractAnimation
+class Q_AUTOTEST_EXPORT QmlPauseAnimation : public QmlAbstractAnimation
 {
     Q_OBJECT
     Q_DECLARE_PRIVATE(QmlPauseAnimation)

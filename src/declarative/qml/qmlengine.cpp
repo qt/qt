@@ -107,11 +107,6 @@ struct StaticQtMetaObject : public QObject
         { return &static_cast<StaticQtMetaObject*> (0)->staticQtMetaObject; }
 };
 
-static QString userLocalDataPath(const QString& app)
-{
-    return QDesktopServices::storageLocation(QDesktopServices::DataLocation) + QLatin1String("/") + app;
-}
-
 QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
 : rootContext(0), currentExpression(0),
   isDebugging(false), contextClass(0), objectClass(0), valueTypeClass(0), globalClass(0),
@@ -125,7 +120,9 @@ QmlEnginePrivate::QmlEnginePrivate(QmlEngine *e)
         scriptEngine.newQMetaObject(StaticQtMetaObject::get());
     scriptEngine.globalObject().setProperty(QLatin1String("Qt"), qtObject);
 
-    offlineStoragePath = userLocalDataPath(QLatin1String("QML/OfflineStorage"));
+    offlineStoragePath = QDesktopServices::storageLocation(QDesktopServices::DataLocation)
+        + QDir::separator() + QLatin1String("QML")
+        + QDir::separator() + QLatin1String("OfflineStorage");
     qt_add_qmlxmlhttprequest(&scriptEngine);
     qt_add_qmlsqldatabase(&scriptEngine);
 
@@ -1256,8 +1253,12 @@ void QmlEngine::addImportPath(const QString& path)
   QmlGraphicsWebView and the SQL databases created with openDatabase()
   are stored here.
 
-  The default is QML/OfflineStorage/ in the platform-standard
+  The default is QML/OfflineStorage in the platform-standard
   user application data directory.
+
+  Note that the path may not currently exist on the filesystem, so
+  callers wanting to \e create new files at this location should create
+  it first - see QDir::mkpath().
 */
 void QmlEngine::setOfflineStoragePath(const QString& dir)
 {

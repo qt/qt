@@ -921,9 +921,10 @@ void QMetaObjectBuilder::removeMethod(int index)
         d->methods.removeAt(index);
         for (int prop = 0; prop < d->properties.size(); ++prop) {
             // Adjust the indices of property notify signal references.
-            if (d->properties[prop].notifySignal == index)
+            if (d->properties[prop].notifySignal == index) {
                 d->properties[prop].notifySignal = -1;
-            else if (d->properties[prop].notifySignal > index)
+                d->properties[prop].setFlag(Notify, false);
+            } else if (d->properties[prop].notifySignal > index)
                 (d->properties[prop].notifySignal)--;
         }
     }

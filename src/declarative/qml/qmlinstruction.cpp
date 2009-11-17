@@ -54,145 +54,162 @@ void QmlCompiledData::dump(QmlInstruction *instr, int idx)
 
     switch(instr->type) {
     case QmlInstruction::Init:
-        qWarning() << idx << "\t" << line << "\t" << "INIT";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "INIT";
         break;
     case QmlInstruction::CreateObject:
-        qWarning() << idx << "\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE\t\t\t" << instr->create.type << "\t\t\t" << types.at(instr->create.type).className;
         break;
     case QmlInstruction::SetId:
-        qWarning() << idx << "\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t\t\t\t" << primitives.at(instr->setId.value);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "SETID\t\t\t" << instr->setId.value << "\t\t\t" << primitives.at(instr->setId.value);
         break;
     case QmlInstruction::SetDefault:
-        qWarning() << idx << "\t" << line << "\t" << "SET_DEFAULT";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "SET_DEFAULT";
         break;
     case QmlInstruction::CreateComponent:
-        qWarning() << idx << "\t" << line << "\t" << "CREATE_COMPONENT\t" << instr->createComponent.count;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "CREATE_COMPONENT\t" << instr->createComponent.count;
         break;
     case QmlInstruction::StoreMetaObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data << "\t";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_META\t\t" << instr->storeMeta.data;
         break;
+
     case QmlInstruction::StoreFloat:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_FLOAT\t\t" << instr->storeFloat.propertyIndex << "\t" << instr->storeFloat.value;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_FLOAT\t\t" << instr->storeFloat.propertyIndex << "\t" << instr->storeFloat.value;
         break;
     case QmlInstruction::StoreDouble:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_DOUBLE\t\t" << instr->storeDouble.propertyIndex << "\t" << instr->storeDouble.value;
         break;
     case QmlInstruction::StoreInteger:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_INTEGER\t\t" << instr->storeInteger.propertyIndex << "\t" << instr->storeInteger.value;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_INTEGER\t\t" << instr->storeInteger.propertyIndex << "\t" << instr->storeInteger.value;
         break;
     case QmlInstruction::StoreBool:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_BOOL\t\t" << instr->storeBool.propertyIndex << "\t" << instr->storeBool.value;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_BOOL\t\t" << instr->storeBool.propertyIndex << "\t" << instr->storeBool.value;
         break;
     case QmlInstruction::StoreString:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_STRING\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
     case QmlInstruction::StoreUrl:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << primitives.at(instr->storeUrl.value);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_URL\t\t" << instr->storeUrl.propertyIndex << "\t" << instr->storeUrl.value << "\t\t" << primitives.at(instr->storeUrl.value);
         break;
     case QmlInstruction::StoreColor:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_COLOR\t\t" << instr->storeColor.propertyIndex << "\t" << QString::number(instr->storeColor.value, 16);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_COLOR\t\t" << instr->storeColor.propertyIndex << "\t\t\t" << QString::number(instr->storeColor.value, 16);
         break;
     case QmlInstruction::StoreDate:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_DATE\t\t" << instr->storeDate.propertyIndex << "\t" << instr->storeDate.value;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_DATE\t\t" << instr->storeDate.propertyIndex << "\t" << instr->storeDate.value;
         break;
     case QmlInstruction::StoreTime:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_TIME\t\t" << instr->storeTime.propertyIndex << "\t" << instr->storeTime.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_TIME\t\t" << instr->storeTime.propertyIndex << "\t" << instr->storeTime.valueIndex;
         break;
     case QmlInstruction::StoreDateTime:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_DATETIME\t\t" << instr->storeDateTime.propertyIndex << "\t" << instr->storeDateTime.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_DATETIME\t\t" << instr->storeDateTime.propertyIndex << "\t" << instr->storeDateTime.valueIndex;
         break;
     case QmlInstruction::StorePoint:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_POINT\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_POINT\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
         break;
     case QmlInstruction::StorePointF:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_POINTF\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_POINTF\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
         break;
     case QmlInstruction::StoreSize:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_SIZE\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SIZE\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
         break;
     case QmlInstruction::StoreSizeF:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_SIZEF\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SIZEF\t\t" << instr->storeRealPair.propertyIndex << "\t" << instr->storeRealPair.valueIndex;
         break;
     case QmlInstruction::StoreRect:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_RECT\t\t" << instr->storeRect.propertyIndex << "\t" << instr->storeRect.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_RECT\t\t" << instr->storeRect.propertyIndex << "\t" << instr->storeRect.valueIndex;
         break;
     case QmlInstruction::StoreRectF:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_RECTF\t\t" << instr->storeRect.propertyIndex << "\t" << instr->storeRect.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_RECTF\t\t" << instr->storeRect.propertyIndex << "\t" << instr->storeRect.valueIndex;
         break;
     case QmlInstruction::StoreVector3D:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_VECTOR3D\t\t" << instr->storeVector3D.propertyIndex << "\t" << instr->storeVector3D.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VECTOR3D\t\t" << instr->storeVector3D.propertyIndex << "\t" << instr->storeVector3D.valueIndex;
         break;
     case QmlInstruction::StoreVariant:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT\t\t" << instr->storeString.propertyIndex << "\t" << instr->storeString.value << "\t\t" << primitives.at(instr->storeString.value);
         break;
     case QmlInstruction::StoreObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT\t\t" << instr->storeObject.propertyIndex;
         break;
     case QmlInstruction::StoreVariantObject:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_VARIANT_OBJECT\t" << instr->storeObject.propertyIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VARIANT_OBJECT\t" << instr->storeObject.propertyIndex;
         break;
     case QmlInstruction::StoreInterface:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_INTERFACE\t\t" << instr->storeObject.propertyIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_INTERFACE\t\t" << instr->storeObject.propertyIndex;
         break;
+
     case QmlInstruction::StoreSignal:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_SIGNAL\t\t" << instr->storeSignal.signalIndex << "\t" << instr->storeSignal.value << "\t\t" << primitives.at(instr->storeSignal.value);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SIGNAL\t\t" << instr->storeSignal.signalIndex << "\t" << instr->storeSignal.value << "\t\t" << primitives.at(instr->storeSignal.value);
         break;
+    case QmlInstruction::StoreScript:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT\t\t" << instr->storeScript.value << "\t" << instr->storeScript.fileName << "\t" << instr->storeScript.lineNumber;
+        break;
+    case QmlInstruction::StoreScriptString:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_SCRIPT_STRING\t" << instr->storeScriptString.propertyIndex << "\t" << instr->storeScriptString.value << "\t" << instr->storeScriptString.scope;
+        break;
+
     case QmlInstruction::AssignSignalObject:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "ASSIGN_SIGNAL_OBJECT\t" << instr->assignSignalObject.signal << "\t\t\t" << datas.at(instr->assignSignalObject.signal);
         break;
     case QmlInstruction::AssignCustomType:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "ASSIGN_CUSTOMTYPE\t" << instr->assignCustomType.propertyIndex << "\t" << instr->assignCustomType.valueIndex;
         break;
+
     case QmlInstruction::StoreBinding:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_COMPILED_BINDING\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t\t" << instr->assignBinding.context;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_COMPILED_BINDING\t" << instr->assignBinding.property << "\t" << instr->assignBinding.value << "\t" << instr->assignBinding.context;
+        break;
+    case QmlInstruction::StoreIdOptBinding:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_ID_OPT_BINDING\t" << instr->assignIdOptBinding.property << "\t" << instr->assignIdOptBinding.id;
+        break;
+    case QmlInstruction::StoreObjPropBinding:
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJ_PROP_BINDING\t" << instr->assignObjPropBinding.property << "\t" << instr->assignObjPropBinding.contextIdx << "\t" << instr->assignObjPropBinding.context << "\t" << instr->assignObjPropBinding.notifyIdx;
         break;
     case QmlInstruction::StoreValueSource:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t" << instr->assignValueSource.castValue;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VALUE_SOURCE\t" << instr->assignValueSource.property << "\t" << instr->assignValueSource.castValue;
         break;
     case QmlInstruction::StoreValueInterceptor:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_VALUE_INTERCEPTOR\t" << instr->assignValueInterceptor.property << "\t" << instr->assignValueInterceptor.castValue;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_VALUE_INTERCEPTOR\t" << instr->assignValueInterceptor.property << "\t" << instr->assignValueInterceptor.castValue;
         break;
+
     case QmlInstruction::BeginObject:
-        qWarning() << idx << "\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "BEGIN\t\t\t" << instr->begin.castValue;
         break;
     case QmlInstruction::StoreObjectQmlList:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT_QMLLIST";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT_QMLLIST";
         break;
     case QmlInstruction::StoreObjectQList:
-        qWarning() << idx << "\t" << line << "\t" << "STORE_OBJECT_QLIST";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "STORE_OBJECT_QLIST";
         break;
     case QmlInstruction::AssignObjectList:
-        qWarning() << idx << "\t" << line << "\t" << "ASSIGN_OBJECT_LIST\t";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "ASSIGN_OBJECT_LIST";
         break;
     case QmlInstruction::FetchAttached:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_ATTACHED\t\t" << instr->fetchAttached.id;
         break;
     case QmlInstruction::FetchQmlList:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH_QMLLIST\t\t" << instr->fetchQmlList.property << "\t" << instr->fetchQmlList.type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_QMLLIST\t\t" << instr->fetchQmlList.property << "\t" << instr->fetchQmlList.type;
         break;
     case QmlInstruction::FetchQList:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH_QLIST\t\t" << instr->fetch.property;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_QLIST\t\t" << instr->fetch.property;
         break;
     case QmlInstruction::FetchObject:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH\t\t\t" << instr->fetch.property;
         break;
     case QmlInstruction::FetchValueType:
-        qWarning() << idx << "\t" << line << "\t" << "FETCH_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "FETCH_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
         break;
     case QmlInstruction::PopFetchedObject:
-        qWarning() << idx << "\t" << line << "\t" << "POP";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "POP";
         break;
     case QmlInstruction::PopQList:
-        qWarning() << idx << "\t" << line << "\t" << "POP_QLIST";
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "POP_QLIST";
         break;
     case QmlInstruction::PopValueType:
-        qWarning() << idx << "\t" << line << "\t" << "POP_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "POP_VALUE\t\t" << instr->fetchValue.property << "\t" << instr->fetchValue.type;
         break;
     case QmlInstruction::Defer:
-        qWarning() << idx << "\t" << line << "\t" << "DEFER" << "\t\t" << instr->defer.deferCount;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "DEFER" << "\t\t\t" << instr->defer.deferCount;
         break;
     default:
-        qWarning() << idx << "\t" << line << "\t" << "XXX UNKOWN INSTRUCTION" << "\t" << instr->type;
+        qWarning().nospace() << idx << "\t\t" << line << "\t" << "XXX UNKOWN INSTRUCTION" << "\t" << instr->type;
         break;
     }
 }

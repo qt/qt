@@ -130,8 +130,6 @@ As an example, imagine you decided to make a generic tab widget item to be used
 through your application suite wherever information is in such quantity that it
 needs to be divided up into pages.
 
-To do this in QML, ... \todo example of container definition.
-
 A significant difference in the parenting concept with QML compare to QWidgets
 is that while child items are positioned relative to their parents,
 there is no requirement that they be wholy contained ("clipped") to

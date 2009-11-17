@@ -2,11 +2,9 @@ TEMPLATE = subdirs
 SUBDIRS += \
            anchors \                # Cover
            animatedimage \          # Cover
-           animations \             # Cover
-           behaviors \              # Cover
            datetimeformatter \      # Cover
-           debugger \               # Cover
            examples \
+	   graphicswidgets \        # Cover
            layouts \                # Cover
            numberformatter \        # Cover
            parserstress \           # Cover
@@ -15,6 +13,9 @@ SUBDIRS += \
            qmlbinding \             # Cover
            qmlconnection \          # Cover
            qmlcontext \             # Cover
+           qmldebug \               # Cover
+           qmldebugclient \         # Cover
+           qmldebugservice \        # Cover
            qmldom \                 # Cover
            qmleasefollow \          # Cover
            qmlecmascript \          # Cover
@@ -36,6 +37,7 @@ SUBDIRS += \
            qmlgraphicstextinput \   # Cover
            qmlgraphicswebview \     # Cover
            qmlinfo \                # Cover
+           qmlinstruction \         # Cover
            qmllanguage \            # Cover
            qmllist \                # Cover
            qmllistaccessor \        # Cover
@@ -49,6 +51,7 @@ SUBDIRS += \
            qmlsystempalette \       # Cover
            qmltimer \               # Cover
            qmlxmllistmodel \        # Cover
+           qpacketprotocol \        # Cover
            repeater \               # Cover
            sql \                    # Cover
            states \                 # Cover

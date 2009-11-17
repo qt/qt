@@ -64,10 +64,14 @@ void tst_QmlListModel::dynamic_data()
 
     QTest::newRow("count") << "count" << 0 << "";
 
+    QTest::newRow("get1") << "{get(0)}" << 0 << "QML QmlListModel (unknown location) get: index 0 out of range";
+
     QTest::newRow("append1") << "{append({'foo':123});count}" << 1 << "";
     QTest::newRow("append2") << "{append({'foo':123,'bar':456});count}" << 1 << "";
     QTest::newRow("append3a") << "{append({'foo':123});append({'foo':456});get(0).foo}" << 123 << "";
     QTest::newRow("append3b") << "{append({'foo':123});append({'foo':456});get(1).foo}" << 456 << "";
+    QTest::newRow("append4a") << "{append(123)}" << 0 << "QML QmlListModel (unknown location) append: value is not an object";
+    QTest::newRow("append4b") << "{append([1,2,3])}" << 0 << "QML QmlListModel (unknown location) append: value is not an object";
 
     QTest::newRow("clear1") << "{append({'foo':456});clear();count}" << 0 << "";
     QTest::newRow("clear2") << "{append({'foo':123});append({'foo':456});clear();count}" << 0 << "";
@@ -78,6 +82,9 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("remove2b") << "{append({'foo':123});append({'foo':456});remove(0);get(0).foo}" << 456 << "";
     QTest::newRow("remove2c") << "{append({'foo':123});append({'foo':456});remove(1);get(0).foo}" << 123 << "";
     QTest::newRow("remove3") << "{append({'foo':123});remove(0);get(0).foo}" << 0 << "QML QmlListModel (unknown location) get: index 0 out of range";
+    QTest::newRow("remove4a") << "{remove(0)}" << 0 << "QML QmlListModel (unknown location) remove: index 0 out of range";
+    QTest::newRow("remove4b") << "{append({'foo':123});remove(0);remove(0)}" << 0 << "QML QmlListModel (unknown location) remove: index 0 out of range";
+    QTest::newRow("remove4c") << "{append({'foo':123});remove(1)}" << 0 << "QML QmlListModel (unknown location) remove: index 1 out of range";
 
     QTest::newRow("insert1") << "{insert(0,{'foo':123});count}" << 1 << "";
     QTest::newRow("insert2") << "{insert(1,{'foo':123});count}" << 0 << "QML QmlListModel (unknown location) insert: index 1 out of range";
@@ -87,16 +94,23 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("insert3d") << "{append({'foo':123});insert(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("insert3e") << "{append({'foo':123});insert(0,{'foo':456});get(1).foo}" << 123 << "";
     QTest::newRow("insert4") << "{append({'foo':123});insert(-1,{'foo':456})}" << 0 << "QML QmlListModel (unknown location) insert: index -1 out of range";
+    QTest::newRow("insert5a") << "{insert(0,123)}" << 0 << "QML QmlListModel (unknown location) insert: value is not an object";
+    QTest::newRow("insert5b") << "{insert(0,[1,2,3])}" << 0 << "QML QmlListModel (unknown location) insert: value is not an object";
 
     QTest::newRow("set1") << "{append({'foo':123});set(0,{'foo':456});count}" << 1 << "";
     QTest::newRow("set2") << "{append({'foo':123});set(0,{'foo':456});get(0).foo}" << 456 << "";
     QTest::newRow("set3a") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).foo}" << 999 << "";
     QTest::newRow("set3b") << "{append({'foo':123,'bar':456});set(0,{'foo':999});get(0).bar}" << 456 << "";
+    QTest::newRow("set4a") << "{set(0,{'foo':456})}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
+    QTest::newRow("set5a") << "{append({'foo':123,'bar':456});set(0,123)}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
+    QTest::newRow("set5b") << "{append({'foo':123,'bar':456});set(0,[1,2,3])}" << 0 << "QML QmlListModel (unknown location) set: value is not an object";
 
     QTest::newRow("setprop1") << "{append({'foo':123});set(0,'foo',456);count}" << 1 << "";
     QTest::newRow("setprop2") << "{append({'foo':123});set(0,'foo',456);get(0).foo}" << 456 << "";
     QTest::newRow("setprop3a") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).foo}" << 999 << "";
     QTest::newRow("setprop3b") << "{append({'foo':123,'bar':456});set(0,'foo',999);get(0).bar}" << 456 << "";
+    QTest::newRow("setprop4a") << "{set(0,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 0 out of range";
+    QTest::newRow("setprop4a") << "{append({'foo':123,'bar':456});set(1,'foo',456)}" << 0 << "QML QmlListModel (unknown location) set: index 1 out of range";
 
     QTest::newRow("move1a") << "{append({'foo':123});append({'foo':456});move(0,1,1);count}" << 2 << "";
     QTest::newRow("move1b") << "{append({'foo':123});append({'foo':456});move(0,1,1);get(0).foo}" << 456 << "";
@@ -107,6 +121,10 @@ void tst_QmlListModel::dynamic_data()
     QTest::newRow("move2b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(0).foo}" << 789 << "";
     QTest::newRow("move2c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(1).foo}" << 123 << "";
     QTest::newRow("move2d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,1,2);get(2).foo}" << 456 << "";
+    QTest::newRow("move3a") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,3)}" << 0 << "QML QmlListModel (unknown location) move: out of range";
+    QTest::newRow("move3b") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,-1,1)}" << 0 << "QML QmlListModel (unknown location) move: out of range";
+    QTest::newRow("move3c") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(1,0,-1)}" << 0 << "QML QmlListModel (unknown location) move: out of range";
+    QTest::newRow("move3d") << "{append({'foo':123});append({'foo':456});append({'foo':789});move(0,3,1)}" << 0 << "QML QmlListModel (unknown location) move: out of range";
 
     // Structured model
 
