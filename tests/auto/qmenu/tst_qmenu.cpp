@@ -101,11 +101,13 @@ private slots:
     void menuSizeHint();
     void task258920_mouseBorder();
     void setFixedWidth();
+    void deleteActionInTriggered();
 protected slots:
     void onActivated(QAction*);
     void onHighlighted(QAction*);
     void onStatusMessageChanged(const QString &);
     void onStatusTipTimer();
+    void deleteAction(QAction *a) { delete a; }
 private:
     void createActions();
     QMenu *menus[2], *lastMenu;
@@ -857,6 +859,17 @@ void tst_QMenu::setFixedWidth()
     //get as much space as possible
     QCOMPARE(menu.sizeHint().width(), menu.minimumWidth());
 }
+
+void tst_QMenu::deleteActionInTriggered()
+{
+    // should not crash
+    QMenu m;
+    QObject::connect(&m, SIGNAL(triggered(QAction*)), this, SLOT(deleteAction(QAction*)));
+    QWeakPointer<QAction> a = m.addAction("action");
+    a.data()->trigger();
+    QVERIFY(!a);
+}
+
 
 
 

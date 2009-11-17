@@ -24,8 +24,6 @@ along with this library.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QObject>
 
-#include "volumeobserver.h"
-
 #include "videooutput.h"
 
 class RFile;
@@ -49,7 +47,6 @@ class VideoOutput;
  *  -   Video, in which case the implementation is VideoPlayer
  */
 class AbstractPlayer : public QObject
-                     , public VolumeObserver
 {
     // Required although this class has no signals or slots
     // Without this, qobject_cast will fail
@@ -85,7 +82,6 @@ public:
     virtual void setFileSource(const Phonon::MediaSource&, RFile&) = 0;
     virtual void setNextSource(const Phonon::MediaSource &) = 0;
 
-    // VolumeObserver
     virtual void volumeChanged(qreal volume);
 
     void setVideoOutput(VideoOutput* videoOutput);

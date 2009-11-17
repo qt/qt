@@ -31,12 +31,11 @@ namespace Phonon
 namespace MMF
 {
 class Backend;
-class VolumeObserver;
 
 /**
  * @short AudioOutputInterface implementation for MMF.
  *
- * Forwards volume commands to the VolumeObserver instance,
+ * Forwards volume commands to the MediaObject instance,
  * which is provided by the backend when MediaNode objects are
  * connected.
  *
@@ -82,13 +81,8 @@ Q_SIGNALS:
     void audioDeviceFailed();
 
 private:
-
-    void setVolumeObserver(VolumeObserver* observer);
-
     qreal                           m_volume;
 
-    // Not owned
-    VolumeObserver*                 m_observer;
 };
 }
 }

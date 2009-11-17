@@ -1210,7 +1210,9 @@ void QTextEdit::keyPressEvent(QKeyEvent *e)
                 if (!hasEditFocus() && !(e->modifiers() & Qt::ControlModifier)) {
                     if (e->text()[0].isPrint()) {
                         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
                         clear();
+#endif
                     } else {
                         e->ignore();
                         return;
@@ -1574,7 +1576,8 @@ void QTextEdit::mouseReleaseEvent(QMouseEvent *e)
         d->autoScrollTimer.stop();
         ensureCursorVisible();
     }
-    d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
+    if (!isReadOnly())
+        d->handleSoftwareInputPanel(e->button(), d->clickCausedFocus);
     d->clickCausedFocus = 0;
 }
 
@@ -1672,7 +1675,9 @@ void QTextEdit::inputMethodEvent(QInputMethodEvent *e)
         && QApplication::keypadNavigationEnabled()
         && !hasEditFocus()) {
         setEditFocus(true);
+#ifndef Q_OS_SYMBIAN
         selectAll();    // so text is replaced rather than appended to
+#endif
     }
 #endif
     d->sendControlEvent(e);
