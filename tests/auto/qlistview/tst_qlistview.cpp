@@ -122,6 +122,7 @@ private slots:
     void taskQTBUG_633_changeModelData();
     void taskQTBUG_435_deselectOnViewportClick();
     void taskQTBUG_2678_spacingAndWrappedText();
+    void taskQTBUG_5877_skippingItemInPageDownUp();
 };
 
 // Testing get/set functions
@@ -1879,6 +1880,37 @@ void tst_QListView::taskQTBUG_2678_spacingAndWrappedText()
     w.show();
     QTest::qWaitForWindowShown(&w);
     QCOMPARE(w.horizontalScrollBar()->minimum(), w.horizontalScrollBar()->maximum());
+}
+
+void tst_QListView::taskQTBUG_5877_skippingItemInPageDownUp()
+{
+    QList<int> currentItemIndexes;
+    QtTestModel model(0);
+    model.colCount = 1;
+    model.rCount = 100;
+
+    currentItemIndexes << 0 << 6 << 16 << 25 << 34 << 42 << 57 << 68 << 77
+                       << 83 << 91 << 94;
+    QMoveCursorListView vu;
+    vu.setModel(&model);
+    vu.show();
+
+    int itemHeight = vu.visualRect(model.index(0, 0)).height();
+    int visibleRowCount = vu.height() / itemHeight;
+    int scrolledRowCount = visibleRowCount - 1;
+
+    for (int i = 0; i < currentItemIndexes.size(); ++i) {
+        vu.selectionModel()->setCurrentIndex(model.index(currentItemIndexes[i], 0),
+                                             QItemSelectionModel::SelectCurrent);
+
+        QModelIndex idx = vu.moveCursor(QMoveCursorListView::MovePageDown, Qt::NoModifier);
+        int newCurrent = qMin(currentItemIndexes[i] + scrolledRowCount, 99);
+        QCOMPARE(idx, model.index(newCurrent, 0));
+
+        idx = vu.moveCursor(QMoveCursorListView::MovePageUp, Qt::NoModifier);
+        newCurrent = qMax(currentItemIndexes[i] - scrolledRowCount, 0);
+        QCOMPARE(idx, model.index(newCurrent, 0));
+    }
 }
 
 QTEST_MAIN(tst_QListView)
