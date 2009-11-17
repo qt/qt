@@ -55,7 +55,7 @@
 
 #include "QtGui/qtextformat.h"
 #include "QtCore/qvector.h"
-#include "QtCore/qset.h"
+#include "QtCore/qhash.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -97,7 +97,7 @@ public:
 
     FormatVector formats;
     QVector<qint32> objFormats;
-    QSet<uint> hashes;
+    QMultiHash<uint,int> hashes;
 
     inline QFont defaultFont() const { return defaultFnt; }
     void setDefaultFont(const QFont &f);

@@ -75,6 +75,8 @@ public:
     QActionPrivate();
     ~QActionPrivate();
 
+    bool showStatusText(QWidget *w, const QString &str);
+
     QPointer<QActionGroup> group;
     QString text;
     QString iconText;

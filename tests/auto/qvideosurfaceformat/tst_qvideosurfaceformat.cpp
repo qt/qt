@@ -292,13 +292,13 @@ void tst_QVideoSurfaceFormat::frameRate_data()
     QTest::addColumn<qreal>("frameRate");
 
     QTest::newRow("null")
-            << 0.0;
+            << qreal(0.0);
     QTest::newRow("1/1")
-            << 1.0;
+            << qreal(1.0);
     QTest::newRow("24/1")
-            << 24.0;
+            << qreal(24.0);
     QTest::newRow("15/2")
-            << 7.5;
+            << qreal(7.5);
 }
 
 void tst_QVideoSurfaceFormat::frameRate()
@@ -583,7 +583,7 @@ void tst_QVideoSurfaceFormat::compare()
     QCOMPARE(format1 == format2, false);
     QCOMPARE(format1 != format2, true);
 
-    format2.setFrameRate(7.50001);
+    format2.setFrameRate(qreal(7.50001));
 
     // Equal.
     QCOMPARE(format1 == format2, true);

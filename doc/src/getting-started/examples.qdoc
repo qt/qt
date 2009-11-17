@@ -336,13 +336,6 @@
     features is the archive of the \l {Qt Quarterly}.
 
     \endtable
-
-    \omit
-    In the list below, examples marked with an asterisk (*) are fully
-    documented. Eventually, all the examples will be fully documented,
-    but sometimes we include an example before we have time to write
-    about it.
-    \endomit
 */
 
 /*!
@@ -388,6 +381,8 @@
     \o \l{widgets/wiggly}{Wiggly}\raisedaster
     \o \l{widgets/windowflags}{Window Flags}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -416,6 +411,8 @@
     \o \l{dialogs/tabdialog}{Tab Dialog}\raisedaster
     \o \l{dialogs/trivialwizard}{Trivial Wizard}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -442,12 +439,14 @@
     \o \l{mainwindows/recentfiles}{Recent Files}
     \o \l{mainwindows/sdi}{SDI}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
     \page examples-layouts.html
     \title Layout Examples
-    
+
     \previouspage Main Window Examples
     \contentspage Qt Examples
     \nextpage Item Views Examples
@@ -467,6 +466,8 @@
     \o \l{layouts/dynamiclayouts}{Dynamic Layouts}
     \o \l{layouts/flowlayout}{Flow Layout}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -503,6 +504,8 @@
     \o \l{itemviews/spinboxdelegate}{Spin Box Delegate}\raisedaster
     \o \l{itemviews/stardelegate}{Star Delegate}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -529,6 +532,8 @@
     \o \l{graphicsview/portedasteroids}{Ported Asteroids}
     \o \l{graphicsview/portedcanvas}{Ported Canvas}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -559,6 +564,8 @@
     \o \l{painting/svgviewer}{SVG Viewer}
     \o \l{painting/transformations}{Transformations}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -631,16 +638,18 @@
     \o \l{draganddrop/fridgemagnets}{Fridge Magnets}\raisedaster
     \o \l{draganddrop/puzzle}{Drag and Drop Puzzle}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
     \page examples-threadandconcurrent.html
     \title Threading and Concurrent Programming Examples
-    
+
     \previouspage Drag and Drop Examples
     \contentspage Qt Examples
     \nextpage Tools Examples
-    
+
     \image thread-examples.png
 
     Qt 4 makes it easier than ever to write multithreaded applications. More
@@ -669,6 +678,8 @@
     \o \l{qtconcurrent/runfunction}{QtConcurrent Run Function}
     \o \l{qtconcurrent/wordcount}{QtConcurrent Word Count}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -704,6 +715,8 @@
     \o \l{tools/treemodelcompleter}{Tree Model Completer}\raisedaster
     \o \l{tools/undoframework}{Undo Framework}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -736,6 +749,8 @@
     \o  \l{network/torrent}{Torrent}
     \o  \l{network/googlesuggest}{Google Suggest}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -745,7 +760,7 @@
     \previouspage Network Examples
     \contentspage Qt Examples
     \nextpage OpenGL Examples
-    
+
     \image ipc-examples.png
 
     \list
@@ -784,6 +799,8 @@
     \o \l{opengl/samplebuffers}{Sample Buffers}
     \o \l{opengl/textures}{Textures}
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -829,6 +846,8 @@
     \o \l{phonon/capabilities}{Capabilities}\raisedaster
     \o \l{phonon/qmusicplayer}{Music Player}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -855,6 +874,8 @@
     \o \l{sql/tablemodel}{Table Model}
     \o \l{sql/sqlwidgetmapper}{SQL Widget Mapper}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 
@@ -890,6 +911,8 @@
     \o \l{xmlpatterns/trafficinfo}{Traffic Info}\raisedaster
     \o \l{xmlpatterns/schema}{XML Schema Validation}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -996,12 +1019,26 @@
     from displaying Web pages within a Qt user interface to an implementation of
     a basic function Web browser.
 
-    \list
-    \o \l{webkit/previewer}{Previewer}\raisedaster
-    \o \l{webkit/formextractor}{Form Extractor}
-    \o \l{webkit/googlechat}{Google Chat}
-    \o \l{webkit/fancybrowser}{Fancy Browser}
-    \endlist
+    \table
+    \header \o Example \o Description
+    \row \o \l{webkit/domtraversal}{DOM Traversal}\raisedaster
+    \o Shows how to use QWebElement to inspect the document structure of a Web page.
+    \row \o \l{webkit/fancybrowser}{Fancy Browser}
+    \o A more advanced browser example, showing the use of jQuery to perform effects.
+    \row \o \l{webkit/formextractor}{Form Extractor}
+    \o How to use JavaScript and C++ together to read page content.
+    \row \o \l{webkit/googlechat}{Google Chat}
+    \o A real-world example that shows how an existing Web-based service can be accessed
+    using QtWebKit.
+    \row \o \l{webkit/previewer}{Previewer}\raisedaster
+    \o Shows how to make a simple Web page previewer by using Qt's text input widgets
+    together with a QWebView widget.
+    \row \o \l{webkit/simpleselector}{Simple Selector}\raisedaster
+    \o A basic demonstration, showing how to use QWebElement to select elements in a
+    Web page.
+    \endtable
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1021,6 +1058,8 @@
     \list
     \o \l{help/simpletextviewer}{Simple Text Viewer}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1060,13 +1099,15 @@
     \image animation-examples.png Animation
 
     \list
-	\o \l{animation/animatedtiles}{Animated Tiles}
-	\o \l{animation/appchooser}{Application Chooser}
-	\o \l{animation/easing}{Easing Curves}
+        \o \l{animation/animatedtiles}{Animated Tiles}
+        \o \l{animation/appchooser}{Application Chooser}
+        \o \l{animation/easing}{Easing Curves}
     \o \l{animation/moveblocks}{Move Blocks}\raisedaster
-	\o \l{animation/states}{States}
+        \o \l{animation/states}{States}
     \o \l{animation/stickman}{Stick man}\raisedaster
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1100,6 +1141,8 @@
     \o \l{dbus/pingpong}{Ping Pong}
     \o \l{dbus/remotecontrolledcar}{Remote Controlled Car} 
     \endlist
+
+    Examples marked with an asterisk (*) are fully documented.
 */
 
 /*!
@@ -1131,7 +1174,7 @@
     \previouspage Qt for Embedded Linux Examples
     \contentspage Qt Examples
     \nextpage Qt Quarterly
-    
+
     \image activeqt-examples.png ActiveQt
 
     \list

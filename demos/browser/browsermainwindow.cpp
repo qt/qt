@@ -552,47 +552,6 @@ void BrowserMainWindow::slotViewStatusbar()
     m_autoSaver->changeOccurred();
 }
 
-QUrl BrowserMainWindow::guessUrlFromString(const QString &string)
-{
-    QString urlStr = string.trimmed();
-    QRegExp test(QLatin1String("^[a-zA-Z]+\\:.*"));
-
-    // Check if it looks like a qualified URL. Try parsing it and see.
-    bool hasSchema = test.exactMatch(urlStr);
-    if (hasSchema) {
-        QUrl url = QUrl::fromEncoded(urlStr.toUtf8(), QUrl::TolerantMode);
-        if (url.isValid())
-            return url;
-    }
-
-    // Might be a file.
-    if (QFile::exists(urlStr)) {
-        QFileInfo info(urlStr);
-        return QUrl::fromLocalFile(info.absoluteFilePath());
-    }
-
-    // Might be a shorturl - try to detect the schema.
-    if (!hasSchema) {
-        int dotIndex = urlStr.indexOf(QLatin1Char('.'));
-        if (dotIndex != -1) {
-            QString prefix = urlStr.left(dotIndex).toLower();
-            QByteArray schema = (prefix == QLatin1String("ftp")) ? prefix.toLatin1() : QByteArray("http");
-            QUrl url =
-                QUrl::fromEncoded(schema + "://" + urlStr.toUtf8(), QUrl::TolerantMode);
-            if (url.isValid())
-                return url;
-        }
-    }
-
-    // Fall back to QUrl's own tolerant parser.
-    QUrl url = QUrl::fromEncoded(string.toUtf8(), QUrl::TolerantMode);
-
-    // finally for cases where the user just types in a hostname add http
-    if (url.scheme().isEmpty())
-        url = QUrl::fromEncoded("http://" + string.toUtf8(), QUrl::TolerantMode);
-    return url;
-}
-
 void BrowserMainWindow::loadUrl(const QUrl &url)
 {
     if (!currentTab() || !url.isValid())
@@ -873,7 +832,7 @@ void BrowserMainWindow::slotSwapFocus()
 
 void BrowserMainWindow::loadPage(const QString &page)
 {
-    QUrl url = guessUrlFromString(page);
+    QUrl url = QUrl::fromUserInput(page);
     loadUrl(url);
 }
 

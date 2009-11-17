@@ -702,7 +702,7 @@
 <context>
     <name>ConnectionDelegate</name>
     <message>
-        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+643"/>
+        <location filename="../tools/designer/src/components/signalsloteditor/signalsloteditorwindow.cpp" line="+644"/>
         <source>&lt;object&gt;</source>
         <translation>&lt;Objekt&gt;</translation>
     </message>
@@ -4446,8 +4446,8 @@ Möchten Sie sie überschreiben?</translation>
         <location line="+6"/>
         <source>Customized (%n roles)</source>
         <translation>
-            <numerusform>Angepaßt (eine Rolle)</numerusform>
-            <numerusform>Angepaßt (%n Rollen)</numerusform>
+            <numerusform>Angepasst (eine Rolle)</numerusform>
+            <numerusform>Angepasst (%n Rollen)</numerusform>
         </translation>
     </message>
     <message>
@@ -4689,7 +4689,7 @@ Möchten Sie sie überschreiben?</translation>
     <message>
         <location filename="../tools/designer/src/lib/shared/filterwidget.cpp" line="+185"/>
         <source>&lt;Filter&gt;</source>
-        <translation>&lt;FIlter&gt;</translation>
+        <translation>&lt;Filter&gt;</translation>
     </message>
 </context>
 <context>
@@ -5550,17 +5550,14 @@ Please select another name.</source>
 <context>
     <name>qdesigner_internal::ObjectInspector</name>
     <message>
-        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+754"/>
-        <source>&amp;Find in Text...</source>
-        <translation>&amp;Suchen...</translation>
-    </message>
-</context>
-<context>
-    <name>qdesigner_internal::ObjectInspector::ObjectInspectorPrivate</name>
-    <message>
-        <location line="-438"/>
+        <location filename="../tools/designer/src/components/objectinspector/objectinspector.cpp" line="+316"/>
         <source>Change Current Page</source>
         <translation>Seite wechseln</translation>
+    </message>
+    <message>
+        <location line="+438"/>
+        <source>&amp;Find in Text...</source>
+        <translation>&amp;Suchen...</translation>
     </message>
 </context>
 <context>
@@ -5747,7 +5744,7 @@ Please select another name.</source>
     <message>
         <location line="+55"/>
         <source>New custom widget plugins have been found.</source>
-        <translation>Es wurden neuinstallierten Plugins mit benutzerdefinierten Widgets gefunden.</translation>
+        <translation>Es wurden neu installierte Plugins mit benutzerdefinierten Widgets gefunden.</translation>
     </message>
 </context>
 <context>
@@ -5775,9 +5772,6 @@ Please select another name.</source>
         <source>Browse...</source>
         <translation>Durchsuchen...</translation>
     </message>
-</context>
-<context>
-    <name>qdesigner_internal::PreviewConfigurationWidget::PreviewConfigurationWidgetPrivate</name>
     <message>
         <location line="+118"/>
         <source>Load Custom Device Skin</source>

@@ -33,32 +33,52 @@
     <name>QHelpCollectionHandler</name>
     <message>
         <location filename="../tools/assistant/lib/qhelpcollectionhandler.cpp" line="+79"/>
-        <source>The collection file is not set up yet!</source>
-        <translation>Die Katalogdatei ist noch nicht eingerichtet.</translation>
+        <source>The collection file &apos;%1&apos; is not set up yet!</source>
+        <translation>Die Katalogdatei &apos;%1&apos; ist noch nicht eingerichtet.</translation>
     </message>
     <message>
-        <location line="+22"/>
+        <location line="+23"/>
         <source>Cannot load sqlite database driver!</source>
         <translation>Der Datenbanktreiber für SQLite kann nicht geladen werden.</translation>
     </message>
     <message>
         <location line="+11"/>
-        <location line="+48"/>
+        <location line="+49"/>
         <source>Cannot open collection file: %1</source>
         <translation>Katalogdatei kann nicht geöffnet werden: %1</translation>
     </message>
     <message>
-        <location line="-39"/>
+        <location line="-40"/>
         <source>Cannot create tables in file %1!</source>
         <translation>In Datei %1 können keine Tabellen angelegt werden.</translation>
     </message>
     <message>
         <location line="+16"/>
-        <source>The specified collection file already exists!</source>
-        <translation>Die angegebene Katalogdatei existiert bereits.</translation>
+        <source>The collection file &apos;%1&apos; already exists!</source>
+        <translation>Die Katalogdatei &apos;%1&apos; existiert bereits.</translation>
     </message>
     <message>
-        <location line="+5"/>
+        <location line="+148"/>
+        <source>Unknown filter &apos;%1&apos;!</source>
+        <translation>Unbekannter Filter &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location line="+105"/>
+        <source>Invalid documentation file &apos;%1&apos;!</source>
+        <translation>Ungültige Dokumentationsdatei &apos;%1&apos;.</translation>
+    </message>
+    <message>
+        <location line="+167"/>
+        <source>Cannot register namespace &apos;%1&apos;!</source>
+        <translation>Der Namensraum &apos;%1&apos; kann nicht registriert werden.</translation>
+    </message>
+    <message>
+        <location line="+24"/>
+        <source>Cannot open database &apos;%1&apos; to optimize!</source>
+        <translation>Die Datenbank &apos;%1&apos; kann nicht zur Optimierung geöffnet werden.</translation>
+    </message>
+    <message>
+        <location line="-438"/>
         <source>Cannot create directory: %1</source>
         <translation>Das Verzeichnis kann nicht angelegt werden: %1</translation>
     </message>
@@ -68,12 +88,7 @@
         <translation>Die Katalogdatei kann nicht kopiert werden: %1</translation>
     </message>
     <message>
-        <location line="+119"/>
-        <source>Unknown filter!</source>
-        <translation>Unbekannter Filter.</translation>
-    </message>
-    <message>
-        <location line="+55"/>
+        <location line="+174"/>
         <source>Cannot register filter %1!</source>
         <translation>Der Filter kann nicht registriert werden: %1</translation>
     </message>
@@ -83,12 +98,7 @@
         <translation>Die Dokumentationsdatei kann nicht geöffnet werden: %1</translation>
     </message>
     <message>
-        <location line="+6"/>
-        <source>Invalid documentation file!</source>
-        <translation>Ungültige Dokumentationsdatei.</translation>
-    </message>
-    <message>
-        <location line="+34"/>
+        <location line="+40"/>
         <source>The namespace %1 was not registered!</source>
         <translation>Der Namensraum %1 wurde nicht registriert.</translation>
     </message>
@@ -96,16 +106,6 @@
         <location line="+120"/>
         <source>Namespace %1 already exists!</source>
         <translation>Der Namensraum %1 existiert bereits.</translation>
-    </message>
-    <message>
-        <location line="+13"/>
-        <source>Cannot register namespace!</source>
-        <translation>Der Namensraum kann nicht registriert werden.</translation>
-    </message>
-    <message>
-        <location line="+24"/>
-        <source>Cannot open database to optimize!</source>
-        <translation>Die Datenbank kann nicht zur Optimierung geöffnet werden.</translation>
     </message>
 </context>
 <context>
@@ -120,7 +120,7 @@
 <context>
     <name>QHelpEngineCore</name>
     <message>
-        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+524"/>
+        <location filename="../tools/assistant/lib/qhelpenginecore.cpp" line="+523"/>
         <source>The specified namespace does not exist!</source>
         <translation>Der angegebene Namensraum existiert nicht.</translation>
     </message>
@@ -128,7 +128,7 @@
 <context>
     <name>QHelpEngineCorePrivate</name>
     <message>
-        <location line="-402"/>
+        <location line="-401"/>
         <source>Cannot open documentation file %1: %2!</source>
         <translation>Die Dokumentationsdatei %1 kann nicht geöffnet werden: %2.</translation>
     </message>
@@ -317,11 +317,6 @@
 </context>
 <context>
     <name>QObject</name>
-    <message>
-        <location filename="../tools/assistant/lib/qhelp_global.h" line="+83"/>
-        <source>Untitled</source>
-        <translation>Ohne Titel</translation>
-    </message>
     <message>
         <location filename="../tools/assistant/lib/qhelpprojectdata.cpp" line="+85"/>
         <source>Unknown token.</source>

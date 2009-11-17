@@ -1064,9 +1064,7 @@ void QPixmapDropShadowFilter::setOffset(const QPointF &offset)
 QRectF QPixmapDropShadowFilter::boundingRectFor(const QRectF &rect) const
 {
     Q_D(const QPixmapDropShadowFilter);
-    qreal delta = d->radius + 1;
-    return rect.adjusted(-2, -2, 2, 2).united(
-            rect.translated(d->offset).adjusted(-delta, -delta, delta, delta));
+    return rect.united(rect.translated(d->offset).adjusted(-d->radius, -d->radius, d->radius, d->radius));
 }
 
 /*!
@@ -1089,19 +1087,24 @@ void QPixmapDropShadowFilter::draw(QPainter *p,
         return;
     }
 
-    QImage tmp = src.isNull() ? px.toImage() : px.copy(src.toAlignedRect()).toImage();
+    QImage tmp(px.size(), QImage::Format_ARGB32_Premultiplied);
+    tmp.fill(0);
+    QPainter tmpPainter(&tmp);
+    tmpPainter.setCompositionMode(QPainter::CompositionMode_Source);
+    tmpPainter.drawPixmap(d->offset, px);
+    tmpPainter.end();
 
     // blur the alpha channel
     tmp = blurred(tmp, tmp.rect(), qRound(d->radius), true);
 
     // blacken the image...
-    QPainter tmpPainter(&tmp);
+    tmpPainter.begin(&tmp);
     tmpPainter.setCompositionMode(QPainter::CompositionMode_SourceIn);
-    tmpPainter.fillRect(0, 0, tmp.width(), tmp.height(), d->color);
+    tmpPainter.fillRect(tmp.rect(), d->color);
     tmpPainter.end();
 
     // draw the blurred drop shadow...
-    p->drawImage(pos + d->offset, tmp);
+    p->drawImage(pos, tmp);
 
     // Draw the actual pixmap...
     p->drawPixmap(pos, px, src);

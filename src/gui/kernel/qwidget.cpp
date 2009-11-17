@@ -3084,9 +3084,10 @@ void QWidgetPrivate::setEnabled_helper(bool enable)
 #endif
 #ifndef QT_NO_IM
     if (q->testAttribute(Qt::WA_InputMethodEnabled) && q->hasFocus()) {
-        QInputContext *qic = inputContext();
+        QWidget *focusWidget = effectiveFocusWidget();
+        QInputContext *qic = focusWidget->d_func()->inputContext();
         if (enable) {
-            qic->setFocusWidget(q);
+            qic->setFocusWidget(focusWidget);
         } else {
             qic->reset();
             qic->setFocusWidget(0);
@@ -10348,9 +10349,10 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break; }
     case Qt::WA_NativeWindow: {
 #ifndef QT_NO_IM
+        QWidget *focusWidget = d->effectiveFocusWidget();
         QInputContext *ic = 0;
         if (on && !internalWinId() && testAttribute(Qt::WA_InputMethodEnabled) && hasFocus()) {
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
             ic->reset();
             ic->setFocusWidget(0);
         }
@@ -10359,7 +10361,7 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         if (on && !internalWinId() && testAttribute(Qt::WA_WState_Created))
             d->createWinId();
         if (ic && isEnabled())
-            ic->setFocusWidget(this);
+            ic->setFocusWidget(focusWidget);
 #endif //QT_NO_IM
         break;
     }
@@ -10391,13 +10393,14 @@ void QWidget::setAttribute(Qt::WidgetAttribute attribute, bool on)
         break;
     case Qt::WA_InputMethodEnabled: {
 #ifndef QT_NO_IM
-        QInputContext *ic = d->ic;
+        QWidget *focusWidget = d->effectiveFocusWidget();
+        QInputContext *ic = focusWidget->d_func()->ic;
         if (!ic && (!on || hasFocus()))
-            ic = d->inputContext();
+            ic = focusWidget->d_func()->inputContext();
         if (ic) {
-            if (on && hasFocus() && ic->focusWidget() != this && isEnabled()) {
-                ic->setFocusWidget(this);
-            } else if (!on && ic->focusWidget() == this) {
+            if (on && hasFocus() && ic->focusWidget() != focusWidget && isEnabled()) {
+                ic->setFocusWidget(focusWidget);
+            } else if (!on && ic->focusWidget() == focusWidget) {
                 ic->reset();
                 ic->setFocusWidget(0);
             }
@@ -11460,6 +11463,17 @@ void QWidget::languageChange() { }  // compat
      QWIDGETSIZE_MAX), i.e. QSize (16777215,16777215).
 
      \sa QWidget::setMaximumSize()
+*/
+
+/*!
+    \fn QWidget::setupUi(QWidget *widget)
+
+    Sets up the user interface for the specified \a widget.
+
+    \note This function is available with widgets that derive from user
+    interface descriptions created using \l{uic}.
+
+    \sa {Using a Designer UI File in Your Application}
 */
 
 QRect QWidgetPrivate::frameStrut() const

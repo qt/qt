@@ -1180,7 +1180,7 @@ void QRenderRule::drawBackgroundImage(QPainter *p, const QRect &rect, QPoint off
 
     QRect r = originRect(rect, background()->origin);
     QRect aligned = QStyle::alignedRect(Qt::LeftToRight, background()->position, bgp.size(), r);
-    QRect inter = aligned.intersected(r);
+    QRect inter = aligned.translated(-off).intersected(r);
 
     switch (background()->repeat) {
     case Repeat_Y:
@@ -4637,6 +4637,7 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
         }
         break;
 
+#ifndef QT_NO_TABWIDGET
     case PM_TabBarTabHSpace:
     case PM_TabBarTabVSpace:
         subRule = renderRule(w, opt, PseudoElement_TabBarTab);
@@ -4660,11 +4661,14 @@ int QStyleSheetStyle::pixelMetric(PixelMetric m, const QStyleOption *opt, const 
             return 0;
         break;
 
-    case PM_TabBarBaseOverlap:
-        if (hasStyleRule(w->parentWidget(), PseudoElement_TabWidgetPane)) {
+    case PM_TabBarBaseOverlap: {
+        const QWidget *tabWidget = qobject_cast<const QTabWidget *>(w) ? w : w->parentWidget();
+        if (hasStyleRule(tabWidget, PseudoElement_TabWidgetPane)) {
             return 0;
         }
         break;
+    }
+#endif // QT_NO_TABWIDGET
 
     case PM_SliderThickness: // horizontal slider's height (sizeHint)
     case PM_SliderLength: // minimum length of slider

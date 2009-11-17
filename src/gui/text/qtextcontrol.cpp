@@ -55,6 +55,7 @@
 #include <qstyle.h>
 #include <qtimer.h>
 #include "private/qtextdocumentlayout_p.h"
+#include "private/qabstracttextdocumentlayout_p.h"
 #include "private/qtextedit_p.h"
 #include "qtextdocument.h"
 #include "private/qtextdocument_p.h"
@@ -126,6 +127,7 @@ QTextControlPrivate::QTextControlPrivate()
 #endif
       isEnabled(true),
       hadSelectionOnMousePress(false),
+      ignoreUnusedNavigationEvents(false),
       openExternalLinks(false)
 {}
 
@@ -264,19 +266,25 @@ bool QTextControlPrivate::cursorMoveKeyEvent(QKeyEvent *e)
     cursor.setVisualNavigation(visualNavigation);
     q->ensureCursorVisible();
 
+    bool ignoreNavigationEvents = ignoreUnusedNavigationEvents;
+    bool isNavigationEvent = e->key() == Qt::Key_Up || e->key() == Qt::Key_Down;
+
+#ifdef QT_KEYPAD_NAVIGATION
+    ignoreNavigationEvents = ignoreNavigationEvents || QApplication::keypadNavigationEnabled();
+    isNavigationEvent = isNavigationEvent ||
+                        (QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
+                         && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right));
+#else
+    isNavigationEvent = isNavigationEvent || e->key() == Qt::Key_Left || e->key() == Qt::Key_Right;
+#endif
+
     if (moved) {
         if (cursor.position() != oldCursorPos)
             emit q->cursorPositionChanged();
         emit q->microFocusChanged();
-    }
-#ifdef QT_KEYPAD_NAVIGATION
-    else if (QApplication::keypadNavigationEnabled()
-        && ((e->key() == Qt::Key_Up || e->key() == Qt::Key_Down)
-        || QApplication::navigationMode() == Qt::NavigationModeKeypadDirectional
-        && (e->key() == Qt::Key_Left || e->key() == Qt::Key_Right))) {
+    } else if (ignoreNavigationEvents && isNavigationEvent) {
         return false;
     }
-#endif
 
     selectionChanged(/*forceEmitSelectionChanged =*/(mode == QTextCursor::KeepAnchor));
 
@@ -2263,6 +2271,18 @@ bool QTextControl::openExternalLinks() const
     return d->openExternalLinks;
 }
 
+bool QTextControl::ignoreUnusedNavigationEvents() const
+{
+    Q_D(const QTextControl);
+    return d->ignoreUnusedNavigationEvents;
+}
+
+void QTextControl::setIgnoreUnusedNavigationEvents(bool ignore)
+{
+    Q_D(QTextControl);
+    d->ignoreUnusedNavigationEvents = ignore;
+}
+
 void QTextControl::moveCursor(QTextCursor::MoveOperation op, QTextCursor::MoveMode mode)
 {
     Q_D(QTextControl);
@@ -2319,6 +2339,9 @@ void QTextControl::print(QPrinter *printer) const
         tempDoc->setUseDesignMetrics(doc->useDesignMetrics());
         QTextCursor(tempDoc).insertFragment(d->cursor.selection());
         doc = tempDoc;
+
+        // copy the custom object handlers
+        doc->documentLayout()->d_func()->handlers = d->doc->documentLayout()->d_func()->handlers;
     }
     doc->print(printer);
     delete tempDoc;

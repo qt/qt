@@ -602,10 +602,10 @@ QString CodeMarker::macName(const Node *node, const QString &name)
     }
 
     if (node->name().isEmpty()) {
-        return QLatin1Char('/') + myName;
+        return QLatin1Char('/') + protect(myName);
     }
     else {
-        return plainFullName(node) + QLatin1Char('/') + myName;
+        return plainFullName(node) + QLatin1Char('/') + protect(myName);
     }
 }
 

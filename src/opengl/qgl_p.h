@@ -233,6 +233,7 @@ public:
 
     QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
+    bool isSharing() const { return m_shares.size() >= 2; }
 
     void addGuard(QGLSharedResourceGuard *guard);
     void removeGuard(QGLSharedResourceGuard *guard);
@@ -374,7 +375,8 @@ public:
         NVFloatBuffer           = 0x00000400,
         PixelBufferObject       = 0x00000800,
         FramebufferBlit         = 0x00001000,
-        NPOTTextures            = 0x00002000
+        NPOTTextures            = 0x00002000,
+        BGRATextureFormat       = 0x00004000
     };
     Q_DECLARE_FLAGS(Extensions, Extension)
 
