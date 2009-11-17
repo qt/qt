@@ -509,9 +509,7 @@ void tst_QListView::moveCursor2()
     QModelIndex idx = vu.moveCursor(QMoveCursorListView::MoveHome, Qt::NoModifier);
     QCOMPARE(idx, model.index(0,0));
     idx = vu.moveCursor(QMoveCursorListView::MoveDown, Qt::NoModifier);
-    QModelIndex p = model.index(8,0);
     QCOMPARE(idx, model.index(8,0));
-
 }
 
 void tst_QListView::moveCursor3()
@@ -605,7 +603,6 @@ void tst_QListView::indexAt()
 
     QVERIFY(view2.m_index.isValid());
     QVERIFY(view2.m_index.row() != 0);
-
 }
 
 void tst_QListView::clicked()
@@ -703,7 +700,6 @@ void tst_QListView::modelColumn()
     view.setModel(&model);
 
 
-
     //
     // Set and get with a valid model
     //
@@ -742,7 +738,6 @@ void tst_QListView::modelColumn()
         QCOMPARE(startrow, 2);
     }
 }
-
 
 void tst_QListView::hideFirstRow()
 {
@@ -814,7 +809,6 @@ void tst_QListView::batchedMode()
         ba.setBit(idx.row(), true);
     }
     QCOMPARE(ba.size(), 3);
-
 }
 
 void tst_QListView::setCurrentIndex()
@@ -1146,7 +1140,6 @@ void tst_QListView::selection()
     for (int i = 0; i < selected.count(); ++i) {
         QVERIFY(expectedItems.contains(selected.at(i).row()));
     }
-
 }
 
 void tst_QListView::scrollTo()
@@ -1251,7 +1244,6 @@ void tst_QListView::scrollTo()
 
     QTest::keyClick(lv.viewport(), Qt::Key_Up, Qt::NoModifier);
     QCOMPARE(lv.visualRect(index).y(), 0);
-
 }
 
 
@@ -1772,7 +1764,6 @@ void tst_QListView::clickOnViewportClearsSelection()
     QTest::mouseRelease(view.viewport(), Qt::LeftButton, 0, point);
     //now the selection should be cleared
     QVERIFY(!view.selectionModel()->hasSelection());
-
 }
 
 void tst_QListView::task262152_setModelColumnNavigate()
@@ -1795,7 +1786,6 @@ void tst_QListView::task262152_setModelColumnNavigate()
     QTest::keyClick(&view, Qt::Key_Down);
     QTest::qWait(30);
     QTRY_COMPARE(view.currentIndex(), model.index(2,1));
-
 }
 
 void tst_QListView::taskQTBUG_2233_scrollHiddenItems_data()

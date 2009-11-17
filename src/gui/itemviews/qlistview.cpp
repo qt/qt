@@ -773,7 +773,7 @@ void QListView::rowsAboutToBeRemoved(const QModelIndex &parent, int start, int e
 void QListView::mouseMoveEvent(QMouseEvent *e)
 {
     if (!isVisible())
-	return;
+        return;
     Q_D(QListView);
     QAbstractItemView::mouseMoveEvent(e);
     if (state() == DragSelectingState
@@ -832,16 +832,16 @@ void QListView::resizeEvent(QResizeEvent *e)
       return;
 
     bool listWrap = (d->viewMode == ListMode) && d->wrapItemText;
-    bool flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0) 
-				|| (d->flow == TopToBottom && delta.height() != 0);
+    bool flowDimensionChanged = (d->flow == LeftToRight && delta.width() != 0)
+                                || (d->flow == TopToBottom && delta.height() != 0);
 
     // We post a delayed relayout in the following cases :
     // - we're wrapping
     // - the state is NoState, we're adjusting and the size has changed in the flowing direction
-    if (listWrap 
+    if (listWrap
         || (state() == NoState && d->resizeMode == Adjust && flowDimensionChanged)) {
-	d->doDelayedItemsLayout(100); // wait 1/10 sec before starting the layout
-    } else {	
+        d->doDelayedItemsLayout(100); // wait 1/10 sec before starting the layout
+    } else {
         QAbstractItemView::resizeEvent(e);
     }
 }
@@ -1445,7 +1445,7 @@ void QListView::doItemsLayout()
     // so we set the state to expanding to avoid
     // triggering another layout
     QAbstractItemView::State oldState = state();
-    setState(ExpandingState); 
+    setState(ExpandingState);
     if (d->model->columnCount(d->root) > 0) { // no columns means no contents
         d->resetBatchStartRow();
         if (layoutMode() == SinglePass)
