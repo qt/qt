@@ -483,6 +483,10 @@ void QmlListModel::remove(int index)
 */
 void QmlListModel::insert(int index, const QScriptValue& valuemap)
 {
+    if (!valuemap.isObject() || valuemap.isArray()) {
+        qmlInfo(this) << tr("insert: value is not an object");
+        return;
+    }
     if (!_root)
         _root = new ModelNode;
     if (index >= _root->values.count() || index<0) {
@@ -517,8 +521,10 @@ void QmlListModel::move(int from, int to, int n)
 {
     if (n==0 || from==to)
         return;
-    if (from+n > count() || to+n > count() || from < 0 || to < 0)
+    if (from+n > count() || to+n > count() || from < 0 || to < 0 || n < 0) {
         qmlInfo(this) << tr("move: out of range");
+        return;
+    }
     int origfrom=from; // preserve actual move, so any animations are correct
     int origto=to;
     int orign=n;
@@ -564,7 +570,7 @@ void QmlListModel::move(int from, int to, int n)
 */
 void QmlListModel::append(const QScriptValue& valuemap)
 {
-    if (!valuemap.isObject()) {
+    if (!valuemap.isObject() || valuemap.isArray()) {
         qmlInfo(this) << tr("append: value is not an object");
         return;
     }
@@ -636,9 +642,11 @@ QScriptValue QmlListModel::get(int index) const
 */
 void QmlListModel::set(int index, const QScriptValue& valuemap)
 {
-    if (!_root)
-        _root = new ModelNode;
-    if ( index > _root->values.count()) {
+    if (!valuemap.isObject() || valuemap.isArray()) {
+        qmlInfo(this) << tr("set: value is not an object");
+        return;
+    }
+    if ( !_root || index > _root->values.count()) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }
@@ -677,9 +685,7 @@ void QmlListModel::set(int index, const QScriptValue& valuemap)
 */
 void QmlListModel::set(int index, const QString& property, const QVariant& value)
 {
-    if (!_root)
-        _root = new ModelNode;
-    if ( index >= _root->values.count()) {
+    if ( !_root || index >= _root->values.count()) {
         qmlInfo(this) << tr("set: index %1 out of range").arg(index);
         return;
     }

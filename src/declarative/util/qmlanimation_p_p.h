@@ -208,7 +208,7 @@ public:
     QmlMetaProperty property;
     QmlAnimationGroup *group;
 
-    QmlMetaProperty createProperty(QObject *obj, const QString &str);
+    static QmlMetaProperty createProperty(QObject *obj, const QString &str, QObject *infoObj);
 };
 
 class QmlPauseAnimationPrivate : public QmlAbstractAnimationPrivate

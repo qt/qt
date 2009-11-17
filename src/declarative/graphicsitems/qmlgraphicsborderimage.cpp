@@ -58,8 +58,6 @@ QML_DEFINE_TYPE(Qt,4,6,BorderImage,QmlGraphicsBorderImage)
     \snippet snippets/declarative/border-image.qml 0
 
     \image BorderImage.png
-
-    \sa examples/declarative/border-image
  */
 
 /*!

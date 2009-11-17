@@ -62,7 +62,7 @@
 
 QT_BEGIN_NAMESPACE
 
-QEasingCurve stringToCurve(const QString &curve)
+static QEasingCurve stringToCurve(const QString &curve, QObject *obj)
 {
     QEasingCurve easingCurve;
 
@@ -73,8 +73,7 @@ QEasingCurve stringToCurve(const QString &curve)
     if (hasParams) {
         QString easeName = curve.trimmed();
         if (!easeName.endsWith(QLatin1Char(')'))) {
-            qWarning("QEasingCurve: Unmatched perenthesis in easing function '%s'",
-                     qPrintable(curve));
+            qmlInfo(obj) << obj->tr("Unmatched parenthesis in easing function \"%1\"").arg(curve);
             return easingCurve;
         }
 
@@ -83,8 +82,8 @@ QEasingCurve stringToCurve(const QString &curve)
             easeName.mid(idx + 1, easeName.length() - 1 - idx - 1);
         normalizedCurve = easeName.left(idx);
         if (!normalizedCurve.startsWith(QLatin1String("ease"))) {
-            qWarning("QEasingCurve: Easing function '%s' must start with 'ease'",
-                     qPrintable(curve));
+            qmlInfo(obj) << obj->tr("Easing function \"%1\" must start with \"ease\"").arg(curve);
+            return easingCurve;
         }
 
         props = prop_str.split(QLatin1Char(','));
@@ -98,9 +97,8 @@ QEasingCurve stringToCurve(const QString &curve)
 
     int value = me.keyToValue(normalizedCurve.toUtf8().constData());
     if (value < 0) {
-        qWarning("QEasingCurve: Unknown easing curve '%s'",
-                 qPrintable(curve));
-        value = 0;
+        qmlInfo(obj) << obj->tr("Unknown easing curve \"%1\"").arg(curve);
+        return easingCurve;
     }
     easingCurve.setType((QEasingCurve::Type)value);
 
@@ -109,9 +107,8 @@ QEasingCurve stringToCurve(const QString &curve)
             int sep = str.indexOf(QLatin1Char(':'));
 
             if (sep == -1) {
-                qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                         qPrintable(curve));
-                return easingCurve;
+                qmlInfo(obj) << obj->tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
+                continue;
             }
 
             QString propName = str.left(sep).trimmed();
@@ -119,9 +116,8 @@ QEasingCurve stringToCurve(const QString &curve)
             qreal propValue = str.mid(sep + 1).trimmed().toDouble(&isOk);
 
             if (propName.isEmpty() || !isOk) {
-                qWarning("QEasingCurve: Improperly specified property in easing function '%s'",
-                         qPrintable(curve));
-                return easingCurve;
+                qmlInfo(obj) << obj->tr("Improperly specified parameter in easing function \"%1\"").arg(curve);
+                continue;
             }
 
             if (propName == QLatin1String("amplitude")) {
@@ -130,10 +126,12 @@ QEasingCurve stringToCurve(const QString &curve)
                 easingCurve.setPeriod(propValue);
             } else if (propName == QLatin1String("overshoot")) {
                 easingCurve.setOvershoot(propValue);
+            } else {
+                qmlInfo(obj) << obj->tr("Unknown easing parameter \"%1\"").arg(propName);
+                continue;
             }
         }
     }
-
     return easingCurve;
 }
 
@@ -219,16 +217,14 @@ void QmlAbstractAnimationPrivate::commence()
     }
 }
 
-//### make static?
-QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str)
+QmlMetaProperty QmlAbstractAnimationPrivate::createProperty(QObject *obj, const QString &str, QObject *infoObj)
 {
-    Q_Q(QmlAbstractAnimation);
     QmlMetaProperty prop = QmlMetaProperty::createProperty(obj, str);
     if (!prop.isValid()) {
-        qmlInfo(q) << QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str);
+        qmlInfo(infoObj) << QmlAbstractAnimation::tr("Cannot animate non-existant property \"%1\"").arg(str);
         return QmlMetaProperty();
     } else if (!prop.isWritable()) {
-        qmlInfo(q) << QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str);
+        qmlInfo(infoObj) << QmlAbstractAnimation::tr("Cannot animate read-only property \"%1\"").arg(str);
         return QmlMetaProperty();
     }
     return prop;
@@ -436,7 +432,7 @@ void QmlAbstractAnimation::setTarget(QObject *o)
 
     d->target = o;
     if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName);
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
     } else {
         d->userProperty.invalidate();
     }
@@ -458,7 +454,7 @@ void QmlAbstractAnimation::setProperty(const QString &n)
 
     d->propertyName = n;
     if (d->target && !d->propertyName.isEmpty()) {
-        d->userProperty = d->createProperty(d->target, d->propertyName);
+        d->userProperty = d->createProperty(d->target, d->propertyName, this);
     } else {
         d->userProperty.invalidate();
     }
@@ -652,7 +648,7 @@ int QmlPauseAnimation::duration() const
 void QmlPauseAnimation::setDuration(int duration)
 {
     if (duration < 0) {
-        qWarning("QmlPauseAnimation: Cannot set a duration of < 0");
+        qmlInfo(this) << tr("Cannot set a duration of < 0");
         return;
     }
 
@@ -1029,7 +1025,7 @@ void QmlPropertyAction::transition(QmlStateActions &actions,
 
     if (hasTarget && d->value.isValid()) {
         Action myAction;
-        myAction.property = d->createProperty(target(), d->propertyName);
+        myAction.property = d->createProperty(target(), d->propertyName, this);
         if (myAction.property.isValid()) {
             myAction.toValue = d->value;
             data->actions << myAction;
@@ -1630,7 +1626,7 @@ int QmlPropertyAnimation::duration() const
 void QmlPropertyAnimation::setDuration(int duration)
 {
     if (duration < 0) {
-        qWarning("QmlPropertyAnimation: Cannot set a duration of < 0");
+        qmlInfo(this) << tr("Cannot set a duration of < 0");
         return;
     }
 
@@ -1872,7 +1868,7 @@ void QmlPropertyAnimation::setEasing(const QString &e)
         return;
 
     d->easing = e;
-    d->va->setEasingCurve(stringToCurve(d->easing));
+    d->va->setEasingCurve(stringToCurve(d->easing, this));
     emit easingChanged(e);
 }
 
@@ -2114,7 +2110,7 @@ void QmlPropertyAnimation::transition(QmlStateActions &actions,
     //an explicit animation has been specified
     if (hasTarget && d->toIsDefined) {
         Action myAction;
-        myAction.property = d->createProperty(target(), d->propertyName);
+        myAction.property = d->createProperty(target(), d->propertyName, this);
         if (myAction.property.isValid()) {
             if (d->fromIsDefined) {
                 d->convertVariant(d->from, d->interpolatorType ? d->interpolatorType : myAction.property.propertyType());

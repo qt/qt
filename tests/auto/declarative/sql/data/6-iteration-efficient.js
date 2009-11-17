@@ -1,12 +1,16 @@
 var db = openDatabase("QmlTestDB", "", "Test database from Qt autotests", 1000000);
 var r=0;
+var fbefore="FORWARD WRONG"
+var fafter="FORWARD WRONG"
 
 db.transaction(
     function(tx) {
         tx.executeSql('SELECT * FROM Greeting', [],
             function(tx, rs) {
                 var r1=""
+                if (!rs.rows.forwardOnly) fbefore=""
                 rs.rows.forwardOnly = true;
+                if (rs.rows.forwardOnly) fafter="";
                 for(var i=0; rs.rows[i]; ++i) {
                     r1 += rs.rows[i].salutation + ", " + rs.rows[i].salutee + ";"
                 }
@@ -17,7 +21,7 @@ db.transaction(
         );
     },
     function(tx, error) { if (r==0) r="TRANSACTION FAILED: "+error.message },
-    function(tx, result) { if (r==0) r="passed" }
+    function(tx, result) { if (r==0) r=fbefore+"passed"+fafter }
 );
 
 

@@ -1428,6 +1428,11 @@ QmlGraphicsKeysAttached *QmlGraphicsKeysAttached::qmlAttachedProperties(QObject 
 */
 
 /*!
+    \fn void QmlGraphicsItem::childrenChanged()
+    \internal
+*/
+
+/*!
     \fn void QmlGraphicsItem::focusChanged()
     \internal
 */
@@ -2692,6 +2697,8 @@ QVariant QmlGraphicsItem::itemChange(GraphicsItemChange change,
 {
     if (change == ItemParentHasChanged) {
         emit parentChanged();
+    } else if (change == ItemChildAddedChange || change == ItemChildRemovedChange) {
+        emit childrenChanged();
     }
 
     return QGraphicsItem::itemChange(change, value);
