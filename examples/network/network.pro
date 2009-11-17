@@ -19,6 +19,7 @@ SUBDIRS       = blockingfortuneclient \
 symbian: SUBDIRS = qftp
 
 contains(QT_CONFIG, openssl):SUBDIRS += securesocketclient
+contains(QT_CONFIG, openssl-linked):SUBDIRS += securesocketclient
 
 # install
 sources.files = $$SOURCES $$HEADERS $$RESOURCES $$FORMS network.pro README

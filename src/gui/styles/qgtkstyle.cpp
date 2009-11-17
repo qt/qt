@@ -127,11 +127,19 @@ static const int groupBoxBottomMargin    =  2;  // space below the groupbox
 static const int groupBoxTitleMargin     =  6;  // space between contents and title
 static const int groupBoxTopMargin       =  2;
 
+/*!
+  Returns the configuration string for \a value.
+  Returns \a fallback if \a value is not found.
+ */
 QString QGtkStyle::getGConfString(const QString &value, const QString &fallback)
 {
     return QGtkStylePrivate::getGConfString(value, fallback);
 }
 
+/*!
+  Returns the configuration boolean for \a key.
+  Returns \a fallback if \a key is not found.
+ */
 bool QGtkStyle::getGConfBool(const QString &key, bool fallback)
 {
     return QGtkStylePrivate::getGConfBool(key, fallback);

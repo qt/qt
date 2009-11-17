@@ -477,9 +477,6 @@ void QGraphicsAnchorLayout::removeAt(int index)
         return;
 
     // Removing an item affects both horizontal and vertical graphs
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Horizontal);
-    d->restoreSimplifiedGraph(QGraphicsAnchorLayoutPrivate::Vertical);
-
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Horizontal);
     d->removeCenterConstraints(item, QGraphicsAnchorLayoutPrivate::Vertical);
     d->removeAnchors(item);

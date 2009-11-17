@@ -665,7 +665,7 @@ int QAbstractAnimation::currentLoopTime() const
 
     The animation's current time starts at 0, and ends at totalDuration().
 
-    \sa loopCount, currentLoopTime
+    \sa loopCount, currentLoopTime()
  */
 int QAbstractAnimation::currentTime() const
 {

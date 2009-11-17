@@ -3030,7 +3030,7 @@ void QGLContext::setValid(bool valid)
 bool QGLContext::isSharing() const
 {
     Q_D(const QGLContext);
-    return d->sharing;
+    return d->group->isSharing();
 }
 
 QGLFormat QGLContext::format() const

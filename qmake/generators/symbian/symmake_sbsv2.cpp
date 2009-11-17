@@ -182,15 +182,22 @@ void SymbianSbsv2MakefileGenerator::writeWrapperMakefile(QFile& wrapperFile, boo
         }
         t << endl;
 
+        QString winscw("winscw");
         // For more specific builds, targets are in this form: build-platform, e.g. release-armv5
         foreach(QString item, debugPlatforms) {
             t << "debug-" << item << ": " << BLD_INF_FILENAME << endl;
-            t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << "\t$(SBS) -c " << item << "_udeb.mwccinc" << testClause << endl;
+            else
+                t << "\t$(SBS) -c " << item << "_udeb" << testClause << endl;
         }
 
         foreach(QString item, releasePlatforms) {
             t << "release-" << item << ": " << BLD_INF_FILENAME << endl;
-            t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
+            if(QString::compare(item, winscw) == 0)
+                t << "\t$(SBS) -c " << item << "_urel.mwccinc" << testClause << endl;
+            else
+                t << "\t$(SBS) -c " << item << "_urel" << testClause << endl;
         }
 
         t << endl;
@@ -379,28 +386,6 @@ void SymbianSbsv2MakefileGenerator::writeBldInfExtensionRulesPart(QTextStream& t
         t << "END" << endl;
     }
 
-    // Generate temp dirs
-    QString tempDirs;
-    for (QMap<QString, QStringList>::iterator it = systeminclude.begin(); it != systeminclude.end(); ++it) {
-        QStringList values = it.value();
-        for (int i = 0; i < values.size(); ++i) {
-            QString value = values.at(i);
-            if (value.endsWith("/" QT_EXTRA_INCLUDE_DIR)) {
-                value = fileInfo(value).absoluteFilePath();
-                tempDirs.append(value);
-                tempDirs.append(" ");
-            }
-        }
-    }
-
-    if (tempDirs.size())
-        tempDirs.chop(1); // Remove final space
-
-    t << "START EXTENSION qt/qmake_generate_temp_dirs" << endl;
-    t << "OPTION DIRS " << tempDirs << endl;
-    t << "END" << endl;
-    t << endl;
-
     t << "START EXTENSION qt/qmake_store_build" << endl;
     t << "END" << endl;
     t << endl;
@@ -413,4 +398,11 @@ void SymbianSbsv2MakefileGenerator::writeBldInfMkFilePart(QTextStream& t, bool a
     // We don't generate extension makefile in sbsb2
     Q_UNUSED(t);
     Q_UNUSED(addDeploymentExtension);
+}
+
+void SymbianSbsv2MakefileGenerator::appendAbldTempDirs(QStringList& sysincspaths, QString includepath)
+{
+    //Do nothing
+    Q_UNUSED(sysincspaths);
+    Q_UNUSED(includepath);
 }

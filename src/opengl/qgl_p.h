@@ -233,6 +233,7 @@ public:
 
     QGLExtensionFuncs &extensionFuncs() {return m_extensionFuncs;}
     const QGLContext *context() const {return m_context;}
+    bool isSharing() const { return m_shares.size() >= 2; }
 
     void addGuard(QGLSharedResourceGuard *guard);
     void removeGuard(QGLSharedResourceGuard *guard);
