@@ -1,7 +1,7 @@
 import Qt 4.6
 
 Rectangle {
-    id: container
+    id: Container
     width: 200; height: 200
     Rectangle {
         id: myRect
@@ -17,7 +17,7 @@ Rectangle {
             id: AncCh
             target: myRect;
             reset: "left"
-            right: container.right
+            right: Container.right
         }
     }
 }
