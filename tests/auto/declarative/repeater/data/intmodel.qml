@@ -6,12 +6,24 @@ Rectangle {
     width: 240
     height: 320
     color: "white"
+
+    function checkProperties() {
+        testObject.error = false;
+        if (repeater.delegate != comp) {
+            print("delegate property incorrect");
+            testObject.error = true;
+        }
+    }
+
+    Component {
+        id: comp
+        Item{}
+    }
+
     Repeater {
         id: repeater
         objectName: "repeater"
         model: testData
-        Component {
-            Item{}
-        }
+        delegate: comp
     }
 }

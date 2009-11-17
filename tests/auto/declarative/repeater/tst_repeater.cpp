@@ -55,12 +55,99 @@ private slots:
     void numberModel();
     void objectList();
     void stringList();
+    void dataModel();
+    void itemModel();
 
 private:
     QmlView *createView(const QString &filename);
     template<typename T>
     T *findItem(QObject *parent, const QString &id);
 };
+
+class TestObject : public QObject
+{
+    Q_OBJECT
+
+    Q_PROPERTY(bool error READ error WRITE setError)
+    Q_PROPERTY(bool useModel READ useModel NOTIFY useModelChanged)
+
+public:
+    TestObject() : QObject(), mError(true), mUseModel(false) {}
+
+    bool error() const { return mError; }
+    void setError(bool err) { mError = err; }
+
+    bool useModel() const { return mUseModel; }
+    void setUseModel(bool use) { mUseModel = use; emit useModelChanged(); }
+
+signals:
+    void useModelChanged();
+
+private:
+    bool mError;
+    bool mUseModel;
+};
+
+class TestModel : public QAbstractListModel
+{
+public:
+    enum Roles { Name = Qt::UserRole+1, Number = Qt::UserRole+2 };
+
+    TestModel(QObject *parent=0) : QAbstractListModel(parent) {
+        QHash<int, QByteArray> roles;
+        roles[Name] = "name";
+        roles[Number] = "number";
+        setRoleNames(roles);
+    }
+
+    int rowCount(const QModelIndex &parent=QModelIndex()) const { return list.count(); }
+    QVariant data(const QModelIndex &index, int role=Qt::DisplayRole) const {
+        QVariant rv;
+        if (role == Name)
+            rv = list.at(index.row()).first;
+        else if (role == Number)
+            rv = list.at(index.row()).second;
+
+        return rv;
+    }
+
+    int count() const { return rowCount(); }
+    QString name(int index) const { return list.at(index).first; }
+    QString number(int index) const { return list.at(index).second; }
+
+    void addItem(const QString &name, const QString &number) {
+        emit beginInsertRows(QModelIndex(), list.count(), list.count());
+        list.append(QPair<QString,QString>(name, number));
+        emit endInsertRows();
+    }
+
+    void insertItem(int index, const QString &name, const QString &number) {
+        emit beginInsertRows(QModelIndex(), index, index);
+        list.insert(index, QPair<QString,QString>(name, number));
+        emit endInsertRows();
+    }
+
+    void removeItem(int index) {
+        emit beginRemoveRows(QModelIndex(), index, index);
+        list.removeAt(index);
+        emit endRemoveRows();
+    }
+
+    void moveItem(int from, int to) {
+        emit beginMoveRows(QModelIndex(), from, from, QModelIndex(), to);
+        list.move(from, to);
+        emit endMoveRows();
+    }
+
+    void modifyItem(int idx, const QString &name, const QString &number) {
+        list[idx] = QPair<QString,QString>(name, number);
+        emit dataChanged(index(idx,0), index(idx,0));
+    }
+
+private:
+    QList<QPair<QString,QString> > list;
+};
+
 
 tst_QmlGraphicsRepeater::tst_QmlGraphicsRepeater()
 {
@@ -69,15 +156,23 @@ tst_QmlGraphicsRepeater::tst_QmlGraphicsRepeater()
 void tst_QmlGraphicsRepeater::numberModel()
 {
     QmlView *canvas = createView(SRCDIR "/data/intmodel.qml");
-    canvas->execute();
-    qApp->processEvents();
 
     QmlContext *ctxt = canvas->rootContext();
     ctxt->setContextProperty("testData", 5);
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->execute();
+    qApp->processEvents();
 
     QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
     QVERIFY(repeater != 0);
     QCOMPARE(repeater->parentItem()->childItems().count(), 5+1);
+
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+
+    delete canvas;
 }
 
 void tst_QmlGraphicsRepeater::objectList()
@@ -155,6 +250,67 @@ void tst_QmlGraphicsRepeater::stringList()
         }
     }
     QVERIFY(saw_repeater);
+
+    delete canvas;
+}
+
+void tst_QmlGraphicsRepeater::dataModel()
+{
+    QmlView *canvas = createView(SRCDIR "/data/repeater2.qml");
+    QmlContext *ctxt = canvas->rootContext();
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    TestModel testModel;
+    testModel.addItem("one", "1");
+    testModel.addItem("two", "2");
+    testModel.addItem("three", "3");
+
+    ctxt->setContextProperty("testData", &testModel);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QVERIFY(repeater != 0);
+
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QVERIFY(container != 0);
+
+    QCOMPARE(container->childItems().count(), 4);
+
+    testModel.addItem("four", "4");
+
+    QCOMPARE(container->childItems().count(), 5);
+}
+
+void tst_QmlGraphicsRepeater::itemModel()
+{
+    QmlView *canvas = createView(SRCDIR "/data/itemlist.qml");
+    QmlContext *ctxt = canvas->rootContext();
+    TestObject *testObject = new TestObject;
+    ctxt->setContextProperty("testObject", testObject);
+
+    canvas->execute();
+    qApp->processEvents();
+
+    QmlGraphicsRepeater *repeater = findItem<QmlGraphicsRepeater>(canvas->root(), "repeater");
+    QVERIFY(repeater != 0);
+
+    QmlGraphicsItem *container = findItem<QmlGraphicsItem>(canvas->root(), "container");
+    QVERIFY(container != 0);
+
+    QCOMPARE(container->childItems().count(), 1);
+
+    testObject->setUseModel(true);
+    QMetaObject::invokeMethod(canvas->root(), "checkProperties");
+    QVERIFY(testObject->error() == false);
+
+    QCOMPARE(container->childItems().count(), 4);
+    QVERIFY(qobject_cast<QObject*>(container->childItems().at(0))->objectName() == "item1");
+    QVERIFY(qobject_cast<QObject*>(container->childItems().at(1))->objectName() == "item2");
+    QVERIFY(qobject_cast<QObject*>(container->childItems().at(2))->objectName() == "item3");
+    QVERIFY(container->childItems().at(3) == repeater);
 
     delete canvas;
 }
