@@ -52,8 +52,9 @@
     \section1 Source Compatibility
 
     Qt for Symbian provides the same level of source compatibility guarantee as
-    given for other platforms.  That is, a program which compiles against a
-    given version of Qt for Symbian will also compile against all future versions.
+    given for other platforms.  That is, a program which compiles against a given
+    version of Qt for Symbian will also compile against all future versions of the
+    same major release.
 
     \section1 Binary Compatibility
 
@@ -62,32 +63,37 @@
     the Qt 4.x series. However, due to the fact that Symbian support is
     newly added in 4.6.0, it is possible that minor corrections to the
     behavior and to the ABI in 4.6.1 will be required in order to ensure
-    compatibility going forward.
-
+    compatibility going forward. If we break the binary compatiblity promise,
+    we will document such changes in the 4.6.1 release.
 
     \section1 Supported Devices
 
-    Qt should work on all phones which run one of the following versions of S60:
+    Qt should generally work on any device which runs one of the following
+    versions of Symbian:
 
     \table
-    \header \o S60 version
-    \row \o 3.1
-    \row \o 3.2
-    \row \o 5.0
+    \header \o Symbian Version
+    \row \o S60 3.1
+    \row \o S60 3.2
+    \row \o S60 5.0 (Symbian ^1)
     \endtable
 
     Qt has received Tier 1 testing on the following phone models:
 
     \table
     \header \o Phone
+    \row    \o Nokia 5800
     \row    \o Nokia E71
     \row    \o Nokia E72
-    \row    \o Nokia 5800
+    \row    \o Nokia N78
+    \row    \o Nokia N95
+    \row    \o Nokia N97
+    \row    \o Samsung i8910
     \endtable
 
     \section1 Supported Functionality
 
-    The following technologies and classes are not supported:
+    The following technologies and classes are not currently supported:
 
     \table
     \header \o Technology
@@ -95,29 +101,32 @@
     \row    \o QtConcurrent
             \o
     \row    \o QtDBus
-            \o Will never be supported.
+            \o No current plans to support this feature.
     \row    \o QtOpenGL
-            \o Support for OpenGL ES may arrive in a future release.
+            \o Support for OpenGL ES planned for a future release.
     \row    \o Printing support
-            \o
-    \row    \o Backend for QtMultimedia
-            \o Although the module itself is supported, no backend for Symbian
-               is available. However, there is a backend available for Phonon.
+            \o No current plans to support this feature.
     \row    \o Qt3Support
-            \o Will never be supported.
-    \row    \o QtSql: SQLite as driver
-            \o The only driver supported is SQLite.
-    \row    \o Developer Tools
-            \o Developer tools such as Designer, Assistant and Creator do not
-               run on Symbian OS.
+            \o No current plans to support this feature.
     \endtable
 
+    The following technologies have limited support:
+
+    \table
+    \header \o Technology
+            \o Note
+    \row    \o QtSql
+            \o The only driver supported is SQLite.
+    \row    \o QtMultimedia
+            \o Although the module itself is supported, no backend for Symbian
+               is available. However, there is a backend available for Phonon.
+    \endtable
 
     \section1 Known Issues
 
     Known issues can be found by visiting the
     \l{http://qt.gitorious.org/qt/pages/Qt460KnownIssues}{wiki page} with an
-    up-to-date list of known issues, or by
+    up-to-date list of known issues, and the list of bugs can be found by
     \l{http://bugreports.qt.nokia.com/browse/QTBUG/component/19171}{browsing} the
     S60 component in Qt's public task tracker, located at
     \l{http://bugreports.qt.nokia.com/}{http://bugreports.qt.nokia.com/}.
