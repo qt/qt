@@ -391,6 +391,13 @@ void tst_states::parentChange()
         QmlGraphicsRectangle *innerRect = qobject_cast<QmlGraphicsRectangle*>(rect->findChild<QmlGraphicsRectangle*>("MyRect"));
         QVERIFY(innerRect != 0);
 
+        QmlParentChange *pChange = qobject_cast<QmlParentChange*>(rect->states()->at(0)->changes()->at(0));
+        QVERIFY(pChange != 0);
+        QmlGraphicsItem *nParent = qobject_cast<QmlGraphicsItem*>(rect->findChild<QmlGraphicsItem*>("NewParent"));
+        QVERIFY(nParent != 0);
+
+        QCOMPARE(pChange->parent(), nParent);
+
         rect->setState("reparented");
         QCOMPARE(innerRect->rotation(), qreal(0));
         QCOMPARE(innerRect->scale(), qreal(1));
