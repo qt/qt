@@ -580,7 +580,7 @@ void tst_QXmlSimpleReader::inputFromSocket()
     QSKIP("Symbian: Skipped due to problems in Open C and QtNetwork", SkipAll);
 #endif
 
-#if defined(Q_OS_WIN32) && (defined(Q_CC_INTEL) || defined(Q_CC_MINGW) || defined(Q_CC_MSVC_NET))
+#if defined(Q_OS_WIN32) && (defined(Q_CC_INTEL) || defined(Q_CC_MSVC_NET))
     QSKIP("Regression caused by QHOstInfo change 294548, see task 202231.", SkipAll);
 #endif
     QTcpSocket sock;

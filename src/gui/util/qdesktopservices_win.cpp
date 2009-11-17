@@ -59,7 +59,7 @@
 #  endif
 #endif
 
-#if defined(Q_CC_MINGW) && !defined(CSIDL_MYMUSIC)
+#ifndef CSIDL_MYMUSIC
 #define CSIDL_MYMUSIC	13
 #define CSIDL_MYVIDEO	14
 #endif
