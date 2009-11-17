@@ -66,6 +66,7 @@ public:
     virtual void addWindowSurface(QGraphicsSystemFbWindowSurface * surface) { windowStack.prepend(surface); }
     virtual void raise(QWindowSurface * surface);
     virtual void lower(QWindowSurface * surface);
+    virtual QWidget * topLevelAt(QPoint p);
 
     virtual void pointerEvent(QMouseEvent & me);
 
