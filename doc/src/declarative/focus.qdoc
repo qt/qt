@@ -75,12 +75,12 @@ Item {
 
 \endlist
 
-See also the \l {Keys}{Keys attached property} and {KeyNavigation}{KeyNavigation attached property}.
+See also the \l {Keys}{Keys attached property} and \l {KeyNavigation}{KeyNavigation attached property}.
 
 \section1 Querying the Active Focus Item
 
 Whether or not an \l Item has \e {active focus} can be queried through the
-read-only property \c {Item::focus}.  For example, here we have a \l Text
+property \c {Item::focus}.  For example, here we have a \l Text
 element whose text is determined by whether or not it has \e {active focus}.
 
 \code
@@ -191,10 +191,11 @@ This problem is fundamentally one of visibility.  The \c {MyWidget}
 components each set their \c {keyHandler} Items as focused as that is all they can
 do - they don't know how they are going to be used, but they do know that when
 they're in use their \c {keyHandler} element is what needs focus.  Likewise
-the code that uses the \c {MyWidget}'s sets the second \c {MyWidget} as
-focused because, while it doesn't know exactly how the \c {MyWidget} is
-implemented, it knows that it wants the second one to be focused.  No one piece
-of code knows everything about the other, which is exactly how it should be.
+the code that uses the two \c {MyWidgets} sets the second \c {MyWidget} as
+focused. While it doesn't know exactly how the \c {MyWidget} is
+implemented, it knows that it wants the second one to be focused.  This allows us
+to achieve encapsulation, allowing each widget to focus on it's appropriate behaviour
+itself.
 
 To solve this problem - allowing components to care about what they know about
 and ignore everything else - the QML items introduce a concept known as a
