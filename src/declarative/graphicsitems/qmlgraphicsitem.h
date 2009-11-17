@@ -69,7 +69,7 @@ class Q_DECLARATIVE_EXPORT QmlGraphicsItem : public QGraphicsObject, public QmlP
 
     Q_PROPERTY(QmlGraphicsItem * parent READ parentItem WRITE setParentItem NOTIFY parentChanged DESIGNABLE false FINAL)
     Q_PROPERTY(QmlList<QObject *> *data READ data DESIGNABLE false)
-    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ fxChildren DESIGNABLE false)
+    Q_PROPERTY(QmlList<QmlGraphicsItem *>* children READ fxChildren DESIGNABLE false NOTIFY childrenChanged)
     Q_PROPERTY(QmlList<QObject *>* resources READ resources DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlState *>* states READ states DESIGNABLE false)
     Q_PROPERTY(QmlList<QmlTransition *>* transitions READ transitions DESIGNABLE false)
@@ -160,6 +160,7 @@ public:
 Q_SIGNALS:
     void widthChanged();
     void heightChanged();
+    void childrenChanged();
     void childrenRectChanged();
     void baselineOffsetChanged();
     void stateChanged(const QString &);

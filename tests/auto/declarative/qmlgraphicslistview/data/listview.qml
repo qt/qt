@@ -114,5 +114,6 @@ Rectangle {
         highlight: testObject.invalidHighlight ? invalidHl : myHighlight
         highlightMoveSpeed: 1000
         highlightResizeSpeed: 1000
+        cacheBuffer: testObject.cacheBuffer
     }
 }

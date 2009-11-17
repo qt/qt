@@ -83,7 +83,8 @@ QT_BEGIN_NAMESPACE
 class QmlReplaceSignalHandler : public ActionEvent
 {
 public:
-    QmlReplaceSignalHandler() : expression(0), reverseExpression(0), ownedExpression(0) {}
+    QmlReplaceSignalHandler() : expression(0), reverseExpression(0),
+                                rewindExpression(0), ownedExpression(0) {}
     ~QmlReplaceSignalHandler() {
         delete ownedExpression;
     }
@@ -93,6 +94,7 @@ public:
     QmlMetaProperty property;
     QmlExpression *expression;
     QmlExpression *reverseExpression;
+    QmlExpression *rewindExpression;
     QGuard<QmlExpression> ownedExpression;
 
     virtual void execute() {
@@ -104,7 +106,15 @@ public:
         ownedExpression = property.setSignalExpression(reverseExpression);
     }
 
-    virtual void saveOriginals() { reverseExpression = property.signalExpression(); }
+    virtual void saveOriginals() {
+        saveCurrentValues();
+        reverseExpression = rewindExpression;
+    }
+
+    virtual void rewind() {
+        ownedExpression = property.setSignalExpression(rewindExpression);
+    }
+    virtual void saveCurrentValues() { rewindExpression = property.signalExpression(); }
 
     virtual bool override(ActionEvent*other) {
         if (other == this)

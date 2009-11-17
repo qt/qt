@@ -173,11 +173,11 @@ void QmlTransitionManager::transition(const QList<Action> &list,
                 if (action.event->isReversable()) {
                     if (action.reverseEvent) {   //reverse the reverse
                         action.event->clearForwardBindings();
-                        action.event->execute();
+                        action.event->rewind();
                         action.event->clearReverseBindings();
                     } else {
                         action.event->clearReverseBindings();
-                        action.event->reverse();
+                        action.event->rewind();
                         action.event->clearForwardBindings();
                     }
                 }

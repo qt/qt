@@ -61,8 +61,8 @@ private slots:
     void inserted();
     void removed();
     void moved();
-    void currentIndex();
     void changeFlow();
+    void currentIndex();
     void defaultValues();
     void properties();
 
@@ -310,7 +310,7 @@ void tst_QmlGraphicsGridView::removed()
     QmlView *canvas = createView(SRCDIR "/data/gridview.qml");
 
     TestModel model;
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 40; i++)
         model.addItem("Item" + QString::number(i), "");
 
     QmlContext *ctxt = canvas->rootContext();
@@ -388,6 +388,7 @@ void tst_QmlGraphicsGridView::removed()
 
     // Remove items before visible
     gridview->setViewportY(120);
+    QTest::qWait(500);
     gridview->setCurrentIndex(10);
 
     // let transitions settle.
@@ -420,6 +421,14 @@ void tst_QmlGraphicsGridView::removed()
         QVERIFY(item->x() == (i%3)*80);
         QVERIFY(item->y() == (i/3)*60);
     }
+
+    // remove item outside current view.
+    gridview->setCurrentIndex(32);
+    QTest::qWait(500);
+    gridview->setViewportY(240);
+
+    model.removeItem(30);
+    QVERIFY(gridview->currentIndex() == 31);
 
     delete canvas;
 }
@@ -622,6 +631,29 @@ void tst_QmlGraphicsGridView::currentIndex()
     QApplication::sendEvent(canvas, &key);
     QVERIFY(key.isAccepted());
     QCOMPARE(gridview->currentIndex(), 0);
+
+    gridview->setFlow(QmlGraphicsGridView::TopToBottom);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 5);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Left, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 0);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 1);
+
+    key = QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier, "", false, 1);
+    QApplication::sendEvent(canvas, &key);
+    QVERIFY(key.isAccepted());
+    QCOMPARE(gridview->currentIndex(), 0);
+
 
     // turn off auto highlight
     gridview->setHighlightFollowsCurrentItem(false);

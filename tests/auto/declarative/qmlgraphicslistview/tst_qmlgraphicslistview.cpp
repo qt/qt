@@ -97,10 +97,12 @@ class TestObject : public QObject
     Q_PROPERTY(bool error READ error WRITE setError NOTIFY changedError)
     Q_PROPERTY(bool animate READ animate NOTIFY changedAnim)
     Q_PROPERTY(bool invalidHighlight READ invalidHighlight NOTIFY changedHl)
+    Q_PROPERTY(int cacheBuffer READ cacheBuffer NOTIFY changedCacheBuffer)
 
 public:
     TestObject(QObject *parent = 0)
-        : QObject(parent), mError(true), mAnimate(false), mInvalidHighlight(false) {}
+        : QObject(parent), mError(true), mAnimate(false), mInvalidHighlight(false)
+        , mCacheBuffer(0) {}
 
     bool error() const { return mError; }
     void setError(bool err) { mError = err; emit changedError(); }
@@ -111,15 +113,20 @@ public:
     bool invalidHighlight() const { return mInvalidHighlight; }
     void setInvalidHighlight(bool invalid) { mInvalidHighlight = invalid; emit changedHl(); }
 
+    int cacheBuffer() const { return mCacheBuffer; }
+    void setCacheBuffer(int buffer) { mCacheBuffer = buffer; emit changedCacheBuffer(); }
+
 signals:
     void changedError();
     void changedAnim();
     void changedHl();
+    void changedCacheBuffer();
 
 public:
     bool mError;
     bool mAnimate;
     bool mInvalidHighlight;
+    int mCacheBuffer;
 };
 
 class TestModel : public QListModelInterface
@@ -291,6 +298,7 @@ void tst_QmlGraphicsListView::items()
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
+    QVERIFY(listview->highlightItem() != 0);
     QCOMPARE(listview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -315,6 +323,7 @@ void tst_QmlGraphicsListView::items()
     testObject->setInvalidHighlight(true);
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
+    QVERIFY(listview->highlightItem() == 0);
 
     // set an empty model and confirm that items are destroyed
     T model2;
@@ -565,6 +574,25 @@ void tst_QmlGraphicsListView::removed(bool animated)
         QVERIFY(item);
         QCOMPARE(item->y(),40+i*20.0);
     }
+
+    // remove current item beyond visible items.
+    listview->setCurrentIndex(20);
+    QTest::qWait(500);
+    model.removeItem(20);
+    QTest::qWait(500);
+
+    QCOMPARE(listview->currentIndex(), 20);
+    QVERIFY(listview->currentItem() != 0);
+
+    // remove item before current, but visible
+    listview->setCurrentIndex(8);
+    QTest::qWait(500);
+    QmlGraphicsItem *oldCurrent = listview->currentItem();
+    model.removeItem(6);
+    QTest::qWait(500);
+
+    QCOMPARE(listview->currentIndex(), 7);
+    QVERIFY(listview->currentItem() == oldCurrent);
 
     delete canvas;
 }
@@ -1006,7 +1034,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     QVERIFY(viewport != 0);
     QVERIFY(listview->delegate() != 0);
     QVERIFY(listview->model() != 0);
-    QVERIFY(listview->highlight() == 0);
+    QVERIFY(listview->highlight() != 0);
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
@@ -1017,7 +1045,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
         QVERIFY(item->y() == i*20);
     }
 
-    listview->setCacheBuffer(400);
+    testObject->setCacheBuffer(400);
     QVERIFY(listview->cacheBuffer() == 400);
 
     int newItemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
