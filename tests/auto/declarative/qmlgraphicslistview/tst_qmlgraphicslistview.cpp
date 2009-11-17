@@ -291,6 +291,7 @@ void tst_QmlGraphicsListView::items()
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
 
+    QVERIFY(listview->highlightItem() != 0);
     QCOMPARE(listview->count(), model.count());
     QCOMPARE(viewport->childItems().count(), model.count()+1); // assumes all are visible, +1 for the (default) highlight item
 
@@ -315,6 +316,7 @@ void tst_QmlGraphicsListView::items()
     testObject->setInvalidHighlight(true);
     QMetaObject::invokeMethod(canvas->root(), "checkProperties");
     QVERIFY(testObject->error() == false);
+    QVERIFY(listview->highlightItem() == 0);
 
     // set an empty model and confirm that items are destroyed
     T model2;
@@ -1006,7 +1008,7 @@ void tst_QmlGraphicsListView::cacheBuffer()
     QVERIFY(viewport != 0);
     QVERIFY(listview->delegate() != 0);
     QVERIFY(listview->model() != 0);
-    QVERIFY(listview->highlight() == 0);
+    QVERIFY(listview->highlight() != 0);
 
     // Confirm items positioned correctly
     int itemCount = findItems<QmlGraphicsItem>(viewport, "wrapper").count();
