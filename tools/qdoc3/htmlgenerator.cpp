@@ -4080,7 +4080,7 @@ void HtmlGenerator::generateMacRef(const Node *node, CodeMarker *marker)
 
     QStringList macRefs = marker->macRefsForNode(node);
     foreach (const QString &macRef, macRefs)
-        out() << "<a name=\"" << "//apple_ref/" << macRef << "\" />\n";
+        out() << "<a name=\"" << "//apple_ref/" << macRef << "\"></a>\n";
 }
 
 void HtmlGenerator::beginLink(const QString &link,
