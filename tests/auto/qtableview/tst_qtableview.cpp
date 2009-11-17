@@ -198,6 +198,7 @@ private slots:
     void task191545_dragSelectRows();
     void taskQTBUG_5062_spansInconsistency();
     void taskQTBUG_4516_clickOnRichTextLabel();
+    void taskQTBUG_5237_wheelEventOnHeader();
 
     void mouseWheel_data();
     void mouseWheel();
@@ -3922,6 +3923,22 @@ void tst_QTableView::changeHeaderData()
     QVERIFY(view.verticalHeader()->width() > textWidth);
 }
 
+void tst_QTableView::taskQTBUG_5237_wheelEventOnHeader()
+{
+    QTableView view;
+    QStandardItemModel model(500,5);
+    view.setModel(&model);
+    view.show();
+    QTest::qWaitForWindowShown(&view);
+
+    int sbValueBefore = view.verticalScrollBar()->value();
+    QHeaderView *header = view.verticalHeader();
+    QTest::mouseMove(header);
+    QWheelEvent wheelEvent(header->geometry().center(), -720, 0, 0);
+    QApplication::sendEvent(header->viewport(), &wheelEvent);
+    int sbValueAfter = view.verticalScrollBar()->value();
+    QVERIFY(sbValueBefore != sbValueAfter);
+}
 
 QTEST_MAIN(tst_QTableView)
 #include "tst_qtableview.moc"
