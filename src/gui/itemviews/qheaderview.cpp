@@ -2396,7 +2396,12 @@ bool QHeaderView::viewportEvent(QEvent *e)
         d->state = QHeaderViewPrivate::NoState;
         d->pressed = d->section = d->target = -1;
         d->updateSectionIndicator(d->section, -1);
-    }
+        break; }
+    case QEvent::Wheel: {
+        QAbstractScrollArea *asa = qobject_cast<QAbstractScrollArea *>(parentWidget());
+        if (asa)
+            return QApplication::sendEvent(asa->viewport(), e);
+        break; }
     default:
         break;
     }
