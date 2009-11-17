@@ -475,6 +475,8 @@ void QmlAnchorChanges::setReset(const QString &reset)
     Q_D(QmlAnchorChanges);
     d->resetString = reset;
     d->resetList = d->resetString.split(QLatin1Char(','));
+    for (int i = 0; i < d->resetList.count(); ++i)
+        d->resetList[i] = d->resetList.at(i).trimmed();
 }
 
 /*!
@@ -766,8 +768,8 @@ bool QmlAnchorChanges::override(ActionEvent*other)
         return false;
     if (static_cast<ActionEvent*>(this) == other)
         return true;
-    //### can we do any other meaningful comparison? Do we need to attempt to merge the two
-    //    somehow if they have the same target and some of the same anchors?
+    if (static_cast<QmlAnchorChanges*>(other)->object() == object())
+        return true;
     return false;
 }
 
