@@ -4,6 +4,7 @@ SUBDIRS += \
            animatedimage \          # Cover
            datetimeformatter \      # Cover
            examples \
+	   graphicswidgets \        # Cover
            layouts \                # Cover
            numberformatter \        # Cover
            parserstress \           # Cover

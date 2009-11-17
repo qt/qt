@@ -139,10 +139,11 @@ void tst_sql::testQml_data()
 
     QTest::newRow("creation") << "data/1-creation.js" << "passed" << 1 << false;
     QTest::newRow("selection") << "data/2-selection.js" << "passed" << 1 << false;
+    QTest::newRow("selection-bindnames") << "data/2-selection-bindnames.js" << "passed" << 1 << true; // WebKit somehow breaks named parameters
     QTest::newRow("iteration-item-function") << "data/3-iteration-item-function.js" << "passed" << 1 << false;
-    QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 1 << true;
-    QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 1 << true;
-    QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 1 << true;
+    QTest::newRow("iteration-index") << "data/4-iteration-index.js" << "passed" << 1 << true; // Some HTML5 documents say to use rows by index, others by item() function
+    QTest::newRow("iteration-iterator") << "data/5-iteration-iterator.js" << "passed" << 1 << true; // As with previous, WebKit doesn't give an array
+    QTest::newRow("iteration-efficient") << "data/6-iteration-efficient.js" << "passed" << 1 << true; // It's very inefficient to find the total number of results, here is a solution
 }
 
 void tst_sql::validateAgainstWebkit_data()
