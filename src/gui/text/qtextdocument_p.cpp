@@ -1114,9 +1114,11 @@ void QTextDocumentPrivate::endEditBlock()
         return;
 
     if (undoEnabled && undoState > 0) {
+        const bool wasBlocking = !undoStack[undoState - 1].block_end;
         if (undoStack[undoState - 1].block_part) {
             undoStack[undoState - 1].block_end = true;
-            emit document()->undoCommandAdded();
+            if (wasBlocking)
+                emit document()->undoCommandAdded();
         }
     }
 

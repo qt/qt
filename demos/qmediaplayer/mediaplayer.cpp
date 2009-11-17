@@ -355,13 +355,13 @@ void MediaPlayer::stateChanged(Phonon::State newstate, Phonon::State oldstate)
 
     switch (newstate) {
         case Phonon::ErrorState:
-            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             if (m_MediaObject.errorType() == Phonon::FatalError) {
                 playButton->setEnabled(false);
                 rewindButton->setEnabled(false);
             } else {
                 m_MediaObject.pause();
             }
+            QMessageBox::warning(this, "Phonon Mediaplayer", m_MediaObject.errorString(), QMessageBox::Close);
             break;
         case Phonon::PausedState:
         case Phonon::StoppedState:
@@ -471,6 +471,8 @@ void MediaPlayer::effectChanged()
 
 void MediaPlayer::showSettingsDialog()
 {
+    playPauseForDialog();
+
     if (!settingsDialog)
         initSettingsDialog();
 
@@ -516,6 +518,8 @@ void MediaPlayer::showSettingsDialog()
         m_videoWidget->setScaleMode(oldScale);
         ui->audioEffectsCombo->setCurrentIndex(currentEffect);
     }
+
+    playPauseForDialog();
 }
 
 void MediaPlayer::initVideoWindow()
@@ -652,10 +656,25 @@ void MediaPlayer::setFile(const QString &fileName)
     m_MediaObject.play();
 }
 
+void MediaPlayer::playPauseForDialog()
+{
+    // If we're running on a small screen, we want to pause the video
+    // when popping up dialogs.
+    if (m_hasSmallScreen &&
+        (Phonon::PlayingState == m_MediaObject.state() ||
+         Phonon::PausedState == m_MediaObject.state()))
+        playPause();
+}
+
 void MediaPlayer::openFile()
 {
+    playPauseForDialog();
+
     QStringList fileNames = QFileDialog::getOpenFileNames(this, QString(),
                                                           QDesktopServices::storageLocation(QDesktopServices::MusicLocation));
+
+    playPauseForDialog();
+
     m_MediaObject.clearQueue();
     if (fileNames.size() > 0) {
         QString fileName = fileNames[0];
