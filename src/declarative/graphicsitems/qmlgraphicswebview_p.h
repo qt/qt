@@ -208,6 +208,7 @@ private Q_SLOTS:
     void windowObjectCleared();
     void pageUrlChanged();
     void contentsSizeChanged(const QSize&);
+    void initialLayout();
 
 protected:
     void drawContents(QPainter *, const QRect &);

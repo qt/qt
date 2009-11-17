@@ -202,11 +202,11 @@ Item {
                         var sc = zoom/zoomFactor;
                         scaleAnim.to = sc;
                         flickVX.from = flickable.viewportX
-                        flickVX.to = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
-                        finalX.value = Math.min(Math.max(0,centerX-flickable.width/2),webView.width*sc-flickable.width)
+                        flickVX.to = Math.max(0,Math.min(centerX-flickable.width/2,webView.width*sc-flickable.width))
+                        finalX.value = flickVX.to
                         flickVY.from = flickable.viewportY
-                        flickVY.to = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
-                        finalY.value = Math.min(Math.max(0,centerY-flickable.height/2),webView.height*sc-flickable.height)
+                        flickVY.to = Math.max(0,Math.min(centerY-flickable.height/2,webView.height*sc-flickable.height))
+                        finalY.value = flickVY.to
                         finalZoom.value = zoom
                         quickZoom.start()
                     }
@@ -214,11 +214,12 @@ Item {
 
                 preferredWidth: flickable.width
                 preferredHeight: flickable.height
-                zoomFactor: flickable.width > 980 ? flickable.width : flickable.width/980
+                zoomFactor: flickable.width > 980 ? 1 : flickable.width/980
 
                 onUrlChanged: { if (url != null) { webBrowser.urlString = url.toString(); } }
-                onDoubleClick: { if (!heuristicZoom(clickX,clickY,2.5)) {
-                                    var zf = flickable.width > 980 ? flickable.width : flickable.width/980;
+                onDoubleClick: {
+                                if (!heuristicZoom(clickX,clickY,2.5)) {
+                                    var zf = flickable.width > 980 ? 1 : flickable.width/980;
                                     doZoom(zf,clickX/zoomFactor*zf,clickY/zoomFactor*zf)
                                  }
                                }
