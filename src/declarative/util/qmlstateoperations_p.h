@@ -79,6 +79,8 @@ public:
     virtual void reverse();
     virtual QString typeName() const;
     virtual bool override(ActionEvent*other);
+    virtual void rewind();
+    virtual void saveCurrentValues();
 };
 
 class QmlStateChangeScriptPrivate;
@@ -166,6 +168,8 @@ public:
     virtual void saveOriginals();
     virtual void clearForwardBindings();
     virtual void clearReverseBindings();
+    virtual void rewind();
+    virtual void saveCurrentValues();
 };
 
 QT_END_NAMESPACE
