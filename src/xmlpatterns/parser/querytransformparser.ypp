@@ -870,7 +870,7 @@ static void variableUnavailable(const QXmlName &variableName,
                                 const ParserContext *const parseInfo,
                                 const YYLTYPE &location)
 {
-    parseInfo->staticContext->error(QtXmlPatterns::tr("No variable by name %1 exists")
+    parseInfo->staticContext->error(QtXmlPatterns::tr("No variable with name %1 exists")
                                        .arg(formatKeyword(parseInfo->staticContext->namePool(), variableName)),
                                     ReportContext::XPST0008, fromYYLTYPE(location, parseInfo));
 }
