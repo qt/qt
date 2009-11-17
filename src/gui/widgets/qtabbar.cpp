@@ -1947,7 +1947,8 @@ void QTabBar::changeEvent(QEvent *event)
 {
     Q_D(QTabBar);
     if (event->type() == QEvent::StyleChange) {
-        d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
+        if (!d->elideModeSetByUser)
+            d->elideMode = Qt::TextElideMode(style()->styleHint(QStyle::SH_TabBar_ElideMode, 0, this));
         d->useScrollButtons = !style()->styleHint(QStyle::SH_TabBar_PreferNoArrows, 0, this);
         d->refresh();
     } else if (event->type() == QEvent::FontChange) {
@@ -1979,6 +1980,7 @@ void QTabBar::setElideMode(Qt::TextElideMode mode)
 {
     Q_D(QTabBar);
     d->elideMode = mode;
+    d->elideModeSetByUser = true;
     d->refresh();
 }
 
