@@ -79,7 +79,7 @@
 <context>
     <name>BookmarkManager</name>
     <message>
-        <location line="+434"/>
+        <location line="+435"/>
         <source>Bookmarks</source>
         <translation>Lesezeichen</translation>
     </message>
@@ -103,7 +103,7 @@
 <context>
     <name>BookmarkWidget</name>
     <message>
-        <location line="-416"/>
+        <location line="-417"/>
         <source>Filter:</source>
         <translation>Filter:</translation>
     </message>
@@ -130,7 +130,7 @@
     <message>
         <location line="+1"/>
         <source>Show Bookmark in New Tab</source>
-        <translation>Lesezeichen in neuem Tab öffnen</translation>
+        <translation>Lesezeichen in neuem Reiter öffnen</translation>
     </message>
     <message>
         <location line="+3"/>
@@ -151,7 +151,7 @@
 <context>
     <name>CentralWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+238"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="+239"/>
         <source>Add new page</source>
         <translation>Neue Seite hinzufügen</translation>
     </message>
@@ -166,7 +166,7 @@
         <translation>Drucken</translation>
     </message>
     <message>
-        <location line="+148"/>
+        <location line="+130"/>
         <location line="+2"/>
         <source>unknown</source>
         <translation>unbekannt</translation>
@@ -192,7 +192,7 @@
         <translation>Lesezeichen für diese Seite hinzufügen ...</translation>
     </message>
     <message>
-        <location line="+255"/>
+        <location line="+235"/>
         <source>Search</source>
         <translation>Suchen</translation>
     </message>
@@ -207,7 +207,7 @@
     <message>
         <location line="+1"/>
         <source>Open Link in New Tab</source>
-        <translation>Link in neuem Tab öffnen</translation>
+        <translation>Link in neuem Reiter öffnen</translation>
     </message>
 </context>
 <context>
@@ -226,7 +226,7 @@
 <context>
     <name>FindWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-955"/>
+        <location filename="../tools/assistant/tools/assistant/centralwidget.cpp" line="-918"/>
         <source>Previous</source>
         <translation>Zurück</translation>
     </message>
@@ -282,7 +282,7 @@
 <context>
     <name>HelpViewer</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+492"/>
+        <location filename="../tools/assistant/tools/assistant/helpviewer.cpp" line="+489"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
@@ -304,12 +304,12 @@
     <message>
         <location line="+3"/>
         <source>Open Link in New Tab	Ctrl+LMB</source>
-        <translation>Link in neuem Tab öffnen	</translation>
+        <translation>Link in neuem Reiter öffnen	</translation>
     </message>
     <message>
         <location line="-275"/>
         <source>Open Link in New Tab</source>
-        <translation>Link in neuem Tab öffnen</translation>
+        <translation>Link in neuem Reiter öffnen</translation>
     </message>
     <message>
         <location line="+209"/>
@@ -334,7 +334,7 @@
     <message>
         <location line="+1"/>
         <source>Open Link in New Tab</source>
-        <translation>Link in neuem Tab öffnen</translation>
+        <translation>Link in neuem Reiter öffnen</translation>
     </message>
 </context>
 <context>
@@ -392,7 +392,7 @@
     <message>
         <location line="+37"/>
         <source>Download failed: Downloaded file is corrupted.</source>
-        <translation>Herunterladen fehlgeschlagen: Die Datei ist warscheinlich beschädigt.</translation>
+        <translation>Herunterladen fehlgeschlagen: Die Datei ist wahrscheinlich beschädigt.</translation>
     </message>
     <message>
         <location line="+2"/>
@@ -441,19 +441,19 @@
     <name>MainWindow</name>
     <message>
         <location filename="../tools/assistant/tools/assistant/mainwindow.cpp" line="+110"/>
-        <location line="+391"/>
+        <location line="+383"/>
         <source>Index</source>
         <translation>Index</translation>
     </message>
     <message>
-        <location line="-385"/>
-        <location line="+383"/>
+        <location line="-377"/>
+        <location line="+375"/>
         <source>Contents</source>
         <translation>Inhalt</translation>
     </message>
     <message>
-        <location line="-378"/>
-        <location line="+382"/>
+        <location line="-370"/>
+        <location line="+374"/>
         <source>Bookmarks</source>
         <translation>Lesezeichen</translation>
     </message>
@@ -463,14 +463,14 @@
         <translation>Suchen</translation>
     </message>
     <message>
-        <location line="-372"/>
-        <location line="+215"/>
-        <location line="+512"/>
+        <location line="-364"/>
+        <location line="+207"/>
+        <location line="+514"/>
         <source>Qt Assistant</source>
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location line="-544"/>
+        <location line="-546"/>
         <location line="+5"/>
         <source>Unfiltered</source>
         <translation>Ohne Filter</translation>
@@ -493,12 +493,12 @@
     <message>
         <location line="+7"/>
         <source>New &amp;Tab</source>
-        <translation>Neuer &amp;Tab</translation>
+        <translation>Neuer &amp;Reiter</translation>
     </message>
     <message>
         <location line="+3"/>
         <source>&amp;Close Tab</source>
-        <translation>Tab &amp;schließen</translation>
+        <translation>Reiter &amp;schließen</translation>
     </message>
     <message>
         <location line="+4"/>
@@ -516,7 +516,12 @@
         <translation>&amp;Textsuche ...</translation>
     </message>
     <message>
-        <location line="+6"/>
+        <location line="+2"/>
+        <source>&amp;Find</source>
+        <translation>&amp;Suchen</translation>
+    </message>
+    <message>
+        <location line="+4"/>
         <source>Find &amp;Next</source>
         <translation>&amp;Weitersuchen</translation>
     </message>
@@ -583,10 +588,15 @@
     <message>
         <location line="+6"/>
         <source>Sync with Table of Contents</source>
-        <translation>Seite mit Inhalt-Tab abgleichen</translation>
+        <translation>Seite mit Inhaltsangabe abgleichen</translation>
     </message>
     <message>
-        <location line="+7"/>
+        <location line="+2"/>
+        <source>Sync</source>
+        <translation>Synchronisieren</translation>
+    </message>
+    <message>
+        <location line="+5"/>
         <source>Next Page</source>
         <translation>Nächste Seite</translation>
     </message>
@@ -636,7 +646,7 @@
         <translation>Filter:</translation>
     </message>
     <message>
-        <location line="+23"/>
+        <location line="+25"/>
         <source>Address Toolbar</source>
         <translation>Adressleiste</translation>
     </message>
@@ -661,7 +671,7 @@
         <translation>Suchindex wird aufgebaut</translation>
     </message>
     <message>
-        <location line="-638"/>
+        <location line="-640"/>
         <source>Looking for Qt Documentation...</source>
         <translation>Suche nach Qt-Dokumentation ...</translation>
     </message>
@@ -963,7 +973,7 @@
         <translation>Qt Assistant</translation>
     </message>
     <message>
-        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+217"/>
+        <location filename="../tools/assistant/tools/assistant/main.cpp" line="+225"/>
         <source>Could not register documentation file
 %1
 
@@ -1023,7 +1033,7 @@ Grund:
 <context>
     <name>SearchWidget</name>
     <message>
-        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+195"/>
+        <location filename="../tools/assistant/tools/assistant/searchwidget.cpp" line="+196"/>
         <source>&amp;Copy</source>
         <translation>&amp;Kopieren</translation>
     </message>
@@ -1035,7 +1045,7 @@ Grund:
     <message>
         <location line="+4"/>
         <source>Open Link in New Tab</source>
-        <translation>Link in neuem Tab öffnen</translation>
+        <translation>Link in neuem Reiter öffnen</translation>
     </message>
     <message>
         <location line="+8"/>
