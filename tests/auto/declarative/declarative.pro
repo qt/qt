@@ -7,6 +7,7 @@ SUBDIRS += \
            datetimeformatter \      # Cover
            debugger \               # Cover
            examples \
+	   graphicswidgets \        # Cover
            layouts \                # Cover
            numberformatter \        # Cover
            parserstress \           # Cover
