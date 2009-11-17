@@ -134,7 +134,7 @@ void View::showInformation(ImageItem *image)
 #ifndef Q_OS_SYMBIAN
         window->show();
 #else
-        window->showFullScreen();
+        window->showMaximized();
 #endif
     } else {
         InformationWindow *window;
@@ -147,7 +147,7 @@ void View::showInformation(ImageItem *image)
         window->move(pos() + QPoint(20, 40));
         window->show();
 #else
-        window->showFullScreen();
+        window->showMaximized();
 #endif
         informationWindows.append(window);
     }
