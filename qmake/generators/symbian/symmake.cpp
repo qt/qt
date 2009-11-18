@@ -209,7 +209,7 @@ bool SymbianMakefileGenerator::writeMakefile(QTextStream &t)
         generatePkgFile(iconFile);
     }
 
-    writeBldInfContent(t, generatePkg);
+    writeBldInfContent(t, generatePkg, iconFile);
 
     // Generate empty wrapper makefile here, because wrapper makefile must exist before writeMkFile,
     // but all required data is not yet available.
@@ -378,14 +378,11 @@ void SymbianMakefileGenerator::generatePkgFile(const QString &iconFile)
                  .arg(installPathRegResource)
                  .arg(fixedTarget + "_reg.rsc") << endl;
 
-            QString myIconFile = iconFile;
-            myIconFile = myIconFile.replace("\\\\", "\\");
-
             if (!iconFile.isEmpty())  {
                 t << QString("\"%1epoc32/data/z%2\"    - \"!:%3\"")
                      .arg(epocRoot())
-                     .arg(QString(myIconFile).replace('\\','/'))
-                     .arg(myIconFile) << endl << endl;
+                     .arg(iconFile)
+                     .arg(QDir::toNativeSeparators(iconFile)) << endl << endl;
             }
         }
     }
@@ -1120,7 +1117,7 @@ void SymbianMakefileGenerator::writeMmpFileRulesPart(QTextStream& t)
     }
 }
 
-void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension)
+void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploymentExtension, const QString &iconFile)
 {
     // Read user defined bld inf rules
 
@@ -1242,7 +1239,7 @@ void SymbianMakefileGenerator::writeBldInfContent(QTextStream &t, bool addDeploy
 
     // Generate extension rules
 
-    writeBldInfExtensionRulesPart(t);
+    writeBldInfExtensionRulesPart(t, iconFile);
 
     userItems = userBldInfRules.value(BLD_INF_TAG_EXTENSIONS);
     foreach(QString item, userItems)
@@ -1320,14 +1317,17 @@ void SymbianMakefileGenerator::writeRssFile(QString &numberOfIcons, QString &ico
         t << "\t\t{" << endl;
         t << "\t\tcaption = STRING_r_caption;" << endl;
 
-        if (numberOfIcons.isEmpty() || iconFile.isEmpty()) {
+        QString rssIconFile = iconFile;
+        rssIconFile = rssIconFile.replace("/", "\\\\");
+
+        if (numberOfIcons.isEmpty() || rssIconFile.isEmpty()) {
             // There can be maximum one item in this tag, validated when parsed
             t << "\t\tnumber_of_icons = 0;" << endl;
             t << "\t\ticon_file = \"\";" << endl;
         } else {
             // There can be maximum one item in this tag, validated when parsed
             t << "\t\tnumber_of_icons = " << numberOfIcons << ";" << endl;
-            t << "\t\ticon_file = \"" << iconFile << "\";" << endl;
+            t << "\t\ticon_file = \"" << rssIconFile << "\";" << endl;
         }
         t << "\t\t};" << endl;
         t << "\t}" << endl;
@@ -1697,6 +1697,7 @@ void SymbianMakefileGenerator::generateCleanCommands(QTextStream& t,
 
 void SymbianMakefileGenerator::removeSpecialCharacters(QString& str)
 {
+    // When modifying this method check also application_icon.prf
     str.replace(QString("/"), QString("_"));
     str.replace(QString("\\"), QString("_"));
     str.replace(QString("-"), QString("_"));
