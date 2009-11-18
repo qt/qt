@@ -177,6 +177,12 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    QFile file(argv[1]);
+    if (!file.exists()) {
+        printf("%s does not exist\n", argv[1]);
+        return 1;
+    }
+
     ReplayWidget *widget = new ReplayWidget(argv[1]);
 
     if (!widget->updates.isEmpty()) {
