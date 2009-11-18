@@ -110,23 +110,16 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
 
     // Verify license info...
     QString licenseKey = licenseInfo["LICENSEKEYEXT"];
-    const char * clicenseKey = licenseKey.toLatin1();
+    QByteArray clicenseKey = licenseKey.toLatin1();
     //We check the licence
-#ifndef _WIN32_WCE
-        char *buffer = strdup(clicenseKey);
-#else
-        char *buffer = (char*) malloc(strlen(clicenseKey) + 1);
-        strcpy(buffer, clicenseKey);
-#endif
     static const char * const SEP = "-";
     char *licenseParts[NUMBER_OF_PARTS];
     int partNumber = 0;
-    for (char *part = strtok(buffer, SEP); part != 0; part = strtok(0, SEP))
+    for (char *part = strtok(clicenseKey.data(), SEP); part != 0; part = strtok(0, SEP))
         licenseParts[partNumber++] = part;
     if (partNumber < (NUMBER_OF_PARTS-1)) {
         dictionary["DONE"] = "error";
         cout << "License file does not contain proper license key." <<partNumber<< endl;
-        free(buffer);
         return;
     }
 
@@ -160,7 +153,7 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         static const char src[] = "8NPQRTZ";
         static const char dst[] = "UCWX9M7";
         const char *p = strchr(src, platforms[1]);
-        platforms[1] = dst + (p - src);
+        platforms[1] = dst[p - src];
     }
 
 #define PL(a,b) (int(a)+int(b)*256)
@@ -188,8 +181,8 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
             && platformCode != PL('S', 'W')) {
             dictionary["DONE"] = "error";
         } else if (dictionary["PLATFORM NAME"].contains("Symbian")
-                   && platformCode != PL('N', '9') && platformCode != PL('S', '9,')
-                   && platformCode != PL('S', 'C') && platformCode != PL('S', 'UCWX9M7')
+                   && platformCode != PL('N', '9') && platformCode != PL('S', '9')
+                   && platformCode != PL('S', 'C') && platformCode != PL('S', 'U')
                    && platformCode != PL('S', 'W')) {
             dictionary["DONE"] = "error";
         }
@@ -248,6 +241,5 @@ void Tools::checkLicense(QMap<QString,QString> &dictionary, QMap<QString,QString
         return;
     }
     dictionary["LICENSE FILE"] = toLicenseFile;
-    free(buffer);
 }
 
