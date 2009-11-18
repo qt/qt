@@ -57,6 +57,7 @@ public:
     HelpGenerator();
     bool generate(QHelpDataInterface *helpData,
         const QString &outputFileName);
+    bool checkLinks(const QHelpDataInterface &helpData);
     QString error() const;
 
 private slots:

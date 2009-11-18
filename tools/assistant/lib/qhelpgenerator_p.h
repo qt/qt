@@ -74,6 +74,7 @@ public:
 
     bool generate(QHelpDataInterface *helpData,
         const QString &outputFileName);
+    bool checkLinks(const QHelpDataInterface &helpData);
     QString error() const;
 
 Q_SIGNALS:

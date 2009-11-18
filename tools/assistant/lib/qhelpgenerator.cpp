@@ -47,6 +47,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QDir>
 #include <QtCore/QDebug>
+#include <QtCore/QSet>
 #include <QtCore/QVariant>
 #include <QtCore/QDateTime>
 #include <QtCore/QTextCodec>
@@ -824,4 +825,68 @@ bool QHelpGenerator::insertMetaData(const QMap<QString, QVariant> &metaData)
     return true;
 }
 
+bool QHelpGenerator::checkLinks(const QHelpDataInterface &helpData)
+{
+    /*
+     * Step 1: Gather the canoncal file paths of all files in the project.
+     *         We use a set, because there will be a lot of look-ups.
+     */
+    QSet<QString> files;
+    foreach (const QHelpDataFilterSection &filterSection, helpData.filterSections()) {
+        foreach (const QString &file, filterSection.files()) {
+            QFileInfo fileInfo(helpData.rootPath() + QDir::separator() + file);
+            const QString &canonicalFileName = fileInfo.canonicalFilePath();
+            if (!fileInfo.exists())
+                emit warning(tr("File '%1' does not exist.").arg(file));
+            else
+                files.insert(canonicalFileName);
+        }
+    }
+
+    /*
+     * Step 2: Check the hypertext and image references of all HTML files.
+     *         Note that we don't parse the files, but simply grep for the
+     *         respective HTML elements. Therefore. contents that are e.g.
+     *         commented out can cause false warning.
+     */
+    bool allLinksOk = true;
+    foreach (const QString &fileName, files) {
+        if (!fileName.endsWith(QLatin1String("html"))
+            && !fileName.endsWith(QLatin1String("htm")))
+            continue;
+        QFile htmlFile(fileName);
+        if (!htmlFile.open(QIODevice::ReadOnly)) {
+            emit warning(tr("File '%1' cannot be opened.").arg(fileName));
+            continue;
+        }
+        const QRegExp linkPattern(QLatin1String("<(?:a href|img src)=\"?([^#\">]+)[#\">]"));
+        QTextStream stream(&htmlFile);
+        const QString codec = QHelpGlobal::codecFromData(htmlFile.read(1000));
+        stream.setCodec(QTextCodec::codecForName(codec.toLatin1().constData()));
+        const QString &content = stream.readAll();
+        QStringList invalidLinks;
+        for (int pos = linkPattern.indexIn(content); pos != -1;
+             pos = linkPattern.indexIn(content, pos + 1)) {
+            const QString& linkedFileName = linkPattern.cap(1);
+            if (linkedFileName.contains(QLatin1String("://")))
+                continue;
+            const QString curDir = QFileInfo(fileName).dir().path();
+            const QString &canonicalLinkedFileName =
+                QFileInfo(curDir + QDir::separator() + linkedFileName).canonicalFilePath();
+            if (!files.contains(canonicalLinkedFileName)
+                && !invalidLinks.contains(canonicalLinkedFileName)) {
+                emit warning(tr("File '%1' contains an invalid link to file '%2'").
+                         arg(fileName).arg(linkedFileName));
+                allLinksOk = false;
+                invalidLinks.append(canonicalLinkedFileName);
+            }
+        }
+    }
+
+    if (!allLinksOk)
+        d->error = tr("Invalid links in HTML files.");
+    return allLinksOk;
+}
+
 QT_END_NAMESPACE
+
