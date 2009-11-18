@@ -633,12 +633,19 @@
             file in the \c{file} tags. It is possible to specify a different file or any
             language. The icon defined by the \c{icon} tags is applied to any language.
         \row
-            \o \c{<cacheDirectory>}
-            \o Specified as a path relative to the directory given by
-            QDesktopServices::DataLocation, the cache path is used to store index files
+            \o \c{<cacheDirectory base="collection|default">}
+            \o The cache directory is used to store index files
             needed for the full text search and a copy of the collection file.
-            The copy is needed because \QA stores all its settings in the collection file;
-            i.e., it must be writable for the user.
+            The copy is needed because \QA stores all its settings in the collection file; i.e., it must be writable for the user.
+            The directory is specified as a relative path. 
+            If the \c{base} attribute is set to "collection", the path is 
+            relative to the directory the collection file resides in. 
+            If the attribute is set to "default" or if it is missing, 
+            the path is relative to the directory given by 
+            QDesktopServices::DataLocation. The first form is useful for 
+            collections that are used in a "mobile" way, e.g. carried around 
+            on a USB stick.
+            
     \endtable
 
     In addition to those \QA specific tags, the tags for generating and registering
